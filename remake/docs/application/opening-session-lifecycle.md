@@ -524,6 +524,14 @@ revision. Unknown versions or identities reject with “This save needs the matc
 best-effort load, inferred migration or fallback to a new game. Future formats require a separately
 reviewed migration only if a real retained save needs one.
 
+The private opening selection declares its gameplay revision. Existing four-member worlds use
+revision 1. The five-member world uses revision 2 because New Game generates Kazin's level-4
+stats from the main RNG before the player moves. A four-member save lacks those attained stats
+and stores only the later RNG value. To Continue that slot, select the four-member world. Start
+the five-member world in a separate slot and use the same world when continuing it. Selecting
+a mismatched revision shows the existing matching-content message before restoring the party.
+The [campaign preparation](pre-voyage-campaign.md#preparing-the-ordinary-selection) identifies both selections.
+
 Application owns DTO capture/validation/restore; Content owns bounded JSON admission/encoding and
 binding to admitted definitions; the host owns a small filesystem adapter. Domain has no file/Godot
 dependency. Add only the storage boundary needed to return typed results; avoid a plugin store,

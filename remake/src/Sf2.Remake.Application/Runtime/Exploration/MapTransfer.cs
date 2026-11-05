@@ -183,14 +183,14 @@ internal static class MapTransfer
     }
 
     internal static ExplorationState Build(ExplorationMapDefinition map, EntityRef player, MapPosition position,
-        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null)
+        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null, bool combatPlacement = false)
     {
         map = map.SelectSetup(flags);
         var layout = map.Layout;
         foreach (var copy in map.LayoutEvents?.Flags ?? [])
             if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
         layout = FieldSearch.RestoreChests(layout, map.Search, flags);
-        if (!map.Traversal.IsWithinActiveArea(position) || OriginalMapTraversal.IsBlocked(layout, position))
+        if (!map.Traversal.IsWithinActiveArea(position) || (!combatPlacement && OriginalMapTraversal.IsBlocked(layout, position)))
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
         {
@@ -223,7 +223,7 @@ internal static class MapTransfer
         var story = current.Story;
         var world = current.Exploration!;
         ValidateDisplay(story.Display);
-        if (story.Warp is not null || story.TextWindow is not ClosedTextWindow ||
+        if ((story.Warp is { } warp && warp.Map != world.Definition.Map) || story.TextWindow is not ClosedTextWindow ||
             story.PortraitWindow is not ClosedPortraitWindow || story.LogicalText is not { Open: false })
             throw new BattleRuleException("scene-reload-context", "story.windows", true);
         if (world.Definition.BasePalette != story.Display!.Base)
@@ -259,7 +259,8 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
-        MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules rules)
+        MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules rules,
+        bool combatPlacement = false)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
         CaravanRuntime.RequireOrdinaryMapOperation(world);
@@ -291,7 +292,7 @@ internal static class MapTransfer
                 if (write.Value) enteredFlags.Add(write.Flag); else enteredFlags.Remove(write.Flag);
             flags = enteredFlags.Order().ToArray();
             // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
-            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags);
+            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags, combatPlacement);
         }
         var story = continuation.Copy(continuation.Cursor,
             flags: flags,

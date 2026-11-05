@@ -13,6 +13,7 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_exploration_search.py",
         "src/sf2tool/remake_exploration_services.py",
         "src/sf2tool/remake_exploration_programs.py",
+        "src/sf2tool/remake_exploration_scene.py",
         "src/sf2tool/remake_exploration_visuals.py",
     }
 )

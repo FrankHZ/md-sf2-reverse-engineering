@@ -8,7 +8,8 @@ from typing import Any
 
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
-from sf2tool.remake_exploration_joins import join_service
+from sf2tool.remake_exploration_joins import join_selector, join_service
+from sf2tool.remake_exploration_scene import scene_operation, sound_operation
 from sf2tool.remake_exploration_services import church_service, shop_service
 
 
@@ -283,6 +284,11 @@ class OriginalPrograms:
             "DownLeft": (-1, 1),
             "DownRight": (1, 1),
         }
+        if op == "jumpUp":
+            # csc2D_D copies the 34-byte eas_Jump body, excluding its jump to idle.
+            self.sources.add("disasm/code/common/scripting/map/mapscriptengine_1.asm")
+            jump = self.action_stream("eas_Jump")
+            return jump[:-2]
         if op.startswith("move") and op[4:] in directions:
             x, y = directions[op[4:]]
             return [{"op": "move", "x": x * self.number(args[0]), "y": y * self.number(args[0])}]
@@ -457,7 +463,9 @@ class OriginalPrograms:
                 # These stores are represented by the following typed dialogue speaker binding.
                 pass
             elif (
-                op == "move.b" and len(args) == 2 and args[0].startswith("#")
+                op == "move.b"
+                and len(args) == 2
+                and args[0].startswith("#")
                 and args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w"
             ):
                 registers["shop"] = self.number(args[0][1:])
@@ -690,15 +698,7 @@ class OriginalPrograms:
                     ]
                 )
             elif op == "playSound":
-                result.append(
-                    {
-                        "op": "present",
-                        "kind": "SoundFade" if args[0] == "SOUND_COMMAND_FADE_OUT" else "Sound",
-                        "resource": None if args[0] == "SOUND_COMMAND_FADE_OUT" else args[0],
-                        "entity": None,
-                        "position": None,
-                    }
-                )
+                result.append(sound_operation(args[0]))
             elif op == "warp" and (
                 self.scene_maps is None or self.number(args[0]) in self.scene_maps
             ):
@@ -757,7 +757,7 @@ class OriginalPrograms:
                     }
                 )
             elif op == "join":
-                result.extend(join_service(self.number(args[0])))
+                result.extend(join_service(join_selector(args[0], self.number)))
             elif op in ("entityNodHead", "nod"):
                 result.append(
                     {
@@ -899,15 +899,8 @@ class OriginalPrograms:
                         "fullBlack": {"period": 6 if op.startswith("slow") else None},
                     }
                 )
-            elif op == "setPos":
-                result.append(
-                    {
-                        "op": "position",
-                        "entity": self.entity(args[0]),
-                        "position": {"x": self.number(args[1]), "y": self.number(args[2])},
-                        "facing": self.number(args[3]),
-                    }
-                )
+            elif op in ("setPos", "setPosFlash", "roofEvent", "stepEvent"):
+                result.extend(scene_operation(self, op, args))
             elif op in (
                 "entityActions",
                 "entityActionsWait",

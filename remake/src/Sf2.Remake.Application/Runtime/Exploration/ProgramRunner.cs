@@ -167,7 +167,8 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, clearWarp: true);
                         var returning = current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn");
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
-                            MapLoadMode.Rebuild, story, observations, rules);
+                            MapLoadMode.Rebuild, story, observations, rules,
+                            combatPlacement: current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap);
                         continue;
                     case SourceStoryInstruction source:
                         try { active = SourceStoryRules.Apply(rules.SourceStory, definition, current, source, cursor); }
@@ -387,7 +388,7 @@ internal static class ProgramRunner
                                 music = ExplorationMusicRunner.Request(definition.Exploration!, current, cue.Resource, token);
                             else if (cue.Kind == PresentationCueKind.PreviousMusic)
                                 music = ExplorationMusicRunner.Previous(definition.Exploration!, current, token);
-                            else if (cue.Kind == PresentationCueKind.SoundFade && music is not null)
+                            else if (cue.Kind is (PresentationCueKind.SoundFade or PresentationCueKind.SoundCut) && music is not null)
                                 music = music with { EndStep = null, ActualDone = false, PreviousEligible = false };
                         }
                         story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore), music: music); break;
@@ -459,6 +460,16 @@ internal static class ProgramRunner
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
                     case HideMapEntity hide:
                         active = new ActiveExploration(current.Exploration!.Hide(hide.Entity, hide.RemoveAliases)); break;
+                    case ApplyMapLayoutEvent layoutEvent:
+                        var field = current.Exploration!;
+                        active = new ActiveExploration(layoutEvent.Roof ? MapEventDispatcher.ScriptedRoof(field, layoutEvent.Position)
+                            : MapEventDispatcher.OpenDoor(field, layoutEvent.Position));
+                        break;
+                    case FlashEntityPosition flash:
+                        var flashing = Entity(current, flash.Entity);
+                        active = new ActiveExploration(current.Exploration!.WithEntity(flashing with { Visible = false }));
+                        story = current.Story.Copy(cursor, new PositionFlashWait(token, flash.Entity, flashing.Visible));
+                        break;
                     case SetEntityPosition position:
                         active = EditEntity(current, position.Entity, entity => entity with
                         {

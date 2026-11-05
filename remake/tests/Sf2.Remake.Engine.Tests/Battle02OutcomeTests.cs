@@ -30,6 +30,35 @@ public sealed class Battle02OutcomeTests
         Assert.Equal(0x80, ally.Status);
     }
 
+    [Fact]
+    public void OverworldVictoryKeepsTheCombatantTileEvenWhenFieldWalkingCannotEnterIt()
+    {
+        var (original, battle, story, party) = Outcome(false);
+        var landed = new MapPosition(32, 32);
+        var words = new ushort[WorkingMapLayout.WordCount];
+        words[32 * WorkingMapLayout.ColumnCount + 32] = 0xC16B;
+        var map = new ExplorationMapDefinition(new("map-66"), new WorkingMapLayout(words),
+            new OriginalMapTraversal([new(0, 0, 63, 63)]), [], []);
+        var world = new ExplorationDefinition([map], original.Exploration!.Programs.Values,
+            partyFlags: original.Exploration.PartyFlags);
+        var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world,
+            encounterStarts: original.EncounterStarts.Values);
+        var fighter = battle.GetActor(new("medic-a")).Position!;
+        var route = story.EnteringBattle!;
+        story = story.Copy(null, fieldPlayer: new(new("player"), 32), enteringBattle: route with
+            { Outcome = route.Outcome! with { BattleOrigin = new(landed.X - fighter.X, landed.Y - fighter.Y) } });
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.IsAlly ? actor : actor.With(hp: 0, clearPosition: true)));
+        var input = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveBattle(battle, null), story, SessionStopReason.PlayerInput);
+        var returned = BattleOutcome.Begin(definition, new(input, [], input.StopReason));
+        Assert.Null(returned.Failure);
+        Assert.Equal(landed, returned.Snapshot.Exploration!.PlayerEntity.Position);
+        Assert.Contains(returned.Observations, observation => observation.Kind == "battle-returned");
+        Assert.Equal(SessionStopReason.PlayerInput, returned.Snapshot.StopReason);
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, map.Traversal.TryMove(map.Layout, landed, ExplorationDirection.West).Outcome);
+        Assert.True(OriginalMapTraversal.IsBlocked(map.Layout, landed));
+        Assert.Throws<BattleRuleException>(() => MapTransfer.Build(map, new("player"), landed, 0, 32, party, story.Flags));
+    }
+
     [Theory]
     [InlineData(BattleOutcomeKind.Defeat)]
     [InlineData(BattleOutcomeKind.Retreat)]

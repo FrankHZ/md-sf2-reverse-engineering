@@ -1,5 +1,6 @@
 {
   "package": "private-battle01-to-battle02",
+  "gameplayRevision": 2,
   "maps": [
     3,
     19,
@@ -8,7 +9,8 @@
     40,
     57,
     66,
-    5
+    5,
+    43
   ],
   "battles": [
     1,
@@ -31,6 +33,10 @@
     {
       "member": 3,
       "class": "WARR"
+    },
+    {
+      "member": 4,
+      "class": "MAGE"
     }
   ],
   "outcomeEgressMap": {
@@ -39,7 +45,7 @@
     "3": 5
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening content through the Yeel encounter. The product reader supplies the initial state.",
+  "controlledBoundary": "Ordinary opening through Hawel's house. The product reader supplies the initial state.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -88,7 +94,8 @@
     21,
     40,
     66,
-    5
+    5,
+    43
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -137,6 +144,9 @@
     "21": [
       501,
       609
+    ],
+    "43": [
+      612
     ]
   },
   "outcomeBattles": [
@@ -149,7 +159,8 @@
     19,
     20,
     21,
-    57
+    57,
+    43
   ],
   "basePalettes": true,
   "audioCues": [
@@ -203,7 +214,10 @@
     "SFX_WARP_TIMER_C2",
     "SFX_DIALOG_BLEEP_5_TIMER_D1",
     "SFX_DIALOG_BLEEP_6_TIMER_D1",
-    "SFX_DIALOG_BLEEP_5_TIMER_CC"
+    "SFX_DIALOG_BLEEP_5_TIMER_CC",
+    "SFX_MENU_SWITCH_TIMER_D1",
+    "SFX_VALIDATION_TIMER_D1",
+    "SFX_WARP_TIMER_D1"
   ],
   "paidRetreatBattles": [
     2,

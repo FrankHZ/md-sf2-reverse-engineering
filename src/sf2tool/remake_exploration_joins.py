@@ -1,6 +1,13 @@
 """Lower the selected csc08 join service without consuming the cutscene text cursor."""
 
 
+def join_selector(expression, number):
+    selector = 0
+    for operand in expression.split("|"):
+        selector |= number(operand.strip())
+    return selector
+
+
 def join_service(selector: int) -> list[dict]:
     result = []
     members = [1, 2] if selector & 32767 == 128 else [selector & 32767]

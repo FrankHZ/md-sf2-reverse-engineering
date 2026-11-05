@@ -49,7 +49,8 @@ internal sealed partial class ExplorationPresentation
                     throw new InvalidOperationException("music-previous-binding");
                 break;
             case PresentationCueKind.SoundWait: _audio.SkipEntryFiniteMusic(); break;
-            case PresentationCueKind.SoundFade: _audio.SkipEntryFade(); break;
+            case PresentationCueKind.SoundFade: _audio.SkipEntryStop(253); break;
+            case PresentationCueKind.SoundCut: _audio.SkipEntryStop(254); break;
             default: throw new InvalidOperationException("presentation-binding-" + wait.Cue.Kind);
         }
         _cue = wait.Token; _cueAge = 0; _cueResource = null;

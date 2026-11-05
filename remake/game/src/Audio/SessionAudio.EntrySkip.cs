@@ -49,11 +49,11 @@ internal sealed partial class SessionAudio
         Record("battle-entry-skip-consumed", _music, MusicCue);
     }
 
-    internal void SkipEntryFade()
+    internal void SkipEntryStop(int command)
     {
         BeginEntrySuppression();
         _entrySilenced = true;
-        Record("battle-entry-skip", _music, MusicCue, 253);
+        Record("battle-entry-skip", _music, MusicCue, command);
     }
 
     internal void ReconcileEntry(SessionSnapshot current)

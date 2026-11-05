@@ -170,6 +170,7 @@ public sealed class ExplorationDefinition
         Maps = new ReadOnlyDictionary<MapId, ExplorationMapDefinition>(maps.ToDictionary(map => map.Map));
         Programs = new ReadOnlyDictionary<string, StoryProgram>(programs.ToDictionary(program => program.Id, StringComparer.Ordinal));
     }
+    internal int GameplayRevision { get; init; } = 1;
     public ExplorationTextFont? TextFont { get; }
     public IReadOnlyDictionary<int, string> Texts { get; }
     public IReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>> TextTokens { get; }

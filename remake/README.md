@@ -27,11 +27,10 @@ full-game parity and public distribution remain outside that acceptance. The
 [retained evidence route](./docs/evidence/retained-comparisons.md) preserves failed comparisons,
 source/provenance and the retired reference implementation without turning them into current run plans.
 
-The ordinary New Game carries the party through Battle01/02, Yeel, Kazin following and Battle03.
-Paid retreat and ordinary defeat return to the current savepoint. Victory restores exploration on
-Map66, where the party can reach Hawel's doorstep. The
-[campaign agreement](docs/application/pre-voyage-campaign.md#ordinary-new-game-through-the-battle03-return)
-records the actual inputs, safe save locations and remaining Map43/Battle04 handoff.
+The ordinary New Game carries the party through Battle01–03, Yeel and Hawel’s house. The house
+scene turns Kazin from a follower into a party member. The five-member opening uses separate
+save slots from the four-member world. The [campaign agreement](docs/application/pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment)
+records the inputs, compatible Continue selections and remaining Battle04/prison handoff.
 
 The [current Godot presentation](./docs/godot/presentation.md) includes continuous exploration/Talk,
 a shared 1920×1080 world at 96px per cell, story dialogue, battle movement ranges, HP/MP cards,

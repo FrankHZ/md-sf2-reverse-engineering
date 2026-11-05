@@ -12,7 +12,7 @@ internal static class OpeningSave
         var source = definition.Exploration?.Provenance;
         if (definition.Persistence is null || source is null || rules.Identity != "sf2")
             throw new BattleRuleException("save-profile-unavailable", "save.profile", true);
-        return new("sf2-opening", definition.Package, 1, rules.Identity, 1, 1,
+        return new("sf2-opening", definition.Package, definition.Exploration!.GameplayRevision, rules.Identity, 1, 1,
             source.Repository, source.Commit, source.RomSha256);
     }
 

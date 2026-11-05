@@ -229,7 +229,7 @@ internal static class ExplorationDispatcher
                     if (current.Story.Wait is MusicWait { LogicalDone: true })
                         return Reject(current, "music-awaiting-presentation", "wait");
                     if (current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
-                        { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade })
+                        { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade or PresentationCueKind.SoundCut })
                         return Reject(current, "audio-delivery-only", "wait");
                     bool existingFieldInput = current.StopReason == SessionStopReason.PlayerInput &&
                         current.Story.Cursor is null && current.Story.Wait is null;
@@ -318,7 +318,7 @@ internal static class ExplorationDispatcher
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
                                 fieldControl: existingFieldInput || pendingMove is not null) : null;
-                        var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.Roof(tickResult.World)) : current.Active;
+                        var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.FieldRoof(tickResult.World, current.Story)) : current.Active;
                         var story = active is ActiveExploration serviced ? ExplorationTextRunner.AfterEntities(serviced.World, current.Story) : current.Story;
                         foreach (int sound in tickResult?.Sounds ?? [])
                             current = ProgramRunner.Commit(current, active, story, observations, "entity-sound", sound.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -370,6 +370,22 @@ internal static class ExplorationDispatcher
                         if (story.Wait is EntityEventFacingWait)
                         { active = MapEventDispatcher.Face(current, active); story = story.Copy(story.Cursor,
                             entityServices: story.TextSettings is not null ? false : null); }
+                        else if (story.Wait is PositionFlashWait pulse && active is ActiveExploration flashing)
+                        {
+                            if (pulse.Remaining > 1)
+                                story = story.Copy(story.Cursor, pulse with { Remaining = pulse.Remaining - 1 });
+                            else if (!pulse.Hidden && pulse.Counter == 0)
+                                story = FinishWait(story);
+                            else
+                            {
+                                if (!flashing.World.TryResolveEntity(pulse.Entity, out var entity))
+                                    throw new BattleRuleException("program-entity", "program.entity", true);
+                                active = new ActiveExploration(flashing.World.WithEntity(entity with { Visible = pulse.Hidden && pulse.OriginallyVisible }));
+                                story = story.Copy(story.Cursor, pulse.Hidden
+                                    ? pulse with { Hidden = false, Remaining = 2 * Math.Max(1, pulse.Counter - 15) }
+                                    : pulse with { Hidden = true, Remaining = 2, Counter = pulse.Counter - 1 });
+                            }
+                        }
                         else if (story.Wait is TickWait timer)
                             story = timer.Remaining <= 1 ? FinishWait(story) : story.Copy(story.Cursor, timer with { Remaining = timer.Remaining - 1 });
                         else if (story.Wait is PhysicalEntityWait physical && active is ActiveExploration physicalWorld &&
@@ -481,7 +497,7 @@ internal static class ExplorationDispatcher
         bool enabled = entityEnabled ?? current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { CallerReturn: true } &&
             (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning));
         var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;
-        var world = tick is null ? current.Exploration! : MapEventDispatcher.Roof(tick.World);
+        var world = tick is null ? current.Exploration! : MapEventDispatcher.FieldRoof(tick.World, current.Story);
         var story = ExplorationTextRunner.AfterEntities(world, current.Story);
         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));
         current = ProgramRunner.Commit(current, new ActiveExploration(world), story, observations, kind, detail);

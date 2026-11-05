@@ -80,6 +80,9 @@ public sealed record EntityWait(WaitToken Token, EntityRef Entity, ProgramLocati
     ExplorationDirection? PendingMove = null, EntityWaitCompletion Completion = EntityWaitCompletion.NotBusy) : ProgramWait(Token);
 public sealed record EntitySpriteWait(WaitToken Token, int Slot, long Request) : ProgramWait(Token);
 public sealed record EntitySetSpriteWait(WaitToken Token) : ProgramWait(Token);
+// csc17 hides the actor for two VInts, then shows it for 2 * max(1, counter - 15).
+public sealed record PositionFlashWait(WaitToken Token, EntityRef Entity, bool OriginallyVisible,
+    int Counter = 30, bool Hidden = true, int Remaining = 2) : ProgramWait(Token);
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
 public abstract record FieldEventContext(bool Returning);

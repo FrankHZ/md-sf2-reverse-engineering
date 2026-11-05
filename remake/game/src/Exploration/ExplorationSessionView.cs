@@ -309,7 +309,7 @@ public sealed partial class ExplorationSessionView : Control
         current.Story.Wait is FieldSearchWait ? false :
         current.Story.Wait is MusicWait music ? !music.LogicalDone :
         current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
-            { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade } ? false :
+            { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade or PresentationCueKind.SoundCut } ? false :
         current.Story.Wait is ChoiceWait { Work: { } choice } ? choice.Automatic :
         current.Story.Wait is NodWait nod ? !nod.LogicalDone :
         current.Story.Wait is FieldTextWait text ? !text.LogicalDone :

@@ -343,6 +343,15 @@ internal sealed partial class SessionAudio : IDisposable
         _sceneMusic = music;
         BeginSceneEnd();
     }
+    internal void CutMusic()
+    {
+        if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
+        Record("cut-command", _music, MusicCue, 254);
+        Stop(_music, MusicCue);
+        StopSharedEffects();
+        _fading = false;
+    }
+
     internal void BeginSceneEnd()
     {
         if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
