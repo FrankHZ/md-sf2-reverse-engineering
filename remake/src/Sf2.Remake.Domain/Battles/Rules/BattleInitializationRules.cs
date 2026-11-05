@@ -54,7 +54,9 @@ internal static class BattleInitializationRules
         }
         foreach (var input in start.Actors)
         {
-            Require((input.Status & ~7) == 0, "new-battle-status-refresh", "start.actors.status", true);
+            bool sleepingCasualty = input.Hp == 0 && (input.Status & ~0xC0) == 0 &&
+                definition.Deployments.Any(row => row.Actor == input.Actor && row.Faction == BattleFaction.Ally);
+            Require((input.Status & ~7) == 0 || sleepingCasualty, "new-battle-status-refresh", "start.actors.status", true);
             Require(input.PositionOverride is null, "initialization-placement-override", "start.actors.positionOverride", true);
         }
     }

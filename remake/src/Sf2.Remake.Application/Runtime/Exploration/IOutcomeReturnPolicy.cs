@@ -25,7 +25,7 @@ internal static class OutcomeReturnRules
         BattleProgressionRules.Invoke(rule.Identity, "outcome-start", () =>
         {
             var result = rule.Start(definition, battle, story, kind, party);
-            Party(definition, party, result.Party, gold: false);
+            Party(definition, party, result.Party, gold: false, healing: kind == BattleOutcomeKind.Victory);
             if (kind == BattleOutcomeKind.Retreat)
                 Require(result.Program is not null && result.Party.Actors.SequenceEqual(party.Actors));
             Program(definition, result.Program);
@@ -40,7 +40,7 @@ internal static class OutcomeReturnRules
     {
         var result = rule.Finish(definition, story, party);
         Party(definition, party, result.Recovered, gold: true);
-        Party(definition, result.Recovered, result.Returned, gold: false);
+        Party(definition, result.Recovered, result.Returned, gold: false, healing: true);
         Program(definition, result.Program);
         Require(result.JoinMember is null || definition.Exploration!.PartyFlags is { } layout &&
             result.JoinMember >= 0 && result.JoinMember < layout.MemberCount);
@@ -51,7 +51,7 @@ internal static class OutcomeReturnRules
         BattleStartInput party, bool all) => BattleProgressionRules.Invoke(rule.Identity, "party-recovery", () =>
     {
         var result = rule.Heal(definition, party, all);
-        Party(definition, party, result, gold: false);
+        Party(definition, party, result, gold: false, healing: true, all: all);
         return result;
     });
 
@@ -64,7 +64,8 @@ internal static class OutcomeReturnRules
     private static void Position(ScenarioDefinition definition, MapId map, MapPosition position) => Require(
         definition.Exploration!.Maps.TryGetValue(map, out var target) && target.Traversal.IsWithinActiveArea(position) &&
         !OriginalMapTraversal.IsBlocked(target.Layout, position));
-    private static void Party(ScenarioDefinition definition, BattleStartInput before, BattleStartInput after, bool gold)
+    private static void Party(ScenarioDefinition definition, BattleStartInput before, BattleStartInput after, bool gold,
+        bool healing = false, bool all = false)
     {
         Require(after.Encounter == before.Encounter && after.MainSeed == before.MainSeed && after.ThinkingSeed == before.ThinkingSeed &&
             ReferenceEquals(after.ItemCustody, before.ItemCustody) &&
@@ -76,10 +77,13 @@ internal static class OutcomeReturnRules
         for (int index = 0; index < before.Actors.Count; index++)
         {
             var a = before.Actors[index]; var b = after.Actors[index];
-            Require(b with { Hp = a.Hp, Mp = a.Mp } == a);
             var deployment = encounter.Deployments.FirstOrDefault(row => row.Actor == a.Actor) ??
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == a.Actor);
+            bool canClearSleep = healing && deployment.Faction == BattleFaction.Ally &&
+                (all || a.Hp > 0 || deployment.Initialization?.AllyPartyMember is 7 or 28);
+            Require(b.Status == a.Status || (canClearSleep && (a.Status & ~0xC0) == 0 && b.Status == 0));
+            Require(b with { Hp = a.Hp, Mp = a.Mp, Status = a.Status } == a);
             Require(deployment.Faction == BattleFaction.Ally || b == a);
             Require(b.Hp <= (a.Progress?.MaxHp ?? deployment.Definition.MaxHp) &&
                 b.Mp <= (a.Progress?.MaxMp ?? deployment.Definition.MaxMp));
