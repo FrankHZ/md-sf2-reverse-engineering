@@ -334,6 +334,141 @@ ordinary New Game route for a settled field comparison, then active dialogue/Chu
 Do not change user saves or canonical inputs to construct these disposable cases. Exact local receipts,
 retained failed observations and CI/head identities belong to the Issue/PR handoff.
 
+## Minimal contextual hints proposal (#1544)
+
+**Standard rigor; design only.** The selected user outcome is intuitive operation with minimal
+contextual instruction. This section recommends the concrete default for a later, explicitly selected
+screen group; production controls and their existing agreements remain implemented as documented.
+Acceptance here is a bounded source/document review and an implementable information hierarchy.
+No UI change, new tutorial/hint platform, device service, Help entrance or gameplay rule is selected.
+Main-story delivery under #1538 retains priority. The
+[local-services/overview proposal](modernization-design.md) supplies no implemented capability.
+
+### Current consumers and evidence boundary
+
+**Confirmed — source structure at accepted `6020e968`:** the table names the actual hint consumers
+and installed English/Chinese catalog keys. It is reproducible by reading those symbols and the
+two [existing](../../game/localization/en.po) [catalogs](../../game/localization/zh_CN.po);
+it adds no Godot, original-game or human observation. **Inferred:** simultaneous shortcut lists and
+repeated action labels can obscure the next step. Whether the proposed reductions improve discovery
+or reading comfort remains **Unknown** under [#1456](#human-opening-review-boundary-1456).
+
+| Current consumer / source fact | Recommended default and finite exception |
+| --- | --- |
+| [ExplorationDialogueView.RefreshHint](../../game/src/Exploration/ExplorationDialogueView.cs): `field.controls` appends Hold Wait and Party to legal Talk/Search. | At settled field input show only `[Confirm]: Talk` / `交谈`, otherwise legal Search / `搜索`; omit an empty interaction cue. Keep the existing visible Menu entry. Wait and Party stay in Help; a first-use contextual cue may expose Party/Wait as described below. No click-to-walk or mouse Talk is implied. |
+| The same consumer and [BattleStoryView.Hint](../../game/src/Battles/BattleStoryView.cs) select reveal, read-more, continue, automatic progress and eligible intro-skip hints; `story.choice-help` lists direction/Confirm/Cancel/right click. | Show the current reading step only: Reveal / `显示全文`, Read more / `阅读下文`, then Continue / `继续`. Keep focused Yes/No rows and `[Confirm]: Choose · [Cancel]: No` / `选择 · 否`; directional instruction belongs in first-use Help. Cancel means No here, never a generic Back. Retain Skip battle intro only while the real entry service admits it; automatic progress offers no false Continue. |
+| [BattleCommandMenu.Refresh](../../game/src/Battles/BattleCommandMenu.cs): movement has its own hint; target-help is followed by confirm-help, repeating commit/back; the main diamond appends Equipment/Give/Drop shortcuts. | Movement: `[Confirm]: Actions` / `指令`, with the existing range/current actor. Main diamond/list: current selection plus one Choose/Back cue. Target: one action-specific Execute/Back cue, retaining selected actor, action, MP/item cost, range and disabled reason. Preserve a compact Equipment/Give/Drop access cue on the main diamond: these have no equivalent visible action rows and Help cannot open here. Do not hide their only discoverable entrance. |
+| [BattleSessionView](../../game/src/Battles/BattleSessionView.cs) builds a full `_battleHelp` string as well as the diamond hint; auxiliary Give/Drop/Equipment and unread text have their own instructions. | Remove the general action catalogue from ordinary battle chrome only when its necessary current-step information is retained in the active menu/message. Keep recipient/slot/commit distinctions and any current Read more, timed Hold Wait or refusal. AI/round progress needs no command list. Existing result/reward sequence remains intact. |
+| [ShopServiceView.Present/Build](../../game/src/Exploration/ShopServiceView.cs): `shop.hint` repeats Buy/unequipped/Party guidance through all phases; actual offer text already names item/member/price. | Stock/member/slot: one Choose/Back cue. Keep current gold, prices, seller/recipient and selected slot. Confirm: retain Buy/Sell terms and unequipped consequence there; result: actual paid/received outcome and Continue. Deals/Repair unavailability remains readable. This is the bounded controlled Galam consumer, not ordinary campaign shop access. |
+| [ChurchServiceView.Present](../../game/src/Exploration/ChurchServiceView.cs): navigation, transient refusal, selected Save explanation and localization notes share a growing footer. | Service menu: Choose/Leave; offer: Confirm treatment/Decline with member, effect, cost and gold; result: outcome/payment and Continue. Keep unavailable Promotion/curse-removal reasons and no-applicable-member/insufficient-gold feedback. Selected Record adventure keeps the common-slot, savepoint and return explanation from #1519; it is decision content, not dispensable navigation. |
+| [PartyStatusView.Present/Handle](../../game/src/Exploration/PartyStatusView.cs) combines Prepare, focus-pane navigation, scrolling, two Close bindings and pointer/wheel notes; [FieldActionView](../../game/src/Exploration/FieldActionView.cs) repeats row navigation. | Keep visible member/pane focus and `[Confirm]: Prepare · [Cancel]: Close` / `整备 · 关闭`. Retain `[Target]: Change pane` and, when its list overflows, focused Up/Down scroll guidance: pane switching has no equivalent visible button today. Prepare uses its actual selected action and Back, with resource/eligibility details beside the row. Extra Close aliases and wheel instructions move to Help. |
+| [SystemMenuView](../../game/src/Entry/SystemMenuView.cs), [SaveSlotView](../../game/src/Entry/SaveSlotView.cs), [SettingsView](../../game/src/UI/SettingsView.cs) already have labeled controls plus compact mapped footers. | Use one shared Choose/Back cue per modal, without repeating the selected button's caption in another instruction bar. Preserve every disabled reason, save destination/ambient reset, overwrite/backup/quit/replacement consequence, storage failure/recovery notice and Settings draft/Apply/read-only distinction. Keep the visible Control help row and existing Menu pad-unavailable explanation. |
+
+### Recommended information hierarchy
+
+Use the existing owning panel and its focused control as the default source of meaning. The normal
+context cue names the current legal action and adds Back/Decline or a non-obvious operation only when
+needed to proceed or recover. Keep one contextual action area in the active panel; hide underlying
+gameplay instructions beneath a modal. This is a placement/default rule, not a fixed line, character
+or action-count budget. Costs, consequences, unread text and recovery can require more space.
+
+Keep decision information beside the selected item, target or confirmation, above optional controls:
+what changes, who is affected, what is paid/lost and why an action is unavailable. A button caption
+may carry its binding directly, or a shared cue can explain Confirm/Back once; do not add both a
+second caption and a duplicate footer. Existing supported focus markers and textual unavailable
+reasons accompany color. Keep selected-but-disabled inspection where supported; System Menu skips
+disabled rows, so its reasons must remain visible without requiring focus or hover.
+
+Do not reduce these cases to a generic Confirm or hide them in Help:
+
+- Paid Shop/Church offers retain exact item/treatment, member, amount, currency and applicable
+  consequences, then explicit accept/decline. Opening or browsing never pays. Preserve each service's
+  actual default selection and transaction authority; this proposal does not change them.
+- Save/overwrite/backup recovery, New Game replacing a journey and unsaved Quit retain explicit
+  consequences and their existing Cancel-first confirmations. Drop and other irreversible actions
+  retain their actual selected item/target and explicit commit boundary. No new destructive shortcut.
+- Invalid movement retains an actionable correction such as “Choose an unoccupied tile in the
+  highlighted range” / “请选择高亮移动范围内未被占用的格子”. Failures retain the actual reason and
+  available recovery; uncertain save publication still says to check Continue before retrying.
+  A stopped scene retains its failure/code and existing exits, without inventing Retry or skip.
+
+Context changes replace the old cue; refusal feedback clears on its existing valid context/focus
+change, not an arbitrary timeout. Save/storage outcomes and unresolved failures remain until their
+own explicit return/recovery. Preserve text reveal → read remaining pages → acknowledge, gesture
+completion, focus recovery and fresh-input/release barriers across every modal/choice transition.
+
+### Mappings, first use and reading limits
+
+**Concrete default:** reuse `GameInput.CompactHint`: one installed effective keyboard name and one
+installed pad alternative, if present, for each retained action; full alternatives use `GameInput.Hint`
+in the [existing grouped Help](#grouped-controls-help-and-remapping-boundary). Thus an illustrative
+standard cue is `Enter/South: Talk` / `Enter/South：交谈`; after a swap or custom configuration it
+must name the effective Confirm, not a hard-coded Enter. Battle's current `KeyHint` selects only the
+first keyboard name; unifying that consumer is proposed work, not already delivered pad annotation.
+An absent implicit Menu pad binding must never produce a fictitious glyph.
+
+Device switching does not change this default: the same small cue remains usable for keyboard/pad;
+do not append all aliases or an entire device's controls. Automatic last-device switching is deferred,
+as in #1452; no platform glyph detector or device preference is needed for this design. Use supported
+textual logical key names and pad positions/axis signs; branded controller icons and physical-layout
+aliases are unverified. Mouse users use visible labeled controls and complete clicks; the supported
+right-click return is described in Help. Keep Cancel=No explicit on choices. No mouse-only campaign
+or keyboard-free naming claim follows. Name entry keeps its keyboard-only editor, fixed Enter/Escape
+and seven-character restricted ASCII alphabet; Unicode/IME names remain deferred under the
+[localization owner](../application/localization-design.md).
+
+For a selected first-use implementation, show one dismissible, context-local instruction when the
+non-obvious control first becomes usable: for example hold directions to walk, or `[Equipment]:
+Party` at settled field input. Keep it through the first successful relevant input or deliberate
+dismissal; do not cover a choice/transaction, consume the opener as confirmation, or time out essential
+reading. An ordinary per-view lifetime is sufficient; cross-session “seen” storage and a tutorial
+sequence are outside scope. Until tested for that screen, retain its necessary access cue rather than
+assuming a new player read Help earlier. Supplemental battle/Party cues above remain while their
+actions lack equivalent visible entrances; first-use dismissal must not erase those entrances.
+
+Detailed movement/menu shortcuts, pointer gestures, full bindings and control semantics stay in #1452's
+scrollable Help with fixed Previous/Next/Back and keyboard/pad reading. The existing route is title/
+Witch → Settings → Control help, or settled field → Menu → Settings → Control help. Battle/story can
+open Menu, but Settings/Help is unavailable there; do not show “Help now” or remove a necessary
+current-step control on that assumption. Help is currently authored in English, including its fixed
+navigation text; a Chinese Settings label does not establish fully localized Help. A later screen
+slice must retain necessary Chinese contextual text until any needed Help translation is delivered.
+Closing Help preserves draft, origin focus and scroll and submits no gameplay command or Apply.
+
+Chinese labels, maximum admitted names, long bindings and current English fallback notices must be measured as
+shaped text in the actual allotted panel. Wrap and grow within the supported bounds; use the existing
+scroll/reading-page mechanism for overflow, with reachable controls and keyboard/pad reading before
+commit. Never ellipsize a price, target, overwrite warning or disabled reason to meet a hint quota,
+or shrink below the owning theme's readable sizes. Preserve visible current-consumer fallback notices;
+moving repeated name-policy boilerplate requires an equally discoverable existing location and the
+localization owner's agreement. This proposal does not silently waive those localization contracts.
+Gameplay follows the current minimum 1920×1080 client; existing scaled entry/Settings/Help 720p
+observations do not admit 720p gameplay. Arbitrary font scaling, screen-reader support, all physical
+controllers/layouts/DPI and human Chinese reading comfort remain **Unknown**. Existing text speed,
+instant text, reduced flash and Confirm/Cancel swap retain their supported scope.
+
+### Finite implementation and acceptance boundary
+
+After main-story priority, recommend one pilot: settled exploration Talk/Search → one dialogue
+reveal/read-more/choice → safe field return. Check discovery and recovery before selecting battle
+movement/diamond/target, then service/Party and Save/Settings groups. This order is a recommendation,
+not a dispatched implementation queue. No whole-interface redesign or new runtime authority follows.
+
+Each later selected group must read actual input/state/projection/errors through its normal caller:
+standard and swapped/custom bindings, pad alternative/missing Menu pad, deliberate pointer input,
+held/focus/modal return, current English/Chinese and long text, unavailable actions and one relevant
+failure. Paid/overwrite cases retain preview, decline, explicit commit and resource/file preservation
+at the existing boundary. Verify that a first-use cue can be read/dismissed and that no necessary
+operation disappears while Help is inaccessible. Reuse the affected existing observation owners;
+no screenshot, new comparison framework or tests of verification tools. Human #1456 review must still
+answer whether a new player finds the action, understands No/Back/commit and can read long Chinese
+without a manual. Source review and green CI cannot answer those questions.
+
+This design's checks are source/caller/catalog correspondence, Markdown targets/anchors/tables,
+scope/private boundary, `git diff --check`, clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD` and actual scoped CI. SDK, Godot, H3,
+aggregate tests and new runtime/experience evidence are outside this documentation-only acceptance.
+
 ## Grouped controls help and remapping boundary
 
 **Standard rigor; [#1452](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1452).**
@@ -395,8 +530,8 @@ file and refuse ordinary Apply. Do not modify canonical inputs or user preferenc
 ### Deferred per-action remapping design
 
 This is an implementable boundary, **not implemented UI**. A separate bounded follow-up may expose
-the existing finite 15 actions: Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay,
-Item, Wait, Equipment, Give and Discard. Display context labels from this help and installed bindings;
+the existing finite 16 actions: Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay,
+Item, Wait, Equipment, Give, Discard and Menu. Display context labels from this help and installed bindings;
 name editing keeps its explicit LineEdit keyboard contract outside this action inventory.
 
 - Edit one whole candidate draft using existing `InputSettings`/`ActionBinding`. Clone the bindings
@@ -406,7 +541,8 @@ name editing keeps its explicit LineEdit keyboard contract outside this action i
   At most 32 total key/button/signed-axis events may belong to one action.
 - Keep the existing global unique-identity policy, including within one action. Report both action
   names and the colliding identity; do not silently steal a binding or infer safe context overlaps.
-  Each action requires at least one keyboard binding and one pad button or signed axis. Removing the
+  Each explicit action binding requires at least one keyboard binding and one pad button or signed axis;
+  retain #1518's [implicit Menu migration exception](#system-menu-agreement-1518). Removing the
   last required-device binding leaves an invalid draft with a reason and disabled Apply. Capture has
   an explicit Cancel control; physical Escape or Pad Back aborts armed capture, independent of the
   action being edited. Reserved identities remain assignable through explicit named choices instead

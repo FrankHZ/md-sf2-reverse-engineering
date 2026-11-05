@@ -8,6 +8,20 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+## Minimal contextual hints proposal (#1544)
+
+The [design owner](../godot/presentation.md#minimal-contextual-hints-proposal-1544) recommends one
+current-action area, existing compact installed keyboard/pad names and #1452's on-demand Help, with
+a finite screen-difference table and later pilot order. The user's minimal/intuitive goal is selected;
+these presentation changes are **Not implemented** and main-story #1538 retains priority.
+**Confirmed — bounded source review:** exploration combines interaction/Wait/Party, battle target
+hints repeat confirmation, and Shop repeats unequipped guidance across phases. **Inferred:** this
+can obscure the next step. The proposal preserves payment/overwrite/failure/disabled information and
+necessary battle/Party access cues; Settings/Help cannot open during active battle/story. Help's
+English-only prose, deferred automatic device switching/rebinding UI and long-Chinese/layout limits
+are explicit. Discoverability, physical-device behavior and human reading benefit remain **Unknown**
+under #1456; no new runtime observation or full-interface implementation is claimed.
+
 ## Local services and battle overview proposal (#1543)
 
 The [design owner](../godot/modernization-design.md) recommends visited/unlocked near-town services
