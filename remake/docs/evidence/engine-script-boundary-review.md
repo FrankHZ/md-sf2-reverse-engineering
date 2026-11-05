@@ -20,8 +20,14 @@ boundary; it does not make the interpreter a universal defeated-program executor
 preserves `CurrentEntities` across scene-map replacement. Actual program cases vary physical append
 order, resume the caller tail without target init, and distinguish both explicit entity reloads,
 which still rebuild the allocation/list. Party/resources, aliases and existing actor motions remain
-intact. F8 remains a separate open finding. The audit-base observations, inferred consequences and retained failures
-below continue to describe their named Git object.
+intact. The audit-base observations, inferred consequences and retained failures below continue to
+describe their named Git object.
+
+**Current F8 disposition:** [the bounded repair](structure-and-quality-review.md#f8-bounded-repair-disposition)
+shares immutable selected-view context between logical music, stable save music and Godot delivery.
+CameraB/playerA and off-area player variations retain matching area/cue/history, finite generations
+and native completion; autoscroll does not change identity. Missing/ambiguous view context fails
+before music publication. Save eligibility and the separately owned shutdown warning remain unchanged.
 
 **Standard rigor**, [Issue1564](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1564):
 assess reuse and design minimal corrections; retain the existing High-rigor campaign, transaction
@@ -77,8 +83,8 @@ not current policy. Original F4 API failure and F5 pre-fix failures remain below
 The audit-base recommendation was F6 before adding resource-affecting defeated scripts or admitting new defeated
 profiles; F7 before scene-load/follower-append composition; F8 before explicit music/history waits
 in scenes whose selected view and player area differ. Unrelated bounded content can proceed after
-declaring its own unsupported operations. F6/F7 now have the bounded dispositions above; F8 remains
-unrepaired. The audit recommendations alone do not authorize further runtime fixes.
+declaring its own unsupported operations. F6/F7/F8 now have the bounded dispositions above.
+The audit recommendations alone do not authorize further runtime fixes.
 Prefer explicit restrictions at an unsupported context over accepting a write then losing it; do
 not disable legitimate ordinary field scripts or replace the engine with a universal VM.
 

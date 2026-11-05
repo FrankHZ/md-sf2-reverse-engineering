@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.GodotAdapter.Observation;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter.Audio;
@@ -153,24 +154,10 @@ internal sealed partial class SessionAudio : IDisposable
             _observedSequence = current.ObservationSequence;
             if (current.Exploration is { } world)
             {
-                // LoadMap/csc48 already selected the view area, independently of
-                // a player temporarily hidden or staged outside every area.
-                int area = -1;
-                if (current.Story.LogicalView is { } view)
-                {
-                    for (int i = 0; i < world.Definition.ViewAreas.Count; i++)
-                    {
-                        // Scripted autoscroll changes live registers, not the selected
-                        // source area or its music binding.
-                        var source = world.Definition.ViewAreas[i];
-                        if (source == view.Area with { AutoscrollAX = source.AutoscrollAX,
-                            AutoscrollAY = source.AutoscrollAY, AutoscrollBX = source.AutoscrollBX,
-                            AutoscrollBY = source.AutoscrollBY }) { area = i; break; }
-                    }
-                }
-                else area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)?.OneBasedRecordOrdinal - 1 ?? -1;
-                if (area < 0) throw new InvalidOperationException("map-music-area-unavailable");
-                var context = (world.Map, area, current.Story.SelectsBattleMusic);
+                var selected = ExplorationViewContext.Resolve(world, current.Story.LogicalView);
+                if (selected.Error is { } error) throw new InvalidOperationException(error);
+                int area = selected.Area;
+                var context = (selected.Map, area, current.Story.SelectsBattleMusic);
                 if (_context == context) return;
                 if (!_maps.TryGetValue(world.Map, out var visual) || area >= visual.Music.Count)
                     throw new InvalidOperationException("map-music-unavailable");

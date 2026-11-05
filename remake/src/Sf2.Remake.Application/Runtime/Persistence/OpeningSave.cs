@@ -70,7 +70,7 @@ internal static class OpeningSave
         {
             RequireStable(definition, current);
             var world = current.Exploration!;
-            int area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
+            int area = ExplorationViewContext.Require(world, current.Story.LogicalView).Area;
             var visuals = definition.Exploration!.Visuals;
             if (observed.Map != world.Map || observed.Area != area || observed.Music.Previous.Count > 9 || visuals is null ||
                 !observed.Music.Previous.Prepend(observed.Music.Cue).All(cue => visuals.Audio.TryGetValue(cue, out var audio) && audio.Command < 65))
@@ -132,7 +132,7 @@ internal static class OpeningSave
     private static SavedMusic Music(ScenarioDefinition definition, SessionSnapshot current)
     {
         var world = current.Exploration!;
-        int area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
+        int area = ExplorationViewContext.Require(world, current.Story.LogicalView).Area;
         if (current.Story.Music is { HistoryBound: true, Battle: false } music && music.Map == world.Map && music.Area == area)
             return new(music.Cue, Array.AsReadOnly(music.Previous.ToArray()));
         if (current.Story.Music is { HistoryBound: false } unknown && unknown.Map == world.Map && unknown.Area == area && !unknown.Battle)

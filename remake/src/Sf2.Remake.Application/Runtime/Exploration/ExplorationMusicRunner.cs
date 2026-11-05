@@ -6,8 +6,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 // Accepted modern clock: a step is one admitted common service, not a hardware interval.
 internal static class ExplorationMusicRunner
 {
-    private static int Area(SessionSnapshot current) => current.Exploration!.Definition.Traversal
-        .SelectActiveArea(current.Exploration.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1;
+    private static int Area(SessionSnapshot current) =>
+        ExplorationViewContext.Require(current.Exploration!, current.Story.LogicalView).Area;
 
     // An external field input follows publication of the prior result: SessionAudio
     // has observed its final context before the input can start another program.
@@ -86,7 +86,7 @@ internal static class ExplorationMusicRunner
     {
         if (story.Music is not { HistoryBound: true } music) return story;
         if (active is ActiveExploration exploration && music.Map == exploration.World.Map &&
-            music.Area == exploration.World.Definition.Traversal.SelectActiveArea(exploration.World.PlayerEntity.Position)!.OneBasedRecordOrdinal - 1 &&
+            music.Area == ExplorationViewContext.Require(exploration.World, story.LogicalView).Area &&
             music.Battle == (story.SelectsBattleMusic)) return story;
         if (story.Wait is MusicWait)
             throw new BattleRuleException("music-context-replaced", "story.music", true);

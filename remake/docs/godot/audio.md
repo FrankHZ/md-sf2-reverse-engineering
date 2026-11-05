@@ -6,6 +6,60 @@ policies, source provenance and limits; [asset admission](../content/presentatio
 private payloads and [retained comparisons](../evidence/retained-comparisons.md#scoped-audio-consumer-comparison)
 owns the bounded evidence.
 
+## Scene music context observation
+
+`SessionAudio.Observe` and Application music consume the same immutable `ExplorationViewContext`
+selection. A logical view owns the loaded area even with playerA/cameraB or an off-area retained
+player. Autoscroll registers do not change source-area identity. Only an absent logical view permits
+player traversal fallback; missing/ambiguous view identity is an explicit error. The
+[session owner](../application/session-and-programs.md#modern-finite-music) owns history/wait semantics.
+
+The focused [`SceneMusicContextObservation`](../../game/probes/SceneMusicContextObservation.cs)
+loads the public authored [`scene-music-context`](../../content/authored/scene-music-context.json)
+fixture, then changes the retained-player coverage for a second case. Authored silent PCM keeps this
+independent of private content. It drives ordinary session commands and actual
+`ExplorationPresentation.Update` completions; it never manufactures a `CompleteMusic` receipt.
+Four semantic samples per case retain selected area, logical generation/history, native playback
+and Finished receipts. No rendering, screenshots, voyage replay or acoustic parity is claimed.
+
+From the owning checkout root with the existing shared installations and local caches, a needed
+rerun uses the following bounded headless instance. The original isolation reason was the changed
+adapter selection while the user's H play checkout/instance remained reserved. Use a fresh ignored
+output directory to preserve completed failures; expected runtime is a few seconds, limit60 seconds,
+total observation budget15 MiB. No editor import was needed with the existing imported G project.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+Push-Location remake
+try {
+    & $env:DOTNET_BIN restore game/Sf2.Remake.Godot.csproj --locked-mode
+    if ($LASTEXITCODE -ne 0) { throw 'locked restore failed' }
+    & $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+    if ($LASTEXITCODE -ne 0) { throw 'Debug build failed' }
+} finally { Pop-Location }
+$run = Join-Path (Get-Location) 'local/observations/scene-music-context-review'
+New-Item -ItemType Directory -Path $run -ErrorAction Stop | Out-Null
+$env:SF2_SCENE_MUSIC_OUTPUT = Join-Path $run 'adapter.json'
+$argsForGodot = @('--headless', '--path', ('"' + (Join-Path (Get-Location) 'remake/game') + '"'),
+    '--audio-driver', 'Dummy', '--log-file', ('"' + (Join-Path $run 'godot.log') + '"'),
+    '--script', 'res://probes/engine_scene_music_context_observation.gd')
+$process = Start-Process -FilePath $env:GODOT_BIN -ArgumentList $argsForGodot -WindowStyle Hidden -PassThru `
+    -RedirectStandardOutput (Join-Path $run 'stdout.log') -RedirectStandardError (Join-Path $run 'stderr.log')
+if (-not $process.WaitForExit(60000)) { Stop-Process -Id $process.Id; throw 'observation timed out' }
+$process.Refresh()
+$process.ExitCode
+Get-Content -LiteralPath (Join-Path $run 'stderr.log')
+```
+
+**Confirmed:** the completed headless Dummy observation selected areaB in both variants, played the
+finite cue with the matching generation, received exactly one native Finished callback per case,
+and actually restarted areaB after the logical wait. The report passed and the process exited0;
+stderr retained the existing two-instance ObjectDB exit warning, separately owned by #1570.
+This is actual adapter delivery/completion evidence on authored silence, not audible-fidelity or
+clean-shutdown acceptance. The [F8 disposition](../evidence/structure-and-quality-review.md#f8-bounded-repair-disposition)
+retains the engine baseline reproduction and observation limits.
+
 ## Resource lifetime and shutdown
 
 **Confirmed, bounded adapter behavior:** on Godot 4.7.2 .NET, four repeated cycles in one
