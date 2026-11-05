@@ -235,6 +235,7 @@ internal static class GameText
         ["save.destination.map3-opening"] = 0,
         ["save.destination.map3-joined"] = 0,
         ["save.destination.battle01-return"] = 0,
+        ["save.destination.battle07-return"] = 0,
         ["save.destination.unavailable"] = 0,
         ["save.choose"] = 0,
         ["save.quit-dirty"] = 0,

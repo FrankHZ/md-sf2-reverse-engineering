@@ -5,7 +5,178 @@ handoffs required by [the campaign issue](https://github.com/FrankHZ/md-sf2-reve
 Cross-chapter acceptance is **High** because encounter selection, field reload, recruitment and
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
-## Current Stage C implementation agreement
+## Current Stage D implementation agreement
+
+[Issue1540](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1540) connects the accepted
+Battle07 aftermath through the castle, earthquake town, docks departure and Map73's first-arrival
+init to the first stable Map14 control. Stop before the plank choice, Battle08 and town building.
+The three [post-tower](../../../docs/design/synthesis/chapters/grans-opening/post-tower-return-through-earthquake-entry.md),
+[departure](../../../docs/design/synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md) and
+[voyage](../../../docs/design/synthesis/chapters/grans-opening/voyage-through-damaged-ship-control.md)
+guides own the source behavior. **High** rigor remains appropriate because scene-map replacement,
+layout reconstruction, following, party reset and safe persistence share the continuous state.
+
+Use the existing typed map/setup/layout/population/program consumers. The selected package adds
+Maps4/44/73/14 and Map19's F507 setup; the same seven generated members and gameplay revision4
+remain. Direct departure Yes/No returns do not write F89. Source native counted loops lower into
+finite plane-scroll changes and waits, and source plane-position writes stay separate from actors.
+Automatic scroll remains a modern deterministic projection, not a hardware timing claim. The raw
+Map44 default zone displacement retains its explicit Unsupported instruction; it is never replaced
+by the nearby return. Natural original reach and hardware-exact audiovisual timing remain **Unknown**.
+
+The existing persistence owner admits a finite completed Battle07 Map58 return recipe, with the
+outcome's retained anchor, F507/F74/F640 set and F407/F999 clear. Stable input, closed windows,
+settled followers, zero quake and legal reconstructed landing remain mandatory. Preserve all party,
+flags, equipment/status, names, semantic settings, egress and RNG; do not rerun init, healing or
+battle outcomes on Continue. The [save owner](opening-session-lifecycle.md#eligibility-and-restoration-recipes)
+records this recipe. No arbitrary checkpoint, battle suspend or observation-to-save conversion is
+admitted. The retained Stage C binary cannot offer this new recipe; a necessary updated-process
+Continue uses the existing legal Battle01 slot, then saves at the new real boundary for subsequent
+fresh-process checks. Previous route results and failures remain evidence at their original scope.
+
+Acceptance requires source compilation, small engine behavior tests, actual Godot state/input and
+projection observations, first/repeat quake entry, legal crack/exit traversal, independent followers,
+No returning to usable control, Yes consuming departure once, and stable Map14 control. Check a real
+save/Continue roundtrip before the departure segment. Reuse prior continuous opening/encounter
+results; repeat only an affected boundary after failure. Report the campaign completion/residual
+matrix and accurate selected gates/CI for independent main-gate review; implementation alone does
+not close the parent campaign or human-play acceptance.
+
+The current 18-map world is 117,949,866 bytes with the same seven encounters. Preparation is linear in selected
+content and holds one world; allow 3 GiB peak RAM and 1 GiB incremental disk, retaining 2 GiB free space.
+Reports stay at most 15 MiB. Five finite isolated SFX captures total about 20 MiB, within the
+25 MiB audio acquisition budget; no new music is needed. Reassess missing cues, source conflicts or
+reader limits before expanding. Preserve old worlds, legal saves, failures and the idle native instance.
+
+### Source operations and finite audio
+
+**Confirmed static** at pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+`maps/mapinit_0.asm:SwitchMap` and `data/maps/global/flagswitchedmaps.asm` select the
+replacement before an explicit map transfer. Conditional warp events consume that table; a
+current-map warp preserves its map. An unselected replacement remains an explicit frontier.
+`map19/mapsetups/s3_zoneevents_507.asm` owns the independent F622/F623 conversations;
+`map04/mapsetups/s6_initfunction.asm` owns first/repeated F624 entry, six layout copies and the
+falling guards. `map44/mapsetups/scripts.asm:cs_54578` clears F74, changes plane scroll,
+loads the Map66 scene, queues Map73 and clears F640. Map73's init consumes the voyage and
+loads Map14 before writing F700. These paths are under `disasm/data/maps/entries/`.
+
+The existing source-placement allowance now also accompanies scripted queued warps: Map73's
+requested (26,13) cell is blocked before its init scene takes over. Ordinary walking/warp/save
+landing validation remains strict, and source placement still requires an admitted area.
+A scene-map load changes the current map/layout/population without invoking its ordinary setup init.
+The caller and its remaining flag write survive that load; Map14's later ordinary init is not inferred.
+
+`entity/eas_main.asm:eas_Follower1`, the reached custom action streams, `VInt_UpdateScrollingData`,
+`SetViewDestination` and `IsMapScrollingToViewTarget` own physical following, signed-byte automatic
+scroll, source plane-position writes and wait behavior. Counted native loops lower their source d7
+count into typed operations. Scripted plane origins drive the corresponding drawn layers and the
+main-plane actor origin; autoscroll register changes do not select a different music area.
+The two later Map14 action waits of 1200/600 remain explicit Unsupported operations; they are
+outside the first-arrival control boundary. No duration truncation or new later-chapter claim is made.
+
+Use the existing finite original-driver audio recipe with music6 for timer204, music8 for203 and
+music1 for194. Each 1400-frame capture uses the verified ROM and registered installation, dispatches
+the isolated command at frame243 after stopping music, and retains channel termination plus quiet-tail
+evidence. The selected PCM keeps441 unchanged samples on either side, without normalization.
+Pass the five generated candidates once to the ordinary world producer. Original-driver isolation
+is **Confirmed**; natural scene reach, hardware interrupt phase and acoustic equality remain **Unknown**.
+`Load_SFX`/the H2 inventory assign FALLING88 to YM5, WARP89 to PSG noise,
+RUMBLE93 to YM4/5 and INTRO_LIGHTNING118 to YM6/DAC; existing whole-clip replacement groups consume them.
+
+| Command / timer | Capture SHA-256 | Cut [start, end) | All inactive frame |
+| --- | --- | --- | --- |
+| 88 / 204 | `7C3ADEF2EE58D5DDEA0EA88A908BC32197A6245E75B754A14E4785658492DC56` | 179731, 207464 | 278 |
+| 88 / 203 | `9338E4FEB46AB9AF699FE6C65A827A39A68FAA7A55E84A0CAB4C92F164D968D8` | 179199, 207477 | 278 |
+| 89 / 204 | `A4F8628F80ED543E4283029DD6C408906B63A4ECB13984B1D527B916B44847C7` | 179667, 203350 | 281 |
+| 93 / 204 | `6DBB61C5C8E84FE0978773D0E362A17A13B4E22623041D9FE678BBD0C4760F8E` | 179619, 266846 | 357 |
+| 118 / 194 | `BB415A7C2532868B04BF9898F0CF514F3DC9E53F5067C82D8E221064D4EDA6F9` | 179215, 310890 | 417 |
+
+### Tower return through first damaged-ship control
+
+**Confirmed in the remake**, Normal at 1920×1080/96px. The accepted ordinary New Game/Battle01
+slot continued with its actual seven-member initialization through Battles02–07. Actual defeats,
+paid EGRESS, revival, equipment, rewards and optional Kiwi recruitment remained on the same party.
+The bounded input driver exhausted Battle05 recovery and Battle06 turn/attempt budgets; these were
+completed observer failures, with no runtime failure. Subsequent ordinary paid retries and corrected
+path choices continued the existing session. No observation JSON, flags, party or battle result was
+injected. The accepted earlier New Game/entry evidence remains the provenance of the starting slot.
+
+| Actual input boundary | Observed result |
+| --- | --- |
+| Battle07 return → explicit Save → ordinary Quit → fresh-process Continue | Slot1 records `battle07-return`; the pre-existing Battle01 slot remains available. All26 progress fields compare equal after restoration, including seven-member initialization/active roster, casualties, equipment/status, names, gold, both RNG seeds, egress and semantic text settings. Loading returns to Map58(13,35) Down without replaying growth, outcomes, healing or init. The active English UI setting remains selected. |
+| Reverse tower stairs → castle F507 setup | Physical Astral/king/minister followers survive separately from party membership. F622 warning and F623 safe-place conversations each execute once; repeat steps return to input without replay. |
+| Castle exit → first earthquake Map4 | F640 substitutes Map3 with Map4. Text715–720, the six copied layout pieces, FALLING and the two guards' rotation/shrinking complete. Both guards end at(0,0); F624 is set and input returns. |
+| Walk across the changed town → Map44 → west return → Map4 → docks again | Ordinary collision-aware input reaches the east exit. Repeat init parks both guards and reconstructs the same copied layout words without replaying the first scene. F624/F640/F74 remain set. No collision data is relaxed to pass the cracks. |
+| Captain138 → explicit No, then cancel | Both return to usable Map44 control; flags, roster/resources and gold are unchanged. Ambient services continue their normal RNG draws. No departure is consumed and F89 is not invented by the direct returned Yes/No prompt. |
+| Captain → Yes | The boarding/shore sequence clears F74, scrolls the planes independently, plays the Map66 ship/quake/lightning sequence, then queues Map73 and clears F640 once. |
+| Map73 init → Map14 | First control is Map14(40,8) Left with F700 set, F74/F640 clear, F703/F408/F508 clear and no active script/wait. One Down input reaches(40,9). Gold2806, active/joined members, equipment, progress, names and egress survive. Source party reset revives the carried Slade casualty to14 HP; Jaha's scene disappearance does not remove him from the party. |
+
+At first Map14 control, the actual adapter reports a bound camera, visible textured player at
+(480,600) in the 1920×1080 viewport, scale4, and1821 background tile draws. Engine, presentation
+and audio errors are null. No screenshots or frame dumps are used. Stop here: the plank choice,
+Battle08, new-town construction, later Map14 init and arbitrary later savepoints are not accepted.
+The selected Map14 private data does not imply those behaviors are implemented.
+
+The final local report selection is limited to the continuation/save handoffs, final departure
+observations and each failure boundary; private data and captures stay local. First/repeat quake,
+No/cancel, Yes and usable successor control are observed; **Unknown** remains original natural
+reach/timing and hardware-exact audiovisual behavior. Independent main-gate review, parent#1535
+closure and human/aesthetic acceptance remain separate. The #1541 presentation audit identifies no
+additional battle-art prerequisite for this chapter; its modern battle-effect and human-review
+limits remain with the existing presentation owners.
+
+### Verification and preserved failures
+
+Use the existing world preparation command below, then the affected engine filter
+`DepartureProgramTests|PreVoyageSaveTests|OpeningSaveTests|OpeningRestoreTests|CastleTowerProgramTests|MapTransferPolicyTests|GalamSceneOperationsTests|BattleEntryProgramTests|FieldEgressTests`
+and `uv run sf2 verify adapter`. These are actual engine behaviors and adapter compilation, not tests
+of the producer/observer. The clean-head repository plan and remote CI determine the remaining
+public checks. Do not rerun the historical slow aggregate to erase a failed result.
+
+Completed development failures remain explicit:
+
+- The initial53-test selection completed30 passed/23 failed: accidental initial camera destinations
+  made fresh views look busy. Restoring unrequested destinations to null passed the affected52 nodes;
+  the remaining private opening node failed on the later unused Map14 waits1200/600. Keeping those
+  waits Unsupported passed its direct rerun.
+- The subsequent private opening admission rejected extra fields on a switched-map frontier event;
+  emitting the existing frontier schema passed the same node's direct rerun. This did not relax admission.
+- Native departure attempts stopped at `audio-command-ambiguous` (WARP89/timer204),
+  `sfx-slots-unavailable` (FALLING88), `audio-content-unavailable` (INTRO_LIGHTNING118),
+  `map-entry-position` (the source Map73 scripted landing), and `ordinary-warp-scene-load`
+  (Map73 init's Map14 load). Each exact boundary was preserved and corrected at its owner; the final
+  fresh-process route reached Map14 with none of these failures.
+- An observer used the wrong save-menu index and cancelled instead of saving; no slot was written.
+  Corrected ordinary slot selection saved successfully. The ordinary quit retained the known
+  two-instance ObjectDB exit warning; leak causality remains **Unknown**, not a new clean-exit claim.
+
+The initial failed nodes (all under `Sf2.Remake.Engine.Tests`) were:
+
+- `OpeningSaveTests.CompletedShopResourcesUseTheExistingSavePayloadAndRestoreAuthority`
+- `PreVoyageSaveTests.TowerAftermathCapturesAndRestoresProgressWithoutHealingOrReplayingTheScene`
+- `OpeningSaveTests.BusyStoryAndPresentationRejectWithoutConsumingProgress(kind: 3)`
+- `OpeningSaveTests.BusyStoryAndPresentationRejectWithoutConsumingProgress(kind: 2)`
+- `OpeningRestoreTests.VictoryRestoreUsesTheCompletedOutcomeLanding(x: 12, y: 8)`
+- `OpeningSaveTests.BusyStoryAndPresentationRejectWithoutConsumingProgress(kind: 1)`
+- `OpeningRestoreTests.VictoryRestoreUsesTheCompletedOutcomeLanding(x: 4, y: 5)`
+- `OpeningSaveTests.BusyStoryAndPresentationRejectWithoutConsumingProgress(kind: 4)`
+- `OpeningSaveTests.BusyStoryAndPresentationRejectWithoutConsumingProgress(kind: 0)`
+- `OpeningSaveTests.BusyStoryAndPresentationRejectWithoutConsumingProgress(kind: 5)`
+- `OpeningSaveTests.CaptureIsDetachedAndStaleRevisionCannotCaptureNewProgress`
+- `OpeningSaveTests.AmbientDefaultWalkingCanResetButStoryInstalledWorkCannotBeSaved`
+- `OpeningSaveTests.SameContextUnknownMusicNeedsObservedHistoryAndCannotAssumeTheDefault`
+- `OpeningRestoreTests.RestoreRebuildsEachRecipeWithoutOnloadGrowthHealingOrReward(joined: True, victory: True)`
+- `OpeningRestoreTests.RestoreRebuildsEachRecipeWithoutOnloadGrowthHealingOrReward(joined: False, victory: False)`
+- `OpeningRestoreTests.RestoreRebuildsEachRecipeWithoutOnloadGrowthHealingOrReward(joined: True, victory: False)`
+- `DepartureProgramTests.AutomaticPlanesKeepSignedStepsIndependentOfCameraDestinationAndDoNotBlockWaits`
+- `CastleTowerProgramTests.ViewDeadbandsClampsCounterAndIndependentAxesAreStateDriven`
+- `CastleTowerProgramTests.UnequalPlaneInitializationQuantizesThenScalesBeforeOffsets(layer: 0)`
+- `CastleTowerProgramTests.UnequalPlaneInitializationQuantizesThenScalesBeforeOffsets(layer: 255)`
+- `CastleTowerProgramTests.UnequalPlaneFollowUsesMainPlaneAndScalesEachAxisSpeed(layer: 0)`
+- `CastleTowerProgramTests.UnequalPlaneFollowUsesMainPlaneAndScalesEachAxisSpeed(layer: 255)`
+- `OpeningSaveTests.RealFreshOpeningCanCaptureAndRestoreWithoutNewGameReplay`
+
+## Stage C supported boundary
 
 Stage C consumes the accepted Battle06 entry and stops at usable exploration after Battle07's
 first victory in the tower. It uses **High** scope: optional recruitment, source scenes, encounter
@@ -136,7 +307,7 @@ setup, placement/facing, egress register, result and next accepted input at each
 | A · Battle04 outcomes and prison entry observed. | First victory stages Lemon's capture warp, executes the shared Bowie join tail, clears F404 and sets F504 before returning Map17 (0,0) Right. Completed victory skips capture and uses the saved ordinary victory return. Special defeat restores Bowie and halves gold, clears F404, sets F504 and overrides the egress map to 17; retain egress coordinates/facing. With egress 43 these are (7,5) Down. Legal EGRESS/Wing consumes its actual resource and returns to the egress map; first escape leaves F404 armed. | First victory and special defeat reached their distinct Map17 entry operands, then the first text 880 input. Paid EGRESS returned to Map43 and allowed re-entry. Stage B owns the remaining F660-gated prison program and subsequent interactions. |
 | B · Captivity through Battle06 first usable control observed. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Actual first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). The jewel is F384, not an inventory award. | Prison/maid first and repeated interactions, actual defeat/paid EGRESS/retry, completed guard/interior revisit, paid Buy/Sell/equipment/supplies and six living members on the Battle06 board are observed below. No Battle06 result is admitted. |
 | C · Battle06 through Battle07 tower return observed. | Actual Battle06 victory clears F406, sets F506 and returns on Map66. Map3's changed setup offers Kiwi (joined F6, active F38 subject to capacity). Battle07 admission uses F407. First victory sets F74/F640 through its scene and clears F407/sets F507 through the caller. Slade, Kiwi and royal followers retain their separate roles. | Refusal, castle bypass, later naming/join and repeated talk; paid Battle07 EGRESS/re-entry; ordinary faction combat, casualties, silence/suppressed cast, full first-victory program and usable Map58 movement are observed. |
-| D · Tower aftermath through departure. Pending. | The Map57 tower return carries F507 and F74/F640. The castle's Map3 request selects quake Map4 on F640. Map44 departure clears F74/F640 and requests Map73 (26,13) Right. Admit the first stable successor control. | Check ordinary interactions, refusal/acceptance where offered, and fresh-process Continue from an existing legal point. Stage ends before Battle08. |
+| D · Tower aftermath through first damaged-ship control. Observed; independent review pending. | The Map58 tower return carries F507 and F74/F640. The castle's Map3 request selects quake Map4 on F640. Map44 departure clears F74/F640 and requests Map73 (26,13) Right. Map73 init loads Map14 and writes F700. | Fresh-process Map58 Continue, first/repeated quake entry, crack/exit traversal, No/cancel and Yes reach usable Map14(40,8) control. Stop before plank choice/Battle08; independent review and human acceptance remain separate. |
 
 For the later handoffs consult the [Battle05 tail](../../../docs/design/synthesis/chapters/grans-opening/battle05-outcomes-through-battle06.md), [Battle06 return](../../../docs/design/synthesis/chapters/grans-opening/battle06-outcomes-through-battle07.md), [Battle07 aftermath](../../../docs/design/synthesis/chapters/grans-opening/battle07-outcomes-and-aftermath.md) and [harbor choice](../../../docs/design/synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md).
 
@@ -152,7 +323,8 @@ resources, next accepted input and errors. The [chapter presentation matrix](../
 identifies required bindings. Reuse the sound, physical, ranged, healing and fire consumers.
 Keep private art and audio in the selected local package. Retain one small record per handoff.
 
-Existing save eligibility covers the admitted default Map3 recipes and settled Battle01 Map57 return.
+Save eligibility covers the admitted default Map3 recipes, settled Battle01 Map57 return and
+the completed Battle07 Map58 aftermath recipe above.
 Save/Quit and Continue must round-trip a legal point with this selection. Restore verifies package,
 member identities, membership flags, gear, resources and the egress register. New egress values
 require explicit admission independent of location eligibility. Battle suspend, arbitrary field
@@ -161,8 +333,8 @@ saves, Map16/17 save recipes and high-level promotion are outside this delivery.
 ## Preparing the ordinary selection
 
 Use the [opening inputs](../content/profiles-and-trust.md#opening-new-game-admission) for root
-Battle01 and title content. The [fourteen-map selection](../../content/private/pre-voyage-opening.json)
-adds Map16/18/58/60 to Yeel, Hawel's house, Map17 and the opening maps. It admits Battle01–07 boards,
+Battle01 and title content. The [eighteen-map selection](../../content/private/pre-voyage-opening.json)
+adds Map16/18/58/60 and the departure Maps4/44/73/14 to Yeel, Hawel's house, Map17 and the opening maps. It admits Battle01–07 boards,
 their selected outcomes and the selected Map66 requests.
 The producer binds each map's two base palette words from the verified ROM. Both ordinary readers
 load the same world. The package keeps its historical ID and uses gameplay revision 4 for seven generated members.
@@ -206,7 +378,8 @@ manifest, the nine reviewed additional command/timer candidates from the opening
 (59/BD, 6E/CC, 6F/CC, 41/CC, 43/CC, 4A/CC, 41/C2, 43/C2, 01/C2 in hex), and the accepted authored
 defeat and encounter cues. Include the three [Hawel candidates](#hawel-media-prerequisite) and
 the [four timer-specific field effects](#yeel-warp-and-hawel-speech-variants) and the
-[two Galam door effects](#galam-door-audio) and [Stage C candidates](#stage-c-audio-reproduction). Pass each candidate once.
+[two Galam door effects](#galam-door-audio) and [Stage C candidates](#stage-c-audio-reproduction), plus the five
+[departure candidates](#source-operations-and-finite-audio). Pass each candidate once.
 
 ```powershell
 $audioArgs = foreach ($candidate in $reviewedCandidates) { '--audio-candidate'; $candidate }
@@ -218,7 +391,7 @@ $env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorld
 
 Launch the ordinary title without diagnostic start arguments. Use an external disposable save
 namespace as in the [save recipe](../verification/host.md#opening-save-and-continue).
-The measured world is 114,271,642 bytes. Keep the unchanged 01/C2 main-theme WAV and its candidate
+The current world is 117,949,866 bytes, below the 128 MiB reader limit. Keep the unchanged 01/C2 main-theme WAV and its candidate
 in `audio-01-c2` beneath the world's parent, alongside the three Hawel directories. Supply its
 candidate once. These four referenced WAVs total 26,376,328 bytes. The selection also requires
 the seven additional inline field cues below. Missing selected cues reject preparation.
@@ -246,7 +419,7 @@ Actual adapter projection after movement has a bound Map58 camera at (84,642), a
 brightness and playing battle music. Runtime, presentation and audio errors are absent. The save
 offer correctly remains `save-location-unavailable`; this stage adds neither a new safe point nor
 old-world migration. Original natural reach, VInt timing, pixel-exact special transforms and
-human-play acceptance remain **Unknown**. Map58 exit into earthquake-town/departure is the next stage.
+human-play acceptance remain **Unknown**. The next section of the route consumes Map58 through the departure boundary above.
 
 The reproducible route uses the world preparation commands above and ordinary title/input actions;
 local input drivers and compact boundary receipts remain ignored. The meaningful engine selection

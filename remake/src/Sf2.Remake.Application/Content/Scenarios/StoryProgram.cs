@@ -34,6 +34,8 @@ public sealed record CloseText : StoryInstruction;
 public sealed record WaitForView : StoryInstruction;
 public sealed record ChooseYesNo(int? ResultFlag, ProgramLocation? NoTarget = null) : StoryInstruction;
 public sealed record NamePartyMember(int Member) : StoryInstruction;
+public sealed record SetPlaneAutoscroll(int Axis, int Value, bool Relative = false) : StoryInstruction;
+public sealed record SetPlanePosition(int Axis, int Value) : StoryInstruction;
 public sealed record SetCameraSpeed(ushort Speed) : StoryInstruction;
 public sealed record AddExplorationFollower(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;

@@ -1305,3 +1305,6 @@ msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回。购买后可离店，
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "battle.scene.poison-cured"
 msgstr "{0} 的中毒已治愈。"
+
+msgid "save.destination.battle07-return"
+msgstr "古代之塔，地震之后"

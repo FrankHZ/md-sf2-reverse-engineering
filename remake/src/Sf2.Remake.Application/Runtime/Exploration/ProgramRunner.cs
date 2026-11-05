@@ -47,9 +47,9 @@ internal static class ProgramRunner
                     {
                         var warpEvent = new ExplorationEvent(ExplorationEventKind.Warp, null, null, null, null,
                             pendingWarp.Map, pendingWarp.Position, pendingWarp.Facing);
-                        MapTransfer.Validate(definition, current, current.Exploration!, warpEvent, rules);
+                        MapTransfer.Validate(definition, current, current.Exploration!, warpEvent, rules, sourcePlacement: true);
                         current = current.WithStory(current.Story.Copy(null, clearScriptWarp: true, clearEventCaller: true));
-                        current = MapTransfer.BeginWarp(definition, current, warpEvent, observations, rules);
+                        current = MapTransfer.BeginWarp(definition, current, warpEvent, observations, rules, sourcePlacement: true);
                         continue;
                     }
                     if (current.Story.Warp is not null)
@@ -174,7 +174,7 @@ internal static class ProgramRunner
                             : new FieldReturnAnchor(eventWarp.Map, eventWarp.Position, eventWarp.Facing);
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
                             MapLoadMode.Rebuild, story, observations, rules,
-                            combatPlacement: eventWarp is not null || current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap,
+                            sourcePlacement: eventWarp is not null || current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap,
                             checkBattle: false);
                         current = ExplorationMusicRunner.SelectFieldMusic(definition.Exploration!, current, observations);
                         continue;
@@ -230,6 +230,10 @@ internal static class ProgramRunner
                         active = new ActiveExploration(current.Exploration!.WithFollower(FollowerMotion.Install(Entity(current, follow.Entity), leaderSlot, follow.OffsetX, follow.OffsetY))); break;
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
+                    case SetPlaneAutoscroll scroll:
+                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Autoscroll(story.LogicalView!, scroll)); break;
+                    case SetPlanePosition plane:
+                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Position(story.LogicalView!, plane)); break;
                     case SetCameraSpeed speed:
                         if (story.TextSettings is null) throw new BattleRuleException("field-text-settings", "program.camera", true);
                         story = story.Copy(story.Cursor, textSettings: story.TextSettings with { ViewSpeed = speed.Speed }); break;
@@ -258,8 +262,6 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
                             clearCameraEntity: target.Entity is null); break;
                     case LoadSceneMap load:
-                        if (story.Warp is not null)
-                            throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
                         var scene = MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load);
                         story = story.TextSettings is not null ? MapTransfer.BindScene(current, scene, load).Copy(story.Cursor) :
                             story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true);

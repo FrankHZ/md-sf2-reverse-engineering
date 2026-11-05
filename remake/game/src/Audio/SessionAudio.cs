@@ -159,7 +159,14 @@ internal sealed partial class SessionAudio : IDisposable
                 if (current.Story.LogicalView is { } view)
                 {
                     for (int i = 0; i < world.Definition.ViewAreas.Count; i++)
-                        if (world.Definition.ViewAreas[i] == view.Area) { area = i; break; }
+                    {
+                        // Scripted autoscroll changes live registers, not the selected
+                        // source area or its music binding.
+                        var source = world.Definition.ViewAreas[i];
+                        if (source == view.Area with { AutoscrollAX = source.AutoscrollAX,
+                            AutoscrollAY = source.AutoscrollAY, AutoscrollBX = source.AutoscrollBX,
+                            AutoscrollBY = source.AutoscrollBY }) { area = i; break; }
+                    }
                 }
                 else area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)?.OneBasedRecordOrdinal - 1 ?? -1;
                 if (area < 0) throw new InvalidOperationException("map-music-area-unavailable");
@@ -408,10 +415,10 @@ internal sealed partial class SessionAudio : IDisposable
     // not hardware output masks or a claim of acoustic independence.
     private static Slots SoundSlots(int command) => command switch
     {
-        65 or 109 or 111 => Slots.Ym5,
+        65 or 88 or 109 or 111 => Slots.Ym5,
         66 or 67 or 69 or 70 or 72 or 73 or 74 or 79 or 100 or 102 => Slots.PsgTone3,
         77 => Slots.Ym4,
-        81 or 82 or 83 or 84 or 116 or 117 => Slots.Ym6,
+        81 or 82 or 83 or 84 or 116 or 117 or 118 => Slots.Ym6,
         89 or 110 => Slots.PsgNoise,
         92 or 93 or 96 or 113 => Slots.Ym4 | Slots.Ym5,
         _ => throw new InvalidOperationException("sfx-slots-unavailable"),

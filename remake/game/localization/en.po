@@ -1305,3 +1305,6 @@ msgstr "{0}/{1}: select · {2}: confirm · {3}: back. Purchases stay unequipped;
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "battle.scene.poison-cured"
 msgstr "{0} is cured of poison."
+
+msgid "save.destination.battle07-return"
+msgstr "Ancient Tower, earthquake aftermath"

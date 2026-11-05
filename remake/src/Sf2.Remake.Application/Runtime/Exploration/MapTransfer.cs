@@ -9,12 +9,12 @@ internal static class MapTransfer
     // Apply is a pure snapshot construction. Reuse its full admission before consuming a
     // field action; publish again after the old-world pass with its resulting party seed.
     internal static void Validate(ScenarioDefinition definition, SessionSnapshot current, ExplorationState candidate,
-        ExplorationEvent warp, SessionRules rules)
+        ExplorationEvent warp, SessionRules rules, bool sourcePlacement = false)
     {
         var preview = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
         var admitted = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
-            warp.LoadMode, current.Story, [], rules);
+            warp.LoadMode, current.Story, [], rules, sourcePlacement);
         if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null) return;
         ValidateDisplay(current.Story.Display);
         var target = definition.Exploration.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
@@ -30,7 +30,10 @@ internal static class MapTransfer
                 {
                     case PresentCue { Kind: PresentationCueKind.FlashWhite } cue: ValidateFlash(cue); break;
                     case PresentCue cue when IsPalette(cue): ValidateCue(cue); break;
-                    case LoadSceneMap: throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
+                    case LoadSceneMap scene:
+                        if (!definition.Exploration.Maps.TryGetValue(scene.Map, out var sceneMap) || sceneMap.BasePalette is not { Valid: true })
+                            throw new BattleRuleException("scene-load-palette-binding", "map.basePalette", true);
+                        break;
                     case CallProgram call: Check(call.Target); break;
                     case JumpProgram jump: Check(jump.Target); break;
                     case BranchFlag branch: Check(branch.Target); break;
@@ -86,12 +89,12 @@ internal static class MapTransfer
     }
 
     internal static SessionSnapshot BeginWarp(ScenarioDefinition definition, SessionSnapshot current,
-        ExplorationEvent warp, List<SessionObservation> observations, SessionRules rules)
+        ExplorationEvent warp, List<SessionObservation> observations, SessionRules rules, bool sourcePlacement = false)
     {
         if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null)
             return Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                warp.LoadMode, current.Story, observations, rules);
-        var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, warp.Destination!, warp.Facing, warp.LoadMode));
+                warp.LoadMode, current.Story, observations, rules, sourcePlacement);
+        var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, warp.Destination!, warp.Facing, warp.LoadMode, sourcePlacement));
         var world = current.Exploration!;
         current = new(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(world.WithEntity(world.PlayerEntity with { Actions = null, ActionCursor = 0, WaitingForMotion = false })),
@@ -181,7 +184,7 @@ internal static class MapTransfer
         current = ProgramRunner.Commit(current, current.Active, story, observations, "map-load-service");
         if (wait.Remaining > 1) return current;
         var warp = story.Warp!;
-        try { return Apply(definition, current, warp.Map, warp.Position, warp.Facing, warp.Mode, story.Copy(null), observations, rules); }
+        try { return Apply(definition, current, warp.Map, warp.Position, warp.Facing, warp.Mode, story.Copy(null), observations, rules, warp.SourcePlacement); }
         catch (BattleRuleException error) { throw new FadeServiceFailure(current, error); }
     }
 
@@ -196,14 +199,14 @@ internal static class MapTransfer
     }
 
     internal static ExplorationState Build(ExplorationMapDefinition map, EntityRef player, MapPosition position,
-        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null, bool combatPlacement = false)
+        byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null, bool sourcePlacement = false)
     {
         map = map.SelectSetup(flags);
         var layout = map.Layout;
         foreach (var copy in map.LayoutEvents?.Flags ?? [])
             if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
         layout = FieldSearch.RestoreChests(layout, map.Search, flags);
-        if (!map.Traversal.IsWithinActiveArea(position) || (!combatPlacement && OriginalMapTraversal.IsBlocked(layout, position)))
+        if (!map.Traversal.IsWithinActiveArea(position) || (!sourcePlacement && OriginalMapTraversal.IsBlocked(layout, position)))
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
         {
@@ -253,8 +256,6 @@ internal static class MapTransfer
         CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
         ExplorationTextRunner.ValidateContext(current);
         var story = current.Story;
-        if (story.Warp is not null)
-            throw new BattleRuleException("ordinary-warp-scene-load", "program.map", true);
         if (story.TextWindow is not ClosedTextWindow || story.PortraitWindow is not ClosedPortraitWindow ||
             story.LogicalText is not { Open: false } || story.Wait is not null)
             throw new BattleRuleException("scene-load-windows", "story.windows", true);
@@ -273,7 +274,7 @@ internal static class MapTransfer
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
         MapPosition position, byte facing, MapLoadMode mode, StoryState continuation, List<SessionObservation> observations, SessionRules rules,
-        bool combatPlacement = false, bool checkBattle = true)
+        bool sourcePlacement = false, bool checkBattle = true)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
         CaravanRuntime.RequireOrdinaryMapOperation(world);
@@ -305,7 +306,7 @@ internal static class MapTransfer
                 if (write.Value) enteredFlags.Add(write.Flag); else enteredFlags.Remove(write.Flag);
             flags = enteredFlags.Order().ToArray();
             // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
-            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags, combatPlacement);
+            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags, sourcePlacement);
         }
         var story = continuation.Copy(continuation.Cursor,
             flags: flags,

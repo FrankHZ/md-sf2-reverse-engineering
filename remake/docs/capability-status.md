@@ -3,7 +3,7 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
-## Ordinary opening through Battle07 tower return
+## Ordinary opening through first damaged-ship control
 
 The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to
 Hawel's house. Ordinary play completed the source scene, formally recruited Kazin, inspected
@@ -29,10 +29,20 @@ ordinary movement to (13,34), with F507/F74/F640 and separate Astral/king/minist
 The [Stage C observations](application/pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration)
 own the exact input, state, projection and error boundary; independent integration remains with main-gate.
 
-Later F530 setups, earthquake-town/departure and arbitrary field saves are Unsupported. Original
-natural traversal/timing and human-play acceptance remain Unknown. The existing legal Battle01
-save and fresh-process Continue preserve revision4's seven-member initialization; no post-Galam save
-recipe or migration of older member counts is added. Older worlds retain their own compatible slots.
+Stage D continues the actual tower return through castle F622/F623, F640's quake-map substitution,
+first/repeated F624 entry and legal docks traversal. No/cancel preserves usable town control; Yes
+consumes the boarding/shore sequence and Map73 init, reaching Map14(40,8) Left with F700 set.
+Ordinary movement is observed there; F74/F640 are clear and F703/F408/F508 remain clear.
+The [departure observations](application/pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control)
+retain state, input, drawn projection, audio, source bindings and completed failures. Independent
+integration and parent-campaign closure remain with main-gate.
+
+The finite `battle07-return` recipe supports a real Save/Quit/fresh-process Continue at Map58,
+preserving progress and rebuilding the declared safe anchor/followers. Older worlds retain their
+own compatible slots; revision4 still initializes seven members and no migration is added.
+Plank choice/Battle08, new-town construction, later F530/Map14 setups and arbitrary field saves are
+Unsupported. The raw Map44 default-zone displacement and later Map14 waits1200/600 remain explicit
+frontiers. Original natural traversal/timing and human-play acceptance remain Unknown.
 
 ## Finite Galam shop and purchased-supply closure
 

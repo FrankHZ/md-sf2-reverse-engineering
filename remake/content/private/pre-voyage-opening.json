@@ -15,7 +15,11 @@
     16,
     18,
     60,
-    58
+    58,
+    4,
+    44,
+    73,
+    14
   ],
   "battles": [
     1,
@@ -66,7 +70,7 @@
     "7": 16
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through Battle06, optional Kiwi recruitment, Battle07 and usable tower aftermath.",
+  "controlledBoundary": "Ordinary opening through Battle01-07, earthquake evacuation, departure and the first stable damaged-ship control; before Battle08.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -150,7 +154,11 @@
     18,
     57,
     60,
-    58
+    58,
+    4,
+    44,
+    73,
+    14
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -198,7 +206,8 @@
     "19": [
       501,
       609,
-      506
+      506,
+      507
     ],
     "20": [
       501,
@@ -221,6 +230,11 @@
     ],
     "40": [
       506
+    ],
+    "44": [
+      609,
+      506,
+      507
     ]
   },
   "outcomeBattles": [
@@ -314,7 +328,12 @@
     "SFX_DIALOG_BLEEP_5_TIMER_C4",
     "SFX_DIALOG_BLEEP_6_TIMER_C4",
     "SFX_WARP_TIMER_C4",
-    "SFX_DOOR_OPEN_TIMER_C4"
+    "SFX_DOOR_OPEN_TIMER_C4",
+    "SFX_FALLING_TIMER_CC",
+    "SFX_FALLING_TIMER_CB",
+    "SFX_BIG_DOOR_RUMBLE_TIMER_CC",
+    "SFX_WARP_TIMER_CC",
+    "SFX_INTRO_LIGHTNING_TIMER_C2"
   ],
   "paidRetreatBattles": [
     2,

@@ -33,7 +33,7 @@ internal static class BattleDefeatedProgram
             var leader = battle.GetActor(battle.Definition.Outcome!.Leader);
             var leaderPosition = MapPoint(leader.Position ?? leader.Deployment.Position);
             var shell = MapTransfer.Build(map, binding.Player, leaderPosition, 3, binding.Speed, party,
-                current.Story.Flags, combatPlacement: true);
+                current.Story.Flags, sourcePlacement: true);
             var field = definition.ScenesFor(battle.Definition.Encounter)?.FieldDeath;
             var entities = new List<ExplorationEntity>();
             foreach (var actor in battle.Actors.Where(a => a.Position is not null))

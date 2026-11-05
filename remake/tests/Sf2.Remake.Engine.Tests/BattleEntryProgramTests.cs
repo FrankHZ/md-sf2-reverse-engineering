@@ -691,7 +691,6 @@ public sealed class BattleEntryProgramTests
     [InlineData("transitioning", "full-fade-state")]
     [InlineData("palette", "scene-load-palette-binding")]
     [InlineData("window", "scene-load-windows")]
-    [InlineData("warp", "ordinary-warp-scene-load")]
     public void BoundSceneRejectsUnsupportedStatesBeforePublishingReplacement(string condition, string failure)
     {
         var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
@@ -704,8 +703,7 @@ public sealed class BattleEntryProgramTests
         var display = condition == "visible" ? new ExplorationDisplay(1, new(0xEEE, 0xAAA), new(0xEEE, 0xAAA), FullFadeVisibility.BaseRestored) :
             new ExplorationDisplay(1, new(0xEEE, 0xAAA), new(0, 0), condition == "transitioning" ? FullFadeVisibility.Transitioning : FullFadeVisibility.Black);
         var story = entry.Story.Copy(new("scene-test", 0), display: display,
-            textWindow: condition == "window" ? new OpenTextWindow(100, TextDisplayMode.Single, null, 0) : null,
-            warp: condition == "warp" ? new(new("yard-map"), new(1, 1), 1, MapLoadMode.Rebuild) : null);
+            textWindow: condition == "window" ? new OpenTextWindow(100, TextDisplayMode.Single, null, 0) : null);
         var result = ProgramRunner.Run(session.Definition, entry.WithStory(story), []);
         Assert.Equal(failure, result.Failure!.Code);
         Assert.Same(entry.Active, result.Snapshot.Active);

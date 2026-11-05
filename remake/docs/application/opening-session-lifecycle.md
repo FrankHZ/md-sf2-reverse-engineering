@@ -50,7 +50,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
 | Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
-| Persistence/Continue | **Implemented, bounded:** two explicit local slots, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. Three savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3 and completed Battle01 Map57 return. | #1421; [implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). Interiors, battle/story suspend, later setups/campaign, autosave, migration and original SRAM parity remain outside scope. |
+| Persistence/Continue | **Implemented, bounded:** two explicit local slots, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. Four savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return and completed Battle07 Map58 aftermath. | #1421; [implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). Other interiors, battle/story suspend, arbitrary later setups, autosave, migration and original SRAM parity remain outside scope. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL; Antidote/DETOX1 cure poison with caller-specific payment. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
@@ -370,6 +370,14 @@ asks the selected profile for a recipe and validates its typed result using exis
   later exact position and not `Story.ReturnAnchor`, which can describe the previous map. Add this
   small location-owned anchor at completed return; validate it against Map57 content on capture/load.
   Restore the void setup/player/followers and flags without `abcs_battle01`, stat reset or reward replay.
+
+- **Map58 Battle07 aftermath:** after the complete outcome return, F507/F74/F640 set and
+  F407/F999 clear, retain the completed return anchor (ordinary first victory is `(13,35)`, Down).
+  Map58 has no setup init to replay. Rebuild its flag-selected layout/population and royal followers;
+  retain casualties, equipment, names, gold, status and both RNG streams. The existing stability and
+  anchor collision/occupancy checks apply. Egress may retain the admitted early refuge Maps0/3/5/43/16.
+  This adds the `battle07-return` recipe to the existing format, without changing revision4 party
+  generation. The quake town and scene-only damaged-ship arrival are not save locations.
 
 These are implemented product recipes. Their acceptance includes
 ordinary legal variations within all three required boundaries: reordered optional conversations,
