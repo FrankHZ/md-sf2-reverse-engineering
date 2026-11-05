@@ -3,18 +3,17 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public enum FieldRecoveryEffect { NoEffect, CurePoison }
+public enum FieldRecoveryEffect { NoEffect, CurePoison, Egress }
 public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, FieldRecoveryEffect Effect);
 
 // Field caller policies are admitted separately from battle recovery and its EXP/RNG rolls.
 internal static class FieldRecovery
 {
-    internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command, out bool effective)
+    internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command, out FieldRecoveryEffect effect, out bool effective)
     {
         var member = FieldInventory.Member(definition, current, command.Member);
         var party = current.Exploration!.Party;
         var capabilities = definition.FieldPreparation!;
-        FieldRecoveryEffect effect;
         FieldSpellChoice? spell = null;
         FieldInventoryChoice? item = null;
         ActorRef? targetRef;
@@ -29,7 +28,8 @@ internal static class FieldRecovery
         else if (command is FieldCast cast)
         {
             var learned = member.Carried.Progress?.Spells ?? member.Deployment!.Definition.Spells;
-            if (!learned.Contains(cast.Spell) || !capabilities.Spells.TryGetValue(cast.Spell, out spell))
+            spell = capabilities.Spell(cast.Spell, current.Exploration.Map);
+            if (!learned.Contains(cast.Spell) || spell is null)
                 throw new BattleRuleException("field-spell-unsupported", "spell", true);
             effect = spell.Effect; targetRef = cast.Target;
         }
@@ -41,6 +41,13 @@ internal static class FieldRecovery
             // This bounded family has no item map event. Do not consume ordinary recovery items.
             if (targetRef is not null) throw new BattleRuleException("field-no-effect-target", "target");
             return party;
+        }
+        if (effect == FieldRecoveryEffect.Egress)
+        {
+            if (spell is null || targetRef is not null)
+                throw new BattleRuleException("field-egress-target", "target");
+            return FieldInventory.Replace(party,
+                [member.Carried with { Mp = (byte)Math.Max(0, member.Carried.Mp - spell.MpCost) }]);
         }
         var target = FieldInventory.Member(definition, current,
             targetRef ?? throw new BattleRuleException("field-recovery-target", "target"));

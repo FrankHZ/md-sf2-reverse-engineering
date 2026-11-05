@@ -13,20 +13,24 @@ public sealed record FieldCast(ActorRef Member, SpellRef Spell, ActorRef? Target
 
 internal static class FieldCommands
 {
-    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command)
+    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command, SessionRules? rules = null)
     {
         try
         {
             bool effective = false;
+            var effect = FieldRecoveryEffect.NoEffect;
             bool recovery = command is FieldUseItem or FieldCast;
-            var party = recovery ? FieldRecovery.Prepare(definition, current, command, out effective)
+            var party = recovery ? FieldRecovery.Prepare(definition, current, command, out effect, out effective)
                 : FieldInventory.Prepare(definition, current, command);
+            if (effect == FieldRecoveryEffect.Egress)
+                return FieldEgress.Begin(definition, current, command.Member, party, rules ?? Gameplay.RuleCompositions.Sf2());
             long revision = checked(current.Revision + 1), sequence = checked(current.ObservationSequence + 1);
             var snapshot = new SessionSnapshot(current.SessionId, revision, sequence,
                 new ActiveExploration(current.Exploration!.WithParty(party)), current.Story, SessionStopReason.PlayerInput);
             return new(snapshot, [new(sequence, revision, recovery ? effective ? "field-status-recovered" : "field-no-effect" : command switch
             { FieldEquip => "field-equipped", FieldGive => "field-given", FieldDrop => "field-dropped", _ => "field-prepared" }, command.Member)], snapshot.StopReason);
         }
+        catch (BattlePolicyFault error) { return ProgramRunner.Failure(current, [], error); }
         catch (BattleRuleException error)
         {
             return new(current, [], error.Unsupported ? SessionStopReason.Unsupported : SessionStopReason.Rejected,

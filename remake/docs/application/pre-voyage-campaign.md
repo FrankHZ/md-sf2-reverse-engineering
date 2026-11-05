@@ -169,8 +169,9 @@ recovery boundary follow below; natural original recovery remains **Unknown**.
 The [enclosed-return issue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1552)
 uses **Standard** scope: distinguish a source/import/coordinate error from a missing field action
 before changing gameplay. The independent diagnosis is complete at the engine/state boundary.
-Recovery implementation and native input acceptance remain pending main-gate's scope decision.
-Stage B does not resolve this earlier playable risk.
+The approved recovery scope uses the existing field Magic menu and live savepoint operands.
+The bounded implementation and native acceptance below address this earlier playable risk; they
+do not extend Stage B or establish original natural recovery.
 
 **Confirmed in the selected inputs.** Against the pinned source above and the verified US ROM,
 Map66's decoded 4096-word layout equals the ordinary ten-map world's layout word for word.
@@ -207,10 +208,9 @@ world, existing production assemblies, the actual `(16,13)` combatant coordinate
 The complete outcome program returned Map66 `(32,32)`, `PlayerInput`, F402 clear/F502 set and
 egress Map3. Each separate `Move` through `ExplorationDispatcher.Submit` emitted
 `movement-blocked`; `WaitAtInput` stayed in exploration at the same position. The live interaction
-query returned none, and field search was unavailable. Bowie knows `SpellRef("egress", 1)`,
-but `FieldInventory.Query` offered no spells and `FieldCommands.Submit(FieldCast(...))` returned
-`field-spell-unsupported`. Gold 102 and the selected main/thinking seeds 1535008860/24202529
-survived return. This is a controlled boundary, not reconstruction of the entire recorded party
+query returned none, and field search was unavailable. The diagnosed missing action was field
+`SpellRef("egress", 1)`; the implementation below now admits it. Gold 102 and the selected
+main/thinking seeds 1535008860/24202529 survive this controlled outcome return. This is a controlled boundary, not reconstruction of the entire recorded party
 or a new ordinary-route/native observation. The retained real failure remains independent evidence.
 
 Controls using the same real maps admit east/south movement from Map66 `(19,24)` and Map3
@@ -244,29 +244,85 @@ the live egress map is 3. Its pre-F399 and raft branches are separate source con
 Original natural execution from the sampled enclosed tile, exact visual timing and onward travel
 are **Unknown**; static availability is not an observed escape.
 
-**Proposed minimum implementation, not accepted capability.** Admit field EGRESS for the
-selected source overworld maps through `PrivateFieldPreparation`, expose it through the existing
-Magic confirmation, and extend field command execution with the source MP payment and ordinary
-flash/warp continuation. Resolve the live egress register through existing admitted savepoint
-operands; do not choose a nearby tile, change the map, replay the battle outcome, or branch on
-Battle02's number. Preserve gold, inventory, EXP, accounting, RNG and victory flags. Validate the
-destination before payment; distinguish paid departure from subsequent ordinary entry recovery.
-The bounded target is early walking mode with F399 set and supported live egress destinations.
-Pre-F399, raft/Caravan and unbound destinations must remain explicit until admitted.
+**Confirmed in the remake.** `PrivateFieldEgress` binds admitted source overworld maps 66–78
+and a typed sound/flash/recovery program. `PrivateFieldPreparation` exposes learned EGRESS1
+through the existing Magic confirmation. `FieldEgress` resolves the live egress register through
+the same savepoint operands as battle return, prevalidates the recovered destination, then commits
+MP payment once with a zero lower bound. It publishes no payment for an unsupported destination
+or context. The bounded context is walking mode with F399 set, flags 64/640 clear and a bound live
+savepoint. Pre-F399, raft/Caravan and unbound destinations remain unsupported.
 
-This affects Content field capability binding, Application field recovery/command and map-transfer
-continuation, and the existing Godot field-action presentation. It needs behavior cases for low/zero
-MP, cancellation/stale input, live destination changes, payment once, a normal accessible departure
-and rejection before payment when unsupported. Non-overworld source EGRESS has no effect; retain
-that distinction. Angel Wing shares the original destination path but also removes an inventory
-slot and falls through the shared spell-entry code; its exact payment operands need their own check
-and are not necessary to unblock a living Bowie with EGRESS.
+The existing presentation delivers command 77, four modern white pulses, then the ordinary queued
+warp/fade/load/input continuation. Entry recovery is distinct from payment: after flash completion,
+`ResetPartyBattleStats(LivingOnly: true)` applies the existing living/immortal recovery policy;
+ordinary dead members stay dead. This follows `ExplorationLoop`'s `HealLivingAndImmortalAllies`
+in `code/gameflow/exploration/explorationfunctions_2.asm`. Existing source-script resets retain
+their all-member default. The cast retains gold, items, EXP, accounting, RNG and victory flags;
+destination programs and normal NPC activity subsequently retain their usual effects. No battle
+outcome is replayed, map word changed, nearest tile selected or Battle02-number exception added.
+Non-overworld EGRESS is a resource-preserving no-effect action. Angel Wing's overworld inventory
+removal/shared spell-entry operands are outside this capability.
 
-Acceptance remains ordinary menu/input at this exact position, return with retained progress,
-then re-entry and travel toward Yeel in the unchanged world, alongside a usable victory position
-and legal paid-retreat control. Use a bounded native observation on the existing runtime after
-implementation; do not replay the whole campaign. Until that passes, this issue is unresolved and
-the enclosed return is not a playable-success claim. Retain the earlier ObjectDB exit **Unknown**.
+The admitted audio is the existing single finite command-77 PCM `SFX_SPELL_CAST_TIMER_C6`,
+recorded timer 198, 67,779 sample frames. Native dispatch at current timer 194 uses the existing
+single-finite-PCM policy; no retiming, relabelling, new capture or substituted command is involved.
+Missing/ambiguous command-77 admission fails as `field-egress-audio`. Four pulses over 32 modern
+60-Hz ticks use the existing flash presenter, not a hardware-timing fidelity claim.
+
+**Confirmed native input boundary.** Reuse the unchanged ten-map/four-battle private world and
+runtime, mounted once from a controlled completed Battle02 outcome: Bowie `(16,13)`, origin
+`(16,19)`, gold 102, seeds 1535008860/24202529, initialized four battle members plus the fifth
+retained carried member. This is not the exact historical party or a replay of the whole campaign.
+After that initial boundary, no state replacement, relocation or direct successful completion is
+supplied. Actual host keys and running state/presentation observations establish:
+
+- At Map66 `(32,32)`, all four movement directions remain blocked. E → Prepare → Magic → EGRESS
+  permits Cancel; a later Confirm pays MP8→0 once, then returns Map3 `(32,13)` Up, with MP8
+  after entry recovery and ordinary input available.
+- Walk through the church door `(32,15)` and Granseal west exit. Map66 arrival is `(29,32)`;
+  F402 remains clear/F502 set, so no Battle02 replay occurs. Ordinary navigation through the south
+  Yeel warp `(19,23)` reaches Map5 `(21,42)` in the same session.
+- Leave Yeel south to the accessible Map66 `(19,24)` and repeat Cancel/Confirm. Cancel preserves
+  the complete party, payment is MP8→0, and the live Map3 refuge is usable again. Both casts retain
+  gold 102, carried items, EXP, kills/defeats, growth and victory state. The second cast preserves all
+  current flags. First Map3 entry's normal init adds F80; ordinary NPC updates advance main RNG only
+  after transfer. Thinking RNG remains 24202529.
+- Two casts produce eight flash pulses/two restorations and white opacity reaches 1. Command-77
+  playback and warp audio have no delivery error; no session/presentation error occurs. The field
+  menu closes so it cannot pause the active flash/warp.
+
+Reproduce the engine behavior with `FieldEgressTests`, plus affected `FieldRecoveryTests`,
+`FieldInventoryTests`, `PartyRecoveryContextTests`, `Battle02OutcomeTests`, `BattleRetreatTests`
+and map-transfer/outcome controls under the locked SDK. They cover low/zero MP, cancellation/query,
+stale or repeated input, two live anchors, enclosed/accessible ground, dead-member recovery,
+non-overworld no effect, and destination/context rejection before payment. Run the affected adapter
+build and the committed verification plan; no historical slow aggregate or emulator is required.
+
+For a native recheck on the owned machine, the retained bounded setup is
+`local/issue1552/egress-fixture.cs` plus `build-fixture.ps1`, `native.targets` and `native.gd`;
+`launch.ps1 -Run <fresh-name>` loads current private selections and reuses
+`local/issue1471/field-01`. Its fixture invokes the existing outcome reducer to the named controlled
+input boundary; the adapter-local bridge is compiled only with the explicitly selected targets file.
+Use the keys/coordinates above (retained phases 1–3), inspect state rather than screenshots, and
+finish with an ordinary adapter build without those targets. Reports and probe assemblies remain
+ignored, are not product dependencies and are not public evidence artifacts.
+
+Resource scope remains one native process, existing installations/assemblies and unchanged world,
+no full-world copies or asset acquisition, less than 5 MiB new observation logs and a 1 GiB free-space
+floor. Work is linear in the selected package plus bounded map navigation; no API/model expense.
+The existing large packages are preserved. Native shutdown again reports two ObjectDB instances;
+its cause and original natural escape/timing remain **Unknown**. The observer requested exit 0,
+but the detached-process wrapper did not recover an OS exit status; do not count that as a clean
+shutdown gate. This does not invalidate the observed movement/cast/return boundaries above.
+
+The configured private all-engine run retains two unresolved `PrivateExplorationTests` checks:
+`APrivateWorldWithDifferentRomProvenanceCannotStartTheSession` and
+`PrivatePresentationBytesAndRequiredSpriteLinksAreAdmittedBeforeStartup`. Their mutated serialization
+of the selected large services world reaches `document-size` before the expected ROM/raster guard.
+No assertion or size limit was weakened; further large temporary copies are outside the available
+headroom. The separate player-ready/AI checks require the documented `battle01-player-ready.json`
+selection and pass with that input. Preserve the completed aggregate and node-specific results;
+these optional private-input failures are not field EGRESS success evidence.
 
 ## Battle04 and the Galam prison handoff
 

@@ -18,7 +18,7 @@ public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) 
 public sealed record BranchEntityCoordinates(EntityRef Entity, short X, short Y, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities = false) : StoryInstruction;
 public sealed record ReturnProgram : StoryInstruction;
-public sealed record ResetPartyBattleStats : StoryInstruction;
+public sealed record ResetPartyBattleStats(bool LivingOnly = false) : StoryInstruction;
 public sealed record ReturnBattleMap : StoryInstruction;
 public sealed record SetEgressMap(MapId Map) : StoryInstruction;
 public sealed record SourceRandomBattle(int Battle, ProgramLocation OnRequest) : StoryInstruction;
