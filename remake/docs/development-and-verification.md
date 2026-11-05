@@ -1043,6 +1043,10 @@ comparison and frame-inspection recipes are prohibited. Existing completed image
 artifacts. A probe that still emits images needs that side effect disabled in an owned change before
 a future required run. A remote debug server is not an established dependency; first use an existing
 native probe or suitable debug/state interface that answers the concrete question.
+For a currently running session without a loaded observation channel, follow
+[live managed inspection](../../docs/operations/godot-live-inspection.md) before considering a restart.
+It preserves unsaved progress and defines the bounded Windows snapshot, module identity and private
+receipt procedure; a debug window title alone does not establish a remote endpoint.
 
 Reuse the same verified Godot installation, owning project and running debug instance. A concrete
 failure, necessary code/import restart, observed contamination, or test of startup/export/cleanup can
@@ -1347,7 +1351,8 @@ request and main push. Its Windows jobs are:
 
 | Job | Current execution |
 | --- | --- |
-| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit engine, adapter, research, H4 and private-admission affected-path booleans. |
+| `scope` | Compare the actual event Git range; fail on a missing/invalid range or failed comparison. Emit engine, adapter, research, H4, private-admission and live-inspection affected-path booleans. |
+| `live-inspection-build` | Locked restore/build of the standalone [live inspector](../../docs/operations/godot-live-inspection.md); no game build, process attachment or private input. |
 | `private-admission-build` | Locked restore/build of the bounded [private admission entry](#private-world-mutation-probes) and its actual Content dependencies; no private execution or input. |
 | `engine-unit` | Locked restore/build/test of Engine.Tests and its actual production dependencies, using the pinned .NET SDK/runtime. No Python, native Godot, private input or legacy test project. |
 | `adapter-build` | Locked restore/build of the ordinary game C# project. No Godot tests or native editor launch. |
@@ -1357,9 +1362,12 @@ request and main push. Its Windows jobs are:
 Shared product/build inputs select engine and adapter; engine tests select engine; `remake/game/`
 selects the ordinary adapter. `remake/reference/inputs/` selects engine for its Engine.Tests consumers. Research/contracts/source/fixtures/manifests/schema inputs select
 research. Workflow and shared CLI/harness/planner changes select
-engine/adapter/research and private-admission compilation; the workflow also selects H4 for its explicit comparison/build inputs.
+engine/adapter/research, private-admission and live-inspection compilation; the workflow also selects H4 for its explicit comparison/build inputs.
 Changes under `remake/tools/Sf2.Remake.PrivateAdmission/` select only private-admission compilation;
 shared product/build inputs also compile that consumer.
+Changes under `remake/tools/Sf2.Remake.LiveInspection/` select only live-inspection compilation;
+shared product/build inputs conservatively compile that consumer too. The shared partition record
+owner `src/sf2tool/verification_partitions.py` follows the same workflow/planner dependency selection.
 Changes under `tools/h4-comparison/` or to the named H4 bridge/comparator/environment/planner/workflow
 paths select `h4-comparison-build`. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
