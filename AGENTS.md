@@ -157,6 +157,8 @@ For non-trivial original-game claims, retain enough provenance to reproduce the 
 identity, pinned upstream repository and commit, source symbol or ROM/RAM address, tool version,
 command, fixture, and observed result as applicable. Preserve disagreements and design a focused test
 instead of selecting the convenient source.
+Before escalating a contract mismatch as a product choice, follow the
+[evidence-conflict workflow](docs/operations/github-project-governance.md#resolve-evidence-conflicts-before-product-choices).
 
 Static source shape proves structure, not natural reach, caller state, timing, presentation, or
 hardware behavior. A bounded H3 observation proves only its named seam. Apply the static-first and
