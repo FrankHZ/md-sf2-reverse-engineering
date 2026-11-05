@@ -17,7 +17,8 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
     internal readonly Control Diamond = new() { Name = "Diamond", MouseFilter = MouseFilterEnum.Ignore };
-    internal readonly BattleDiamondButton[] Commands = [new("Attack"), new("Magic"), new("Item"), new("Stay")];
+    internal readonly UI.DiamondCommandButton[] Commands = [new("Attack", "battle.command.attack", "command-menu"), new("Magic", "battle.command.magic", "command-menu"),
+        new("Item", "battle.command.item", "command-menu"), new("Stay", "battle.command.stay", "command-menu")];
     private readonly PanelContainer _context = Frame("ContextPanel");
     private readonly PanelContainer _detail = Frame("DescriptionPanel");
     private readonly PanelContainer _list = Frame("ChoicePanel");
@@ -119,8 +120,7 @@ internal sealed partial class BattleMenuLayout : Control
         bool narrow = size.X < 700;
         // Four display pixels per source pixel: keep the original icon crisp,
         // and bring the cardinal centers closer without overlapping the square rasters.
-        const float cell = 24 * 4, step = 64;
-        const float menuWidth = cell * 3, menuHeight = cell + step * 2;
+        float menuWidth = UI.DiamondMenuGeometry.Size.X, menuHeight = UI.DiamondMenuGeometry.Size.Y;
         float listHeight = Mathf.Clamp(size.Y * 0.38f, 300, 420);
         float detailWidth = _commandHint ? Mathf.Min(420, size.X - 2 * margin) :
             narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 420, 520);
@@ -135,12 +135,7 @@ internal sealed partial class BattleMenuLayout : Control
         Target.Size = Target.RequestedSize;
         _context.Position = new(size.X * 0.55f + 8, Target.Visible ? margin + Target.Size.Y + 16 : margin);
         Diamond.Position = new(margin, bottom - menuHeight); Diamond.Size = new(menuWidth, menuHeight);
-        Vector2[] locations = [new(cell, 0), new(0, step), new(cell * 2, step), new(cell, step * 2)];
-        for (int i = 0; i < Commands.Length; i++)
-        {
-            Commands[i].Position = locations[i]; Commands[i].Size = new(cell, cell);
-            Commands[i].Arrange();
-        }
+        UI.DiamondMenuGeometry.Arrange(Diamond, Commands);
         _list.Position = new(margin, bottom - listHeight);
         _list.Size = new(Mathf.Min(540, size.X - 2 * margin - (narrow ? 0 : detailWidth + 24)), listHeight);
         _detail.Position = new(narrow ? margin : size.X - margin - detailWidth, size.Y - margin - detailHeight);
@@ -289,94 +284,5 @@ internal sealed partial class BattleMenuLayout : Control
     {
         var panel = new PanelContainer { Name = name, MouseFilter = MouseFilterEnum.Ignore };
         return panel;
-    }
-}
-
-// Source pixels are supplied through the existing admitted scene raster collection.
-// An unmounted public scene shows text-only squares; it never substitutes authored glyphs.
-internal sealed partial class BattleDiamondButton : Control
-{
-    internal string Identity { get; }
-    internal string Caption => GameText.Get("battle.command." + Identity.ToLowerInvariant());
-    internal void RefreshCaption() { if (_label.Text != Caption) _label.Text = Caption; }
-    internal bool Selected { get; private set; }
-    internal bool Available { get; set; }
-    private readonly Label _label;
-    private ImageTexture? _normal, _selected;
-    private int _pixelScale = 1;
-    private string? _drawnResource;
-    private bool _drawnExtraFrame;
-    private double _focusRemaining;
-    private int _drawnOffsetY;
-    private int FocusOffsetY => _focusRemaining > 0.12 ? -4 : _focusRemaining > 0.06 ? -2 : _focusRemaining > 0 ? -1 : 0;
-
-    internal void SetSelection(bool selected, bool reducedFlash)
-    {
-        // Only a new focus starts the short modern emphasis; refresh/idle never restarts it.
-        if (selected != Selected) _focusRemaining = selected && !reducedFlash ? 0.18 : 0;
-        if (reducedFlash) _focusRemaining = 0;
-        Selected = selected;
-        QueueRedraw();
-    }
-
-    internal void AdvanceFocus(double delta)
-    {
-        if (_focusRemaining <= 0) return;
-        _focusRemaining = Math.Max(0, _focusRemaining - delta);
-        QueueRedraw();
-    }
-
-    internal void StopFocusEmphasis() { _focusRemaining = 0; QueueRedraw(); }
-    internal BattleDiamondButton(string identity)
-    {
-        Identity = identity; Name = identity;
-        MouseFilter = MouseFilterEnum.Ignore;
-        TextureFilter = TextureFilterEnum.Nearest;
-        _label = new Label { HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        _label.AddThemeFontSizeOverride("font_size", 28);
-    }
-    public override void _Ready() => AddChild(_label);
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing) { _normal?.Dispose(); _selected?.Dispose(); }
-        base.Dispose(disposing);
-    }
-    internal void SetArt(ImageTexture? normal, ImageTexture? selected)
-    {
-        _normal?.Dispose(); _selected?.Dispose();
-        _normal = normal; _selected = selected; _drawnResource = null;
-        _label.Visible = normal is null; QueueRedraw();
-    }
-    internal void Arrange()
-    {
-        _pixelScale = Math.Max(1, (int)Mathf.Floor(Mathf.Min(Size.X, Size.Y) / 24));
-        _label.Position = Vector2.Zero; _label.Size = Size; QueueRedraw();
-    }
-    internal object ObserveArt() => new { shape = "square", mounted = _normal is not null,
-        resource = _drawnResource,
-        width = _normal?.GetWidth(), height = _normal?.GetHeight(), scale = _pixelScale,
-        filter = TextureFilter.ToString(), extraFrame = _drawnExtraFrame, labelVisible = _label.Visible,
-        focusRemainingMs = _focusRemaining * 1000, drawnOffsetY = _drawnOffsetY };
-    public override void _Draw()
-    {
-        _drawnOffsetY = FocusOffsetY;
-        var offset = new Vector2(0, _drawnOffsetY);
-        _label.Position = offset;
-        var texture = Selected ? _selected : _normal;
-        _drawnExtraFrame = texture is null;
-        if (texture is not null)
-        {
-            float side = 24 * _pixelScale;
-            DrawTextureRect(texture, new Rect2(((Size - new Vector2(side, side)) / 2).Round() + offset, new(side, side)), false);
-            _drawnResource = $"command-menu.{Identity.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
-        }
-        else
-        {
-            var rect = new Rect2(Vector2.One + offset, Size - Vector2.One * 2);
-            DrawRect(rect, new Color("002492"));
-            DrawRect(rect, Selected ? Colors.White : new Color("ffdb49"), false, 2);
-        }
-        _label.Modulate = Selected ? Colors.White : Available ? new Color("ffdb49") : new Color("a0a0a0");
     }
 }

@@ -1317,3 +1317,12 @@ msgstr "已取消保存准备。请先继续游戏，再尝试保存。"
 
 msgid "save.error.entry-transition"
 msgstr "保存准备期间场景发生了变化。请先继续游戏，再尝试保存。"
+
+msgid "church.diamond-hint"
+msgstr "{0} / {1} / {2} / {3}：选择服务   {4}：确定\n{5}：离开   鼠标：选择图标"
+
+msgid "church.icon-promote"
+msgstr "转职"
+
+msgid "church.icon-save"
+msgstr "存档"

@@ -88,6 +88,8 @@ public sealed partial class ExplorationSessionView : Control
     private readonly Dictionary<int, AuthoredEntityDraw> _authoredDraws = [];
     private SessionAudio? _audio;
     private SessionFailure? PresentationFailure => _result?.Failure ??
+        (_church?.AssetError is { } churchError ? new SessionFailure(SessionFailureKind.AdapterError,
+            "church-menu-resource-invalid", "presentation.churchMenu", churchError) : null) ??
         (_presentation?.Error is { } error ? new(SessionFailureKind.AdapterError,
             "presentation-unavailable", "presentation", error) :
             _dialogueView?.FallbackReason == "display-operands" ? new(SessionFailureKind.AdapterError,
@@ -528,6 +530,8 @@ public sealed partial class ExplorationSessionView : Control
         if (PresentationFailure is not null)
         { _church.Hide(); _church.Suspend(); _shop.Hide(); _shop.Suspend(); _churchSaveRequested = false; return; }
         _church.Present(_session!, _input, (command, revision) => Send(command, revision, recoverable: true));
+        if (PresentationFailure is not null)
+        { _church.Hide(); _church.Suspend(); _shop.Hide(); _shop.Suspend(); _churchSaveRequested = false; return; }
         _shop.Present(_session!, _input, (command, revision) => Send(command, revision, recoverable: true));
         if (_churchSaveRequested && _session!.Current.CanWaitAtInput)
         { _churchSaveRequested = false; RequestServiceSave?.Invoke(); }

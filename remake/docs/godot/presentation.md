@@ -63,39 +63,41 @@ only if initialization actually subscribed them; this does not hide other shutdo
 
 ## Church and shared Save agreement (#1519)
 
-**Standard rigor:** clarify the existing priest services and common persistence entrance within the
+**Standard rigor:** the current #1587 outcome is a four-service diamond followed by the existing
+ordered quotation/confirmation/result flow, within the
 [High recovery agreement](../application/opening-session-lifecycle.md#implemented-opening-church).
-The real Map3 caller already offers Raise, Cure, unavailable Promotion, Save and Leave, and completes
-its program/event/portrait return before opening the common save host. Retain that lifecycle.
-The finite [state/input/geometry observations](../verification/host.md#church-and-shared-save-calibration)
-cover this calibration; independent integration belongs to main-gate.
+The actual Map3 caller, carried party, typed `ChurchWait`, costs and save lifecycle remain authoritative.
+The [native observation](../verification/host.md#church-diamond-observation) owns the finite acceptance.
 
-- The world entry reads **Record adventure… (Save)** / **记录冒险…（存档）**. Selecting that row
-  explains the same two slots as Menu → Save, existing save-point limits, return to exploration after
-  closing saving, and a fresh priest interaction for further services. It requests the existing
-  `LeaveChurch(Save: true)`; it does not require a separate manual Leave.
-- Both entrances retain the same slot labels, declared Continue destination, safe Cancel-first
-  overwrite confirmation, backup/write/recovery rules and format. Church has no additional save
-  permission. Save cancel, success and failure close into usable exploration. Menu Save retains its
-  existing Back-to-slots then Back-to-Menu hierarchy. Neither entrance captures a service wait.
-- Cost, target, Confirm/Decline, no-applicable-member, insufficient-gold and paid feedback retain their
-  typed transaction meanings. Promotion remains inspectable/unavailable; curse removal explicitly
-  remains unavailable here. No new service or automatic save is added.
-- Church uses the bundled-font-supported `>` focus marker with the existing gold/unavailable colors.
-  A selected Save appends its explanation to mapped navigation; the existing measured footer grows
-  to fit. Other rows retain their existing hints and transient-refusal lifetime.
-- On resuming a paused Church, its early-return branch clears the existing entry-skip release flag
-  only after gameplay input is neutral, as ordinary exploration already does. The Church's own held
-  input and `MenuPointer` suspension still reject the old gesture; fresh mouse input works after
-  release. There is no new pause or input authority.
-- A diagnostic/authored profile that cannot save now explains that saving is unavailable in this
-  game, retaining existing saves and the diagnostic code. Waiting longer or ending an already-closed
-  priest conversation cannot enable that profile. Other save errors retain their existing mapping.
+- The four cardinal slots are Raise (up), Cure (left), unavailable Promotion (right), and Record
+  adventure… (Save) (down). Mapped directions focus a service; Confirm or a complete fresh icon click
+  selects it. The full selected service and unavailability/save explanation appear beside the diamond.
+  Leave is an independent Back control; Cancel/right-click also leaves from services.
+- Existing `ChurchWait` supplies ordered eligible-member offers directly. Confirm pays that exact
+  offer once; Decline/Cancel rejects it without payment. Results acknowledge into the next existing
+  offer or services. No extra member selector, transaction state machine, refund or service is added.
+  No-applicable-member, insufficient-gold and curse-unavailable feedback retain their meanings.
+- The [private church resources](../content/presentation-assets.md#private-church-menu-icons) provide
+  eight unchanged24px rasters at nearest4×. `DiamondCommandButton` and `DiamondMenuGeometry` share
+  only pixel/focus/cardinal geometry with battle; battle rules and navigation remain battle-owned.
+  Public content without these resources uses short text squares, with full labels beside them.
+  A supplied set must be complete. A PNG that passes header admission but fails native decoding
+  releases temporary textures and stops through the existing presentation-failure boundary once.
+- The measured, wrapped title, selected description and hints determine the centered panel height.
+  Quote/result choices remain separate readable rows. English/Chinese fallback labels fit96px
+  buttons; long save help remains beside the diamond at1080p/1440p. The bundled font remains required.
+- A service token change, command, hide or pause suspends the old gesture and requires neutral input.
+  A complete fresh pointer click works after pause; held Confirm cannot continue into another charge.
+  Focus changes clear transient refusal. The existing reduced-flash preference controls focus emphasis.
+- Record adventure uses the existing `LeaveChurch(Save: true)`, completes the real caller/event/portrait
+  return and finite field settlement, then opens the same SaveSlotView and eligibility query as Menu
+  → Save. The same two slots, destination, safe Cancel-first overwrite, backups and format apply.
+  Save cancel/success/failure return to exploration; a fresh priest interaction reopens services.
+  A controlled/authored profile still explains its existing `save-profile-unavailable` refusal.
 
-World96px/4× scale, panel geometry, services, save eligibility, Domain/Application and durable format
-are unchanged. Physical focus/device delivery, final pixels, original service cadence and whole-game
-human/aesthetic acceptance remain **Unknown**. Existing ObjectDB shutdown warnings are retained;
-this slice does not claim leak closure.
+No new save permission, original service timing, source-pixel window reproduction, whole-game visual
+approval or physical device delivery is claimed. Human aesthetic approval remains with #1456.
+Existing ObjectDB shutdown warnings remain **Unknown**; this slice does not claim leak closure.
 
 ## Display layer boundaries (#1517)
 

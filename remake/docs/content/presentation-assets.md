@@ -136,6 +136,59 @@ set fails through the existing adapter-error boundary. Nearest sampling, no mipm
 icon scale preserve pixel edges. Scenes with no command-menu namespace display text-only squares.
 Extracted pixels and prepared scenes stay ignored and must not enter public packages or PR attachments.
 
+## Private church menu icons
+
+**Confirmed:** the optional `world.presentation.churchMenu` contains exactly
+`{raise|cure|promote|save}.{normal|selected}` using the existing authenticated raster fields.
+All eight must be24×24; absence preserves compatible public/older inputs and renders short authored
+text squares. Private original pixels remain ignored, never bundled in public content or PR attachments.
+Content validates the set/shape/bytes; native decoding failure stops the host and releases temporary
+textures. The [current UI agreement](../godot/presentation.md#church-and-shared-save-agreement-1519)
+owns focus, choice and service behavior.
+
+Use the existing preparation entry after same-process input/tool configuration:
+
+```powershell
+uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream `
+    --world $world --out-dir $freshIgnoredOutput
+```
+
+`--world` accepts either a private-world wrapper or a standalone world object; it adds only church
+rasters and emits `world.json`/`provenance.json` into a new destination. Preserve the original inputs.
+Relative selected encounter files and external audio are copied beneath that destination with their
+existing relative paths; escaping/missing dependencies fail before publication. No world rule,
+program, event or source-asset substitution is performed. Input/output CLI paths resolve from the
+caller's cwd; dependencies resolve from the explicit input world's directory. Use absolute selections
+when invoking from another checkout or working directory.
+
+A read-only pinned checkout may omit split binaries and generated H1 output. Select an existing
+pinned H1 listing with `--listing $listing` and deliberately add `--rom-assets` to decode the verified
+canonical ROM directly. The source identity/parity owner is `sf2tool.graphics_source`; existing imports through
+`texture_extract` retain their entry points. The unchanged split-payload parity reader remains mandatory for every split
+payload that is present; mismatched bytes/lengths reject. This route verifies the same canonical ROM
+identity, pinned upstream, existing accepted H1 menu addresses/pointer and palette address. It does
+not build H1, modify upstream or infer permission to redistribute pixels.
+
+Named provenance: pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`menustringspointertable.asm:pt_ChurchMenuNames` gives Raise/Cure/Promo./Save order;
+`diamondmenu.asm:dmaDiamondMenuIcon_Up/Left/Right/Down` reads offsets0/0x240/0x480/0x6C0
+and adds0x120 when frame counter>=15. Each288-byte half is nine row-major tiles. The modern
+normal/selected assignment uses those two halves; it does not reproduce the original15-frame cadence
+or inserted side border tiles. `tiles_ChurchMenu` is ROM0x2B072,934 compressed bytes through
+`tiles_ShopMenu`0x2B418; the decoder consumes7438 bits into2304 bytes. Existing
+`tests/fixtures/h2/ui-graphics-decode-v1.json` binds these menu addresses.
+`displayinit.asm:InitializeDisplay` copies `palette_Base`/`CRAM_PALETTE_SIZE` into `PALETTE_3_BASE`;
+`diamondmenulayout.asm` selects `PALETTE3` for its menu tiles. The accepted player-frame fixture's
+`static.indexBindings.paletteBase`/`static.palettePolicy` binds ROM0x309E,32 bytes/16 big-endian
+0x0EEE words. Index0 stays transparent. Preparation records those addresses, consumed bits,
+source mapping and each raster's existing content digest.
+
+Eight raw rasters total18,432 bytes (about25KiB base64). One existing world publication is O(n)
+time/memory plus its finite selected dependencies. The observed private input is125,828,417 bytes;
+publication is125,978,971 bytes plus669,487 dependency bytes and2,490 provenance bytes. Use one world copy, one process,
+<3GiB peak and<1GiB total scratch; reassess before larger worlds/dependency sets. Native acceptance
+uses semantic samples under5MiB/run, no screenshots or whole-route acquisition.
+
 ## Public-authored battle gauges
 
 The shared ordinary-game status card loads four small PNGs directly from
