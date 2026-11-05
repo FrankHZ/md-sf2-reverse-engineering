@@ -27,8 +27,8 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle not in (2, 3):
-        raise ValueError("only selected overworld encounters 2 and 3 are admitted here")
+    if battle not in (2, 3, 4):
+        raise ValueError("unsupported overworld encounter selection")
     root = repo_path("").resolve()
     output = output.resolve()
     upstream = upstream.resolve()
@@ -65,7 +65,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     bounds = re.search(r"0x([0-9A-Fa-f]+)\.\.0x([0-9A-Fa-f]+)", source)
     begin, end = (int(value, 16) for value in bounds.groups())
     counts = [int(value) for value in _arguments(source, "dc.b")[:4]]
-    if counts != {2: [4, 6, 0, 1], 3: [12, 6, 1, 0]}[battle]:
+    if counts != {2: [4, 6, 0, 1], 3: [12, 6, 1, 0], 4: [5, 8, 3, 1]}[battle]:
         raise ValueError("selected spriteset header drift")
     entities = []
     pattern = (
@@ -129,7 +129,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     ):
         raise ValueError("selected spriteset record drift")
     provenance = dict(repository=ACCEPTED_UPSTREAM_REPOSITORY, commit=ACCEPTED_UPSTREAM_COMMIT)
-    code = {2: "TO_YEEL", 3: "TO_HAWEL_HOUSE"}[battle]
+    code = {2: "TO_YEEL", 3: "TO_HAWEL_HOUSE", 4: "AMBUSHED_BY_GALAM_SOLDIERS"}[battle]
     identity = dict(id=battle, code=code)
 
     def span(start: int, end: int) -> dict:
@@ -145,7 +145,14 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         aiRegions=regions,
         aiPoints=points,
     )
-    terrain_path = f"data/battles/entries/battle{battle:02d}/terrain.bin"
+    terrain_entries = source_text("disasm/data/battles/terrainentries.asm")
+    pointer = _arguments(terrain_entries, "dc.l")[battle]
+    entry = re.search(
+        r"^" + re.escape(pointer) + r':\s*incbin\s+"([^"]+)"', terrain_entries, re.MULTILINE
+    )
+    if entry is None:
+        raise ValueError("selected terrain pointer has no binary record")
+    terrain_path = entry[1]
     split = re.search(
         r"^#split\s+0x([0-9A-Fa-f]+),0x([0-9A-Fa-f]+),[^\n]*" + re.escape(terrain_path) + r"\s*$",
         source_text("split/sf2splits.txt"),
@@ -356,6 +363,22 @@ def compile_routes(compiler, selection, upstream):
                     "facing": facing,
                 },
             }
+        if battle_id in selection.get("completedOnDefeat", []):
+            body = (upstream / "disasm/code/gameflow/battle/battleloop_2.asm").read_text(
+                encoding="utf-8"
+            )
+            tail = re.search(
+                r"cmpi\.b\s+#(BATTLE_\w+),\(\(CURRENT_BATTLE[^\n]*\n(?:[^\n]*\n){0,3}?"
+                r"\s*clrFlg\s+(\d+)[^\n]*\n\s*setFlg\s+(\d+)[^\n]*\n\s*jsr\s+j_UpgradeBattle\s+moveq\s+#(MAP_\w+),d0\s+clr\.w\s+d4",
+                body,
+            )
+            if not tail or (compiler.number(tail[1]), int(tail[2]), int(tail[3])) != (
+                battle_id,
+                route["unlockedFlag"],
+                route["completedFlag"],
+            ):
+                raise ValueError("unbound completed defeat tail")
+            route["outcome"]["completedDefeatMap"] = "map-" + str(compiler.number(tail[4]))
         if battle_id in selection.get("paidRetreatBattles", []):
             if "outcome" not in route:
                 raise ValueError("paid retreat requires a field return")
@@ -411,7 +434,7 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(2, 3), default=2)
+    parser.add_argument("--battle", type=int, choices=(2, 3, 4), default=2)
     args = parser.parse_args()
     print(
         json.dumps(

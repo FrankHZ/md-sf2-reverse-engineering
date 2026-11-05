@@ -685,6 +685,14 @@ class OriginalPrograms:
                 )
             elif op == "setQuake" and 0 <= self.number(args[0]) <= 255:
                 result.append({"op": "quake", "amount": self.number(args[0])})
+            elif op == "loadEntitiesFromMapSetup":
+                result.append(
+                    {
+                        "op": "setup-entities",
+                        "position": {"x": self.number(args[0]), "y": self.number(args[1])},
+                        "facing": self.number(args[2]),
+                    }
+                )
             elif op in ("resetMap", "reloadMap"):
                 result.extend(
                     [

@@ -12,8 +12,8 @@ internal static class PrivateWorldEncounterReader
         PrivateBattleContentReader? newGame = null)
     {
         Require(selections.ValueKind == JsonValueKind.Array, "array-required", "encounters");
-        // The product route admits Battle01 through Battle03. Controlled scenarios retain their two-encounter boundary.
-        Require(selections.GetArrayLength() <= (newGame is null ? 1 : 2), "encounter-selection-limit", "encounters");
+        // Product rows must resolve to distinct, authenticated encounters; the root occupies one slot.
+        Require(selections.GetArrayLength() <= (newGame is null ? 1 : PrivateBattleEncounterReader.RegisteredCount - 1), "encounter-selection-limit", "encounters");
         var admitted = new List<ScenarioReadAccepted> { first };
         string directory = Path.GetDirectoryName(Path.GetFullPath(worldPath))!;
         foreach (var row in selections.EnumerateArray())

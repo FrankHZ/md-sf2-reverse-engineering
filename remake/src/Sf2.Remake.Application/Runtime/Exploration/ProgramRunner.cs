@@ -40,7 +40,8 @@ internal static class ProgramRunner
                         current = SourceRandomBattleRunner.Consume(definition, current, observations, rules);
                         continue;
                     }
-                    if (current.Story.ScriptWarp is { } pendingWarp)
+                    if (current.Story.ScriptWarp is { } pendingWarp && current.Story.Continuation is not
+                        (ProgramContinuation.VictoryProgramFinished or ProgramContinuation.OutcomeMapLoaded))
                     {
                         var warpEvent = new ExplorationEvent(ExplorationEventKind.Warp, null, null, null, null,
                             pendingWarp.Map, pendingWarp.Position, pendingWarp.Facing);
@@ -164,11 +165,13 @@ internal static class ProgramRunner
                         active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: true)));
                         break;
                     case ReturnBattleMap:
-                        story = story.Copy(story.Cursor, clearWarp: true);
-                        var returning = current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn");
+                        var eventWarp = current.Story.ScriptWarp;
+                        story = story.Copy(story.Cursor, clearWarp: true, clearScriptWarp: true);
+                        var returning = eventWarp is null ? current.Story.OutcomeReturn ?? throw new BattleRuleException("outcome-return", "story.outcomeReturn")
+                            : new FieldReturnAnchor(eventWarp.Map, eventWarp.Position, eventWarp.Facing);
                         current = MapTransfer.Apply(definition, current, returning.Map, returning.Position, returning.Facing,
                             MapLoadMode.Rebuild, story, observations, rules,
-                            combatPlacement: current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap);
+                            combatPlacement: eventWarp is not null || current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap);
                         continue;
                     case SourceStoryInstruction source:
                         try { active = SourceStoryRules.Apply(rules.SourceStory, definition, current, source, cursor); }
@@ -246,6 +249,12 @@ internal static class ProgramRunner
                         story = story.TextSettings is not null ? MapTransfer.BindScene(current, scene, load).Copy(story.Cursor) :
                             story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true);
                         active = new ActiveExploration(scene); break;
+                    case LoadSetupEntities setupEntities:
+                        var sourceMap = definition.Exploration!.Maps[current.Exploration!.Map].SelectSetup(story.Flags);
+                        var population = sourceMap.Population ?? throw new BattleRuleException("missing-map-population", "program.entities", true);
+                        active = new ActiveExploration(SceneEntities.Reload(current.Exploration,
+                            new(population, setupEntities.Position, setupEntities.Facing, sourceMap.Entities), story.Flags, token.Value));
+                        story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case LoadSceneEntities load:
                         CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));

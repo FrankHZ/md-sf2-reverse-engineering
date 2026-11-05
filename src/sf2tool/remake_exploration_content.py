@@ -289,8 +289,9 @@ def prepare(
             "start",
             "battleScenes",
         }
-        if not isinstance(encounters, list) or len(encounters) > 2:
-            raise ValueError("at most two additional encounters are supported")
+        additional_count = max(0, len(set(selection.get("battles", []))) - 1)
+        if not isinstance(encounters, list) or len(encounters) > additional_count:
+            raise ValueError("additional encounters exceed selected battle routes")
         for entry in encounters:
             if not isinstance(entry, dict) or set(entry) not in (keys, keys - {"start"}):
                 raise ValueError("encounter input selection fields")

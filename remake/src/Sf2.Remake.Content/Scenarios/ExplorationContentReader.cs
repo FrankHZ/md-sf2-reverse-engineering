@@ -333,7 +333,7 @@ internal static class ExplorationContentReader
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
         ObjectOptional(row, "outcome", ["after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress"],
-            "battleOrigin", "paidRetreat");
+            "battleOrigin", "paidRetreat", "completedDefeatMap");
         // Nonempty defeated programs remain unsupported; admitted leader cleanup uses its finite binding.
         var egress = row.GetProperty("egress");
         Object(egress, "egress", "map", "position", "facing");
@@ -341,7 +341,8 @@ internal static class ExplorationContentReader
             Required("defeated"), Required("defeat"), Required("return"), battleMap,
             (byte)Number(row, "victoryFacing", 0, 3), new(Id(egress, "map")), Position(egress.GetProperty("position")), (byte)Number(egress, "facing", 0, 3),
             row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null,
-            row.TryGetProperty("paidRetreat", out _) && Boolean(row, "paidRetreat"));
+            row.TryGetProperty("paidRetreat", out _) && Boolean(row, "paidRetreat"),
+            row.TryGetProperty("completedDefeatMap", out _) ? new MapId(Id(row, "completedDefeatMap")) : null);
         ProgramLocation Required(string name)
         {
             var value = Location(row.GetProperty(name));
@@ -556,6 +557,9 @@ internal static class ExplorationContentReader
             case "camera-target": Object(row, opcode, "op", "position"); return new SetCameraTarget(Position(row.GetProperty("position")));
             case "camera-entity": Object(row, opcode, "op", "entity"); return new SetCameraEntity(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")));
             case "scene-map": Object(row, opcode, "op", "map", "camera"); return new LoadSceneMap(new(Id(row, "map")), Position(row.GetProperty("camera")));
+            case "setup-entities":
+                Object(row, opcode, "op", "position", "facing");
+                return new LoadSetupEntities(Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 3));
             case "scene-entities":
                 Object(row, opcode, "op", "population", "position", "facing", "entities");
                 var entities = ReadEntities(row);
@@ -682,6 +686,9 @@ internal static class ExplorationContentReader
                 if (route.Outcome is not { } outcome) continue;
                 Target(outcome.AfterProgram); Target(outcome.DefeatedProgram); Target(outcome.DefeatProgram); Target(outcome.ReturnProgram);
                 Require(definition.Maps.ContainsKey(outcome.EgressMap), "missing-map", "map.battle.outcome.egress");
+                if (outcome.CompletedDefeatMap is { } handoff)
+                    Require(definition.Maps.ContainsKey(handoff) && route.UnlockedFlag is not null && route.CompletedFlag is not null,
+                        "completed-defeat-route", "map.battle.outcome.completedDefeatMap");
             }
             foreach (var entry in map.Events)
             {

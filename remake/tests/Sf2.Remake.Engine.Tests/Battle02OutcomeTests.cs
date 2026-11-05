@@ -15,6 +15,88 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class Battle02OutcomeTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CaptureWarpWaitsForTheVictoryCallerTailAndCompletedVictorySkipsIt(bool completed)
+    {
+        var (definition, battle, story, _) = CaptureOutcome();
+        if (completed) story = story.Copy(null, flags: story.Flags.Append(502));
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.IsAlly ? actor : actor.With(hp: 0, clearPosition: true)));
+        var input = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveBattle(battle, null), story, SessionStopReason.PlayerInput);
+        var result = BattleOutcome.Begin(definition, new(input, [], input.StopReason));
+        Assert.Null(result.Failure);
+        Assert.DoesNotContain(402, result.Snapshot.Story.Flags);
+        Assert.Contains(502, result.Snapshot.Story.Flags);
+        Assert.Contains(0, result.Snapshot.Story.Flags);
+        Assert.Contains(32, result.Snapshot.Story.Flags);
+        Assert.Null(result.Snapshot.Story.ScriptWarp);
+        var field = result.Snapshot.Exploration!;
+        Assert.Equal(new MapId(completed ? "map-66" : "prison"), field.Map);
+        if (completed)
+        {
+            Assert.Equal(SessionStopReason.PlayerInput, result.StopReason);
+            Assert.DoesNotContain(710, result.Snapshot.Story.Flags);
+        }
+        else
+        {
+            Assert.Equal(new MapPosition(0, 0), field.PlayerEntity.Position);
+            Assert.Equal((byte)0, field.PlayerEntity.Motion.Facing);
+            Assert.Contains(710, result.Snapshot.Story.Flags);
+            Assert.NotNull(result.Snapshot.Story.Wait);
+            var events = result.Observations.Select(observation => observation.Kind).ToList();
+            Assert.True(events.IndexOf("after-battle-join") < events.IndexOf("battle-unlock-cleared"));
+            Assert.True(events.IndexOf("battle-completed-set") < events.IndexOf("map-transferred"));
+            Assert.Single(result.Observations, observation => observation.Kind == "map-transferred");
+        }
+    }
+
+    [Theory]
+    [InlineData(2, 3, 1)]
+    [InlineData(7, 5, 3)]
+    public void CompletedDefeatOverridesOnlyTheLiveEgressMapAndRetreatKeepsTheAnchor(int x, int y, byte facing)
+    {
+        var (definition, battle, story, party) = CaptureOutcome();
+        var selected = story.EnteringBattle!;
+        story = story.Copy(null, enteringBattle: selected with { Outcome = selected.Outcome! with
+            { EgressPosition = new(x, y), EgressFacing = facing } }, egressMap: new("map-3"),
+            continuation: ProgramContinuation.DefeatProgramFinished);
+        var policy = new Sf2OutcomeReturnPolicy();
+        Assert.Equal(new FieldReturnAnchor(new("prison"), new(x, y), facing),
+            OutcomeReturnRules.Start(policy, definition, battle, story, BattleOutcomeKind.Defeat, party).Return);
+        Assert.Equal(new FieldReturnAnchor(new("map-3"), new(x, y), facing),
+            OutcomeReturnRules.Start(policy, definition, battle, story, BattleOutcomeKind.Retreat, party).Return);
+        party = party.WithResources(party.Actors.Select(actor => actor with { Hp = 0 }), 101);
+        var finish = OutcomeReturnRules.Finish(policy, definition, story, party);
+        Assert.Equal(50u, finish.Returned.Gold);
+        Assert.True(finish.ClearUnlocked);
+        Assert.True(finish.SetCompleted);
+        Assert.Null(finish.JoinMember);
+        Assert.Equal(100, finish.Returned.Actors.Single(actor => actor.Actor.Value == "medic-a").Hp);
+        Assert.Equal(0, finish.Returned.Actors.Single(actor => actor.Actor.Value == "guard-a").Hp);
+    }
+
+    private static (ScenarioDefinition, EngineBattleState, StoryState, BattleStartInput) CaptureOutcome()
+    {
+        var (original, battle, story, party) = Outcome(false);
+        var words = new ushort[WorkingMapLayout.WordCount];
+        words[0] = 0xC000;
+        var area = new OriginalMapTraversal([new(0, 0, 63, 63)]);
+        ExplorationMapDefinition Map(string id, ProgramLocation? init = null) =>
+            new(new(id), new(words), area, [], [], init);
+        var programs = original.Exploration!.Programs.Values.Concat(new StoryProgram[] {
+            new("capture", [new QueueMapWarp(new("prison"), new(0, 0), 0), new EndProgram(true)]),
+            new("prison-init", [new WriteFlag(710, true), new WaitProgramTicks(1), new EndProgram(true)]) });
+        var world = new ExplorationDefinition([Map("map-66"), Map("map-3"), Map("prison", new("prison-init", 0))],
+            programs, partyFlags: original.Exploration.PartyFlags);
+        var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world,
+            encounterStarts: original.EncounterStarts.Values);
+        var route = story.EnteringBattle!;
+        story = story.Copy(null, fieldPlayer: new(new("player"), 32), enteringBattle: route with
+            { Outcome = route.Outcome! with { AfterProgram = new("capture", 0), CompletedDefeatMap = new("prison") } });
+        return (definition, battle, story, party);
+    }
+
     [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN",
         "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD", "SF2_PRIVATE_CONTROLLED_START")]
     public void FreshFormationKeepsAnUnrevivedSleepingAllyOffTheBoard()

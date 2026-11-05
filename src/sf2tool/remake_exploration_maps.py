@@ -132,6 +132,25 @@ def compile_maps(
         if selected in selection.get("eventMaps", []):
             folder = f"disasm/data/maps/entries/map{selected:02d}/mapsetups/"
             source_rows = rows(folder, "s1_entities", setup["references"]["entities"])
+            # An unterminated label can fall through into a shared entity list.
+            # Canonical record addresses identify the following source owner.
+            while (
+                source_rows
+                and source_rows[-1]["opcode"] != "msEntitiesEnd"
+                and len(source_rows) < len(records)
+            ):
+                address = records[len(source_rows)]["address"]
+                continuations = [
+                    entry
+                    for entry in resources["entityLists"].values()
+                    if entry["address"] == address
+                ]
+                if len(continuations) != 1:
+                    raise ValueError("unresolved entity-list continuation")
+                tail = rows(folder, "s1_entities", continuations[0]["id"])
+                if not tail:
+                    raise ValueError("empty entity-list continuation")
+                source_rows.extend(tail)
             source_rows = [source for source in source_rows if source["opcode"] != "msEntitiesEnd"]
             if len(source_rows) != len(records):
                 raise ValueError("entity source/canonical cardinality mismatch")
