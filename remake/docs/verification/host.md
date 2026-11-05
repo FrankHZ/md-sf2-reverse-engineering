@@ -311,6 +311,15 @@ applicable CI. Scope and current policy belong to the [audio owner](../godot/aud
 
 ### Reproduce
 
+Current review [#1570](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1570) retains
+**Standard** rigor: distinguish current shutdown-only retention from a demonstrated project owner
+defect, consuming accepted F8 code. High-rigor state/save boundaries remain unchanged. Scope is the
+existing audio observers and these two owning documents unless resource attribution establishes a
+production repair. No gameplay, save, engine version or audio timing changes are admitted. Initial
+pilot: at most six serial headless runs, each at most60s, total new reports at most15MiB. Native IDs,
+actual child exit and retained stderr are acceptance evidence; counts or JSON success alone are not.
+Use the transferred imported checkout/shared editor; do not control the reserved user play instance.
+
 From the owning checkout, load `local/private-inputs.ps1` and force
 `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Build Debug from `remake/` using
 `& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore` when the
@@ -398,6 +407,92 @@ their exact historical IDs were not instrumented before exit. **Unknown:** exact
 under other timing/drivers/versions and unbounded-session behavior. No whole-game, hardware or
 audible-fidelity claim follows. An upstream shutdown repair is the appropriate remedy; the warning
 remains an explicit limitation on the pinned version. Do not suppress it or add a product delay.
+
+### Current exit attribution (#1570)
+
+**Confirmed:** current production base `626eb6277db8af112c04cb91894c1492ce233ce0` includes F8.
+The six serial runs below use the same installed Godot identity cited above, headless Dummy and
+project-authored silence. The current reflection constructor signatures in `AudioLifetimeObservation`
+remain valid; no constructor repair was necessary. Only existing observers and the audio/host
+documents change. Production `SessionAudio`, `GameRoot`, Application and save behavior do not.
+
+| Retained run under `local/issue1570/` | Native PID / ms / exit | Resource and stderr result |
+| --- | --- | --- |
+| `scene-01` |39128 /1550 /0 | F8 assertions pass; two leaked instances, last restored areaB WAV/playback, each refcount1. |
+| `backend-stop-01` |36340 /247 /0 | Stop/clear/queue-free then immediate quit; exactly the standalone voice's WAV/playback remain, each refcount1. |
+| `backend-runtime-01` |2744 /1363 /0 | Four natural Finished callbacks; each interrupted pair is initially alive then invalid; no retained targets or stderr. |
+| `session-01` |18900 /2562 /0 | Four actual SessionAudio cycles, sixteen completions,54 released IDs in13 samples, active disposal and node removal; no stderr. `_ExitTree` calls Dispose again without error. |
+| `scene-drain-01` |29812 /896 /0 | Same F8 stages; native-ID predicate observes all16 IDs invalid after disposal; no stderr. |
+| `scene-immediate-final` |19044 /803 /0 | Final observer code, drain option unset: F8 passes, same terminal pair remains and exit warning returns. |
+
+Each launch used the actual Godot `.exe` headlessly, not its `_console.exe` wrapper, with fresh
+worktree-local APPDATA/LOCALAPPDATA/TEMP/TMP/log directories. Each `process.json` records PID,
+elapsed time, `timedOut:false`, `stopped:true` and captured native exit0. All six processes stopped;
+none was killed or left running. stdout, stderr and reports are preserved. Total new observation
+data is below0.25MiB, well below15MiB; the longest launch took2562ms. No new native launch is needed
+for document-only follow-up. The reserved play checkout/processes were inspected read-only.
+
+The F8 probe records native IDs at initial music, scene selection, finite start and previous-music
+restart, then queries validity after each `using` scope has disposed its actual SessionAudio.
+Both immediate runs end with WAV `9223372064302302679` and playback `9223372064319079896`:
+these match the **second** variant's `previous-restarted` IDs and the verbose leaked instances.
+Only that pair is alive after the second disposal; the first variant's pair has already vanished
+during normal processing. The standalone backend's leaked WAV `9223372063798986198` and playback
+`9223372063815763415` likewise match its created voice. All have refcount1; no leaked player node or
+other object class was reported. The accompanying orphan `Master` StringName is retained separately
+in verbose output. IDs are process-local: equality across runs does not identify the same object.
+GDScript prints signed64 IDs; compare modulo2^64 with Godot's unsigned verbose IDs using integer
+arithmetic, never floating-point JSON numbers. The observations retain integers, not managed resource
+wrappers; they never call C# `GodotObject.IsInstanceIdValid` or force GC.
+
+Reproduce from the existing imported owning checkout after the protected SDK setup above and a
+Debug build if observation sources changed. Use the existing bounded local launcher when retained:
+`pwsh -NoProfile -File local/issue1570/run-native.ps1 -Case scene -Run <fresh-name>`.
+Its other cases are `backend-stop`, `backend-runtime`, and `session`. The underlying portable
+selection is the existing native argument-array recipe with `--headless --audio-driver Dummy`,
+`--verbose`, and the following scripts/environment:
+
+| Case | Script under `res://probes/` | Environment |
+| --- | --- | --- |
+| F8 immediate | `engine_scene_music_context_observation.gd` | `SF2_SCENE_MUSIC_OUTPUT=<fresh>/native.json`; unset `SF2_AUDIO_DRAIN_EXIT` |
+| F8 release contrast | same | same output selection, `SF2_AUDIO_DRAIN_EXIT=1` |
+| Backend immediate | `engine_audio_backend_observation.gd` | `SF2_AUDIO_CASE=stop-quit` |
+| Backend repeated | same | `SF2_AUDIO_CASE=runtime` |
+| SessionAudio repeated | `engine_audio_lifetime_observation.gd` | `SF2_AUDIO_OUTPUT=<fresh>/native.json` |
+
+Launch the actual executable selected beside the configured console executable, retaining its exit:
+
+```powershell
+$nativeGodot = $env:GODOT_BIN -replace '_console\.exe$', '.exe'
+# $arguments: the selected script/flags above, explicit project and fresh --log-file destination.
+& $nativeGodot @arguments 1> (Join-Path $run 'stdout.log') 2> (Join-Path $run 'stderr.log')
+$nativeExit = $LASTEXITCODE
+```
+
+Use the60s process bound and preserve timeout/termination as failure, not exit0. The retained launcher
+uses `ProcessStartInfo.ArgumentList`, hidden/no-window background execution, redirected output and
+`WaitForExit(60000)` on that actual process. Do not infer its status from a console wrapper.
+The optional F8 release contrast advances ordinary process frames only until tracked native IDs
+become invalid, with a2s failure deadline. It adds no fixed sleep, production drain, gameplay delay
+or synthetic music completion. Default F8 completion and immediate quit are unchanged.
+
+**Confirmed bounded disposition:** current F8 immediate-exit retention and independent backend
+retention reproduce the pinned upstream deferred deletion limitation. The source seams cited above
+were rechecked: Stop marks fade/deletion, the mixer schedules list erasure, main-thread cleanup
+unrefs playback, and shutdown does not drain live entries. Real project disposal reaches its release
+owner; no project lifecycle repair is justified by these observations. Keep the visible warning and
+the upstream-version limitation. Debug and Release adapter builds pass; no new engine behavior tests,
+full suite, emulator or campaign replay is warranted by observation/document changes.
+
+**Inferred:** the older F8 `local/observations/scene-music-context/adapter-first` warning shares this
+cause. **Unknown:** exact class/ID/owner of that original non-verbose two-instance record and the
+retained #1540 `continue01` two-instance / #1539 `continue01` eight-instance stderr records. Those
+small historical logs were read, not overwritten; counts alone cannot exclude different causes or
+establish growth. Other older two/four/eight-instance records remain unclassified unless their own
+verbose evidence identifies them. Current desktop close, other drivers/versions, whole-campaign and
+unbounded runtime behavior are not newly observed. Preserve all #1410 failures above and later
+failed aggregates, including the separate private admission probes addressed in#1574; this clean
+bounded evidence neither reruns nor turns those historical failures into passes.
 
 ## Unified world viewport observation
 

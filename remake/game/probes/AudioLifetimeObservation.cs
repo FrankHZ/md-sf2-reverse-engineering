@@ -82,7 +82,7 @@ public partial class AudioLifetimeObservation : Node
     private async Task Released(string label, int cycle)
     {
         await Until(() => _released.All(id => !IsAlive(id)), label);
-        _samples.Add(new { label, cycle, releasedObjects = _released.Count });
+        _samples.Add(new { label, cycle, releasedObjects = _released.Count, releasedIds = _released.ToArray() });
         _released.Clear();
     }
 
@@ -103,7 +103,7 @@ public partial class AudioLifetimeObservation : Node
 
     private void Finish()
     {
-        var result = new { passed = true, driver = AudioServer.GetDriverName(), samples = _samples };
+        var result = new { passed = true, driver = AudioServer.GetDriverName(), completions = _audio!.Completions, samples = _samples };
         System.IO.File.WriteAllText(OS.GetEnvironment("SF2_AUDIO_OUTPUT"), JsonSerializer.Serialize(result));
         GD.Print("SESSION-LIFETIME ", JsonSerializer.Serialize(result));
         GetTree().Quit();

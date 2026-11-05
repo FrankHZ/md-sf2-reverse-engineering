@@ -71,6 +71,17 @@ object IDs and both Dummy and WASAPI; it does not establish original audio timin
 The [reproduction and failure record](../verification/host.md#audio-resource-lifetime-observation)
 also explains why C# validity polling can itself retain a resource.
 
+**Confirmed current F8 attribution (#1570):** on accepted production base `626eb627`, the
+scene-music observation's two leaked instances are exactly the WAV and playback of the second
+variant's restored areaB music, both refcount1. `SessionAudio.Dispose()` has already stopped the
+player, cleared/disposed its stream and queued the node for deletion. Native IDs from the first
+variant are gone by the second variant's disposal; the last pair survives until immediate exit.
+The same final observer code with a diagnostic native-ID release predicate reaches zero live IDs
+and clean exit. A separate GDScript Stop/clear/queue-free reproduction retains its own identified
+pair without any project audio owner. Current backend and actual SessionAudio repeated-release
+observations pass without accumulation. These are headless Dummy observations over authored
+silence; the earlier WASAPI/window-close findings retain their original scope, not new coverage.
+
 **Confirmed upstream teardown limitation:** the pinned Godot build can report `AudioStreamWAV` and
 `AudioStreamPlaybackWAV` pairs at immediate exit, including with a standalone GDScript player and
 with ordinary host window close. `Stop()` requests deferred mixer deletion; it is not synchronous
@@ -79,12 +90,18 @@ entries. Running the event/mix loop until the observed objects disappear release
 Thus an exit-zero gameplay report is not a clean-shutdown report. See the pinned source and exact
 cases in the reproduction owner.
 
-No project audio-lifetime defect was established by this investigation. Keep normal release and
+No project audio-lifetime defect was established by either bounded investigation. Keep normal release and
 finite-completion behavior; do not add GC, fixed sleeps, delayed gameplay completion or log filtering
 to hide upstream teardown. The appropriate repair is an upstream audio-server shutdown change,
 followed by the bounded reproductions on an explicitly accepted Godot version. The current warning
 remains visible. **Unknown:** behavior on other versions/drivers, exact race-dependent exit counts,
-and arbitrarily long sessions beyond the exercised cycles. This is not a blanket leak-free claim.
+and arbitrarily long sessions beyond the exercised cycles. Historical non-verbose two/four/eight
+instance warnings, including the original F8 report and the #1539/#1540 campaign logs, lack IDs;
+their exact classes, owners and causes remain **Unknown**. The current F8 reproduction supports an
+**Inferred** common cause for the older same-case F8 warning, not retrospective identification or
+resolution of every campaign warning. No whole-campaign replay, current native-window close or
+save/restore leak-free claim follows. See the
+[current evidence and reproduction](../verification/host.md#current-exit-attribution-1570).
 
 ## Audio Boundary
 

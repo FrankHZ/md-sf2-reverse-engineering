@@ -23,7 +23,18 @@ public partial class SceneMusicContextObservation : Control
         try
         {
             await Observe(false);
+            GetTree().Call("report_audio_lifetime", "first-disposed");
             await Observe(true);
+            GetTree().Call("report_audio_lifetime", "second-disposed-before-quit");
+            if (OS.GetEnvironment("SF2_AUDIO_DRAIN_EXIT") == "1")
+            {
+                // Diagnostic contrast only: observe deferred deletion, never delay product exit.
+                ulong deadline = Time.GetTicksMsec() + 2000;
+                while (!GetTree().Call("audio_released").AsBool() && Time.GetTicksMsec() < deadline)
+                    await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                Check(GetTree().Call("audio_released").AsBool(), "disposed scene audio released");
+                GetTree().Call("report_audio_lifetime", "released-before-quit");
+            }
             var report = new { passed = true, driver = AudioServer.GetDriverName(), samples = _samples };
             System.IO.File.WriteAllText(OS.GetEnvironment("SF2_SCENE_MUSIC_OUTPUT"), JsonSerializer.Serialize(report));
             GD.Print("SCENE-MUSIC ", JsonSerializer.Serialize(report));
@@ -50,6 +61,7 @@ public partial class SceneMusicContextObservation : Control
         using var presentation = new ExplorationPresentation(this, session.Definition.Exploration!,
             new InputSettings { FormatVersion = 1 }, () => throw new InvalidOperationException("unexpected-battle"), audio, new());
         audio.Observe(started.Result);
+        GetTree().Call("observe_audio", "initial", offArea, this);
         Check(audio.MusicCue == "area-a", "initial field cue");
         ulong deadline = Time.GetTicksMsec() + 10000;
         bool sceneObserved = false, finiteObserved = false, nativeCompletion = false;
@@ -109,6 +121,7 @@ public partial class SceneMusicContextObservation : Control
 
         void Sample(string stage)
         {
+            GetTree().Call("observe_audio", stage, offArea, this);
             var current = session.Current;
             _samples.Add(new { offArea, stage, current.Revision,
                 context = ExplorationViewContext.Resolve(current.Exploration!, current.Story.LogicalView),
