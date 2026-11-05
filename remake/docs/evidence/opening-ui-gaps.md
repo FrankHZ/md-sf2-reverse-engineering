@@ -362,7 +362,13 @@ mouse, result/status UI and B3/B6–B8 remain with C/D/E/their separate slices.
 the existing Move/Interact/session authority. Release, focus/hide/pause, interaction, program and
 map/battle handoffs cancel future repeat; a normal Move wait retains it. The
 [control owner](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk)
-records cadence, direction priority, session tests and finite native reproduction. Bounded executor
+records cadence, direction priority, session tests and finite native reproduction.
+[#1585's modern continuity policy](../verification/field-programs.md#successful-step-continuity-1585)
+removes the successful-step initial/repeat deadline and chains current held input at the completed
+step's service boundary. Bounded actual-input observations at two valid speeds retain unchanged
+motion service counts and cover late turning, release, collision, interaction return and lifecycle
+barriers. Original natural cadence and subjective acceptance remain Unknown under #1456; this
+engineering result does not establish a user-approved feel. Bounded executor
 observations exercised remapped keys/stick, obstruction, native focus, dialogue, map transfer and
 fresh battle menu input. Independent attempts encountered external focus loss; the observer must
 report an unavailable environment rather than continue input and produce cascading product failures.

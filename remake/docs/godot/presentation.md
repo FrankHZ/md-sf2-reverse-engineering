@@ -1365,6 +1365,13 @@ Stay slot. Actor labels retain current content identities; a complete naming/por
 outside this iteration. Pointer activation and new controller acceptance are also outside scope.
 
 Continuous exploration movement retains its [accepted control owner](../verification/field-programs.md#continuous-exploration-control-and-contextual-talk).
+Its [successful-step continuity policy](../verification/field-programs.md#successful-step-continuity-1585)
+uses the existing ordinary clock: after an owned step completes, a still-held legal direction
+submits the next Move at that same service boundary. Successful steps have no separate repeat
+deadline; a refused attempt retains120 ms backoff. Late turning, release/fallback, story/map/battle
+ownership and lifecycle release barriers remain live-input decisions. This bounded Standard adapter
+change preserves motion speed/animation and menu repetition. It is a modern control choice;
+original natural timing and #1456 subjective acceptance remain Unknown.
 The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
 ## Entry windows and hints (#1445)

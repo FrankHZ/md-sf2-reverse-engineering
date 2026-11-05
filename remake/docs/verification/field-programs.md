@@ -10,10 +10,11 @@ original timing claim is included. Integration and independent review status bel
 [PR #1390](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1390).
 
 `GameInput` retains mapped direction edges separately from choices. A fresh direction immediately
-submits the existing Move. The host waits 220 ms before repeating, then attempts at most one Move
-every 120 ms, only at ordinary field input. Motion may delay that attempt; missed deadlines do not
-accumulate. The latest newly pressed direction wins; releasing it falls back to another still-held
-direction. Keyboard aliases, D-pad and mapped stick deflections use the same semantics. OS keyboard
+submits the existing Move. A successful ordinary step chains to the currently held direction at
+its completion service, without a separate initial/repeat deadline or an idle presentation frame.
+A refused attempt backs off 120 ms before another held attempt; missed deadlines do not accumulate.
+The latest newly pressed direction wins, including near the end of an owned step; releasing it
+falls back to another still-held direction. Keyboard aliases, D-pad and mapped stick deflections use the same semantics. OS keyboard
 echo cannot select or repeat a choice. Existing button/axis release/neutral admission remains.
 
 `ExplorationMovementHold` retains only the token of its own ordinary field Move. That movement wait
@@ -23,6 +24,67 @@ release or resume, but cannot cause a later Move. Return needs a fresh non-echo 
 pad buttons/axes need their existing release/neutral edge. Keyboard recovery does not require a
 release that may have happened outside the window. All field automatic delivery now pauses while
 unfocused/hidden/paused, and resume discards timing debt.
+
+### Successful-step continuity (#1585)
+
+**Standard rigor:** the bounded outcome is removal of adapter-created gaps between legal held
+steps, using the existing ordinary clock and Move authority. Application rules, motion speed,
+animation, RNG, menu repetition and original timing research are outside scope. The host first
+offers held input before neutral service as usual. If that service finishes its owned motion at
+ordinary input, it rechecks live held input after failure/program/map/battle ownership guards and
+submits at most one next Move. It stores no future command or direction queue. A late direction
+edge cannot reinstate the refusal deadline while an owned step is active. Release, collision,
+interaction and lifecycle barriers retain the contract above.
+
+The finite existing control observer selects this slice with `SF2_CONTROL_CASE=cadence`; it records
+only step starts/completions and semantic checkpoints. Reuse the installation/project and mapped-J
+settings below. After loading the local environment and building the Debug adapter, from the root:
+
+```powershell
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$env:SF2_CONTROL_CASE = 'cadence'
+$project = (Resolve-Path './remake/game').Path
+$package = (Resolve-Path './remake/content/authored/harbor-arrival.json').Path
+$settings = (Resolve-Path './local/issue1389/input.json').Path
+$env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path (Resolve-Path './local/issue1585').Path 'native.json'
+& $env:GODOT_BIN --headless --fullscreen --resolution 1920x1080 --max-fps 60 --path $project --script res://probes/engine_exploration_control_observation.gd -- --authored-package $package --input-settings $settings
+```
+
+The observer uses actual mapped input routing and live player positions. It requires four straight
+steps, same-tick/same-frame completion-to-next-submit, wall refusal, release during motion, exactly
+one tapped step, a last-motion-service direction change, held-direction fallback, hide/pause
+release barriers, the real system modal, interaction/decline/return, story/map/battle handoff with
+old direction held and fresh battle-menu input. It reuses the existing handoff suffix. Select `cadence-focus` and omit
+`--headless --fullscreen` for the short real native sibling-window focus transfer; focus availability
+remains mandatory. `cadence-baseline` records the straight boundaries without imposing the new
+cadence requirement. No screenshots, save operations, emulator work or new comparison platform.
+Budget: serial launches under45 seconds each, total new reports/logs under10 MiB. Use the adapter
+gate and clean committed planner/CI; this adapter-only slice introduces no Application behavior test.
+
+**Confirmed (bounded remake):** ordinary-speed `--max-fps 60` observations on the accepted
+`12c6d4ac` product and the changed adapter give the following wall-clock gaps. Reports also retain
+simulation ticks and Godot frames; no `--fixed-fps` controls these accepted observations.
+
+| Authored start speed | Before: completion → next submit (ms) | Changed: completion → next submit (ms) | Step service ticks, before/after |
+| --- | --- | --- | --- |
+|96, unchanged `harbor-arrival.json` |199.815 /66.656 /66.472 |1.259 /1.113 /1.197 |5 /5 |
+|32, otherwise identical prelaunch authored copy |64.908 /17.067 /17.330 |1.328 /1.284 /1.262 |13 /13 |
+
+Changed submissions share the completion's logical tick and process frame in every row; measured
+milliseconds include result-signal/state-readback overhead and are not a timing guarantee. The speed32
+baseline already had no intervening logical service on its later steps, but still waited another
+frame. Final observations also pass the late-turn boundary at both speeds and actual native focus
+loss/return. Reproduce speed32 by copying the authored JSON into ignored output and changing only
+`start.speed` to32 before launch; never change a live session or canonical input. Retained local
+reports are `local/issue1585/{baseline04,baseline32-09,late08,speed32-10,focus11}`; `final13` and
+`final32-14` also include the real system modal and existing map/battle suffix.
+
+**Unknown:** original natural cadence and subjective improvement. This is an explicit modern host
+policy; [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) retains user playtest
+acceptance. Startup/window-size failures, an observer input-delivery ordering failure and its old
+Yes-selection assumption are retained
+locally; neither is silently counted as a passing observation. The earlier fixed-delta exploratory
+run is not used for the ordinary-speed numbers above.
 
 `GameSession.QueryExplorationInteraction()` is read-only. It uses the same current entity visibility,
 raw motion tile/facing and ordered flag-eligible interaction event predicate as Interact. It returns
