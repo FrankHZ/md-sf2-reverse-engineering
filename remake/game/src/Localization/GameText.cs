@@ -539,13 +539,13 @@ internal static class GameText
     internal static DisplayResult Field(FieldTextWait wait, ExplorationDefinition definition)
     {
         DisplayResult result;
-        if (Language == "en") result = DisplayCatalog.Canonical(wait, definition);
+        if (Language == "en") result = DisplayCatalog.Canonical(wait, definition, reflow: true);
         else if (_overlay is null)
         {
-            result = DisplayCatalog.Canonical(wait, definition);
+            result = DisplayCatalog.Canonical(wait, definition, reflow: true);
             if (result.Reason is null) result = result with { Reason = "overlay-unavailable" };
         }
-        else result = _overlay.Resolve(wait, definition);
+        else result = _overlay.Resolve(wait, definition, reflow: true);
         if (result.Reason is { } reason) Diagnose(reason, $"world.text/{wait.Text}");
         return result;
     }
@@ -559,8 +559,8 @@ internal static class GameText
         Diagnose("unmigrated-consumer", key);
         return Get("localization.fallback", "unmigrated-consumer: " + key);
     }
-    internal static DisplayResult Dialogue(DialogueWait wait, GameSession session) => WholeRow(wait.Text, session, null);
-    private static DisplayResult WholeRow(int id, GameSession session, int? implicitMember)
+    internal static DisplayResult Dialogue(DialogueWait wait, GameSession session) => WholeRow(wait.Text, session, null, reflow: true);
+    private static DisplayResult WholeRow(int id, GameSession session, int? implicitMember, bool reflow = false)
     {
         var source = session.Definition.Exploration!;
         var names = new List<DisplayNameBinding>();
@@ -570,7 +570,7 @@ internal static class GameText
                     (tokens[i].Member ?? implicitMember) is { } member)
                     names.Add(new(i, member, CharacterNames.Member(session.Definition, session.Current.Story, member), null));
         // Legacy dialogue has no captured bare NAME/CLASS operand. Missing bindings use display-operands fallback.
-        var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names) : _overlay.Resolve(id, source, names);
+        var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names, reflow) : _overlay.Resolve(id, source, names, reflow);
         if (Language != "en" && _overlay is null && row.Reason is null) row = row with { Reason = "overlay-unavailable" };
         if (row.Reason is { } reason) Diagnose(reason, $"world.text/{id}");
         return row;

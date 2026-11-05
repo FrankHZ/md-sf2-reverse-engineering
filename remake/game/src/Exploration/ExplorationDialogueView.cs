@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Sf2.Remake.Content.Localization;
 using Godot;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
@@ -46,13 +47,18 @@ internal sealed partial class ExplorationDialogueView : Control
         // The resolved field projection belongs to this open window through program waits and close animation.
         _fieldTextProjection = current.Story.Wait is FieldTextWait ||
             (_fieldTextProjection && current.Story.TextWindow is OpenTextWindow && ReferenceEquals(current.Story.TextWindow, _textWindow));
-        if (!_fieldTextProjection)
+        bool retainedQuestionWindow = current.Story.Wait is ChoiceWait &&
+            (current.Story.TextWindow is not OpenTextWindow || ReferenceEquals(current.Story.TextWindow, _textWindow));
+        if (!_fieldTextProjection && !retainedQuestionWindow)
         {
             EffectiveLocale = "en";
             FallbackReason = current.Story.TextWindow is OpenTextWindow || current.Story.Wait is DialogueWait or W1TextWait or FieldSearchWait
                 ? "unmigrated-consumer" : null;
         }
-        if (current.Story.Wait is FieldSearchWait search)
+        // A choice attached to this window must not reconstruct the question from raw source
+        // and undo its locale/reflow. The existing choice controller still owns confirmation.
+        if (retainedQuestionWindow) _dialogue.Text = previousText;
+        else if (current.Story.Wait is FieldSearchWait search)
         {
             var display = GameText.Search(search.Result, session);
             _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
@@ -69,10 +75,10 @@ internal sealed partial class ExplorationDialogueView : Control
             _dialogue.Text = display.Text; EffectiveLocale = display.EffectiveLocale; FallbackReason = display.Reason;
         }
         else if (current.Story.Wait is W1TextWait span)
-            _dialogue.Text = string.Concat(session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select(part => part.Kind switch
+            _dialogue.Text = string.Concat(session.Definition.Exploration.TextTokens[span.Text].Take(span.EndToken).Select((part, index) => part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
-                ExplorationTextTokenKind.Newline => "\n",
+                ExplorationTextTokenKind.Newline => SourceTextLayout.Break(session.Definition.Exploration.TextTokens[span.Text], index, "en"),
                 ExplorationTextTokenKind.MemberName => CharacterNames.Member(session.Definition, current.Story, part.Member!.Value),
                 _ => "",
             }));

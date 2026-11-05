@@ -968,6 +968,24 @@ slot/backup bytes; a required version migration uses a detached validated candid
 write recovery, not rewrite-on-read. M0/M1 change no save schema. Naming policy, not display locale,
 is the potential migration trigger.
 
+## Selected source-line display policy
+
+The [#1583 presentation agreement](../godot/presentation.md#source-line-reflow-1583) owns modern
+reflow for ordinary exploration and the known entry-v1 projection. `DisplayCatalog`'s optional
+`reflow` argument changes only rendered text: default canonical/translated resolution, source-token
+mapping, admission and captured name/class bindings remain intact. Individual typed `{N}` between
+text operands can become separators; consecutive/control-adjacent breaks and literal paragraphs
+remain explicit. Separator choice reads resolved operands rather than placeholder spellings.
+
+Entry source/translated rows retain their exact stored LF and default resolver output. Only
+`EntryPresentationAssets` applies the legacy entry-format layout policy after resolution. No
+translation row, private corpus, control mapping, source unit, schema or save identity changes.
+Display/reveal character totals follow the actual shaped projection; they never replace source
+logical character work. W1's existing English fallback is not additional Chinese coverage. Search,
+battle and other unselected consumers retain their current layout. The finite unit/native checks
+are linked from the presentation agreement; original paragraph intent outside the reviewed examples
+and human typography acceptance remain **Unknown**.
+
 ## Font, layout and delivery
 
 M1 bundles Noto Sans CJK SC Regular through StoryTheme for Simplified Chinese and the required

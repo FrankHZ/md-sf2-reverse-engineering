@@ -1,5 +1,83 @@
 # Field and Program Verification
 
+## Source line reflow observation
+
+The [Standard display agreement](../godot/presentation.md#source-line-reflow-1583) is exercised by
+[`engine_dialogue_reflow_observation.gd`](../../game/probes/engine_dialogue_reflow_observation.gd),
+which extends the existing ordinary-host/reading observer. No screenshot, emulator run, whole-route
+capture, live session mutation or test of an observer is involved. Build the actual Debug adapter
+using the configured locked SDK, and load the ignored private-input configuration in the same
+process as each command; force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`.
+
+Use a new ignored run directory and isolate APPDATA/LOCALAPPDATA/TEMP/TMP there. Set
+`SF2_EXPLORATION_OBSERVATION_OUTPUT` to its report, `SF2_READING_PACKAGE` to its new generated package,
+`SF2_REFLOW_LOCALE` to `en`/`zh-CN`, and `SF2_READING_CASE` to `field`, `field-zh`, `field-portrait`,
+`field-portrait-zh`, `field-name-zh`, `field-long`, `field-long-portrait-zh`, `field-wide-portrait-zh`
+or `w1`, plus `choice`/`choice-zh` for an ordinary dialogue followed by an attached question.
+The runner derives only its finite authored text/transparent portrait fixture before Main
+startup; its local overlay selects the matching source controls through normal admission. Use the
+existing120-character/sec adjustable settings and Down remapped to J. From repository root:
+
+```powershell
+& $env:GODOT_BIN --headless --max-fps 60 --resolution 1920x1080 `
+  --path remake/game --rendering-method gl_compatibility --audio-driver Dummy `
+  --script res://probes/engine_dialogue_reflow_observation.gd -- `
+  --authored-package $env:SF2_READING_PACKAGE --input-settings $inputSettings
+```
+
+For `entry`/`entry-zh`, omit `--authored-package` and select the already admitted read-only
+`SF2_PRIVATE_ENTRY_CONTENT` and optional `SF2_ENTRY_DISPLAY_CATALOG`. The observer visits IDs216–220
+and menu221. `entry-switch` additionally uses real menu navigation and locale Apply; omit
+`--input-settings`, initialize the same settings in a fresh **external, non-Git** preferences
+root/namespace, and select it through `SF2_SAVE_ROOT`/`SF2_SAVE_NAMESPACE`. Only its own preferences
+are written; no save/Continue action is invoked. `SF2_REFLOW_BASELINE=1` records old layout without
+requiring reflow; it does not change the product. The wide case requests2560×1440; others use1920×1080.
+
+**Confirmed finite observations:**
+
+- Original compiled entry body width592 yields2/3/2/2/2 lines for216–220. Reflow yields1/2/1/2/2
+  in English and1/2/1/1/1 in the existing admitted Chinese overlay. Every page fits the entry safe
+  region; text is30px, no portrait column is reserved, and Reveal/More/Continue still reaches Menu.
+- The ordinary1392px-body example changes6 to5 lines; literal blank paragraphs and consecutive
+  source `{N}` remain distinct. Both locales, actual mounted portrait/no portrait, English W1 and
+  resolved Latin-name spacing in Chinese pass. Width changes only for existing portrait reservation.
+- English26-line and Chinese-with-portrait27-line passages exceed a screen. Fresh Confirm reads
+  every page, the last-page edge retains the same token, subsequent Confirm advances, append retains
+  the text prefix, and the genuine close returns field control. The wide portrait case stays in bounds.
+- Ordinary English/Chinese dialogue advances once into a distinct choice, retaining its resolved
+  question/locale and requiring a fresh answer. Entry locale Apply refreshes the same menu and texture identities. The existing Confirm observer's
+  `field-clear`/`field-pause` cases and control observer's `cadence` case pass, preserving CLEAR,
+  real pause, fresh choice/held/echo release and mapped navigation. Run those observers directly
+  through their existing recipes; no new choice/clock implementation is introduced here.
+- Focused `LocalizationDisplayTests` cover opt-in/default projection, actual field-text append,
+  immutable source state, explicit paragraphs and resolved names. Adapter build and clean committed
+  dependency plan/actual CI accompany delivery. No old aggregate/research suite is selected for this
+  display-only change.
+
+Resource planning: inputs are existing entry materials plus finite generated text/transparent rasters;
+no acquisition. Projection is linear in displayed text plus existing name-binding lookups; reports
+contain bounded semantic/layout checkpoints. Native processes are serial and limited to45s each.
+An initial90-repeat long fixture completed with observation-deadline failures, not product failures:
+its full logical-unit dumps consumed unnecessary output and its3s polling deadline was insufficient
+for the real source services. These failures remain preserved. The30-repeat fixture still exceeds a
+screen, uses compact checkpoints and a20s predicate deadline. Including retained failed artifacts,
+the revised local budget is32MiB (initial12MiB estimate was exceeded); replan before exceeding it.
+No evidence is deleted to meet that budget. Long accepted cases took under8s locally.
+
+A focused choice witness also exposed the previous locale reset when an authored question has no
+open source text window; retaining the resolved question now covers that existing form as well as
+the same open window. The initial open-window-only correction remained failing for the authored
+form; the final narrow English/Chinese choice observation and original cadence regression pass.
+
+Other retained setup failures: missing entry selection; launcher settings object lacked a language
+property; Chinese canonical-name fixture violated existing source admission (replaced by legal
+ASCII custom names); menu observer initially used removed Down instead of mapped J; control runner
+initially selected a nonexistent generated package. Each has a corrected narrow result. Two ObjectDB
+exit instances were reported by entry+overlay runs; the prior exit-warning investigation remains
+its owner, and this slice does not claim leak closure. Accepted field runs have no native errors;
+report PASS must still be paired with exit/log inspection. Human final pixels/reading approval and
+all-catalog source-semantic classification remain **Unknown**.
+
 ## Ordinary dialogue Confirm observation
 
 The [High reading agreement](../godot/presentation.md#ordinary-dialogue-confirm) supersedes older

@@ -15,8 +15,10 @@ internal sealed class EntryPresentationAssets : IDisposable
     private readonly string? _displayError;
     internal DisplayResult Dialogue(int id)
     {
-        if (GameText.Language == "en") return new(Content.Dialogue[id.ToString(System.Globalization.CultureInfo.InvariantCulture)], "en", null);
-        return _display?.ResolveEntry(id, Content) ?? new(Content.Dialogue[id.ToString(System.Globalization.CultureInfo.InvariantCulture)], "en", _displayError);
+        var original = new DisplayResult(Content.Dialogue[id.ToString(System.Globalization.CultureInfo.InvariantCulture)], "en", null);
+        var display = GameText.Language == "en" ? original :
+            _display?.ResolveEntry(id, Content) ?? original with { Reason = _displayError };
+        return display with { Text = SourceTextLayout.EntryLines(display.Text, display.EffectiveLocale) };
     }
 
     internal EntryPresentationAssets()
