@@ -11,6 +11,107 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class DepartureProgramTests
 {
     [Theory]
+    [InlineData(1, 2, 3)]
+    [InlineData(5, 2, 7)]
+    [InlineData(2, 6, 4)]
+    public void SceneMapPreservesPhysicalAppendOrderAndReturnsToTheCaller(int first, int second, int added)
+    {
+        var (session, before) = SceneFollowers(first, second, added);
+        var result = ProgramRunner.Run(session.Definition,
+            before.WithStory(before.Story.Copy(new("scene-caller", 0))), []);
+        Assert.Null(result.Failure);
+        var after = result.Snapshot;
+        var world = after.Exploration!;
+        Assert.Equal(new[] { first, second, added }, world.CurrentEntities);
+        Assert.Equal(new EntityFollower(second, -24, 0), world.Entities[new("entity-130")].Follower);
+        Assert.Equal(before.Exploration!.AllEntities.Where(row => row.Slot != added),
+            world.AllEntities.Where(row => row.Slot != added));
+        var appended = world.Entities[new("entity-130")];
+        Assert.Equal(before.Exploration.Entities[appended.Entity].Position, appended.Position);
+        Assert.Equal((ushort)32, appended.Motion.XSpeed);
+        Assert.Equal((ushort)32, appended.Motion.YSpeed);
+        Assert.Equal(before.Exploration.Aliases, world.Aliases);
+        Assert.Same(before.Exploration.Party, world.Party);
+        Assert.Equal(new MapId("yard-map"), world.Map);
+        Assert.Contains(700, after.Story.Flags);
+        Assert.DoesNotContain(999, after.Story.Flags);
+        Assert.Empty(after.Story.Callers);
+        Assert.Equal(new ProgramLocation("scene-caller", 2), after.Story.Cursor);
+        Assert.IsType<TickWait>(after.Story.Wait);
+    }
+
+    [Theory]
+    [InlineData("scene-reload")]
+    [InlineData("setup-reload")]
+    public void ExplicitEntityReloadRebuildsTheSceneFollowerList(string program)
+    {
+        var (session, before) = SceneFollowers(5, 2, 7);
+        var loaded = ProgramRunner.Run(session.Definition,
+            before.WithStory(before.Story.Copy(new("scene-caller", 0))), []);
+        Assert.Null(loaded.Failure);
+        var result = ProgramRunner.Run(session.Definition,
+            loaded.Snapshot.WithStory(loaded.Snapshot.Story.Copy(new(program, 0))), []);
+        Assert.Null(result.Failure);
+        var world = result.Snapshot.Exploration!;
+        Assert.Equal(new[] { 0 }, world.CurrentEntities);
+        Assert.Equal(new[] { 0, 1 }, world.AllEntities.Select(row => row.Slot));
+        Assert.All(world.AllEntities, row => Assert.Null(row.Follower));
+        Assert.Equal(1, world.Aliases[new("entity-128")]);
+        Assert.Same(before.Exploration!.Party, world.Party);
+        Assert.IsType<EntitySetSpriteWait>(result.Snapshot.Story.Wait);
+    }
+
+    private static (GameSession Session, SessionSnapshot Before) SceneFollowers(int first, int second, int added)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] = JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            var target = document["world"]!["maps"]![1]!;
+            target["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+            target["onLoad"] = JsonNode.Parse("""{"program":"forbidden-init","instruction":0}""");
+            target["population"] = JsonNode.Parse("""{"allyCount":30,"nonAllyStart":128,"playerSprite":30,"followers":[]}""");
+            target["entities"] = JsonNode.Parse("""[{"id":"entity-128","position":{"x":8,"y":5},"facing":2,"speed":32,"visible":true,"obstruction":false,"sprite":30}]""");
+            var programs = document["world"]!["programs"]!.AsArray();
+            programs.Add(JsonNode.Parse("""{"id":"forbidden-init","instructions":[{"op":"set-flag","flag":999,"value":true},{"op":"end"}]}"""));
+            programs.Add(JsonNode.Parse("""
+                {"id":"followers","instructions":[
+                  {"op":"follow","entity":"entity-128","leader":"entity-0","x":-24,"y":0},
+                  {"op":"follow","entity":"entity-129","leader":"entity-128","x":-24,"y":0},
+                  {"op":"wait-ticks","ticks":1},{"op":"end"}]}
+                """));
+            programs.Add(JsonNode.Parse("""
+                {"id":"scene-caller","instructions":[
+                  {"op":"call","target":{"program":"scene-append","instruction":0}},
+                  {"op":"set-flag","flag":700,"value":true},{"op":"wait-ticks","ticks":1},{"op":"end"}]}
+                """));
+            programs.Add(JsonNode.Parse("""
+                {"id":"scene-append","instructions":[
+                  {"op":"scene-map","map":"yard-map","camera":{"x":3,"y":4}},
+                  {"op":"add-follower","entity":"entity-130"},{"op":"end"}]}
+                """));
+            var reload = JsonNode.Parse("""{"op":"scene-entities","position":{"x":3,"y":4},"facing":2}""")!;
+            reload["population"] = target["population"]!.DeepClone();
+            reload["entities"] = target["entities"]!.DeepClone();
+            programs.Add(new JsonObject { ["id"] = "scene-reload",
+                ["instructions"] = new JsonArray(reload, JsonNode.Parse("""{"op":"end"}""")) });
+            programs.Add(JsonNode.Parse("""{"id":"setup-reload","instructions":[{"op":"setup-entities","position":{"x":3,"y":4},"facing":2},{"op":"end"}]}"""));
+        });
+        var initial = session.Current.Exploration!;
+        // Legal physical allocations deliberately differ from alias identity and append order.
+        var entities = new[] { (0, 0), (128, first), (129, second), (130, added) }.Select(pair =>
+            new ExplorationEntity(new("entity-" + pair.Item1),
+                EntityMotionState.At(new(2 + pair.Item2, 4), 1, 64), true, Slot: pair.Item2));
+        var world = new ExplorationState(initial.Definition, initial.Layout, new("entity-0"), entities, initial.Party);
+        var entry = new SessionSnapshot(session.Current.SessionId, session.Current.Revision,
+            session.Current.ObservationSequence, new ActiveExploration(world), session.Current.Story, session.Current.StopReason);
+        var result = ProgramRunner.Run(session.Definition, entry.WithStory(entry.Story.Copy(new("followers", 0),
+            display: new(1, new(0xEEE, 0xAAA), new(0, 0), FullFadeVisibility.Black))), []);
+        Assert.Null(result.Failure);
+        Assert.Equal(new[] { first, second }, result.Snapshot.Exploration!.CurrentEntities);
+        return (session, result.Snapshot);
+    }
+
+    [Theory]
     [InlineData("plane-position")]
     [InlineData("plane-autoscroll")]
     public void SourcePlaneOperationsRejectAnAuthoredContextWithoutLogicalView(string opcode)
