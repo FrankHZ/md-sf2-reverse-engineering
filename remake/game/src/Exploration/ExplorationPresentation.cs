@@ -649,7 +649,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         {
             if (!capture.IsAccepting()) return;
             var expected = new { sprite = entity.Sprite, direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 },
-                half = entity.Motion.AnimationCounter > 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0, nod = lowered };
+                half = entity.Motion.AnimationCounter >= 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0, nod = lowered };
             string key = $"entity:{entity.Slot}:{entity.Entity.Value}:{expected.sprite}:{expected.direction}:{expected.half}:{lowered}";
             if (capture.NewRequirement(key)) capture.RecordFrozenFacts("resourceRequirements", new
                 { identity, kind = "entity", subject = entity.Entity.Value, slot = entity.Slot, expected });
@@ -756,7 +756,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (_visuals is null || entity.Sprite is not { } sprite || !_visuals.Sprites.TryGetValue(sprite, out var visual))
             throw new InvalidOperationException("entity-sprite-binding");
         int direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 };
-        int half = entity.Motion.AnimationCounter > 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
+        int half = entity.Motion.AnimationCounter >= 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
         int orientation = entity.Motion.FlagsB & 3;
         int size = entity.RenderSize;
         var key = (sprite, direction, half, nod, headShift, orientation, size);

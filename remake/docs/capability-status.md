@@ -3,6 +3,18 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
+## Ordinary field time and save entry
+
+Focused ordinary exploration advances without V, including standing animation, followers and enabled
+NPC service. System menu, direct Save and genuine Church-return Save share bounded motion settlement
+before freezing and querying the existing save recipes. Cancel, focus/pause and Quit interrupt it;
+exhaustion or transition leaves a paused menu with a readable Save-unavailable reason. The
+[contract](application/session-and-programs.md#ordinary-exploration-clock-and-save-boundary) and
+[verification](development-and-verification.md#ordinary-clock-and-save-entry) own the exact limits.
+Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
+original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
+warn even after animation-only time.
+
 ## Ordinary opening through first damaged-ship control
 
 The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to

@@ -249,7 +249,7 @@ msgstr "{0}：继续阅读"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "field.controls"
-msgstr "{0}按住 {1}：等待    {2}：队伍状态"
+msgstr "{0}{1}：队伍状态"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "localization.names"
@@ -426,7 +426,7 @@ msgid "save.choose"
 msgstr "选择已保存的旅程。"
 
 msgid "save.quit-dirty"
-msgstr "退出游戏？上次保存后的进度将丢失，游戏不会自动保存。"
+msgstr "退出游戏？可能有尚未保存的更改。游戏不会自动保存。"
 
 msgid "save.quit-clean"
 msgstr "退出到桌面？上次保存的进度已保留。"
@@ -1308,3 +1308,12 @@ msgstr "{0} 的中毒已治愈。"
 
 msgid "save.destination.battle07-return"
 msgstr "古代之塔，地震之后"
+
+msgid "save.error.entry-limit"
+msgstr "移动未能及时结束。请先继续游戏，再尝试保存。"
+
+msgid "save.error.entry-cancelled"
+msgstr "已取消保存准备。请先继续游戏，再尝试保存。"
+
+msgid "save.error.entry-transition"
+msgstr "保存准备期间场景发生了变化。请先继续游戏，再尝试保存。"

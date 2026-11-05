@@ -125,6 +125,19 @@ public sealed class SessionSnapshot
         ? battle.Battle.ThinkingSeed : ((ActiveExploration)Active).World.Party.ThinkingSeed) >> 24);
     public BattleSelection? Selection => (Active as ActiveBattle)?.Selection;
     public SessionStopReason StopReason { get; }
+    // Ordinary control includes a committed player step, but never a story/service caller.
+    public bool HasOrdinaryFieldTime => Active is ActiveExploration field &&
+        StopReason is SessionStopReason.PlayerInput or SessionStopReason.SimulationWait &&
+        Story.Cursor is null && Story.Callers.Count == 0 && Story.EventCaller is null &&
+        Story.Continuation == ProgramContinuation.FieldInput && Story.EnteringBattle is null &&
+        Story.FieldPlayer is null && Story.EntrySkip is null && Story.Warp is null &&
+        Story.ScriptWarp is null && !Story.BattleRequest && Story.TextWindow is ClosedTextWindow &&
+        Story.PortraitWindow is not OpenPortraitWindow &&
+        (Story.Wait is null || Story.Wait is EntityWait { AfterMotion: null } move && move.Entity == field.World.Player);
+    // Transient entry readiness is independent of save recipes and discardable ambient scripts.
+    public bool HasSettledFieldEntry => HasOrdinaryFieldTime && CanWaitAtInput &&
+        !Exploration!.AllEntities.Any(entity => entity.Visible && (entity.WaitingForSprite ||
+            entity.Follower is not null && (entity.Motion.IsMoving || entity.WaitingForMotion)));
     public bool CanWaitAtInput => Active is ActiveExploration field && StopReason == SessionStopReason.PlayerInput &&
         Story.Cursor is null && Story.Wait is null && Story.Callers.Count == 0 &&
         Story.Continuation == ProgramContinuation.FieldInput && Story.EnteringBattle is null &&

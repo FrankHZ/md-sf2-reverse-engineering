@@ -249,7 +249,7 @@ msgstr "{0}: Read more"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "field.controls"
-msgstr "{0}Hold {1}: Wait    {2}: Party Status"
+msgstr "{0}{1}: Party Status"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "localization.names"
@@ -426,7 +426,7 @@ msgid "save.choose"
 msgstr "Choose a saved journey."
 
 msgid "save.quit-dirty"
-msgstr "Quit? Progress since your last save will be lost. No automatic save is made."
+msgstr "Quit? There may be unsaved changes. No automatic save is made."
 
 msgid "save.quit-clean"
 msgstr "Quit to desktop? Your last save is safe."
@@ -1308,3 +1308,12 @@ msgstr "{0} is cured of poison."
 
 msgid "save.destination.battle07-return"
 msgstr "Ancient Tower, earthquake aftermath"
+
+msgid "save.error.entry-limit"
+msgstr "Movement did not settle in time. Resume play before trying Save again."
+
+msgid "save.error.entry-cancelled"
+msgstr "Save preparation was cancelled. Resume play before trying again."
+
+msgid "save.error.entry-transition"
+msgstr "The scene changed while preparing Save. Resume play before trying again."

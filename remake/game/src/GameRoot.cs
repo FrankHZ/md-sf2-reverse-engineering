@@ -65,13 +65,18 @@ public sealed partial class GameRoot : Node
         }
         var action = _input?.Resolve(input);
         if (action is null) return;
+        if (_exploration?.MenuEntryPending == true)
+        {
+            if (action is GameAction.Cancel or GameAction.Menu) _exploration.CancelMenuEntry();
+            GetViewport().SetInputAsHandled(); return;
+        }
         if (_settings is not null) HandleSettingsAction(action.Value, input);
         else if (_slots is not null) _slots.Handle(action.Value);
         else if (_entry is not null) _entry.Handle(action.Value);
         else if (_systemMenu is not null) _systemMenu.Handle(action.Value);
         else if (action == GameAction.Menu) ShowSystemMenu();
         else if (action == GameAction.Cancel && CanOpenSettings) ShowSystemMenu();
-        else if (action == GameAction.Stay && _exploration?.CanOpenHostMenu == true) ShowSave();
+        else if (action == GameAction.Stay && _exploration?.CanRequestFieldSave == true) ShowSave();
         else if (_exploration is { } exploration && GodotObject.IsInstanceValid(exploration) && exploration.IsVisibleInTree())
             exploration.HandleAction(action.Value);
         else if (_battle?.IsVisibleInTree() == true) _battle.HandleAction(action.Value);
@@ -248,8 +253,20 @@ public sealed partial class GameRoot : Node
     {
         if (_session is null || _systemMenu is not null || _entry is not null || _slots is not null ||
             _settings is not null || _windowRecovery is not null || _exploration?.PartyMenuOpen == true) return;
+        RequestFieldEntry(OpenSystemMenu);
+    }
+    private void OpenSystemMenu()
+    {
+        if (_systemMenu is not null) return;
         _systemMenu = new SystemMenuView { Name = "SystemMenuView", Input = _input!, Resume = CloseSystemMenu };
-        _hostUi.AddChild(_systemMenu); RefreshSystemMenuLabels(); ApplyHostPause(); DisarmInput();
+        _hostUi.AddChild(_systemMenu); ApplyHostPause();
+        if (_fieldEntryFailure is null && _session!.Current.HasSettledFieldEntry && _audio?.ObserveFieldHistory() is { } music)
+        {
+            var before = _session.Current;
+            var published = _session.Submit(new(before.SessionId, before.Revision, null, music));
+            _fieldEntryFailure = published.Failure?.Code;
+        }
+        RefreshSystemMenuLabels(); DisarmInput();
     }
     private void RefreshSystemMenuLabels()
     {
@@ -263,7 +280,8 @@ public sealed partial class GameRoot : Node
         var save = _session!.QuerySave();
         string saveReason = save.Error is "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion"
             ? Explain(save.Error) : GameText.Get("system.save-reason");
-        _systemMenu.Present(save.Allowed, save.Allowed ? "" : saveReason, CanOpenSettings,
+        _systemMenu.Present(save.Allowed && _fieldEntryFailure is null,
+            _fieldEntryFailure is { } error ? Explain(error) : save.Allowed ? "" : saveReason, CanOpenSettings,
             _session.Current.CanWaitAtInput && _exploration?.PartyMenuOpen != true,
             ShowSave, ShowSettings, ShowEntry, RequestQuit);
     }
@@ -275,6 +293,7 @@ public sealed partial class GameRoot : Node
     }
     private void CloseSystemMenu()
     {
+        _fieldEntryFailure = null;
         if (_systemMenu is { } menu) { _systemMenu = null; _hostUi.RemoveChild(menu); menu.QueueFree(); }
         ApplyHostPause(); DisarmInput();
     }

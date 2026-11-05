@@ -74,6 +74,9 @@ public sealed partial class GameRoot
         "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion" =>
             GameText.Get("save.error.busy"),
         "save-stale-revision" => GameText.Get("save.error.stale"),
+        "save-entry-budget" => GameText.Get("save.error.entry-limit"),
+        "save-entry-cancelled" or "save-entry-paused" or "save-entry-quit" => GameText.Get("save.error.entry-cancelled"),
+        "save-entry-transition" => GameText.Get("save.error.entry-transition"),
         "save-root-configuration" or "save-root-inside-worktree" or "save-root-inside-worktree-or-link" =>
             GameText.Get("save.error.config"),
         _ => GameText.Get("save.error.other"),
@@ -82,6 +85,16 @@ public sealed partial class GameRoot
     private void ShowSave()
     {
         if (_session is null || _slots is not null) return;
+        if (_systemMenu is not null) ShowSettledSave();
+        else RequestFieldEntry(ShowSettledSave);
+    }
+
+    private void ShowSettledSave()
+    {
+        if (_session is null) return;
+        // Freeze dispatch before music publication and the revision-bound query.
+        OpenSavePanel();
+        if (_fieldEntryFailure is { } entryError) { SaveError(entryError); return; }
         if (_audio?.ObserveFieldHistory() is { } music)
         {
             var before = _session.Current;
@@ -208,6 +221,7 @@ public sealed partial class GameRoot
     { SettingsNotification(what); }
     private void RequestQuit()
     {
+        _exploration?.CancelMenuEntry("save-entry-quit");
         if (_session is null) { GetTree().Quit(); return; }
         if (_windowRecovery is not null) { ShowWindowQuit(); return; }
         if (_slots is not null) return;

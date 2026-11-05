@@ -142,6 +142,7 @@ public sealed partial class ExplorationSessionView : Control
 
     private void SuspendClock()
     {
+        CancelMenuEntry("save-entry-paused");
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
@@ -272,11 +273,13 @@ public sealed partial class ExplorationSessionView : Control
                 Send(new CompleteTextReveal(deliveredToken));
             return;
         }
+        CheckMenuEntry();
+        if (!CanProcess()) return;
+        if (_session.Current.HasOrdinaryFieldTime)
+        { AdvanceOrdinaryTime(delta); return; }
         if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
         {
-            if (_session.Current.CanWaitAtInput && _movementHold.Repeat(_input, _session.Current, Time.GetTicksUsec()) is { } direction)
-            { HandleAction(direction, repeating: true); return; }
-            // Idle field time is explicitly paused. Presentation time never becomes field debt.
+            // Text/choice input retains its explicit service contract.
             _tickTime = 0;
             if (!CanSubmitWait || !GetWindow().HasFocus() || !IsVisibleInTree() || !_input.WaitHeld || PresentationFailure is not null)
                 CancelFieldWait();
@@ -319,6 +322,7 @@ public sealed partial class ExplorationSessionView : Control
 
     internal void HandleAction(GameAction action, bool repeating = false)
     {
+        if (MenuEntryPending) return;
         _choicePointer.Cancel();
         if (!GetWindow().HasFocus() || !CanProcess()) { SuspendClock(); return; }
         bool direction = action is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left;
@@ -355,6 +359,7 @@ public sealed partial class ExplorationSessionView : Control
         }
         if (action == GameAction.Wait)
         {
+            if (current.HasOrdinaryFieldTime) return;
             if (!CanSubmitWait || !GetWindow().HasFocus() || !CanProcess()) { CancelFieldWait(); return; }
             _waitingAtInput = true;
             SubmitFieldWait();
@@ -459,9 +464,14 @@ public sealed partial class ExplorationSessionView : Control
         _result = submitted;
         if (command is LeaveChurch { Save: true } && submitted.Failure is null) _churchSaveRequested = true;
         _movementHold.Observe(_input, current, _result, command);
-        if (current.Story.Wait?.Token != _session.Current.Story.Wait?.Token) _tickTime = 0;
+        bool ordinaryTransition = current.HasOrdinaryFieldTime != _session.Current.HasOrdinaryFieldTime;
+        if (ordinaryTransition || !current.HasOrdinaryFieldTime && current.Story.Wait?.Token != _session.Current.Story.Wait?.Token)
+        {
+            _tickTime = 0;
+            if (ordinaryTransition) _resumeAutomatic = true;
+        }
         if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
-        else _tickTime = 0;
+        else if (!current.HasOrdinaryFieldTime) _tickTime = 0;
         PublishResult("submit");
         bool skipping = current.Story.EntrySkip is not null || command is SkipBattleEntry;
         _audio?.Observe(_result, skipping);
@@ -753,6 +763,8 @@ public sealed partial class ExplorationSessionView : Control
         {
             sessionId = current?.SessionId, revision = current?.Revision, observationSequence = current?.ObservationSequence, mode = current?.Mode.ToString(),
             canWaitAtInput = current?.CanWaitAtInput, waitingAtInput = _waitingAtInput,
+            ordinaryTime = current?.HasOrdinaryFieldTime, settledFieldEntry = current?.HasSettledFieldEntry,
+            menuEntryPending = MenuEntryPending, menuEntrySteps = _menuSteps,
             canWaitForChoice = current?.CanWaitForChoice, choice = current?.Story.Wait as ChoiceWait,
             movementDirection = _input.MovementDirection?.ToString(),
             gameplayHeld = _input.GameplayHeld, choiceRequiresRelease = _choiceRequiresRelease,

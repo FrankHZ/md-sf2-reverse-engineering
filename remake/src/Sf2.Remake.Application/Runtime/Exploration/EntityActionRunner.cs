@@ -18,7 +18,7 @@ internal static class EntityActionRunner
     };
 
     internal static EntityActionTickResult Tick(ExplorationState world, ExplorationDirection? fieldMove = null,
-        IReadOnlyList<int>? storyFlags = null, bool fieldControl = false)
+        IReadOnlyList<int>? storyFlags = null, bool fieldControl = false, bool ordinarySprites = false)
     {
         var entities = world.AllEntities.ToDictionary(entity => entity.Slot);
         ushort spriteSize = world.SpriteSize;
@@ -38,7 +38,7 @@ internal static class EntityActionRunner
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
             // Selected ac_animSpeedX2 scenes animate even without translation. The
             // modern simulation tick owns this projection; it is not a VInt claim.
-            if ((entity.Motion.FlagsB & 16) != 0 && entity.Motion.AnimationCounter != 255)
+            if (!ordinarySprites && (entity.Motion.FlagsB & 16) != 0 && entity.Motion.AnimationCounter != 255)
             {
                 int counter = entity.Motion.AnimationCounter + 3;
                 entity = entity with { Motion = entity.Motion with { AnimationCounter = (byte)(counter > 30 ? 0 : counter) } };
