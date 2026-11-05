@@ -15,6 +15,11 @@ uv run sf2 verify adapter
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
+When the dependency plan selects the engine aggregate with private inputs, the private Battle01
+scenario/source-AI assertions require `SF2_PRIVATE_CONTROLLED_START` to resolve to the tracked
+`remake/reference/inputs/battle01-player-ready.json`, as specified by their battle verification owner.
+An entry-observation controlled party with different seeds is not interchangeable with that fixture.
+
 `OrdinaryFieldTimeTests` varies legal follower spacing/direction/seed, exercises unchanged unsettled
 save refusal followed by natural completion, ordinary/fixed/2x/suppressed sprite rules, actual NPC
 RNG and matched step/action sequences, and stale capture after an animation-only revision. Existing
@@ -96,7 +101,11 @@ transition/Cancel/pause/Quit escape, revealed text idle and real finite-audio re
 partitions and cap/fraction policy. The focused final behavior selection passes206 tests; adapter
 compilation has zero warnings/errors. Earlier completed failures remain in the slice handoff:
 unrepresentative follower fixture, old sprite-counter expectations, native setup/focus/content
-errors and exact floating-debt comparison. Corrections rerun their owning selections, not the
+errors and exact floating-debt comparison. The committed-plan aggregate completed with2140 passes,
+2 skips and3 failures: Caravan's old stationary-counter expectation and two private Battle01 checks
+using the entry-observation controlled start. The Caravan assertion now includes the ordinary +1
+phase; selecting the named Battle01 fixture fixes the two input mismatches without expectation
+changes. Their three owning test classes pass22 checks. Corrections rerun their owning selections, not the
 whole slow aggregate solely to erase failures. Native exit reports retain2–6 ObjectDB leak warnings
 on some runs; cause is **Unknown**, not a gameplay/presentation error-free cleanup claim. All owned
 processes exited. Exact candidate head, run paths, command results and actual CI belong to the frozen

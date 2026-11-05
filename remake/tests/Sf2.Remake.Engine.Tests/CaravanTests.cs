@@ -227,7 +227,8 @@ public sealed class CaravanTests
         Assert.True(session.Current.CanWaitAtInput);
         Assert.Equal(FieldTravelMode.Caravan, session.Current.Exploration!.TravelMode);
         Assert.Equal(new[] { 3, 2 }, session.Current.Exploration.CurrentEntities);
-        Assert.Equal(guest, session.Current.Exploration.Entities[new("guest")].Motion);
+        // Skipping the literal first slot preserves motion; the ordinary sprite phase still runs.
+        Assert.Equal(guest with { AnimationCounter = 1 }, session.Current.Exploration.Entities[new("guest")].Motion);
         Assert.Equal(0x6000, session.Current.Exploration.Entities[new("scout")].Motion.X);
     }
 
