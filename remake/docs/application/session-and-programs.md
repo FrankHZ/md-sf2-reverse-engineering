@@ -1,5 +1,214 @@
 # Session and Resumable Programs
 
+## Proposed ordinary exploration clock and save boundary
+
+**Proposed, not implemented or accepted scheduling. High rigor:** ordinary time, shared RNG,
+animation, modal ordering and persistence are coupled. This bounded
+[#1586 investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1586)
+recommends one implementation outcome: ordinary focused exploration advances without holding V;
+legal followers finish naturally; opening Save cannot freeze them permanently midway. Include
+[#1580](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1580) in that implementation's
+acceptance, rather than shipping a follower-only clock alongside it. This document authorizes no
+production change. The current [explicit field Wait implementation](../verification/field-programs.md#explicit-field-input-gameplay-wait)
+continues to describe today's behavior.
+
+### Original source and limits
+
+**Confirmed:** the original-source structures below are present at
+`ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`, the project's
+pinned US baseline. Links pin exact files/lines. They do not establish a new natural runtime trace,
+elapsed-time equivalence, or original save UX.
+
+| Boundary | Source and conclusion |
+| --- | --- |
+| Ordinary map input | [`ExplorationLoop` and `WaitForEvent`, explorationfunctions_2.asm:47–76,174–196](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/exploration/explorationfunctions_2.asm#L47-L196) install base services and controlled-entity script, then poll event/A/C input. The neutral loop branches back without an explicit `WaitForVInt` call; it does not disable interrupts or require a player Wait button. Movement input is consumed by `esc02_controlCharacter`, [entityscriptengine_2.asm:194–275](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityscriptengine_2.asm#L194-L275). |
+| Interrupt versus blocking wait | [`WaitForVInt`, vintengine_1.asm:144–152](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/interrupts/vintengine_1.asm#L144-L152) enables update and waits for `WAITING_NEXT_VINT` to clear. [`VInt`, vint.asm:10–40,64–94](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/interrupts/vint.asm#L10-L94) tests/clears `ENABLE_VINT`, does display/fade/Z80 work, calls enabled contextual functions, clears that wait and re-arms from `VINT_ENABLED`. [`EnableInterrupts`, vdpcontrol.asm:129–156](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/interrupts/vdpcontrol.asm#L129-L156) sets that byte and CPU mask. Blocking waits and ordinary polling therefore share interrupt services; one is not a prerequisite for every ordinary update. |
+| Input/service order | [`ApplyZ80BusUpdates`, applyfadingeffectandz80busupdate.asm:122–195](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm#L122-L195) reads/derives controller state before contextual work. [`SetBaseVIntFunctions`, battlevints.asm:8–34](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlevints.asm#L8-L34) registers map planes → entities → view → scrolling → sprites → windows → map animations. `CallContextualFunctions` walks slots in order, gated by `VINT_FUNCS_ENABLED_BITFIELD`; this is an enabled-context order, not a whole-game universal clock. |
+| Motion, actions and RNG | [`VInt_UpdateEntities`, entityscriptengine_2.asm:34–54,1938–1966](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityscriptengine_2.asm#L34-L54) skips empty slots, runs each physical slot's `UpdateEntityData` before its action script, then advances to the next slot. `esc03_follow` at510 and `esc06_walkRandomly` at649 are actual gameplay, not sprite decoration. [Random walk at649–832](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityscriptengine_2.asm#L649-L832) calls `GenerateRandomNumber` before direction/bounds/collision handling; the [shared RNG at randomnumbergenerator.asm:10–23](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/randomnumbergenerator.asm#L10-L23) writes `RANDOM_SEED`. Neutral time can change destinations, occupancy and later RNG history. It does not imply a draw on every tick. |
+| Standing versus movement animation | [`VInt_UpdateSprites`, entityscriptengine_1.asm:49–106](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityscriptengine_1.asm#L49-L106) first clips/skips blinking/special cases, then selects normal frame2 for signed counter ≥15. Counter -1 disables advancement; otherwise it adds1, adds another2 for `FLAGS_B_2X_ANIMATION_SPEED`, and wraps above30. No movement predicate gates that normal increment. Separately, [movement at entityscriptengine_2.asm:2136–2140](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityscriptengine_2.asm#L2136-L2140) adds a travel-derived amount unless counter=-1; `esc14_setAnimationCounter` at1489–1503 sets1 or-1. A stationary normal actor can animate; a fixed/scripted or skipped sprite need not. |
+| Menu and text callers | [`ProcessPlayerAction`, explorationvints.asm:10–17,94–108](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/exploration/explorationvints.asm#L10-L108) idles/stops the controlled entity and waits for view scroll, then deactivates entity/view services around `FieldMenu` and reactivates them. It does not deactivate the sprite service there, nor prove all followers stopped. [`WaitForPlayerInput`, input.asm:58–66](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/input.asm#L58-L66) instead tests input first, calling `WaitForVInt` only for a nonaccepting poll. Text caller enablement and accepting-poll ordering must remain separately owned. |
+
+Reproduce this static review against the existing read-only pinned checkout with
+`git -C <pinned-upstream> rev-parse HEAD`, `git -C <pinned-upstream> status --short`, and
+`git -C <pinned-upstream> show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<linked-path>`.
+Use the named symbols/line spans; no ROM execution, rebuild or new acquisition is required.
+**Inferred:** automatic ordinary exploration opportunities are closer to that source structure
+than a stopped world awaiting V. **Unknown:** exact original natural idle phases, every caller's
+enable transitions, hardware timing and visible standing cadence at the reported save location.
+This recommendation does not promote those Unknowns to a runtime-fidelity claim.
+
+### Current cause and what automatic time fixes
+
+**Confirmed:** remake structure at accepted `b0f7871a`:
+[`CanWaitAtInput`](../../src/Sf2.Remake.Application/Runtime/SessionContract.cs) describes player
+command readiness, not world/save stability. It requires ordinary field continuation with no
+cursor/callers/wait/event/battle entry, closed text and a nonbusy, sprite-ready player; it does not
+require settled followers. [`ExplorationDispatcher`](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationDispatcher.cs)
+admits one `WaitAtInput`, binds field music when needed and routes it through `AdvanceSimulation`.
+The service respects entity enablement, slot order, movement before action and shared RNG; the
+receipt is `gameplay-wait` rather than `simulation-tick`. Generic elapsed ticks already service
+committed player movement; text/choice delivery has separate guards and tokens.
+
+[`ExplorationSessionView._Process`](../../game/src/Exploration/ExplorationSessionView.cs) clears
+elapsed debt and returns at `CanWaitAtInput` unless movement or explicit Wait is supplied. This
+can strand followers when the player arrives first. The
+[retained read-only investigation](../../../docs/operations/godot-live-inspection.md#interpreting-save-refusal)
+**Confirmed** unchanged revision/tick and a physically moving follower across snapshots.
+**Inferred:** that host stop explains the persistent refusal; no target-side `QuerySave` was invoked.
+The [human follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1580#issuecomment-6667523004)
+reports V → completed followers → successful slot2 save, supporting this cause without substituting
+for an instrumented post-V query. No new observation was run for this design.
+
+Automatic time removes this starvation, but does not alone make saving reliable:
+[`ShowSystemMenu`](../../game/src/GameRoot.cs) can open before motion settles, queries once and
+[`ApplyHostPause`](../../game/src/Entry/WindowSupportHost.cs) disables exploration processing.
+A perfectly working free clock would then pause the same unfinished follower behind a disabled Save.
+Also, [`EntityActionRunner`](../../src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs)
+currently adds stationary animation progress only for the selected 2x flag; ordinary motion owns
+travel increments. Merely scheduling that runner does not supply the missing normal standing pass.
+
+### Recommended finite scheduling contract
+
+Reuse the current session, immutable motion/counter state, host accumulator and service commands.
+Do not add a parallel follower scheduler, RNG stream, generic clock platform or render-owned actor
+state. `CanWaitAtInput` remains readiness for a neutral field opportunity, even when followers are
+moving; save stability remains a stricter independent query.
+
+- In focused, visible, unpaused ordinary exploration, use 60 fixed logical steps/second for both
+  committed ordinary walking and neutral field time. At each step, service existing movement via
+  `AdvanceSimulation(token, 1)` or settled input via the existing `WaitAtInput` path. Automatic use
+  means a neutral service opportunity, not a synthetic physical keypress. Keep its music prelude
+  and service ordering; do not run both paths for the same step. No direction/action is invented.
+- Reuse `_tickTime` with at most four ordinary steps per callback, retaining only a fractional
+  step and dropping excess whole-step backlog after that cap. This is a proposed responsiveness
+  limit, not an original timing constant. Slow/stalled rendering may slow gameplay; it cannot
+  trigger a long catch-up burst. Check fresh session/revision, mode, token, pause and failure after
+  every result; stop the batch on a consumer transition. Clear debt at pause/handoff/replacement;
+  resume with a fresh delta, never paused duration. No background thread or additional timer.
+- Apply available physical action/menu intent before the next neutral opportunity. An accepted
+  Move installs its existing movement request, whose first service consumes that step; an
+  interaction/transition hands control to its existing caller instead of receiving an extra idle
+  service. No stale input envelope may be replayed after a revision change. Release barriers still
+  prevent held movement/Confirm/Wait crossing focus, modal or consumer boundaries.
+- Ordinary V/Pad Wait must neither be required nor add a second opportunity/accelerate the clock.
+  Remove its ordinary-field help requirement. Keep `WaitAtInput` for deterministic direct stepping
+  and existing diagnostics; retain the configurable Wait binding at the separately admitted text
+  and choice consumers until their follow-up policy is accepted.
+- Add the missing normal standing sprite-counter phase at this ordinary field boundary, after
+  entity movement/actions, separately from entity-service enablement, using the existing counter
+  and fixed 255 / normal +1 / 2x +3 / wrap-above-30 rules.
+  Replace the overlapping 2x increment here, do not double it; align frame selection at 15 with
+  the named source. Admit normal visible actors only, preserve fixed/scripted/special poses and
+  existing movement contributions. The finite modern policy advances these visible actors even
+  off-camera, independent of physical window size/render rate; original clipping/blinking phase
+  parity is not claimed. Add no idle RNG or coordinate wobble. Script/nod/battle sprite services
+  outside ordinary field control retain their current owners and are not silently retimed.
+
+Determinism means identical initial state/content and the same ordered logical opportunities/actions
+produce identical results, including the shared seed. It does not require a human to press Wait,
+nor equal real holding durations or an unchanged old whole-history trace. Compare matched states
+and explicit step/action schedules directly; automatic play naturally changes how many NPC draws
+occur before interaction/battle entry. Keep completed reference failures and original Unknowns;
+do not reseed, split RNG, normalize NPCs or revive a full-route golden to hide this difference.
+
+| State/owner | Proposed ordinary-clock responsibility |
+| --- | --- |
+| Field input / committed ordinary movement | Continue the existing enabled field service, including autonomous NPCs and follower follow-up decisions, not only already-started translations. Input-ready does not mean persistent-ready. |
+| System/party/settings/save modal | Pause world and ordinary sprite progression after the bounded entry procedure below where applicable. No time debt or world updates behind a mounted modal. This full modal freeze is a modern policy; the original field menu leaves some other VInt services registered. |
+| OS focus loss, hidden view, tree pause, window recovery, failure | Suspend immediately, even during pending menu settlement; disarm input and pending host intent. Focus return requires fresh input, no catch-up. Never defer a real OS pause to finish saving. |
+| Text reveal, W1/plain/field text input, choice, Search result, Church/Shop | No new automatic ordinary opportunities. Keep each existing mandatory-work, delivery, token, explicit poll and acknowledgement contract. Reveal-only Confirm and slow reading/rendering add no gameplay steps. Church Save may request ordinary settlement only after its genuine caller return. |
+| Script waits, finite music, warp/load/fade, scene/battle handoff | Yield ordinary scheduling; existing owners run their required work or wait for delivery. Keep the modern finite-music logical-end plus actual-completion gates and sound-before-entity service order. No audio-duration-derived field ticks and no extension into battle choice/turn time. |
+
+Extending automatic neutral time to text/choice input is a separate bounded follow-up: review each
+caller's enable flags and input-first versus service-first accepting poll, token occurrence and
+reveal/delivery boundary before changing that consumer. Thus this proposal removes V from ordinary
+exploration, not from every current diagnostic or text wait, and makes no whole-game time claim.
+
+### Menu entry, capture and restoration
+
+Use a small disposable host menu/save intent, reusing the Church close-then-Save pattern. When a
+menu or direct Save is requested at ordinary field control (or during its already committed player
+move), stop accepting new movement/interactions. Before mounting the modal, continue the same
+ordinary enabled steps until that move and visible follower motion/`WaitingForMotion` and sprite
+readiness settle. Check after every published step and freeze at the first such boundary; do not
+wait for every ambient NPC script to become idle or for every save recipe to become available.
+No follower-only service, teleport, action clearing, manual completion or guard relaxation is used.
+
+Bound this pending entry to 120 logical steps (two nominal seconds), with cancel available. This is
+a proposed failure limit, not a claim that every legal setup settles in 120 steps. Failure, unexpected
+caller/warp/battle transition or budget exhaustion cancels settlement and opens only the ordinary
+paused menu with Save unavailable and an accurate reason/Resume path; no hidden retry loop or
+successful-save claim. Cancel during pending entry freezes immediately and opens the existing
+paused menu; Quit bypasses settlement and uses the existing unsaved-progress confirmation. Neither
+pause nor exit depends on follower convergence, and neither bypass saves. Immediate OS pause cancels
+the pending intent. Requests from other busy
+story/battle consumers open their usual paused menu immediately, without attempting to finish
+story work. Party/settings modals may pause immediately; their close returns to fresh ordinary time.
+Route system menu, direct Save and returned Church Save through the same boundary so none can
+bypass settlement before offering Save. This short ordinary menu-entry policy exists to avoid
+freezing a transient save blocker; it is not a stability gate for all UI. Party/settings do not capture
+progress, and OS/explicit pause and Quit take priority over obtaining a save offer. Unsupported save
+locations still allow menu access promptly once transient motion ends or the player cancels settlement.
+
+After settlement, freeze dispatch, perform any actual `ObserveFieldMusic` history publication,
+then call `QuerySave` and build the offer from that final revision. Keep dispatch paused through
+slot/overwrite confirmation and `CaptureSave(offer.SessionId, offer.Revision)`. The latter must
+revalidate; stale session/revision returns failure/requery, never overwrites using an old offer.
+Cancel resumes fresh time; reopen queries anew. Do not query a live advancing world and then
+hold its offer across ticks. Neither Query nor Capture may settle entities or advance RNG itself.
+
+[`OpeningSave.RequireStable`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs)
+and the [savepoint owner](opening-session-lifecycle.md#implemented-savepoint-boundary) remain
+binding: supported map/phase/anchor, party/resource/music knowledge, settled player/followers,
+sprite readiness, closed dialogue/portrait, completed view/fade, no busy story/warp/battle/service,
+and reconstructible progress are still required. Allowed ambient motion is already discardable
+under the recipe; it must not become a new reason to wait forever. Automatic time does not add
+interior/later-map recipes, arbitrary suspended-state saving or original SRAM parity.
+[`OpeningRestore`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs) still
+rebuilds the finite savepoint off-session, preserves captured seeds/progress and performs no
+ordinary-service RNG draws before publication. NPC phases and fresh music playback may differ from
+uninterrupted play. Under this proposal, the first *eligible automatic* step after mounting resumes
+ambient work; the current owner's “next deliberate service” wording must be updated at implementation.
+For the first implementation, retain the conservative unsaved warning in
+[`OpeningPersistenceHost.PresentQuitChoices`](../../game/src/Entry/OpeningPersistenceHost.cs):
+`_savedRevision != Current.Revision` can become true on the first automatic step after saving,
+including an animation-only step that changes no durable progress. NPC steps can also change the
+saved seed. This deliberate first-slice tradeoff may over-warn; it must not describe every revision
+as lost story progress. Verify both cases and preserve Cancel/exit access. Do not reset revisions,
+weaken stale-offer checks or introduce hashes/a second dirty-state authority to hide the warning.
+A later persistent-value comparison, if requested, belongs to the save/quit owner, not this clock fix.
+
+### Implementation acceptance and remaining Unknowns
+
+One coherent follow-up should own the session/host ordinary scheduler, missing normal sprite phase,
+menu/save entry and their direct behavior assertions/docs. Reuse existing input/state observers,
+save store and restoration recipes; no new framework or broad capture matrix. Acceptance is:
+
+1. Actual engine steps with a stopped player and moving followers settle and make `QuerySave`
+   available at an already supported recipe. Vary direction, follower spacing and seed; blocked
+   or disallowed work retains its real failure. Enabled NPC walking/collision consumes the existing
+   shared RNG in order; suppressed services, fixed 255 and ordinary/2x counters remain distinct.
+2. Fixed step/action schedules agree across callback partitions; idle V cannot double-step. One
+   bounded native ordinary walk/release observes follower completion, standing frame change and
+   usable control without V, including a genuine physical-focus/modal pause with zero resume debt.
+3. Immediate system-menu/direct-Save entry after player arrival, plus Church caller-return Save,
+   settle before freeze/query. Cover cancellation, the settlement budget/transition stop and stale
+   revision rejection, immediate pause/quit escape and the retained conservative quit warning after
+   animation-only versus RNG-changing steps. Confirm one supported slot, Continue through the existing recipe, and check
+   persistent resources/seeds before its first automatic step; keep actual user slots untouched.
+4. Busy text/story/sprite, unsupported location and battle still reject saving; ordinary ticks do
+   not enter those consumers. A narrow existing text/finite-music boundary observation retains
+   delivery-versus-logical gating. No full campaign replay, new emulator capture or tests of probes.
+
+**Unknown:** the proposed implementation's runtime behavior, settlement bound adequacy, every
+legal follower configuration's convergence, original offscreen/standing phase fidelity and future
+text-idle policy. These do not justify declaring saving universally solved. Source/service ordering
+and the bounded acceptance above are enough to implement the recommended outcome; any observed
+nonconvergence must be attributed to its owning movement/content rule, not hidden by saving mid-motion.
+For this design-only change, use direct document/link/source checks and a clean committed
+`uv run sf2 verify plan --base origin/main --head HEAD`; record actual CI separately. No SDK,
+engine/full suite, native process, asset generation or original-game acquisition belongs to this review.
+
 ## Finite Galam shop transactions
 
 **Implemented finite capability; Standard rigor, existing transactional High retained.** `OpenShop`

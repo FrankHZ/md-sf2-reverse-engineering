@@ -866,6 +866,14 @@ earlier first-warp NPC phase gap has been fixed.
 
 ## Explicit field-input gameplay Wait
 
+**Current implementation, not the proposed ordinary-play policy.** The bounded
+[ordinary exploration clock and save-boundary design](../application/session-and-programs.md#proposed-ordinary-exploration-clock-and-save-boundary)
+recommends automatic neutral field opportunities, normal standing animation and menu-entry
+settlement, absorbing the follower-save starvation issue. It is not implemented by this documentation
+change. The observations below retain their original explicit-Wait results; they are not player UX
+requirements or proof that automatic time alone makes every location saveable. Text/choice polling
+below remains outside that proposed ordinary-field cutover.
+
 `WaitAtInput` is an engine command for one deliberate opportunity at a settled field-input
 consumer under [Option A](../../../docs/decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a).
 It carries neither a wait token nor a batch count. The current session/revision identifies the
