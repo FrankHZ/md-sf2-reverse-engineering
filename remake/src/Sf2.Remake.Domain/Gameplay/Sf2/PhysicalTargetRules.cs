@@ -67,7 +67,7 @@ internal static class PhysicalTargetRules
         return new(selected, (byte)maximum, (byte)Math.Min(15, maximum));
     }
 
-    // aipriority.asm: only the seven admitted source classes. Physical callers select
+    // aipriority.asm: admitted source classes. Physical callers select
     // by mover; CAST_SPELL overrides it with Mage. Geometry and class are separate inputs.
     internal static int ClassRank(byte? classId, PhysicalPriorityTable table) => classId switch
     {
@@ -78,6 +78,7 @@ internal static class PhysicalTargetRules
         4 => table == PhysicalPriorityTable.Mage ? 24 : table == PhysicalPriorityTable.Archer ? 8 : 5,
         5 => table == PhysicalPriorityTable.Flying ? 27 : 15,
         10 => table == PhysicalPriorityTable.Flying ? 25 : table == PhysicalPriorityTable.Mage ? 19 : 13,
+        11 => table == PhysicalPriorityTable.Flying ? 18 : table == PhysicalPriorityTable.Mage ? 2 : 30,
         _ => throw new BattleRuleException("ai-target-class", "target.classRule", true),
     };
 }

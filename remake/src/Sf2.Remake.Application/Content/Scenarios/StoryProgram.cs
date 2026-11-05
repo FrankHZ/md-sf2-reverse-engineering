@@ -32,7 +32,10 @@ public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
 public sealed record CloseText : StoryInstruction;
 public sealed record WaitForView : StoryInstruction;
-public sealed record ChooseYesNo(int ResultFlag) : StoryInstruction;
+public sealed record ChooseYesNo(int? ResultFlag, ProgramLocation? NoTarget = null) : StoryInstruction;
+public sealed record NamePartyMember(int Member) : StoryInstruction;
+public sealed record SetCameraSpeed(ushort Speed) : StoryInstruction;
+public sealed record AddExplorationFollower(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
 public sealed record SetEntitySprite(EntityRef Entity, int Sprite, bool Ally = false) : StoryInstruction;
 public sealed record SetEntityDestination(EntityRef Entity, MapPosition Position, bool Wait) : StoryInstruction;
@@ -62,7 +65,7 @@ public enum EntityScriptInstallation { Preserve, SlotTimer, SlotTimerClearCollis
 public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Actions, bool Wait,
     EntityScriptInstallation Installation = EntityScriptInstallation.Preserve,
     Runtime.Exploration.EntityWaitCompletion? Completion = null) : StoryInstruction;
-public sealed record WaitForEntity(EntityRef Entity) : StoryInstruction;
+public sealed record WaitForEntity(EntityRef Entity, bool ScriptIdle = false) : StoryInstruction;
 public sealed record JoinPartyMember(int Member) : StoryInstruction;
 public abstract record OutcomePartyInstruction(int Member) : StoryInstruction;
 public sealed record ClearOutcomePartyAi(int Member) : OutcomePartyInstruction(Member);
@@ -70,7 +73,8 @@ public sealed record LeaveOutcomeBattleParty(int Member) : OutcomePartyInstructi
 public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,
-    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null, int? DurationTicks = null) : StoryInstruction;
+    EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null, int? DurationTicks = null,
+    int? SoundCommand = null) : StoryInstruction;
 // ExecuteFading is synchronous, full-mask black, with one final VInt service.
 // A supplied period is temporary; null consumes the live period.
 public sealed record FullBlackFade(byte? Period = null);
@@ -81,6 +85,7 @@ public sealed record UnsupportedInstruction(string Opcode, string Source) : Stor
 public abstract record EntityAction;
 public sealed record MoveEntityRelative(int X, int Y, bool Wait = true) : EntityAction;
 public sealed record MoveEntityAbsolute(MapPosition Position, bool FieldInput = false) : EntityAction;
+public sealed record PositionEntity(MapPosition Position) : EntityAction;
 public sealed record RandomWalkEntity(MapPosition Origin, int Radius) : EntityAction;
 public sealed record FaceEntity(byte Facing) : EntityAction;
 public sealed record WaitEntityTicks(byte Ticks) : EntityAction;

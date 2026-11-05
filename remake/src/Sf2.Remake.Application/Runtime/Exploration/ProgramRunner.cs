@@ -29,7 +29,7 @@ internal static class ProgramRunner
         {
             try
             {
-                if (current.Story.Wait is ChoiceWait) current = BattleEntrySkip.Disarm(current, observations, "choice");
+                if (current.Story.Wait is ChoiceWait or NameWait) current = BattleEntrySkip.Disarm(current, observations, "choice");
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
                 if (current.Story.Cursor is not { } cursor)
                 {
@@ -220,11 +220,19 @@ internal static class ProgramRunner
                         var joined = MapPartyMembership.Join(current.Story.Flags, layout, join.Member);
                         active = JoinResources(definition, current, join.Member);
                         story = story.Copy(story.Cursor, flags: joined.Flags, partyLists: joined.Lists); break;
+                    case AddExplorationFollower added:
+                        var followerWorld = current.Exploration!;
+                        int lastSlot = followerWorld.CurrentEntities.LastOrDefault();
+                        active = new ActiveExploration(followerWorld.WithFollower(FollowerMotion.Install(Entity(current, added.Entity), lastSlot, -24, 0)));
+                        break;
                     case FollowEntity follow:
                         int leaderSlot = Entity(current, follow.Leader).Slot;
-                        active = EditEntity(current, follow.Entity, entity => FollowerMotion.Install(entity, leaderSlot, follow.OffsetX, follow.OffsetY)); break;
+                        active = new ActiveExploration(current.Exploration!.WithFollower(FollowerMotion.Install(Entity(current, follow.Entity), leaderSlot, follow.OffsetX, follow.OffsetY))); break;
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
                     case SetDialogueSpeaker speaker: story = story.Copy(story.Cursor, speaker: speaker.Entity, clearSpeaker: speaker.Entity is null); break;
+                    case SetCameraSpeed speed:
+                        if (story.TextSettings is null) throw new BattleRuleException("field-text-settings", "program.camera", true);
+                        story = story.Copy(story.Cursor, textSettings: story.TextSettings with { ViewSpeed = speed.Speed }); break;
                     case SetCameraTarget target:
                         if (story.Continuation == ProgramContinuation.DefeatedProgramFinished && story.EnteringBattle?.Outcome?.BattleOrigin is { } cameraOrigin)
                             target = target with { Position = new(target.Position.X + cameraOrigin.X, target.Position.Y + cameraOrigin.Y) };
@@ -354,10 +362,15 @@ internal static class ProgramRunner
                         }
                         story = story.Copy(story.Cursor, textWindow: new ClosedTextWindow(),
                             portraitWindow: story.PortraitWindow is UnknownPortraitWindow ? new UnknownPortraitWindow() : story.PortraitWindow); break;
+                    case NamePartyMember name:
+                        var namedActor = CharacterNames.Binding(definition, name.Member);
+                        if (!current.Exploration!.Party.Actors.Any(actor => actor.Actor == namedActor))
+                            throw new BattleRuleException("name-member", "program.name", true);
+                        story = current.Story.Copy(cursor, new NameWait(token, name.Member)); break;
                     case ChooseYesNo choice:
                         if (current.Story.TextSettings is not null) ExplorationTextRunner.ValidateContext(current);
                         story = current.Story.Copy(cursor, new ChoiceWait(token, choice.ResultFlag,
-                            current.Story.TextSettings is null ? null : new ChoiceWork())); break;
+                            current.Story.TextSettings is null ? null : new ChoiceWork(), choice.NoTarget)); break;
                     case WaitProgramTicks ticks when ticks.Ticks > 0:
                         story = current.Story.Copy(cursor, new TickWait(token, ticks.Ticks)); break;
                     case WaitProgramTicks: break;
@@ -530,7 +543,8 @@ internal static class ProgramRunner
                                 ? EntityWaitCompletion.NotBusy : EntityWaitCompletion.ScriptIdle)));
                         break;
                     case WaitForEntity wait:
-                        if (Entity(current, wait.Entity).Busy) story = current.Story.Copy(cursor, new EntityWait(token, wait.Entity));
+                        if (wait.ScriptIdle ? !Entity(current, wait.Entity).IsScriptIdle : Entity(current, wait.Entity).Busy)
+                            story = current.Story.Copy(cursor, new EntityWait(token, wait.Entity, Completion: wait.ScriptIdle ? EntityWaitCompletion.ScriptIdle : EntityWaitCompletion.NotBusy));
                         break;
                     case TransferToMap transfer:
                         story = story.Copy(story.Cursor, clearWarp: true);
@@ -606,7 +620,7 @@ internal static class ProgramRunner
         {
             FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
-            DialogueWait or W1TextWait or ChoiceWait or ChurchWait or ShopWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
+            DialogueWait or W1TextWait or ChoiceWait or NameWait or ChurchWait or ShopWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or PhysicalEntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

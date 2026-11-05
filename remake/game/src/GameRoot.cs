@@ -80,9 +80,10 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
+        RefreshPartyName();
         if (_menuButton is not null)
         {
-            _menuButton.Visible = _entry is null && _settings is null && _slots is null && _systemMenu is null && _windowRecovery is null;
+            _menuButton.Visible = _entry is null && _settings is null && _slots is null && _nameEntry is null && _systemMenu is null && _windowRecovery is null;
             _menuButton.Disabled = _exploration?.PartyMenuOpen == true;
         }
     }

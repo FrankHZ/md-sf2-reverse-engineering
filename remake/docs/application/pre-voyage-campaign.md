@@ -5,37 +5,121 @@ handoffs required by [the campaign issue](https://github.com/FrankHZ/md-sf2-reve
 Cross-chapter acceptance is **High** because encounter selection, field reload, recruitment and
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
-## Current Stage B implementation agreement
+## Current Stage C implementation agreement
 
-Stage B consumes the accepted Battle04 prison entry and stops at the first usable Battle06
-player control. Its implementation uses **High** scope: imported init dispatch, map-load audio
-and suspended battle scenes share mutable session state, so each stage needs its actual handoff
-before later acceptance. The source owners linked below govern prison movement/layout, F660–F664,
-follower F73 versus joined F5/active F37, Battle05's separate position/HP consumer, jewel F384,
-F406 and setup-specific services. No Battle06 result, later spell catalog, arbitrary save point,
-original natural-route claim or later F530 setup is included.
+Stage C consumes the accepted Battle06 entry and stops at usable exploration after Battle07's
+first victory in the tower. It uses **High** scope: optional recruitment, source scenes, encounter
+outcomes and persistence share live party state. The [Issue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1539)
+and the two source chapter guides linked below own its acceptance. Stage B's completed observations
+remain below. The ordinary Stage C route and usable Map58 return are observed in the remake;
+independent integration acceptance remains with main-gate.
 
-Implement in order: prison and passage consumers with real Map16 entry; Battle05 entry, special
-post-scene positions and outcome programs; then F663 services and actual Battle06 entry. Each
-increment retains the ordinary content selection. The six-member initialization uses gameplay
-revision 3, with the existing visible revision mismatch and protected older slots. A fresh New Game,
-legal Save and fresh-process Continue carries that party into this segment; no invented RNG history
-is used to migrate four/five-member progress.
+The selected implementation adds Battle06 outcomes, the F506 Granseal/castle variants, optional Kiwi
+consent/name/join, Astral/Lemon and royal following, Battle07 entry/combat/first-victory scene and the
+Map58 control handoff. F407 is intro-produced admission state; F506 is Battle06 completion state.
+Battle07 uses ordinary faction counts. Scene actors and persistent followers do not join the battle
+party. Kiwi uses the actual early TORT class, growth and unarmed visuals; promotion and later
+special mechanics remain outside this stage. No earthquake-town/departure implementation is included.
 
-Acceptance combines narrow engine behavior tests, affected Content/adapter builds and one compact
-ordinary-route observation with real victory, ordinary defeat/paid escape, repeated interactions,
-paid equipment/supplies and the next usable control. The existing shop transaction tests cover
-cancellation, full inventory and insufficient gold. Native checks read actual input/state/projection
-and errors; no screenshots or frame collection. Preserve completed failures and verify corrections
-at their affected boundary. Exact committed-head planner selection and public CI complete handoff.
+Use the existing program interpreter, waits, follower allocation, common battle rules and rendering.
+Source action lowering is separated from the previously full program compiler to admit the reached
+lying, disappearance and waiting instructions without another interpreter. Direct Yes/No returns
+branch without inventing csc06's F89 write. Naming uses the existing seven-character alphabet and
+name persistence. Gameplay revision 4 contains seven generated members; older revision-3 six-member
+slots retain their original world and are visibly rejected against the new revision. Do not infer
+missing initialization draws or inject a recorded Battle06 observation as a Continue save.
 
-Reuse the existing ten-map/four-battle inputs, adding Map16/18, Battle05/06 and Slade. The source
-program pilot has twelve maps and 377 programs. Before final export, measure a representative
-new scene and the serialized world. Initial incremental storage budget is 1 GiB, with shared WAVs
-and prior encounter inputs reused read-only; native reports remain at most 15 MiB. Preparation is
-linear in selected map/scene payloads, with one world resident in memory (allow 3 GiB peak RAM).
-Reassess a world/scene reader limit, missing asset or unexpectedly expanded dependency before
-scaling; keep all older generated worlds and private evidence.
+Acceptance uses small actual-engine behavior tests, affected Content/adapter builds and ordinary
+input through the real Battle06 result, changed town, Kiwi refusal/recruitment and repeated talk,
+royal following, Battle07 and its first-victory continuation. Verify source defeat/paid retreat/reentry
+and repeated-completion boundaries with representative variations. Record control, flags, party
+resources, costs/rewards, target projections and errors. Existing skip eligibility remains an entry
+delivery policy; it does not replace the victory program. Original natural reach and timing stay
+**Unknown**. Complete a clean-head verification plan and actual public CI before independent review.
+
+Reuse the twelve-map/six-battle inputs and reviewed WAVs; add Maps60/58 and Battle07. The initial
+fourteen-map world measures 114,271,642 bytes and the Battle07 base scene export totals 1,692,520
+bytes. Preparation is linear in selected content with one resident world (3 GiB peak RAM allowance).
+Budget 1 GiB incremental storage and retain a 2 GiB write floor; reports remain at most 15 MiB.
+Music is game content, accounted separately from reports. Reassess missing cues, reader limits or
+expanded dependencies before scaling. Keep all old worlds, legal saves and completed failures.
+
+### Stage C source operations and presentation boundary
+
+The pinned source remains `ShiningForceCentral/SF2DISASM` at
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, with the verified USA ROM from the private-input owner.
+The two chapter guides below own the accepted outcome and caller order. Additional consumed seams:
+
+- `disasm/data/maps/entries/map03/mapsetups/s2_entityevents_506.asm`,
+  `Map3_1FA_EntityEvent15` and `cs_512BA`: direct returned Yes/No, `j_NameAlly`, join and
+  `addNewFollower`. Decline does not write F89, name or membership; naming precedes joining.
+- `disasm/code/common/scripting/map/mapscriptengine_1.asm`, `csc56_addFollower`:
+  append after the last physical exploration slot; a present follower is not duplicated.
+  F83/F74 scene-following and force membership remain separate.
+- `disasm/data/scripting/entity/eas_battleneutralentities.asm`, `eas_LyingLeft`,
+  `eas_LyingRight`, `eas_Motionless`, and `eas_actions.asm`: orientation, motion-off/idle,
+  sprite resize/refresh, absolute position and accelerated animation. `waitIdle` waits for the
+  idle action program, independently of a stationary entity. `cameraSpeed` overrides ordinary
+  scrolling speed while preserving the current plane/parallax contract.
+- `disasm/code/gameflow/battle/battleactions/createbattlesceneanimation.asm` and
+  `battlescenes/battlesceneengine_1.asm`, `GetEnemyAnimation`: the selected early enemies use
+  their ordinary species animation when casting. The producer emits that cast sequence.
+  `battlescenes/getweaponspriteandpalette.asm` and `battlesceneengine_0.asm` omit weapon
+  operands for unarmed Kiwi; his battle sprite is6/palette0 and field sprite16. The source
+  `data/battles/global/aipriority.asm` ranks TORT at30 in Regular/Archer,18 in Flying and2
+  in Mage; the common AI target tie-break consumes class11 without substituting another class.
+
+The adapter projects orientation and centered resizing with nearest-neighbor raster operations.
+Slide-out is finite and retains a blank sprite until reload or slide-in. Accelerated animation
+advances the selected source bit's counter by3 per modern simulation tick, retaining motion-off255;
+ordinary animation keeps its existing cadence. These are bounded modern projections, **not**
+bit-exact sprite transforms or equality with the source VInt clock. Original natural timing remains
+**Unknown**. Naming retains the existing alphabet/length and save payload; it adds no new safe point.
+
+### Stage C audio reproduction
+
+Source Sound operands identify commands. Multiple reviewed SFX recordings are selected using the
+live music timer; unique finite recordings retain the existing explicit reuse policy. Music keeps
+its resource identity for logical waits/history. There is no first-candidate fallback for ambiguous
+SFX. Kiwi's speech69 uses PSG tone3; lightning82, hit84 and demon breath117 use YM6, as given by
+`sounddriver.asm` and the existing H2 sound inventory's active-slot records.
+
+Use the finite audio-only recipe below with the table's command/timer, source stream pointers,
+verified ROM and registered BizHawk installation. Start music34 for timer189, music2 for198,
+music38 for210 and music12 for196; stop with254 and dispatch at frame243. Each isolated capture
+retains channel termination and quiet-tail evidence. The cuts keep441 unchanged samples before
+and after the active interval. Supply each generated candidate to the ordinary world producer;
+WAVs/captures remain private. These observations concern the original driver in isolation and do
+not establish natural original scene reach or interrupt phase.
+
+| Command / timer | Capture SHA-256 | Cut [start, end) | All inactive frame |
+| --- | --- | --- | --- |
+| 81 / 189 | `5DC52583628F737F6D119DF2082B18010FCA5B521AE1BAAA702B58A3893F8AE4` | 179310, 195361 | 271 |
+| 82 / 189 | `9B5EC30732D3A69A1C81FD19C1C30051B3B6A046BF74EC0E16702D664F9531FA` | 179310, 198371 | 277 |
+| 84 / 189 | `58CE1A923AFAD96EDD1E83CA2AF19D0C3CA30E413983E96AEF9EB53E4FD1A367` | 179310, 199046 | 268 |
+| 92 / 189 | `EBF94E3158A275CB5BD5C3E8D772CEC50631D5AF8CA0A9F028853CAD9CC23F03` | 179324, 191899 | 256 |
+| 117 / 189 | `CF63B9E59E92B9D6C3C947963927A8028EF1A0A535E13345CF97FA2FA7EF530A` | 179310, 262660 | 354 |
+| 93 / 189 | `3E6DC78F69102C3831DAAF421A7BE4737B47CD0AE7AC25C9586844BAC81A0341` | 179325, 290483 | 389 |
+| 81 / 198 | `8E170BA689BB956F265696A6786FA91BCF87B29DAD9FE3D742BF886B3A057C00` | 179374, 195613 | 267 |
+| 92 / 210 | `F212A64B327ED7C984CC15D8654133E201850A2A7A0ECDEF92A8188F45ADA80F` | 179222, 188791 | 252 |
+| 65 / 196 | `B66619C90801341983245CF55A32C22F1F20DDAC1C74170B0E18BF3BB4C7E97D` | 179442, 194351 | 260 |
+| 67 / 196 | `FCB7F81E63B4987A8F8F08D90F0B8EA0042569BCC2EFDF7DE349890D3C95815C` | 179354, 208327 | 279 |
+| 69 / 196 | `01DE19542D16515BA7548A6FDD727C542C9EAB4A98C8E720E3EBC2F554DC085B` | 179368, 187604 | 248 |
+| 70 / 196 | `E1F8B6A3120D7C54FBD256798B48FFCCBF3F5EEE7481A241551E0B67A711DA73` | 179378, 187480 | 248 |
+| 73 / 196 | `32CD4BFAA86CE0BA4D7F9B50376AD87E0E97CCDA854D1D929DA9FE30FBD2D207` | 179352, 187643 | 248 |
+| 74 / 196 | `1C3722DF599263D30AC0ACDDF2B89575F1EDA34292DB5C5CDC9448D1AA1867DC` | 179463, 187565 | 248 |
+| 89 / 196 | `957DCAEB3214F651747FBD62AC7C2566CC6FE8BDDBEB2FB2203410C3531429E1` | 179519, 206283 | 286 |
+| 92 / 196 | `7F7A2525839A65F175754D346D54067D9822CE32EF82CD729B585BB5D7939699` | 179439, 190887 | 255 |
+
+For music6 (`MUSIC_BOSS_ATTACK`, timer204), the 6400-frame isolated capture SHA-256 is
+`BBE3D9212EC4550D8A23760D7FF1860695F438F86E7D123FFBD2BE521621F1E0`.
+Its channel0 cursor rewinds at frames1456,2669,3882,5095,6308. The pinned `music06.asm`
+streams each contribute1296 macro ticks across all eight active channels. **Inferred modern loop:**
+cut capture samples[178620,1351110), runtime loop[279805,1172490). Five local recurrence lags
+span892682–892691 samples; the selected median is892685, with a quiet seam below200 PCM16 units.
+Correlations vary because original oscillator phase is free-running; this does not assert waveform
+phase equality. Use the ordinary `sf2tool.remake_audio` command below with these bounds and
+`--loop-begin 279805 --loop-end 1172490`. The selection pins its runtime WAV digest.
 
 ## Session and handoffs
 
@@ -51,7 +135,7 @@ setup, placement/facing, egress register, result and next accepted input at each
 | A · Battle03 outcomes, Hawel recruitment and Battle04 observed. | Battle03 victory clears F403, sets F503 and uses the first party member's final tile plus origin. Defeat restores Bowie, halves gold and uses egress. Paid escape takes its own egress return. Map66 (6,5) enters Map43 (6,11) Up. Default setup runs the house scene; F612 selects the revisit. Join Kazin (F4, active subject to capacity), follow, clear F72, set F404. Caller sets F612/F650, clears F72 and writes egress 43. | Ordinary input played the house scene, inspected the diary, exited and revisited the F612 setup in the three-encounter world. The level-4 mage retained his generated stats, equipped rod and herb. House init has no F503 or F72 gate. Battle04 exercised Kazin BLAZE with the selected enemy recipient, and Galam Archer attacks from distance 2, with result messages and resumed turns. |
 | A · Battle04 outcomes and prison entry observed. | First victory stages Lemon's capture warp, executes the shared Bowie join tail, clears F404 and sets F504 before returning Map17 (0,0) Right. Completed victory skips capture and uses the saved ordinary victory return. Special defeat restores Bowie and halves gold, clears F404, sets F504 and overrides the egress map to 17; retain egress coordinates/facing. With egress 43 these are (7,5) Down. Legal EGRESS/Wing consumes its actual resource and returns to the egress map; first escape leaves F404 armed. | First victory and special defeat reached their distinct Map17 entry operands, then the first text 880 input. Paid EGRESS returned to Map43 and allowed re-entry. Stage B owns the remaining F660-gated prison program and subsequent interactions. |
 | B · Captivity through Battle06 first usable control observed. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Actual first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). The jewel is F384, not an inventory award. | Prison/maid first and repeated interactions, actual defeat/paid EGRESS/retry, completed guard/interior revisit, paid Buy/Sell/equipment/supplies and six living members on the Battle06 board are observed below. No Battle06 result is admitted. |
-| C · Battle06 through Battle07 tower return. Pending. | Battle06 victory clears F406, sets F506 and returns on Map66. Map3's changed setup offers Kiwi (joined F6, active F38 subject to capacity). Battle07 admission uses F407. First victory sets F74/F640 through its scene and clears F407/sets F507 through the caller. Preserve Slade, Kiwi and royal followers in their separate roles. | Exercise join and bypass for Kiwi, real changed equipment, enemy support and reached statuses, costs, deaths and resumed control. |
+| C · Battle06 through Battle07 tower return observed. | Actual Battle06 victory clears F406, sets F506 and returns on Map66. Map3's changed setup offers Kiwi (joined F6, active F38 subject to capacity). Battle07 admission uses F407. First victory sets F74/F640 through its scene and clears F407/sets F507 through the caller. Slade, Kiwi and royal followers retain their separate roles. | Refusal, castle bypass, later naming/join and repeated talk; paid Battle07 EGRESS/re-entry; ordinary faction combat, casualties, silence/suppressed cast, full first-victory program and usable Map58 movement are observed. |
 | D · Tower aftermath through departure. Pending. | The Map57 tower return carries F507 and F74/F640. The castle's Map3 request selects quake Map4 on F640. Map44 departure clears F74/F640 and requests Map73 (26,13) Right. Admit the first stable successor control. | Check ordinary interactions, refusal/acceptance where offered, and fresh-process Continue from an existing legal point. Stage ends before Battle08. |
 
 For the later handoffs consult the [Battle05 tail](../../../docs/design/synthesis/chapters/grans-opening/battle05-outcomes-through-battle06.md), [Battle06 return](../../../docs/design/synthesis/chapters/grans-opening/battle06-outcomes-through-battle07.md), [Battle07 aftermath](../../../docs/design/synthesis/chapters/grans-opening/battle07-outcomes-and-aftermath.md) and [harbor choice](../../../docs/design/synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md).
@@ -77,20 +161,20 @@ saves, Map16/17 save recipes and high-level promotion are outside this delivery.
 ## Preparing the ordinary selection
 
 Use the [opening inputs](../content/profiles-and-trust.md#opening-new-game-admission) for root
-Battle01 and title content. The [twelve-map selection](../../content/private/pre-voyage-opening.json)
-adds Map16/18 to Yeel, Hawel's house, Map17 and the opening maps. It admits Battle01–06 boards,
-Battle01–05 outcomes and the selected Map66 requests. Battle06 outcomes remain outside this slice.
+Battle01 and title content. The [fourteen-map selection](../../content/private/pre-voyage-opening.json)
+adds Map16/18/58/60 to Yeel, Hawel's house, Map17 and the opening maps. It admits Battle01–07 boards,
+their selected outcomes and the selected Map66 requests.
 The producer binds each map's two base palette words from the verified ROM. Both ordinary readers
-load the same world. The package keeps its historical ID and uses gameplay revision 3 for six generated members.
+load the same world. The package keeps its historical ID and uses gameplay revision 4 for seven generated members.
 To Continue an existing four-member V1 slot, select its previously prepared world via
 `SF2_PRIVATE_EXPLORATION_CONTENT`. To rebuild it with the current producer, obtain the revision-1
 selection using `git show 158ee4528a86d2ffbab091023f7d1e40673c84ad:remake/content/private/pre-voyage-opening.json`
 and supply the same four-member source/audio inputs in a separate ignored directory. Choose a
-separate slot for a six-member New Game. Five-member revision-2 slots likewise retain their existing
-world; no extra Slade record or prior growth draws are inferred. The established [compatibility rule](opening-session-lifecycle.md#format-compatibility-and-local-storage)
+separate slot for a seven-member New Game. Five-member revision-2 and six-member revision-3 slots
+likewise retain their existing worlds; missing members or prior growth draws are not inferred. The established [compatibility rule](opening-session-lifecycle.md#format-compatibility-and-local-storage)
 checks the selected revision before restoring progress.
 
-For each new battle 5 and 6, prepare the immutable board and scene inputs with the existing
+For each new battle 5 through 7, prepare the immutable board and scene inputs with the existing
 source/ROM consumers. Use separate fresh ignored directories for each output:
 
 ```powershell
@@ -102,7 +186,7 @@ uv run python -m sf2tool.remake_battle_scene_content --upstream $upstream --rom 
   --field-death-base (Join-Path $sceneDirectory 'battle-scenes.json') --output $fieldSceneDirectory
 ```
 
-Scene selection includes Knight/Mage and the Battle06 Cleric, plus Slade's knife and the finite
+Scene selection includes Knight/Mage, the Battle06 Cleric and Battle07 Dark Smoke/Kiwi, plus Slade's knife and the finite
 Galam stock variants for Bowie, Sarah/Kazin and Chester. The shared renderer resolves the current
 equipped item together with class. An unavailable equipped-item binding rejects; unequipped
 actors retain the existing class idle/unarmed projection. No equipment statistic is inferred
@@ -110,9 +194,9 @@ from the selected image.
 
 Reuse the [Battle02 input recipe](../verification/field-programs.md#prepare-the-selected-inputs)
 and [Battle03 materials](../verification/field-programs.md#yeel-guide-through-battle03). Under one
-fresh ignored output directory, place the five additional encounter exports and their field-death scenes
+fresh ignored output directory, place the six additional encounter exports and their field-death scenes
 in separate subdirectories. Place one copy of the shared trusted static, enemy and gold inputs there.
-In the encounter list, supply one row per additional battle, ordered 02 through 06. Each row has
+In the encounter list, supply one row per additional battle, ordered 02 through 07. Each row has
 `placement`, `scene`, `terrain`, `static`, `enemies`, `gold` and `battleScenes` paths relative to the
 world's parent. Product rows omit the diagnostic party checkpoint. Keep the root Battle01 inputs
 and the preceding immutable exports read-only.
@@ -122,7 +206,7 @@ manifest, the nine reviewed additional command/timer candidates from the opening
 (59/BD, 6E/CC, 6F/CC, 41/CC, 43/CC, 4A/CC, 41/C2, 43/C2, 01/C2 in hex), and the accepted authored
 defeat and encounter cues. Include the three [Hawel candidates](#hawel-media-prerequisite) and
 the [four timer-specific field effects](#yeel-warp-and-hawel-speech-variants) and the
-[two Galam door effects](#galam-door-audio). Pass each candidate once.
+[two Galam door effects](#galam-door-audio) and [Stage C candidates](#stage-c-audio-reproduction). Pass each candidate once.
 
 ```powershell
 $audioArgs = foreach ($candidate in $reviewedCandidates) { '--audio-candidate'; $candidate }
@@ -134,10 +218,43 @@ $env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorld
 
 Launch the ordinary title without diagnostic start arguments. Use an external disposable save
 namespace as in the [save recipe](../verification/host.md#opening-save-and-continue).
-The measured world is 108,998,786 bytes. Keep the unchanged 01/C2 main-theme WAV and its candidate
+The measured world is 114,271,642 bytes. Keep the unchanged 01/C2 main-theme WAV and its candidate
 in `audio-01-c2` beneath the world's parent, alongside the three Hawel directories. Supply its
 candidate once. These four referenced WAVs total 26,376,328 bytes. The selection also requires
 the seven additional inline field cues below. Missing selected cues reject preparation.
+
+## Battle06 result through usable tower exploration
+
+**Confirmed in the remake.** The current revision-4 world starts seven members through ordinary
+New Game. Save at the existing legal Battle01 Map57 return and use title Continue with that same
+world. Follow the preceding chapter routes through real Battle05 and Battle06 outcomes; no recorded
+battle state, flag, HP or member injection supplies this continuation. Normal 1920×1080/96px input
+reaches these boundaries in one resumed session:
+
+| Ordinary input and state | Observed result |
+| --- | --- |
+| Defeat Battle06's enemies with the carried party and changed purchased equipment | F406 clears, F506 sets, source return is Map66 (25,6) in this run; gold958. Living resources recover while casualties retain death. The coordinate is an observation, not a victory predicate. |
+| Enter changed Granseal, talk to Kiwi and decline; leave for the castle | No membership or name change. The returned Yes/No leaves F89 unchanged. The castle route works without F6; Astral/Lemon departure sets F620 and royal following sets F621/F83, without adding combat members. |
+| Return to the pet shop, accept, try an eight-character name, then enter `Shelly` | Invalid input cannot join. Valid confirmation precedes F6/F38 and persistent name binding; repeated talk preserves membership/resources. The new physical follower follows the last existing follower; no duplicate appears. |
+| Talk to prone Lemon in Map40, traverse Map57 and the Map60 portals, enter Battle07 | The source intro sets F457 and clears F83; ten enemies face the actual living active party. Kiwi uses TORT growth, unarmed visuals and common target-priority rules. Scene royalty are not battle actors. |
+| Cast EGRESS in Battle07, pay for Slade's revival in Galam, walk back through castle and portals | EGRESS pays8 MP before returning to Map16 (27,7) Up. F407/F457 remain set, F507/F74/F640 stay clear. Re-entry skips the completed intro and admits all seven living members with actual paid resources. |
+| Fight the entire enemy faction | Dark Smoke, enemy spells, silence and a paid suppressed cast use the ordinary combat path. Chester, Kazin and Kiwi become casualties; four living allies complete victory. No named unit, round or scenario endpoint determines victory. |
+| Confirm the full first-victory program, then press Up | The scene sets jewel F385 and F74/F640, then the caller clears F407 and sets F507. Map58 (13,35) Down accepts movement to (13,34) Up. Gold1778 and active/joined0–6 survive; dead members remain dead. Astral→king→minister occupy physical follower slots1–3 behind Bowie, separately from combat membership. |
+
+Actual adapter projection after movement has a bound Map58 camera at (84,642), a visible textured
+96px Bowie at (912,696), three visible textured followers, no open window or active cue, normal
+brightness and playing battle music. Runtime, presentation and audio errors are absent. The save
+offer correctly remains `save-location-unavailable`; this stage adds neither a new safe point nor
+old-world migration. Original natural reach, VInt timing, pixel-exact special transforms and
+human-play acceptance remain **Unknown**. Map58 exit into earthquake-town/departure is the next stage.
+
+The reproducible route uses the world preparation commands above and ordinary title/input actions;
+local input drivers and compact boundary receipts remain ignored. The meaningful engine selection
+is `KiwiTests|MapEntityLifecycleTests|CastleTowerProgramTests|BattleEntrySkipTests|ExplorationMusicTests`,
+plus `Battle02OutcomeTests|BattleRetreatTests|AngelWingTests|SilenceSpellTests|EarlyRangedTests` for
+the shared outcome, cost, repeated-completion, status and target rules. Run the affected adapter build
+and inspect the normal runtime's actual state/input/projection and errors. Do not turn the local
+observer's route decisions or confirmation lists into production rules or tests of the observer.
 
 ## Ordinary New Game through the Battle03 return
 

@@ -82,7 +82,7 @@ internal static class ExplorationChoiceRunner
         {
             if (work.Remaining > 1)
                 return Save(current, work with { Remaining = work.Remaining - 1 }, observations, "choice-return-delay");
-            return ProgramRunner.Commit(current, current.Active, current.Story.Copy(ProgramRunner.Next(current.Story.Cursor!.Value)),
+            return ProgramRunner.Commit(current, current.Active, current.Story.Copy(!work.Yes && wait.NoTarget is { } noTarget ? noTarget : ProgramRunner.Next(current.Story.Cursor!.Value)),
                 observations, "choice-returned", work.Yes ? "yes" : "no");
         }
         if (ExplorationTextRunner.WindowsMoving(current.Story))
@@ -90,8 +90,8 @@ internal static class ExplorationChoiceRunner
         if (work.Phase == ChoicePhase.Opening)
             return Save(current, work with { Phase = work.EntryHeld ? ChoicePhase.Release : ChoicePhase.Input }, observations, "choice-open-completed");
         current = Save(current, work with { Phase = ChoicePhase.ReturnDelay, Remaining = 10 }, observations, "choice-deleted");
-        return ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
-            flags: ProgramRunner.Flags(current.Story, wait.ResultFlag, work.Yes)), observations, "choice-result-flag", wait.ResultFlag.ToString());
+        return wait.ResultFlag is not { } flag ? current : ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
+            flags: ProgramRunner.Flags(current.Story, flag, work.Yes)), observations, "choice-result-flag", flag.ToString());
     }
 
     private static SessionSnapshot MoveWindows(SessionSnapshot current, List<SessionObservation> observations, string direction)

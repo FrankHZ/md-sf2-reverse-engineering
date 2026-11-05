@@ -1,6 +1,6 @@
 {
   "package": "private-battle01-to-battle02",
-  "gameplayRevision": 3,
+  "gameplayRevision": 4,
   "maps": [
     3,
     19,
@@ -13,7 +13,9 @@
     43,
     17,
     16,
-    18
+    18,
+    60,
+    58
   ],
   "battles": [
     1,
@@ -21,7 +23,8 @@
     3,
     4,
     5,
-    6
+    6,
+    7
   ],
   "growthClasses": [
     {
@@ -47,6 +50,10 @@
     {
       "member": 5,
       "class": "THIF"
+    },
+    {
+      "member": 6,
+      "class": "TORT"
     }
   ],
   "outcomeEgressMap": {
@@ -54,10 +61,12 @@
     "2": 3,
     "3": 5,
     "4": 43,
-    "5": 16
+    "5": 16,
+    "6": 16,
+    "7": 16
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through Galam captivity, Battle05 and first Battle06 player control.",
+  "controlledBoundary": "Ordinary opening through Battle06, optional Kiwi recruitment, Battle07 and usable tower aftermath.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -102,6 +111,14 @@
     {
       "symbol": "bbcs_06",
       "path": "data/battles/entries/battle06/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "bbcs_07",
+      "path": "data/battles/entries/battle07/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "abcs_battle07",
+      "path": "data/battles/entries/battle07/cs_afterbattle.asm"
     }
   ],
   "programs": [
@@ -130,7 +147,10 @@
     43,
     17,
     16,
-    18
+    18,
+    57,
+    60,
+    58
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -154,6 +174,12 @@
       "loopEnd": 3887119,
       "timerB": 194,
       "wavSha256": "E19BC7F1E5DD99E5863ECFC356EA02BF1CFE41A47BDFBA9244C4D299B6E76035"
+    },
+    "MUSIC_BOSS_ATTACK": {
+      "timerB": 204,
+      "wavSha256": "47371285E3790A00038F6FD6FB32340C7664C8F5580D418071DE076279EE365C",
+      "loopBegin": 279805,
+      "loopEnd": 1172490
     }
   },
   "presentationAtlases": {
@@ -166,19 +192,23 @@
   },
   "setups": {
     "3": [
-      609
+      609,
+      506
     ],
     "19": [
       501,
-      609
+      609,
+      506
     ],
     "20": [
       501,
-      609
+      609,
+      506
     ],
     "21": [
       501,
-      609
+      609,
+      506
     ],
     "43": [
       612
@@ -188,6 +218,9 @@
     ],
     "17": [
       505
+    ],
+    "40": [
+      506
     ]
   },
   "outcomeBattles": [
@@ -195,7 +228,9 @@
     2,
     3,
     4,
-    5
+    5,
+    6,
+    7
   ],
   "searchMaps": [
     3,
@@ -262,13 +297,32 @@
     "SFX_VALIDATION_TIMER_D1",
     "SFX_WARP_TIMER_D1",
     "SFX_BIG_DOOR_RUMBLE",
-    "SFX_SECRET_PATH_ROCK"
+    "SFX_SECRET_PATH_ROCK",
+    "SFX_LIGHTNING_1_TIMER_BD",
+    "SFX_LIGHTNING_2_TIMER_BD",
+    "SFX_HIT_2_TIMER_BD",
+    "SFX_DOOR_OPEN_TIMER_BD",
+    "SFX_DEMON_BREATH_TIMER_BD",
+    "SFX_BIG_DOOR_RUMBLE_TIMER_BD",
+    "MUSIC_BOSS_ATTACK",
+    "SFX_LIGHTNING_1_TIMER_C6",
+    "SFX_DOOR_OPEN_TIMER_D2",
+    "SFX_MENU_SWITCH_TIMER_C4",
+    "SFX_VALIDATION_TIMER_C4",
+    "SFX_DIALOG_BLEEP_1_TIMER_C4",
+    "SFX_DIALOG_BLEEP_2_TIMER_C4",
+    "SFX_DIALOG_BLEEP_5_TIMER_C4",
+    "SFX_DIALOG_BLEEP_6_TIMER_C4",
+    "SFX_WARP_TIMER_C4",
+    "SFX_DOOR_OPEN_TIMER_C4"
   ],
   "paidRetreatBattles": [
     2,
     3,
     4,
-    5
+    5,
+    6,
+    7
   ],
   "completedOnDefeat": [
     4

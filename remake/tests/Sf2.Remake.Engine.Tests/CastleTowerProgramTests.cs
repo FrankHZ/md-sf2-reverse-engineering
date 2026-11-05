@@ -8,6 +8,51 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class CastleTowerProgramTests
 {
+    [Fact]
+    public void ViewDeadbandsClampsCounterAndIndependentAxesAreStateDriven()
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}");
+        var world = session.Current.Exploration!;
+        var view = session.Current.Story.LogicalView!;
+        var player = world.PlayerEntity;
+        LogicalView TickAt(int x, int y, LogicalView current) => ExplorationViewRunner.Tick(
+            world.WithEntity(player with { Motion = player.Motion with { X = (short)x, Y = (short)y } }), current, new(2, 0, 0));
+        Assert.False(TickAt(2304, 1536, view).Scrolling);
+        Assert.False(TickAt(0, 0, view).Scrolling);
+        var moving = TickAt(2305, 2305, view with { FollowCounter = 6 });
+        Assert.Equal(32, moving.BX.Position);
+        Assert.Equal(7, moving.FollowCounter);
+        Assert.Equal(24, TickAt(2305, 1536, view with { FollowCounter = 32767 }).BX.Speed);
+        Assert.Equal(384, moving.AX.Destination);
+        Assert.Equal(384 + 32 * 384, moving.AY.Destination);
+        var finishing = moving with { AX = new(380, 384, 32), BX = new(360, 384, 24), AY = new(32 * 384 + 300, 32 * 384 + 384, 24), BY = new(300, 384, 24) };
+        var next = TickAt(0, 0, finishing);
+        Assert.False(next.AX.Active);
+        Assert.False(next.BX.Active);
+        Assert.True(next.AY.Active);
+        Assert.Equal(324, next.BY.Position);
+        Assert.True(next.HideWindows);
+        var upper = view with { AX = new(20 * 384), BX = new(20 * 384), AY = new(21 * 384 + 32 * 384), BY = new(21 * 384) };
+        Assert.False(TickAt(30 * 384, 30 * 384, upper).Scrolling);
+        Assert.Equal("field-view-profile", Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { Area = view.Area with { ParallaxAX = 192 } }, new(2, 0, 0))).Message);
+        Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { TargetSlot = 63 }, new(2, 0, 0)));
+        var slow = ExplorationViewRunner.Tick(world, ExplorationViewRunner.SetDestination(view, new(1, 1)), new(2, 0, 1));
+        Assert.Equal(1, slow.BX.Speed);
+    }
+
+    [Theory]
+    [InlineData(40)] [InlineData(16)]
+    public void ExplicitCameraSpeedOverridesAutomaticScrollSpeedAndPreservesParallax(int speed)
+    {
+        var world = ParallaxWorld(0);
+        var view = ExplorationViewRunner.Initialize(world) with
+            { TargetSlot = null, AX = new(0, 1000), AY = new(0), BX = new(0, 2000), BY = new(0) };
+        var next = ExplorationViewRunner.Tick(world, view, new(2, 0, (ushort)speed));
+        Assert.Equal(speed / 2, next.AX.Position);
+        Assert.Equal(speed, next.BX.Position);
+        Assert.Equal(24, ExplorationViewRunner.Tick(world, next, new(2, 0, 0)).BX.Speed);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(255)]

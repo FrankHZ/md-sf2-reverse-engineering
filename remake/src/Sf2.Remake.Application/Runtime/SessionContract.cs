@@ -48,6 +48,7 @@ public sealed record CompleteMusic(long Generation, string Cue) : SessionCommand
 public sealed record EntitySpriteReady(int Slot, long Request) : SessionCommand;
 // An explicit answer: authored direct choice, or a source choice's admitted Input phase.
 public sealed record ChooseDialogue(WaitToken Wait, bool Yes) : SessionCommand;
+public sealed record NameMember(WaitToken Wait, string Name) : SessionCommand;
 // Held state gates entry/release only. PollChoice receives a fresh conditioned semantic mask.
 public sealed record ChoiceHeldInput(WaitToken Wait, bool Held) : SessionCommand;
 [Flags]

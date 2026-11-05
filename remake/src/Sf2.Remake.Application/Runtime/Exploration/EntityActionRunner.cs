@@ -36,6 +36,13 @@ internal static class EntityActionRunner
             ushort? word = destinationX is >= 0 and < 64 && destinationY is >= 0 and < 64
                 ? world.Layout[destinationX, destinationY] : null;
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
+            // Selected ac_animSpeedX2 scenes animate even without translation. The
+            // modern simulation tick owns this projection; it is not a VInt claim.
+            if ((entity.Motion.FlagsB & 16) != 0 && entity.Motion.AnimationCounter != 255)
+            {
+                int counter = entity.Motion.AnimationCounter + 3;
+                entity = entity with { Motion = entity.Motion with { AnimationCounter = (byte)(counter > 30 ? 0 : counter) } };
+            }
             if (fieldControl && (world.Population is not null || world.Definition.Caravan is not null) && entity.Slot == world.PlayerEntity.Slot)
                 entity = entity with { Motion = ControlledMotion(entity.Motion) };
             entities[entity.Slot] = entity;
@@ -99,6 +106,11 @@ internal static class EntityActionRunner
                         if (motion is null) { next--; motion = entity.Motion; }
                         else waitingForMotion = true;
                         yield = true; break;
+                    case PositionEntity position:
+                        short px = unchecked((short)(position.Position.X * 384)), py = unchecked((short)(position.Position.Y * 384));
+                        motion = motion with { X = px, Y = py, XDestination = px, YDestination = py,
+                            XTravel = 0, YTravel = 0, WaitTimer = 0 };
+                        break;
                     case RandomWalkEntity walk:
                         for (int attempt = 0; attempt < 4; attempt++)
                         {

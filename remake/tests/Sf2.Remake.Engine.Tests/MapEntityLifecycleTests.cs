@@ -9,6 +9,72 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class MapEntityLifecycleTests
 {
+    [Theory]
+    [InlineData(0, 3)] [InlineData(29, 0)] [InlineData(255, 255)]
+    public void AcceleratedStationaryAnimationHonorsTheDisabledCounter(int before, int after)
+    {
+        var world = StartPopulation(false).Current.Exploration!;
+        var entity = world.Entities[new("entity-128")];
+        world = world.WithEntity(entity with { Motion = entity.Motion with
+            { FlagsB = (byte)(entity.Motion.FlagsB | 16), AnimationCounter = (byte)before } });
+        var result = EntityActionRunner.Tick(world);
+        Assert.Null(result.Failure);
+        Assert.Equal(after, result.World.Entities[entity.Entity].Motion.AnimationCounter);
+        Assert.Equal(entity.Position, result.World.Entities[entity.Entity].Position);
+        Assert.Equal(world.Party.MainSeed, result.World.Party.MainSeed);
+    }
+
+    [Fact]
+    public void NewFollowerUsesLastPhysicalFollowerAndDoesNotJoinTheCombatParty()
+    {
+        var before = StartPopulation(false).Current;
+        var session = StartPopulation(false, """
+            [{"op":"add-follower","entity":"entity-128"},{"op":"end"}]
+            """);
+        var world = session.Current.Exploration!;
+        Assert.Equal(new[] { 0, 1, 2, 3 }, world.CurrentEntities);
+        Assert.Equal(new EntityFollower(2, -24, 0), world.Entities[new("entity-128")].Follower);
+        Assert.Equal(before.Exploration!.Party.Actors, world.Party.Actors);
+        Assert.DoesNotContain(128, session.Current.Story.Flags);
+        Assert.Equal(before.Exploration.Party.MainSeed, world.Party.MainSeed);
+        var extended = SceneEntities.Add(world, new(new("entity-129"), new(5, 2), 1, 200,
+            new([new Sf2.Remake.Application.Content.Scenarios.IdleEntityAction()])), 1);
+        Assert.Equal(world.CurrentEntities, extended.CurrentEntities);
+    }
+
+    [Fact]
+    public void IdleWaitDoesNotCompleteForAStationaryScriptThatStillOwnsWork()
+    {
+        var session = StartPopulation(false, """
+            [{"op":"motion","entity":"entity-128","wait":false,"installation":"SlotTimer","actions":[
+               {"op":"wait","ticks":7},{"op":"idle"}]},
+             {"op":"wait-idle","entity":"entity-128"},{"op":"end"}]
+            """);
+        var wait = Assert.IsType<EntityWait>(session.Current.Story.Wait);
+        Assert.False(session.Current.Exploration!.Entities[new("entity-128")].Motion.IsMoving);
+        Accept(session, new AdvanceSimulation(wait.Token));
+        Assert.IsType<EntityWait>(session.Current.Story.Wait);
+        Accept(session, new AdvanceSimulation(wait.Token, 5));
+        Assert.Null(session.Current.Story.Wait);
+    }
+
+    [Fact]
+    public void ActionPositionIsImmediateAndDoesNotConsumePartyResources()
+    {
+        var session = StartPopulation(false, """
+            [{"op":"motion","entity":"entity-128","wait":true,"actions":[
+               {"op":"position","position":{"x":63,"y":63}},{"op":"idle"}]},{"op":"end"}]
+            """);
+        var party = session.Current.Exploration!.Party;
+        Accept(session, new AdvanceSimulation(session.Current.Story.Wait!.Token));
+        var world = session.Current.Exploration!;
+        var entity = world.Entities[new("entity-128")];
+        Assert.Equal(new MapPosition(63, 63), entity.Position);
+        Assert.False(entity.Motion.IsMoving);
+        Assert.Equal(0, entity.Motion.XTravel); Assert.Equal(0, entity.Motion.YTravel);
+        Assert.Equal(party.Actors, world.Party.Actors); Assert.Equal(party.MainSeed, world.Party.MainSeed);
+    }
+
     [Fact]
     public void PlayerInputAvoidsMovingObstructableActorsButCanCrossAnUnobstructableFollower()
     {

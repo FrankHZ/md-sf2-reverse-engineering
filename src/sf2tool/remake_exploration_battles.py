@@ -27,7 +27,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle not in (2, 3, 4, 5, 6):
+    if battle not in (2, 3, 4, 5, 6, 7):
         raise ValueError("unsupported overworld encounter selection")
     root = repo_path("").resolve()
     output = output.resolve()
@@ -67,9 +67,14 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     counts = [int(value) for value in _arguments(source, "dc.b")[:4]]
     if (
         counts
-        != {2: [4, 6, 0, 1], 3: [12, 6, 1, 0], 4: [5, 8, 3, 1], 5: [6, 8, 1, 1], 6: [6, 9, 1, 0]}[
-            battle
-        ]
+        != {
+            2: [4, 6, 0, 1],
+            3: [12, 6, 1, 0],
+            4: [5, 8, 3, 1],
+            5: [6, 8, 1, 1],
+            6: [6, 9, 1, 0],
+            7: [7, 10, 4, 1],
+        }[battle]
     ):
         raise ValueError("selected spriteset header drift")
     entities = []
@@ -140,6 +145,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         4: "AMBUSHED_BY_GALAM_SOLDIERS",
         5: "GALAM_CASTLE",
         6: "TO_GRANSEAL",
+        7: "VERSUS_DARK_SMOKES",
     }[battle]
     identity = dict(id=battle, code=code)
 
@@ -474,7 +480,7 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(2, 3, 4, 5, 6), default=2)
+    parser.add_argument("--battle", type=int, choices=(2, 3, 4, 5, 6, 7), default=2)
     args = parser.parse_args()
     print(
         json.dumps(

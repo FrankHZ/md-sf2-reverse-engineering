@@ -143,7 +143,7 @@ public sealed partial class GameRoot
         bool covered = _windowRecovery is not null || _windowQuit is not null;
         if (_entry is not null) _entry.ProcessMode = covered || _settings is not null || _slots is not null
             ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
-        bool paused = covered || _entry is not null || _settings is not null || _slots is not null || _systemMenu is not null;
+        bool paused = covered || _entry is not null || _settings is not null || _slots is not null || _nameEntry is not null || _systemMenu is not null;
         if (_exploration is not null) _exploration.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_battle is not null) _battle.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_settings is not null) _settings.ProcessMode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;

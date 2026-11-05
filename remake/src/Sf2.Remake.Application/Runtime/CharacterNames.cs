@@ -9,6 +9,14 @@ namespace Sf2.Remake.Application.Runtime;
 // Resolve identity once, before formatting: never substitute arbitrary substrings in source text.
 public static class CharacterNames
 {
+    internal static ActorRef Binding(ScenarioDefinition definition, int member)
+    {
+        var actors = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
+            .Where(row => row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == member)
+            .Select(row => row.Actor).Distinct().ToArray();
+        if (actors.Length != 1) throw new BattleRuleException("name-member-binding", "program.name", true);
+        return actors[0];
+    }
     public static string Actor(StoryState story, ActorRef actor, string fallback) =>
         story.Names.GetValueOrDefault(actor.Value) ?? fallback;
 

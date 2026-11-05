@@ -189,6 +189,16 @@ internal static class ExplorationDispatcher
                         facingReady || (setReady && !mountedWorld.AllEntities.Any(entity => entity.WaitingForSprite)) ? FinishWait(current.Story) : current.Story,
                         observations, "entity-sprite-ready", sprite.Slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     break;
+                case NameMember name:
+                    if (current.Story.Wait is not NameWait named || named.Token != name.Wait)
+                        return Reject(current, "stale-or-wrong-wait", "wait");
+                    if (NewGameName.Error(name.Name) is { } nameError) return Reject(current, nameError, "name");
+                    var names = current.Story.Names.ToDictionary(pair => pair.Key, pair => pair.Value);
+                    string nameKey = CharacterNames.Binding(definition, named.Member).Value;
+                    if (name.Name.Length == 0) names.Remove(nameKey); else names[nameKey] = name.Name;
+                    current = ProgramRunner.Commit(current, current.Active,
+                        FinishWait(current.Story).Copy(NextCursor(current.Story), names: names), observations, "member-named", nameKey);
+                    break;
                 case ChooseDialogue choice:
                     if (current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Input } sourceChoice && sourceChoice.Token == choice.Wait)
                     {
@@ -198,8 +208,8 @@ internal static class ExplorationDispatcher
                     if (current.Story.Wait is not ChoiceWait { Work: null } waiting || waiting.Token != choice.Wait)
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     current = ProgramRunner.Commit(current, current.Active,
-                        FinishWait(current.Story).Copy(NextCursor(current.Story),
-                            flags: ProgramRunner.Flags(current.Story, waiting.ResultFlag, choice.Yes)), observations,
+                        FinishWait(current.Story).Copy(!choice.Yes && waiting.NoTarget is { } noTarget ? noTarget : NextCursor(current.Story),
+                            flags: waiting.ResultFlag is { } resultFlag ? ProgramRunner.Flags(current.Story, resultFlag, choice.Yes) : null), observations,
                         "dialogue-chosen", choice.Yes ? "yes" : "no");
                     break;
                 case ChoiceHeldInput held:

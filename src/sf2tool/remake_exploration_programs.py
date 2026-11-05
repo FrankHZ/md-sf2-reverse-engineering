@@ -8,6 +8,7 @@ from typing import Any
 
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
+from sf2tool.remake_exploration_actions import action_stream, compile_action, finish_in_idle
 from sf2tool.remake_exploration_joins import join_selector, join_service
 from sf2tool.remake_exploration_scene import portrait_operations, scene_operation, sound_operation
 from sf2tool.remake_exploration_services import church_service, shop_service
@@ -112,7 +113,7 @@ class OriginalPrograms:
                     result.append({"op": "jump", "instruction": labels[target[1]]})
                 else:
                     result.extend(
-                        self.action(op, _tokens(operands), f"{path}:eas_Walking[{index}]")
+                        compile_action(self, op, _tokens(operands), f"{path}:eas_Walking[{index}]")
                     )
         return result
 
@@ -225,7 +226,7 @@ class OriginalPrograms:
                     "speed": self.entity_speed,
                     "visible": True,
                     "obstruction": False,
-                    "actions": self.action_stream(values[4]),
+                    "actions": action_stream(self, values[4]),
                 }
             )
         return {
@@ -235,142 +236,6 @@ class OriginalPrograms:
             "population": self.population(),
             "entities": entities,
         }
-
-    @staticmethod
-    def finish_in_idle(actions: list[dict[str, Any]]) -> None:
-        # Source esc34 clears the timer before entering eas_Idle in the same service.
-        actions.extend([{"op": "jump", "instruction": len(actions) + 1}, {"op": "idle"}])
-
-    def action_stream(self, symbol: str) -> list[dict[str, Any]]:
-        if symbol in self.actions:
-            return self.actions[symbol]
-        path = "disasm/data/scripting/entity/eas_actions.asm"
-        if symbol == "eas_Motionless":
-            path = "disasm/data/scripting/entity/eas_battleneutralentities.asm"
-            self.sources.add(path)
-            text = (self.upstream / path).read_text(encoding="utf-8")
-            if not re.search(
-                r"eas_Motionless:\s*ac_motion OFF\s+word_44984:\s*ac_branch"
-                r"\s+dc.w eas_Idle-word_44984",
-                text,
-            ):
-                raise ValueError("motionless source action drift")
-            result = self.action("ac_motion", ["OFF"], path + ":eas_Motionless")
-            self.finish_in_idle(result)
-            self.actions[symbol] = result
-            return result
-        rows = self.source_operations(path, symbol)
-        result: list[dict[str, Any]] = []
-        self.actions[symbol] = result
-        for row in rows:
-            op, args = row["opcode"], _tokens(row["operandText"])
-            source = f"{path}:{symbol}[{row['index']}]"
-            if op == "ac_jump" and args == ["eas_Idle"]:
-                self.finish_in_idle(result)
-                break
-            result.extend(self.action(op, args, source))
-            if op in ("ac_end", "ac_jump"):
-                break
-        return result
-
-    def action(self, op: str, args: list[str], source: str) -> list[dict[str, Any]]:
-        directions = {
-            "Right": (1, 0),
-            "Up": (0, -1),
-            "Left": (-1, 0),
-            "Down": (0, 1),
-            "UpRight": (1, -1),
-            "UpLeft": (-1, -1),
-            "DownLeft": (-1, 1),
-            "DownRight": (1, 1),
-        }
-        if op == "jumpUp":
-            # csc2D_D copies the 34-byte eas_Jump body, excluding its jump to idle.
-            self.sources.add("disasm/code/common/scripting/map/mapscriptengine_1.asm")
-            jump = self.action_stream("eas_Jump")
-            return jump[:-2]
-        if op.startswith("move") and op[4:] in directions:
-            x, y = directions[op[4:]]
-            return [{"op": "move", "x": x * self.number(args[0]), "y": y * self.number(args[0])}]
-        if op.startswith("face") and op[4:] in directions:
-            facing = [
-                "Right",
-                "Up",
-                "Left",
-                "Down",
-                "UpRight",
-                "UpLeft",
-                "DownLeft",
-                "DownRight",
-            ].index(op[4:])
-            return [{"op": "face", "facing": facing}, {"op": "wait", "ticks": self.number(args[0])}]
-        if op == "eaWait" or op == "ac_wait":
-            return [{"op": "wait", "ticks": self.number(args[0])}]
-        if op == "ac_motion":
-            return [{"op": "animation-counter", "counter": 1 if self.number(args[0]) else 255}]
-        if op == "ac_moveRel":
-            return [
-                {"op": "move", "x": self.number(args[0]), "y": self.number(args[1]), "wait": False}
-            ]
-        if op in ("ac_setSpeed", "ac_accelFactors"):
-            return [
-                {
-                    "op": "speed" if op == "ac_setSpeed" else "acceleration",
-                    "x": self.number(args[0]),
-                    "y": self.number(args[1]),
-                }
-            ]
-        flag_ops = {
-            "ac_entityObstructable": ("a", 128),
-            "ac_mapUncollidable": ("a", 64),
-            "ac_entityUncollidable": ("a", 32),
-            "ac_autoFacing": ("b", 64),
-            "ac_immersed": ("b", 32),
-        }
-        if op in flag_ops:
-            field, mask = flag_ops[op]
-            return [
-                {
-                    "op": "flags",
-                    "field": field,
-                    "mask": mask,
-                    "value": mask if args[0] == "ON" else 0,
-                }
-            ]
-        if op in ("ac_acceleration", "ac_deceleration"):
-            shift = 0 if op == "ac_acceleration" else 2
-            return [
-                {
-                    "op": "flags",
-                    "field": "a",
-                    "mask": 3 << shift,
-                    "value": (
-                        (int(self.number(args[0]) != 0) | (int(self.number(args[1]) != 0) << 1))
-                        << shift
-                    ),
-                }
-            ]
-        if op in ("ac_orientUp", "ac_orientLeft", "ac_orientDown", "ac_orientRight"):
-            return [
-                {
-                    "op": "flags",
-                    "field": "b",
-                    "mask": 3,
-                    "value": [
-                        "ac_orientUp",
-                        "ac_orientLeft",
-                        "ac_orientDown",
-                        "ac_orientRight",
-                    ].index(op),
-                }
-            ]
-        if op == "ac_setSize":
-            return [{"op": "sprite-size", "size": self.number(args[0])}]
-        if op == "ac_updateSprite":
-            return [{"op": "refresh-sprite", "source": source}]
-        if op == "ac_setFacing":
-            return [{"op": "face", "facing": self.number(args[0])}]
-        return [self.native(op, source)]
 
     def compile(self, symbol: str) -> str:
         if symbol in self.programs:
@@ -481,6 +346,30 @@ class OriginalPrograms:
                 result.append(shop_service(self, registers.pop("shop")))
             elif op == "jsr" and args == ["j_ChurchMenu"]:
                 result.append(church_service(self))
+            elif op == "jsr" and args == ["j_YesNoPrompt"]:
+                # The direct prompt returns d0, unlike csc06 which writes F89.
+                tail = rows[index : index + 3]
+                if [r["opcode"] for r in tail] != ["clsTxt", "tst.w", "bne.s"] or tail[1][
+                    "operandText"
+                ] != "d0":
+                    raise ValueError("direct Yes/No caller is not admitted")
+                declined = symbol + "-declined"
+                self.programs[declined] = {
+                    "id": declined.lower().replace("_", "-"),
+                    "source": source,
+                    "entitiesRunning": False,
+                    "instructions": [
+                        {"op": "close-text"},
+                        {"op": "jump", "target": _location(self.compile(tail[2]["operandText"]))},
+                    ],
+                }
+                result.extend(
+                    [{"op": "prompt-yes-no", "noTarget": _location(declined)}, {"op": "close-text"}]
+                )
+                index += 3
+            elif op == "jsr" and args == ["j_NameAlly"]:
+                self.sources.add("disasm/code/common/menus/nameallyscreen.asm")
+                result.append({"op": "name-member", "member": registers["d0"]})
             elif op == "jsr" and args == ["GetEntityPortaitAndSpeechSfx"]:
                 speaker = self.entity(str(registers["d0"]))
             elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
@@ -669,7 +558,7 @@ class OriginalPrograms:
                         "position": {"x": self.number(args[1]), "y": self.number(args[2])},
                         "facing": self.number(args[3]),
                         "sprite": self.number(args[4]),
-                        "actions": self.action_stream("eas_Init"),
+                        "actions": action_stream(self, "eas_Init"),
                     }
                 )
             elif op == "moveNextToPlayer":
@@ -846,7 +735,12 @@ class OriginalPrograms:
             elif op == "resetForceBattleStats":
                 self.sources.add("disasm/code/common/scripting/map/resetalliesstats.asm")
                 result.append({"op": "reset-party-battle-stats"})
-            elif op == "animEntityFX" and args[1] in ("MOSAIC_IN", "MOSAIC_OUT", "SLIDE_IN"):
+            elif op == "animEntityFX" and args[1] in (
+                "MOSAIC_IN",
+                "MOSAIC_OUT",
+                "SLIDE_IN",
+                "SLIDE_OUT",
+            ):
                 result.append(
                     {
                         "op": "present",
@@ -855,10 +749,11 @@ class OriginalPrograms:
                             "MOSAIC_IN": "mosaic-in",
                             "MOSAIC_OUT": "mosaic-out",
                             "SLIDE_IN": "slide-in",
+                            "SLIDE_OUT": "slide-out",
                         }[args[1]],
                         "entity": self.entity(args[0]),
                         "position": None,
-                        **({"durationTicks": 46} if args[1] == "SLIDE_IN" else {}),
+                        **({"durationTicks": 46} if args[1] in ("SLIDE_IN", "SLIDE_OUT") else {}),
                     }
                 )
             elif op == "shiver":
@@ -877,6 +772,12 @@ class OriginalPrograms:
                 result.append({"op": "close-text"})
             elif op == "yesNo":
                 result.append({"op": "yes-no", "flag": 89})
+            elif op == "cameraSpeed":
+                result.append({"op": "camera-speed", "speed": self.number(args[0])})
+            elif op == "waitIdle":
+                result.append({"op": "wait-idle", "entity": self.entity(args[0])})
+            elif op == "addNewFollower":
+                result.append({"op": "add-follower", "entity": self.entity(args[0])})
             elif op == "csWait":
                 result.append({"op": "wait-ticks", "ticks": self.number(args[0])})
             elif op == "setSprite":
@@ -929,12 +830,13 @@ class OriginalPrograms:
                     if action["opcode"] == "ac_jump" and _tokens(action["operandText"]) == [
                         "eas_Idle"
                     ]:
-                        self.finish_in_idle(actions)
+                        finish_in_idle(actions)
                         entered_idle = True
                         index += 1
                         continue
                     actions.extend(
-                        self.action(
+                        compile_action(
+                            self,
                             action["opcode"],
                             _tokens(action["operandText"]),
                             f"{relative}:{symbol}[{action['index']}]",
@@ -946,7 +848,7 @@ class OriginalPrograms:
                 index += 1
                 sequence = op.startswith("entityActions")
                 if sequence and not entered_idle:
-                    self.finish_in_idle(actions)
+                    finish_in_idle(actions)
                 result.append(
                     {
                         "op": "motion",
@@ -957,7 +859,7 @@ class OriginalPrograms:
                     }
                 )
             elif op in ("setActscript", "setActscriptWait"):
-                actions = self.action_stream(args[1])
+                actions = action_stream(self, args[1])
                 result.append(
                     {
                         "op": "motion",

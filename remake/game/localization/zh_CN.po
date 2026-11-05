@@ -336,7 +336,13 @@ msgid "name.title"
 msgstr "你叫什么名字？"
 
 msgid "name.empty"
-msgstr "留空使用 Bowie"
+msgstr "留空使用默认名字"
+
+msgid "name.member-title"
+msgstr "为 {0} 命名"
+
+msgid "name.confirm-hint"
+msgstr "Enter：使用此名"
 
 msgid "name.help"
 msgstr "仅支持键盘输入，最多 7 个字符\n字母 A–Z / a–z、数字 0–9\n以及 , . - ! ? # ' 和空格\nBackspace/Delete：删除字符\n留空使用默认名字，不支持中文命名"

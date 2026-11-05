@@ -3,6 +3,7 @@
 import re
 
 from sf2tool.h2.battle_global_data import _tokens
+from sf2tool.remake_exploration_actions import action_stream
 from sf2tool.remake_exploration_search import compile_search
 
 
@@ -129,7 +130,7 @@ def compile_maps(
             compiler.population() if route is None and "outcomeEgressMap" in selection else None
         )
         layout_events = None
-        if selected in selection.get("eventMaps", []):
+        if selected in selection.get("eventMaps", []) and setup is not None:
             folder = f"disasm/data/maps/entries/map{selected:02d}/mapsetups/"
             source_rows = rows(folder, "s1_entities", setup["references"]["entities"])
             # An unterminated label can fall through into a shared entity list.
@@ -170,7 +171,7 @@ def compile_maps(
                     if source_record["kind"] == "walking"
                     else sequenced(folder, args[4])
                     if source_record["kind"] == "sequenced"
-                    else compiler.action_stream(args[4])
+                    else action_stream(compiler, args[4])
                 )
             population = compiler.population()
             for key, filename, macro, default in (
@@ -208,7 +209,7 @@ def compile_maps(
                         events.append(
                             {
                                 "kind": "source-zone",
-                                "actions": compiler.action_stream("eas_Init"),
+                                "actions": action_stream(compiler, "eas_Init"),
                                 **common,
                                 "marker": 0x1400,
                                 "x": None
@@ -224,6 +225,8 @@ def compile_maps(
                     if source_row["opcode"] == default:
                         # The default terminates the table; following instructions are not rows.
                         break
+
+        if selected in selection.get("eventMaps", []):
 
             def block_copy(record):
                 return {
@@ -287,7 +290,7 @@ def compile_maps(
                     f"map-{selected}-input", f"{route_id}:input/event/autonomous-entity services"
                 )
             )
-        if selected in selection.get("eventMaps", []):
+        if selected in selection.get("eventMaps", []) and setup is not None:
             input_program = None
             on_load = compiler.compile(setup["references"]["initFunction"])
         search = (

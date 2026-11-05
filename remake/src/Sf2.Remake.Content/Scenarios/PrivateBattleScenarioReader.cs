@@ -80,7 +80,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
                     2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
                     3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
-                    10 => BattleClassRule.UnpromotedThief,
+                    10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
                     _ => throw Unsupported("source-class", "actors.class"),
                 };
                 Require(input.Hp <= input.MaxHp && input.Mp <= input.MaxMp, "numeric-range", "allies.resources");

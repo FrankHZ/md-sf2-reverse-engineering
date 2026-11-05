@@ -259,22 +259,24 @@ def prepare(
         raise ValueError("audio candidates require private presentation preparation")
     if visuals is not None:
         # Source playSound names identify commands, not a recording's timer suffix.
-        # Resolve only a unique command candidate; runtime still checks live timer policy.
-        cues = {asset["cue"] for asset in visuals["audio"]}
+        # Multiple SFX recordings require the runtime's live timer selector. Music
+        # keeps its unique resource identity for logical completion and history.
         for program in compiler.programs.values():
             for instruction in program["instructions"]:
                 resource = instruction.get("resource")
                 if (
                     instruction["op"] != "present"
                     or instruction["kind"] != "Sound"
-                    or resource in cues
                 ):
                     continue
                 if resource not in compiler.equates:
                     continue
                 command = compiler.number(resource)
                 candidates = [asset for asset in visuals["audio"] if asset["command"] == command]
-                if len(candidates) == 1:
+                if len(candidates) > 1 and command >= 65:
+                    instruction["soundCommand"] = command
+                    instruction["resource"] = None
+                elif len(candidates) == 1:
                     instruction["resource"] = candidates[0]["cue"]
     encounters = None
     if encounter_inputs is not None:

@@ -207,6 +207,8 @@ internal static class GameText
         ["entry.retry-help"] = 0,
         ["entry.launch-help"] = 0,
         ["name.title"] = 0,
+        ["name.member-title"] = 1,
+        ["name.confirm-hint"] = 0,
         ["name.empty"] = 0,
         ["name.help"] = 0,
         ["name.use"] = 0,

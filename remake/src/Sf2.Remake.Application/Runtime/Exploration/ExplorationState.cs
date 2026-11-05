@@ -55,7 +55,8 @@ public sealed record ChoiceWork(ChoicePhase Phase = ChoicePhase.Entry, bool Yes 
     public bool Visible => Phase is not (ChoicePhase.Entry or ChoicePhase.ReturnDelay);
     public bool Automatic => Phase is ChoicePhase.Opening or ChoicePhase.Closing or ChoicePhase.ReturnDelay;
 }
-public sealed record ChoiceWait(WaitToken Token, int ResultFlag, ChoiceWork? Work = null) : ProgramWait(Token);
+public sealed record NameWait(WaitToken Token, int Member) : ProgramWait(Token);
+public sealed record ChoiceWait(WaitToken Token, int? ResultFlag, ChoiceWork? Work = null, ProgramLocation? NoTarget = null) : ProgramWait(Token);
 public sealed record GestureRestore(byte AnimationCounter, ushort SpriteSize);
 public sealed record NodWait(WaitToken Token, EntityRef Entity, int Elapsed = 0, bool ActualDone = false) : ProgramWait(Token)
 {
@@ -196,7 +197,7 @@ public sealed class StoryState
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
         short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false, FieldReturnAnchor? saveAnchor = null,
-        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false) =>
+        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -207,7 +208,7 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
@@ -257,6 +258,9 @@ public sealed class ExplorationState
     public FieldTravelMode TravelMode { get; }
     public IReadOnlyList<int> CurrentEntities { get; }
     internal ExplorationState WithTravelMode(FieldTravelMode mode) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, mode, CurrentEntities);
+    internal ExplorationState WithFollower(ExplorationEntity entity) => new(Definition, Layout, Player,
+        AllEntities.Select(row => row.Slot == entity.Slot ? entity : row), Party, SpriteSize, Aliases, RoofState,
+        Population, Quake, TravelMode, CurrentEntities.Contains(entity.Slot) ? CurrentEntities : CurrentEntities.Append(entity.Slot).ToArray());
     public ExplorationEntity PlayerEntity => Entities[Player];
     public bool TryResolveEntity(EntityRef reference, out ExplorationEntity entity)
     {
