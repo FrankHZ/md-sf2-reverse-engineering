@@ -1586,10 +1586,77 @@ render frame; camera animation only transforms the retained drawing. Work is bou
 
 `BattleMovementRangeView` draws quiet cyan fill (alpha 0.20) with an edge (alpha 0.55) inside each legal
 96px cell, using the existing clipped board and camera transform. Ground is Z0; the range follows
-ground at Z0; actor sprites/labels remain Z1; original foreground walls remain Z2; preview/path/target
+ground at Z0; actor sprites/labels remain Z1; original foreground walls remain Z2; selection/target
 marks remain Z3. Preserving foreground occlusion is part of acceptance. No new art, zoom, camera or
 menu geometry is introduced. Source-original range pixels, animation and hardware cadence remain
 **Unknown**; this is an accepted modern affordance, not an original presentation-parity claim.
+
+### Battle selection and preview feedback (#1617)
+
+**Standard rigor.** This bounded presentation change removes the selected actor's gold modulation and
+the gold underline at every preview-path cell. It preserves the accepted 96px scale, legal movement
+query, actual segment delivery, target selection, input boundary and accessibility. Inspection
+(#1633), the whole visual redesign (#1616), gameplay/path legality and original frame/pixel recreation
+are outside this agreement. The [pinned original evidence](battle-scenes.md#battlefield-selection-evidence)
+distinguishes movement, actor blinking, grid feedback and target cursor; it does not justify the old
+gold treatment or supply exact original visuals.
+
+`BattleMapViewport` now leaves every map sprite's `Modulate` white and retains faction colors on
+authored labels. `BattleSelectionView` draws one unfilled set of white corner brackets with a dark
+outline around the acting unit, following its actual interpolated position through preview and undo.
+The cue consumes the selected projected marker, not another gameplay position. At rest it identifies
+the provisional destination; no breadcrumb trail is drawn. The existing cyan legal-stop overlay
+remains based on the committed origin during Movement, and the separate cyan full-cell border
+identifies the accepted target during target/commit selection. Back clears that target border
+through the ordinary parent return; the acting-unit cue remains separate. The board/viewport clip
+both cues; selection and target are Z3, above source foreground Z2, without changing sprite/terrain
+ordering.
+
+The brackets are steady in both normal and reduced-flash modes. They preserve sprite ink and use
+shape plus a contrasting outline rather than color or blinking alone. This is an explicit modern
+accessibility decision, not reproduction of the source menu blink or cursor art. No timer, alpha
+animation, asset, state cache, new input or gameplay service is added. `ReadTerrainJson` exposes the
+actual cue position/draw count/style and existing range/target operands; actor observation includes
+actual sprite modulation. Existing preview geometry now describes this single acting-unit cue,
+not the removed trail. Human legibility/aesthetic approval and original pixels/timing remain
+**Unknown** beyond the bounded engineering observation.
+
+Acceptance uses adapter compilation, a Debug build of the owned Godot project, direct scope/source
+checks and the clean committed planner. The focused
+[`engine_battle_selection_observation.gd`](../../game/probes/engine_battle_selection_observation.gd)
+drives ordinary mapped input and reads actual actor/range/target nodes: initial actor, interpolated
+preview, action menu, undo, range rejection, target switching and Back. It checks retained committed
+positions, HP/MP, both seeds and queue position across browsing. No engine rules change, so no new
+engine unit test or broad suite is required. Use the existing selected installation and local caches;
+no original runtime, screenshot, frame capture, comparator or asset/world copy is needed.
+
+After the [locked environment setup](../development-and-verification.md#locked-net-workflow), supply
+`SF2_VIEWPORT_OUTPUT` as a fresh ignored report path and launch the ordinary host with
+`--script res://probes/engine_battle_selection_observation.gd -- --input-settings <settings>` plus
+the ordinary authored content entry. Use 1920×1080, `--max-fps 60` and an explicit local `--log-file`.
+The authored input is garden-watch with care's maximum range raised to 3 so both living allies can
+be browsed; the retained #1615 navigation input also works. Run with `reducedFlash: false` and `true`.
+For the mounted private sprite check, set `SF2_SELECTION_PRIVATE=1` and `SF2_SELECTION_START` to the
+controlled Map57 approach at (8,14), facing Down, flags 0,1,2,32,33,34,66,80,401,451. Reuse the
+admitted connected world, private static/scene selections and existing
+`StartPreVoyageLocalizationObservation` startup; the older private-exploration CLI entry does not
+admit this multi-encounter world. Actual input then enters Battle01 and browses Chester's slot1
+Medical Herb targets; this is not natural full-route evidence. The ignored
+`local/issue1617/HANDOFF.md` owns exact local selections, commands, results, preserved probe failures
+and process state. Reports are compact semantic checkpoints; four bounded normal/reduced
+authored/private observations suffice, with a 100MiB local-output budget and no large acquisition.
+Reassess a startup/consumer failure before expanding the run.
+
+**Confirmed, bounded headless native observations:** the authored healer and connected Battle01
+Chester both retain one visible acting-unit cue through real preview/return, hide/restore movement
+range with its unchanged destination set, reject the range edge without moving the accepted preview,
+switch real Magic/Herb targets and clear target borders on Back. Mounted private sprites retain
+white modulation and their admitted textures. Normal/reduced-flash runs preserve the compared
+committed positions, HP/MP, queue position and both RNG seeds; the 96px cue stays steady at idle.
+No script/native error was reported in the passing runs. Some private exits report the existing
+class of ObjectDB leak warning (4–6 instances); the final normal verbose run reports none. Its
+intermittent cause remains **Unknown**, not a resolved lifecycle claim. Authored input and controlled
+Map57 admission establish this consumer boundary, not natural original reach or human visual approval.
 
 ### Modern UI experiment
 

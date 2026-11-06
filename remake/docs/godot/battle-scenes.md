@@ -638,6 +638,38 @@ modern PCM reuse resolves host delivery, not hardware-exact counter audio. Direc
 cover exact preference, unique reuse, named playback, missing/ambiguous rejection and actual finite
 completion without gameplay changes. The world/audio pack and #517's116 recording remain unchanged.
 
+## Battlefield selection evidence
+
+**Confirmed, static source only:** the USA baseline and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` separate moving an actor, blinking that actor,
+displaying a range grid and selecting a target. The [baseline identity and evidence limits](battle-interaction-baseline.md#evidence-and-reproduction-boundary)
+apply. These source facts inform [#1617's modern selection treatment](presentation.md#battle-selection-and-preview-feedback-1617);
+they do not establish original screen colors or timing.
+
+| Pinned source beneath `disasm/code/` | Directly supported boundary |
+| --- | --- |
+| `gameflow/battle/battlefunctions/battlefunctions_2.asm:ProcessBattleEntityControlPlayerInput` | `@Start` clears actor blinking before `ControlBattleEntity`. A legal accepted position sets blinking before the action menu. Menu Cancel rebuilds movement range and returns to `@Start`. This is not a persistent selected-actor palette replacement. |
+| `gameflow/battle/battlefunctions/battlefunctions_0.asm:ControlBattleEntity`, `SetEntityBlinkingFlag`, `ClearEntityBlinkingFlag` | Movement controls the actual entity, updates its position/mapsprite and returns chosen coordinates. The blink helpers set/clear `ENTITYDEF_FLAGS_B_BLINKING`; they do not recolor its sprite. |
+| `common/scripting/entity/entityscriptengine_1.asm:VInt_UpdateSprites` | When the blink bit is set and the frame-counter/threshold condition holds, rendering takes `@MoveSpriteOffScreen`. This establishes intermittent sprite suppression, not a gold tint; no modern duration is inferred from it. |
+| `gameflow/battle/battlefunctions/battlefunctions_0.asm:ControlCursorEntity_ChooseTarget`, `UpdateCursorSprites`, `sprite_Cursor` | Target browsing updates a separate cursor and mini status, accepts A/C or cancels B, then hides the cursor. The sprite table has radius 0/1/2 variants and explicit palette selectors. Its artwork/color appearance is not established by these selectors alone. |
+| Same file: `CreatePulsatingBlocksForGrid`, `DeletePulsatingBlocks` | The renderer consumes the grid at `FF4D00_LOADING_SPACE`, changes map tile palette/priority bits and installs `FADING_SETTING=PULSATING_1`; deletion clears those bits/fade state. This is grid feedback, not a traversal of `BATTLE_ENTITY_MOVE_STRING` to draw path underlines. |
+
+Reproduce in the registered read-only pinned checkout:
+
+```powershell
+git rev-parse HEAD
+git status --short
+git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm
+git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm
+git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/common/scripting/entity/entityscriptengine_1.asm
+```
+
+**Inferred:** preserving sprite colors and separating acting-unit, legal-stop and target cues better
+reflects these distinct responsibilities than a gold sprite plus a gold breadcrumb trail.
+**Unknown:** natural caller/frame timing, original blink duty cycle in a reached turn, cursor pixels,
+range palette appearance and a whole-game absence of other path effects. This inspection supports a
+small modern rendering choice; it does not require original runtime acquisition or admit new gameplay.
+
 ## Battlefield movement and walking audio
 
 Application owns a finite route and one completion token per adjacent segment. Player steps change
