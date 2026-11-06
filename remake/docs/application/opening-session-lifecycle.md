@@ -462,7 +462,8 @@ attained base stats plus the equipped weapon. Field commands have their own expl
 product Battles01–07 explicitly admit the existing free weapon/Unarmed commands under the
 [connected equipment boundary](../content/profiles-and-trust.md#connected-battle-equipment-admission).
 Unsupported weapon effects still reject. Product battle Give has its
-[separate admission](../content/profiles-and-trust.md#connected-battle-give-admission); battle Drop remains unavailable.
+[separate admission](../content/profiles-and-trust.md#connected-battle-give-admission);
+Drop has its own [product binding](../content/profiles-and-trust.md#connected-battle-discard-admission).
 
 Same-context unknown music history rejects capture. The native audio owner can supply its actual
 bounded cue/history through `ObserveFieldMusic`, a session command equivalent to other host
@@ -521,7 +522,9 @@ receipts/Deals and resources survive. Drop rejects unsellable content; rare item
 custody and add one saturating Deals entry. Item/class metadata must be admitted before mutation;
 these field commands do not themselves enable battle transactions. Product battle Equip has the
 separate admission linked above; connected battle Give has its
-[own product binding](../content/profiles-and-trust.md#connected-battle-give-admission), and battle Drop remains unavailable.
+[own product binding](../content/profiles-and-trust.md#connected-battle-give-admission), as does
+[battle Drop](../content/profiles-and-trust.md#connected-battle-discard-admission). Each battle caller
+retains its own refusal, action cost and continuation; field Drop alone does not admit battle Drop.
 
 **Confirmed static source policy:** SF2DISASM commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`,

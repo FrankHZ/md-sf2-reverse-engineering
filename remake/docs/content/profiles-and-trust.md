@@ -1043,7 +1043,8 @@ attained values, loadouts, flags, anchor and music resources before publishing a
 restore definitions. Controlled/authored profiles acquire no capability implicitly. Class masks and
 simple adjacent ATT-only weapons reuse #1421's trusted numerical bindings. Give/Drop names and
 custody properties come from selected source item records; unadmitted equipped/broken weapon
-effects reject. Field preparation itself does not relax battle profiles. Product battle equipment and Give have separate admission below.
+effects reject. Field preparation itself does not relax battle profiles. Product battle equipment,
+Give and Discard have separate admission below.
 
 Opening static selection additionally retains Medical Herb0, Healing Seed1, Antidote3 and Angel Wing4 with their
 exact codes, use-spell families and no-equipment-effect definitions. This is immutable admission,
@@ -1088,10 +1089,28 @@ controlled/private battle readers without this product binding still have no Giv
 broken words, equipped nonweapons, cursed/ring/other unsupported equipment, invalid current ATT and
 unsupported actors reject without mutation. Source class masks govern later Equip, not receipt.
 Existing v2 restoration consumes the same definitions/current words; no new persistence authority
-is added. Battle Drop remains unavailable. See the
+is added. Drop uses its separate explicit admission below. See the
 [agreement and source](../domain/gameplay-rules.md#connected-battle-give-agreement) and
 [native observation](../development-and-verification.md#connected-battle-give-observation).
 
+
+### Connected battle discard admission
+
+`OpeningLoadoutBindings` explicitly calls `PrivateFieldPreparation.Discard` after live equipment/Give
+for product New Game and Continue through Battles01–07. It passes the same selected
+`FieldPreparationDefinition.Items` metadata into `BattleDiscardDefinition`: admitted ordinary
+ATT-only weapons, exact CONSUMABLE records and Mithril123, with source identity/name/rarity/unsellable
+properties. This shares metadata, not field execution. The battle caller retains exact-slot, live-word,
+equipment/status and custody validation and its own unsellable refusal. Unsupported cursed/ring/broken
+words and equipped states reject; the product catalog does not add protected Sky Orb or full curses.
+
+`BattleDefinition.WithDiscard` uses the existing capability-preserving copy constructor; outcome,
+deployment and Give replacements retain Discard. `BattleDiscardReader` keeps the standalone authored
+opt-in guard. Controlled/private construction without this product binding acquires no capability.
+No world export, item grant, schema/save revision, source mutation or global guard relaxation occurs.
+Current loadout/progress and `ItemCustody` remain the authorities across v2 battle record restore and
+ordinary field return/save. See the [agreement/source](../domain/gameplay-rules.md#connected-battle-discard-agreement)
+and [native observation](../development-and-verification.md#connected-battle-discard-observation).
 
 ### Opening Search admission
 

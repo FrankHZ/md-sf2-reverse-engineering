@@ -842,7 +842,8 @@ reach or hardware timing; #1047 Unknowns and #638 pause remain unchanged.
 ## Connected battle Give observation
 
 The [Standard implementation/High consistency agreement](domain/gameplay-rules.md#connected-battle-give-agreement)
-owns the finite Battles01–07 product admission and unchanged standalone/Drop restrictions.
+owns the finite Battles01–07 product admission and unchanged standalone restrictions.
+Drop has its separate observation below.
 `ConnectedBattleGiveTests` and `BattleGivePersistenceTests` cover ordinary/full equipped transfers,
 current ATT/range, invalid/cancel/stale/no-target/refused-item behavior, exactly-once Stay completion,
 later Equip, v2 settled-Movement record restore, actual attack/victory and field custody/save.
@@ -882,6 +883,58 @@ the latter proves templates but not translated source names. One read-only world
 O(N) existing target/state work and a bounded movement grid are sufficient; budget one serial native
 instance, <75s/<2MiB per report. No full campaign, original hardware timing/natural reach, warning
 repair or human visual acceptance is claimed. Preserve failures and inspect clean committed plan/CI.
+
+## Connected battle discard observation
+
+The [Standard implementation/High consistency agreement](domain/gameplay-rules.md#connected-battle-discard-agreement)
+owns product Battles01–07 Drop and its finite catalog. `ConnectedBattleDiscardTests` and
+`BattleDiscardPersistenceTests` cover ordinary/equipped/rare removal, no turn cost, same action/preview,
+Cancel/stale/repeat refusal, known custody and v2 record restore through actual victory and field save.
+Existing `BattleDiscardTests`/`BattleDiscardSessionTests` retain protected unsellable, saturated Deals,
+missing custody and wider refusal/delivery cases. Codec round-trip is in memory, not physical disk.
+
+Load the owning ignored environment in the launching process; select absolute SDK/shared CLI home,
+force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false` and reuse existing uv/NuGet/build/import state.
+Run affected actual engine behavior, `uv run sf2 verify engine`, `uv run sf2 verify adapter` and
+Debug adapter build. After correction rerun only failed/affected cases; preserve completed failures.
+Inspect the clean committed planner, ownership/private boundary and actual exact-head CI.
+
+Use the existing read-only world/static/scene/asset selections and registered controlled Map57
+approach, as for connected Give. Do not retry the unaccepted direct-battle helper or copy/export
+the world. Reuse the selected Godot installation/project. No owned G instance remained, so necessary
+startup runs hidden in the background with explicit local cwd/logs/TEMP and disposable save namespace.
+Other worktrees' instances, player saves and inputs remain untouched. Set the reviewed catalog
+explicitly for Chinese source names; language selection alone proves only templates.
+
+```powershell
+$env:SF2_INSPECTION_ROUTE = 'keyboard'
+$env:SF2_INSPECTION_START = $registeredMap57Start
+$env:SF2_EQUIPMENT_ZH = '1' # '0' for English; inherited observer switch
+$env:SF2_DISPLAY_CATALOG = $reviewedWorldCatalog
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $freshIgnoredOutput 'observation.json'
+& $env:GODOT_BIN --headless --log-file (Join-Path $freshIgnoredOutput 'godot.log') `
+  --audio-driver Dummy --max-fps 60 --resolution 1920x1080 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_connected_discard_observation.gd -- --input-settings $selectedInputSettings
+```
+
+Await actual process exit. The observer sends installed keys only and reads actual state/projection
+and errors: enter Battle01, make a legal nonzero movement preview, cancel each Drop boundary, remove
+the equipped wooden weapon and then Herb from the actual four slots, reveal/ack each result, and
+return free to the same ActionChoice/preview. One removal event and no action/after-turn suffix are
+required each time. Outer Cancel restores movement origin while both removed items stay removed.
+Current ATT/equipped slot, queue, resources, custody and seeds are inspected. There are no gameplay
+setters, synthetic completion, screenshots, frame capture, new comparator or asset acquisition.
+
+English/default and Chinese/remapped/catalog native runs passed in about3.8s/3.6s, each under250KiB.
+Chinese actual result names Chester/wooden stick/Herb from the selected catalog. Both retain six
+ObjectDB exit warnings with no native ERROR. A first native assertion expected null rather than the
+existing Unarmed slot4 sentinel; its completed failure remains preserved separately. No production
+guard or equipment semantics were changed for that correction.
+Resource budget: one serial native instance, one read-only world, fixed semantic samples, <75s and
+<2MiB per report. Slot work is O(4), state copies O(N) plus the existing finite movement query.
+No research/full suite or seven-battle replay is needed. Original natural reach/hardware timing,
+full curse behavior, later campaign, physical slot I/O, warning repair and human aesthetic acceptance
+remain outside this slice; existing #1047 Unknowns and #638 pause remain unchanged.
 
 ## Battle equipment authored observation
 

@@ -383,8 +383,45 @@ The [admission owner](../content/profiles-and-trust.md#authored-battle-discard-a
 [native recipe](../development-and-verification.md#battle-discard-authored-observation) own execution.
 Modern feedback and menu cancellation are authored interactions. Names/arena/weapon bonus/range
 operands are example content. Curses, rings, broken/status effects, wider item use, field/Caravan/shop
-services, private/connected imports and save/load remain Unsupported. **Unknown:** natural original
+services and wider private imports remain Unsupported in this authored boundary. The product binding
+and persistence extension below is separate. **Unknown:** natural original
 reach and original presentation/timing; the twelve #1047 Unknowns and #638 pause remain unchanged.
+
+## Connected battle discard agreement
+
+**Standard bounded implementation; existing High inventory/save consistency:** product New Game and
+Continue explicitly enable the existing `BattleDiscard` transaction through connected Battles01–07.
+`OpeningLoadoutBindings` binds live equipment, Give, then Discard; `PrivateFieldPreparation.Discard`
+shares only the admitted field catalog's identity/name/RARE/UNSELLABLE metadata. Battle selection,
+refusal, confirmation, removal and result remain the battle caller's rules above. The standalone
+reader guard and controlled callers without this product binding remain unchanged.
+
+The finite catalog is exact ordinary ATT-only weapons, exact CONSUMABLE records and Mithril123.
+Confirmed static provenance remains the pinned S2 battle caller above, independently inspected for
+this binding; `data/stats/items/itemdefs.asm` declares Mithril123 RARE without UNSELLABLE. The battle
+caller checks equipped curse before unsellable, then removes before the rare Deals addition. Field
+`DropItemBySlot` is not evidence that battle Drop has the same caller policy. No cursed/ring/broken
+word or other unsupported equipment becomes admitted: those states explicitly reject before mutation.
+Protected Sky Orb113 remains tested in the authored subset and is not added to the product carry
+catalog. This does not implement a curse lifecycle or claim a reachable cursed product item.
+
+Acceptance covers ordinary/equipped/rare removal, cancellation, live-slot and repeated-input refusal,
+one committed receipt, same ActionChoice/preview and no turn/RNG suffix. Outer movement Cancel must
+retain committed words, equipment and Deals. Known rare custody gets one saturating entry, preserving
+all once-flags; missing custody refuses. `ConnectedBattleDiscardTests`, existing `BattleDiscardTests`/
+`BattleDiscardSessionTests` and `BattleDiscardPersistenceTests` reproduce these actual engine rules.
+Equipped and rare variants survive settled-Movement v2 record/codec restore, an actual attack/victory,
+field custody and field save/restore. Codec round-trip is in memory, not physical slot-store I/O.
+
+The [explicit admission](../content/profiles-and-trust.md#connected-battle-discard-admission),
+[session continuation](../application/session-and-programs.md#battle-discard-selection-and-completion),
+[capability](../capability-status.md#connected-battle-discard-and-deals) and
+[native input recipe](../development-and-verification.md#connected-battle-discard-observation) own
+the connected boundary. Reuse one read-only world and the existing localized Godot consumer. Four
+slots bound transaction work to O(4), with existing O(N) state copies; no acquisition, new authority,
+schema, save revision, comparator or seven-battle replay. Later campaigns, Battle Search, Deals
+purchase, new item effects, full curse behavior, original natural reach/timing and human aesthetic
+acceptance remain outside this slice. Existing #1047 Unknowns and #638 pause are unchanged.
 
 ## Early classes and ranged physical attacks
 
