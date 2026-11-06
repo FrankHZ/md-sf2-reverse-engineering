@@ -11,6 +11,44 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class LocalizationDisplayTests
 {
     [Theory]
+    [InlineData(null, "本地名称")]
+    [InlineData("Name", "Name")]
+    [InlineData("WWWWWWW", "WWWWWWW")]
+    public void DisplayNamesUseCapturedMemberIdentityAndKeepExplicitCustomValuesLiteral(string? custom, string expected)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("{NAME;1}{W1}", name: "Name");
+        var before = session.Current;
+        var captured = Assert.IsType<FieldTextWait>(before.Story.Wait);
+        var wait = captured with { DisplayNames = captured.DisplayNames!.Select(binding => binding with { CustomName = custom }).ToArray() };
+        var overlay = DisplayCatalogReader.Read(JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            package = session.Definition.Package, locale = "zh-CN",
+            texts = new[] { new { @namespace = "world.text", id = 100, text = "{NAME;1}{W1}" } },
+            names = new[] { new { @namespace = "name.ally", index = 1, text = "本地名称" } },
+        }), session.Definition).Catalog!;
+        var display = overlay.Resolve(wait, session.Definition.Exploration!);
+        Assert.Equal(expected, display.Text); Assert.Null(display.Reason); Assert.Null(display.NameDiagnostics);
+        Assert.Equal("Name", DisplayCatalog.Canonical(captured, session.Definition.Exploration!).Text);
+        Assert.Same(before, session.Current); Assert.Same(captured.Units, wait.Units);
+    }
+
+    [Fact]
+    public void MissingNameKeepsCanonicalOperandAndReportsItsIdentitySeparatelyFromChineseBody()
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("{NAME;1} waits.{W1}", name: "Name");
+        var wait = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        var overlay = DisplayCatalogReader.Read(JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            package = session.Definition.Package, locale = "zh-CN",
+            texts = new[] { new { @namespace = "world.text", id = 100, text = "{NAME;1}等待。{W1}" } },
+        }), session.Definition).Catalog!;
+        var display = overlay.Resolve(wait, session.Definition.Exploration!);
+        Assert.Equal("Name等待。", display.Text); Assert.Equal("zh-CN", display.EffectiveLocale);
+        Assert.Equal("missing-name-translation", display.Reason);
+        Assert.Equal(new DisplayDiagnostic("missing-name-translation", "name.ally/1"), Assert.Single(display.NameDiagnostics!));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void SourceLayoutIsOptionalAndCannotChangeTextWorkOrAppendBoundaries(bool chinese)

@@ -38,7 +38,7 @@ internal sealed partial class BattleDiscardView : Control
             _characters = 0; _delivered = false;
             _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             _text.Text = GameText.Get("battle.discard-result",
-                CharacterNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Actor), _session.ActiveBattleScenes), state.Item);
+                DisplayNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Actor), _session.ActiveBattleScenes), DisplayNames.Item(state.ItemId, state.Item));
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
         }
         _state = state; Show();
@@ -94,12 +94,12 @@ internal sealed partial class BattleDiscardView : Control
         var items = session.QueryBattleChoices().Discard.Items;
         if (selection!.Stage == BattleSelectionStage.DiscardCommitReady)
             return GameText.Get("battle.discard-confirm",
-                items.FirstOrDefault(item => item.Slot == selection.ItemSlot)?.Item.Name ?? GameText.Get("battle.give-item"));
+                items.FirstOrDefault(item => item.Slot == selection.ItemSlot) is { } selected ? DisplayNames.ItemWord(selected.Word, selected.Item.Name) : GameText.Get("battle.give-item"));
         int index = items.ToList().FindIndex(item => item.Slot == selection.ItemSlot);
         string title = GameText.Get("battle.discard-title") + "\n";
         if (index < 0) return title + GameText.Get("battle.transaction-empty");
         var item = items[index];
-        return title + GameText.Get("battle.transaction-item", index + 1, items.Count, item.Slot + 1, item.Item.Name) +
+        return title + GameText.Get("battle.transaction-item", index + 1, items.Count, item.Slot + 1, DisplayNames.ItemWord(item.Word, item.Item.Name)) +
             ((item.Word & 128) != 0 ? GameText.Get("battle.discard-equipped") : "") +
             (item.Item.Unsellable ? GameText.Get("battle.discard-protected") : item.Item.Rare ? GameText.Get("battle.discard-rare") : "");
     }

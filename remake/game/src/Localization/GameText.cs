@@ -227,7 +227,6 @@ internal static class GameText
         ["name.too-long"] = 0,
         ["name.character"] = 0,
         ["name.default"] = 0,
-        ["name.bowie-default"] = 0,
         ["slot.title.save"] = 0,
         ["slot.title.confirm"] = 0,
         ["slot.title.saved"] = 0,
@@ -310,6 +309,12 @@ internal static class GameText
         ["ui.settings.display"] = 0,
         ["ui.settings.partial"] = 0,
         ["ui.settings.overlay"] = 0,
+        ["ui.settings.world-unbound"] = 0,
+        ["ui.settings.catalog"] = 2,
+        ["ui.settings.entry-loaded"] = 0,
+        ["ui.settings.entry-unbound"] = 0,
+        ["ui.settings.entry-unavailable"] = 0,
+        ["name.default-value"] = 1,
         ["shop.title"] = 1,
         ["shop.buy"] = 0,
         ["shop.sell"] = 0,
@@ -460,12 +465,20 @@ internal static class GameText
     private static Candidate? _current;
     private static DisplayCatalog? _overlay;
     private static string? _overlayError;
+    private static object? _entryAdmission;
+    private static string? _entryError;
     private static readonly HashSet<string> _diagnostics = new(StringComparer.Ordinal);
     internal static bool Ready => _current is not null;
     internal static string Language => _current?.Language ?? "en";
     internal static string? StartupError { get; private set; }
-    internal static string Coverage => Language == "en" ? "" : Get(_overlayError is null ? "ui.settings.partial" : "ui.settings.overlay");
-    internal static object? Observe() => _current is null ? null : new { language = Language, rows = _current.Status, diagnostics = Diagnostics, coverage = Coverage };
+    internal static string Coverage => Language == "en" ? "" : string.Join("\n", new[] {
+        _overlay is null ? Get(_overlayError is null ? "ui.settings.world-unbound" : "ui.settings.overlay") : Get("ui.settings.catalog", _overlay.MessageCount, _overlay.NameCount),
+        Get(_entryError is not null ? "ui.settings.entry-unavailable" : _entryAdmission is null ? "ui.settings.entry-unbound" : "ui.settings.entry-loaded"),
+        Get("ui.settings.partial") });
+    internal static object? Observe() => _current is null ? null : new { language = Language, rows = _current.Status, diagnostics = Diagnostics, coverage = Coverage,
+        worldCatalog = new { messages = _overlay?.MessageCount ?? 0, names = _overlay?.NameCount ?? 0, error = _overlayError },
+        entryCatalog = _entryAdmission, entryError = _entryError,
+        nameDiagnostics = Diagnostics.Where(issue => issue.Contains(":name.", StringComparison.Ordinal)).ToArray() };
     internal static string[] Diagnostics => _diagnostics.Order(StringComparer.Ordinal).ToArray();
     internal static string Get(string key, params object[] args)
     {
@@ -522,17 +535,23 @@ internal static class GameText
             try { Publish(Prepare("en")); } catch (ArgumentException) { _current = null; }
         }
     }
-    internal static void Bind(ScenarioDefinition source, string? path)
+    internal static void ClearWorld()
     {
-        _overlay = null; _overlayError = null; _diagnostics.Clear();
+        _overlay = null; _overlayError = "overlay-unavailable"; DisplayNames.Clear();
+        _diagnostics.Clear();
         if (_current is { } current)
             foreach (var (key, status) in current.Status) if (status.Reason is { } reason) Diagnose(reason, key);
+    }
+    internal static void Bind(ScenarioDefinition source, string? path)
+    {
+        ClearWorld(); _overlayError = null; DisplayNames.Bind(source, null);
         if (string.IsNullOrEmpty(path)) { _overlayError = "overlay-unavailable"; return; }
         try
         {
             if (!System.IO.Path.IsPathFullyQualified(path) || new System.IO.FileInfo(path).Length > 256 * 1024) throw new ArgumentException();
             var admission = DisplayCatalogReader.Read(System.IO.File.ReadAllBytes(path), source);
             _overlay = admission.Catalog; _overlayError = admission.Error;
+            DisplayNames.Bind(source, _overlay);
             foreach (var issue in _overlay?.Diagnostics ?? []) Diagnose(issue.Code, issue.Key);
             if (Language == "zh-CN" && _overlayError is not null) Diagnose(_overlayError, "world.text");
         }
@@ -541,11 +560,15 @@ internal static class GameText
     }
     internal static DisplayCatalogAdmission EntryCatalog(EntryPresentation source, string? path)
     {
+        _entryAdmission = null; _entryError = "overlay-unavailable";
         try
         {
             if (string.IsNullOrEmpty(path) || !System.IO.Path.IsPathFullyQualified(path) ||
                 new System.IO.FileInfo(path).Length > 256 * 1024) return new(null, "overlay-unavailable");
-            return DisplayCatalogReader.Read(System.IO.File.ReadAllBytes(path), source);
+            var result = DisplayCatalogReader.Read(System.IO.File.ReadAllBytes(path), source);
+            _entryAdmission = result.Catalog is { } catalog ? new { messages = catalog.MessageCount, names = catalog.NameCount } : null;
+            _entryError = result.Error;
+            return result;
         }
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         { return new(null, "overlay-unavailable"); }
@@ -561,6 +584,7 @@ internal static class GameText
         }
         else result = _overlay.Resolve(wait, definition, reflow: true);
         if (result.Reason is { } reason) Diagnose(reason, $"world.text/{wait.Text}");
+        foreach (var issue in result.NameDiagnostics ?? []) Diagnose(issue.Code, issue.Key);
         return result;
     }
     internal static string Fallback(string prefix, bool includeKey = false, bool exact = false)
@@ -582,11 +606,17 @@ internal static class GameText
             for (int i = 0; i < tokens.Count; i++)
                 if (tokens[i].Kind == ExplorationTextTokenKind.MemberName &&
                     (tokens[i].Member ?? implicitMember) is { } member)
-                    names.Add(new(i, member, CharacterNames.Member(session.Definition, session.Current.Story, member), null));
+                {
+                    var actor = session.Definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
+                        .FirstOrDefault(row => row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == member)?.Actor;
+                    names.Add(new(i, member, CharacterNames.Member(session.Definition, new Dictionary<string, string>(), member),
+                        actor is { } idActor ? session.Current.Story.Names.GetValueOrDefault(idActor.Value) : null, Actor: actor));
+                }
         // Legacy dialogue has no captured bare NAME/CLASS operand. Missing bindings use display-operands fallback.
         var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names, reflow) : _overlay.Resolve(id, source, names, reflow);
         if (Language != "en" && _overlay is null && row.Reason is null) row = row with { Reason = "overlay-unavailable" };
         if (row.Reason is { } reason) Diagnose(reason, $"world.text/{id}");
+        foreach (var issue in row.NameDiagnostics ?? []) Diagnose(issue.Code, issue.Key);
         return row;
     }
     internal static DisplayResult Search(FieldSearchResult result, GameSession session)
@@ -604,7 +634,7 @@ internal static class GameText
                 Diagnose("display-operands", key);
                 return new("Text unavailable (display-operands).", "en", "display-operands");
             }
-            string item = result.ItemName ?? "";
+            string item = result.ItemWord is { } word ? DisplayNames.ItemWord(word, result.ItemName ?? "") : result.ItemName ?? "";
             string value = result.Kind switch
             {
                 FieldSearchKind.Item => Get(key, PartyStatusView.MemberName(session.QueryPartyDetails()!.Members.Single(member => member.Carried.Actor == result.Recipient), session), item),
@@ -624,9 +654,6 @@ internal static class GameText
             BattleActionKind.Physical => Get("battle.command.attack"),
             BattleActionKind.Stay => Get("battle.command.stay"), _ => choice.Label,
         };
-    internal static string BattleEquipmentLabel(BattleEquipmentChoice choice) =>
-        choice.Slot == 4 ? Get("prepare.unarmed") : choice.Label;
-
     internal static string BattleFailure(SessionFailure failure, bool stopped = false)
     {
         string recovery = stopped ? "stop" : failure.Code switch
@@ -640,6 +667,6 @@ internal static class GameText
             $"{failure.Kind}: {failure.Code} ({failure.Field})");
     }
 
-    private static void Diagnose(string reason, string key)
+    internal static void Diagnose(string reason, string key)
     { if (_diagnostics.Count < 128) _diagnostics.Add(reason + ":" + key); }
 }

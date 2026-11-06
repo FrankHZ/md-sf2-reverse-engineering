@@ -1,5 +1,79 @@
 # Development and Verification
 
+## Pre-voyage Chinese consumer observation
+
+The [finite admission agreement](application/pre-voyage-chinese-admission.md) owns the exact806 world
+IDs, six entry aliases,51 names, unchanged source-token grammar and campaign frontier. This is display
+integration over accepted source/translation authority; no new original capture, full route, font
+sweep or research aggregate is required. Keep sole corpora and historical209/six-alias catalogs read-only.
+
+From the owning checkout, with explicit source/corpus/entry/previous-catalog paths selected locally:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.remake_localization --world $world --corpus $corpus --names $names `
+  --entry $entry --upstream $pinnedSource --previous-world $previousWorld `
+  --previous-entry $previousEntry --output local/pre-voyage-catalog
+```
+
+The selector resolves relative paths from its checkout, including when invoked from `remake/`.
+Output must be a fresh ignored directory beneath that checkout's `local/`; no corpus writeback,
+runtime manifest or media clone occurs. It reads the existing world once per derivation, checks all
+source strings against the pinned text table/corpus, selects the tracked ID/key sets, checks control
+order/segment parameters and name source expressions, preserves exact entry projection, rejects an
+unexpected historical change set, and emits world/entry catalogs plus34-row review and lightweight QA.
+Review the34 calibration changes semantically before selecting the candidate. Strict runtime admission
+and actual consumer checks remain separate from offline selection and heuristic results.
+
+Reuse the existing reader/resolver projection harness with the actual admitted world for the full
+806/51/six-alias check and missing/invalid row/name, source, duplicate, byte/row/name-bound and old-overlay
+controls. Unknown name identities reject the candidate. Missing name rows preserve canonical/custom
+values and expose exact namespace/index diagnostics separately from Chinese body locale. Check that
+the prior executable rejects the new shape with `overlay-unavailable` and still accepts its retained
+209-row catalog. Do not construct a second full-corpus comparator or add tests of the selector/probe.
+
+Runtime behavior assertions are in `LocalizationDisplayTests`; the existing captured identity owners
+are `ExplorationTextWaitTests`, `Battle01ToBattle02Tests`, `PartyDetailsQueryTests`,
+`BattleGiveSessionTests`, `BattleDiscardSessionTests` and `BattleSceneDisplayIdentityTests`/`BattleSceneTests`.
+Run their affected selection and `uv run sf2 verify adapter`. A public-input engine aggregate explicitly
+clears optional private selectors and reports its private skips; it is not private acceptance. Direct
+private admission/native observations and the named private behavior selection supply their own evidence.
+Do not apply a Battle01 comparison-start override to unrelated spell/accounting assertions.
+
+Native acceptance uses the existing Debug project/installation, serial background processes and
+state/input/projection/errors only. Import changed PO/source resources when needed; generated UID/import
+noise is local build state. The small `probes/PreVoyageLocalizationObservation.cs` startup admits the real
+world through `OpeningNewGameReader`, constructs explicit prelaunch inputs and uses production
+`GameSession.Start`/ordinary mount. It refuses an already running session and never modifies its fields
+or injects a display catalog. It does not widen the legacy two-encounter controlled-start reader.
+The private battle seam obtains actual initialized actor values first, then validates a fresh fully
+initialized controlled input with declared accounting zeros/HP/positions. These are controlled inputs,
+not evidence of original preceding reach. Reuse existing localization/entry/party/service/battle hooks;
+keep scenario drivers and private data ignored, with exact inputs/results in the local handoff.
+
+Observe ordinary entry/all aliases, Settings Apply/Cancel and a fresh persisted launch; actual New Game
+and Continue bind names before slot/default labels. Check an explicit custom equal to its canonical
+name, real Talk/calibrated480, the new662/longest663 source-zone flow, join446 NAME/CLASS and the Kiwi
+choice/no/cancel/name chain with a wide custom value. Check Search4065's preserved breaks, Party and
+Galam Shop, then private item-use/HEAL messages and enemy card/field identity. Read longest/wide actual
+panel geometry/ReadMore rather than repeating offline font measurements. Compare equivalent paused
+canonical session boundaries across language Apply and verify disposable save bytes remain unchanged.
+Use a new namespace under the configured external validation root; existing user saves/backups are excluded.
+
+Give/Discard checks use their **existing standalone authored production transactions** and Chinese
+result templates. Their project-authored labels remain canonical without pinned source-name identity;
+classify that exclusion explicitly. Private/connected Give/Discard imports remain Unsupported, so these
+checks establish neither a private transaction path nor a Chinese natural chain.
+
+The finite candidate is under128KiB; one existing118MB world read per admission/derivation avoids package
+copies. Keep supporting reports/scripts under32MiB, serial native cases within60s, and allow separately
+budgeted reused build/import state and controlled inputs. Reassess real growth or new caller semantics.
+Retain every completed failed check, input/setup failure and ObjectDB exit warning. Existing native leak
+cause remains Unknown; a successful consumer result does not establish clean shutdown. On a clean
+committed head inspect `uv run sf2 verify plan --scope engine --base origin/main --head HEAD`
+and actual CI; the selector is explicitly classified as an engine producer, with no research extraction
+semantics. Record exact plan/head/CI identities in the handoff.
+
 ## Ordinary clock and save entry
 
 The [High-rigor scope agreement](application/session-and-programs.md#ordinary-exploration-clock-and-save-boundary)

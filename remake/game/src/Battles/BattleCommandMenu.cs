@@ -259,7 +259,7 @@ internal sealed partial class BattleCommandMenu : Control
 
     private string OptionLabel(BattleActionChoice option)
     {
-        string name = GameText.BattleActionLabel(option);
+        string name = DisplayNames.Action(option, _current!);
         string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {name}" : name;
         if (option.Action.Spell is { } spell)
         {

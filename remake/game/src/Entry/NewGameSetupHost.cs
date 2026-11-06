@@ -35,7 +35,11 @@ public sealed partial class GameRoot
         {
             var read = RestoreSource().Read();
             if (read is not ExplorationReadAccepted admitted)
-            { NewGameError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "new-game-content-required"); return; }
+            {
+                if (_session is null) GameText.ClearWorld();
+                NewGameError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "new-game-content-required"); return;
+            }
+            GameText.Bind(admitted.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
             var store = Store(admitted.Definition);
             _slots.ShowChoices("new-game-slots", GameText.Get("new.slots"),
                 (Label(1, store.Read(1), admitted.Definition), () => ChooseNewSlot(1)), (Label(2, store.Read(2), admitted.Definition), () => ChooseNewSlot(2)), (GameText.Get("entry.cancel"), CancelNewGame));
@@ -62,7 +66,7 @@ public sealed partial class GameRoot
     private void ConfirmNewGame()
     {
         _slots!.Show(); _slots.Cancel = ShowName;
-        _slots.ShowChoices("confirm-new-game", GameText.Get("new.confirm", _nameDraft.Length == 0 ? GameText.Get("name.bowie-default") : _nameDraft, _newSlot),
+        _slots.ShowChoices("confirm-new-game", GameText.Get("new.confirm", _nameDraft.Length == 0 ? GameText.Get("name.default-value", DisplayNames.DefaultMember(0)) : _nameDraft, _newSlot),
             (GameText.Get("entry.back"), ShowName), (GameText.Get("new.start", _newSlot), CommitNewGame));
         DisarmInput();
     }

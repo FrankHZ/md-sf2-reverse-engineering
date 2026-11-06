@@ -118,7 +118,7 @@ internal sealed partial class PartyStatusView : Control
         int? binding = member.Deployment?.Initialization?.AllyPartyMember;
         if (member.Deployment is null)
             return CharacterNames.Actor(session.Current.Story, member.Carried.Actor, GameText.Get("party.name-unavailable"));
-        return binding is { } index ? CharacterNames.Member(session.Definition, session.Current.Story, index)
+        return binding is { } index ? DisplayNames.Member(session.Definition, session.Current.Story, index)
             : CharacterNames.Actor(session.Current.Story, member.Carried.Actor, session.Definition.PrivateDefinitions is null
                 ? CharacterNames.ReadableIdentity(member.Carried.Actor) : GameText.Get("party.name-unavailable"));
     }

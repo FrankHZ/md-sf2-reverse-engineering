@@ -11,7 +11,7 @@ public static class DisplayCatalogReader
     public static DisplayCatalogAdmission Read(byte[] bytes, ScenarioDefinition source)
         => Read(bytes, source.Package, "world.text", source.Exploration?.TextTokens,
             source.Exploration?.Provenance?.Repository, source.Exploration?.Provenance?.Commit,
-            source.Exploration?.Provenance?.RomSha256);
+            source.Exploration?.Provenance?.RomSha256, source);
 
     // Entry has its own admitted profile and source identity; it is not a gameplay scenario.
     public static DisplayCatalogAdmission Read(byte[] bytes, EntryPresentation source)
@@ -21,7 +21,7 @@ public static class DisplayCatalogReader
 
     private static DisplayCatalogAdmission Read(byte[] bytes, string package, string targetNamespace,
         IReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>>? originals,
-        string? repository, string? commit, string? romSha256)
+        string? repository, string? commit, string? romSha256, ScenarioDefinition? definition = null)
     {
         try
         {
@@ -29,8 +29,9 @@ public static class DisplayCatalogReader
             string json = new UTF8Encoding(false, true).GetString(bytes);
             using var document = JsonDocument.Parse(json);
             var root = document.RootElement;
-            Shape(root, repository is null ? ["package", "locale", "texts"] :
-                ["package", "locale", "texts", "source"]);
+            bool hasNames = targetNamespace == "world.text" && root.TryGetProperty("names", out _);
+            string[] envelope = repository is null ? ["package", "locale", "texts"] : ["package", "locale", "texts", "source"];
+            Shape(root, hasNames ? [.. envelope, "names"] : envelope);
             if (root.GetProperty("package").GetString() != package ||
                 root.GetProperty("locale").GetString() != "zh-CN" || originals is null)
                 throw new ArgumentException();
@@ -42,7 +43,7 @@ public static class DisplayCatalogReader
                     pin.GetProperty("romSha256").GetString() != romSha256) throw new ArgumentException();
             }
             var texts = root.GetProperty("texts");
-            if (texts.ValueKind != JsonValueKind.Array || texts.GetArrayLength() > 256) throw new ArgumentException();
+            if (texts.ValueKind != JsonValueKind.Array || texts.GetArrayLength() > (targetNamespace == "world.text" ? 1024 : 256)) throw new ArgumentException();
             var seen = new HashSet<(string, int)>();
             var rows = new Dictionary<int, DisplayCatalog.Row>(); var rejected = new Dictionary<int, string>();
             var diagnostics = new List<DisplayDiagnostic>();
@@ -63,12 +64,42 @@ public static class DisplayCatalogReader
                 }
                 rows.Add(id, row!);
             }
-            return new(new("zh-CN", rows, rejected, diagnostics), null);
+            var names = new Dictionary<(string, int), string>();
+            if (hasNames)
+            {
+                var entries = root.GetProperty("names");
+                if (entries.ValueKind != JsonValueKind.Array || entries.GetArrayLength() > 128) throw new ArgumentException();
+                foreach (var entry in entries.EnumerateArray())
+                {
+                    Shape(entry, ["namespace", "index", "text"]);
+                    string space = entry.GetProperty("namespace").GetString() ?? throw new ArgumentException();
+                    int index = entry.GetProperty("index").GetInt32();
+                    string value = entry.GetProperty("text").GetString() ?? throw new ArgumentException();
+                    if (!KnownName(definition!, space, index) || string.IsNullOrWhiteSpace(value) || value.Length > 128 ||
+                        value.Any(c => char.IsControl(c) || c is '{' or '}' or '\u2028' or '\u2029') || !names.TryAdd((space, index), value))
+                        throw new ArgumentException();
+                }
+            }
+            return new(new("zh-CN", rows, rejected, diagnostics, names), null);
         }
         catch (Exception error) when (error is JsonException or ArgumentException or InvalidOperationException or
             KeyNotFoundException or DecoderFallbackException or OverflowException)
         { return new(null, "overlay-unavailable"); }
     }
+    private static bool KnownName(ScenarioDefinition source, string space, int index) => index >= 0 && (space switch
+    {
+        "name.ally" => index < (source.Exploration?.MemberNames.Count ?? 0),
+        "name.class" => source.PrivateDefinitions?.Classes.Keys.Any(id => id == index) == true,
+        "name.item" => source.PrivateDefinitions?.Items.Keys.Any(id => id == index) == true ||
+            source.Exploration?.Programs.Values.SelectMany(program => program.Instructions).OfType<OpenShop>()
+                .Any(shop => shop.Definition.Items.Keys.Any(id => id == index)) == true ||
+            source.Exploration?.Maps.Values.SelectMany(map => new[] { map.Search }.Concat(map.Setups.Values.Select(setup => setup.Search)))
+                .Where(search => search is not null).SelectMany(search => search!.Chests.Concat(search.OtherItems))
+                .Any(item => item.ItemWord is { } word && (word & 127) == index) == true,
+        "name.spell" => source.PrivateDefinitions?.Spells.Values.Any(spell => spell.BaseId == index) == true,
+        "name.enemy" => source.PrivateDefinitions?.Enemies.Values.Any(enemy => enemy.Id == index) == true,
+        _ => false,
+    });
     private static void Shape(JsonElement value, string[] names)
     {
         if (value.ValueKind != JsonValueKind.Object) throw new ArgumentException();

@@ -440,39 +440,39 @@ internal sealed partial class BattleSceneView : Control
         {
             var spell = state.SilencedSpell ?? state.SupportSpell?.Spell;
             if (spell is { } key && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
-                return LocalizedMessage("battle.spell.action", ActorName(state.Actor), key.Value.ToUpperInvariant(), key.Level);
+                return LocalizedMessage("battle.spell.action", ActorName(state.Actor), DisplayNames.Spell(key), key.Level);
             if (SemanticMessage(state) is { } statusMessage) return statusMessage;
             return "";
         }
         if (state.AttackSpell is { } attack)
         {
             if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
-                return LocalizedMessage("battle.spell.action", ActorName(state.Actor), attack.Spell.Value.ToUpperInvariant(), attack.Spell.Level);
+                return LocalizedMessage("battle.spell.action", ActorName(state.Actor), DisplayNames.Spell(attack.Spell), attack.Spell.Level);
             if (SemanticMessage(state) is { } spellMessage) return spellMessage;
         }
         if (state.Spell?.CuresPoison == true)
         {
             if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
-                return LocalizedMessage("battle.heal.action", ActorName(state.Actor), state.Spell.Spell.Value.ToUpperInvariant(), state.Spell.Spell.Level);
+                return LocalizedMessage("battle.heal.action", ActorName(state.Actor), DisplayNames.Spell(state.Spell.Spell), state.Spell.Spell.Level);
             if (SemanticMessage(state) is { } cureMessage) return cureMessage;
         }
         if (state.Item?.CuresPoison == true && state.Phase == BattleScenePhase.ResultMessage && SemanticMessage(state) is { } itemCure)
             return itemCure;
         if (state.IsAura && state.Phase == BattleScenePhase.ActionMessage)
             return GameText.Language == "en" ? $"{ActorName(state.Actor)} casts {state.Spell!.Spell.Value.ToUpperInvariant()} {state.Spell.Spell.Level}." :
-                LocalizedMessage("battle.heal.action", ActorName(state.Actor), state.Spell!.Spell.Value.ToUpperInvariant(), state.Spell.Spell.Level);
+                LocalizedMessage("battle.heal.action", ActorName(state.Actor), DisplayNames.Spell(state.Spell!.Spell), state.Spell.Spell.Level);
         if (state.IsAura && state.Phase == BattleScenePhase.ResultMessage)
             return GameText.Language == "en" ? $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP." :
                 LocalizedMessage("battle.heal.recovery", ActorName(state.Target!.Value), state.Amount);
         if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
         {
             _messageFallback = GameText.Fallback("battle.heal.action", true, exact: true);
-            return BattleCharacterNames.HealingText(healing.Display, false);
+            return BattleCharacterNames.HealingText(healing.Display, false, _session);
         }
         if (state.Healing is { } recovery && state.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop)
         {
             _messageFallback = GameText.Fallback("battle.heal.recovery", true, exact: true);
-            return BattleCharacterNames.HealingText(recovery.Display, true);
+            return BattleCharacterNames.HealingText(recovery.Display, true, _session);
         }
         // Chinese uses authored functional templates from typed state. English keeps
         // the admitted source-ID route below; missing Chinese rows fall back whole.
@@ -528,7 +528,7 @@ internal sealed partial class BattleSceneView : Control
             if (key is null) return null;
             // Amount is the learned level for Spell, not a stat gain; retain SpellRef.
             return growth.Spell is { } spell && growth.Kind == BattleGrowthNoticeKind.Spell
-                ? LocalizedMessage("battle.scene." + key, Name(state.RewardActor), spell.Value.ToUpperInvariant(), spell.Level)
+                ? LocalizedMessage("battle.scene." + key, Name(state.RewardActor), DisplayNames.Spell(spell), spell.Level)
                 : growth.Kind == BattleGrowthNoticeKind.Spell ? null
                 : LocalizedMessage("battle.scene." + key, Name(state.RewardActor), growth.Amount);
         }
@@ -539,7 +539,7 @@ internal sealed partial class BattleSceneView : Control
                 "physical-first" => LocalizedMessage("battle.scene.attack", ActorName(state.Actor)),
                 "physical-second" => LocalizedMessage("battle.scene.second", ActorName(state.Actor)),
                 "physical-counter" => LocalizedMessage("battle.scene.counter", ActorName(state.Actor)),
-                "item-use" => LocalizedMessage("battle.scene.item", ActorName(state.Actor), state.Item!.Name),
+                "item-use" => LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(state.Item!.ItemId, state.Item.Name)),
                 "prism-laser" => LocalizedMessage("battle.scene.prism", ActorName(state.Actor)), _ => null,
             },
             BattleScenePhase.ResultMessage => state.ReactionKind switch
@@ -552,8 +552,8 @@ internal sealed partial class BattleSceneView : Control
             },
             BattleScenePhase.DeathMessage => LocalizedMessage(_session.Current.Battle.GetActor(state.Target!.Value).IsAlly
                 ? "battle.scene.ally-death" : "battle.scene.enemy-death", Target()),
-            BattleScenePhase.ItemReceivedMessage => LocalizedMessage("battle.scene.received", ActorName(state.Actor), state.ItemReceipt!.Item.Name),
-            BattleScenePhase.ItemDroppedMessage => LocalizedMessage("battle.scene.dropped", Target(), state.ItemReceipt!.Item.Name),
+            BattleScenePhase.ItemReceivedMessage => LocalizedMessage("battle.scene.received", ActorName(state.Actor), DisplayNames.Item(state.ItemReceipt!.Item.ItemId, state.ItemReceipt.Item.Name)),
+            BattleScenePhase.ItemDroppedMessage => LocalizedMessage("battle.scene.dropped", Target(), DisplayNames.Item(state.ItemReceipt!.Item.ItemId, state.ItemReceipt.Item.Name)),
             BattleScenePhase.RewardMessage => LocalizedMessage("battle.scene.exp", Name(state.RewardActor), state.RewardAmount),
             BattleScenePhase.GoldMessage => LocalizedMessage("battle.scene.gold", state.GoldAmount),
             BattleScenePhase.SilencedCastMessage => LocalizedMessage("battle.scene.silenced-cast", ActorName(state.Actor)),

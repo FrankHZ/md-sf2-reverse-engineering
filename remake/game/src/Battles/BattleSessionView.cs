@@ -417,14 +417,14 @@ public sealed partial class BattleSessionView : Control
         var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
         _equipment = currentActor?.Definition.Equipment is null ? "" :
             GameText.Get("battle.equipment-current", _input.Hint(GameAction.Equipment),
-                equipmentChoices.FirstOrDefault(o => o.Equipped) is { } equipped ? GameText.BattleEquipmentLabel(equipped) : GameText.Get("prepare.unarmed"),
+                equipmentChoices.FirstOrDefault(o => o.Equipped) is { } equipped ? DisplayNames.Equipment(equipped, _session.Current) : GameText.Get("prepare.unarmed"),
                 currentActor.Attack, BattleEquipment.Physical(currentActor)!.MinimumRange, BattleEquipment.Physical(currentActor)!.MaximumRange);
         _spells = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             _session.QueryBattleChoices().Spells.Select(option =>
-                option.Label + (option.Spell == selection.Spell ? " · selected" : "") +
+                DisplayNames.Spell(option.Spell, option.Label, level: true) + (option.Spell == selection.Spell ? " · selected" : "") +
                 (option.Enabled ? "" : $" · unavailable: {option.Reason!.Code}")));
         _items = selection is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
-            _session.QueryBattleChoices().Items.Select(option => $"{option.Slot + 1}: {option.Label}" +
+            _session.QueryBattleChoices().Items.Select(option => $"{option.Slot + 1}: {DisplayNames.BattleItem(_session.Current, option.Slot, option.Label)}" +
                 (option.Slot == selection.ItemSlot ? " · selected" : "") +
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
         _giveMenu = BattleGiveView.Menu(_session);
@@ -438,7 +438,7 @@ public sealed partial class BattleSessionView : Control
         {
             int index = equipmentChoices.ToList().FindIndex(option => option.Slot == selection!.EquipmentSlot);
             _equipment = GameText.Get("battle.equipment-title") + "\n" + (index < 0 ? GameText.Get("battle.no-equipment") :
-                GameText.Get("battle.equipment-row", index + 1, equipmentChoices.Count, GameText.BattleEquipmentLabel(equipmentChoices[index]),
+                GameText.Get("battle.equipment-row", index + 1, equipmentChoices.Count, DisplayNames.Equipment(equipmentChoices[index], _session.Current),
                     equipmentChoices[index].Attack, equipmentChoices[index].MinimumRange, equipmentChoices[index].MaximumRange));
             if (_session.QueryBattleChoices().EquipmentFailure is { } equipmentFailure)
                 _equipment += "\n" + GameText.BattleFailure(equipmentFailure);

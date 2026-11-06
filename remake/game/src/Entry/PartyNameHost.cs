@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Entry;
@@ -15,7 +16,7 @@ public sealed partial class GameRoot
         _nameEntry = new NameEntryView
         {
             Name = "NameEntryView",
-            MemberName = CharacterNames.Member(_session.Definition, snapshot.Story, wait.Member),
+            MemberName = DisplayNames.Member(_session.Definition, snapshot.Story, wait.Member),
             Draft = "",
             Done = name =>
             {

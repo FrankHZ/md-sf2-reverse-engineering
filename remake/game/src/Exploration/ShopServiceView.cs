@@ -84,7 +84,7 @@ internal sealed partial class ShopServiceView : Control
                 foreach (byte id in wait.Definition.Stock)
                 {
                     var item = wait.Definition.Items[id];
-                    _options.Add((GameText.Get("shop.stock", item.Name, item.Price), new SelectShopItem(wait.Token, id)));
+                    _options.Add((GameText.Get("shop.stock", DisplayNames.Item(id, item.Name), item.Price), new SelectShopItem(wait.Token, id)));
                 }
                 Add("shop.back", new BackShop(wait.Token)); break;
             case ShopPhase.Member:
@@ -98,7 +98,7 @@ internal sealed partial class ShopServiceView : Control
                 for (int slot = 0; slot < loadout.Items.Count; slot++)
                 {
                     ushort word = loadout.Items[slot]; byte id = (byte)(word & 127); if (id == 127) continue;
-                    string name = wait.Definition.Items.TryGetValue(id, out var item) ? item.Name : GameText.Get("shop.unknown", id);
+                    string name = wait.Definition.Items.TryGetValue(id, out var item) ? DisplayNames.Item(id, item.Name) : GameText.Get("shop.unknown", id);
                     _options.Add((GameText.Get("shop.slot", slot + 1, name, (word & 128) != 0 ? GameText.Get("shop.equipped") : ""),
                         new SelectShopSlot(wait.Token, slot, word)));
                 }
@@ -107,7 +107,7 @@ internal sealed partial class ShopServiceView : Control
                 var offer = wait.Offer!;
                 var selected = _session.QueryPartyDetails()!.Members.Single(row => row.Carried.Actor == offer.Member);
                 _title.Text += "\n" + GameText.Get(wait.Action == ShopAction.Buy ? "shop.confirm-buy" : "shop.confirm-sell",
-                    wait.Definition.Items[offer.Item].Name, PartyStatusView.MemberName(selected, _session), offer.Price);
+                    DisplayNames.Item(offer.Item, wait.Definition.Items[offer.Item].Name), PartyStatusView.MemberName(selected, _session), offer.Price);
                 Add("shop.confirm", new AnswerShop(wait.Token, offer, true)); Add("shop.back", new AnswerShop(wait.Token, offer, false)); break;
             case ShopPhase.Result:
                 _title.Text += "\n" + GameText.Get("shop.result." + wait.Result!.Value.ToString().ToLowerInvariant());
