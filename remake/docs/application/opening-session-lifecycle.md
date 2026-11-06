@@ -749,6 +749,9 @@ Map40 area0 at (14,14) facing Up, empty results, (15,7) facing Up pickup/repeat,
 and rare Drop/Deals. Select `SF2_PRIVATE_TOWER_SEARCH_WORLD` and the ordinary authenticated battle
 inputs for the private check; public engine verification leaves those selectors absent. The retained
 focused producer check also confirms that a real pinned callback table remains withheld.
+An authored headless Godot observation separately confirms actual menu Search and Confirm-shortcut
+empty feedback, modal input ownership and return to field control. It tests the shared adapter
+mapping, not private Map40 resources or original reach; no screenshots or full-route run are used.
 
 **Confirmed in the remake:** the previously prepared campaign world lacks Map40 Search even though
 its input program is null. The selection correction affects newly prepared content; an existing
