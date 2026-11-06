@@ -55,6 +55,10 @@ live host remain on the Godot thread. One entry operation runs at a time. Repeat
 ignored. Cancel acknowledges a return request immediately and returns after the in-flight read;
 publication/recovery cannot be cancelled halfway through their atomic disk operation. Window-close
 requests visibly wait for that operation before applying the existing quit policy.
+After waiting, close releases the entry/name/slot presentation and prepared replacement resources
+before invoking that policy. An existing session retains its identity, revision and unsaved-progress
+confirmation; cancelling quit returns to that original playable session, including after a completed
+replacement save was published without being mounted.
 
 Success and exception results share the original host/tree-lifetime, panel and session boundary.
 An exited or replaced owner receives no late UI result or input rearming. Window recovery retains

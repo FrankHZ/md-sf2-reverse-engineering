@@ -45,6 +45,8 @@ func _run() -> void:
     root.size=Vector2i(1920,1080)
     host=load("res://Main.tscn").instantiate();root.add_child(host)
     await process_frame;await process_frame
+    if OS.get_environment("SF2_ENTRY_CONFIRMATION_CASE").begins_with("active-quit"):
+        await active_quit();return
     await press(KEY_ENTER);await press(KEY_E)
     if entry().visibleCharacters>=0 and entry().visibleCharacters<entry().totalCharacters: await press(KEY_ENTER)
     if OS.get_environment("SF2_ENTRY_CONFIRMATION_CASE")!="timing":
@@ -62,6 +64,46 @@ func _run() -> void:
 func slot_state() -> Dictionary:
     var s:=host.find_child("SaveSlotView",true,false)
     return JSON.parse_string(s.call("ReadSaveObservationJson")) if s else {}
+
+func active_quit() -> void:
+    # Reuse the existing controlled field bootstrap; subsequent menu/name/close inputs
+    # are ordinary product actions. This does not claim preceding natural reach.
+    var controlled:=OS.get_environment("SF2_ENTRY_CONFIRMATION_START")
+    if controlled=="":check(false,"active close needs an existing controlled field start");finish();return
+    check(host.call("StartPreVoyageLocalizationObservation",controlled)=="started","real controlled field session mounted")
+    await process_frame;await process_frame;await process_frame
+    await press(KEY_F10)
+    check(host.find_child("SystemMenuView",true,false)!=null,"ordinary system menu opens")
+    for i in range(3):await press(KEY_DOWN)
+    await press(KEY_ENTER)
+    check(entry().replacement,"active session opens replacement entry")
+    await press(KEY_UP);await press(KEY_ENTER)
+    if OS.get_environment("SF2_ENTRY_CONFIRMATION_CASE")=="active-quit-write":
+        await until_slots();await press(KEY_ENTER);await press(KEY_ENTER)
+        await press(KEY_DOWN);await press(KEY_ENTER)
+        for i in range(1200):
+            if slot_state().get("message","").begins_with("Saving"):break
+            await process_frame
+        check(slot_state().get("message","").begins_with("Saving"),"active replacement publication reached")
+    var before: Dictionary=JSON.parse_string(host.call("ReadPersistenceObservationJson"))
+    host.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+    samples.append({"label":"active-close-request","slots":slot_state(),"sessionId":before.sessionId,"revision":before.revision})
+    for i in range(600):
+        if slot_state().get("state")=="confirm-quit":break
+        await process_frame
+    var after: Dictionary=JSON.parse_string(host.call("ReadPersistenceObservationJson"))
+    samples.append({"label":"active-close-completed","slots":slot_state(),"sessionId":after.sessionId,"revision":after.revision})
+    check(slot_state().get("state")=="confirm-quit","deferred close reaches existing quit confirmation")
+    check(slot_state().get("message","").contains("unsaved"),"original dirty-session warning retained")
+    check(before.sessionId==after.sessionId and before.revision==after.revision,"replacement result preserves original session")
+    if slot_state().get("state")!="confirm-quit":finish();return
+    await press(KEY_ESCAPE)
+    check(host.find_child("SaveSlotView",true,false)==null,"cancel quit releases confirmation")
+    await press(KEY_ESCAPE)
+    view=host.get_node_or_null("ExplorationSessionView")
+    check(view!=null and state().canWaitAtInput,"cancel quit resumes original playable session")
+    check(not JSON.parse_string(host.call("ReadAudioObservationJson")).musicPaused,"cancel quit resumes original audio")
+    finish()
 func wait_field(label: String) -> void:
     for i in range(1800):
         view=host.get_node_or_null("ExplorationSessionView")

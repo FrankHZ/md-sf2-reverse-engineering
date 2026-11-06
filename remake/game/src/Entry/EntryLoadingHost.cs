@@ -67,10 +67,20 @@ public sealed partial class GameRoot
                 if (_entryQuitRequested)
                 {
                     _entryQuitRequested = false;
-                    Callable.From(RequestQuit).CallDeferred();
+                    Callable.From(() => { if (Current()) FinishEntryQuit(); }).CallDeferred();
                 }
-                else if (returning && back is not null) Callable.From(back).CallDeferred();
+                else if (returning && back is not null)
+                    Callable.From(() => { if (Current()) back(); }).CallDeferred();
             }
         }
+    }
+
+    private void FinishEntryQuit()
+    {
+        // Return the old session to the existing quit owner. Leaving the loading panel
+        // installed makes RequestQuit treat the close as an already covered request.
+        // In particular, a completed replacement write must not mount the new session
+        // or bypass the original session's unsaved-progress confirmation.
+        ClearPreparedNewGame(); CloseName(); CloseSavePanel(); CloseEntry(); RequestQuit();
     }
 }

@@ -73,6 +73,15 @@ mutating that fixture itself. Use Dummy when only input/state acceptance is requ
 failed reports. Adapter compilation and the clean committed planner are the affected gates; no
 gameplay rule or engine behavior changed.
 
+`active-quit` and `active-quit-write` cover close during replacement source admission and publication
+with an already mounted, dirty session. Set `SF2_ENTRY_CONFIRMATION_START` to an existing controlled
+field-start JSON beneath this checkout's ignored `local/`; the existing private observation bootstrap
+mounts the real session, then ordinary system-menu, replacement, naming and close inputs drive the
+case. This controls initial placement, not preceding natural reach. Both cases require the original
+session ID/revision and unsaved warning at quit confirmation, then cancel and observe usable original
+field input/audio. The discovered failure (loading panel swallowed deferred quit) and its corrected
+passes are retained with the other worker reports.
+
 ## System menu agreement (#1518)
 
 **Standard rigor:** consolidate the existing gameplay system entries and preserve their eligibility,
