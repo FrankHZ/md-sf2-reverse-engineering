@@ -956,15 +956,16 @@ actor-qualified land effect, retaining the existing HP/MP image gauges, names, i
 live private HP/MP values at or above 100 remain unavailable, while authored values keep their policy.
 No member list, transaction admission, action-order prediction or #1616 visual redesign is included.
 
-`GameSession.QueryBattleActingStatus` reads the current player selection in Movement, ActionChoice,
-TargetChoice or CommitReady, including its own actual player/undo delivery. It rejects automatic,
+`GameSession.QueryBattleActingStatus` reads any current ordinary player selection through the existing
+`HasBattleControl` boundary, including Equipment/Give/Discard selection and its own actual player/undo delivery. It rejects automatic,
 uninitialized, dead, unplaced/hidden actors and other scene/program/outcome/fault/field boundaries.
 `BattleUnitProjection` is the single shared scalar/name/class/land owner for this query and settled
 inspection; neither query initializes an actor or reads prepared reaction results. Inspection's
 settled-origin admission is unchanged. The acting query accepts no arbitrary tile or inspected unit.
 `BattleCommandMenu` consumes that disposable result alongside the current choices; next actor,
 inspection dismissal and ordinary return presentation requery the live session rather than retain
-another stats cache. Inspection hides the ordinary card and its existing return restores it.
+another stats cache. Existing auxiliary shells still own their visibility; selection retains the
+acting projection, while actual Give/Discard presentation waits remain unavailable. Inspection hides the ordinary card and its existing return restores it.
 
 During delivery the land subject is `BattleMovement.From`, the last fully delivered tile of the
 current segment. After matching completion it becomes the next segment's From or the settled
@@ -988,13 +989,16 @@ Source window positioning, hide-toggle timing, sub-tile threshold and natural ha
 
 **Confirmed engine/native:** `BattleActingStatusQueryTests` exercises Regular/Flying/Hovering with
 Light/Heavy protection, requested-versus-delivered preview/undo tiles, query purity, live progress,
-private 99/100/101 disclosure, unavailable names/classes and excluded boundaries. The existing
+private 99/100/101 disclosure, unavailable names/classes and excluded boundaries. Actual command-driven Equipment, all Give/Discard selection stages and ordinary target/commit
+stages retain actor/resources/header; actual transaction presentation rejects the card. The existing
 inspection behavior tests pass with the shared projection. The bounded
 [`engine_battle_acting_status_observation.gd`](../../game/probes/engine_battle_acting_status_observation.gd)
 uses actual ordinary host input and reads actual card nodes/draws: public `practice-yard` variants
 use Regular and Hovering across Light → Heavy → None terrain, multi-segment undo, same-actor full
 inspection/return, explicit Stay confirmation and next-actor handoff. The Hovering case uses Chinese
-and remapped/swapped controls; actual hints consume those bindings. A connected private-local
+and remapped/swapped controls; actual hints consume those bindings. A focused authored `battle-give`
+case also opens actual Equipment/Give inventory shells and the visible Item submenu, verifies retained
+acting projection and Back, and preserves resources/RNG without committing a transaction. A connected private-local
 Battle01 controlled-start case separately observes Chester's KNTE/live level, shown tile/undo,
 inspection return and Sarah handoff in Chinese. These are bounded consumer checks, not full-campaign,
 physical-device/focus, original-runtime or human visual acceptance.

@@ -66,6 +66,33 @@ func step(action: String, x: int, y: int, from_percent: int, to_percent: int) ->
     if not await settled(): return false
     return await card_at("delivered", x+(1 if action == "right" else 0),y+(-1 if action == "up" else 0),to_percent)
 
+func auxiliary() -> void:
+    var initial := record("aux-origin")
+    await press("confirm")
+    await press("equipment")
+    var equipment := record("equipment-selection")
+    if not check(equipment.stage == "EquipmentChoice" and equipment.equipmentVisible, "Actual equipment submenu owns its existing shell"): return
+    var c: Dictionary = equipment.menu.layout.actorCard
+    if not check(c.actor == initial.actor and c.hp.current == initial.menu.layout.actorCard.hp.current and
+            c.role == initial.menu.layout.actorCard.role, "Equipment selection retains live acting projection behind its existing shell"): return
+    await press("cancel")
+    if not await card_at("equipment-back",int(initial.previewX),int(initial.previewY),-1): return
+    await press("give")
+    var give := record("give-inventory-selection")
+    c = give.menu.layout.actorCard
+    if not check(give.stage == "GiveItemChoice" and c.actor == initial.actor and
+            c.hp.current == initial.menu.layout.actorCard.hp.current and c.role == initial.menu.layout.actorCard.role,
+            "Actual Give inventory selection retains current actor/resources/header"): return
+    await press("cancel")
+    await press("right")
+    await press("confirm")
+    var items := record("item-inventory-submenu")
+    if not check(items.menu.page == "Items" and items.menu.layout.actorCard.visible and
+            items.menu.layout.actorCard.actor == initial.actor, "Visible inventory submenu retains acting card"): return
+    await press("cancel")
+    if not check(resources(state()) == resources(initial), "Equipment/Give/Item browsing and Back preserve resources and RNG"): return
+    finish(true)
+
 func run() -> void:
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate()
@@ -78,9 +105,12 @@ func run() -> void:
     if host.find_child("BattleSessionView",true,false) == null:
         fail("Ordinary battle host not mounted")
         return
-    for action in ["up","down","left","right","confirm","cancel","attack"]:
+    for action in ["up","down","left","right","confirm","cancel","attack","equipment","give"]:
         events[action] = InputMap.action_get_events("sf2_"+action).filter(func(e): return e is InputEventKey)[0]
     if not await settled(): return
+    if OS.get_environment("SF2_ACTING_AUX") == "1":
+        await auxiliary()
+        return
     var first := state()
     var x := int(first.previewX)
     var y := int(first.previewY)

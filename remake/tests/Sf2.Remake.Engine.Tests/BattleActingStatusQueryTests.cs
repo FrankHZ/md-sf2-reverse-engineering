@@ -5,12 +5,51 @@ using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
+using System.Text.Json.Nodes;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
 
 namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleActingStatusQueryTests
 {
+    [Fact]
+    public void AllOrdinarySelectionStagesRetainLiveStatusButTransactionPresentationDoesNot()
+    {
+        void Read(GameSession session, BattleSelectionStage stage)
+        {
+            var current = session.Current;
+            Assert.Equal(stage, current.Selection!.Stage); Assert.True(current.HasBattleControl);
+            var actor = current.Battle.GetActor(current.Selection.Actor);
+            var card = session.QueryBattleActingStatus()!;
+            Assert.Equal(actor.Actor, card.Unit.Actor); Assert.Equal((int)actor.Hp, card.Unit.Hp);
+            Assert.Equal((int)actor.Mp, card.Unit.Mp); Assert.Equal((int)actor.Level, card.Unit.Level);
+            Assert.Equal(current.Selection.Preview.Destination, card.Land.Position);
+            Assert.Equal(card, session.QueryBattleActingStatus()); Assert.Same(current, session.Current);
+        }
+        var equipment = Start("battle-equipment");
+        Read(equipment, BattleSelectionStage.Movement);
+        Accept(equipment, new Confirm()); Read(equipment, BattleSelectionStage.ActionChoice);
+        Accept(equipment, new BeginEquipment()); Read(equipment, BattleSelectionStage.EquipmentChoice);
+        Accept(equipment, new SelectEquipment(1)); Read(equipment, BattleSelectionStage.EquipmentChoice);
+        Accept(equipment, new Cancel()); Read(equipment, BattleSelectionStage.ActionChoice);
+        Accept(equipment, new ChooseAction(SessionAction.Stay)); Read(equipment, BattleSelectionStage.CommitReady);
+
+        var give = Start("battle-give", d => d["actors"]![1]!["items"] = new JsonArray(189, 0, 0, 50));
+        Accept(give, new Confirm()); Accept(give, new BeginGive()); Read(give, BattleSelectionStage.GiveItemChoice);
+        Accept(give, new Confirm()); Read(give, BattleSelectionStage.GiveTargetChoice);
+        Accept(give, new SelectTarget(new("receiver"))); Accept(give, new Confirm()); Read(give, BattleSelectionStage.GiveExchangeChoice);
+        Accept(give, new Confirm()); Read(give, BattleSelectionStage.GiveCommitReady);
+        Accept(give, new Confirm()); Assert.NotNull(give.Current.BattleGive); Assert.Null(give.QueryBattleActingStatus());
+
+        var discard = Start("battle-discard");
+        Accept(discard, new Confirm()); Accept(discard, new BeginDiscard()); Read(discard, BattleSelectionStage.DiscardItemChoice);
+        Accept(discard, new Confirm()); Read(discard, BattleSelectionStage.DiscardCommitReady);
+        Accept(discard, new Confirm()); Assert.NotNull(discard.Current.BattleDiscard); Assert.Null(discard.QueryBattleActingStatus());
+
+        var target = Start(); Accept(target, new Confirm()); Accept(target, new SelectSpell(new("mend", 1)));
+        Read(target, BattleSelectionStage.TargetChoice);
+    }
+
     [Theory]
     [InlineData(BattleMover.Regular, 15, 30)]
     [InlineData(BattleMover.Flying, 0, 0)]

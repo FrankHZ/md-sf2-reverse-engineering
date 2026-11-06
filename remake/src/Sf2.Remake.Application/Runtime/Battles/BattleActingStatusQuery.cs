@@ -9,8 +9,7 @@ internal static class BattleActingStatusQuery
 {
     internal static BattleActingStatus? Query(ScenarioDefinition definition, SessionSnapshot current)
     {
-        if (current.Selection is not { Stage: BattleSelectionStage.Movement or BattleSelectionStage.ActionChoice or
-                BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady } selection ||
+        if (current.Selection is not { } selection ||
             current.StopReason is not (SessionStopReason.PlayerInput or SessionStopReason.PresentationWait)) return null;
         // Remove only the owned player/undo delivery when checking ordinary control.
         // Other scene/program/outcome/automatic boundaries retain their normal exclusion.
