@@ -9,7 +9,7 @@ the accepted sole message/name corpora. The bounded candidate is **806 world mes
 Raise the world message ceiling to **1,024**, retain **256 KiB per file / 8,192 UTF-16 units per
 message**, and admit at most **128 optional name rows / 128 UTF-16 units per name**. No new native
 text token, chapter loader, cache, database or localization framework is needed for this candidate.
-These are recommendations for implementation, not changes to the current 256-row reader.
+The runtime reader now implements these bounds; entry retains its existing 256-row ceiling.
 
 **Implemented identity prerequisite ([Issue1601](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1601)):**
 field display bindings capture optional `ClassId` alongside the member/actor and canonical class
@@ -19,8 +19,8 @@ captures `ItemId` from the committed transaction. Each scene carries optional `E
 by ActorRef within its own encounter, derived directly from the admitted enemy table and placement.
 All additions are display metadata with old-constructor defaults; scene JSON, canonical strings,
 source text work, gameplay and saves retain their existing contracts. Catalog/name resolution,
-whole-row canonical/custom separation and view integration remain step 2; this prerequisite adds
-no Chinese runtime coverage.
+whole-row canonical/custom separation and view integration are implemented by the finite catalog
+consumer below. The identity prerequisite alone did not expand Chinese runtime coverage.
 
 **Standard rigor:** this investigation fixes a finite selection, display interfaces and delivery
 sequence. The existing [High save boundary](opening-session-lifecycle.md#format-compatibility-and-local-storage)
@@ -35,6 +35,62 @@ and the **first stable Map14 control**. Stop there. Plank choices, later Map14 i
 town construction, unimplemented shops/services and later chapters remain outside scope.
 The 444-row editorial Grans batch and the 4,267-row `world.texts` table are neither this denominator
 nor proof that any particular original-game path naturally executes.
+
+## Implemented candidate and observed consumers
+
+**Confirmed:** the #1602 candidate derives the exact806/6/51 selection from the sole corpora into
+fresh ignored files. The world catalog is111,580 UTF-8 bytes; the entry catalog is1,042 bytes.
+All selected source strings match both the admitted world and pinned source; control order and
+per-segment operand identity pass. The34 historical differences have a private old/new/reason
+review: only the already accepted name/class/title calibrations and adjacent spacing change.
+The old209 catalog, six approved aliases, source corpora and gameplay world remain unchanged.
+This is a worker-verified candidate; independent main-gate integration remains separate.
+
+The runtime catalog resolves captured member/class IDs and optional name rows, preserving explicit
+custom values even when equal to canonical English. Search/legacy whole-row bindings now retain
+canonical and custom separately. Typed item words, SpellRef/BaseId and encounter-scoped enemy IDs
+feed the existing semantic views, party/class details, transaction results, battle field markers,
+cards and entry/slot/default-name labels. Empty127 remains the existing localized UI label.
+Names are checked against admitted source tables and actual consumer bindings, including Search
+placements whose identities need not appear in an encounter's static item subset.
+
+Ordinary New Game and Continue bind the catalog from their already admitted definition before
+building name/slot labels, then the normal session mount rebinds it. Settings/observation expose
+admitted message/name counts, separate entry status and exact name fallback identities; these
+counts describe admission, not natural reach. Missing/invalid names remain canonical with explicit
+name diagnostics. Authored labels without pinned source-name identity remain their declared names.
+
+The bounded native state/input/projection checks cover ordinary title and all six aliases,
+Settings Apply/Cancel and a subsequent ordinary process, New Game default hints, and Continue's
+translated default versus an explicit canonical-equal custom value. Actual Talk displays calibrated480;
+the source zone/Jaha chain displays new662/663 and join446, including the complete longest selected
+row663 in its actual panel. Kiwi's real choice/no/cancel/name/join chain displays captured NAME/CLASS
+and a seven-character wide custom value. The real Search4065 consumer preserves its semantic breaks;
+Party and Galam Shop display their typed member/class/item values. Private battle observations
+cover the enemy target card/field names, committed item-use message and HEAL actor/spell message.
+No selected body/name fallback remains unexplained at these observed seams. Actual longest/wide
+panels fit at1080p with their real reading geometry; this does not establish human typography taste.
+
+Give/Discard remain **standalone authored capabilities**: their actual production transactions and
+Chinese result templates were observed with committed IDs. Their project-authored item/actor labels
+remain canonical and are explicitly outside the selected private name table. Private/connected
+Give/Discard imports remain Unsupported; no private Give/Discard natural chain is claimed or enabled.
+The [capability owner](../capability-status.md#authored-battle-give-and-exchange) retains that boundary.
+
+Controlled field placements and an explicitly initialized private battle input prove the actual
+consumers, not preceding natural reach. The probe-only startup uses production New Game admission,
+then production session-start validation before ordinary mount. It never edits a running session,
+injects an overlay, clones the world or relaxes the legacy two-encounter controlled-start reader.
+Its battle preparation first obtains real initialized operands through production initialization;
+controlled accounting zeros/HP/positions are labeled test inputs, never original-state evidence.
+Language Apply preserves the paused session's exact revision/tick/source work/flags/resources/RNG;
+ordinary language changes leave both disposable save files byte-identical. Default language remains
+English until an ordinary persisted Apply. See the [reproduction owner](../development-and-verification.md#pre-voyage-chinese-consumer-observation).
+
+Natural reach of every optional branch, later chapters, legacy/authored unmigrated text, image
+lettering, IME and human Chinese reading remain outside this bounded technical result. Existing
+ObjectDB exit leak warnings remain **Unknown**; successful consumer checks do not establish clean
+native teardown. Exact heads, commands, controlled inputs, failures and CI belong in the frozen handoff.
 
 ## Selection evidence and exact IDs
 
@@ -162,16 +218,14 @@ canonical strings as fallbacks and add only identities dropped before presentati
 - `DisplayNameBinding` retains source-token index, member, actor, canonical/custom values; append
   optional class identity captured by `ExplorationTextRunner`. Resolver layout boundary sampling
   and emitted text must use the same display choice.
-- `PartyInventorySlot` currently drops the item word. Expose its existing item ID from
+- `PartyInventorySlot` exposes its committed item ID from
   `PartyDetailsQuery`; class identity is available from `Deployment.Definition.Growth.ClassId`,
   SpellRef resolves through `PrivateDefinitions.Spells[ref].BaseId`. No text parsing is needed.
-- `BattleGiveState` and `BattleDiscardState` currently retain only item names after the mutation.
-  Carry the given/returned/removed item IDs from `BattleGiveResult`/`BattleDiscardResult` at Begin.
+- `BattleGiveState` and `BattleDiscardState` retain the given/returned/removed item IDs from `BattleGiveResult`/`BattleDiscardResult` at Begin.
   Looking at the post-transaction slot cannot recover the item reliably. Their canonical `Text`
   properties and command/resource semantics remain unchanged.
-- `BattleSceneContentReader` already maps each encounter's placement to `EnemyNames[ActorRef]`.
-  Retain the parallel source enemy table ID there, in `BattleSceneDefinition`, before the placement
-  identity is discarded. Scope by encounter: `enemy-0` is reused by different battles. Never map
+- `BattleSceneContentReader` maps each encounter's placement to `EnemyNames[ActorRef]` and retains
+  the parallel source enemy table ID in `BattleSceneDefinition`. Scope by encounter: `enemy-0` is reused by different battles. Never map
   enemy English text or ActorRef spelling back to a table row. Old/authored scene definitions can
   omit this optional display map and use visible fallback.
 - Reuse Search `ItemWord`, Shop offer/stock ID, field command expected word, equipment selections,
@@ -197,13 +251,13 @@ merge world and entry pins just because both use numeric message IDs.
 
 Offline selection reads the sole corpora, this exact ID/key selection and the selected source
 identity, checks source/control/parameter topology, then writes a fresh private candidate. Sort IDs
-and name keys for a reviewable diff. A small maintained selector belongs in
+and name keys for a reviewable diff. The maintained selector is
 `src/sf2tool/remake_localization.py`, reusing existing JSON/source/token helpers; do not modify the
-frozen PowerShell compatibility surface or introduce a runtime manifest. A proposed interface is
+frozen PowerShell compatibility surface or introduce a runtime manifest. Its selection arguments include
 `--world <selected-world> --corpus <source.jsonl> --names <names.zh-CN.jsonl> --output <fresh-directory>`.
 Entry derivation additionally takes the admitted entry profile for its existing six aliases.
-Inputs are read-only; output must be ignored and outside the corpus authority. This is a proposed
-command interface, not an executable delivered by this design.
+Inputs are read-only; output must be ignored and outside the corpus authority. The delivered module entry and required explicit input paths are documented in the
+[verification owner](../development-and-verification.md#pre-voyage-chinese-consumer-observation).
 
 The [accepted layout report](../evidence/dialogue-corpus-layout.md) identifies 34 historical world
 targets that differ from the later calibrated corpus. Produce a private old/new/reason review for
@@ -256,7 +310,8 @@ unbounded cursor growth or an unresolved target rather than silently dropping it
 Allow 1 GiB peak memory for that one JSON parse, no content-pack copy, and at most 2 MiB of new
 reports/scripts. The compact structure is 850,180 bytes and the closure 231,774 bytes. Corpus reads
 are a few MiB; catalog generation is linear in selected rows/tokens and produces under 128 KiB.
-No network/API/model batch, native launch or package regeneration is needed for this design.
+Offline derivation requires no network/API/model batch, native launch or package regeneration.
+The runtime consumer/build budget is owned by the verification guide.
 Replan if the selection changes, reports exceed 2 MiB, the catalog approaches 256 KiB, or real new
 token/caller semantics appear. A row-cap increase must have a new measured selection, not an
 automatic full-corpus fallback.
@@ -300,9 +355,8 @@ every wait. Preselected language must still work in every selected consumer.
 | Required English UI resources invalid / preference write failure | Existing recovery UI / Apply rejection; retain the last working candidate and settings |
 | Unsupported gameplay frontier | Existing localized unavailable state; no new gameplay or fabricated source text |
 
-`GameText.Coverage` currently reports a generic partial state and diagnostics are bounded to 128
-entries. Keep this usable UI, but make selected-catalog/name admission status visible at startup or
-Settings and in the existing observation surface. A finite offline full-selection check is the
+`GameText.Coverage` reports admitted world message/name counts and separate entry status in
+Settings and the existing observation surface. Diagnostics remain bounded to128 entries. A finite offline full-selection check is the
 coverage authority; the 128-entry diagnostic set is not a coverage counter. Do not claim zero
 fallback because diagnostics saturated or because only the currently shown sentence is Chinese.
 Missing name translations must not be hidden behind a body `EffectiveLocale=zh-CN`.
@@ -316,11 +370,10 @@ gameplay revisions remain governed by their existing save/content compatibility 
 more display rows neither upgrades their capabilities nor authorizes loading a revision4 save in
 an older world. No save migration or destructive in-place overlay overwrite is needed.
 
-## Minimal implementation sequence
+## Delivery responsibilities
 
-The following slices are proposals, not dispatched work. The first prevents known identity loss;
-the second delivers the complete vertical Chinese result. Neither creates a general localization
-refactor or a future-token queue. `A`, `C`, `G`, `T` below mean `remake/src/Sf2.Remake.Application`,
+The two implemented responsibilities preserve display identities and deliver the finite private
+Chinese candidate. Neither creates a general localization refactor or future-token queue. `A`, `C`, `G`, `T` below mean `remake/src/Sf2.Remake.Application`,
 `remake/src/Sf2.Remake.Content`, `remake/game`, and `remake/tests/Sf2.Remake.Engine.Tests`.
 Actual dispatch must freeze the exact touched paths from these owners and serialize shared files.
 
@@ -353,7 +406,7 @@ Depends on slice 1. Outcome: selected dialogue, entry and all implemented semant
 the 806 messages/six aliases/51 names through ordinary launch and a persistent language preference.
 
 Exact catalog owners: `C/Localization/DisplayCatalog.cs`, `DisplayCatalogReader.cs`,
-`G/src/Localization/GameText.cs`, new `src/sf2tool/remake_localization.py`, and this document plus
+`G/src/Localization/GameText.cs`, its focused `DisplayNames.cs`, `src/sf2tool/remake_localization.py`, and this document plus
 the localization owner's current-status summary. The private source corpora remain read-only;
 dispatch separately names fresh derived world/entry outputs and their private review/handoff.
 The limits change only world message count plus the bounded optional-name extension. Existing
@@ -363,7 +416,7 @@ Exact view owners for name formatting and diagnostics: `G/src/Exploration/Explor
 `PartyStatusView.cs`, `PartyDetailsPanel.cs`, `FieldActionView.cs`, `ChurchServiceView.cs`,
 `ShopServiceView.cs`; `G/src/Battles/BattleCharacterNames.cs`, `BattleSceneView.cs`,
 `BattleCommandMenu.cs`, `BattleSessionView.cs`, `BattleGiveView.cs`, `BattleDiscardView.cs`,
-`BattleRetreatView.cs`; `G/src/Entry/NameEntryView.cs`, `PartyNameHost.cs`, `NewGameSetupHost.cs`,
+`BattleRetreatView.cs` and the marker/roster producer `BattlePresentation.cs`; `G/src/Entry/NameEntryView.cs`, `PartyNameHost.cs`, `NewGameSetupHost.cs`,
 `OpeningPersistenceHost.cs`, `SaveSlotView.cs` and `SessionEntryView.cs`.
 Resolve existing call sites before dispatch; these are responsibility owners, not permission to
 redesign all their UI. `G/src/GameRoot.cs`, `G/src/Entry/SettingsHost.cs` and

@@ -362,8 +362,8 @@ msgstr "不支持此字符。请使用上方列出的字母、数字或标点。
 msgid "name.default"
 msgstr "将使用默认名字。"
 
-msgid "name.bowie-default"
-msgstr "Bowie（默认）"
+msgid "name.default-value"
+msgstr "{0}（默认）"
 
 msgid "slot.title.save"
 msgstr "保存旅程"
@@ -1360,3 +1360,9 @@ msgstr "当前探索状态下不可用。"
 
 msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}：选择\n{4}：确认   {5}：返回"
+
+msgid "ui.settings.catalog"
+msgstr "世界目录已准入：{0} 条文本 / {1} 个显示名称。"
+
+msgid "ui.settings.entry-catalog"
+msgstr "入口目录：{0}。"

@@ -72,7 +72,7 @@ internal sealed partial class NameEntryView : Control
         _use.Disabled = error is not null;
         _error.Modulate = error is null ? StoryTheme.Selected : new("ffc4ad");
         _error.Text = error switch
-        { "name-too-long" => GameText.Get("name.too-long"), "name-character" => GameText.Get("name.character"), _ => _edit.Text.Length == 0 ? GameText.Get("name.default") : "" };
+        { "name-too-long" => GameText.Get("name.too-long"), "name-character" => GameText.Get("name.character"), _ => _edit.Text.Length == 0 ? GameText.Get("name.default-value", MemberName ?? DisplayNames.DefaultMember(0)) : "" };
     }
     private void Finish()
     {

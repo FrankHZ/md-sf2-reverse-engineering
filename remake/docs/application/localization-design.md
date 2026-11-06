@@ -9,9 +9,10 @@ settings, authored FieldTextWait and semantic HEAL consumers, localized Church/S
 screen groups under [epic #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 The private six-row M3 [Witch-entry suggestion](#m3-private-witch-entry-review-sample) has approved
 human text tone; in-game typography/reading remains pending. The private
-[opening-world catalog](#m3-private-opening-world-chinese-text) has 209 source-backed rows
-connected to existing consumers, including ordinary-defeat `DialogueWait` row 363. Complete-game bilingual
-coverage and human reading acceptance remain separate. The inventory below records
+[opening-world catalog](#m3-private-opening-world-chinese-text) is retained as the209-row rollback seed.
+The [pre-voyage candidate](pre-voyage-chinese-admission.md#implemented-candidate-and-observed-consumers)
+implements806 world rows, six entry aliases and51 display names through existing consumers.
+Complete-game coverage, independent integration and human reading acceptance remain separate. The inventory below records
 source findings at `9f5c5af81ad0da0e7d84f8033df306accbc4b7cb`; M1 behavior supersedes its named pilot paths.
 These describe the remake, not new original-game evidence.
 
@@ -20,13 +21,12 @@ Application/Content/Godot capability. The existing [High save/restore boundary](
 continues to govern identity changes. Canonical source tokens, glyph units, name expansion, HEAL work,
 program acknowledgements, gameplay/RNG and game-save format remain independent of display locale.
 
-The next runtime target is the [pre-voyage Chinese admission plan](pre-voyage-chinese-admission.md):
-806 selected world messages, six entry aliases and 51 display names through first stable Map14 control.
-The [identity prerequisite](pre-voyage-chinese-admission.md#decision-and-acceptance-boundary) retains
-captured class, inventory, committed Give/Discard and encounter-scoped enemy table IDs as optional
-display metadata. Catalog and view integration remain pending, with no expanded runtime coverage.
-Static translation does not implement
-unimplemented chapters. ROM patching, voice/TTS, other
+The [pre-voyage admission owner](pre-voyage-chinese-admission.md) records exact selection, reader limits,
+ordinary mounting, persistent switching and bounded actual consumer observations through the accepted
+first stable Map14 boundary. Captured class, inventory, committed transaction and encounter-scoped
+enemy IDs remain display metadata. Give/Discard Chinese templates are observed only in their existing
+standalone authored capabilities; their declared authored names stay canonical and private/connected
+imports remain Unsupported. Static translation and finite admission do not implement later chapters. ROM patching, voice/TTS, other
 languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.
 

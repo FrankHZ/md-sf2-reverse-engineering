@@ -117,7 +117,7 @@ public sealed partial class GameRoot
     private static string Label(int slot, SlotRead read, ScenarioDefinition definition, bool forContinue = false)
     {
         if (read.Primary is { } record)
-            return GameText.Get("slot.record", slot, CharacterNames.Member(definition, record.Data.Names, 0),
+            return GameText.Get("slot.record", slot, DisplayNames.Member(definition, record.Data.Names, 0),
                 SavedDestination(record.Data.Recipe), SavedTime(record));
         string status = read.Error switch
         {
@@ -168,9 +168,13 @@ public sealed partial class GameRoot
         OpenSavePanel(overEntry: _entry is not null);
         var read = RestoreSource().Read();
         if (read is not ExplorationReadAccepted admitted)
-        { SaveError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "save-content-required"); return; }
+        {
+            if (_session is null) GameText.ClearWorld();
+            SaveError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "save-content-required"); return;
+        }
         try
         {
+            GameText.Bind(admitted.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
             var store = Store(admitted.Definition);
             _slots!.ShowChoices("continue-slots", GameText.Get("save.choose"),
                 (Label(1, store.Read(1), admitted.Definition, forContinue: true), () => ContinueSlot(1, store, admitted.Definition)),
@@ -186,7 +190,7 @@ public sealed partial class GameRoot
         if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
         if (read.Backup is { } backup && CanRecover(read))
         {
-            _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery", slot, CharacterNames.Member(definition, backup.Data.Names, 0),
+            _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery", slot, DisplayNames.Member(definition, backup.Data.Names, 0),
                 SavedDestination(backup.Data.Recipe), SavedTime(backup)),
                 (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.recover"), () =>
                 {

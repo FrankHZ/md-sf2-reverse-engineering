@@ -99,7 +99,8 @@ internal sealed partial class FieldActionView : Control
             (() => GameText.Get("prepare.drop"), Drop, true), (() => GameText.Get("prepare.back"), Hide, true)]);
     }
 
-    private static string EquipmentName(BattleEquipmentChoice choice) => choice.Slot == 4 ? GameText.Get("prepare.unarmed") : choice.Label;
+    private string EquipmentName(BattleEquipmentChoice choice) => choice.Slot == 4 ? GameText.Get("prepare.unarmed") :
+        DisplayNames.ItemWord(_choices.Items.Single(item => item.Slot == choice.Slot).Word, choice.Label);
     private void Equip() => Menu("equipment", () => GameText.Get("prepare.equipment", _name), _choices.Equipment.Select(choice =>
         ((Func<string>)(() => GameText.Get("prepare.equipment-row", EquipmentName(choice),
             choice.Equipped ? " · " + GameText.Get("party.equipped") : "", choice.Attack)), (Action)(() => Confirm(
@@ -107,44 +108,44 @@ internal sealed partial class FieldActionView : Control
             () => GameText.Get("prepare.confirm-equip", EquipmentName(choice), choice.Attack))), true)));
 
     private void Give() => Menu("give-item", () => GameText.Get("prepare.give-item"), _choices.Items.Select(item =>
-        ((Func<string>)(() => $"{item.Slot + 1}. {item.Name}"), (Action)(() => Targets("give-target", () => GameText.Get("prepare.give-target"), true, target =>
+        ((Func<string>)(() => $"{item.Slot + 1}. {DisplayNames.ItemWord(item.Word, item.Name)}"), (Action)(() => Targets("give-target", () => GameText.Get("prepare.give-target"), true, target =>
         {
             var other = _session.QueryFieldActions(target);
             if (other.Error is { } error) { Message(() => GameText.Get("prepare.unavailable", Recovery(error), error)); return; }
             if (other.Items.Count == 4)
                 Menu("exchange", () => GameText.Get("prepare.exchange"), other.Items.Select(returned =>
-                    ((Func<string>)(() => $"{returned.Slot + 1}. {returned.Name}"), (Action)(() => Confirm(
+                    ((Func<string>)(() => $"{returned.Slot + 1}. {DisplayNames.ItemWord(returned.Word, returned.Name)}"), (Action)(() => Confirm(
                         new FieldGive(_member, item.Slot, item.Word, target, returned.Slot, returned.Word),
-                        () => GameText.Get("prepare.confirm-exchange", item.Name, returned.Name))), true)));
-            else Confirm(new FieldGive(_member, item.Slot, item.Word, target), () => GameText.Get("prepare.confirm-give", item.Name));
+                        () => GameText.Get("prepare.confirm-exchange", DisplayNames.ItemWord(item.Word, item.Name), DisplayNames.ItemWord(returned.Word, returned.Name)))), true)));
+            else Confirm(new FieldGive(_member, item.Slot, item.Word, target), () => GameText.Get("prepare.confirm-give", DisplayNames.ItemWord(item.Word, item.Name)));
         })), true)));
 
     private void Use() => Menu("use-item", () => GameText.Get("prepare.use-item"), _choices.Items.Select(item =>
-        ((Func<string>)(() => $"{item.Slot + 1}. {item.Name}" + (item.Use is null ? " · " + GameText.Get("party.value-unavailable") : "")), (Action)(() =>
+        ((Func<string>)(() => $"{item.Slot + 1}. {DisplayNames.ItemWord(item.Word, item.Name)}" + (item.Use is null ? " · " + GameText.Get("party.value-unavailable") : "")), (Action)(() =>
         {
             if (item.Use is null) { Message(() => GameText.Get("prepare.use-unsupported")); return; }
             if (item.Use == FieldRecoveryEffect.NoEffect)
-                Confirm(new FieldUseItem(_member, item.Slot, item.Word), () => GameText.Get("prepare.confirm-no-effect-item", item.Name));
+                Confirm(new FieldUseItem(_member, item.Slot, item.Word), () => GameText.Get("prepare.confirm-no-effect-item", DisplayNames.ItemWord(item.Word, item.Name)));
             else Targets("use-target", () => GameText.Get("prepare.use-target"), true, target => Confirm(new FieldUseItem(_member, item.Slot, item.Word, target),
-                () => GameText.Get("prepare.confirm-use", item.Name)));
+                () => GameText.Get("prepare.confirm-use", DisplayNames.ItemWord(item.Word, item.Name))));
         }), item.Use is not null)));
 
     private void Magic() => Menu("magic", () => GameText.Get("prepare.choose-magic"), _choices.Spells.Select(spell =>
-        ((Func<string>)(() => GameText.Get("prepare.spell-row", spell.Name, spell.Spell.Level)), (Action)(() =>
+        ((Func<string>)(() => GameText.Get("prepare.spell-row", DisplayNames.Spell(spell.Spell, spell.Name), spell.Spell.Level)), (Action)(() =>
         {
             if (spell.Effect == FieldRecoveryEffect.NoEffect)
-                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-no-effect-spell", spell.Name));
+                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-no-effect-spell", DisplayNames.Spell(spell.Spell, spell.Name)));
             else if (spell.Effect == FieldRecoveryEffect.Egress)
-                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-egress", spell.Name, spell.MpCost));
+                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-egress", DisplayNames.Spell(spell.Spell, spell.Name), spell.MpCost));
             else Targets("magic-target", () => GameText.Get("prepare.magic-target"), true, target => Confirm(new FieldCast(_member, spell.Spell, target),
-                () => GameText.Get("prepare.confirm-cast", spell.Name, spell.MpCost)));
+                () => GameText.Get("prepare.confirm-cast", DisplayNames.Spell(spell.Spell, spell.Name), spell.MpCost)));
         }), true)));
 
     private void Drop() => Menu("drop-item", () => GameText.Get("prepare.drop-item"), _choices.Items.Select(item =>
-        ((Func<string>)(() => $"{item.Slot + 1}. {item.Name}" + (!item.CanDrop ? " · " + GameText.Get("prepare.cannot-drop") : "")), (Action)(() =>
+        ((Func<string>)(() => $"{item.Slot + 1}. {DisplayNames.ItemWord(item.Word, item.Name)}" + (!item.CanDrop ? " · " + GameText.Get("prepare.cannot-drop") : "")), (Action)(() =>
         {
             if (!item.CanDrop) { Message(() => GameText.Get("prepare.drop-refused")); return; }
-            Confirm(new FieldDrop(_member, item.Slot, item.Word), () => GameText.Get("prepare.confirm-drop", item.Name));
+            Confirm(new FieldDrop(_member, item.Slot, item.Word), () => GameText.Get("prepare.confirm-drop", DisplayNames.ItemWord(item.Word, item.Name)));
         }), item.CanDrop)));
 
     private void Targets(string stage, Func<string> title, bool self, Action<ActorRef> select) => Menu(stage, title,

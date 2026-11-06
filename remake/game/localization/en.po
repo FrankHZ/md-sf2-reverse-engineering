@@ -362,8 +362,8 @@ msgstr "Unsupported character. Use the letters, digits or punctuation listed abo
 msgid "name.default"
 msgstr "The default name will be used."
 
-msgid "name.bowie-default"
-msgstr "Bowie (default)"
+msgid "name.default-value"
+msgstr "{0} (default)"
 
 msgid "slot.title.save"
 msgstr "Save your journey"
@@ -1360,3 +1360,9 @@ msgstr "Unavailable at the current field boundary."
 
 msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}: Choose\n{4}: Select   {5}: Back"
+
+msgid "ui.settings.catalog"
+msgstr "World catalog admitted: {0} dialogue rows / {1} display names."
+
+msgid "ui.settings.entry-catalog"
+msgstr "Entry catalog: {0}."

@@ -41,7 +41,7 @@ internal sealed partial class PartyDetailsPanel : Panel
     internal void Present(PartyMemberDetails? member, string name)
     {
         _member = member; _name.Text = name;
-        _class.Text = GameText.Get("party.class-unavailable") + (member?.Carried.Absent == true ? " · " + GameText.Get("party.absent") : member?.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
+        _class.Text = DisplayNames.Class(member) + (member?.Carried.Absent == true ? " · " + GameText.Get("party.absent") : member?.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
         string[] values = [Number(member?.Level), Number(member?.Attack), Number(member?.Defense), Number(member?.Agility),
             Number(member?.Carried.Exp), Number(member?.Deployment?.Definition.Move)];
         for (int i = 0; i < values.Length; i++)
@@ -54,10 +54,10 @@ internal sealed partial class PartyDetailsPanel : Panel
         if (member is not null && member.MaxHp is { } hp) _hp.Present(member.Carried.Hp, hp);
         if (member is not null && member.MaxMp is { } mp) _mp.Present(member.Carried.Mp, mp);
         var spells = member?.Spells is not { } learned ? new[] { GameText.Get("party.value-unavailable") } : learned.Count == 0 ? [GameText.Get("party.none-learned")] :
-            learned.Select(spell => spell.Name ?? GameText.Get("party.spell-unavailable", spell.Spell.Level)).ToArray();
+            learned.Select(spell => spell.Name is { } spellName ? DisplayNames.Spell(spell.Spell, spellName, level: true) : GameText.Get("party.spell-unavailable", spell.Spell.Level)).ToArray();
         Rows(_spells, _spellRows, spells);
         Rows(_inventory, _itemRows, member?.Inventory.Select(slot => $"{slot.Slot + 1}. " +
-            (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : slot.Name ?? GameText.Get("party.item-unavailable")) +
+            (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
             (slot.Equipped ? "\n    " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")]);
         Arrange();
     }

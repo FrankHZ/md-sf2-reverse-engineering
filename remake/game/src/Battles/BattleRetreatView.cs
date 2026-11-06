@@ -61,11 +61,11 @@ internal sealed partial class BattleRetreatView : Control
             _elapsed = _revealed = 0; _delivered = false;
             _panel.Present(false, false, false, default, "", lifetimeOpen: false);
             var actor = _session.Current.Battle.GetActor(state.Actor);
-            string name = CharacterNames.Battle(_session.Current.Story, actor, _session.ActiveBattleScenes);
+            string name = DisplayNames.Battle(_session.Current.Story, actor, _session.ActiveBattleScenes);
             _text.Text = state.Payment switch
             {
-                SpellRetreatPayment spell => GameText.Get("battle.retreat-spell", name, spell.Spell.Value.ToUpperInvariant(), spell.Spell.Level),
-                ItemRetreatPayment item => GameText.Get("battle.retreat-item", name, item.Name),
+                SpellRetreatPayment spell => GameText.Get("battle.retreat-spell", name, DisplayNames.Spell(spell.Spell), spell.Spell.Level),
+                ItemRetreatPayment item => GameText.Get("battle.retreat-item", name, DisplayNames.Item(item.ItemId, item.Name)),
                 _ => throw new InvalidOperationException("Unknown retreat payment."),
             };
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;

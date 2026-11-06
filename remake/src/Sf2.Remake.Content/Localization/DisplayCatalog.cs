@@ -6,7 +6,8 @@ using Sf2.Remake.Content.Scenarios;
 namespace Sf2.Remake.Content.Localization;
 
 public sealed record DisplayDiagnostic(string Code, string Key);
-public sealed record DisplayResult(string Text, string EffectiveLocale, string? Reason);
+public sealed record DisplayResult(string Text, string EffectiveLocale, string? Reason,
+    IReadOnlyList<DisplayDiagnostic>? NameDiagnostics = null);
 
 // Admitted rows carry their complete source mapping. A rejected row never contributes a map.
 public sealed class DisplayCatalog
@@ -14,16 +15,24 @@ public sealed class DisplayCatalog
     internal sealed record Row(IReadOnlyList<ExplorationTextToken> Tokens, IReadOnlyList<int> SourceTokens);
     private readonly IReadOnlyDictionary<int, Row> _rows;
     private readonly IReadOnlyDictionary<int, string> _rejected;
+    private readonly IReadOnlyDictionary<(string Namespace, int Index), string> _names;
     public string Locale { get; }
+    public int MessageCount => _rows.Count;
+    public int NameCount => _names.Count;
     public IReadOnlyList<DisplayDiagnostic> Diagnostics { get; }
     internal DisplayCatalog(string locale, IDictionary<int, Row> rows, IDictionary<int, string> rejected,
-        IEnumerable<DisplayDiagnostic> diagnostics)
+        IEnumerable<DisplayDiagnostic> diagnostics, IDictionary<(string, int), string>? names = null)
     {
         Locale = locale; _rows = new ReadOnlyDictionary<int, Row>(new Dictionary<int, Row>(rows));
         _rejected = new ReadOnlyDictionary<int, string>(new Dictionary<int, string>(rejected));
+        _names = new ReadOnlyDictionary<(string, int), string>(new Dictionary<(string, int), string>(names ?? new Dictionary<(string, int), string>()));
         Diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }
     private static readonly DisplayCatalog English = new("en", new Dictionary<int, Row>(), new Dictionary<int, string>(), []);
+    public DisplayResult ResolveName(string space, int? index, string canonical, string? custom = null) =>
+        custom is not null ? new(custom, Locale, null) : index is null ? new(canonical, "en", "display-operands") :
+        _names.TryGetValue((space, index.Value), out var value) ? new(value, Locale, null) :
+        new(canonical, "en", "missing-name-translation");
     public DisplayResult ResolveEntry(int text, EntryPresentation source) =>
         source.Dialogue.TryGetValue(text.ToString(System.Globalization.CultureInfo.InvariantCulture), out var original)
             ? ResolveRange(text, ExplorationTextTokens.Read(original), [], 0, int.MaxValue)
@@ -55,11 +64,28 @@ public sealed class DisplayCatalog
     {
         bool translated = _rows.TryGetValue(text, out var row);
         var tokens = translated ? row!.Tokens : canonical;
+        string? nameReason = null;
+        var nameDiagnostics = new List<DisplayDiagnostic>();
         DisplayNameBinding? Binding(int index) => names.FirstOrDefault(name =>
             name.SourceToken == (translated ? row!.SourceTokens[index] : index));
+        string Name(int index, DisplayNameBinding binding)
+        {
+            if (!translated) return binding.CustomName ?? binding.CanonicalName;
+            bool isClass = tokens[index].Kind == ExplorationTextTokenKind.ClassName;
+            var result = ResolveName(isClass ? "name.class" : "name.ally", isClass ? binding.ClassId : binding.Member,
+                binding.CanonicalName, isClass ? null : binding.CustomName);
+            nameReason ??= result.Reason;
+            if (result.Reason is { } reason)
+            {
+                string key = isClass ? $"name.class/{binding.ClassId?.ToString() ?? "unknown"}" : $"name.ally/{binding.Member?.ToString() ?? "unknown"}";
+                var issue = new DisplayDiagnostic(reason, key);
+                if (!nameDiagnostics.Contains(issue)) nameDiagnostics.Add(issue);
+            }
+            return result.Text;
+        }
         string? Boundary(int index) => index < 0 || index >= tokens.Count ? null :
             tokens[index].Kind == ExplorationTextTokenKind.Literal ? tokens[index].Value :
-            Binding(index) is { } name ? name.CustomName ?? name.CanonicalName : null;
+            Binding(index) is { } name ? Name(index, name) : null;
         var output = new System.Text.StringBuilder();
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -73,10 +99,10 @@ public sealed class DisplayCatalog
             {
                 var binding = Binding(i);
                 if (binding is null) return new("Text unavailable (display-operands).", "en", "display-operands");
-                output.Append(binding.CustomName ?? binding.CanonicalName);
+                output.Append(Name(i, binding));
             }
         }
-        return new(output.ToString(), translated ? Locale : "en", translated ? null :
-            _rejected.ContainsKey(text) ? "invalid-translation" : "missing-translation");
+        return new(output.ToString(), translated ? Locale : "en", translated ? nameReason :
+            _rejected.ContainsKey(text) ? "invalid-translation" : "missing-translation", nameDiagnostics.Count == 0 ? null : nameDiagnostics.AsReadOnly());
     }
 }
