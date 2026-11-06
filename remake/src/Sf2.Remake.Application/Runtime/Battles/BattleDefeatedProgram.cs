@@ -52,9 +52,14 @@ internal static class BattleDefeatedProgram
                 throw new BattleRuleException("defeated-leader", "battle.outcome.leader", true);
             if (!battle.Actors.Any(a => a.Actor == pending.Actor))
                 throw new BattleRuleException("defeated-actor", "story.defeatedScene.actor", true);
-            var visuals = battle.Visuals ?? throw new BattleRuleException("defeated-visuals", "battle.visuals", true);
-            foreach (var actor in battle.Actors.Where(a => a.Position is not null)) _ = visuals.Resolve(actor.Actor);
-            foreach (var death in pending.Deaths.Actors) _ = visuals.Resolve(death);
+            // Connected entry has no battle-story physical alias table. This field scene
+            // constructs its own slots from combatants/population below; it never reads
+            // a battle visual's pose or identity. Supplied tables still require valid reads.
+            if (battle.Visuals is { } visuals)
+            {
+                foreach (var actor in battle.Actors.Where(a => a.Position is not null)) _ = visuals.Resolve(actor.Actor);
+                foreach (var death in pending.Deaths.Actors) _ = visuals.Resolve(death);
+            }
             var party = new BattleStartInput(battle.Definition.Encounter,
                 battle.Actors.Where(a => a.IsAlly).Select(a => new BattleActorStartInput(a.Actor, a.Hp, a.Mp,
                     a.Exp, a.Kills, a.Defeats, a.Status, null, a.Progress, a.SourceLoadout, a.ActivationWord, a.Initialized))

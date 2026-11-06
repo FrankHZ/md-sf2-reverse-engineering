@@ -80,14 +80,17 @@ public sealed class BattleEndPositionTests
     }
 
     [Theory]
-    [InlineData(10, 12, "medic-a", 13, 2, 317)]
-    [InlineData(0, 14, "guard-a", 52, 7, 91)]
+    [InlineData(10, 12, "medic-a", 13, 2, 317, true)]
+    [InlineData(0, 14, "guard-a", 52, 7, 91, true)]
+    [InlineData(10, 12, "medic-a", 13, 2, 317, false)]
+    [InlineData(0, 14, "guard-a", 52, 7, 91, false)]
     public void DefeatedScenePosesSurviveDeathDeliveryWithoutChangingCombatAuthority(int originX, int originY,
-        string credit, ushort hp, byte mp, uint gold)
+        string credit, ushort hp, byte mp, uint gold, bool visuals)
     {
         var (definition, initial) = DefeatedContext(originX, originY, change: battle => battle.With(
             firstAlly: new ActorRef(credit), gold: gold, itemCustody: new([11], new Dictionary<byte, byte> { [2] = 3 }),
-            actors: battle.Actors.Select(a => a.Actor == new ActorRef("medic-a") ? a.With(hp: hp, mp: mp) : a)));
+            actors: battle.Actors.Select(a => a.Actor == new ActorRef("medic-a") ? a.With(hp: hp, mp: mp) : a)), visuals: visuals);
+        Assert.Equal(visuals, initial.Battle.Visuals is not null);
         var result = BattleDefeatedProgram.Begin(definition, new(initial, [], initial.StopReason), RuleCompositions.Sf2());
         Assert.Null(result.Failure);
         var field = result.Snapshot;
@@ -160,12 +163,12 @@ public sealed class BattleEndPositionTests
 
     internal static (ScenarioDefinition Definition, SessionSnapshot Before) DefeatedContext(int originX = 10, int originY = 12,
         IEnumerable<StoryProgram>? programs = null, Func<EngineBattleState, EngineBattleState>? change = null,
-        bool population = true, bool enemySprites = true)
+        bool population = true, bool enemySprites = true, bool visuals = true)
     {
         var battle = BattleEndPositions.Apply(Battle(false, stageCompanion: true)).With(firstAlly: new ActorRef("medic-a"));
         battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == new ActorRef("tail")
             ? actor.With(hp: 0, clearPosition: true) : actor));
-        battle = battle.With(visuals: new BattleVisualState(
+        if (visuals) battle = battle.With(visuals: new BattleVisualState(
             battle.Actors.Select((actor, slot) => (actor.Actor, slot)).ToDictionary(row => row.Actor, row => row.slot),
             battle.Actors.Select((actor, slot) => (actor, slot)).Where(row => row.actor.Position is not null)
                 .Select(row => new BattleVisual(row.slot, row.actor.Actor, row.actor.Position!, 3))));
