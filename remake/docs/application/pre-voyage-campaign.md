@@ -5,6 +5,77 @@ handoffs required by [the campaign issue](https://github.com/FrankHZ/md-sf2-reve
 Cross-chapter acceptance is **High** because encounter selection, field reload, recruitment and
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
+## Castle bedroom cast after Astral leaves
+
+**Standard rigor; bounded content correction:** after the first King's-bedroom scene completes
+(F605), private Map20's default setup retires bedroom Astral/entity130 at every entrance.
+This is an explicit **modern content rule**: the wide view can expose this dormant scene actor
+from the separate west stair room. It is not an original-game claim that all entrances remove him.
+The outcome is no stale bedroom display, Talk target or obstruction after departure, through
+Preserve stairs and rebuilt reentry, while first-scene actors, legitimate residents and later
+Astral appearances retain their own scripts. General room masking, camera policy, NPC refresh,
+save formats and engine transfer/allocation rules are outside this correction.
+
+**Confirmed static**, pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+
+- [Map19 invitation](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map19/mapsetups/s2_entityevents.asm),
+  `Map19_EntityEvent12` / `cs_52F40`, keeps Astral140 on refusal (caller F607), then moves him to
+  (63,63) before writing F608 on acceptance. Its
+  [initialization](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map19/mapsetups/s6_initfunction.asm)
+  repeats that placement when F605 is clear or F608 is set.
+- [Map20's default entity list](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map20/mapsetups/s1_entities.asm)
+  independently declares bedroom Astral130 at (19,39), sprite209. Its
+  [initialization](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map20/mapsetups/s6_initfunction.asm),
+  `ms_map20_InitFunction` at `0x53966`, gates first/repeat bedroom work on player (23,37).
+  `cs_53996` ends at `cs_53B60`'s `hide 130`; its caller then writes F605. The pinned source's
+  only F605 writer is that caller. The non-bedroom branch does not perform this hide.
+- [Map20's areas](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map20/2-areas.asm)
+  share X0–41/Y33–45 across west stairs, bedroom and east stairs. Thus the existing area clip
+  alone does not separate those rooms at modern width. The
+  [F609 setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map20/mapsetups/pointertable_609.asm)
+  selects another cast and the shared later init, not the default bedroom entry.
+
+[`PrivateCastleSceneContent`](../../src/Sf2.Remake.Content/Scenarios/PrivateCastleSceneContent.cs)
+binds after private typed maps/programs are read and before their existing Link validation.
+It preserves the original entry body under `sf2-source-map20-init` and wraps only
+`ms-map20-initfunction`: non-default setup flags bypass cleanup; clear F605 runs the source body;
+set F605 first executes existing `HideMapEntity(entity-130, removeAliases:true)`, then the source body.
+The retained-hidden-record rule makes repeated source hides safe. F605 is still clear throughout
+the first scene, so its cast is available until the source hides it. No new runtime instruction or
+state authority is introduced, and Map19 and before-battle scene programs are unchanged.
+
+Explicit controlled starts with non-default setups still have an unresolved population/default-OnLoad
+selection mismatch, tracked in [#1629](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1629).
+This correction only bypasses its additional cleanup for those setups; ordinary `MapTransfer` selects
+the correct setup init, while the broader New Game/Restore impact remains **Unknown**.
+
+Acceptance uses small `CastleSceneLifecycleTests` content-entry behavior assertions, affected
+entity/follower tests, adapter compilation, and short native input/state/actor-projection observations.
+Reuse the registered world read-only and the owned Godot project; reports stay under a new ignored
+`local/issue1611` run, budgeted below10 MiB without copying the world or saves. The controlled starts
+do not establish a natural full route, original camera/raster parity or human visual approval.
+The user's exact running snapshot remains **Unknown** because the protected play instance was not
+inspected; the independently reproduced Map19→Map20 sequence identifies the same reported symptom.
+
+**Confirmed at the bounded remake consumer:** nine new content-entry behavior cases and the affected
+entity/follower group pass (42 total). Release adapter and the actual native Debug build compile.
+Native `StartPreVoyageLocalizationObservation` at1920×1080/fixed60 FPS consumes these controlled
+starts with base flags0/1/2/32/33/34/66 and ordinary keys; each returns no session/presentation error:
+
+| Start and additional flags | Input and observed boundary |
+| --- | --- |
+| Map20(23,37), no additional flag | Actual first bedroom init completes, hides130 and writes F605. |
+| Map19(16,6) Up, F605 | Talk, decline, Talk, accept; refusal keeps140 at(16,5), acceptance places140 at(63,63) and writes F608. Follow `map3-castle-battle-unlock-static-v1`'s Astral-to-west-tower and guard segments: Map20's130 is hidden and Map21's real guard sets F401/F256. |
+| Map20(26,37) Up, F605/F608 | Up/Left, Right/Left crosses the royal Preserve stairs both ways;130 stays hidden. |
+| Map20(6,37) Left, F605/F608 | Left/Right exits to Map19; Left/Right rebuilds Map20;140 stays at(63,63) and130 is hidden after reentry. |
+| Map40(14,13) Up, F605/F607/F608/F401 | Up enters the real Map57 before-battle scene; visible Astral135 speaks2292/W2, Confirm advances to2293/W1. Stop there. |
+
+The native before/after west-entry projections reproduce visible bedroom130 before cleanup and its
+absence afterward while retaining the same room geometry and other actors. Thus clipping is not
+used as evidence of lifecycle correctness. The runs preserve shutdown warnings: two ObjectDB
+instances on the field/bedroom cases, four at the pending next-scene dialogue. Clean native exit is
+not established; no audio lifecycle repair or complete campaign rerun belongs to this correction.
+
 ## Same-map walking-party arrival
 
 **Standard rigor; bounded rule correction:** current-map stairs retain a live scene, so arrival must

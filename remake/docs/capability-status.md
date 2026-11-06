@@ -15,6 +15,19 @@ Text/choice/script/battle consumers retain their existing time owners. Universal
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.
 
+## Castle bedroom scene retirement
+
+**Implemented bounded capability, Standard:** private default Map20 content retires bedroom
+Astral130 after the first bedroom scene (F605), including entrances outside that scene's original
+royal-entry guard. Existing typed conditional/hide/jump programs supply this explicit modern rule;
+the source body remains intact. It prevents the wide view from showing the independently allocated
+stale bedroom actor after Map19's real F608 departure. First-scene cast and other residents remain;
+non-default setups bypass cleanup, and later tower actors use their own population/programs.
+The [campaign agreement](application/pre-voyage-campaign.md#castle-bedroom-cast-after-astral-leaves)
+owns pinned source facts, the original-versus-modern boundary and bounded verification.
+No global NPC refresh, room mask, camera change or original all-entrance retirement claim is made.
+The exact protected user snapshot, original raster/cadence and human visual acceptance remain Unknown.
+
 ## Same-map walking-party arrival
 
 **Implemented bounded capability, Standard:** Preserve entrances settle the player and the live,

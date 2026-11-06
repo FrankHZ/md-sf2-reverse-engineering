@@ -150,6 +150,7 @@ internal static class ExplorationContentReader
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
+        if (!authored) PrivateCastleSceneContent.Bind(maps, programs);
         CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
             world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation, worldDirectory) : null,
