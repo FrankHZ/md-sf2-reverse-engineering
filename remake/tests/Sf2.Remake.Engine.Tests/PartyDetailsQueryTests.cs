@@ -32,6 +32,7 @@ public sealed class PartyDetailsQueryTests
         Assert.True(member.Inventory[0].Equipped); Assert.False(member.Inventory[1].Equipped);
         Assert.NotNull(member.Inventory[0].Name);
         Assert.Equal(member.Inventory[0].Name, member.Inventory[1].Name);
+        Assert.Equal(new byte?[] { 50, 50, null, 99 }, member.Inventory.Select(slot => slot.ItemId));
         Assert.True(member.Inventory[2].Empty); Assert.False(member.Inventory[3].Empty); Assert.Null(member.Inventory[3].Name);
         Assert.Equal(0, member.Carried.Hp); Assert.True(member.Carried.Absent);
         Assert.Same(before, session.Current);
@@ -68,7 +69,7 @@ public sealed class PartyDetailsQueryTests
             original.Terrain, deployments, original.Spells.Values);
         var session = Field(read, read.Start.Actors, withoutLoadout);
         Assert.All(session.QueryPartyDetails()!.Members, member =>
-            Assert.All(member.Inventory, slot => Assert.Null(slot.Empty)));
+            Assert.All(member.Inventory, slot => { Assert.Null(slot.Empty); Assert.Null(slot.ItemId); }));
         Assert.Null(Start().QueryPartyDetails());
         // Authored outcome worlds can have party flags without source member bindings.
         // Their carried allies remain inspectable rather than disappearing after return.

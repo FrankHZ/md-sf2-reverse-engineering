@@ -117,6 +117,9 @@ public sealed class BattleGiveSessionTests
         Assert.Equal(20, session.Current.Battle.GetActor(Giver).Attack);
         Assert.Equal("stale-input", session.Submit(envelope).Failure!.Code);
         var wait = session.Current.BattleGive!;
+        Assert.Equal((byte)(before.GetActor(Giver).SourceLoadout!.Items[0] & 127), wait.GivenItemId);
+        Assert.Equal(full ? (byte?)61 : null, wait.ReturnedItemId);
+        Assert.NotEqual(wait.GivenItemId, (byte)(session.Current.Battle.GetActor(Giver).SourceLoadout!.Items[0] & 127));
         var pending = session.Current;
         Assert.Equal("stale-or-wrong-give-wait", Send(session, new Acknowledge(wait.Token)).Failure!.Code);
         Assert.Equal("stale-or-wrong-give-wait", Send(session, new CompleteTextReveal(new(wait.Token.Value + 1))).Failure!.Code);

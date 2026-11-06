@@ -107,6 +107,7 @@ internal static class ExplorationTextRunner
             if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Clear)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "", SourceToken: sourceToken)); continue; }
             int? member = part.Member;
+            if (part.Kind == ExplorationTextTokenKind.ClassName) member = text.NameMember;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{NAME}") member = text.NameMember;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{LEADER}" && definition.PartyFlags is { } partyFlags)
             {
@@ -114,23 +115,25 @@ internal static class ExplorationTextRunner
                 partyLists = MapPartyMembership.Rebuild(current.Story.Flags, partyFlags);
                 member = partyLists.Active.Count > 0 ? partyLists.Active[0] : null;
             }
+            (byte Id, string Name)? role = part.Kind == ExplorationTextTokenKind.ClassName ? JoinedClass(scenario, current, member) : null;
             string value = part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
                 ExplorationTextTokenKind.MemberName when member is >= 0 && member < definition.MemberNames.Count => scenario is null
                     ? definition.MemberNames[member.Value] : CharacterNames.Member(scenario, current.Story, member.Value),
-                ExplorationTextTokenKind.ClassName => JoinedClass(scenario, current, text.NameMember),
+                ExplorationTextTokenKind.ClassName => role!.Value.Name,
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };
             if (part.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
             {
-                ActorRef? namedActor = part.Kind == ExplorationTextTokenKind.MemberName && scenario is not null
+                ActorRef? namedActor = scenario is not null
                     ? scenario.Encounters.Values.SelectMany(encounter => encounter.Deployments).FirstOrDefault(row =>
                         row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == member)?.Actor : null;
                 string canonical = part.Kind == ExplorationTextTokenKind.MemberName && scenario is not null && member is { } number
                     ? CharacterNames.Member(scenario, new Dictionary<string, string>(), number) : value;
-                string? custom = namedActor is { } identity ? current.Story.Names.GetValueOrDefault(identity.Value) : null;
-                names.Add(new(sourceToken, member, canonical, custom, namedActor));
+                string? custom = part.Kind == ExplorationTextTokenKind.MemberName && namedActor is { } identity
+                    ? current.Story.Names.GetValueOrDefault(identity.Value) : null;
+                names.Add(new(sourceToken, member, canonical, custom, namedActor, role?.Id));
             }
             foreach (char character in value)
             {
@@ -150,7 +153,7 @@ internal static class ExplorationTextRunner
         return Normalize(story);
     }
 
-    private static string JoinedClass(ScenarioDefinition? scenario, SessionSnapshot current, int? member)
+    private static (byte Id, string Name) JoinedClass(ScenarioDefinition? scenario, SessionSnapshot current, int? member)
     {
         if (member is null || scenario?.PrivateDefinitions is not { } source)
             throw new BattleRuleException("join-text-class", "program.nameMember", true);
@@ -165,7 +168,7 @@ internal static class ExplorationTextRunner
             throw new BattleRuleException("join-text-class", "program.nameMember", true);
         // The admitted engine has no class-changing command. Growth.ClassId is the same
         // class authority used for this live ally's stat refresh, not a speaker sprite.
-        return role.NameExpression[1..^1];
+        return (growth.ClassId, role.NameExpression[1..^1]);
     }
 
     private static FieldTextWait Span(WaitToken token, int text, IReadOnlyList<FieldTextUnit> units, int start,
