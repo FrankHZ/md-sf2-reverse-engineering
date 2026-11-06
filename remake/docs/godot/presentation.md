@@ -1662,6 +1662,56 @@ change preserves motion speed/animation and menu repetition. It is a modern cont
 original natural timing and #1456 subjective acceptance remain Unknown.
 The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
+### Ordinary movement camera continuity (#1607)
+
+**Standard rigor:** remove a reproduced ordinary-field camera/actor phase mismatch. The existing
+60 Hz service count, movement admission, held-input barriers, collision/story rules, animation
+counters, velocity and RNG remain the acceptance boundary. Own only the camera update in
+`ExplorationPresentation`, its ordinary-clock call site and this agreement. No interpolation,
+extra service, movement-distance change, repeat-deadline change or original hardware-timing claim.
+
+The camera consumes the final snapshot of the ordinary callback before drawing its actors.
+A `finally` exit also covers the last settling service that opens a paused menu, and a service that
+hands to a scene or transfer. Retired/battle-handoff and failed fields cannot drive that camera.
+The existing dead zone, clamp, camera speed and integral output-pixel rounding remain unchanged;
+there is one camera advance per callback, including callbacks with no due logical service.
+
+**Confirmed (bounded remake):** before this correction, camera focus read the pre-service actor,
+while drawing read the post-service actor. At ordinary speed32 and4× projection, a repeated straight
+step changed actual actor draw Y between444 and452 at the install-only boundary. Moving camera
+projection after the service keeps Y444, including the final service opening the real system menu.
+The menu case settles at tick13 and retains the final actor/camera projection while paused. Short
+turn/release/wall observations and the existing continuous-input observer retain story/menu,
+hide/pause, map and battle handoff barriers. Matched fixed callback/input sequences preserve every
+recorded logical entity, destination, velocity, animation counter, revision, flag and RNG seed.
+
+The ordinary movement service still installs a target before later services integrate travel;
+a32-speed cell retains13 services, including installation. Its zero-displacement installation is
+not removed or treated as a new input-repeat defect. Animation counters carry across steps. Both
+the movement increment and the sprite-phase increment have static owners in pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/common/scripting/entity/entityscriptengine_2.asm:UpdateEntityData` and
+`entityscriptengine_1.asm:VInt_UpdateSprites/@DetermineWalkingFrame`. This source structure does
+not establish modern/original natural frame cadence; neither counter nor pose selection changes here.
+
+For the finite camera witness, use a prelaunch controlled visual field with area(0,0)–(30,30),
+player(15,15), speed32 and a wall at(15,20). Freeze automatic callbacks at attach as in the existing
+[ordinary-clock observer](../development-and-verification.md#native-reproduction), then drive the
+actual view `_Process` at1/60 with live Down, Up, Right and release edges. Read logical entities and
+`worldGeometry` through `ReadObservationJson`; after a real draw, match `cameraProjection`'s tick
+and actor coordinates. The first four uninterrupted steps exercise the dead-zone edge. Request the
+real system menu during the first step to exercise the settling/paused exit. Ordinary-speed
+`--max-fps60` sampling retains frame-time statistics separately; the bounded native sample had
+median16.666ms, without establishing a worst-case performance guarantee. No frame files or images
+are required. The existing [successful-step observer](../verification/field-programs.md#successful-step-continuity-1585)
+provides the input/story/transfer suffix using its unchanged speed32 prelaunch variant.
+
+Compile the adapter and inspect the committed dependency plan and actual CI. The ignored Issue1607
+handoff retains exact commands, input selection, compact reports and process completion. Subjective
+smoothness, an independent animation-specific defect, hardware pixels and original natural cadence
+remain **Unknown**; this correction establishes the reproduced camera/actor phase defect only.
+
+
 ## Entry windows and hints (#1445)
 
 The [title lifecycle finding](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)

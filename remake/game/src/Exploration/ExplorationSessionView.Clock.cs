@@ -47,6 +47,19 @@ public sealed partial class ExplorationSessionView
 
     private void AdvanceOrdinaryTime(double delta)
     {
+        try { ServiceOrdinaryTime(delta); }
+        finally
+        {
+            // A final service can open a pausing menu or enter a scene. Project its
+            // actors and camera together even when service exits at that boundary.
+            // A retired field must never move the newly mounted battle camera.
+            if (!_handedOff && !_battleHandoffPending && PresentationFailure is null)
+                _presentation?.UpdateCamera(delta, _session!.Current);
+        }
+    }
+
+    private void ServiceOrdinaryTime(double delta)
+    {
         CheckMenuEntry();
         if (!CanProcess()) return;
         const double step = 1.0 / 60;
