@@ -2,6 +2,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Xunit;
 
@@ -34,11 +35,16 @@ public sealed class BattleSaveRegionTests
         Assert.Contains(386, session.Current.Story.Flags); Assert.Contains(700, session.Current.Story.Flags);
         Assert.True(session.Current.Battle.Regions!.Flags[6]);
         Assert.NotEqual(0, session.Current.Battle.GetActor(new("enemy")).ActivationWord!.Value & 1);
-        // Entering a script invalidates the audio history. C owns the host observation hook;
-        // this engine test supplies known context only after the real program has completed.
+        // Native history can be published only after the real region program completes.
         Assert.Equal("save-battle-music-unknown", session.QueryBattleSave().Error);
-        var known = session.Current.WithStory(session.Current.Story.Copy(null, music: original.Story.Music));
-        var saved = BattleSaveFixture.Capture(definition, known);
+        var music = original.Story.Music!;
+        var before = session.Current;
+        var observed = session.Submit(new(before.SessionId, before.Revision, null,
+            new ObserveBattleMusic(music.Map, music.Area, new(music.Cue, music.Previous))));
+        Assert.Null(observed.Failure);
+        Assert.Same(before.Active, session.Current.Active);
+        Assert.True(session.QueryBattleSave().Allowed);
+        var saved = session.CaptureBattleSave(session.Current.SessionId, session.Current.Revision).Data!;
         var resumed = Assert.IsType<SessionStarted>(GameSession.RestoreBattle(definition, saved, session.Rules)).Session;
         Assert.Equal(0, Stay(session)); Assert.Equal(0, Stay(resumed));
         Assert.True(resumed.Current.Battle.Round > saved.Battle.Round);

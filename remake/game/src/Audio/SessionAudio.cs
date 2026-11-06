@@ -115,12 +115,11 @@ internal sealed partial class SessionAudio : IDisposable
     {
         try
         {
-            var world = snapshot.Exploration!;
             var music = snapshot.Story.Music ?? throw new InvalidOperationException("restore-music-required");
             // Prepare the new playback and its logical history before replacing the old host session.
             Play(music.Cue, remember: false);
             _history.Clear(); _history.Add(music.Cue); _history.AddRange(music.Previous);
-            _context = (world.Map, music.Area, false);
+            _context = (music.Map, music.Area, music.Battle);
             BindMusic(music.Generation, music.Cue);
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException)
@@ -131,6 +130,15 @@ internal sealed partial class SessionAudio : IDisposable
     {
         if (Error is not null || _context is not { Battle: false } context || MusicCue is null ||
             _history.Count == 0 || _history[0] != MusicCue) return null;
+        return new(context.Map, context.Area, new(MusicCue, Array.AsReadOnly(_history.Skip(1).Take(9).ToArray())));
+    }
+
+    internal Sf2.Remake.Application.Runtime.Persistence.ObserveBattleMusic? ObserveBattleHistory()
+    {
+        if (Error is not null || _context is not { Battle: true } context || MusicCue is null ||
+            _entrySuppressed || _entryMusicConsumed || _fading || _battlefieldMusic is not null ||
+            (!_music.Playing && !_music.StreamPaused) || MusicFinished || _assets[MusicCue].LoopBegin is null ||
+            _assets[MusicCue].ModernEndStep is not null || _history.Count == 0 || _history[0] != MusicCue) return null;
         return new(context.Map, context.Area, new(MusicCue, Array.AsReadOnly(_history.Skip(1).Take(9).ToArray())));
     }
 

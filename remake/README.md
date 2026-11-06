@@ -32,7 +32,10 @@ optional Kiwi recruitment, tower aftermath, earthquake town and docks departure.
 init reaches usable Map14 control; stop before the plank choice, Battle08 and new-town construction.
 The current eighteen-map world keeps gameplay revision4 and seven generated members. Earlier
 revision1–3 worlds retain their own compatible slots. Explicit Save/Continue supports the existing
-opening recipes plus the completed Battle07 Map58 safe point, preserving actual progress.
+opening recipes plus the completed Battle07 Map58 safe point, preserving actual progress. The
+[battle persistence boundary](docs/application/battle-save-and-continue.md) also supports explicit
+system-menu Save/return or Save and Quit at settled player Movement in Battles01–07, then ordinary
+title Continue in a fresh process at that actor's saved turn.
 The [campaign agreement](docs/application/pre-voyage-campaign.md) owns preparation, ordinary launch,
 continuous input observations, completed failures and remaining acceptance boundaries. Independent
 main-gate review and human/aesthetic acceptance are not implied by the local route result.
@@ -78,7 +81,8 @@ reports a startup diagnostic. Witch New Game chooses one of two slots, then a pr
 confirmation. A write succeeds before gameplay replaces the paused session; occupied replacement
 is explicit and Cancel retains current progress. At settled field input, New Game… opens the same
 flow with Cancel selected. Save… (default Space / Pad LB) opens two local slots at a supported settled
-field boundary; title Continue restores the selected journey at its displayed savepoint. Configure
+field boundary; use the system Menu during admitted battle Movement. Title Continue restores the
+selected journey at its displayed savepoint or battle turn. Configure
 absolute `SF2_SAVE_ROOT` outside every checkout and a unique `SF2_SAVE_NAMESPACE` first; there is no
 default save folder. See [save/restart usage and limits](docs/verification/host.md#opening-save-and-continue).
 Explicit diagnostic play uses a start selection. The
@@ -107,7 +111,7 @@ not require a game launch.
 | Profile | Current input boundary | Claim |
 | --- | --- | --- |
 | `public-authored` | explicit `--authored-package <path>`; validated configurable authored battle | connected semantic battle subset; no original start/fidelity or export claim |
-| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, Map3/Battle01 and completed Battle07 Map58 return savepoints with process restart; [finite campaign scope](docs/application/pre-voyage-campaign.md), no arbitrary interior/battle suspend or full campaign claim |
+| `private-local-new-game` | ordinary title → New Game or Continue with admitted private content, no checkpoint | fresh opening party/progress, a confirmed initial save, shared custom protagonist name, supported field savepoints and stable player Movement battle saves through Battle07; [finite campaign scope](docs/application/pre-voyage-campaign.md), no arbitrary interior/animation suspend or full campaign claim |
 | `private-local-controlled-start` | explicit battle start plus selected private inputs, or `--private-exploration-start` plus prepared connected world | common initialized actions; selected connected packages cover opening/Battle01, Battle02 outcomes/returns and Yeel–Battle03 play/control at their separate boundaries. Initial party/accounting/seeds and ordinary-defeat egress remain explicit controlled inputs; no original natural-route or fidelity claim |
 
 Profile selection is explicit and content remains validated. Private startup cannot silently fall back

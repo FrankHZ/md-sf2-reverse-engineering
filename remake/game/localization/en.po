@@ -3,6 +3,39 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: en\n"
 
+msgid "save.and-return"
+msgstr "Save and return"
+
+msgid "save.and-quit"
+msgstr "Save and Quit"
+
+msgid "save.battle-location"
+msgstr "Battle {0} · Round {1} · {2}"
+
+msgid "save.battle-offer"
+msgstr "{0}\nContinue resumes this actor's turn here."
+
+msgid "save.recovery-record"
+msgstr "Recover this backup?\n{0}"
+
+msgid "save.error.battle-preview"
+msgstr "Cancel movement before saving. Return to play and finish the actual return movement, then request Save again."
+
+msgid "save.error.battle-selection"
+msgstr "Return to Movement and cancel the move before saving. Committed equipment and item changes are kept."
+
+msgid "save.error.battle-movement"
+msgstr "Wait for movement to finish. Return to play, then request Save again at the actor's origin."
+
+msgid "save.error.battle-busy"
+msgstr "Finish the current action or story before saving. Return to play, then request Save again at player Movement."
+
+msgid "save.error.battle-music"
+msgstr "Battle music is not ready for saving. Return to play and let the current music event finish, then request Save again."
+
+msgid "save.error.battle-context"
+msgstr "Required battle progress is unknown or unsupported. Return to play or check the matching game content before using this slot. Your progress files are kept."
+
 msgid "entry.new-menu"
 msgstr "New Game…"
 

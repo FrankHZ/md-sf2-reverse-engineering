@@ -6,6 +6,12 @@ policies, source provenance and limits; [asset admission](../content/presentatio
 private payloads and [retained comparisons](../evidence/retained-comparisons.md#scoped-audio-consumer-comparison)
 owns the bounded evidence.
 
+Battle persistence uses a separate native battle-context observation and restores the saved
+map/area/battle selector, current looping cue and actual bounded history. Battle-scene attack/defence
+pushes update that history; field observation is never used for an active battle. Finite/helper
+music is still refused. See the [persistence contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c)
+and [native restart observations](../verification/battle-save.md), including retained exit warnings.
+
 ## Scene music context observation
 
 `SessionAudio.Observe` and Application music consume the same immutable `ExplorationViewContext`

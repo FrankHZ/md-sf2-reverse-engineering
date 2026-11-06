@@ -10,7 +10,7 @@ public sealed partial class GameRoot
 
     // Only detached content/session/disk work belongs here. The caller captures configured
     // paths on the host thread and publishes nodes, labels and audio after this returns.
-    private async Task<T> LoadEntry<T>(Func<T> work, bool publishing = false)
+    private async Task<T> LoadEntry<T>(Func<T> work, bool publishing = false, Action<T>? publicationObserved = null)
     {
         _entryLoading = true;
         var panel = _slots!;
@@ -46,6 +46,9 @@ public sealed partial class GameRoot
             catch when (!Current() || returning || _entryQuitRequested)
             { throw new OperationCanceledException(); }
             if (!Current()) throw new OperationCanceledException();
+            // A close request can discard the candidate, but cannot erase an uncertain
+            // disk result. Record that result on this host thread before cancellation.
+            publicationObserved?.Invoke(result);
             if (_entryQuitRequested || returning) throw new OperationCanceledException();
             // A window recovery/quit cover retains this operation's result until its
             // original panel is usable. No completion mounts behind a recovery modal.
