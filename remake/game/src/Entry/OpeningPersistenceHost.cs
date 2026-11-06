@@ -50,6 +50,7 @@ public sealed partial class GameRoot
     }
     private void CloseSavePanel()
     {
+        if (_entryLoading) return;
         if (_slots is { } slots) { _slots = null; _hostUi.RemoveChild(slots); slots.QueueFree(); }
         if (_entry is not null) { _entry.Show(); _entry.ReturnFromSetup(); }
         ReturnToSystemMenu();
@@ -163,60 +164,79 @@ public sealed partial class GameRoot
         void BackToSave() { CloseSavePanel(); ShowSave(); }
     }
 
-    private void ShowContinue()
+    private async void ShowContinue()
     {
+        if (_entryLoading) return;
         OpenSavePanel(overEntry: _entry is not null);
-        var read = RestoreSource().Read();
-        if (read is not ExplorationReadAccepted admitted)
-        {
-            if (_session is null) GameText.ClearWorld();
-            SaveError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "save-content-required"); return;
-        }
         try
         {
+            var source = RestoreSource();
+            var read = await LoadEntry(source.Read);
+            if (read is not ExplorationReadAccepted admitted)
+            {
+                if (_session is null) GameText.ClearWorld();
+                SaveError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "save-content-required"); return;
+            }
             GameText.Bind(admitted.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
             var store = Store(admitted.Definition);
+            var slots = await LoadEntry(() => (First: store.Read(1), Second: store.Read(2)));
             _slots!.ShowChoices("continue-slots", GameText.Get("save.choose"),
-                (Label(1, store.Read(1), admitted.Definition, forContinue: true), () => ContinueSlot(1, store, admitted.Definition)),
-                (Label(2, store.Read(2), admitted.Definition, forContinue: true), () => ContinueSlot(2, store, admitted.Definition)), (GameText.Get("entry.cancel"), CloseSavePanel));
+                (Label(1, slots.First, admitted.Definition, forContinue: true), () => ContinueSlot(1, store, admitted.Definition)),
+                (Label(2, slots.Second, admitted.Definition, forContinue: true), () => ContinueSlot(2, store, admitted.Definition)), (GameText.Get("entry.cancel"), CloseSavePanel));
         }
+        catch (ArgumentException error) { SaveError(error.Message); }
+        catch (OperationCanceledException) { }
+    }
+
+    private async void ContinueSlot(int slot, LocalSaveStore store, ScenarioDefinition definition)
+    {
+        try
+        {
+            if (_entryLoading || !EnsureWindowSupport()) return;
+            var read = await LoadEntry(() => store.Read(slot));
+            if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
+            if (read.Backup is { } backup && CanRecover(read))
+            {
+                _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery", slot, DisplayNames.Member(definition, backup.Data.Names, 0),
+                    SavedDestination(backup.Data.Recipe), SavedTime(backup)),
+                    (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.recover"), async () =>
+                    {
+                        if (_entryLoading || !EnsureWindowSupport()) return;
+                        try
+                        {
+                            var recovery = await LoadEntry(() => store.Recover(slot), publishing: true);
+                            if (recovery.Record is null) SaveError(recovery.Error!);
+                            else RestoreRecord(recovery.Record, definition);
+                        }
+                        catch (OperationCanceledException) { }
+                        catch (ArgumentException error) { SaveError(error.Message); }
+                    }));
+                _slots.ShowDetail(GameText.Get("save.details", read.Error ?? GameText.Get("slot.primary-missing")));
+                return;
+            }
+            SaveError(read.Error ?? read.BackupError ?? "save-slot-empty");
+        }
+        catch (OperationCanceledException) { }
         catch (ArgumentException error) { SaveError(error.Message); }
     }
 
-    private void ContinueSlot(int slot, LocalSaveStore store, ScenarioDefinition definition)
+    private async void RestoreRecord(OpeningSaveRecord record, ScenarioDefinition definition)
     {
-        if (!EnsureWindowSupport()) return;
-        var read = store.Read(slot);
-        if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
-        if (read.Backup is { } backup && CanRecover(read))
+        try
         {
-            _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery", slot, DisplayNames.Member(definition, backup.Data.Names, 0),
-                SavedDestination(backup.Data.Recipe), SavedTime(backup)),
-                (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.recover"), () =>
-                {
-                    if (!EnsureWindowSupport()) return;
-                    var recovery = store.Recover(slot);
-                    if (recovery.Record is null) SaveError(recovery.Error!);
-                    else RestoreRecord(recovery.Record, definition);
-                }));
-            _slots.ShowDetail(GameText.Get("save.details", read.Error ?? GameText.Get("slot.primary-missing")));
-            return;
+            if (_entryLoading || !EnsureWindowSupport()) return;
+            var result = await LoadEntry(() => GameSession.Restore(definition, record.Data, RuleCompositions.ForGame()));
+            if (result is SessionStartFailed failed) { SaveError(failed.Failure.Code); return; }
+            // The admitted initial recipe runs ordinary on-load and starts fresh-map playback.
+            // Settled savepoints instead restore their saved music/history generation.
+            _restoring = record.Data.Recipe != "new-game";
+            try { MountSession((SessionStarted)result); }
+            finally { _restoring = false; }
+            if (_session?.Current.SessionId == ((SessionStarted)result).Session.Current.SessionId)
+            { _savedSession = _session.Current.SessionId; _savedRevision = _session.Current.Revision; }
         }
-        SaveError(read.Error ?? read.BackupError ?? "save-slot-empty");
-    }
-
-    private void RestoreRecord(OpeningSaveRecord record, ScenarioDefinition definition)
-    {
-        if (!EnsureWindowSupport()) return;
-        var result = GameSession.Restore(definition, record.Data, RuleCompositions.ForGame());
-        if (result is SessionStartFailed failed) { SaveError(failed.Failure.Code); return; }
-        // The admitted initial recipe runs ordinary on-load and starts fresh-map playback.
-        // Settled savepoints instead restore their saved music/history generation.
-        _restoring = record.Data.Recipe != "new-game";
-        try { MountSession((SessionStarted)result); }
-        finally { _restoring = false; }
-        if (_session?.Current.SessionId == ((SessionStarted)result).Session.Current.SessionId)
-        { _savedSession = _session.Current.SessionId; _savedRevision = _session.Current.Revision; }
+        catch (OperationCanceledException) { }
+        catch (ArgumentException error) { SaveError(error.Message); }
     }
 
     private static string SavedTime(OpeningSaveRecord record) => record.SavedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
@@ -225,6 +245,12 @@ public sealed partial class GameRoot
     { SettingsNotification(what); }
     private void RequestQuit()
     {
+        if (_entryLoading)
+        {
+            _entryQuitRequested = true;
+            _slots?.ShowDetail(GameText.Get("entry.quit-pending"));
+            return;
+        }
         _exploration?.CancelMenuEntry("save-entry-quit");
         if (_session is null) { GetTree().Quit(); return; }
         if (_windowRecovery is not null) { ShowWindowQuit(); return; }

@@ -22,18 +22,20 @@ public sealed partial class GameRoot
 
     private void BeginNewGame()
     {
-        if (_input is null || _slots is not null || _nameEntry is not null) return;
+        if (_entryLoading || _input is null || _slots is not null || _nameEntry is not null) return;
         _nameDraft = ""; _newSlot = 1; _newMainSeed = _newThinkingSeed = null;
         OpenSavePanel(overEntry: true); ShowNewSlots();
     }
 
-    private void ShowNewSlots()
+    private async void ShowNewSlots()
     {
+        if (_entryLoading) return;
         ClearPreparedNewGame(); CloseName();
         _slots!.Show(); _slots.Cancel = CancelNewGame;
         try
         {
-            var read = RestoreSource().Read();
+            var source = RestoreSource();
+            var read = await LoadEntry(source.Read);
             if (read is not ExplorationReadAccepted admitted)
             {
                 if (_session is null) GameText.ClearWorld();
@@ -41,11 +43,12 @@ public sealed partial class GameRoot
             }
             GameText.Bind(admitted.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
             var store = Store(admitted.Definition);
+            var slots = await LoadEntry(() => (First: store.Read(1), Second: store.Read(2)));
             _slots.ShowChoices("new-game-slots", GameText.Get("new.slots"),
-                (Label(1, store.Read(1), admitted.Definition), () => ChooseNewSlot(1)), (Label(2, store.Read(2), admitted.Definition), () => ChooseNewSlot(2)), (GameText.Get("entry.cancel"), CancelNewGame));
+                (Label(1, slots.First, admitted.Definition), () => ChooseNewSlot(1)), (Label(2, slots.Second, admitted.Definition), () => ChooseNewSlot(2)), (GameText.Get("entry.cancel"), CancelNewGame));
         }
         catch (ArgumentException error) { NewGameError(error.Message); }
-        DisarmInput();
+        catch (OperationCanceledException) { }
     }
 
     private void ChooseNewSlot(int slot) { _newSlot = slot; ShowName(); }
@@ -71,9 +74,9 @@ public sealed partial class GameRoot
         DisarmInput();
     }
 
-    private void CommitNewGame()
+    private async void CommitNewGame()
     {
-        if (_committing || !EnsureWindowSupport()) return;
+        if (_entryLoading || _committing || !EnsureWindowSupport()) return;
         _committing = true;
         try
         {
@@ -81,14 +84,15 @@ public sealed partial class GameRoot
             {
                 if (_newMainSeed is null)
                 {
-                    Span<byte> seeds = stackalloc byte[8]; System.Security.Cryptography.RandomNumberGenerator.Fill(seeds);
-                    _newMainSeed = BitConverter.ToUInt32(seeds[..4]); _newThinkingSeed = BitConverter.ToUInt32(seeds[4..]);
+                    byte[] seeds = System.Security.Cryptography.RandomNumberGenerator.GetBytes(8);
+                    _newMainSeed = BitConverter.ToUInt32(seeds, 0); _newThinkingSeed = BitConverter.ToUInt32(seeds, 4);
                 }
-                _preparedNewGame = GameSession.PrepareNewGame(new OpeningNewGameReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"),
+                var source = new OpeningNewGameReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"),
                     Selected("SF2_PRIVATE_BATTLE01_DATA"), Selected("SF2_PRIVATE_BATTLE01_SCENE"), Selected("SF2_PRIVATE_BATTLE01_TERRAIN"),
                     Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"),
-                    _newMainSeed.Value, _newThinkingSeed!.Value, System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT")),
-                    new(_nameDraft), RuleCompositions.ForGame());
+                    _newMainSeed.Value, _newThinkingSeed!.Value, System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT"));
+                var name = new NewGameOptions(_nameDraft);
+                _preparedNewGame = await LoadEntry(() => GameSession.PrepareNewGame(source, name, RuleCompositions.ForGame()));
                 if (_preparedNewGame.Failure is { } failure)
                 { _preparedNewGame = null; NewGameError(failure.Code); return; }
                 _preparedAudio = new SessionAudio(this, _preparedNewGame.Started!.Session.Definition.Exploration!);
@@ -96,7 +100,7 @@ public sealed partial class GameRoot
             }
             var prepared = _preparedNewGame;
             var store = Store(prepared.Started!.Session.Definition);
-            var written = store.Write(_newSlot, prepared.Save!);
+            var written = await LoadEntry(() => store.Write(_newSlot, prepared.Save!), publishing: true);
             if (!written.Success)
             {
                 if (written.Error == "save-publication-uncertain")
@@ -115,7 +119,8 @@ public sealed partial class GameRoot
             _savedSession = _session!.Current.SessionId; _savedRevision = _session.Current.Revision;
         }
         catch (ArgumentException error) { NewGameError(error.Message); }
-        finally { _committing = false; DisarmInput(); }
+        catch (OperationCanceledException) { }
+        finally { _committing = false; }
     }
 
     private void NewGameError(string error)
@@ -128,6 +133,7 @@ public sealed partial class GameRoot
     private void ClearPreparedNewGame() { _preparedAudio?.Dispose(); _preparedAudio = null; _preparedNewGame = null; }
     private void CancelNewGame()
     {
+        if (_entryLoading) return;
         ClearPreparedNewGame(); CloseName(); CloseSavePanel(); _entry?.ReturnFromSetup(); DisarmInput();
     }
 }

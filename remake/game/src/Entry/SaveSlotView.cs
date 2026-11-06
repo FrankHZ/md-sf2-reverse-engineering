@@ -18,6 +18,8 @@ internal sealed partial class SaveSlotView : Control
     private readonly List<Button> _buttons = [];
     private readonly List<Action> _actions = [];
     private int _selected;
+    private bool _loading;
+    private Action? _loadingBack;
     internal Action? Cancel;
     internal bool OverEntry { get; init; }
     internal string State { get; private set; } = "slots";
@@ -63,9 +65,16 @@ internal sealed partial class SaveSlotView : Control
 
     internal void ShowDetail(string detail) { _detail.Text = detail; _detail.Show(); }
 
+    internal void ShowLoading(string message, Action? back)
+    {
+        ShowChoices("entry-loading", message, back is null ? [] : [(GameText.Get("entry.cancel"), back)]);
+        _loading = true; _loadingBack = back; _hint.Hide();
+    }
+    internal void FinishLoading() { _loading = false; _loadingBack = null; _hint.Show(); }
+
     internal void ShowChoices(string state, string message, params (string Label, Action Action)[] choices)
     {
-        State = state; _message.Text = message;
+        _loading = false; _loadingBack = null; State = state; _message.Text = message;
         _detail.Hide(); _detail.Text = "";
         _coverage.Text = string.Join("\n", new[] { GameText.Fallback("slot.", includeKey: true), GameText.Fallback("save.", includeKey: true),
             GameText.Fallback("new.", includeKey: true), GameText.Fallback("entry.", includeKey: true) }.Where(text => text != ""));
@@ -82,7 +91,7 @@ internal sealed partial class SaveSlotView : Control
         {
             int index = _buttons.Count;
             var button = new Button { Text = label, AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(OverEntry ? 600 : 0, 76), FocusMode = FocusModeEnum.None };
-            button.Pressed += () => { Select(index); action(); };
+            button.Pressed += () => { if (_loading) { _loadingBack?.Invoke(); return; } Select(index); action(); };
             button.MouseEntered += () => Select(index);
             button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.Hint(GameAction.Confirm), Input.Hint(GameAction.Cancel));
             _column.AddChild(button); _buttons.Add(button); _actions.Add(action);
@@ -95,6 +104,8 @@ internal sealed partial class SaveSlotView : Control
 
     internal void Handle(GameAction action)
     {
+        if (_loading) { if (action == GameAction.Cancel) _loadingBack?.Invoke(); return; }
+        if (_buttons.Count == 0) return;
         if (action == GameAction.Cancel) Cancel?.Invoke();
         else if (action == GameAction.Up) Select((_selected + _buttons.Count - 1) % _buttons.Count);
         else if (action == GameAction.Down) Select((_selected + 1) % _buttons.Count);

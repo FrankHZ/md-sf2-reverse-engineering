@@ -33,6 +33,18 @@ msgid "ui.settings.gradual"
 msgstr "逐字显示"
 
 #. Settings display; actions use stable indexes.
+msgid "entry.loading"
+msgstr "正在加载，请稍候…可取消返回。"
+
+msgid "entry.publishing"
+msgstr "正在保存，请稍候…保存完成前请保持游戏开启。"
+
+msgid "entry.returning"
+msgstr "当前加载完成后返回…"
+
+msgid "entry.quit-pending"
+msgstr "当前操作完成后退出…"
+
 msgid "ui.settings.speed"
 msgstr "文字速度：每秒 {0} 字 · 左／右 −／＋10"
 
