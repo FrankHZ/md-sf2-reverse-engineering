@@ -1431,7 +1431,7 @@ msgid "battle.inspect.land"
 msgstr "{0} · Land effect {1}% at ({2},{3})"
 
 msgid "battle.inspect.options"
-msgstr "Battle options · Map\n{0} / {1}: open Map · {2}: return to cursor"
+msgstr "Battle options · {0}\n{1}/{2}: choose · {3} / {4}: open · {5}: return to cursor"
 
 msgid "battle.inspect.map-help"
 msgstr "{0}/{1}: known units · {2}: return to options"
@@ -1516,3 +1516,15 @@ msgstr "Barrier"
 
 msgid "battle.acting-land"
 msgstr "Land effect {0}% · ({1}, {2})"
+
+msgid "battle.member.title"
+msgstr "Battle members"
+
+msgid "battle.member.map"
+msgstr "Map"
+
+msgid "battle.member.empty"
+msgstr "No battle members available."
+
+msgid "battle.member.help"
+msgstr "{0}/{1}: member · {2} / {3}: details · {4}: return to options"
