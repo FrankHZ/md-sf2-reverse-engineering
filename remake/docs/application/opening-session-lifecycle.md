@@ -715,6 +715,52 @@ into Battle01. On these five non-overworld maps only, field Use has the source N
 and consumes nothing. Other maps require their separately admitted effect policy; no new Battle01
 retreat profile or later Egress behavior is enabled.
 
+### Tower exterior Search admission
+
+**Standard rigor; bounded content correction (#1612):** the pre-voyage selection admits Search on
+Map40 and its selected setup, alongside the existing opening maps and Map43. The outcome is ordinary
+Search/empty feedback and the source Mithril pickup at legal field input. Other maps, callback
+execution, Search text layout, new save locations and controlled-start OnLoad selection are outside
+this correction. `FieldSearch.Available` and the host's existing command mapping remain unchanged.
+
+**Confirmed static**, pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+[Map40's description handler](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map40/mapsetups/s4_descriptions.asm)
+`ms_map40_AreaDescriptions` at `0x53FC0` directly returns; it has no callback or text rows.
+Its [chest table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map40/7-chest-items.asm)
+is empty, while the
+[other-item table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map40/8-other-items.asm)
+at `0xB0AD0` declares Mithril123 at (15,6), receipt flag132. The
+[item definition](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm)
+declares RARE, no equip effects and no use spell. The accepted
+[Search spine](../../../docs/research/world/field-search-control.md) owns marker precedence,
+explicit empty423/412 and unhandled no-entity action semantics; these are not new original runtime observations.
+
+The existing compiler lowers those tables without a new opcode or callback fallback. The private
+immutable item subset and field catalog include Mithril before possession; ordinary acquisition,
+Give and rare Drop/Deals use their existing rules. Use remains Unsupported; smithing and Deals
+trading are not admitted. This metadata does not grant Angel Wing a new Map40 NoEffect policy.
+Story callers/waits, input programs, warps and battle handoffs still deny Search. The visible
+Confirm shortcut still chooses Talk when there is an interaction target, then explicit `Search()`;
+it is distinct from the engine's `Search(false)` no-entity action entry.
+
+Acceptance uses `FieldSearchTests` for empty/menu-only/unhandled, receipt/full-pack and modal/handoff
+boundaries, and optional `TowerFieldSearchTests` for actual private Content → `GameSession` admission,
+Map40 area0 at (14,14) facing Up, empty results, (15,7) facing Up pickup/repeat, Give, unsupported Use
+and rare Drop/Deals. Select `SF2_PRIVATE_TOWER_SEARCH_WORLD` and the ordinary authenticated battle
+inputs for the private check; public engine verification leaves those selectors absent. The retained
+focused producer check also confirms that a real pinned callback table remains withheld.
+An authored headless Godot observation separately confirms actual menu Search and Confirm-shortcut
+empty feedback, modal input ownership and return to field control. It tests the shared adapter
+mapping, not private Map40 resources or original reach; no screenshots or full-route run are used.
+
+**Confirmed in the remake:** the previously prepared campaign world lacks Map40 Search even though
+its input program is null. The selection correction affects newly prepared content; an existing
+world must be refreshed through the ordinary producer before it gains this definition. The bounded
+managed observation composes only generated Map40 Search metadata into existing read-only world
+structure, with required immutable dependencies; it is not a newly generated full campaign package.
+**Unknown:** the user's exact map/area/story snapshot, original natural reach and original input,
+presentation and persistence cadence. No protected running instance or user save was inspected.
+
 ## Implemented opening Church
 
 **Standard transactional scope; #1424, within this owner's High recovery agreement.** The outcome
