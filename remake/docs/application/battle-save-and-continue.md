@@ -229,6 +229,15 @@ strict envelope, typed record dispatch and atomic `LocalSaveStore`. The host con
 admission results rather than weakening a field predicate or inventing a last-safe snapshot.
 ## Stable commit and request UX
 
+For read-only inspection, `QueryBattleSave` may assess an actual `ObserveBattleMusic` value without
+publishing it. This uses the existing music admission and complete capture/restore validation on a
+detached candidate and returns the live session/revision identity; it grants no writable capture.
+Default query and `CaptureBattleSave` still reject unbound music. The host uses the assessed offer
+only to reach explicit Save, which publishes the actual observation and rechecks strict eligibility
+before slot selection/write. Inspection Menu open/close therefore stays pure without disabling a
+fresh otherwise eligible Save. [Inspection acceptance](../godot/presentation.md#battle-inspection-and-on-demand-map-1633)
+records the focused native entry/publication/return check.
+
 Application owns eligibility. The host may explain it and pause input; it cannot declare a safe
 snapshot from an animation frame. Reuse session ID/revision checking for query → confirmation →
 capture. All copied arrays/maps must be detached. Query/capture/validation must not advance gameplay,

@@ -18,7 +18,8 @@ public sealed class GameSession
         OpeningNewGame.Prepare(source, options, rules);
     public SaveAvailability QuerySave() => OpeningSave.Query(Definition, Current, Rules);
     public SaveCapture CaptureSave(Guid session, long revision) => OpeningSave.Capture(Definition, Current, Rules, session, revision);
-    public BattleSaveAvailability QueryBattleSave() => BattleSave.Query(Definition, Current, Rules);
+    public BattleSaveAvailability QueryBattleSave(ObserveBattleMusic? observedMusic = null) =>
+        BattleSave.Query(Definition, Current, Rules, observedMusic);
     public BattleSaveCapture CaptureBattleSave(Guid session, long revision) => BattleSave.Capture(Definition, Current, Rules, session, revision);
 
     public static SessionStartOutcome RestoreBattle(ScenarioDefinition definition, BattleSaveData data, SessionRules rules)

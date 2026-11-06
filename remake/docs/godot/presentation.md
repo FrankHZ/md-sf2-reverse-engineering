@@ -1701,8 +1701,13 @@ options, then B returns to cursor, then B restores the same actor’s Movement.
 `BattleSessionView.Navigation`’s existing repeat clock and `GameInput`’s held direction. Page/entry/exit
 changes disarm it and require mapped release before another action. Focus/pause/hide retain the
 existing isolation. Host Menu pause/return skips its usual save-music observation while inspection
-is active, preventing a revision-only invalidation; explicit Save still captures current music at
-its existing boundary. Explicit independent mutations or session replacement invalidate inspection.
+is active, preventing a revision-only invalidation. Its Save offer supplies the actual live audio
+observation to `QueryBattleSave` for a pure eligibility assessment through the existing music and
+strict save/restore validators; an unbound history cannot dead-end the fresh inspection menu.
+This publishes no revision or music state. Explicit Save still publishes the real observation and
+performs strict capture at its existing boundary before writing. Save-and-return retires inspection
+when that explicit publication changes its revision. Other independent mutations or session
+replacement also invalidate inspection.
 
 `BattleMapViewport` owns a temporary cursor subject, so ordinary Frame cannot replace it. Exit
 removes that override and resumes actor framing. `WorldViewportLayout` retains 96px cells,
@@ -1742,6 +1747,14 @@ ordinary `--path`/`--script res://probes/engine_battle_inspection_observation.gd
 completed passing report, process exit and no script/native errors. Each run is bounded to75 seconds;
 only compact semantic checkpoints are written. Three finite input routes and affected retries fit
 within a 100MiB local output budget; no large processing/acquisition is authorized.
+
+A separate `SF2_INSPECTION_SAVE_ENTRY=verify` private route starts before any earlier host Menu or
+music observation. It checks actual Save enabled/reason against ordinary Movement, pure inspection
+Menu open/close, then a fresh inspection → Save → slot confirmation → disposable Save and return.
+The ordinary strict query/capture still rejects unknown history before the explicit Save; choosing
+Save binds actual `MUSIC_BATTLE_THEME_1` history, strictly captures, writes, and returns to the same
+actor/origin/resources/queue/seeds without passing its held confirmation into gameplay. The
+pre-correction disabled fresh Save entry is preserved as a completed failing observation.
 
 The focused `SF2_INSPECTION_UI_ONLY=1` private route checks en/zh-CN key admission, actual Chinese
 full/short/options/Map/terrain labels, remapped direction hints and actor-qualified land effect

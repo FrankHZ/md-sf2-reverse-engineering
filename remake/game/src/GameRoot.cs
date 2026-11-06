@@ -299,7 +299,9 @@ public sealed partial class GameRoot : Node
             if (!_input.MenuPadAvailable) _menuButton.TooltipText += "\n" + GameText.Get("system.no-pad");
         }
         if (_systemMenu is null) return;
-        var save = SaveOffer();
+        // Inspection Menu entry is pure, but Save must be reachable before its real
+        // music observation is published. Validate that live observation only for the offer.
+        var save = SaveOffer(previewMusic: _battle?.Inspecting == true);
         string saveReason = save.Error is "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion"
             ? Explain(save.Error) : GameText.Get("system.save-reason");
         if (_session!.Current.Active is ActiveBattle && save.Error is { } battleError) saveReason = Explain(battleError);

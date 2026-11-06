@@ -19,11 +19,11 @@ public sealed partial class GameRoot
     private bool _saveNeedsInspection;
     private sealed record HostSaveOffer(Guid SessionId, long Revision, string Destination, string? Error);
 
-    private HostSaveOffer SaveOffer()
+    private HostSaveOffer SaveOffer(bool previewMusic = false)
     {
         if (_session!.Current.Active is ActiveBattle)
         {
-            var offer = _session.QueryBattleSave();
+            var offer = _session.QueryBattleSave(previewMusic ? _audio?.ObserveBattleHistory() : null);
             return new(offer.SessionId, offer.Revision, offer.Location is { } location
                 ? BattleDestination(_session.Definition, _session.Current.Story.Names, location.Encounter, location.Round, location.Actor) : "", offer.Error);
         }

@@ -371,6 +371,69 @@ func ui_projection() -> bool:
     await act("cancel"); await act("cancel"); await act("cancel")
     return purity(region_baseline,"nonzero-region terrain Map closes")
 
+func menu_save_sample(label: String) -> Dictionary:
+    var s:=sample(label)
+    var button: Button=host.find_child("SystemSave",true,false)
+    var reason: Label=host.find_child("ReasonSave",true,false)
+    var persistence: Dictionary=JSON.parse_string(host.call("ReadPersistenceObservationJson"))
+    var row: Dictionary=samples[-1]
+    row.saveEntry={"enabled":not button.disabled,"reason":reason.text,"strictAvailability":persistence.availability}
+    return row.saveEntry
+
+func fresh_save_entry() -> bool:
+    var baseline:=signature(state())
+    var before: Dictionary=JSON.parse_string(host.call("ReadPersistenceObservationJson"))
+    if not check(before.availability.Error=="save-battle-music-unknown","Fresh battle has no earlier music observation"): return false
+    await act("cancel")
+    if not await inspect_page("Cursor"): return false
+    await act("menu")
+    var inspected:=menu_save_sample("fresh-inspection-Save-entry")
+    await act("cancel")
+    if not check(state().inspection.active,"Pure Menu close preserves inspection"):return false
+    if not purity(baseline,"fresh inspection Menu open/close"):return false
+    await act("cancel")
+    await act("menu")
+    var ordinary:=menu_save_sample("fresh-ordinary-Movement-Save-entry")
+    if not check(ordinary.enabled,"Existing ordinary Movement Menu enables Save"):return false
+    await act("cancel")
+    if OS.get_environment("SF2_INSPECTION_SAVE_ENTRY")=="reproduce":
+        return check(inspected.enabled,"Fresh inspection Menu must also offer existing host Save")
+    if not check(inspected.enabled and inspected.reason.is_empty(),"Fresh inspection Save offer is enabled with truthful eligibility"):return false
+    # A second fresh ordinary entry verifies actual capture, not history bound by the comparison menu.
+    root.remove_child(host);host.queue_free();await frames(2)
+    host=load("res://Main.tscn").instantiate();root.add_child(host);await frames(4)
+    if not check(host.call("StartPreVoyageLocalizationObservation",OS.get_environment("SF2_INSPECTION_START"))=="started","Fresh save verification admission"):return false
+    if not await enter_battle():return false
+    var fresh:=signature(state())
+    await act("cancel");await act("menu")
+    var offered:=menu_save_sample("fresh-inspection-before-explicit-Save")
+    if not check(offered.enabled and offered.strictAvailability.Error=="save-battle-music-unknown",
+            "Pure menu offer assesses live music while strict capture remains unavailable until Save"):return false
+    if not purity(fresh,"Save eligibility query does not publish history"):return false
+    await act("down");await act("confirm")
+    if not await wait_for(func(_s):return JSON.parse_string(host.call("ReadPersistenceObservationJson")).panel=="save-slots","inspection Save slot chooser"):return false
+    var captured: Dictionary=JSON.parse_string(host.call("ReadPersistenceObservationJson"))
+    samples.append({"label":"actual-strict-save-capture","persistence":captured})
+    if not check(captured.availability.Allowed and captured.progress!=null and captured.progress.Story.Music!=null,
+            "Explicit Save publishes actual music and passes strict capture before writing"):return false
+    if not check(state().revision==fresh[1]+1 and state().observationSequence==fresh[2]+1,
+            "Only explicit music observation publishes the expected single revision"):return false
+    await act("confirm")
+    if not check(JSON.parse_string(host.call("ReadPersistenceObservationJson")).panel=="confirm-save","Actual slot confirmation"):return false
+    await act("down");await act("confirm")
+    if not await wait_for(func(_s):return JSON.parse_string(host.call("ReadPersistenceObservationJson")).panel=="saved","disposable Save and return publication"):return false
+    var slots:Node=host.find_child("SaveSlotView",true,false)
+    samples.append({"label":"disposable-save-published","panel":JSON.parse_string(slots.call("ReadSaveObservationJson"))})
+    await send_action("confirm",true)
+    await frames(10)
+    if not check(state().stage=="Movement" and not state().inspection.active,
+            "Save-and-return retires changed-revision inspection without confirming gameplay"):return false
+    await send_action("confirm",false)
+    if not check(state().sessionId==fresh[0] and signature(state()).slice(3)==fresh.slice(3),
+            "Actual Save preserves actor/origin/path, seeds, queue, resources and story"):return false
+    sample("inspection-save-returned-Movement")
+    return true
+
 func run() -> void:
     root.size=Vector2i(1920,1080)
     host=load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()
@@ -381,6 +444,11 @@ func run() -> void:
         if not check(admitted=="started","Registered connected controlled admission: "+str(admitted)): return
         await frames(2)
     if not await enter_battle(): return
+    if not OS.get_environment("SF2_INSPECTION_SAVE_ENTRY").is_empty():
+        if not await fresh_save_entry():return
+        root.remove_child(host);host.queue_free();await frames(2)
+        finish(true)
+        return
     if OS.get_environment("SF2_INSPECTION_UI_ONLY")=="1":
         if not await ui_projection(): return
         root.remove_child(host); host.queue_free(); await frames(2)
