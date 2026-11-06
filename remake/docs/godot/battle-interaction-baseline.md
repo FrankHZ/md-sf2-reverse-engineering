@@ -11,8 +11,9 @@ agreement, but no new runtime, collection platform or engine implementation is n
 Restore access to battlefield inspection before adding tactical predictions. Free cursor inspection,
 enemy/ally status, the whole-battle map and battle Quit/save are original features. The current
 remake has movement, command/target cards and action playback, but those consumers do not supply
-arbitrary battlefield inspection. Recommend a read-only inspection entry, public unit details and
-on-demand overview, followed by the remaining original battlefield-menu functions.
+arbitrary battlefield inspection. The selected first scope uses original-style Movement B/Cancel:
+finish the existing movement undo, then enter read-only inspection, public unit details and
+on-demand overview. A separate non-destructive Inspect shortcut is Deferred.
 
 This document owns the functional comparison and proposed inspection boundary. Existing
 [presentation](presentation.md), [battle scenes](battle-scenes.md),
@@ -109,14 +110,16 @@ normal route has no such functional entry, even if a diagnostic read exposes sim
 | --- | --- | --- |
 | Turn begins: S1 focuses the actor, waits for cursor/view settlement, opens mini status and land effect, builds movement range; sleep/stun and AI-control branches restrict player action. | `GameRoot` routes to the mounted `BattleSessionView`; `BattleCommandMenu.Refresh` presents the acting card in Movement. `QueryBattleMovementRange` supplies legal stops. [B8/E1 acceptance](presentation.md#battle-movement-range-agreement) owns the retained witnesses. | Actor and movement feedback exist. Land-effect information is missing. Exact original selection animation is **Unknown**; [#1617](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1617) owns its correction. |
 | Observe the battlefield independently of movement: S1–S3 enter `BattlefieldMenu` after movement B cancellation; its cursor owns view focus. | `BattleSessionView.HandleAction` routes directions to `Move` in Movement. Cancel submits `Cancel`, whose dispatcher builds a return path and remains in Movement. There is no inspection branch/action in this route. | **Functional missing entry**, not merely an undiscovered key. Do not use movement to pan for inspection. Recommended first scope below. |
-| Inspect any living ally/enemy on a tile, including one outside attack range: S2 checks current HP and coordinates; A invokes full status, C invokes mini status/land effect for another actor. | `BattleCommandMenu.Refresh` supplies the target card only on its Target page; the selected action controls candidate enumeration. `BattleStatusCard` displays name, role, HP/MP, low/dead warning and silence. | **Functional gap** in arbitrary browsing and full enemy/ally details. Existing cards are reusable rendering, not inspection evidence. |
+| Inspect any living ally/enemy on a tile, including one outside attack range: S2 checks current HP and coordinates; A invokes full status, C invokes mini status/land effect for another actor. On the current actor C returns directly to actor control; A returns there after the full screen closes. | `BattleCommandMenu.Refresh` supplies the target card only on its Target page; the selected action controls candidate enumeration. `BattleStatusCard` displays name, role, HP/MP, low/dead warning and silence. | **Functional gap** in arbitrary browsing and full enemy/ally details. Existing cards are reusable rendering, not inspection evidence. Preserve caller-specific returns rather than assuming every detail Back returns to the cursor. |
 | Empty-ground options: S2 calls `MENU_BATTLEFIELD`; return values dispatch Member, Map, Speed and Quit. | `BattleCommandMenu` has Main/Magic/Items/Target/Commit pages; Main is Attack/Magic/Item/Stay. Host Menu is a separate modal. Neither supplies the original empty-ground menu. | **Functional gap**. Keep system Menu distinct from battle options; layout belongs to #1616. |
 | Map: S7 builds an overview of the battlefield area and entity indicators, then returns to the options caller. | `BattleMapViewport` renders the ordinary board at 96px cells; `Frame` follows movement/selection/target/story. No overview page exists. The [overview design](modernization-design.md#read-only-battle-overview) is proposed. | **Functional gap**, with an existing design to reuse. Modern placement/legend/accessibility can change; map availability is original. |
 | Member: S2 rebuilds the battle-force list, opens its summary list and then full member screens. | `QueryPartyDetails` returns null outside Exploration; `ExplorationSessionView.HandleAction` opens `PartyStatusView` only at field input without a battle mount. Battle Equipment instead begins equipment selection. | **Functional gap** in battle roster inspection. The field details UI exists but its current query and entry cannot serve the live battle. |
 | Move, reconsider, return to actor: S2 accepts A/C at a valid stop; diamond cancel restores logical origin/rebuilds movement. Movement B constructs and delivers a cancel-move string before free inspection. | `BattleCommandDispatcher` keeps the authoritative actor position separate from `Selection.Preview`; `BattleMovementContinuation` delivers preview/return movement. Cancel at the main diamond rolls back the preview. | Core undo exists; transition to inspection does not. Preserve the distinction between undoing a move and closing a read-only panel. No source promise to retain a tentative destination through B. |
 | Choose Attack/Magic/Item/Search-or-Stay: S2 chooses Stay or Search from faced chest availability; it chooses initial Attack/Stay focus from attack targets. | `BattleCommandMenu` defaults to its Main Attack index and groups typed `QueryBattleChoices` actions into four commands. No battle Search command/page appears. | Basic actions exist; initial focus is a **behavior difference**, and contextual battle Search is a **functional gap** outside the first inspection scope. Field Search does not establish battle Search. |
 | Choose spell/level or item, then target; cancel to the appropriate parent: S2 checks spell availability/MP/range and returns canceled targets to spell/item/action selection. | `BattleChoices.Query`, `BattleCommandMenu.Handle/Select/PickTarget` and `ReturnToBattleActions` drive lists, availability/reasons and target selection. Cancel restores the relevant list/main page; main Cancel returns to movement. | Existing core route. Menus flatten source spell/item structures into modern lists. Off-range attempted targets may be displayed but cannot commit; do not confuse these with free inspection. [Localized consumer boundary](presentation.md#localized-battle-command-and-equipment-display). |
-| Give/Equip/Drop: S2's item submenu includes these operations, with separate curse/confirmation and turn-consumption branches. | Battle Equipment/Give/Discard shortcuts dispatch to the existing typed selections; Give/Discard have their own result consumers and equipment returns to the action page. Main help exposes the shortcuts rather than an original item diamond. | **Discoverability / navigation difference**, not absent transaction engines. Preserve each owning action's commit semantics; inspection must never invoke them. |
+| Give/exchange: S2's item submenu selects a held slot and adjacent recipient, including full-pack exchange; completed Give consumes the turn as Stay. | Standalone authored `battleGive: true` has typed slot/recipient/return-slot selection and result delivery. `BattleGiveReader` requires `!connected`; private battle construction does not supply `BattleDefinition.Give`. `BattleGive.RequireActor` rejects that absence with `give-unavailable`. | **Functional admission gap in connected/private battles**, plus shortcut discoverability in the authored subset. A visible Give shortcut does not enable the ordinary private route. [Capability](../capability-status.md#authored-battle-give-and-exchange) / [admission](../content/profiles-and-trust.md#authored-battle-give-admission). |
+| Drop: S2 has confirmation, cursed-item refusal and rare-item Deals handling. | Standalone authored `battleDiscard.items` admits a finite item set and returns after its result without consuming the turn. `BattleDiscardReader` requires `!connected`; private construction does not bind Discard. `BattleDiscard.Choices` rejects that absence with `discard-unavailable`. | **Functional admission gap in connected/private battles**, not merely a missing menu link. Standalone authored refusal/confirmation/rare handling does not establish private item support. [Capability](../capability-status.md#authored-battle-discard) / [admission](../content/profiles-and-trust.md#authored-battle-discard-admission). |
+| Equip: S2's item submenu changes eligible equipment and returns to the battle command menu. | Standalone authored equipment has eligible-slot/Unarmed preview and commit. Connected/private loadout bindings use `AllowChanges = false` (or no equipment binding); `BattleEquipment.RequireActor/Choices` returns `equipment-unavailable`. Live private carried equipment still determines supported ATT/range and may be prepared in the field. | **Functional gap in in-battle equipment changes**, separately from implemented private equipment use and authored menu discoverability. Do not infer battle Equip from working field Prepare or supported attacks. [Equipment capability](../capability-status.md#authored-battle-equipment-agreement). |
 | Commit → scene → result: S1 handles Stay and retreat separately from ordinary battlescenes. | `Confirm` reaches action preparation only from a complete selection; scene continuations deliver resource effects/messages/rewards/deaths and then control/outcome. `BattleSceneView` uses live cards. | Existing bounded [battle-scene consumers](battle-scenes.md#message-and-outcome-presentation). Whole-game animation/pixel parity remains **Unknown**. Weapon layering belongs to [#1620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1620). |
 | Next actor/round or exploration return: the [battle-loop owner](../../../docs/research/battle/battle-loop.md#top-level-battle-control) orders deaths, faction checks, after-turn and next entry. | `BattleAdvancer` and continuations progress automatically; `LeaveBattle` and the field presenter retire windows and resume field control. [Retained return boundary](presentation.md#battle-messages-return-and-party-status). | Existing finite behavior; it is not proof of all encounters. Inspection must be unavailable across these transitions. |
 | Speed/text options: S8 stores two old values; directions edit message speed 0–3 and message suppression; B restores both, A/C keeps changes. | [Settings](presentation.md#basic-preferences-agreement) offers instant/adjustable text, characters/sec, swapped controls and reduced flash at title/safe field only. `SettingsHost.CanOpenSettings` excludes battle. There is no battle-message suppression preference in `InputSettings`. | **Functional gap** in in-battle access and selective suppression; modern text reveal exists with a different scale. This is separate from [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619)'s temporary 1.5× time policy. |
@@ -128,6 +131,17 @@ and repeated pad deflections, and `BattleSessionView` has no held-direction loop
 owns hold/release/mode isolation. Gold sprite modulation and preview underlines in
 `BattleMapViewport.Present` are **Confirmed current code**, not proof of original presentation;
 #1617 owns that fidelity boundary. Do not duplicate either issue in an inspection implementation.
+
+Transaction support must be read with content admission. The precise current boundaries above come
+from [Give admission](../../src/Sf2.Remake.Content/Scenarios/BattleGiveReader.cs),
+[Discard admission](../../src/Sf2.Remake.Content/Scenarios/BattleDiscardReader.cs),
+[private battle construction](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs),
+[private field equipment binding](../../src/Sf2.Remake.Content/Scenarios/PrivateFieldPreparation.cs),
+[restored loadout binding](../../src/Sf2.Remake.Content/Persistence/OpeningLoadoutBindings.cs) and
+[battle Equip guard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs).
+Private weapons contributing to attacks and field Prepare changing carried equipment do not enable
+private battle Equip, Give or Drop. These remain functional capability gaps for the ordinary route;
+this investigation neither admits them nor creates implementation tickets for them.
 
 Message suppression is selective. **Confirmed static:** S8's `bsc10_displayMessage` checks
 `NO_BATTLE_MESSAGES_TOGGLE` before `DisplayText`; `bsc11_displayMessageWithNoWait` does not.
@@ -179,7 +193,8 @@ AdvanceSimulation or any RNG service. `QueryBattleChoices` remains the authority
 offers; it cannot supply arbitrary inspection targets. `QueryPartyDetails` stays field-owned until
 a deliberately shared scalar detail projection is extracted; do not make it initialize a battle.
 
-Initially admit only a live player selection in settled Movement, without movement delivery,
+Initially enter only after Movement B/Cancel has completed its existing undo/return path, with a
+live player selection in settled Movement and no movement delivery,
 scene/retreat/Give/Discard/round/appearance/program/outcome or failure. Reject hidden/unplaced units
 and stale IDs explicitly. Reuse ordinary-board visibility rules at that boundary, including staged
 entity visibility; do not reveal a positioned actor before its appearance. Existing board projection
@@ -188,30 +203,41 @@ and appearance filtering are the first owners to reuse, rather than a second rev
 Keep only cursor tile, selected public unit, panel/focus and return context in the adapter. Bind
 that context to the current session/revision/actor; retire it on replacement or a changed boundary.
 During inspection no gameplay commands, automatic turns, movement acknowledgements, resource writes
-or reward acknowledgements may pass through. Opening/browsing/closing preserves the exact selection,
-preview destination/path, round/cursor/queue, all actor/party/story state and both RNG seeds. Revision
-and observation sequence do not advance merely for reading. Animation of a cursor/camera is display
-state, not a logical battle opportunity.
+or reward acknowledgements may pass through. Establish the purity baseline **after** the authorized
+Cancel and its real return delivery finish. Browsing/closing preserves that post-undo selection,
+origin preview/path, round/cursor/queue, all actor/party/story state and both RNG seeds. Revision and
+observation sequence do not advance merely for inspection reads. The entry's real Cancel/delivery
+may publish their ordinary revisions; the old tentative destination is intentionally canceled.
+Animation of a cursor/camera is display state, not a logical battle opportunity.
 
 ### Entry, return and provisional movement
 
-The source and proposed modern entry have deliberately different cancellation contracts:
+The selected first version follows the original entry/return contract. It does not add a default
+Inspect shortcut or permanent entry that preserves a tentative move:
 
 | Transition | Required behavior |
 | --- | --- |
-| Original B during movement (S1–S3) | Retrace/cancel the move before `BattlefieldMenu`; on B return, restart the same actor's control. Original B does not promise to preserve the tentative destination. |
-| Proposed explicit Inspect from settled Movement | Use a separate, discoverable mapped entry, with keyboard/pad and a labeled control. Preserve the existing Cancel undo operation. This non-destructive entry is an intentional modernization of access, not a claim that the source B preserves preview. Initial cursor/focus is the displayed actor at its preview destination. |
-| Inspect another unit or empty tile | Directions move only the inspection cursor over admitted battle cells. Detail/short-card actions and empty-ground options remain inspection-owned. They never issue `Move`, `SelectTarget` or `Confirm` to the battle session. |
-| Close details / Map / Member | Return to the same inspection cursor and panel focus. Back must first close the child, then close inspection on a fresh event. |
-| Return to active unit / close inspection | Return camera subject to the same actor and preserved preview; retire the inspection cursor. The actor's authoritative position and provisional destination remain distinct. Require release before the next gameplay Confirm/Cancel/direction can be consumed. |
-| Future inspection from ActionChoice/TargetChoice | Defer until parent page, spell/item candidate, target and preview can be restored as one context. The initial scope must not silently discard these by converting entry into Cancel. |
+| Movement B/Cancel (S1–S3) | Reuse the existing undo and actual return-path delivery, then enter inspection. If the actor has not moved, enter directly at the settled boundary without fabricating a movement wait. `MoveBattleEntityByMoveString` writes the final chosen X/Y; the returned actor's origin is the initial cursor location. |
+| Action menu Cancel | Keep its existing return to Movement/undo. Do not enter inspection from every menu Cancel; the subsequent Movement B/Cancel owns the inspection entry. |
+| Inspect another unit or empty tile | Directions move only the inspection cursor over admitted battle cells. A/full-details and C/short-status meanings are local to this mode; empty ground opens battle options. These inputs never issue gameplay `Move`, `SelectTarget`, Attack or `Confirm`. |
+| B while in the free cursor | Close inspection, retire its camera override/cursor and restore the same actor's post-undo Movement state. It does not end the turn. Require release before ordinary gameplay consumes another action. |
+| A on the current actor | S2 opens `BuildMemberScreen`; after that screen closes, `@loc_5` compares the selected ID with the current actor and returns from `BattlefieldMenu`. Resume the same actor's Movement state, rather than reopen the free cursor. |
+| C on the current actor | S2's `@IsCursorOnMovingEntity` returns directly before `@OpenMiniStatus`. Resume actor control; do not add a new current-actor short-card child here. |
+| A/C on another living unit | A opens the full sheet; C opens mini status and land effect. On dismissal S2 loops to `BattlefieldMenu` for the same cursor context. S5's full screen waits for A/B/C; this caller's return destination differs from inspecting the current actor. |
+| Empty-ground menu / Map / Member | Menu Cancel returns to the cursor. Map returns to the empty-ground menu. Member's selected full sheet returns to its member list, even when it displays the current actor; leaving that list returns to the empty-ground menu. Preserve caller identity rather than using the direct-cursor active-unit rule for every full sheet. |
 
-The initial proposed entry need not consume an existing Attack/Equipment/Target shortcut. Its exact
-mapped control and placement are serialized with #1615 input and #1616 layout work. If main-gate
-instead selects exact original B entry, reuse the existing return-path delivery first, explicitly
-label that it cancels movement, and enter inspection only after that delivery completes. Do not
-claim the non-destructive contract for that alternative. This is a bounded input choice, not a
-second simulation or an authorization to change cancellation semantics silently.
+**Deferred intentional modernization:** a separate non-destructive Inspect entry could preserve a
+Movement preview, or later an ActionChoice/TargetChoice parent, selected item/spell and target.
+A uniform modern Back that always returns full details to the free cursor would also differ from
+the source's current-actor A/C behavior. Neither alternative is required by the selected first scope.
+Default B/Cancel entry is fixed above; map the mode-local A/C functions and release barriers through
+the existing input authority with #1615, and let #1616 place contextual hints rather than another
+permanent Inspect control. Do not change source-like return destinations implicitly for UI uniformity.
+
+The first slice includes the cursor → empty-ground Map entry → options → cursor route. Member's
+caller-specific return above records the original behavior for its following implementation slice;
+it does not make Member, Speed or Quit/save part of Map acceptance. Show only working actions, or
+an explicit real availability reason where the chosen layout retains an unavailable original row.
 
 ### Camera and overview
 
@@ -220,13 +246,14 @@ or story; `_Process` reapplies it. Add a temporary inspection subject at that ow
 Frame cannot immediately replace the cursor. Reuse `WorldViewportLayout.Focus/Clamp` and the
 battle's admitted `SourceMapRegion` offset. Keep 96px cells, clipping and legal area boundaries;
 do not pan into neighboring packed rooms, storage, hidden entities or an entire source-world map.
-Returning removes only the override and resumes the saved actor/preview subject. The modern
+Returning removes only the override and resumes the same actor at the post-undo origin. The modern
 dead zone, easing and framing remain modern policy, not original camera evidence.
 
 The on-demand Map reuses the [overview proposal](modernization-design.md#read-only-battle-overview):
-whole admitted battle area, disclosed allies/enemies, active unit, clearly distinguished committed
-position/preview and the clipped camera rectangle, with shapes/labels and a navigable known-unit
-list. It reads the camera without moving it; Back returns to the same inspection cursor. No map
+whole admitted battle area, disclosed allies/enemies, active unit at its post-undo origin and the
+clipped camera rectangle, with shapes/labels and a navigable known-unit list. This first scope has
+no retained tentative destination to display. It reads the camera without moving it; Back returns
+to the empty-ground menu, whose own Back returns to the inspection cursor. No map
 click can move a unit or commit a target. Free battlefield cursor and overview are complementary;
 one is not acceptance for the other. A permanent minimap, click-to-center, threat overlays and
 undisclosed objectives remain outside this first scope.
@@ -240,7 +267,8 @@ needs another input. No new full-route replay, screenshots, bulk capture or comp
 | Check | Required result |
 | --- | --- |
 | Query purity and disclosure | Small engine behavior tests show repeated live reads preserve state/RNG, reject busy/stale/hidden units and do not reveal pending appearances. Use the real query, not tests of a probe/report. |
-| Real entry and return | Actual adapter input/state/projection/errors show movement preview → Inspect → distant unit → child details/Map → Back → same preview/actor. Compare selection, path, session/revision/sequence, seeds, resources and queue before/after. Undo remains a separate working action. |
+| Real entry and return | Actual adapter input/state/projection/errors show moved preview → B/Cancel → real undo delivery → cursor at origin; no-move B enters directly. Capture the post-undo baseline, then inspect another unit and Map, return through their real parents and B back to the same actor at origin. Compare selection/path, session/revision/sequence, seeds, resources and queue against that baseline, not the canceled preview. Menu Cancel still returns to Movement before a later B enters inspection. |
+| Current actor and caller-specific returns | From the cursor, C on the current actor resumes Movement directly; A opens full details then resumes Movement on dismissal. A/C on another unit returns to the free cursor after dismissal. A member-list full sheet returns to its list even for the active actor. No close event leaks into a gameplay confirmation. |
 | Information | Ally/enemy short/full details read live HP/MP, admitted stats/status/equipment; unsupported fields remain explicit. Test two mover/protection combinations so land effect cannot be a hardcoded tile percentage. |
 | Camera | Read actual cursor/focus, region origin and camera bounds at opposing board edges and return. The board scale never changes when panels open. Include a nonzero source-region origin and small-board centering where existing inputs permit. |
 | Input isolation | Keyboard/pad and mapped controls, pointer controls where offered, hold/release, child Back, focus loss and host Menu pause never move/commit on dismissal or carry a held direction into gameplay. Coordinate with #1615 rather than duplicating its repeat clock. |
@@ -257,11 +285,11 @@ This table is future acceptance, not a list of checks passed by this documentati
 | --- | --- |
 | First: this baseline → #1616 | Review original capabilities and the read-only contract before allocating layout space. Layout acceptance cannot turn a missing consumer into a completed feature. Shared documentation navigation is main-gate-owned. |
 | Foundation: #1615 and #1617 | Direction hold/mode isolation and evidence-based selection/path feedback retain their issues. Inspection consumes the accepted input contract and respects visual ownership; neither issue must grow into full inspection. |
-| Recommended new implementation slice, not created here | Live public battle query + settled-Movement Inspect + unit short/full details + on-demand Map, with original/modern entry choice fixed in dispatch. One coherent inspection outcome; serialize `GameSession`, battle views, input and UI ownership. Reuse #1543's overview rather than implement a second map. |
-| Following bounded original-options slice | Battle Member roster reuses the query/details; source-like empty-ground menu connects available functions. Original Speed access/selective message suppression needs a separate explicit consumer/persistence contract. Do not expose dead rows that pretend to work. |
+| Recommended new implementation slice, not created here | Live public battle query + original-style Movement B/Cancel undo/delivery → inspection + source-like unit detail returns + on-demand Map. Entry is fixed to the original-style choice, not a new default Inspect shortcut. One coherent inspection outcome; serialize `GameSession`, battle views, input and UI ownership. Reuse #1543's overview design with the caller returns specified here. |
+| Following bounded original-options slice | Battle Member roster reuses the query/details and connects to the first slice's options entry with its source return stack. Original Speed access/selective message suppression needs a separate explicit consumer/persistence contract. Quit/save waits for #1618. An existing menu row is not acceptance for an unavailable function. |
 | #1618 | Battle Quit/save/Continue, stable commit and recovery. Inspection/options provide an entry only after its availability contract exists; no private save mutation or schema change here. |
 | #1619 / #1620 | Temporary Shift 1.5× presentation/time policy and weapon frame/layer correction retain their own scopes and evidence. Neither is required to establish that original inspection exists. |
-| Deferred modernization | Action-order bar, permanent minimap, tactical predictions and enemy threat/intent. No predictive run or simulation is authorized by this design. |
+| Deferred modernization | Separate preview-preserving Inspect entry, ActionChoice/TargetChoice inspection, uniform Back replacing current-actor returns, action-order bar, permanent minimap, tactical predictions and enemy threat/intent. No predictive run or simulation is authorized by this design. |
 
 An action-order bar must distinguish the already constructed current-round queue, an explicitly
 qualified prediction and unknown future changes. `EngineBattleState.TurnOrder` exposes the retained
