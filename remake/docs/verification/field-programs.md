@@ -2,6 +2,13 @@
 
 ## Source line reflow observation
 
+The [full-corpus layout review](../evidence/dialogue-corpus-layout.md) adds an all4,267-pair semantic
+and production-projection audit,337 separate names and six entry aliases. Its retained one-off
+runner measures40,676 actual Godot Label layouts with zero missing glyphs/bounds overflow;257
+unsupported rows receive literal-only checks. That report owns exact ID dispositions, reproduction,
+synthetic operand limits and the unchanged209-row Chinese admission boundary. These isolated Label
+measurements complement the real reading/input observations below; they do not replace them.
+
 The [Standard display agreement](../godot/presentation.md#source-line-reflow-1583) is exercised by
 [`engine_dialogue_reflow_observation.gd`](../../game/probes/engine_dialogue_reflow_observation.gd),
 which extends the existing ordinary-host/reading observer. No screenshot, emulator run, whole-route
@@ -75,8 +82,9 @@ ASCII custom names); menu observer initially used removed Down instead of mapped
 initially selected a nonexistent generated package. Each has a corrected narrow result. Two ObjectDB
 exit instances were reported by entry+overlay runs; the prior exit-warning investigation remains
 its owner, and this slice does not claim leak closure. Accepted field runs have no native errors;
-report PASS must still be paired with exit/log inspection. Human final pixels/reading approval and
-all-catalog source-semantic classification remain **Unknown**.
+report PASS must still be paired with exit/log inspection. Human final pixels/reading approval remains
+**Unknown**. The full-corpus review now supplies per-row semantic classifications as **Inferred**
+editorial judgments and retains three unresolved source-intent ambiguities.
 
 ## Ordinary dialogue Confirm observation
 

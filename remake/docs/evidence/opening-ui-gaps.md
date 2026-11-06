@@ -20,8 +20,13 @@ remain intact. No font shrink, theme replacement or wider entry panel is used.
 sample uses5 instead of6 lines at1392px while preserving both literal and source blank paragraphs.
 The [finite observation](../verification/field-programs.md#source-line-reflow-observation) covers both
 locales, names, portrait/no-portrait, long pages, append, legal bounds and language Apply.
-**Unknown:** every source break's semantic intent, physical-device/final-raster experience and the
-user's whole-opening approval. These remain separate from bounded engineering checks and #1456.
+The [full-corpus review](dialogue-corpus-layout.md) covers all4,267 English/Chinese pairs and337 names:
+4,010 compatible rows have controlled native projections;257 remain unsupported. It records107
+semantic-preservation candidates (the21 admitted Search rows already preserve their breaks) and
+three ambiguities. No measured glyph/bounds defect was found; runtime Chinese admission is still209
+world rows plus six aliases. **Unknown:** the three ambiguous source-break intents, actual unbound
+caller contexts, physical-device/final-raster experience and the user's whole-opening approval.
+These remain separate from bounded engineering checks and #1456.
 
 ## Ordinary dialogue confirmation
 

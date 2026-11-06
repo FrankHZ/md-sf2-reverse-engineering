@@ -54,6 +54,13 @@ Provenance remains `ShiningForceCentral/SF2DISASM` at
 `{id,text}` equals that pinned table. Entry display IDs 216–221 project those world IDs; they do not
 add six message IDs. Their human-approved wording remains exact.
 
+The [full-corpus layout review](../evidence/dialogue-corpus-layout.md) separately checks all4,267 pairs,
+337 names and six aliases. It records4,010 parser-compatible rows,257 unsupported rows,107 semantic
+line-preservation candidates and three ambiguities, with explicit native-layout and caller limits.
+All209 historical world rows and six aliases still resolve in the isolated reader check;34 historical
+world targets differ from later full-corpus calibration. Neither that check nor corpus-wide glyph
+coverage expands runtime admission or completes pre-voyage Chinese coverage.
+
 ### One authority and exact ownership
 
 A separately configured persistent private content root outside Git and removable worktrees owns:
@@ -983,8 +990,10 @@ translation row, private corpus, control mapping, source unit, schema or save id
 Display/reveal character totals follow the actual shaped projection; they never replace source
 logical character work. W1's existing English fallback is not additional Chinese coverage. Search,
 battle and other unselected consumers retain their current layout. The finite unit/native checks
-are linked from the presentation agreement; original paragraph intent outside the reviewed examples
-and human typography acceptance remain **Unknown**.
+are linked from the presentation agreement. The full-corpus review records every row's disposition;
+semantic judgments remain **Inferred**, with three ambiguous rows and human typography acceptance
+still **Unknown**. The21 admitted semantic-preservation candidates are existing Search descriptions
+whose default projection already preserves their breaks.
 
 ## Font, layout and delivery
 

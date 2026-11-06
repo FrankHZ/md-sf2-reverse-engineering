@@ -938,6 +938,15 @@ presentation direction and does not assert final aesthetic or all-map acceptance
 
 ### Source line reflow (#1583)
 
+The [full-corpus review](../evidence/dialogue-corpus-layout.md) covers all4,267 pinned English/Chinese
+message pairs,337 separate names and six entry aliases. It distinguishes semantic review, production
+compatibility and actual Godot layout from runtime admission. Of4,010 compatible messages, controlled
+projections pass measured glyph/bounds checks;257 unsupported rows do not count as rendering passes.
+The107 semantic-preservation candidates and three ambiguities have explicit dispositions. The21
+currently admitted candidates use Search's existing preservation policy; no new reflow defect was
+found. The frozen209-row Chinese world subset and six aliases remain unchanged. Full-game/pre-voyage
+Chinese admission and human reading acceptance are not established by this audit.
+
 **Standard rigor:** a bounded display-only change reuses the current Content resolver and shared
 panel. The source glyph/window service, source ranges, RNG, script waits and the separate High
 [Confirm agreement](#ordinary-dialogue-confirm) are unchanged. No theme, geometry, font-size,
@@ -966,8 +975,9 @@ again in the same entry; existing Reveal/More/Continue and release guards remain
 source represented by admitted entry row217 and ordinary opening row480, a break splits an unfinished
 clause. This supports identifying those breaks as original layout; it does **not** prove that every
 single `{N}` in the complete catalog is nonsemantic. Reflow for the selected consumers is an explicit
-modern policy. Private wording and the pinned inputs remain read-only. **Unknown:** semantic intent
-of every unreviewed source break and human approval of the resulting reading experience (#1456).
+modern policy. Private wording and the pinned inputs remain read-only. The full review's semantic
+judgments are **Inferred**; original intent for the three ambiguous rows and human approval of the
+resulting reading experience (#1456) remain **Unknown**.
 
 The [finite observation owner](../verification/field-programs.md#source-line-reflow-observation)
 records native widths/line counts, bilingual paragraphs, names, portrait reservations, long pages,
