@@ -15,6 +15,19 @@ Text/choice/script/battle consumers retain their existing time owners. Universal
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.
 
+## Same-map walking-party arrival
+
+**Implemented bounded capability, Standard:** Preserve entrances settle the player and the live,
+script-free physical follow chain at the destination, clearing old velocity/travel/motion waits.
+Membership/order changes use installed links rather than character or stair identities. Independent
+NPCs, script-owned separated members and their chains retain their state; rebuild entry still uses
+destination population/flags. Existing stable-save restrictions remain in force. Small engine
+behavior checks and short controlled Godot tower/royal-room roundtrips plus normal cross-map entry
+confirm the admitted rule. The [arrival agreement](application/pre-voyage-campaign.md#same-map-walking-party-arrival)
+owns source-list versus active-follow mapping, reproduction and preserved failures. Natural original
+reach, all cutscene separation semantics, raft/caravan transfers and native clean exit are not
+established by this correction.
+
 ## Ordinary opening through first damaged-ship control
 
 The private title New Game and a real Map57 Continue connect Battle01/02, Yeel and Battle03 to
