@@ -44,7 +44,7 @@ public sealed partial class BattleSessionView : Control
     internal string? StartupError => _startupFailure?.Code;
     private bool _started;
     private bool _inputSuspended;
-    private void SuspendInput() { _inputSuspended = true; _menu?.SuspendPointer(); }
+    private void SuspendInput() { _inputSuspended = true; ClearNavigation(); _menu?.SuspendPointer(); }
     private void ResumeInput() => _inputSuspended = false;
     private string _title = "";
     private string _status = "";
@@ -212,6 +212,7 @@ public sealed partial class BattleSessionView : Control
     // Keep only the battlefield beneath the field-owned after/return effects.
     internal void RetireWindows()
     {
+        ClearNavigation();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
         _appearance.Hide(); _give.Hide(); _discard.Hide(); _feedback.Hide();
@@ -219,6 +220,7 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
+        ServiceNavigation();
         if (_startupFailure is not null || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_session?.Current.BattleDiscard is not null)
@@ -262,6 +264,7 @@ public sealed partial class BattleSessionView : Control
 
     internal void HandlePointer(InputEvent input)
     {
+        ClearNavigation();
         if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() ||
             _session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
             _session?.Current.HasBattleControl != true || _session.Current.BattleMovement is not null)
@@ -269,10 +272,10 @@ public sealed partial class BattleSessionView : Control
         if (_menu.HandlePointer(input)) Present();
     }
 
-    internal void HandleAction(GameAction action)
+    private void HandleActionCore(GameAction action)
     {
         _menu.SuspendPointer(keyboard: true);
-        if (_startupFailure is not null || _inputSuspended || !IsVisibleInTree()) return;
+        if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_session?.Current.BattleDiscard is not null)
         { if (_discard.Acknowledge(action) is { } ack) Send(ack); return; }
@@ -364,6 +367,7 @@ public sealed partial class BattleSessionView : Control
         var current = _session!.Current;
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
+        if (_result.Failure is not null) { _navigationRejected = true; ClearNavigation(); }
         PublishResult("submit");
         ObserveResult?.Invoke(_result);
         if (_result.Failure is null)
