@@ -1291,7 +1291,7 @@ It does not relabel authored tests as an original trace replay.
 Private Content admits Medical Herb and the separately bounded [Seed/Antidote extension](#finite-purchased-supplies-and-detox1) into this item family.
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
 not herbs. The current class model admits PRST healing EXP and the existing non-healer
-classes. VICR/MMNK class admission, broader item families, equipment beyond the authored weapon subset, Give/Drop beyond the standalone subsets, field inventory,
+classes. VICR/MMNK class admission, broader item families, equipment beyond its explicit admitted subset, Give/Drop beyond their explicit admitted subsets, field inventory,
 AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
 physical-only AI policy rejects a nonempty item loadout at start. This does not close the
 continuous H4 milestone or establish successful native-original cancellation.
@@ -1324,7 +1324,34 @@ unplaced coordinates. The completed Give writes STAY and exits player control. M
 retains provisional movement until commit; modern result text is authored, not source dialogue
 or original timing evidence.
 
-Scope excludes curses, rings, broken items, general status effects, field/service inventory,
-private imports, save/load and changed frozen profiles. Carryability is separate from use or class
+This standalone agreement excludes curses, rings, broken items, general status effects, field/service inventory
+and changed frozen profiles. The connected product extension below owns private admission and persistence.
+Carryability is separate from use or class
 equip eligibility. **Unknown:** natural original reach, original presentation/timing and wider
 status behavior. #1047's twelve Unknowns remain unchanged; #638 remains paused.
+
+### Connected battle Give agreement
+
+**Standard implementation (#1647), retaining High inventory/save consistency:** product New Game and
+Continue admit the existing Give transaction for connected Battles01–07 through the explicit opening
+binding. Its catalog reuses admitted field carry identities: ordinary ATT-only weapons, exact
+`CONSUMABLE` records and Mithril. Carryability grants neither Equip nor Use. Rings, cursed equipment,
+broken words, unselected identities and other equipped effects reject before any transfer. Both live
+four-slot loadouts, current base ATT, target adjacency and selected words remain authoritative.
+The standalone opt-in and field-only controlled bindings are unchanged; battle Drop is separate.
+
+The pinned Give caller above checks equipped curses on both selected words; its unsellable check is
+in Drop, not Give. This finite catalog does not implement general cursed-item handling. Equipped
+ordinary weapons may be transferred/exchanged; removal refreshes current ATT/range, receipt is
+unequipped, and current progress carries the same loadout. Preview/cancellation/rejected stale offers
+are free. Confirmation publishes once; actual result reveal/acknowledgement runs exactly one existing
+Stay suffix. Receipts, Deals, gold and gameplay seeds do not change in the transfer prefix.
+
+Acceptance uses actual engine behavior for ordinary/full transfer, cancellation, illegal slots,
+no recipient, stale offer, restricted items, equipped removals, later Equip and exactly-once suffix;
+v2 record restore at settled Movement, actual attack/victory, field custody and field save/restore.
+The record codec runs in memory and does not prove disk I/O. The
+[connected native recipe](../development-and-verification.md#connected-battle-give-observation)
+checks ordinary connected input and localized projection. Later battles, new item effects, original
+natural reach/timing and human visual acceptance remain outside this outcome. Four slots bound local
+work to O(4); existing actor copy/target query is O(N), with no acquisition or new comparator.

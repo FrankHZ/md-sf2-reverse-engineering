@@ -406,7 +406,7 @@ counter validation, growth and continued ordinary control. The
 
 Four held slots bound selection to O(4); one commit copies existing battle actor state, O(N), with no
 RNG or acquisition. One authored package, small engine tests and one semantic witness (<180 seconds,
-<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give/Drop beyond the standalone subsets above, field/services,
+<2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give/Drop beyond their explicit admitted subsets, field/services,
 broader private equipment families remain Unsupported. The connected extension below owns private
 chapter preparation and persistence. Original natural reach,
 presentation/timing and the twelve #1047 Unknowns remain unchanged. Authored weapon names, numerical
@@ -420,7 +420,7 @@ ordinary `WEAPON` records with ATT-only effects and ranges1–1,1–2 or2–2 su
 contributions. Only supported unpromoted, physical, player allies with growth/loadout bindings opt in.
 Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Rings, curses, broken
 weapons, other effects and unsupported actor states cannot become legal equipment changes; no eligible
-weapon means no interaction. Battle Give/Drop remain unadmitted (#1647/#1648).
+weapon means no interaction. Connected Give has its separate agreement below; battle Drop remains unadmitted (#1648).
 
 The existing command-menu equipment hint/default E (or installed binding) opens the localized slot
 preview. Cancel preserves authority; Confirm returns to the same ActionChoice/preview with no turn,
@@ -437,6 +437,28 @@ not natural campaign/original reach, hardware timing or human visual acceptance.
 remain with the [domain/source owner](domain/gameplay-rules.md#authored-battle-weapon-equipment).
 Four carried slots bound selection to O(4); existing commit/state copying is O(N). Reuse the selected
 world read-only; no world export, acquisition, seven-battle replay or new comparator is required.
+
+## Connected battle Give and exchange
+
+**Implemented finite product binding; Standard implementation, High inventory/save consistency:**
+New Game/Continue through connected Battles01–07 reuse the existing Domain/Application Give and
+localized Godot consumer. The ordinary command-menu hint names default G or its installed mapping;
+slot → cardinal adjacent recipient → required full-pack return slot → confirmation/result → Stay
+is reachable with normal input. Preview/Cancel/illegal or stale offers retain authority. Both equipped
+removals refresh current ATT/range; received words are unequipped. One reveal/acknowledgement consumes
+the giver's action exactly once. Drop remains unavailable.
+
+The [agreement/source](domain/gameplay-rules.md#connected-battle-give-agreement),
+[explicit admission](content/profiles-and-trust.md#connected-battle-give-admission) and
+[session owner](application/session-and-programs.md#battle-give-selection-and-completion) define
+the finite catalog and revalidation. `ConnectedBattleGiveTests` and `BattleGivePersistenceTests`
+cover changed live states, equipped full exchange, subsequent Equip, v2 record/codec restore,
+actual attack/victory, field custody and reusable field save. Codec round-trip is in memory, not disk I/O.
+The [native recipe](development-and-verification.md#connected-battle-give-observation) observes real
+Map57 entry and Battle01 transfer/exchange, English and Chinese remapped input with the existing
+selected name catalog. This does not claim seven private trajectories, later campaign admission,
+new item effects, natural original reach/hardware timing, clean warning-free shutdown or human visual
+acceptance. Rings/curses/broken/unsupported words and actor states remain explicitly refused.
 
 ## Authored AURA agreement
 

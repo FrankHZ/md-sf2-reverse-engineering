@@ -71,11 +71,11 @@ cover the enemy target card/field names, committed item-use message and HEAL act
 No selected body/name fallback remains unexplained at these observed seams. Actual longest/wide
 panels fit at1080p with their real reading geometry; this does not establish human typography taste.
 
-Give/Discard remain **standalone authored capabilities**: their actual production transactions and
-Chinese result templates were observed with committed IDs. Their project-authored item/actor labels
-remain canonical and are explicitly outside the selected private name table. Private/connected
-Give/Discard imports remain Unsupported; no private Give/Discard natural chain is claimed or enabled.
-The [capability owner](../capability-status.md#authored-battle-give-and-exchange) retains that boundary.
+Standalone authored Give/Discard observations retain canonical project-authored labels outside the
+selected private name table. The [connected Give extension](../capability-status.md#connected-battle-give-and-exchange)
+now reuses committed item/member IDs and the existing Chinese templates/catalog in Battles01–07.
+Actual Map57→Battle01 input observes normal receipt, equipped full-pack exchange and next control;
+this is a controlled connected seam, not natural original reach. Connected battle Discard remains Unsupported.
 
 Controlled field placements and an explicitly initialized private battle input prove the actual
 consumers, not preceding natural reach. The probe-only startup uses production New Game admission,
@@ -155,7 +155,7 @@ enumerated by this design; they are explicitly outside the claim of natural exec
 | --- | --- |
 | Historical admitted seed | All 209 historical world IDs are in the current 806 union:170 opening program IDs including defeat363, plus39 Search rows. Six `entry.text` aliases216–221 remain separately bound to the entry profile. The historical artifacts remain unchanged. |
 | Additional admitted world rows | The additional 597 world rows comprise 588 program IDs and nine Search descriptions4065–4073. The current candidate admits all 806 under the existing token grammar; representative actual caller projections are recorded above. Admission does not prove every conditional path naturally executes. |
-| Existing semantic UI; no per-source-row overlay | Church menus/results, Search item/gold/full-pack result, Shop buy/sell, Party/Prepare, entry/slots/settings, battle command/target/equipment/status, Give/Discard/paid retreat, story choices/return notices and semantic battle feedback reuse typed values and public PO keys. Selected source-name identities now resolve through the 51-key table. Give/Discard remain authored-only; their authored labels are excluded from that private name table, and private/connected imports remain Unsupported. |
+| Existing semantic UI; no per-source-row overlay | Church menus/results, Search item/gold/full-pack result, Shop buy/sell, Party/Prepare, entry/slots/settings, battle command/target/equipment/status, Give/Discard/paid retreat, story choices/return notices and semantic battle feedback reuse typed values and public PO keys. Selected source-name identities resolve through the 51-key table. Connected Give now consumes those IDs; authored Give/Discard labels stay canonical and connected battle Discard remains Unsupported. |
 | Implemented operand/display projection | Join446 captures member/custom-name and class identities. Semantic views resolve selected item/enemy/class identities at the named seams while retaining canonical fallback and explicit custom values. These use the 51-key table below without new native tokens; unselected or identity-free authored labels retain their declared values. |
 | Not a Chinese admission claim | `W1TextWait`'s legacy English path, authored `BattleStoryView` bodies and raw unmigrated battle fallback remain explicit. In this selected program inventory only 363 lacks `explicitWindows`; it uses the connected `DialogueWait` path. The ordinary configured field context selects `FieldTextWait` for the other 757 program IDs. Alternative authored/legacy contexts do not become Chinese merely because an ID is in the catalog. |
 | Outside the product | Unselected setup variants, post-frontier bodies, later Map14/Map73 events, Battle08+, future services and the rest of the4,267-row corpus. The nine corpus non-language rows are not selected world messages. Image lettering and Chinese input/IME are separate capabilities. |
