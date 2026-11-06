@@ -23,13 +23,15 @@ Use the owner that matches the responsibility being changed:
 | Domain rules, selected algorithms, deterministic state transitions and author workflow | [Gameplay rules](domain/gameplay-rules.md) |
 | Proposed special-mechanic gaps, finite extensions and staged implementation recommendation | [Special mechanics design](domain/special-mechanics-design.md) |
 | Application session authority, program execution, waits, map and outcome continuation | [Session and programs](application/session-and-programs.md) |
-| Proposed opening New Game, savepoint persistence, recovery and feature closure | [Opening session lifecycle](application/opening-session-lifecycle.md) |
+| Opening New Game, shared field savepoints, recovery and feature closure | [Opening session lifecycle](application/opening-session-lifecycle.md) |
+| Battle Save/Continue eligibility, continuation values, versioned admission and ordinary host recovery | [Battle Save and Continue](application/battle-save-and-continue.md) |
 | Proposed game localization, semantic display operands and language/save separation | [Game localization design](application/localization-design.md) |
 | Content profiles, admission, explicit starts and private provenance | [Profiles and trust](content/profiles-and-trust.md) |
 | Local source/master/runtime assets and offline preparation | [Presentation assets](content/presentation-assets.md) |
 | Godot entry, semantic input, field projection and UI boundaries | [Presentation](godot/presentation.md) |
 | Audio cue delivery and source limits | [Audio](godot/audio.md) |
 | Battle scene, movement and death presentation | [Battle scenes](godot/battle-scenes.md) |
+| Battle need/decision, player flow, per-layer consumers, connected admission, acceptance and gaps | [Battle feature trace](godot/battle-interaction-baseline.md) |
 | Environment, checks and observation selection | [Development and verification](development-and-verification.md) |
 | Structural review, concrete defects and bounded engineering follow-ups | [Structure and quality review](evidence/structure-and-quality-review.md) |
 | Runtime, SF2 rule and story-content boundaries; focused correction proposals | [Engine and script boundary review](evidence/engine-script-boundary-review.md) |

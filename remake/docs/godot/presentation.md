@@ -15,9 +15,11 @@ modernization choices, real service/disclosure limits, menu/return sketches and 
 Near-town remote services and a read-only overview are recommendations awaiting product selection,
 not implemented capabilities or changes to the current agreements below.
 
-The [battle interaction baseline](battle-interaction-baseline.md) compares original capabilities
-with current consumer gaps and owns the proposed battlefield inspection mode; it does not establish
-an implemented inspection capability.
+The [battle interaction baseline](battle-interaction-baseline.md) is the maintained battle feature
+trace: source/accepted need → player decision and return → layer responsibility and Content admission
+→ ordinary connected entry → acceptance and remaining Issue. It owns the accepted, unimplemented
+inspection contract (#1633) and distinguishes delivered battle Save/Continue from authored-only
+transactions and #1616's visual proposal. Update that entry with its detailed owner when a feature merges.
 
 ## Entry confirmation observation
 
@@ -97,7 +99,7 @@ engineering acceptance; final raster, physical device access and human aesthetic
 | Group / action | Availability and return |
 | --- | --- |
 | Resume Game (initial selection) | Always safe; closes Menu and resumes only when no other host modal covers play. |
-| Journey / Save | Exactly the current `QuerySave` offer; unsupported controlled/authored starts and busy/non-savepoint states show a reason. The existing field Save shortcut and Church save owner remain. Save confirmation Back returns slots; slots Back returns Menu. |
+| Journey / Save | Field uses `QuerySave`; admitted battle uses `QueryBattleSave` at settled player Movement/origin. Unsupported profiles, busy states and nonzero previews show their real reason without cancellation or queued save. The field shortcut and Church caller remain. Save confirmation Back returns slots; slots Back returns Menu. [Battle contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c). |
 | Journey / Settings | Existing `CanOpenSettings`: title/Witch or settled exploration outside other menus. No battle/story access is added. Settings/help retain draft, Apply and Back ownership; closing Settings returns Menu. |
 | Session / New Game | Existing settled-field `CanWaitAtInput` and Party exclusion, followed by the existing replacement entry with Cancel selected, slot/name and final explicit Start/save confirmation. Cancel unwinds those existing pages to Menu. |
 | Session / Quit | Existing clean/dirty confirmation, Cancel initially selected; Cancel returns Menu. Window recovery retains its own Quit confirmation and returns to recovery first. |
@@ -1799,13 +1801,19 @@ coordinates. A translucent navy scrim preserves the paused field/battle behind i
 to use its Witch-safe right window and existing canvas scaling. Both use the accepted shared blue/gold
 button normal/hover/pressed/disabled/selection treatment and compact mapped hints. Gameplay adds a
 short state heading; entry keeps its accepted vertical arrangement. Slot rows wrap the complete
-character name, known savepoint destination and UTC save timestamp. Only the four already supported
-recipe identities receive readable destination labels; unknown identities say location unavailable.
-No current NPC/position, elapsed playtime or original-game state is inferred from a slot.
+character name, known destination and UTC save timestamp. Field records retain their finite recipe
+labels; battle-v2 records use the admitted encounter/round/actor. The displayed time is the saved UTC
+timestamp, not inferred elapsed playtime. Unknown
+identities say location unavailable; no current NPC/position or original-game state is inferred.
+The [implemented battle host contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c)
+extends this shared window with Save and return / Save and Quit and fresh-process battle Continue;
+its [native verification](../verification/battle-save.md) owns that bounded acceptance.
 
-State sequence: Save explains the safe return destination and ambient reset, then offers both slots,
-Cancel and Quit. Slot selection opens a cancel-first save/overwrite confirmation, with backup wording
-only for replacement. Success offers Return to game. Unsupported/busy/configuration/storage errors
+State sequence: field Save explains its safe return destination and ambient reset; battle Save
+explains continuation at the same actor's settled turn. The shared flow then offers both slots
+and Cancel. Slot selection opens a cancel-first save/overwrite confirmation with Save and return /
+Save and Quit, and backup wording only for replacement. Success offers Return to game.
+Unsupported/busy/configuration/storage errors
 have a readable reason, explicit file-retention wording, Back and Quit; the existing diagnostic code
 is secondary. Uncertain publication remains distinct and directs the player to check Continue before
 retrying. Missing/damaged/incompatible slots and available backups have readable summaries; explicit

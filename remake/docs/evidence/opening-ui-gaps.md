@@ -8,6 +8,12 @@ whole-opening human/aesthetic approval. A–E now have accepted bounded deliveri
 walking/Talk, story presentation, menu mouse input, battle status/messages/return and read-only Party
 Status. Their engineering acceptance does not establish full-game or all-device experience.
 
+The [battle feature trace](../godot/battle-interaction-baseline.md) is the maintained battle-wide
+entry from original/accepted need through player flow, layer responsibility, actual connected
+admission and acceptance/gaps. It includes delivered battle Save/Continue and distinguishes
+unimplemented inspection from standalone authored transactions. This opening assessment retains
+its narrower historical observation and human-experience boundaries.
+
 ## Source dialogue reading space (#1583)
 
 **Implemented; independent review and human acceptance remain separate.** The
@@ -227,6 +233,15 @@ media, natural reach and SRAM parity. This bounded change does not close #438 or
 | D5 · Skip eligible tower before/load/start | **Integrated; experience pending.** **Accepted, bounded:** mapped Cancel (default Escape/X) requests Skip battle intro; Confirm/Enter remains reveal/advance. Skip preserves script work, mounts real resources and clears before ordinary battle advancement. | This is not a remaining missing feature or a request for another skip ticket. Choice/failure stops it; focus loss disarms it and fresh input is required. **Unknown:** physical focus-loss/short-tail experience beyond recorded observations. | **Confirmed accepted implementation/observation:** [skip owner](../godot/battle-entry-skip.md#current-acceptance-boundary), [independent acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1386#issuecomment-6462571007), merged [#1387](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1387). Six/eight ObjectDB exit warnings remain historical evidence; the [audio-lifetime finding](../verification/host.md#audio-resource-lifetime-observation) explains a bounded teardown-retention cause without individually proving these older instances. | **P2, preserve accepted behavior.** C may reuse wording/controls without broadening eligibility. Existing [#1386](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1386); no duplicate implementation slice. |
 
 ## Battle and return matrix
+
+These rows retain their named opening acceptance scopes. For current battle access and gaps, follow
+the [player-flow trace](../godot/battle-interaction-baseline.md#one-player-decision-from-entry-through-return),
+not a second battle inventory here. In particular, B2's auxiliary-menu preservation is standalone
+authored evidence: connected Give/Drop have no Content admission and private Equip disallows changes.
+Field Party/Prepare and Search do not establish their battle equivalents. B9's field save/restart
+evidence remains valid; the separate [battle Save/Continue observation](../verification/battle-save.md)
+now establishes settled-turn saving and fresh-process continuation at its controlled/headless boundary.
+Neither delivery implies natural seven-battle replay, physical-device approval or #1616 visual acceptance.
 
 | ID / flow and trigger | Existing behavior and delivery state | Gap and user impact | Evidence and limits | Priority / dependencies / suggested slice and Issue |
 | --- | --- | --- | --- | --- |
