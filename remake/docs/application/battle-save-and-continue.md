@@ -268,8 +268,9 @@ Unknown/outside the claim. A required failure case not reached is recorded as un
 
 Recommended serial slices follow; main-gate creates implementation Issues only after design review.
 Every slice starts from accepted main. Do not dispatch overlapping writers in the shared session,
-store, entry or battle input files. The movement work in #1607 owns its code and `presentation.md`;
-this design consumes the final accepted delivery semantics, not that topic's unmerged implementation.
+store, entry or battle input files. Consume the accepted movement/camera and handoff boundary in
+[#1607's presentation owner](../godot/presentation.md#ordinary-movement-camera-continuity-1607).
+That accepted change does not alter persistence semantics; no in-flight #1607 dependency remains.
 Inspection implementation [#1633](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1633)
 consumes the accepted #1622 baseline and depends on #1615/#1617. Its options surface can later host
 Quit, but inspection is not a persistence dependency: host Menu can expose the same safe Save/Save
@@ -279,7 +280,7 @@ and Quit first. No unrelated shared navigation expansion is needed.
 | --- | --- | --- |
 | A: Domain/Application continuation | Existing `Domain/Battles/State`, narrow restore admission beside it, `Application/Runtime/Persistence`, `GameSession` facade and actual engine behavior tests. Add typed battle progress, stable eligibility and detached reconstruction with reader-backed party/route/AI/queue/visual invariants. Reuse pure movement selection. No disk/UI availability yet. Stop at equivalent next actions/RNG and connected return behavior on small engine cases. | 2–4 engineer-days |
 | B: Content and shared store | `Content/Persistence/OpeningSaveJson` dispatch plus a bounded battle codec, existing Content compatibility admission and `game/src/Persistence/LocalSaveStore`. Preserve v1 and generalize the existing store's record boundary. Directly validate strict/mixed-version/corrupt/interrupted files. No ordinary Save option until host integration passes. Depends on accepted A. | 1–2 days |
-| C: Host and integrated acceptance | `game/src/Entry/OpeningPersistenceHost`, existing entry loading/mount/audio and system/battle-menu consumers, localized save labels; narrow Application music-observation hook if needed. Serialize ownership with #1607 and inspection/input work. Native safe/busy UX, fresh-process Continue, outcome suffixes, disposable failure checks; update only affected capability/evidence owners when implemented. Depends on accepted A/B. | 2–3 days |
+| C: Host and integrated acceptance | `game/src/Entry/OpeningPersistenceHost`, existing entry loading/mount/audio and system/battle-menu consumers, localized save labels; narrow Application music-observation hook if needed. Preserve the accepted movement/handoff boundary and serialize ownership with active inspection/input work. Native safe/busy UX, fresh-process Continue, outcome suffixes, disposable failure checks; update only affected capability/evidence owners when implemented. Depends on accepted A/B. | 2–3 days |
 
 The inferred total is **5–9 engineer-days**, including focused verification and independent review;
 this is an estimate, not an approved spending cap or a reason to omit a correctness boundary. Highest
