@@ -180,6 +180,12 @@ Unknown. The older completed private comparison failures remain with their evide
 
 ## Early physical classes and ranged weapons
 
+The [weapon-composition correction](godot/battle-scenes.md#weapon-frame-composition-1620) binds
+admitted layer1 behind the body and layer2 in front without changing animation selectors, flips,
+offsets or gameplay. Its finite original-operand audit and native consumer observation are separate
+from natural original reach and human visual acceptance; neither a full-weapon survey nor a new
+asset export is implied.
+
 **Implemented, bounded:** early KNTE/MAGE/ACHR/THIF definitions extend the existing SDMN/WARR/PRST
 physical subset. Ordinary 1-1, Short Spear1-2 and Wooden Arrow2-2 use live equipment for player
 and enemy legality, movement stations, targets, actions and counter range. THIF retains its source

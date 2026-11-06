@@ -1785,6 +1785,67 @@ failures and process completion live in the Issue handoff/PR. No new original H2
 gate is selected for this engine-only addition; original timing, natural reach and human aesthetic
 acceptance remain **Unknown**.
 
+## Weapon composition observation
+
+`res://probes/engine_weapon_layer_observation.gd` reuses the existing connected-equipment observer's
+ordinary mapped input, controlled Map57 field admission and finite legal-stop query. It observes
+the running `BattleSceneView` resource, body/weapon frame, flip, position, Z and texture rectangle;
+it never sets gameplay state or supplies a completion. See the
+[source and operand owner](godot/battle-scenes.md#weapon-frame-composition-1620).
+
+Reuse the selected readonly opening world, Battle01 scene, assets and static inputs from the
+[connected equipment recipe](#connected-battle-equipment-observation). No world copy, source asset
+export or new installation is needed. Use the existing controlled Map57 approach (player entity0,
+position8,14, facing3, speed32; flags0,1,2,32,33,34,66,80,401,451) in a worktree-local start document,
+with its existing `StartPreVoyageLocalizationObservation` envelope. Configure a fresh disposable
+save namespace and instant Chinese settings through the ordinary `--input-settings` option.
+
+After loading the owning environment and building the actual Debug adapter:
+
+```powershell
+$env:SF2_INSPECTION_ROUTE = 'keyboard'
+$env:SF2_INSPECTION_START = $selectedMap57Approach
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $observationOutput 'observation.json'
+$env:SF2_WEAPON_SWORD = '0'
+$env:SF2_WEAPON_FRONT_VARIATION = '0'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 60 --resolution 1920x1080 --path remake/game --script res://probes/engine_weapon_layer_observation.gd -- --input-settings $instantChineseSettings
+```
+
+The default advances only Chester and delivers one real physical attack, target damage and later
+player Movement. Set `SF2_WEAPON_SWORD=1` for the adjacent Wooden Sword: Bowie uses his carried Herb
+on himself through the real item list. This reaches sequence0, including hold15 and both-flip weapon50,
+without requiring an extra combat route. Item consumption and later control remain required.
+Both cases assert layer1→Z1 under body Z2, exact selected offsets and the unchanged weapon footprint.
+Scene cards/messages remain on battle UI CanvasLayer1, above the world canvas regardless of sprite Z.
+
+For the separately labelled **authored valid-content variation**, read the selected Battle01 scene
+into a fresh ignored JSON, change only ally sprite0/item71 `sequences.item.frames[-1].weapon.layer`
+from1 to2, and select that file through `SF2_PRIVATE_BATTLE_SCENE_CONTENT`. Set both switches to1.
+The actual item scene must go behind→front→behind; all other operands remain unchanged. This small
+scene-document variation is not a replacement selected world, original pose, private-library update
+or source evidence. Do not modify the canonical input. The selected natural early combinations have
+no layer2 pose, so no original-runtime front-layer observation is claimed.
+
+**Confirmed, bounded native:** knight damage/control, the sword item gesture and the layer2 variation
+pass with actual input and projections. The source sword and variation preserve the same final
+gameplay/RNG. Only unique semantic frame combinations and terminal action state are retained;
+reports are below60 KiB and each run is below30 seconds (deadline75 seconds, planned report cap1 MiB).
+No screenshots, full-frame export, new comparator, original emulator run or full-weapon acquisition.
+The adapter build passes. No Domain/Application/Content behavior changed, so no new engine unit test
+or tests of this probe are added; run the clean committed dependency plan for remaining selections.
+
+Completed discovery failures remain recorded: the old layer mapping failed on the actual knight
+idle; its early probe teardown then read a freed host. A two-actor march reached battle defeat and
+the first monitor read the stale battle view during exploration return. A single-actor sword attack
+also reached defeat; the bounded adjacent check now uses the ordinary item gesture. Its initial input
+omitted item-list selection and failed before any gesture; the corrected list/slot input passes.
+An initial static script expected upstream animation binaries in Git; pinned source declares their
+names while the private ROM supplies bytes. The corrected check compares the four ROM sequences
+directly to the selected content (128 bytes), preserving that provenance distinction.
+These are completed failures, not interrupted suites or passed routes. Existing ObjectDB exit
+warnings remain retained and **Unknown**; passing final runs have no native ERROR. Original timing,
+the exact frame in the user's private image, later weapons and human visual approval remain Unknown.
+
 ## Battle Speed and message observation
 
 The finite actual-host [probe](../game/probes/engine_battle_speed_observation.gd) extends the existing
