@@ -91,12 +91,20 @@ internal sealed partial class BattleCommandMenu : Control
 
     internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input)
     {
-        _current = current; _choices = choices; _failure = failure; _input = input;
         var selection = current.Selection;
+        bool enteringActions = selection?.Stage == BattleSelectionStage.ActionChoice &&
+            (_actor != selection.Actor || _current?.SessionId != current.SessionId ||
+                _current?.Selection?.Stage == BattleSelectionStage.Movement);
+        _current = current; _choices = choices; _failure = failure; _input = input;
         if (_actor != selection?.Actor || selection?.Stage == BattleSelectionStage.Movement || selection is null)
         {
             _page = Page.Main; _command = _row = 0; TargetCandidate = null;
         }
+        // Fresh entry consumes the live offer at the confirmed stop. Child Back keeps the chosen focus.
+        if (enteringActions)
+            _command = choices.Failure is null && choices.Actions.Any(option =>
+                option.Action.Kind == BattleActionKind.Physical && option.Enabled &&
+                option.Targets.Any(target => target.Enabled)) ? 0 : 3;
         _actor = selection?.Actor;
         Visible = current.BattleScene is null && current.BattleRetreat is null && current.BattleGive is null &&
             current.BattleDiscard is null && current.BattleRound is null && selection?.Stage is
