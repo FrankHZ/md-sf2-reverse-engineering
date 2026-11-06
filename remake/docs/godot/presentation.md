@@ -152,6 +152,11 @@ Existing ObjectDB shutdown warnings remain **Unknown**; this slice does not clai
 
 ## Display layer boundaries (#1517)
 
+The [display composition audit and contract](display-composition-contract.md) maps viewport,
+field-priority and close-up responsibilities, current consumers, evidence limits and bounded repair
+candidates for #1621. It retains the implemented canvas agreement below; its proposed geometry
+refresh and review constraints are not implemented changes or visual acceptance.
+
 **Standard rigor:** make the existing battle dialogue and status readable over world sprites, then
 bound the current field, battle and host overlay consumers. This slice owns composition and
 visibility lifetime only. Menu redesign (#1518), Church behavior (#1519), gameplay, save data,
