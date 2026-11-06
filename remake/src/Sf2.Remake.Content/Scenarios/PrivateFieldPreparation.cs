@@ -8,6 +8,11 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class PrivateFieldPreparation
 {
+    // Product binding only. Reuse admitted field carry identities, not their Use/Drop capabilities.
+    // BattleGive revalidates both live four-slot loadouts and ordinary equipped weapons.
+    internal static BattleDefinition Give(BattleDefinition battle, FieldPreparationDefinition preparation) =>
+        battle.WithGive(new(preparation.Items.Values.Select(item => KeyValuePair.Create(item.ItemId, item.Name))));
+
     internal static BattleDefinition Equipment(BattleDefinition battle, PrivateBattleDefinitions source, bool allowBattleChanges = false)
     {
         var weapons = Weapons(source);

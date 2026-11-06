@@ -461,7 +461,8 @@ existing numerical equipment accessor. Changed carried loadouts therefore derive
 attained base stats plus the equipped weapon. Field commands have their own explicit admission below;
 product Battles01–07 explicitly admit the existing free weapon/Unarmed commands under the
 [connected equipment boundary](../content/profiles-and-trust.md#connected-battle-equipment-admission).
-Unsupported weapon effects still reject; battle Give/Drop remain unavailable.
+Unsupported weapon effects still reject. Product battle Give has its
+[separate admission](../content/profiles-and-trust.md#connected-battle-give-admission); battle Drop remains unavailable.
 
 Same-context unknown music history rejects capture. The native audio owner can supply its actual
 bounded cue/history through `ObserveFieldMusic`, a session command equivalent to other host
@@ -519,7 +520,8 @@ adjustment and equal-slot unequip branch. Other words, spells, attained bases, m
 receipts/Deals and resources survive. Drop rejects unsellable content; rare items require known
 custody and add one saturating Deals entry. Item/class metadata must be admitted before mutation;
 these field commands do not themselves enable battle transactions. Product battle Equip has the
-separate admission linked above; connected battle Give/Drop remain unavailable.
+separate admission linked above; connected battle Give has its
+[own product binding](../content/profiles-and-trust.md#connected-battle-give-admission), and battle Drop remains unavailable.
 
 **Confirmed static source policy:** SF2DISASM commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`,

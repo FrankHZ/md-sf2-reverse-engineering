@@ -103,7 +103,7 @@ Existing supported connected outcome and growth admission also preserve attack d
 `BattleDefinition.WithOutcome`/`WithDeployments` own replacement copies, including the opening
 loadout binder, so a new capability does not default away. The connected behavior test combines
 learned BLAZE1, real damage/death/drop, growth, outcome return and walking re-entry. Existing
-connected Give/Discard/poison/equipment restrictions remain in force. Authored new spell-learning
+connected capability restrictions remain in force except for the explicit product Give/equipment bindings below. Authored new spell-learning
 schedules remain unsupported; the existing admitted source growth implementation owns learning.
 The private test uses controlled learned priest/mage states and pinned exports; it neither imports
 Kazin's story nor proves a natural cast. See [capabilities](../capability-status.md#player-blaze1-2-and-blast1).
@@ -201,7 +201,8 @@ not an original starting-state or private fidelity claim. See the
 ## Authored battle Give admission
 
 Standalone format7 opts in with top-level `battleGive: true`; omission preserves the previous
-profile. False, connected format8 and private import do not enable Give. The finite transfer
+profile. False and connected format8 do not enable this authored opt-in. Private product Give has
+the separate explicit opening binding below. The finite transfer
 catalog comes from existing validated `weapons`, healing `items` and retreat `items`, independently
 of use/equip eligibility. Unknown/drop-only identities, broken words and equipped nonweapons fail
 closed. Weapon metadata remains uncursed and ATT-only; names/arena values are authored.
@@ -1042,7 +1043,7 @@ attained values, loadouts, flags, anchor and music resources before publishing a
 restore definitions. Controlled/authored profiles acquire no capability implicitly. Class masks and
 simple adjacent ATT-only weapons reuse #1421's trusted numerical bindings. Give/Drop names and
 custody properties come from selected source item records; unadmitted equipped/broken weapon
-effects reject. No battle Give/Drop profile is relaxed. Product battle equipment has separate admission below.
+effects reject. Field preparation itself does not relax battle profiles. Product battle equipment and Give have separate admission below.
 
 Opening static selection additionally retains Medical Herb0, Healing Seed1, Antidote3 and Angel Wing4 with their
 exact codes, use-spell families and no-equipment-effect definitions. This is immutable admission,
@@ -1068,10 +1069,28 @@ identities or spell/use effects are inferred from an equipment action.
 
 The default `allowBattleChanges: false` preserves the historical field-only/controlled caller;
 enemy bindings remain immutable. Domain still validates live status/control/stats and the actual
-selected slot at confirmation. No Give/Drop capability is added. Existing v2 saved words, attained
+selected slot at confirmation. Equipment alone adds no Give/Drop capability. Existing v2 saved words, attained
 base stats and custody reconstruct through these same product definitions, with no initialization
 replay. Field/earlier battle records remain compatible: this enables an already represented
 transaction and does not change their serialization, restoration or captured values.
+
+### Connected battle Give admission
+
+`OpeningLoadoutBindings` explicitly calls `PrivateFieldPreparation.Give` after its live equipment
+binding for product New Game and Continue. It reuses `FieldPreparationDefinition.Items` from the
+same selected source: ordinary admitted weapons, exact consumables and Mithril. It transfers identity
+and canonical display name only; field Use/Drop effects, rarity and unsellable properties are not
+new battle capabilities. No export, item grant, save revision, source mutation or global reader guard
+change is required. `BattleGiveReader` continues to reject the connected authored opt-in, and
+controlled/private battle readers without this product binding still have no Give definition.
+
+`BattleGive` checks both live four-word loadouts before offering/confirming. Unsupported identities,
+broken words, equipped nonweapons, cursed/ring/other unsupported equipment, invalid current ATT and
+unsupported actors reject without mutation. Source class masks govern later Equip, not receipt.
+Existing v2 restoration consumes the same definitions/current words; no new persistence authority
+is added. Battle Drop remains unavailable. See the
+[agreement and source](../domain/gameplay-rules.md#connected-battle-give-agreement) and
+[native observation](../development-and-verification.md#connected-battle-give-observation).
 
 
 ### Opening Search admission

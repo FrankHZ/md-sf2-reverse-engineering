@@ -886,10 +886,17 @@ Connected Battles01–07 use the same localized equipment HUD and installed Equi
 directions select eligible carried slots/Unarmed, Confirm commits and Cancel returns to the same
 action menu/preview. Authority and free-return semantics remain in Application. The
 [connected admission](../content/profiles-and-trust.md#connected-battle-equipment-admission) excludes
-unsupported gear and does not enable battle Give/Drop. The
+unsupported gear and alone does not enable battle Give/Drop. The
 [native observation](../development-and-verification.md#connected-battle-equipment-observation)
 checks actual English/Chinese projection and mapped input, with no new presenter state or visual
 fidelity claim.
+
+The separate [connected Give binding](../content/profiles-and-trust.md#connected-battle-give-admission)
+uses the existing advertised G/installed mapping and localized slot/recipient/return-slot/result
+consumer. Its [native observation](../development-and-verification.md#connected-battle-give-observation)
+checks English and Chinese remapped input, committed selected item/member names, free cancellation,
+equipped ordinary/full transfer and exactly one Stay suffix. The presenter keeps no inventory authority.
+Connected battle Drop remains unavailable.
 
 The [M2e consumer agreement](../application/localization-design.md#implemented-m2e-battle-transactions-and-retreat-boundary)
 owns English/zh-CN Give/exchange and Discard current item/recipient/confirmation/results, protected/
@@ -1793,9 +1800,11 @@ Map57 admission establish this consumer boundary, not natural original reach or 
 **Standard rigor:** the accepted [minimum contract](battle-interaction-baseline.md#minimum-implementation-contract-proposed-for-review)
 owns scope and caller returns. This implementation connects original-style free inspection to the
 common battle host, including admitted connected Battles01–07. It does not admit a later encounter,
-Speed, empty-ground Quit, connected Equip/Give/Drop, a preview-preserving shortcut, action
+Speed, empty-ground Quit, a preview-preserving shortcut, action
 prediction or a visual redesign. The empty-ground options now offer Map and the
 [Member extension](#battle-member-roster-and-read-only-details-1645).
+Connected Equip/Give have separate product admissions in the [feature trace](battle-interaction-baseline.md);
+connected Drop remains separate.
 
 `GameSession.QueryBattleInspection` reads the current settled player Movement boundary. Optional
 session/revision and requested-unit identity reject stale or undisclosed requests explicitly.
@@ -1911,7 +1920,8 @@ sheet → same selected roster row → same Options choice → cursor → the sa
 It reuses the inspection session/revision/actor lifecycle, mapped input/release barriers and
 `PartyDetailsPanel`; no transaction, new battle authority or persistence format is introduced.
 Scope is the current connected private Battles01–07 admission, with actual connected input observation
-on Battle01. Later campaigns, Speed/Quit and connected Equip/Give/Drop remain separate.
+on Battle01. Later campaigns, Speed/Quit and connected Drop remain separate; connected Equip/Give
+have their own [product admissions](battle-interaction-baseline.md).
 
 **Confirmed static disclosure:** pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, S2 `BattlefieldMenu` calls `UpdateForce`, copies

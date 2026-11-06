@@ -382,8 +382,11 @@ entry once. Stale/duplicate waits reject; a later suffix failure preserves the p
 and stops that continuation. Ordinary subsequent rounds retain their own RNG behavior.
 
 The [Give owner](../domain/gameplay-rules.md#authored-battle-give-and-exchange) owns source order,
-admission and limits. This is an authored standalone interaction; no original result dialogue,
-hardware timing, field/service inventory or private persistence claim is made.
+admission and limits. The [connected extension](../domain/gameplay-rules.md#connected-battle-give-agreement)
+uses this same continuation and one loadout authority under explicit product admission. Save rejects
+all selection/result waits; settled next-player Movement captures both changed loadouts through the
+existing v2 record. Field return consumes those current values. Result dialogue is authored; original
+dialogue/timing and natural reach are not claimed.
 
 ## Battle equipment selection
 

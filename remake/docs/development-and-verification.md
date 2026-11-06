@@ -60,10 +60,10 @@ panel geometry/ReadMore rather than repeating offline font measurements. Compare
 canonical session boundaries across language Apply and verify disposable save bytes remain unchanged.
 Use a new namespace under the configured external validation root; existing user saves/backups are excluded.
 
-Give/Discard checks use their **existing standalone authored production transactions** and Chinese
-result templates. Their project-authored labels remain canonical without pinned source-name identity;
-classify that exclusion explicitly. Private/connected Give/Discard imports remain Unsupported, so these
-checks establish neither a private transaction path nor a Chinese natural chain.
+Standalone authored Give/Discard checks retain canonical project-authored labels without pinned
+source-name identity. The [connected Give observation](#connected-battle-give-observation) now uses
+the same production transaction/templates with selected Chinese member/item names. Connected battle
+Discard remains Unsupported; neither route establishes natural original reach.
 
 The finite candidate is under128KiB; one existing118MB world read per admission/derivation avoids package
 copies. Keep supporting reports/scripts under32MiB, serial native cases within60s, and allow separately
@@ -838,6 +838,50 @@ command events (target <2 MiB and <180 seconds); no asset acquisition/network/na
 Transfer work is O(4); target queries visit at most the admitted roster and existing movement grid.
 Retain both failed and corrected observations. Modern authored delivery is not original natural
 reach or hardware timing; #1047 Unknowns and #638 pause remain unchanged.
+
+## Connected battle Give observation
+
+The [Standard implementation/High consistency agreement](domain/gameplay-rules.md#connected-battle-give-agreement)
+owns the finite Battles01–07 product admission and unchanged standalone/Drop restrictions.
+`ConnectedBattleGiveTests` and `BattleGivePersistenceTests` cover ordinary/full equipped transfers,
+current ATT/range, invalid/cancel/stale/no-target/refused-item behavior, exactly-once Stay completion,
+later Equip, v2 settled-Movement record restore, actual attack/victory and field custody/save.
+The v2 record codec runs in memory; these tests do not claim physical slot-store I/O.
+
+Load the owning ignored environment in the launching process. Run affected engine behavior and
+`uv run sf2 verify adapter`, then build the existing Debug adapter for native use. Reuse the current
+Godot installation/project; startup is necessary only when no owned instance exists or a concrete
+binary/import issue requires it. Use the already accepted read-only world and actual controlled
+Map57 approach, not the unaccepted direct-battle helper. Select the existing reviewed world catalog
+through `SF2_DISPLAY_CATALOG` for Chinese names, and existing input settings for the remapped case.
+No world copy, export, reference comparison or seven-battle replay is needed.
+
+```powershell
+$env:SF2_INSPECTION_ROUTE = 'keyboard'
+$env:SF2_INSPECTION_START = $registeredMap57Start
+$env:SF2_EQUIPMENT_ZH = '1' # '0' for English; reused observer locale switch
+$env:SF2_DISPLAY_CATALOG = $reviewedWorldCatalog
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $freshIgnoredOutput 'observation.json'
+& $env:GODOT_BIN --headless --log-file (Join-Path $freshIgnoredOutput 'godot.log') `
+  --audio-driver Dummy --max-fps 60 --resolution 1920x1080 --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_connected_give_observation.gd -- --input-settings $selectedInputSettings
+```
+
+Await the actual background process exit, keeping explicit log/cwd/TEMP and disposable save namespace
+in this worktree. The probe inherits existing movement/input/state queries, follows legal stops to
+an adjacent actual three-item recipient, fills it with one equipped transfer, then exchanges the
+next player's equipped word for that recipient's equipped word. It checks item/final/exchange Cancel,
+mapped discoverability, both live loadouts/ATT, localized result and one give/action/after-turn event
+per giver, followed by actual player Movement. It submits only installed inputs and reads state,
+projection and errors; no gameplay setters, synthetic completions or screenshots.
+
+Completed English/default and Chinese/remapped/catalog observations took about5.4s/4.3s, each under
+250KiB. Both report pass/exit0 with four retained ObjectDB exit warnings and no native ERROR. A prior
+probe parse failure and a Chinese UI-only run without the catalog remain recorded separately;
+the latter proves templates but not translated source names. One read-only world, O(4) slot work,
+O(N) existing target/state work and a bounded movement grid are sufficient; budget one serial native
+instance, <75s/<2MiB per report. No full campaign, original hardware timing/natural reach, warning
+repair or human visual acceptance is claimed. Preserve failures and inspect clean committed plan/CI.
 
 ## Battle equipment authored observation
 

@@ -37,15 +37,16 @@ internal static class OpeningLoadoutBindings
             angelWing.MinimumRange == 0 && angelWing.MaximumRange == 0 &&
             angelWing.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
             "source-field-angel-wing", "field.items");
-        var encounters = admitted.Encounters.Values.Select(encounter =>
-            PrivateFieldPreparation.Equipment(encounter, source, allowBattleChanges: true));
         var egress = PrivateFieldEgress.Bind(admitted.Exploration);
+        var preparation = PrivateFieldPreparation.Read(source, openingMaps, egress.Capability);
+        var encounters = admitted.Encounters.Values.Select(encounter => PrivateFieldPreparation.Give(
+            PrivateFieldPreparation.Equipment(encounter, source, allowBattleChanges: true), preparation));
         return new(admitted.Package, encounters, source, egress.World, admitted.BattleScenes, admitted.EncounterStarts.Values,
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
             Persistence = new Sf2OpeningRestore(),
             DefeatFallback = (new("map-0"), openingMap),
-            FieldPreparation = PrivateFieldPreparation.Read(source, openingMaps, egress.Capability),
+            FieldPreparation = preparation,
         };
     }
 

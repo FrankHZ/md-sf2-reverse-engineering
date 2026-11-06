@@ -24,9 +24,10 @@ program acknowledgements, gameplay/RNG and game-save format remain independent o
 The [pre-voyage admission owner](pre-voyage-chinese-admission.md) records exact selection, reader limits,
 ordinary mounting, persistent switching and bounded actual consumer observations through the accepted
 first stable Map14 boundary. Captured class, inventory, committed transaction and encounter-scoped
-enemy IDs remain display metadata. Give/Discard Chinese templates are observed only in their existing
-standalone authored capabilities; their declared authored names stay canonical and private/connected
-imports remain Unsupported. Static translation and finite admission do not implement later chapters. ROM patching, voice/TTS, other
+enemy IDs remain display metadata. Give/Discard authored names stay canonical; the
+[connected Give extension](../capability-status.md#connected-battle-give-and-exchange) observes actual
+Chinese templates and selected member/item names through ordinary mapped input. Connected battle
+Discard remains Unsupported. Static translation and finite admission do not implement later chapters. ROM patching, voice/TTS, other
 languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.
 
