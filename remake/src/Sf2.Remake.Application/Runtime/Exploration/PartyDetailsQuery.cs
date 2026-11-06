@@ -51,11 +51,11 @@ internal static class PartyDetailsQuery
         return new(field.Party.Gold, members.AsReadOnly());
     }
 
-    private static string? SpellName(ScenarioDefinition definition, SpellRef spell) =>
+    internal static string? SpellName(ScenarioDefinition definition, SpellRef spell) =>
         definition.PrivateDefinitions is { } source ? source.Spells.GetValueOrDefault(spell)?.DisplayName :
         $"{spell.Value.Replace('-', ' ').Replace('_', ' ').ToUpperInvariant()} {spell.Level}";
 
-    private static string? ItemName(ScenarioDefinition definition, BattleDefinition encounter, BattleActorDefinition? actor, byte item) =>
+    internal static string? ItemName(ScenarioDefinition definition, BattleDefinition encounter, BattleActorDefinition? actor, byte item) =>
         definition.PrivateDefinitions?.Items.GetValueOrDefault(item)?.DisplayName ??
         definition.FieldPreparation?.Items.GetValueOrDefault(item)?.Name ??
         actor?.Equipment?.Weapons.GetValueOrDefault(item)?.Name ??

@@ -37,6 +37,31 @@ public sealed class BattleMusicObservationTests
         Assert.Same(result.Snapshot, wrong.Snapshot);
     }
 
+    [Fact]
+    public void SaveEligibilityCanAssessLiveMusicWithoutPublishingOrWeakeningCapture()
+    {
+        var (definition, current) = BattleSaveFixture.Create();
+        var old = current.Story.Music!;
+        current = current.WithStory(current.Story.Copy(null, music: old with { HistoryBound = false }));
+        var rules = RuleCompositions.Sf2();
+        var observation = new ObserveBattleMusic(old.Map, old.Area, new(old.Cue, old.Previous));
+        Assert.Equal("save-battle-music-unknown", BattleSave.Query(definition, current, rules).Error);
+        var offer = BattleSave.Query(definition, current, rules, observation);
+        Assert.True(offer.Allowed, offer.Error);
+        Assert.Equal(current.SessionId, offer.SessionId); Assert.Equal(current.Revision, offer.Revision);
+        Assert.False(current.Story.Music!.HistoryBound);
+        Assert.Equal("save-battle-music-unknown", BattleSave.Capture(definition, current, rules, offer.SessionId, offer.Revision).Error);
+        Assert.Equal("save-battle-music-observation", BattleSave.Query(definition, current, rules,
+            observation with { Area = 999 }).Error);
+        var observed = BattleMusicObservation.Submit(definition, current, rules, observation);
+        Assert.Null(observed.Failure);
+        Assert.NotNull(BattleSave.Capture(definition, observed.Snapshot, rules,
+            observed.Snapshot.SessionId, observed.Snapshot.Revision).Data);
+        var busy = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
+            current.Active, current.Story, SessionStopReason.PresentationWait);
+        Assert.Equal("save-battle-busy", BattleSave.Query(definition, busy, rules, observation).Error);
+    }
+
     [Theory]
     [InlineData("map")]
     [InlineData("area")]

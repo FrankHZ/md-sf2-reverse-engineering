@@ -40,6 +40,20 @@ internal sealed partial class BattleMapViewport : Control
     private readonly List<BattlefieldTerrain> _terrain = [];
     private BattleMapRegion? _region;
     private int _builds;
+    private MapPosition? _inspectionFocus;
+    private BattleInspectionCursor _inspectionCursor = null!;
+    internal Rect2 CameraCells => new Rect2((WorldViewport.Origin - (_region is null ? Vector2.Zero :
+        new Vector2(_region.Origin.X, _region.Origin.Y) * 24)) / 24, Size / CellSize)
+        .Intersection(new(Vector2.Zero, _mapSize / CellSize));
+    internal void Inspect(MapPosition? position)
+    {
+        _inspectionFocus = position;
+        if (_inspectionCursor is null) return;
+        _inspectionCursor.Visible = position is not null;
+        if (position is not null) _inspectionCursor.Position = new Vector2(position.X, position.Y) * CellSize;
+        if (position is not null) _range.Hide();
+        Frame();
+    }
 
     public override void _Ready()
     {
@@ -72,6 +86,9 @@ internal sealed partial class BattleMapViewport : Control
         _board.AddChild(_range);
         _selection = new BattleSelectionView { Name = "Selection" };
         _board.AddChild(_selection);
+        _inspectionFocus = null;
+        _inspectionCursor = new BattleInspectionCursor { Name = "InspectionCursor", Size = Vector2.One * CellSize, ZIndex = 4, Visible = false };
+        _board.AddChild(_inspectionCursor);
         foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
@@ -308,8 +325,9 @@ internal sealed partial class BattleMapViewport : Control
     {
         if (_mapSize == Vector2.Zero || Size.X <= 0 || Size.Y <= 0) return;
         Vector2 offset = _region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24;
-        var focus = _focus.Count == 0 ? _mapSize / (2 * WorldViewportLayout.PixelScale)
-            : new Vector2(_focus[^1].X + 0.5f, _focus[^1].Y + 0.5f) * 24;
+        var positions = _inspectionFocus is { } inspecting ? new[] { inspecting } : _focus;
+        var focus = positions.Count == 0 ? _mapSize / (2 * WorldViewportLayout.PixelScale)
+            : new Vector2(positions[^1].X + 0.5f, positions[^1].Y + 0.5f) * 24;
         WorldViewport.Focus(_map, new(offset, _mapSize / WorldViewportLayout.PixelScale), offset + focus, Size, _storyCamera);
         ApplyCamera(offset);
     }
@@ -331,7 +349,7 @@ internal sealed partial class BattleMapViewport : Control
         ApplyCamera(_region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24);
     }
 
-    internal IReadOnlyList<MapPosition> CameraFocus => _focus;
+    internal IReadOnlyList<MapPosition> CameraFocus => _inspectionFocus is { } position ? [position] : _focus;
     internal int BoardChildren => _board.GetChildCount();
     public string ReadTerrainJson() => System.Text.Json.JsonSerializer.Serialize(new
     {
@@ -349,6 +367,7 @@ internal sealed partial class BattleMapViewport : Control
             visible = pair.Value.IsVisibleInTree(), scale = pair.Value.Scale.X,
             outputWidth = (pair.Value.Texture?.GetWidth() ?? 0) * pair.Value.Scale.X,
             outputHeight = (pair.Value.Texture?.GetHeight() ?? 0) * pair.Value.Scale.Y }),
+        inspectionCursor = new { visible = _inspectionCursor.IsVisibleInTree(), position = _inspectionFocus, rect = Rectangle(_inspectionCursor.GetGlobalRect()) },
         movementRange = _range.Observe(),
         selection = _selection.Observe(),
         previewZ = _selection.Visible ? new[] { _selection.ZIndex } : [],

@@ -1420,3 +1420,96 @@ msgstr "开场中文不可用，使用英文。"
 
 msgid "ui.settings.world-unbound"
 msgstr "开始新游戏或继续旅程时会加载世界中文文本。"
+
+msgid "battle.inspect.close"
+msgstr "{0} / {1} / {2}：关闭"
+
+msgid "battle.inspect.detail-help"
+msgstr "{0} · {1}：魔法/物品 · {2}/{3}：滚动"
+
+msgid "battle.inspect.land"
+msgstr "{0} · 地形效果 {1}%（{2},{3}）"
+
+msgid "battle.inspect.options"
+msgstr "战场选项 · 地图\n{0} / {1}：打开地图 · {2}：返回光标"
+
+msgid "battle.inspect.map-help"
+msgstr "{0}/{1}：已知单位 · {2}：返回选项"
+
+msgid "battle.inspect.cursor"
+msgstr "查看 ·（{0},{1}）· {2}"
+
+msgid "battle.inspect.cursor-help"
+msgstr "{0}：完整资料/选项 · {1}：简要状态/选项 · {2}：返回行动单位"
+
+msgid "battle.inspect.entry-help"
+msgstr "{0}：撤销移动后查看战场；菜单返回上一级"
+
+msgid "battle.inspect.empty"
+msgstr "空地"
+
+msgid "battle.inspect.legend"
+msgstr "地图 · 圆形：我方 · 菱形：敌方 · 白环：行动单位 · 方框：视野"
+
+msgid "battle.inspect.known-count"
+msgstr "已知单位 · {0}"
+
+msgid "battle.inspect.ally"
+msgstr "我方"
+
+msgid "battle.inspect.enemy"
+msgstr "敌方"
+
+msgid "battle.inspect.ally-header"
+msgstr "{0} · 等级 {1}"
+
+msgid "battle.inspect.not-applicable"
+msgstr "不适用"
+
+msgid "battle.inspect.no-status"
+msgstr "无异常状态"
+
+msgid "battle.inspect.status.curse"
+msgstr "诅咒"
+
+msgid "battle.inspect.status.poison"
+msgstr "中毒"
+
+msgid "battle.inspect.status.stun"
+msgstr "麻痹"
+
+msgid "battle.inspect.status.sleep"
+msgstr "睡眠"
+
+msgid "battle.inspect.status.silence"
+msgstr "沉默"
+
+msgid "battle.inspect.status.unavailable"
+msgstr "其他状态效果（详情不可用）"
+
+msgid "battle.inspect.terrain"
+msgstr "地形 · {0}"
+
+msgid "battle.inspect.terrain.open"
+msgstr "平地"
+
+msgid "battle.inspect.terrain.brush"
+msgstr "灌木"
+
+msgid "battle.inspect.terrain.rough"
+msgstr "崎岖地"
+
+msgid "battle.inspect.terrain.deep"
+msgstr "深地"
+
+msgid "battle.inspect.terrain.desert"
+msgstr "沙漠"
+
+msgid "battle.inspect.terrain.impassable"
+msgstr "不可通行"
+
+msgid "battle.inspect.terrain.highsky"
+msgstr "高空"
+
+msgid "battle.inspect.terrain.barrier"
+msgstr "障碍"

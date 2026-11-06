@@ -7,8 +7,18 @@ namespace Sf2.Remake.Application.Runtime.Persistence;
 
 internal static class BattleSave
 {
-    internal static BattleSaveAvailability Query(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules)
+    internal static BattleSaveAvailability Query(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules,
+        ObserveBattleMusic? observedMusic = null)
     {
+        // Menu eligibility can validate the live adapter observation without publishing it.
+        // Actual capture still requires a committed observation on the authoritative session.
+        if (observedMusic is not null)
+        {
+            var observed = BattleMusicObservation.Submit(definition, current, rules, observedMusic);
+            if (observed.Failure is { } failure) return new(current.SessionId, current.Revision, null, failure.Code);
+            var offer = Query(definition, observed.Snapshot, rules);
+            return offer with { Revision = current.Revision };
+        }
         try
         {
             var data = CaptureValues(definition, current, rules);

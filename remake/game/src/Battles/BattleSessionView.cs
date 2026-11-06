@@ -102,6 +102,7 @@ public sealed partial class BattleSessionView : Control
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; ui.AddChild(_appearance);
         _feedback = new UI.ContextHint { Name = "BattleFeedback", ZIndex = 100 }; ui.AddChild(_feedback);
         _feedback.Hide();
+        _inspection = new BattleInspectionView { Name = "Inspection" }; ui.AddChild(_inspection);
         Arrange();
     }
 
@@ -115,7 +116,7 @@ public sealed partial class BattleSessionView : Control
             $"{input.Hint(GameAction.Give)}: Give; directions select item/recipient, confirm, cancel returns\n" +
             $"{input.Hint(GameAction.Equipment)}: equipment; directions cycle, confirm equips, cancel returns\n" +
             $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
-            $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: cancel all provisional choices\n" +
+            $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: undo Movement, then inspect; menu Back returns one level\n" +
             $"{input.Hint(GameAction.Wait)}: wait at a healing message\n\nAI and rounds advance automatically.";
         _battleHelp = _help;
     }
@@ -212,7 +213,7 @@ public sealed partial class BattleSessionView : Control
     // Keep only the battlefield beneath the field-owned after/return effects.
     internal void RetireWindows()
     {
-        ClearNavigation();
+        ClearNavigation(); RetireInspection();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
         _appearance.Hide(); _give.Hide(); _discard.Hide(); _feedback.Hide();
@@ -220,6 +221,12 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
+        if (_inspectionRelease && !_input.GameplayHeld) _inspectionRelease = false;
+        if (_inspection.Active)
+        {
+            if (!_inspection.Refresh(_session)) { InspectionBarrier(); Present(); }
+            else { ServiceNavigation(); return; }
+        }
         ServiceNavigation();
         if (_startupFailure is not null || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
@@ -265,6 +272,12 @@ public sealed partial class BattleSessionView : Control
     internal void HandlePointer(InputEvent input)
     {
         ClearNavigation();
+        if (_inspection.Active || _inspectionRelease)
+        {
+            if (!_inspectionRelease && !_inputSuspended && GetWindow().HasFocus() && CanProcess() && IsVisibleInTree())
+                _inspection.HandlePointer(input);
+            return;
+        }
         if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() ||
             _session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
             _session?.Current.HasBattleControl != true || _session.Current.BattleMovement is not null)
@@ -277,6 +290,7 @@ public sealed partial class BattleSessionView : Control
         _menu.SuspendPointer(keyboard: true);
         if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
+        if (InspectionInput(action)) return;
         if (_session?.Current.BattleDiscard is not null)
         { if (_discard.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleGive is not null)
@@ -306,6 +320,7 @@ public sealed partial class BattleSessionView : Control
             Send(new SelectEquipment(options[(index + step + options.Count) % options.Count].Slot));
             return;
         }
+        if (MovementInspectionEntry(action)) return;
         if (_menu.Handle(action))
         {
             if (_session.Current.HasBattleControl || _session.Current.BattleScene is not null) Present();
@@ -364,6 +379,7 @@ public sealed partial class BattleSessionView : Control
 
     private void Send(SessionCommand command)
     {
+        if (_inspection.Active) return;
         var current = _session!.Current;
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
@@ -393,6 +409,7 @@ public sealed partial class BattleSessionView : Control
             return;
         }
         Present();
+        CompleteInspectionEntry();
     }
 
     private WaitToken? _movementSoundToken;
@@ -531,6 +548,7 @@ public sealed partial class BattleSessionView : Control
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             rules = _session?.Rules.Identity, battleChoices = choices, healingChoices = choices,
             scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(), observationSequence = current?.ObservationSequence,
+            inspection = _inspection.Observe(), inspectionRelease = _inspectionRelease, inspectionEntryPending = _inspectionAfterReturn is not null,
             menu = _menu.Observe(), movement = _map.ObserveMovement(),
             visualAliases = current?.Battle.Visuals?.Aliases.Select(p => new { actor = p.Key.Value, slot = p.Value }),
             physicalVisuals = current?.Battle.Visuals?.Visuals.Values, cameraFocus = _map.CameraFocus,
@@ -560,6 +578,7 @@ public sealed partial class BattleSessionView : Control
                 attack = a.Attack, equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
                 minimumRange = BattleEquipment.Physical(a)?.MinimumRange, maximumRange = BattleEquipment.Physical(a)?.MaximumRange }),
             spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells,
+            selection = current?.Selection,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,
             actors = current is null || _startupFailure is not null ? null : _map.ObserveActors(current.Battle.Actors),
