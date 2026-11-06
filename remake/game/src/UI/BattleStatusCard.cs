@@ -50,6 +50,16 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _mp.Present(mp, maxMp);
     }
 
+    internal void Present(Sf2.Remake.Application.Runtime.Battles.BattleInspectionUnit unit, string name)
+    {
+        _actor = unit.Actor; Show(); PresentName(name);
+        _role.Text = (unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
+            unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
+            GameText.Get("battle.inspect.enemy")) + " · " + DisplayNames.InspectionStatus(unit.Status);
+        _role.Modulate = Colors.White; Size = RequestedSize;
+        _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
+    }
+
     private void PresentName(string name)
     {
         if (_name.Text == name) return;
@@ -98,7 +108,7 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
 {
     private readonly Label _label, _value;
     private readonly BattleGaugeImage _image;
-    private int _current, _maximum;
+    private int? _current, _maximum;
     internal BattleVitalGauge(string label)
     {
         Name = label; MouseFilter = MouseFilterEnum.Ignore;
@@ -110,11 +120,11 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
         foreach (var text in new[] { _label, _value }) text.AddThemeFontSizeOverride("font_size", 22);
     }
     public override void _Ready() { AddChild(_label); AddChild(_image); AddChild(_value); }
-    internal void Present(int current, int maximum)
+    internal void Present(int? current, int? maximum)
     {
         _current = current; _maximum = maximum;
-        _value.Text = maximum == 0 ? "—" : $"{current}/{maximum}";
-        _image.Fraction = maximum == 0 ? 0 : Mathf.Clamp((float)current / maximum, 0, 1);
+        _value.Text = maximum == 0 ? "—" : $"{current?.ToString() ?? GameText.Get("party.value-unavailable")}/{maximum?.ToString() ?? GameText.Get("party.value-unavailable")}";
+        _image.Fraction = current is null || maximum is null or 0 ? 0 : Mathf.Clamp((float)current.Value / maximum.Value, 0, 1);
         _image.QueueRedraw();
     }
     internal object Observe() => new { label = _label.Text, current = _current, maximum = _maximum,

@@ -60,6 +60,9 @@ public sealed class GameSession
     public BattleChoicesSnapshot QueryBattleChoices() =>
         BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
 
+    public BattleInspectionSnapshot QueryBattleInspection(Guid? session = null, long? revision = null, ActorRef? unit = null) =>
+        BattleInspectionQuery.Query(Definition, Current, session, revision, unit);
+
     public BattleMovementRange? QueryBattleMovementRange() => BattleMovementQuery.Query(Current);
 
     public BattleSceneDefinition? ActiveBattleScenes => Current.Mode == SessionMode.Battle

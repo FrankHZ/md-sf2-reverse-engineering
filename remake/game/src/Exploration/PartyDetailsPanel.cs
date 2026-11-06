@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Battles;
@@ -19,6 +20,7 @@ internal sealed partial class PartyDetailsPanel : Panel
     private readonly VBoxContainer _spells = new(), _inventory = new();
     private readonly List<Label> _spellRows = [], _itemRows = [];
     private PartyMemberDetails? _member;
+    private string? _inspectionActor;
     internal int FocusPane { get; set; }
 
     public override void _Ready()
@@ -40,7 +42,7 @@ internal sealed partial class PartyDetailsPanel : Panel
 
     internal void Present(PartyMemberDetails? member, string name)
     {
-        _member = member; _name.Text = name;
+        _inspectionActor = null; _member = member; _name.Text = name;
         _class.Text = DisplayNames.Class(member) + (member?.Carried.Absent == true ? " · " + GameText.Get("party.absent") : member?.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
         string[] values = [Number(member?.Level), Number(member?.Attack), Number(member?.Defense), Number(member?.Agility),
             Number(member?.Carried.Exp), Number(member?.Deployment?.Definition.Move)];
@@ -59,6 +61,30 @@ internal sealed partial class PartyDetailsPanel : Panel
         Rows(_inventory, _itemRows, member?.Inventory.Select(slot => $"{slot.Slot + 1}. " +
             (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
             (slot.Equipped ? "\n    " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")]);
+        Arrange();
+    }
+
+    // Same detail widgets, projected from live public scalars rather than a carried-party snapshot.
+    internal void Present(BattleInspectionUnit unit, string name)
+    {
+        _member = null; _inspectionActor = unit.Actor.Value; _name.Text = name;
+        _class.Text = (unit.Ally ? DisplayNames.Name("name.class", unit.ClassId,
+            unit.ClassName ?? GameText.Get("party.class-unavailable")) : GameText.Get("battle.inspect.not-applicable")) +
+            " · " + DisplayNames.InspectionStatus(unit.Status);
+        string[] values = [Number(unit.Level), Number(unit.Attack), Number(unit.Defense), Number(unit.Agility),
+            unit.Ally ? Number(unit.Exp) : GameText.Get("battle.inspect.not-applicable"), Number(unit.Move)];
+        if (!unit.Ally) values[0] = GameText.Get("battle.inspect.not-applicable");
+        for (int i = 0; i < values.Length; i++)
+        { _stats[i].Title.Text = GameText.Get("party.stat." + _titles[i].ToLowerInvariant()); _stats[i].Value.Text = values[i]; }
+        _hp.Show(); _mp.Show(); _unknownHp.Hide(); _unknownMp.Hide();
+        _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
+        _magicTitle.Text = GameText.Get("party.magic"); _itemsTitle.Text = GameText.Get("party.items");
+        Rows(_spells, _spellRows, unit.Spells.Count == 0 ? [GameText.Get("party.none-learned")] :
+            unit.Spells.Select(spell => DisplayNames.Spell(spell.Spell, spell.Name ?? GameText.Get("party.value-unavailable"), level: true)).ToArray());
+        Rows(_inventory, _itemRows, unit.Inventory.Select(slot => $"{slot.Slot + 1}. " +
+            (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") :
+                DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
+            (slot.Equipped ? " · " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray());
         Arrange();
     }
 
@@ -100,7 +126,7 @@ internal sealed partial class PartyDetailsPanel : Panel
     internal void ScrollFocused(int step) { if (FocusPane == 1) _magic.ScrollVertical += step; if (FocusPane == 2) _items.ScrollVertical += step; }
     internal void Wheel(Vector2 position, int step)
     { if (_magic.GetGlobalRect().HasPoint(position)) _magic.ScrollVertical += step; if (_items.GetGlobalRect().HasPoint(position)) _items.ScrollVertical += step; }
-    internal object Card() => new { actor = _member?.Carried.Actor.Value, name = _name.Text, visible = IsVisibleInTree(),
+    internal object Card() => new { actor = _inspectionActor ?? _member?.Carried.Actor.Value, name = _name.Text, visible = IsVisibleInTree(),
         rect = BattleMapViewport.Rectangle(GetGlobalRect()), hp = _hp.Observe(), mp = _mp.Observe() };
     internal object Observe() => new { rect = BattleMapViewport.Rectangle(GetGlobalRect()), name = _name.Text,
         nameRect = BattleMapViewport.Rectangle(_name.GetGlobalRect()), hpRect = BattleMapViewport.Rectangle(_hp.GetGlobalRect()),

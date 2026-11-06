@@ -285,7 +285,9 @@ public sealed partial class GameRoot : Node
         if (_systemMenu is not null) return;
         _systemMenu = new SystemMenuView { Name = "SystemMenuView", Input = _input!, Resume = CloseSystemMenu };
         _hostUi.AddChild(_systemMenu); ApplyHostPause();
-        if (_fieldEntryFailure is null) _fieldEntryFailure = ObserveSaveMusic();
+        // Opening/closing a host modal over read-only inspection cannot publish a revision.
+        // Explicit Save still captures current music in ShowSettledSave.
+        if (_fieldEntryFailure is null && _battle?.Inspecting != true) _fieldEntryFailure = ObserveSaveMusic();
         RefreshSystemMenuLabels(); DisarmInput();
     }
     private void RefreshSystemMenuLabels()

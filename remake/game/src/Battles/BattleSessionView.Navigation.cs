@@ -25,6 +25,8 @@ public sealed partial class BattleSessionView
             current.BattleScene is not null || current.BattleRound is not null || current.BattleRetreat is not null ||
             current.BattleGive is not null || current.BattleDiscard is not null ||
             current.BattleMovement is { Purpose: not BattleMovementPurpose.Player }) return null;
+        if (_inspectionRelease) return null;
+        if (_inspection.Active) return (current.SessionId, current.Revision, selection.Actor, "Inspection", _inspection.Page);
         var stage = selection.Stage;
         if (_menu.NavigationPage == "Commit" || stage is BattleSelectionStage.GiveCommitReady or BattleSelectionStage.DiscardCommitReady) return null;
         if (stage == BattleSelectionStage.CommitReady) stage = BattleSelectionStage.TargetChoice;

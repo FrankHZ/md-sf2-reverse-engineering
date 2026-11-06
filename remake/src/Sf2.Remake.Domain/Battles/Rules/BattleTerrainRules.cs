@@ -1,8 +1,20 @@
 namespace Sf2.Remake.Domain.Battles;
 
 // Supported source mover interpretations, shared by authored and initialized private sessions.
-internal static class BattleTerrainRules
+public static class BattleTerrainRules
 {
+    // Source UI setting, not the physical damage multiplier or a movement cost.
+    public static int LandEffect(BattleTerrain terrain, BattleMover mover)
+    {
+        if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
+        if (mover == BattleMover.Flying) return 0;
+        return terrain.Protection switch
+        {
+            TerrainProtection.None => 0, TerrainProtection.Light => 15, TerrainProtection.Heavy => 30,
+            _ => throw new BattleRuleException("terrain-protection", "terrain.protection", true),
+        };
+    }
+
     internal static sbyte MovementCost(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);

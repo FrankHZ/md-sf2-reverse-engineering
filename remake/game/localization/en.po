@@ -1420,3 +1420,96 @@ msgstr "Opening Chinese is unavailable; using English."
 
 msgid "ui.settings.world-unbound"
 msgstr "World Chinese is loaded when you start or continue a journey."
+
+msgid "battle.inspect.close"
+msgstr "{0} / {1} / {2}: close"
+
+msgid "battle.inspect.detail-help"
+msgstr "{0} · {1}: Magic/Items · {2}/{3}: scroll"
+
+msgid "battle.inspect.land"
+msgstr "{0} · Land effect {1}% at ({2},{3})"
+
+msgid "battle.inspect.options"
+msgstr "Battle options · Map\n{0} / {1}: open Map · {2}: return to cursor"
+
+msgid "battle.inspect.map-help"
+msgstr "{0}/{1}: known units · {2}: return to options"
+
+msgid "battle.inspect.cursor"
+msgstr "Inspect · ({0},{1}) · {2}"
+
+msgid "battle.inspect.cursor-help"
+msgstr "{0}: full details / options · {1}: short status / options · {2}: return to actor"
+
+msgid "battle.inspect.entry-help"
+msgstr "{0}: undo movement, then inspect; menu Back returns one level"
+
+msgid "battle.inspect.empty"
+msgstr "Empty ground"
+
+msgid "battle.inspect.legend"
+msgstr "Map · circles: allies · diamonds: enemies · white ring: acting unit · rectangle: camera"
+
+msgid "battle.inspect.known-count"
+msgstr "Known units · {0}"
+
+msgid "battle.inspect.ally"
+msgstr "Ally"
+
+msgid "battle.inspect.enemy"
+msgstr "Enemy"
+
+msgid "battle.inspect.ally-header"
+msgstr "{0} · Level {1}"
+
+msgid "battle.inspect.not-applicable"
+msgstr "N/A"
+
+msgid "battle.inspect.no-status"
+msgstr "No status effects"
+
+msgid "battle.inspect.status.curse"
+msgstr "Cursed"
+
+msgid "battle.inspect.status.poison"
+msgstr "Poisoned"
+
+msgid "battle.inspect.status.stun"
+msgstr "Stunned"
+
+msgid "battle.inspect.status.sleep"
+msgstr "Asleep"
+
+msgid "battle.inspect.status.silence"
+msgstr "Silenced"
+
+msgid "battle.inspect.status.unavailable"
+msgstr "Other status effect (details unavailable)"
+
+msgid "battle.inspect.terrain"
+msgstr "Terrain · {0}"
+
+msgid "battle.inspect.terrain.open"
+msgstr "Open"
+
+msgid "battle.inspect.terrain.brush"
+msgstr "Brush"
+
+msgid "battle.inspect.terrain.rough"
+msgstr "Rough"
+
+msgid "battle.inspect.terrain.deep"
+msgstr "Deep"
+
+msgid "battle.inspect.terrain.desert"
+msgstr "Desert"
+
+msgid "battle.inspect.terrain.impassable"
+msgstr "Impassable"
+
+msgid "battle.inspect.terrain.highsky"
+msgstr "High sky"
+
+msgid "battle.inspect.terrain.barrier"
+msgstr "Barrier"

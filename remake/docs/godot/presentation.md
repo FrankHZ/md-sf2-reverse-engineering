@@ -1658,6 +1658,106 @@ class of ObjectDB leak warning (4–6 instances); the final normal verbose run r
 intermittent cause remains **Unknown**, not a resolved lifecycle claim. Authored input and controlled
 Map57 admission establish this consumer boundary, not natural original reach or human visual approval.
 
+### Battle inspection and on-demand Map (#1633)
+
+**Standard rigor:** the accepted [minimum contract](battle-interaction-baseline.md#minimum-implementation-contract-proposed-for-review)
+owns scope and caller returns. This implementation connects original-style free inspection to the
+common battle host, including admitted connected Battles01–07. It does not admit a later encounter,
+Member, Speed, empty-ground Quit, connected Equip/Give/Drop, a preview-preserving shortcut, action
+prediction or a visual redesign. Only working Map is offered by the empty-ground options page.
+
+`GameSession.QueryBattleInspection` reads the current settled player Movement boundary. Optional
+session/revision and requested-unit identity reject stale or undisclosed requests explicitly.
+Movement delivery, provisional paths, AI, scenes, Give/Discard, round/appearance/program, outcome,
+fault and exploration are unavailable. `BattleVisibility` is the extracted ordinary-board staged
+entity filter shared with `BattleSnapshotProjection`; no reveal history or second battle is stored.
+The result contains admitted board dimensions/region, known living placed/initialized unit markers,
+live public scalar details and inspected-actor land effect. It exposes no queue, AI memory, reserve
+list or predictions. Unknown private names stay unavailable. Private numeric stats use the pinned
+source `UNKNOWN_STAT_VALUE_THRESHOLD = $64` (100), including current/max HP/MP, ATT/DEF/AGI/MOV;
+authored values retain their authored policy. Enemy class/LV/EXP are N/A. Admitted curse, poison,
+stun, sleep and silence are named; other status details and durations remain unavailable. Shared
+`BattleTerrainRules.LandEffect` owns 0/15/30 by mover/protection; the combat multiplier consumes the
+same interpretation. This displayed setting is not the damage-reduction percentage.
+
+`BattleSessionView.Inspection` intercepts B only in settled Movement. With no provisional move it
+enters directly without Submit. Otherwise it submits the existing Cancel once and waits for every
+actual return segment delivered by `BattleMapViewport`; only then does it open at the actor’s origin.
+Action-menu Cancel still returns to Movement. The query identity binds the disposable adapter mode
+to session/revision/actor; an ineligible boundary retires it. While active, directions and details
+never submit gameplay or advance automatic work. The purity baseline starts after undo delivery.
+
+Mode-local **A** uses the configured Attack binding (default F / Pad West) for a full sheet; **C**
+uses configured Confirm (default Enter/Z / Pad South) for short status; **B** uses configured Cancel.
+Hints use the installed, potentially swapped bindings. Current-actor C returns directly to Movement;
+current-actor A’s full sheet returns there on A/B/C dismissal. Other units’ A/C sheets return to their
+cursor. Full sheets reuse `PartyDetailsPanel` scalar widgets; short status reuses `BattleStatusCard`
+and names the actor/location of its land effect; mover semantics remain in the query. Tab/Target switches Magic/Items list focus,
+Up/Down scrolls it, and wheel input over either list uses the existing detail widget. Browsing never
+opens a transaction. A/C on empty ground opens options; A/C there opens Map; B from Map returns to
+options, then B returns to cursor, then B restores the same actor’s Movement.
+
+`BattleInspectionView` retains only cursor, panel/caller and selected public unit. It uses
+`BattleSessionView.Navigation`’s existing repeat clock and `GameInput`’s held direction. Page/entry/exit
+changes disarm it and require mapped release before another action. Focus/pause/hide retain the
+existing isolation. Host Menu pause/return skips its usual save-music observation while inspection
+is active, preventing a revision-only invalidation; explicit Save still captures current music at
+its existing boundary. Explicit independent mutations or session replacement invalidate inspection.
+
+`BattleMapViewport` owns a temporary cursor subject, so ordinary Frame cannot replace it. Exit
+removes that override and resumes actor framing. `WorldViewportLayout` retains 96px cells,
+SourceMapRegion offset, legal clipping and small-board centering. Opening panels never resizes the
+world. `BattleOverviewView` draws the whole admitted area with a schematic semantic-terrain layer, disclosed ally circles/enemy diamonds,
+active-unit ring and clipped camera rectangle. Only Width×Height local terrain cells are published,
+using the existing 48-cell storage stride; neighboring packed cells are excluded. The localized
+legend pairs readable terrain-class names with distinct swatches. Configured directions navigate its bounded known-unit list and
+highlight without centering the camera or issuing any action. No Map pointer control is offered.
+
+**Confirmed bounded engineering observations:** the committed
+[`engine_battle_inspection_observation.gd`](../../game/probes/engine_battle_inspection_observation.gd)
+uses actual host input/state and projected nodes. Controlled Map57 approach reaches ordinary Battle01
+player Movement with registered content and disposable save namespace; it is not a natural opening
+replay. The existing `hidden-spawns` authored case establishes reserve/appearance admission separately.
+These observe moved and no-move entry, real return delivery, the caller-specific A/C/B returns,
+live ally/enemy cards/sheets, an off-camera disclosed enemy, Map/options/cursor, edge framing, held
+controls, installed remapping and swapped Confirm/Cancel, pad input, focus-handler signals, host
+pause/return and actual host replacement. Post-undo comparisons include session/revision/sequence,
+selection/path, both seeds, queue/cursor, resources, loadouts/status and story state. A supplementary
+existing controlled Battle02 boundary checks nonzero origin `(16,19)` and opposing clipped edges;
+the small authored board stays centered. Engine behavior tests cover query purity, stale/busy and
+hidden rejection, changed live values/committed equipment, and Regular/Heavy, Flying/Heavy and
+Hovering/Light land effects. No screenshots, per-frame export, emulator acquisition or new comparator.
+
+Reproduce after the [locked environment setup](../development-and-verification.md#locked-net-workflow),
+affected engine checks and adapter Release/Debug build. Reuse the owning project/installation. Set
+`SF2_VIEWPORT_OUTPUT` to a fresh ignored report, `SF2_INSPECTION_ROUTE` to `keyboard`, `pad` or `axis`,
+and `SF2_INSPECTION_HIDDEN=1` for the existing authored `hidden-spawns.json` package. The ordinary host
+uses `--authored-package <absolute-package>` and optional `--input-settings <absolute-settings>`.
+For the connected check use the registered world/action/scene/presentation selections, no startup CLI
+package, `SF2_INSPECTION_PRIVATE=1` and `SF2_INSPECTION_START` pointing to the existing controlled Map57
+approach. Set `SF2_INSPECTION_REGION_START` to a local controlled-start document with
+`{"formatVersion":1,"start":{"battle":"battle-2"}}` for the replacement geometry-only boundary.
+Run the probe with `--headless --max-fps 60 --resolution 1920x1080`, explicit `--log-file`, and the
+ordinary `--path`/`--script res://probes/engine_battle_inspection_observation.gd` options. Require a
+completed passing report, process exit and no script/native errors. Each run is bounded to75 seconds;
+only compact semantic checkpoints are written. Three finite input routes and affected retries fit
+within a 100MiB local output budget; no large processing/acquisition is authorized.
+
+The focused `SF2_INSPECTION_UI_ONLY=1` private route checks en/zh-CN key admission, actual Chinese
+full/short/options/Map/terrain labels, remapped direction hints and actor-qualified land effect
+without raw mover wording. It uses the same registered Map57/Battle01 and Battle02 region-only
+inputs and does not repeat the gameplay route. The Map draw count and per-class histogram match
+the admitted Width×Height projection, with multiple classes, distinct colors and camera/session
+purity. The native probe reads actual projected text/draw consumers; it is not a test of a report.
+
+Ignored `local/issue1633/HANDOFF.md` owns exact heads, selected commands/reports, preserved failed
+attempts, CI and process state. Initial probe parse/parent-return assumptions, a real private Menu
+music-revision failure and a zero-origin fixture assumption are retained there. Some private failed
+exits and the focused Chinese passing exit emitted the previously observed ObjectDB warning (two instances); its intermittent cause remains
+**Unknown**. These checks do not establish physical OS focus switching, full campaign coverage,
+original free-cursor cadence/pixels, every source minimap category or human visual approval. Member’s
+list-specific return remains #1645, not a passed inspection assertion.
+
 ### Modern UI experiment
 
 The user-selected direction for #438 retains the original diamond command arrangement and spatial
@@ -1736,7 +1836,7 @@ The shared 1080p world viewport is defined above; the earlier 640-by-360 proposa
 **Standard rigor:** battle movement and existing directional selection need a consistent held-input
 boundary across provisional movement, menu pages, target candidates and actor changes. The finite
 scope is adapter navigation; engine legality, action costs, RNG, field speed, Shift acceleration and
-the planned inspection interface retain their existing owners.
+inspection retain their existing owners.
 
 `GameInput` remains the single mapped keyboard/button/signed-axis edge and held-direction authority.
 There was no separate battle/menu repeat loop to preserve. `BattleSessionView.Navigation` uses the

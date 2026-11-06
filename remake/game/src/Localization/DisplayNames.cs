@@ -59,6 +59,14 @@ internal static class DisplayNames
             ? expression[1..^1] : GameText.Get("party.class-unavailable");
         return Name("name.class", id, canonical);
     }
+    internal static string InspectionName(bool ally, int? index, string canonical, string? custom) =>
+        canonical == "Name unavailable" && custom is null ? GameText.Get("party.name-unavailable") :
+        Name(ally ? "name.ally" : "name.enemy", index, canonical, custom);
+
+    internal static string InspectionStatus(IReadOnlyList<string> statuses) => statuses.Count == 0
+        ? GameText.Get("battle.inspect.no-status") : string.Join(", ", statuses.Select(status =>
+            GameText.Get("battle.inspect.status." + (status is "curse" or "poison" or "stun" or "sleep" or "silence" ? status : "unavailable"))));
+
     internal static string BattleItem(SessionSnapshot current, int slot, string canonical)
     {
         var actor = current.Selection is { } selection ? current.Battle.GetActor(selection.Actor) : null;

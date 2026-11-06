@@ -34,19 +34,13 @@ internal static class BattleSnapshotProjection
                 _ => GameText.Get("battle.status.confirm"),
             };
         var death = snapshot.BattleScene is { IsFieldDeath: true } field ? field : null;
-        var staged = snapshot.BattleFieldScene;
         var mapOrigin = snapshot.Story.EnteringBattle?.Outcome?.BattleOrigin ?? new MapPosition(0, 0);
-        ExplorationEntity? Entity(BattleActorState actor)
-        {
-            int slot = actor.IsAlly ? actor.Deployment.Initialization?.AllyPartyMember ?? actor.ProcessingOrder : actor.ProcessingOrder;
-            var reference = new EntityRef("entity-" + slot.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            return staged?.Entities.TryGetValue(reference, out var entity) == true && entity.Entity == reference ? entity : null;
-        }
+        ExplorationEntity? Entity(BattleActorState actor) => BattleVisibility.StagedEntity(snapshot, actor);
         MapPosition Position(BattleActorState actor) => Entity(actor) is { } entity
             ? new(entity.Position.X - mapOrigin.X, entity.Position.Y - mapOrigin.Y)
             : snapshot.BattleMovement?.Actor == actor.Actor ? snapshot.BattleMovement.From
             : selection?.Actor == actor.Actor ? selection.Preview.Destination : actor.Position!;
-        var markers = battle.Actors.Where(a => a.Position is not null && (staged is null || Entity(a) is { Visible: true })).Select(a => new BattleActorMarker(
+        var markers = battle.Actors.Where(a => BattleVisibility.OnBoard(snapshot, a)).Select(a => new BattleActorMarker(
             a.Actor, Position(a), a.IsAlly, a.Actor == selection?.Actor,
             $"{BattleCharacterNames.Resolve(a, names, snapshot.Story)}\n{a.Hp}/{a.MaxHp}",
             death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : Entity(a)?.Motion.Facing ?? a.Facing,

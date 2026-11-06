@@ -44,14 +44,9 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
 
     internal static int LandMultiplier(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
-        if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
-        if (mover == BattleMover.Flying) return 256;
-        // Protection is independent of the movement-cost table, including hovering.
-        return terrain.Protection switch
-        {
-            TerrainProtection.None => 256, TerrainProtection.Light => 230, TerrainProtection.Heavy => 205,
-            _ => throw new BattleRuleException("terrain-protection", "terrain.protection", true),
-        };
+        // The source display setting and damage multiplier share mover/protection semantics.
+        return BattleTerrainRules.LandEffect(terrain, mover) switch
+        { 0 => 256, 15 => 230, 30 => 205, _ => throw new InvalidOperationException() };
     }
 
     internal static PhysicalActorDefinition RequireActor(EngineBattleState battle, ActorRef actorRef)

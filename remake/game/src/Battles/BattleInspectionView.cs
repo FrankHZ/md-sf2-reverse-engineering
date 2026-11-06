@@ -1,0 +1,167 @@
+using Godot;
+using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
+using Sf2.Remake.GodotAdapter.UI;
+using Sf2.Remake.GodotAdapter.Exploration;
+
+namespace Sf2.Remake.GodotAdapter.Battles;
+
+// Only disposable focus/caller state. Every projection is queried from the live session.
+internal sealed partial class BattleInspectionView : Control
+{
+    private GameSession? _session;
+    private BattleInspectionSnapshot? _snapshot;
+    private GameInput _input = null!;
+    private BattleMapViewport _map = null!;
+    private readonly PartyDetailsPanel _details = new() { Name = "Details" };
+    private readonly BattleStatusCard _short = new() { Name = "ShortStatus" };
+    private readonly Label _hint = new() { Name = "InspectionHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
+    private readonly BattleOverviewView _overview = new() { Name = "Overview" };
+    private string _page = "Cursor";
+    private MapPosition _cursor = new(0, 0);
+    private BattleInspectionUnit? _unit;
+    private BattleInspectionLand? _land;
+    private int _knownIndex;
+    internal bool Active => _snapshot is not null;
+    internal string Page => _page;
+
+    public override void _Ready()
+    {
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
+        Theme = StoryTheme.Create(); ZIndex = 90;
+        AddChild(_details); AddChild(_short); AddChild(_overview); AddChild(_hint);
+        _hint.AddThemeFontSizeOverride("font_size", 24);
+        Close();
+    }
+    internal bool Open(GameSession session, GameInput input, BattleMapViewport map)
+    {
+        var query = session.QueryBattleInspection();
+        if (!query.Available) return false;
+        _session = session; _input = input; _map = map; _snapshot = query;
+        _cursor = query.Units.Single(u => u.Actor == query.ActiveActor).Position;
+        _page = "Cursor"; _unit = null; _land = null; Show(); Project(); return true;
+    }
+    internal void Close()
+    {
+        _snapshot = null; _session = null; _unit = null; _land = null;
+        _map?.Inspect(null); Hide();
+    }
+    internal bool Refresh(GameSession? session)
+    {
+        if (_snapshot is null) return false;
+        var query = session?.QueryBattleInspection(_snapshot.SessionId, _snapshot.Revision);
+        if (session != _session || query?.Available != true || query.ActiveActor != _snapshot.ActiveActor)
+        { Close(); return false; }
+        _snapshot = query; Project(); return true;
+    }
+    internal void Handle(GameAction action)
+    {
+        if (!Active) return;
+        bool a = action == GameAction.Attack, c = action == GameAction.Confirm, b = action == GameAction.Cancel;
+        if (_page is "Full" or "Short")
+        {
+            if (a || b || c)
+            {
+                if (_unit!.Actor == _snapshot!.ActiveActor) { Close(); return; }
+                _page = "Cursor"; _unit = null; _land = null;
+            }
+            else if (_page == "Full")
+            {
+                if (action == GameAction.Target) _details.FocusPane = _details.FocusPane == 1 ? 2 : 1;
+                if (action is GameAction.Up or GameAction.Down) _details.ScrollFocused(action == GameAction.Up ? -72 : 72);
+            }
+        }
+        else if (_page == "Map")
+        {
+            if (b) _page = "Options";
+            else if (action is GameAction.Up or GameAction.Down && _snapshot!.Units.Count > 0)
+                _knownIndex = (_knownIndex + (action == GameAction.Up ? -1 : 1) + _snapshot.Units.Count) % _snapshot.Units.Count;
+        }
+        else if (_page == "Options")
+        {
+            if (b) _page = "Cursor";
+            else if (a || c) { _page = "Map"; _knownIndex = 0; }
+        }
+        else if (b) { Close(); return; }
+        else if (a || c)
+        {
+            var marker = _snapshot!.Units.FirstOrDefault(u => u.Position == _cursor);
+            if (marker is null) _page = "Options";
+            else if (c && marker.Actor == _snapshot.ActiveActor) { Close(); return; }
+            else
+            {
+                var query = _session!.QueryBattleInspection(_snapshot.SessionId, _snapshot.Revision, marker.Actor);
+                if (!query.Available || query.Unit is null) { Close(); return; }
+                _unit = query.Unit; _land = query.Land; _page = a ? "Full" : "Short";
+                _details.FocusPane = 1; _details.ResetReading();
+            }
+        }
+        else
+        {
+            int x = _cursor.X, y = _cursor.Y;
+            if (action == GameAction.Up) y--; if (action == GameAction.Down) y++;
+            if (action == GameAction.Left) x--; if (action == GameAction.Right) x++;
+            _cursor = new(Math.Clamp(x, 0, _snapshot!.Width - 1), Math.Clamp(y, 0, _snapshot.Height - 1));
+        }
+        Project();
+    }
+    internal void HandlePointer(InputEvent input)
+    {
+        if (_page == "Full" && input is InputEventMouseButton { Pressed: true } mouse &&
+            mouse.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
+            _details.Wheel(mouse.Position, mouse.ButtonIndex == MouseButton.WheelUp ? -72 : 72);
+    }
+    private static string UnitName(BattleInspectionMarker unit) => DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName);
+    private void Project()
+    {
+        if (_snapshot is null) return;
+        _map.Inspect(_cursor);
+        var size = GetViewportRect().Size;
+        _details.Visible = _page == "Full"; _short.Visible = _page == "Short"; _overview.Visible = _page == "Map";
+        string a = _input.CompactHint(GameAction.Attack), c = _input.CompactHint(GameAction.Confirm), b = _input.CompactHint(GameAction.Cancel);
+        string close = GameText.Get("battle.inspect.close", a, c, b);
+        string up = _input.CompactHint(GameAction.Up), down = _input.CompactHint(GameAction.Down);
+        string message;
+        if (_unit is { } unit)
+        {
+            string name = DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName);
+            if (_page == "Full")
+            {
+                _details.Size = new(Mathf.Min(1000, size.X - 64), Mathf.Min(860, size.Y - 180));
+                _details.Position = (size - _details.Size) / 2 - new Vector2(0, 36); _details.Present(unit, name);
+                message = GameText.Get("battle.inspect.detail-help", close, _input.CompactHint(GameAction.Target), up, down);
+            }
+            else
+            {
+                _short.Present(unit, name); _short.Position = new(24, 24);
+                message = GameText.Get("battle.inspect.land", name, _land!.Percent, unit.Position.X, unit.Position.Y) + "\n" + close;
+            }
+        }
+        else if (_page == "Options") message = GameText.Get("battle.inspect.options", a, c, b);
+        else if (_page == "Map")
+        {
+            _overview.Position = new(24, 24); _overview.Size = size - new Vector2(48, 156);
+            _overview.Present(_snapshot, _map.CameraCells, _knownIndex);
+            message = GameText.Get("battle.inspect.map-help", up, down, b);
+        }
+        else
+        {
+            var at = _snapshot.Units.FirstOrDefault(u => u.Position == _cursor);
+            message = GameText.Get("battle.inspect.cursor", _cursor.X, _cursor.Y, at is null ? GameText.Get("battle.inspect.empty") : UnitName(at)) +
+                "\n" + GameText.Get("battle.inspect.cursor-help", a, c, b);
+        }
+        _hint.Text = message; _hint.Position = new(24, size.Y - 120); _hint.Size = new(size.X - 48, 112);
+    }
+    internal object Observe() => new
+    {
+        active = Active, page = Active ? _page : null, cursor = Active ? _cursor : null,
+        sessionId = _snapshot?.SessionId, revision = _snapshot?.Revision, actor = _snapshot?.ActiveActor?.Value,
+        unit = _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _hint.Text,
+        full = _details.IsVisibleInTree() ? _details.Observe() : null,
+        shortStatus = _short.IsVisibleInTree() ? _short.Observe() : null,
+        overview = _overview.IsVisibleInTree() ? _overview.Observe() : null,
+    };
+}
