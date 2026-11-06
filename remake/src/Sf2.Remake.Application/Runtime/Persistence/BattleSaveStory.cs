@@ -84,9 +84,13 @@ internal static class BattleSaveStory
         if (value.SaveAnchor is { } anchor)
             Require(anchor.Facing <= 3 && world.Maps.ContainsKey(anchor.Map), "prior-anchor");
         ExplorationViewRunner.Validate(value.LogicalView.Area);
-        Require(Sf2OutcomeReturnPolicy.FindEgress(definition, new(value.EgressMap), route.Outcome) is not null ||
-            definition.DefeatFallback is { } fallback && fallback.Register.Value == value.EgressMap &&
-            Sf2OutcomeReturnPolicy.FindEgress(definition, fallback.Destination) is not null, "egress");
+        var egress = Sf2OutcomeReturnPolicy.FindEgress(definition, new(value.EgressMap), route.Outcome);
+        if (egress is null && definition.DefeatFallback is { } fallback && fallback.Register.Value == value.EgressMap)
+            egress = Sf2OutcomeReturnPolicy.FindEgress(definition, fallback.Destination, route.Outcome);
+        Require(egress is not null, "egress");
+        RequireReturnPlayer(world, route.Outcome.BattleMap, value.Player.Entity);
+        RequireReturnPlayer(world, egress!.Map, value.Player.Entity);
+        if (route.Outcome.CompletedDefeatMap is { } handoff) RequireReturnPlayer(world, handoff, value.Player.Entity);
         var roster = definition.Encounters.Values.SelectMany(e => e.Deployments).Where(d => d.Faction == BattleFaction.Ally)
             .GroupBy(d => d.Actor).ToDictionary(g => g.Key, g => g.First());
         Require(value.Names.Count <= 30 && value.Names.All(p => roster.ContainsKey(new(p.Key)) &&
@@ -116,6 +120,20 @@ internal static class BattleSaveStory
             music: new(1, music.Cue, Array.AsReadOnly(music.Previous.ToArray()), new(music.Map), music.Area, null, Battle: true),
             stepCounter: value.StepCounter, egressMap: new(value.EgressMap), fieldPlayer: new(new(value.Player.Entity), value.Player.Speed,
                 Array.AsReadOnly(retained.Select(BattleContinuationValues.Carried).ToArray())), saveAnchor: value.SaveAnchor, names: value.Names);
+    }
+
+    private static void RequireReturnPlayer(ExplorationDefinition world, MapId destination, string player)
+    {
+        Require(world.Maps.TryGetValue(destination, out var map), "return-map");
+        if (player == "entity-0") return;
+        // Outcome construction first uses BattleMap; the return then uses live egress or
+        // the defeat handoff. Programs/entry can change flags before that rebuild, so check
+        // the destination's declared setup alternatives, without executing those programs.
+        // Plain authored maps construct the supplied player directly; unrelated maps do not
+        // constrain this binding. Population allocation owns the entity-0 requirement.
+        Require(map!.Population is null && (map.Setup is null || map.Setup.FlagAlternatives
+            .Where(v => v.Setup != map.Setup.DefaultSetup).All(v =>
+                map.Setups.TryGetValue(v.Setup, out var setup) && setup.Population is null)), "return-player");
     }
 
     internal static void RequireMembership(ScenarioDefinition definition, StoryState story, EngineBattleState battle)

@@ -6,6 +6,7 @@ using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 using Xunit;
 
 namespace Sf2.Remake.Engine.Tests;
@@ -13,13 +14,58 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleSaveReturnTests
 {
     [Theory]
-    [InlineData(BattleOutcomeKind.Victory)] [InlineData(BattleOutcomeKind.Defeat)] [InlineData(BattleOutcomeKind.Retreat)]
-    public void LegalEndingRetainsReturnRegistersPartyAndReusableFieldSave(BattleOutcomeKind kind)
+    [InlineData("battle")] [InlineData("egress")] [InlineData("fallback")]
+    [InlineData("completed-defeat")] [InlineData("selected-setup")] [InlineData("after-setup")]
+    public void PopulationReturnRejectsNoncanonicalPlayerBeforePublishingCandidate(string target)
+    {
+        var (basis, original) = BattleSaveFixture.Create();
+        var data = BattleSaveFixture.Capture(basis, original);
+        var world = basis.Exploration!;
+        var population = world.Maps[new("map-3")].Population!;
+        var maps = world.Maps.Values.Select(m => new ExplorationMapDefinition(m.Map, m.Layout, m.Traversal,
+            m.Entities, m.Events, battles: m.Battles.Select(r => target == "completed-defeat"
+                ? r with { Outcome = r.Outcome! with { CompletedDefeatMap = new("handoff") } } : r),
+            population: (target == "battle" && m.Map.Value == "map-57" || target is "egress" or "fallback" && m.Map.Value == "map-3") ? population : null,
+            setup: m.Map.Value == "map-57" && target is "selected-setup" or "after-setup"
+                ? new(new("default"), [new(new(target == "selected-setup" ? "399" : "777"), new("populated"))]) : null,
+            setups: [new(new("populated"), [], [], null, null, population)],
+            basePalette: m.BasePalette, viewAreas: m.ViewAreas)).ToList();
+        if (target == "completed-defeat")
+        {
+            var source = maps[0];
+            maps.Add(new(new("handoff"), source.Layout, source.Traversal, [], [], population: population,
+                basePalette: source.BasePalette, viewAreas: source.ViewAreas));
+        }
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values,
+            exploration: new(maps, world.Programs.Values, provenance: world.Provenance, partyFlags: world.PartyFlags, visuals: world.Visuals),
+            encounterStarts: basis.EncounterStarts.Values)
+        { Persistence = new Sf2OpeningRestore(), DefeatFallback = target == "fallback" ? (new("old-register"), new("map-3")) : null };
+        if (target == "fallback") data = data with { Story = data.Story with { EgressMap = "old-register" } };
+        Assert.IsType<SessionStarted>(GameSession.RestoreBattle(definition, data, RuleCompositions.Sf2()));
+        var bad = data with { Story = data.Story with { Player = data.Story.Player with { Entity = "authored-player" } } };
+        var rejected = Assert.IsType<SessionStartFailed>(GameSession.RestoreBattle(definition, bad, RuleCompositions.Sf2()));
+        Assert.Equal("save-battle-return-player", rejected.Failure.Code);
+    }
+
+    [Theory]
+    [InlineData(BattleOutcomeKind.Victory, false)] [InlineData(BattleOutcomeKind.Defeat, false)] [InlineData(BattleOutcomeKind.Retreat, false)]
+    [InlineData(BattleOutcomeKind.Victory, true)] [InlineData(BattleOutcomeKind.Defeat, true)] [InlineData(BattleOutcomeKind.Retreat, true)]
+    public void LegalEndingRetainsReturnRegistersPartyAndReusableFieldSave(BattleOutcomeKind kind, bool authoredPlayer)
     {
         var (basis, original) = BattleSaveFixture.Create();
         var encounter = original.Battle.Definition.WithOutcome(original.Battle.Definition.Outcome!, retreatItems: [new(115, "Angel Wing")]);
+        var world = basis.Exploration!;
+        if (authoredPlayer)
+        {
+            var maps = world.Maps.Values.Select(m => new ExplorationMapDefinition(m.Map, m.Layout, m.Traversal,
+                m.Entities, m.Events, battles: m.Battles, basePalette: m.BasePalette, viewAreas: m.ViewAreas)).ToList();
+            // An unrelated populated map must not constrain this route's authored player.
+            var other = world.Maps[new("map-3")];
+            maps.Add(new(new("unrelated"), other.Layout, other.Traversal, [], [], population: other.Population));
+            world = new(maps, world.Programs.Values, provenance: world.Provenance, partyFlags: world.PartyFlags, visuals: world.Visuals);
+        }
         var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values.Select(e => e.Encounter == encounter.Encounter ? encounter : e),
-            exploration: basis.Exploration, encounterStarts: basis.EncounterStarts.Values) { Persistence = new Sf2OpeningRestore() };
+            exploration: world, encounterStarts: basis.EncounterStarts.Values) { Persistence = new Sf2OpeningRestore() };
         var loadout = new BattleSourceLoadout([115, 127, 127, 127], [63, 63, 63, 63]);
         var actors = original.Battle.Actors.Select(a => a.Actor.Value switch
         {
@@ -30,7 +76,8 @@ public sealed class BattleSaveReturnTests
         var battle = new EngineBattleState(encounter, actors, b.MainSeed, b.ThinkingSeed, b.Round, b.Queue, b.Cursor, b.Gold,
             b.StartPolicy, b.Regions, itemCustody: b.ItemCustody, deathCredit: b.DeathCredit);
         var live = BattleSaveFixture.At(battle, original.Story.Copy(null, fieldPlayer: original.Story.FieldPlayer! with
-            { RetainedAllies = original.Story.FieldPlayer.RetainedAllies!.Select(a => a with { Absent = false }).ToArray() }));
+            { Player = new(authoredPlayer ? "authored-player" : "entity-0"),
+                RetainedAllies = original.Story.FieldPlayer.RetainedAllies!.Select(a => a with { Absent = false }).ToArray() }));
         var saved = BattleSaveFixture.Capture(definition, live);
         var restored = Assert.IsType<SessionStarted>(GameSession.RestoreBattle(definition, saved, RuleCompositions.Sf2())).Session;
         var control = End(definition, live, kind);
@@ -53,6 +100,13 @@ public sealed class BattleSaveReturnTests
         }
         Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-1").Hp);
         Assert.Null(resumed.Story.EnteringBattle); Assert.Null(resumed.Story.FieldPlayer);
+        if (authoredPlayer)
+        {
+            Assert.Equal(new EntityRef("authored-player"), resumed.Exploration.Player);
+            Assert.Null(resumed.Exploration.Population);
+            Assert.Null(ExplorationDispatcher.Submit(definition, resumed, new WaitAtInput(), RuleCompositions.Sf2()).Failure);
+            return; // Field v1 owns only its declared population-backed recipes.
+        }
         // The real v1 consumer runs on the supported returned field recipe.
         var field = OpeningSave.Capture(definition, resumed, RuleCompositions.Sf2(), resumed.SessionId, resumed.Revision);
         Assert.Null(field.Error);

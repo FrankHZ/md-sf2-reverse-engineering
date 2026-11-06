@@ -55,6 +55,12 @@ The reconstruction and comparison are specific to this contract, not a general s
 
 Admission requires a connected New Game route, complete active/retained roster and accounting,
 known required AI/return resources, completed prior work and known ordinary looping battle music.
+The saved player binding must support the intermediate battle map, resolved live egress (including
+the declared defeat fallback) and special defeat destination. Population allocation requires
+`entity-0`; plain authored return maps retain their supplied player ID. Only these destination maps
+and their declared setup alternatives constrain the binding, because outcome programs and entry
+can change setup flags before rebuilding. Admission does not execute those programs or inspect
+unrelated maps. Invalid bindings reject before a replacement session is published.
 Unknown death credit stays distinct from known-no-ally; a poison-capable encounter requires known
 credit. Semantic visual aliases/old physical slots are retained when present; absence is not
 replaced with actor projections. The [defeated field staging consumer](pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
