@@ -1664,6 +1664,72 @@ change preserves motion speed/animation and menu repetition. It is a modern cont
 original natural timing and #1456 subjective acceptance remain Unknown.
 The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
+### Battle directional hold and mode isolation (#1615)
+
+**Standard rigor:** battle movement and existing directional selection need a consistent held-input
+boundary across provisional movement, menu pages, target candidates and actor changes. The finite
+scope is adapter navigation; engine legality, action costs, RNG, field speed, Shift acceleration and
+the planned inspection interface retain their existing owners.
+
+`GameInput` remains the single mapped keyboard/button/signed-axis edge and held-direction authority.
+There was no separate battle/menu repeat loop to preserve. `BattleSessionView.Navigation` uses the
+existing 120 ms adapter repeat policy: one fresh direction acts immediately, then at most one eligible
+navigation per deadline, without catch-up. Player movement awaits its actual
+`BattleMapViewport.ConsumeMovement` delivery before another Move. Turning during that delivery can
+replace the pending direction; it cannot interrupt or duplicate the current step. Exploration's
+successful-step cadence and rejected-attempt backoff are unchanged.
+
+Directions repeat in Movement, the cardinal command menu, spell/item lists, offered targets and
+existing admitted Equipment/Give/Drop selectors. TargetChoice and CommitReady share their target
+navigation page; a different candidate does not create a new mode. Stay/transaction confirmation and
+result/scene/round/return phases are ineligible. Disabled target candidates retain their actual reason
+and cannot commit a previously accepted target. The engine still validates each submitted Move or
+selection against live state.
+
+Release of the active direction stops future repeats and does not resume an older held direction.
+A fresh turn restarts the deadline. Any non-direction action or pointer input disarms the hold;
+rejection, session/actor/stage/page changes, hide/pause and focus handlers also clear it. Host modal
+return keeps the existing release barrier. Only a new mapped input edge can resume navigation.
+Confirm, Cancel, Tab/Target and shortcuts remain edge-only, including keyboard Echo and repeated pad
+button/axis events; holding them cannot confirm another page or spend another actor's action.
+
+**Confirmed bounded engineering observation:** the ordinary authored host accepts standard keyboard,
+custom directions with swapped Confirm/Cancel, mapped D-pad/buttons and signed stick input. The
+[finite consumer probe](../../game/probes/engine_battle_navigation_observation.gd) reads actual state,
+movement/preview rectangles and menu candidates, with release/turn before rejection, range rejection
+and fresh recovery, list/target/back, repeated Confirm/Cancel edges, host pause/release return,
+hide/show, focus-handler return and real next-actor isolation. Existing authored equipment/Give/Drop
+examples separately exercise their actual selector, projected candidate and free cancellation.
+Menu/provisional movement preserve both seeds; cancellation preserves the observed resources.
+These observations establish the common adapter boundary, not private campaign replay, physical OS
+focus switching, original repeat timing or subjective controller/human acceptance.
+
+Reproduce after the [locked environment setup](../development-and-verification.md#locked-net-workflow)
+and adapter Release/Debug compilation. Use fresh ignored output, explicit `--log-file`, 1920×1080 and
+the existing Godot installation. No private input or new installation is required. For the main
+probe, derive one small ignored variation from `remake/content/authored/garden-watch.json`: keep its
+start/terrain/actors; replace `spells` with `care` levels 1–3, each retaining its original effect/cost
+and range 0–3, and give `herbalist-b` those three spell references. This supplies multiple real list
+rows and both admitted and unavailable target candidates without changing production content.
+
+```powershell
+$env:SF2_BATTLE_NAVIGATION_OUTPUT = Join-Path $freshIgnoredOutput 'navigation.json'
+$env:SF2_BATTLE_NAVIGATION_ROUTE = 'keyboard' # also pad or axis
+$env:SF2_BATTLE_NAVIGATION_AUX = ''
+& $env:GODOT_BIN --headless --max-fps 60 --resolution 1920x1080 `
+  --log-file (Join-Path $freshIgnoredOutput 'godot.log') --path (Join-Path $repoRoot 'remake/game') `
+  --script res://probes/engine_battle_navigation_observation.gd -- --authored-package $navigationPackage
+```
+
+Add ordinary `--input-settings <absolute-path>` for admitted custom/swapped mappings; the probe reads
+installed bindings rather than duplicating a key table. `pad` uses device 0 D-pad/buttons; `axis` uses
+device 0 signed axes with mapped keyboard fallback for actions lacking axes. For each auxiliary
+check set `SF2_BATTLE_NAVIGATION_AUX` to `equipment`, `give` or `discard` and select the corresponding
+tracked `remake/content/authored/battle-<kind>.json`. The probe bounds each run to 35 seconds, writes
+compact boundary samples and exits nonzero on failed assertions. Require a completed passing report
+and no native/script errors in addition to process exit; a script exception can otherwise exit 0.
+Screenshots, full-route replay and tests of the observer are unnecessary for this adapter change.
+
 ### Ordinary movement camera continuity (#1607)
 
 **Standard rigor:** remove a reproduced ordinary-field camera/actor phase mismatch. The existing

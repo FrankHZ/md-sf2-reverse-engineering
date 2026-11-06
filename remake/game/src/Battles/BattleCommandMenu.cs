@@ -25,6 +25,9 @@ internal sealed partial class BattleCommandMenu : Control
     private BattleSceneDefinition? _content;
     internal Action<SessionCommand> Submit { get; set; } = null!;
     internal ActorRef? TargetCandidate { get; private set; }
+    // TargetChoice and CommitReady share this navigation page; choosing a different
+    // target must not create a new mode or restart the directional repeat clock.
+    internal string NavigationPage => _page.ToString();
 
     public override void _Ready()
     {
