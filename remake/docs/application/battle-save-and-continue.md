@@ -270,8 +270,10 @@ Recommended serial slices follow; main-gate creates implementation Issues only a
 Every slice starts from accepted main. Do not dispatch overlapping writers in the shared session,
 store, entry or battle input files. The movement work in #1607 owns its code and `presentation.md`;
 this design consumes the final accepted delivery semantics, not that topic's unmerged implementation.
-Inspection (#1622) supplies a future empty-ground Quit entry, not a persistence dependency: host Menu
-can expose the same safe Save/Save and Quit first. No unrelated shared navigation expansion is needed.
+Inspection implementation [#1633](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1633)
+consumes the accepted #1622 baseline and depends on #1615/#1617. Its options surface can later host
+Quit, but inspection is not a persistence dependency: host Menu can expose the same safe Save/Save
+and Quit first. No unrelated shared navigation expansion is needed.
 
 | Slice / accountable code owner | Bounded output and stopping acceptance | Estimate |
 | --- | --- | --- |
