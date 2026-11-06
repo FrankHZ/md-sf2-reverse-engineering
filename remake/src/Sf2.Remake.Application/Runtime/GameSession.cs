@@ -202,6 +202,7 @@ public sealed class GameSession
             _current = skipped.Snapshot;
             return skipped;
         }
+        bool searchActive = current.BattleSearch is not null;
         bool discardActive = current.BattleDiscard is not null;
         bool discardInput = discardActive || envelope.Command is BeginDiscard or SelectDiscardItem ||
             current.Selection is { } selected && BattleDiscardSelection.Active(selected.Stage);
@@ -210,7 +211,7 @@ public sealed class GameSession
         bool retreatActive = current.BattleRetreat is not null;
         bool sceneActive = current.BattleScene is not null;
         bool movementActive = current.BattleMovement is not null;
-        bool programActive = !discardActive && !giveActive && !roundActive && !retreatActive && !sceneActive && !movementActive && !current.HasBattleControl;
+        bool programActive = !searchActive && !discardActive && !giveActive && !roundActive && !retreatActive && !sceneActive && !movementActive && !current.HasBattleControl;
         if (envelope.Command is WaitAtInput && (!programActive || current.Exploration is null))
             return BattleCommandDispatcher.Reject(current, "field-input-unavailable", "command");
         if (envelope.Command is WaitForText && (!programActive || current.Exploration is null))
@@ -219,7 +220,8 @@ public sealed class GameSession
             (tick.Ticks != 1 || (current.BattleScene is { Healing: not null } healingScene
                 ? tick.Wait != healingScene.Token : tick.Wait is not null)))
             return BattleCommandDispatcher.Reject(current, "invalid-battle-tick", "command");
-        var result = discardActive ? BattleDiscardContinuation.Submit(current, envelope.Command)
+        var result = searchActive ? BattleSearchContinuation.Submit(current, envelope.Command, Rules)
+            : discardActive ? BattleDiscardContinuation.Submit(current, envelope.Command)
             : giveActive ? BattleGiveContinuation.Submit(current, envelope.Command, Rules)
             : roundActive ? BattleRoundContinuation.Submit(current, envelope.Command, Rules)
             : retreatActive ? BattleRetreatContinuation.Submit(Definition, current, envelope.Command, Rules)
@@ -228,7 +230,7 @@ public sealed class GameSession
             : programActive ? ExplorationDispatcher.Submit(Definition, current, envelope.Command, Rules)
             : BattleCommandDispatcher.Submit(current, envelope.Command, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
         result = ContinueStory(Definition, result, Rules);
-        if (result.Failure is null && !discardInput && !programActive && !retreatActive && result.Snapshot.BattleGive is null) result = BattleOutcome.Begin(Definition, result, Rules);
+        if (result.Failure is null && !discardInput && !(searchActive && !current.BattleSearch!.EndsTurn) && !programActive && !retreatActive && result.Snapshot.BattleGive is null && result.Snapshot.BattleSearch is null) result = BattleOutcome.Begin(Definition, result, Rules);
         result = BattleEntrySkip.Progress(current, result);
         _current = result.Snapshot;
         return result;

@@ -1755,3 +1755,32 @@ These scope rules do not waive accepted 8C/H4 evidence. A migration handoff name
 required-check change and unsupported product capability. Use
 [Bounded Inspection and Review](../../docs/operations/bounded-inspection-and-review.md) for exact
 identity, semantic review and completed-result handoff.
+
+## Battle Search observation
+
+The #1649 observer `res://probes/engine_battle_search_observation.gd` extends the existing mapped-input
+observer and runs the actual common host/session from `--authored-package remake/content/authored/battle-search.json`
+(use an absolute resolved path at launch). It changes no gameplay state through a probe API. It checks
+unfaced Stay, nonzero delivered preview/facing, Down Search, Cancel, one receipt, actual result reveal/
+ack, true turn suffix and opened marker. An ignored copy with only the champion's fourth item slot
+filled supplies the full-pack branch: another member still has room, but no transfer/receipt/turn is
+allowed; real result return and outer movement undo are checked. This is controlled content, not an
+original natural route or a new world export.
+
+Use the owning ignored environment with a fresh output directory, existing Godot/project and actual
+Debug assembly. A necessary first startup/changed translation import is recorded; background headless
+Hidden launches use explicit local logs. No screenshots, per-frame dumps, bulk corpus or new tool
+installation. Fixed-sample output budget is <2 MiB/<75 seconds per run; work is bounded by the small
+actor/chest lists and four slots, with no acquisition. English and Chinese/remapped variants observe
+actual captions/result text and the installed input map. Authored actor/item fallback names remain
+explicit: the private #1602 catalog is package/provenance-bound and cannot be mounted as if this
+public authored package were the private world. Any private source-noun observation must select that
+accepted catalog, not merely change language.
+
+`BattleSearchTests` tests actual rules/session behavior, including four directions, full/occupied free
+return, unique receipt, duplicate/stale inputs, gold saturation, empty contents and real battle-v2
+codec restore followed by ordinary empty Search. Run `uv run sf2 verify engine` and affected
+`uv run sf2 verify adapter`, then the clean committed dependency plan. Native results, exact head,
+failures and process completion live in the Issue handoff/PR. No new original H2/H3 or full research
+gate is selected for this engine-only addition; original timing, natural reach and human aesthetic
+acceptance remain **Unknown**.

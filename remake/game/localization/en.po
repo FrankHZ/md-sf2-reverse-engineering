@@ -1528,3 +1528,34 @@ msgstr "No battle members available."
 
 msgid "battle.member.help"
 msgstr "{0}/{1}: member · {2} / {3}: details · {4}: return to options"
+
+msgid "battle.command.search"
+msgstr "Search"
+
+msgid "battle.search-confirm"
+msgstr "Search the chest?"
+
+msgid "battle.search-item"
+msgstr "{0} opened the chest and received {1}."
+
+msgid "battle.search-gold"
+msgstr "{0} opened the chest and found {1} gold coins."
+
+msgid "battle.search-empty"
+msgstr "{0} opened the chest, but it was empty."
+
+msgid "battle.search-full"
+msgstr "{0} found {1}, but their hands are full. The chest remains closed."
+
+msgid "battle.search-occupied"
+msgstr "{0} is distributing items from the open chest."
+
+
+msgid "battle.chest-open"
+msgstr "Open"
+
+msgid "battle.chest-closed"
+msgstr "Chest"
+
+msgid "battle.search-detail"
+msgstr "Open the faced chest. Receiving an item, gold or an empty result ends this turn. Full hands return to commands."

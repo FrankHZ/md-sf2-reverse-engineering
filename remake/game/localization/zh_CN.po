@@ -1528,3 +1528,34 @@ msgstr "没有可查看的战斗成员。"
 
 msgid "battle.member.help"
 msgstr "{0}/{1}：成员 · {2} / {3}：详情 · {4}：返回选项"
+
+msgid "battle.command.search"
+msgstr "调查"
+
+msgid "battle.search-confirm"
+msgstr "调查宝箱？"
+
+msgid "battle.search-item"
+msgstr "{0}打开宝箱，获得了{1}。"
+
+msgid "battle.search-gold"
+msgstr "{0}打开宝箱，找到了{1}枚金币。"
+
+msgid "battle.search-empty"
+msgstr "{0}打开宝箱，但里面是空的。"
+
+msgid "battle.search-full"
+msgstr "{0}找到了{1}，但背包已满。宝箱保持关闭。"
+
+msgid "battle.search-occupied"
+msgstr "{0}正在分发宝箱中的物品。"
+
+
+msgid "battle.chest-open"
+msgstr "已开"
+
+msgid "battle.chest-closed"
+msgstr "宝箱"
+
+msgid "battle.search-detail"
+msgstr "打开面前的宝箱。领取物品、金币或发现空箱会结束本回合；背包已满时返回行动菜单。"

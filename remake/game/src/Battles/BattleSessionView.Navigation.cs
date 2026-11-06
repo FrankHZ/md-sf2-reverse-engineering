@@ -23,7 +23,7 @@ public sealed partial class BattleSessionView
             (!current.HasBattleControl && current.BattleMovement is not { Purpose: BattleMovementPurpose.Player }) ||
             current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
             current.BattleScene is not null || current.BattleRound is not null || current.BattleRetreat is not null ||
-            current.BattleGive is not null || current.BattleDiscard is not null ||
+            current.BattleGive is not null || current.BattleDiscard is not null || current.BattleSearch is not null ||
             current.BattleMovement is { Purpose: not BattleMovementPurpose.Player }) return null;
         if (_inspectionRelease) return null;
         if (_inspection.Active) return (current.SessionId, current.Revision, selection.Actor, "Inspection", _inspection.Page);

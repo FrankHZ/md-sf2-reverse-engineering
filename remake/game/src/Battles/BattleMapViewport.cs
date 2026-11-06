@@ -18,6 +18,7 @@ internal sealed partial class BattleMapViewport : Control
     internal bool CameraSettled => WorldViewport.Settled;
     private readonly Control _board = new() { Name = "Board", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Dictionary<ActorRef, Label> _markers = [];
+    private readonly Dictionary<int, Label> _chests = [];
     private readonly Dictionary<ActorRef, Sprite2D> _sprites = [];
     private readonly Dictionary<ActorRef, int> _spriteIds = [];
     private readonly Dictionary<(int Sprite, int Direction, int Frame), ImageTexture> _textures = [];
@@ -66,7 +67,7 @@ internal sealed partial class BattleMapViewport : Control
     internal void Build(BattleDefinition definition, ScenarioDefinition content)
     {
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
-        _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
+        _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
         _builds++;
@@ -82,6 +83,14 @@ internal sealed partial class BattleMapViewport : Control
             throw new InvalidOperationException("battlefield-map-region-unavailable");
         if (_region is not null) BuildTerrain(definition, content);
         else BuildAuthoredTerrain(definition);
+        foreach (var chest in definition.Search?.Chests ?? [])
+        {
+            var label = new Label { Name = "Chest_" + chest.Flag, Position = new Vector2(chest.Position.X, chest.Position.Y) * CellSize,
+                Size = Vector2.One * CellSize, HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore, ZIndex = 1 };
+            label.AddThemeFontSizeOverride("font_size", 20);
+            _board.AddChild(label); _chests.Add(chest.Flag, label);
+        }
         _range = new BattleMovementRangeView { Name = "MovementRange" };
         _board.AddChild(_range);
         _selection = new BattleSelectionView { Name = "Selection" };
@@ -184,6 +193,12 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
+        foreach (var chest in _chests)
+        {
+            bool opened = current.Story.Flags.Contains(chest.Key);
+            chest.Value.Text = Localization.GameText.Get(opened ? "battle.chest-open" : "battle.chest-closed");
+            chest.Value.Modulate = opened ? Colors.LightGray : Colors.Gold;
+        }
         _range.Present(projection.MovementRange);
         _selection.Present(projection.Markers.FirstOrDefault(actor => actor.Selected));
         _battleVisuals = current.Battle.Visuals;

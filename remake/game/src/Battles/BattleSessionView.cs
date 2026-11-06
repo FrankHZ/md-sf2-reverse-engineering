@@ -61,6 +61,7 @@ public sealed partial class BattleSessionView : Control
     private BattleGiveView _give = null!;
     private string _discardMenu = "";
     private BattleDiscardView _discard = null!;
+    private BattleSearchView _search = null!;
     private BattleMapViewport _map = null!;
     private BattleCommandMenu _menu = null!;
     private BattleDefinition? _mapDefinition;
@@ -97,6 +98,7 @@ public sealed partial class BattleSessionView : Control
         _scene = new BattleSceneView { Name = "BattleScene", PresentationRoot = ui }; AddChild(_scene);
         _give = new BattleGiveView { Name = "BattleGive" }; ui.AddChild(_give);
         _discard = new BattleDiscardView { Name = "BattleDiscard" }; ui.AddChild(_discard);
+        _search = new BattleSearchView { Name = "BattleSearch" }; ui.AddChild(_search);
         _retreat = new BattleRetreatView { Name = "BattleRetreat" }; ui.AddChild(_retreat);
         _story = new BattleStoryView { Name = "BattleStory" }; ui.AddChild(_story);
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; ui.AddChild(_appearance);
@@ -167,7 +169,7 @@ public sealed partial class BattleSessionView : Control
         if (first)
         {
             _scene.Configure(session, _input, Audio); _retreat.Configure(session, _input.Settings);
-            _give.Configure(session, _input.Settings); _discard.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings);
+            _give.Configure(session, _input.Settings); _discard.Configure(session, _input.Settings); _search.Configure(session, _input.Settings); _appearance.Configure(session, _map, _input.Settings);
             _story.Configure(session, _map, _input);
         }
         if (!ReferenceEquals(_mapDefinition, result.Snapshot.Battle.Definition) ||
@@ -216,7 +218,7 @@ public sealed partial class BattleSessionView : Control
         ClearNavigation(); RetireInspection();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
-        _appearance.Hide(); _give.Hide(); _discard.Hide(); _feedback.Hide();
+        _appearance.Hide(); _give.Hide(); _discard.Hide(); _search.Hide(); _feedback.Hide();
     }
 
     public override void _Process(double delta)
@@ -230,6 +232,11 @@ public sealed partial class BattleSessionView : Control
         ServiceNavigation();
         if (_startupFailure is not null || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
+        if (_session?.Current.BattleSearch is not null)
+        {
+            if (!_inputSuspended && _search.Consume(delta) is { } completion) Send(completion);
+            return;
+        }
         if (_session?.Current.BattleDiscard is not null)
         {
             if (!_inputSuspended && _discard.Consume(delta) is { } completion) Send(completion);
@@ -291,6 +298,8 @@ public sealed partial class BattleSessionView : Control
         if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (InspectionInput(action)) return;
+        if (_session?.Current.BattleSearch is not null)
+        { if (_search.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleDiscard is not null)
         { if (_discard.Acknowledge(action) is { } ack) Send(ack); return; }
         if (_session?.Current.BattleGive is not null)
@@ -432,7 +441,7 @@ public sealed partial class BattleSessionView : Control
         _feedback.Visible = (_result.Failure is { } failure &&
             (failure.Kind != SessionFailureKind.IllegalCommand || !_menu.Visible)) || (!_menu.Visible && _session.Current.Selection is null &&
             _session.Current.BattleScene is null && _session.Current.BattleRound is null &&
-            _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null);
+            _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null && _session.Current.BattleSearch is null);
         _roster = projection.Roster;
         var selection = _session.Current.Selection;
         var equipmentChoices = _session.QueryBattleChoices().Equipment;
@@ -452,7 +461,7 @@ public sealed partial class BattleSessionView : Control
         _giveMenu = BattleGiveView.Menu(_session);
         _give.Present();
         _discardMenu = BattleDiscardView.Menu(_session);
-        _discard.Present();
+        _discard.Present(); _search.Present();
         bool give = BattleGiveView.Selecting(selection?.Stage), discard = BattleDiscardView.Selecting(selection?.Stage);
         bool equipment = selection?.Stage == BattleSelectionStage.EquipmentChoice;
         bool auxiliary = give || discard || equipment;
@@ -571,7 +580,7 @@ public sealed partial class BattleSessionView : Control
             target = current?.Selection?.Target?.Value, candidate = (_menu.Visible ? _menu.TargetCandidate : _targetCandidate)?.Value,
             itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
-            discard = _discard.Observe(), discardMenu = _discardMenu, custody = current?.Battle.ItemCustody,
+            search = _search.Observe(), searchChests = current?.Battle.Definition.Search?.Chests.Select(c => new { x = c.Position.X, y = c.Position.Y, flag = c.Flag, opened = current.Story.Flags.Contains(c.Flag) }), discard = _discard.Observe(), discardMenu = _discardMenu, custody = current?.Battle.ItemCustody,
             give = _give.Observe(), giveMenu = _giveMenu, returnSlot = current?.Selection?.ReturnSlot,
             equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment, equipmentVisible = _hud.IsVisibleInTree() && current?.Selection?.Stage == BattleSelectionStage.EquipmentChoice,
             equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,

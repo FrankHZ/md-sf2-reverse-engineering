@@ -322,7 +322,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         foreach (var encounter in Array(root, "encounters"))
         {
             ObjectOptional(encounter, "encounter", ["id", "map", "placements",
-                .. poison ? new[] { "outcome" } : []], "initialization", "rewards", "tarosEffectiveness", "prismLaser", "itemDrops", "leaderCleanup");
+                .. poison ? new[] { "outcome" } : []], "initialization", "rewards", "tarosEffectiveness", "prismLaser", "itemDrops", "leaderCleanup", "search");
             BattleRewardDefinition? rewards = null;
             if (encounter.TryGetProperty("rewards", out var rewardInput))
             {
@@ -384,7 +384,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 leaderCleanup: LeaderCleanupReader.Read(encounter, placements, allowLeaderCleanup),
                 itemDrops: EnemyItemDropReader.Read(encounter, placements, dropItems),
                 prismLaser: PrismLaserReader.Read(encounter, placements),
-                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison, attackSpells: attacks.Values, supportSpells: supports.Values)),
+                give: BattleGiveReader.Read(root, allowLeaderCleanup, placements, weapons, healingItems.Values, retreatItems.Values), discard: allowLeaderCleanup ? null : discard, poison: poison, attackSpells: attacks.Values, supportSpells: supports.Values, search: BattleSearchReader.Read(encounter, terrain.Width, terrain.Height, healingItems.Values, retreatItems.Values, weapons))),
                 "duplicate-encounter", "encounters.id");
         }
         Require(encounters.ContainsKey(selectedEncounter), "missing-encounter", "start.encounter");
