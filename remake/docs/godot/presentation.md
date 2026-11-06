@@ -15,6 +15,10 @@ modernization choices, real service/disclosure limits, menu/return sketches and 
 Near-town remote services and a read-only overview are recommendations awaiting product selection,
 not implemented capabilities or changes to the current agreements below.
 
+The [battle interaction baseline](battle-interaction-baseline.md) compares original capabilities
+with current consumer gaps and owns the proposed battlefield inspection mode; it does not establish
+an implemented inspection capability.
+
 ## System menu agreement (#1518)
 
 **Standard rigor:** consolidate the existing gameplay system entries and preserve their eligibility,
