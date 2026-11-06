@@ -25,8 +25,13 @@ entry or replay awards. Actual engine behavior covers subsequent AI/actions/roun
 payments/once events and focused victory/defeat/Angel Wing returns, including the existing field v1
 save consumer. The [battle persistence agreement](application/battle-save-and-continue.md#implemented-domainapplication-boundary-a)
 owns admission, reproduction and the seven-encounter private profile's explicit known-context limit.
-Disk codec/store, native music observation, Save UI and fresh-process Continue remain B/C work;
-battle saving is not yet available to players. Required unknown music/interpreter state rejects.
+The shared strict v1/v2 codec/store and ordinary system-menu Save/return, Save and Quit and title
+Continue are implemented for this boundary across the seven admitted encounters. Actual native
+restart compares complete saved semantics and both seeds before first input, then matched AI/round
+results; focused victory/defeat and admitted Battle02 Egress keep usable v1 field returns.
+The [native verification owner](verification/battle-save.md) distinguishes controlled preconditions,
+ordinary input, inherited engine/storage evidence and remaining physical/exit-warning limits.
+Required unknown or finite music/interpreter state rejects; arbitrary battle suspension remains outside scope.
 
 ## Castle bedroom scene retirement
 

@@ -149,6 +149,12 @@ public sealed class GameSession
             return BattleCommandDispatcher.Reject(current, "stale-input", "envelope");
         if (current.BattleResult is not null) return BattleCommandDispatcher.Reject(current, "battle-ended", "command");
         if (envelope.Command is null) return BattleCommandDispatcher.Reject(current, "missing-command", "command");
+        if (envelope.Command is ObserveBattleMusic battleMusic)
+        {
+            var observed = BattleMusicObservation.Submit(Definition, current, Rules, battleMusic);
+            _current = observed.Snapshot;
+            return observed;
+        }
         if (envelope.Command is ObserveFieldMusic music)
         {
             var observed = OpeningSave.ObserveMusic(Definition, current, music);

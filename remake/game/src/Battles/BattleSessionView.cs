@@ -41,6 +41,7 @@ public sealed partial class BattleSessionView : Control
     private GameSession? _session;
     private SessionResult? _result;
     private SessionFailure? _startupFailure;
+    internal string? StartupError => _startupFailure?.Code;
     private bool _started;
     private bool _inputSuspended;
     private void SuspendInput() { _inputSuspended = true; _menu?.SuspendPointer(); }

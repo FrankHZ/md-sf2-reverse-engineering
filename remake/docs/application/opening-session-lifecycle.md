@@ -32,8 +32,8 @@ slots and bounded in-process original helpers, but leaves physical restart/power
 player save UX Unknown at that earlier bounded evidence surface. The accepted
 [battle interaction baseline](../godot/battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
 separately confirms original USA battle Quit/save. The authorized remake battle Save/Continue
-[design contract](battle-save-and-continue.md) owns planned stable battle commits and fresh-process
-restoration; current implementation here remains field-only. No arbitrary story/battle snapshot,
+[battle persistence owner](battle-save-and-continue.md) owns the implemented stable battle commit
+and fresh-process boundary; this document continues to own field recipes. No arbitrary story/battle snapshot,
 autosave, cloud save, SRAM import,
 copy/delete UI, migration framework, whole-party naming, promotion or Battle03 ending is promised here.
 New Game selects a slot and writes only after final confirmation, including explicit occupied-slot

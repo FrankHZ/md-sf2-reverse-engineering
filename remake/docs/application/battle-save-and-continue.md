@@ -7,8 +7,9 @@ The authorized outcome is explicit Save during a battle, process exit, then Cont
 battle with equivalent subsequent gameplay. Silent loss, duplicate payment/rewards and a plausible
 but different RNG continuation are unacceptable. High rigor controls recovery and staged acceptance;
 it does not require a snapshot platform. This document owns the accepted staged implementation
-contract. Slice A implements the finite in-memory continuation and B implements the versioned
-codec/shared store below; host Save/Continue with fresh-process acceptance (C) remains pending. The current
+contract. A implements finite in-memory continuation, B the versioned codec/shared store, and C
+connects ordinary host Save/Continue with the bounded native observations below. Independent
+integration remains main-gate's responsibility. The current
 [opening lifecycle](opening-session-lifecycle.md#implemented-savepoint-boundary)
 continues to own delivered field savepoints and the common storage/entry rules.
 
@@ -28,7 +29,7 @@ to product saves. Additional gameplay capabilities remain owned by their existin
 
 Design acceptance requires the boundary, reader-backed state disposition, compatibility/failure
 policy, fresh-process acceptance matrix and bounded implementation ownership below. Implementation
-acceptance requires those future checks to pass; serializing successfully is insufficient. Main-gate
+acceptance requires the checks below to pass; serializing successfully is insufficient. Main-gate
 owns review, implementation dispatch and integration. No unresolved product choice blocks this design.
 
 ## Implemented Domain/Application boundary (A)
@@ -85,15 +86,13 @@ compares the next legal turn. This is engine admission/continuation evidence, no
 reach or native restart. The local representative run covers 9–17 actors and 0–4 retained allies;
 capture plus detached restore measured 24.72 ms for the first case and 0.39–0.83 ms thereafter,
 excluding content admission, encoding and disk/host work. No media copies, traces or new acquisition
-are needed; the existing world reader dominates memory. B owns measured encoded size and peak memory
+are needed; the existing world reader dominates memory. B records measured encoded size and peak memory
 with the real codec/store under the resource limits below.
 
-**Unknown / deferred:** native music observation,
-ordinary Save UI, mounting and genuinely fresh-process equivalence (C). Entering a region script
-invalidates music history; A explicitly rejects `save-battle-music-unknown` afterward until known
-context is bound. The region behavior test supplies that context explicitly after actual completion;
-it does not implement C's hook. Finite music/interpreter continuation, later campaign content and
-arbitrary saves remain outside admission. Passing A does not enable battle saving in the product.
+Entering a region script invalidates music history. `BattleSaveRegionTests` submits C's typed
+`ObserveBattleMusic` only after actual program completion, then saves/restores and continues the
+next round without replaying the region. Unknown history still rejects. Finite music/interpreter
+continuation, later campaign content and arbitrary saves remain outside admission.
 
 ## Implemented versioned codec and shared storage (B)
 
@@ -137,11 +136,9 @@ attempted returns `save-publication-uncertain`, including failed final validatio
 published; callers must inspect the slot before deciding on a later operation, never retry or exit
 as though the attempt certainly failed. Only the operation's own unpublished temp is disposable.
 
-The narrow `OpeningPersistenceHost` compatibility adapter deliberately rejects battle records with
-`save-incompatible` before displaying/mounting them. The shared recovery decision therefore also
-blocks an older v1 backup behind a valid v2 primary. C owns replacing that explicit unavailable-reader
-boundary with ordinary battle slot labels, music observation, safe Save and actual mounting. B does
-not expose an ordinary battle Save option or claim native restart/visible-input acceptance.
+`OpeningPersistenceHost` consumes both typed variants. The shared recovery decision still forbids
+downgrade behind unsupported versions/kinds or semantic/content rejection. Valid battle records
+use their own labels and restore path; they are never converted to v1 field progress.
 
 Direct acceptance invokes the real codec, `SaveRecordRestore` and linked production store from a
 disposable console driver, with A's small `BattleSaveFixture.Create`/`Capture` and existing
@@ -175,11 +172,45 @@ and store) was 2.75–4.00 MB, process peak working set 644 MB including content
 3 GiB admission budget. These are small local samples, not latency guarantees. The cold metadata/JIT
 cost merits C's ordinary-input observation and use of the existing detached `LoadEntry` work where
 needed; there is no size pressure, new cache, checksum scheme or limit increase. Fresh-process native
-equivalence, visible blocking, music and outcome mounting remain C's required acceptance.
+equivalence, loading feedback, music and outcome mounting use C's native verification below.
 
 Validation uses `uv run sf2 verify engine`, `uv run sf2 verify adapter`, selected consumer builds,
 and clean committed `uv run sf2 verify plan --base origin/main --head HEAD` under the locked
 environment workflow. No normal/full research suite or Godot restart is selected solely for B.
+
+## Implemented ordinary host boundary (C)
+
+**Confirmed in bounded remake observations; [#1638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1638).**
+The existing system menu offers the same two slots at admitted player Movement, with localized
+encounter/round/actor/time labels and explicit overwrite consent. Confirmation offers Save and
+return or Save and Quit; only verified publication marks the captured revision clean or exits.
+The saved acknowledgement returns directly to play. Nonzero preview, pending movement/scene,
+selection and story work refuse without cancellation or a queued save. Closing the menu resumes
+the real pending consumer. Existing modal pause, ownership and release barriers remain shared.
+
+`SessionAudio.ObserveBattleHistory` reads its actual battle map/area/current cue and bounded history,
+including native attack/defence scene pushes. `ObserveBattleMusic` validates stable battle input,
+route and admitted looping resources; it never calls the field-only observation. A changed native
+previous stack replaces the last observation because battle scenes push music between player inputs;
+a known current cue cannot disagree, and an existing logical generation/clock is retained. Finite,
+fading, skipped, unknown or incomplete helper contexts do not become saveable by this observation.
+
+Continue reuses asynchronous `LoadEntry`, the no-init definition reader and `SaveRecordRestore`.
+Battle audio and the actual disabled candidate battle view prepare before releasing the old session;
+failed preparation disposes the candidate and retains the previous owner. Mount does not Start or
+Advance. Saved music starts at its beginning with a new generation and reconstructed history.
+Cancel rebinds the old session's display catalog. Capture/store work runs detached while gameplay
+callbacks remain frozen. Publication uncertainty survives a close request even if that request
+discards the completed entry operation's result; another Save requires read-only Continue inspection.
+
+The [native verification owner](../verification/battle-save.md) records real Save/return, owned
+process exit/new PID Continue, exact pre-input semantic/RNG comparisons and matched subsequent
+AI/round draws. All seven existing battle shapes mount/save/continue by the same mechanism.
+Controlled focused Battle01 victory/defeat and admitted Battle02 Egress return to usable field,
+save v1 and Continue repeatedly without repeating outcomes. Engine A/B evidence remains authoritative
+for the wider state/codec/storage matrix; this is not a seven-battle natural campaign replay.
+Physical focus/OS-close device acceptance and arbitrary candidate resource corruption are not newly
+claimed by these headless observations. Exit warnings remain explicit in the verification owner.
 
 ## Evidence boundary and current consumers
 
@@ -192,35 +223,10 @@ entry. Battle saving is an original feature. This design consumes that accepted 
 claiming a new original observation, physical power-loss guarantee or arbitrary-action snapshot.
 The modern two-slot UI and the serialization/restoration boundaries here are separate decisions.
 
-**Confirmed code structure**, inspected at accepted remake commit
-`9aabbfa925a11beca40b122823e492038c3a4d5f`:
-
-- [GameSession](../../src/Sf2.Remake.Application/Runtime/GameSession.cs) delegates `QuerySave`,
-  revision-bound `CaptureSave` and detached `Restore` to the opening persistence owner.
-  [OpeningSave.RequireStable](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs)
-  requires `CanWaitAtInput`, which is field-only. Relaxing that check alone cannot save a battle.
-- [OpeningSaveData](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSaveData.cs) carries
-  party progress, two uint seeds, custody and selected story values; it has no live enemy, queue,
-  AI or battle return binding. [OpeningRestore.Build](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
-  validates and reconstructs field recipes. It must remain the v1 field authority.
-- [OpeningSaveJson](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs) admits version1 only,
-  rejects duplicate/unknown/missing keys and all JSON null values (except that old saves may omit
-  `names`), checks a checksum over exact payload bytes, and bounds the envelope to 1 MiB/depth32.
-  A new optional battle property would violate old-reader compatibility, not extend it safely.
-- [LocalSaveStore](../../game/src/Persistence/LocalSaveStore.cs) already locks one slot, validates
-  candidates, writes/flushes a same-directory temporary, rereads it, replaces primary with backup
-  (or moves into an empty slot), then rereads primary. It distinguishes uncertain publication.
-  Recovery preserves the good backup and refuses incompatible/version-mismatched primaries.
-- [OpeningPersistenceHost](../../game/src/Entry/OpeningPersistenceHost.cs) freezes dispatch for
-  field Save, labels slots, asks before overwrite, validates Continue, mounts a candidate and marks
-  success only after readback. Its field music observation, recipe labels and field restore mount
-  assumptions need a battle branch; a new menu label alone supplies no restoration.
-
-**Inferred:** these existing transactions are sufficient infrastructure for a finite battle payload;
-new work belongs in state admission/reconstruction and the host boundary. **Unknown:** fresh-process
-battle equivalence, actual save latency and native failure behavior until implementation acceptance.
-No SDK, game, emulator, protected save or screenshot is needed for this static design audit.
-
+The current source responsibilities are the implemented A/B/C boundaries above. Field v1 remains
+owned by `OpeningSave`/`OpeningRestore`; battle v2 by `BattleSave`/`BattleRestore`. Both use the same
+strict envelope, typed record dispatch and atomic `LocalSaveStore`. The host consumes their
+admission results rather than weakening a field predicate or inventing a last-safe snapshot.
 ## Stable commit and request UX
 
 Application owns eligibility. The host may explain it and pause input; it cannot declare a safe
@@ -397,8 +403,9 @@ add tests of probes, comparison drivers or report generators. Native checks read
 projection/errors, never screenshots. Use disposable slot namespaces outside removable worktrees;
 registered immutable content is read-only. Existing user primary/backup and retained diagnostic
 processes are not test inputs. The following is the integrated required acceptance matrix.
-A's bounded engine checks are recorded above; disk/host/fresh-process rows remain future acceptance
-until B/C complete them.
+A/B engine and direct-store checks are recorded above; C's actual native coverage and explicit
+limits are recorded in the linked verification owner. This matrix remains the acceptance boundary,
+not a claim that every failure was observed on physical hardware.
 
 | Group / minimum representative seam | Pass condition |
 | --- | --- |

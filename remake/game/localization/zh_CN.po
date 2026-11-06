@@ -3,6 +3,39 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: zh_CN\n"
 
+msgid "save.and-return"
+msgstr "保存并返回游戏"
+
+msgid "save.and-quit"
+msgstr "保存并退出"
+
+msgid "save.battle-location"
+msgstr "战斗 {0} · 第 {1} 回合 · {2}"
+
+msgid "save.battle-offer"
+msgstr "{0}\n继续游戏将回到此角色当前回合的位置。"
+
+msgid "save.recovery-record"
+msgstr "恢复此备份？\n{0}"
+
+msgid "save.error.battle-preview"
+msgstr "请先取消移动。返回游戏，等待实际返回移动完成后，再次请求保存。"
+
+msgid "save.error.battle-selection"
+msgstr "请先返回移动阶段并取消移动。已确认的装备与物品变更会保留。"
+
+msgid "save.error.battle-movement"
+msgstr "请等待移动完成。返回游戏，待角色回到原位后再次请求保存。"
+
+msgid "save.error.battle-busy"
+msgstr "请先完成当前行动或剧情。返回游戏，待玩家可移动时再次请求保存。"
+
+msgid "save.error.battle-music"
+msgstr "当前战斗音乐尚不能保存。返回游戏，等待音乐事件结束后再次请求保存。"
+
+msgid "save.error.battle-context"
+msgstr "所需战斗进度未知或尚不支持。请返回游戏，或检查匹配的游戏内容后再使用此存档。进度文件会保留。"
+
 msgid "entry.new-menu"
 msgstr "新游戏…"
 

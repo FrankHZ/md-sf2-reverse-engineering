@@ -197,8 +197,30 @@ public sealed partial class GameRoot : Node
         if (_restoring && candidateAudio is not null)
         {
             candidateAudio.Restore(started.Result.Snapshot);
+            candidateAudio.SetPaused(true);
             if (candidateAudio.Error is { } restoreAudioError)
             { candidateAudio.Dispose(); SaveError(restoreAudioError); return; }
+        }
+        BattleSessionView? preparedBattle = null;
+        if (_restoring && SessionPresentationOwner.IsBattle(started.Result.Snapshot))
+        {
+            // Build the actual battle resources while the previous session is still owned.
+            // Attach only projects this already restored player boundary; it never advances it.
+            var previousScale = GetWindow().ContentScaleMode;
+            preparedBattle = new BattleSessionView { Name = "PreparedBattle", ProcessMode = ProcessModeEnum.Disabled,
+                WorldViewport = new(), Audio = candidateAudio };
+            AddChild(preparedBattle); preparedBattle.ConfigureInput(_input!);
+            try
+            {
+                preparedBattle.Attach(started.Session, started.Result); preparedBattle.Hide();
+                if (preparedBattle.StartupError is { } resourceError) throw new InvalidOperationException(resourceError);
+            }
+            catch (Exception error) when (error is InvalidOperationException or ArgumentException)
+            {
+                RemoveChild(preparedBattle); preparedBattle.Free(); candidateAudio?.Dispose();
+                GetWindow().ContentScaleMode = previousScale;
+                SaveError(error.Message); return;
+            }
         }
         // Admission and required audio preparation succeed before the old owner is released.
         // A failed replacement leaves the old session paused behind the cancellable entry.
@@ -207,8 +229,12 @@ public sealed partial class GameRoot : Node
         CloseSavePanel();
         _session = started.Session;
         _audio = candidateAudio;
-        var view = new BattleSessionView { Name = "BattleSessionView", WorldViewport = _worldViewport };
-        _battle = view; AddChild(view); view.ConfigureInput(_input!);
+        var view = preparedBattle ?? new BattleSessionView { WorldViewport = _worldViewport };
+        view.Name = "BattleSessionView";
+        if (preparedBattle is not null) _worldViewport = preparedBattle.WorldViewport;
+        _battle = view;
+        if (view.GetParent() is null) AddChild(view);
+        view.ConfigureInput(_input!);
         if (_audio is not null)
         {
             view.Audio = _audio;
@@ -259,12 +285,7 @@ public sealed partial class GameRoot : Node
         if (_systemMenu is not null) return;
         _systemMenu = new SystemMenuView { Name = "SystemMenuView", Input = _input!, Resume = CloseSystemMenu };
         _hostUi.AddChild(_systemMenu); ApplyHostPause();
-        if (_fieldEntryFailure is null && _session!.Current.HasSettledFieldEntry && _audio?.ObserveFieldHistory() is { } music)
-        {
-            var before = _session.Current;
-            var published = _session.Submit(new(before.SessionId, before.Revision, null, music));
-            _fieldEntryFailure = published.Failure?.Code;
-        }
+        if (_fieldEntryFailure is null) _fieldEntryFailure = ObserveSaveMusic();
         RefreshSystemMenuLabels(); DisarmInput();
     }
     private void RefreshSystemMenuLabels()
@@ -276,11 +297,12 @@ public sealed partial class GameRoot : Node
             if (!_input.MenuPadAvailable) _menuButton.TooltipText += "\n" + GameText.Get("system.no-pad");
         }
         if (_systemMenu is null) return;
-        var save = _session!.QuerySave();
+        var save = SaveOffer();
         string saveReason = save.Error is "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion"
             ? Explain(save.Error) : GameText.Get("system.save-reason");
-        _systemMenu.Present(save.Allowed && _fieldEntryFailure is null,
-            _fieldEntryFailure is { } error ? Explain(error) : save.Allowed ? "" : saveReason, CanOpenSettings,
+        if (_session!.Current.Active is ActiveBattle && save.Error is { } battleError) saveReason = Explain(battleError);
+        _systemMenu.Present(save.Error is null && _fieldEntryFailure is null,
+            _fieldEntryFailure is { } error ? Explain(error) : save.Error is null ? "" : saveReason, CanOpenSettings,
             _session.Current.CanWaitAtInput && _exploration?.PartyMenuOpen != true,
             ShowSave, ShowSettings, ShowEntry, RequestQuit);
     }

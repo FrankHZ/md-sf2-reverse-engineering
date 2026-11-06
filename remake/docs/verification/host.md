@@ -1889,8 +1889,12 @@ fallback. The connected New Game route supplies the map material and reaches act
 
 ## Opening Save and Continue
 
+Stable battle Movement uses the same slots through the separate
+[battle Save/Continue verification owner](battle-save.md). Field recipes below retain their own
+safe-anchor semantics; a battle record restores the saved actor/queue position instead.
+
 The [High-rigor lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
-owns the three recipes, persistent state and exclusions. These are remake savepoints, not original
+owns the field recipes, persistent state and exclusions. These are remake savepoints, not original
 SRAM or exact-position suspension. Load the current ignored private/tool configuration in the same
 PowerShell process as each launch, select the existing palette-complete New Game world and six
 battle/static inputs, and force `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Reuse the owned installation

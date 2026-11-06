@@ -20,6 +20,17 @@ internal static class GameText
     private static readonly Dictionary<string, int> Arguments = new()
     {
         ["entry.loading"] = 0,
+        ["save.and-return"] = 0,
+        ["save.and-quit"] = 0,
+        ["save.battle-location"] = 3,
+        ["save.battle-offer"] = 1,
+        ["save.recovery-record"] = 1,
+        ["save.error.battle-preview"] = 0,
+        ["save.error.battle-selection"] = 0,
+        ["save.error.battle-movement"] = 0,
+        ["save.error.battle-busy"] = 0,
+        ["save.error.battle-music"] = 0,
+        ["save.error.battle-context"] = 0,
         ["entry.publishing"] = 0,
         ["entry.returning"] = 0,
         ["entry.quit-pending"] = 0,
