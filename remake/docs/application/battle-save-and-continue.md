@@ -7,8 +7,8 @@ The authorized outcome is explicit Save during a battle, process exit, then Cont
 battle with equivalent subsequent gameplay. Silent loss, duplicate payment/rewards and a plausible
 but different RNG continuation are unacceptable. High rigor controls recovery and staged acceptance;
 it does not require a snapshot platform. This document owns the accepted staged implementation
-contract. Slice A implements the finite in-memory continuation below; disk format/store (B) and
-host Save/Continue with fresh-process acceptance (C) remain pending. The current
+contract. Slice A implements the finite in-memory continuation and B implements the versioned
+codec/shared store below; host Save/Continue with fresh-process acceptance (C) remains pending. The current
 [opening lifecycle](opening-session-lifecycle.md#implemented-savepoint-boundary)
 continues to own delivered field savepoints and the common storage/entry rules.
 
@@ -88,12 +88,98 @@ excluding content admission, encoding and disk/host work. No media copies, trace
 are needed; the existing world reader dominates memory. B owns measured encoded size and peak memory
 with the real codec/store under the resource limits below.
 
-**Unknown / deferred:** disk v2 and mixed-version publication/recovery (B), native music observation,
+**Unknown / deferred:** native music observation,
 ordinary Save UI, mounting and genuinely fresh-process equivalence (C). Entering a region script
 invalidates music history; A explicitly rejects `save-battle-music-unknown` afterward until known
 context is bound. The region behavior test supplies that context explicitly after actual completion;
 it does not implement C's hook. Finite music/interpreter continuation, later campaign content and
 arbitrary saves remain outside admission. Passing A does not enable battle saving in the product.
+
+## Implemented versioned codec and shared storage (B)
+
+**Confirmed in the remake; [#1637](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1637).**
+[SaveRecord](../../src/Sf2.Remake.Content/Persistence/SaveRecord.cs) has finite field and battle
+variants. `OpeningSaveJson.ReadRecord`/`WriteRecord` dispatch these records; the original
+`Read`/`Write` API remains field-only. Version1 keeps its exact original property order, payload,
+checksum and missing-`names` compatibility. Reading never rewrites a file. Version2 has required
+`formatVersion`, `slot`, `sequence`, `savedAt`, `kind: "battle-player-input"` and `data` keys.
+[BattleSaveWire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs) maps only A's finite
+battle/story progress, with no CLR type discriminator, path, definitions or computed view property.
+All keys are required, including names. Every nullable operand is explicitly
+`{"present":false}` or `{"present":true,"value":...}`; unknown death credit, known-no-ally credit,
+zero and absence remain distinct. No JSON null is admitted. Custody flags must already be distinct
+and sorted; duplicate deal identities reject before their constructor could normalize them.
+
+The existing base64/SHA-256 envelope checks the exact decoded payload bytes. The 1 MiB encoded-file
+and depth32 limits, duplicate/unknown/missing-key rejection and UTC/slot/positive-sequence header
+checks apply to both versions. After envelope/checksum validation, the untyped top-level version
+and v2 kind are classified before typed payload binding or null/key inspection of that payload.
+Unknown versions/kinds produce `save-version`/`save-kind`, even with unfamiliar/null payload data;
+they do not become a malformed old payload eligible for downgrade. Invalid JSON or excessive depth
+still rejects at the common bounded JSON reader.
+
+`SaveRecordRestore.Restore` dispatches to the existing field restore or A's `RestoreBattle`, using
+only the caller's admitted definitions/rules. Reuse `OpeningRestoreReader` for configured private
+content: its `initializeParty:false` path calls the existing `PrivateBattleContentReader.Definitions`,
+not growth initialization. No battle entry, AI, round generation or route program runs. The payload
+selects no input file or rule implementation. Failed admission returns no mountable session.
+
+[LocalSaveStore](../../game/src/Persistence/LocalSaveStore.cs) accepts the same two typed variants
+and a record validator. Both use one slot lock, sequence calculation, same-directory temp,
+WriteThrough/flush, validated temp readback, atomic Move/Replace and validated final readback.
+Readbacks also compare exact bytes, in addition to sequence; this is an inexpensive transaction
+check, not a content-comparison framework. Recovery's second backup read is bounded as well.
+`SlotRead.CanRecover` is shared by store and host: only missing or structurally corrupt primary
+permits explicit repair from a valid backup. Semantic/content rejection, unknown versions/kinds
+and unavailable readers preserve both files and forbid downgrade. Repair preserves the good backup
+byte-for-byte. No operation promotes an interrupted `.tmp` residue. A failure after publication is
+attempted returns `save-publication-uncertain`, including failed final validation after bytes were
+published; callers must inspect the slot before deciding on a later operation, never retry or exit
+as though the attempt certainly failed. Only the operation's own unpublished temp is disposable.
+
+The narrow `OpeningPersistenceHost` compatibility adapter deliberately rejects battle records with
+`save-incompatible` before displaying/mounting them. The shared recovery decision therefore also
+blocks an older v1 backup behind a valid v2 primary. C owns replacing that explicit unavailable-reader
+boundary with ordinary battle slot labels, music observation, safe Save and actual mounting. B does
+not expose an ordinary battle Save option or claim native restart/visible-input acceptance.
+
+Direct acceptance invokes the real codec, `SaveRecordRestore` and linked production store from a
+disposable console driver, with A's small `BattleSaveFixture.Create`/`Capture` and existing
+`OpeningRestoreTests.Fixture` supplying inputs. Reproduce a deterministic roundtrip by writing
+`new BattleSaveRecord(1, 2, DateTimeOffset.UnixEpoch, data)`, reading with `ReadRecord`, restoring
+against the fixture's definition, recapturing through the returned `GameSession`, and requiring
+identical encoded bytes with the same header. Envelope mutations recompute the existing checksum
+so missing/duplicate/unknown keys, malformed presence, bad coordinates/queue/roles/loadout,
+required unknown accounting, wrong compatibility/route and size/depth failures reach their real
+owners. No codec/probe test suite or production fault platform is added.
+
+Under an explicitly configured **new external disposable root/namespace**, directly call store
+Write(v1), Write(v2), Write(v1), inspect sequences and both bytes, corrupt/remove primary and call
+Recover. Open `slot1.lock` with FileShare.None for lock contention; hold primary with FileShare.Read
+without Delete sharing to reach a real Windows replacement-attempt failure. The existing validator
+delegate can admit the temp, then use an incompatible configured definition at final readback to
+exercise uncertain publication after commit; rejecting at temp validation proves pre-publication
+preservation. Both mixed-version backup directions, exact backup repair, interrupted-temp residue,
+future version/kind, unavailable content and the field-only host policy were checked. These are
+bounded direct consumers, not evidence of physical power-loss durability. Local reproduction commands,
+driver source, disposable namespace and all completed failures/results belong in the executor's
+ignored `local/issue1637/HANDOFF.md`; this document owns the API recipe and acceptance boundary.
+
+The representative run reused the existing seven-encounter input read-only, following the same
+initialized encounter/known settled context construction as `BattleSaveProfileTests`, then restored
+through separately admitted no-init definitions. It copied no world/music. For 9–17 actors and 0–4
+retained allies, encoded records measured 18,386–22,358 bytes. No-init content admission took 834 ms;
+codec + detached restore + recapture/re-encode took 68 ms cold and 2.8–4.5 ms afterward; actual store
+writes including flush/readbacks took 9.9–11.5 ms. Combined per-case managed allocation (codec cycle
+and store) was 2.75–4.00 MB, process peak working set 644 MB including content, within the existing
+3 GiB admission budget. These are small local samples, not latency guarantees. The cold metadata/JIT
+cost merits C's ordinary-input observation and use of the existing detached `LoadEntry` work where
+needed; there is no size pressure, new cache, checksum scheme or limit increase. Fresh-process native
+equivalence, visible blocking, music and outcome mounting remain C's required acceptance.
+
+Validation uses `uv run sf2 verify engine`, `uv run sf2 verify adapter`, selected consumer builds,
+and clean committed `uv run sf2 verify plan --base origin/main --head HEAD` under the locked
+environment workflow. No normal/full research suite or Godot restart is selected solely for B.
 
 ## Evidence boundary and current consumers
 
