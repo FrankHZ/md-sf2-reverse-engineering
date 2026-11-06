@@ -44,6 +44,11 @@ The retained-hidden-record rule makes repeated source hides safe. F605 is still 
 the first scene, so its cast is available until the source hides it. No new runtime instruction or
 state authority is introduced, and Map19 and before-battle scene programs are unchanged.
 
+Explicit controlled starts with non-default setups still have an unresolved population/default-OnLoad
+selection mismatch, tracked in [#1629](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1629).
+This correction only bypasses its additional cleanup for those setups; ordinary `MapTransfer` selects
+the correct setup init, while the broader New Game/Restore impact remains **Unknown**.
+
 Acceptance uses small `CastleSceneLifecycleTests` content-entry behavior assertions, affected
 entity/follower tests, adapter compilation, and short native input/state/actor-projection observations.
 Reuse the registered world read-only and the owned Godot project; reports stay under a new ignored
