@@ -1431,7 +1431,7 @@ msgid "battle.inspect.land"
 msgstr "{0} · 地形效果 {1}%（{2},{3}）"
 
 msgid "battle.inspect.options"
-msgstr "战场选项 · 地图\n{0} / {1}：打开地图 · {2}：返回光标"
+msgstr "战场选项 · {0}\n{1}/{2}：选择 · {3} / {4}：打开 · {5}：返回光标"
 
 msgid "battle.inspect.map-help"
 msgstr "{0}/{1}：已知单位 · {2}：返回选项"
@@ -1516,3 +1516,15 @@ msgstr "障碍"
 
 msgid "battle.acting-land"
 msgstr "地形效果 {0}% · ({1}, {2})"
+
+msgid "battle.member.title"
+msgstr "战斗成员"
+
+msgid "battle.member.map"
+msgstr "地图"
+
+msgid "battle.member.empty"
+msgstr "没有可查看的战斗成员。"
+
+msgid "battle.member.help"
+msgstr "{0}/{1}：成员 · {2} / {3}：详情 · {4}：返回选项"

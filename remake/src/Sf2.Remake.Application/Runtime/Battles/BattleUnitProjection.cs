@@ -45,4 +45,35 @@ internal static class BattleUnitProjection
     internal static BattleLandEffect Land(SessionSnapshot current, BattleActorState actor, MapPosition position) =>
         new(actor.Actor, position, actor.Definition.Mover,
             BattleTerrainRules.LandEffect(current.Battle.Definition.Terrain[position.Y * 48 + position.X], actor.Definition.Mover));
+    internal static BattleInspectionUnit Details(ScenarioDefinition definition, SessionSnapshot current, BattleActorState actor)
+    {
+        var summary = BattleUnitProjection.Summary(definition, current, actor);
+        int? Stat(int value) => BattleUnitProjection.Stat(definition, value);
+        return new(actor.Actor, actor.Position, actor.IsAlly, summary.Name,
+            summary.NameIndex, summary.CustomName, summary.ClassId, summary.ClassName,
+            summary.Hp, summary.MaxHp, summary.Mp, summary.MaxMp, summary.Level,
+            actor.IsAlly ? actor.Exp : null, Stat(actor.Attack), Stat(actor.Defense), Stat(actor.Agility), Stat(actor.Definition.Move),
+            Status(actor.Status), Array.AsReadOnly(actor.Spells.Select(spell => new PartySpell(spell,
+                PartyDetailsQuery.SpellName(definition, spell))).ToArray()),
+            Array.AsReadOnly(Enumerable.Range(0, 4).Select(slot =>
+            {
+                var items = actor.SourceLoadout?.Items;
+                if (items is null || slot >= items.Count) return new PartyInventorySlot(slot, null, null, false, false);
+                ushort word = items[slot]; byte item = (byte)(word & 127);
+                return new PartyInventorySlot(slot, item == 127 ? null : PartyDetailsQuery.ItemName(definition, current.Battle.Definition, actor.Definition, item),
+                    item == 127, item != 127 && (word & 128) != 0, item != 127 && (word & 256) != 0, item == 127 ? null : item);
+            }).ToArray()));
+    }
+
+    internal static IReadOnlyList<string> Status(ushort word)
+    {
+        var result = new List<string>();
+        if ((word & 4) != 0) result.Add("curse");
+        if ((word & 2) != 0) result.Add("poison");
+        if ((word & 1) != 0) result.Add("stun");
+        if ((word & 0xC0) != 0) result.Add("sleep");
+        if ((word & 0x300) != 0) result.Add("silence");
+        if ((word & ~0x3C7) != 0) result.Add("Other status effect (details unavailable)");
+        return result.AsReadOnly();
+    }
 }

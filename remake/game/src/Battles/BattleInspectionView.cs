@@ -20,6 +20,9 @@ internal sealed partial class BattleInspectionView : Control
     private readonly BattleStatusCard _short = new() { Name = "ShortStatus" };
     private readonly Label _hint = new() { Name = "InspectionHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
     private readonly BattleOverviewView _overview = new() { Name = "Overview" };
+    private readonly BattleMemberListView _roster = new() { Name = "MemberList" };
+    private BattleMemberSnapshot? _members;
+    private int _optionIndex, _memberIndex;
     private string _page = "Cursor";
     private MapPosition _cursor = new(0, 0);
     private BattleInspectionUnit? _unit;
@@ -32,7 +35,7 @@ internal sealed partial class BattleInspectionView : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
         Theme = StoryTheme.Create(); ZIndex = 90;
-        AddChild(_details); AddChild(_short); AddChild(_overview); AddChild(_hint);
+        AddChild(_details); AddChild(_short); AddChild(_overview); AddChild(_roster); AddChild(_hint);
         _hint.AddThemeFontSizeOverride("font_size", 24);
         Close();
     }
@@ -42,11 +45,11 @@ internal sealed partial class BattleInspectionView : Control
         if (!query.Available) return false;
         _session = session; _input = input; _map = map; _snapshot = query;
         _cursor = query.Units.Single(u => u.Actor == query.ActiveActor).Position;
-        _page = "Cursor"; _unit = null; _land = null; Show(); Project(); return true;
+        _page = "Cursor"; _unit = null; _land = null; _members = null; _optionIndex = _memberIndex = 0; Show(); Project(); return true;
     }
     internal void Close()
     {
-        _snapshot = null; _session = null; _unit = null; _land = null;
+        _snapshot = null; _session = null; _unit = null; _land = null; _members = null;
         _map?.Inspect(null); Hide();
     }
     internal bool Refresh(GameSession? session)
@@ -61,14 +64,14 @@ internal sealed partial class BattleInspectionView : Control
     {
         if (!Active) return;
         bool a = action == GameAction.Attack, c = action == GameAction.Confirm, b = action == GameAction.Cancel;
-        if (_page is "Full" or "Short")
+        if (_page is "Full" or "Short" or "MemberFull")
         {
             if (a || b || c)
             {
-                if (_unit!.Actor == _snapshot!.ActiveActor) { Close(); return; }
-                _page = "Cursor"; _unit = null; _land = null;
+                if (_page != "MemberFull" && _unit!.Actor == _snapshot!.ActiveActor) { Close(); return; }
+                _page = _page == "MemberFull" ? "Members" : "Cursor"; _unit = null; _land = null;
             }
-            else if (_page == "Full")
+            else if (_page is "Full" or "MemberFull")
             {
                 if (action == GameAction.Target) _details.FocusPane = _details.FocusPane == 1 ? 2 : 1;
                 if (action is GameAction.Up or GameAction.Down) _details.ScrollFocused(action == GameAction.Up ? -72 : 72);
@@ -83,7 +86,27 @@ internal sealed partial class BattleInspectionView : Control
         else if (_page == "Options")
         {
             if (b) _page = "Cursor";
-            else if (a || c) { _page = "Map"; _knownIndex = 0; }
+            else if (action is GameAction.Up or GameAction.Down) _optionIndex = 1 - _optionIndex;
+            else if (a || c) { _page = _optionIndex == 0 ? "Map" : "Members"; _knownIndex = 0; _memberIndex = 0; }
+        }
+        else if (_page == "Members")
+        {
+            if (b) _page = "Options";
+            else if (_members is { Members.Count: > 0 } members)
+            {
+                if (action is GameAction.Up or GameAction.Down)
+                    _memberIndex = (_memberIndex + (action == GameAction.Up ? -1 : 1) + members.Members.Count) % members.Members.Count;
+                else if (a || c)
+                {
+                    var query = _session!.QueryBattleMembers(_snapshot!.SessionId, _snapshot.Revision, members.Members[_memberIndex].Actor);
+                    if (!query.Available) { Close(); return; }
+                    if (query.Unit is { } detail)
+                    {
+                        _unit = detail; _page = "MemberFull"; _land = null;
+                        _details.FocusPane = 1; _details.ResetReading();
+                    }
+                }
+            }
         }
         else if (b) { Close(); return; }
         else if (a || c)
@@ -110,7 +133,7 @@ internal sealed partial class BattleInspectionView : Control
     }
     internal void HandlePointer(InputEvent input)
     {
-        if (_page == "Full" && input is InputEventMouseButton { Pressed: true } mouse &&
+        if (_page is "Full" or "MemberFull" && input is InputEventMouseButton { Pressed: true } mouse &&
             mouse.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
             _details.Wheel(mouse.Position, mouse.ButtonIndex == MouseButton.WheelUp ? -72 : 72);
     }
@@ -120,7 +143,7 @@ internal sealed partial class BattleInspectionView : Control
         if (_snapshot is null) return;
         _map.Inspect(_cursor);
         var size = GetViewportRect().Size;
-        _details.Visible = _page == "Full"; _short.Visible = _page == "Short"; _overview.Visible = _page == "Map";
+        _details.Visible = _page is "Full" or "MemberFull"; _roster.Visible = _page == "Members"; _short.Visible = _page == "Short"; _overview.Visible = _page == "Map";
         string a = _input.CompactHint(GameAction.Attack), c = _input.CompactHint(GameAction.Confirm), b = _input.CompactHint(GameAction.Cancel);
         string close = GameText.Get("battle.inspect.close", a, c, b);
         string up = _input.CompactHint(GameAction.Up), down = _input.CompactHint(GameAction.Down);
@@ -128,7 +151,7 @@ internal sealed partial class BattleInspectionView : Control
         if (_unit is { } unit)
         {
             string name = DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName);
-            if (_page == "Full")
+            if (_page is "Full" or "MemberFull")
             {
                 _details.Size = new(Mathf.Min(1000, size.X - 64), Mathf.Min(860, size.Y - 180));
                 _details.Position = (size - _details.Size) / 2 - new Vector2(0, 36); _details.Present(unit, name);
@@ -137,10 +160,24 @@ internal sealed partial class BattleInspectionView : Control
             else
             {
                 _short.Present(unit, name); _short.Position = new(24, 24);
-                message = GameText.Get("battle.inspect.land", name, _land!.Percent, unit.Position.X, unit.Position.Y) + "\n" + close;
+                message = GameText.Get("battle.inspect.land", name, _land!.Percent, _land.Position.X, _land.Position.Y) + "\n" + close;
             }
         }
-        else if (_page == "Options") message = GameText.Get("battle.inspect.options", a, c, b);
+        else if (_page == "Options")
+        {
+            string[] options = [GameText.Get("battle.member.map"), GameText.Get("field-menu.member")];
+            message = GameText.Get("battle.inspect.options", string.Join("   ", options.Select((text, i) => (i == _optionIndex ? "> " : "  ") + text)), up, down, a, c, b);
+        }
+        else if (_page == "Members")
+        {
+            _members = _session!.QueryBattleMembers(_snapshot.SessionId, _snapshot.Revision);
+            if (!_members.Available) { Close(); return; }
+            _memberIndex = Math.Clamp(_memberIndex, 0, Math.Max(0, _members.Members.Count - 1));
+            _roster.Size = new(Mathf.Min(820, size.X - 64), Mathf.Min(800, size.Y - 180));
+            _roster.Position = (size - _roster.Size) / 2 - new Vector2(0, 36);
+            _roster.Present(_members, _memberIndex);
+            message = GameText.Get("battle.member.help", up, down, a, c, b);
+        }
         else if (_page == "Map")
         {
             _overview.Position = new(24, 24); _overview.Size = size - new Vector2(48, 156);
@@ -159,7 +196,8 @@ internal sealed partial class BattleInspectionView : Control
     {
         active = Active, page = Active ? _page : null, cursor = Active ? _cursor : null,
         sessionId = _snapshot?.SessionId, revision = _snapshot?.Revision, actor = _snapshot?.ActiveActor?.Value,
-        unit = _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _hint.Text,
+        optionIndex = _optionIndex, memberIndex = _memberIndex, members = _members?.Members,
+        roster = _roster.IsVisibleInTree() ? _roster.Observe() : null, unit = _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _hint.Text,
         full = _details.IsVisibleInTree() ? _details.Observe() : null,
         shortStatus = _short.IsVisibleInTree() ? _short.Observe() : null,
         overview = _overview.IsVisibleInTree() ? _overview.Observe() : null,
