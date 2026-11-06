@@ -297,9 +297,11 @@ of actor, movement preview, camera/selection, action count and RNG before implem
 visible inspection affordance in the movement context area, with its eventual mapped hint; leave it
 out of the current working UI until those semantics are accepted. Map/Member/Quit/Speed are distinct
 source functions, not automatically four enabled remake commands. Battle saving belongs to
-[#1618](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1618); speed changes to
-[#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) where applicable.
-Their final label/binding/eligibility cannot be determined by a style document.
+[#1618](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1618). The original Speed entry
+concerns text speed / battle-message settings; #1622 must compare its exact options with existing
+Settings. [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) separately owns
+the proposed Shift-held 1.5× simulation/presentation acceleration, not implementation of the original
+Speed entry. Final labels, bindings and eligibility remain with their respective behavior owners.
 
 The prior [host Overview recommendation](modernization-design.md#read-only-battle-overview) remains
 a separate unimplemented proposal. Prefer first closing the original inspection path; do not add a
