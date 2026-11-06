@@ -368,8 +368,9 @@ The [Standard agreement and provenance](domain/gameplay-rules.md#authored-battle
 [session](application/session-and-programs.md#battle-discard-selection-and-completion) and
 [native observation](development-and-verification.md#battle-discard-authored-observation) bound this
 claim. Null custody remains Unknown and blocks required rare mutation. Curses, rings, broken/status
-behavior, wider items, field/Caravan/shop services, connected/private imports and save/load remain
-Unsupported. Original reach/presentation/timing and the twelve #1047 Unknowns remain open; #638 paused.
+behavior, wider items and field/Caravan/shop services remain outside this authored subset. The
+[connected product extension](#connected-battle-discard-and-deals) owns its separate import/save boundary.
+Original reach/presentation/timing and the twelve #1047 Unknowns remain open; #638 paused.
 
 ## Authored battle Give and exchange
 
@@ -420,7 +421,7 @@ ordinary `WEAPON` records with ATT-only effects and ranges1–1,1–2 or2–2 su
 contributions. Only supported unpromoted, physical, player allies with growth/loadout bindings opt in.
 Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Rings, curses, broken
 weapons, other effects and unsupported actor states cannot become legal equipment changes; no eligible
-weapon means no interaction. Connected Give has its separate agreement below; battle Drop remains unadmitted (#1648).
+weapon means no interaction. Connected Give and Drop have their separate agreements below.
 
 The existing command-menu equipment hint/default E (or installed binding) opens the localized slot
 preview. Cancel preserves authority; Confirm returns to the same ActionChoice/preview with no turn,
@@ -446,7 +447,7 @@ localized Godot consumer. The ordinary command-menu hint names default G or its 
 slot → cardinal adjacent recipient → required full-pack return slot → confirmation/result → Stay
 is reachable with normal input. Preview/Cancel/illegal or stale offers retain authority. Both equipped
 removals refresh current ATT/range; received words are unequipped. One reveal/acknowledgement consumes
-the giver's action exactly once. Drop remains unavailable.
+the giver's action exactly once. Drop has its separate free transaction below.
 
 The [agreement/source](domain/gameplay-rules.md#connected-battle-give-agreement),
 [explicit admission](content/profiles-and-trust.md#connected-battle-give-admission) and
@@ -459,6 +460,33 @@ Map57 entry and Battle01 transfer/exchange, English and Chinese remapped input w
 selected name catalog. This does not claim seven private trajectories, later campaign admission,
 new item effects, natural original reach/hardware timing, clean warning-free shutdown or human visual
 acceptance. Rings/curses/broken/unsupported words and actor states remain explicitly refused.
+
+## Connected battle discard and Deals
+
+**Implemented finite product binding; Standard implementation, High inventory/save consistency:**
+New Game/Continue through connected Battles01–07 admit the existing Domain/Application Drop and
+localized Godot `BattleDiscardView`. The advertised R/installed mapping opens actual slots; explicit
+confirmation removes/compacts once, refreshes equipped ATT/range and adds rare Mithril to known Deals
+with cap15. Reveal/ack returns the same actor's ActionChoice/preview with no movement commit, action
+cost, Stay, after-turn, hooks or RNG. Selection/final Cancel are free. Outer Cancel undoes movement
+while retaining already committed inventory/equipment/custody. Duplicate/stale input cannot remove
+the next compacted item or duplicate a Deals receipt.
+
+The [agreement/source](domain/gameplay-rules.md#connected-battle-discard-agreement),
+[admission](content/profiles-and-trust.md#connected-battle-discard-admission) and
+[session owner](application/session-and-programs.md#battle-discard-selection-and-completion) retain
+the finite ordinary weapon/consumable/Mithril catalog and standalone/controlled distinctions.
+`ConnectedBattleDiscardTests` and `BattleDiscardPersistenceTests`, alongside existing authored refusal/
+custody cases, cover current gear, cancellation/stale/repeat refusal, missing custody, v2 record
+restore, actual attack/victory and field custody/save. Codec round-trip is in memory, not disk I/O.
+The [native recipe](development-and-verification.md#connected-battle-discard-observation) observes
+ordinary connected Battle01 equipped/ordinary removal, free return/outer undo, Chinese names/templates
+and remapped input. It does not establish seven private trajectories or physical slot I/O.
+
+Rings/curses/broken/unsupported words and actors explicitly refuse; authored Sky Orb refusal does not
+admit product curse behavior. Later campaigns, Battle Search, Deals purchase, new effects, original
+natural reach/hardware timing and human aesthetic acceptance remain outside this boundary. Retained
+ObjectDB exit warnings and #1047 Unknowns are unchanged.
 
 ## Authored AURA agreement
 

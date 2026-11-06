@@ -27,7 +27,9 @@ first stable Map14 boundary. Captured class, inventory, committed transaction an
 enemy IDs remain display metadata. Give/Discard authored names stay canonical; the
 [connected Give extension](../capability-status.md#connected-battle-give-and-exchange) observes actual
 Chinese templates and selected member/item names through ordinary mapped input. Connected battle
-Discard remains Unsupported. Static translation and finite admission do not implement later chapters. ROM patching, voice/TTS, other
+Discard has its own [finite product binding](../capability-status.md#connected-battle-discard-and-deals)
+and English/Chinese remapped input observation, including selected source member/item names, free
+return and committed removal after outer Cancel. Static translation and finite admission do not implement later chapters. ROM patching, voice/TTS, other
 languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.
 

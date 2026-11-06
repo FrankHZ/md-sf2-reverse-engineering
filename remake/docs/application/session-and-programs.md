@@ -360,6 +360,13 @@ after-turn or next-turn dispatch. Outer Cancel later returns to movement while r
 inventory/equipment/Deals, and an ordinary subsequent action uses the usual commit/turn lifecycle.
 The [domain owner](../domain/gameplay-rules.md#authored-battle-discard) records source order and limits.
 
+Product New Game/Continue explicitly bind this same selection/continuation in connected Battles01–07;
+see the [connected agreement](../domain/gameplay-rules.md#connected-battle-discard-agreement).
+No action suffix or second inventory authority is introduced. Settled Movement after ordinary outer
+Cancel captures the already committed words/equipment/Deals; pending selection/result still refuses
+battle save. V2 record restoration and victory field return consume that current loadout and custody,
+without replaying Drop or resurrecting equipment. Controlled callers without the binding stay unavailable.
+
 ## Battle Give selection and completion
 
 `BeginGive` enters `GiveItemChoice` from `ActionChoice`; `SelectGiveItem(slot)` changes only

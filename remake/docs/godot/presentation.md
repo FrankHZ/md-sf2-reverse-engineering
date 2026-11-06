@@ -896,7 +896,11 @@ uses the existing advertised G/installed mapping and localized slot/recipient/re
 consumer. Its [native observation](../development-and-verification.md#connected-battle-give-observation)
 checks English and Chinese remapped input, committed selected item/member names, free cancellation,
 equipped ordinary/full transfer and exactly one Stay suffix. The presenter keeps no inventory authority.
-Connected battle Drop remains unavailable.
+The separate [connected Drop binding](../content/profiles-and-trust.md#connected-battle-discard-admission)
+uses advertised R/installed mapping and the existing localized selector/confirmation/result.
+Its [native observation](../development-and-verification.md#connected-battle-discard-observation)
+checks ordinary/equipped removal, free return and outer movement undo retaining committed inventory;
+Chinese remapped input displays selected source names. The presenter owns no inventory or Deals state.
 
 The [M2e consumer agreement](../application/localization-design.md#implemented-m2e-battle-transactions-and-retreat-boundary)
 owns English/zh-CN Give/exchange and Discard current item/recipient/confirmation/results, protected/
@@ -1803,8 +1807,8 @@ common battle host, including admitted connected Battles01–07. It does not adm
 Speed, empty-ground Quit, a preview-preserving shortcut, action
 prediction or a visual redesign. The empty-ground options now offer Map and the
 [Member extension](#battle-member-roster-and-read-only-details-1645).
-Connected Equip/Give have separate product admissions in the [feature trace](battle-interaction-baseline.md);
-connected Drop remains separate.
+Connected Equip/Give/Drop have separate finite product admissions in the
+[feature trace](battle-interaction-baseline.md).
 
 `GameSession.QueryBattleInspection` reads the current settled player Movement boundary. Optional
 session/revision and requested-unit identity reject stale or undisclosed requests explicitly.

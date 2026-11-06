@@ -13,6 +13,11 @@ internal static class PrivateFieldPreparation
     internal static BattleDefinition Give(BattleDefinition battle, FieldPreparationDefinition preparation) =>
         battle.WithGive(new(preparation.Items.Values.Select(item => KeyValuePair.Create(item.ItemId, item.Name))));
 
+    // The battle caller supplies its own refusal/confirmation/removal semantics.
+    // Share only admitted identity, rarity and unsellable metadata, not field Drop execution.
+    internal static BattleDefinition Discard(BattleDefinition battle, FieldPreparationDefinition preparation) =>
+        battle.WithDiscard(new(preparation.Items.Values));
+
     internal static BattleDefinition Equipment(BattleDefinition battle, PrivateBattleDefinitions source, bool allowBattleChanges = false)
     {
         var weapons = Weapons(source);
