@@ -17,6 +17,7 @@ public sealed partial class GameRoot
     private long _savedRevision = -1;
     private bool _restoring;
     private bool _saveNeedsInspection;
+    private bool _battleSaveCaller;
     private sealed record HostSaveOffer(Guid SessionId, long Revision, string Destination, string? Error);
 
     private HostSaveOffer SaveOffer(bool previewMusic = false)
@@ -79,6 +80,7 @@ public sealed partial class GameRoot
         if (_slots is { } slots) { _slots = null; _hostUi.RemoveChild(slots); slots.QueueFree(); }
         if (_session is not null) GameText.Bind(_session.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
         if (_entry is not null) { _entry.Show(); _entry.ReturnFromSetup(); }
+        if (_battleSaveCaller) { _battleSaveCaller = false; _battle?.ReturnFromBattleSave(); }
         ReturnToSystemMenu();
         ApplyHostPause();
         DisarmInput();
@@ -88,7 +90,7 @@ public sealed partial class GameRoot
         if (code == "save-publication-uncertain") _saveNeedsInspection = true;
         _slots!.Cancel = CloseSavePanel;
         _slots.ShowChoices(_saveNeedsInspection ? "save-uncertain" : "error", Explain(code),
-            _saveNeedsInspection ? [(GameText.Get("entry.inspect"), () => { CloseSavePanel(); ShowContinue(); }),
+            _saveNeedsInspection ? [(GameText.Get("entry.inspect"), ShowContinue),
                 (GameText.Get("entry.back"), CloseSavePanel)] : [(GameText.Get("entry.back"), CloseSavePanel)]);
         _slots.ShowDetail(GameText.Get("save.details", code));
     }
@@ -125,11 +127,21 @@ public sealed partial class GameRoot
         else RequestFieldEntry(ShowSettledSave);
     }
 
+    private void ShowBattleQuit()
+    {
+        if (_session is null || _entry is not null || _systemMenu is not null || _settings is not null ||
+            _slots is not null || _nameEntry is not null || _windowRecovery is not null || _windowQuit is not null ||
+            _battle?.CanOpenBattleQuit != true) return;
+        _battleSaveCaller = true;
+        ShowSettledSave();
+    }
+
     private async void ShowSettledSave()
     {
         if (_session is null) return;
         // Freeze dispatch before music publication and the revision-bound query.
         OpenSavePanel();
+        _slots!.Cancel = CloseSavePanel;
         if (_saveNeedsInspection) { SaveError("save-publication-uncertain"); return; }
         if (_fieldEntryFailure is { } entryError) { SaveError(entryError); return; }
         if (ObserveSaveMusic() is { } musicError) { SaveError(musicError); return; }
@@ -198,7 +210,7 @@ public sealed partial class GameRoot
             : GameText.Get("save.confirm", slot), (GameText.Get("entry.cancel"), BackToSave),
             (GameText.Get("save.and-return"), () => PublishSave(false)), (GameText.Get("save.and-quit"), () => PublishSave(true)));
 
-        void BackToSave() { CloseSavePanel(); ShowSave(); }
+        void BackToSave() { ShowSettledSave(); }
         async void PublishSave(bool quit)
         {
             if (_entryLoading) return;
