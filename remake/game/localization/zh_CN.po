@@ -1366,3 +1366,6 @@ msgstr "世界目录已准入：{0} 条文本 / {1} 个显示名称。"
 
 msgid "ui.settings.entry-catalog"
 msgstr "入口目录：{0}。"
+
+msgid "ui.settings.world-unbound"
+msgstr "世界目录会在新游戏或继续旅程准入内容时检查。"

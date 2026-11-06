@@ -1366,3 +1366,6 @@ msgstr "World catalog admitted: {0} dialogue rows / {1} display names."
 
 msgid "ui.settings.entry-catalog"
 msgstr "Entry catalog: {0}."
+
+msgid "ui.settings.world-unbound"
+msgstr "World catalog is checked when New Game or Continue admits its content."

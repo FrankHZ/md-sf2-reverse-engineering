@@ -488,7 +488,7 @@ the exact JSON shape/encoding described above; the pretty and compact numbers ar
 serializations, not installed-file sizes. Reuse the accepted full-corpus disposition; no second
 semantic or native-font sweep is needed.
 
-Documentation acceptance is direct scope/link/ID/private-boundary checking and the clean committed
-planner/actual CI selection. No SDK, Godot, emulator, normal/full research or engine aggregate ran
-for this investigation. Prior completed toolchain/engine/observer failures and ObjectDB shutdown
+The #1505 design investigation used direct scope/link/ID/private-boundary checking and its committed
+planner/actual CI selection. No SDK, Godot, emulator, research or engine aggregate ran for that design.
+The implemented candidate's scoped checks and real consumers are recorded above and in the verification owner. Prior completed toolchain/engine/observer failures and ObjectDB shutdown
 Unknown remain with their original owners; this design does not turn them green or restart them.
