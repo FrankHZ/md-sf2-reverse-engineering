@@ -1417,8 +1417,8 @@ query/revision, menu selection/heading and diamond projection after mapped input
 range 2 and range 1–2 variants cover both boundaries, a nearby defeated enemy with a living off-range
 enemy, provisional movement, cancellation and origin re-entry. Item/Stay/Attack child Back retains
 manual focus, held Confirm cannot advance from the item list, and idle refresh retains focus. Custom
-directions with swapped Confirm/Cancel also pass. The existing connected private Battle03 admission
-covers no-target origin, a legal left preview and re-entry, with child returns. All observed browsing
+directions with swapped Confirm/Cancel also pass. The existing [Map57 controlled approach](../verification/battle-save.md#method-and-reproduction)
+admits Battle01 (`battle-1` in the selected world) and covers no-target origin, a legal left preview and re-entry, with child returns. All observed browsing
 retains committed positions, HP/MP, inventories, queue cursor and both RNG seeds. Connected near-target
 variants, live target death during an open menu, physical OS input and human/aesthetic acceptance are
 **Unknown**; authored controlled starts do not establish those boundaries.
