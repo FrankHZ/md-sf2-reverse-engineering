@@ -1,0 +1,310 @@
+# Battle Save and Continue / 战斗保存与继续
+
+## Agreement and delivery boundary
+
+**High rigor; [#1618](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1618).**
+The authorized outcome is explicit Save during a battle, process exit, then Continue in that same
+battle with equivalent subsequent gameplay. Silent loss, duplicate payment/rewards and a plausible
+but different RNG continuation are unacceptable. High rigor controls recovery and staged acceptance;
+it does not require a snapshot platform. This document is the implementation contract proposed for
+independent review. No battle save format, runtime consumer or restart acceptance is implemented by
+this design. The current [opening lifecycle](opening-session-lifecycle.md#implemented-savepoint-boundary)
+continues to own delivered field savepoints and the common storage/entry rules.
+
+Recommended first boundary: **an unfinished battle at settled player Movement input, at the actor's
+committed origin, after all prior work has completed**. Save preserves the current queue entry;
+Continue returns to that actor's Movement input, not battle entry or the beginning of the round.
+Use the existing two manual slots. Offer Save and return to play, or explicitly Save and Quit;
+Continue is reusable, not a consumable suspend file. This is a remake UX choice within the user's
+authorization. There is no save during arbitrary animation, autosave, cloud, original SRAM import,
+new slot manager, event log, predictive simulation, or later campaign admission.
+
+The implementation target is the currently admitted connected campaign's battle/return routes.
+Stage the first vertical proof in Battle01, then admit the remaining existing routes after the same
+restoration checks; do not hardcode a particular round, actor or reference sequence as eligibility.
+Standalone diagnostic battles with unknown progress or no field return are not silently converted
+to product saves. Additional gameplay capabilities remain owned by their existing issues.
+
+Design acceptance requires the boundary, reader-backed state disposition, compatibility/failure
+policy, fresh-process acceptance matrix and bounded implementation ownership below. Implementation
+acceptance requires those future checks to pass; serializing successfully is insufficient. Main-gate
+owns review, implementation dispatch and integration. No unresolved product choice blocks this design.
+
+## Evidence boundary and current consumers
+
+**Confirmed, accepted original evidence:** the [battle interaction baseline](../godot/battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
+records the USA manual and pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+player Movement B returns the preview before free inspection; empty-ground options include Quit;
+`BattlefieldMenu` excludes Battle00, confirms suspension, records elapsed seconds, sets flag88,
+saves the selected slot and normally transfers to `WitchSuspend`. The battle loop has suspended
+entry. Battle saving is an original feature. This design consumes that accepted evidence without
+claiming a new original observation, physical power-loss guarantee or arbitrary-action snapshot.
+The modern two-slot UI and the serialization/restoration boundaries here are separate decisions.
+
+**Confirmed code structure**, inspected at accepted remake commit
+`9aabbfa925a11beca40b122823e492038c3a4d5f`:
+
+- [GameSession](../../src/Sf2.Remake.Application/Runtime/GameSession.cs) delegates `QuerySave`,
+  revision-bound `CaptureSave` and detached `Restore` to the opening persistence owner.
+  [OpeningSave.RequireStable](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs)
+  requires `CanWaitAtInput`, which is field-only. Relaxing that check alone cannot save a battle.
+- [OpeningSaveData](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSaveData.cs) carries
+  party progress, two uint seeds, custody and selected story values; it has no live enemy, queue,
+  AI or battle return binding. [OpeningRestore.Build](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
+  validates and reconstructs field recipes. It must remain the v1 field authority.
+- [OpeningSaveJson](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs) admits version1 only,
+  rejects duplicate/unknown/missing keys and all JSON null values (except that old saves may omit
+  `names`), checks a checksum over exact payload bytes, and bounds the envelope to 1 MiB/depth32.
+  A new optional battle property would violate old-reader compatibility, not extend it safely.
+- [LocalSaveStore](../../game/src/Persistence/LocalSaveStore.cs) already locks one slot, validates
+  candidates, writes/flushes a same-directory temporary, rereads it, replaces primary with backup
+  (or moves into an empty slot), then rereads primary. It distinguishes uncertain publication.
+  Recovery preserves the good backup and refuses incompatible/version-mismatched primaries.
+- [OpeningPersistenceHost](../../game/src/Entry/OpeningPersistenceHost.cs) freezes dispatch for
+  field Save, labels slots, asks before overwrite, validates Continue, mounts a candidate and marks
+  success only after readback. Its field music observation, recipe labels and field restore mount
+  assumptions need a battle branch; a new menu label alone supplies no restoration.
+
+**Inferred:** these existing transactions are sufficient infrastructure for a finite battle payload;
+new work belongs in state admission/reconstruction and the host boundary. **Unknown:** fresh-process
+battle equivalence, actual save latency and native failure behavior until implementation acceptance.
+No SDK, game, emulator, protected save or screenshot is needed for this static design audit.
+
+## Stable commit and request UX
+
+Application owns eligibility. The host may explain it and pause input; it cannot declare a safe
+snapshot from an animation frame. Reuse session ID/revision checking for query → confirmation →
+capture. All copied arrays/maps must be detached. Query/capture/validation must not advance gameplay,
+RNG, region tests, simulation opportunities, actions or receipts.
+
+| Live phase | Required request behavior |
+| --- | --- |
+| Settled Movement at committed origin | Allow only the predicate below; slot confirmation says “Continue resumes this actor's turn here.” Display encounter, round, actor, slot, character and timestamp. Save success resumes the same boundary; Save and Quit exits only after verified publication. |
+| Nonzero movement preview | Refuse with “Cancel movement before saving.” Do not discard a preview as a side effect of Save. The ordinary Cancel path must finish its actual return delivery; then the player requests Save again. Moving back to origin is also eligible once the current preview is canonical zero-move and delivery has ended; no movement-history flag is needed. |
+| Action, spell/item/equipment/Give/Discard or target/commit selection | Refuse with “Return to movement and cancel the move before saving.” Existing Back/Cancel semantics remain authoritative. Already committed equipment/discard changes survive cancellation; they are not an undo transaction. |
+| Preview or undo delivery in flight | Refuse with “Wait for movement to finish.” A delivered final position is required, not just an empty command queue in the host. |
+| Committed attack/heal/item, result/growth/drop/death, after-turn poison/sleep/silence | Refuse with “Finish this action before saving.” HP/payment/RNG/reward publications can precede the final delivery; never capture a partial scene or rerun it on load. |
+| Automatic actor, round construction, appearance/region program, battle entry, retreat, victory/defeat return, story choice/wait, fault/Unsupported | Refuse with the specific busy/unavailable reason. No deferred save intent, timeout fast-forward or “save last safe state” fallback. Resume normally and request again at player input (or an existing eligible field savepoint). |
+| Read-only inspection/options over eligible Movement | May open the same Save flow after ordinary undo has completed. The inspection cursor/map is not durable. Cancel returns through the real menu parent; Continue closes menus and focuses the acting unit. |
+| Window-close or ordinary Quit | Keep explicit unsaved-progress warning and Cancel. A requested Save and Quit uses this eligibility and write result; failure stays in game. Explicit Quit without saving remains possible. Closing during an active publication waits for its result, as current entry operations do. |
+
+The first implementation deliberately has **no pending-save queue**. Rejection leaves the same live
+snapshot and choices intact, and dismissing its message does not deliver a gameplay confirmation.
+Busy menus must allow returning to play; they cannot pause a scene forever while waiting for its
+completion. Repeated Save, focus recovery, held controls and session replacement follow the existing
+input-release and owner-lifetime rules. Only one save operation is active. Freeze simulation and
+presentation callbacks that could mutate semantic state throughout the captured revision's flow.
+
+The stable predicate extends, rather than reuses unchanged, `SessionSnapshot.HasBattleControl` in
+[SessionContract](../../src/Sf2.Remake.Application/Runtime/SessionContract.cs):
+
+1. ActiveBattle, `StopReason.PlayerInput`, no outcome, and the current queue entry is a living,
+   placed, player-controlled actor that agrees with `Selection.Actor`. No terminal outcome already
+   follows from the state. Automatic control and sleeping skipped entries are not player boundaries.
+2. Selection is Movement with a fresh zero-move preview at that actor's authoritative position;
+   no chosen action/target/item/equipment/exchange operands. Verify the preview/path, not just equality
+   of endpoints. No Scene, Movement, Retreat, Round, Give or Discard continuation is retained.
+3. Story has no cursor/callers/wait/event caller, defeated program, warp/script warp, entry skip,
+   battle request or pending outcome return. A retained old `OutcomeReturn` value alone is not
+   pending work: the current continuation determines that. Entry completed to `ProgramContinuation.FieldInput`;
+   retain the connected `EnteringBattle` route and `FieldPlayer` binding (unlike field saves).
+   Text/portrait windows and logical text are closed, no typewriting/scroll/fade work remains, and
+   semantic display state is settled and admitted. Unknown required context is an error.
+4. The current profile supports restoring the encounter, party, region/AI state, content resources
+   and future outcome route without executing entry. This includes all state in the next section.
+   Native motion and sprite delivery must have acknowledged their actual owned work before capture.
+
+`BattleActionCommitter.Publish` is **not** itself this boundary. It can start defeated/death and
+status continuations before `BattleTurnFlow.ConsumeEntry`; `BattleRoundContinuation` can publish
+region flags and appearances before generating its queue. Inspect the actual final snapshot.
+
+## State ownership and reconstruction proof
+
+The DTO is a finite value contract, not serialization of `SessionSnapshot`/Godot objects. The table
+identifies durable groups and their consuming code; implementation should reuse existing value
+owners and avoid maintaining a second field-by-field schema inventory in prose.
+
+| Authority and real later reader | Durable treatment / reconstruction obligation |
+| --- | --- |
+| [EngineBattleState](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs); [BattleTurnFlow](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) `QueuedActor`, `ConsumeEntry`, `GenerateQueue` | Save encounter, round, the entire ordered queue including nullable-actor sentinel slots and altered agility, and cursor. Extra entries and dead entries are legal; do not deduplicate, AGI-sort, remove consumed entries or regenerate the round. Current actor is derived from queue/cursor and cross-checked, not a second authority. |
+| BattleActorState; [BattleMovement](../../src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs), [Sf2PhysicalAction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2PhysicalAction.cs), growth/status rules | Preserve every current encounter actor, including dead, unplaced, hidden/uninitialized and converted records: identity, position presence and coordinates, facing, current HP/MP/status, initialization, progress/accounting and full loadout. Live `Attack` must be retained/validated; difficulty initialization and growth/equipment can distinguish it from the immutable definition. Restore cannot respawn a dead enemy, refill MP, refresh status or rebuild from encounter starts. |
+| [SourceEnemyAi.Resolve](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceEnemyAi.cs), [SourceMoveOrderAi](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceMoveOrderAi.cs) | Preserve ActivationWord, AiMemory, PrimaryOrder, SecondaryOrder and LastTarget with their present/absent meanings. Standby consumes ThinkingSeed and memory; dead-follow promotion changes orders; LastTarget affects pursuit radius. Immutable strategy/control/deployment/processing order rebind from the compatible content; SourceAllyControl also reads the live activation word. No AI decision is run during restore. |
+| [BattleActivationRules](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActivationRules.cs), [BattleSpawnRules](../../src/Sf2.Remake.Domain/Battles/Rules/BattleSpawnRules.cs), [BattleRoundContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRoundContinuation.cs) | Retain region Flags and Tested, activation/spawn state and story region-program once flags. Rebind region geometry/program definitions; do not re-test regions, populate, display appearances or set played flags while loading. |
+| EngineBattleState seeds; turn generation, SourceEnemyAi, action/growth and [BattleAfterTurnContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) | Preserve both complete uint MainSeed and ThinkingSeed, including zero/high/low bits. They are the gameplay RNG authority. No wall-clock reseed, startup growth, AI preflight or idle simulation on restore; historical observations/draw receipts are not state to replay. |
+| [Sf2BattleProgressionRule](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2BattleProgressionRule.cs), [BattleActionCommitter](../../src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs), [BattleItemCustody](../../src/Sf2.Remake.Domain/Battles/State/BattleItemCustody.cs) | Save attained EXP/level/stats/spells, kills/defeats, gold, item words (including equipped/broken bits), drop once-flags and Deals counts as already committed. Preserve DeathCredit's unknown versus known-no-ally versus known-ally distinction: it survives turns without a scene and controls later death accounting. Do not infer it from the acting unit. Completed reward messages are not pending rewards. |
+| [BattleEntry](../../src/Sf2.Remake.Application/Runtime/Exploration/BattleEntry.cs), [BattleOutcome](../../src/Sf2.Remake.Application/Runtime/Exploration/BattleOutcome.cs), [Sf2OutcomeReturnPolicy](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs) | Retain connected route identity, FieldPlayer identity/speed and encounter-excluded RetainedAllies, story flags/names, egress register, step counter and live start-policy gameplay options. Rebind route programs, battle origin and return definitions from admitted content. BattleOutcome concatenates retained allies; return selects live flags/egress and first active member's position/facing. Do not choose a route by encounter alone where ambiguous, recompute player identity, discard nondeployed members or perform healing/gold-halving/join/completion on load. |
+| [StoryState](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationState.cs), ProgramRunner and text/music consumers | Retain TextCursor, TextSettings, settled display/palette operands, semantic speaker/service/window-fix state and known music cue/history/context where later commands read them. Preserve explicit unknown/presence states when legal; refuse a required unknown rather than turning it into zero/false/empty. PartyLists may rebuild from flags only after equality with the live lists is checked; a mismatch rejects capture. SaveAnchor remains an optional durable prior field anchor; ReturnAnchor/OutcomeReturn may be omitted only under the admitted no-pending-return invariant and their overwrite-before-read recipe. |
+| [BattleVisualState](../../src/Sf2.Remake.Domain/Battles/State/BattleVisualState.cs), [BattleStoryOperations.Visual/Convert](../../src/Sf2.Remake.Application/Runtime/Battles/BattleStoryOperations.cs) | These are semantic physical-slot identities, not disposable nodes. Preserve admitted aliases and visual records (appearance/position/facing); conversion can share a slot and leave an old physical record. Rebuilding every alias or pose from logical actor position is invalid. Definitions/resources rebind; Godot nodes, sprite handles and animation clocks rebuild. A recipe without such state must prove it is unneeded rather than fabricate mappings. |
+| [BattleMovementContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs), selection queries, host view | Provisional selection, target lists, movement grid/path, camera, menu focus, inspection cursor and input latches are rebuilt at the saved actor's origin. Preserve committed equipment/discard effects. Use the pure selection/range construction, not `BattleAdvancer.Start/Advance` to arrive at a convenient boundary. |
+
+Retained nondeployed allies use the existing complete carried-party representation, including absence
+and initialization; the battle actor set is not the entire campaign party. Reuse existing loadout,
+item identity and learned-spell validators where their assumptions apply. The field `SavedAlly`
+validator requires initialized growth-bearing allies; applying it unchanged to enemies or hidden
+actors would reject valid states or invent defaults. New battle admission must validate those actual
+roles, negative/out-of-board coordinates, permitted absence and accounting knowledge explicitly.
+
+Session ID, revision, observation sequence, wait tokens, process/native resource handles and input
+state are fresh after restore. They authorize one process, not saved gameplay. No pending wait/token
+is allowed in this profile. `SimulationTick` and the old text-poll `RandomSeedCopy` have no independent
+future gameplay authority at this seam (live seed copy projects ThinkingSeed); keep them out of
+semantic equality and never use them to seed RNG. Later consumer changes must revisit that claim.
+
+Music is not automatically disposable: [ExplorationMusicRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationMusicRunner.cs)
+reads history, context and finite completion state. First battle admission permits a known ordinary
+looping battle cue/history and no pending finite music helper; bind native knowledge through a
+battle-context counterpart of the existing observation, without drawing RNG. Rebuild native playback
+at its beginning with a fresh generation. Do not call field-only `ObserveFieldMusic` on ActiveBattle.
+A finite cue whose logical step/completion can affect future waits is outside this first stable
+profile and rejects explicitly; admitting it requires preservation of those semantic operands and
+an equivalence check, not copying the field-save policy of resetting all clocks. PCM position and
+cosmetic phase are not promised. Post-battle field cue selection remains its existing owner.
+
+## Format and detached restoration
+
+Recommend a **version2 battle record**, with an explicit kind `battle-player-input`, under the
+existing checksum envelope and slot directory. Keep the v1 field record/parser/writer unchanged;
+new code reads both supported versions, dispatches to one typed payload, and validates before use.
+Do not add nullable battle fields to `OpeningSaveData`, export arbitrary CLR type names, or store
+content paths. Share reusable party values/validation only where semantics match. Proposed names
+here describe responsibilities; no JSON schema or production file is created by this design.
+
+Version2 retains format/slot/sequence/UTC timestamp plus the existing profile/package, gameplay,
+rule and recipe compatibility identities and pinned source identities. Add a battle restoration
+recipe revision, separate from v1 field recipe interpretation. The configured source supplies
+trusted content and rules; a save cannot select an executable, file, private root or alternate rule.
+Use the existing revision mechanisms, not a new manifest or content hashes for change detection.
+Adding the battle format alone must not change v1's `SaveCompatibility` values. A genuine shared
+gameplay/content change still follows explicit compatibility rejection; this design adds no migration.
+Do not set original suspend flag88 to route through `BattleEntry`: that entry currently rejects it,
+and executing it would initialize a new battle rather than restore this one.
+
+Use explicit finite presence variants for nullable/sentinel values (position, queue actor,
+DeathCredit and legitimately unknown optional operands). The strict JSON reader rejects null today;
+these variants must preserve meaning without relaxing v1 or accepting arbitrary missing keys.
+Unknown required transaction/return/AI data rejects. Reject unsupported version/kind, incompatible
+content/rules, missing or extra keys, duplicate identities, bad bounds and cross-field conflicts.
+The checksum detects accidental corruption, not authenticity or semantic validity.
+
+A complete restoration transaction is:
+
+1. Read the selected slot under current byte/depth limits; validate envelope, version and header.
+   Admit independently configured content with `OpeningRestoreReader`'s no-party-initialization
+   approach. Resolve exact encounter and route by stable content-owned identity (e.g. owning map
+   plus route key/ordinal under gameplay revision); require uniqueness and encounter agreement.
+2. Validate actor identity/roles, legal progress/loadout/status, positions, region arrays, queue
+   shape/sentinel/cursor and the actual current actor. Allow repeated extra-turn actors and consumed
+   dead entries. Validate membership, retained-party partition, custody, options and return resources.
+   Rebind immutable definitions/rules without invoking start initialization. Restore StartPolicy's
+   gameplay operands needed by future spawn/control; diagnostic provenance is not a gameplay default.
+3. Construct a detached EngineBattleState and connected StoryState, with the saved queue/seeds and
+   a fresh Movement selection. Build visual/audio resources and validate the same stable predicate.
+   Compare the captured semantic values with the reconstructed candidate before offering Save.
+   No entry/start/load program, round generator, `BattleOutcome.Begin`, action preparation, region
+   test or reward consumer runs merely to mount. In particular, no `GameSession.Start(saved start)`.
+4. Publish the candidate session/view only after validation and required resource preparation pass.
+   [GameRoot.MountSession](../../game/src/GameRoot.cs) already prepares candidate audio before
+   releasing the old session; extend the correct battle mount path and its failure cleanup. Until
+   success the old session remains paused and usable. Discard old intents/callbacks and require
+   input release. Initial rendering must not tick automatic work past the saved actor.
+
+Neither a valid checksum nor data that could produce a *new* battle proves valid continuation.
+Check saved invariants without executing future actions speculatively. If valid original-live state
+cannot pass the proposed restore validator, correct the owning validator/contract; do not normalize
+the save until it resembles a favored test case.
+
+## Publication, failure, compatibility and rollback
+
+Reuse the existing per-slot lock, detached validation, bounded serialization, flush, temporary
+readback, atomic replace/move and final readback. Generalize only the record/validator boundary in
+LocalSaveStore so v1 field and v2 battle records share it, including backups of a different supported
+kind/version. Sequence remains monotonically selected from compatible primary/backup under the lock.
+Do not duplicate the filesystem transaction in a battle-specific store.
+
+| Failure or compatibility case | Required behavior |
+| --- | --- |
+| Busy/stale/unknown or candidate validation/resource failure | No disk publication and no live-session replacement. Explain reason; preserve current battle, preview and last good files. |
+| Write/flush/temp reread failure before publication | Keep primary/backup intact; permit an explicit later retry from a freshly checked revision. No success/clean marker and no automatic exit. |
+| Replacement attempted, exception or failed final readback | Preserve `save-publication-uncertain`; no blind retry or claim that the old primary survived. Keep session paused, offer read-only Continue/slot inspection and Cancel; reconcile the actual slot before another write. |
+| Process interruption | Before publication: last good primary wins; leftover temp is never Continue input. After publication: validate actual primary; if missing/corrupt offer the compatible backup explicitly. Do not infer commit from temp/mtime alone. No universal disk-controller/power-loss guarantee is claimed. |
+| Corrupt primary, valid compatible backup | Show backup kind/destination/actor/time and require explicit recovery. Reuse Recover's temp/replace path preserving backup bytes; never rotate corrupt primary over the last good backup. |
+| Incompatible/future-version primary or unavailable required content | Preserve files and report matching build/content required. Do not silently load an older backup, downgrade to field return, restart battle, delete a slot or overwrite it to unblock Save. Retain current recovery exclusions. |
+| Existing v1 field/new-game save, including absent names | Continue through unchanged v1 semantics; do not reinterpret it as a battle or rewrite on read. New field saves stay v1. |
+| Old executable sees v2 primary | It rejects the unsupported record; supported new code can still read the prior v1 backup. The existing reader deserializes v1 before checking version, so a differently shaped v2 can report `save-malformed` and expose old backup recovery instead of `save-version`. Do not use that old recovery to overwrite v2 during rollback. Preserve user-owned bytes locally before operator-directed rollback; no automatic downgrade. New version dispatch must classify unsupported versions before typed payload parsing. |
+
+Overwrite consent remains explicit, including replacing a field save with a battle save. Mark saved
+session/revision only after verified publication; after mounting Continue mark the new session's
+revision, not the serialized old identity. If capture succeeds but host mount fails, report the
+mount failure separately from the disk result. Repeated Continue restores the same progress; it
+must not append rewards, charges or new save sequences merely by reading. No game-state rollback
+is performed when Cancel closes a save UI.
+
+## Minimum implementation acceptance
+
+Use small tests of actual Domain/Application behavior and direct codec/store invocations. Do not
+add tests of probes, comparison drivers or report generators. Native checks read state/input/view
+projection/errors, never screenshots. Use disposable slot namespaces outside removable worktrees;
+registered immutable content is read-only. Existing user primary/backup and retained diagnostic
+processes are not test inputs. The following is **future required acceptance**, not checks passed
+by this documentation PR.
+
+| Group / minimum representative seam | Pass condition |
+| --- | --- |
+| Eligibility and purity | Engine behavior: query/capture at ordinary Movement; nonzero preview versus moving back to a canonical origin preview; Action/Target/Commit; undo in flight; scene/reward/status; AI; appearance/region program; outcome/retreat; fault; stale ID/revision. Only the stable predicate succeeds; rejected requests preserve all state and seeds. Capture is detached and repeatable. Include already committed non-turn equipment/discard where that capability is admitted. |
+| Exact continuation in a new process | Save after at least one committed action, with a partially consumed queue, damaged units and consumed MP/item. Terminate the owned disposable process, launch the same configured content in a genuinely fresh process and Continue through the normal slot UI. Before first input compare semantic state and both uint seeds. Apply the same legal command sequence and presentation completions to live-control and restored branches: compare next AI decision/action/resource results, queue consumption and next-round draws. Session IDs/revisions/tokens and cosmetic clocks are intentionally different. |
+| Alternate valid state | Repeat a small engine continuation with a different actor/order and zero/high-bit seed values, status/AI memory/promoted order changes and an absent/dead actor. Exercise a region activation/appearance once-flag and semantic visual alias state with an existing small authored case where admitted; this does not claim those diagnostics are product save profiles. No fixed reference trajectory as legality. |
+| Rewards and accounting | Save at the next stable player input after a kill/drop/EXP or growth award, then Continue twice independently. Each restore starts with exactly the saved amounts/flags/items/kills/defeats; later actions award only new rewards. Include poison/death-credit continuation after a no-scene turn and a retained nondeployed ally. No completed message/action is replayed. |
+| Victory, defeat and retreat return | From one saved connected boundary, run separate short legal endings for victory, ordinary defeat and admitted Egress/Angel Wing. Compare positions/facing/map, leader recovery, gold payment/halving, roster/join/once flags, carried inventory and next field usability with the corresponding uninterrupted branch. Save/Continue the resulting supported field recipe and confirm no duplicate outcome processing. Use a focused suffix, not the whole campaign. |
+| Strict data and old files | Directly invoke real codec/store/restore with disposable v1 field/new-game (with/without names), valid v2, wrong version/profile/revision/route, checksum corruption, truncated/oversize data, missing/duplicate/unknown keys, bad queue/cursor, mismatched membership, invalid loadout and required unknown. No failed candidate is mounted or silently defaulted; mixed v1/v2 backup rotation remains valid. |
+| Storage and cancellation | Direct bounded failures at pre-publication and post-attempt/readback, lock contention and missing/corrupt primary with valid backup. Inspect actual bytes/sequence and recovery through the real consumer. Use a temporary path/controlled I/O seam only if needed to reach the particular failure; no general fault platform. Test Cancel, rejected overwrite, duplicate confirmation, focus loss, window-close and session replacement; exit only after the selected successful Save and Quit. |
+| Actual host mounting | Native ordinary input → Save and return; Save and Quit → fresh Continue. Correct encounter/round/actor slot label, matching board/resources, usable Movement, music, no stale token/held-input action and no engine/presentation/audio errors. After busy refusal, closing the message resumes the pending action normally. |
+
+Acceptance evidence names the saved boundary, content/rule identity, semantic differences, actual
+process termination/restart and command results. Same-process DTO roundtrip cannot substitute for
+fresh-process proof. Original hardware timing, exact PCM resume and full-game coverage remain
+Unknown/outside the claim. A required failure case not reached is recorded as unavailable, not PASS.
+
+## Bounded implementation ownership and resources
+
+Recommended serial slices follow; main-gate creates implementation Issues only after design review.
+Every slice starts from accepted main. Do not dispatch overlapping writers in the shared session,
+store, entry or battle input files. The movement work in #1607 owns its code and `presentation.md`;
+this design consumes the final accepted delivery semantics, not that topic's unmerged implementation.
+Inspection (#1622) supplies a future empty-ground Quit entry, not a persistence dependency: host Menu
+can expose the same safe Save/Save and Quit first. No unrelated shared navigation expansion is needed.
+
+| Slice / accountable code owner | Bounded output and stopping acceptance | Estimate |
+| --- | --- | --- |
+| A: Domain/Application continuation | Existing `Domain/Battles/State`, narrow restore admission beside it, `Application/Runtime/Persistence`, `GameSession` facade and actual engine behavior tests. Add typed battle progress, stable eligibility and detached reconstruction with reader-backed party/route/AI/queue/visual invariants. Reuse pure movement selection. No disk/UI availability yet. Stop at equivalent next actions/RNG and connected return behavior on small engine cases. | 2–4 engineer-days |
+| B: Content and shared store | `Content/Persistence/OpeningSaveJson` dispatch plus a bounded battle codec, existing Content compatibility admission and `game/src/Persistence/LocalSaveStore`. Preserve v1 and generalize the existing store's record boundary. Directly validate strict/mixed-version/corrupt/interrupted files. No ordinary Save option until host integration passes. Depends on accepted A. | 1–2 days |
+| C: Host and integrated acceptance | `game/src/Entry/OpeningPersistenceHost`, existing entry loading/mount/audio and system/battle-menu consumers, localized save labels; narrow Application music-observation hook if needed. Serialize ownership with #1607 and inspection/input work. Native safe/busy UX, fresh-process Continue, outcome suffixes, disposable failure checks; update only affected capability/evidence owners when implemented. Depends on accepted A/B. | 2–3 days |
+
+The inferred total is **5–9 engineer-days**, including focused verification and independent review;
+this is an estimate, not an approved spending cap or a reason to omit a correctness boundary. Highest
+risk is return/retained-party completeness, unknown AI/death/visual state, then mixed-version storage
+and host callback lifetime. Reassess after A's first Battle01 continuation and before exposing C.
+If a required reader needs a live interpreter stack, an unsupported finite music continuation or
+new gameplay content, stop that profile's admission, record the precise dependency and replan;
+do not expand to arbitrary snapshots or hide a gap behind another default.
+
+Expected state is tens of actors, one 64-slot queue and small region/custody/story sets. Payload
+copy/encoding is O(actors + queue + flags + retained progress); current cross-reference checks can
+scan the bounded actor/content sets repeatedly. Reuse existing lookups and measure rather than
+claim linear end-to-end validation. Content admission/resource preparation is additional work;
+no history/frames/traces are retained. Keep the 1 MiB encoded-file
+cap. One save uses at most primary + backup + one unpublished temp (at most 3 MiB per active slot),
+with bounded encoded/decoded/candidate copies in memory; configured content dominates memory.
+Two existing slots plus one active temp remain a small fixed disk budget. No new network/model/API
+cost or content duplication is required. Measure one representative serialized battle and fresh
+restore latency/memory in A/B; target comfortably below the cap (review if over 256 KiB or if saving
+visibly blocks input). Use existing detached entry work if resource preparation needs it, never a
+background mutation of the live session. A cap increase or repeated resource failures require
+review of actual payload/consumer costs, not a new compression/cache subsystem by default.
+
+Release only when v1 compatibility and the vertical restart/return matrix pass. If a later slice
+fails, keep battle saving unavailable while field v1 remains usable, and preserve evidence/files.
+Reverting code must not delete or reinterpret v2 files; the compatibility row above governs recovery.
+Keep new handwritten responsibilities below the repository's source-size limit, extracting only a
+touched oversized responsibility where necessary. Current docs-only acceptance is direct source,
+link, scope and private-boundary inspection, a clean committed planner and actual CI disposition;
+no normal/full Python, SDK, Godot or original runtime suite is selected just for this design.
