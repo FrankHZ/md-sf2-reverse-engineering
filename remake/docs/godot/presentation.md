@@ -1385,6 +1385,54 @@ movement-cost, field text/music/motion and battle-scene source-service algorithm
 explicit exclusions in the independently accepted bounded scope. #438 remains open for UI/UX
 discussion with the user; Git integration and Epic closure remain main-gate responsibilities.
 
+### Initial battle command focus (#1644)
+
+**Standard rigor:** on fresh entry to Main from legal Movement confirmation, select Attack only
+when the current `BattleChoicesSnapshot` has no query failure and offers an enabled Physical action
+with an enabled target; otherwise select Stay. `BattleCommandMenu.Present` consumes the existing live
+query at that confirmed stop. Godot does not infer factions, distance, weapon range or target legality.
+The rule also applies to a newly mounted actor/session entering ActionChoice. Ordinary refreshes and
+child Back retain the player's chosen Main focus; Main Cancel restores Movement, whose next confirmed
+stop gets a fresh decision. Focus submits no command and never bypasses target/action confirmation.
+Search substitution remains outside this rule, under #1649.
+
+**Confirmed static source:** trace [S2](battle-interaction-baseline.md#evidence-and-reproduction-boundary),
+pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`battlefunctions_2.asm:ProcessBattleEntityControlPlayerInput` accepts the unoccupied chosen stop and
+writes actor X/Y before `@StartBattleMenu`. `@CheckTargetReachableByAttack` rebuilds the attack range
+and tests `TARGETS_LIST_LENGTH`, supplying diamond index 0 when nonempty, 3 when empty. The linked
+[`BuildAttackRangeGrid`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm)
+clears prior targets, builds opposite-affiliation occupancy, obtains current min/max attack range and
+applies each radius. Its `ApplyRelativeCoordinatesListToGrid` admits living occupants; the
+[`BuildTargetsArray`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildtargetsarray.asm)
+helper excludes zero HP, neutral activation and out-of-map placement. Reproduce from the registered
+read-only pinned checkout with `git show <pin>:disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+and the two named battlefield files. This proves source structure, not natural original reach or timing.
+The remake additionally requires its existing supported/enabled offer, rather than promising an
+unavailable action from geometry alone.
+
+**Confirmed bounded engineering observation:** the
+[actual-host focus probe](../../game/probes/engine_battle_initial_focus_observation.gd) reads live
+query/revision, menu selection/heading and diamond projection after mapped input. Authored range 1,
+range 2 and range 1–2 variants cover both boundaries, a nearby defeated enemy with a living off-range
+enemy, provisional movement, cancellation and origin re-entry. Item/Stay/Attack child Back retains
+manual focus, held Confirm cannot advance from the item list, and idle refresh retains focus. Custom
+directions with swapped Confirm/Cancel also pass. The existing [Map57 controlled approach](../verification/battle-save.md#method-and-reproduction)
+admits Battle01 (`battle-1` in the selected world) and covers no-target origin, a legal left preview and re-entry, with child returns. All observed browsing
+retains committed positions, HP/MP, inventories, queue cursor and both RNG seeds. Connected near-target
+variants, live target death during an open menu, physical OS input and human/aesthetic acceptance are
+**Unknown**; authored controlled starts do not establish those boundaries.
+
+After the locked environment setup and adapter Debug build, reproduce the tracked authored example
+with `SF2_FOCUS_EXPECTED=0,0,3`, `SF2_FOCUS_STEPS=down,down+down`, and a fresh ignored
+`SF2_VIEWPORT_OUTPUT`, then run the selected Godot with `--headless --max-fps 60 --resolution 1920x1080
+--path remake/game --script res://probes/engine_battle_initial_focus_observation.gd -- --authored-package
+<absolute repository path>/remake/content/authored/battle-equipment.json`. Use an explicit run-local
+log and admitted settings, as in the [native input recipe](#battle-directional-hold-and-mode-isolation-1615).
+Comma-separated paths restart at the committed origin; `+` separates steps in one preview. Expectations
+are Attack=0, Stay=3; the probe separately checks the live offer at every entry. Range/dead-target
+variants change only a small ignored authored input; private inputs and observations stay local.
+
 ## Presentation Policy and Current Layout
 
 The common design baseline is 1920×1080 (16:9). One map cell and ordinary 24×24 sprite
