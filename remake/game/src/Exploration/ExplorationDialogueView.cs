@@ -21,6 +21,7 @@ internal sealed partial class ExplorationDialogueView : Control
     private TextWindow? _textWindow;
     private bool _fieldTextProjection;
     private FieldTextWait? _displaySpan;
+    private byte _portraitFlags;
     internal string EffectiveLocale { get; private set; } = "en";
     internal string? FallbackReason { get; private set; }
     internal double Revealed { get; set; }
@@ -114,11 +115,18 @@ internal sealed partial class ExplorationDialogueView : Control
             Panel.ResetReading();
         if (current.Story.Wait is FieldTextWait displayed) _displaySpan = displayed;
         else if (!_fieldTextProjection) _displaySpan = null;
-        _textWindow = current.Story.TextWindow;
         bool portrait = session.Definition.Exploration?.Visuals is not null &&
             current.Story.PortraitWindow is OpenPortraitWindow or UnknownPortraitWindow { LegacySpeaker: not null };
         byte flags = current.Story.PortraitWindow switch
         { OpenPortraitWindow open => open.Flags, UnknownPortraitWindow unknown => unknown.LegacyFlags, _ => 0 };
+        if (portrait) _portraitFlags = flags;
+        // Source portrait and text close waits are independent. Keep the last mounted portrait
+        // with this text window until the composed panel exits; a new window must not inherit it.
+        else if (current.Story.TextWindow is OpenTextWindow && ReferenceEquals(current.Story.TextWindow, _textWindow) &&
+            Panel.Portrait.Texture is not null)
+        { portrait = true; flags = _portraitFlags; }
+        else Panel.Portrait.Texture = null;
+        _textWindow = current.Story.TextWindow;
         bool sourceChoice = current.Story.Wait is ChoiceWait { Work: not null };
         var choice = (current.Story.Wait as ChoiceWait)?.Work;
         Panel.Choices.Present(current.Story.Wait is ChoiceWait && (choice is null || choice.Visible) &&

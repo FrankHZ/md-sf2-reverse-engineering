@@ -1105,6 +1105,44 @@ installations/materials reused. Release is independent Draft-PR review. Recovery
 host policy; original evidence, completed failures and protected sessions are retained. No new
 engine behavior tests are required for unchanged Application commands; observers run directly.
 
+### Coordinated dialogue exit (#1613)
+
+**Standard rigor:** a bounded adapter projection correction, with independent logical text and
+portrait services. The visible portrait remains with its existing open text window through the
+portrait-close/text-close handoff. After logical portrait closure, the view clears that mounted
+texture when the text window ends; a new window without a portrait cannot inherit it. A newly
+opened portrait still comes from the existing presenter's resource and facial-state selection.
+CLEAR, reading pages and attached choices do not themselves close the text window.
+
+The scope is `ExplorationDialogueView` and this agreement; the shared `StoryDialoguePanel`,
+`PresentationCanvas`, source scripts, Application commands, acknowledgement count and logical
+window waits retain their owners. No theme, global layer, text service or engine rule is added.
+Acceptance uses short real Godot state/input/control observations of ordinary close, portraitless
+text, CLEAR/pages, consecutive speakers and the actual Kiwi choice branches, plus the affected
+adapter build, clean committed planner and actual CI. Shared battle consumers need only their
+applicable no-portrait dialogue boundary. Human visual acceptance and original hardware timing
+remain **Unknown**; no screenshot, full-route or emulator acquisition is required.
+
+**Confirmed (bounded native observation):** ordinary Map3 text480/481 reaches `TextCloseWait`
+with a closed logical portrait and an open text window. Both native controls now remain visible
+through that wait and disappear together when the panel lifetime ends. The registered current
+private-world observations also cover Jaha662–664, Zone8 through525, Kiwi Yes/No and subsequent
+portraitless text. Before/after semantic checkpoints, confirmation/choice counts and logical waits
+agree; new portraitless windows have a null mounted texture. Existing authored `field-clear`,
+`long`, `field-portrait` and Jaro `battle` story observations pass without changed helpers.
+
+For the ordinary seam, load the registered private inputs and Debug adapter, start ordinary Main,
+then use the existing `StartPreVoyageLocalizationObservation` bootstrap with a checkout-local
+controlled-start JSON: Map3, entity0 at(42,9), facing1, speed32, flags[0,32,256]. This controls initial
+placement, not preceding natural reach. Send ordinary Confirm to Talk; finish each actual text
+input through mapped Confirm. Read `ExplorationSessionView.ReadObservationJson` at the text/window
+transitions: `wait`, `textWindow`, `portraitWindow`, `dialoguePanel.visible`, `portraitVisible` and
+`portraitTexture`. Require the retained texture at the described close seam and null texture/hidden
+controls after field return. Reuse the [ordinary Confirm recipe](../verification/field-programs.md#ordinary-dialogue-confirm-observation)
+for CLEAR/pages/portrait; use the [shared story recipe](../verification/host.md#shared-story-dialogue-observation)
+with `jaro-conversion.json` for the unchanged battle consumer. Retain native exit logs separately:
+the observed ObjectDB exit warnings are not resolved by this projection correction.
+
 ### Current story presentation
 
 `ExplorationDialogueView` owns field text-to-label projection. The existing field controller still
