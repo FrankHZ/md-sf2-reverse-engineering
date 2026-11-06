@@ -32,7 +32,7 @@ internal sealed partial class BattleMapViewport : Control
     private ExplorationVisuals? _visuals;
     private BattleSceneDefinition? _sceneContent;
     private BattleMovementRangeView _range = null!;
-    private readonly List<ColorRect> _preview = [];
+    private BattleSelectionView _selection = null!;
     private readonly List<ColorRect> _target = [];
     private IReadOnlyList<MapPosition> _focus = [];
     private Vector2 _mapSize;
@@ -52,7 +52,7 @@ internal sealed partial class BattleMapViewport : Control
     internal void Build(BattleDefinition definition, ScenarioDefinition content)
     {
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
-        _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _preview.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
+        _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
         _builds++;
@@ -70,6 +70,8 @@ internal sealed partial class BattleMapViewport : Control
         else BuildAuthoredTerrain(definition);
         _range = new BattleMovementRangeView { Name = "MovementRange" };
         _board.AddChild(_range);
+        _selection = new BattleSelectionView { Name = "Selection" };
+        _board.AddChild(_selection);
         foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
@@ -166,6 +168,7 @@ internal sealed partial class BattleMapViewport : Control
     internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
         _range.Present(projection.MovementRange);
+        _selection.Present(projection.Markers.FirstOrDefault(actor => actor.Selected));
         _battleVisuals = current.Battle.Visuals;
         if (_movement?.Token != projection.Movement?.Token)
         { _movementElapsed = _movementProgress = 0; _movementDelivered = false; }
@@ -185,7 +188,7 @@ internal sealed partial class BattleMapViewport : Control
             int? shownFacing = current.BattleFieldScene is null && _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor.Actor, out int slot) &&
                 _battleVisuals.Visuals.TryGetValue(slot, out var visual) ? visual.Facing : actor.Facing;
             node.Text = actor.Text + FacingMark(shownFacing);
-            node.Modulate = actor.Selected ? Colors.Gold : actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
+            node.Modulate = actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
             if (actor.Targeted)
             {
                 var origin = new Vector2(actor.Position.X, actor.Position.Y) * CellSize;
@@ -206,7 +209,7 @@ internal sealed partial class BattleMapViewport : Control
                 int direction = facing switch { 1 => 0, 3 => 2, _ => 1 };
                 sprite.Texture = Texture(id, direction);
                 sprite.FlipH = facing == 0;
-                sprite.Modulate = actor.Selected ? Colors.Gold : Colors.White;
+                sprite.Modulate = Colors.White;
                 sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", facing); sprite.SetMeta("walkingFrame", 0);
             }
         }
@@ -220,15 +223,6 @@ internal sealed partial class BattleMapViewport : Control
                     retained.Text = visual.Appearance.Value + FacingMark(visual.Facing); retained.Modulate = Colors.LightCoral;
                     retained.SetMeta("physicalAppearance", visual.Appearance.Value);
                 }
-        foreach (var node in _preview) { _board.RemoveChild(node); node.QueueFree(); }
-        _preview.Clear();
-        foreach (var position in projection.Preview)
-        {
-            var node = new ColorRect { Position = new(position.X * CellSize + 4, position.Y * CellSize + CellSize - 7),
-                Size = new(CellSize - 10, 3), Color = Colors.Gold, MouseFilter = MouseFilterEnum.Ignore, ZIndex = 3 };
-            _board.AddChild(node);
-            _preview.Add(node);
-        }
         _storyCamera = false;
         var target = candidate ?? current.Selection?.Target;
         var targetMarker = target is null ? null : projection.Markers.FirstOrDefault(marker => marker.Actor == target);
@@ -268,6 +262,7 @@ internal sealed partial class BattleMapViewport : Control
         var from = new Vector2(movement.From.X, movement.From.Y);
         var to = new Vector2(movement.To.X, movement.To.Y);
         var position = from.Lerp(to, (float)_movementProgress) * CellSize;
+        _selection.FollowMovement(movement.Actor, position);
         var physical = PhysicalActor(movement.Actor);
         _markers[physical].Position = position + new Vector2(2, 4);
         if (_sprites.TryGetValue(physical, out var sprite))
@@ -355,13 +350,14 @@ internal sealed partial class BattleMapViewport : Control
             outputWidth = (pair.Value.Texture?.GetWidth() ?? 0) * pair.Value.Scale.X,
             outputHeight = (pair.Value.Texture?.GetHeight() ?? 0) * pair.Value.Scale.Y }),
         movementRange = _range.Observe(),
-        previewZ = _preview.Select(node => node.ZIndex).Distinct().ToArray(),
+        selection = _selection.Observe(),
+        previewZ = _selection.Visible ? new[] { _selection.ZIndex } : [],
         targets = _target.Select(node => new { name = node.Name.ToString(), z = node.ZIndex, rect = Rectangle(new Rect2(node.Position, node.Size)) }),
     });
-    internal int PreviewCount => _preview.Count;
+    internal int PreviewCount => _selection.Visible ? 1 : 0;
     internal float Zoom => _board.Scale.X;
-    internal object? PreviewRectangle => _preview.Count == 0 ? null : Rectangle(_preview[^1].GetGlobalRect());
-    internal bool PreviewInsideMap => _preview.Count > 0 && GetGlobalRect().Encloses(_preview[^1].GetGlobalRect());
+    internal object? PreviewRectangle => _selection.Visible ? Rectangle(_selection.GetGlobalRect()) : null;
+    internal bool PreviewInsideMap => _selection.Visible && GetGlobalRect().Encloses(_selection.GetGlobalRect());
     internal IEnumerable<object> ObserveActors(IEnumerable<BattleActorState> actors) => actors.Select(a =>
     {
         var physical = PhysicalActor(a.Actor);
@@ -375,11 +371,11 @@ internal sealed partial class BattleMapViewport : Control
             primaryOrder = a.Deployment.Initialization?.PrimaryOrder, secondaryOrder = a.Deployment.Initialization?.SecondaryOrder,
             commandset = a.Deployment.Initialization?.AiCommandset,
             items = a.SourceLoadout?.Items, spells = a.SourceLoadout?.Spells,
-            nodeX = node.Position.X, nodeY = node.Position.Y, nodeRotation = node.Rotation, nodeAlpha = node.Modulate.A, visible = _sprites.TryGetValue(physical, out var image) ? image.Visible : node.Visible, text = node.Text,
+            nodeX = node.Position.X, nodeY = node.Position.Y, nodeRotation = node.Rotation, nodeAlpha = node.Modulate.A, nodeColor = node.Modulate.ToHtml(), visible = _sprites.TryGetValue(physical, out var image) ? image.Visible : node.Visible, text = node.Text,
             sprite = _sprites.TryGetValue(physical, out var sprite) ? new { visible = sprite.Visible, resource = (int)sprite.GetMeta("mapsprite", -1),
                 resourceSelector = sprite.Texture is ImageTexture bound && _resourceSelectors.TryGetValue(bound, out var selector)
                     ? selector : null,
-                texturePresent = sprite.Texture is not null, visibleInTree = sprite.IsVisibleInTree(),
+                texturePresent = sprite.Texture is not null, visibleInTree = sprite.IsVisibleInTree(), modulate = sprite.Modulate.ToHtml(),
                 facing = (int)sprite.GetMeta("facing", -1), walkingFrame = (int)sprite.GetMeta("walkingFrame", 0), flipH = sprite.FlipH, x = sprite.Position.X, y = sprite.Position.Y,
                 width = sprite.Texture?.GetWidth(), height = sprite.Texture?.GetHeight() } : null,
             globalRect = Rectangle(node.GetGlobalRect()), insideMap = GetGlobalRect().Encloses(node.GetGlobalRect()) };
