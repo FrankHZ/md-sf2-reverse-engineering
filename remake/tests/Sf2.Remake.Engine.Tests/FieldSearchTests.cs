@@ -17,7 +17,7 @@ public sealed class FieldSearchTests
     private static GameSession Session(ushort marker = 0x1800, ushort? item = 0, uint? gold = null,
         ushort[]? leader = null, ushort[]? second = null, int[]? flags = null,
         FieldAreaDescription[]? descriptions = null, bool placement = true, ExplorationEvent[]? events = null,
-        FieldPreparationDefinition? preparation = null)
+        FieldPreparationDefinition? preparation = null, bool admitted = true, ProgramLocation? input = null)
     {
         var source = FieldInventoryTests.Session().Definition;
         var battle = source.Encounters.Values.Single();
@@ -26,7 +26,8 @@ public sealed class FieldSearchTests
         var receipt = new FieldItemPlacement(Faced, 150, item, gold);
         var search = new FieldSearchDefinition(placement && marker == 0x1800 ? [receipt] : [],
             placement && marker != 0x1800 ? [receipt] : [], descriptions ?? [Description], 0xD801, 0xD802);
-        var map = new ExplorationMapDefinition(new("sample-field"), new(words), new([new(0, 0, 63, 63)]), [], events ?? [], search: search);
+        var map = new ExplorationMapDefinition(new("sample-field"), new(words), new([new(0, 0, 63, 63)]), [], events ?? [],
+            search: admitted ? search : null, inputProgram: input);
         int[] ids = [403, 404, 405, 408, 409, 410, 412, 423, 425, 427, 900];
         var world = new ExplorationDefinition([map], [], ids.Select(id => new KeyValuePair<int, string>(id, "authored text " + id)));
         var definition = new ScenarioDefinition("search-test", [battle], exploration: world) { FieldPreparation = preparation ?? source.FieldPreparation };
@@ -128,6 +129,51 @@ public sealed class FieldSearchTests
         Assert.Equal(FieldSearchKind.Description, Search(session).Kind); Close(session);
         session = Session(0, descriptions: []);
         Assert.Equal(new[] { 423, 412 }, Search(session).Texts);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void MissingSearchOrAnInputProgramDoesNotAdmitEvenEmptySearch(bool inputProgram)
+    {
+        var session = Session(0, descriptions: [], admitted: inputProgram,
+            input: inputProgram ? new("unimplemented-input", 0) : null);
+        var before = session.Current;
+        Assert.True(before.CanWaitAtInput);
+        Assert.False(session.CanSearch);
+        Assert.Equal("field-search-unavailable", Send(session, new Search()).Failure!.Code);
+        Assert.Same(before, session.Current);
+    }
+
+    [Theory]
+    [InlineData("program")] [InlineData("caller")] [InlineData("text")]
+    [InlineData("warp")] [InlineData("script-warp")] [InlineData("battle-request")]
+    [InlineData("battle-entry")] [InlineData("presentation")]
+    public void SearchCannotTakeControlFromStoryOrAHandoff(string owner)
+    {
+        var session = Session(0, descriptions: []);
+        var current = session.Current;
+        var destination = new OrdinaryWarp(new("sample-field"), new(4, 5), 1, MapLoadMode.Rebuild);
+        var story = owner switch
+        {
+            "program" => current.Story.Copy(new("story", 0)),
+            "caller" => current.Story.Copy(null, callers: [new("story", 1)]),
+            "text" => current.Story.Copy(null, textWindow: new OpenTextWindow(900, TextDisplayMode.Single, null)),
+            "warp" => current.Story.Copy(null, warp: destination),
+            "script-warp" => current.Story.Copy(null, scriptWarp: destination),
+            "battle-request" => current.Story.Copy(null, battleRequest: true),
+            "battle-entry" => current.Story.Copy(null, enteringBattle: new("battle", null, null, null, null, null)),
+            _ => current.Story.Copy(null, new FieldSearchWait(new(42), new(FieldSearchKind.Empty, [423, 412]))),
+        };
+        var before = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
+            current.Active, story, owner == "presentation" ? SessionStopReason.PresentationWait : SessionStopReason.PlayerInput);
+        Assert.False(FieldSearch.Available(before));
+        foreach (bool menu in new[] { false, true })
+        {
+            var result = FieldSearch.Submit(session.Definition, before, new(menu));
+            Assert.Equal("field-search-unavailable", result.Failure!.Code);
+            Assert.Same(before, result.Snapshot);
+            Assert.Empty(result.Observations);
+        }
     }
 
     [Fact]

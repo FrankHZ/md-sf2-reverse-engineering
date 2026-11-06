@@ -36,7 +36,7 @@ internal static class PrivateFieldPreparation
         var weapons = Weapons(source);
         var wingNoEffectMaps = wingMaps ?? [];
         return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
-                item.ItemTypeExpression == "CONSUMABLE").Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
+                item.ItemTypeExpression == "CONSUMABLE" || item.Code == "MITHRIL").Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
                 FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 } ||
