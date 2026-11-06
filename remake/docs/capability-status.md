@@ -15,6 +15,19 @@ Text/choice/script/battle consumers retain their existing time owners. Universal
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.
 
+## Battle continuation state
+
+**Implemented Domain/Application boundary, High:** a connected unfinished battle at settled player
+Movement can be captured against its session/revision and reconstructed as a detached session.
+Live actor resources, partly consumed queue, both RNG streams, AI/regions, custody/death credit,
+semantic visual aliases and connected return/retained party context survive; restore does not run
+entry or replay awards. Actual engine behavior covers subsequent AI/actions/rounds, completed
+payments/once events and focused victory/defeat/Angel Wing returns, including the existing field v1
+save consumer. The [battle persistence agreement](application/battle-save-and-continue.md#implemented-domainapplication-boundary-a)
+owns admission, reproduction and the seven-encounter private profile's explicit known-context limit.
+Disk codec/store, native music observation, Save UI and fresh-process Continue remain B/C work;
+battle saving is not yet available to players. Required unknown music/interpreter state rejects.
+
 ## Castle bedroom scene retirement
 
 **Implemented bounded capability, Standard:** private default Map20 content retires bedroom

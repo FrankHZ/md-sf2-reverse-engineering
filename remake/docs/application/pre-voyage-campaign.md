@@ -714,8 +714,15 @@ for board coordinates; its mounted viewport does not override these facings with
 visuals. HP, queue, rewards and death accounting still come from the live battle. Only the actual
 death batch spins/exits, and cleanup removes its marker without reviving a retained scene entity.
 
+Connected entry may have no battle-story physical visual table. Defeated field staging constructs
+its own slots from live combatants and selected map population, so it does not require that table
+or synthesize one on restore. Supplied aliases still validate; actual battle-story visual readers
+remain strict. Battle Save A's seven-encounter admission exposed this unnecessary prerequisite as
+`save-battle-return-visuals-unknown`; the correction changes only this field-staging consumer.
+
 `BattleEndPositionTests` runs the real defeated interpreter, death continuation and outcome entry
-with two area origins and changed leader/companion/corpse poses. It checks continuity through
+with two area origins, absent/present battle visual tables and changed leader/companion/corpse poses.
+`DefeatedContextTests` retains invalid-supplied-alias rejection. These checks establish continuity through
 FieldSpin/FieldExit/FieldSettle and the after-program, unchanged combat resources/queue and exactly
 one kill credit at cleanup. A bounded authored native observation mounts the existing
 `BattleSnapshotProjection`/`BattleMapViewport` on those reducer results: leader board(6,6) Up and

@@ -6,12 +6,13 @@
 The authorized outcome is explicit Save during a battle, process exit, then Continue in that same
 battle with equivalent subsequent gameplay. Silent loss, duplicate payment/rewards and a plausible
 but different RNG continuation are unacceptable. High rigor controls recovery and staged acceptance;
-it does not require a snapshot platform. This document is the implementation contract proposed for
-independent review. No battle save format, runtime consumer or restart acceptance is implemented by
-this design. The current [opening lifecycle](opening-session-lifecycle.md#implemented-savepoint-boundary)
+it does not require a snapshot platform. This document owns the accepted staged implementation
+contract. Slice A implements the finite in-memory continuation below; disk format/store (B) and
+host Save/Continue with fresh-process acceptance (C) remain pending. The current
+[opening lifecycle](opening-session-lifecycle.md#implemented-savepoint-boundary)
 continues to own delivered field savepoints and the common storage/entry rules.
 
-Recommended first boundary: **an unfinished battle at settled player Movement input, at the actor's
+The admitted boundary is **an unfinished battle at settled player Movement input, at the actor's
 committed origin, after all prior work has completed**. Save preserves the current queue entry;
 Continue returns to that actor's Movement input, not battle entry or the beginning of the round.
 Use the existing two manual slots. Offer Save and return to play, or explicitly Save and Quit;
@@ -29,6 +30,64 @@ Design acceptance requires the boundary, reader-backed state disposition, compat
 policy, fresh-process acceptance matrix and bounded implementation ownership below. Implementation
 acceptance requires those future checks to pass; serializing successfully is insufficient. Main-gate
 owns review, implementation dispatch and integration. No unresolved product choice blocks this design.
+
+## Implemented Domain/Application boundary (A)
+
+**Confirmed in the remake; [#1636](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1636).**
+`GameSession.QueryBattleSave`, revision-bound `CaptureBattleSave` and detached `RestoreBattle`
+consume [BattleSaveData](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleSaveData.cs) and
+[BattleContinuationData](../../src/Sf2.Remake.Domain/Battles/State/BattleContinuationData.cs).
+The existing field v1 API remains separate. Battle recipe revision1 uses the existing package,
+gameplay, rules and field-compatibility identity plus a distinct battle recipe revision.
+The immutable admitted scenario owns encounter definitions and the map/ordinal return route;
+the payload carries live actors, queue/cursor, both seeds, AI/region state, death credit, custody,
+semantic physical aliases and the retained party/story/music context needed by future readers.
+Nullable typed operands distinguish absence or unknown from zero. B must encode explicit presence
+without relaxing the disk contract's prohibition on JSON null.
+
+Query/capture validate a detached candidate without consuming input, RNG, region work or rewards.
+Restore validates the saved finite values against admitted definitions, reconstructs them directly,
+and compares them against the reconstructed values to reject implicit constructor normalization.
+Only pure movement preview is recomputed. No new-battle initializer, queue generation, story entry,
+reward replay or speculative next action runs during restore. A fresh session ID, revision and
+observation sequence replace process-local identities; the saved current queue entry remains current.
+The reconstruction and comparison are specific to this contract, not a general snapshot system.
+
+Admission requires a connected New Game route, complete active/retained roster and accounting,
+known required AI/return resources, completed prior work and known ordinary looping battle music.
+Unknown death credit stays distinct from known-no-ally; a poison-capable encounter requires known
+credit. Semantic visual aliases/old physical slots are retained when present; absence is not
+replaced with actor projections. The [defeated field staging consumer](pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
+builds its own entities from combatants/population and permits absent battle-story visual tables;
+supplied tables and actual battle-story alias readers retain their validation.
+
+Reproduce actual behavior with `uv run sf2 verify engine`, or the narrow engine-test filter
+`FullyQualifiedName~BattleSave|FullyQualifiedName~BattleEndPositionTests|FullyQualifiedName~DefeatedContextTests`
+using the [locked SDK/environment workflow](../development-and-verification.md#locked-net-workflow).
+`BattleSaveContinuationTests`, `BattleSaveEligibilityTests`, `BattleSaveProgressTests`,
+`BattleSaveRegionTests` and `BattleSaveReturnTests` cover pure/stale/busy admission, real movement
+return/undo delivery, changed actor/order, duplicate/dead queue entries, zero/high-bit seeds,
+next AI/round draws, promoted orders, paid healing/items, committed equipment/discard, kill/drop/EXP,
+poison credit, region-script once flags, visual aliases and repeated restore. Focused legal victory,
+defeat and Angel Wing suffixes compare carried resources/return operands and use the existing field
+v1 save/restore consumer at the supported returned recipe. `BattleEndPositionTests` runs defeated
+Begin/Resume/death/outcome with and without a battle visual table; invalid supplied aliases still fail.
+
+With registered private inputs, `BattleSaveProfileTests` reads the existing seven-encounter world
+once, uses actual initialized definitions and explicitly known settled story/music context, then
+compares the next legal turn. This is engine admission/continuation evidence, not natural campaign
+reach or native restart. The local representative run covers 9–17 actors and 0–4 retained allies;
+capture plus detached restore measured 24.72 ms for the first case and 0.39–0.83 ms thereafter,
+excluding content admission, encoding and disk/host work. No media copies, traces or new acquisition
+are needed; the existing world reader dominates memory. B owns measured encoded size and peak memory
+with the real codec/store under the resource limits below.
+
+**Unknown / deferred:** disk v2 and mixed-version publication/recovery (B), native music observation,
+ordinary Save UI, mounting and genuinely fresh-process equivalence (C). Entering a region script
+invalidates music history; A explicitly rejects `save-battle-music-unknown` afterward until known
+context is bound. The region behavior test supplies that context explicitly after actual completion;
+it does not implement C's hook. Finite music/interpreter continuation, later campaign content and
+arbitrary saves remain outside admission. Passing A does not enable battle saving in the product.
 
 ## Evidence boundary and current consumers
 
@@ -245,8 +304,9 @@ Use small tests of actual Domain/Application behavior and direct codec/store inv
 add tests of probes, comparison drivers or report generators. Native checks read state/input/view
 projection/errors, never screenshots. Use disposable slot namespaces outside removable worktrees;
 registered immutable content is read-only. Existing user primary/backup and retained diagnostic
-processes are not test inputs. The following is **future required acceptance**, not checks passed
-by this documentation PR.
+processes are not test inputs. The following is the integrated required acceptance matrix.
+A's bounded engine checks are recorded above; disk/host/fresh-process rows remain future acceptance
+until B/C complete them.
 
 | Group / minimum representative seam | Pass condition |
 | --- | --- |
@@ -266,7 +326,7 @@ Unknown/outside the claim. A required failure case not reached is recorded as un
 
 ## Bounded implementation ownership and resources
 
-Recommended serial slices follow; main-gate creates implementation Issues only after design review.
+The serial slices follow; main-gate creates implementation Issues after design review.
 Every slice starts from accepted main. Do not dispatch overlapping writers in the shared session,
 store, entry or battle input files. Consume the accepted movement/camera and handoff boundary in
 [#1607's presentation owner](../godot/presentation.md#ordinary-movement-camera-continuity-1607).
@@ -308,6 +368,7 @@ Release only when v1 compatibility and the vertical restart/return matrix pass. 
 fails, keep battle saving unavailable while field v1 remains usable, and preserve evidence/files.
 Reverting code must not delete or reinterpret v2 files; the compatibility row above governs recovery.
 Keep new handwritten responsibilities below the repository's source-size limit, extracting only a
-touched oversized responsibility where necessary. Current docs-only acceptance is direct source,
-link, scope and private-boundary inspection, a clean committed planner and actual CI disposition;
-no normal/full Python, SDK, Godot or original runtime suite is selected just for this design.
+touched oversized responsibility where necessary. A uses scoped engine behavior verification,
+adapter compilation for the shared facade/return consumer, direct private profile admission, a clean
+committed planner and actual CI disposition. Documentation-only corrections use direct source/link,
+scope and private-boundary inspection; they do not select research or native suites by themselves.
