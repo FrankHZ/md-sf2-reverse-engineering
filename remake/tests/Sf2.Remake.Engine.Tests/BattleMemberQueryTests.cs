@@ -66,6 +66,16 @@ public sealed class BattleMemberQueryTests
     }
 
     [Fact]
+    public void AuthoredAlliesWithoutSourceMemberBindingsRemainReadableInAStoryPackage()
+    {
+        var session = Start();
+        var definition = new ScenarioDefinition("authored-story", session.Definition.Encounters.Values,
+            battleStory: new BattleStoryDefinition([], new Dictionary<int, string>()));
+        var roster = BattleMemberQuery.Query(definition, session.Current);
+        Assert.Equal(session.Current.Battle.Actors.Count(a => a.IsAlly), roster.Members.Count);
+    }
+
+    [Fact]
     public void SourceRosterRebuildsLiveFlagsRatherThanTrustingACountedListFromBeforeTheActiveWrite()
     {
         var session = Start();

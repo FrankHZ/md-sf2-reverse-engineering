@@ -26,7 +26,8 @@ internal static class BattleMemberQuery
                 ? current.Story.PartyLists : null;
         var actors = current.Battle.Actors.Where(a => a.IsAlly && (membership is null
             ? definition.PrivateDefinitions is null
-            : a.Deployment.Initialization?.AllyPartyMember is { } member && membership.Active.Contains(member)))
+            : a.Deployment.Initialization?.AllyPartyMember is { } member ? membership.Active.Contains(member)
+                : definition.PrivateDefinitions is null))
             .OrderBy(a => a.Deployment.Initialization?.AllyPartyMember ?? a.ProcessingOrder).ToArray();
         var scenes = definition.ScenesFor(current.Battle.Definition.Encounter);
         var members = actors.Select(a => new BattleMemberEntry(a.Actor, BattleUnitProjection.Name(definition, current, a),
