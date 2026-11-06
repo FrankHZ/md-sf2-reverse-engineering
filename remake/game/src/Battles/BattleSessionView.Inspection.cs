@@ -9,6 +9,14 @@ public sealed partial class BattleSessionView
 {
     internal bool Inspecting => _inspection?.Active == true;
     internal Action? RequestSpeed { get; set; }
+    internal Action? RequestQuit { get; set; }
+    internal bool CanOpenBattleQuit => _inspection?.Active == true && _inspection.Page == "Options" &&
+        _session?.QueryBattleInspection().Available == true;
+    internal void ReturnFromBattleSave()
+    {
+        InspectionBarrier();
+        if (!_inspection.Refresh(_session, afterSave: true)) Present();
+    }
     internal bool CanOpenBattleSpeed => _inspection?.Active == true && _inspection.Page == "Options" &&
         _session?.QueryBattleInspection().Available == true;
     internal void ReturnFromBattleSpeed() { InspectionBarrier(); _inspection.Refresh(_session); }

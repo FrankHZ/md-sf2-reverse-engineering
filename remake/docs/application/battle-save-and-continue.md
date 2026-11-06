@@ -212,6 +212,29 @@ for the wider state/codec/storage matrix; this is not a seven-battle natural cam
 Physical focus/OS-close device acceptance and arbitrary candidate resource corruption are not newly
 claimed by these headless observations. Exit warnings remain explicit in the verification owner.
 
+## Empty-ground Options Quit caller (#1651)
+
+**Standard rigor for the bounded adapter entry; existing High persistence contract unchanged.**
+`BattleInspectionView` now exposes Quit from empty-ground Options after ordinary Movement B/undo
+and actual return delivery. `GameRoot.ShowBattleQuit` requires that current safe Options caller,
+then opens the existing two-slot Save flow. Availability, real music publication, strict capture,
+explicit overwrite, Save/return, Save and Quit, codec and store remain their existing owners.
+No stable-origin rule, save format, supported campaign or second save authority is added.
+
+Cancel, error Back and successful Save/return restore the same Options selection and inspection
+cursor. Only this paused save caller may requery the same session/actor at the current revision:
+explicit Save can publish real music and advance revision before any file is written. An unavailable
+or replaced session/actor closes inspection; ordinary refresh still rejects stale revisions. Continue
+mounts a new session and uses its normal actor focus, without reviving the previous caller.
+
+Overwrite Cancel returns to the slot list with its ordinary Cancel handler restored. Uncertain
+publication retains the write guard on Back; Inspect reuses the covered panel for read-only Continue
+inspection, then Cancel returns to Options. It never resumes gameplay between the covered panels.
+Existing host Menu Save remains available with its established return contract. Pause and held-input
+release barriers are shared. [Bounded native evidence](../verification/battle-save.md#options-quit-caller-1651)
+owns the actual entry, two-slot files, refusal, return, exit and failure observations. No new engine
+rule or A/B/C seven-shape/restart acquisition is required by this entry change.
+
 ## Evidence boundary and current consumers
 
 **Confirmed, accepted original evidence:** the [battle interaction baseline](../godot/battle-interaction-baseline.md#one-player-decision-from-entry-through-return)

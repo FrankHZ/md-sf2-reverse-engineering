@@ -31,6 +31,7 @@ internal sealed partial class BattleInspectionView : Control
     internal bool Active => _snapshot is not null;
     internal string Page => _page;
     internal Action? RequestSpeed { get; set; }
+    internal Action? RequestQuit { get; set; }
 
     public override void _Ready()
     {
@@ -53,10 +54,11 @@ internal sealed partial class BattleInspectionView : Control
         _snapshot = null; _session = null; _unit = null; _land = null; _members = null;
         _map?.Inspect(null); Hide();
     }
-    internal bool Refresh(GameSession? session)
+    internal bool Refresh(GameSession? session, bool afterSave = false)
     {
         if (_snapshot is null) return false;
-        var query = session?.QueryBattleInspection(_snapshot.SessionId, _snapshot.Revision);
+        // Only the paused save caller may rebind after the host publishes real music.
+        var query = session?.QueryBattleInspection(_snapshot.SessionId, afterSave ? null : _snapshot.Revision);
         if (session != _session || query?.Available != true || query.ActiveActor != _snapshot.ActiveActor)
         { Close(); return false; }
         _snapshot = query; Project(); return true;
@@ -87,10 +89,11 @@ internal sealed partial class BattleInspectionView : Control
         else if (_page == "Options")
         {
             if (b) _page = "Cursor";
-            else if (action is GameAction.Up or GameAction.Down) _optionIndex = (_optionIndex + (action == GameAction.Up ? -1 : 1) + 3) % 3;
+            else if (action is GameAction.Up or GameAction.Down) _optionIndex = (_optionIndex + (action == GameAction.Up ? -1 : 1) + 4) % 4;
             else if (a || c)
             {
                 if (_optionIndex == 2) { RequestSpeed?.Invoke(); return; }
+                if (_optionIndex == 3) { RequestQuit?.Invoke(); return; }
                 _page = _optionIndex == 0 ? "Map" : "Members"; _knownIndex = 0; _memberIndex = 0;
             }
         }
@@ -170,7 +173,7 @@ internal sealed partial class BattleInspectionView : Control
         }
         else if (_page == "Options")
         {
-            string[] options = [GameText.Get("battle.member.map"), GameText.Get("field-menu.member"), GameText.Get("battle.speed.title")];
+            string[] options = [GameText.Get("battle.member.map"), GameText.Get("field-menu.member"), GameText.Get("battle.speed.title"), GameText.Get("entry.quit")];
             message = GameText.Get("battle.inspect.options", string.Join("   ", options.Select((text, i) => (i == _optionIndex ? "> " : "  ") + text)), up, down, a, c, b);
         }
         else if (_page == "Members")

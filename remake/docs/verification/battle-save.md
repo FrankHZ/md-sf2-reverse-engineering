@@ -121,3 +121,63 @@ new host-node lifecycle leak. It does not identify the native mixer ownership of
 Earlier non-verbose2/6-instance logs and later variable4–12 counts retain **Unknown** per-object
 attribution; do not retrospectively relabel them. All original logs remain. Exit0/semantic success
 does not mean clean shutdown or leak-free long-term play; no broader cleanup audit was performed.
+
+## Options Quit caller (#1651)
+
+The bounded adapter addition uses the existing High A/B/C persistence contract with Standard entry
+scope. The actual-input observer is
+[`engine_battle_quit_observation.gd`](../../game/probes/engine_battle_quit_observation.gd), extending the
+existing save observer's input/persistence helpers. It waits for the actual attach signal before
+reading a battle projection. No new fixture generator, store, gameplay setter, screenshot or
+seven-battle replay is used.
+
+After the same private/tool configuration and affected Debug adapter build, select a fresh external
+disposable namespace under the configured save root and fresh ignored output. Reuse the registered
+world/scene/entry and the existing controlled Map57 approach described above. Set `SF2_QUIT_CASE`
+and `SF2_SAVE_CASE` to `entry`, `unavailable`, `storage-fail`, `uncertain`, `save-quit` or `resume`,
+`SF2_SAVE_REPORT` to the output JSON, and `SF2_BATTLE_SAVE_START` to that controlled field input.
+Launch the same installed project headless with Dummy audio, `--max-fps 120`, 1920×1080, explicit
+`--log-file`, `--script res://probes/engine_battle_quit_observation.gd` and the existing English,
+instant/reduced-flash `--input-settings`. `unavailable` adds the existing authored `stone-court.json`
+package. Remaining cases use ordinary title Continue from a disposable copy of `entry`'s actual
+slot1 record; `resume` uses the actual `save-quit` output. No player profile is read or written.
+
+For `storage-fail`, hold this new namespace's slot1 lock with FileShare.None. For `uncertain`, hold
+its existing primary read-only without Delete sharing to deny actual Windows Replace. Keep each
+handle until that owned process exits. These reuse the existing failure mechanism, not new fault
+machinery. Each process has a50-second observation/55-second wrapper budget; six passing finite
+cases take approximately2–5 seconds each on this host. Retain selected samples only, with16MiB
+headroom for this caller slice and the existing3GiB content-admission budget; no acquisition or
+world copies are required.
+
+**Confirmed bounded remake observations:**
+
+- Actual Movement B → free cursor → empty-ground C → Options Quit opens both existing slots.
+  Inspection browsing remains pure until explicit Save publishes real native music. Slot Cancel
+  returns to the same Quit focus/cursor/actor with the updated revision, without staling inspection.
+- Both slots publish real v2 files. Each Save/return preserves the complete finite progress payload;
+  held Return confirmation blocks a second action until released. Occupied-slot overwrite Cancel
+  returns through slots to Options, preserving exact bytes. B then restores cursor and Movement.
+  Existing host Menu inspection pause stays pure; nonzero preview still refuses Save.
+- Real lock failure reports error/Back; real denied replacement reports uncertain Inspect/Back.
+  Neither exits nor changes primary bytes. Back restores the same live Options and both RNG seeds;
+  another Quit cannot retry uncertain publication. Inspect reads Continue slots and Cancel returns
+  to that same caller. Read-only inspection does not publish or mount a replacement.
+- Actual Options Save and Quit increments sequence1→2 and exits0 only after publication, with exact
+  prior bytes retained as backup. A fresh PID uses ordinary title Continue; its complete pre-input
+  finite progress equals the saved-and-returned control. Wider matched gameplay suffix and seven
+  battle-shape/restart evidence remain C's accepted observations above.
+- Standalone authored content remains unavailable for product saving. Quit shows the real existing
+  error, Back restores Options, and gameplay revision is unchanged. No admission guard was relaxed.
+
+Exact heads, local commands, PIDs, byte/payload comparisons, selected committed plan/CI, failed
+attempts and process completion belong to `local/issue1651/HANDOFF.md`. The first entry observation
+completed failing because the reused slot page retained overwrite's Cancel callback; restoring its
+ordinary handler fixed the return. A later observation's gameplay assertions passed but reading a
+not-yet-attached battle projection emitted errors, so that run is not acceptance. Waiting for actual
+attach fixed the observer; all six final runs completed without script/native errors.
+
+Some connected private runs emit the existing2–4 ObjectDB-instance warning on exit. Per-object
+attribution for these new nonverbose logs remains **Unknown**, under the retained exit-warning
+boundary above; exit0 is not clean-shutdown acceptance. Physical OS focus/device/close, exact original
+option ordering/pixels/timing and human/aesthetic acceptance are not newly claimed.

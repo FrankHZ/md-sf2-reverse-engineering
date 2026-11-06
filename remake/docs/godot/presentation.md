@@ -1892,8 +1892,9 @@ is active, preventing a revision-only invalidation. Its Save offer supplies the 
 observation to `QueryBattleSave` for a pure eligibility assessment through the existing music and
 strict save/restore validators; an unbound history cannot dead-end the fresh inspection menu.
 This publishes no revision or music state. Explicit Save still publishes the real observation and
-performs strict capture at its existing boundary before writing. Save-and-return retires inspection
-when that explicit publication changes its revision. Other independent mutations or session
+performs strict capture at its existing boundary before writing. Host Menu Save-and-return retires inspection
+when that explicit publication changes its revision. The dedicated [Options Quit caller](#battle-options-quit-1651)
+rebinds its same-session/actor inspection after the paused explicit save instead. Other independent mutations or session
 replacement also invalidate inspection.
 
 `BattleMapViewport` owns a temporary cursor subject, so ordinary Frame cannot replace it. Exit
@@ -2293,6 +2294,27 @@ current keyboard-only editor, use `local/issue1446/run-native.ps1` with fresh di
 its owning handoff records keyboard editing, invalid/default/draft handling, pad isolation while
 focused/unfocused, held button/axis release across exit, final Start and fresh-process Continue.
 No persistence/engine semantics changed, so earlier name/save compatibility evidence remains applicable.
+
+## Battle Options Quit (#1651)
+
+**Confirmed in bounded remake observations; Standard entry scope, existing High save consistency.**
+Empty-ground Options offers Map, Member, Speed and Quit. A/C on Quit enters the same shared two-slot
+Save/Save and Quit window as the host Menu. This entry requires current settled inspection Options;
+it does not make preview, movement delivery, scene or standalone diagnostic content saveable.
+Unavailable content reports the existing reason and Back returns to the same caller.
+
+Slot Cancel, overwrite Cancel → slots → Cancel, error Back, uncertain Back, uncertain Inspect →
+Continue slots → Cancel, and successful Save → Return restore the selected Quit row and legal free
+cursor. The host freezes callbacks before publishing music. On return, only this save caller rebinds
+the current revision for the same live session/actor through the strict inspection query. Independent
+stale refresh still retires inspection. B then returns Options → cursor → actor Movement. Successful
+Continue replaces the old caller through normal mounting. Save and Quit exits only after verified
+publication. Actual held confirmation cannot navigate Options or move the actor until released.
+
+The [save owner](../application/battle-save-and-continue.md#empty-ground-options-quit-caller-1651)
+and [finite native observation](../verification/battle-save.md#options-quit-caller-1651) own reproduction
+and limits. Modern host Menu stays usable, including its preview refusal and pure inspection pause.
+No Shift behavior, global UI redesign, new persistence authority or original timing claim is added.
 
 ## Gameplay Save and Quit windows (#1450)
 

@@ -234,6 +234,7 @@ public sealed partial class GameRoot : Node
         if (preparedBattle is not null) _worldViewport = preparedBattle.WorldViewport;
         _battle = view;
         view.RequestSpeed = ShowBattleSpeed;
+        view.RequestQuit = ShowBattleQuit;
         if (view.GetParent() is null) AddChild(view);
         view.ConfigureInput(_input!);
         if (_audio is not null)
