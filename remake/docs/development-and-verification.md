@@ -1784,3 +1784,31 @@ codec restore followed by ordinary empty Search. Run `uv run sf2 verify engine` 
 failures and process completion live in the Issue handoff/PR. No new original H2/H3 or full research
 gate is selected for this engine-only addition; original timing, natural reach and human aesthetic
 acceptance remain **Unknown**.
+
+## Battle Speed and message observation
+
+The finite actual-host [probe](../game/probes/engine_battle_speed_observation.gd) extends the existing
+inspection input driver. Launch the existing project with `--authored-package` selecting tracked
+`remake/content/authored/stone-court.json`, the probe as `--script`, and no `--input-settings` override.
+Set `SF2_SPEED_MODE=transaction`, `SF2_INSPECTION_ROUTE=keyboard` and an explicit ignored
+`SF2_VIEWPORT_OUTPUT`. Configure a fresh disposable `SF2_SAVE_ROOT` outside every checkout and a
+unique namespace. Initial ordinary `sf2-preferences/input.json` uses formatVersion1, adjustable47.5cps,
+English or zh-CN and optional admitted custom bindings. The probe uses mapped input only; no gameplay
+setter, synthetic completion, screenshot, world copy or export. Budget75s/2MiB, fixed samples;
+actual successful samples take under6s/100KiB. Outputs and TEMP stay in the owning G worktree.
+
+`transaction` proves B abandons both drafts, A persists suppression with custom cps unchanged,
+Left/Right traverses all presets, C persists both, exact caller return, input release/focus and
+unchanged gameplay/RNG while settings pause the host. `restore` starts a new process in the same
+namespace and reads the actual saved file before reopening Speed and fighting. `baseline` starts a
+separate namespace with instant text and default suppressionfalse. Every mode runs the same physical
+attack through visible required EXP, hidden/visible ordinary damage and coin, actual completion,
+death cleanup and next Movement. A bounded report comparison checks identical phase sequence and
+final gameplay (excluding process/session identity). Chinese/remapped input changes only preferences,
+not authored game content. This proves no original timing, physical gamepad or human visual acceptance.
+
+After loading the existing worktree environment in the launching process, run affected actual engine
+unit behavior and `uv run sf2 verify adapter`; Debug build is required only for changed native C#.
+The final clean committed `verify plan` selects additional compile checks. No research/full/H3 or
+private campaign replay follows from this presentation-only policy. Historical ObjectDB/audio warning
+and direct-battle helper failures retain their previous Unknowns; no unrelated retry is required.

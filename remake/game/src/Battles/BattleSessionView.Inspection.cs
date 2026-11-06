@@ -8,6 +8,10 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 public sealed partial class BattleSessionView
 {
     internal bool Inspecting => _inspection?.Active == true;
+    internal Action? RequestSpeed { get; set; }
+    internal bool CanOpenBattleSpeed => _inspection?.Active == true && _inspection.Page == "Options" &&
+        _session?.QueryBattleInspection().Available == true;
+    internal void ReturnFromBattleSpeed() { InspectionBarrier(); _inspection.Refresh(_session); }
     private BattleInspectionView _inspection = null!;
     private (Guid Session, ActorRef Actor)? _inspectionAfterReturn;
     private bool _inspectionRelease;

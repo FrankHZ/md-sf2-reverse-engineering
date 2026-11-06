@@ -1559,3 +1559,21 @@ msgstr "宝箱"
 
 msgid "battle.search-detail"
 msgstr "打开面前的宝箱。领取物品、金币或发现空箱会结束本回合；背包已满时返回行动菜单。"
+
+msgid "battle.speed.title"
+msgstr "速度"
+
+msgid "battle.speed.custom"
+msgstr "自定义（每秒 {0} 字）"
+
+msgid "battle.speed.value"
+msgstr "消息速度：{0}"
+
+msgid "battle.speed.messages"
+msgstr "普通伤害／金币消息：{0}"
+
+msgid "battle.speed.mapping"
+msgstr "现代文字显示：0＝每秒 15 字，1＝30 字，2＝60 字，3＝即时。选择预设前保留自定义速度。暴击、经验、升级、物品、状态与剧情消息仍会显示。"
+
+msgid "battle.speed.hint"
+msgstr "{0}/{1}：修改   {2}/{3}：接受并保存   {4}：放弃两项修改"

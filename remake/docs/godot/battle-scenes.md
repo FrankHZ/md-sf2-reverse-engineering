@@ -728,3 +728,31 @@ Absence of a random call alone does not prove natural reach or interrupt parity.
 broader scratch effects and hardware audio. Normal/reduced native equality establishes only the
 bounded modern consumer. Option A, the retained HEAL CP2059–2091 recovery mismatch and 8D/H4 remain
 open. No logical padding, reseeding or fitting to retained79 receipt counts is part of movement.
+
+## Selective hit/coin message delivery (#1650)
+
+**Implemented, bounded:** Application `BattleSceneState.CanSuppressHitCoinMessage` marks only
+`GoldMessage` and noncritical `ResultMessage` with Damage from physical-first/second/counter optional.
+Every other phase defaults required: attack announcement, critical/miss/no-effect, spell/item damage
+and recovery, death, EXP, growth/learned spells, dropped/received items, all status/after-turn notices
+and battle story. Future phases remain required without an explicit policy change.
+
+Godot consumes the separate default-false preference at the [safe Speed caller](presentation.md#battle-speed-and-selective-messages-1650).
+An optional hidden message projects no text and returns one ordinary `Acknowledge` for the current
+token on its actual processing opportunity. It does not fabricate presentation completion, remove
+logical scene phases or bypass action construction, damage, MP, reward, RNG, death or turn suffixes.
+The existing session/revision/token guard refuses stale or duplicate delivery. Focus/host pause blocks
+consumption and resumes once without catch-up. Required messages retain reveal/acknowledgement rules.
+HEAL's logical speed2/no-messages0 work remains unchanged and is never suppressed by this policy.
+The accepted [fast-text audio policy](audio.md#accepted-fast-text-speech-policy) remains: omitted
+characters add no speech; existing tails and legitimate confirmation/replacement keep their owners.
+No speech backfill, whole-message skip, Shift acceleration or original timing parity is introduced.
+
+**Confirmed, bounded remake:** six engine cases cover retained critical/miss messages and real optional-token refusal/acknowledgement
+through damage, death, EXP, gold and next turn. Actual native default/suppressed attacks expose the
+same phase sequence and final gameplay/RNG. EXP and death still display while ordinary damage/coin
+text disappears and completes without input or deadlock. Existing public engine behavior checks pass.
+See the [reproduction and limits](../development-and-verification.md#battle-speed-and-message-observation).
+Pinned original S8/bsc10/bsc11 and the manual retain original authority in the
+[battle source trace](battle-interaction-baseline.md); this conservative mapping is not a claim that
+every original bsc10 message is hidden. Natural original reach/timing and human visual approval remain Unknown.

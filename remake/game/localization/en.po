@@ -1559,3 +1559,21 @@ msgstr "Chest"
 
 msgid "battle.search-detail"
 msgstr "Open the faced chest. Receiving an item, gold or an empty result ends this turn. Full hands return to commands."
+
+msgid "battle.speed.title"
+msgstr "Speed"
+
+msgid "battle.speed.custom"
+msgstr "Custom ({0} characters/s)"
+
+msgid "battle.speed.value"
+msgstr "Message speed: {0}"
+
+msgid "battle.speed.messages"
+msgstr "Ordinary hit / coin messages: {0}"
+
+msgid "battle.speed.mapping"
+msgstr "Modern reveal: 0 = 15, 1 = 30, 2 = 60 characters/s; 3 = instant. Custom speed stays unchanged until you select a preset. Critical hits, EXP, levels, items, status and story messages remain visible."
+
+msgid "battle.speed.hint"
+msgstr "{0}/{1}: Change   {2}/{3}: Accept and save   {4}: Cancel both changes"

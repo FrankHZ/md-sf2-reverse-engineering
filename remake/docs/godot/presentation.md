@@ -390,6 +390,48 @@ direction, all-map UI or gameplay extension is authorized. #1447 has a bounded
 [investigation-only finding](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)
 awaiting independent review; Appearance #1463 remains deferred.
 
+## Battle Speed and selective messages (#1650)
+
+**Standard rigor**, bounded [#1650](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1650).
+Existing preference storage retains its consistency contract. The settled Movement → B inspection →
+empty-ground A/C → Options → Speed caller opens the existing SettingsHost/SettingsView transaction
+with only speed and ordinary hit/coin display. General Settings remains unavailable in battle,
+including through the system Menu. The query must still admit current inspection; active movement,
+scene, story, action and target stages gain no direct settings entry. Closing returns to the same
+Options selection/cursor. The host pauses the battle/audio and reuses input release and focus barriers.
+No session command, revision, RNG, resource, progress slot or session replacement belongs to editing.
+
+Left/Right changes the selected draft; Up/Down selects its two rows. A or C accepts both and writes
+through the existing SettingsStore before live publication; B abandons both. Read-only launch
+settings retain their existing no-write policy. Write failures retain the draft/error and prior file
+and live values. The preference `suppressBattleHitCoinMessages` defaults false for existing files;
+it stays separate from journey saves and survives general Settings drafts. Bindings, language,
+flash policy and arbitrary 1–240 cps remain intact unless explicitly edited in their owning settings.
+
+| Original selector label | Accepted modern reveal mapping |
+| --- | --- |
+| 0 | adjustable,15 characters/s |
+| 1 | adjustable,30 characters/s |
+| 2 | adjustable,60 characters/s |
+| 3 | instant; retain unused cps |
+| Custom | existing adjustable cps outside those presets; retain exactly until Left/Right chooses a preset |
+
+This mapping is an intentional modern presentation policy, not original VInt or speed equivalence.
+Opening/accepting only a suppression edit never normalizes custom cps. From Custom, Right selects0
+and Left selects3; presets wrap. S8's pinned source confirms two drafts, B rollback, A/C acceptance
+and speed0–3 masking; the [source trace](battle-interaction-baseline.md#evidence-and-reproduction-boundary)
+retains original authority. The finite [message policy](battle-scenes.md#selective-hitcoin-message-delivery-1650)
+keeps critical, EXP, growth, items, status and story messages. This does not implement Shift acceleration.
+
+**Confirmed, bounded actual native host:** ordinary authored stone-court input covers custom47.5,
+B cancel, A acceptance preserving custom cps, all four presets, C acceptance, held input/focus release,
+unchanged gameplay/RNG during the modal and return to Options. A new process loads the physically
+written preference file, then completes the same attack with required EXP delivery. English/default
+and Chinese/remapped inputs pass. Default/suppressed runs retain the same scene phase sequence and
+final gameplay values, including RNG, gold, EXP, HP, inventories and next actor. The
+[reproduction owner](../development-and-verification.md#battle-speed-and-message-observation) bounds
+this observation; it is not natural original timing, physical pad hardware or human visual approval.
+
 ## Basic preferences agreement
 
 **Standard rigor; [#1451](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1451).**
@@ -399,10 +441,10 @@ Settings and control help directly on the title and Witch menu. At settled explo
 The mapped Menu action opens the [system Menu](#system-menu-agreement-1518), then Settings; field Cancel opens the gameplay diamond. Settings remains
 unavailable during active text, choices, Church, party menus, movement and battle decisions. The host pauses the existing
 view/audio while the modal is open; no gameplay command, session replacement, revision, RNG or game
-save write belongs to this operation. Battle settings can be changed on the next safe field return.
+save write belongs to this operation. The separate [battle Speed caller](#battle-speed-and-selective-messages-1650) permits only its two preferences at settled inspection Options.
 
 The view owns a disposable draft. Cancel closes without publication or writes; Defaults changes
-only the four draft preferences, preserving custom bindings. Apply validates the entire candidate,
+the product draft preferences, preserving custom bindings. Apply validates the entire candidate,
 including device bindings, writes it, then updates the existing settings and input objects in place.
 All mounted consumers retain those objects. Reduced flash and reveal policy apply to subsequent
 presentation at this safe boundary. Hint refresh and a held-input release barrier prevent the old

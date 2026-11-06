@@ -282,6 +282,12 @@ public sealed class BattleSceneState
     public int GoldAmount => IsAfterTurnNotice || IsFieldDeath ? 0 : (int)(Action.ConstructionEffects.Where(effect => effect.Kind == "gold")
         .Sum(effect => effect.After!.Value - effect.Before!.Value));
     public bool IsHealingMessage => Healing is not null && Phase is BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage;
+    // Finite optional presentation only. The consumer still acknowledges this exact
+    // token through the ordinary continuation; resources, RNG and rewards are unchanged.
+    // Critical, miss, spell/item, status, death, EXP, growth and item notices stay required.
+    public bool CanSuppressHitCoinMessage => Phase == BattleScenePhase.GoldMessage ||
+        Phase == BattleScenePhase.ResultMessage && ReactionKind == "Damage" && !Critical &&
+        ActionKind is "physical-first" or "physical-second" or "physical-counter";
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or
         BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
         or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage

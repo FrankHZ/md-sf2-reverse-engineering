@@ -47,6 +47,7 @@ internal sealed partial class BattleSceneView : Control
     private bool _castSoundPlayed;
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
+    private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
 
     public override void _Ready()
     {
@@ -227,6 +228,11 @@ internal sealed partial class BattleSceneView : Control
         _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
         RefreshMessageHint(state);
         _elapsed += delta;
+        if (Suppressed(state))
+        {
+            _completed = true;
+            return new Acknowledge(state.Token);
+        }
         if (state.IsAfterTurnNotice || state.Phase is BattleScenePhase.SleepMessage or BattleScenePhase.SilenceMessage)
         {
             // Modern finite delivery of the source's no-input status notices. Actual
@@ -358,7 +364,7 @@ internal sealed partial class BattleSceneView : Control
         if (_suspended || !IsVisibleInTree() || !CanProcess()) return null;
         if (action == GameAction.Wait && _state is { Healing.AtTimedInput: true } waiting && Error is null)
             return new AdvanceSimulation(waiting.Token);
-        if (action != GameAction.Confirm || _state is not { RequiresAcknowledgement: true } state || Error is not null) return null;
+        if (action != GameAction.Confirm || _state is not { RequiresAcknowledgement: true } state || Error is not null || _completed || Suppressed(state)) return null;
         if (_message.VisibleCharacters >= 0 && _message.VisibleCharacters < _message.GetTotalCharacterCount())
         { _revealed = _message.GetTotalCharacterCount(); _message.VisibleCharacters = (int)_revealed; return null; }
         if (_messagePanel.ReadMore()) return null;
@@ -429,6 +435,7 @@ internal sealed partial class BattleSceneView : Control
     private string Message(BattleSceneState state)
     {
         _messageFallback = "";
+        if (Suppressed(state)) return "";
         if (state.Healing is { } message && (!GameText.Ready || message.Display is null ||
             string.IsNullOrEmpty(message.Display.CasterName) || string.IsNullOrEmpty(message.Display.TargetName) ||
             message.Display.RecoveredHp < 0))
@@ -636,6 +643,8 @@ internal sealed partial class BattleSceneView : Control
         laser = _state?.Laser is not null ? _laser.Observe() : null,
         attackSpell = _state?.AttackSpell is not null ? _attackSpell.Observe() : null,
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
+        suppressed = _state is { } messageState && Suppressed(messageState), suppressible = _state?.CanSuppressHitCoinMessage,
+        requiresAcknowledgement = _state?.RequiresAcknowledgement,
         fieldDeath = _state is { IsFieldDeath: true } field ? new { actors = field.DeadActors.Select(a => a.Value),
             step = field.FieldStep, facing = field.FieldFacing, delay = field.FieldDelay } : null,
         elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
