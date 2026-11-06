@@ -10,7 +10,7 @@ public enum SessionFailureKind { IllegalCommand, UnsupportedCapability, ContentE
 public sealed record SessionFailure(SessionFailureKind Kind, string Code, string Field, string Message);
 public enum SessionStopReason { PlayerInput, PresentationWait, SimulationWait, BattleEnded, Rejected, Unsupported, Faulted }
 public enum SessionMode { Exploration, Battle }
-public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady, DiscardItemChoice, DiscardCommitReady }
+public enum BattleSelectionStage { Movement, ActionChoice, TargetChoice, CommitReady, EquipmentChoice, GiveItemChoice, GiveTargetChoice, GiveExchangeChoice, GiveCommitReady, DiscardItemChoice, DiscardCommitReady, SearchCommitReady }
 public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat, AttackSpell, SupportSpell }
 
 public abstract record SessionCommand;
@@ -87,7 +87,7 @@ public sealed class BattleSelection
 
 public abstract record ActiveSessionState;
 public sealed record ActiveBattle(EngineBattleState Battle, BattleSelection? Selection, BattleSceneState? Scene = null,
-    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null, BattleGiveState? Give = null, BattleDiscardState? Discard = null, BattleOutcomeKind? Outcome = null) : ActiveSessionState;
+    BattleMovementState? Movement = null, BattleRetreatState? Retreat = null, BattleRoundState? Round = null, BattleGiveState? Give = null, BattleDiscardState? Discard = null, BattleOutcomeKind? Outcome = null, BattleSearchState? Search = null) : ActiveSessionState;
 public sealed record ActiveExploration(ExplorationState World) : ActiveSessionState;
 
 public sealed class SessionSnapshot
@@ -108,7 +108,8 @@ public sealed class SessionSnapshot
     public StoryState Story { get; }
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
     public BattleOutcomeKind? BattleResult => (Active as ActiveBattle)?.Outcome;
-    public bool HasBattleControl => Story.DefeatedScene is not { CompletedWorld: null } && BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null;
+    public bool HasBattleControl => Story.DefeatedScene is not { CompletedWorld: null } && BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null && BattleSearch is null;
+    public BattleSearchState? BattleSearch => (Active as ActiveBattle)?.Search;
     public BattleDiscardState? BattleDiscard => (Active as ActiveBattle)?.Discard;
     public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;
     public BattleRoundState? BattleRound => (Active as ActiveBattle)?.Round;

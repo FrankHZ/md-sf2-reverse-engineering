@@ -174,11 +174,11 @@ public sealed class BattleDefinition
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
         EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null, IEnumerable<SupportSpellDefinition>? supportSpells = null)
+        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null, IEnumerable<SupportSpellDefinition>? supportSpells = null, BattleSearchDefinition? search = null)
     {
         SupportSpells = new ReadOnlyDictionary<SpellRef, SupportSpellDefinition>((supportSpells ?? []).ToDictionary(s => s.Spell));
         AttackSpells = new ReadOnlyDictionary<SpellRef, AttackSpellDefinition>((attackSpells ?? []).ToDictionary(s => s.Spell));
-        Poison = poison; Discard = discard; Give = give; PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
+        Search = search; Poison = poison; Discard = discard; Give = give; PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
         Encounter = encounter; Map = map; Width = width; Height = height;
         Terrain = Array.AsReadOnly(terrain.ToArray());
         Deployments = Array.AsReadOnly(deployments.OrderBy(deployment => deployment.ProcessingOrder).ToArray());
@@ -191,11 +191,11 @@ public sealed class BattleDefinition
     private BattleDefinition(BattleDefinition source, IEnumerable<BattleDeploymentDefinition>? deployments = null,
         BattleOutcomeDefinition? outcome = null, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null) : this(source.Encounter, source.Map, source.Width, source.Height,
+        BattleDiscardDefinition? discard = null, BattleSearchDefinition? search = null) : this(source.Encounter, source.Map, source.Width, source.Height,
         source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
         outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, retreatSpells ?? source.RetreatSpells.Values,
         retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, source.ItemDrops, source.PrismLaser,
-        give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values) { }
+        give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search) { }
     internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null) => new(this, outcome: outcome, retreatSpells: retreatSpells, retreatItems: retreatItems);
     internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
@@ -224,6 +224,8 @@ public sealed class BattleDefinition
     public PrismLaserDefinition? PrismLaser { get; }
     public BattleGiveDefinition? Give { get; }
     public BattleDiscardDefinition? Discard { get; }
+    internal BattleDefinition WithSearch(BattleSearchDefinition search) => new(this, search: search);
+    public BattleSearchDefinition? Search { get; }
     public bool Poison { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;
 }

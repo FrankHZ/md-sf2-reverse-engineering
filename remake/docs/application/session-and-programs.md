@@ -2105,3 +2105,56 @@ A retained-snapshot rejection stays in the menu; a continuation failure after st
 visible through ordinary error presentation. Service Save is disposable host intent until actual
 settled field return, then opens the existing eligible-save flow. The interpreter or suspended
 service is never persisted. See [cost/status policy and limits](opening-session-lifecycle.md#implemented-opening-church).
+
+## Battle Search and chest return
+
+**Standard rigor; #1649, with the existing High inventory/save consistency boundary.** The bounded
+outcome is a faced-chest battle command, atomic actor-only reward/receipt, actual result delivery and
+the correct caller suffix. Authored/controlled admission is explicit; connected Battles01–07 do not
+invent chest placements. No traps, field descriptions, party-wide distribution, later campaign,
+original timing or natural access claim enters this slice.
+
+The pinned [S2 caller](../godot/battle-interaction-baseline.md#evidence-and-reproduction-boundary),
+`battlefunctions_2.asm:@StartBattleMenu..byte_2517C`, checks `GetEntityPositionAfterApplyingFacing`
+and `CheckChestItem` before replacing Down Stay with Search. `battlefunctions_3.asm` supplies the
+four direction offsets and occupied-coordinate scan. `exploration.asm:CheckChestItem/OpenChest/CloseChest`
+supplies the source placement flag and chest marker. Both block constants 55297/55298 retain marker
+`0x1800`, so an opened registered chest still offers Search with empty contents. These are
+**Confirmed static** facts at pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`;
+the [existing Search evidence](../../../docs/research/world/field-search-control.md) retains ROM identity.
+Reproduce with `git show <pin>:disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm`
+and the named sibling/exploration files in the registered read-only checkout. They do not establish
+original natural runtime access or text/hardware cadence.
+
+`BattleSearch` owns the faced-coordinate and actor inventory/gold rule. Application's
+`BattleSearchContinuation` owns explicit confirmation, result wait and caller return. It reads the
+settled preview destination and the actor's last actually delivered facing, not the uncommitted
+actor position or menu navigation direction. Content supplies immutable battle-local chest positions,
+item identity/name or gold, and the ordinary durable story receipt flag. Godot replaces the Down
+caption, submits `BeginBattleSearch`/Confirm/Cancel, renders an authored chest marker and semantic
+localized result, and reports actual reveal/ack. It does not call the field dispatcher.
+
+- Cancel at Search confirmation returns to the same ActionChoice/preview without a receipt or turn.
+  Outer action Cancel retains the ordinary movement undo.
+- The faced occupied coordinate produces its own feedback and free return. A full acting inventory
+  also returns free and leaves the chest unclaimed; it never searches another ally's free slots.
+- A supported item uses the shared four-slot `BattleInventory.Add`; gold saturates at 999999; an
+  empty chest still opens. Actor resources and the first receipt flag publish together. Repeated
+  search gives empty feedback without another receipt, never another grant. Battle drop once-flags
+  and Deals remain separate. Flags are the only durable open authority, including host markers.
+- Successful item/gold/empty feedback owns a token until actual reveal and acknowledgement; only
+  then does the common Stay commit execute movement, after-turn status and normal queue/outcome
+  continuation. Full/occupied acknowledgement returns directly, without Stay or outcome hooks.
+  Duplicate envelopes, early/stale acknowledgements and repeated reveal are rejected. A later suffix
+  callback failure preserves the already committed grant/flag and exact wait in Faulted state; it
+  cannot roll back or retry the reward.
+- Existing battle-v2 stable-Movement capture serializes the receipt with story flags and the actual
+  inventory. Selection/result waits cannot save. No new save schema or alternate receipt ledger is
+  introduced. The persistence unit round-trips the real codec in memory and uses ordinary restored
+  Search to prove no regrant; it does not claim physical disk I/O or new private save compatibility.
+
+Acceptance is actual engine behavior across directions, changed preview/position, cancellation,
+occupied/full/repeated/empty/gold cases, one receipt and turn suffix, plus stable save restore.
+[Admission and natural-access boundary](../content/profiles-and-trust.md#battle-search-admission),
+[capability](../capability-status.md#battle-search-capability) and
+[native input route](../development-and-verification.md#battle-search-observation) retain their limits.

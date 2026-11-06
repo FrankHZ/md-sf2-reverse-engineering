@@ -25,8 +25,9 @@ internal sealed partial class DiamondCommandButton : Control
 {
     internal string Identity { get; }
     private readonly string _captionKey, _resourcePrefix;
-    internal string Caption => GameText.Get(_captionKey);
-    internal void RefreshCaption() { if (_label.Text != Caption) _label.Text = Caption; }
+    internal string? CaptionOverride { get; set; }
+    internal string Caption => GameText.Get(CaptionOverride ?? _captionKey);
+    internal void RefreshCaption() { if (_label.Text != Caption) _label.Text = Caption; _label.Visible = _normal is null || CaptionOverride is not null; QueueRedraw(); }
     internal bool Selected { get; private set; }
     internal bool Available { get; set; }
     private readonly Label _label;
@@ -74,7 +75,7 @@ internal sealed partial class DiamondCommandButton : Control
     {
         _normal?.Dispose(); _selected?.Dispose();
         _normal = normal; _selected = selected; _drawnResource = null;
-        _label.Visible = normal is null; QueueRedraw();
+        _label.Visible = normal is null || CaptionOverride is not null; QueueRedraw();
     }
     internal void Arrange()
     {
@@ -94,7 +95,7 @@ internal sealed partial class DiamondCommandButton : Control
         _drawnOffsetY = FocusOffsetY;
         var offset = new Vector2(0, _drawnOffsetY);
         _label.Position = offset;
-        var texture = Selected ? _selected : _normal;
+        var texture = CaptionOverride is not null ? null : Selected ? _selected : _normal;
         _drawnExtraFrame = texture is null;
         if (texture is not null)
         {

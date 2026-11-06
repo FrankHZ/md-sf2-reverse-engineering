@@ -1079,3 +1079,19 @@ outcome families remain explicit boundaries. First/repeat visits, choice alterna
 follower/flag variants are compared through real common commands; native observations use actual
 ordinary-host input and a world prepared with the local presentation assets.
 See [Architecture](./architecture.md).
+
+## Battle Search capability
+
+**Implemented bounded authored/controlled capability (#1649), not connected source chest coverage.**
+A faced registered chest replaces Down Stay with Search using the live preview and delivered facing.
+Actor-only item/gold/empty results claim once and finish through actual Stay/after-turn; full and
+occupied feedback return free. Opened chests remain searchable but cannot grant again. Explicit
+confirmation cancels free; versioned stable battle save/restore retains inventory and receipt.
+D owns the shared inventory/reward rule, A owns command and result continuation, C owns finite metadata,
+and Godot only submits input and projects menu/result/open markers. The
+[application contract](application/session-and-programs.md#battle-search-and-chest-return) and
+[admission inventory](content/profiles-and-trust.md#battle-search-admission) explain why ordinary
+Battles01–07 supply no in-region chest candidate. Traps/later maps, private natural reach, original
+presentation timing and physical slot I/O are not established. The
+[native witness](development-and-verification.md#battle-search-observation) is authored, with separate
+English/Chinese UI and installed-key-map acceptance; it is not a private source-noun translation claim.

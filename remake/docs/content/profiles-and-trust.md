@@ -1144,3 +1144,29 @@ supplement upgrades only named text/Church programs and map metadata, explicitly
 `unavailable` keys. Embedded assets/audio aliases and contained relative encounter inputs stay with
 the selected world. One derivative remains within the128MiB ceiling; no asset re-export, stock or
 save schema is introduced. F609 remains outside opening reach even when its Church body is lowered.
+
+## Battle Search admission
+
+`AuthoredScenarioPackageReader` admits optional per-encounter `search.chests` in the existing
+public authored battle format, including its existing composed authored-world consumer. Each row
+has battle-local `x`/`y`, a durable `flag`, nullable `item` and nullable `gold`; both null means empty,
+both non-null rejects. `BattleSearchReader` bounds positions, receipt flags and gold, rejects duplicate
+positions/flags within an encounter, and permits only already admitted healing/retreat/weapon item
+identities with their canonical metadata. Up to 64 explicit rows are admitted. There is no trap field,
+map-description fallback, private importer, scenario-ID predicate or private guard relaxation.
+Definition copies preserve this capability. Authors own global receipt-flag allocation just as for
+existing field placements/program flags; distinct rewards must not reuse a flag.
+
+The public [battle-search package](../../content/authored/battle-search.json) is an explicitly authored
+controlled example. It is not an original map or proof of natural access. The existing private
+Battles01–07 readers/bindings leave `Search` absent. **Confirmed static bounded inventory:** at
+SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`data/battles/global/battlemapcoords.asm` maps those battles to 57,66,66,66,16,66,58. The respective
+`data/maps/entries/map{57,66,58}/7-chest-items.asm` tables are empty. Map16 contains (10,5), (11,5),
+(34,23), (35,23), all outside Battle05's rectangle x=0..23/y=14..27. Reproduce these exact paths with
+`git show <pin>:disasm/<path>`; no source bytes are republished. Therefore this finite source inventory
+supplies no in-region chest candidate to connect. Original natural Search reach remains **Unknown**;
+this does not authorize a new world export or later campaign admission.
+
+The [application owner](../application/session-and-programs.md#battle-search-and-chest-return)
+defines opened/full/occupied/result/turn semantics and the existing save authority.

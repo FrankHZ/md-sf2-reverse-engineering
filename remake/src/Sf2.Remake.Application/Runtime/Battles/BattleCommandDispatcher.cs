@@ -32,6 +32,12 @@ internal static class BattleCommandDispatcher
                 return BattleGiveSelection.Submit(current, command);
             switch (command)
             {
+                case BeginBattleSearch:
+                    return BattleSearchContinuation.Select(current);
+                case Confirm when selection.Stage == BattleSelectionStage.SearchCommitReady:
+                    return BattleSearchContinuation.Begin(current, rules);
+                case Cancel or ReturnToBattleActions when selection.Stage == BattleSelectionStage.SearchCommitReady:
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "search-cancelled");
                 case ReturnToBattleActions when selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");
                 case BeginEquipment when selection.Stage == BattleSelectionStage.ActionChoice:
