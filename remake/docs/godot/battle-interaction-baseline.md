@@ -37,6 +37,11 @@ new original investigation, later campaign admission and runtime/test execution 
 
 ### Reading and maintenance
 
+Start with the [player-flow matrix](#one-player-decision-from-entry-through-return), use the
+[layer responsibility map](#responsibility-and-admission-route) to locate consumers, and follow
+[sequencing and gaps](#sequencing-and-remaining-uncertainty) for the remaining scope. The provenance
+below supports those routes; it need not be read first.
+
 “Connected” below means the admitted private-local campaign, currently Battles01–07; it does not mean
 every original encounter. “Standalone authored” means an independently admitted example, not ordinary
 campaign integration. **Confirmed code structure** establishes a reachable consumer or guard;
@@ -183,7 +188,14 @@ source fidelity, functional access and human acceptance are deliberately distinc
 
 | Player need / original basis | Remake decision and operation / return | Responsible consumers and ordinary admission | Acceptance boundary / remaining work |
 | --- | --- | --- | --- |
-| Save an unfinished battle and later resume. S2 excludes Battle00; confirmation copies elapsed seconds, sets flag88, writes the slot and normally transfers to `WitchSuspend`; the loop has suspended entry. | **Implemented modern decision:** host Menu → Save at settled player Movement/origin → two slots/explicit overwrite → Save and return or Save and Quit. Fresh title Continue resumes this actor/queue entry. Saves are reusable. Busy/preview requests refuse without undo or queued save; empty-ground Quit entry still awaits inspection/options wiring. | D continuation values/queue/AI/RNG → A `QueryBattleSave`/`CaptureBattleSave`/`RestoreBattle`, stable/route guards → C strict battle-v2 codec and no-init restored definitions → shared `LocalSaveStore` → G `OpeningPersistenceHost`, ordinary entry, real battle resources/audio preparation. **Connected Battles01–07**, not standalone diagnostics or arbitrary animation. | [High A/B/C contract](../application/battle-save-and-continue.md), [native acceptance](../verification/battle-save.md). **Confirmed bounded engineering delivery**, not a missing persistence feature: #1639/#1640/#1641 implement #1636–#1638 under #1618. Actual exit/new PID, exact pre-input state/two seeds, matched suffix, seven controlled shapes, focused outcomes, explicit backup and publication failures are retained there. Physical focus/OS-close, human experience and exit warning limits remain **Unknown** as qualified. |
+| Save an unfinished battle and later resume. S2 excludes Battle00; confirmation copies elapsed seconds, sets flag88, writes the slot and normally transfers to `WitchSuspend`; the loop has suspended entry. | **Implemented modern decision:** host Menu → Save at settled player Movement/origin → two slots/explicit overwrite → Save and return or Save and Quit. Fresh title Continue resumes this actor/queue entry. Saves are reusable. Busy/preview requests refuse without undo or queued save. Host Menu is the accepted usable entry; original empty-ground Quit is a separate unfiled entry difference, as qualified below. | D continuation values/queue/AI/RNG → A `QueryBattleSave`/`CaptureBattleSave`/`RestoreBattle`, stable/route guards → C strict battle-v2 codec and no-init restored definitions → shared `LocalSaveStore` → G `OpeningPersistenceHost`, ordinary entry, real battle resources/audio preparation. **Connected Battles01–07**, not standalone diagnostics or arbitrary animation. | [High A/B/C contract](../application/battle-save-and-continue.md), [native acceptance](../verification/battle-save.md). **Confirmed bounded engineering delivery**, not a missing persistence feature: #1639/#1640/#1641 implement #1636–#1638 under #1618. Actual exit/new PID, exact pre-input state/two seeds, matched suffix, seven controlled shapes, focused outcomes, explicit backup and publication failures are retained there. Physical focus/OS-close, human experience and exit warning limits remain **Unknown** as qualified. |
+
+The original empty-ground **Quit entry has no implementation Issue filed**. #1633 explicitly excludes
+it, and closed #1618's implemented A/B/C persistence does not own its future wiring. If source-style
+options access is retained as follow-up coverage, G owns the options entry and caller-specific
+return/pause/release flow, consuming A's existing save availability and shared host dialog. No new
+C admission, save format or recovery decision is implied. Until separately scoped, the accepted host
+Menu supplies working battle Save and Save and Quit.
 
 The battle direction route consumes fresh input edges: `GameInput.Resolve` rejects keyboard Echo
 and repeated pad deflections, and `BattleSessionView` has no held-direction loop. The field's

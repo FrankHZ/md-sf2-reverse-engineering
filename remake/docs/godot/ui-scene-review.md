@@ -314,7 +314,10 @@ Map/Member/Quit/Speed are distinct functions, not four enabled commands. #1633 c
 and Map, depending on #1615/#1617. Battle Member and original Speed access/selective message suppression
 have no implementation Issue filed; the feature trace names their responsibilities. Battle saving
 is implemented through the separate [host contract](../application/battle-save-and-continue.md),
-while the empty-ground Quit entry is not connected. Original Speed concerns text/message settings;
+with host Menu as the accepted usable entry. Original empty-ground Quit is not connected and has
+**no implementation Issue filed**; #1633 excludes it and closed #1618 does not own future options
+wiring. Any such follow-up belongs to the adapter's options/return flow consuming existing save
+eligibility, not a new persistence design. Original Speed concerns text/message settings;
 [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) separately owns proposed
 Shift-held 1.5× acceleration. Final labels and availability stay with those behavior owners.
 

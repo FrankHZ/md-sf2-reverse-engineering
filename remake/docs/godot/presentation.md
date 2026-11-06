@@ -1812,13 +1812,16 @@ its [native verification](../verification/battle-save.md) owns that bounded acce
 State sequence: field Save explains its safe return destination and ambient reset; battle Save
 explains continuation at the same actor's settled turn. The shared flow then offers both slots
 and Cancel. Slot selection opens a cancel-first save/overwrite confirmation with Save and return /
-Save and Quit, and backup wording only for replacement. Success offers Return to game.
-Unsupported/busy/configuration/storage errors
-have a readable reason, explicit file-retention wording, Back and Quit; the existing diagnostic code
-is secondary. Uncertain publication remains distinct and directs the player to check Continue before
-retrying. Missing/damaged/incompatible slots and available backups have readable summaries; explicit
-backup recovery retains Cancel first. Ordinary and unsaved Quit share the same window and explicit
-Cancel-first Quit action. Opening, browsing and canceling never write a slot; no implicit retry or save.
+Save and Quit, and backup wording only for replacement. Successful Save and return offers Return to
+game; Save and Quit exits only after successful publication. A failed write does not mark progress
+clean or exit. Unsupported/busy/configuration/storage errors show a readable reason, retention
+wording and **Back only**; the diagnostic code is secondary. Uncertain publication instead offers
+**Inspect / Back**. Inspection reads Continue before another write or Quit is permitted; Back alone
+does not clear that requirement. `RequestQuit` preserves this guard, and `PresentQuitChoices` offers
+Inspect / Cancel while it is pending. Missing/damaged/incompatible slots and available backups have
+readable summaries; explicit backup recovery retains Cancel first. Outside that uncertainty guard,
+ordinary and unsaved Quit use the same window and Cancel-first Quit confirmation. Opening, browsing
+and canceling never write a slot; no implicit retry or save.
 Church Save closes its real caller and enters this same settled Save path.
 
 Acceptance: adapter compilation, clean committed scope plan, direct document/diff checks and bounded
