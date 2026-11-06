@@ -118,7 +118,7 @@ msgstr "Chinese support is partial. Untranslated dialogue and names remain in En
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
-msgstr "Field translation unavailable (overlay-unavailable); English fallback. Preference retained."
+msgstr "World Chinese is unavailable; using English. Your language preference is retained."
 
 #. Arguments: caster name, spell identity, level.
 msgid "battle.heal.action"
@@ -1362,10 +1362,16 @@ msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}: Choose\n{4}: Select   {5}: Back"
 
 msgid "ui.settings.catalog"
-msgstr "World catalog admitted: {0} dialogue rows / {1} display names."
+msgstr "World Chinese loaded: {0} dialogue rows / {1} display names."
 
-msgid "ui.settings.entry-catalog"
-msgstr "Entry catalog: {0}."
+msgid "ui.settings.entry-loaded"
+msgstr "Opening Chinese is loaded."
+
+msgid "ui.settings.entry-unbound"
+msgstr "Opening Chinese has not been loaded yet."
+
+msgid "ui.settings.entry-unavailable"
+msgstr "Opening Chinese is unavailable; using English."
 
 msgid "ui.settings.world-unbound"
-msgstr "World catalog is checked when New Game or Continue admits its content."
+msgstr "World Chinese is loaded when you start or continue a journey."

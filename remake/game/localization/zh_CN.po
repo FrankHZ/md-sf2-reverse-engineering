@@ -118,7 +118,7 @@ msgstr "简体中文尚未覆盖全部内容；缺译的对白和名称仍显示
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.overlay"
-msgstr "场景译文不可用（overlay-unavailable）；回退英文。已保留语言偏好。"
+msgstr "世界中文文本不可用，使用英文。语言偏好已保留。"
 
 #. Arguments: caster name, spell identity, level.
 msgid "battle.heal.action"
@@ -1362,10 +1362,16 @@ msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}：选择\n{4}：确认   {5}：返回"
 
 msgid "ui.settings.catalog"
-msgstr "世界目录已准入：{0} 条文本 / {1} 个显示名称。"
+msgstr "世界中文文本已加载：{0} 条对白 / {1} 个显示名称。"
 
-msgid "ui.settings.entry-catalog"
-msgstr "入口目录：{0}。"
+msgid "ui.settings.entry-loaded"
+msgstr "开场中文已加载。"
+
+msgid "ui.settings.entry-unbound"
+msgstr "开场中文尚未加载。"
+
+msgid "ui.settings.entry-unavailable"
+msgstr "开场中文不可用，使用英文。"
 
 msgid "ui.settings.world-unbound"
-msgstr "世界目录会在新游戏或继续旅程准入内容时检查。"
+msgstr "开始新游戏或继续旅程时会加载世界中文文本。"

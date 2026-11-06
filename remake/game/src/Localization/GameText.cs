@@ -311,7 +311,9 @@ internal static class GameText
         ["ui.settings.overlay"] = 0,
         ["ui.settings.world-unbound"] = 0,
         ["ui.settings.catalog"] = 2,
-        ["ui.settings.entry-catalog"] = 1,
+        ["ui.settings.entry-loaded"] = 0,
+        ["ui.settings.entry-unbound"] = 0,
+        ["ui.settings.entry-unavailable"] = 0,
         ["name.default-value"] = 1,
         ["shop.title"] = 1,
         ["shop.buy"] = 0,
@@ -471,7 +473,7 @@ internal static class GameText
     internal static string? StartupError { get; private set; }
     internal static string Coverage => Language == "en" ? "" : string.Join("\n", new[] {
         _overlay is null ? Get(_overlayError is null ? "ui.settings.world-unbound" : "ui.settings.overlay") : Get("ui.settings.catalog", _overlay.MessageCount, _overlay.NameCount),
-        Get("ui.settings.entry-catalog", _entryError ?? (_entryAdmission is null ? "unbound" : "admitted")),
+        Get(_entryError is not null ? "ui.settings.entry-unavailable" : _entryAdmission is null ? "ui.settings.entry-unbound" : "ui.settings.entry-loaded"),
         Get("ui.settings.partial") });
     internal static object? Observe() => _current is null ? null : new { language = Language, rows = _current.Status, diagnostics = Diagnostics, coverage = Coverage,
         worldCatalog = new { messages = _overlay?.MessageCount ?? 0, names = _overlay?.NameCount ?? 0, error = _overlayError },
