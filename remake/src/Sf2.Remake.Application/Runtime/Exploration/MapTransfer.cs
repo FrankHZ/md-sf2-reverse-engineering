@@ -294,9 +294,7 @@ internal static class MapTransfer
             if (map != world.Map) throw new BattleRuleException("preserve-other-map", "map.loadMode", true);
             if (!target.Traversal.IsWithinActiveArea(position) || OriginalMapTraversal.IsBlocked(world.Layout, position))
                 throw new BattleRuleException("map-entry-position", "map.position");
-            next = world.WithEntity(world.PlayerEntity with
-            { Motion = world.PlayerEntity.Motion with { X = (short)(position.X * 384), Y = (short)(position.Y * 384),
-                XDestination = (short)(position.X * 384), YDestination = (short)(position.Y * 384), Facing = facing }, Actions = null, ActionCursor = 0 });
+            next = FollowerMotion.Arrive(world, position, facing);
             next = MapEventDispatcher.RoofOnLoad(next);
         }
         else

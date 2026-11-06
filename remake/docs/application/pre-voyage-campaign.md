@@ -5,6 +5,58 @@ handoffs required by [the campaign issue](https://github.com/FrankHZ/md-sf2-reve
 Cross-chapter acceptance is **High** because encounter selection, field reload, recruitment and
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
+## Same-map walking-party arrival
+
+**Standard rigor; bounded rule correction:** current-map stairs retain a live scene, so arrival must
+move its following party without reallocating NPCs or taking ownership from a story script.
+`MapTransfer` owns entry admission and scene preservation; `FollowerMotion` owns placement of the
+player-rooted physical follow chain. Content continues to own deliberate separation and reattachment.
+No map/character/story-flag special case or new save recipe is introduced.
+
+**Confirmed static**, pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+[`map20/6-warp-events.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map20/6-warp-events.asm)
+uses `MAP_CURRENT` for east-tower (39,39)↔(39,53) and royal-room (25,35)↔(25,50) stairs.
+The existing importer maps that selector to `Preserve`, independently of equal map IDs.
+[`ExplorationLoop`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/exploration/explorationfunctions_2.asm)
+calls `UpdateMainEntityProperties` then `DeclareRaftEntity` on current-map entry; explicit map entry
+instead calls `InitializeMapEntities`, allocating followers before declared map actors.
+[`DeclareRaftEntity`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/map/mapfunctions.asm)
+enumerates `EXPLORATION_ENTITIES`, assigning each listed slot's current X/Y and destination X/Y to
+the entrance, except for its raft/caravan paths. This is a source-list operation; the four writes
+alone do not establish every story separation, natural reach or hardware service schedule.
+
+The admitted remake walking rule places the player and installed, script-free followers connected
+to that player at the entrance, including members already moving. It clears their previous velocity,
+travel, motion wait and timer; it retains follower links/offsets, speeds, flags, sprite state and each
+follower's facing. The selected entrance sets player facing. Physical slots determine connectivity,
+including changed membership/order; character identities and allocation order do not select legality.
+`SceneEntities.Build` and follower-install commands establish these links. `CurrentEntities` also
+retains slots after scripts take over, so it cannot by itself identify current following. An actor
+with a script, a detached actor, and a chain rooted in another actor retain their state. This is an
+explicit bounded mapping of source party placement to the admitted follow model, not a claim that
+filtering the original list by `Actions` reproduces all original cutscenes. Raft/caravan transfer
+support and broader separation semantics remain outside this correction.
+
+Acceptance uses `FollowerTransferTests` through `uv run sf2 verify engine`: varied zero/one/three
+followers and reversed physical links, moving player/followers, multiple landings and return,
+independent/script-owned actors, destination population rebuild, and existing settled-save/input
+rules. Arrival does not bypass on-load work, supported save locations or later movement restrictions.
+The affected `MapTransferPolicyTests`, `OrdinaryFieldTimeTests`, `OpeningRestoreTests`,
+`DepartureProgramTests` and `CastleTowerProgramTests` remain direct behavior checks.
+
+**Confirmed in the remake:** a short headless Godot observation uses the existing
+`StartPreVoyageLocalizationObservation` controlled-start seam with the registered world read-only.
+From Map20 (38,41), Up then Right takes the real diagonal east-tower stairs; Left then Right returns.
+From (26,37), Up then Left takes the royal-room stairs; Right then Left returns. The independent
+Map20 (36,41), Up entrance rebuilds Map19 at (35,7). Actual input, physical entity state and native
+actor projection confirm party arrival and retained NPC behavior; autonomous NPC walking continues,
+and rebuild uses destination declarations. These explicit starting states do not
+establish natural route/title reach or original timing. Reproduction inputs, checkpoint reports and
+completed failures are retained under ignored `local/issue1610/`; no world or saves are copied.
+The first native startup lacked the local font import; necessary local import restored it. The
+bounded native runs retain the same two-ObjectDB exit warning before and after correction; no
+audio/host-lifecycle repair or clean-exit claim is included.
+
 ## Current Stage D implementation agreement
 
 [Issue1540](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1540) connects the accepted
