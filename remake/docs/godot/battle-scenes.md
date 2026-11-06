@@ -378,6 +378,56 @@ The host uses the existing modern half-second fade and instant/adjustable text s
 timing, exact final pixels, continuous opening/outcome acceptance and original audio mixing remain
 **Unknown**; these observations grant no H4 or deviation waiver.
 
+### Weapon frame composition (#1620)
+
+**Standard scope:** diagnose the reported knight weapon/body overlap using the accepted private
+frames and pinned source; correct the responsible projection and retain legal front/back layers,
+frame selection, flips, offsets, hit delivery and the separate battle UI. No asset replacement,
+world occlusion redesign, original frame capture or full-weapon survey belongs to this slice.
+
+**Confirmed, static:** at SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, beneath `disasm/`:
+
+- `data/graphics/battles/battlesprites/allies/animations/allybattlespriteanimations.txt` defines
+  weapon layer1 as under the character and layer2 as over it; bits4/5 of the frame byte mirror/flip,
+  and signed weapon offsets are relative to the current body position.
+- `code/gameflow/battle/battlescenes/battlesceneengine_0.asm`,
+  `LoadBattlesceneAllyVdpSprites` writes toggle1 for ally slots1–9.
+  `LoadBattlesceneWeaponVdpSprites` / `loc_1958E` writes `0x01010101 << (layer-1)` for slots10–13.
+  `code/common/tech/graphics/graphics_2.asm:sub_1942/sub_196C` links toggle2 before toggle1,
+  and increasing slot order within each group. Layer1 therefore follows the body in the sprite
+  chain; layer2 precedes it. This agrees with the format, rather than inferring priority from the
+  name of the field. `battlesceneengine_4.asm:sprite_BattlesceneWeapon` preserves the four 32×32
+  chunk arrangement and the horizontal/vertical flip combinations within the same 64×64 footprint.
+- `code/gameflow/battle/battlescenes/getallyanimation.asm:GetAllyAnimation` selects KNTE sequence2 for the stick/lance
+  and special80 for the Short Spear. USE_ITEM and dodge retain their distinct selectors.
+
+The [accepted animation fixture](../../../tests/fixtures/h2/battle-sprite-animation-static-v1.json)
+pins the US ROM identity and ally pointer table `0x1AAC3A`. Read only the selected pointer and
+`8 * (count + 1)` bytes: sequence0 at `0x1AAD96` (40 bytes), sequence2 at `0x1AADDE` (32),
+sequence42 at `0x1AB2FE` (24), sequence80 at `0x1AB68E` (32). Their decoded operands match the
+existing selected scene's corresponding sequences. No private payload or generated art is tracked.
+
+| Selected combination | Body and weapon operands | Layer interpretation |
+| --- | --- | --- |
+| KNTE, Wooden Stick56 / Bronze Lance73, idle | Body0; weapon0, no flip, relative(12,-1) |1, behind body |
+| KNTE, sequence2 attack | Body3 at(-2,0), then hold15 at(-10,0); weapon0 at(-7,-6), no flip | Both1, behind body |
+| KNTE, Short Spear72, sequence80 | Body4 at(0,0), weapon0 at(-23,-16); hold15 with weapon at(127,127) | Both1; preserve the source off-body placement |
+| KNTE dodge42 | Body2, weapon0 at(16,-7), no flip |1 |
+| SDMN, Wooden Sword71, idle / sequence0 | Idle weapon17 (frame1 + horizontal flip) at(-16,10); attack weapon1,0,50 (frame2 + both flips), including body hold15 | All selected rows1 |
+
+**Confirmed, bounded remake:** the adapter formerly projected layer1 at Z3 above the body's Z2;
+the actual knight idle reproduced that mismatch. `BattleSceneView.Weapon` now maps layer1→Z1 and
+layer2→Z3. It keeps the raw frame mask, flips, signed offsets, body animation and resource binding.
+This changes the meaning of the admitted weapon-layer field only, not canvas ordering or all scene Z.
+The selected early KNTE/SDMN rows contain no layer2 pose. A separately labelled valid-content layer2
+variation checks the front path; it is not an original pose or original-runtime witness.
+
+The [native observation](../development-and-verification.md#weapon-composition-observation) owns
+actual input, node operands, hit/return and UI checks. The precise character/frame in the user's
+private image remains **Unknown**; the reproduced inversion is a concrete cause of weapons covering
+the body, not proof that every reported pixel had this cause. Original natural reach, VDP output,
+all later weapons, hardware timing and human/aesthetic approval remain **Unknown**.
+
 ### Medical Herb scenes
 
 The admitted item family uses the same typed scene continuation. Inventory compaction and its two

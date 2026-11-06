@@ -84,6 +84,17 @@ and mount API are not the current `SessionFailure` API. Missing or inconsistent 
 typed ContentError/UnsupportedCapability; actual delivery failure is AdapterError and cannot release
 a pending engine completion as success. See [private admission](profiles-and-trust.md#private-admission-layers).
 
+## Battle weapon operands
+
+`sf2tool.remake_battle_scene_content` preserves the selected animation's raw weapon frame/layer
+and signed X/Y, and composes each 64×64 weapon from four column-major 32×32 hardware chunks.
+The existing scene reader admits layers1–2. Neither preparation nor admission reverses their
+meaning: layer1 is behind the body, layer2 in front; frame bits4/5 select horizontal/vertical flip.
+The [bounded source/ROM and native audit](../godot/battle-scenes.md#weapon-frame-composition-1620)
+locates #1620 in the Godot projection. Existing selected scene files and asset packs require no
+regeneration or promotion. The authored front-layer experiment is disposable diagnostic content,
+not an original asset correction or an update to the selected private world's authority.
+
 ## Deterministic Derivation and Cache
 
 Main Git owns schemas, maintained generators/readers and minimum authored fixtures. The separate

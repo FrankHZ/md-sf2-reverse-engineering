@@ -594,7 +594,9 @@ internal sealed partial class BattleSceneView : Control
         _weaponResource = _allyVisual!.WeaponFrames[frame!.Frame & 7]; Bind(_weapon, _weaponResource);
         _weapon.FlipH = (frame.Frame & 16) != 0; _weapon.FlipV = (frame.Frame & 32) != 0;
         _weapon.Position = new Vector2(136 + frame.X,64 + frame.Y) + offset;
-        _weapon.ZIndex = frame.Layer == 1 ? 3 : 1;
+        // Source layer 1 follows the ally in the VDP sprite chain (behind);
+        // layer 2 precedes it (in front). Keep that per-frame distinction.
+        _weapon.ZIndex = frame.Layer == 2 ? 3 : 1;
     }
     private void Bind(Sprite2D node, string resource)
     {
@@ -661,6 +663,9 @@ internal sealed partial class BattleSceneView : Control
                 width = sprite.GetRect().Size.X, height = sprite.GetRect().Size.Y }).ToArray(),
         allyFrame = _allyFrame, enemyFrame = _enemyFrame, allyResource = _allyResource, enemyResource = _enemyResource,
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
+        weaponZ = _weapon.ZIndex, allyZ = _ally.ZIndex, weaponY = _weapon.Position.Y,
+        weaponRect = new { x = _weapon.GetRect().Position.X, y = _weapon.GetRect().Position.Y,
+            width = _weapon.GetRect().Size.X, height = _weapon.GetRect().Size.Y },
         background = BoundResource(_background), backgroundWrap = BoundResource(_backgroundWrap), ground = BoundResource(_ground),
         textureCount = _textures.Count, reducedFlash = _settings?.ReducedFlash, message = _message.Text,
         messagePanel = _messagePanel.Observe(), visibleCharacters = _message.VisibleCharacters, messageFont = ObserveMessageFont(),
