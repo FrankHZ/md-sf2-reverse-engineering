@@ -38,7 +38,8 @@ public sealed partial class GameRoot
 
     private LocalSaveStore Store(ScenarioDefinition definition) => new(Selected("SF2_SAVE_ROOT"), Selected("SF2_SAVE_NAMESPACE"),
         System.IO.Path.GetFullPath(System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "..")),
-        data => GameSession.Restore(definition, data, RuleCompositions.ForGame()) is SessionStartFailed failed ? failed.Failure.Code : null);
+        record => record is not OpeningSaveRecord ? "save-incompatible" :
+            SaveRecordRestore.Restore(definition, record, RuleCompositions.ForGame()) is SessionStartFailed failed ? failed.Failure.Code : null);
 
     private void OpenSavePanel(bool overEntry = false)
     {
@@ -117,7 +118,7 @@ public sealed partial class GameRoot
 
     private static string Label(int slot, SlotRead read, ScenarioDefinition definition, bool forContinue = false)
     {
-        if (read.Primary is { } record)
+        if (read.Primary is OpeningSaveRecord record)
             return GameText.Get("slot.record", slot, DisplayNames.Member(definition, record.Data.Names, 0),
                 SavedDestination(record.Data.Recipe), SavedTime(record));
         string status = read.Error switch
@@ -131,8 +132,7 @@ public sealed partial class GameRoot
             ? GameText.Get("slot.backup-review") : GameText.Get("slot.backup"));
     }
 
-    private static bool CanRecover(SlotRead read) => read.Backup is not null &&
-        read.Error is not ("save-incompatible" or "save-version" or "save-storage-unavailable" or "save-music-resource");
+    private static bool CanRecover(SlotRead read) => read.CanRecover;
 
     // Display names for the existing finite recipes, not a new savepoint selection policy.
     private static string SavedDestination(string recipe) => recipe switch
@@ -195,7 +195,7 @@ public sealed partial class GameRoot
             if (_entryLoading || !EnsureWindowSupport()) return;
             var read = await LoadEntry(() => store.Read(slot));
             if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
-            if (read.Backup is { } backup && CanRecover(read))
+            if (read.Backup is OpeningSaveRecord backup && CanRecover(read))
             {
                 _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery", slot, DisplayNames.Member(definition, backup.Data.Names, 0),
                     SavedDestination(backup.Data.Recipe), SavedTime(backup)),
@@ -220,8 +220,10 @@ public sealed partial class GameRoot
         catch (ArgumentException error) { SaveError(error.Message); }
     }
 
-    private async void RestoreRecord(OpeningSaveRecord record, ScenarioDefinition definition)
+    private async void RestoreRecord(SaveRecord saved, ScenarioDefinition definition)
     {
+        // C owns battle mounting/music/UI. An unavailable reader never offers backup downgrade.
+        if (saved is not OpeningSaveRecord record) { SaveError("save-incompatible"); return; }
         try
         {
             if (_entryLoading || !EnsureWindowSupport()) return;
@@ -239,7 +241,7 @@ public sealed partial class GameRoot
         catch (ArgumentException error) { SaveError(error.Message); }
     }
 
-    private static string SavedTime(OpeningSaveRecord record) => record.SavedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+    private static string SavedTime(SaveRecord record) => record.SavedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
     public override void _Notification(int what)
     { SettingsNotification(what); }
