@@ -367,8 +367,8 @@ physical OS focus behavior and human visual acceptance that it does not establis
 | --- | --- |
 | Foundation: #1615 and #1617 | #1615 now supplies bounded directional hold/mode isolation under its [agreement and native observation](presentation.md#battle-directional-hold-and-mode-isolation-1615). #1617 supplies [source-calibrated selection feedback](presentation.md#battle-selection-and-preview-feedback-1617): unchanged sprite colors, a steady actor cue, retained legal-stop/target feedback and no gold trail. Its bounded actual consumer checks retain original timing/pixel and human-approval Unknowns. Both are foundations of #1633; neither supplies inspection. |
 | Original access: #1633 | Implemented public live query + Movement B undo/delivery → cursor + caller-specific details + Map. [Detailed owner and observation limits](presentation.md#battle-inspection-and-on-demand-map-1633). Member, Speed and [Quit](presentation.md#battle-options-quit-1651) have their separate delivered owners; host save remains available through its existing owner. |
-| Planned original gaps | Member is delivered under [#1645](presentation.md#battle-member-roster-and-read-only-details-1645); connected Equip has the [finite #1646 boundary](../capability-status.md#connected-battle-equipment-agreement), Give the [finite #1647 boundary](../capability-status.md#connected-battle-give-and-exchange), and Drop the [finite #1648 boundary](../capability-status.md#connected-battle-discard-and-deals). #1649 Search now has the [finite authored/controlled boundary](../capability-status.md#battle-search-capability); #1650 Speed/message access is [delivered](presentation.md#battle-speed-and-selective-messages-1650); #1651 empty-ground Quit is [connected](presentation.md#battle-options-quit-1651) to the existing save flow. The player-flow rows retain A/C/G responsibility and existing authored evidence. Inspection/options consumers are supplied by #1633; Quit consumes the existing save boundary. #1369/#438 own dispatch, not this trace. |
-| Delivered recovery: #1618 | A/B/C are implemented through #1639/#1640/#1641. Use the [current save contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c), not the obsolete field-only assumption. #1633 does not reopen persistence; any future options entry must consume its eligibility and real parent returns. |
+| Delivered finite capabilities | Member is delivered under [#1645](presentation.md#battle-member-roster-and-read-only-details-1645); connected Equip has the [finite #1646 boundary](../capability-status.md#connected-battle-equipment-agreement), Give the [finite #1647 boundary](../capability-status.md#connected-battle-give-and-exchange), and Drop the [finite #1648 boundary](../capability-status.md#connected-battle-discard-and-deals). #1649 Search now has the [finite authored/controlled boundary](../capability-status.md#battle-search-capability); #1650 Speed/message access is [delivered](presentation.md#battle-speed-and-selective-messages-1650); #1651 empty-ground Quit is [connected](presentation.md#battle-options-quit-1651) to the existing save flow. The player-flow rows retain A/C/G responsibility and existing authored evidence. Inspection/options consumers are supplied by #1633; Quit consumes the existing save boundary. #1369/#438 own dispatch, not this trace. |
+| Delivered recovery: #1618 | A/B/C are implemented through #1639/#1640/#1641. Use the [current save contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c), not the obsolete field-only assumption. #1633 does not reopen persistence; #1651's Options Quit entry consumes its eligibility, real parent returns and shared failure/publication rules. |
 | Visual composition: #1616 | [Tracked language](ui-design-language.md) and [scene proposal](ui-scene-review.md) exist. Design delivery does not mean deployed product, independent acceptance of every choice, or human visual approval. Preserve freestanding diamonds and existing behavior boundaries; separate authorized implementation follows design review. |
 | Independent correction: #1620 | [Located and corrected](battle-scenes.md#weapon-frame-composition-1620): source layer1 is behind the body, layer2 in front. Actual knight attack/hit and adjacent sword item gesture preserve frame/flip/offset, action return and UI canvas order. The finite layer2 content variation verifies the front path only; it is not original natural-source evidence. Exact user-image frame, later weapons, original timing/pixels and human visual approval remain **Unknown**. |
 | Modernization: #1619 and deferred candidates | [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) owns proposed held 1.5× timing across exploration/battle; no implementation is claimed. Separate preview-preserving Inspect, ActionChoice/TargetChoice inspection, uniform Back replacing current-actor returns, action-order bar, permanent minimap and tactical threat/intent remain **Deferred**. No action-order implementation Issue is filed; disclosure/product selection precedes a bounded consumer. No predictive simulation is authorized here. |
@@ -383,15 +383,23 @@ status/death and round generation can change what happens next. No bar is part o
 all minimap entity-category anomalies, and original idle/VInt effects on RNG during browsing.
 The source waits for VInts, so absence of direct action/RNG calls in `BattlefieldMenu` is not proof
 that every original RNG value stays frozen. Read-only remake inspection's no-RNG rule is its own
-explicit contract. Hardware timing is unnecessary for the proposed access/information boundary.
+explicit contract. Hardware timing is unnecessary for the admitted access/information boundary.
 
-**Unknown:** native reach and readability of a future inspection UI, exact final control placement,
-and human acceptance of its layout. Current code absence is established statically; no new runtime
-failure or success was manufactured. If exact original B-return physical motion or a specific
-boundary becomes blocking, first state that question and reuse the existing player-ready seam for
-one B → cursor → return observation. Do not convert this Unknown list into an automatic acquisition
-queue. Documentation review here uses direct source/link/scope/private-boundary checks, a clean
-committed planner and actual CI disposition only; no SDK, normal/full suite or Godot run is required.
+**Confirmed, bounded remake evidence:** actual native input/state/projection observations reach
+inspection, caller-specific details and Map through the [#1633 owner](presentation.md#battle-inspection-and-on-demand-map-1633),
+with separate Member, Speed and Quit observations linked above. Quit's [save observation](../verification/battle-save.md#options-quit-caller-1651)
+covers its actual two-slot caller, cancellation/failure returns, verified process exit and fresh
+Continue. These controlled/authored observations establish those implemented paths and projected
+content, not natural original reach or final human readability.
+
+**Unknown:** human acceptance of the current layout/readability, physical OS focus/device behavior
+outside the named observations, and natural original reach/key timing at these seams. Exact original
+B-return motion and broader pixel/category fidelity retain the source/hardware limits above. Do not
+convert these Unknowns into an automatic acquisition queue. A newly blocking question needs a named
+boundary and the smallest existing observation that can answer it. Documentation-only reconciliation
+uses direct source/link/scope/private-boundary checks, a clean committed planner and actual CI
+disposition; it does not invalidate completed engine/native results or require another SDK,
+normal/full suite or Godot run.
 
 [s1]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/executeindividualturn.asm
 [s2]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm
