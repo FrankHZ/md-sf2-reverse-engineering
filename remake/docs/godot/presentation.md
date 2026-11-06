@@ -1,5 +1,11 @@
 # Godot Host and Presentation
 
+The [shared UI design language](ui-design-language.md) and
+[player-path scene review](ui-scene-review.md) own #1616's proposed cross-scene visual direction,
+freestanding diamonds, layout/state combinations and bounded implementation dependencies.
+They await independent design and human visual review; they do not change the implemented
+agreements below or authorize product implementation, new battle capabilities or hint redesign.
+
 The implemented bounded [game localization design](../application/localization-design.md) owns English/zh-CN
 catalogs, safe settings refresh, name/IME and font boundaries. Translated
 display remains separate from Application's canonical text work and game-save identity.
