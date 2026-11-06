@@ -407,9 +407,36 @@ counter validation, growth and continued ordinary control. The
 Four held slots bound selection to O(4); one commit copies existing battle actor state, O(N), with no
 RNG or acquisition. One authored package, small engine tests and one semantic witness (<180 seconds,
 <2 MiB target) are sufficient. Rings, curse/status/break/use effects, Give/Drop beyond the standalone subsets above, field/services,
-connected/private chapter preparation and persistence remain Unsupported. Original natural reach,
+broader private equipment families remain Unsupported. The connected extension below owns private
+chapter preparation and persistence. Original natural reach,
 presentation/timing and the twelve #1047 Unknowns remain unchanged. Authored weapon names, numerical
 bonuses and presentation are example inputs, not newly confirmed original definitions.
+
+## Connected battle equipment agreement
+
+**Standard implementation; existing High save/custody boundary:** product New Game and Continue
+explicitly admit the existing free weapon transaction in connected Battles01–07. Trusted selected
+ordinary `WEAPON` records with ATT-only effects and ranges1–1,1–2 or2–2 supply class masks and
+contributions. Only supported unpromoted, physical, player allies with growth/loadout bindings opt in.
+Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Rings, curses, broken
+weapons, other effects and unsupported actor states cannot become legal equipment changes; no eligible
+weapon means no interaction. Battle Give/Drop remain unadmitted (#1647/#1648).
+
+The existing command-menu equipment hint/default E (or installed binding) opens the localized slot
+preview. Cancel preserves authority; Confirm returns to the same ActionChoice/preview with no turn,
+HP/MP, gold, custody or RNG cost. Current slots drive later ATT/range and attacks. Committed words
+and current base stats pass through v2 battle record/codec restore, ordinary attack/victory and
+field return/save; no second inventory, save format or compatibility revision is introduced.
+The old guard began as the numerical opening restore binding in #1428, then field preparation reused
+it in #1429/#1533. Its restricted caller remains intact; product binding now opts in explicitly.
+
+`ConnectedBattleEquipmentTests` and `BattleEquipmentPersistenceTests` exercise these engine boundaries
+with public authored operands. The [connected native recipe](development-and-verification.md#connected-battle-equipment-observation)
+uses the actual private product entry, keys and state/projection. Its controlled Map57 approach is
+not natural campaign/original reach, hardware timing or human visual acceptance. Original facts
+remain with the [domain/source owner](domain/gameplay-rules.md#authored-battle-weapon-equipment).
+Four carried slots bound selection to O(4); existing commit/state copying is O(N). Reuse the selected
+world read-only; no world export, acquisition, seven-battle replay or new comparator is required.
 
 ## Authored AURA agreement
 

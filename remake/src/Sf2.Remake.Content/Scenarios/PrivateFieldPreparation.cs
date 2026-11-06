@@ -1,22 +1,31 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
 
 internal static class PrivateFieldPreparation
 {
-    internal static BattleDefinition Equipment(BattleDefinition battle, PrivateBattleDefinitions source)
+    internal static BattleDefinition Equipment(BattleDefinition battle, PrivateBattleDefinitions source, bool allowBattleChanges = false)
     {
         var weapons = Weapons(source);
         return battle.WithDeployments(battle.Deployments.Select(row =>
         {
-            if (row.Faction != BattleFaction.Ally || row.Definition.Equipment is not null) return row;
+            if (row.Faction != BattleFaction.Ally || (!allowBattleChanges && row.Definition.Equipment is not null)) return row;
+            // Product New Game/Continue explicitly opt into the existing weapon transaction.
+            // Field-only/controlled consumers and enemy equipment keep their immutable binding.
+            if (allowBattleChanges)
+                Require(row.Control == BattleControl.Player && Sf2ClassRules.SourceClass(row.Definition.ClassRule) is not null &&
+                    row.Definition.Physical is { Promoted: false } && row.Definition.Growth is not null,
+                    "source-battle-equipment-actor", "actor.equipment", true);
             int bonus = row.Definition.Growth?.AttackBonus ?? row.Definition.SourceLoadout?.Items
                 .Where(word => (word & 128) != 0).Sum(word => weapons.Single(item => item.ItemId == (word & 127)).AttackBonus) ?? 0;
             Require(row.Definition.Attack >= bonus, "source-base-attack", "actor.attack");
-            return row with { Definition = row.Definition.WithEquipment(new((byte)(row.Definition.Attack - bonus), weapons, allowChanges: false)) };
+            var definition = row.Definition.WithEquipment(new((byte)(row.Definition.Attack - bonus), weapons, allowChanges: allowBattleChanges));
+            if (allowBattleChanges) BattleEquipment.ValidateLoadout(definition, definition.SourceLoadout);
+            return row with { Definition = definition };
         }));
     }
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)

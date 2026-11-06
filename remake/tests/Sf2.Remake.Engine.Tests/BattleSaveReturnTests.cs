@@ -116,7 +116,7 @@ public sealed class BattleSaveReturnTests
         Assert.Null(EngineTestContent.Send(again, new WaitAtInput()).Failure);
     }
 
-    private static SessionSnapshot End(ScenarioDefinition definition, SessionSnapshot current, BattleOutcomeKind kind)
+    internal static SessionSnapshot End(ScenarioDefinition definition, SessionSnapshot current, BattleOutcomeKind kind)
     {
         var rules = RuleCompositions.Sf2();
         var commands = kind switch

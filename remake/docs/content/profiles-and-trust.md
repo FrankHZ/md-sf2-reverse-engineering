@@ -1022,9 +1022,9 @@ already prepared #1423 world reaches the priest. The original source world remai
 
 `OpeningRestoreReader` selects these same trusted inputs and `PrivateBattleContentReader.Definitions`;
 it never runs `OpeningPartyInitialization`. Saved values cannot choose input paths or alter content.
-Product definitions bind supported adjacent weapons to the existing numerical loadout accessor,
-independently of saved equipment. Field preparation has separate admission below; private battle
-equipment changes remain disabled. The [lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
+Product definitions bind supported ordinary weapons to the existing numerical loadout accessor,
+independently of saved equipment. Product battle changes have the explicit admission below;
+field-only controlled consumers retain immutable battle equipment. The [lifecycle owner](../application/opening-session-lifecycle.md#implemented-savepoint-boundary)
 owns reconstruction and supported semantic state.
 
 `OpeningSaveJson` version1 encodes one UTF-8 JSON record as base64 `payload`, with uppercase hex
@@ -1042,7 +1042,7 @@ attained values, loadouts, flags, anchor and music resources before publishing a
 restore definitions. Controlled/authored profiles acquire no capability implicitly. Class masks and
 simple adjacent ATT-only weapons reuse #1421's trusted numerical bindings. Give/Drop names and
 custody properties come from selected source item records; unadmitted equipped/broken weapon
-effects reject. No battle Give/Drop profile or `Equipment.AllowChanges` is relaxed.
+effects reject. No battle Give/Drop profile is relaxed. Product battle equipment has separate admission below.
 
 Opening static selection additionally retains Medical Herb0, Healing Seed1, Antidote3 and Angel Wing4 with their
 exact codes, use-spell families and no-equipment-effect definitions. This is immutable admission,
@@ -1053,6 +1053,25 @@ MP cost. Other item/spell effects remain explicitly unavailable. The
 static caller provenance and exact payment; battle healing power/EXP/RNG is not reused for field use.
 Existing save format/revisions remain compatible because captured values and restoration semantics
 are unchanged. No new world export, source input mutation or public private-content fixture is needed.
+
+### Connected battle equipment admission
+
+`OpeningLoadoutBindings` calls `PrivateFieldPreparation.Equipment(..., allowBattleChanges: true)`
+for both product New Game and Continue. Each ally must already have player control, an admitted
+unpromoted source class, ordinary physical metadata and source growth. Initial loadout validation
+uses the existing equipment rule. Selected pinned item definitions admit only exact ordinary
+`WEAPON` type, ATT-only/zero-NONE effects and range1–1,1–2 or2–2; their admitted source class flags
+become masks. Class-ineligible ordinary weapons remain carryable, never offered. Rings/cursed types,
+other effects and broken weapons cannot be equipped; unsupported equipped state rejects explicitly.
+Kiwi's weaponless loadout offers no menu. The trusted source selection remains finite; no new item
+identities or spell/use effects are inferred from an equipment action.
+
+The default `allowBattleChanges: false` preserves the historical field-only/controlled caller;
+enemy bindings remain immutable. Domain still validates live status/control/stats and the actual
+selected slot at confirmation. No Give/Drop capability is added. Existing v2 saved words, attained
+base stats and custody reconstruct through these same product definitions, with no initialization
+replay. Field/earlier battle records remain compatible: this enables an already represented
+transaction and does not change their serialization, restoration or captured values.
 
 
 ### Opening Search admission
