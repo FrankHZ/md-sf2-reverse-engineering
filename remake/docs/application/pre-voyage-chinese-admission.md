@@ -269,12 +269,16 @@ keep their approved wording and the existing newline/leading-CLEAR/terminal-W2 p
 Custom-name values are runtime operands, never part of corpus synchronization.
 
 Of the full-corpus 107 semantic-break candidates, **29** are in this selection, all Search:
-the 21 already admitted plus 4065–4072. Search already preserves whole-row breaks; the new nine
-descriptions must use that same contract. The other 78 candidates and all three ambiguities
-330/3207/3529 are outside this selection. Field prose keeps the existing source-token-aware reflow,
-and entry keeps `SourceTextLayout.EntryLines`. Thus this vertical result needs no new semantic-break
-metadata. If a future field consumer needs mixed semantic/soft breaks, that policy belongs in
-content/display metadata keyed to source token positions, validated by Content; never an engine
+the 21 already admitted plus 4065–4072. The current
+[Search layout policy](../evidence/dialogue-corpus-layout.md#current-search-consumer-layout-1608)
+preserves their reviewed source-token breaks while reflowing ordinary layout breaks in this finite
+selection, including the mixed4041 row. N1 is retained in all29;4043/4047/4048 also retain N2.
+Complete description/prefix rows and typed rewards remain separated. The other78 candidates and
+all three ambiguities330/3207/3529 are outside this selection. Field prose keeps the existing source-token-aware reflow,
+and entry keeps `SourceTextLayout.EntryLines`. Search uses the existing Content/display source-token
+mapping with the bounded `SourceTextLayout.SearchBreaks` metadata; older catalogs remain readable
+without a new envelope or control grammar. If a future field consumer needs mixed semantic/soft
+breaks, that policy belongs in content/display metadata keyed to source token positions, validated by Content; never an engine
 story-ID blacklist or a global removal of N. Source tokens and waits remain exact in every case.
 
 ## Capacity and work budget

@@ -50,17 +50,20 @@ public sealed class DisplayCatalog
         return ResolveRange(wait.Text, canonical, wait.DisplayNames, wait.DisplayStart, wait.DisplayEnd, reflow);
     }
     // Search reads complete admitted rows; it does not run a second text interpreter or wait.
-    public static DisplayResult Canonical(int text, ExplorationDefinition source, IReadOnlyList<DisplayNameBinding> names, bool reflow = false)
+    public static DisplayResult Canonical(int text, ExplorationDefinition source, IReadOnlyList<DisplayNameBinding> names,
+        bool reflow = false, IReadOnlySet<int>? preservedBreaks = null)
     {
-        var result = English.Resolve(text, source, names, reflow);
+        var result = English.Resolve(text, source, names, reflow, preservedBreaks);
         return result.Reason == "missing-translation" ? result with { Reason = null } : result;
     }
-    public DisplayResult Resolve(int text, ExplorationDefinition source, IReadOnlyList<DisplayNameBinding> names, bool reflow = false) =>
+    public DisplayResult Resolve(int text, ExplorationDefinition source, IReadOnlyList<DisplayNameBinding> names,
+        bool reflow = false, IReadOnlySet<int>? preservedBreaks = null) =>
         source.TextTokens.TryGetValue(text, out var tokens)
-            ? ResolveRange(text, tokens, names, 0, tokens.Count, reflow)
+            ? ResolveRange(text, tokens, names, 0, tokens.Count, reflow, preservedBreaks)
             : new("Text unavailable (display-operands).", "en", "display-operands");
     private DisplayResult ResolveRange(int text, IReadOnlyList<ExplorationTextToken> canonical,
-        IReadOnlyList<DisplayNameBinding> names, int start, int end, bool reflow = false)
+        IReadOnlyList<DisplayNameBinding> names, int start, int end, bool reflow = false,
+        IReadOnlySet<int>? preservedBreaks = null)
     {
         bool translated = _rows.TryGetValue(text, out var row);
         var tokens = translated ? row!.Tokens : canonical;
@@ -93,7 +96,7 @@ public sealed class DisplayCatalog
             if (original < start || original >= end) continue;
             var token = tokens[i];
             if (token.Kind == ExplorationTextTokenKind.Literal) output.Append(token.Value);
-            else if (token.Kind == ExplorationTextTokenKind.Newline) output.Append(reflow ?
+            else if (token.Kind == ExplorationTextTokenKind.Newline) output.Append(reflow && preservedBreaks?.Contains(original) != true ?
                 SourceTextLayout.Break(tokens, i, translated ? Locale : "en", Boundary(i - 1), Boundary(i + 1)) : "\n");
             else if (token.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
             {
