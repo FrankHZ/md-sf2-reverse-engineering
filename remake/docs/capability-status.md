@@ -1095,3 +1095,19 @@ Battles01–07 supply no in-region chest candidate. Traps/later maps, private na
 presentation timing and physical slot I/O are not established. The
 [native witness](development-and-verification.md#battle-search-observation) is authored, with separate
 English/Chinese UI and installed-key-map acceptance; it is not a private source-noun translation claim.
+
+## Battle Speed and selective messages
+
+**Implemented, bounded [#1650](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1650):**
+settled inspection empty-ground Options → Speed uses the existing host transaction/persistence,
+B rollback and A/C acceptance for speed and ordinary hit/coin display. Explicit modern presets0–3
+map to15/30/60 cps/instant; custom cps remains untouched until selected. Only ordinary noncritical
+physical damage text and coin text are optional; actual tokens still cross normal continuation.
+EXP/growth/items/status/story and all unmapped messages remain required. General battle Settings
+and Shift acceleration are not admitted. [Detailed owner](godot/presentation.md#battle-speed-and-selective-messages-1650),
+[message policy](godot/battle-scenes.md#selective-hitcoin-message-delivery-1650).
+
+Actual English/default and Chinese/remapped native input covers draft/return/focus, physical preference
+writes and new-process restore; paired default/suppressed attacks preserve phase sequence and final
+HP/EXP/gold/RNG/resources/next actor. Engine unit and adapter checks pass. Original timing/full message
+parity, physical controller hardware, private-natural route and human visual approval remain unclaimed.

@@ -11,6 +11,7 @@ internal sealed partial class SettingsView : Control
     internal required Func<InputSettings, bool, string?> Apply { get; init; }
     internal string? Notice { get; init; }
     internal bool ReadOnly { get; init; }
+    internal bool BattleOnly { get; init; }
     private InputSettings _draft = null!;
     private bool _reset;
     private ControlsHelpView? _help;
@@ -35,19 +36,19 @@ internal sealed partial class SettingsView : Control
         _panel.AddChild(_scroll);
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         column.AddThemeConstantOverride("separation", 12); _scroll.AddChild(column);
-        column.AddChild(new Label { Text = GameText.Get("ui.settings.title"), HorizontalAlignment = HorizontalAlignment.Center });
+        column.AddChild(new Label { Text = GameText.Get(BattleOnly ? "battle.speed.title" : "ui.settings.title"), HorizontalAlignment = HorizontalAlignment.Center });
         _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart, Text = Notice ?? "Changes take effect only after Apply." };
         column.AddChild(_message);
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < (BattleOnly ? 2 : 9); i++)
         {
             var button = new Button { Name = "Setting" + i, CustomMinimumSize = new(0, 58),
                 FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore,
-                AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && i < 7 };
+                AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && !BattleOnly && i < 7 };
             column.AddChild(button); _buttons.Add(button);
         }
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(_hint);
-        _selected = ReadOnly ? 7 : 0;
+        _selected = ReadOnly && !BattleOnly ? 7 : 0;
         Resized += Arrange; Arrange(); Refresh();
     }
 
@@ -70,6 +71,13 @@ internal sealed partial class SettingsView : Control
         _pointer.Suspend();
         if (_help is not null) { _help.Handle(action); return; }
         if (action == GameAction.Cancel) { Close(); return; }
+        if (BattleOnly)
+        {
+            if (action is GameAction.Up or GameAction.Down) { _selected = 1 - _selected; Refresh(); }
+            else if (action is GameAction.Attack or GameAction.Confirm) AcceptBattle();
+            else if (!ReadOnly && action is GameAction.Left or GameAction.Right) ChangeBattle(action == GameAction.Left ? -1 : 1);
+            return;
+        }
         if (action is GameAction.Up or GameAction.Down)
         {
             int step = action == GameAction.Up ? -1 : 1;
@@ -104,6 +112,7 @@ internal sealed partial class SettingsView : Control
 
     private void Activate(int direction)
     {
+        if (BattleOnly) { if (!ReadOnly) ChangeBattle(direction); return; }
         if (_buttons[_selected].Disabled) return;
         switch (_selected)
         {
@@ -126,6 +135,20 @@ internal sealed partial class SettingsView : Control
         Refresh();
     }
 
+    private void ChangeBattle(int direction)
+    {
+        if (_selected == 0) _draft.ChangeBattleSpeed(direction);
+        else _draft.SuppressBattleHitCoinMessages = !_draft.SuppressBattleHitCoinMessages;
+        Refresh();
+    }
+
+    private void AcceptBattle()
+    {
+        if (ReadOnly) { Close(); return; }
+        _status = Apply(_draft, false) ?? "";
+        if (_status == "") Close(); else Refresh();
+    }
+
     private void CloseHelp()
     {
         if (_help is not { } help) return;
@@ -135,6 +158,17 @@ internal sealed partial class SettingsView : Control
 
     private void Refresh()
     {
+        if (BattleOnly)
+        {
+            string value = _draft.BattleSpeed is { } speed ? speed.ToString() : GameText.Get("battle.speed.custom", _draft.CharactersPerSecond);
+            _buttons[0].Text = GameText.Get("battle.speed.value", value);
+            _buttons[1].Text = GameText.Get("battle.speed.messages", GameText.Get(_draft.SuppressBattleHitCoinMessages ? "ui.settings.off" : "ui.settings.on"));
+            for (int i = 0; i < 2; i++) StoryTheme.Select(_buttons[i], i == _selected);
+            _message.Text = _status != "" ? _status : Notice ?? GameText.Get("battle.speed.mapping");
+            _hint.Text = GameText.Get("battle.speed.hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
+                Input.CompactHint(GameAction.Attack), Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
+            return;
+        }
         string[] labels = [GameText.Get("ui.settings.text", GameText.Get(_draft.TextMode == "instant" ? "ui.settings.instant" : "ui.settings.gradual")),
             GameText.Get("ui.settings.speed", _draft.CharactersPerSecond),
             GameText.Get("ui.settings.confirm", GameText.Get(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")),
@@ -148,6 +182,6 @@ internal sealed partial class SettingsView : Control
     }
 
     public string ReadSettingsObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
-    { draft = _draft, applied = Input.Settings, selected = _selected, readOnly = ReadOnly, reset = _reset, message = _message.Text,
+    { draft = _draft, applied = Input.Settings, selected = _selected, readOnly = ReadOnly, battleOnly = BattleOnly, reset = _reset, message = _message.Text,
         locale = GameText.Language, coverage = GameText.Coverage, diagnostics = GameText.Diagnostics, labels = _buttons.Select(button => button.Text), help = _help is not null, scroll = _scroll.ScrollVertical, bindings = Enum.GetValues<GameAction>().ToDictionary(action => action.ToString(), Input.Hint) });
 }

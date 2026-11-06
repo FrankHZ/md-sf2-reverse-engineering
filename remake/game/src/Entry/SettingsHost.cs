@@ -12,6 +12,7 @@ public sealed partial class GameRoot
     private string? _settingsNotice;
     private bool _settingsOverride;
     private InputEvent? _settingsActivation, _settingsRelease;
+    private bool _battleSettings;
 
     public string ReadSettingsHostObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { applied = _input?.Settings, releaseBarrier = _releaseBarrier, remapRelease = _settingsRelease?.AsText(),
@@ -98,6 +99,18 @@ public sealed partial class GameRoot
         _hostUi.AddChild(_settings); CoverSystemMenu(); ApplyHostPause(); DisarmInput();
     }
 
+    private void ShowBattleSpeed()
+    {
+        if (_input is null || _settings is not null || _entry is not null || _systemMenu is not null ||
+            _slots is not null || _nameEntry is not null || _windowRecovery is not null || _windowQuit is not null ||
+            _battle?.CanOpenBattleSpeed != true) return;
+        _battleSettings = true;
+        _settings = new SettingsView { Name = "SettingsView", Input = _input, Close = CloseSettings,
+            Apply = ApplySettings, BattleOnly = true, ReadOnly = _settingsOverride,
+            Notice = _settingsOverride ? GameText.Get("ui.settings.readonly") : _settingsNotice };
+        _hostUi.AddChild(_settings); ApplyHostPause(); DisarmInput();
+    }
+
     private string? ApplySettings(InputSettings candidate, bool reset)
     {
         if (_settingsOverride) return GameText.Get("ui.settings.readonly");
@@ -121,6 +134,7 @@ public sealed partial class GameRoot
     {
         if (_settings is not { } settings) return;
         _settings = null; _hostUi.RemoveChild(settings); settings.QueueFree();
+        if (_battleSettings) { _battleSettings = false; _battle?.ReturnFromBattleSpeed(); }
         ReturnToSystemMenu();
         ApplyHostPause(); DisarmInput();
     }

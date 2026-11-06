@@ -104,7 +104,7 @@ public sealed partial class BattleSessionView : Control
         _appearance = new BattleAppearanceView { Name = "BattleAppearance" }; ui.AddChild(_appearance);
         _feedback = new UI.ContextHint { Name = "BattleFeedback", ZIndex = 100 }; ui.AddChild(_feedback);
         _feedback.Hide();
-        _inspection = new BattleInspectionView { Name = "Inspection" }; ui.AddChild(_inspection);
+        _inspection = new BattleInspectionView { Name = "Inspection", RequestSpeed = () => RequestSpeed?.Invoke() }; ui.AddChild(_inspection);
         Arrange();
     }
 

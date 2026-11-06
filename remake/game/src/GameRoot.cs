@@ -233,6 +233,7 @@ public sealed partial class GameRoot : Node
         view.Name = "BattleSessionView";
         if (preparedBattle is not null) _worldViewport = preparedBattle.WorldViewport;
         _battle = view;
+        view.RequestSpeed = ShowBattleSpeed;
         if (view.GetParent() is null) AddChild(view);
         view.ConfigureInput(_input!);
         if (_audio is not null)

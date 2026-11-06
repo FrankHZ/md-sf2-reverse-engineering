@@ -14,6 +14,7 @@ internal sealed class InputSettings
     public string Language { get; set; } = "en";
     public string TextMode { get; set; } = "instant";
     public double CharactersPerSecond { get; set; } = 40;
+    public bool SuppressBattleHitCoinMessages { get; set; }
     public Dictionary<string, ActionBinding> Bindings { get; set; } = [];
 
     internal static InputSettings Load(string? path)
@@ -54,6 +55,7 @@ internal sealed class InputSettings
         {
             FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
             Language = Language, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
+            SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
         draft.Bindings = Bindings;
         return draft;
@@ -64,5 +66,17 @@ internal sealed class InputSettings
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
         Bindings = candidate.Bindings;
+        SuppressBattleHitCoinMessages = candidate.SuppressBattleHitCoinMessages;
+    }
+
+    // Modern reveal presets, not original VInt timing. Merely opening retains custom cps.
+    internal int? BattleSpeed => TextMode == "instant" ? 3 : CharactersPerSecond switch
+    { 15 => 0, 30 => 1, 60 => 2, _ => null };
+
+    internal void ChangeBattleSpeed(int direction)
+    {
+        int speed = BattleSpeed is { } current ? (current + direction + 4) % 4 : direction > 0 ? 0 : 3;
+        TextMode = speed == 3 ? "instant" : "adjustable";
+        if (speed != 3) CharactersPerSecond = new[] { 15.0, 30, 60 }[speed];
     }
 }
