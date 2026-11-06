@@ -40,6 +40,35 @@ owns Issue dispatch, exact production ownership and integration. Reassess High
 rigor at the persistence review and final restart acceptance; ordinary inventory/UI slices can
 use Standard once their state boundary is fixed. No unresolved aesthetic choice gates this design.
 
+## Entry confirmation responsiveness
+
+**Standard rigor** for [#1605](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1605):
+the bounded outcome is responsive title New Game/Continue confirmation, slot/name return and
+failure recovery, with continuous entry music. The existing High-rigor save/recovery agreement
+above still applies. No source cache, save format, gameplay rule or finite-track policy changes.
+
+The host presents loading feedback before detached content admission and slot validation. Fresh
+source admission occurs on each slot-list entry; New Game preparation, slot re-read, restoration,
+publication and explicit backup recovery retain their existing validators. Background work touches
+detached content/session data and disk only; display binding, nodes, audio and publication to the
+live host remain on the Godot thread. One entry operation runs at a time. Repeated confirmation is
+ignored. Cancel acknowledges a return request immediately and returns after the in-flight read;
+publication/recovery cannot be cancelled halfway through their atomic disk operation. Window-close
+requests visibly wait for that operation before applying the existing quit policy.
+After waiting, close releases the entry/name/slot presentation and prepared replacement resources
+before invoking that policy. An existing session retains its identity, revision and unsaved-progress
+confirmation; cancelling quit returns to that original playable session, including after a completed
+replacement save was published without being mounted.
+
+Success and exception results share the original host/tree-lifetime, panel and session boundary.
+An exited or replaced owner receives no late UI result or input rearming. Window recovery retains
+the original pending result until its cover closes; quitting discards it after detached work ends.
+Settings and window recovery explicitly pause entry audio. Slot/name/loading panels disable entry
+gestures and animation while music continues. Actual field entry still makes its legal music change.
+The [presentation observation](../godot/presentation.md#entry-confirmation-observation) owns the
+reproduction, measured boundaries and remaining startup cost; software playback does not establish
+human listening acceptance.
+
 ## Current feature map
 
 The feature map reflects the accepted entry, persistence, preparation, Search and Church consumers;

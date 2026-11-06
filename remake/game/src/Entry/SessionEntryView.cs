@@ -39,7 +39,12 @@ public sealed partial class SessionEntryView : Control
         _previousScaleMode = GetWindow().ContentScaleMode;
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.CanvasItems;
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
-        try { _assets = new EntryPresentationAssets(); _assets.AttachAudio(this); }
+        try
+        {
+            _assets = new EntryPresentationAssets(); _assets.AttachAudio(this);
+            // Host pause owns audio explicitly; disabling entry gestures must not pause BGM.
+            GetNode<AudioStreamPlayer>("SessionMusic").ProcessMode = ProcessModeEnum.Always;
+        }
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or
             System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
         { _assets?.Dispose(); _assets = null; _assetError = "entry-content-unavailable"; }
@@ -105,6 +110,7 @@ public sealed partial class SessionEntryView : Control
         _dialogue.Visible = !active; _hint.Visible = !active;
     }
     internal void ReturnFromSetup() { _activated = _setup = false; ShowMenu(); }
+    internal void PauseAudio(bool paused) => _assets?.Audio?.SetPaused(paused);
     public override void _ExitTree()
     {
         GetWindow().ContentScaleMode = _previousScaleMode;

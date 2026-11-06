@@ -33,6 +33,18 @@ msgid "ui.settings.gradual"
 msgstr "Gradual"
 
 #. Settings display; actions use stable indexes.
+msgid "entry.loading"
+msgstr "Loading, please wait… You can cancel to return."
+
+msgid "entry.publishing"
+msgstr "Saving, please wait… Keep the game open until saving finishes."
+
+msgid "entry.returning"
+msgstr "Returning when the current load finishes…"
+
+msgid "entry.quit-pending"
+msgstr "Closing after the current operation finishes…"
+
 msgid "ui.settings.speed"
 msgstr "Text speed: {0} characters/sec · Left/Right −/+10"
 

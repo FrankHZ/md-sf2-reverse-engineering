@@ -19,6 +19,69 @@ The [battle interaction baseline](battle-interaction-baseline.md) compares origi
 with current consumer gaps and owns the proposed battlefield inspection mode; it does not establish
 an implemented inspection capability.
 
+## Entry confirmation observation
+
+The [entry lifecycle agreement](../application/opening-session-lifecycle.md#entry-confirmation-responsiveness)
+owns #1605's bounded behavior. **Confirmed:** on accepted base `cba8bb41`, ordinary first/repeated
+New Game and Continue slot entry blocked the host frame for approximately 1,016/974/647ms.
+Boundary timing attributed 642–1,035ms to source admission, 6–20ms to display binding and less than
+2ms to empty-slot reads. Disabling the entry node also automatically paused its child music player:
+the playback position stopped, `StreamPaused` became true, and the cue receipt sequence did not change.
+
+With detached admission and explicit audio pause ownership, the WASAPI headless observation measured
+first/repeated New Game and Continue slot readiness at approximately 1,263/850/766ms, with maximum
+host frame intervals 46/21/21ms. Loading feedback appears before admission; music stays unpaused,
+its position advances and its receipt sequence remains unchanged through slot entry/return.
+This improves responsiveness rather than promising shorter source admission. Final New Game/Continue
+world mounting remains synchronous Godot work: approximately 190–210ms inside `MountSession`, with
+observed first-world frame gaps around 238–256ms. Loading feedback precedes this tail and legal
+world music replaces entry music. Full entry startup without any frame stall is not claimed.
+
+The bounded native cases cover ordinary New Game/Continue, cancellation and repeated confirmation,
+bad-source retry, empty/corrupt slots and explicit backup recovery, focus loss, Settings/window-recovery
+pause, host replacement and deferred close during reading/publication. Temporary fault injection
+also confirmed current-owner exceptions reach recovery UI and stale-owner exceptions are cancelled;
+that diagnostic API is not shipped. **Unknown:** human listening/foreground aesthetic acceptance.
+WASAPI playback state/position is software evidence, not a human listening result. The retained
+ObjectDB exit warnings are distinct from input/audio acceptance.
+
+Reproduce with the existing Debug build and imported localization resources, the registered read-only
+inputs, a fresh disposable save root outside all checkouts and an explicit new namespace. Do not
+select player slots or an earlier save-validation destination. The small
+[`entry_confirmation_observation.gd`](../../game/probes/entry_confirmation_observation.gd) reuses
+ordinary semantic input and live state; it refuses to run without an explicit namespace marker and
+report path. It accumulates frame-gap maxima, not per-frame state captures. Allow 55 seconds and
+under 200KiB of report/log output per serial native process; no world/media copy or screenshots.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:SF2_SAVE_ROOT = '<absolute-fresh-disposable-root-outside-checkouts>'
+$env:SF2_SAVE_NAMESPACE = '<fresh-namespace>'
+$env:SF2_ENTRY_CONFIRMATION_NAMESPACE = $env:SF2_SAVE_NAMESPACE
+$env:SF2_ENTRY_CONFIRMATION_OUTPUT = '<absolute-ignored-report-file>'
+$env:SF2_ENTRY_CONFIRMATION_CASE = 'timing'
+& $env:GODOT_BIN --headless --resolution 1920x1080 --path remake/game --max-fps 60 `
+  --audio-driver WASAPI --script res://probes/entry_confirmation_observation.gd
+```
+
+Run `new` then `restore` in separate processes for durable creation/restart; `cancel`, `bad-source`,
+`focus`, `window` and `detach` are separate short cases. `quit` and `quit-write` report the request
+before actual process exit; require exit 0 without a timeout and inspect the resulting disposable
+slot through ordinary `restore`. `bad-slot` requires a valid disposable backup and deliberately
+invalid primary plus an empty second slot; it verifies explicit recovery without preparing or
+mutating that fixture itself. Use Dummy when only input/state acceptance is required, and preserve
+failed reports. Adapter compilation and the clean committed planner are the affected gates; no
+gameplay rule or engine behavior changed.
+
+`active-quit` and `active-quit-write` cover close during replacement source admission and publication
+with an already mounted, dirty session. Set `SF2_ENTRY_CONFIRMATION_START` to an existing controlled
+field-start JSON beneath this checkout's ignored `local/`; the existing private observation bootstrap
+mounts the real session, then ordinary system-menu, replacement, naming and close inputs drive the
+case. This controls initial placement, not preceding natural reach. Both cases require the original
+session ID/revision and unsaved warning at quit confirmation, then cancel and observe usable original
+field input/audio. The discovered failure (loading panel swallowed deferred quit) and its corrected
+passes are retained with the other worker reports.
+
 ## System menu agreement (#1518)
 
 **Standard rigor:** consolidate the existing gameplay system entries and preserve their eligibility,
