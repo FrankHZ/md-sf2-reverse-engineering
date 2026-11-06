@@ -23,7 +23,7 @@ internal sealed partial class BattleInspectionView : Control
     private string _page = "Cursor";
     private MapPosition _cursor = new(0, 0);
     private BattleInspectionUnit? _unit;
-    private BattleInspectionLand? _land;
+    private BattleLandEffect? _land;
     private int _knownIndex;
     internal bool Active => _snapshot is not null;
     internal string Page => _page;

@@ -1513,3 +1513,6 @@ msgstr "高空"
 
 msgid "battle.inspect.terrain.barrier"
 msgstr "障碍"
+
+msgid "battle.acting-land"
+msgstr "地形效果 {0}% · ({1}, {2})"

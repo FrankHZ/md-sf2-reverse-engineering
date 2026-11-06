@@ -1513,3 +1513,6 @@ msgstr "High sky"
 
 msgid "battle.inspect.terrain.barrier"
 msgstr "Barrier"
+
+msgid "battle.acting-land"
+msgstr "Land effect {0}% · ({1}, {2})"

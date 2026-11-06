@@ -58,6 +58,7 @@ internal static class GameText
         ["battle.inspect.close"] = 3,
         ["battle.inspect.detail-help"] = 4,
         ["battle.inspect.land"] = 4,
+        ["battle.acting-land"] = 3,
         ["battle.inspect.options"] = 3,
         ["battle.inspect.map-help"] = 3,
         ["battle.inspect.cursor"] = 3,
