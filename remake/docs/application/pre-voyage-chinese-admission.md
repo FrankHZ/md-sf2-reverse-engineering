@@ -27,7 +27,7 @@ sequence. The existing [High save boundary](opening-session-lifecycle.md#format-
 remains binding. No locale, translated text or display-name choice enters canonical execution,
 source glyph work, RNG, gameplay revision, ActorId or save schema. No translation is edited here.
 The [localization owner](localization-design.md) retains corpus authority and existing consumers;
-this document owns the proposed pre-voyage admission rather than duplicating those agreements.
+this document owns the implemented pre-voyage admission and its remaining acceptance boundaries.
 
 The product denominator is the accepted [campaign](pre-voyage-campaign.md): ordinary title/New Game,
 Map3, Battles01–07 and their supported field returns/services, tower aftermath, departure/voyage,
@@ -153,10 +153,10 @@ enumerated by this design; they are explicitly outside the claim of natural exec
 
 | Class | Concrete scope and disposition |
 | --- | --- |
-| Already connected Chinese | All 209 historical world IDs are in the 806 union:170 opening program IDs including defeat363, plus39 Search rows. Six `entry.text` aliases216–221 remain separately bound to the entry profile. |
-| Must be admitted | The remaining 597 world rows: 588 additional program IDs and nine Search descriptions4065–4073. All 806 are parser-compatible under the current token grammar. Admission and actual caller projection are still required. |
-| Existing semantic UI; no per-source-row overlay | Church menus/results, Search item/gold/full-pack result, Shop buy/sell, Party/Prepare, entry/slots/settings, battle command/target/equipment/status, Give/Discard/paid retreat, story choices/return notices and semantic battle feedback. Reuse their typed values and public PO keys. Localized templates currently still contain source-name arguments. |
-| Operand/display interface work | Join446 needs the captured name and class display identities; existing canonical operands are present. Name translation across semantic UI needs the 51-key table below and preservation of item/enemy/class identity at the named seams. These are not new native token requirements. |
+| Historical admitted seed | All 209 historical world IDs are in the current 806 union:170 opening program IDs including defeat363, plus39 Search rows. Six `entry.text` aliases216–221 remain separately bound to the entry profile. The historical artifacts remain unchanged. |
+| Additional admitted world rows | The additional 597 world rows comprise 588 program IDs and nine Search descriptions4065–4073. The current candidate admits all 806 under the existing token grammar; representative actual caller projections are recorded above. Admission does not prove every conditional path naturally executes. |
+| Existing semantic UI; no per-source-row overlay | Church menus/results, Search item/gold/full-pack result, Shop buy/sell, Party/Prepare, entry/slots/settings, battle command/target/equipment/status, Give/Discard/paid retreat, story choices/return notices and semantic battle feedback reuse typed values and public PO keys. Selected source-name identities now resolve through the 51-key table. Give/Discard remain authored-only; their authored labels are excluded from that private name table, and private/connected imports remain Unsupported. |
+| Implemented operand/display projection | Join446 captures member/custom-name and class identities. Semantic views resolve selected item/enemy/class identities at the named seams while retaining canonical fallback and explicit custom values. These use the 51-key table below without new native tokens; unselected or identity-free authored labels retain their declared values. |
 | Not a Chinese admission claim | `W1TextWait`'s legacy English path, authored `BattleStoryView` bodies and raw unmigrated battle fallback remain explicit. In this selected program inventory only 363 lacks `explicitWindows`; it uses the connected `DialogueWait` path. The ordinary configured field context selects `FieldTextWait` for the other 757 program IDs. Alternative authored/legacy contexts do not become Chinese merely because an ID is in the catalog. |
 | Outside the product | Unselected setup variants, post-frontier bodies, later Map14/Map73 events, Battle08+, future services and the rest of the4,267-row corpus. The nine corpus non-language rows are not selected world messages. Image lettering and Chinese input/IME are separate capabilities. |
 
@@ -179,7 +179,7 @@ bound by its consumer. Full-corpus 4,010-compatible/257-unsupported counts are n
 | --- | --- | --- |
 | Field LEADER/fixed NAME | `ExplorationTextRunner.Begin` captures source-token-indexed `DisplayNames`; LEADER rebuilds active membership and selects its actual first member | Translate the captured member identity, not the speaker or assumed member0. Preserve `CustomName` first. Do not recompute the live party during display. |
 | Bare NAME/CLASS in446 | `ShowText.NameMember`: `cs_516A8`→3, `cs_512BA`→6, `cs_540C0`→4, `abcs_battle05`→5. `JoinedClass` reads the generated member's validated `Growth.ClassId` and private class table | Retain that class ID in the display binding alongside its existing canonical string. Translate by `name.class/index`; never infer class from English abbreviation, actor sprite or prose. |
-| Search bare NAME | `FieldSearch` uses the controlled leader; `GameText.WholeRow(..., implicitMember:0)` constructs the binding. Search reward recipient is separately typed in `FieldSearchResult` | Preserve these distinct identities. Fix whole-row projection to keep canonical and explicit custom values separate before adding translated defaults; its current call to `CharacterNames.Member` returns an already combined string. |
+| Search bare NAME | `FieldSearch` uses the controlled leader; `GameText.WholeRow(..., implicitMember:0)` constructs the binding. Search reward recipient is separately typed in `FieldSearchResult` | Whole-row projection now keeps canonical and explicit custom values separate, preserving these distinct identities and custom-name precedence when resolving translated defaults. |
 | Defeat363 | Existing legacy `DialogueWait` whole-row LEADER/member0 contract | Retain its existing identity contract and explicit custom value. Do not reuse that legacy shortcut for field LEADER. |
 | Item/spell/number in implemented services/battles | Item word/ID, SpellRef, amounts, phases, reward/receipt and payment values already belong to semantic results | Format translated display labels and existing numeric values in PO templates. Keep source fallback/canonical HEAL strings intact. No ITEM/SPELL/# exploration-parser expansion. |
 | DICT/D2/D3 and future generic contexts | No selected world row requires them | Defer until a real admitted gameplay caller supplies dictionary/delay/parameter semantics. A translated draft is not that caller. |
@@ -210,12 +210,13 @@ Naming controls keep their current admitted alphabet/length; show the translated
 display hint, leaving the actual editable/custom value literal. Slot metadata must follow the same
 precedence; missing old metadata gets canonical fallback, never a save rewrite.
 
-### Small interface changes that are actually needed
+### Implemented identity interfaces
 
 Application remains locale-free. `DisplayCatalog`/`GameText` own localized labels. Keep existing
-canonical strings as fallbacks and add only identities dropped before presentation:
+canonical strings as fallbacks. The implemented additions retain identities previously dropped
+before presentation:
 
-- `DisplayNameBinding` retains source-token index, member, actor, canonical/custom values; append
+- `DisplayNameBinding` retains source-token index, member, actor, canonical/custom values and
   optional class identity captured by `ExplorationTextRunner`. Resolver layout boundary sampling
   and emitted text must use the same display choice.
 - `PartyInventorySlot` exposes its committed item ID from
@@ -240,10 +241,10 @@ the implementation diff; it cannot be filled by a story-ID special case.
 
 ## Catalog, line policy and source updates
 
-Keep the current `package`, `locale`, `source` and `texts` shape and `world.text` namespace. Add an
-optional `names` array of `{namespace,index,text}` to that **same world catalog**. Its source pin is
-the same admitted repository/commit/ROM identity; validate name namespaces/indices against actual
-source tables and consumer bindings. Names must be plain text, with no control braces/newlines.
+The implemented reader retains the `package`, `locale`, `source` and `texts` shape and `world.text`
+namespace, with an optional `names` array of `{namespace,index,text}` in that **same world catalog**.
+Its source pin is the same admitted repository/commit/ROM identity; validate name namespaces/indices
+against actual source tables and consumer bindings. Names must be plain text, with no control braces/newlines.
 No name index is an ActorId. Unknown rows fail with diagnostics; duplicate identities and malformed
 envelopes reject the candidate. Optional names preserve old-overlay readability in the new reader.
 Entry continues to use its own existing profile, source identity and `entry.text` reader; do not
@@ -280,7 +281,8 @@ story-ID blacklist or a global removal of N. Source tokens and waits remain exac
 
 **Confirmed measurements:** UTF-8 serialization with literal Unicode, no BOM, using the existing
 world envelope and sorted selected rows. Pretty form uses two-space indentation and final LF.
-The optional-name shape above was measured in memory only; no deployable catalog was written.
+The #1505 design measured the optional-name shape in memory only. The implemented #1602 derivation
+then wrote the fresh selected candidate and confirmed the same 111,580-byte world envelope.
 
 | Candidate | Message / name rows | Compact bytes | Pretty bytes |
 | --- | ---: | ---: | ---: |
@@ -291,8 +293,8 @@ The optional-name shape above was measured in memory only; no deployable catalog
 
 Maximum selected translated message is 147 UTF-16 units / 327 UTF-8 bytes including control syntax;
 maximum selected name is 6 units. These are stored-row measurements, not expanded-layout bounds.
-The 1,024-row proposal leaves 218 message rows of headroom;128 name rows leave 77. The pretty selected
-catalog uses 43% of 256 KiB. Keep 8,192 units/message for compatibility, rather than tightening old
+The implemented 1,024-row ceiling leaves 218 message rows of headroom;128 name rows leave 77.
+The pretty selected catalog uses 43% of 256 KiB. Keep 8,192 units/message for compatibility, rather than tightening old
 admission merely because this subset is small. A 128-unit name cap comfortably bounds this plain
 display projection without changing custom-name admission. Entry retains its 256-row ceiling.
 Both `GameText` pre-read guards and `DisplayCatalogReader` must agree with the chosen byte limit.
@@ -325,11 +327,11 @@ input configuration, resolving from configured roots, not checkout-specific path
 An output file beside a package is not implicitly mounted. No filesystem scanning or chapter overlay
 stack is needed. `GameRoot.BeginSource` binds the actual admitted scenario, while
 `EntryPresentationAssets` binds the actual entry profile before displaying its dialogue.
-World-name lookup is also needed before BeginSource: New Game/Continue already admit a definition
-before building slot labels. Bind the world display candidate from that admitted definition before
-those labels/default-name hints, then rebind for the actual started session. Reuse that existing
-admission; do not parse another 118 MB world just for names. Clear stale bindings when changing a
-source or rejecting a candidate. Entry-only viewing must still work without a world catalog.
+World-name lookup also runs before BeginSource: New Game/Continue bind the world display candidate
+from their already admitted definition before slot labels/default-name hints, then rebind for the
+actual started session. This reuses existing admission without parsing another 118 MB world just for
+names. Stale bindings clear when changing a source or rejecting a candidate. Entry-only viewing
+still works without a world catalog.
 
 Keep the current clean-preferences language default **English**. The private Chinese setup selects
 Chinese once through ordinary Settings/Apply; that saved preference controls later ordinary launches

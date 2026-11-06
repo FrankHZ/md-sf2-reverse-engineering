@@ -89,12 +89,13 @@ A separately configured persistent private content root outside Git and removabl
 - `README.md`: current ownership, use, boundaries and navigation. Exact selections, corrections,
   failures, reproducible commands and acceptance records stay in the private owning handoffs.
 
-No original/translated prose or private review is published. The existing **209 world rows and six
-entry display rows remain frozen admitted runtime subsets**. They are historical admission evidence,
-not competing full-text authorities. Calibrated corpus wording is not automatically mounted or copied
-to them. A separately scoped admission must derive and validate runtime subsets and real consumers.
-The [#1505 admission design](pre-voyage-chinese-admission.md) owns the proposed selection, capacity,
-operands and delivery; the current **256 rows / 256 KiB / 8,192 UTF-16 units per row** is unchanged.
+No original/translated prose or private review is published. The historical **209 world rows and six
+entry display rows remain immutable admission artifacts**, not competing full-text authorities.
+Calibrated corpus wording is not automatically mounted or copied to them. The
+[pre-voyage admission owner](pre-voyage-chinese-admission.md) records the separately derived current
+**806 world rows / six entry aliases / 51 display-name identities**, implemented consumers and bounded
+observations. Current reader limits are **1,024 world messages / 256 entry messages / 128 optional
+name rows**, with **256 KiB per file / 8,192 UTF-16 units per message / 128 UTF-16 units per name**.
 
 The exact ID arrays in private `batches.json` are normative. The
 [six reading groups](../../../docs/design/synthesis/themes/story-progression.md#read-story-content-in-segments)
@@ -249,6 +250,10 @@ acquisition queue follows from those Unknowns. Direct document/source checks suf
 
 ## Implemented M1 boundary
 
+The milestone sections retain their original acceptance boundaries and evidence. M1's pilot and
+M3's 209-row seed are not current coverage limits; the pre-voyage admission linked above owns the
+later message/name selection, projection and remaining exclusions.
+
 - `GameText` loads exact native PO resources and validates the complete English baseline. Selected
   Chinese rows resolve individually with key/effective-locale/reason metadata. Missing or invalid rows
   use the complete English template; required baseline/catalog/font failure refuses Apply before the
@@ -259,8 +264,9 @@ acquisition queue follows from those Unknowns. Direct document/source checks suf
   retain their existing detailed recovery errors (currently English) with a localized explanation.
   No gameplay command, save operation, scene remount or music restart implements a locale change.
 - An explicit absolute `SF2_DISPLAY_CATALOG` selects the optional package overlay once per session
-  composition. `DisplayCatalogReader` reuses `ExplorationTextTokens`, enforces the 256 KiB/256-row
-  envelope and package/locale/private source identity, and retains complete per-row control/name maps.
+  composition. `DisplayCatalogReader` reuses `ExplorationTextTokens`, enforces package/locale/private
+  source identity and the current limits above (1,024 world / 256 entry messages, 128 optional names),
+  and retains complete per-row control/name maps. The file ceiling remains 256 KiB.
   Structural failures reject the overlay; semantic row failures discard that whole row and mapping.
   Missing rows remain distinguishable from invalid rows and producer-operand defects. Diagnostics are
   bounded to 128 distinct key/reason pairs per composition and contain no selected private path.
@@ -274,9 +280,9 @@ acquisition queue follows from those Unknowns. Direct document/source checks suf
   Reading/reveal/ReadMore do not add logical opportunities, MP cost, recovery, EXP or RNG draws.
 - The public authored `localization-pilot.json` / `.zh-CN.json` contain original prose, simple solid
   diagnostic art and a synthesized tone, without extracted source content. W1/W2/CLEAR/N/D1, captured
-  names, mixed-script reveal and ReadMore exercise ordinary host/session consumers. Other dialogue
-  paths, default-name display and other UI/results remain English/unmigrated. Static terminology
-  adoption is recorded above.
+  names, mixed-script reveal and ReadMore exercise ordinary host/session consumers. At M1, other
+  dialogue paths, default-name display and other UI/results remained English/unmigrated. Later
+  milestone boundaries and the current pre-voyage admission record their subsequent coverage.
 - One unmodified [Noto Sans CJK SC Regular](../../game/fonts/localization/README.md) is bundled under
   OFL 1.1, version 2.004, pinned upstream revision `f8d157532fbfaeda587e826d4cd5b21a49186f7c`.
   It is 16,437,364 bytes; the necessary 4.7.2 font import produced 14,444,319 bytes in about 6.3 seconds.
@@ -294,7 +300,7 @@ preferences backup for downgrade. Never rewrite game slots to change language.
 
 ## Implemented M2a Church/Search boundary
 
-The current slice owns English/zh-CN Church menus, offers, results, choices, errors and hints, plus
+M2a introduced English/zh-CN Church menus, offers, results, choices, errors and hints, plus
 Search source-ID rows and typed item/gold/full/empty feedback. Entry/slots, other menus, private script
 translation batches, Unicode names, new services, layout redesign and save migration remain outside
 scope. Acceptance preserves payment/queue order, atomic reward/flag/chest publication, unavailable
@@ -314,9 +320,10 @@ their separate M2b boundary below; independent integration remains main-gate wor
   token/name mapping and whole-row fallback, then formats semantic templates. No second event stream,
   reward computation, source-text execution or source definition mutation is introduced.
 - Missing/invalid templates and source rows retain key/reason/effective-locale diagnostics and visible
-  English fallback. Literal custom-name precedence uses the existing resolver. Untranslated default
-  names/items remain English and are explicitly labelled as such. 中毒 / 眩晕 / 诅咒 are this UI's
-  terms; they do not approve a game-wide naming glossary or publish private translated scripts.
+  English fallback. Literal custom-name precedence uses the existing resolver. At M2a, untranslated
+  default names/items remained English; current selected name projection is recorded above.
+  中毒 / 眩晕 / 诅咒 are this UI's terms; they do not approve a game-wide naming glossary or publish
+  private translated scripts.
 - The original public pilot also admits a small Church and Search sample. For connected authored
   packages, existing `battleDiscard.items` undergoes its full id/name/rare/unsellable and loadout
   validation, including same-ID label agreement, and contributes only `FieldPreparation.Items`.
@@ -341,8 +348,8 @@ coverage remain unaccepted. The existing High save/restore boundary and format a
 English/zh-CN now cover title/Witch controls, New Game setup, restricted-name help/errors, slot
 status/destination/UTC time, Save/Quit/Continue, overwrite/backup recovery and recoverable failures.
 Node/action identity is independent of labels. Custom names, including an explicit `Bowie` override,
-stay literal. Frozen runtime overlays retain their historical source-name choices; current static
-terminology is recorded above and requires separate runtime admission.
+stay literal. Historical runtime overlays retain their original source-name choices. The separately
+derived pre-voyage catalog now admits the selected current terminology without rewriting those artifacts.
 Only the existing Normal difficulty, seven-character restricted alphabet and save recipes are admitted.
 
 `EntryPresentationReader` retains the validated entry profile/upstream commit/ROM identity alongside
@@ -452,12 +459,14 @@ SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, USA ROM SHA-256
 private review table or absolute input path is published in Git. Local admission grants no distribution
 right, and worktree retirement must preserve these three user-content files.
 
-The measured 209 rows require changing only the existing reader's finite entry ceiling from 64 to
-256 (47 rows of headroom); 256 KiB total, 8,192 characters per row, strict UTF-8/shape/source/duplicate
-and control-segment name checks remain unchanged. The current catalog is 28,053 UTF-8 bytes. There is
-no segment loader, merger, manifest, cache or second content authority. Unapproved proper/default
-names and source class abbreviations remain English; captured custom names remain literal. Every
-assigned sentence is translated; names alone are not untranslated-sentence permission.
+At M3, the measured 209 rows raised the reader's finite message ceiling from 64 to 256 (47 rows of
+headroom); the 256 KiB file ceiling, 8,192 UTF-16 units per message and strict UTF-8/shape/source/duplicate
+and control-segment name checks were retained. That historical seed catalog is 28,053 UTF-8 bytes.
+The later pre-voyage candidate uses the current 1,024-world-message/128-name limits above; entry
+retains 256 messages. There is no segment loader, merger, manifest, cache or second content authority.
+At M3, unapproved proper/default names and source class abbreviations remained English; the current
+51-key name projection is recorded in the admission owner. Captured custom names remain literal.
+Every assigned sentence is translated; names alone are not untranslated-sentence permission.
 
 **Confirmed technical boundary:** whole-catalog actual Content admission resolves all 209 rows in
 Chinese without diagnostics/fallback and preserves controls/captured names; missing/invalid-row English
@@ -600,8 +609,9 @@ binding context cannot be trusted. Once that structural/context admission succee
 individual row for an unknown target ID/namespace, unbound placeholders, unsupported tags or changed
 control topology. Other independently valid rows may remain available. Missing rows mean explicit
 partial coverage. Optional overlay failure never invalidates the gameplay package; required source
-admission still fails normally. Proposed M1 bounds are 256 KiB/64 entries per overlay with no external
-includes; these are tiny-pilot limits, not measured full-game requirements.
+admission still fails normally. The original M1 proposal used 256 KiB/64 entries with no external
+includes. Current limits are the 1,024 world / 256 entry messages and 128 optional name rows stated
+above; the file ceiling remains 256 KiB. These finite limits do not establish full-game requirements.
 
 ### Source controls and names
 
@@ -1031,8 +1041,9 @@ asset decision; retain it and identify the untranslated gap until then. A catalo
 
 ## Implementation sequence and acceptance
 
-The M1 paths below are implemented only at the bounded pilot boundary above. Later phases remain
-finite candidates, not an implementation queue. Paths are repository
+The tables below retain milestone ownership and acceptance scopes: M1, M2a–M2g and the M3 seed are
+implemented at their named boundaries; the linked pre-voyage owner records the later admission.
+Chinese naming/IME and broader human acceptance remain separate candidates. Paths are repository
 relative: `A` = `remake/src/Sf2.Remake.Application`, `C` = `remake/src/Sf2.Remake.Content`,
 `G` = `remake/game`, `T` = `remake/tests/Sf2.Remake.Engine.Tests`. M1 owns the implemented paths
 below; future dispatch must recheck names and single-writer ownership, especially shared
@@ -1072,7 +1083,7 @@ If preserving logical work requires a new interpreter/timing policy, private rig
 or font/reveal cannot be demonstrated, stop expansion and retain English/slots/original resources.
 M1 does not enable Unicode naming or close the epic.
 
-### Next bounded candidates
+### Milestone scopes and remaining candidates
 
 | Candidate / dependencies | Initial exact ownership | Acceptance, failure and stop |
 | --- | --- | --- |
