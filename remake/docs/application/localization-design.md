@@ -20,10 +20,10 @@ Application/Content/Godot capability. The existing [High save/restore boundary](
 continues to govern identity changes. Canonical source tokens, glyph units, name expansion, HEAL work,
 program acknowledgements, gameplay/RNG and game-save format remain independent of display locale.
 
-The runtime product target remains title/Witch, New Game/naming, supported opening exploration/services,
-Battle01 outcomes and independent-process Continue, then other implemented consumers. One pilot
-does not establish that coverage. The current full-text authorization below includes static translation
-of unimplemented chapters; it does not implement those chapters. ROM patching, voice/TTS, other
+The next runtime target is the [pre-voyage Chinese admission plan](pre-voyage-chinese-admission.md):
+806 selected world messages, six entry aliases and 51 display names through first stable Map14 control.
+This is a design candidate, not expanded runtime coverage. Static translation does not implement
+unimplemented chapters. ROM patching, voice/TTS, other
 languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.
 
@@ -90,8 +90,8 @@ No original/translated prose or private review is published. The existing **209 
 entry display rows remain frozen admitted runtime subsets**. They are historical admission evidence,
 not competing full-text authorities. Calibrated corpus wording is not automatically mounted or copied
 to them. A separately scoped admission must derive and validate runtime subsets and real consumers.
-[#1505](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1505) owns later capacity/parameter
-design; the reader's **256 rows / 256 KiB total / 8,192 UTF-16 units per row** remains unchanged.
+The [#1505 admission design](pre-voyage-chinese-admission.md) owns the proposed selection, capacity,
+operands and delivery; the current **256 rows / 256 KiB / 8,192 UTF-16 units per row** is unchanged.
 
 The exact ID arrays in private `batches.json` are normative. The
 [six reading groups](../../../docs/design/synthesis/themes/story-progression.md#read-story-content-in-segments)
