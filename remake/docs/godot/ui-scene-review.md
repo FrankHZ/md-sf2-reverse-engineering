@@ -220,9 +220,18 @@ Keep the current [system Menu](presentation.md#system-menu-agreement-1518),
 [preferences](presentation.md#basic-preferences-agreement),
 [Save/Quit](presentation.md#gameplay-save-and-quit-windows-1450) and
 [window recovery](presentation.md#window-support-and-recovery-1455) authorities.
+The [implemented battle Save/Continue contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c)
+now supplies admitted settled-Movement eligibility, two-slot Save and return / Save and Quit,
+battle destination labels and fresh-process continuation. This visual proposal preserves that
+behavior; it does not reopen save design or establish human acceptance of these layouts.
 The current user slot and backup must never be a design-validation fixture.
 
 ## 8. Battle: one complete decision, then its consequences
+
+Use the [battle feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
+for current source, decision/return, real layer consumers, Content guards, connected acceptance and
+uncovered implementation scopes. The following is #1616's tracked **Proposed** composition, not
+deployed UI or user visual approval; visual coverage does not close those functional gaps.
 
 The first visual question is “whose decision is this, and what am I considering?” The second is
 “what will it cost or affect?” Round and gold are useful context, not the primary headline.
@@ -261,7 +270,7 @@ the independent diamond shown on the language page; never place it inside the me
 | Main action | Freestanding Up Attack / Left Magic / Right Item / Down Stay diamond, with selected name/reason in the adjacent frame. Original Search substitution remains a source-specific admission question. | Disabled focus is inspectable and cannot commit. Long reason grows/pages the detail group. Back returns to movement and undoes the preview through the current Cancel contract. Stay retains explicit confirmation. |
 | Spell / item list | List replaces diamond; selected offer shows actual spell level/cost or item/slot. Acting card remains; no stale target card. | Rows include actual unavailable reasons, scroll and retain focus. Confirm enters only an enabled offer. Back restores the same cardinal focus with no resource/RNG change. |
 | Target / affected area | Acting and current target cards, board cursor/affected set, selected action and cost, actual target/Confirm/Back controls. List yields its space; detail names the considered target. | Disabled candidate stays identifiable and cannot confirm an earlier valid target. Long name uses the card policy; detail uses reading space. Back returns to the spell/item list or main action and clears provisional target through the existing return command. |
-| Equipment / Give / Drop | Retain the current auxiliary selection presenter and shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve existing read-before-confirm and cancellation; Drop confirmation and supported transaction limits remain. Do not promise new mouse coverage or private Give/Drop admission. |
+| Equipment / Give / Drop | Retain the standalone authored auxiliary presenter and shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Connected/private Give/Drop lack Content admission; private equipment bindings disallow in-battle changes. Do not promise new mouse coverage or connected transactions from this layout. |
 | Commit | The explicit current command owns payment/action commitment; UI retires the provisional pages and switches to the real presentation phase. | A refusal/stale offer remains with its current responsible view and reason; do not invent success or silently submit a previous choice. Returning held directions/Confirm cannot act on the next phase. |
 
 ### Viewing the battlefield is an original-feature question
@@ -270,8 +279,10 @@ The [SEGA USA manual, “Special Game Options”](https://www.sega.jp/genesismin
 describes B free-cursor viewing during battle, A for full ally/enemy information, C for status and B
 to return; an empty-ground menu offers Map, Member, Quit and Speed, with Map showing the battlefield
 and Quit saving. **Confirmed at manual-description level**, not exact source-call, engine-support or
-modern-input equivalence. [#1622](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1622)
-owns that source/capability closure. Do not reclassify this whole feature as a new modern convenience.
+modern-input equivalence. The accepted [#1622 source/functional contract](battle-interaction-baseline.md)
+now owns that closure; [#1633](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1633)
+owns the still-unimplemented cursor/details/Map subset. Do not reclassify original access as a new
+modern convenience.
 
 Reserve this proposed layout and interaction seam, without adding a working control in this slice:
 
@@ -279,7 +290,7 @@ Reserve this proposed layout and interaction seam, without adding a working cont
   [Viewing battlefield]                 [viewed unit / terrain if admitted]
                  freely inspected board cursor
        empty-ground options: Map · Member · Quit · Speed
-  [existing mapped inspection actions after #1622]              [Back]
+  [mode-local actions per accepted inspection contract]        [Back]
 
   Map page: whole-board schematic | legend / selected known unit | Back
 ```
@@ -290,18 +301,25 @@ visual grouping; a whole-board page gets a bounded map region and legend, never 
 behind live command controls. Long unit/terrain text scrolls in its own detail area. Unknown or
 undisclosed information is absent or explicitly unavailable, not invented from hidden future AI.
 
-**Unknown:** precise entry phases, modern binding, empty-ground cardinal order, disclosed terrain
-fields and camera restoration. Existing mapped Cancel already unwinds provisional battle actions;
-do not steal it because the manual says B. #1622 must settle the entry/return contract and preservation
-of actor, movement preview, camera/selection, action count and RNG before implementation. Reserve a
-visible inspection affordance in the movement context area, with its eventual mapped hint; leave it
-out of the current working UI until those semantics are accepted. Map/Member/Quit/Speed are distinct
-source functions, not automatically four enabled remake commands. Battle saving belongs to
-[#1618](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1618). The original Speed entry
-concerns text speed / battle-message settings; #1622 must compare its exact options with existing
-Settings. [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) separately owns
-the proposed Shift-held 1.5× simulation/presentation acceleration, not implementation of the original
-Speed entry. Final labels, bindings and eligibility remain with their respective behavior owners.
+The [accepted inspection contract](battle-interaction-baseline.md#minimum-implementation-contract-proposed-for-review)
+settles entry and return: Movement B/Cancel finishes real undo/delivery before inspection at origin;
+action-menu Cancel still returns to Movement first. Current-actor A closes to Movement and C returns
+directly; other-unit sheets return to cursor; Map returns to options, then cursor. It also owns
+disclosure, actor-qualified land effect, temporary camera focus and post-undo state/RNG purity.
+Place the mode-local hints through that contract and #1615's input isolation; do not add a separate
+preview-preserving Inspect shortcut. Exact final placement/bindings and human visual acceptance
+remain **Unknown** until the appropriate implementation/review.
+
+Map/Member/Quit/Speed are distinct functions, not four enabled commands. #1633 covers cursor/details
+and Map, depending on #1615/#1617. Battle Member and original Speed access/selective message suppression
+have no implementation Issue filed; the feature trace names their responsibilities. Battle saving
+is implemented through the separate [host contract](../application/battle-save-and-continue.md),
+with host Menu as the accepted usable entry. Original empty-ground Quit is not connected and has
+**no implementation Issue filed**; #1633 excludes it and closed #1618 does not own future options
+wiring. Any such follow-up belongs to the adapter's options/return flow consuming existing save
+eligibility, not a new persistence design. Original Speed concerns text/message settings;
+[#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) separately owns proposed
+Shift-held 1.5× acceleration. Final labels and availability stay with those behavior owners.
 
 The prior [host Overview recommendation](modernization-design.md#read-only-battle-overview) remains
 a separate unimplemented proposal. Prefer first closing the original inspection path; do not add a
@@ -354,7 +372,7 @@ coordinator serializes shared paths, especially `StoryTheme`, `GameRoot` and `pr
 | 2. Battle decision composition under #1616 | `remake/game/src/Battles/BattleMenuLayout.cs`; `remake/game/src/Battles/BattleCommandMenu.cs`; `remake/game/src/Battles/BattleSessionView.cs`; `remake/game/src/UI/BattleStatusCard.cs` | Accepted pilot plus #1621's relevant responsibility findings before changing composition assumptions. Complete counter/host exclusion, card/list/target/auxiliary-page combinations and returns. No engine rules or inspection feature. |
 | 3. Field and service siblings under #1616 | `remake/game/src/Exploration/FieldMenuView.cs`; `remake/game/src/Exploration/ChurchServiceView.cs`; `remake/game/src/Exploration/ShopServiceView.cs`; `remake/game/src/Exploration/PartyStatusView.cs`; `remake/game/src/Exploration/PartyDetailsPanel.cs`; `remake/game/src/Exploration/FieldActionView.cs` | Consume the accepted shared theme with one writer. Keep each transaction/lifecycle owner intact; split Party/preparation from services if they cannot be reviewed as one coherent layout change. Stop at existing admitted consumers. |
 | 4. Remaining entry/host surfaces, preserving #1606 ownership | `remake/game/src/Entry/SaveSlotView.cs`; `remake/game/src/Entry/NameEntryView.cs`; `remake/game/src/Entry/SystemMenuView.cs`; `remake/game/src/UI/SettingsView.cs`; `remake/game/src/GameRoot.cs`; `remake/game/src/Entry/OpeningPersistenceHost.cs`; `remake/game/src/Entry/WindowSupportHost.cs` | Accepted pilot; preserve actual save/settings/recovery predicates and the existing owned instance. `GameRoot`/persistence changes require a specific demonstrated layout need, not a second navigation service. No save format or user-save experiment. |
-| 5. Original battle inspection / map, separately bounded after #1622 | No product paths authorized by this design. #1622 must name the actual query/input/presentation owners once source and capability comparison closes. | Original-feature closure takes priority over optional modern additions; it need not wait for unrelated sibling polish. Define binding, public information and state-preserving return before implementation; do not hide missing functionality behind a disabled cosmetic mock. |
+| 5. Original battle inspection / Map under #1633 | No product paths authorized by this visual design. #1633 freezes the bounded `GameSession` query, battle view/input and map/camera paths identified by the accepted functional contract at dispatch. | Depends on #1615 input isolation and #1617 selection/path feedback; unrelated visual polish is separate. Consume the accepted entry, public disclosure and caller-return contract; do not hide missing functionality behind a disabled cosmetic mock. |
 
 Each future code slice updates the closest current agreement and uses its scoped adapter/behavior
 checks and actual state/input/geometry/error observations. New engine behavior warrants small
@@ -362,10 +380,10 @@ behavior tests; a visual change does not justify tests of probes or a full legac
 tools/instances and disposable evidence namespaces, never screenshots or current user saves.
 Main-gate retains independent acceptance and integration; user visual acceptance remains separate.
 
-No new blocker is created for finishing this **design** by #1621/#1622's unresolved details. They
-limit the affected implementation seam, not the ability to review the recommended look. Remaining
-Unknowns are human visual acceptance, measured final long-content combinations, original inspection
-bindings/disclosure, and the separately owned close/tint/path/weapon/resize defects. Preserve their
+The accepted composition and inspection contracts constrain the affected implementation seams;
+they do not block review of this **Proposed** look or establish a working inspection UI. Remaining
+Unknowns are human visual acceptance, measured final long-content combinations, final inspection
+bindings/layout, and the separately owned tint/path/weapon/resize defects. Preserve their
 own Issues; do not open duplicates or call them resolved by this document. #1544 hint simplification
 and the action-order strip remain deferred. Freeze this design PR after direct checks and actual CI;
 do not begin any implementation or next ticket from its delivery alone.
