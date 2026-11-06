@@ -877,6 +877,51 @@ per-frame dumps or screenshots. This is modern authored semantic acceptance, not
 reach, hardware UI/timing, connected/private equipment or the twelve #1047 Unknowns. Existing
 comparison failures retain their historical owners; the Issue handoff records this slice's failures.
 
+## Connected battle equipment observation
+
+`ConnectedBattleEquipmentTests` exercises the actual Content binding plus free session confirmation,
+class-ineligible carry, curse exclusion, slot identity, cancellation and live ATT/range. Existing
+`BattleEquipmentTests`/`BattleEquipmentSessionTests` cover growth, counter and actual range/resolution.
+`BattleEquipmentPersistenceTests.FreeEquipmentSurvivesV2RecordRestoreActualAttackAndFieldReturn`
+checks equip/Unarmed, queue/RNG/custody, v2 `OpeningSaveJson.WriteRecord/ReadRecord` **in memory**,
+restored real attack/victory, field loadout/progress and later field save restore. This is a codec and
+engine behavior claim, not a physical slot-store write or seven-battle replay.
+
+Build the actual adapter Debug configuration after the locked environment setup. Reuse the existing
+read-only connected world and private/static/scene selections; no export or world copy is required.
+Select an explicitly disposable save namespace. The native probe
+`res://probes/engine_connected_equipment_observation.gd` extends the existing mapped-input/viewport
+observer. Set `SF2_INSPECTION_START` to a worktree-local controlled approach document with this start:
+
+```json
+{"start":{"map":"map-57","player":"entity-0","position":{"x":8,"y":14},"facing":3,"speed":32,"flags":[0,1,2,32,33,34,66,80,401,451]}}
+```
+
+Launch the selected Godot installation with `--headless --audio-driver Dummy --max-fps 60
+--resolution 1920x1080 --path <owning remake/game> --script
+res://probes/engine_connected_equipment_observation.gd -- --input-settings <settings.json>`.
+Use explicit worktree-local logs, `SF2_VIEWPORT_OUTPUT`, TEMP and writable outputs. Settings select
+`language: "en"` or `"zh-CN"`; `SF2_EQUIPMENT_ZH=1` enables Chinese label assertions. The probe reads
+installed keyboard bindings, including Equipment, from the real InputMap; use a remapped settings
+file for the Chinese case. `SF2_EQUIPMENT_APPROACH_ONLY=1` stops at usable Movement after the actual
+Map57 entry and free equipment cycle. Otherwise it moves the already-equipped actor through the
+existing legal-stop query and ordinary turns, then confirms a legal physical attack and reaches
+subsequent player control. Other players Stay. No live setters, fabricated completions, screenshots
+or source trajectory comparison are used.
+
+Budget one Battle01 witness per selected configuration, <75 seconds and <2 MiB per report. Record
+actual state/projection, process completion and errors. Controlled Map57 admission does not establish
+natural campaign reach or original hardware/UI timing. Existing ObjectDB/WAV/playback exit warnings
+remain unresolved and separate from observer pass; preserve initial fixture/probe failures in the
+Issue handoff rather than replacing their evidence with a new aggregate result.
+
+**Confirmed bounded consumer (#1646):** English ordinary bindings complete the actual field entry
+and equipment cycle. Chinese remapped bindings complete that same entry/cycle and later ordinary
+movement/turns, a real physical damage delivery and usable subsequent player control in the same
+session. The observed acting ally's ATT changes8→5→8 through Unarmed/reequip; preview/cancel and
+free confirmations preserve the existing resources/queue/seeds/custody. Numerical range changes
+use the small varied-weapon engine cases rather than claiming broader private weapon coverage.
+
 ## AURA authored observation
 
 Launch `remake/content/authored/aura-healing.json` with `--authored-package`. Enter opens actions,

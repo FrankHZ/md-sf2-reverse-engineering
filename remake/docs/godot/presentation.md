@@ -881,6 +881,16 @@ See the [finite native recipe](../verification/host.md#localized-battle-commands
 
 ## Localized battle transactions and retreat display
 
+Connected Battles01–07 use the same localized equipment HUD and installed Equipment mapping
+(default E / Pad Start) as authored equipment. The ordinary command diamond advertises that binding;
+directions select eligible carried slots/Unarmed, Confirm commits and Cancel returns to the same
+action menu/preview. Authority and free-return semantics remain in Application. The
+[connected admission](../content/profiles-and-trust.md#connected-battle-equipment-admission) excludes
+unsupported gear and does not enable battle Give/Drop. The
+[native observation](../development-and-verification.md#connected-battle-equipment-observation)
+checks actual English/Chinese projection and mapped input, with no new presenter state or visual
+fidelity claim.
+
 The [M2e consumer agreement](../application/localization-design.md#implemented-m2e-battle-transactions-and-retreat-boundary)
 owns English/zh-CN Give/exchange and Discard current item/recipient/confirmation/results, protected/
 rare/equipped explanations, auxiliary hints and authored EGRESS/Angel Wing feedback. Views format

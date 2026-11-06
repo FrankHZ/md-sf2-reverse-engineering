@@ -456,10 +456,12 @@ origin, so object identity or equality to the initial map script cannot establis
 setup, story-installed movement, sprite work and follower motion still reject. A completed
 Battle01 return records its own Map57 anchor; later movement cannot overwrite that anchor.
 
-Private product definitions bind supported adjacent weapons from trusted item/class data to the
+Private product definitions bind supported ordinary weapons from trusted item/class data to the
 existing numerical equipment accessor. Changed carried loadouts therefore derive attack from
 attained base stats plus the equipped weapon. Field commands have their own explicit admission below;
-private battle equipment commands remain disabled. Unsupported weapon effects still reject.
+product Battles01–07 explicitly admit the existing free weapon/Unarmed commands under the
+[connected equipment boundary](../content/profiles-and-trust.md#connected-battle-equipment-admission).
+Unsupported weapon effects still reject; battle Give/Drop remain unavailable.
 
 Same-context unknown music history rejects capture. The native audio owner can supply its actual
 bounded cue/history through `ObserveFieldMusic`, a session command equivalent to other host
@@ -516,7 +518,8 @@ slot. Full packs require an explicit return slot; field self-exchange retains it
 adjustment and equal-slot unequip branch. Other words, spells, attained bases, membership, gold,
 receipts/Deals and resources survive. Drop rejects unsellable content; rare items require known
 custody and add one saturating Deals entry. Item/class metadata must be admitted before mutation;
-these commands do not enable private battle Give/Drop/Equip.
+these field commands do not themselves enable battle transactions. Product battle Equip has the
+separate admission linked above; connected battle Give/Drop remain unavailable.
 
 **Confirmed static source policy:** SF2DISASM commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`,

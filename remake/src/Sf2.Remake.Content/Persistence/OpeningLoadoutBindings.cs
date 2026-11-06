@@ -37,12 +37,8 @@ internal static class OpeningLoadoutBindings
             angelWing.MinimumRange == 0 && angelWing.MaximumRange == 0 &&
             angelWing.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
             "source-field-angel-wing", "field.items");
-        var weapons = PrivateFieldPreparation.Weapons(source);
-        var encounters = admitted.Encounters.Values.Select(encounter => encounter.WithDeployments(
-            encounter.Deployments.Select(deployment =>
-                deployment.Faction != BattleFaction.Ally || deployment.Definition.Growth is not { } growth ? deployment :
-                deployment with { Definition = deployment.Definition.WithEquipment(new(
-                    checked((byte)(deployment.Definition.Attack - growth.AttackBonus)), weapons, allowChanges: false)) })));
+        var encounters = admitted.Encounters.Values.Select(encounter =>
+            PrivateFieldPreparation.Equipment(encounter, source, allowBattleChanges: true));
         var egress = PrivateFieldEgress.Bind(admitted.Exploration);
         return new(admitted.Package, encounters, source, egress.World, admitted.BattleScenes, admitted.EncounterStarts.Values,
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)

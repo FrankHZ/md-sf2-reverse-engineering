@@ -466,6 +466,12 @@ implementation, not an observation of original UI timing. `BattleEquipmentTests`
 slots, nonzero growth, invalid state and current counter equipment. The original natural route and
 full equipment/status fidelity remain **Unknown**.
 
+Connected Battles01–07 now opt into this same rule through their product content binding. The
+source class masks and ATT-only ordinary weapon metadata remain Content's trust responsibility;
+field-only controlled bindings and enemies do not acquire mutable equipment. The
+[connected agreement](../capability-status.md#connected-battle-equipment-agreement) owns supported
+entry, v2 record restore/field return and residual exclusions. This adds no Domain algorithm.
+
 ## Authored AURA group healing
 
 `HealingSpellDefinition.Targets` distinguishes Single, AuraRadius and AuraAllAllies. Ordinary

@@ -400,10 +400,12 @@ session envelope rejects wrong session, stale revision, duplicate submission and
 Confirmation returns to `ActionChoice`, not the action committer/scene/turn advancer. A later
 movement/action Cancel preserves confirmed equipment; it never restores a starting loadout.
 
-This is a standalone authored weapon interaction. It introduces no item custody transfer, payment,
-RNG, turn consumption or connected/private persistence. See the
+The interaction serves authored and explicitly admitted connected Battles01–07. It introduces no
+item custody transfer, payment, RNG or turn consumption. Product equipment changes use the same
+live loadout/progress that v2 battle capture/restoration and battle-to-field return already preserve;
+no transaction-specific saved state is needed. See the
 [domain owner](../domain/gameplay-rules.md#authored-battle-weapon-equipment) and
-[content boundary](../content/profiles-and-trust.md#authored-weapon-admission).
+[content boundary](../content/profiles-and-trust.md#connected-battle-equipment-admission).
 
 ## Ordered AURA recovery
 
