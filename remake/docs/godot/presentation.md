@@ -1041,8 +1041,11 @@ choice retains the already resolved question and locale instead of reconstructin
 W1 keeps its
 existing English/unmigrated boundary, not a newly claimed Chinese consumer.
 
-`DisplayCatalog` defaults to its original projection; only these consumers request reflow. Search,
-battle and compatibility-only raw-string consumers keep their current policies. Entry is a separate
+`DisplayCatalog` defaults to its original projection. Search opts into the
+[finite source-token layout policy](../evidence/dialogue-corpus-layout.md#current-search-consumer-layout-1608),
+retaining reviewed semantic breaks and complete-row/result separation; unreviewed rows retain their
+original policy. Battle and compatibility-only raw-string consumers keep their current policies.
+Entry is a separate
 narrow compatibility boundary: the pinned `private-local-entry` v1 generator maps source `{N}` to
 LF in IDs216–221. `EntryPresentationAssets` reflows those isolated LF breaks for the selected
 English/Chinese row after resolution, preserving blank lines. It never normalizes arbitrary UI

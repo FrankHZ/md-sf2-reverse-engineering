@@ -63,12 +63,12 @@ records zero-based token indexes, unsupported/unbound operands and frozen Chines
 | N1 | 98 | 1361, 3484–3487, 4035–4036, 4039–4042, 4044–4046, 4049–4053, 4055–4057, 4059, 4061–4063, 4065–4072, 4074–4075, 4079–4081, 4083–4089, 4091, 4093, 4097–4100, 4105–4111, 4114, 4117–4130, 4132–4133, 4136, 4138–4140, 4142–4145, 4152–4153, 4162–4163, 4165–4166, 4171–4176, 4184–4185 |
 
 These include title/body, inscription/byline and verse boundaries. Mixed rows such as4041,4128,4134
-and4138 also contain ordinary internal wrapping; future admission should preserve the relevant
-semantic breaks instead of applying a whole-row blacklist. Existing Search intentionally retains
-all source line breaks through the default whole-row resolver. The **21 currently admitted**
+and4138 also contain ordinary internal wrapping; admission should preserve the relevant
+semantic breaks instead of applying a whole-row blacklist. At the review boundary Search retained
+all source line breaks through the default whole-row resolver. The **21 historical209-subset**
 preservation candidates are Search descriptions:
-`4035–4036, 4039–4053, 4055–4057, 4059`. Their current policy already preserves those boundaries;
-they are not newly discovered reflow defects. The remaining86 candidates are outside the frozen
+`4035–4036, 4039–4053, 4055–4057, 4059`. Those boundaries were already preserved;
+they were not newly discovered reflow defects. The remaining86 candidates are outside the frozen
 Chinese subset. That status does not establish absence of an English consumer or natural reach.
 
 **Unknown:** row330 N1 may distinguish narration from a vocalization; rows3207 and3529 N1/N2 may
@@ -76,11 +76,70 @@ express chant or refrain cadence. All three are outside the frozen Chinese subse
 intent, caller and timing remain unresolved; a blanket prose-folding pass is not semantic acceptance.
 No story-ID blacklist or new rendering mechanism is introduced for these future admission questions.
 
-Search uses `GameText.Search` with default whole-row preservation. Ordinary exploration opts into
+The current bounded Search policy below supersedes that historical whole-row preservation.
+Ordinary exploration opts into
 reflow; W1 still has its separate English boundary. `BattleStoryView` displays its authored body,
 while `BattleSceneView`'s raw source fallback explicitly maps `{N}` to LF and semantic battle messages
 have their own localization. The full-corpus hypothetical field projection does not change or prove
 those consumers' real caller bindings.
+
+### Current Search consumer layout (#1608)
+
+**Standard rigor:** a bounded display-only correction owns `GameText.Search`, the existing
+`DisplayCatalog` projection and `SourceTextLayout` metadata. Preserve the reviewed semantic
+boundaries, source/canonical work, result identities, row order, reward commits, reveal and
+Confirm/ReadMore behavior. No Search admission/rules, translation, theme, save or input change is
+included. Adapter compilation, affected existing localization assertions, direct real-consumer
+observations and the committed verification plan are the acceptance boundary; no new engine rule
+or verification-tool unit tests and no full campaign/corpus/native sweep are required.
+
+**Confirmed modern-host reproduction:** real Map3 Search429+4041 at controlled position42,7,
+facing1, produced five lines in both languages at the actual1392px body width. The source-width
+break in429 split the investigation prefix, and4041 N2 split an unfinished clause. The corrected
+consumer produces three lines, retains4041 N1 and the boundary between the two complete rows.
+Real Map43 Search427+4065 similarly changes four lines to three while preserving4065 N1.
+These are actual Search/Label projections, not hypothetical full-corpus layout results.
+
+`SourceTextLayout.SearchBreaks` contains display metadata for the pinned US source identity and
+the admitted pre-voyage Search rows: prefixes/results403–405,408–410,412,423,425–430 and
+descriptions4035–4059,4065–4073. It preserves N1 for the29 semantic candidates in the current
+806-row selection, plus N2 in4043/4047/4048. In these descriptions N1/N2 are canonical token
+positions1/3; Content checks that each preserved position is a source Newline. The catalog's
+already validated translation mapping carries those source positions into Chinese. All other
+typed breaks in this finite selection use `SourceTextLayout.Break`; consecutive/control-adjacent
+breaks and literal paragraphs keep that helper's existing explicit boundaries. Other source
+identities and unreviewed Search rows retain whole-row preservation. This is source/display
+metadata supported by the reviewed table above, not an Application story-ID exception or a
+punctuation heuristic. The semantic interpretation remains **Inferred**.
+
+`GameText.Search` still joins complete resolved rows and the typed item/gold/full result with one
+LF. Reflow never concatenates a description into its reward or crosses a row's wait/CLEAR boundary.
+Canonical tokens, whole-row fallback, captured/default/custom-name resolution, the Search wait
+and reward submission are unchanged. The shared panel retains its existing wrapping and reading
+behavior under the [presentation policy](../godot/presentation.md#source-line-reflow-1583).
+
+Native observations use the existing `StartPreVoyageLocalizationObservation` bootstrap followed by
+ordinary key events and `ReadObservationJson`, with no live snapshot setters. Controlled Map3
+positions7,10 /42,7 /44,7 /56,7 face1 to exercise4037/4041/4043/4047; Map43 uses the existing
+controlled Hawel start for4065 and11,4 for item receipt135. Initial placement does not establish
+preceding natural reach. A tiny authored harbor-derived Search supplies the absent gold shape and
+a36-line notice through the same consumer: ReadMore keeps the Search wait/reward until the final
+fresh Confirm. These authored strings are not original-game evidence. English/Chinese observations
+and repeated item/gold searches preserve reward/state/RNG boundaries. A separate tiny authored
+start uses the actual name editor to enter `WWWWWWW`; both locales' Search retain that explicit
+custom name instead of the translated default. Human typography approval,
+all optional natural reach and the pre-existing ObjectDB shutdown warning remain **Unknown**.
+
+The finite recipes/reports are retained under ignored `local/issue1608/` in the assigned checkout:
+`run.ps1 -Run <fresh-name> -Start mixed|ordinary|semantic|double|hawel|item -Locale en|zh-CN`;
+`-Authored authored-gold.json|authored-pages.json` selects the tiny controlled packages instead.
+`-Authored authored-custom.json` also exercises the real name editor before Search.
+The runner loads current local private selections, reuses owned imports/binaries, overrides saves
+with its independent G-drive disposable root/namespace, and records native report plus process
+exit/timeout/errors. No source/catalog/world mutation or large-world copy is involved. Paired
+baseline/candidate4041 EN/ZH and4065 ZH checkpoints have identical canonical revision, wait,
+Search result, party, gold, flags, seeds and simulation tick. The native records and scope checks
+support this correction only; historical full-review and failed observation records stay intact.
 
 ## Unsupported and unbound context
 

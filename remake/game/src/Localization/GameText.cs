@@ -602,7 +602,8 @@ internal static class GameText
         return Get("localization.fallback", "unmigrated-consumer: " + key);
     }
     internal static DisplayResult Dialogue(DialogueWait wait, GameSession session) => WholeRow(wait.Text, session, null, reflow: true);
-    private static DisplayResult WholeRow(int id, GameSession session, int? implicitMember, bool reflow = false)
+    private static DisplayResult WholeRow(int id, GameSession session, int? implicitMember, bool reflow = false,
+        IReadOnlySet<int>? preservedBreaks = null)
     {
         var source = session.Definition.Exploration!;
         var names = new List<DisplayNameBinding>();
@@ -617,7 +618,8 @@ internal static class GameText
                         actor is { } idActor ? session.Current.Story.Names.GetValueOrDefault(idActor.Value) : null, Actor: actor));
                 }
         // Legacy dialogue has no captured bare NAME/CLASS operand. Missing bindings use display-operands fallback.
-        var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names, reflow) : _overlay.Resolve(id, source, names, reflow);
+        var row = Language == "en" || _overlay is null ? DisplayCatalog.Canonical(id, source, names, reflow, preservedBreaks) :
+            _overlay.Resolve(id, source, names, reflow, preservedBreaks);
         if (Language != "en" && _overlay is null && row.Reason is null) row = row with { Reason = "overlay-unavailable" };
         if (row.Reason is { } reason) Diagnose(reason, $"world.text/{id}");
         foreach (var issue in row.NameDiagnostics ?? []) Diagnose(issue.Code, issue.Key);
@@ -625,7 +627,11 @@ internal static class GameText
     }
     internal static DisplayResult Search(FieldSearchResult result, GameSession session)
     {
-        var rows = result.Texts.Select(id => WholeRow(id, session, 0)).ToList();
+        var rows = result.Texts.Select(id =>
+        {
+            var preserved = SourceTextLayout.SearchBreaks(id, session.Definition.Exploration!);
+            return WholeRow(id, session, 0, reflow: preserved is not null, preservedBreaks: preserved);
+        }).ToList();
         string? key = result.Kind switch
         {
             FieldSearchKind.Item => "search.item", FieldSearchKind.Full => "search.full",
