@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Battles;
+using Sf2.Remake.Application.Runtime.Battles;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
@@ -11,6 +12,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
     internal static readonly Vector2 CardSize = new(500, 192);
     internal Vector2 RequestedSize { get; private set; } = CardSize;
     private readonly Label _role = Text("Role", 18), _name = Text("CharacterName", 26);
+    private readonly Label _land = Text("LandEffect", 18);
     private readonly BattleVitalGauge _hp = new("HP"), _mp = new("MP");
     private ActorRef? _actor;
 
@@ -23,6 +25,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _name.CustomMinimumSize = new(0, 64);
         _name.MaxLinesVisible = 2;
         _name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+        column.AddChild(_land); _land.Hide();
         column.AddChild(_hp); column.AddChild(_mp);
         // A hidden wrapped label initially measures at width 1. Reset the requested
         // frame when native sorting publishes the real minimum (also on actor changes).
@@ -40,6 +43,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
     // Field callers project scalar carried resources without constructing a battle actor.
     internal void Present(ActorRef? actor, string name, string role, int hp, int maxHp, int mp, int maxMp)
     {
+        _land.Hide();
         _actor = actor; Visible = actor is not null;
         PresentName(name);
         bool low = hp > 0 && maxHp > 0 && hp * 4 <= maxHp;
@@ -52,6 +56,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
 
     internal void Present(Sf2.Remake.Application.Runtime.Battles.BattleInspectionUnit unit, string name)
     {
+        _land.Hide();
         _actor = unit.Actor; Show(); PresentName(name);
         _role.Text = (unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
             unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
@@ -60,9 +65,29 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
     }
 
+    internal void PresentActing(BattleActingStatus? status)
+    {
+        _actor = status?.Unit.Actor; Visible = status is not null;
+        if (status is null) { _land.Hide(); return; }
+        var unit = status.Unit;
+        _land.Show();
+        _land.Text = GameText.Get("battle.acting-land", status.Land.Percent, status.Land.Position.X, status.Land.Position.Y);
+        PresentName(DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName));
+        string header = unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
+            unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
+            GameText.Get("battle.inspect.enemy");
+        bool low = unit.Hp is > 0 && unit.MaxHp is > 0 && unit.Hp * 4 <= unit.MaxHp;
+        _role.Text = GameText.Get("battle.acting") + " · " + header +
+            ((unit.Status & 0x300) != 0 ? " · " + GameText.Get("battle.status.silence", (unit.Status & 0x300) >> 8) : "") +
+            (low ? GameText.Get("battle.low-hp") : "");
+        _role.Modulate = low ? StoryTheme.Selected : Colors.White; Size = RequestedSize;
+        _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
+    }
+
     private void PresentName(string name)
     {
-        if (_name.Text == name) return;
+        if (_name.Text == name)
+        { RequestedSize = new(RequestedSize.X, CardSize.Y + (_land.Visible ? 26 : 0)); return; }
         _name.Text = name;
         var font = _name.GetThemeFont("font");
         using var shaped = new TextParagraph
@@ -83,13 +108,14 @@ internal sealed partial class BattleStatusCard : PanelContainer
         const float maximumNameWidth = 800 - 28;
         while (shaped.GetLineCount() > 2 && shaped.Width < maximumNameWidth)
             shaped.Width = Mathf.Min(shaped.Width + 16, maximumNameWidth);
-        RequestedSize = new(shaped.Width + 28, CardSize.Y);
+        RequestedSize = new(shaped.Width + 28, CardSize.Y + (_land.Visible ? 26 : 0));
         _name.AddThemeFontSizeOverride("font_size", fontSize);
     }
 
     internal object Observe() => new
     {
         actor = _actor?.Value, visible = IsVisibleInTree(), name = _name.Text, role = _role.Text,
+        land = _land.IsVisibleInTree() ? _land.Text : null, landRect = BattleMapViewport.Rectangle(_land.GetGlobalRect()),
         rect = BattleMapViewport.Rectangle(GetGlobalRect()),
         nameRect = BattleMapViewport.Rectangle(_name.GetGlobalRect()),
         nameLines = _name.GetLineCount(), nameFontSize = _name.GetThemeFontSize("font_size"),

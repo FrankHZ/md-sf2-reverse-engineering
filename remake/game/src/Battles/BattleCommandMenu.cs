@@ -20,6 +20,7 @@ internal sealed partial class BattleCommandMenu : Control
     private ActorRef? _actor;
     private SessionSnapshot? _current;
     private BattleChoicesSnapshot? _choices;
+    private BattleActingStatus? _actingStatus;
     private GameInput _input = null!;
     private SessionFailure? _failure;
     private BattleSceneDefinition? _content;
@@ -89,13 +90,13 @@ internal sealed partial class BattleCommandMenu : Control
         Refresh();
     }
 
-    internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input)
+    internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input, BattleActingStatus? actingStatus)
     {
         var selection = current.Selection;
         bool enteringActions = selection?.Stage == BattleSelectionStage.ActionChoice &&
             (_actor != selection.Actor || _current?.SessionId != current.SessionId ||
                 _current?.Selection?.Stage == BattleSelectionStage.Movement);
-        _current = current; _choices = choices; _failure = failure; _input = input;
+        _current = current; _actingStatus = actingStatus; _choices = choices; _failure = failure; _input = input;
         if (_actor != selection?.Actor || selection?.Stage == BattleSelectionStage.Movement || selection is null)
         {
             _page = Page.Main; _command = _row = 0; TargetCandidate = null;
@@ -211,8 +212,7 @@ internal sealed partial class BattleCommandMenu : Control
         if (_current is null || _choices is null) return;
         var selection = _current.Selection;
         bool moving = selection?.Stage == BattleSelectionStage.Movement;
-        var actor = _actor is { } active ? _current.Battle.GetActor(active) : null;
-        _layout.Actor.Present(actor, actor is null ? "" : BattleCharacterNames.Resolve(actor, _content, _current!.Story), GameText.Get("battle.acting"));
+        _layout.Actor.PresentActing(_actingStatus);
         var candidate = !moving && _page == Page.Target && TargetCandidate is { } targetRef
             ? _current.Battle.GetActor(targetRef) : null;
         _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, _current!.Story), GameText.Get("battle.target"));

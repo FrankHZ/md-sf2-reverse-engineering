@@ -422,7 +422,7 @@ public sealed partial class BattleSessionView : Control
             if (_movementSoundToken != movement.Token)
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(79); }
         }
-        _menu.Present(_session.Current, _session.QueryBattleChoices(), _result!.Failure, _input);
+        _menu.Present(_session.Current, _session.QueryBattleChoices(), _result!.Failure, _input, _session.QueryBattleActingStatus());
         Arrange();
         var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin, _session.QueryBattleMovementRange(), _session.ActiveBattleScenes);
         _title = projection.Title;
