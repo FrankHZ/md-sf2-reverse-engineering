@@ -4,7 +4,7 @@ using Sf2.Remake.Application.Runtime.Exploration;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 public sealed record BattleGiveState(ActorRef Giver, ActorRef Recipient, string Item, string? Returned,
-    WaitToken Token, bool Revealed = false)
+    WaitToken Token, bool Revealed = false, byte? GivenItemId = null, byte? ReturnedItemId = null)
 {
     public string Text => Returned is null ? $"{Giver.Value} gave {Item} to {Recipient.Value}." :
         $"{Giver.Value} gave {Item} to {Recipient.Value} and received {Returned}.";
@@ -23,7 +23,8 @@ internal static class BattleGiveContinuation
         observations.Add(new(++sequence, revision, "give-committed", transfer.Giver,
             transfer.Given.Word, transfer.Given.Slot, Target: transfer.Recipient,
             Detail: transfer.Returned is null ? "transfer" : "exchange"));
-        var wait = new BattleGiveState(transfer.Giver, transfer.Recipient, transfer.Given.Name, transfer.Returned?.Name, new(sequence));
+        var wait = new BattleGiveState(transfer.Giver, transfer.Recipient, transfer.Given.Name, transfer.Returned?.Name, new(sequence),
+            GivenItemId: (byte)(transfer.Given.Word & 127), ReturnedItemId: transfer.Returned is { } returned ? (byte)(returned.Word & 127) : null);
         var next = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(transfer.Battle, null, Give: wait), current.Story, SessionStopReason.PresentationWait);
         return new(next, observations.AsReadOnly(), next.StopReason);

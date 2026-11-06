@@ -16,7 +16,8 @@ public sealed record DialogueWait(WaitToken Token, int Text, TextDisplayMode Mod
 public sealed record W1TextWait(WaitToken Token, int Text, int EndToken, bool AtInput, bool Revealed = false) : ProgramWait(Token);
 public enum FieldTextPhase { ClearFirst, ClearSecond, Opening, Tokens, GlyphCursor, GlyphDelay, Scroll, Input, End, TextPause, ClearToken }
 public sealed record FieldTextUnit(ExplorationTextTokenKind Kind, string Text, byte Symbol = 0, byte Advance = 0, int SourceToken = 0);
-public sealed record DisplayNameBinding(int SourceToken, int? Member, string CanonicalName, string? CustomName, ActorRef? Actor = null);
+public sealed record DisplayNameBinding(int SourceToken, int? Member, string CanonicalName, string? CustomName,
+    ActorRef? Actor = null, byte? ClassId = null);
 public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<FieldTextUnit> Units,
     int Index, int End, string Projection, FieldTextPhase Phase, int Remaining = 0,
     bool FirstGlyph = true, bool Revealed = false, bool SavedTypewriting = false,

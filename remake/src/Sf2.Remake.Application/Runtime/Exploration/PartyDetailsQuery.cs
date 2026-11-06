@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public sealed record PartyInventorySlot(int Slot, string? Name, bool? Empty, bool Equipped, bool Broken);
+public sealed record PartyInventorySlot(int Slot, string? Name, bool? Empty, bool Equipped, bool Broken, byte? ItemId = null);
 public sealed record PartySpell(SpellRef Spell, string? Name);
 public sealed record PartyMemberDetails(BattleActorStartInput Carried, BattleDeploymentDefinition? Deployment,
     ushort? MaxHp, byte? MaxMp, byte? Level, byte? Attack, byte? Defense, byte? Agility,
@@ -44,7 +44,8 @@ internal static class PartyDetailsQuery
                     if (loadout is null || slot >= loadout.Items.Count) return new PartyInventorySlot(slot, null, null, false, false);
                     ushort word = loadout.Items[slot]; byte item = (byte)(word & 127);
                     return new PartyInventorySlot(slot, item == 127 ? null : ItemName(definition, encounter, actor, item),
-                        item == 127, item != 127 && (word & 128) != 0, item != 127 && (word & 256) != 0);
+                        item == 127, item != 127 && (word & 128) != 0, item != 127 && (word & 256) != 0,
+                        item == 127 ? null : item);
                 }).ToArray()));
         }
         return new(field.Party.Gold, members.AsReadOnly());

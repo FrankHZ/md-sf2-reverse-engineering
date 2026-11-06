@@ -3,7 +3,7 @@ using Sf2.Remake.Application.Runtime.Exploration;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public sealed record BattleDiscardState(ActorRef Actor, string Item, WaitToken Token, bool Revealed = false)
+public sealed record BattleDiscardState(ActorRef Actor, string Item, WaitToken Token, bool Revealed = false, byte? ItemId = null)
 {
     public string Text => $"{Actor.Value} discarded {Item}.";
 }
@@ -17,7 +17,8 @@ internal static class BattleDiscardContinuation
             Detail: result.Removed.Item.Rare ? "deals" : "ordinary");
         var next = new SessionSnapshot(current.SessionId, observation.Revision, observation.Sequence,
             new ActiveBattle(result.Battle, new(result.Actor, current.Selection!.Preview, BattleSelectionStage.ActionChoice),
-                Discard: new(result.Actor, result.Removed.Item.Name, new(observation.Sequence))), current.Story, SessionStopReason.PresentationWait);
+                Discard: new(result.Actor, result.Removed.Item.Name, new(observation.Sequence), ItemId: result.Removed.Item.ItemId)),
+            current.Story, SessionStopReason.PresentationWait);
         return new(next, [observation], next.StopReason);
     }
 

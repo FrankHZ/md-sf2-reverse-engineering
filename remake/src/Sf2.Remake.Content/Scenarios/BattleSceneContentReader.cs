@@ -181,7 +181,11 @@ internal static class BattleSceneContentReader
                 .Where(row => row.Kind == EncounterEntityKind.Enemy).Select((row, index) =>
                     (Actor: new ActorRef("enemy-" + index), Name: definitions.Enemies[row.IdentityExpression].DisplayName))
                 .ToDictionary(row => row.Actor, row => row.Name)),
-            new ReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>(equipment));
+            new ReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>(equipment),
+            new ReadOnlyDictionary<ActorRef, byte>(definitions.Encounter.Placements
+                .Where(row => row.Kind == EncounterEntityKind.Enemy).Select((row, index) =>
+                    (Actor: new ActorRef("enemy-" + index), Id: definitions.Enemies[row.IdentityExpression].Id))
+                .ToDictionary(row => row.Actor, row => row.Id)));
     }
 
     private static string[] Strings(JsonElement row, string key) => Array(row, key).Select(value =>

@@ -22,7 +22,10 @@ program acknowledgements, gameplay/RNG and game-save format remain independent o
 
 The next runtime target is the [pre-voyage Chinese admission plan](pre-voyage-chinese-admission.md):
 806 selected world messages, six entry aliases and 51 display names through first stable Map14 control.
-This is a design candidate, not expanded runtime coverage. Static translation does not implement
+The [identity prerequisite](pre-voyage-chinese-admission.md#decision-and-acceptance-boundary) retains
+captured class, inventory, committed Give/Discard and encounter-scoped enemy table IDs as optional
+display metadata. Catalog and view integration remain pending, with no expanded runtime coverage.
+Static translation does not implement
 unimplemented chapters. ROM patching, voice/TTS, other
 languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
 96px world cells, source grouping, input/reward authority and private-content boundary.

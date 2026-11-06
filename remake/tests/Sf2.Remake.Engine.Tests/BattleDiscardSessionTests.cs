@@ -55,6 +55,8 @@ public sealed class BattleDiscardSessionTests
         var committed = session.Submit(envelope); Assert.Null(committed.Failure);
         Assert.Single(committed.Observations); Assert.Equal("discard-committed", committed.Observations[0].Kind);
         var battle = session.Current.Battle; var wait = session.Current.BattleDiscard!;
+        Assert.Equal((byte)(original.GetActor(Champion).SourceLoadout!.Items[slot] & 127), wait.ItemId);
+        Assert.NotEqual(wait.ItemId, (byte)(battle.GetActor(Champion).SourceLoadout!.Items[slot] & 127));
         Assert.False(session.Current.HasBattleControl); Assert.False(wait.Revealed);
         Assert.Same(preview, session.Current.Selection!.Preview);
         Assert.Equal(original.Cursor, battle.Cursor); Assert.Equal(original.Queue, battle.Queue);

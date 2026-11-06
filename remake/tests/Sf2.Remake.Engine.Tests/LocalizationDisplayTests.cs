@@ -77,6 +77,7 @@ public sealed class LocalizationDisplayTests
         var first = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
         var captured = Assert.Single(first.DisplayNames!, binding => binding.SourceToken == 0);
         Assert.Equal(1, captured.Member); Assert.Equal(name, captured.CanonicalName);
+        Assert.Null(captured.ClassId);
         Assert.Equal(name + " waits.", first.Projection);
         Assert.Equal(name.Length, first.Units.Count(unit => unit.SourceToken == 0));
         Assert.Equal(0, first.DisplayStart); Assert.Equal(2, first.DisplayEnd);

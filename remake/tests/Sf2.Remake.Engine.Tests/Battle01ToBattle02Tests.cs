@@ -131,6 +131,13 @@ public sealed class Battle01ToBattle02Tests
         Assert.Null(shown.Failure);
         var wait = Assert.IsType<FieldTextWait>(shown.Snapshot.Story.Wait);
         Assert.Equal(name + " the " + role, string.Concat(wait.Units.Select(unit => unit.Text)));
+        var capturedName = Assert.Single(wait.DisplayNames!, binding => binding.ClassId is null);
+        Assert.Equal(member, capturedName.Member); Assert.Equal(name, capturedName.CanonicalName);
+        Assert.Null(capturedName.CustomName);
+        var capturedClass = Assert.Single(wait.DisplayNames!, binding => binding.ClassId is not null);
+        Assert.Equal(classId, capturedClass.ClassId); Assert.Equal(role, capturedClass.CanonicalName);
+        Assert.Equal(member, capturedClass.Member); Assert.Equal(capturedName.Actor, capturedClass.Actor);
+        Assert.Null(capturedClass.CustomName);
         Assert.Equal(100, wait.Text);
         Assert.Equal(664, shown.Snapshot.Story.TextCursor);
         Assert.Contains(member, shown.Snapshot.Story.Flags);
@@ -164,6 +171,25 @@ public sealed class Battle01ToBattle02Tests
         Assert.Empty(current.Story.PartyLists!.Active);
         Assert.Equal(new[] { member }, current.Story.PartyLists.Reserve);
         Assert.Equal(new[] { new ActorRef("hero") }, current.Exploration!.Party.ActiveAllies);
+    }
+
+    [Theory]
+    [InlineData("Leader")]
+    [InlineData("A B-7")]
+    public void JoinCapturesCustomNameWithoutReplacingTheClassOrCanonicalValue(string custom)
+    {
+        var (definition, initial) = JoinMessage(0, 0, "SDMN");
+        initial = initial.WithStory(initial.Story.Copy(initial.Story.Cursor,
+            names: new Dictionary<string, string> { ["hero"] = custom }));
+        var shown = ProgramRunner.Run(definition, initial, []);
+        Assert.Null(shown.Failure);
+        var wait = Assert.IsType<FieldTextWait>(shown.Snapshot.Story.Wait);
+        var name = Assert.Single(wait.DisplayNames!, binding => binding.ClassId is null);
+        Assert.Equal("Leader", name.CanonicalName); Assert.Equal(custom, name.CustomName);
+        var role = Assert.Single(wait.DisplayNames!, binding => binding.ClassId is not null);
+        Assert.Equal((byte)0, role.ClassId); Assert.Null(role.CustomName);
+        Assert.Equal("SDMN", role.CanonicalName);
+        Assert.Equal(custom + " the SDMN", string.Concat(wait.Units.Select(unit => unit.Text)));
     }
 
     [Fact]

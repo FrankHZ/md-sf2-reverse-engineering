@@ -20,7 +20,8 @@ public sealed record BattleSceneDefinition(string Encounter, string Background, 
     IReadOnlyDictionary<int, string> Texts, IReadOnlyList<string> MemberNames, HealingSceneVisual? Healing = null, FieldDeathVisual? FieldDeath = null,
     IReadOnlyList<BattleSceneTerrainVisual>? TerrainScenes = null,
     IReadOnlyDictionary<ActorRef, string>? EnemyNames = null,
-    IReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>? Equipment = null)
+    IReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>? Equipment = null,
+    IReadOnlyDictionary<ActorRef, byte>? EnemyNameIds = null)
 {
     public bool TryAllyVisual(BattleActorState actor, out BattleSceneActorVisual visual)
     {

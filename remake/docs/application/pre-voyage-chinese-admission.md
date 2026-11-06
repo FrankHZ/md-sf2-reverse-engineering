@@ -2,7 +2,7 @@
 
 ## Decision and acceptance boundary
 
-**Design candidate for [Issue1505](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1505).**
+**Accepted design from [Issue1505](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1505).**
 Use one private world catalog, the existing separate entry namespace, and offline derivation from
 the accepted sole message/name corpora. The bounded candidate is **806 world messages**, the existing
 **six entry aliases**, **51 display-name identities**, and the already localized semantic UI.
@@ -10,6 +10,17 @@ Raise the world message ceiling to **1,024**, retain **256 KiB per file / 8,192 
 message**, and admit at most **128 optional name rows / 128 UTF-16 units per name**. No new native
 text token, chapter loader, cache, database or localization framework is needed for this candidate.
 These are recommendations for implementation, not changes to the current 256-row reader.
+
+**Implemented identity prerequisite ([Issue1601](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1601)):**
+field display bindings capture optional `ClassId` alongside the member/actor and canonical class
+text; custom names remain separate and never replace a class. Party inventory exposes nullable
+`ItemId` (null for empty or unknown slots). Give captures `GivenItemId`/`ReturnedItemId` and Discard
+captures `ItemId` from the committed transaction. Each scene carries optional `EnemyNameIds`, keyed
+by ActorRef within its own encounter, derived directly from the admitted enemy table and placement.
+All additions are display metadata with old-constructor defaults; scene JSON, canonical strings,
+source text work, gameplay and saves retain their existing contracts. Catalog/name resolution,
+whole-row canonical/custom separation and view integration remain step 2; this prerequisite adds
+no Chinese runtime coverage.
 
 **Standard rigor:** this investigation fixes a finite selection, display interfaces and delivery
 sequence. The existing [High save boundary](opening-session-lifecycle.md#format-compatibility-and-local-storage)
@@ -314,6 +325,8 @@ refactor or a future-token queue. `A`, `C`, `G`, `T` below mean `remake/src/Sf2.
 Actual dispatch must freeze the exact touched paths from these owners and serialize shared files.
 
 ### 1. Preserve the existing display operands
+
+Implemented as the identity prerequisite described above; catalog/name consumers remain step 2.
 
 Outcome: every selected name-bearing display can identify its value without parsing an English
 string or inspecting a mutated slot. Keep current rendering and old overlays working.
