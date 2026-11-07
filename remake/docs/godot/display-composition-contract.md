@@ -213,6 +213,82 @@ not have the same acceptance. Do not silently enlarge #1614 or claim it already 
 repair. The coordinator can choose a separately bounded layout correction after review; no new
 Issue or implementation is created here.
 
+### World-camera resize assessment (#1614)
+
+**Standard rigor:** this bounded implementation assesses center-anchor retention using the existing
+camera and observer. Its accepted boundary is supported client resize, fixed96px cells, legal-area
+clamp/small-area centering and explicit story framing. It adds no camera system or close-up repair.
+`ExplorationPresentation.cs` and `presentation.md` remain outside this slice's ownership under #1609.
+Acceptance is adapter compilation, actual native state/draw/input/error observations, direct document
+checks, committed dependency selection and independent PR review; no engine rule changed.
+
+**Confirmed:** at baseline `d65e94dcb0c516f33b7f3db78194205447e9ca1e`, field
+`UpdateCamera` already passes the real viewport each process, and battle `Frame` does likewise.
+Their resize subscribers already refresh presentation/arrangement. `Focus` retained the old origin
+before applying its24×12 source-pixel dead zone, causing avoidable center drift without a scale change.
+An off-screen Windows/OpenGL native window reproduced this with the observer below; no desktop mode,
+player settings, save data, private-world copy or screenshots were used.
+
+For the authored interior player at source center `(732,732)`, legal bounds `(96,96,1344,1344)`:
+
+| Actual client / viewport | Baseline settled origin | Corrected settled origin | Corrected player draw center |
+| --- | --- | --- | --- |
+| 1920×1080, initial | `(492,621)` | `(492,621)` | `(960,444)` |
+| 2560×1440 | `(436,588)` | `(412,576)` | `(1280,624)` |
+| 2560×1080 | `(436,609)` | `(412,621)` | `(1280,444)` |
+| 1920×1080, returned | `(468,609)` | `(492,621)` | `(960,444)` |
+
+The initial world point under the viewport center is `(732,756)`. It stays there after the correction;
+the baseline first resize drifted `(24,12)` source pixels, i.e. `(96,48)` output pixels. The correction
+shifts the current origin by `(oldViewport-newViewport)/(2*PixelScale)` before ordinary follow and
+existing clamp. It creates no retained anchor state. Map/disjoint-area changes and `story=true` bypass
+that shift. Normal follow may subsequently move an edge-clamped camera as space becomes available;
+anchor retention never overrides the subject, legal extent, small-area centering or explicit story.
+
+**Confirmed, bounded native observation:** all five controlled cases pass the three-resize sequence.
+High-edge origins remain `(800,1080)`, `(800,1170)`, `(960,1170)`; low-edge origins remain `(96,96)`.
+The offset11×10-cell small area centers at `(1036,180)`, `(1036,225)`, `(1116,225)` with legal screen
+1056×960. An explicit source camera target at cell `(25,25)` retains its own origins `(292,456)`,
+`(292,501)`, `(372,501)` while the player remains at `(30,30)`. Actual authored draw centers match
+the measured camera at every size; fresh Right input works after the four ordinary-field cases.
+Idle simulation/animation continues normally: revision equality is not a resize contract. The first
+observer attempt failed that incorrect assertion; its completed result is retained locally, followed
+by the position/projection checks. Both adapter Release and native Debug builds pass without warnings.
+
+Reproduce from the owning checkout root after loading its existing configuration and building the
+adapter plus its Debug configuration for native use. The existing
+[`engine_world_viewport_observation.gd`](../../game/probes/engine_world_viewport_observation.gd)
+derives small controlled packages from tracked `harbor-arrival.json` before ordinary host admission.
+Use a fresh ignored output directory and serial native launches:
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+uv run sf2 verify adapter
+Push-Location remake
+& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+Pop-Location
+New-Item -ItemType Directory -Path local/resize-observation -ErrorAction Stop | Out-Null
+foreach ($case in @('interior','edge','low','small','story')) {
+    $env:SF2_VIEWPORT_CASE = "resize-$case"
+    $env:SF2_VIEWPORT_RESIZE_CHECK = '1'
+    $env:SF2_VIEWPORT_RESIZE_PACKAGE = Join-Path (Resolve-Path local/resize-observation) "$case.json"
+    $env:SF2_VIEWPORT_OUTPUT = Join-Path (Resolve-Path local/resize-observation) "$case-result.json"
+    $arguments = @('--audio-driver','Dummy','--max-fps','60','--resolution','1920x1080',
+        '--position','-20000,-20000','--path','remake/game','--script',
+        'res://probes/engine_world_viewport_observation.gd','--','--authored-package',
+        ('"{0}"' -f $env:SF2_VIEWPORT_RESIZE_PACKAGE))
+    $process = Start-Process -FilePath $env:GODOT_BIN -ArgumentList $arguments -WindowStyle Hidden -PassThru
+    if (-not $process.WaitForExit(45000)) { throw 'Owned observer deadline; inspect its process and logs' }
+    if ($process.ExitCode -ne 0) { throw "Resize observer failed: $case" }
+}
+```
+
+**Unknown / unclaimed:** human visual preference, minimized or unfocused resize, arbitrary resize
+during moving/autoscrolling story planes, and a separate battle-board native resize case. The shared
+helper and unchanged battle caller are statically checked; this field observation does not prove
+those additional consumers or F2's close-up behavior. These limits do not require a camera redesign.
+
 ## Minimal interfaces, migration and observable acceptance
 
 Keep composition responsibilities local. `PresentationCanvas.Mount` remains the cross-presenter

@@ -49,13 +49,62 @@ func state() -> Dictionary:
 func sample(label: String) -> Dictionary:
     var current := state()
     var row := {"label":label, "focused":root.has_focus(), "owner":str(view.name)}
-    for key in ["sessionId", "revision", "mode", "map", "stage", "actor", "failure", "wait", "stop", "stopReason", "viewport", "mapViewport", "worldGeometry", "cameraProjection", "logicalView", "entities", "actors", "previewRect", "zoom", "menu", "help", "dialogue", "choiceProjection", "entrySkip", "battleHandoffPending", "retreat", "scene", "battleChoices", "textId", "skipRequiresRelease", "battleMounted"]:
+    if case_name.begins_with("resize-"):
+        row.window = {"size":[root.size.x,root.size.y], "position":[root.position.x,root.position.y], "mode":root.mode, "display":DisplayServer.get_name()}
+    for key in ["sessionId", "revision", "mode", "map", "stage", "actor", "failure", "wait", "stop", "stopReason", "viewport", "mapViewport", "worldGeometry", "cameraProjection", "logicalView", "entities", "authoredDraws", "actors", "previewRect", "zoom", "menu", "help", "dialogue", "choiceProjection", "entrySkip", "battleHandoffPending", "retreat", "scene", "battleChoices", "textId", "skipRequiresRelease", "battleMounted"]:
         if current.has(key): row[key] = current[key]
     var board := host.find_child("MapViewport", true, false)
     if board != null and current.has("stage"):
         row.terrain = JSON.parse_string(board.call("ReadTerrainJson"))
     samples.append(row)
     return current
+
+# Resize only this observer's off-screen native window; never change desktop mode/settings.
+# The current viewport center is the retained world anchor, subject to legal-area clamp.
+func resize_world() -> void:
+    root.position = Vector2i(-20000, -20000)
+    await frames(90)
+    var initial := sample("resize-initial")
+    var sizes := [Vector2i(2560,1440), Vector2i(2560,1080), Vector2i(1920,1080)]
+    for size in sizes:
+        var before := state()
+        root.size = size
+        await frames(3)
+        sample("resize-first-" + str(size))
+        await frames(90)
+        var after := sample("resize-settled-" + str(size))
+        if not check(root.size == size and after.viewport.width == size.x and after.viewport.height == size.y, "Actual native client and viewport resize"): return
+        if not check(after.failure == null and after.sessionId == initial.sessionId and after.entities[0].x == initial.entities[0].x and after.entities[0].y == initial.entities[0].y, "Resize retains session/player position without adapter errors"): return
+        if not check(after.worldGeometry.cellSize == 96 and after.worldGeometry.pixelScale == 4, "Resize retains source scale"): return
+        var draw: Dictionary = after.authoredDraws[0]
+        var player: Dictionary = after.entities[0]
+        var projected := (Vector2(player.x,player.y) / 16 + Vector2(12,12) - Vector2(after.worldGeometry.cameraX,after.worldGeometry.cameraY)) * 4
+        if not check(draw.Visible and Vector2(draw.X,draw.Y).distance_to(projected) <= 0.01, "Actual authored draw follows resized camera"): return
+        var bounds: Dictionary = before.worldGeometry.bounds
+        var old_center := Vector2(before.worldGeometry.cameraX, before.worldGeometry.cameraY) + Vector2(before.viewport.width, before.viewport.height) / 8
+        var desired := old_center - Vector2(size) / 8
+        var extent := Vector2(size) / 4
+        var expected := Vector2(
+            bounds.x + (bounds.width - extent.x) / 2 if bounds.width <= extent.x else clampf(desired.x, bounds.x, bounds.x + bounds.width - extent.x),
+            bounds.y + (bounds.height - extent.y) / 2 if bounds.height <= extent.y else clampf(desired.y, bounds.y, bounds.y + bounds.height - extent.y))
+        var actual := Vector2(after.worldGeometry.cameraX, after.worldGeometry.cameraY)
+        samples.append({"label":"anchor-check", "expectedOrigin":[expected.x,expected.y], "actualOrigin":[actual.x,actual.y], "centerDriftSourcePixels":[actual.x-desired.x,actual.y-desired.y]})
+        if case_name == "resize-story":
+            # Controlled program explicitly frames source point (25.5,25.5) cells.
+            expected = Vector2(25.5,25.5) * 24 - extent / 2 + Vector2(0,24)
+            if not check(actual.distance_to(expected) <= 0.26, "Explicit story camera remains authoritative"): return
+        elif case_name in ["resize-edge", "resize-low"]:
+            var edge := Vector2(bounds.x + bounds.width - extent.x, bounds.y + bounds.height - extent.y) if case_name == "resize-edge" else Vector2(bounds.x,bounds.y)
+            if not check(actual.distance_to(edge) <= 0.26, "Legal edge clamp retains priority over anchor"): return
+        elif OS.get_environment("SF2_VIEWPORT_RESIZE_CHECK") == "1":
+            if not check(actual.distance_to(expected) <= 0.26, "Resize preserves center anchor except legal clamp/centering"): return
+    if case_name != "resize-story":
+        if not await tap(KEY_RIGHT): return
+        if not await wait_for(func(s): return s.get("canWaitAtInput", false), "fresh movement after resize"): return
+        await frames(15)
+        var moved := sample("resize-fresh-input")
+        if not check(moved.entities[0].x > initial.entities[0].x, "Fresh input remains usable after resize"): return
+    finish(true)
 
 func wait_for(test: Callable, label: String, seconds := 8.0) -> bool:
     var deadline := Time.get_ticks_msec() + int(seconds * 1000)
@@ -107,8 +156,41 @@ func geometry(current: Dictionary) -> bool:
             if not check(actor.outputWidth == 96 and actor.outputHeight == 96 and actor.scale == 4, "Private battle sprite matches field scale"): return false
     return true
 
+# Small public controlled packages, prepared before ordinary host admission.
+func prepare_resize() -> void:
+    var doc: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../content/authored/harbor-arrival.json"))
+    var map: Dictionary = doc.world.maps[0]
+    map.layout = []
+    for y in range(64):
+        var row: Array = []
+        row.resize(64); row.fill(0); map.layout.append(row)
+    map.areas = [{"minX":4,"minY":4,"maxX":59,"maxY":59}]
+    map.entities = []; map.events = []
+    doc.start.position = {"x":30,"y":30}
+    if case_name == "resize-edge": doc.start.position = {"x":58,"y":58}
+    if case_name == "resize-low": doc.start.position = {"x":5,"y":5}
+    if case_name == "resize-small":
+        map.areas = [{"minX":51,"minY":10,"maxX":61,"maxY":19}]
+        doc.start.position = {"x":55,"y":14}
+    if case_name == "resize-story":
+        doc.world.programs.append({"id":"resize-camera","instructions":[
+            {"op":"camera-target","position":{"x":25,"y":25}}, {"op":"wait-view"},
+            {"op":"text-cursor","text":100}, {"op":"show-text","mode":"single","speaker":null}, {"op":"end"}]})
+        doc.start.program = {"program":"resize-camera","instruction":0}
+    var file := FileAccess.open(OS.get_environment("SF2_VIEWPORT_RESIZE_PACKAGE"), FileAccess.WRITE)
+    file.store_string(JSON.stringify(integral_numbers(doc))); file.close()
+
+func integral_numbers(value: Variant) -> Variant:
+    if value is Dictionary:
+        for key in value: value[key] = integral_numbers(value[key])
+    elif value is Array:
+        for index in range(value.size()): value[index] = integral_numbers(value[index])
+    elif value is float and value == floor(value): return int(value)
+    return value
+
 func run() -> void:
     root.size = Vector2i(1920,1080)
+    if case_name.begins_with("resize-"): prepare_resize()
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     root.grab_focus()
@@ -116,7 +198,10 @@ func run() -> void:
     state() # Subscribe to the existing camera draw readback before sampling.
     await frames(5)
     if not await focus(): return
-    if case_name in ["entry", "region"]:
+    if case_name.begins_with("resize-"):
+        await resize_world()
+        return
+    elif case_name in ["entry", "region"]:
         await entry()
         return
     elif case_name == "far":
