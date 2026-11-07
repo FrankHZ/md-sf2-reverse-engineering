@@ -117,6 +117,78 @@ not establish natural route, palette fidelity or general map loading. The comple
 preserve the source joins and retained results. Current before-battle projection has its
 [Godot owner](../godot/presentation.md#bound-before-battle-scene-presentation).
 
+## Ordinary menu publication and coverage (#1666)
+
+**Standard rigor:** restore the existing exploration, battle and church diamond resource paths in
+ordinary private startup, with one bounded publication and no gameplay or new asset-platform change.
+Acceptance separates functional navigation, actual resource drawing and human experience. The
+[presentation agreement](../godot/presentation.md#ordinary-menu-resource-acceptance-1666) owns native
+observations; the [battle baseline](../godot/battle-interaction-baseline.md) keeps battle residuals.
+
+**Confirmed:** the inspected ordinary input selections contained neither `presentation.fieldMenu`
+nor `presentation.churchMenu`, and the selected initial battle scene contained no `command-menu.*`.
+Title New Game and fresh title Continue reproduced text squares. Prior dedicated scene observations
+prove their own prepared inputs, not these selections. The first break was publication/selection,
+not raster decoding or the existing diamond consumers. User/machine environment scopes supplied no
+replacement world/scene selection on the inspected host; the ignored launcher supplied them.
+
+Use one publication for the **actual selected world and opening battle scene**, after loading the
+[private-input environment](../../../docs/operations/local-private-inputs.md). All path variables below
+are explicit absolute input/output selections; output must be a fresh ignored directory in this
+checkout. The pinned source and retained H1 listing may be read-only.
+
+```powershell
+uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream --listing $listing --rom-assets --world $world --scene $scene --menu all --out-dir $output
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
+& $env:GODOT_BIN --path remake/game
+```
+
+This mounts both world menus, the external opening scene, and every non-null `encounters[].battleScenes`
+selection. It preserves all encounter paths and gameplay data; existing raster namespaces must be
+absent or exactly equal to the source-derived complete set. Partial/conflicting sets reject before
+publication. Ordinary readers and `FieldMenuView`, `ChurchServiceView`, `BattleMenuLayout` remain the
+runtime consumers. Selecting only the new opening scene leaves later battle scenes unchanged;
+selecting only the world leaves the external opening scene unchanged. Both selections above are
+therefore required. Local launchers must retain these selections for later ordinary sessions.
+
+The publisher copies declared dependencies once, including external PCM WAV files at the existing
+`PrivateAudioWave` convention `audio-cc-tt/command-cc-timer-tt.wav` (hex command/timer). `runtimeWav`
+is a boolean declaration, not a path. The earlier single-menu helper's path assumption failed on
+the current world and is corrected here. It does not copy an upstream checkout or change canonical
+inputs. `provenance.json` records each menu's source, palette, mapping and raster identities, plus
+prepared scene paths and copied dependencies. No extracted pixels enter Git or public packages.
+
+The inspected input world is118,241,084 bytes. Its full publication including seven scene files,
+external audio and provenance is about148MB, below the existing128MiB individual-world admission
+limit and1GiB scratch budget. Added raw menu pixels are18,432 bytes per eight-image set: two world
+sets and one set per selected battle scene. Work is O(world + selected dependencies), with one world
+parse/write and bounded source decoding; retain the existing<3GiB process budget. Reassess if the
+selected world/dependencies exceed these bounds. Reuse this publication read-only for native cases;
+no per-language world copies, full campaign replay or screenshot acquisition is required.
+
+### Bounded source-to-consumer inventory
+
+**Confirmed** static source identities below use SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` and the registered US ROM. Paths are relative to
+`disasm/`. Read them with `git show <pin>:disasm/<path>`; menu addresses/mappings are retained in
+`tests/fixtures/h2/ui-graphics-decode-v1.json`. These facts do not prove original natural reach,
+original animation cadence or human visual acceptance.
+
+| Surface / source identity | Existing reuse and current consumer | Current resource boundary / next owner |
+| --- | --- | --- |
+| Field Member/Magic/Item/Search: `tiles_MainMenu` ROM0x29A02, `menutilespointertable.asm` packed0x85010204, indices5/1/2/4 | `remake_command_menu --menu all`; `world.presentation.fieldMenu` → `ExplorationAssetReader` → `FieldMenuView` → `DiamondCommandButton` | **Confirmed** ordinary New Game drawing, both states, English/Chinese and parent returns. |
+| Battle Attack/Magic/Item/Stay: same source, packed0x80010203, indices0/1/2/3 | `scene.rasters.command-menu.*` → existing scene admission → `BattleMenuLayout` → shared button | **Confirmed** ordinary title Continue drawing on an admitted battle, both states and English/Chinese. All seven prepared scene collections contain the same complete set; this is not seven native battle observations. The authored/controlled chest Search caption still deliberately suppresses Stay art; its original index4 variant is not claimed by this repair. Battles01–07 have no admitted in-region chest candidate. |
+| Church Raise/Cure/Promo./Save: `tiles_ChurchMenu` ROM0x2B072, four sequential icons | `world.presentation.churchMenu` → existing admission → `ChurchServiceView` → shared button | **Confirmed** ordinary New Game, real Map3 stairs/walk/priest, normal/selected/unavailable/return. |
+| Spell and item identity icons: `data/graphics/icons/entries.asm`, `ItemIconNNN`, `OtherIconNNN`, `SpellIconNNN`, `p_Icons`;192 bytes per16×24 icon | Existing `texture_extract.extract_icons`, verified source reader, base palette and tile renderer. `loadhighlightableicon.asm` masks item index with0x7F; spell index with0x3F then adds130; empty spell uses icon127. Selected art is an AND overlay from `tiles_IconHighlight`, not a second stored image. | [#1667](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1667): add bounded validated bindings and actual consumers in `BattleMenuLayout` spell/item rows, `BattleSessionView` equipment HUD and `FieldActionView` magic/use/equipment rows. Current ordinary entries are text; no icon admission for these lists is implied by the diamond pack. Reuse extraction rather than drawing replacements or introducing a parallel asset repository. |
+| Spell level: `code/common/menus/magicmenu.asm:SelectSpellLevel`, `tiles_TextHighlight`; equipment: `equipmenu.asm:BuildBattleEquipWindow`, `itemmenu.asm` | Level text/selector and item icon are distinct source operands. Current localized text retains actual level/cost/slot and rules. | #1667 must bind the icon by semantic spell/item ID and retain modern localized level/description text. No separate per-level picture is established by this source; exact original border/window presentation remains outside this ticket. |
+| Item operations Use/Give/Equip/Drop: `tiles_ItemMenu` ROM0x2A9C2; `pt_ItemMenuNames` gives source order. Member sheet: `memberscreen.asm:BuildMemberStatusWindow` loads spell/item icons and broken-item overlays. | Shared diamond decoder/palette for operation icons, `extract_icons` for individual slots. Current `FieldActionView`, `BattleGiveView`, `BattleDiscardView` and shared `PartyDetailsPanel` use text rows. | [#1668](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1668) consumes #1667's item/spell bindings for Member/inventory/Give/Drop; operation icons need their own small admitted set, not `command-menu.item` as a substitute. Broken overlay/current unsupported item states stay explicit. |
+| Shop Buy/Sell/Repair/Deals: `tiles_ShopMenu` ROM0x2B418, `pt_ShopMenuNames`. Empty-ground Member/Map/Speed/Quit: `tiles_BattleFieldMenu` ROM0x2ACF6, `pt_BattlefieldMenuNames`. | Existing stack decoder, verified source, palette and 3×3 half renderer; current `ShopServiceView` and `BattleInspectionView` use text choices. Goods use the same individual item icon family. | [#1669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1669) owns new service/options consumers and bindings, preserving their current return/selection authority. Modern Map drawing, HP/MP gauges, panel chrome and Chinese font are accepted separate choices, not missing original menu assets. |
+
+The inventory is finite: sources, admission seams and actual consumers are named; downstream icon
+rendering is **not implemented** here. Native entry/return coverage and static source facts are
+separate from the **Unknown** original natural/cadence/pixel parity and human/aesthetic approval.
+
 ## Private Command Menu Icons
 
 The current diamond-menu experiment uses the original square attack/magic/item/stay rasters directly
@@ -138,7 +210,7 @@ The output scene adds eight 24×24 RGBA8 rasters named
 `provenance.json` records pinned upstream/ROM identity, source offsets and raster digests. Select the
 new scene through the existing `SF2_PRIVATE_BATTLE_SCENE_CONTENT` input; no new startup switch or
 resource loader is involved. Preparation reads source inputs only and refuses to replace an output
-directory or an already-populated command-menu namespace. The eight raw rasters total 18KiB, in
+directory or a partial/conflicting command-menu namespace; identical complete art may be reused. The eight raw rasters total 18KiB, in
 addition to the copied scene and JSON encoding.
 
 The ordinary Content reader admits the rasters. The adapter requires all eight when any is present,
@@ -167,7 +239,7 @@ uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream `
 `--world` accepts either a private-world wrapper or a standalone world object; it adds only church
 rasters and emits `world.json`/`provenance.json` into a new destination. Preserve the original inputs.
 Relative selected encounter files and external audio are copied beneath that destination with their
-existing relative paths; escaping/missing dependencies fail before publication. No world rule,
+existing relative paths/fixed command-timer convention; escaping/missing dependencies fail before publication. No world rule,
 program, event or source-asset substitution is performed. Input/output CLI paths resolve from the
 caller's cwd; dependencies resolve from the explicit input world's directory. Use absolute selections
 when invoking from another checkout or working directory.
@@ -194,7 +266,8 @@ or inserted side border tiles. `tiles_ChurchMenu` is ROM0x2B072,934 compressed b
 0x0EEE words. Index0 stays transparent. Preparation records those addresses, consumed bits,
 source mapping and each raster's existing content digest.
 
-Eight raw rasters total18,432 bytes (about25KiB base64). One existing world publication is O(n)
+Eight raw rasters total18,432 bytes (about25KiB base64). The retained single-menu measurement below describes its older input; use the
+[current ordinary publication](#ordinary-menu-publication-and-coverage-1666) for current sizing. One world publication is O(n)
 time/memory plus its finite selected dependencies. The observed private input is125,828,417 bytes;
 publication is125,978,971 bytes plus669,487 dependency bytes and2,490 provenance bytes. Use one world copy, one process,
 <3GiB peak and<1GiB total scratch; reassess before larger worlds/dependency sets. Native acceptance

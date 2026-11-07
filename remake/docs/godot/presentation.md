@@ -136,6 +136,59 @@ registry. No Domain/Application, progress format, savepoint legality or new navi
 changed. A directly observed invalid-settings early exit now disconnects window-support signals
 only if initialization actually subscribed them; this does not hide other shutdown warnings.
 
+## Ordinary menu resource acceptance (#1666)
+
+**Standard rigor:** repair the existing three private diamond paths by publishing/selecting the
+ordinary world and battle resources together. No gameplay, save format, modern96px world scale,
+font/translation or new list consumer is changed. The [publication and source inventory](../content/presentation-assets.md#ordinary-menu-publication-and-coverage-1666)
+owns exact resource identities, preparation, size bounds and #1667–#1669 handoff seams.
+
+**Confirmed:** the inspected ordinary world had no field/church menu sets and the selected battle
+scene had no command set. Actual title New Game and Continue showed compatible text squares.
+The same ordinary entry paths with the new publication draw the supplied original24×24 normal/
+selected rasters at nearest4×. The failure was missing assembled resources; dedicated scene-only
+success did not establish ordinary startup coverage. Public-authored scenes intentionally retain
+text fallback; private empty sets/partial sets are not silently called original presentation.
+
+Use `game/probes/engine_menu_assets_observation.gd` against the ordinary `Main.tscn`. It starts the
+actual title, submits mapped New Game/slot/name/Normal Start or Continue input, then reads existing
+state and `_Draw` resource projections. It never assigns a gameplay state or bypasses restoration.
+After the normal protected environment and both publication selections, use a fresh disposable save
+namespace outside checkouts and explicitly selected English or Chinese instant-text settings:
+
+```powershell
+$env:SF2_MENU_ASSETS_CASE = 'field-new'
+$env:SF2_MENU_ASSETS_EXPECT = 'original'
+$env:SF2_MENU_ASSETS_OUTPUT = Join-Path $run 'native.json'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 --path remake/game --script res://probes/engine_menu_assets_observation.gd -- --input-settings $settings
+```
+
+`field-new` covers the four field commands, existing Member/Magic/Equip text consumers and layered
+Back, then walks from the real New Game upstairs through the stairs to the Map3 priest at(32,13).
+Bounded input planning reads the live layout, including slope movement; only semantic samples are
+retained. Church covers four services, normal/selected images, refused Promotion without state/
+resource change, healthy Cure result, and caller return. `battle-continue` uses a disposable copy of
+an actually written compatible battle save and title Continue, then the main diamond, spell list,
+existing equipment HUD and return to Movement. `authored` additionally takes
+`--authored-package <absolute authored package>` and expects `fallback`; it needs no original art.
+For the missing-private-resource comparison, select the original unaugmented world/scene and expect
+`fallback`. `invalid-scene` uses Continue with one command raster removed from a disposable scene;
+startup must show the existing error and never mount gameplay. No player saves are changed.
+
+**Confirmed** bounded native results: English/Chinese ordinary field and church; English/Chinese
+ordinary battle Continue; missing-resource private input; public authored fallback; partial private
+scene rejection. Observations retain actual selected labels, resources, dimensions/filter/cardinals,
+consumer pages and parents. The private publication also preserves all gameplay data and unchanged
+dependency bytes. Completed setup/route failures remain in `local/issue1666/HANDOFF.md`: old external
+WAV assumption, route planner omission of stairs/slopes, and one deliberately terminated expensive
+observer attempt. None is relabeled as a passing run. Some exits retain2–4 ObjectDB warnings; this
+work does not establish leak-free shutdown.
+
+**Unknown:** human aesthetic/readability approval, physical OS-device/focus behavior, original
+natural route/timing/pixel parity, and downstream list art until #1667–#1669. No screenshot, full
+campaign run or original emulator observation is claimed. The contextual authored chest Search
+caption remains a text override; the ordinary admitted Battles01–07 do not expose that variant.
+
 ## Exploration gameplay diamond agreement (#1588)
 
 Standard rigor: a bounded multi-consumer presentation change with existing command authority.
@@ -2063,9 +2116,10 @@ owned by its `docs/ui-treatment-01.md` and `src/remaster/vector_ui.py`, supplies
 reference. Its Yes/No sample is not a complete UI kit: placeholder text and the embedded private item
 image must be separated from reusable frame geometry. Private art is not licensed by this selection.
 
-The ordinary host now implements a first playable iteration through `BattleCommandMenu` and
+The ordinary host supports the first playable iteration through `BattleCommandMenu` and
 `BattleMenuLayout`, using a shared selection-name window and the original 24×24 normal/selected
-command rasters from a local private scene input. Icons use nearest sampling at integral scale;
+command rasters **when the selected scene contains them**. The [ordinary publication repair](#ordinary-menu-resource-acceptance-1666)
+separately proves current startup selection. Icons use nearest sampling at integral scale;
 icon positions and the shared text window scale independently. No authored replacement glyph is used. Public scenes
 without these rasters show text-only squares. The [asset owner](../content/presentation-assets.md#private-command-menu-icons)
 defines preparation and admission through the existing scene raster collection.
