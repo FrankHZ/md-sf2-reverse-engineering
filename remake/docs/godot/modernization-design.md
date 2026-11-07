@@ -1,7 +1,8 @@
 # Modernization Design
 
-This page owns two separate proposals: local services/battle overview under #1543 below, and
-[held 1.5× exploration and battle acceleration](#held-15-acceleration-1619) under #1619.
+This page owns separate proposals: local services/battle overview under #1543 below,
+[optional objective and destination guidance](#optional-objective-and-destination-guidance-1578)
+under #1578, and [held 1.5× exploration and battle acceleration](#held-15-acceleration-1619) under #1619.
 Their implementation and acceptance decisions remain separate. The
 [UI language](ui-design-language.md) and [scene review](ui-scene-review.md) own #1616's visual design.
 
@@ -258,12 +259,205 @@ the remaining candidates are deferred rather than a new implementation backlog.
 | Deferred · Enemy threat overlay | Faster tactical comparison | Can reveal activation, ranges or AI intent; geometric range is not predicted AI action | Medium/high disclosure and terrain semantics; crowded for color/vision needs | Gameplay rules and movement-range owners; no full AI-plan display |
 | Separate · Held acceleration / broader skip | Shorter repetition | Completion/payment/story order must survive; cannot skip rules | [#1619's bounded clock/input design](#held-15-acceleration-1619) covers exploration and battle; broader skip remains deferred | Existing presentation/session owners; do not start from this #1543 recommendation |
 | Deferred · Bulk inventory organization | Fewer repeated slot operations | Changes custody/equipment, full-pack exchange and possibly sale economy | Medium/high transactional scope; preview/undo intent needs design | FieldInventory/Prepare owner; no batch sell or auto-equip |
-| Deferred · Route guidance | Easier navigation | Risks quest/spawn spoilers and replacing exploration | Medium content disclosure and accessible wayfinding | Campaign/content owners; no new quest tracker or auto-path |
+| Separate · Route guidance | Easier navigation | Risks quest/spawn spoilers and replacing exploration | [#1578's bounded proposal](#optional-objective-and-destination-guidance-1578) below; independent implementation acceptance | Campaign/content owners; no new quest tracker or auto-path |
 
 The product choices are concrete: accept near-town remote replenishment or choose inside-town-only;
 accept an on-demand overview restricted to stable player selections or defer it. Recommended defaults
 are near-town access and the restricted overview, with existing Save limits. Timing relative to the
 main story remains a scheduling decision, not authorization to start all three recommendations.
+
+## Optional objective and destination guidance (#1578)
+
+First-stage design for [#1578](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1578).
+**Standard rigor:** one optional aid spans content disclosure, state queries, preferences and field
+presentation. The outcome is a reviewable recommendation and bounded implementation contract;
+no guidance is implemented or runtime-accepted by this document. Recommend **Modern guidance: On**
+by default, **one short objective in the exploration gameplay menu**, and **a named next exit or
+local destination with a quiet marker when its location is justified**. This helps a returning
+player remember an already disclosed task without adding a permanent quest paragraph. Default,
+marker usefulness and human readability remain product recommendations awaiting review.
+
+This is intentional modernization, not an original quest-system claim. Reuse the
+[shared visual language](ui-design-language.md) and [field composition](ui-scene-review.md#3-exploration-world-speech-choices-and-search):
+original freestanding diamond, adjacent blue reading frame, gold only for focus, visible world,
+1080p baseline and 96px cells. #1543's host Journey/services remain a separate proposal. The objective
+belongs to the existing **Member / Magic / Item / Search gameplay diamond**, not the host
+Settings/Save/Quit menu. #1544's accepted minimal-hint direction applies; its deferred implementation,
+device-label cleanup and wider hint migration are not prerequisites or work authorized here.
+
+### A normal chapter with an observable before and after
+
+Select **Kazin's offer in Yeel → travel toward Hawel's house → first house scene and revisit**.
+It has town, overworld, encounter interruption and completion boundaries already supported in the
+[pre-voyage campaign](../application/pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment).
+Do not start from the damaged ship or admit the next campaign chapter just to demonstrate guidance.
+
+**Confirmed — accepted remake observations:** the linked campaign records ordinary New Game,
+Battle01 save/Continue, Battle02, Kazin's Yeel conversation, defeat recovery, Battle03 victory,
+Map66(6,6) → Map43 entry, recruitment and F612 reentry without duplicate enrollment. It also records
+`save-location-unavailable` on Map66. These retained results establish an available consumer, not
+a new native pass or permission to save at the new guidance checkpoints.
+The [ordinary opening/return observation](../application/pre-voyage-campaign.md#ordinary-new-game-through-the-battle03-return)
+also records paid EGRESS to Yeel, defeat recovery and a walk through the north village exit for
+Battle03 retry. That is a concrete existing approach to reuse for the town hint, not an assumed
+straight line from a battle's arbitrary victory tile.
+
+**Confirmed — original static structure:** the
+[Yeel/overworld contract](../../../docs/design/synthesis/chapters/grans-opening/battle02-outcome-through-battle03.md)
+owns pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, map/event symbols and source links.
+Yeel is Map5; its north exit returns to Map66(18,21), south exit to Map66(19,24). Kazin's fixed
+texts784–787 offer a guide to Hawel outside the village; the caller sets F72 after `cs_51B14` returns.
+F72 establishes following, not recruitment F4 or encounter unlock F403. A separate villager's
+texts767–769 give northwest information, but there is no demonstrated durable “heard that line”
+flag. Never infer that conversation from being in Yeel, or parse its rendered text at runtime.
+Original natural traversal, timing and save persistence are **Unknown** in that static contract;
+the remake observations above do not resolve those original-game Unknowns.
+
+The finite coverage below is a **proposed modern content rule**, not inferred original mission logic.
+Bind it to the admitted pre-voyage profile and compatible selected setups, not raw map numbers alone.
+
+| Supported state / checkpoint | Objective and permitted destination | Required withholding or refresh |
+| --- | --- | --- |
+| Yeel before completed guide caller; F72 clear, F4/F612 clear | No pilot objective. “No guidance available here” is optional menu-only fallback. | Do not invent “Talk to Kazin,” a quest giver marker or knowledge of Hawel from the full dialogue catalog. This is uncovered guidance, not a claim that the story has no next task. |
+| Settled Yeel after the caller; F72 set, F4/F612 clear | “Visit Hawel with Kazin.” Destination: “Hawel's house · outside Yeel.” Candidate next step: “North exit.” | The north exit is a recommended modern route, not a mandatory story gate. Publish that local hint only after checking the current setup, exit binding and walkable approach. Do not attribute northwest knowledge to the unrelated villager. |
+| Same guide state on Map66, before Battle03 completion F503 | Same objective; identify the known house only at the precision justified by the guide disclosure. | Do not expose Battle03, soldiers, enemy positions, scene triggers or house-event consequences. If no justified traversable leg is bound, show “Route not available” with no bearing/marker; a geometric arrow to the house would falsely promise access across the encounter. |
+| Battle, dialogue, automatic entry/return or stopped scene | No field objective panel or destination marker. | Preserve the actual owner and failure. Requery after usable field control, including defeat/Egress return; never use a cached victory or reset F72 to fit a planned route. |
+| Map66 after F503, still following and before F4/F612 | Same objective; final approach is the real house entry at Map66(6,5), from the recorded (6,6) approach. | Recommend an entrance marker only once that ordinary public entrance is visible in the current field view and its approach is valid. Off-camera retain the known house/area label without an exact bearing. Coordinates stay internal; no newly revealed terrain or event zone is rendered. |
+| Map43 entry scene running, then F4/F612 set and F72 clear | Hide during the scene; after it settles remove this objective and every pilot destination. On revisit keep it removed. | Do not chain to Battle04 or reveal Hawel's fate/recruitment before the real scene. No “quest complete” flag, reward or toast is added. |
+| Other map/profile/setup, missing binding or inconsistent F72/F4/F612 combination | No pilot guidance; optional natural menu fallback. | Treat coverage as Unsupported. Never fall back to the previous map's coordinate or choose an arbitrary rule by order. |
+
+**Inferred benefit:** today the player must remember the offer, find an exit and rediscover the house
+approach; the proposal makes the known task and next supported leg inspectable without another
+conversation. Compare identical reached checkpoints with guidance Off/On: can the player name the
+goal and identify a justified next exit/entrance, and then make a legal move? Fewer inputs or faster
+travel are not promised. The before case retains ordinary Talk, map travel and encounters; the after
+case changes only information. If an exit/precision is unproved, the truthful missing-route state is
+part of acceptance, not a reason to add pathfinding or a knowledge-history subsystem.
+
+### One state query and one preference
+
+**Confirmed — inspected source structure at accepted
+[`9e72a85eb97aa85147a0c80bce43b8234d4b9c00`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/9e72a85eb97aa85147a0c80bce43b8234d4b9c00):**
+[GameSession](../../src/Sf2.Remake.Application/Runtime/GameSession.cs) owns the current session and
+existing read-only queries; [ExplorationState](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationState.cs)
+holds the current definition/layout/player/party, and session Story owns progress flags.
+[MapTransfer](../../src/Sf2.Remake.Application/Runtime/Exploration/MapTransfer.cs) selects setups from
+those flags and validates actual entry. The existing
+[field-menu integration](../../game/src/Exploration/ExplorationSessionView.Menu.cs) checks
+`CanWaitAtInput`, hides on invalidation and returns Party to its original menu.
+[InputSettings](../../game/src/Input/InputSettings.cs),
+[SettingsStore](../../game/src/Input/SettingsStore.cs) and
+[SettingsHost](../../game/src/Entry/SettingsHost.cs) provide draft/Apply, atomic revision-checked
+preference persistence, failure retention and read-only launch override. No general objective,
+disclosure or destination query exists in this inspected baseline.
+
+Add a small read-only Application query beside the existing field queries, consuming the current
+session revision, phase, Story flags, party/follower state and admitted content. Return either no
+coverage or one objective text key, known destination label and optional **current-map** next-step
+anchor/precision plus an availability reason. Final destination and immediate leg are distinct
+fields; a remote map coordinate is never a local marker. A finite profile-owned rule table supplies
+modern text keys, predicates and disclosure/anchor bindings. Keep it with the existing profile's
+content ownership; do not mine disassembly events or translate dialogue into tasks at runtime.
+
+Prefer one bounded rule/record in the existing content model over a generic quest framework or new
+registry. Validate ambiguous predicates and missing map/exit/entity bindings at content admission.
+Runtime refusals remain possible as setup, visibility or phase changes. The query submits no command,
+advances no clock, consumes no RNG and writes no flags, party, resources, encounter state or saves.
+There is no completed-task list, visited-map ledger, saved objective ID or second story authority.
+
+Recompute on opening the gameplay menu and after committed progress/map/setup changes, usable return
+and Continue. Clear old markers **before** a transfer/scene/locale switch; publish only a result for
+the current session/revision/map. Do not hold guidance through the transfer fade. Use existing view
+refresh/invalidation; this tiny rule set needs no cache, hashes, background poller or event platform.
+
+Use one `Modern guidance / 现代引导` On/Off row in existing general Settings. It controls both objective
+and destination information; no new toolbar toggle or fifth diamond command. Recommend On for new
+preferences and an old format1 file missing the member, preserving every existing setting/binding.
+Explicit Off persists across New Game, Continue and app restart; Continue never restores an older
+save's preference. Default reset follows the selected On default. Draft/Back cancels; Apply publishes
+only after the existing successful write. Storage conflict/failure retains the previous applied
+choice. Read-only launch overrides keep their current refusal. Extend existing Draft/Publish and
+validation rather than accepting arbitrary unknown JSON or rewriting the save format. Settings
+remains subject to its current host entry restrictions; guidance cannot open it during battle.
+
+### Display precision, layout and return
+
+The menu adds a labelled **Current objective / 当前目标** section above the selected command's
+existing name/reason in its adjacent reading frame. Preserve both sections; a goal never replaces
+Search's unavailable reason, a cost or a required action hint. Initially focus the same diamond
+command as today. Objective text is passive and supplies no new Confirm action. On overflow use
+the existing reading/scroll treatment with explicit focus transfer and Back returning to the same
+diamond selection; directional diamond input cannot simultaneously scroll text. Do not add a
+separate task screen or leave the paragraph behind when the menu closes.
+
+At 1920×1080, retain the 32px safe edge and 32px gap from the 288px-wide diamond. Propose a reading
+frame up to 960×424 rather than squeezing the existing 640×224 command detail. Try bottom-aligned
+placement; if it covers the player, move the whole diamond/detail composition to the clear upper
+safe edge once on open, as the field-reading policy already recommends. Keep Menu, person, full
+command names, reasons and footer disjoint. This is proposed geometry, not measured acceptance.
+Use 30px body/24px secondary text, wrap full names and grow/scroll within safe bounds before any
+font reduction. Larger supported windows retain capped reading width and 96px world; below-minimum
+windows use existing recovery and hide guidance. No world zoom or new responsive layout system.
+
+| Surface | Minimum useful precision and interaction |
+| --- | --- |
+| Overworld, menu closed | One short quiet destination/next-step label near a safe edge; at most one hollow labelled marker for a justified visible current-map anchor. For an off-camera anchor use “Next: North exit” or another authored direction label; no screen-edge compass arrow through walls or undisclosed terrain. No constant objective paragraph, minimap, route line, distance countdown or camera retargeting. |
+| Town, menu closed | Prefer the relevant exit or named building before an exact doorway. A known, currently visible person may use the live entity anchor, never a stored NPC coordinate; absent/hidden/script-owned people get no marker. The pilot uses the exit, not a new Kazin quest marker. No secret room, unopened interior or undisclosed item/reward marker. |
+| Local blockage, closed door or unsupported leg | Distinguish known destination from “Route not available” or a justified “Entrance unavailable.” Remove a claimed next-step marker when its binding/approach fails. Existing collision/warp legality remains authoritative; an anchor is orientation, not a shortest-path or guaranteed-reach claim. No full search is added to prove access. |
+| Unknown location / uncovered objective | “Location not known” only when that knowledge distinction is actually supplied; otherwise omit destination and use the coverage fallback. Never expose internal map IDs, flag names or “Unknown” as unexplained player jargon. Off hides fallback text as well. |
+| Gameplay menu, Party, Search result, dialogue, service, host modal, battle | Hide world labels/markers while another reading/input owner is open. Only the root gameplay menu displays its objective section. Close Party to the same diamond; Search retains its actual result/return; host Back/Resume retains its original caller. Requery on field return; release/neutral guards prevent movement or confirmation from the closing gesture. |
+
+Markers use a hollow shape plus a localized label, not color alone, and never look like gold
+selection, a quest reward or a clickable movement destination. They ignore pointer input and do not
+reveal terrain, pan the camera or move the actor. All goal/direction information must also be
+readable in the menu; a marker is supplementary. This takes no dependency on #1543's battle overview
+or a new town/world map. Ordinary control with guidance Off must still complete the same chapter.
+
+Use existing en/zh-CN catalogs and localization/name projection. Proposed copy includes
+`Current objective / 当前目标`, `Visit Hawel with Kazin. / 和 Kazin 一起拜访 Hawel。`,
+`Hawel's house · outside Yeel / Hawel 的家 · Yeel 村外`,
+`Next: North exit / 下一步：北侧出口`, and `Route not available / 暂无可用路线`.
+These are new modern UI strings, not translated ROM dialogue or newly approved Chinese proper names.
+Keep canonical/custom names under the existing naming policy; do not derive a name from a sprite.
+Switch locale without retaining the old label or marker width. Exercise a long existing/custom name
+and expanded English/Chinese copy, keyboard/pad remaps and mouse; use one currently legal action
+hint and existing Help. Do not expose South/East button names or take over #1544's device work.
+
+### Bounded implementation and human review
+
+Each row is a later separately owned slice after design review, not permission to start code here.
+Recheck accepted main and serialize shared paths with #1616, #1619 and settings/localization work.
+Main-gate freezes exact paths at dispatch; the candidates below are navigation, not a parallel queue.
+
+| Stage / dependencies | Candidate ownership | Acceptance and stopping boundary |
+| --- | --- | --- |
+| A · Query, preference and menu; accepted guidance/layout choices first | Application `Runtime/GameSession.cs` and a new adjacent field query; `Content/Scenarios/ExplorationDefinition.cs` and the existing private-profile content owner; adapter `Input/InputSettings.cs`, `Input/SettingsStore.cs`, `Entry/SettingsHost.cs`, `UI/SettingsView.cs`, `Exploration/FieldMenuView.cs`, `Exploration/ExplorationSessionView.Menu.cs`; existing locale catalogs | Implement only the table's goal/disclosure and settings transaction. Check before/after offer, completion/revisit, conflicting/uncovered state, On/Off/Apply/Back/failure/old preferences and menu→Party→Back. Stop with no world markers; this is partial #1578 delivery. |
+| B · Town/overworld destination; same query after A | Existing field view/presentation and world projection owners, finite profile anchor bindings, existing catalogs; reuse A's query rather than another navigation authority | Yeel exit, Map66 incomplete leg, justified post-Battle03 house approach, blocked/absent anchor and transfer/return invalidation. No pointer travel, new maps or route solver. If exact precision cannot be justified, deliver truthful named-area/unavailable output and retain that limitation for review. |
+| C · Integrated persistence and human review; after B | Existing campaign/save/field acceptance owners; product changes only for demonstrated defects within A/B ownership | Compare Off/On at the same finite checkpoints; actual Save/Continue only at an already eligible recipe, then walk to the sample. Confirm locale/window/controls and failure recovery. Human accepts whether the aid is useful and unobtrusive. Keep #1578 open until its remaining acceptance is met. |
+
+Add small actual engine-behavior tests for the new query's progress/disclosure, ambiguity and read-only
+invariants. Run affected engine behavior, `uv run sf2 verify engine` where those semantics change,
+`uv run sf2 verify adapter`, committed planner and actual selected CI. Preference/UI verification
+uses direct existing consumers, not tests of observers, planners or reports. Later native acceptance
+reads actual input/state/projection/geometry/errors through the existing owned installation/project/
+debug instance, without screenshots or a new replay/comparison framework. No runtime run is needed
+for this design PR.
+
+Bound later observation to the table's finite checkpoints and one already eligible save/Continue
+pair, serially; reuse retained progress inputs rather than replaying the full campaign. Budget at
+most 12 short cases, 30s per live checkpoint, 100KiB/case and 2MiB total report material, with no asset
+copies or per-frame world dumps. Query work is O(number of finite admitted rules + local anchor
+checks), output one record; no all-map search or acquisition. Replan if reaching a checkpoint needs
+new campaign admission, a new persistent knowledge ledger or an unverified route platform. Retain
+existing failure records and instances; no cleanup is implied.
+
+Human review under [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) must decide
+the default On, whether the goal/command distinction is immediately clear, whether a named exit
+is enough or a marker earns its visual cost, and whether the player can recognize unavailable
+routing without being spoiled. Compare the goal before/after guide conversation and after house
+completion, return/Continue, English/Chinese long names and supported window geometry. Measured
+layout, natural-language quality, route/anchor precision and user benefit remain **Unknown** until
+those checks; the design's source and document checks cannot pass them.
 
 ## Held 1.5× acceleration (#1619)
 
@@ -457,7 +651,7 @@ implementation acceptance in this section has yet passed.
 
 ## Design-task verification
 
-The #1619 design task changes only this owner; source, runtime and other design owners are read-only.
+Design tasks #1578 and #1619 change only this owner; source, runtime and other design owners are read-only.
 Acceptance is source-chain review, local Markdown target/anchor and scope checks, `git diff --check`,
 the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`, and actual scoped CI.
 Load the owning ignored input configuration for the planner as required by the repository. No SDK,
