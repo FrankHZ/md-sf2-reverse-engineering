@@ -43,7 +43,7 @@ func field() -> void:
     check(actions.stage == "use-item", "ordinary exploration Use")
     icons(actions.icons, "field-use")
     await key(KEY_DOWN); await frames(4); icons(state().partyStatus.preparation.icons, "field-use-next")
-    await key(back); await key(KEY_DOWN); await key(KEY_DOWN); await key(KEY_ENTER); await frames(4)
+    await key(back); await key(KEY_RIGHT); await key(KEY_ENTER); await frames(4)
     check(state().partyStatus.preparation.stage == "equipment", "ordinary exploration Equip")
     icons(state().partyStatus.preparation.icons, "field-equip")
     await key(KEY_DOWN); await frames(4); icons(state().partyStatus.preparation.icons, "field-equip-next")

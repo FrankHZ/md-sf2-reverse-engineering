@@ -48,7 +48,7 @@ func enter_options() -> bool:
         if not occupied: break
     await key(KEY_ENTER)
     check(inspection().page == "Options", "Empty-ground C opens Options")
-    await key(KEY_UP)
+    await key(KEY_DOWN)
     caller = inspection().duplicate(true)
     check(caller.optionIndex == 3 and "Quit" in caller.hint, "Quit is actual selected option")
     sample("options-quit")

@@ -185,7 +185,7 @@ observer attempt. None is relabeled as a passing run. Some exits retain2–4 Obj
 work does not establish leak-free shutdown.
 
 **Unknown:** human aesthetic/readability approval, physical OS-device/focus behavior, original
-natural route/timing/pixel parity. Member/Give/Drop art has the separate #1668 acceptance below; shop/options art remains #1669;
+natural route/timing/pixel parity. Member/Give/Drop art has the separate #1668 acceptance below; shop/options art has the [#1669 acceptance](#shop-and-options-art-acceptance-1669);
 #1667 identity consumers have their separate acceptance below. No screenshot, full
 campaign run or original emulator observation is claimed. The contextual authored chest Search
 caption remains a text override; the ordinary admitted Battles01–07 do not expose that variant.
@@ -2642,7 +2642,7 @@ This is the Standard resource-consumer slice; current gameplay/confirmation rule
 localized level/cost/equipment text stay authoritative. Public authored inputs and older private
 packs without this optional namespace retain explicit text mode. Declared bundles reject missing/invalid bindings through Content; preparation rejects conflicting
 source resources. A defensive runtime marker or typed decoding error preserves navigation.
-Member/inventory/Give/Drop and Item operations have the separate #1668 acceptance below; shop/options art remains #1669.
+Member/inventory/Give/Drop and Item operations have the separate #1668 acceptance below; shop/options art has the [#1669 acceptance](#shop-and-options-art-acceptance-1669).
 
 **Confirmed functional/resource boundary:** ordinary title New Game exercises field Magic/Use/Equip
 and their parent returns; fresh title Continue exercises battle Magic/Item/Equip and returns to the
@@ -2717,5 +2717,80 @@ with source receipts; ordinary Observe stays lightweight. No screenshots or full
 
 **Unknown:** original natural reach, original timing/window/pixel parity, physical device/focus behavior,
 later catalog/unsupported states, broken overlays and human/aesthetic approval. Source choices do not
-grant gameplay legality. Observed ObjectDB shutdown warnings remain explicit. #1669 owns shop and
+grant gameplay legality. Observed ObjectDB shutdown warnings remain explicit. [#1669](#shop-and-options-art-acceptance-1669) supplies shop and
 empty-ground options art; #1456/#1616 retain human review without blocking this engineering boundary.
+
+## Shop and Options art acceptance (#1669)
+
+**Standard rigor:** the existing service/options callers now consume the
+[source-owned menu families](../content/presentation-assets.md#shop-and-battlefield-menu-resources-1669).
+Shop is Up Buy / Left Sell / Right Repair / Down Deals; empty ground is Up Member / Left Map /
+Right Speed / Down Quit. Directions select the cardinal slot, then Confirm opens it. Attack still
+opens battlefield options where previously admitted. Cancel and an independent pointer Leave/Back
+restore the actual parent. Repair/Deals retain their unavailable reason and cannot mutate resources;
+no unavailable image is invented beyond the original normal/selected pair.
+
+The shared `DiamondMenuView` is the extracted Item-operation layout: four96px buttons over visible
+world and a separate explanation/Back frame with32px between them. Shop hides its old common panel
+and veil only on its service page; stock, member, slot, offer and result pages keep their readable
+lists, gold/prices, live source slot numbers and equipped text. Stock and sale/confirmation rows
+borrow semantic item textures from the shop's `IdentityIcons` owner and retain localized text.
+No new UI platform, global panel revision or texture ownership layer is introduced. Existing buttons
+own decoded menu textures; temporary tree exit/reparenting suspends input without releasing content.
+
+**Confirmed bounded remake observations:** the existing controlled-start presenter admits the same
+ordinary product world at Map16/F663 `(35,26)`, source-facing1 (Up), with explicitly joined opening
+members. Actual Talk reaches the existing item counter and the `(39,26)` weapon counter. English and real #1602 world/entry Chinese
+catalogs cover all normal/selected services, unavailable Repair/Deals, item selection, prices,
+equipped sale slot0, a real sale and purchase receipt, recipient/stock/service Back, pointer Buy/Leave
+and usable field return. The seven-item weapon stock also scrolls to Back, accepts pointer selection on the image and preserves resources on its actual insufficient-gold result. This controlled approach is not natural campaign reach. The existing Galam
+shop probe's original ordinary-start recipe remains valid; its service Sell input is now Left.
+
+A fresh process uses a copied real disposable Continue through ordinary title/slot input. Its actual
+saved route is Map57 / battle-1, despite the older seed's Battle02 nickname. The same actor reaches
+Movement B → cursor → empty-ground Confirm → Options. English and Chinese with remapped cardinal/
+confirm/cancel inputs observe actual source draws, Member → full sheet → roster → Options, Map →
+Options, Speed draft Cancel and Quit's shared two-slot Cancel with preserved focus. The independent
+pointer Map/Back returns through cursor to the same actor/revision. Held service Confirm does not
+choose a child stock item; held battlefield Confirm stays in Map. Gestures begun beneath host Menu
+cannot execute after return. No gameplay setter, screenshot, GPU readback/hash or full campaign replay
+is used. Normal `Observe` reads only state, resource identity and draw projection.
+
+Source-free namespaces remain explicit text through the same controls. The representative old
+private resource pack and public authored entry retain their admitted behavior. A corrupt declared
+PNG reports the resource error at its own shop/options menu and permits independent exit; expected
+codec errors remain recorded. Missing shop or battlefield halves reject Content before gameplay.
+The source-to-publication comparison preserves every unrelated world/scene value and dependency.
+The maintained Item/Member/Map/Speed/Quit/shop probes now use the actual cardinal inputs; their older
+reports retain their historical scope and are not claimed as rerun here.
+
+For direct native reproduction, load the selected environment/private inputs and both final pack
+selections in the same process; choose fresh ignored report/settings files and an external disposable
+save namespace. `$shopStart` uses the existing controlled presenter envelope with `start` Map16,
+entity-0, `(35,26)` (item) or `(39,26)` (weapon), facing1, speed32 and flags0/1/2/32/33/34/663.
+This sets initial admitted inputs only, not an active gameplay snapshot. Select both real #1602
+world/entry display catalogs for Chinese; a language toggle alone is not that coverage.
+
+```powershell
+$env:SF2_INSPECTION_START = $shopStart
+$env:SF2_SHOP_ART = '1'
+$env:SF2_SHOP_CASE = 'item' # weapon selects that counter's expected stock
+$env:SF2_MENU_ASSETS_EXPECT = 'original'
+$env:SF2_OBSERVATION_OUTPUT = $shopReport
+& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_shop_observation.gd -- --input-settings $settings
+# Separate ordinary Continue over a disposable real saved turn:
+$env:SF2_MENU_ASSETS_CASE = 'battle-continue'
+$env:SF2_MENU_ASSETS_OUTPUT = $battleReport
+& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_menu_assets_observation.gd -- --input-settings $settings
+```
+
+`SF2_MENU_REMAPPED=1` selects the finite U/K/L/J/Q/B input witness with those actual bindings in
+`$settings`; defaults use arrows/Enter/Escape. `SF2_MENU_FAULT=1` requires an explicitly malformed
+selected resource and checks its error/exit rather than treating it as text success. Legacy command
+art can be declared separately with `SF2_COMMAND_ART=original` while new options remain text.
+The existing authored diagnostic mode exercises shared command text fallback; it does not assert
+private equipment admission. No prior transaction/save suite is rerun solely to update navigation.
+
+**Unknown:** physical OS/device focus, original natural reach/cadence/pixel parity, later campaign,
+full resource coverage and human/aesthetic approval. Observed ObjectDB shutdown warnings remain an
+open boundary; neither #1456 nor #1616 is signed off by these engineering observations.

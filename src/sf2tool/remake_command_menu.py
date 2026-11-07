@@ -40,7 +40,17 @@ def menu_assets(
         rom, upstream, owner=f"{menu}-menu", listing_path=listing
     )
     main_menu = menu in ("field", "command")
-    symbol = "tiles_MainMenu" if main_menu else f"tiles_{menu.title()}Menu"
+    symbol = (
+        "tiles_MainMenu"
+        if main_menu
+        else {"battlefield": "tiles_BattleFieldMenu"}.get(menu, f"tiles_{menu.title()}Menu")
+    )
+    pointer_symbol = "p_tiles_BattlefieldMenu" if menu == "battlefield" else f"p_{symbol}"
+    next_symbol = {
+        "item": "tiles_BattleFieldMenu",
+        "battlefield": "tiles_ChurchMenu",
+        "shop": "tiles_CaravanMenu",
+    }.get(menu, "tiles_ShopMenu")
     source_path = (
         MAIN_MENU_PATH if main_menu else Path(f"data/graphics/tech/menus/{menu}menutiles.bin")
     )
@@ -57,22 +67,19 @@ def menu_assets(
             if main_menu
             else (
                 symbol,
-                "tiles_BattleFieldMenu" if menu == "item" else "tiles_ShopMenu",
-                f"p_{symbol}",
+                next_symbol,
+                pointer_symbol,
                 "pt_tiles_Menu",
             )
         )
         for checked in symbols:
             if source.addresses[checked] != fixture["table"][checked]:
                 raise ValueError(f"{menu}-menu H1/accepted-address drift")
-        pointer = source.addresses["p_tiles_MainMenu" if main_menu else f"p_{symbol}"]
+        pointer = source.addresses["p_tiles_MainMenu" if main_menu else pointer_symbol]
         if int.from_bytes(source.rom[pointer : pointer + 4], "big") != address:
             raise ValueError(f"{menu}-menu ROM pointer drift")
         byte_count = (
-            7 * MAIN_MENU_ICON_BYTES
-            if main_menu
-            else source.addresses["tiles_BattleFieldMenu" if menu == "item" else "tiles_ShopMenu"]
-            - address
+            7 * MAIN_MENU_ICON_BYTES if main_menu else source.addresses[next_symbol] - address
         )
         compressed = source.rom[address : address + byte_count]
         if (source.disasm / source_path).exists() and len(
@@ -112,13 +119,14 @@ def menu_assets(
             raise ValueError(f"{menu}-menu slot mapping drift")
         payload = compressed
     else:
-        if menu == "item":
-            pointer_entry = source.addresses["pt_tiles_Menu"] + 12
+        if menu in ("item", "battlefield", "shop"):
+            entry = {"item": 12, "battlefield": 16, "shop": 24}[menu]
+            pointer_entry = source.addresses["pt_tiles_Menu"] + entry
             if (
                 int.from_bytes(source.rom[pointer_entry : pointer_entry + 4], "big")
-                != source.addresses["p_tiles_ItemMenu"]
+                != source.addresses[pointer_symbol]
             ):
-                raise ValueError("item-menu slot mapping drift")
+                raise ValueError(f"{menu}-menu slot mapping drift")
         decoded = decode_stack_compressed(compressed, expected_output_bytes=2304)
         payload, consumed = decoded.output, decoded.input_bits_consumed
     rasters, receipts = {}, []
@@ -127,7 +135,17 @@ def menu_assets(
         "church": (("raise", "cure", "promote", "save"), (0, 1, 2, 3)),
         "command": (("attack", "magic", "item", "stay"), (0, 1, 2, 3)),
         "item": (("use", "give", "equip", "drop"), (0, 1, 2, 3)),
+        "shop": (("buy", "sell", "repair", "deals"), (0, 1, 2, 3)),
+        "battlefield": (("member", "map", "speed", "quit"), (0, 1, 2, 3)),
     }[menu]
+    if menu in ("shop", "battlefield"):
+        # Read the pinned ROM string table; modern consumer order is not source evidence.
+        table = source.addresses[f"pt_{menu.title()}MenuNames"]
+        for index, name in enumerate(names):
+            pointer = int.from_bytes(source.rom[table + index * 4 : table + index * 4 + 4], "big")
+            end = source.rom.index(0, pointer)
+            if source.rom[pointer:end].decode("ascii").lower() != name:
+                raise ValueError(f"{menu}-menu name/slot drift")
     for index, name in zip(indices, names, strict=True):
         for frame, state in enumerate(("normal", "selected")):
             start = index * MAIN_MENU_ICON_BYTES + frame * 288
@@ -229,6 +247,7 @@ def prepare_church(
     scene: Path | None = None,
     identity_icons: bool = False,
     item_menu: bool = False,
+    shop_battlefield: bool = False,
 ) -> None:
     """Publish once, including every declared encounter when selecting all menus."""
     if out_dir.exists():
@@ -240,6 +259,10 @@ def prepare_church(
     menus = ("field", "church", "command") if menu == "all" else (menu,)
     if item_menu:
         menus += ("item",)
+    if shop_battlefield:
+        if menu != "all":
+            raise ValueError("shop-battlefield requires all menus")
+        menus += ("shop", "battlefield")
     assets = {name: menu_assets(rom, upstream, listing, rom_assets, name) for name in menus}
     icons = None
     if identity_icons:
@@ -254,7 +277,7 @@ def prepare_church(
             raise ValueError("input world owns conflicting identity icons")
         presentation["identityIcons"] = icons[0]
     for name in menus:
-        if name != "command":
+        if name not in ("command", "battlefield"):
             presentation = world_document["presentation"]
             key = name + "Menu"
             if key in presentation and presentation[key] != assets[name][0]:
@@ -298,6 +321,8 @@ def prepare_church(
                 )
         for battle_scene in scenes.values():
             mount(battle_scene["rasters"], assets["command"][0], "command-menu.")
+            if shop_battlefield:
+                mount(battle_scene["rasters"], assets["battlefield"][0], "battlefield-menu.")
             if icons:
                 mount(
                     battle_scene["rasters"],
@@ -346,7 +371,14 @@ def main() -> None:
     parser.add_argument(
         "--item-menu", action="store_true", help="Add source Use/Give/Equip/Drop art to a world"
     )
+    parser.add_argument(
+        "--shop-battlefield",
+        action="store_true",
+        help="Add source shop and empty-ground options art with --menu all",
+    )
     args = parser.parse_args()
+    if args.shop_battlefield and args.menu != "all":
+        parser.error("--shop-battlefield requires --menu all")
     if args.item_menu and args.menu != "all":
         parser.error("--item-menu requires --menu all")
     if args.identity_icons and args.menu != "all":
@@ -370,6 +402,7 @@ def main() -> None:
             args.scene,
             args.identity_icons,
             args.item_menu,
+            args.shop_battlefield,
         )
     else:
         prepare(args.rom, args.upstream, args.scene, args.out_dir, args.listing, args.rom_assets)

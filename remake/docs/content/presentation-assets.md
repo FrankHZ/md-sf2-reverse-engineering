@@ -138,13 +138,14 @@ are explicit absolute input/output selections; output must be a fresh ignored di
 checkout. The pinned source and retained H1 listing may be read-only.
 
 ```powershell
-uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream --listing $listing --rom-assets --world $world --scene $scene --menu all --out-dir $output
+uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream --listing $listing --rom-assets --world $world --scene $scene --menu all --identity-icons --item-menu --shop-battlefield --out-dir $output
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
 & $env:GODOT_BIN --path remake/game
 ```
 
-This mounts both world menus, the external opening scene, and every non-null `encounters[].battleScenes`
+The current complete publication additionally includes the [Shop/Options families](#shop-and-battlefield-menu-resources-1669).
+This mounts the world menus, the external opening scene, and every non-null `encounters[].battleScenes`
 selection. It preserves all encounter paths and gameplay data; existing raster namespaces must be
 absent or exactly equal to the source-derived complete set. Partial/conflicting sets reject before
 publication. Ordinary readers and `FieldMenuView`, `ChurchServiceView`, `BattleMenuLayout` remain the
@@ -183,10 +184,10 @@ original animation cadence or human visual acceptance.
 | Spell and item identity icons: `data/graphics/icons/entries.asm`, `ItemIconNNN`, `OtherIconNNN`, `SpellIconNNN`, `p_Icons`;192 bytes per16×24 icon | Existing `texture_extract.extract_icons`, verified source reader, base palette and tile renderer. `loadhighlightableicon.asm` masks item index with0x7F; spell index with0x3F then adds130; empty spell uses icon127. Selected art is an AND overlay from `tiles_IconHighlight`, not a second stored image. | [#1667](#spell-and-item-identity-art-1667) publishes bounded validated bindings consumed by `BattleMenuLayout` spell/item rows, `BattleSessionView` equipment HUD and `FieldActionView` magic/use/equipment rows. The earlier diamond-only pack remains a distinct optional text mode for these lists. |
 | Spell level: `code/common/menus/magicmenu.asm:SelectSpellLevel`, `tiles_TextHighlight`; equipment: `equipmenu.asm:BuildBattleEquipWindow`, `itemmenu.asm` | Level text/selector and item icon are distinct source operands. Current localized text retains actual level/cost/slot and rules. | #1667 binds semantic spell/item IDs and retains localized level/cost/description text. No separate per-level picture is established by this source; exact original border/window presentation remains outside this ticket. |
 | Item operations Use/Give/Equip/Drop: `tiles_ItemMenu` ROM0x2A9C2; `pt_ItemMenuNames` gives source order. Member sheet: `memberscreen.asm:BuildMemberStatusWindow` loads spell/item icons and broken-item overlays. | Shared diamond decoder/palette for operation icons, `extract_icons` for individual slots. Shared `PartyDetailsPanel`, field Give/Drop/exchange rows and the battle transaction HUD consume semantic identities. | [#1668](#member-inventory-and-item-operations-1668) adds the separate24×24 Item operation set and existing Member/inventory/Give/Drop consumers. Broken overlays/current unsupported item states stay explicit. |
-| Shop Buy/Sell/Repair/Deals: `tiles_ShopMenu` ROM0x2B418, `pt_ShopMenuNames`. Empty-ground Member/Map/Speed/Quit: `tiles_BattleFieldMenu` ROM0x2ACF6, `pt_BattlefieldMenuNames`. | Existing stack decoder, verified source, palette and 3×3 half renderer; current `ShopServiceView` and `BattleInspectionView` use text choices. Goods use the same individual item icon family. | [#1669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1669) owns new service/options consumers and bindings, preserving their current return/selection authority. Modern Map drawing, HP/MP gauges, panel chrome and Chinese font are accepted separate choices, not missing original menu assets. |
+| Shop Buy/Sell/Repair/Deals: `tiles_ShopMenu` ROM0x2B418, `pt_ShopMenuNames`. Empty-ground Member/Map/Speed/Quit: `tiles_BattleFieldMenu` ROM0x2ACF6, `pt_BattlefieldMenuNames`. | Existing stack decoder, verified source, palette and 3×3 half renderer; current `ShopServiceView` and `BattleInspectionView` consume source cardinal art. Goods use the same individual item icon family. | [#1669 resource owner](#shop-and-battlefield-menu-resources-1669) records current service/options bindings and unchanged caller authority. Modern Map drawing, HP/MP gauges, panel chrome and Chinese font are accepted separate choices, not missing original menu assets. |
 
 The inventory is finite: sources, admission seams and actual consumers are named. #1667 implements
-the spell/Use/Equip subset; #1668 extends Member/Give/Drop and Item operations. Shop/empty-ground options art remains #1669. Native entry/return coverage and static source facts are
+the spell/Use/Equip subset; #1668 extends Member/Give/Drop and Item operations. Shop/empty-ground options art has the [#1669 owner](#shop-and-battlefield-menu-resources-1669). Native entry/return coverage and static source facts are
 separate from the **Unknown** original natural/cadence/pixel parity and human/aesthetic approval.
 
 ## Private Command Menu Icons
@@ -451,7 +452,7 @@ field Give/Drop/full-pack exchange, and battle Give/Drop selection and confirmat
 slots, equipment, localized names, unavailable reasons, scrolling, caller-specific Back and actual
 transactions. This adds presentation only; Domain rules, inventory authority and gameplay admission
 do not depend on the art catalog. Public authored and old private namespaces remain explicit text.
-Shop and empty-ground options art stays with #1669; broken overlays, unadmitted item states and human
+Shop and empty-ground options art has the [separate owner below](#shop-and-battlefield-menu-resources-1669); broken overlays, unadmitted item states and human
 visual approval remain outside this slice.
 
 `remake_command_menu --menu all --item-menu` consumes the accepted publication read-only and adds
@@ -479,3 +480,72 @@ with separate given/returned images outside its existing readable text column. N
 portrait, independent unavailable image, new fifth operation or per-level spell image is invented.
 The [presentation owner](../godot/presentation.md#member-inventory-art-acceptance-1668) records finite
 ordinary/controlled acceptance and remaining Unknowns.
+
+## Shop and battlefield menu resources (#1669)
+
+**Standard rigor:** show the original service/options and item identities at the existing admitted
+shop and empty-ground callers. Keep Buy/Sell, unavailable Repair/Deals reasons, independent Leave,
+Map/Member browsing, Speed drafts, Quit save safety and actual parent returns. No new shop service,
+battle/save/RNG rule, global #1616 layout, original pixel distribution or human approval is included.
+The [presentation acceptance](../godot/presentation.md#shop-and-options-art-acceptance-1669) separates
+actual ordinary/controlled consumers from source facts and remaining Unknowns.
+
+**Confirmed static:** pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, registered
+US ROM and retained H1 listing resolve `tiles_ShopMenu`0x2B418/936 bytes and the exact spelling
+`tiles_BattleFieldMenu`0x2ACF6/892 bytes. The existing stack decoder produces2304 bytes from7445
+and7103 consumed bits respectively. `menutilespointertable.asm` selects `p_tiles_ShopMenu`0x28020
+at `pt_tiles_Menu+24`, and `p_tiles_BattlefieldMenu`0x28018 at `+16`. The producer verifies these
+against the accepted UI graphics fixture/listing/ROM and reads the ROM name pointers, rather than
+using modern text-list indices. `menustringspointertable.asm` gives these source slots:
+
+| Family | Up / source0 | Left / source1 | Right / source2 | Down / source3 |
+| --- | --- | --- | --- | --- |
+| `pt_ShopMenuNames` | Buy | Sell | Repair | Deals |
+| `pt_BattlefieldMenuNames` | Member | Map | Speed | Quit |
+
+`diamondmenu.asm`'s cardinal DMA consumers select each record's288-byte normal/selected halves.
+The existing base palette/3×3 renderer supplies24×24 images. `shop/shopactions.asm:ShopMenu`
+initializes Up, dispatches Buy/Sell/Repair/Deals and exits on `-1`; there is no fifth Leave icon.
+`battlefunctions_2.asm:BattlefieldMenu` dispatches0 Member,1 minimap,2 settings,3 suspend and
+returns to its cursor on `-1`. The remake retains its separately accepted browsing, modern Speed
+and shared two-slot Quit policies; original suspend semantics do not redefine that save contract.
+
+### Final publication and ordinary selection
+
+The command in [ordinary menu publication](#ordinary-menu-publication-and-coverage-1666) is the
+complete preparation command. `--identity-icons --item-menu --shop-battlefield` adds the admitted
+identity catalog, Item operations, shop services and battlefield options to `--menu all`.
+When reusing an already complete identity/Item publication, omit `--identity-icons` to preserve
+those existing bytes. Inputs are read-only; choose a fresh ignored `$output`. No output is canonical
+until explicitly selected. The base campaign `$freshWorld` supplies gameplay data; it is not the
+complete product-art selection. Old private packages keep their existing identities or explicit
+text mode, and public authored content remains text where the private namespace is absent.
+
+The final slice publication consumes the prior complete publication once, adds world
+`presentation.shopMenu` (`buy/sell/repair/deals.normal/selected`) and adds
+`battlefield-menu.member/map/speed/quit.normal/selected` to all seven selected scene sets, including
+the external opening `scene.json`. Whole-family absence is optional; declared partial, extra,
+wrong-shaped or conflicting sets reject. A native decode failure stays explicit in the owning menu,
+blocks its service/options dispatch and retains Leave/Back. It must not redirect to another caller
+or report original-art success. Identity icons use the existing16×24 semantic item catalog.
+
+Select **both** outputs in the same process before ordinary title/New Game/Continue, retaining the
+caller's existing save root/namespace, settings and both display catalogs:
+
+```powershell
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
+```
+
+The ignored local convenience selector `local/issue1669/select-content.ps1` selects the already
+generated final pack using paths relative to its own script. Dot-source it from the owning checkout;
+it sets only these two environment selections and does not launch a game or configure player saves.
+Its availability and exact local reproduction belong in the slice handoff. The CLI recipe above
+remains the durable way to regenerate the pack.
+
+This bounded publication is148,931,904 bytes, with114,290,841 bytes in its world. Added raw pixels
+are147,456 bytes across one world plus seven scenes; all other world/scene values and26 dependencies
+compare unchanged to the selected input. Work is O(input plus declared dependencies); retain the
+existing assumed<3GiB peak-process/1GiB scratch budget, not an independently measured peak.
+Two bounded negative worlds and small scene variants share these dependencies; no language copies,
+full-route collection or new asset platform. Replan if content/dependency growth breaks these bounds.

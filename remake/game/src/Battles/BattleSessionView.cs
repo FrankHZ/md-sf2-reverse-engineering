@@ -44,7 +44,7 @@ public sealed partial class BattleSessionView : Control
     internal string? StartupError => _startupFailure?.Code;
     private bool _started;
     private bool _inputSuspended;
-    private void SuspendInput() { _inputSuspended = true; ClearNavigation(); _menu?.SuspendPointer(); }
+    private void SuspendInput() { _inputSuspended = true; ClearNavigation(); _menu?.SuspendPointer(); _inspection?.SuspendPointer(); }
     private void ResumeInput() => _inputSuspended = false;
     private string _title = "";
     private string _status = "";
@@ -183,6 +183,7 @@ public sealed partial class BattleSessionView : Control
                 _map.Build(result.Snapshot.Battle.Definition, session.Definition);
                 _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
                 _inspection.ConfigureIcons(_menu.Icons, session.Definition);
+                _inspection.ConfigureOptions(session.ActiveBattleScenes);
                 _menu.Reset();
             }
             catch (InvalidOperationException error)
@@ -286,7 +287,11 @@ public sealed partial class BattleSessionView : Control
         if (_inspection.Active || _inspectionRelease)
         {
             if (!_inspectionRelease && !_inputSuspended && GetWindow().HasFocus() && CanProcess() && IsVisibleInTree())
+            {
+                string page = _inspection.Page;
                 _inspection.HandlePointer(input);
+                if (page != _inspection.Page) InspectionBarrier();
+            }
             return;
         }
         if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() ||

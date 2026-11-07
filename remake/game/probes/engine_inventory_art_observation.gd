@@ -108,7 +108,7 @@ func battle() -> void:
         var inspect: Dictionary = state().inspection
         if not inspect.units.any(func(u): return u.Position.X == inspect.cursor.X and u.Position.Y == inspect.cursor.Y): break
         await key(KEY_RIGHT)
-    await key(KEY_ENTER); await key(KEY_DOWN); await key(KEY_ENTER); await key(KEY_ENTER); await frames(4)
+    await key(KEY_ENTER); await key(KEY_UP); await key(KEY_ENTER); await key(KEY_ENTER); await frames(4)
     check(state().inspection.page == "MemberFull", "ordinary battle Member sheet")
     sheet(state().inspection.full, "battle-member")
     await key(KEY_TAB); await key(KEY_DOWN); await frames(4); record("battle-member-scrolled")

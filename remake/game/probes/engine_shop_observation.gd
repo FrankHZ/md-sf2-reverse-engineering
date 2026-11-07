@@ -13,6 +13,8 @@ func check(ok: bool, message: String) -> void:
     if not ok: failures.append(message)
 func field() -> Dictionary: return JSON.parse_string(view.call("ReadObservationJson"))
 func key(code: Key) -> void:
+    if OS.get_environment("SF2_MENU_REMAPPED") == "1":
+        code = {KEY_UP:KEY_U,KEY_LEFT:KEY_K,KEY_RIGHT:KEY_L,KEY_DOWN:KEY_J,KEY_ENTER:KEY_Q,KEY_ESCAPE:KEY_B}.get(code,code)
     var event := InputEventKey.new();event.keycode=code;event.pressed=true;Input.parse_input_event(event)
     await process_frame;await process_frame
     event=InputEventKey.new();event.keycode=code;event.pressed=false;Input.parse_input_event(event)
@@ -47,6 +49,11 @@ func settle_field() -> Dictionary:
 func start_host() -> bool:
     root.size=Vector2i(1920,1080);host=load("res://Main.tscn").instantiate();root.add_child(host)
     await process_frame;await process_frame
+    if OS.get_environment("SF2_INSPECTION_START") != "":
+        var admission: String = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_INSPECTION_START"))
+        check(admission == "started", "controlled product-world admission: " + admission)
+        await process_frame; await process_frame
+    root.grab_focus()
     view=host.find_child("ExplorationSessionView",true,false)
     if view==null:
         visible_text("startup-diagnostic");check(false,"ordinary exploration host");return false
@@ -68,6 +75,95 @@ func buy(stock_index: int, member_index: int) -> void:
     check(paid.gold==before.gold-offer.Price,"exact payment and grant")
     picture("purchased");visible_text("result-text")
     await key(KEY_ENTER)
+func art(label: String) -> void:
+    await process_frame; await process_frame
+    var shop: Dictionary = field().shop
+    var original := OS.get_environment("SF2_MENU_ASSETS_EXPECT") == "original"
+    if int(shop.wait.Phase) == 0:
+        check(not shop.panelVisible and not shop.veilVisible, "freestanding shop diamond")
+        var menu: Dictionary = shop.services
+        check(menu.detailRect.x-menu.diamondRect.x-menu.diamondRect.width == 32, "visible world between diamond and explanation")
+        for i in 4:
+            var command: Dictionary = menu.commands[i]
+            check(command.id == ["Buy","Sell","Repair","Deals"][i] and command.enabled == (i<2), "source service slot/availability")
+            check(command.art.mounted == original, "explicit shop resource mode")
+            if original:
+                check(command.art.resource == "shop-menu."+command.id.to_lower()+(".selected" if command.selected else ".normal"), "actual source shop draw")
+    else:
+        for icon in shop.icons:
+            if not icon.visible: continue
+            check(icon.resource == icon.drawn and icon.texture != null, "actual shop item draw")
+            check(icon.width == 16 and icon.height == 24 and icon.scale == 4, "source item dimensions")
+    picture(label); visible_text(label+"-text")
+func pointer(rect: Dictionary) -> void:
+    var point := Vector2(rect.x+rect.width/2,rect.y+rect.height/2)
+    var event := InputEventMouseButton.new(); event.position=point;event.button_index=MOUSE_BUTTON_LEFT;event.pressed=true;Input.parse_input_event(event)
+    await process_frame;await process_frame
+    event=InputEventMouseButton.new();event.position=point;event.button_index=MOUSE_BUTTON_LEFT;event.pressed=false;Input.parse_input_event(event)
+    await process_frame;await process_frame
+func art_flow() -> void:
+    var baseline:=field()
+    if OS.get_environment("SF2_MENU_FAULT") == "1":
+        check(baseline.shop.error != null,"bad declared shop image is explicit")
+        await key(KEY_ENTER)
+        check(int(field().shop.wait.Phase)==0 and field().party==baseline.party,"bad image cannot dispatch Buy")
+        await key(KEY_ESCAPE);await settle_field()
+        check(not field().shop.visible,"bad image retains independent Leave")
+        picture("bad-shop-return");return
+    for direction in [KEY_UP,KEY_LEFT,KEY_RIGHT,KEY_DOWN]:
+        await key(direction); await art("service-"+str(direction))
+    for direction in [KEY_RIGHT,KEY_DOWN]:
+        await key(direction); await key(KEY_ENTER)
+        check(field().gold==baseline.gold and field().party==baseline.party and int(field().shop.wait.Phase)==0, "unavailable service preserves authority")
+        await art("unavailable-"+str(direction))
+    var rect: Dictionary=field().shop.services.commands[0].rect
+    var point:=Vector2(rect.x+rect.width/2,rect.y+rect.height/2)
+    var mouse:=InputEventMouseButton.new();mouse.position=point;mouse.button_index=MOUSE_BUTTON_LEFT;mouse.pressed=true;Input.parse_input_event(mouse);await process_frame;await process_frame
+    await key(KEY_F10);await key(KEY_ESCAPE)
+    mouse=InputEventMouseButton.new();mouse.position=point;mouse.button_index=MOUSE_BUTTON_LEFT;mouse.pressed=false;Input.parse_input_event(mouse);await process_frame;await process_frame
+    check(int(field().shop.wait.Phase)==0,"covered shop gesture cannot select")
+    await key(KEY_UP)
+    var held:=InputEventKey.new();held.keycode=KEY_Q if OS.get_environment("SF2_MENU_REMAPPED")=="1" else KEY_ENTER;held.pressed=true;Input.parse_input_event(held)
+    for frame in 20:await process_frame
+    check(int(field().shop.wait.Phase)==1,"held service Confirm never chooses a stock item")
+    held=InputEventKey.new();held.keycode=KEY_Q if OS.get_environment("SF2_MENU_REMAPPED")=="1" else KEY_ENTER;held.pressed=false;Input.parse_input_event(held);await process_frame;await process_frame
+    await art("stock")
+    if OS.get_environment("SF2_SHOP_CASE") == "weapon":
+        for i in 7:await key(KEY_DOWN)
+        check(field().shop.first>0,"weapon stock scrolls to independent Back")
+        await art("stock-scrolled")
+        for i in 7:await key(KEY_UP)
+    await key(KEY_DOWN);await art("stock-next")
+    await key(KEY_ENTER);await key(KEY_ENTER);await art("buy-offer")
+    check(int(field().shop.wait.Phase)==4, "real Buy confirmation")
+    await key(KEY_ESCAPE);check(int(field().shop.wait.Phase)==2, "confirmation returns to real recipient")
+    await key(KEY_ESCAPE);check(int(field().shop.wait.Phase)==1, "recipient returns to stock")
+    await key(KEY_ESCAPE);check(int(field().shop.wait.Phase)==0, "stock returns to services")
+    # Sell the real source equipped slot, then buy the first actual stock item with those proceeds.
+    await key(KEY_LEFT);await key(KEY_ENTER);await key(KEY_ENTER);await art("sale-slots")
+    await key(KEY_ENTER);await art("sale-offer")
+    var before:=field();var offer: Dictionary=before.shop.wait.Offer
+    check(int(before.shop.wait.Phase)==4 and offer.Slot==0, "actual sale slot0")
+    await key(KEY_ENTER)
+    check(int(field().shop.wait.Result)==1 and field().gold==before.gold+offer.Price, "real sale receipt")
+    await key(KEY_ENTER)
+    await key(KEY_UP);await key(KEY_ENTER);await key(KEY_ENTER);await key(KEY_ENTER)
+    before=field();offer=before.shop.wait.Offer;await art("purchase-offer")
+    await key(KEY_ENTER)
+    if before.gold >= offer.Price:
+        check(int(field().shop.wait.Result)==0 and field().gold==before.gold-offer.Price, "real purchase receipt")
+    else:
+        check(int(field().shop.wait.Result)==3 and field().gold==before.gold and field().party==before.party, "real insufficient-gold result preserves resources")
+    await key(KEY_ENTER);await process_frame;await process_frame
+    await pointer(field().shop.services.commands[0].rect)
+    check(int(field().shop.wait.Phase)==1, "pointer Buy enters actual stock")
+    await pointer(field().shop.icons[0].rect)
+    check(int(field().shop.wait.Phase)==2,"pointer on item image selects its actual stock row")
+    await key(KEY_ESCAPE);await key(KEY_ESCAPE)
+    await pointer(field().shop.services.backRect)
+    await settle_field()
+    check(field().wait==null and not field().shop.visible, "independent Leave restores source caller")
+    picture("art-field-return")
 func run() -> void:
     if not await start_host():finish();return
     var initial:=await settle_field()
@@ -77,13 +173,16 @@ func run() -> void:
     await key(KEY_ENTER);var menu:=await settle_field()
     if menu.is_empty():finish();return
     check(menu.wait=="ShopWait" and menu.shop.visible,"actual source caller opened shop")
+    if menu.wait != "ShopWait": picture("caller-failure");finish();return
     var item_case:=OS.get_environment("SF2_SHOP_CASE")!="weapon"
     check(menu.shop.wait.Definition.Stock==([0.0,1.0,3.0,4.0] if item_case else [57.0,72.0,73.0,33.0,85.0,86.0,103.0]),"real selected source inventory")
     picture("real-caller");visible_text("menu-text")
+    if OS.get_environment("SF2_SHOP_ART") == "1":
+        await art_flow();finish();return
     await buy(1 if item_case else 0,0)
     if item_case:await buy(2,1)
     # Sell the actual newly purchased slot, while retaining the source equipped first slot.
-    await key(KEY_DOWN);await key(KEY_ENTER);await key(KEY_ENTER);await key(KEY_DOWN);await key(KEY_ENTER)
+    await key(KEY_LEFT);await key(KEY_ENTER);await key(KEY_ENTER);await key(KEY_DOWN);await key(KEY_ENTER)
     var offered:=field();var offer: Dictionary=offered.shop.wait.Offer
     check(int(offered.shop.wait.Phase)==4 and offer.Slot==1,"actual held sale slot")
     picture("sale-offer");await key(KEY_ENTER)

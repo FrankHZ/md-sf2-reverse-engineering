@@ -46,30 +46,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal void ConfigureAssets(BattleSceneDefinition? content)
     {
         Icons.Configure(content?.Rasters);
-        if (content is null || !content.Rasters.Keys.Any(key => key.StartsWith("command-menu.", StringComparison.Ordinal)))
-        {
-            foreach (var command in Commands) command.SetArt(null, null);
-            return;
-        }
-        var textures = new List<ImageTexture>();
-        try
-        {
-            foreach (var command in Commands)
-                foreach (string state in new[] { "normal", "selected" })
-                {
-                    string key = $"command-menu.{command.Identity.ToLowerInvariant()}.{state}";
-                    if (!content.Rasters.TryGetValue(key, out var raster) || raster.Width != 24 || raster.Height != 24)
-                        throw new InvalidOperationException("command-menu-resource-required");
-                    using var image = raster.Format == "rgba8"
-                        ? Image.CreateFromData(24, 24, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
-                    if (raster.Format != "rgba8" && (image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok ||
-                        image.GetWidth() != 24 || image.GetHeight() != 24))
-                        throw new InvalidOperationException("command-menu-resource-invalid");
-                    textures.Add(ImageTexture.CreateFromImage(image));
-                }
-        }
-        catch { foreach (var texture in textures) texture.Dispose(); throw; }
-        for (int i = 0; i < Commands.Length; i++) Commands[i].SetArt(textures[i * 2], textures[i * 2 + 1]);
+        UI.MenuRasterTextures.Configure(Commands, content?.Rasters, "command-menu.", "command-menu");
     }
 
     public override void _Ready()

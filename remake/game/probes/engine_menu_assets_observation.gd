@@ -5,15 +5,21 @@ var mode := OS.get_environment("SF2_MENU_ASSETS_CASE")
 var expect_art := OS.get_environment("SF2_MENU_ASSETS_EXPECT") == "original"
 var back := KEY_ESCAPE
 
+func key(code: int) -> void:
+    if OS.get_environment("SF2_MENU_REMAPPED") == "1":
+        code = {KEY_UP:KEY_U,KEY_LEFT:KEY_K,KEY_RIGHT:KEY_L,KEY_DOWN:KEY_J,KEY_ENTER:KEY_Q,KEY_ESCAPE:KEY_B}.get(code,code)
+    await super.key(code)
+
 func record(label: String) -> void:
     var s := state()
     var row := {"label":label}
-    for k in ["sessionId", "revision", "map", "stage", "wait", "failure", "displayLocale", "fieldMenu", "church", "partyStatus", "menu", "party", "gold", "actors", "equipmentVisible", "equipmentText", "hudPanel"]:
+    for k in ["sessionId", "revision", "map", "stage", "wait", "failure", "displayLocale", "fieldMenu", "church", "inspection", "partyStatus", "menu", "party", "gold", "actors", "equipmentVisible", "equipmentText", "hudPanel"]:
         if s.has(k): row[k] = s[k]
     if s.has("entities"): row["player"] = player(s)
     samples.append(row)
 
 func diamond(menu: Dictionary, prefix: String, label: String) -> void:
+    var original := expect_art or prefix == "command-menu" and OS.get_environment("SF2_COMMAND_ART") == "original"
     check(menu.commands.size() == 4, label + ": four cardinal commands")
     for k in ["selection", "hint"]:
         if menu.has(k + "Rect"):
@@ -22,9 +28,9 @@ func diamond(menu: Dictionary, prefix: String, label: String) -> void:
             check(menu[k + "MinimumHeight"] <= rect.height+1, label + ": " + k + " text fits")
     for c in menu.commands:
         var a: Dictionary = c.art
-        check(a.mounted == expect_art, label + ": expected resource mode " + c.id)
+        check(a.mounted == original, label + ": expected resource mode " + c.id)
         check(c.rect.width == 96 and c.rect.height == 96, label + ": integral geometry")
-        if expect_art:
+        if original:
             check(a.resource == prefix + "." + c.id.to_lower() + (".selected" if c.selected else ".normal"), label + ": actual drawn resource " + c.id)
             check(a.width == 24 and a.height == 24 and a.scale == 4 and a.filter == "Nearest" and not a.extraFrame and not a.labelVisible, label + ": original raster projection")
         else:
@@ -52,7 +58,8 @@ func field() -> void:
     await key(KEY_RIGHT); await key(KEY_ENTER); await key(KEY_ENTER)
     record("field-item-operations")
     # Existing Item operations: Use, Give, Equip, Drop.
-    await key(KEY_DOWN); await key(KEY_DOWN); await key(KEY_ENTER)
+    await key(KEY_RIGHT); await key(KEY_ENTER)
+    check(state().partyStatus.preparation.stage == "equipment", "actual Equip consumer")
     record("field-equipment-consumer")
     for i in 4:
         if state().fieldMenu.visible: break
@@ -70,13 +77,74 @@ func battle() -> void:
     await key(KEY_LEFT); await key(KEY_ENTER)
     record("battle-magic-consumer")
     await key(back)
-    if state().menu.page == "Main":
+    if state().menu.page == "Main" and mode != "authored":
         await key(KEY_E)
         check(state().equipmentVisible and not state().menu.visible, "ordinary equipment opens above hidden command menu")
         record("battle-equipment-consumer"); await key(back)
     await key(back)
     record("battle-return")
     check(state().stage == "Movement", "battle menu returns to Movement")
+    if mode == "battle-continue": await options()
+
+func click(rect: Dictionary) -> void:
+    var point := Vector2(rect.x+rect.width/2,rect.y+rect.height/2)
+    var motion := InputEventMouseMotion.new();motion.position=point;motion.relative=Vector2(8,0);Input.parse_input_event(motion);await frames(2)
+    for pressed in [true,false]:
+        var event := InputEventMouseButton.new();event.position=point;event.button_index=MOUSE_BUTTON_LEFT;event.pressed=pressed;Input.parse_input_event(event);await frames(2)
+
+func options() -> void:
+    var before := state()
+    await key(back);await frames(4)
+    check(state().inspection.page == "Cursor", "Movement B enters actual inspection")
+    for step in 10:
+        var inspect: Dictionary = state().inspection
+        if not inspect.units.any(func(u):return u.Position == inspect.cursor):break
+        await key(KEY_RIGHT)
+    await key(KEY_ENTER);await frames(4)
+    check(state().inspection.page == "Options", "empty-ground actual caller")
+    for direction in [KEY_UP,KEY_LEFT,KEY_RIGHT,KEY_DOWN]:
+        await key(direction);await frames(4)
+        var menu: Dictionary = state().inspection.options
+        if OS.get_environment("SF2_MENU_FAULT") != "1": diamond(menu,"battlefield-menu","options-"+str(direction))
+        check(menu.commands.map(func(c):return c.id) == ["Member","Map","Speed","Quit"], "source semantic slots")
+        check(menu.detailRect.x-menu.diamondRect.x-menu.diamondRect.width == 32, "freestanding options world gap")
+    if OS.get_environment("SF2_MENU_FAULT") == "1":
+        check(state().inspection.optionsError != null,"bad declared battlefield image is explicit")
+        await key(KEY_ENTER);check(state().inspection.page == "Options","bad art cannot enter wrong caller")
+        await key(back);await key(back);check(state().stage == "Movement","bad art retains independent Back")
+        record("bad-options-return");return
+    # A gesture started beneath the host overlay must not execute on return.
+    var rect: Dictionary = state().inspection.options.commands[1].rect
+    var point := Vector2(rect.x+rect.width/2,rect.y+rect.height/2)
+    var mouse := InputEventMouseButton.new();mouse.position=point;mouse.button_index=MOUSE_BUTTON_LEFT;mouse.pressed=true;Input.parse_input_event(mouse);await frames(2)
+    await key(KEY_F10);await key(back)
+    mouse=InputEventMouseButton.new();mouse.position=point;mouse.button_index=MOUSE_BUTTON_LEFT;mouse.pressed=false;Input.parse_input_event(mouse);await frames(4)
+    check(state().inspection.page == "Options","covered pointer gesture cannot select")
+    await key(KEY_LEFT)
+    var held := InputEventKey.new();held.keycode=KEY_Q if OS.get_environment("SF2_MENU_REMAPPED")=="1" else KEY_ENTER;held.pressed=true;Input.parse_input_event(held);await frames(20)
+    check(state().inspection.page == "Map","held Confirm opens only the intended Map page")
+    held=InputEventKey.new();held.keycode=KEY_Q if OS.get_environment("SF2_MENU_REMAPPED")=="1" else KEY_ENTER;held.pressed=false;Input.parse_input_event(held);await frames(3)
+    check(state().inspection.page == "Map", "Left opens actual Map")
+    await key(back);check(state().inspection.optionIndex == 1,"Map returns to exact selected Options")
+    await key(KEY_UP);await key(KEY_ENTER);check(state().inspection.page == "Members","Up opens actual Member")
+    await key(KEY_ENTER);await frames(3);check(state().inspection.page == "MemberFull","Member opens live full sheet")
+    await key(back);await key(back);check(state().inspection.optionIndex == 0,"Member returns through real roster")
+    await key(KEY_RIGHT);await key(KEY_ENTER);await frames(4)
+    var settings := host.find_child("SettingsView",true,false)
+    check(settings != null,"Right opens existing Speed host")
+    await key(back);await frames(4);check(state().inspection.page == "Options" and state().inspection.optionIndex == 2,"Speed Cancel preserves caller/focus")
+    await key(KEY_DOWN);await key(KEY_ENTER)
+    if not await wait_panel("save-slots"):return
+    record("source-Quit-shared-save-slots")
+    await key(back);await frames(4);check(state().inspection.page == "Options" and state().inspection.optionIndex == 3,"Quit Cancel preserves caller/focus")
+    await click(state().inspection.options.commands[1].rect)
+    check(state().inspection.page == "Map","pointer selects same Map caller")
+    await key(back);await frames(3)
+    await click(state().inspection.options.backRect)
+    check(state().inspection.page == "Cursor","independent pointer Back returns to cursor")
+    await key(back);await frames(4)
+    check(not state().inspection.active and state().stage == "Movement" and state().actor == before.actor and state().revision == before.revision,"pure browsing returns to same actor/revision")
+    record("source-options-return")
 
 func player(s: Dictionary) -> Dictionary:
     for e in s.get("entities", []):
@@ -192,8 +260,10 @@ func run() -> void:
         if not await wait_field(): finish(); return
     elif mode == "invalid-scene":
         await key(KEY_ENTER); await key(KEY_E); await key(KEY_DOWN); await key(KEY_ENTER)
-        if not await wait_panel("continue-slots"): finish(); return
-        await key(KEY_ENTER)
+        for frame in 1200:
+            if panel().get("state") in ["continue-slots","error"]:break
+            await process_frame
+        if panel().get("state") == "continue-slots": await key(KEY_ENTER)
         if not await wait_panel("error"): finish(); return
         samples.append({"label":"partial-menu-refused", "panel":panel(), "persistence":persistence()})
         check(view == null, "partial private menu never mounts gameplay")
