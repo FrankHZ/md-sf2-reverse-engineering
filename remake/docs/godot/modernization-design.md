@@ -1,4 +1,11 @@
-# Local Services and Battle Overview
+# Modernization Design
+
+This page owns two separate proposals: local services/battle overview under #1543 below, and
+[held 1.5× exploration and battle acceleration](#held-15-acceleration-1619) under #1619.
+Their implementation and acceptance decisions remain separate. The
+[UI language](ui-design-language.md) and [scene review](ui-scene-review.md) own #1616's visual design.
+
+## Local services and battle overview (#1543)
 
 This is the design proposal for [#1543](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1543).
 **Standard rigor:** reduce repeated service travel and battlefield orientation work while keeping
@@ -249,7 +256,7 @@ the remaining candidates are deferred rather than a new implementation backlog.
 | 3 · Minimal contextual hints | Less visual noise across existing controls | Low if fees, errors and dangerous confirmations stay visible | Low/medium, limited screen group; existing help/remaps preserve discoverability | Existing #1544, already backlog; review its design later, no duplicate ticket |
 | Deferred · Camera locate from overview | Faster inspection of a known unit | Presentation only if focus is separated from gameplay selection | Medium: temporary focus and return; require pad/keyboard parity | Existing viewport owner; separate extension after read-only use is judged useful |
 | Deferred · Enemy threat overlay | Faster tactical comparison | Can reveal activation, ranges or AI intent; geometric range is not predicted AI action | Medium/high disclosure and terrain semantics; crowded for color/vision needs | Gameplay rules and movement-range owners; no full AI-plan display |
-| Deferred · Animation speed / broader skip | Shorter repetition | Completion/payment/story order must survive; cannot skip rules | Coupled lifecycle work; reuse Reduced Motion and existing supported skips first | Presentation/settings and session owners; no global speed system |
+| Separate · Held acceleration / broader skip | Shorter repetition | Completion/payment/story order must survive; cannot skip rules | [#1619's bounded clock/input design](#held-15-acceleration-1619) covers exploration and battle; broader skip remains deferred | Existing presentation/session owners; do not start from this #1543 recommendation |
 | Deferred · Bulk inventory organization | Fewer repeated slot operations | Changes custody/equipment, full-pack exchange and possibly sale economy | Medium/high transactional scope; preview/undo intent needs design | FieldInventory/Prepare owner; no batch sell or auto-equip |
 | Deferred · Route guidance | Easier navigation | Risks quest/spawn spoilers and replacing exploration | Medium content disclosure and accessible wayfinding | Campaign/content owners; no new quest tracker or auto-path |
 
@@ -258,9 +265,199 @@ accept an on-demand overview restricted to stable player selections or defer it.
 are near-town access and the restricted overview, with existing Save limits. Timing relative to the
 main story remains a scheduling decision, not authorization to start all three recommendations.
 
+## Held 1.5× acceleration (#1619)
+
+**Proposed, not implemented.** [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619)
+requires hold Shift for temporary 1.5× in both exploration and battle; release restores 1×.
+This is an intentional modern pacing feature. It is independent of original message Speed,
+text suppression, Reduced Flash and the existing battle-entry skip. No persistent toggle, rules
+change, universal skip or global appearance decision is included.
+
+**High rigor for this timing boundary:** inspection found mandatory HEAL work that advances RNG,
+frame-driven battle story service, independently processed camera/text, and waits requiring real
+audio completion. Retiming only movement or a parent delta would leave these consumers inconsistent.
+The staged contract below controls that concrete coupling; it needs no new timing framework or
+research acquisition. The earlier #1543 scope remains Standard. Independent design acceptance
+precedes implementation; future slices must declare serial ownership of shared input/host files.
+
+### Inspected baseline and ownership
+
+**Confirmed — accepted source structure at
+[`a480804eb16fe34249a2c8543da62734a9c4f271`](https://github.com/FrankHZ/md-sf2-reverse-engineering/commit/a480804eb16fe34249a2c8543da62734a9c4f271):**
+use `git show <commit>:<repository-relative path>` to reproduce this inspection. Linked source paths
+below are navigation to the same owners, not a claim that any future head has already passed.
+
+| Existing owner | Actual behavior and consequence |
+| --- | --- |
+| [GameInput](../../game/src/Input/GameInput.cs), [InputSettings](../../game/src/Input/InputSettings.cs) | No acceleration action. `Prepare` rejects Shift/Ctrl/Alt/Meta as keys, rejects duplicate bindings and limits each action to 32 events. `Resolve` uses exact event matching, fresh non-echo edges and pad/axis guards; `GameplayHeld` currently excludes only Wait. Adding Shift to a settings file alone fails and does not address Shift+direction matching or choice/entry-skip held-state consumers. |
+| [Exploration clock](../../game/src/Exploration/ExplorationSessionView.Clock.cs), [view](../../game/src/Exploration/ExplorationSessionView.cs), [movement hold](../../game/src/Input/ExplorationMovementHold.cs) | Ordinary 60 Hz service, max 4 steps/callback, fractional debt only; `WaitAtInput` at readiness or `AdvanceSimulation(token,1)` during motion. Successful held steps chain at completion, refused attempts back off 120 ms. Nonordinary automatic work uses the same view accumulator, currently with a 600-tick cap; text/choice Wait has its separate explicit input cadence. |
+| [ExplorationPresentation](../../game/src/Exploration/ExplorationPresentation.cs) | Uses elapsed delta for modern cues and camera; bound camera, motion, fades and nod readiness can instead be logical service. Real resource readiness and finite music are separate completion conditions. Ordinary camera projection must still occur after the last service, including a menu/scene boundary. |
+| [BattleSessionView](../../game/src/Battles/BattleSessionView.cs), [navigation](../../game/src/Battles/BattleSessionView.Navigation.cs) | Dispatches one active consumer per callback. Movement/appearance/retreat/scene receive delta; program story consumes without delta; automatic `AdvanceSimulation` is callback driven. Navigation uses real 120 ms deadlines and actual movement completion; actions/Confirm remain edge-only. |
+| [BattleSceneView](../../game/src/Battles/BattleSceneView.cs), [BattleStoryView](../../game/src/Battles/BattleStoryView.cs), [BattleMapViewport](../../game/src/Battles/BattleMapViewport.cs) | HEAL logical work can advance once per Consume; story TickWait once per callback. Story reveal and camera have their own `_Process` callbacks. Scaling only the parent's delta misses these. [HealingSceneCursor.Advance](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs) advances fairy work and shared seed. [GameSession](../../src/Sf2.Remake.Application/Runtime/GameSession.cs) rejects multi-tick ordinary battle commands: keep one existing legal command per opportunity. |
+| [SessionAudio](../../game/src/Audio/SessionAudio.cs), [BattleRetreatView](../../game/src/Battles/BattleRetreatView.cs) | Audio has actual playback/history/generation and pause ownership. Egress Effect requires both its elapsed minimum and the real cue ending. `ExplorationPresentation` checks finite music identity/completion; elapsed time alone cannot satisfy it. |
+| [GameRoot](../../game/src/GameRoot.cs), [WindowSupportHost](../../game/src/Entry/WindowSupportHost.cs) | Host modals disable gameplay views and pause session audio; `DisarmInput` and local focus/hide hooks protect resume. Acceleration must join those paths, including views disabled before another `_Process` can run. |
+
+Keep [ordinary exploration time/NPC/RNG](../application/session-and-programs.md#ordinary-exploration-clock-and-save-boundary),
+[successful-step continuity](../verification/field-programs.md#successful-step-continuity-1585) and
+[battle hold/mode isolation](presentation.md#battle-directional-hold-and-mode-isolation-1615)
+as the 1× behavioral baseline. These are remake contracts. Original source provenance and its timing
+Unknowns remain in those owners and the [battle source trace](battle-interaction-baseline.md#evidence-and-reproduction-boundary).
+No new original-game fidelity claim follows from acceleration.
+
+### One rate, explicit domains
+
+Recommend one transient held-rate decision in `GameInput`, sampled by the active view, with each
+view retaining its existing elapsed/debt responsibility. The inactive/prepared/retiring view gets
+no budget. Do not use `Engine.TimeScale`, multiply actor speeds, alter movement costs, change RNG,
+or inject key/Confirm/Wait events. No save field, new persistent setting or second simulation clock.
+
+| Domain | Proposed budget and boundary |
+| --- | --- |
+| Ordinary exploration | Feed `wallDelta × rate` into the existing 60 Hz clock. Service player motion, ordinary NPC actions/random walking, followers, standing/walking animation and bound view/scroll in their existing order. NPC time also accelerates while the player stands still with Shift held. The player alone never outruns the world clock. Preserve source per-tick motion speeds and animation increments. |
+| Autonomous field/story work | Scale existing TickWait/entity/nod/fade/view logical service and modern timed cues together. Keep program PC, callers, flag/payment/effect order, exact wait tokens and real asset readiness. Check the current owner after every result. This includes admitted automatic battle-entry/return work, but does not request entry skip or omit instructions. |
+| Battle | Scale player/automatic board movement, appearances, attack/spell/HEAL/death/status presentation, required automatic waits, round programs and automatic action continuation. Turn legality, AI decisions, turn order, ranges and costs stay in Application/Domain. A ready player selection never gains automatic actions. |
+| Reading and decisions | Keep text reveal at the chosen real characters/s, reading/scrolling, explicit dialogue/choice polls, Confirm/Cancel/shortcuts and menu/list/target navigation at 1×. Shift supplies no acknowledgement, choice, timed-input acceptance or text-suppression request. Required autonomous text work still executes; delivery and input gates retain their separate conditions. |
+| Camera | Gameplay travel/cue camera follows the same budget as its subject; bound camera readiness still comes from engine service. Inspection cursor, menu focus effects and pointer/UI animation use real time. Route independent camera `_Process` advancement through the owning view's budget; never advance the same WorldViewport twice. |
+| Audio | Keep sample rate, pitch and music playback rate unchanged. Cues still start once at their existing semantic events; their wall-time spacing can shorten. Existing fade envelopes may follow the accelerated visual fade, retaining cue/history order. A finite music/cue completion remains real; no synthetic Finished, generation replacement or skip disposition. |
+
+Battle needs a small scheduling correction before the feature can cover all these domains.
+Reuse the exploration policy locally: 60 Hz opportunities, cap 4 per callback, drop excess whole
+debt, no background timer. One scaled budget supplies both timed visual progress and mandatory
+logical service, once. Split reading from automatic consumption where a consumer currently mixes
+them. HEAL mandatory work, story TickWait and automatic continuation receive single legal service
+opportunities, not `Ticks > 1` or repeated player input. Stop a callback at a new wait/phase/input
+owner and discard its unused budget; re-read current state before further commands. Actual mount/
+draw acknowledgements still require their real frame. Do not loop through newly mounted phases
+using the old delta, or apply 1.5 again inside a child already given scaled time.
+
+This makes battle logical service independent of rendering frequency. At 60 FPS, 1× retains the
+existing one-opportunity cadence; at 30/120 FPS it replaces callback-dependent logical timing with
+the same 60 opportunities/s. That deliberate correction must preserve matched-work endpoints and
+1× control behavior before enabling 1.5×. It does not claim unchanged historical wall-time traces.
+Ordinary field and automatic script scheduling retain separate eligibility in the same accumulator;
+use the same bounded cap for the touched automatic path rather than carrying its 600-tick burst.
+Mandatory work is delayed, never discarded: only unused host time is dropped.
+
+Only committed battle Movement repetition shares the accelerated travel cadence (including its
+120 ms navigation delay measured in gameplay time); list/target/inspection repeats stay real 120 ms.
+Exploration successful steps still chain on completion without a new deadline; refused attempts
+keep real 120 ms backoff. Releasing a direction, late turning, rejection and mode changes retain
+their established guards. Holding Shift alone cannot submit a movement command.
+
+### Shift admission and lifetime
+
+Add a semantic `Accelerate` hold to `GameInput`, default logical Shift (both physical Shift keys).
+Allow Shift only for this action; retain the ban on modifier chords and Ctrl/Alt/Meta bindings.
+For ordinary gameplay key matching, ignore the acceleration Shift bit on a copy of the event;
+preserve other modifier checks and the real key/pressed/echo identity. Pressing Shift after a
+direction or a direction after Shift must both work; releasing Shift cannot clear the direction.
+Shift+Confirm remains one ordinary fresh Confirm. Acceleration edges update held state without
+returning a navigation/action command, so Shift press/release cannot clear an already held direction.
+Never mutate the received event or relax all bindings to nonexact matching as a shortcut. Check actual Godot matching in the adapter witness.
+
+Extend existing binding preparation/help rather than adding a parallel polling key table. Old
+format 1 preferences with no Accelerate entry get Shift without changing their custom controls.
+The new action is keyboard-accessible by default; explicitly permit its pad arrays to be empty,
+since current defaults already occupy every named pad button. Optional user-provided free pad/
+signed-axis bindings use the same uniqueness, 32-event limit and release/neutral guards. No default
+button is stolen and no Controls editor expansion is required. Exclude Accelerate from
+`GameplayHeld`, choice-entry raw-held input and entry-skip admission, while observing its own
+aggregate held/release state. Multiple bindings retain 1.5× until all are released.
+
+| Transition | Rate, input and debt disposition |
+| --- | --- |
+| Fresh Shift press in eligible focused gameplay | Arm 1.5×; preserve the in-flight move/phase's progress and token. Change only future elapsed budget; clear fractional host debt at the edge. Echo/repeated pad packets cannot re-arm or submit actions. |
+| Last acceleration binding released | Restore 1× immediately for subsequent service, discard debt; finish current motion/phase naturally. Another still-held Shift/pad binding retains1.5×. Direction can remain held and continue at 1×. |
+| Automatic wait/phase change within the same sequence | Keep a valid held request; discard old-consumer time. Preserve mandatory completion order, and do not credit the new consumer with old elapsed time. |
+| Dialogue/choice/result acknowledgement, service, Party, field Menu or battle inspection | Disarm acceleration and discard debt when the actual input boundary is reached. Mandatory autonomous work before that boundary still uses the active rate even if text is already visible; reveal stays 1×. After leaving require release/neutral and a new Shift edge. A battle command menu is an ordinary player selection, not a paused host modal: Shift may be armed there, but cannot speed its navigation or commit an action. |
+| Host Menu/Settings/Speed/Save/Quit, menu-entry settling | Disarm before pausing or settling; settling uses ordinary 1× and its existing 120-step budget. Cancel/return preserves reached gameplay state, clears debt and requires fresh activation. Do not restart Save settlement at 1.5×. |
+| Focus loss, hide, window recovery, pause/unpause, device removal or remap Apply | Disarm synchronously through existing host/local hooks; clear debt and held activation. Observe aggregate release/neutral before a new non-echo edge; regain-focus polling must not re-arm a still-held key or count elapsed background time. |
+| Map transfer, field↔battle ownership handoff, New Game/Continue, stopped failure or detach | Disarm old and new owner; no carried budget or held action. Ordinary actor progress and real completion tokens survive where their own contract permits. Failures stay stopped with the reached committed prefix. |
+
+Use an explicit acceleration release latch distinct from the general action release barrier:
+otherwise excluding Shift from `GameplayHeld` would allow stale holds to resume after a modal.
+Continue always starts at 1×; rate/host fractions are disposable and never alter save eligibility.
+The existing entry-skip request takes precedence while active and disarms held acceleration; do
+not multiply its bounded fast-forward work or change its audio delivery dispositions.
+
+### Message Speed 1–4 is a different control
+
+The existing [Speed transaction](presentation.md#battle-speed-and-selective-messages-1650) already
+implements source selector 0–3 with modern reveal presets 15/30/60 cps and instant. The four levels
+sometimes called “Speed 1–4” are currently labelled 0–3 by `SettingsView` and both locale catalogs;
+this feature does not rename them. Custom cps, selective ordinary hit/coin suppression and Apply/Back
+persistence remain owned there. Those presets are not simulation multipliers and their mapping is not original VInt
+equivalence. Held 1.5× neither edits nor multiplies them: the first level (label 0) at 15 cps still
+reveals at 15 cps; the fourth (label 3) remains instant and still waits for any required fresh
+acknowledgement. Source textSettings and mandatory script/HEAL work are not rewritten to a different messageSpeed to accelerate them.
+General Settings remains unavailable during battle; the accepted inspection → Options → Speed
+caller pauses and disarms acceleration like its current host modal. Use existing Controls help
+for the Shift hold and release/reset rule; no new permanent toolbar, visual language or settings row.
+
+### Determinism, rhythm and staged implementation
+
+For the same initial content/state/seeds and legal actions at the same logical service boundaries,
+compare positions/collision, NPC/follower state, program PCs/waits/flags, action order/targets,
+HP/MP/status/inventory/gold/EXP and main/thinking seeds. Keep every mandatory service and its RNG
+draw in order, including HEAL fairy work and accepting-input-before-wait semantics. Acceleration
+adds no draw per action and changes no damage/resource rule. Equal real hold durations intentionally
+travel farther and give NPCs more simulation opportunities; they can therefore produce different
+seeds, collisions and later outcomes. Actions alone without their intervening time are insufficient
+for a determinism claim. Do not freeze NPCs, reseed, or split their RNG to hide this distinction.
+
+**Inferred design target:** eligible uninterrupted time takes approximately two-thirds of its 1×
+wall duration. For example, a modern 0.20 s battle step targets 0.133 s; an authored 60-tick autonomous
+wait targets 0.667 s. Whole encounters include reading, input, mount frames and real audio, so need
+not meet that ratio. At 30/60/120 FPS, compare equal logical endpoints and allow one callback plus
+one 60 Hz step of quantization per retained consumer boundary. A stall deliberately slows progress
+after the cap; it never yields a compensating burst. Original timing and human comfort stay Unknown.
+
+Each future row is a separately reviewed slice, not authorization to edit all listed files now.
+Path prefixes in backticks are repository-relative and exact; proposed new files are marked new.
+Application/Domain/Content remain read-only dependencies unless a concrete semantic failure is
+demonstrated and separately scoped. Implementation must update its existing acceptance owners.
+
+| Slice and dependency | Exact code paths | Acceptance and stopping boundary |
+| --- | --- | --- |
+| A · Shared input and exploration, after design acceptance | `remake/game/src/Input/GameInput.cs`, `remake/game/src/Input/InputSettings.cs`, `remake/game/src/Input/ExplorationMovementHold.cs`, `remake/game/src/Exploration/ExplorationSessionView.cs`, `remake/game/src/Exploration/ExplorationSessionView.Clock.cs`, `remake/game/src/Exploration/ExplorationPresentation.cs`, `remake/game/src/GameRoot.cs`, `remake/game/src/Entry/WindowSupportHost.cs`, `remake/game/src/Entry/SettingsHost.cs`; help `remake/game/src/UI/ControlsHelpView.cs`, `remake/game/src/Localization/GameText.cs`, `remake/game/localization/en.po`, `remake/game/localization/zh_CN.po` | Actual field movement/standing NPC/shared seed, autonomous wait/camera/fade, Shift event order, release and modal/transfer reset. Old binding files and custom pad controls still load. Keep battle acceleration disabled until B; A alone does not satisfy #1619. |
+| B · Complete battle clock, after A and its 1× review | `remake/game/src/Battles/BattleSessionView.cs`, `remake/game/src/Battles/BattleSessionView.Navigation.cs`, new `remake/game/src/Battles/BattleSessionView.Clock.cs`, `remake/game/src/Battles/BattleSceneView.cs`, `remake/game/src/Battles/BattleStoryView.cs`, `remake/game/src/Battles/BattleMapViewport.cs`, `remake/game/src/Battles/BattleRetreatView.cs`, `remake/game/src/Battles/BattleAppearanceView.cs`, `remake/game/src/Battles/BattleGiveView.cs`, `remake/game/src/Battles/BattleDiscardView.cs`, `remake/game/src/Battles/BattleSearchView.cs` | Route mixed and independent callbacks through one active battle budget; keep transaction/result reveal unscaled. First prove 1× results/control and 30/60/120 FPS logical scheduling, then 1.5× movement/automatic attack/HEAL/story/death/return and no double delivery. New partial holds battle scheduling, not a generic scheduler. Stop with both domains delivered; no further campaign admission. |
+| C · Integrated finite acceptance, after B | Existing consumers above; `remake/game/src/Audio/SessionAudio.cs`, `remake/game/src/Audio/SessionAudio.EntrySkip.cs` and `remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationMusicRunner.cs` are inspection dependencies, not planned rewrites. Behavior assertions, only if engine semantics change: `remake/tests/Sf2.Remake.Engine.Tests/OrdinaryFieldTimeTests.cs`, `remake/tests/Sf2.Remake.Engine.Tests/ExplorationSessionTests.OrdinaryTime.cs` | Connected field→Battle01→field reset; Speed 1–4/custom and suppression unchanged; finite music/Egress cue ends naturally at normal pitch, pause/resume and entry skip remain separate. Read actual state/input/projection/errors. No all-route replay or new audio engine. |
+
+The help-file names and every existing candidate must be checked again against accepted main at
+dispatch; serialize these paths with ongoing input, Speed and #1616 composition work. Keep new/
+extracted source below 1,000 lines; extract only the touched timing responsibility if needed.
+
+Use the existing [ordinary-clock native recipe](../development-and-verification.md#native-reproduction),
+the [field continuity witness](../verification/field-programs.md#successful-step-continuity-1585),
+and actual authored `remake/content/authored/stone-court.json` battle plus an already admitted HEAL/
+story/finite-audio consumer. Add only the missing short input/transition observations to their
+existing observers. If a selected example lacks a required wait, use a small ignored authored
+variant using admitted instructions; do not expand original-game acquisition or import a route.
+Compare matched tick/action endpoints, not snapshots at equal real seconds. Include blocked moves,
+late turns, both Shift keys, Shift-before/after-direction, held Confirm, stale completion, phase
+handoff, low-FPS cap, physical focus return and Save/Continue starting at 1×. Read pitch/playback and
+cue completion directly; a shorter visual duration is not proof that audio finished.
+
+Future code checks use `uv run sf2 verify adapter`, affected existing engine behavior assertions
+and `uv run sf2 verify engine` when engine behavior changes, plus committed planner/selected CI.
+Do not add unit tests of adapter observers, schedulers-as-test-tools or reports. A design PR uses
+only direct checks below. Reuse the owned registered installation/project/debug instance for any
+later actual observation; no screenshot or restart is implied by this design.
+
+Bound the future pilot to one field segment and a finite set of battle phases, serially, at most
+30 s per case. Record semantic transitions and coarse endpoint timing, not per-frame world JSON.
+Budget at most 20 cases, 100 KiB/case and 2 MiB total new reports, no duplicated world/assets and no
+network/model acquisition. Input/world memory stays at existing consumer scale; additional clock
+state is O(1), service work is O(due opportunities × existing step cost), capped 4 per callback.
+Stop/replan if a case needs more time/records, any output exceeds its cap, or a required seam cannot
+be reached with admitted content; missing observations remain explicit. The pilot does not authorize
+cleanup of retained evidence or another instance. Subjective comfort, exact original natural timing,
+all-device behavior and existing unrelated shutdown warnings remain **Unknown**. No observation or
+implementation acceptance in this section has yet passed.
+
 ## Design-task verification
 
-This task changes only this owner and short navigation/status in presentation and opening UI gaps.
+The #1619 design task changes only this owner; source, runtime and other design owners are read-only.
 Acceptance is source-chain review, local Markdown target/anchor and scope checks, `git diff --check`,
 the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`, and actual scoped CI.
 Load the owning ignored input configuration for the planner as required by the repository. No SDK,
