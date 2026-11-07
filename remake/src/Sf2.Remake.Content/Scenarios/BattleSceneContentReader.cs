@@ -30,6 +30,8 @@ internal static class BattleSceneContentReader
         var rasters = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
         foreach (var row in root.GetProperty("rasters").EnumerateObject())
             Require(rasters.TryAdd(row.Name, ExplorationAssetReader.Raster(row.Value)), "scene-duplicate-resource", "battleScenes.rasters");
+        IdentityIconReader.Validate(rasters);
+        IdentityIconReader.Bindings(rasters, definitions);
         string background = Text(root, "background"), ground = Text(root, "ground");
         Require(rasters.ContainsKey(background) && rasters.ContainsKey(ground), "scene-background", "battleScenes.rasters");
         var allies = new Dictionary<BattleClassRule, BattleSceneActorVisual>();

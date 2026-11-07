@@ -67,6 +67,7 @@ public sealed partial class BattleSessionView : Control
     private BattleDefinition? _mapDefinition;
     private BattleSceneDefinition? _mapScenes;
     private readonly UI.StoryDialoguePanel _hud = new() { Name = "AuxiliaryHud" };
+    private readonly UI.IdentityIcon _equipmentIcon = new() { Name = "EquipmentIcon" };
     private Rect2 _hudSubject;
     private string _battleHelp = "";
     private BattleSceneView _scene = null!;
@@ -92,7 +93,7 @@ public sealed partial class BattleSessionView : Control
         { _hudSubject = rectangle; _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle); };
         AddChild(_map);
         var ui = UI.PresentationCanvas.Mount(this, "BattleUi", UI.PresentationCanvas.Battle);
-        ui.AddChild(_hud); _hud.Choices.Hide();
+        ui.AddChild(_hud); _hud.AddChild(_equipmentIcon); _hud.Choices.Hide();
         _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
         ui.AddChild(_menu);
         _scene = new BattleSceneView { Name = "BattleScene", PresentationRoot = ui }; AddChild(_scene);
@@ -179,7 +180,7 @@ public sealed partial class BattleSessionView : Control
             try
             {
                 _map.Build(result.Snapshot.Battle.Definition, session.Definition);
-                _menu.ConfigureAssets(session.ActiveBattleScenes);
+                _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
                 _menu.Reset();
             }
             catch (InvalidOperationException error)
@@ -486,7 +487,11 @@ public sealed partial class BattleSessionView : Control
             _equipment + "\n" + _spells + "\n" + _items);
         if (_hud.Body.Text != body) { _hud.Body.Text = body; _hud.ResetReading(); }
         bool hudVisible = !_menu.Visible && selection is not null;
-        _hud.Present(hudVisible, false, false, _hudSubject, _help, lifetimeOpen: hudVisible);
+        _hud.Present(hudVisible, equipment, false, _hudSubject, _help, lifetimeOpen: hudVisible);
+        var selectedEquipment = equipmentChoices.FirstOrDefault(choice => choice.Slot == selection?.EquipmentSlot);
+        string? equipmentIdentity = !equipment || selectedEquipment is null ? null : selectedEquipment.Slot == 4
+            ? UI.IdentityIcons.Unarmed : UI.IdentityIcons.Item(currentActor!.SourceLoadout!.Items[selectedEquipment.Slot]);
+        _equipmentIcon.Present(_menu.Icons, equipmentIdentity, true); _equipmentIcon.Position = new(24, 24); _equipmentIcon.Size = new(64, 96);
         _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help);
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
         // Map children have their own Z priorities; a later sibling's black backdrop
@@ -583,6 +588,7 @@ public sealed partial class BattleSessionView : Control
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
             search = _search.Observe(), searchChests = current?.Battle.Definition.Search?.Chests.Select(c => new { x = c.Position.X, y = c.Position.Y, flag = c.Flag, opened = current.Story.Flags.Contains(c.Flag) }), discard = _discard.Observe(), discardMenu = _discardMenu, custody = current?.Battle.ItemCustody,
             give = _give.Observe(), giveMenu = _giveMenu, returnSlot = current?.Selection?.ReturnSlot,
+            equipmentIcon = _equipmentIcon.Observe(),
             equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment, equipmentVisible = _hud.IsVisibleInTree() && current?.Selection?.Stage == BattleSelectionStage.EquipmentChoice,
             equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,
                 attack = a.Attack, equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),

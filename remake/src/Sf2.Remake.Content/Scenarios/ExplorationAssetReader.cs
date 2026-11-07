@@ -12,7 +12,7 @@ internal static class ExplorationAssetReader
 {
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu");
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -121,7 +121,7 @@ internal static class ExplorationAssetReader
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
             churchMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(churchMenu),
-            fieldMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(fieldMenu));
+            fieldMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(fieldMenu), IdentityIconReader.Read(row));
     }
 
     private static IReadOnlyList<PortraitTileChange>? PortraitChanges(JsonElement portrait, string key)

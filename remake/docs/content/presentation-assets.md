@@ -180,13 +180,13 @@ original animation cadence or human visual acceptance.
 | Field Member/Magic/Item/Search: `tiles_MainMenu` ROM0x29A02, `menutilespointertable.asm` packed0x85010204, indices5/1/2/4 | `remake_command_menu --menu all`; `world.presentation.fieldMenu` → `ExplorationAssetReader` → `FieldMenuView` → `DiamondCommandButton` | **Confirmed** ordinary New Game drawing, both states, English/Chinese and parent returns. |
 | Battle Attack/Magic/Item/Stay: same source, packed0x80010203, indices0/1/2/3 | `scene.rasters.command-menu.*` → existing scene admission → `BattleMenuLayout` → shared button | **Confirmed** ordinary title Continue drawing on an admitted battle, both states and English/Chinese. All seven prepared scene collections contain the same complete set; this is not seven native battle observations. The authored/controlled chest Search caption still deliberately suppresses Stay art; its original index4 variant is not claimed by this repair. Battles01–07 have no admitted in-region chest candidate. |
 | Church Raise/Cure/Promo./Save: `tiles_ChurchMenu` ROM0x2B072, four sequential icons | `world.presentation.churchMenu` → existing admission → `ChurchServiceView` → shared button | **Confirmed** ordinary New Game, real Map3 stairs/walk/priest, normal/selected/unavailable/return. |
-| Spell and item identity icons: `data/graphics/icons/entries.asm`, `ItemIconNNN`, `OtherIconNNN`, `SpellIconNNN`, `p_Icons`;192 bytes per16×24 icon | Existing `texture_extract.extract_icons`, verified source reader, base palette and tile renderer. `loadhighlightableicon.asm` masks item index with0x7F; spell index with0x3F then adds130; empty spell uses icon127. Selected art is an AND overlay from `tiles_IconHighlight`, not a second stored image. | [#1667](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1667): add bounded validated bindings and actual consumers in `BattleMenuLayout` spell/item rows, `BattleSessionView` equipment HUD and `FieldActionView` magic/use/equipment rows. Current ordinary entries are text; no icon admission for these lists is implied by the diamond pack. Reuse extraction rather than drawing replacements or introducing a parallel asset repository. |
-| Spell level: `code/common/menus/magicmenu.asm:SelectSpellLevel`, `tiles_TextHighlight`; equipment: `equipmenu.asm:BuildBattleEquipWindow`, `itemmenu.asm` | Level text/selector and item icon are distinct source operands. Current localized text retains actual level/cost/slot and rules. | #1667 must bind the icon by semantic spell/item ID and retain modern localized level/description text. No separate per-level picture is established by this source; exact original border/window presentation remains outside this ticket. |
-| Item operations Use/Give/Equip/Drop: `tiles_ItemMenu` ROM0x2A9C2; `pt_ItemMenuNames` gives source order. Member sheet: `memberscreen.asm:BuildMemberStatusWindow` loads spell/item icons and broken-item overlays. | Shared diamond decoder/palette for operation icons, `extract_icons` for individual slots. Current `FieldActionView`, `BattleGiveView`, `BattleDiscardView` and shared `PartyDetailsPanel` use text rows. | [#1668](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1668) consumes #1667's item/spell bindings for Member/inventory/Give/Drop; operation icons need their own small admitted set, not `command-menu.item` as a substitute. Broken overlay/current unsupported item states stay explicit. |
+| Spell and item identity icons: `data/graphics/icons/entries.asm`, `ItemIconNNN`, `OtherIconNNN`, `SpellIconNNN`, `p_Icons`;192 bytes per16×24 icon | Existing `texture_extract.extract_icons`, verified source reader, base palette and tile renderer. `loadhighlightableicon.asm` masks item index with0x7F; spell index with0x3F then adds130; empty spell uses icon127. Selected art is an AND overlay from `tiles_IconHighlight`, not a second stored image. | [#1667](#spell-and-item-identity-art-1667) publishes bounded validated bindings consumed by `BattleMenuLayout` spell/item rows, `BattleSessionView` equipment HUD and `FieldActionView` magic/use/equipment rows. The earlier diamond-only pack remains a distinct optional text mode for these lists. |
+| Spell level: `code/common/menus/magicmenu.asm:SelectSpellLevel`, `tiles_TextHighlight`; equipment: `equipmenu.asm:BuildBattleEquipWindow`, `itemmenu.asm` | Level text/selector and item icon are distinct source operands. Current localized text retains actual level/cost/slot and rules. | #1667 binds semantic spell/item IDs and retains localized level/cost/description text. No separate per-level picture is established by this source; exact original border/window presentation remains outside this ticket. |
+| Item operations Use/Give/Equip/Drop: `tiles_ItemMenu` ROM0x2A9C2; `pt_ItemMenuNames` gives source order. Member sheet: `memberscreen.asm:BuildMemberStatusWindow` loads spell/item icons and broken-item overlays. | Shared diamond decoder/palette for operation icons, `extract_icons` for individual slots. `FieldActionView` Use/Equip consumes identity art; Give/Drop, `BattleGiveView`, `BattleDiscardView` and shared `PartyDetailsPanel` retain text rows. | [#1668](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1668) consumes #1667's item/spell bindings for Member/inventory/Give/Drop; operation icons need their own small admitted set, not `command-menu.item` as a substitute. Broken overlay/current unsupported item states stay explicit. |
 | Shop Buy/Sell/Repair/Deals: `tiles_ShopMenu` ROM0x2B418, `pt_ShopMenuNames`. Empty-ground Member/Map/Speed/Quit: `tiles_BattleFieldMenu` ROM0x2ACF6, `pt_BattlefieldMenuNames`. | Existing stack decoder, verified source, palette and 3×3 half renderer; current `ShopServiceView` and `BattleInspectionView` use text choices. Goods use the same individual item icon family. | [#1669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1669) owns new service/options consumers and bindings, preserving their current return/selection authority. Modern Map drawing, HP/MP gauges, panel chrome and Chinese font are accepted separate choices, not missing original menu assets. |
 
-The inventory is finite: sources, admission seams and actual consumers are named; downstream icon
-rendering is **not implemented** here. Native entry/return coverage and static source facts are
+The inventory is finite: sources, admission seams and actual consumers are named. #1667 implements
+the spell/Use/Equip subset; Member/Give/Drop and shop/options art remain #1668/#1669. Native entry/return coverage and static source facts are
 separate from the **Unknown** original natural/cadence/pixel parity and human/aesthetic approval.
 
 ## Private Command Menu Icons
@@ -394,3 +394,50 @@ bounded observation reused one126,677,125-byte private publication and tiny auth
 with O(input bytes) time/space, <3GiB assumed peak memory and <1GiB scratch. Existing private data
 and listing remained read-only. No full asset export, network acquisition or comparison pipeline
 was added. Replan for new dependencies, escaping paths or measured volume/memory above that budget.
+
+## Spell and item identity art (#1667)
+
+**Standard rigor:** add original identity art to the existing battle Magic/Item/Equip and exploration
+Magic/Use/Equip choices. Preserve gameplay, localization, confirmation, return and 96px world scale.
+Member/Give/Drop, operation diamonds, shops/options, broken overlays, full UI reproduction and human
+visual approval are outside this slice. Acceptance separates ordinary functional access/return,
+actual admitted texture drawing, and human experience.
+
+`remake_command_menu --menu all --identity-icons` extends the existing one-publication command above.
+`remake_identity_icons` reuses the verified source reader, `extract_icons`' base-palette/2×3 tile
+renderer and the existing raster format. It resolves source `ITEM_…`/`SPELL_…` enums, validates assembled
+entry order, accepted H1 table/pointer/palette addresses and present split-payload parity. The selected
+frame is the original 192-byte icon AND `tiles_IconHighlight`. `magicmenulayout.asm` places tiles1/2,
+3/4,5/6 in rows; there is no invented corner cleanup, separate level art or unavailable-state artwork.
+
+The finite player catalog is items0/1/3/4/33/56/57/71/72/73/85/86/103/123/127 (initial seven-member
+gear, admitted supplies/stock/Mithril and empty); spells0/2/6/10/11/14 (HEAL/DETOX/DISPEL/EGRESS/BLAZE/BLAST);
+and source `ICON_UNARMED`128. Enemy-only Wooden Arrow45 is not required by these player consumers.
+Only already admitted capabilities are displayed; resource membership never grants an action.
+Each base spell ID has one pair for all offered levels. The source's physical spell16–18 storage
+collisions are excluded. Empty spell slots have no selectable row; empty item127 and Unarmed128 keep
+their distinct source identities. Item equipped flags are masked with127, and live slot order remains
+independent of image identity, duplicate items, translated names and action availability.
+
+World `presentation.identityIcons` and every selected battle scene's `rasters` carry
+`identity-icon.item.<id>.normal/selected`, `identity-icon.spell.<base-id>.normal/selected`, and
+`identity-icon.other.128.normal/selected`. `IdentityIconReader` checks canonical keys, dimensions,
+pairs and bindings for the admitted player classes/items and supported spells; existing raster
+admission checks bytes/digests. A declared partial pair, missing required complete pair or wrong index
+is a ContentError. Absence of the entire optional namespace preserves legacy/private or public
+`unmounted-text` presentation; it does not report bound art. New ordinary publication selects both
+world and scene, as before. No asset payload or additional repository is vendored.
+
+`IdentityIcons` alone creates/disposes identity textures; rows and the equipment HUD borrow them.
+The battle menu shares its owner with equipment. Field preparation retains its own owner for its
+view lifetime. `IdentityIcon` draws16×24 at integral4×/Nearest without tinting source pixels. Text
+independently marks focus/availability and retains localized names, slot, level, MP and ATT/range.
+An unexpected runtime binding miss produces an explicit error marker/observation with usable Back,
+rather than throwing from a row or silently counting a placeholder as bound art. The current Content
+checks normally reject that condition before mounting.
+
+Reuse the #1666 publication read-only as input. One complete output is about149MB;44 raw icon rasters
+add67,584 bytes per collection (one world and seven scene collections), about721KB base64 before JSON
+metadata. Work stays O(input plus declared dependencies), with the existing<3GiB assumed process and
+1GiB scratch budgets. Do not publish separate worlds per language/case. Native/resource acceptance and
+its independent presenter limitation are in the [presentation owner](../godot/presentation.md#identity-art-acceptance-1667).

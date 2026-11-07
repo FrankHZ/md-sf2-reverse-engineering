@@ -185,7 +185,8 @@ observer attempt. None is relabeled as a passing run. Some exits retain2–4 Obj
 work does not establish leak-free shutdown.
 
 **Unknown:** human aesthetic/readability approval, physical OS-device/focus behavior, original
-natural route/timing/pixel parity, and downstream list art until #1667–#1669. No screenshot, full
+natural route/timing/pixel parity. Downstream Member/Give/Drop and shop/options art remain #1668/#1669;
+#1667 identity consumers have their separate acceptance below. No screenshot, full
 campaign run or original emulator observation is claimed. The contextual authored chest Search
 caption remains a text override; the ordinary admitted Battles01–07 do not expose that variant.
 
@@ -2632,3 +2633,35 @@ continuation, use the established session-result/audio/lifecycle consumer. Save 
 waits for real settled caller return before the existing slot menu opens. Replacement discards old
 service/save intent. These are bounded modern controls, not original menu layout, timing, service
 music, exhausted-sprite or human aesthetic parity. [Policy and acceptance](../application/opening-session-lifecycle.md#implemented-opening-church).
+
+## Identity art acceptance (#1667)
+
+Battle Magic/Item lists, the current Equip HUD, and exploration Magic/Use/Equip rows consume the
+[bounded source identity pairs](../content/presentation-assets.md#spell-and-item-identity-art-1667).
+This is the Standard resource-consumer slice; current gameplay/confirmation rules and modern
+localized level/cost/equipment text stay authoritative. Public authored inputs and older private
+packs without this optional namespace retain explicit text mode. Declared bundles reject missing/invalid bindings through Content; preparation rejects conflicting
+source resources. A defensive runtime marker or typed decoding error preserves navigation.
+Member/inventory/Give/Drop and shop/options art remain #1668/#1669. This does not complete those tickets.
+
+**Confirmed functional/resource boundary:** ordinary title New Game exercises field Magic/Use/Equip
+and their parent returns; fresh title Continue exercises battle Magic/Item/Equip and returns to the
+same Movement boundary. English and zh-CN use the same publication. Chinese observations select the
+actual #1602 world and entry display catalogs, including source item/spell names. Held opening Confirm
+cannot submit the field child confirmation. Availability and localized explanations remain distinct
+from original normal/AND-selected pixels. Equipment covers the command menu; its16×24 image is64×96
+beside the existing preview text. The world remains1920×1080 with96px cells.
+
+`probes/engine_identity_icons_observation.gd` extends the ordinary menu observer. Read-only projection
+records resource keys, actual ImageTexture instance IDs,4×/Nearest geometry, focus/visibility and
+errors. Only the explicit probe pixel observation reads native texture bytes/digests; ordinary host
+state reads do not. Compare those explicit digests with the publisher's source receipt.
+Its independent `IdentityIconsObservation.cs` directly composes the actual `BattleCommandMenu` with
+an admitted controlled private party for multi-level/duplicate-slot coverage; that diagnostic omits
+the battlefield renderer and is not ordinary campaign reach. No screenshot or active state setter is
+used. Missing half-pair/full-pair, bad index/digest, legacy absence and public authored fallback are
+separate direct observations, not tests of the probe itself.
+
+**Unknown:** original natural reach, original timing/window/pixel parity, physical input-device focus,
+and human/aesthetic approval. Existing and observed ObjectDB shutdown warnings retain their recorded
+limits. Human visual acceptance remains #1456/#1616 and is not signed by engineering evidence.
