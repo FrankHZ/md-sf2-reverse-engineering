@@ -1,0 +1,423 @@
+using Godot;
+using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.GodotAdapter.Localization;
+using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.UI;
+
+namespace Sf2.Remake.GodotAdapter.Previews;
+
+public partial class DesignPreview : Control
+{
+    private enum Page { Root, Question, Reply, Quote, Result, Spells, Items, Target, Stay }
+    private readonly PreviewStage _stage = new() { Name = "Artwork", Size = new(1920, 1080) };
+    private readonly List<Choice> _choices = [];
+    private Control _surface = null!;
+    private Label? _detail;
+    private StoryDialoguePanel? _dialogue;
+    private readonly MenuPointer _readerPointer = new();
+    private Page _page, _targetParent;
+    private int _scene, _focus, _rootFocus, _offer, _target;
+    private bool _english, _horizontal;
+    private string _result = "";
+    private sealed record Choice(Button Hit, Label Name, TextureRect Art, string? Key, bool Enabled, string Reason);
+    private string T(string zh, string en) => _english ? en : zh;
+
+    public override void _Ready()
+    {
+        GetWindow().Title = "SF2 · Design system preview";
+        GameText.Initialize("zh-CN");
+        Theme = StoryTheme.Create();
+        AddChild(_stage);
+        _stage.LoadSelection();
+        Render();
+    }
+
+    private static StyleBoxFlat Box(string fill, string edge, int border = 2)
+    {
+        var style = new StyleBoxFlat { BgColor = new Color(fill), BorderColor = new Color(edge) };
+        style.SetBorderWidthAll(border);
+        return style;
+    }
+
+    private static TNode Put<TNode>(Control parent, TNode child, Rect2 rect) where TNode : Control
+    {
+        child.Position = rect.Position;
+        child.Size = rect.Size;
+        parent.AddChild(child);
+        return child;
+    }
+
+    private Panel Panel(Rect2 rect, bool quiet = false)
+    {
+        var panel = Put(_surface, new Panel { MouseFilter = MouseFilterEnum.Ignore }, rect);
+        if (quiet) panel.AddThemeStyleboxOverride("panel", Box("111d30f5", "53637a", 1));
+        return panel;
+    }
+
+    private static Label Text(Control parent, Rect2 rect, string value, int size, string color = "f4f5fc")
+    {
+        var label = new Label
+        {
+            Text = value,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore
+        };
+        label.AddThemeFontSizeOverride("font_size", size);
+        label.AddThemeColorOverride("font_color", new Color(color));
+        return Put(parent, label, rect);
+    }
+
+    private Button Utility(Rect2 rect, string label, Action action, bool active = false)
+    {
+        var button = Put(_surface, new Button { Text = label, FocusMode = FocusModeEnum.None }, rect);
+        button.AddThemeFontSizeOverride("font_size", 22);
+        button.AddThemeStyleboxOverride("normal", Box(active ? "2c4158" : "16243a", active ? "ffe19a" : "53637a", 1));
+        button.AddThemeStyleboxOverride("hover", Box("304761", "ffe19a", 1));
+        button.Pressed += action;
+        return button;
+    }
+
+    private void ChooseScene(int scene)
+    {
+        _scene = scene;
+        _page = Page.Root;
+        _focus = _rootFocus = _offer = _target = 0;
+        Render();
+    }
+
+    private void ToggleLanguage()
+    {
+        _english = !_english;
+        GameText.Initialize(_english ? "en" : "zh-CN");
+        Render();
+    }
+
+    private void Show(Page page, int focus = 0)
+    {
+        _page = page;
+        _focus = focus;
+        Render();
+    }
+
+    private void Render()
+    {
+        _readerPointer.Cancel();
+        if (_surface is not null) { RemoveChild(_surface); _surface.QueueFree(); }
+        _surface = new Control { Name = "PreviewControls", Size = new(1920, 1080), MouseFilter = MouseFilterEnum.Ignore };
+        AddChild(_surface);
+        _choices.Clear();
+        _detail = null;
+        _dialogue = null;
+        _horizontal = false;
+        _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1);
+        switch (_scene)
+        {
+            case 0: Entry(); break;
+            case 1: Dialogue(); break;
+            case 2: Church(); break;
+            case 3: Battle(); break;
+        }
+        Panel(new(0, 0, 1920, 72), true);
+        Text(_surface, new(30, 6, 315, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
+        string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle")];
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            int scene = i;
+            Utility(new(365 + i * 210, 10, 198, 52), $"F{i + 1}   {tabs[i]}", () => ChooseScene(scene), _scene == i);
+        }
+        string art = _stage.AssetFailure is { } problem ? T("资源未齐 · ", "Art incomplete · ") + problem :
+            (_scene == 0 ? _stage.HasWitch : _stage.HasWorld) ? T("原版素材 · 示例状态", "Original art · sample state") :
+            T("无私有素材 · 线框", "Text-only · schematic");
+        Text(_surface, new(1228, 10, 425, 52), art, 22, "c1cfdf");
+        Utility(new(1674, 10, 216, 52), _english ? "中文   /   L" : "English   /   L", ToggleLanguage);
+        Refresh();
+    }
+
+    private void Item(Rect2 rect, string name, string? key = null, bool enabled = true, string reason = "")
+    {
+        int index = _choices.Count;
+        var hit = Put(_surface, new Button { Name = "Choice" + index, FocusMode = FocusModeEnum.None }, rect);
+        var icon = new TextureRect
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            TextureFilter = TextureFilterEnum.Nearest,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+        };
+        bool hasArt = key is not null && _stage.Icon(key, false) is not null;
+        float width = key?.StartsWith("identity-icon.", StringComparison.Ordinal) == true ? 64 : 96;
+        Put(hit, icon, new(20, (rect.Size.Y - 96) / 2, width, 96));
+        int left = hasArt ? (int)width + 36 : 20;
+        var caption = Text(hit, new(left, 0, rect.Size.X - left - 16, rect.Size.Y), name, 30);
+        _choices.Add(new(hit, caption, icon, key, enabled, reason));
+        hit.GuiInput += input =>
+        {
+            if (input is InputEventMouseMotion motion && motion.Relative != Vector2.Zero && _focus != index)
+            { _focus = index; Refresh(); }
+        };
+        hit.Pressed += () => { _focus = index; Refresh(); Activate(); };
+    }
+
+    private void Refresh()
+    {
+        for (int i = 0; i < _choices.Count; i++)
+        {
+            var row = _choices[i];
+            bool focused = _focus == i;
+            var style = Box(focused ? "273d56" : "102c50", focused ? "ffe19a" : "536c87", focused ? 3 : 1);
+            foreach (var state in new[] { "normal", "hover", "pressed" }) row.Hit.AddThemeStyleboxOverride(state, style);
+            row.Name.AddThemeColorOverride("font_color", !row.Enabled ? StoryTheme.Unavailable :
+                focused ? StoryTheme.Selected : new Color("f4f5fc"));
+            if (row.Key is not null) row.Art.Texture = _stage.Icon(row.Key, focused);
+        }
+        if (_detail is not null && _choices.Count > 0) _detail.Text = _choices[_focus].Reason;
+        if (_page == Page.Question && _dialogue is not null)
+            _dialogue.Choices.Present(true, _focus == 0, true, true);
+    }
+
+    private void Footer(string hint)
+    {
+        var panel = Panel(new(32, 997, 1856, 60), true);
+        Text(panel, new(18, 0, 1816, 60), hint, 24, "cad6e5");
+    }
+
+    private void Entry()
+    {
+        if (!_stage.HasWitch)
+            Text(_surface, new(440, 462, 460, 100), T("女巫 · 原画区域", "Witch artwork"), 40);
+        var frame = Panel(new(1216, 144, 640, 252));
+        Text(frame, new(26, 16, 584, 54), T("女巫", "The Witch"), 32, "ffe19a");
+        Text(frame, new(26, 78, 584, 146), _page == Page.Result ? T("冒险将在这里开始。", "Your adventure begins here.") :
+            T("准备好出发了吗？请选择你的旅程。", "Are you ready to set out? Choose your journey."), 30);
+        if (_page == Page.Result)
+            Item(new(1216, 444, 640, 78), T("返回", "Back"));
+        else
+        {
+            Item(new(1216, 444, 640, 78), GameText.Get("entry.new"));
+            Item(new(1216, 534, 640, 78), T("继续游戏 · 不可用", "Continue · Unavailable"), enabled: false,
+                reason: T("预览没有连接存档。", "The preview has no save slot attached."));
+            _detail = Text(_surface, new(1216, 638, 640, 100), "", 30);
+        }
+        Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
+    }
+
+    private void Dialogue()
+    {
+        _dialogue = new StoryDialoguePanel { Name = "StoryReader" };
+        _surface.AddChild(_dialogue);
+        var portrait = _stage.Portrait();
+        if (portrait is not null) _dialogue.MountPortrait(portrait, 0);
+        _dialogue.Body.Text = _page switch
+        {
+            Page.Question => T("准备好和我一起去广场了吗？", "Are you ready to walk to the square with me?"),
+            Page.Reply => _result == "yes" ? T("那我们走吧。", "Then let's go.") : T("好，我在这里等你。", "All right. I'll wait here."),
+            _ => T("你听见钟声了吗？镇上的人都去了广场。我们也过去看看吧。", "Did you hear the bell? Everyone in town has gone to the square. Let's go and see.")
+        };
+        _dialogue.Choices.Present(_page == Page.Question, _focus == 0, true, true);
+        _dialogue.Present(true, portrait is not null, false, new(864, 480, 96, 96), _page == Page.Question ?
+            T("← → 选择     Enter 回答", "← → Select     Enter Answer") : T("Enter 或点击继续", "Enter or click to continue"));
+    }
+
+    private void Church()
+    {
+        Put(_surface, new ColorRect { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore }, new(0, 72, 1920, 1008));
+        var panel = Panel(new(1104, 110, 748, 849));
+        Text(panel, new(30, 14, 660, 64), T("教堂", "Church"), 36);
+        Text(panel, new(32, 84, 660, 56), T("持有金币   150", "Gold   150"), 26, "cad6e5");
+        if (_page == Page.Root)
+        {
+            string[] names = [T("复活", "Raise"), T("治疗", "Cure"), T("转职 · 不可用", "Promotion · Unavailable"), T("记录冒险", "Record adventure")];
+            string[] keys = ["raise", "cure", "promote", "save"];
+            for (int i = 0; i < 4; i++)
+                Item(new(1136, 270 + i * 112, 684, 104), names[i], keys[i], i != 2,
+                    i == 2 ? T("这位神父没有提供转职服务。", "Promotion is unavailable from this priest.") : "");
+            _detail = Text(panel, new(32, 609, 684, 116), "", 30);
+            Item(new(1136, 860, 684, 70), T("离开", "Leave"));
+        }
+        else if (_page == Page.Quote)
+        {
+            Text(panel, new(32, 170, 680, 158), _rootFocus == 0 ? T("让鲍伊复活需要 50 枚金币。要支付吗？", "Raise Bowie for 50 gold?") :
+                T("为莎拉治疗中毒需要 10 枚金币。要支付吗？", "Cure Sarah's poison for 10 gold?"), 30);
+            Item(new(1136, 504, 684, 82), T("确认支付", "Confirm payment"));
+            Item(new(1136, 598, 684, 82), T("拒绝", "Decline"));
+        }
+        else
+        {
+            Text(panel, new(32, 170, 684, 194), _result switch
+            {
+                "record" => T("正式游戏在这里进入存档选择。", "In the game, the save-slot choice opens here."),
+                "leave" => T("已离开服务菜单。", "You have left the service menu."),
+                _ => T("示例服务完成。", "Sample service complete.")
+            }, 30);
+            Item(new(1136, 524, 684, 82), T("返回服务列表", "Return to services"));
+        }
+        Footer(T("↑ ↓ 选择服务     Enter 确认     Esc 返回", "↑ ↓ Select service     Enter Confirm     Esc Back"));
+    }
+
+    private void Battle()
+    {
+        var card = Put(_surface, new BattleStatusCard(), new(32, 154, 500, 192));
+        card.Present(new ActorRef("sarah"), T("莎拉", "Sarah"), T("行动角色", "Acting member"), 18, 24, 8, 12);
+        var counts = Panel(new(32, 88, 500, 54), true);
+        Text(counts, new(16, 0, 470, 54), T("回合 3     金币 150", "Round 3     Gold 150"), 24);
+        if (_page == Page.Root)
+        {
+            _horizontal = true;
+            string[] ids = ["attack", "magic", "item", "stay"];
+            for (int i = 0; i < ids.Length; i++)
+                Item(new(32 + i * 322, 825, 310, 122), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
+            Footer(T("← → 选择指令     Enter 确认", "← → Select command     Enter Confirm"));
+        }
+        else if (_page is Page.Spells or Page.Items)
+        {
+            bool magic = _page == Page.Spells;
+            var list = Panel(new(32, 485, 810, 490));
+            Text(list, new(24, 12, 760, 62), magic ? T("魔法", "Magic") : T("道具", "Items"), 32);
+            if (magic)
+            {
+                Item(new(56, 573, 762, 108), T("回复   Lv. 1     3 MP", "HEAL   Lv. 1     3 MP"), "identity-icon.spell.0");
+                Item(new(56, 691, 762, 108), T("回复   Lv. 2     5 MP", "HEAL   Lv. 2     5 MP"), "identity-icon.spell.0");
+            }
+            else Item(new(56, 573, 762, 108), T("药草     槽位 1", "Medical Herb     Slot 1"), "identity-icon.item.0");
+            Item(new(56, 823, 762, 78), T("返回", "Back"));
+            Footer(T("↑ ↓ 选择     Enter 选择目标     Esc 返回", "↑ ↓ Select     Enter Choose target     Esc Back"));
+        }
+        else if (_page == Page.Target)
+        {
+            bool attack = _targetParent == Page.Root;
+            var who = attack ? T("对手", "Opponent") : _target == 0 ? T("鲍伊", "Bowie") : T("莎拉", "Sarah");
+            var targetCard = Put(_surface, new BattleStatusCard(), new(1388, 154, 500, 192));
+            targetCard.Present(new ActorRef("candidate"), who, T("当前目标", "Target"), attack ? 12 : 16, 24, 0, 0);
+            var text = Panel(new(32, 798, 860, 160));
+            string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
+                T("药草", "Medical Herb") : $"HEAL   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
+            Text(text, new(24, 12, 810, 78), action + "   →   " + who, 32);
+            Text(text, new(24, 94, 800, 52), attack ? T("选择对手", "Select opponent") : T("← → 切换队员", "← → Switch member"), 24);
+            if (!attack) Utility(new(916, 850, 252, 74), T("切换目标", "Switch target"), CycleTarget);
+            Utility(new(1184, 850, 294, 74), T("确认", "Confirm"), Activate);
+            Utility(new(1494, 850, 294, 74), T("返回", "Back"), Back);
+        }
+        else if (_page == Page.Stay)
+        {
+            var prompt = Panel(new(540, 550, 840, 332));
+            Text(prompt, new(30, 24, 780, 78), T("让莎拉原地待机？", "Have Sarah stay here?"), 32);
+            Item(new(570, 666, 780, 76), T("待机", "Stay"));
+            Item(new(570, 752, 780, 76), T("返回", "Back"));
+        }
+        else
+        {
+            var message = Panel(new(240, 714, 1440, 254));
+            Text(message, new(28, 20, 1384, 102), T("本次指令预览结束。", "Command preview complete."), 32);
+            Item(new(270, 844, 520, 80), T("返回战斗指令", "Return to battle commands"));
+        }
+    }
+
+    private void Activate()
+    {
+        if (_choices.Count > 0 && !_choices[_focus].Enabled) return;
+        if (_scene == 0) { Show(_page == Page.Root ? Page.Result : Page.Root); return; }
+        if (_scene == 1)
+        {
+            if (_page == Page.Question) _result = _focus == 0 ? "yes" : "no";
+            Show(_page == Page.Root ? Page.Question : _page == Page.Question ? Page.Reply : Page.Root);
+            return;
+        }
+        if (_scene == 2)
+        {
+            if (_page == Page.Root)
+            {
+                _rootFocus = _focus;
+                _result = _focus == 3 ? "record" : _focus == 4 ? "leave" : "service";
+                Show(_focus < 2 ? Page.Quote : Page.Result, _focus < 2 ? 1 : 0);
+            }
+            else if (_page == Page.Quote && _focus == 0) Show(Page.Result);
+            else Show(Page.Root, _rootFocus);
+            return;
+        }
+        switch (_page)
+        {
+            case Page.Root:
+                _rootFocus = _focus;
+                if (_focus == 0) Target();
+                else if (_focus == 3) Show(Page.Stay, 1);
+                else Show(_focus == 1 ? Page.Spells : Page.Items);
+                break;
+            case Page.Items:
+            case Page.Spells:
+                if (_focus == _choices.Count - 1) Back();
+                else { _offer = _focus; Target(); }
+                break;
+            case Page.Stay:
+                if (_focus == 1) Back(); else Show(Page.Result);
+                break;
+            case Page.Target: Show(Page.Result); break;
+            default: Show(Page.Root, _rootFocus); break;
+        }
+    }
+
+    private void Target()
+    {
+        _targetParent = _page;
+        _target = _page == Page.Root ? 2 : 0;
+        Show(Page.Target);
+    }
+
+    private void CycleTarget()
+    {
+        if (_targetParent == Page.Root) return;
+        _target = 1 - _target;
+        Render();
+    }
+
+    private void Back()
+    {
+        if (_scene == 1 && _page == Page.Question) { _result = "no"; Show(Page.Reply); }
+        else if (_scene == 3 && _page == Page.Target)
+            Show(_targetParent, _targetParent == Page.Root ? _rootFocus : _offer);
+        else if (_page != Page.Root) Show(Page.Root, _scene >= 2 ? _rootFocus : 0);
+    }
+
+    public override void _Input(InputEvent input)
+    {
+        if (_dialogue is not null && input is InputEventMouseMotion motion) _readerPointer.Moved(motion);
+        if (_dialogue is not null && input is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouse)
+        {
+            var rect = _dialogue.GetGlobalRect();
+            var hit = _page == Page.Question ? _dialogue.Choices.Hit(mouse.Position)
+                : (Id: rect.HasPoint(mouse.Position) ? "Read" : null, Rect: rect);
+            if (_readerPointer.Read(mouse, hit.Id, hit.Rect, _dialogue) is { } selected)
+            {
+                _focus = selected == "No" ? 1 : 0;
+                Activate();
+            }
+            if (hit.Id is not null) GetViewport().SetInputAsHandled();
+            return;
+        }
+        if (input is InputEventKey { Pressed: true, Echo: false } key)
+        {
+            if (key.Keycode is >= Key.F1 and <= Key.F4)
+            { ChooseScene((int)key.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
+            if (key.Keycode == Key.L)
+            { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
+        }
+        if (input.IsActionPressed("ui_cancel") || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();
+        else if (input.IsActionPressed("ui_accept")) Activate();
+        else
+        {
+            bool sideways = _horizontal || _page is Page.Question or Page.Target;
+            int direction = input.IsActionPressed(sideways ? "ui_left" : "ui_up") ? -1 :
+                input.IsActionPressed(sideways ? "ui_right" : "ui_down") ? 1 : 0;
+            if (direction == 0) return;
+            if (_page == Page.Target) CycleTarget();
+            else
+            {
+                int count = _page == Page.Question ? 2 : _choices.Count;
+                if (count == 0) return;
+                _focus = (_focus + count + direction) % count;
+                Refresh();
+            }
+        }
+        GetViewport().SetInputAsHandled();
+    }
+}
