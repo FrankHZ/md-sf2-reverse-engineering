@@ -100,13 +100,12 @@ internal sealed partial class BattleGiveView : Control
         return exchange ? new SelectGiveReturn(slot) : new SelectGiveItem(slot);
     }
 
-    internal static string Menu(GameSession session)
+    internal static string Menu(GameSession session, BattleGiveChoices choices)
     {
         string Name(Sf2.Remake.Domain.Battles.ActorRef? id) => id is { } actor
             ? DisplayNames.Battle(session.Current.Story, session.Current.Battle.GetActor(actor), session.ActiveBattleScenes) : "";
         var selection = session.Current.Selection;
         if (!Selecting(selection?.Stage)) return "";
-        var choices = session.QueryBattleChoices().Give;
         var givenItem = choices.Items.FirstOrDefault(item => item.Slot == selection!.ItemSlot);
         string given = givenItem is null ? GameText.Get("battle.give-item") : DisplayNames.ItemWord(givenItem.Word, givenItem.Name);
         if (selection!.Stage == BattleSelectionStage.GiveTargetChoice)

@@ -12,7 +12,7 @@ internal static class ExplorationAssetReader
 {
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons");
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -118,10 +118,21 @@ internal static class ExplorationAssetReader
             Require(fieldMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
                 "field-menu-shape", "presentation.fieldMenu");
         }
+        Dictionary<string, ExplorationRaster>? itemMenu = null;
+        if (row.TryGetProperty("itemMenu", out var item))
+        {
+            string[] keys = ["use.normal", "use.selected", "give.normal", "give.selected",
+                "equip.normal", "equip.selected", "drop.normal", "drop.selected"];
+            Object(item, "presentation.itemMenu", keys);
+            itemMenu = keys.ToDictionary(key => key, key => Raster(item.GetProperty(key)), StringComparer.Ordinal);
+            Require(itemMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
+                "item-menu-shape", "presentation.itemMenu");
+        }
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
             churchMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(churchMenu),
-            fieldMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(fieldMenu), IdentityIconReader.Read(row));
+            fieldMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(fieldMenu), IdentityIconReader.Read(row),
+            itemMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(itemMenu));
     }
 
     private static IReadOnlyList<PortraitTileChange>? PortraitChanges(JsonElement portrait, string key)

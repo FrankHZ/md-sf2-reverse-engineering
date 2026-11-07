@@ -12,6 +12,7 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class PartyStatusView : Control
 {
     private readonly PartyDetailsPanel _details = new() { Name = "MemberDetails" };
+    private readonly Control _memberLayer = new() { Name = "MemberLayer" };
     private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", 22), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
     private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", 32);
@@ -25,6 +26,9 @@ internal sealed partial class PartyStatusView : Control
     private readonly MenuPointer _pointer = new();
     private readonly Label _prepare = Text("Prepare", 28);
     private readonly FieldActionView _actions = new() { Name = "FieldActions" };
+    private readonly IdentityIcons _icons = new();
+    private object? _iconSource;
+    private SessionFailure? _assetFailure;
     internal Func<Sf2.Remake.Application.Runtime.Exploration.FieldCommand, long, SessionResult>? SubmitField { get; set; }
     private readonly List<Label> _labels = [];
     private GameSession? _session;
@@ -40,11 +44,12 @@ internal sealed partial class PartyStatusView : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Stop; Theme = StoryTheme.Create();
         var shade = new ColorRect { Color = new(0, 0, 0, 0.7f), MouseFilter = MouseFilterEnum.Ignore };
-        shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
+        _memberLayer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_memberLayer);
+        shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); _memberLayer.AddChild(shade);
         foreach (var node in new Control[] { _portraitFrame, _recordFrame, _goldFrame, _selectorFrame, _details,
-            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) AddChild(node);
+            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) _memberLayer.AddChild(node);
         _roster.AddChild(_rows);
-        AddChild(_prepare); AddChild(_actions);
+        _memberLayer.AddChild(_prepare); AddChild(_actions);
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _selector.HorizontalAlignment = _portraitNote.HorizontalAlignment = _gold.HorizontalAlignment = HorizontalAlignment.Center;
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -54,11 +59,19 @@ internal sealed partial class PartyStatusView : Control
         Hide();
     }
 
-    public override void _ExitTree() { _portrait.Texture = null; _portraitTexture?.Dispose(); }
+    public override void _ExitTree() { _portrait.Texture = null; _portraitTexture?.Dispose(); _icons.Dispose(); _iconSource = null; }
     private string _entry = "actions";
     internal void Begin(GameSession session, GameInput input, string entry = "actions")
     {
         _entry = entry;
+        if (!ReferenceEquals(_iconSource, session.Definition))
+        {
+            _iconSource = session.Definition; _assetFailure = null;
+            try { _icons.Configure(session.Definition.Exploration?.Visuals?.IdentityIcons); }
+            catch (InvalidOperationException error)
+            { _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Member identity icon decoding failed."); }
+        }
+        _details.ConfigureIcons(_icons, session.Definition);
         _session = session; _input = input; _index = 0; _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0; _selectorOpen = false;
         _requiresRelease = true; _pointer.Suspend(); _roster.ScrollVertical = 0; _details.ResetReading();
         _actions.Hide();
@@ -68,6 +81,7 @@ internal sealed partial class PartyStatusView : Control
     internal void Present(GameSession session, GameInput input)
     {
         if (!Open) return;
+        _memberLayer.Visible = !(_actions.Open && _actions.ItemOperations);
         if (_actions.Open) { _actions.Present(); return; }
         _session = session; _input = input; _pointer.ReleaseIfNeutral();
         if (!input.GameplayHeld) _requiresRelease = false;
@@ -110,6 +124,8 @@ internal sealed partial class PartyStatusView : Control
         if (GameText.Language == "zh-CN") _hint.Text += "\n" + GameText.Get("localization.names");
         string fallback = GameText.Fallback("party.", true);
         if (fallback.Length > 0) _hint.Text += " · " + fallback;
+        if (_assetFailure is { } failure) _hint.Text += "\n" + GameText.Get("prepare.failure",
+            GameText.Get("prepare.recovery.unsupported"), failure.Code, failure.Field, failure.Message);
         Arrange();
     }
 
@@ -175,7 +191,7 @@ internal sealed partial class PartyStatusView : Control
     {
         if (_shown is null || _count == 0 || SubmitField is null) return;
         var member = _shown.Members[_index];
-        _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField, _entry);
+        _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField, _icons, _entry);
     }
     internal void Handle(GameAction action, GameSession session, GameInput input)
     {
@@ -226,7 +242,7 @@ internal sealed partial class PartyStatusView : Control
     }
 
     internal object Observe() => new { visible = IsVisibleInTree(), index = _index, count = _count, requiresRelease = _requiresRelease,
-        header = _selector.Text, hint = _hint.Text, selectorOpen = _selectorOpen, focusPane = _details.FocusPane,
+        header = _selector.Text, hint = _hint.Text, failure = _assetFailure, memberLayerVisible = _memberLayer.IsVisibleInTree(), selectorOpen = _selectorOpen, focusPane = _details.FocusPane,
         preparation = _actions.Observe(), prepareRect = Rect(_prepare),
         card = _details.Card(), layout = _details.Observe(), portraitId = _portraitId, portraitVisible = _portrait.IsVisibleInTree(),
         portraitRect = Rect(_portrait), recordRect = Rect(_recordFrame), goldRect = Rect(_goldFrame), kills = _killsValue.Text, defeats = _defeatsValue.Text, gold = _gold.Text,

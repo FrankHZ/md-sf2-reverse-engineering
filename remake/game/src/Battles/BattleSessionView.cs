@@ -68,6 +68,7 @@ public sealed partial class BattleSessionView : Control
     private BattleSceneDefinition? _mapScenes;
     private readonly UI.StoryDialoguePanel _hud = new() { Name = "AuxiliaryHud" };
     private readonly UI.IdentityIcon _equipmentIcon = new() { Name = "EquipmentIcon" };
+    private readonly UI.IdentityIcon _transactionIcon = new() { Name = "TransactionIcon" }, _returnIcon = new() { Name = "ReturnIcon" };
     private Rect2 _hudSubject;
     private string _battleHelp = "";
     private BattleSceneView _scene = null!;
@@ -93,7 +94,7 @@ public sealed partial class BattleSessionView : Control
         { _hudSubject = rectangle; _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle); };
         AddChild(_map);
         var ui = UI.PresentationCanvas.Mount(this, "BattleUi", UI.PresentationCanvas.Battle);
-        ui.AddChild(_hud); _hud.AddChild(_equipmentIcon); _hud.Choices.Hide();
+        ui.AddChild(_hud); _hud.AddChild(_equipmentIcon); _hud.AddChild(_transactionIcon); _hud.AddChild(_returnIcon); _hud.Choices.Hide();
         _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
         ui.AddChild(_menu);
         _scene = new BattleSceneView { Name = "BattleScene", PresentationRoot = ui }; AddChild(_scene);
@@ -181,6 +182,7 @@ public sealed partial class BattleSessionView : Control
             {
                 _map.Build(result.Snapshot.Battle.Definition, session.Definition);
                 _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
+                _inspection.ConfigureIcons(_menu.Icons, session.Definition);
                 _menu.Reset();
             }
             catch (InvalidOperationException error)
@@ -433,7 +435,8 @@ public sealed partial class BattleSessionView : Control
             if (_movementSoundToken != movement.Token)
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(79); }
         }
-        _menu.Present(_session.Current, _session.QueryBattleChoices(), _result!.Failure, _input, _session.QueryBattleActingStatus());
+        var choices = _session.QueryBattleChoices();
+        _menu.Present(_session.Current, choices, _result!.Failure, _input, _session.QueryBattleActingStatus());
         Arrange();
         var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin, _session.QueryBattleMovementRange(), _session.ActiveBattleScenes);
         _title = projection.Title;
@@ -446,23 +449,23 @@ public sealed partial class BattleSessionView : Control
             _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null && _session.Current.BattleSearch is null);
         _roster = projection.Roster;
         var selection = _session.Current.Selection;
-        var equipmentChoices = _session.QueryBattleChoices().Equipment;
+        var equipmentChoices = choices.Equipment;
         var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
         _equipment = currentActor?.Definition.Equipment is null ? "" :
             GameText.Get("battle.equipment-current", _input.Hint(GameAction.Equipment),
                 equipmentChoices.FirstOrDefault(o => o.Equipped) is { } equipped ? DisplayNames.Equipment(equipped, _session.Current) : GameText.Get("prepare.unarmed"),
                 currentActor.Attack, BattleEquipment.Physical(currentActor)!.MinimumRange, BattleEquipment.Physical(currentActor)!.MaximumRange);
         _spells = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
-            _session.QueryBattleChoices().Spells.Select(option =>
+            choices.Spells.Select(option =>
                 DisplayNames.Spell(option.Spell, option.Label, level: true) + (option.Spell == selection.Spell ? " · selected" : "") +
                 (option.Enabled ? "" : $" · unavailable: {option.Reason!.Code}")));
         _items = selection is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
-            _session.QueryBattleChoices().Items.Select(option => $"{option.Slot + 1}: {DisplayNames.BattleItem(_session.Current, option.Slot, option.Label)}" +
+            choices.Items.Select(option => $"{option.Slot + 1}: {DisplayNames.BattleItem(_session.Current, option.Slot, option.Label)}" +
                 (option.Slot == selection.ItemSlot ? " · selected" : "") +
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
-        _giveMenu = BattleGiveView.Menu(_session);
+        _giveMenu = BattleGiveView.Menu(_session, choices.Give);
         _give.Present();
-        _discardMenu = BattleDiscardView.Menu(_session);
+        _discardMenu = BattleDiscardView.Menu(_session, choices.Discard);
         _discard.Present(); _search.Present();
         bool give = BattleGiveView.Selecting(selection?.Stage), discard = BattleDiscardView.Selecting(selection?.Stage);
         bool equipment = selection?.Stage == BattleSelectionStage.EquipmentChoice;
@@ -473,7 +476,7 @@ public sealed partial class BattleSessionView : Control
             _equipment = GameText.Get("battle.equipment-title") + "\n" + (index < 0 ? GameText.Get("battle.no-equipment") :
                 GameText.Get("battle.equipment-row", index + 1, equipmentChoices.Count, DisplayNames.Equipment(equipmentChoices[index], _session.Current),
                     equipmentChoices[index].Attack, equipmentChoices[index].MinimumRange, equipmentChoices[index].MaximumRange));
-            if (_session.QueryBattleChoices().EquipmentFailure is { } equipmentFailure)
+            if (choices.EquipmentFailure is { } equipmentFailure)
                 _equipment += "\n" + GameText.BattleFailure(equipmentFailure);
             string fallback = GameText.Fallback("battle.", includeKey: true);
             if (fallback.Length > 0) _equipment += "\n" + fallback;
@@ -487,11 +490,18 @@ public sealed partial class BattleSessionView : Control
             _equipment + "\n" + _spells + "\n" + _items);
         if (_hud.Body.Text != body) { _hud.Body.Text = body; _hud.ResetReading(); }
         bool hudVisible = !_menu.Visible && selection is not null;
-        _hud.Present(hudVisible, equipment, false, _hudSubject, _help, lifetimeOpen: hudVisible);
+        _hud.Present(hudVisible, auxiliary, false, _hudSubject, _help, lifetimeOpen: hudVisible);
         var selectedEquipment = equipmentChoices.FirstOrDefault(choice => choice.Slot == selection?.EquipmentSlot);
         string? equipmentIdentity = !equipment || selectedEquipment is null ? null : selectedEquipment.Slot == 4
             ? UI.IdentityIcons.Unarmed : UI.IdentityIcons.Item(currentActor!.SourceLoadout!.Items[selectedEquipment.Slot]);
         _equipmentIcon.Present(_menu.Icons, equipmentIdentity, true); _equipmentIcon.Position = new(24, 24); _equipmentIcon.Size = new(64, 96);
+        int? givenWord = give ? choices.Give.Items.FirstOrDefault(item => item.Slot == selection?.ItemSlot)?.Word :
+            discard ? choices.Discard.Items.FirstOrDefault(item => item.Slot == selection?.ItemSlot)?.Word : null;
+        int? returnedWord = give ? choices.Give.Returns.FirstOrDefault(item => item.Slot == selection?.ReturnSlot)?.Word : null;
+        _transactionIcon.Present(_menu.Icons, givenWord is { } given ? UI.IdentityIcons.Item(given) : null,
+            selection?.Stage != BattleSelectionStage.GiveExchangeChoice);
+        _returnIcon.Present(_menu.Icons, returnedWord is { } returned ? UI.IdentityIcons.Item(returned) : null, true);
+        _transactionIcon.Position = new(24, 24); _returnIcon.Position = new(120, 24);
         _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help);
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
         // Map children have their own Z priorities; a later sibling's black backdrop
@@ -589,6 +599,7 @@ public sealed partial class BattleSessionView : Control
             search = _search.Observe(), searchChests = current?.Battle.Definition.Search?.Chests.Select(c => new { x = c.Position.X, y = c.Position.Y, flag = c.Flag, opened = current.Story.Flags.Contains(c.Flag) }), discard = _discard.Observe(), discardMenu = _discardMenu, custody = current?.Battle.ItemCustody,
             give = _give.Observe(), giveMenu = _giveMenu, returnSlot = current?.Selection?.ReturnSlot,
             equipmentIcon = _equipmentIcon.Observe(),
+            transactionIcon = _transactionIcon.Observe(), returnIcon = _returnIcon.Observe(),
             equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment, equipmentVisible = _hud.IsVisibleInTree() && current?.Selection?.Stage == BattleSelectionStage.EquipmentChoice,
             equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,
                 attack = a.Attack, equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
