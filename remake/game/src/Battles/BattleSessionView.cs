@@ -44,8 +44,8 @@ public sealed partial class BattleSessionView : Control
     internal string? StartupError => _startupFailure?.Code;
     private bool _started;
     private bool _inputSuspended;
-    private void SuspendInput() { _inputSuspended = true; ClearNavigation(); _menu?.SuspendPointer(); _inspection?.SuspendPointer(); }
-    private void ResumeInput() => _inputSuspended = false;
+    private void SuspendInput() { _inputSuspended = true; SuspendPacing(); ClearNavigation(); _menu?.SuspendPointer(); _inspection?.SuspendPointer(); }
+    private void ResumeInput() { _inputSuspended = false; SuspendPacing(); }
     private string _title = "";
     private string _status = "";
     private string _roster = "";
@@ -134,6 +134,7 @@ public sealed partial class BattleSessionView : Control
     }
     public override void _ExitTree()
     {
+        SuspendPacing();
         GetWindow().FocusExited -= SuspendInput;
         GetWindow().FocusEntered -= ResumeInput;
         ObservationCapture.Find(this)?.ViewDetached("battle");
@@ -164,6 +165,7 @@ public sealed partial class BattleSessionView : Control
 
     internal void Attach(GameSession session, SessionResult result)
     {
+        SuspendPacing();
         if (_session is not null && _session != session) throw new InvalidOperationException("A view attaches one session only.");
         bool first = _session is null;
         _started = true;
@@ -209,6 +211,7 @@ public sealed partial class BattleSessionView : Control
 
     internal void FailStartup(SessionFailure failure)
     {
+        SuspendPacing();
         _startupFailure = failure;
         RetireWindows(); Arrange();
         _title = GameText.Get("battle.start-unavailable");
@@ -220,6 +223,7 @@ public sealed partial class BattleSessionView : Control
     // Keep only the battlefield beneath the field-owned after/return effects.
     internal void RetireWindows()
     {
+        SuspendPacing();
         ClearNavigation(); RetireInspection();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
@@ -228,57 +232,7 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
-        if (_inspectionRelease && !_input.GameplayHeld) _inspectionRelease = false;
-        if (_inspection.Active)
-        {
-            if (!_inspection.Refresh(_session)) { InspectionBarrier(); Present(); }
-            else { ServiceNavigation(); return; }
-        }
-        ServiceNavigation();
-        if (_startupFailure is not null || !IsVisibleInTree()) return;
-        if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
-        if (_session?.Current.BattleSearch is not null)
-        {
-            if (!_inputSuspended && _search.Consume(delta) is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleDiscard is not null)
-        {
-            if (!_inputSuspended && _discard.Consume(delta) is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleGive is not null)
-        {
-            if (!_inputSuspended && _give.Consume(delta) is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleRound is { Program: true })
-        {
-            if (_session.Current.StopReason is not (SessionStopReason.Unsupported or SessionStopReason.Faulted) && _story.Consume() is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleRound is not null)
-        {
-            if (_appearance.Consume(delta) is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleRetreat is not null)
-        {
-            if (_retreat.Consume(delta) is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleMovement is not null)
-        {
-            if (_map.ConsumeMovement(delta, _input.Settings.ReducedFlash) is { } completion) Send(completion);
-            return;
-        }
-        if (_session?.Current.BattleScene is not null)
-        {
-            try { if (_scene.Consume(delta) is { } completion) Send(completion); }
-            catch (InvalidOperationException error) { FailStartup(new(SessionFailureKind.AdapterError, error.Message, "battleScene", "Battle scene playback is unavailable.")); }
-            return;
-        }
-        if (_startupFailure is null && _session?.Current is { HasBattleControl: true, StopReason: SessionStopReason.SimulationWait }) Send(new AdvanceSimulation());
+        ServicePacing(delta);
     }
 
     internal void HandlePointer(InputEvent input)
@@ -401,6 +355,7 @@ public sealed partial class BattleSessionView : Control
         var current = _session!.Current;
         if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
+        SyncPacing();
         if (_result.Failure is not null) { _navigationRejected = true; ClearNavigation(); }
         PublishResult("submit");
         ObserveResult?.Invoke(_result);
@@ -427,6 +382,7 @@ public sealed partial class BattleSessionView : Control
             return;
         }
         Present();
+        SyncPacing();
         CompleteInspectionEntry();
     }
 
@@ -543,7 +499,7 @@ public sealed partial class BattleSessionView : Control
         var current = _session?.Current;
         return JsonSerializer.Serialize(new
         {
-            revision = current?.Revision, observationSequence = current?.ObservationSequence,
+            revision = current?.Revision, observationSequence = current?.ObservationSequence, pacing = ObservePacing(),
             mainSeed = current?.Battle.MainSeed, thinkingSeed = current?.Battle.ThinkingSeed,
             cursor = current?.Battle.Cursor, actor = current?.Selection?.Actor.Value, round = current?.Battle.Round,
             failure = (_result?.Failure ?? _startupFailure)?.Code, scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(),
@@ -575,6 +531,7 @@ public sealed partial class BattleSessionView : Control
             };
         return new
         {
+            pacing = ObservePacing(),
             origin = _session?.Definition.Origin, sessionId = current?.SessionId, storyFlags = current?.Story.Flags,
             rules = _session?.Rules.Identity, battleChoices = choices, healingChoices = choices,
             scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(), observationSequence = current?.ObservationSequence,

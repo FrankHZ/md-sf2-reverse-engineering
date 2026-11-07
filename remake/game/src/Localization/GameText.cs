@@ -503,8 +503,8 @@ internal static class GameText
     };
     private static readonly Dictionary<string, string> Recovery = new()
     {
-        ["controls.acceleration.note"] = "Hold for exploration at 1.5x; release returns to 1x. NPCs and automatic events share the rate. Text and music keep normal speed. After a menu, dialogue, map change or focus loss, release and press again. Battle acceleration is not available yet.",
-        ["controls.acceleration.hold"] = "Hold: temporary exploration 1.5x",
+        ["controls.acceleration.note"] = "Hold for exploration and battle at 1.5x; release returns to 1x. NPCs and automatic sequences share the rate. Reading, menu controls and music keep normal speed. After a menu, message, map change or focus loss, release and press again.",
+        ["controls.acceleration.hold"] = "Hold: temporary 1.5x gameplay",
         ["ui.settings.title"] = "Settings",
         ["ui.settings.language"] = "Language: {0}",
         ["ui.settings.text"] = "Text: {0}",

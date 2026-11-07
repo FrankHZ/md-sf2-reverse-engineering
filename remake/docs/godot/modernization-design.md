@@ -461,14 +461,15 @@ those checks; the design's source and document checks cannot pass them.
 
 ## Held 1.5× acceleration (#1619)
 
-**Accepted design; implementation staged.** [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619)
+**Implemented in both domains; bounded B/C observations reproduced.** [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619)
 requires hold Shift for temporary 1.5× in both exploration and battle; release restores 1×.
 Stage A implements the shared hold and exploration domain under the
 [current presentation contract](presentation.md#held-exploration-acceleration-1619-a) and
 [bounded native acceptance](../verification/field-programs.md#held-exploration-rate-1619-a).
-Battle acceleration and B/C integrated acceptance remain unimplemented; A alone does not complete
-this Issue. The paths below describe the staged design; those current owners identify A's actual
-consumers and observations.
+Battle now uses the shared hold through one bounded 60 Hz parent budget. The
+[battle presentation contract](presentation.md#held-battle-acceleration-1619-bc) and
+[finite native acceptance](../verification/host.md#held-battle-rate-1619-bc) own the actual B/C
+consumer and observation boundaries. Independent integration acceptance remains with main-gate.
 This is an intentional modern pacing feature. It is independent of original message Speed,
 text suppression, Reduced Flash and the existing battle-entry skip. No persistent toggle, rules
 change, universal skip or global appearance decision is included.
@@ -612,16 +613,16 @@ not meet that ratio. At 30/60/120 FPS, compare equal logical endpoints and allow
 one 60 Hz step of quantization per retained consumer boundary. A stall deliberately slows progress
 after the cap; it never yields a compensating burst. Original timing and human comfort stay Unknown.
 
-Each future row is a separately reviewed slice, not authorization to edit all listed files now.
-Path prefixes in backticks are repository-relative and exact; proposed new files are marked new.
+The rows record current implementation ownership. Paths are repository-relative. The existing
+read-only consumers keep their own rules; parent routing supplies the appropriate clock.
 Application/Domain/Content remain read-only dependencies unless a concrete semantic failure is
 demonstrated and separately scoped. Implementation must update its existing acceptance owners.
 
 | Slice and dependency | Exact code paths | Acceptance and stopping boundary |
 | --- | --- | --- |
-| A · Shared input and exploration, after design acceptance | `remake/game/src/Input/GameInput.cs`, `remake/game/src/Input/InputSettings.cs`, `remake/game/src/Input/ExplorationMovementHold.cs`, `remake/game/src/Exploration/ExplorationSessionView.cs`, `remake/game/src/Exploration/ExplorationSessionView.Clock.cs`, `remake/game/src/Exploration/ExplorationPresentation.cs`, `remake/game/src/GameRoot.cs`, `remake/game/src/Entry/WindowSupportHost.cs`, `remake/game/src/Entry/SettingsHost.cs`; help `remake/game/src/UI/ControlsHelpView.cs`, `remake/game/src/Localization/GameText.cs`, `remake/game/localization/en.po`, `remake/game/localization/zh_CN.po` | Actual field movement/standing NPC/shared seed, autonomous wait/camera/fade, Shift event order, release and modal/transfer reset. Old binding files and custom pad controls still load. Keep battle acceleration disabled until B; A alone does not satisfy #1619. |
-| B · Complete battle clock, after A and its 1× review | `remake/game/src/Battles/BattleSessionView.cs`, `remake/game/src/Battles/BattleSessionView.Navigation.cs`, new `remake/game/src/Battles/BattleSessionView.Clock.cs`, `remake/game/src/Battles/BattleSceneView.cs`, `remake/game/src/Battles/BattleStoryView.cs`, `remake/game/src/Battles/BattleMapViewport.cs`, `remake/game/src/Battles/BattleRetreatView.cs`, `remake/game/src/Battles/BattleAppearanceView.cs`, `remake/game/src/Battles/BattleGiveView.cs`, `remake/game/src/Battles/BattleDiscardView.cs`, `remake/game/src/Battles/BattleSearchView.cs` | Route mixed and independent callbacks through one active battle budget; keep transaction/result reveal unscaled. First prove 1× results/control and 30/60/120 FPS logical scheduling, then 1.5× movement/automatic attack/HEAL/story/death/return and no double delivery. New partial holds battle scheduling, not a generic scheduler. Stop with both domains delivered; no further campaign admission. |
-| C · Integrated finite acceptance, after B | Existing consumers above; `remake/game/src/Audio/SessionAudio.cs`, `remake/game/src/Audio/SessionAudio.EntrySkip.cs` and `remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationMusicRunner.cs` are inspection dependencies, not planned rewrites. Behavior assertions, only if engine semantics change: `remake/tests/Sf2.Remake.Engine.Tests/OrdinaryFieldTimeTests.cs`, `remake/tests/Sf2.Remake.Engine.Tests/ExplorationSessionTests.OrdinaryTime.cs` | Connected field→Battle01→field reset; Speed 1–4/custom and suppression unchanged; finite music/Egress cue ends naturally at normal pitch, pause/resume and entry skip remain separate. Read actual state/input/projection/errors. No all-route replay or new audio engine. |
+| A · Shared input and exploration, after design acceptance | `remake/game/src/Input/GameInput.cs`, `remake/game/src/Input/InputSettings.cs`, `remake/game/src/Input/ExplorationMovementHold.cs`, `remake/game/src/Exploration/ExplorationSessionView.cs`, `remake/game/src/Exploration/ExplorationSessionView.Clock.cs`, `remake/game/src/Exploration/ExplorationPresentation.cs`, `remake/game/src/GameRoot.cs`, `remake/game/src/Entry/WindowSupportHost.cs`, `remake/game/src/Entry/SettingsHost.cs`; help `remake/game/src/UI/ControlsHelpView.cs`, `remake/game/src/Localization/GameText.cs`, `remake/game/localization/en.po`, `remake/game/localization/zh_CN.po` | Actual field movement/standing NPC/shared seed, autonomous wait/camera/fade, Shift event order, release and modal/transfer reset. Old binding files and custom pad controls still load. Shared admission is reused by B; A alone did not satisfy #1619. |
+| B · Battle clock after A's independent 1× acceptance | `remake/game/src/Battles/BattleSessionView.cs`, `remake/game/src/Battles/BattleSessionView.Navigation.cs`, `remake/game/src/Battles/BattleSessionView.Inspection.cs`, `remake/game/src/Battles/BattleSessionView.Clock.cs`, `remake/game/src/Battles/BattleSceneView.cs`, `remake/game/src/Battles/BattleMapViewport.cs`; shared host/help paths from A | One parent budget routes movement, automatic turns, scene/HEAL logical work, story, appearance and retreat; result/story reveal remains real-time. `BattleStoryView`, `BattleRetreatView`, `BattleAppearanceView`, `BattleGiveView`, `BattleDiscardView` and `BattleSearchView` are unchanged consumers. No camera/layout policy change. Matched HEAL work at 30/60/120 FPS and finite story/appearance/death results agree at both rates. |
+| C · Integrated finite acceptance | `remake/game/probes/engine_battle_rate_observation.gd`, existing `remake/game/probes/engine_battle_speed_observation.gd`; `remake/game/probes/PreVoyageLocalizationObservation.cs` gains bounded initial-party selection only | Actual Map3→Battle02→EGRESS→Map3 host handoff at both rates, one MP payment/return, fresh field input, natural normal-pitch cue finish. Reuse the admitted complete world and registered controlled party; no new campaign admission, audio engine or production rule changes. Read-only audio dependencies remain `remake/game/src/Audio/SessionAudio.cs`, `remake/game/src/Audio/SessionAudio.EntrySkip.cs` and `remake/src/Sf2.Remake.Application/Runtime/Exploration/ExplorationMusicRunner.cs`. |
 
 The help-file names and every existing candidate must be checked again against accepted main at
 dispatch; serialize these paths with ongoing input, Speed and #1616 composition work. Keep new/
@@ -638,26 +639,29 @@ late turns, both Shift keys, Shift-before/after-direction, held Confirm, stale c
 handoff, low-FPS cap, physical focus return and Save/Continue starting at 1×. Read pitch/playback and
 cue completion directly; a shorter visual duration is not proof that audio finished.
 
-Future code checks use `uv run sf2 verify adapter`, affected existing engine behavior assertions
+Code checks use `uv run sf2 verify adapter`, affected existing engine behavior assertions
 and `uv run sf2 verify engine` when engine behavior changes, plus committed planner/selected CI.
 Do not add unit tests of adapter observers, schedulers-as-test-tools or reports. A design PR uses
 only direct checks below. Reuse the owned registered installation/project/debug instance for any
 later actual observation; no screenshot or restart is implied by this design.
 
-Bound the future pilot to one field segment and a finite set of battle phases, serially, at most
-30 s per case. Record semantic transitions and coarse endpoint timing, not per-frame world JSON.
-Budget at most 20 cases, 100 KiB/case and 2 MiB total new reports, no duplicated world/assets and no
-network/model acquisition. Input/world memory stays at existing consumer scale; additional clock
+Bound the pilot to one field segment and a finite set of battle phases, serially, with finite
+deadlines. Record semantic transitions and coarse endpoint timing, not per-frame world JSON.
+The current B/C budget is at most 39 launches including preserved failed observer/startup attempts,
+45 s per launch, 100 KiB/report and 2 MiB total semantic reports. This includes the final narrow
+navigation-boundary verification; it does not expand campaign admission. No duplicated world/assets
+or network/model acquisition. Input/world memory stays at existing consumer scale; additional clock
 state is O(1), service work is O(due opportunities × existing step cost), capped 4 per callback.
-Stop/replan if a case needs more time/records, any output exceeds its cap, or a required seam cannot
-be reached with admitted content; missing observations remain explicit. The pilot does not authorize
-cleanup of retained evidence or another instance. Subjective comfort, exact original natural timing,
-all-device behavior and existing unrelated shutdown warnings remain **Unknown**. No observation or
-stage B/C implementation acceptance in this section has yet passed; A's current observations are linked above.
+Stop/replan if a case needs more time/records, output exceeds its cap, or a required seam cannot be
+reached with admitted content. Keep missing observations explicit and select only required playback
+endpoints rather than cumulative audio ledgers. This does not authorize cleanup of retained evidence.
+Subjective comfort, exact original natural timing, all-device behavior and existing unrelated shutdown
+warnings remain **Unknown**. Bounded B/C observations are **Confirmed** at the linked native recipe;
+they do not establish all-route, hardware-exact or human acceptance. A's observations remain linked above.
 
 ## Design-only verification
 
-The design-only stages of #1578 and #1619 change this owner; A implementation instead uses its
+The design-only stages of #1578 and #1619 use these document checks; implementation uses its
 linked adapter/native acceptance. The following checks do not establish runtime acceptance.
 Acceptance is source-chain review, local Markdown target/anchor and scope checks, `git diff --check`,
 the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`, and actual scoped CI.

@@ -48,6 +48,8 @@ internal sealed partial class BattleSceneView : Control
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
     private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
+    internal bool WaitingForInput => _state is { RequiresAcknowledgement: true } state && !Suppressed(state) &&
+        state.Healing is not { LogicalComplete: false, AtTimedInput: false };
 
     public override void _Ready()
     {
@@ -210,6 +212,29 @@ internal sealed partial class BattleSceneView : Control
         catch (InvalidOperationException error) { Error = error.Message; }
     }
 
+    // Reading is real-time delivery. It cannot add mandatory HEAL work or RNG.
+    private void ArrangeCanvas()
+    {
+        var viewport = GetViewportRect().Size;
+        float scale = MathF.Min(viewport.X / 256, viewport.Y / 224);
+        _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
+    }
+
+    internal SessionCommand? Read(double delta)
+    {
+        if (_state is not { RequiresAcknowledgement: true } state || Error is not null || _completed ||
+            _suspended || !IsVisibleInTree() || !CanProcess() || Suppressed(state)) return null;
+        ArrangeCanvas();
+        RefreshMessageHint(state);
+        _revealed += delta * _settings.CharactersPerSecond;
+        if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
+        if (state.IsHealingMessage && state.Healing is { Delivered: false } message &&
+            (message.AtTimedInput || message.LogicalComplete) &&
+            (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()) && !_messagePanel.MoreBelow)
+            return new CompletePresentation(state.Token, state.CompletionKind);
+        return null;
+    }
+
     internal SessionCommand? Consume(double delta)
     {
         if (_state is not { } state || Error is not null || _completed || _suspended ||
@@ -223,9 +248,7 @@ internal sealed partial class BattleSceneView : Control
             _completed = true;
             return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        var viewport = GetViewportRect().Size;
-        float scale = MathF.Min(viewport.X / 256, viewport.Y / 224);
-        _canvas.Scale = new(scale, scale); _canvas.Position = (viewport - new Vector2(256, 224) * scale) / 2;
+        ArrangeCanvas();
         RefreshMessageHint(state);
         _elapsed += delta;
         if (Suppressed(state))
@@ -243,15 +266,6 @@ internal sealed partial class BattleSceneView : Control
         }
         if (state.RequiresAcknowledgement)
         {
-            _revealed += delta * _settings.CharactersPerSecond;
-            if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
-            // Ready text is host delivery, not another player acknowledgement.
-            // Publish at the input boundary so modern reveal speed cannot insert
-            // delivery among mandatory logical operations or advance timed input.
-            if (state.IsHealingMessage && state.Healing is { Delivered: false } message &&
-                (message.AtTimedInput || message.LogicalComplete) &&
-                (_message.VisibleCharacters < 0 || _message.VisibleCharacters >= _message.GetTotalCharacterCount()) && !_messagePanel.MoreBelow)
-                return new CompletePresentation(state.Token, state.CompletionKind);
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
         }
         if (state.SupportSpell is not null || state.IsSilencedCast)

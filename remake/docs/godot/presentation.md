@@ -2854,10 +2854,11 @@ open boundary; neither #1456 nor #1616 is signed off by these engineering observ
 
 ## Held exploration acceleration (#1619 A)
 
-**High rigor at the accepted timing boundary; bounded implementation A.** Hold Shift for focused
+**High rigor at the accepted timing boundary; exploration consumer.** Hold Shift for focused
 exploration at 1.5×; release the last acceleration binding to restore 1×. Both Shift locations and
-an optional mapped pad input share a transient hold. Battle stays at 1× pending stage B; A does
-not complete [the full design](modernization-design.md#held-15-acceleration-1619).
+an optional mapped pad input share a transient hold. The
+[battle consumer below](#held-battle-acceleration-1619-bc) implements the other domain of
+[the accepted design](modernization-design.md#held-15-acceleration-1619).
 
 [GameInput](../../game/src/Input/GameInput.cs) and its
 [acceleration partial](../../game/src/Input/GameInput.Acceleration.cs) own admission. Old format 1
@@ -2887,11 +2888,44 @@ settles at 1× with its existing 120-step guard. Rate/debt are not saved.
 Text cps, Speed's existing 0–3 labels/presets, suppression preferences, sample pitch/rate and music
 completion are unchanged. Fade envelopes may follow visual cues; finite sound/music still requires
 actual completion. Existing entry skip disarms this separate hold. EN/zh-CN Controls help describes
-the staged exploration feature; there is no persistent speed setting or engine/content rule change.
+both exploration and battle; there is no persistent speed setting or engine/content rule change.
 
 The [native recipe and retained failures](../verification/field-programs.md#held-exploration-rate-1619-a)
 own observed scope. Matched logical opportunities/actions preserve state/RNG; equal real hold
 durations intentionally advance more NPC time and can change later collisions/seeds. Native window
 focus with injected mapped events is observed; human physical input, all devices, comfort, original
-natural timing and B/C remain **Unknown**. Existing ObjectDB shutdown warnings remain explicit.
+natural timing remain **Unknown**. Existing ObjectDB shutdown warnings remain explicit.
 The sprite anchor and #1614 viewport/resize owners are unchanged by this implementation.
+
+## Held battle acceleration (#1619 B/C)
+
+[BattleSessionView.Clock](../../game/src/Battles/BattleSessionView.Clock.cs) owns one 60 Hz budget
+for the visible active battle. Its typed boundary identity includes session, movement/scene/retreat/
+round/story tokens, selected actor/stage and actual reading eligibility. Boundary or hold-generation
+changes discard debt; external input discards time predating the new request. Each callback services
+at most four opportunities and keeps only fractional unused time. Mandatory work remains pending.
+Prepared/retired battle views neither drive the shared camera nor disarm the field owner's hold.
+
+The parent routes movement, automatic simulation, battle-story ticks, appearance, scene animation,
+mandatory HEAL steps and retreat effects through that budget. HEAL submits each required operation
+in order rather than scaling an engine step count. `BattleMapViewport.AdvanceCamera` is called by
+this parent only; its inner viewport advances once per opportunity. Inspection and actual reading
+use real delta for camera delivery. The viewport policy and sprite anchor are unchanged.
+
+Scene text reveal is separate real-time `BattleSceneView.Read`; actual acknowledgement eligibility,
+including HEAL's timed input boundary, disarms the hold. Required autonomous HEAL work before that
+boundary still runs at the selected rate. Story dialogue, Give/Discard/Search results and retreat
+text retain real cps and fresh confirmation. Battle command-list/target/inspection navigation keeps
+real 120 ms repeats; provisional movement uses gameplay time. Shift creates no action command.
+
+Focus/hide/pause, inspection, host modals, stopped failure, attach/retire and field↔battle transfer
+clear debt and disarm. Existing release barriers still require neutral and a fresh hold. Normal
+pitch and audio completion are unchanged: EGRESS cannot close while its real cue is playing.
+Speed presets/custom cps, suppression, Reduced Flash, saves and entry skip retain their own owners.
+EN/zh-CN Controls help now describes the two-domain hold without adding a persistent setting.
+
+The [native acceptance](../verification/host.md#held-battle-rate-1619-bc) confirms matched HEAL
+work/RNG/resources at 30/60/120 FPS, finite story/appearance/death, real reading, focus-handler/stall
+bounds and one representative private Map3→Battle02→EGRESS→usable Map3 route at both rates.
+**Unknown:** all devices, physical battle OS-focus behavior, human comfort, original natural timing
+and unobserved campaign combinations. Injecting focus signals exercises handlers, not OS focus.

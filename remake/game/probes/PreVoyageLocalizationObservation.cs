@@ -56,8 +56,34 @@ public sealed partial class GameRoot
         }
         int[] flags = start.GetProperty("flags").EnumerateArray().Select(flag => flag.GetInt32()).ToArray();
         var active = flags.Where(flag => flag is >= 32 and < 62).Order().Select(flag => new ActorRef("ally-" + (flag - 32))).ToArray();
-        var party = new BattleStartInput(old.Party.Encounter, old.Party.Actors, old.Party.MainSeed, old.Party.ThinkingSeed,
-            60, old.Party.NewBattle, active, old.Party.ItemCustody);
+        var initialParty = old.Party;
+        if (start.TryGetProperty("partyInput", out var selectedParty))
+        {
+            // Explicit initial input only, validated by the existing controlled reader.
+            // Full-world admission stays with OpeningNewGameReader above.
+            if (selectedParty.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(selectedParty.GetString()))
+                return "observation-party-input";
+            string inputRoot = Path.Combine(repository, "remake", "reference", "inputs") + Path.DirectorySeparatorChar;
+            string path;
+            try { path = Path.GetFullPath(Path.Combine(repository, selectedParty.GetString()!)); }
+            catch (ArgumentException) { return "observation-party-input"; }
+            if (!path.StartsWith(inputRoot, StringComparison.OrdinalIgnoreCase)) return "observation-party-input";
+            var file = new FileInfo(path);
+            if (!file.Exists || file.Length > 65536) return "observation-party-input";
+            if (PrivateBattle(path).Read() is not ScenarioReadAccepted acceptedParty) return "observation-party-rejected";
+            initialParty = acceptedParty.Start;
+            var initialized = GameSession.Start(acceptedParty.Definition, initialParty, RuleCompositions.ForGame());
+            if (initialized is SessionStartFailed partyFailure) return partyFailure.Failure.Code;
+            var actors = ((SessionStarted)initialized).Session.Current.Battle.Actors.Select(actor => new BattleActorStartInput(
+                actor.Actor, actor.Hp, actor.Mp, actor.Exp ?? 0, actor.Kills ?? 0, actor.Defeats ?? 0,
+                actor.Status, null, actor.Progress ?? new BattleActorProgress(actor.Level, actor.MaxHp, actor.MaxMp,
+                    actor.BaseAttack, actor.Defense, actor.Agility, actor.Definition.Spells, actor.SourceLoadout),
+                actor.SourceLoadout, actor.ActivationWord, actor.Initialized)).ToArray();
+            initialParty = new(initialParty.Encounter, actors, initialParty.MainSeed, initialParty.ThinkingSeed,
+                initialParty.Gold, initialParty.NewBattle, itemCustody: initialParty.ItemCustody);
+        }
+        var party = new BattleStartInput(initialParty.Encounter, initialParty.Actors, initialParty.MainSeed, initialParty.ThinkingSeed,
+            start.TryGetProperty("partyInput", out _) ? initialParty.Gold : 60, initialParty.NewBattle, active, initialParty.ItemCustody);
         var map = new MapId(start.GetProperty("map").GetString()!);
         var palette = admitted.Definition.Exploration!.Maps[map].BasePalette!;
         var position = start.GetProperty("position");

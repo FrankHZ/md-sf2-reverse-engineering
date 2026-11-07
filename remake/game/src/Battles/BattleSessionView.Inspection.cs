@@ -25,7 +25,7 @@ public sealed partial class BattleSessionView
     private bool _inspectionRelease;
 
     private void InspectionBarrier()
-    { ClearNavigation(); _inspectionRelease = _input.GameplayHeld; }
+    { SuspendPacing(); ClearNavigation(); _inspectionRelease = _input.GameplayHeld; }
 
     private void RetireInspection()
     { _inspectionAfterReturn = null; _inspection?.Close(); }
