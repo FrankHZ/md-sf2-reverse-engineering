@@ -1639,8 +1639,8 @@ only disposable source-pixel camera geometry, shared by field and battle through
 It does not store gameplay state. Both authored and private consumers use the same cell scale.
 
 Field coordinates are sixteenth-source-pixel motion values divided by16. A battle cell is mapped
-to the source map by adding `SourceMapRegion.Origin`, then multiplying by24. Sprite top-left and
-foot alignment stay on that same transform. Battle terrain uses the inverse region translation.
+to the source map by adding `SourceMapRegion.Origin`, then multiplying by24. Textured exploration
+actors use the field sprite anchor below. Battle terrain uses the inverse region translation.
 A same-area, same-map handoff retains the presentation origin and pans toward the new subject; a different
 map initializes its own frame under the existing transition. Disjoint packed rooms on the same
 map also initialize within that transition; the camera never pans across unopened storage. Bounds may clamp a handoff when its
@@ -1659,6 +1659,62 @@ independently of the retained player; non-player story follow targets bypass the
 Its inclusive cell bounds become a half-open pixel rectangle. Rendering clips every plane and
 actor to that rectangle and the viewport. Small areas center on exterior base color, never zoom
 or reveal another area. High tile priority, actor ink masks and draw order remain in their owners.
+
+#### Castle barracks and field sprite anchor (#1609)
+
+**Confirmed** in the [pinned US source](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm).
+Map19 area record 1 spans (0,0)–(40,31), with main plane B and plane A offset (0,32).
+The default `ms_map19_Entities` at `0x52BC2` places entity130 at (17,25) and entity131
+at (14,25). Both use guard206, Down (3) and `eas_Init`. Their Talk handlers select texts
+547 and 548. The F501 setup has a different population. `InitializeNewEntity` allocates
+physical slots after existing entities and initializes layer 0. `eas_Init` sets normal
+orientation, size 24 and immersion off, refreshes the sprite and enters idle.
+`ChangeEntityMapsprite` selects direction index 2, with two animation halves.
+
+**Confirmed** for source draw geometry. `VInt_UpdateSprites` selects the area's main plane.
+After subtracting the view in sixteenths and rounding to pixels, it writes sprite attribute
+table coordinates with X +128 and Y +112. The hardware screen bias is 128 on each axis.
+In the same scrolling coordinate system, `LoadMap` initializes the vertical counter at
+view Y +8 and `UpdateVdpPlane` writes the corresponding map row at counter Y −8.
+Thus sprite and cell coincide horizontally, and a settled 24px sprite starts 8 source pixels
+above its cell. The field renderer applies that offset to its texture destination, visibility
+and opaque repair mask. Movement, collision and sprite ordering use the motion position.
+Camera follow uses the cell center. The Talk hint and command share `ExplorationInteractionQuery`.
+The authored marker fallback and `BattleMapViewport` draw their own actors.
+
+**Confirmed** from the verified retail ROM and running Godot 4.7.2 .NET. To reproduce the
+source comparison, decode Map19 blocks and layout at `0xA4698` and `0xA5076` with
+`decode_map_blocks` and `decode_map_layout`. Read both bed columns at rows 24–25. Decode
+guard206 Down at `0xF900C` with Basic and tileset44 at `0x75F28` with Stack. Intersect
+nonzero sprite ink with opaque high-priority tile pixels, applying tile flips. With the
+quarters roof open, plane B block281 supplies the blanket. Its upper six tiles have priority
+and its lower three do not. Plane A is empty at the open beds. With zero windows both guards
+retain low display priority.
+
+| Guard frame | Exposed with the former cell-top draw | Exposed with the source anchor |
+| --- | --- | --- |
+| First | 119 pixels, rows 16–23 | 83 pixels, rows 1–7 |
+| Second | 118 pixels, rows 16–23 | 84 pixels, rows 0–7 |
+
+Rows are zero-based within the sprite. The source and admitted tile/sprite alpha masks agree
+at both beds. The actual Godot repair rectangles leave the head above the blanket.
+
+For a short native reproduction, select the ordinary playtest pair and an isolated save
+namespace. New Game mounts Map3 (56,3). Separately, start the joined Map3 church state
+through `StartPreVoyageLocalizationObservation` (32,13, Up, flags 0/1/2/32/33/66/80/600/602/603/604/605),
+save slot1 through the menu, and use Continue from a fresh title. Walk out of the church,
+through Map3 (28,1) to Map19 (26,30), then to (16,29). Before entering, plane A roof blocks
+354/360 and 357/363 repaint the two guards. Walk Up through (16,28) to (16,26).
+Roof record 7 clears the 7×5 region at (12,55). Use `ReadObservationJson` and
+`ObserveLayoutRegion` / `ReadLayoutRegion` around the beds (B rows 24–25, A rows 56–57).
+The two followers put entities130/131 in slots 5/6 on this route. Direct controlled room
+entry yielded slots 3/4. From (15,25), face left and confirm the Talk hint to receive text548.
+The Map3 church projection places Bowie (32,13) and priest141 (32,11) at the same X,
+48 source pixels apart vertically, with both tops 8 pixels above their cells.
+
+**Unknown** for the historical report's exact party, flags and animation phase, and for
+natural US hardware timing. Native reach was observed from the controlled save through
+ordinary Continue and movement. The New Game check ended at its initial field mount.
 
 #### Scene visibility coordinates (#1589)
 
