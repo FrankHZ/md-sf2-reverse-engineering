@@ -279,9 +279,9 @@ marker usefulness and human readability remain product recommendations awaiting 
 
 This is intentional modernization, not an original quest-system claim. Reuse the
 [shared visual language](ui-design-language.md) and [field composition](ui-scene-review.md#3-exploration-world-speech-choices-and-search):
-original freestanding diamond, adjacent blue reading frame, gold only for focus, visible world,
-1080p baseline and 96px cells. #1543's host Journey/services remain a separate proposal. The objective
-belongs to the existing **Member / Magic / Item / Search gameplay diamond**, not the host
+persistent command names, original icons, gold focus, visible world, 1080p baseline and 96px cells.
+#1543's host Journey/services remain a separate proposal. The optional objective belongs to the
+**Member / Magic / Item / Search gameplay menu**. Host actions keep their existing entry through the
 Settings/Save/Quit menu. #1544's accepted minimal-hint direction applies; its deferred implementation,
 device-label cleanup and wider hint migration are not prerequisites or work authorized here.
 
@@ -371,7 +371,7 @@ the current session/revision/map. Do not hold guidance through the transfer fade
 refresh/invalidation; this tiny rule set needs no cache, hashes, background poller or event platform.
 
 Use one `Modern guidance / 现代引导` On/Off row in existing general Settings. It controls both objective
-and destination information; no new toolbar toggle or fifth diamond command. Recommend On for new
+and destination information; no new toolbar toggle or additional field command. Recommend On for new
 preferences and an old format1 file missing the member, preserving every existing setting/binding.
 Explicit Off persists across New Game, Continue and app restart; Continue never restores an older
 save's preference. Default reset follows the selected On default. Draft/Back cancels; Apply publishes
@@ -382,20 +382,16 @@ remains subject to its current host entry restrictions; guidance cannot open it 
 
 ### Display precision, layout and return
 
-The menu adds a labelled **Current objective / 当前目标** section above the selected command's
-existing name/reason in its adjacent reading frame. Preserve both sections; a goal never replaces
-Search's unavailable reason, a cost or a required action hint. Initially focus the same diamond
-command as today. Objective text is passive and supplies no new Confirm action. On overflow use
-the existing reading/scroll treatment with explicit focus transfer and Back returning to the same
-diamond selection; directional diamond input cannot simultaneously scroll text. Do not add a
-separate task screen or leave the paragraph behind when the menu closes.
+If this guidance is adopted, the menu adds a labeled **Current objective / 当前目标** reading
+section. All field command names remain visible. Preserve Search's unavailable reason, costs and
+required hints. Keep the initial command focus. The objective is passive. On overflow give its
+reading area explicit focus; Back restores the same gameplay command. Only its current owner
+receives directional input. Close the objective with the menu.
 
-At 1920×1080, retain the 32px safe edge and 32px gap from the 288px-wide diamond. Propose a reading
-frame up to 960×424 rather than squeezing the existing 640×224 command detail. Try bottom-aligned
-placement; if it covers the player, move the whole diamond/detail composition to the clear upper
-safe edge once on open, as the field-reading policy already recommends. Keep Menu, person, full
-command names, reasons and footer disjoint. This is proposed geometry, not measured acceptance.
-Use 30px body/24px secondary text, wrap full names and grow/scroll within safe bounds before any
+At 1920×1080, allow a bounded reading region inside the existing safe edge. Measure it alongside
+the reviewed field command layout and move the group together if it covers the player. Keep the
+host Menu, person, full command names, reasons and footer clear. Final placement depends on
+the visual pilot. Use 30px body/24px secondary text, wrap full names and grow/scroll within safe bounds before any
 font reduction. Larger supported windows retain capped reading width and 96px world; below-minimum
 windows use existing recovery and hide guidance. No world zoom or new responsive layout system.
 
@@ -405,7 +401,7 @@ windows use existing recovery and hide guidance. No world zoom or new responsive
 | Town, menu closed | Prefer the relevant exit or named building before an exact doorway. A known, currently visible person may use the live entity anchor, never a stored NPC coordinate; absent/hidden/script-owned people get no marker. The pilot uses the exit, not a new Kazin quest marker. No secret room, unopened interior or undisclosed item/reward marker. |
 | Local blockage, closed door or unsupported leg | Distinguish known destination from “Route not available” or a justified “Entrance unavailable.” Remove a claimed next-step marker when its binding/approach fails. Existing collision/warp legality remains authoritative; an anchor is orientation, not a shortest-path or guaranteed-reach claim. No full search is added to prove access. |
 | Unknown location / uncovered objective | “Location not known” only when that knowledge distinction is actually supplied; otherwise omit destination and use the coverage fallback. Never expose internal map IDs, flag names or “Unknown” as unexplained player jargon. Off hides fallback text as well. |
-| Gameplay menu, Party, Search result, dialogue, service, host modal, battle | Hide world labels/markers while another reading/input owner is open. Only the root gameplay menu displays its objective section. Close Party to the same diamond; Search retains its actual result/return; host Back/Resume retains its original caller. Requery on field return; release/neutral guards prevent movement or confirmation from the closing gesture. |
+| Gameplay menu, Party, Search result, dialogue, service, host modal, battle | Hide world labels/markers while another reading/input owner is open. Only the root gameplay menu displays its objective section. Close Party to the same field command; Search retains its actual result/return; host Back/Resume retains its original caller. Requery on field return; release/neutral guards prevent movement or confirmation from the closing gesture. |
 
 Markers use a hollow shape plus a localized label, not color alone, and never look like gold
 selection, a quest reward or a clickable movement destination. They ignore pointer input and do not
