@@ -1,6 +1,8 @@
 """Add original battle, church or field icons to a copy of an existing private input.
 
-Only eight 24x24 rasters are decoded. Source verification, palette decoding and
+Each family contains eight 24x24 rasters. --menu all publishes the ordinary
+opening world and its selected battle scenes together, with one world copy.
+Source verification, palette decoding and
 tile rendering reuse texture_extract; the ordinary Content raster reader owns
 runtime admission. No canonical scene, ROM or asset-library file is changed.
 """
@@ -26,74 +28,22 @@ from sf2tool.texture_extract import (
 )
 
 
-def prepare(rom: Path, upstream: Path, scene: Path, out_dir: Path) -> None:
-    source, commit, identity = _verified_source(rom, upstream, owner="command-menu")
-    payload = source.read(MAIN_MENU_PATH, symbol="tiles_MainMenu")
-    if len(payload) != 7 * MAIN_MENU_ICON_BYTES:
-        raise ValueError("command-menu source size drift")
-    palette = _load_base_palette(source)
-    document = json.loads(scene.read_text(encoding="utf-8-sig"))
-    rasters = document["rasters"]
-    if any(key.startswith("command-menu.") for key in rasters):
-        raise ValueError("input scene already owns command-menu rasters")
-    receipts = []
-    for index, name in enumerate(("attack", "magic", "item", "stay")):
-        for frame, state in enumerate(("normal", "selected")):
-            start = index * MAIN_MENU_ICON_BYTES + frame * 288
-            pixels, width, height = _render_tile_pool_sheet(
-                payload[start : start + 288], palette, sheet_columns=3
-            )
-            key = f"command-menu.{name}.{state}"
-            digest = hashlib.sha256(bytes(pixels)).hexdigest()
-            rasters[key] = {
-                "width": width,
-                "height": height,
-                "format": "rgba8",
-                "data": base64.b64encode(bytes(pixels)).decode("ascii"),
-                "sha256": digest,
-            }
-            receipts.append({"resource": key, "sourceOffset": start, "sha256": digest})
-    # New output directory only: partial/failed publications cannot overwrite a prior input/run.
-    out_dir.mkdir(parents=True, exist_ok=False)
-    (out_dir / "scene.json").write_text(json.dumps(document), encoding="utf-8")
-    (out_dir / "provenance.json").write_text(
-        json.dumps(
-            {
-                "upstreamCommit": commit,
-                "romSha256": identity["hashes"]["sha256"],
-                "source": MAIN_MENU_PATH.as_posix(),
-                "symbol": "tiles_MainMenu",
-                "palette": "base palette via texture_extract",
-                "transparentIndex": 0,
-                "layout": "nine-tile halves in 3x3 row-major order; first normal, second selected",
-                "resources": receipts,
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-
-def prepare_church(
+def menu_assets(
     rom: Path,
     upstream: Path,
-    world: Path,
-    out_dir: Path,
     listing: Path | None = None,
     rom_assets: bool = False,
     menu: str = "church",
-) -> None:
-    """Mount four source menu slots through the existing world raster admission."""
-    if menu not in ("church", "field"):
-        raise ValueError("unknown world menu")
-    if out_dir.exists():
-        raise ValueError("output directory already exists")
+) -> tuple[dict, dict]:
+    """Decode an existing menu family without publishing or copying a world."""
     source, commit, identity = _verified_source(
         rom, upstream, owner=f"{menu}-menu", listing_path=listing
     )
-    field = menu == "field"
-    symbol = "tiles_MainMenu" if field else "tiles_ChurchMenu"
-    source_path = MAIN_MENU_PATH if field else Path("data/graphics/tech/menus/churchmenutiles.bin")
+    main_menu = menu != "church"
+    symbol = "tiles_MainMenu" if main_menu else "tiles_ChurchMenu"
+    source_path = (
+        MAIN_MENU_PATH if main_menu else Path("data/graphics/tech/menus/churchmenutiles.bin")
+    )
     address = source.addresses[symbol]
     consumed = None
     if rom_assets:
@@ -104,17 +54,17 @@ def prepare_church(
         )
         symbols = (
             ("tiles_MainMenu", "tiles_ItemMenu", "p_tiles_MainMenu", "pt_tiles_Menu")
-            if field
+            if main_menu
             else ("tiles_ChurchMenu", "tiles_ShopMenu", "p_tiles_ChurchMenu", "pt_tiles_Menu")
         )
         for checked in symbols:
             if source.addresses[checked] != fixture["table"][checked]:
                 raise ValueError(f"{menu}-menu H1/accepted-address drift")
-        pointer = source.addresses["p_tiles_MainMenu" if field else "p_tiles_ChurchMenu"]
+        pointer = source.addresses["p_tiles_MainMenu" if main_menu else "p_tiles_ChurchMenu"]
         if int.from_bytes(source.rom[pointer : pointer + 4], "big") != address:
             raise ValueError(f"{menu}-menu ROM pointer drift")
         byte_count = (
-            7 * MAIN_MENU_ICON_BYTES if field else source.addresses["tiles_ShopMenu"] - address
+            7 * MAIN_MENU_ICON_BYTES if main_menu else source.addresses["tiles_ShopMenu"] - address
         )
         compressed = source.rom[address : address + byte_count]
         if (source.disasm / source_path).exists() and len(
@@ -145,24 +95,23 @@ def prepare_church(
         compressed = source.read(source_path, symbol=symbol)
         palette = _load_base_palette(source)
         palette_address = source.addresses["palette_Base"]
-    if field:
+    if main_menu:
         if len(compressed) != 7 * MAIN_MENU_ICON_BYTES:
             raise ValueError("field-menu source size drift")
-        table = source.addresses["pt_tiles_Menu"]
-        if int.from_bytes(source.rom[table : table + 4], "big") != 0x85010204:
-            raise ValueError("field-menu slot mapping drift")
+        table = source.addresses["pt_tiles_Menu"] + (4 if menu == "command" else 0)
+        expected_mapping = 0x80010203 if menu == "command" else 0x85010204
+        if int.from_bytes(source.rom[table : table + 4], "big") != expected_mapping:
+            raise ValueError(f"{menu}-menu slot mapping drift")
         payload = compressed
     else:
         decoded = decode_stack_compressed(compressed, expected_output_bytes=2304)
         payload, consumed = decoded.output, decoded.input_bits_consumed
-    document = json.loads(world.read_text(encoding="utf-8-sig"))
-    world_document = document.get("world", document)
-    property_name = "fieldMenu" if field else "churchMenu"
-    if property_name in world_document["presentation"]:
-        raise ValueError(f"input world already owns {property_name}")
     rasters, receipts = {}, []
-    names = ("member", "magic", "item", "search") if field else ("raise", "cure", "promote", "save")
-    indices = (5, 1, 2, 4) if field else (0, 1, 2, 3)
+    names, indices = {
+        "field": (("member", "magic", "item", "search"), (5, 1, 2, 4)),
+        "church": (("raise", "cure", "promote", "save"), (0, 1, 2, 3)),
+        "command": (("attack", "magic", "item", "stay"), (0, 1, 2, 3)),
+    }[menu]
     for index, name in zip(indices, names, strict=True):
         for frame, state in enumerate(("normal", "selected")):
             start = index * MAIN_MENU_ICON_BYTES + frame * 288
@@ -181,9 +130,104 @@ def prepare_church(
             receipts.append(
                 {"resource": f"{menu}-menu.{key}", "decodedOffset": start, "sha256": digest}
             )
-    world_document["presentation"][property_name] = rasters
-    # The private-world reader intentionally resolves these selections beneath its world directory.
-    # Preserve that package boundary when publishing the one new world, rather than rewriting paths.
+    return rasters, {
+        "upstreamCommit": commit,
+        "romSha256": identity["hashes"]["sha256"],
+        "inputMode": "canonical-ROM" if rom_assets else "split-payload-parity",
+        "sourceAddress": address,
+        "sourceBytes": len(compressed),
+        "compressedBytes": None if main_menu else len(compressed),
+        "inputBitsConsumed": consumed,
+        "decodedBytes": len(payload),
+        "paletteAddress": palette_address,
+        "paletteBytes": PALETTE_BYTES,
+        "source": source_path.as_posix(),
+        "symbol": symbol,
+        "palette": "base palette via texture_extract",
+        "transparentIndex": 0,
+        "paletteSource": (
+            "displayinit.asm InitializeDisplay copies "
+            "palette_Base/CRAM_PALETTE_SIZE to PALETTE_3_BASE; "
+            "diamondmenulayout.asm MENUTILE slots select PALETTE3"
+        ),
+        "paletteAddressFixture": (
+            " "
+            "tests/fixtures/h2/map3-original-player-reference-frame-static-v1.json "
+            "static.indexBindings.paletteBase"
+        ),
+        "layout": (
+            f"slots {indices} in source up/left/right/down order; 288-byte "
+            "normal/selected halves, 3x3 tiles"
+        ),
+        "mappingSource": (
+            "menustringspointertable.asm "
+            f"pt_{'BattleMenuWithStay' if menu == 'command' else menu.title() + 'Menu'}Names; "
+            "diamondmenu.asm "
+            "dmaDiamondMenuIcon_Up/Left/Right/Down"
+        ),
+        "resources": receipts,
+    }
+
+
+def mount(rasters: dict, additions: dict, prefix: str = "") -> None:
+    """Keep already prepared identical art; reject partial or conflicting namespaces."""
+    selected = {prefix + key: value for key, value in additions.items()}
+    existing = {key: value for key, value in rasters.items() if key.startswith(prefix)}
+    if existing and existing != selected:
+        raise ValueError("input already owns partial or different menu rasters")
+    rasters.update(selected)
+
+
+def prepare(
+    rom: Path,
+    upstream: Path,
+    scene: Path,
+    out_dir: Path,
+    listing: Path | None = None,
+    rom_assets: bool = False,
+) -> None:
+    if out_dir.exists():
+        raise ValueError("output directory already exists")
+    art, provenance = menu_assets(rom, upstream, listing, rom_assets, "command")
+    document = json.loads(scene.read_text(encoding="utf-8-sig"))
+    mount(document["rasters"], art, "command-menu.")
+    out_dir.mkdir(parents=True, exist_ok=False)
+    write_json(out_dir / "scene.json", document)
+    write_json(out_dir / "provenance.json", provenance)
+
+
+def write_json(path: Path, document: dict) -> None:
+    # Stream serialization; avoid a second world-sized encoded string.
+    with path.open("w", encoding="utf-8") as stream:
+        json.dump(document, stream, ensure_ascii=False)
+
+
+def prepare_church(
+    rom: Path,
+    upstream: Path,
+    world: Path,
+    out_dir: Path,
+    listing: Path | None = None,
+    rom_assets: bool = False,
+    menu: str = "church",
+    scene: Path | None = None,
+) -> None:
+    """Publish once, including every declared encounter when selecting all menus."""
+    if out_dir.exists():
+        raise ValueError("output directory already exists")
+    if menu == "all" and scene is None:
+        raise ValueError("all menus require the opening battle scene")
+    menus = ("field", "church", "command") if menu == "all" else (menu,)
+    assets = {name: menu_assets(rom, upstream, listing, rom_assets, name) for name in menus}
+    document = json.loads(world.read_text(encoding="utf-8-sig"))
+    world_document = document.get("world", document)
+    for name in menus:
+        if name != "command":
+            presentation = world_document["presentation"]
+            key = name + "Menu"
+            if key in presentation and presentation[key] != assets[name][0]:
+                raise ValueError(f"input world already owns partial or different {key}")
+            presentation[key] = assets[name][0]
     dependencies = {
         value
         for row in document.get("encounters", [])
@@ -191,7 +235,8 @@ def prepare_church(
         if value is not None
     }
     dependencies.update(
-        sound["runtimeWav"]
+        f"audio-{sound['command']:02x}-{sound['timerB']:02x}/"
+        f"command-{sound['command']:02x}-timer-{sound['timerB']:02x}.wav"
         for sound in world_document["presentation"].get("audio", [])
         if "runtimeWav" in sound
     )
@@ -206,79 +251,63 @@ def prepare_church(
             raise ValueError("world dependency escapes input package")
         if not (source_root / path).is_file():
             raise ValueError(f"world dependency missing: {relative}")
+    scenes = {}
+    if menu == "all":
+        # The opening battle is an external selection; later battles are relative dependencies.
+        # Validate all of them before creating the publication. No rules or selection paths change.
+        scenes["scene.json"] = json.loads(scene.read_text(encoding="utf-8-sig"))
+        for row in document.get("encounters", []):
+            if row.get("battleScenes"):
+                relative = row["battleScenes"]
+                if relative in ("world.json", "provenance.json", "scene.json"):
+                    raise ValueError("battle scene collides with publication output")
+                scenes[relative] = json.loads(
+                    (source_root / relative).read_text(encoding="utf-8-sig")
+                )
+        for battle_scene in scenes.values():
+            mount(battle_scene["rasters"], assets["command"][0], "command-menu.")
+    if dependencies.intersection({"world.json", "provenance.json", "scene.json"}):
+        raise ValueError("world dependency collides with publication output")
     out_dir.mkdir(parents=True, exist_ok=False)
     for relative in sorted(dependencies):
         destination = out_dir / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source_root / relative, destination)
-    (out_dir / "world.json").write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
-    (out_dir / "provenance.json").write_text(
-        json.dumps(
-            {
-                "upstreamCommit": commit,
-                "romSha256": identity["hashes"]["sha256"],
-                "inputMode": "canonical-ROM" if rom_assets else "split-payload-parity",
-                "sourceAddress": address,
-                "sourceBytes": len(compressed),
-                "compressedBytes": None if field else len(compressed),
-                "inputBitsConsumed": consumed,
-                "decodedBytes": len(payload),
-                "paletteAddress": palette_address,
-                "paletteBytes": PALETTE_BYTES,
-                "copiedDependencies": sorted(dependencies),
-                "source": source_path.as_posix(),
-                "symbol": symbol,
-                "palette": "base palette via texture_extract",
-                "transparentIndex": 0,
-                "paletteSource": (
-                    "displayinit.asm InitializeDisplay copies "
-                    "palette_Base/CRAM_PALETTE_SIZE to PALETTE_3_BASE; "
-                    "diamondmenulayout.asm MENUTILE slots select PALETTE3"
-                ),
-                "paletteAddressFixture": (
-                    " "
-                    "tests/fixtures/h2/map3-original-player-reference-frame-static-v1.json "
-                    "static.indexBindings.paletteBase"
-                ),
-                "layout": (
-                    f"slots {indices} in source up/left/right/down order; 288-byte "
-                    "normal/selected halves, 3x3 tiles"
-                ),
-                "mappingSource": (
-                    f"menustringspointertable.asm pt_{menu.title()}MenuNames; diamondmenu.asm "
-                    "dmaDiamondMenuIcon_Up/Left/Right/Down"
-                ),
-                "resources": receipts,
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
+        if relative not in scenes:
+            shutil.copyfile(source_root / relative, destination)
+    for relative, battle_scene in scenes.items():
+        write_json(out_dir / relative, battle_scene)
+    write_json(out_dir / "world.json", document)
+    provenance = (
+        assets[menu][1]
+        if menu != "all"
+        else {"menus": {name: asset[1] for name, asset in assets.items()}}
     )
+    provenance["copiedDependencies"] = sorted(dependencies - scenes.keys())
+    provenance["preparedBattleScenes"] = sorted(scenes)
+    write_json(out_dir / "provenance.json", provenance)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("rom", "upstream", "out-dir"):
         parser.add_argument(f"--{name}", type=Path, required=True)
-    inputs = parser.add_mutually_exclusive_group(required=True)
-    inputs.add_argument("--scene", type=Path)
-    inputs.add_argument("--world", type=Path)
+    parser.add_argument("--scene", type=Path, help="Opening battle scene; required with --menu all")
+    parser.add_argument("--world", type=Path)
     parser.add_argument(
-        "--listing",
-        type=Path,
-        help="Existing H1 listing for a read-only upstream checkout (world menus only)",
+        "--listing", type=Path, help="Existing H1 listing for a read-only pinned checkout"
     )
     parser.add_argument(
-        "--rom-assets",
-        action="store_true",
-        help="Decode world-menu bytes directly from the verified canonical ROM",
+        "--rom-assets", action="store_true", help="Decode from verified canonical ROM"
     )
-    parser.add_argument("--menu", choices=("church", "field"), default="church")
+    parser.add_argument("--menu", choices=("church", "field", "all"), default="church")
     args = parser.parse_args()
-    if (
-        args.listing is not None or args.rom_assets or args.menu != "church"
-    ) and args.world is None:
-        parser.error("--listing/--rom-assets/--menu field requires --world")
+    if args.menu == "all":
+        if args.world is None or args.scene is None:
+            parser.error("--menu all requires both --world and --scene")
+    elif (args.world is None) == (args.scene is None):
+        parser.error("select either --world or --scene; both require --menu all")
+    elif args.world is None and args.menu != "church":
+        parser.error("--menu field requires --world")
     if args.world is not None:
         prepare_church(
             args.rom,
@@ -288,9 +317,10 @@ def main() -> None:
             args.listing,
             args.rom_assets,
             args.menu,
+            args.scene,
         )
     else:
-        prepare(args.rom, args.upstream, args.scene, args.out_dir)
+        prepare(args.rom, args.upstream, args.scene, args.out_dir, args.listing, args.rom_assets)
 
 
 if __name__ == "__main__":
