@@ -1,11 +1,35 @@
 using Godot;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.Exploration;
 
 public sealed partial class ExplorationSessionView
 {
+    private long _rateGeneration;
+    internal bool CanAccelerate => _session is { } session && IsVisibleInTree() && CanProcess() && GetWindow().HasFocus() &&
+        !MenuEntryPending && !PartyMenuOpen && !_handedOff && !_battleHandoffPending && PresentationFailure is null &&
+        session.Current.StopReason is not (SessionStopReason.Unsupported or SessionStopReason.Faulted) &&
+        session.Current.Story.EntrySkip is null && !SessionPresentationOwner.IsBattle(session.Current) &&
+        !session.Current.CanWaitForText && !session.Current.CanWaitForChoice &&
+        session.Current.Story.Wait is not (DialogueWait or W1TextWait or FieldTextWait { LogicalDone: true } or
+            FieldSearchWait or ChurchWait or ShopWait or ChoiceWait { Work: null } or ChoiceWait { Work.Automatic: false });
+
+    internal void SuspendPacing()
+    {
+        _input?.AllowAcceleration(false);
+        _tickTime = 0; _resumeAutomatic = true;
+    }
+
+    private double GameplayDelta(double delta)
+    {
+        _input.AllowAcceleration(CanAccelerate);
+        if (_rateGeneration != _input.AccelerationGeneration)
+        { _rateGeneration = _input.AccelerationGeneration; _tickTime = 0; }
+        return delta * _input.AccelerationRate;
+    }
+
     private Action<string?>? _menuEntry;
     private Guid _menuSession;
     private object? _menuMap;
@@ -17,6 +41,7 @@ public sealed partial class ExplorationSessionView
     {
         if (PresentationFailure is { } failure) { completed(failure.Code); return true; }
         if (!CanRequestFieldSave || MenuEntryPending) return false;
+        SuspendPacing();
         _movementHold.Clear(_input); CancelFieldWait();
         _menuSession = _session!.Current.SessionId;
         _menuMap = _session.Current.Exploration!.Definition;

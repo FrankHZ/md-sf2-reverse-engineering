@@ -13,7 +13,7 @@ public sealed partial class ExplorationSessionView
     private void BeginFieldMenu()
     {
         if (!CanOpenFieldMenu) return;
-        _fieldMenuActive = true; _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
+        _fieldMenuActive = true; SuspendPacing(); _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
         _tickTime = 0; _resumeAutomatic = true; _fieldMenu.Begin(); Present();
     }
     private void CloseFieldMenu()

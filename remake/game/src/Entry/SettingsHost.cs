@@ -15,7 +15,7 @@ public sealed partial class GameRoot
     private bool _battleSettings;
 
     public string ReadSettingsHostObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
-    { applied = _input?.Settings, releaseBarrier = _releaseBarrier, remapRelease = _settingsRelease?.AsText(),
+    { applied = _input?.Settings, acceleration = _input?.ObserveAccelerationState(), releaseBarrier = _releaseBarrier, remapRelease = _settingsRelease?.AsText(),
         remapDevice = _settingsRelease?.Device, held = _input?.GameplayHeld, localization = GameText.Observe() });
 
     private void HandleSettingsAction(GameAction action, InputEvent input)
@@ -44,6 +44,7 @@ public sealed partial class GameRoot
 
     private void SettingsFocusLost()
     {
+        _input?.AllowAcceleration(false);
         _systemMenu?.SuspendPointer();
         if (_settings is null && _settingsRelease is null) return;
         _settingsRelease = null; _releaseBarrier = false;

@@ -2850,3 +2850,48 @@ private equipment admission. No prior transaction/save suite is rerun solely to 
 **Unknown:** physical OS/device focus, original natural reach/cadence/pixel parity, later campaign,
 full resource coverage and human/aesthetic approval. Observed ObjectDB shutdown warnings remain an
 open boundary; neither #1456 nor #1616 is signed off by these engineering observations.
+
+
+## Held exploration acceleration (#1619 A)
+
+**High rigor at the accepted timing boundary; bounded implementation A.** Hold Shift for focused
+exploration at 1.5×; release the last acceleration binding to restore 1×. Both Shift locations and
+an optional mapped pad input share a transient hold. Battle stays at 1× pending stage B; A does
+not complete [the full design](modernization-design.md#held-15-acceleration-1619).
+
+[GameInput](../../game/src/Input/GameInput.cs) and its
+[acceleration partial](../../game/src/Input/GameInput.Acceleration.cs) own admission. Old format 1
+settings gain Shift without changing existing bindings. The optional `accelerate` row requires a
+keyboard key but may have empty pad arrays; uniqueness and the 32-event limit remain. Shift is
+allowed only on that row. Matching ignores its Shift modifier only while Shift remains an
+acceleration binding; other exact-match/modifier checks remain. Temporary matching copies are
+disposed. Shift before/after a direction preserves the same held movement; it supplies no Move,
+Confirm, choice poll or entry skip. It is excluded from `GameplayHeld` and has its own release latch.
+
+The [existing exploration clock](../../game/src/Exploration/ExplorationSessionView.Clock.cs) receives
+one scaled delta. Player motion, NPC/random walking, followers, animation and bound view service
+retain their per-tick values/order. Autonomous field/story waits and modern cues use that budget
+too. Ordinary and touched automatic scheduling cap at four 60 Hz opportunities/callback and discard
+excess whole time debt, retaining fractional time only. Mandatory engine work stays pending.
+Successful held-step continuity and real 120 ms refused retry remain; text reveal, explicit Wait and
+choice input keep their real-time boundaries.
+
+Host modals, Party/field menus, actual dialogue/choice input, Save settling, map/scene transfer,
+focus/hide/pause, stopped failures and session replacement disarm and discard debt. In-flight
+progress is not undone. A held key cannot restart acceleration on return; release/neutral and a
+new non-echo edge are required. Pacing input is observed before host modal/release-barrier routing,
+so a consumed release still clears its source. Native focus return reconciles reported device
+neutrality without arming; the first fresh press works even if the host missed key-up. Menu entry
+settles at 1× with its existing 120-step guard. Rate/debt are not saved.
+
+Text cps, Speed's existing 0–3 labels/presets, suppression preferences, sample pitch/rate and music
+completion are unchanged. Fade envelopes may follow visual cues; finite sound/music still requires
+actual completion. Existing entry skip disarms this separate hold. EN/zh-CN Controls help describes
+the staged exploration feature; there is no persistent speed setting or engine/content rule change.
+
+The [native recipe and retained failures](../verification/field-programs.md#held-exploration-rate-1619-a)
+own observed scope. Matched logical opportunities/actions preserve state/RNG; equal real hold
+durations intentionally advance more NPC time and can change later collisions/seeds. Native window
+focus with injected mapped events is observed; human physical input, all devices, comfort, original
+natural timing and B/C remain **Unknown**. Existing ObjectDB shutdown warnings remain explicit.
+The sprite anchor and #1614 viewport/resize owners are unchanged by this implementation.

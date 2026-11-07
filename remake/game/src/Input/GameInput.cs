@@ -2,9 +2,9 @@ using Godot;
 
 namespace Sf2.Remake.GodotAdapter.Input;
 
-internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait, Equipment, Give, Discard, Menu }
+internal enum GameAction { Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay, Item, Wait, Equipment, Give, Discard, Menu, Accelerate }
 
-internal sealed class GameInput
+internal sealed partial class GameInput
 {
     private readonly Dictionary<GameAction, List<InputEvent>> _bindings = [];
     private readonly Dictionary<(int Device, JoyAxis Axis), int> _axes = [];
@@ -21,7 +21,7 @@ internal sealed class GameInput
     internal void DisarmWait() => _waitRequiresRelease |= WaitHeld;
     // Godot's installed actions aggregate all mapped keys, pad buttons and axes.
     // This is held-state admission only, never a conditioned/repeating choice poll.
-    internal bool GameplayHeld => _bindings.Keys.Any(action => action != GameAction.Wait && Godot.Input.IsActionPressed(MapName(action)));
+    internal bool GameplayHeld => _bindings.Keys.Any(action => action is not (GameAction.Wait or GameAction.Accelerate) && Godot.Input.IsActionPressed(MapName(action)));
 
     internal GameInput(InputSettings settings)
     {
@@ -51,6 +51,7 @@ internal sealed class GameInput
             ["target"] = new(["Tab"], ["RightShoulder"], []),
             ["stay"] = new(["Space"], ["LeftShoulder"], []),
             ["wait"] = new(["V"], ["RightStick"], []),
+            ["accelerate"] = new(["Shift"], [], []),
         };
         foreach (var (name, binding) in settings.Bindings)
         {
@@ -74,13 +75,13 @@ internal sealed class GameInput
         {
             if (binding is null || binding.Keys is null || binding.Buttons is null || binding.Axes is null ||
                 binding.Keys.Length == 0 || binding.Buttons.Length + binding.Axes.Length == 0 &&
-                    (name != "menu" || settings.Bindings.ContainsKey("menu")))
+                    name != "accelerate" && (name != "menu" || settings.Bindings.ContainsKey("menu")))
                 throw new ArgumentException($"{name} requires keys, buttons and axes arrays, with keyboard and gamepad access.");
             List<InputEvent> events = [];
             foreach (string key in binding.Keys)
             {
                 if (!Enum.TryParse<Key>(key, false, out var code) || !Enum.IsDefined(code) ||
-                    code is Key.None or Key.Shift or Key.Ctrl or Key.Alt or Key.Meta || code.ToString() != key)
+                    code is Key.None or Key.Ctrl or Key.Alt or Key.Meta || code == Key.Shift && name != "accelerate" || code.ToString() != key)
                     throw new ArgumentException($"Unknown key for {name}: {key}.");
                 Unique("key:" + key);
                 events.Add(new InputEventKey { Keycode = code });
@@ -142,11 +143,16 @@ internal sealed class GameInput
             InputMap.AddAction(name, 0.5f);
             foreach (var input in events) InputMap.ActionAddEvent(name, input);
         }
-        DisarmMovement(); DisarmWait();
+        DisarmMovement(); DisarmWait(); DisarmAcceleration();
     }
 
     internal GameAction? Resolve(InputEvent input)
     {
+        // Shift is a pacing modifier, not a second action or direction edge. Preserve
+        // exact matching for all other modifiers and never mutate the received event.
+        using InputEventKey? normalized = WithoutAccelerationModifier(input);
+        input = normalized ?? input;
+        if (InputMap.EventIsAction(input, MapName(GameAction.Accelerate), true)) return null;
         foreach (var direction in Directions)
         {
             if (Godot.Input.IsActionPressed(MapName(direction))) continue;
@@ -193,7 +199,7 @@ internal sealed class GameInput
 
     internal void ReleaseSettingsHold()
     {
-        DisarmMovement(); DisarmWait();
+        DisarmMovement(); DisarmWait(); DisarmAcceleration();
         foreach (var action in _bindings.Keys) Godot.Input.ActionRelease(MapName(action));
     }
 

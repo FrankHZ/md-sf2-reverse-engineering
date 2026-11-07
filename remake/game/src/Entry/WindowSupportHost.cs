@@ -145,6 +145,7 @@ public sealed partial class GameRoot
             ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         _entry?.PauseAudio(covered || _settings is not null);
         bool paused = covered || _entry is not null || _settings is not null || _slots is not null || _nameEntry is not null || _systemMenu is not null;
+        if (paused) { _input?.AllowAcceleration(false); _exploration?.SuspendPacing(); }
         if (_exploration is not null) _exploration.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_battle is not null) _battle.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_settings is not null) _settings.ProcessMode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
