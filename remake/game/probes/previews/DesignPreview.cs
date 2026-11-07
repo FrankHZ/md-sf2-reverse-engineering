@@ -401,8 +401,9 @@ public partial class DesignPreview : Control
             if (key.Keycode == Key.L)
             { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
         }
-        if (input.IsActionPressed("ui_cancel") || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();
-        else if (input.IsActionPressed("ui_accept")) Activate();
+        if (input.IsActionPressed("ui_cancel") || input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true }
+            || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();
+        else if (input.IsActionPressed("ui_accept") || input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true }) Activate();
         else
         {
             bool sideways = _horizontal || _page is Page.Question or Page.Target;

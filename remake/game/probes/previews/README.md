@@ -3,7 +3,7 @@
 Open `DesignPreview.tscn` in the remake Godot project and run the current scene (F6). The preview
 starts in Chinese. Click the scene names or use F1–F4. Click the language button or press L for
 English. Arrow keys move focus along the visible row or column, Enter confirms, and Esc returns.
-Godot's standard UI confirm/cancel and directional actions also work. In dialogue, click the text
+On a gamepad use the D-pad to select, A to confirm and B to return. In dialogue, click the text
 to continue and click a response to answer. Close the window to finish.
 
 | Scene | Try |
