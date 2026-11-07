@@ -15,6 +15,9 @@ internal sealed partial class FieldActionView : Control
     private readonly Panel _panel = new();
     private readonly Label _title = Text("Title", 32), _hint = Text("Hint", 24);
     private readonly List<Label> _rows = [];
+    private readonly List<IdentityIcon> _icons = [];
+    private readonly IdentityIcons _iconOwner = new();
+    private object? _iconSource;
     private readonly List<(Func<string> Label, Action Choose, bool Available)> _options = [];
     private readonly MenuPointer _pointer = new();
     private GameSession _session = null!;
@@ -49,8 +52,22 @@ internal sealed partial class FieldActionView : Control
     {
         _entry = entry;
         _session = session; _input = input; _member = member; _name = name; _submit = submit;
-        _parents.Clear(); _restore = null; Show(); Actions();
+        _parents.Clear(); _restore = null; _assetFailure = null; Show();
+        if (!ReferenceEquals(_iconSource, session.Definition))
+        {
+            try { _iconOwner.Configure(session.Definition.Exploration?.Visuals?.IdentityIcons); }
+            catch (InvalidOperationException error)
+            {
+                _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Identity icon decoding failed.");
+                Menu("result", () => GameText.Get("prepare.failure", Recovery("field-preparation-unsupported"),
+                    _assetFailure.Code, _assetFailure.Field, _assetFailure.Message), [(() => GameText.Get("prepare.back"), Hide, true)]);
+                return;
+            }
+            _iconSource = session.Definition;
+        }
+        Actions();
     }
+    private SessionFailure? _assetFailure;
 
     private void Menu(string stage, Func<string> title, IEnumerable<(Func<string> Label, Action Choose, bool Available)> options)
     {
@@ -67,6 +84,7 @@ internal sealed partial class FieldActionView : Control
         if (_options.Count == 0) _options.Add((() => GameText.Get("prepare.empty"), Back, true));
         while (_rows.Count < _options.Count)
         {
+            var icon = new IdentityIcon(); _icons.Add(icon); _panel.AddChild(icon);
             var row = Text("Choice" + _rows.Count, 28); _rows.Add(row); _panel.AddChild(row);
         }
         for (int i = 0; i < _rows.Count; i++)
@@ -181,8 +199,24 @@ internal sealed partial class FieldActionView : Control
         _title.Text = _titleText();
         _title.Size = new(1008, Math.Max(112, _title.GetMinimumSize().Y));
         float rowTop = Math.Max(160, _title.Position.Y + _title.Size.Y + 24);
-        for (int i = 0; i < _options.Count; i++) _rows[i].Position = new(32, rowTop + i * 68);
-        _hint.Position = new(32, Math.Max(640, rowTop + _options.Count * 68 + 24));
+        bool artPage = _iconOwner.Mounted && _stage is "magic" or "use-item" or "equipment";
+        float step = artPage ? 100 : 68;
+        for (int i = 0; i < _rows.Count; i++)
+        {
+            string? identity = i >= _options.Count ? null : _stage switch
+            {
+                "magic" when i < _choices.Spells.Count => IdentityIcons.Spell(_session.Definition, _choices.Spells[i].Spell),
+                "use-item" when i < _choices.Items.Count => IdentityIcons.Item(_choices.Items[i].Word),
+                "equipment" when i < _choices.Equipment.Count => _choices.Equipment[i].Slot == 4 ? IdentityIcons.Unarmed :
+                    IdentityIcons.Item(_choices.Items.Single(item => item.Slot == _choices.Equipment[i].Slot).Word),
+                _ => null,
+            };
+            _icons[i].Present(_iconOwner, identity, i == _index);
+            _icons[i].Position = new(32, rowTop + i * step); _icons[i].Size = new(64, 96);
+            _rows[i].Position = new(_icons[i].Visible ? 112 : 32, rowTop + i * step);
+            _rows[i].Size = new(_icons[i].Visible ? 928 : 1008, step);
+        }
+        _hint.Position = new(32, Math.Max(640, rowTop + _options.Count * step + 24));
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < _options.Count; i++)
         {
@@ -225,8 +259,12 @@ internal sealed partial class FieldActionView : Control
         Present();
     }
     internal object Observe() => new { visible = IsVisibleInTree(), stage = _stage, index = _index,
-        title = _title.Text, revision = _choices?.Revision, requiresRelease = _requiresRelease,
+        iconMode = _iconOwner.Mounted ? "bound" : "unmounted-text",
+        failure = _assetFailure, title = _title.Text, revision = _choices?.Revision, requiresRelease = _requiresRelease,
+        icons = _icons.Select(icon => icon.Observe()).ToArray(),
         rows = _rows.Where(row => row.Visible).Select(row => new { text = row.Text, rect = BattleMapViewport.Rectangle(row.GetGlobalRect()) }) };
+    public override void _ExitTree() { _iconOwner.Dispose(); _iconSource = null; }
+    protected override void Dispose(bool disposing) { if (disposing) _iconOwner.Dispose(); base.Dispose(disposing); }
     private static Label Text(string name, int size)
     { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }
 }

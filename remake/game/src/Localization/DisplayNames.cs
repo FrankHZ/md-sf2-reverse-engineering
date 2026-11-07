@@ -72,7 +72,9 @@ internal static class DisplayNames
         var actor = current.Selection is { } selection ? current.Battle.GetActor(selection.Actor) : null;
         var items = actor?.SourceLoadout?.Items;
         int? id = items is not null && slot >= 0 && slot < items.Count ? items[slot] & 127 : null;
-        return id == 127 ? GameText.Get("battle.empty") : Item(id, canonical);
+        string name = id is { } item && _source?.PrivateDefinitions?.Items.TryGetValue((byte)item, out var source) == true
+            ? source.DisplayName : canonical;
+        return id == 127 ? GameText.Get("battle.empty") : Item(id, name);
     }
     internal static string Action(BattleActionChoice choice, SessionSnapshot current) => choice.Empty ? GameText.Get("battle.empty") :
         choice.Action.Spell is { } spell ? Spell(spell, choice.Label, level: true) :

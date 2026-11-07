@@ -236,6 +236,8 @@ internal static class ExplorationContentReader
         }
         Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
             "leader-cleanup-outcome", "encounter.leaderCleanup", true);
+        if (!authored && battle.Definition.PrivateDefinitions is { } iconDefinitions)
+            IdentityIconReader.Bindings(definition.Visuals?.IdentityIcons, iconDefinitions);
         bool shops = battle.Definition.PrivateDefinitions is not null && programs.Any(program => program.Instructions.Any(instruction => instruction is OpenShop));
         return new(new(package, shops ? encounters.Select(encounter => PrivateFieldPreparation.Equipment(encounter, battle.Definition.PrivateDefinitions!)) : encounters,
                 battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,

@@ -60,7 +60,8 @@ public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMa
     IReadOnlyDictionary<int, ExplorationSpriteVisual> Sprites, IReadOnlyDictionary<int, ExplorationPortraitVisual> Portraits,
     IReadOnlyDictionary<string, ExplorationAudio> Audio,
     IReadOnlyDictionary<string, ExplorationRaster>? ChurchMenu = null,
-    IReadOnlyDictionary<string, ExplorationRaster>? FieldMenu = null);
+    IReadOnlyDictionary<string, ExplorationRaster>? FieldMenu = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? IdentityIcons = null);
 public enum ExplorationEventKind { Step, Interact, Warp, SourceZone }
 public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,

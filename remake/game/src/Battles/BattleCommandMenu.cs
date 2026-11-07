@@ -24,6 +24,7 @@ internal sealed partial class BattleCommandMenu : Control
     private GameInput _input = null!;
     private SessionFailure? _failure;
     private BattleSceneDefinition? _content;
+    private ScenarioDefinition? _definition;
     internal Action<SessionCommand> Submit { get; set; } = null!;
     internal ActorRef? TargetCandidate { get; private set; }
     // TargetChoice and CommitReady share this navigation page; choosing a different
@@ -36,7 +37,9 @@ internal sealed partial class BattleCommandMenu : Control
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
     }
     internal void Arrange(Vector2 size) { Size = size; _layout.Arrange(size); }
-    internal void ConfigureAssets(BattleSceneDefinition? content) { _content = content; _layout.ConfigureAssets(content); }
+    internal void ConfigureAssets(BattleSceneDefinition? content, ScenarioDefinition definition)
+    { _content = content; _definition = definition; _layout.ConfigureAssets(content); }
+    internal UI.IdentityIcons Icons => _layout.Icons;
     internal void Reset() { _layout.StopFocusEmphasis(); _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
     internal void SuspendPointer(bool keyboard = false)
     {
@@ -229,8 +232,8 @@ internal sealed partial class BattleCommandMenu : Control
         }
         bool list = !moving && _page is Page.Magic or Page.Items;
         var options = list ? Options() : [];
-        _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
-        _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list);
+        if (list) _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
+        _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list, options.Select(OptionIcon).ToArray());
         _layout.Diamond.Visible &= selection is not null && !moving && _page == Page.Main;
         _layout.Heading.Text = moving ? GameText.Get("battle.position") : _page switch
         {
@@ -273,6 +276,9 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.ShowCommandHint(!moving && _page == Page.Main);
     }
 
+    private string? OptionIcon(BattleActionChoice option) => _definition?.PrivateDefinitions is null ? null : option.Action.Spell is { } spell
+        ? UI.IdentityIcons.Spell(_definition!, spell) : option.Action.ItemSlot is { } slot && _current?.Selection is { } selection
+            ? UI.IdentityIcons.Item(_current.Battle.GetActor(selection.Actor).SourceLoadout!.Items[slot]) : null;
     private string OptionLabel(BattleActionChoice option)
     {
         string name = DisplayNames.Action(option, _current!);

@@ -211,6 +211,7 @@ def prepare_church(
     rom_assets: bool = False,
     menu: str = "church",
     scene: Path | None = None,
+    identity_icons: bool = False,
 ) -> None:
     """Publish once, including every declared encounter when selecting all menus."""
     if out_dir.exists():
@@ -219,8 +220,18 @@ def prepare_church(
         raise ValueError("all menus require the opening battle scene")
     menus = ("field", "church", "command") if menu == "all" else (menu,)
     assets = {name: menu_assets(rom, upstream, listing, rom_assets, name) for name in menus}
+    icons = None
+    if identity_icons:
+        from sf2tool.remake_identity_icons import identity_assets
+
+        icons = identity_assets(rom, upstream, listing, rom_assets)
     document = json.loads(world.read_text(encoding="utf-8-sig"))
     world_document = document.get("world", document)
+    if icons:
+        presentation = world_document["presentation"]
+        if "identityIcons" in presentation and presentation["identityIcons"] != icons[0]:
+            raise ValueError("input world owns conflicting identity icons")
+        presentation["identityIcons"] = icons[0]
     for name in menus:
         if name != "command":
             presentation = world_document["presentation"]
@@ -266,6 +277,12 @@ def prepare_church(
                 )
         for battle_scene in scenes.values():
             mount(battle_scene["rasters"], assets["command"][0], "command-menu.")
+            if icons:
+                mount(
+                    battle_scene["rasters"],
+                    {key.removeprefix("identity-icon."): value for key, value in icons[0].items()},
+                    "identity-icon.",
+                )
     if dependencies.intersection({"world.json", "provenance.json", "scene.json"}):
         raise ValueError("world dependency collides with publication output")
     out_dir.mkdir(parents=True, exist_ok=False)
@@ -282,6 +299,8 @@ def prepare_church(
         if menu != "all"
         else {"menus": {name: asset[1] for name, asset in assets.items()}}
     )
+    if icons:
+        provenance["identityIcons"] = icons[1]
     provenance["copiedDependencies"] = sorted(dependencies - scenes.keys())
     provenance["preparedBattleScenes"] = sorted(scenes)
     write_json(out_dir / "provenance.json", provenance)
@@ -299,8 +318,13 @@ def main() -> None:
     parser.add_argument(
         "--rom-assets", action="store_true", help="Decode from verified canonical ROM"
     )
+    parser.add_argument(
+        "--identity-icons", action="store_true", help="Add bounded item/spell art with --menu all"
+    )
     parser.add_argument("--menu", choices=("church", "field", "all"), default="church")
     args = parser.parse_args()
+    if args.identity_icons and args.menu != "all":
+        parser.error("--identity-icons requires --menu all")
     if args.menu == "all":
         if args.world is None or args.scene is None:
             parser.error("--menu all requires both --world and --scene")
@@ -318,6 +342,7 @@ def main() -> None:
             args.rom_assets,
             args.menu,
             args.scene,
+            args.identity_icons,
         )
     else:
         prepare(args.rom, args.upstream, args.scene, args.out_dir, args.listing, args.rom_assets)

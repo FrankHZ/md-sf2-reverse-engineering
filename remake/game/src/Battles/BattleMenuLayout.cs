@@ -25,6 +25,9 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly ScrollContainer _scroll = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private readonly VBoxContainer _rows = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly List<Label> _rowLabels = [];
+    private readonly List<HBoxContainer> _rowControls = [];
+    private readonly List<UI.IdentityIcon> _rowIcons = [];
+    internal readonly UI.IdentityIcons Icons = new();
     private string[] _labels = [];
     private int _selected;
     private Vector2 _descriptionSize;
@@ -42,6 +45,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal void ConfigureAssets(BattleSceneDefinition? content)
     {
+        Icons.Configure(content?.Rasters);
         if (content is null || !content.Rasters.Keys.Any(key => key.StartsWith("command-menu.", StringComparison.Ordinal)))
         {
             foreach (var command in Commands) command.SetArt(null, null);
@@ -191,7 +195,7 @@ internal sealed partial class BattleMenuLayout : Control
         if (_list.IsVisibleInTree() && _scroll.GetGlobalRect().HasPoint(position))
             for (int i = 0; i < _rowLabels.Count; i++)
             {
-                var rect = _rowLabels[i].GetGlobalRect().Intersection(_scroll.GetGlobalRect());
+                var rect = _rowControls[i].GetGlobalRect().Intersection(_scroll.GetGlobalRect());
                 if (rect.HasPoint(position)) return ($"row:{i}", rect);
             }
         return (null, default);
@@ -213,10 +217,10 @@ internal sealed partial class BattleMenuLayout : Control
             label.CustomMinimumSize = new(width, 0);
             label.CustomMaximumSize = new(width, -1);
         }
-        foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, _list.Size.X - 48), -1);
+        foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, _list.Size.X - 48 - (_rowIcons.Any(icon => icon.Visible) ? 80 : 0)), -1);
     }
 
-    internal void ShowRows(string[] labels, bool[] enabled, int selected, bool visible)
+    internal void ShowRows(string[] labels, bool[] enabled, int selected, bool visible, string?[] identities)
     {
         bool changed = !labels.SequenceEqual(_labels) || selected != _selected || visible != _list.Visible;
         _list.Visible = visible;
@@ -225,17 +229,20 @@ internal sealed partial class BattleMenuLayout : Control
         {
             InvalidatePointer();
             foreach (var child in _rows.GetChildren()) { _rows.RemoveChild(child); child.QueueFree(); }
-            _rowLabels.Clear(); _labels = labels;
+            _rowLabels.Clear(); _rowControls.Clear(); _rowIcons.Clear(); _labels = labels;
             foreach (string value in labels)
             {
                 var label = Text("Choice", 30); label.Text = value;
                 label.CustomMinimumSize = new(0, 64);
-                _rows.AddChild(label); _rowLabels.Add(label);
+                var row = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+                var icon = new UI.IdentityIcon(); row.AddChild(icon); row.AddChild(label);
+                _rows.AddChild(row); _rowLabels.Add(label); _rowControls.Add(row); _rowIcons.Add(icon);
                 label.ItemRectChanged += () => InvalidatePointer();
             }
         }
         for (int i = 0; i < _rowLabels.Count; i++)
         {
+            _rowIcons[i].Present(Icons, identities[i], i == selected);
             _rowLabels[i].Text = (i == selected ? "›  " : "   ") + labels[i];
             // Focus stays inspectable even when unavailable; the marker and reason are independent of color.
             if (enabled[i] && i != selected) _rowLabels[i].RemoveThemeColorOverride("font_color");
@@ -249,7 +256,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     private void ScrollToSelection()
     {
-        if (_selected >= 0 && _selected < _rowLabels.Count) _scroll.EnsureControlVisible(_rowLabels[_selected]);
+        if (_selected >= 0 && _selected < _rowLabels.Count) _scroll.EnsureControlVisible(_rowControls[_selected]);
     }
 
     internal object Observe() => new
@@ -265,12 +272,17 @@ internal sealed partial class BattleMenuLayout : Control
         listVisible = _list.Visible, list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
         rows = _rowLabels.Select(label => label.Text).ToArray(), selectedRow = _selected,
         rowRects = _rowLabels.Select(label => BattleMapViewport.Rectangle(label.GetGlobalRect())).ToArray(),
+        iconMode = Icons.Mounted ? "bound" : "unmounted-text",
+        icons = _rowIcons.Select(icon => icon.Observe()).ToArray(),
         scroll = _scroll.ScrollVertical,
         navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
             visible = control.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
         commands = Commands.Select(button => new { id = button.Identity, label = button.Caption, selected = button.Selected, enabled = button.Available,
             rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }).ToArray(),
     };
+
+    public override void _ExitTree() => Icons.Dispose();
+    protected override void Dispose(bool disposing) { if (disposing) Icons.Dispose(); base.Dispose(disposing); }
 
     private static Label Text(string name, int size)
     {
