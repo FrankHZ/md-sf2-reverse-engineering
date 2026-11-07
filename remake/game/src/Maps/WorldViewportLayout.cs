@@ -42,6 +42,10 @@ internal sealed class WorldViewportLayout
         // Packed rooms on one map are separate display spaces. Their ordinary warp
         // transition must not pan through the intervening unopened storage.
         bool changed = _map != map || _bounds.HasArea() && !_bounds.Intersects(bounds);
+        // Preserve the current center anchor before applying ordinary follow/dead-zone rules.
+        // Explicit story framing and new display spaces remain authoritative.
+        if (!changed && !story)
+            Origin += (_viewport - viewport) / (2 * PixelScale);
         _map = map; _bounds = bounds; _viewport = viewport;
         Vector2 extent = viewport / PixelScale;
         // Keep the subject clear of bottom overlays without reserving world space for UI.
