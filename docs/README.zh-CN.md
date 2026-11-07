@@ -1,7 +1,7 @@
 # 文档索引
 
 这是当前中文阅读入口。[英文索引](./README.md)是规范索引；证据、合同与决策以各自的英文所有者为准。
-设计翻译遵循[术语表](./design/glossary.md)。先前已接受的设计语料在各自审阅基线均有完整中文镜像；新增战斗分析试点尚无中文镜像，须阅读英文；
+设计翻译遵循[术语表（英文）](./design/glossary.md)。先前已接受的设计语料在各自审阅基线均有完整中文镜像；新增战斗分析试点尚无中文镜像，须阅读英文；
 英文研究、ADR 与引擎文档保留各自所有者，不属于这份设计翻译语料。
 
 ## 按阅读目的进入
@@ -30,11 +30,11 @@
 
 | 读者问题 | 已接受的中文主题 | 英文规范源 |
 | --- | --- | --- |
-| 探索、遭遇、战斗、奖励与返回怎样连接？原版、观察和重制的边界是什么？ | [玩法总览](./design/zh-CN/synthesis/gameplay-overview.md) | [Gameplay Overview](./design/synthesis/gameplay-overview.md) |
-| 单次行动有哪些选择，如何结算，代表遭遇有什么例外？ | [战术战斗循环](./design/zh-CN/synthesis/themes/tactical-battle-loop.md) | [Tactical Battle Loop](./design/synthesis/themes/tactical-battle-loop.md) |
-| 加入、出战、职业、成长、装备与资源容量/消费如何相互约束？ | [成长与经济](./design/zh-CN/synthesis/themes/progression-and-economy.md) | [Progression and Economy](./design/synthesis/themes/progression-and-economy.md) |
-| 交互、对话、交通、返回与地图重建怎样组合，哪些状态能保留？ | [地图设计原则](./design/zh-CN/synthesis/themes/map-design-principles.md) | [Map Design Principles](./design/synthesis/themes/map-design-principles.md) |
-| 六组章节如何推进，必需条件与可选分支在哪里？ | [剧情推进](./design/zh-CN/synthesis/themes/story-progression.md) | [Story Progression](./design/synthesis/themes/story-progression.md) |
+| 探索、遭遇、战斗、奖励与返回怎样连接？原版、观察和重制的边界是什么？ | [玩法总览](./design/zh-CN/synthesis/gameplay-overview.md) | [Gameplay Overview（英文规范源）](./design/synthesis/gameplay-overview.md) |
+| 单次行动有哪些选择，如何结算，代表遭遇有什么例外？ | [战术战斗循环](./design/zh-CN/synthesis/themes/tactical-battle-loop.md) | [Tactical Battle Loop（英文规范源）](./design/synthesis/themes/tactical-battle-loop.md) |
+| 加入、出战、职业、成长、装备与资源容量/消费如何相互约束？ | [成长与经济](./design/zh-CN/synthesis/themes/progression-and-economy.md) | [Progression and Economy（英文规范源）](./design/synthesis/themes/progression-and-economy.md) |
+| 交互、对话、交通、返回与地图重建怎样组合，哪些状态能保留？ | [地图设计原则](./design/zh-CN/synthesis/themes/map-design-principles.md) | [Map Design Principles（英文规范源）](./design/synthesis/themes/map-design-principles.md) |
+| 六组章节如何推进，必需条件与可选分支在哪里？ | [剧情推进](./design/zh-CN/synthesis/themes/story-progression.md) | [Story Progression（英文规范源）](./design/synthesis/themes/story-progression.md) |
 
 ## 章节与遭遇
 
@@ -100,14 +100,14 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 [路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。先前已接受语料保留完整译文及原审阅基线；新分析页待译。当前版本锚和漂移状态以现有命令复现。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
 
-当前仍有英文源在对应译文的审阅锚点之后发生变更，这些差异尚须逐项语义复核。
-已有完整译文且曾在各自基线验收，不表示它们与当前英文版本全部同步；复核完成前保留原锚点，不能只刷新 hash 或日期。
+现有已译来源与镜像均匹配注册锚点，未发现实际来源漂移；当前状态以既有命令复现。
+新增战斗分析页仍待译。未来来源变化仍须逐项语义复核，不能只刷新 hash 或日期；元数据同步也不代替中文阅读路线验收。
 
 [翻译索引](../manifests/zh-translation-index.json)记录逐文档状态与审阅版本锚。使用 `uv run --locked sf2 zh-meta list` 查看记录、`uv run --locked sf2 zh-meta test` 复现全局检查。元数据 PASS 只证明检查器覆盖的同步、链接、结构与 fixture 约束，不能替代全文语义与读者路线验收。
 
 未来英文实质变更或新增文档须先确认 accepted main 来源与稳定性，再限定范围、完整翻译和独立审阅。只更新已审阅的受影响记录，其他记录与术语表元数据保持不变。尚未同步时保留旧锚并明确报告漂移，不能只刷新 hash 或日期。`translated` 表示有已锚定译文，不保证来源仍最新；`pending` 表示无镜像，应回退英文。它们都不是原版研究或采集队列。持续同步不包括游戏脚本汉化，也不扩大重制能力。
 
-历史原版/现代失败及 [#1047 的十二项已完成未解决比较](./research/story-content-coverage.md#unknowns-retained-failures-and-next-decision)仍由证据所有者保留，当前组合验收不改写其结果。
+历史原版/现代失败及 [#1047 的十二项已完成未解决比较（英文）](./research/story-content-coverage.md#unknowns-retained-failures-and-next-decision)仍由证据所有者保留，当前组合验收不改写其结果。
 
 ## 当前重制与开发
 
@@ -115,17 +115,17 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 | 工作 | 当前英文入口 |
 | --- | --- |
-| 工作规则、隔离与验证范围 | [AGENTS](../AGENTS.md) |
-| 引擎实现与架构 | [Remake README](../remake/README.md)、[架构](../remake/docs/architecture.md) |
-| 已采用的引擎方向与测试政策 | [ADR 0019](./decisions/0019-state-and-content-driven-remake-engine.md) |
-| 当前可运行能力、Unsupported 与 Unknown | [能力矩阵](../remake/docs/capability-status.md) |
-| 当前私有 Map 3 → Battle01 胜利与可用返回验收 | [就绪性](./design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) |
-| 历史失败与组合接受证据 | [保留比较](../remake/docs/evidence/retained-comparisons.md#accepted-composition-review) |
-| 验证命令与 Godot 实例复用 | [开发与验证](../remake/docs/development-and-verification.md) |
-| 原版研究与证据前沿 | [Research 索引](./README.md#research)、[源码覆盖率](./research/source-coverage.md) |
-| 原版静态、原版观察、英文综合与重制生产的区别 | [剧情覆盖的四个前沿](./research/story-content-coverage.md#four-different-frontiers) |
-| 原始决策与后续修订 | [Decisions 索引](./README.md#decisions) |
-| 文档与 agent instruction 审计 | [审计记录](./operations/documentation-agent-audit.md) |
+| 工作规则、隔离与验证范围 | [AGENTS（英文）](../AGENTS.md) |
+| 引擎实现与架构 | [Remake README（英文）](../remake/README.md)、[架构（英文）](../remake/docs/architecture.md) |
+| 已采用的引擎方向与测试政策 | [ADR 0019（英文）](./decisions/0019-state-and-content-driven-remake-engine.md) |
+| 当前可运行能力、Unsupported 与 Unknown | [能力矩阵（英文）](../remake/docs/capability-status.md) |
+| 当前私有 Map 3 → Battle01 胜利与可用返回验收 | [就绪性（英文规范源）](./design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) |
+| 历史失败与组合接受证据 | [保留比较（英文）](../remake/docs/evidence/retained-comparisons.md#accepted-composition-review) |
+| 验证命令与 Godot 实例复用 | [开发与验证（英文）](../remake/docs/development-and-verification.md) |
+| 原版研究与证据前沿 | [Research 索引（英文）](./README.md#research)、[源码覆盖率（英文）](./research/source-coverage.md) |
+| 原版静态、原版观察、英文综合与重制生产的区别 | [剧情覆盖的四个前沿（英文）](./research/story-content-coverage.md#four-different-frontiers) |
+| 原始决策与后续修订 | [Decisions 索引（英文）](./README.md#decisions) |
+| 文档与 agent instruction 审计 | [审计记录（英文）](./operations/documentation-agent-audit.md) |
 
 当前状态/内容驱动引擎运行通用 authored（项目自编）包及有边界的私有本地内容。
 已接受的连续 Map3 → Battle01 胜利与可用返回之外，已有 Battle02 胜败、返回与再次入战，以及选定的

@@ -2,9 +2,9 @@
 
 - **已确认的原版行为：** 79 个地图定义、共享图块/布局所有权、源码形式的区域/事件/物品/动画、64x64 解码布局、配置选择、有记录的首匹配分发规则、静态过渡使用方优先级、按加载路径的布局持久性、源码形状的地图脚本实体填充/重载、cloneEntity、摄像机控制与实体放置命令记录、有界静态地图事件状态/控制/调用方/内容形状，以及分批的帧级实体移动/动作时序
 - **未知的原版行为：** 非空地图 52 直接 `rts` 事件配置的正常剧情可达性、精确的 VDP 可见滚动时序、硬件级动画扫描线时序，以及最终的 VDP 可见渲染一致性
-- 重制状态：实现无关的 Phase 3 合同；实现方向与能力状态由 [ADR 0019](../../../../decisions/0019-state-and-content-driven-remake-engine.md) 和[重制能力台账](../../../../../remake/docs/capability-status.md) 所有。
+- 重制状态：实现无关的 Phase 3 合同；实现方向与能力状态由 [ADR 0019（英文）](../../../../decisions/0019-state-and-content-driven-remake-engine.md) 和[重制能力台账（英文）](../../../../../remake/docs/capability-status.md) 所有。
 
-> 本文件是 [`map-exploration.md`](../../../contracts/world/map-exploration.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-exploration.md`（英文规范源）](../../../contracts/world/map-exploration.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -142,7 +142,7 @@ ID、调用、写入与分支标签仍是结构同一性。完整源码/H1/ROM �
 
 **已确认的运行时边界：** `sf2-map-script-control-audio-runtime-v1` 保留六次单启动解释器观察：D0=1 与一次 `WaitForVInt` 入口对比调试 P2-START 跳过、`$06` 分发/返回、`$05` 原始声音字与 trap 边界、`$0A` 游标/栈/被调用方返回边界、`$0B` 游标替换，以及 `$FFFF` 结束/返回。其仅会话的入口接缝在观察器记录完成之前保留源码包装器尾声；它是 H3 测试台边界，而不是游戏玩法合同。在共享物理回调 PC 处，观察器在保留一次注册的同时按精确 fixture 用例角色选择失败诊断；这同样不是适配器行为。原版保真适配器必须保留这些控制与游标事实，而不把源码 enum 或观察到的 trap 转换成可听、时序、持久性或玩家可见合同。
 
-**未知：** [`common-scripting.md`](../../../../research/world/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary) 中分组的 `map-script-control-audio/*` 队列保留更长的时长时序、声音驱动/可听结果、任意被调用方效果、正常剧情可达性与呈现行为。
+**未知：** [`common-scripting.md`（英文）](../../../../research/world/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary) 中分组的 `map-script-control-audio/*` 队列保留更长的时长时序、声音驱动/可听结果、任意被调用方效果、正常剧情可达性与呈现行为。
 
 直接地图事件 `txt` 与无操作数的 `clsTxt` 形式同样是源码同一性，而不是显示合同。导入器必须把每个有序位置保留为数字文本行标识符或字面量 `$FFFF` 哨兵源码形式，加上其调用方与独立命名的物理/setup/route 引用权重。它必须保留完整的 0–4,266 已声明 ID 域，包括零引用 ID，而不把原版文本复制或解码进地图合同。这不规定显示内容、说话者、窗口、等待、输入、剧情推进或呈现行为；它们保持在这个静态导入规则之外。
 
@@ -156,7 +156,7 @@ ID、调用、写入与分支标签仍是结构同一性。完整源码/H1/ROM �
 
 地图脚本导入必须分别保留 `sf2-map-script-engine-static-v1`（位于 `tests/fixtures/h2/map-script-engine-static-v1.json`）字段 `expected.entityPlacementCommandFacts` 中源码命名的 `setPos`、`setPosFlash`、`setFacing` 与 `setDest` 记录。每条记录必须保留其操作码、编码/操作数字节宽度、原始宏注释、程序/命令同一性与紧凑完整源码顺序/哈希边界。导入边界还必须保留精确的命名处理器记录：`csc19`/`csc23` 的非推进选择器读取加上存活状态游标调整调用与推进读取；`csc17` 的局部分支目标与 `csc19` 共享尾部边；`csc29` 的三个局部分支目标；解析后的 `MAP_TILE_SIZE` 乘数使用位置；源码形状的状态读/写操作数；以及含零的直接/有效调用方映射。这些源码记录不得被规范化成放置、朝向、移动、可见性、动画、坐标单位、碰撞、持久性、时序或渲染模型。有界 H3 合同 `sf2-map-script-entity-placement-runtime-v1`（位于 `tests/fixtures/h3/map-script-entity-placement-v1.json`）记录七个单启动用例：`setPos` 与 `setFacing` 的存活/死亡当前-HP 游标结果、源码缩放的实体记录字/朝向、完整的 31 次迭代局部 flash 回调序列及其独立的共享尾部回调，以及两个带符号目的地增量极性与 bit-15 等待/旁路。原版保真适配器必须保留这些测得的 RAM/游标/回调事实，而不把它们提升为呈现或地图移动设计。正常剧情可达性、完整动画/可见性/呈现与碰撞/寻路/持久性保持 **未知**。重制可以独立定义自己的实体状态接口。
 
-[Map21 查找澄清](../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#map-21-entity-135-unchecked-lookup-and-conditional-continuation)
+[Map21 查找澄清（英文）](../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#map-21-entity-135-unchecked-lookup-and-conditional-continuation)
 增加的是**已确认**的条件性源码边界，并非新的自然路线运行时证据。
 不得把 `GetEntityAddressFromCharacter` 描述为缺失实体搜索或缺席时跳过的服务：它对选择器字应用掩码，
 把其带符号字节编码转换为同一性表偏移，读取一个字节，再用五位的字移位推导记录地址。
@@ -174,7 +174,7 @@ F603 的 `MoveEntityOutOfMap` 链也有其自身不做检查的表/位置使用�
 并且不得为已移除的142推断回退到玩家槽位。本澄清不要求引擎采用原始内存访问，
 不关闭自然调用状态或呈现方面的未知问题，也不准入另一项运行时场景。
 
-对于 [F603 后的重载边界](../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#post-f603-reload-the-writes-target-inactive-window-composition-storage)，
+对于 [F603 后的重载边界（英文）](../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#post-f603-reload-the-writes-target-inactive-window-composition-storage)，
 四次 `0x7000` 存储的目标是合并的 Plane-A/窗口布局缓冲区，而非 entity255 或仅地图布局。
 **已确认的条件性静态结论：** 正常重载初始化一个空窗口列表；其 VInt 使用方在读取该缓冲区前就返回，
 首次窗口分配则在发布活动窗口前把整个仅地图布局复制到其中。
@@ -310,7 +310,7 @@ init 源码中内嵌的 201 个非配置标签使用相同表示，因此一条 
 ### 已绑定的场地点头生命周期
 
 **已确认（静态绑定）：** 具有显式逻辑文本/视图设置的已准入场地配置，
-可以使用[点头源码所有者](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-nod-lifecycle)
+可以使用[点头源码所有者（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-nod-lifecycle)
 描述的、已独立检查的 `csc26_entityNodHead` 链。
 这项单独绑定不扩大上述结构导入或受控 H3 声明。
 解析所得实体的动画计数器必须在十次公共服务之前变为 FF。
@@ -329,7 +329,7 @@ init 源码中内嵌的 201 个非配置标签使用相同表示，因此一条 
 ### 已绑定的场地摄像机生命周期
 
 **已确认（静态绑定）：** 显式场地视图配置可以使用已单独检查的
-[目的地/滚动/等待链](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-camera-lifecycle)。
+[目的地/滚动/等待链（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-camera-lifecycle)。
 瓦片目的地必须禁用跟随，把每个坐标乘以384逻辑单位，并以已准入的前景/背景偏移安装四个目的地。
 它必须保留当前位置、继承的跟随计数器，以及新目的地等于当前位置时已经活动的轴。
 相等且非活动的轴保持非活动。已准入配置的自动滚动为零，layer0或255，
@@ -383,7 +383,7 @@ LoadMap 必须在此变换之前把共享原点限制并量化到128逻辑单位
 现代视口/布局与既有光栅资源仍是呈现选择。
 遮挡必须由逐单元的瓦片优先级和 alpha 决定，不能把整个图块或整个平面一并提升优先级。
 平面显示优先级必须与精灵间排序保持独立；高优先级地图像素遮盖低优先级精灵着色像素，
-透明像素则露出下一表面。参见[源码/数据绑定](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion)。
+透明像素则露出下一表面。参见[源码/数据绑定（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#bound-tile-priority-and-teacher-occlusion)。
 未绑定呈现保留原有合同。**未知：** 自然中断/VDP/DMA 时序、字回绕目的地、显式速度、
 光标/脉动覆盖，以及上述主/次级数值域之外的其他图层/视差/自动滚动配置仍被排除。
 较早的七用例 H3 接缝不确立物理目标跟踪；当前的重制准入在下文规定。
@@ -398,7 +398,7 @@ LoadMap 必须在此变换之前把共享原点限制并量化到128逻辑单位
 嵌套脚本返回保留外层初始化延续，包括窗口打开时的视图等待；
 只有外层初始化器完成才恢复玩家跟随和场地控制。
 此次扩展不准入战前及结果延续、未知/未注册立绘或未绑定的旧文本。
-[引擎所有者](../../../../../remake/docs/application/session-and-programs.md#bound-map-initialization-lifecycle)
+[引擎所有者（英文）](../../../../../remake/docs/application/session-and-programs.md#bound-map-initialization-lifecycle)
 记录其有界执行和验收；原版呈现节拍仍为**未知**。
 
 ### 已绑定的黑场景替换与战前窗口
@@ -432,7 +432,7 @@ csc42 单独替换物理实体并挂载精灵。
 源码转换必须保留加载后、随后实体替换之前的一次服务等待；加载前的淡入淡出等待不能覆盖该边界。
 即使保留的玩家位于新地图所有区域之外，绑定绘制也必须使用所选视图区域，而不移动该玩家。
 原版自然节拍/像素仍为**未知**。
-[执行边界](../../../../../remake/docs/application/session-and-programs.md#bound-before-battle-scene-and-windows)。
+[执行边界（英文）](../../../../../remake/docs/application/session-and-programs.md#bound-before-battle-scene-and-windows)。
 
 ### 已绑定的物理摄像机目标
 
@@ -497,9 +497,9 @@ null 解除跟随与显式目的地保留既有规则，并清除过期的兼容
 金钱/调试/原始控制器输入重复、精确原版菜单光栅和硬件时序在此重制边界仍为**未知**。
 源码调用位置65/66的请求复用既有 PCM 政策；确认并不隐含额外67。
 原版运行时证据仍限于观察到的 Yes 路径；重制 No 运行不是原版 No 观察。
-参见[溯源](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-choice-lifecycle)、
-[执行](../../../../../remake/docs/application/session-and-programs.md#source-bound-yesno-lifecycle)
-及[验证](../../../../../remake/docs/verification/field-programs.md#source-bound-choice-observation)。
+参见[溯源（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#source-bound-choice-lifecycle)、
+[执行（英文）](../../../../../remake/docs/application/session-and-programs.md#source-bound-yesno-lifecycle)
+及[验证（英文）](../../../../../remake/docs/verification/field-programs.md#source-bound-choice-observation)。
 
 ## 原始场地文本与音乐边界
 
@@ -519,13 +519,13 @@ null 解除跟随与显式目的地保留既有规则，并清除过期的兼容
 之后调用音乐/输入辅助。后面的辅助另有独立逻辑时钟义务：
 `code/common/tech/sound/music.asm:PlayMusicAfterCurrentOne` 总是在检查 `WAIT_FOR_MUSIC_END`
 之前睡眠三个 VInt，并按需重复。**未知：** 原版音乐驱动进度、此前文本服务、门控采样和剩余轮询之间的映射。
-[已接受的现代有限音乐政策](../../../contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)
+[已接受的现代有限音乐政策](../interface/music-wait-service.md#已接受的现代有限音乐策略)
 现提供确定性配置：语义请求 generation0、每次公共服务一步、先激活再采样、完整的3步组，
 以及独立的实际有限完成门控。JOIN 端点505是现代选择，并非505个原版 VInt 或 PCM 换算。
 无配置等待必须保留已完成状态并以 Unsupported 停止。
 有配置的 JOIN 继续经过此前播放、普通输入、关闭/Sleep10，以及既有随从/位置/Zone 返回规则。
-这一有界实现不确立连续 H4。参见[溯源](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
-及[执行](../../../../../remake/docs/application/session-and-programs.md#raw-field-display)。
+这一有界实现不确立连续 H4。参见[溯源（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#raw-display-and-unbound-music-progress)
+及[执行（英文）](../../../../../remake/docs/application/session-and-programs.md#raw-field-display)。
 
 ### 已绑定的地图白色有限服务
 
