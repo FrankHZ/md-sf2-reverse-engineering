@@ -3,19 +3,19 @@
 - 状态：**已确认的仓库治理指南**；本文档不是关于原版游戏的证据，也不选择重制引擎、产品、平台或商业方向。
 - 范围：将带来源的合同组织成简洁的面向玩家的说明，而不改变其证据标签；在各自的决策与验收边界内，区分原版证据、已接受的重制选择与未来工作。
 
-> 本文件是 [`documentation-roadmap.md`](../documentation-roadmap.md) 的完整中文镜像。英文原文始终是审阅基线；镜像遵循 [`glossary.md`](../glossary.md) 的 R1–R7。源码标识符、fixture ID 与路径保持原样；详细证据链接指向英文规范所有者，中文阅读路线见[中文入口](../../README.zh-CN.md)。
+> 本文件是 [`documentation-roadmap.md`（英文规范源）](../documentation-roadmap.md) 的完整中文镜像。英文原文始终是审阅基线；镜像遵循 [`glossary.md`（英文）](../glossary.md) 的 R1–R7。源码标识符、fixture ID 与路径保持原样；普通阅读链接优先指向已有中文对应文档及其语义相同的章节；英文规范源、原始证据与无中文镜像的回退入口明确标注英文。中文阅读路线见[中文入口](../../README.zh-CN.md)。
 
 ## 编写语言政策
 
 **已确认的仓库政策：** 在当前设计综合阶段，英文是新增或实质性修订的设计综合文档的规范编写与审阅语言。保留忠实于源码的标识符、fixture ID、证据标签与代码词汇，不另造翻译等价物。
 
-**已确认的仓库决定（2026-08-04）：** 项目术语表已在 [`glossary.md`](../glossary.md) 接受。它是设计综合文档中英文到中文术语的唯一约束来源，并约束 `docs/design/zh-CN/` 下的镜像约定。不得创造临时双语术语；应采用术语表的固定术语与规则：证据标签译法、保留源码标识符、一词一译、专有名词保留英文并可加建议注记，以及条目修订流程。
+**已确认的仓库决定（2026-08-04）：** 项目术语表已在 [`glossary.md`（英文）](../glossary.md) 接受。它是设计综合文档中英文到中文术语的唯一约束来源，并约束 `docs/design/zh-CN/` 下的镜像约定。不得创造临时双语术语；应采用术语表的固定术语与规则：证据标签译法、保留源码标识符、一词一译、专有名词保留英文并可加建议注记，以及条目修订流程。
 
 非英文本地化从英文规范源出发，按术语表规则以独立批次进行，检查术语一致性、链接完整性、证据标签保留与 fixture 可追溯性。`docs/design/zh-CN/` 下的中文镜像是派生文档；除非某个本地化批次另有明确政策，英文源始终是审阅基线。
 
 **已确认的当前来源与语言状态：** 先前已接受的设计语料在各自经审阅基线均有完整中文镜像，并在[设计文档 Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514) 下独立验收、合并。该语料覆盖 `docs/design/` 下的路线图、合同、主题综合及现有详细指南；术语表负责术语规范，不另设镜像。其中也包括单独审阅的[地图探索合同](contracts/world/map-exploration.md)、仍为**提议（Proposed）**的[受控准入合同](contracts/milestones/map3-controlled-admission.md)和仍为**历史（Historical）**的[引导计划](synthesis/milestones/phase4-bootstrap-plan.md)。译文验收不会提升提案状态、恢复已被取代的实现指导，或改变原版证据。
 
-[战斗设计分析试点（英文）](../synthesis/analyses/battle-design-analysis-pilot.md)是新增英文规范源，尚无中文镜像（`pending`）。部分现有已译来源也已超出原审阅锚点发生变化；这些差异仍须按下文持续协议做语义复核。新增来源待译与既有译文的来源漂移属于不同状态。
+[战斗设计分析试点（英文）](../synthesis/analyses/battle-design-analysis-pilot.md)是新增英文规范源，尚无中文镜像（`pending`）。英文原文此处保留此前的来源漂移提示；现有已译来源与镜像均匹配注册锚点，没有待修复的实质来源漂移。新增来源待译与既有译文的来源漂移属于不同状态；当前状态以既有命令复现。
 
 中文同步使用已独立验收、合并，且在选定范围内实质内容稳定的英文源。验收需要完整双语内容与读者路线审阅，并通过原有术语表/索引检查；仅有元数据 PASS 并不充分。下文持续同步协议约束未来来源变化。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。该设计语料不包括英文研究、ADR、引擎文档或游戏脚本汉化。
 
@@ -68,9 +68,9 @@
 
 ### 已接受的起点
 
-[玩法总览](synthesis/gameplay-overview.md)仍是读者入口。已有的[战术战斗循环](synthesis/themes/tactical-battle-loop.md)、[成长与经济](synthesis/themes/progression-and-economy.md)、[剧情推进](synthesis/themes/story-progression.md)和[地图设计原则](synthesis/themes/map-design-principles.md)仍是主题所有者。它们已接受的修订提供下述相连解释。既有详细剧情指南仍可经剧情推进与[设计索引](../../README.md#design)访问，包括 [Battle27 激活指南](synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)。
+[玩法总览](synthesis/gameplay-overview.md)仍是读者入口。已有的[战术战斗循环](synthesis/themes/tactical-battle-loop.md)、[成长与经济](synthesis/themes/progression-and-economy.md)、[剧情推进](synthesis/themes/story-progression.md)和[地图设计原则](synthesis/themes/map-design-principles.md)仍是主题所有者。它们已接受的修订提供下述相连解释。既有详细剧情指南仍可经剧情推进与[中文章节索引](../../README.zh-CN.md#章节与遭遇)访问，包括 [Battle27 激活指南](synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)。
 
-[剧情内容覆盖所有者](../../research/story-content-coverage.md#four-different-frontiers)区分原版静态研究、原版观察、英文综合和重制生产。已接受的静态章节连接延伸至结尾、字幕和 Battle0 重置，并包含选定的可选遭遇与分支。这支持有限定的战役层面说明，不是自然游玩攻略、每个 NPC/宝箱/服务访问、每种合法交战行动或穷尽的内容普查。后续研究不会自动成为已接受综合。覆盖所有者的[剩余处置](../../research/story-content-coverage.md#remaining-labels-and-next-content-task)没有选择自动采集队列。
+[剧情内容覆盖所有者（英文）](../../research/story-content-coverage.md#four-different-frontiers)区分原版静态研究、原版观察、英文综合和重制生产。已接受的静态章节连接延伸至结尾、字幕和 Battle0 重置，并包含选定的可选遭遇与分支。这支持有限定的战役层面说明，不是自然游玩攻略、每个 NPC/宝箱/服务访问、每种合法交战行动或穷尽的内容普查。后续研究不会自动成为已接受综合。覆盖所有者的[剩余处置（英文）](../../research/story-content-coverage.md#remaining-labels-and-next-content-task)没有选择自动采集队列。
 
 ### 选定英文源集合与协调
 
@@ -78,11 +78,11 @@
 
 | 选定来源 | 当前读者责任 | 剩余实质重写 |
 | --- | --- | --- |
-| [gameplay-overview.md](../synthesis/gameplay-overview.md) | 相连的循环、主题入口，以及原版/观察/重制/生产边界。 | 无计划。 |
-| [story-progression.md](../synthesis/themes/story-progression.md) | 延伸至结尾/reset 的六组章节、选定可选分支和 Taros/Caravan 依赖示例。 | 无计划。 |
-| [tactical-battle-loop.md](../synthesis/themes/tactical-battle-loop.md) | 通用选择、结算与返回，包含五个遭遇对比及其例外。 | 无计划。 |
-| [progression-and-economy.md](../synthesis/themes/progression-and-economy.md) | 将成员、职业、装备与成长连接到接收、容量、支出和恢复。 | 无计划。 |
-| [map-design-principles.md](../synthesis/themes/map-design-principles.md) | 交互尝试、对话继续、交通、当前/重建状态与持久化边界。 | 无计划。 |
+| [gameplay-overview.md（英文规范源）](../synthesis/gameplay-overview.md) | 相连的循环、主题入口，以及原版/观察/重制/生产边界。 | 无计划。 |
+| [story-progression.md（英文规范源）](../synthesis/themes/story-progression.md) | 延伸至结尾/reset 的六组章节、选定可选分支和 Taros/Caravan 依赖示例。 | 无计划。 |
+| [tactical-battle-loop.md（英文规范源）](../synthesis/themes/tactical-battle-loop.md) | 通用选择、结算与返回，包含五个遭遇对比及其例外。 | 无计划。 |
+| [progression-and-economy.md（英文规范源）](../synthesis/themes/progression-and-economy.md) | 将成员、职业、装备与成长连接到接收、容量、支出和恢复。 | 无计划。 |
+| [map-design-principles.md（英文规范源）](../synthesis/themes/map-design-principles.md) | 交互尝试、对话继续、交通、当前/重建状态与持久化边界。 | 无计划。 |
 
 **已接受的整体来源处置：** 这五份英文源已通过 main-gate 独立读者验收并合并，本轮无计划实质重写。其中文主题镜像也已独立验收并合并。审阅路线为总览 → 对应主题 → 章节/示例 → 具名证据，主题及章节链接返回有用的阅读入口。相连示例沿 [Ribble/Achilles → Taros → Caravan](synthesis/themes/story-progression.md#完整示例taros-与-caravan) 展开：容量/拒绝、持有与装备、准入与效果、首次/重复及非胜利返回、获取与登乘，以及独立的服务访问。补充的 Creed/Jaro、奖励/smith 与 Polca no-scroll/scroll 分支检查成员/控制、资源及生命周期交接。这些是选定的静态连接与有限观察，不是一次自然游玩的战役或全内容审计。详细审阅路线、精确接受源对象及实际检查结果由 [Issue #1280](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1280) 及其 PR 保存。[中文读者入口](../../README.zh-CN.md)经已接受主题通往中文章节指南和英文证据所有者；翻译索引记录完整已索引设计语料经审阅的版本锚。
 
@@ -92,14 +92,14 @@
 
 | 保留问题 | 所属边界 |
 | --- | --- |
-| 自然战役可达性、每种合法行动/交互及未观察的调用者/呈现完成。 | [剧情覆盖的四个前沿](../../research/story-content-coverage.md#four-different-frontiers)及选定章节/遭遇所有者。静态连接不延伸原版已观察路线。 |
+| 自然战役可达性、每种合法行动/交互及未观察的调用者/呈现完成。 | [剧情覆盖的四个前沿（英文）](../../research/story-content-coverage.md#four-different-frontiers)及选定章节/遭遇所有者。静态连接不延伸原版已观察路线。 |
 | 完整转职变更、全名册选择与战役平衡/稀缺性。 | [队伍/资源判断边界](synthesis/themes/progression-and-economy.md#判断边界)、[转职](synthesis/themes/progression-and-economy.md#定义当前职业与转职)及所列合同。不主张最优配装或通用曲线。 |
-| 完整交通/返回生命周期，以及存档/挂起相关状态能否持久保留。 | [地图返回/持久化](synthesis/themes/map-design-principles.md#返回与持久性)、[资源持久化](synthesis/themes/progression-and-economy.md#持久性边界)及[存档合同](../contracts/system/save-system.md)。进入存档域、存档返回与持久存储仍相互独立。 |
-| 更广可玩内容、硬件保真与未来 UI/UX 或存档选择。 | [能力所有者](../../../remake/docs/capability-status.md)、[已接受里程碑](../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)及[已接受/未来选择](synthesis/gameplay-overview.md#已作出的重制选择与尚待决定的产品选择)。英文覆盖不授予生产准入。 |
+| 完整交通/返回生命周期，以及存档/挂起相关状态能否持久保留。 | [地图返回/持久化](synthesis/themes/map-design-principles.md#返回与持久性)、[资源持久化](synthesis/themes/progression-and-economy.md#持久性边界)及[存档合同](contracts/system/save-system.md)。进入存档域、存档返回与持久存储仍相互独立。 |
+| 更广可玩内容、硬件保真与未来 UI/UX 或存档选择。 | [能力所有者（英文）](../../../remake/docs/capability-status.md)、[已接受里程碑](synthesis/milestones/map3-battle01-readiness.md#当前已接受里程碑)及[已接受/未来选择](synthesis/gameplay-overview.md#已作出的重制选择与尚待决定的产品选择)。英文覆盖不授予生产准入。 |
 
 历史原版/现代版失败、#1047 的十二个已完成但未解决的比较，以及先前实际诊断、修正与 CI，仍由链接的证据及 Issue/PR 所有者保存。不通过重跑历史套件或改标签来建立此来源处置。
 
-[Map3–Battle01 就绪性所有者](../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)与[保留比较所有者](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)保存已接受组合及已完成失败。原版观察保留[独立边界](../synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier)。当前生产支持由[能力台账](../../../remake/docs/capability-status.md)、所链接的消费者及[覆盖区分](../../research/story-content-coverage.md#four-different-frontiers)负责。重组文字不会推进这些边界。历史报告、失败比较与未知问题仍由原所有者负责；本计划既不以 PASS 替换它们，也不重启它们。[Phase 4 引导计划](synthesis/milestones/phase4-bootstrap-plan.md)保留为历史；[ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md)负责当前引擎方向。
+[Map3–Battle01 就绪性所有者](synthesis/milestones/map3-battle01-readiness.md#当前已接受里程碑)与[保留比较所有者（英文）](../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)保存已接受组合及已完成失败。原版观察保留[独立边界](synthesis/milestones/map3-battle01-readiness.md#已接受原版前沿)。当前生产支持由[能力台账（英文）](../../../remake/docs/capability-status.md)、所链接的消费者及[覆盖区分（英文）](../../research/story-content-coverage.md#four-different-frontiers)负责。重组文字不会推进这些边界。历史报告、失败比较与未知问题仍由原所有者负责；本计划既不以 PASS 替换它们，也不重启它们。[Phase 4 引导计划](synthesis/milestones/phase4-bootstrap-plan.md)保留为历史；[ADR 0019（英文）](../../decisions/0019-state-and-content-driven-remake-engine.md)负责当前引擎方向。
 
 ### 阅读结构与归属
 
@@ -119,13 +119,13 @@
 
 | 里程碑 | 读者问题与交付物 | 所有者与依赖 | 验收边界 |
 | --- | --- | --- | --- |
-| 1. 相连总览与战役结构 | 系统如何衔接、世界发生哪些变化、选择在哪分支？更新总览，将剧情推进组织成章节路线并链接既有细节；从已接受研究扩展后期章节。 | 已有总览/剧情所有者；[章节覆盖](../../research/story-content-coverage.md)、[游戏流程](../../research/system/gameflow-core.md)、[对话](../contracts/interface/dialogue-system.md)、[名册](../contracts/party/party-roster-state.md)。 | 读者能沿选定章节主线，通过有限定的入口、前提、遭遇/结局及返回连接到达结尾，找到可选分支，区分静态连接与已观察游玩。每个选定组均解释或明确限定；编号顺序不是证明。 |
-| 2. 战术规则与遭遇构成 | 战斗员能做什么、单次行动如何结算、敌人如何激活、遭遇有何变化？修订战术战斗循环，以代表例子组织有证据的差异。 | [战斗控制](../contracts/battle/battle-control-lifecycle.md)、[行动](../contracts/battle/battle-action-construction.md)、[导航](../contracts/battle/battlefield-navigation.md)、[AI](../contracts/battle/battle-ai-decision.md)、[交战](../contracts/battle/combat-resolution.md)、[法术](../contracts/battle/spell-resolution.md)及覆盖所链接的选定遭遇研究。 | 解释合法行动、移动/目标条件、结算、敌人激活/控制、结局与重试/返回边界。区分共通规则与 boss、中立、重复、特殊遭遇例外；初始编队或首次调度不证明已游玩战斗或每项 AI 决策。不做模拟器、难度评级或平衡方案。 |
-| 3. 队伍发展与资源 | 招募、出战队伍、职业/转职、装备与成长如何交互，物品、魔法、金钱、服务如何约束选择？让队伍发展有清楚所有者，按这些关系修订成长与经济。 | [名册](../contracts/party/party-roster-state.md)、[成长](../contracts/party/level-up.md)、[同伴定义](../contracts/party/ally-definition-data.md)、[物品定义](../contracts/party/item-definition-data.md)、[法术表](../contracts/party/spellbook-state.md)、[服务](../contracts/party/service-interactions.md)、[Caravan/deals](../contracts/party/caravan-and-deals-state.md)及已接受招募/服务研究。 | 区分加入、跟随、出战成员与 AI；将成长/装备连接到实际规则应用。解释资源来源、转移、消耗、容量、拒绝/失败和恢复，保留实际服务边界。参数引用其所有者；不发明最优配装、战役平衡曲线或完整服务/运行时覆盖。 |
-| 4. 探索、交互与连续性 | 移动、交互、地图转换、对话、交通和世界变化如何组合，哪些状态在各类返回后保留？更新地图设计原则及相关剧情/总览章节，区分存档/挂起与普通地图返回。 | [地图探索](../contracts/world/map-exploration.md)、[对话](../contracts/interface/dialogue-system.md)、[地图进入状态](../contracts/world/map-entry-routing-state.md)、[存档](../contracts/system/save-system.md)、[输入](../contracts/interface/input-system.md)及已接受场景/服务/交通所有者。 | 解释条件交互、当前实体与重建实体、剧情门槛、返回/重新进入和持久化限制。通过链接所有者概述已接受的反馈/输入/音频选择；不增加 UI 布局、美术/无障碍选择、存档设计或硬件一致性目标。 |
+| 1. 相连总览与战役结构 | 系统如何衔接、世界发生哪些变化、选择在哪分支？更新总览，将剧情推进组织成章节路线并链接既有细节；从已接受研究扩展后期章节。 | 已有总览/剧情所有者；[章节覆盖（英文）](../../research/story-content-coverage.md)、[游戏流程（英文）](../../research/system/gameflow-core.md)、[对话](contracts/interface/dialogue-system.md)、[名册](contracts/party/party-roster-state.md)。 | 读者能沿选定章节主线，通过有限定的入口、前提、遭遇/结局及返回连接到达结尾，找到可选分支，区分静态连接与已观察游玩。每个选定组均解释或明确限定；编号顺序不是证明。 |
+| 2. 战术规则与遭遇构成 | 战斗员能做什么、单次行动如何结算、敌人如何激活、遭遇有何变化？修订战术战斗循环，以代表例子组织有证据的差异。 | [战斗控制](contracts/battle/battle-control-lifecycle.md)、[行动](contracts/battle/battle-action-construction.md)、[导航](contracts/battle/battlefield-navigation.md)、[AI](contracts/battle/battle-ai-decision.md)、[交战](contracts/battle/combat-resolution.md)、[法术](contracts/battle/spell-resolution.md)及覆盖所链接的选定遭遇研究。 | 解释合法行动、移动/目标条件、结算、敌人激活/控制、结局与重试/返回边界。区分共通规则与 boss、中立、重复、特殊遭遇例外；初始编队或首次调度不证明已游玩战斗或每项 AI 决策。不做模拟器、难度评级或平衡方案。 |
+| 3. 队伍发展与资源 | 招募、出战队伍、职业/转职、装备与成长如何交互，物品、魔法、金钱、服务如何约束选择？让队伍发展有清楚所有者，按这些关系修订成长与经济。 | [名册](contracts/party/party-roster-state.md)、[成长](contracts/party/level-up.md)、[同伴定义](contracts/party/ally-definition-data.md)、[物品定义](contracts/party/item-definition-data.md)、[法术表](contracts/party/spellbook-state.md)、[服务](contracts/party/service-interactions.md)、[Caravan/deals](contracts/party/caravan-and-deals-state.md)及已接受招募/服务研究。 | 区分加入、跟随、出战成员与 AI；将成长/装备连接到实际规则应用。解释资源来源、转移、消耗、容量、拒绝/失败和恢复，保留实际服务边界。参数引用其所有者；不发明最优配装、战役平衡曲线或完整服务/运行时覆盖。 |
+| 4. 探索、交互与连续性 | 移动、交互、地图转换、对话、交通和世界变化如何组合，哪些状态在各类返回后保留？更新地图设计原则及相关剧情/总览章节，区分存档/挂起与普通地图返回。 | [地图探索](contracts/world/map-exploration.md)、[对话](contracts/interface/dialogue-system.md)、[地图进入状态](contracts/world/map-entry-routing-state.md)、[存档](contracts/system/save-system.md)、[输入](contracts/interface/input-system.md)及已接受场景/服务/交通所有者。 | 解释条件交互、当前实体与重建实体、剧情门槛、返回/重新进入和持久化限制。通过链接所有者概述已接受的反馈/输入/音频选择；不增加 UI 布局、美术/无障碍选择、存档设计或硬件一致性目标。 |
 | 5. 整体读者验收 | 读者能否无矛盾地从总览到主题，经章节示例回到证据？协调交叉链接与重复说明，记录所选英文主题的稳定状态及保留问题。 | 全部已接受主题修订、路线图与现有导航；main-gate 独立审阅。 | 审阅至少一条相连路线，以及跨主题的可选/拒绝或失败分支。检查术语、状态区分和原版/重制边界一致，而非仅检查链接。未解释的已主张转换交回所有者。英文完成不表示双语 Epic 完成。 |
 
-整体审阅采用已有阅读结构与跨系统实例。已接受细节仍在[剑的取得指南](synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)、[Taros 准入指南](synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)、[Battle18 初始化/首次控制研究](../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md)、[Caravan 获取指南](synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)与[Caravan 旅行指南](synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)。示例连接物品/遭遇条件、战斗与结局边界、获取和后续通行选择，保留拒绝/失败及缺少前提的分支。未建立的结果保持为精确缺口；示例不主张自然连续行程。详细参考所有者保持只读，具体修正另定范围。main-gate 串行安排 roadmap/index 及其他共享编辑。整体验收检查主题间连接与重复术语，不是另一轮通用重写或研究活动。新矛盾须先返回所有者，再扩展相关主张。
+整体审阅采用已有阅读结构与跨系统实例。已接受细节仍在[剑的取得指南](synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)、[Taros 准入指南](synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)、[Battle18 初始化/首次控制研究（英文）](../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md)、[Caravan 获取指南](synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)与[Caravan 旅行指南](synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)。示例连接物品/遭遇条件、战斗与结局边界、获取和后续通行选择，保留拒绝/失败及缺少前提的分支。未建立的结果保持为精确缺口；示例不主张自然连续行程。详细参考所有者保持只读，具体修正另定范围。main-gate 串行安排 roadmap/index 及其他共享编辑。整体验收检查主题间连接与重复术语，不是另一轮通用重写或研究活动。新矛盾须先返回所有者，再扩展相关主张。
 
 ### 证据、投入与停止规则
 
@@ -142,6 +142,8 @@
 ### 有边界的翻译修复协议
 
 此处保留既有章节锚，负责持续同步。既有已接受镜像保留各自经审阅基线；新增英文试点待译，既有来源后续变化可在语义复核前保留来源漂移。使用 `uv run --locked sf2 zh-meta test` 复现当前状态；使用 `uv run --locked sf2 zh-meta list` 查看逐文档状态与经审阅的版本锚。计数只描述该语料，不代表全部仓库文档、游戏文本或原版完整性。
+
+中文阅读按链接用途选择目标：普通导航、相关阅读与规则解释使用已有中文镜像；章节链接须对应中文语义标题，不能照抄英文锚。没有等价小节时链接相关中文页面，并说明目的地。英文原文审阅入口和精确源码、fixture、固定版本及原始证据引用保留真实所有者；无中文镜像时明确标注英文回退，包括仍为 `pending` 的战斗分析。已知来源漂移须在中文入口说明，不以未解释的英文跳转隐藏；不得为消除回退创建新译文。
 
 后续每次变化遵循以下规则：
 
@@ -173,7 +175,7 @@
 1. **读者与判断边界。** 说明读者是研究者、保真实现者还是面向玩家的说明者，以及支持和不支持的判断。原版游戏主张在来源所有者层保留 **已确认**、**推断** 或 **未知**。
 2. **玩家动作与动作/目标对齐。** 从有证据的输入、状态变化和结果出发。区分原始源码标签与中性玩家动作短语。无本地证据的玩家目标或含义标为 **推断** 或 **未知**。
 3. **循环、状态流与系统动态。** 只为具备证据所有者的有序转换、资源与反馈关系制图。保留未观察分支，不把控制流图当作引擎架构。
-4. **证据矩阵。** 每个实质条目包含标签、限定主张、源码/研究所有者、合同、适用的 fixture ID/路径和剩余问题。[运行时 RNG 与战斗数学](../../research/battle/runtime-rng-and-battle-math.md)、[交战 fixture](../../../tests/fixtures/h3/physical-damage-v1.json)及[交战合同](../contracts/battle/combat-resolution.md)等本地链接是规范追溯；不另抄证据台账。
+4. **证据矩阵。** 每个实质条目包含标签、限定主张、源码/研究所有者、合同、适用的 fixture ID/路径和剩余问题。[运行时 RNG 与战斗数学（英文）](../../research/battle/runtime-rng-and-battle-math.md)、[交战 fixture](../../../tests/fixtures/h3/physical-damage-v1.json)及[交战合同](contracts/battle/combat-resolution.md)等本地链接是规范追溯；不另抄证据台账。
 5. **原版保真与现代化。** 先陈述原版保真规则，再将有意偏差标为带独立 expected-deviation fixture 的未来决定。没有决定时不暗示现代化。
 6. **H4 验收、扩展与停止条件。** 列出适配器可见的一致性事实、fixture 消费者与扩展所需证据。缺口属于运行时、可达性、呈现或产品问题时停止，不静默扩展合同。
 
@@ -189,4 +191,4 @@
 
 **已确认的协作规则：** 逆向工程继续时，可在已接受证据上增加综合文档，但不得与活动 worker 并行重写子系统合同。未来发现改变结论时，一并更新所属研究笔记、fixture/合同和设计解释，保持双向可追溯性。
 
-**已确认的仓库维护收尾：** [`party-roster-state.md`](../contracts/party/party-roster-state.md) 已在 `src/sf2tool/design_contracts.py` 注册其 H2 map-script 和 H3 active-party fixtures。公开受追踪输入门禁双向验证文档路径、fixture 路径与 fixture ID 的可追溯性；这项收尾不改变任何原版游戏发现。
+**已确认的仓库维护收尾：** [`party-roster-state.md`](contracts/party/party-roster-state.md) 已在 `src/sf2tool/design_contracts.py` 注册其 H2 map-script 和 H3 active-party fixtures。公开受追踪输入门禁双向验证文档路径、fixture 路径与 fixture ID 的可追溯性；这项收尾不改变任何原版游戏发现。

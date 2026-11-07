@@ -1,8 +1,10 @@
 # Battle18 结果与 Caravan 获取
 
+> 本文是[英文规范原文](../../../../synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 首次完成 Taros 战斗后，Rohde 在一段场景中检查小巧的 Caravan，似乎进入其中，并解释为何其尺寸会造成误解。Peter 质疑他的说法；Rohde 自称驾驶者，旁白则说他随军团同行。实际的末尾变更是设置 F65、清除 F84。战斗完成、战斗成员资格、重建的探索行动者及当前运输控制器各有独立使用方。
 
-**已确认：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)确立条件结果路径、完整首次胜利程序、选定变更及紧接的返回。**推断：**其对话与调度将 Rohde 呈现为 Caravan 的驾驶者，以缩小作为进入其中的解释。**未知：**自然结果、实际传入状态、渲染出的消失／返回、服务完成、可用控制及持久性。
+**已确认：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)确立条件结果路径、完整首次胜利程序、选定变更及紧接的返回。**推断：**其对话与调度将 Rohde 呈现为 Caravan 的驾驶者，以缩小作为进入其中的解释。**未知：**自然结果、实际传入状态、渲染出的消失／返回、服务完成、可用控制及持久性。
 
 此前的条件准入见 [Taros 警告与 Battle18 进入](southwest-parmecia-through-taros-battle18-entry.md)，独立的接受／跟随写入见 [Rohde 的提议（中文）](hassan-ancestry-and-rohde-caravan-choice.md)。两者都不提供自然获胜路线。本指南停止于紧接的条件探索／控制边界或无关战斗准入。不包含 Sword 伤害、交战模拟、Caravan 操作／菜单／存储、Rick 及后续旅行。独立的[可选 Rick 招募指南（中文）](hassan-rick-recruitment.md)说明有条件的 Hassan 实体生成及当前成员资格／跟随，不确立必需的神殿至 Hassan 返回。独立的 [Caravan 登乘与 Southwest Parmecia 旅行指南](caravan-boarding-and-southwest-parmecia-travel.md)说明选定神殿出口／准入、mode1 登乘／移动／登陆及步行的独立 Battle19 请求；其条件控制／准入边界不提供自然行程或菜单事务。Fnnn 表示标志 nnn；坐标单位为地图瓦片，索引从零开始。下文等待与速度均为源码操作数，不是实测时间。对话采用转述。
 
@@ -152,4 +154,4 @@ Schema／使用方配对为[循环 schema](../../../../../../schemas/h2-battle-l
 
 [PR846 最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/846#issuecomment-6161451537)与[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/846#issuecomment-6161473505)保留原始／变基后身份与规划器回执、保留比较、已修正／失败检查及最终 CI。它们保留 [PR842 最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161224116)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161232331)，其中包含前序结果。已接受比较不会仅因文字说明而重放；不弱化任何测试夹具、黄金夹具或 schema，聚合事实不提供组合运行时覆盖。
 
-**未知：**自然到达／结果；实际标志、HP、名册／查找、返回预置、存档点、运输／木筏及待处理／输入状态；所有行动者与精灵／文本／淡入淡出／摄像机／音频完成；渲染出的缩小、消失和返回；可用输入及存档／恢复持久性。非 Hassan 传入地图的初始化继续路径在此边界内仍属未知。它们继续按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 延后处理，不自动获取证据，也不主张操作／菜单／存储／Rick／后续旅行能力。
+**未知：**自然到达／结果；实际标志、HP、名册／查找、返回预置、存档点、运输／木筏及待处理／输入状态；所有行动者与精灵／文本／淡入淡出／摄像机／音频完成；渲染出的缩小、消失和返回；可用输入及存档／恢复持久性。非 Hassan 传入地图的初始化继续路径在此边界内仍属未知。它们继续按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 延后处理，不自动获取证据，也不主张操作／菜单／存储／Rick／后续旅行能力。

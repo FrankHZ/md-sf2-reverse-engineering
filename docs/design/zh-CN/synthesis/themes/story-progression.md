@@ -3,11 +3,11 @@
 - **已确认原版行为：** 受限的新游戏/重入交接、顶层地图/战斗/探索路由、有序配置与事件选择、完整地图脚本程序图、处理器局部故事标志变更、对话游标/控制接缝、名册变更、地图生命周期/过渡边界，以及下文所述的进程内存档动作。
 - **推断原版行为：** 这些独立确认的接缝构成可复用的推进架构，由地图、标志、出战队伍和战斗状态选择后续局部行为。
 - **未知原版行为：** 完整的正常游玩时间线、未经审阅的剧情/选择后果、路线排他性、完整存档持久性，以及未观察的故事呈现。选定静态章节的含义与受限原版观察仍由各自链接的所有者限定范围。
-- 重制状态：实现无关的 Layer B 综合；当前引擎方向属于 [ADR 0019](../../../../decisions/0019-state-and-content-driven-remake-engine.md)。本文档不选择战役重写或叙事数据模型。
-- 框架证据日期：2026-08-02；章节导读与完整示例在[当前 Standard 严谨度范围约定](../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)下，使用 `f6da6b1bd5384ce60d77e74271d8f8f3bc404a7a` 的已接受所有者。
+- 重制状态：实现无关的 Layer B 综合；当前引擎方向属于 [ADR 0019（英文）](../../../../decisions/0019-state-and-content-driven-remake-engine.md)。本文档不选择战役重写或叙事数据模型。
+- 框架证据日期：2026-08-02；章节导读与完整示例在[当前 Standard 严谨度范围约定](../../documentation-roadmap.md#当前基线与近期综合)下，使用 `f6da6b1bd5384ce60d77e74271d8f8f3bc404a7a` 的已接受所有者。
 - 源码基线：`ShiningForceCentral/SF2DISASM` `master` `c834c652b6862bc5679fd7f69a38a7093206efc6`。
 
-> 本文是[规范英文原文](../../../synthesis/themes/story-progression.md)的中文镜像，完整同步的英文基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循 [glossary](../../../glossary.md) R1–R7。主题与现有详细指南之间使用中文导航；明示英文规范源、证据合同、研究、ADR 及引擎/验收的链接保留各自所有者。全部已索引设计文档均有独立验收的完整中文镜像。正文中的历史审阅与验收判断保留英文基线当时的时间与范围；当前同步规则见[中文路线图](../../documentation-roadmap.md)。本镜像的同步不产生新观察，也不扩大原版或重制支持。
+> 本文是[规范英文原文](../../../synthesis/themes/story-progression.md)的中文镜像，完整同步的英文基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文始终是审阅基线；本镜像遵循 [glossary（英文）](../../../glossary.md) R1–R7。主题、现有详细指南与规则合同之间优先使用中文导航；英文规范源与原始证据保留各自所有者，研究、ADR 及引擎文档的英文回退明确标注。先前已接受的设计语料有完整中文镜像，新增战斗分析页仍为 `pending`。正文中的历史审阅与验收判断保留英文基线当时的时间与范围；当前同步规则见[中文路线图](../../documentation-roadmap.md)。本镜像的同步不产生新观察，也不扩大原版或重制支持。
 
 ## 判断边界
 
@@ -22,13 +22,13 @@
 5. 传送式探索返回与返回的 `BattleLoop` 交接重入顶层路线；
 6. 存档服务可以序列化受限的战斗员数据区域，但尚未证明完整子系统持久性。
 
-从[游戏总览](../gameplay-overview.md#沿玩法循环选择阅读深度)进入，再用章节分组了解世界变化，用完整示例理解一条连贯依赖。[战术战斗循环](tactical-battle-loop.md)和[成长与经济](progression-and-economy.md)解释这些章节协调的局部系统。[文档路线图](../../../documentation-roadmap.md)拥有范围与审阅顺序；这些解释均不补足缺失的自然时间线。
+从[游戏总览](../gameplay-overview.md#沿玩法循环选择阅读深度)进入，再用章节分组了解世界变化，用完整示例理解一条连贯依赖。[战术战斗循环](tactical-battle-loop.md)和[成长与经济](progression-and-economy.md)解释这些章节协调的局部系统。[文档路线图](../../documentation-roadmap.md)拥有范围与审阅顺序；这些解释均不补足缺失的自然时间线。
 
 ## 分段阅读故事内容
 
 这六组是依据有意义的世界变化与内容依赖形成的**推断性编辑阅读顺序**。它们不是原作者的章节、强制战斗顺序或连续行走的证明。下文的**已确认静态内容**表示具名的已接受所有者支持特定选择器、操作或条件交接。其源码顺序不证明自然抵达、完整呈现、玩家控制或持久存档。
 
-先读各组导读，再展开现有中文详细指南了解精确局部行为，最后通过英文研究链接查证。后期章节直接链接英文研究的部分没有另立设计指南，不是待译指南。北方章节到达条件 Battle32 准入；Moun/Nazca 章节继续经由返回 Grans，到达下一场遭遇的条件交接。最后一组把 Sword 和塔路线连接至尾声与隐藏战斗重置。这些分组不另建一套详细后期战役系列。[覆盖所有者](../../../../research/story-content-coverage.md#four-different-frontiers)区分静态研究、原版观察、英文综合与重制支持。
+先读各组导读，再展开现有中文详细指南了解精确局部行为，最后通过英文研究链接查证。后期章节直接链接英文研究的部分没有另立设计指南，不是待译指南。北方章节到达条件 Battle32 准入；Moun/Nazca 章节继续经由返回 Grans，到达下一场遭遇的条件交接。最后一组把 Sword 和塔路线连接至尾声与隐藏战斗重置。这些分组不另建一套详细后期战役系列。[覆盖所有者（英文）](../../../../research/story-content-coverage.md#four-different-frontiers)区分静态研究、原版观察、英文综合与重制支持。
 
 1. [Grans 开篇与离开](#grans-开篇与离开)。
 2. [New Granseal 与东部 Parmecia](#new-granseal-与东部-parmecia)。
@@ -41,7 +41,7 @@
 
 开篇连接城镇交互、城堡/塔事件与战斗，随后通过被俘、塔后续、地震和乘船离开改变世界。**已确认：** 选定开篇有受限原版观察；后续局部指南解释静态结果/返回与事件门槛。地震城镇出口、登船选择、出航场景和损坏船只抵达是不同交接，并非一次过渡。脚本搬移也不等于玩家再次决定移动。
 
-用[开篇至 Battle01（中文）](../chapters/grans-opening/opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](../chapters/grans-opening/earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖](../../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖](../../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
+用[开篇至 Battle01（中文）](../chapters/grans-opening/opening-through-battle01.md)阅读连贯开端，用[码头出航（中文）](../chapters/grans-opening/earthquake-town-through-docks-departure.md)了解实际 Yes/No 分支。可选 Kiwi 及其他开篇交互仍和各自局部条件放在下列指南中。[Grans 覆盖（英文）](../../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)与[离开覆盖（英文）](../../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)通向已接受证据。败北、逃脱与重复配置保留各自返回；战斗编号和出航布置都不证明自然连续的旅程。
 
 <details>
 <summary>详细指南及其局部边界（中文）</summary>
@@ -74,7 +74,7 @@
 
 登陆并不立即确立一个安顿完毕的新城镇。木板/救援遭遇及其结果先于选定建设/演说和重建人口边界。从 New Granseal 出发，局部条件把 Peter 的介绍与觐见连接到东行、Ribble、Polca 和 Bedoe。**已确认静态内容：** 说话、跟随、加入军团和下一场遭遇准入有独立消费者。十二个编队位置不会招募十二名伙伴。
 
-阅读[木板与救援指南（中文）](../chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](../chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](../chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](../chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)、[East Shrine（中文）](../chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](../chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择（中文）](../chapters/eastern-parmecia/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据](../../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏（中文）](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
+阅读[木板与救援指南（中文）](../chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md)、[Peter 觐见（中文）](../chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)及 [Volcanon 觐见（中文）](../chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)了解这些变化。可选的 [May（中文）](../chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)、[East Shrine（中文）](../chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)、[Bedoe 雏鸟救援（中文）](../chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)与 [Oddler 选择（中文）](../chapters/eastern-parmecia/polca-oddler-choice-and-following.md)是条件分支，并非必经链。[东部章节证据（英文）](../../../../research/story-content-coverage.md#eastern-parmecia-ribble-polca-and-bedoe)保留独立遭遇与返回。Polca 的木筏授予为之后的旅行选项作准备；[登筏（中文）](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)是独立行动边界。
 
 <details>
 <summary>详细指南及其局部边界（中文）</summary>
@@ -129,9 +129,9 @@
 
 交通与物品持有把本组系统连接起来。授予木筏不同于登筏或登陆；Hassan 的 Rohde 提议不同于 Taros 准入；Sword 持有不同于 Bowie 装备后攻击资格。首次胜利可以改变 Caravan 人口条件，同时让玩家继续步行。[完整示例](#完整示例taros-与-caravan)解释这些选定依赖及其失败/拒绝分支，不规定旅行顺序。
 
-在 Caravan 之外，[Elven Village 入场（中文）](../chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)独立于 Battle19 胜利。[Elric 招募（中文）](../chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)、Fairy Cave 与 Creed 小世界通道有各自的交互和结果门槛。恢复正常大小、咨询 Evil Spirit 和带 Fairy 离开同样是不同边界。可选 [Rick](../chapters/southern-travel-creed/hassan-rick-recruitment.md)、村庄探索、[Fairy Woods 试炼](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md)及 [Creed 招募选择/拒绝（中文）](../chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md)保留各自所有者；试炼链接通向研究，并非详细英文指南。
+在 Caravan 之外，[Elven Village 入场（中文）](../chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)独立于 Battle19 胜利。[Elric 招募（中文）](../chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)、Fairy Cave 与 Creed 小世界通道有各自的交互和结果门槛。恢复正常大小、咨询 Evil Spirit 和带 Fairy 离开同样是不同边界。可选 [Rick](../chapters/southern-travel-creed/hassan-rick-recruitment.md)、村庄探索、[Fairy Woods 试炼（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md)及 [Creed 招募选择/拒绝（中文）](../chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md)保留各自所有者；试炼链接通向研究，并非详细英文指南。
 
-已接受证据路线覆盖[南方交通与 Taros](../../../../research/story-content-coverage.md#southern-parmecia-transport-the-sword-and-taros)、[Elven Village 至 Fairy Cave](../../../../research/story-content-coverage.md#elven-village-harpy-pond-and-fairy-cave)及 [Creed/咨询](../../../../research/story-content-coverage.md#creeds-small-worlds-and-the-consultation)。[沙漠遭遇](../../../../research/chapters/southern-travel-creed/battle14-desert-encounter-and-outcomes.md)和[独立神殿进路](../../../../research/chapters/southern-travel-creed/battle15-shrine-approach-and-outcomes.md)是已接受静态研究分支；编号 Battle14/15 不会使它们成为必经行程。
+已接受证据路线覆盖[南方交通与 Taros（英文）](../../../../research/story-content-coverage.md#southern-parmecia-transport-the-sword-and-taros)、[Elven Village 至 Fairy Cave（英文）](../../../../research/story-content-coverage.md#elven-village-harpy-pond-and-fairy-cave)及 [Creed/咨询（英文）](../../../../research/story-content-coverage.md#creeds-small-worlds-and-the-consultation)。[沙漠遭遇（英文）](../../../../research/chapters/southern-travel-creed/battle14-desert-encounter-and-outcomes.md)和[独立神殿进路（英文）](../../../../research/chapters/southern-travel-creed/battle15-shrine-approach-and-outcomes.md)是已接受静态研究分支；编号 Battle14/15 不会使它们成为必经行程。
 
 <details>
 <summary>详细指南及其局部边界（中文）</summary>
@@ -216,7 +216,7 @@
 
 返回取 Cannon、Astral 跟随、Dynamite 与 North Cliff 围绕每次交互改变什么来组织。**已确认静态内容：** 这些赠礼、招募和出站请求有独立条件；返回觐见不检查 Cannon，Janet 不要求 Dynamite。[North Cliff 打开](../chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)是之后 Rohde 加入交战队伍的边界，独立于更早提议和 Caravan 驾驶员场景。
 
-下方详细指南（中文）到达 Ketto、Higins、干旱状态 Pacalon 和 Battle27 首次单次行动分发。它们仍是本章引言；从 [Cannon/North Cliff 证据](../../../../research/story-content-coverage.md#returning-for-the-cannon-and-opening-north-cliff)与 [Ketto/Pacalon 证据](../../../../research/story-content-coverage.md#ketto-higins-and-drought-state-pacalon)开始。以下解释从 Battle27 结果继续，直至**条件 Battle32 准入**，使用已接受 [Tristan–Mitula–恢复降雨所有者](../../../../research/story-content-coverage.md#tristan-mitula-and-restored-rain-returns)。
+下方详细指南（中文）到达 Ketto、Higins、干旱状态 Pacalon 和 Battle27 首次单次行动分发。它们仍是本章引言；从 [Cannon/North Cliff 证据（英文）](../../../../research/story-content-coverage.md#returning-for-the-cannon-and-opening-north-cliff)与 [Ketto/Pacalon 证据（英文）](../../../../research/story-content-coverage.md#ketto-higins-and-drought-state-pacalon)开始。以下解释从 Battle27 结果继续，直至**条件 Battle32 准入**，使用已接受 [Tristan–Mitula–恢复降雨所有者（英文）](../../../../research/story-content-coverage.md#tristan-mitula-and-restored-rain-returns)。
 
 **已确认静态内容**适用于下述选定条件、操作和交接。叙事联系为**推断**，对话归属于其说话者。表格是阅读辅助：各旅行请求与交互必须在实时状态下实际到达并被消费。它既不证明所列地点间无碰撞行走，也不证明自然游玩的时间线。下文局部场景记录表示脚本已返回，独立于成员资格或效果完成。服务完成、呈现、可用控制和存档持久性在此仍为**未知**；原版观察和重制生产仍由下文独立所有者负责。
 
@@ -232,37 +232,37 @@
 
 #### Battle27 返回与可选桥梁
 
-[Battle27 结果所有者](../../../../research/chapters/northern-travel-mitula/battle27-outcomes-through-tristan-admission.md)区分赢得遭遇与进入 Tristan。在选定状态未变时，胜利清除 Battle27 解锁、记录完成，然后进入新 Map74 探索，不先扫描另一战斗。返回位置来自首名出战成员当前战斗坐标和映射朝向；不是固定城镇入口。空 after 程序仍有共享 Bowie 成员资格尾部，但不提供新同伴或抵达 Tristan 事件。位于 `(52,20)` 的显式 Map74 入口独立请求 Tristan，其地图没有战斗行。
+[Battle27 结果所有者（英文）](../../../../research/chapters/northern-travel-mitula/battle27-outcomes-through-tristan-admission.md)区分赢得遭遇与进入 Tristan。在选定状态未变时，胜利清除 Battle27 解锁、记录完成，然后进入新 Map74 探索，不先扫描另一战斗。返回位置来自首名出战成员当前战斗坐标和映射朝向；不是固定城镇入口。空 after 程序仍有共享 Bowie 成员资格尾部，但不提供新同伴或抵达 Tristan 事件。位于 `(52,20)` 的显式 Map74 入口独立请求 Tristan，其地图没有战斗行。
 
 败北和获准 Egress 或 Angel Wing 改走 egress 路线。此处撤退以选定逃脱行动通过可用性和资源检查为前提；取消或不可用行动不是撤退返回。败北恢复 Bowie HP 并减半金币；获准撤退支付法术/物品费用，没有该败北惩罚。这些路径不新记录 Battle27 完成，也不运行其 after 程序。目的地依实际 egress 选择而定：可能的 Tristan 存档点返回不同于大地图入口。更早交战与物品变化不会回滚。胜利也不新解锁 Battles28–30：独立北方大地图区域（事件）可能在 Battle27 获胜前已一起设置这些解锁。
 
-[Pangoat Valley Bridge/Battle28 所有者](../../../../research/chapters/northern-travel-mitula/battle28-bridge-and-outcomes.md)解释带两个大地图入口的支线。该战斗需要桥梁解锁；解锁未设时，相同地图请求选择探索。开场呈现怪物啃桥和受困女子求助。紧迫对话与地震请求不建立倒计时或物理桥塌规则。在首次选定胜利场景中，看似女子的角色显露为 Cameela，索要 Jewel of Evil，并在与顾问对峙后撤离。投射物、精灵变化和口头宝石要求是场景操作；它们不执行宝石转移或交战伤害事务。
+[Pangoat Valley Bridge/Battle28 所有者（英文）](../../../../research/chapters/northern-travel-mitula/battle28-bridge-and-outcomes.md)解释带两个大地图入口的支线。该战斗需要桥梁解锁；解锁未设时，相同地图请求选择探索。开场呈现怪物啃桥和受困女子求助。紧迫对话与地震请求不建立倒计时或物理桥塌规则。在首次选定胜利场景中，看似女子的角色显露为 Cameela，索要 Jewel of Evil，并在与顾问对峙后撤离。投射物、精灵变化和口头宝石要求是场景操作；它们不执行宝石转移或交战伤害事务。
 
 该首次胜利经当前地图重新加载返回，保留桥梁场景行动者与战斗状态。已持有完成的重复胜利跳过 after 场景，改为重建新桥梁探索。败北/获准撤退使用 egress，不新完成该分支。桥梁两个出口独立请求 Map74；之后大地图扫描仍可在 Battle32 前选择符合资格的 Battle27。Cameela 离开及 Tristan 建议不会把出战队伍运送到那里。这些选定表格没有把桥梁胜利设为神殿路线必需条件。
 
 #### Tristan 居民与通向 Mitula 的洞穴路线
 
-[Tristan 局部所有者](../../../../research/chapters/northern-travel-mitula/tristan-entry-interactions-and-exits.md)描述选定人口依赖 Battle30 完成的城镇。在持有该状态前，居民谈及 Mitula 统治、干旱、失踪神殿访客和洞穴彼端神殿；妖精提及 Mitula 雕像处的 Ground Orb。这些对话提供方向和传说，不授予 Orb、不设置局部任务门槛，也不移动出战队伍。物品/武器商店和教堂有独立回调。接触提供服务，不证明买得起、已治疗或已完成存档。搜索可描述雕像、欢迎牌和 Code book，城镇拾取表则不声明物品奖励。
+[Tristan 局部所有者（英文）](../../../../research/chapters/northern-travel-mitula/tristan-entry-interactions-and-exits.md)描述选定人口依赖 Battle30 完成的城镇。在持有该状态前，居民谈及 Mitula 统治、干旱、失踪神殿访客和洞穴彼端神殿；妖精提及 Mitula 雕像处的 Ground Orb。这些对话提供方向和传说，不授予 Orb、不设置局部任务门槛，也不移动出战队伍。物品/武器商店和教堂有独立回调。接触提供服务，不证明买得起、已治疗或已完成存档。搜索可描述雕像、欢迎牌和 Code book，城镇拾取表则不声明物品奖励。
 
-四个城镇出口请求 [Tristan 洞穴](../../../../research/chapters/northern-travel-mitula/tristan-caves-and-shrine-exterior-admission.md)。洞穴没有固定配置人口、对话或局部脚本任务门槛。旅行表包括返回城镇、洞穴内房间转移和两个请求神殿外部的出口。部分房间连接不对称，不能当作自动可逆路径。三个声明宝箱仅经独立搜索与物品栏消费者提供 Protect Milk 和 Healing Seeds；它们不是外部请求的前提。
+四个城镇出口请求 [Tristan 洞穴（英文）](../../../../research/chapters/northern-travel-mitula/tristan-caves-and-shrine-exterior-admission.md)。洞穴没有固定配置人口、对话或局部脚本任务门槛。旅行表包括返回城镇、洞穴内房间转移和两个请求神殿外部的出口。部分房间连接不对称，不能当作自动可逆路径。三个声明宝箱仅经独立搜索与物品栏消费者提供 Protect Milk 和 Healing Seeds；它们不是外部请求的前提。
 
 被消费的外部请求有自身准入决策。持有 Battle29 解锁则选择 Battle29；该解锁未设则选择外部探索。单凭 Battle27 完成不建立解锁历史，桥梁 Battle28 位于另一地图。此扫描中，已持有完成标志不会否决其他条件符合的战斗：选择器清除其解锁，同时仍准入一次。这同样影响本章各处重访。
 
 #### 神殿外部、Zalbard 与 Mitula
 
-[Battle29 结果与外部所有者](../../../../research/chapters/northern-travel-mitula/battle29-outcomes-and-shrine-exterior-route.md)区分胜利、邀请和进入神殿。胜利清除该战斗解锁、记录完成，并在成员派生位置返回新外部探索。不提供新招募或 Battle30 解锁。败北/获准撤退使用配置的 egress 选择，不新完成 Battle29。
+[Battle29 结果与外部所有者（英文）](../../../../research/chapters/northern-travel-mitula/battle29-outcomes-and-shrine-exterior-route.md)区分胜利、邀请和进入神殿。胜利清除该战斗解锁、记录完成，并在成员派生位置返回新外部探索。不提供新招募或 Battle30 解锁。败北/获准撤退使用配置的 egress 选择，不新完成 Battle29。
 
 独立到达任一门区域（事件）触发点，可在场景记录未设时运行邀请场景。对话确认 Zalbard 身份、邀请队伍入内，并用 Odd Eye 名字转移 Astral 注意；这些是归属明确的叙事陈述。场景复制工作门图块并设置后续加载选择器；只有脚本返回后回调才记录该返回。因此中断或状态变化后，门布局、该选择器与场景完成可能不同。已有场景记录不修复不一致的关闭布局。三者均不是 Battle30 解锁。
 
 两个外部出口请求神殿内部；另外两个请求洞穴。内部扫描仅在持有其独立解锁时选择 Battle30，否则选择探索。这些传送行自身不检查新胜利、门场景或物品要求。实际通行仍依赖到达其布局/调用方边界，因此表格不证明可穿过关闭的门。精确场景和布局机制仍归外部所有者。
 
-[Battle30 结果/Mitula 所有者](../../../../research/chapters/northern-travel-mitula/battle30-outcomes-and-mitula-scene.md)继续解释选定 Zalbard 遭遇。其首领清理钩子可在选定首领死亡后移除其余存活敌人，终局计数独立决定结果；本说明不声称覆盖 Zalbard 每次行动或完整首领策略。首次选定胜利的 after 场景安排 Zalbard 在 Ground Orb 光中消失与 Mitula 返回。Astral 将功劳归于 Orb；Mitula 警告 Zeon 恢复、谈及宝石和封印力量，并指引队伍先听讲述者再去 Grans。这些话与效果不授予 Orb、宝石、剑或交通。Orb 是场景行动者，不是物品栏奖励。
+[Battle30 结果/Mitula 所有者（英文）](../../../../research/chapters/northern-travel-mitula/battle30-outcomes-and-mitula-scene.md)继续解释选定 Zalbard 遭遇。其首领清理钩子可在选定首领死亡后移除其余存活敌人，终局计数独立决定结果；本说明不声称覆盖 Zalbard 每次行动或完整首领策略。首次选定胜利的 after 场景安排 Zalbard 在 Ground Orb 光中消失与 Mitula 返回。Astral 将功劳归于 Orb；Mitula 警告 Zeon 恢复、谈及宝石和封印力量，并指引队伍先听讲述者再去 Grans。这些话与效果不授予 Orb、宝石、剑或交通。Orb 是场景行动者，不是物品栏奖励。
 
 胜利在该场景前保存成员派生的 Map1 返回位置。场景改变行动者与跟随，不替换已保存种子；返回后运行共享尾部，清除 Battle30 解锁并设置完成。探索随后在神殿开始，不再扫描战斗。已持有完成时，胜利跳过 Mitula 场景，但仍执行共享尾部及最终标志写入。败北/获准撤退跳过该 after 场景，不新设置完成；使用实际 egress 选择，不保证返回神殿。这些战斗的公共胜利/入场治疗不复活每名死亡己方角色，也不清除每种状态效果。
 
 #### 神殿探索与可选 Taya
 
-[神殿探索](../../../../research/chapters/northern-travel-mitula/mitula-shrine-exploration-and-taya-recruitment.md)提供下一批局部选择。八个传说交互讲述 Arc Valley、敌对恶魔、宝石、圣剑和塔的封印。它们提供故事，不提供物品栏物品或后续解锁。独立房间传送保留当前地图状态；南出口请求外部。重新启用的 Battle30 或 Battle29 解锁可让各自房间/外部请求再次转入交战，即便已持有完成。通常已清除的解锁则允许探索返回。
+[神殿探索（英文）](../../../../research/chapters/northern-travel-mitula/mitula-shrine-exploration-and-taya-recruitment.md)提供下一批局部选择。八个传说交互讲述 Arc Valley、敌对恶魔、宝石、圣剑和塔的封印。它们提供故事，不提供物品栏物品或后续解锁。独立房间传送保留当前地图状态；南出口请求外部。重新启用的 Battle30 或 Battle29 解锁可让各自房间/外部请求再次转入交战，即便已持有完成。通常已清除的解锁则允许探索返回。
 
 Taya 是可选的：激活 `(44,26)` 物体，或到达其独立搜索描述回调，会在局部场景记录未设时运行显露。场景内没有 Yes/No 拒绝，回调中也没有局部 Battle30 完成或现有成员资格检查。Taya 讲述从石头恢复，表明自己是 Mitula 的 sorceress 并提出帮助。场景随后调用其加入军团并建立当前跟随；之后 Nazca 建议不发布旅行请求。不交互/搜索便离开，会使本次招募未尝试。
 
@@ -272,7 +272,7 @@ Taya 是可选的：激活 `(44,26)` 物体，或到达其独立搜索描述回�
 
 #### 经 Tristan 返回与可选 Skreech
 
-[返回所有者](../../../../research/chapters/northern-travel-mitula/mitula-return-and-skreech-recruitment.md)连接神殿到外部、外部到洞穴、洞穴到 Tristan 的独立南出口。重新启用的外部 Battle29 可中断返回；城镇和洞穴没有战斗行。持有 Battle30 完成时，新 Tristan 选择变化后人口：对话改为感谢队伍拯救 Mitula/Pacalon，讨论恶魔威胁、西方空中船和 Moun 紧闭大门。商店、教堂及局部描述仍可经各自回调使用。阅读这些变化台词不是新奖励，也不证明所述事件全部发生。
+[返回所有者（英文）](../../../../research/chapters/northern-travel-mitula/mitula-return-and-skreech-recruitment.md)连接神殿到外部、外部到洞穴、洞穴到 Tristan 的独立南出口。重新启用的外部 Battle29 可中断返回；城镇和洞穴没有战斗行。持有 Battle30 完成时，新 Tristan 选择变化后人口：对话改为感谢队伍拯救 Mitula/Pacalon，讨论恶魔威胁、西方空中船和 Moun 紧闭大门。商店、教堂及局部描述仍可经各自回调使用。阅读这些变化台词不是新奖励，也不证明所述事件全部发生。
 
 该替代城镇配置还在地图外声明 Skreech，并增加 `(24,18)` 区域（事件）。只有更早 Bedoe 救援状态标志已设、且自身局部场景记录未设时，场景才运行。没有救援状态则不可用；已有局部场景记录则跳过，不修复成员资格或跟随。后续检查读取救援标志，不证明每次 Bedoe 访问、飞行或先前交互都救了他。加载后改变人口选择器，也不会重建行动者以匹配新回调。
 
@@ -280,7 +280,7 @@ Taya 是可选的：激活 `(44,26)` 物体，或到达其独立搜索描述回�
 
 #### 恢复降雨、Pacalon 与 Frayja 邀请
 
-[Pacalon 返回所有者](../../../../research/chapters/northern-travel-mitula/pacalon-return-frayja-and-battle31-admission.md)仅从 Map74 探索获准时开始。独立到达的向南滚动请求先前干旱区域地图，在持有 Battle30 完成时替换为恢复降雨版本。该滚动保留当前行动者，不扫描战斗或重建城镇。独立入口请求 Pacalon 城镇、再城堡。预持有 Battle31 解锁可在访问城堡前已拦截城镇请求；城堡本身没有战斗行。
+[Pacalon 返回所有者（英文）](../../../../research/chapters/northern-travel-mitula/pacalon-return-frayja-and-battle31-admission.md)仅从 Map74 探索获准时开始。独立到达的向南滚动请求先前干旱区域地图，在持有 Battle30 完成时替换为恢复降雨版本。该滚动保留当前行动者，不扫描战斗或重建城镇。独立入口请求 Pacalon 城镇、再城堡。预持有 Battle31 解锁可在访问城堡前已拦截城镇请求；城堡本身没有战斗行。
 
 城镇与城堡选择各自恢复状态内容。城镇有水洼/井变化；城堡居民描述降雨、恢复、残余虚弱和被人类救援动摇的自豪。国王感谢是对话，没有另一任务门槛。商店、教堂及现有拾取保留自身条件。恢复天气内容不证明服务完成或每名 centaur 都恢复，入场后改变选择器也不替换已构建人口。
 
@@ -290,13 +290,13 @@ Taya 是可选的：激活 `(44,26)` 物体，或到达其独立搜索描述回�
 
 #### Battle31 结果与条件后续准入
 
-[Battle31 结果/后续所有者](../../../../research/chapters/northern-travel-mitula/battle31-outcomes-and-battle32-admission.md)通过共享终局及空 after 脚本包装器记录胜利。胜利清除其解锁、设置自身完成，在成员派生位置返回新 Pacalon 城镇探索，中间不扫描战斗。Frayja 普通随从标志可在那里重建场上行动者，而无需军团成员资格。after 尾部加入的是 Bowie，不是 Frayja，也不写 Battle32 解锁或完成。败北及获准 Egress/Angel Wing 则为该战斗选择 Pacalon 城堡存档点。败北恢复 Bowie HP 并减半金币；撤退支付自身费用，没有这些败北效果。两者都不新完成 Battle31，也不撤销更早变更。
+[Battle31 结果/后续所有者（英文）](../../../../research/chapters/northern-travel-mitula/battle31-outcomes-and-battle32-admission.md)通过共享终局及空 after 脚本包装器记录胜利。胜利清除其解锁、设置自身完成，在成员派生位置返回新 Pacalon 城镇探索，中间不扫描战斗。Frayja 普通随从标志可在那里重建场上行动者，而无需军团成员资格。after 尾部加入的是 Bowie，不是 Frayja，也不写 Battle32 解锁或完成。败北及获准 Egress/Angel Wing 则为该战斗选择 Pacalon 城堡存档点。败北恢复 Bowie HP 并减半金币；撤退支付自身费用，没有这些败北效果。两者都不新完成 Battle31，也不撤销更早变更。
 
 之后城镇南出口、恢复区域入场和向北滚动是返回 Map74 的独立请求。滚动不会自动运行其区域（事件）。在独立到达的北方区域（事件），Battle27 仍未完成会选择更早解锁分支，设置 Battle27 和 Battles28–30 解锁。Battle27 完成时，只有持有 Frayja 邀请返回记录且 Battle32 未完成，回调才设置 Battle32 解锁并发布重载。缺少邀请或 Battle32 已完成不产生新写入，也不抹除先前持有解锁。此处不检查 Battle31 完成、Frayja 军团成员资格或出战状态。
 
 请求消费后，有序 Map74 扫描仍给予符合资格的 Battle27 优先级。仅较早解锁未设时，所持 Battle32 解锁才能选择 Battle32；两者都未设则返回探索。完成可清除选定解锁，但不取消本次扫描战斗准入。这是条件准入，不是 Battle31 胜利自动奖励或不可逆战役顺序。
 
-**下一边界：** 止于 [Battle32 开场](../../../../research/chapters/moun-nazca-grans/battle32-initialization-and-opening.md)之前。其主体、Jaro 换边、Frayja 后续加入军团、Moun 和 Nazca 超出本章已交付解释，经[下一组](#mounnazca-与返回-grans)继续。静态章节不推进原版观察与重制前沿。
+**下一边界：** 止于 [Battle32 开场（英文）](../../../../research/chapters/moun-nazca-grans/battle32-initialization-and-opening.md)之前。其主体、Jaro 换边、Frayja 后续加入军团、Moun 和 Nazca 超出本章已交付解释，经[下一组](#mounnazca-与返回-grans)继续。静态章节不推进原版观察与重制前沿。
 
 <details>
 <summary>详细指南及其局部边界（中文）</summary>
@@ -394,7 +394,7 @@ Clear527 设置427、写重载，再设置428/429/430。Held527 用811/532 选�
 
 ### Moun、Nazca 与返回 Grans
 
-本章承接[条件 Battle32 准入](#battle31-结果与条件后续准入)。连贯主题是队伍变化、Moun 幸存者与古代船，随后是独立坠船后旅行、Roft 及返回 Grans 的遭遇。可选招募与锻造放在各自门槛旁。证据路线是 [Moun/Jaro/Nazca 进路](../../../../research/story-content-coverage.md#moun-jaro-and-the-nazca-approach)、[Nazca/Dojo/Roft](../../../../research/story-content-coverage.md#nazca-ship-optional-dojo-and-roft)及 [Grans 返回](../../../../research/story-content-coverage.md#grans-return-prism-flowers-lemon-and-geshp)。
+本章承接[条件 Battle32 准入](#battle31-结果与条件后续准入)。连贯主题是队伍变化、Moun 幸存者与古代船，随后是独立坠船后旅行、Roft 及返回 Grans 的遭遇。可选招募与锻造放在各自门槛旁。证据路线是 [Moun/Jaro/Nazca 进路（英文）](../../../../research/story-content-coverage.md#moun-jaro-and-the-nazca-approach)、[Nazca/Dojo/Roft（英文）](../../../../research/story-content-coverage.md#nazca-ship-optional-dojo-and-roft)及 [Grans 返回（英文）](../../../../research/story-content-coverage.md#grans-return-prism-flowers-lemon-and-geshp)。
 
 **已确认静态内容**描述下文选定条件、操作和返回。叙事联系为**推断**，主张归属于说话者。每场遭遇、交互或旅行请求必须在实时状态下实际到达；阅读顺序不证明连续行走或强制序列。请求、场景内地图加载、已返回初始化器和可用玩家控制是不同终点。超出链接观察范围的自然执行、已完成呈现/服务和完整存档持久性仍为**未知**。本章不赋予后期游戏重制支持。
 
@@ -409,117 +409,117 @@ Clear527 设置427、写重载，再设置428/429/430。Held527 用811/532 选�
 | Grans 大地图 → Geshp/Yeel | Red Baron 完成可启用之后 Geshp 解锁区域（事件）。Yeel 提供独立局部场景与招募。 | 较早符合资格的遭遇可优先赢得大地图扫描；Lemon 后续不是招募。 |
 | Geshp 返回 → 下一章 | 之后区域（事件）可解锁 Battle39；下一章拥有其主体与 Force Sword 路线。 | Battle38 胜利自身不运行该区域（事件）、扫描或战斗。 |
 
-普通结果区别由这些遭遇共享；精确机制见 [Battle35 结果/返回说明](../../../../research/chapters/moun-nazca-grans/battle35-outcomes-and-roft-return.md#victory-seed-empty-after-wrapper-and-completion-tail)及其[败北/撤退分支](../../../../research/chapters/moun-nazca-grans/battle35-outcomes-and-roft-return.md#defeat-egress-and-angel-wing-actual-destination-state)。胜利在选定 after 程序之后记录完成并清除相应解锁；已完成遭遇可跳过首次 after 场景。保存返回位置先于场景，通常来自首个出战成员实际战斗位置和映射朝向，再加遭遇裁切。场景布置不是新返回种子。败北恢复 Bowie 并减半金币；获准 Egress/Angel Wing 支付自身资源费用并使用实际 egress 目的地。这些未成功路径不新完成遭遇或运行胜利场景，也不回滚先前交战/物品变化。取消或逃脱被拒不是撤退。之后扫描即便已记录完成仍可准入所持解锁，在该扫描清除解锁并选择遭遇。
+普通结果区别由这些遭遇共享；精确机制见 [Battle35 结果/返回说明（英文）](../../../../research/chapters/moun-nazca-grans/battle35-outcomes-and-roft-return.md#victory-seed-empty-after-wrapper-and-completion-tail)及其[败北/撤退分支（英文）](../../../../research/chapters/moun-nazca-grans/battle35-outcomes-and-roft-return.md#defeat-egress-and-angel-wing-actual-destination-state)。胜利在选定 after 程序之后记录完成并清除相应解锁；已完成遭遇可跳过首次 after 场景。保存返回位置先于场景，通常来自首个出战成员实际战斗位置和映射朝向，再加遭遇裁切。场景布置不是新返回种子。败北恢复 Bowie 并减半金币；获准 Egress/Angel Wing 支付自身资源费用并使用实际 egress 目的地。这些未成功路径不新完成遭遇或运行胜利场景，也不回滚先前交战/物品变化。取消或逃脱被拒不是撤退。之后扫描即便已记录完成仍可准入所持解锁，在该扫描清除解锁并选择遭遇。
 
 #### Jaro 叛离、Frayja 加入与 Moun 幸存者
 
-[Battle32 的 Jaro 所有者](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)区分战斗中条件转变与后续仪式。两个选定区域中任一个，都可在共享已播放标志未设时准入场景；包装器在脚本前设置该标志。未经改动的新编队不在两个区域内，因此开场模板不证明转变。到达转变时，将敌方 Jaro 战斗员移出战斗坐标，把其位置和物理行动者引用复制给己方 Jaro，设置成员资格/出战状态并启用 AI 控制，包括容量满时强制出战准入。它不复制敌方 HP，也不初始化/治疗己方角色，因此不保证存活单次行动。场景将叛离归因于拒绝恶魔。中断可在转变前留下已播放标志，不自动重试或修复。
+[Battle32 的 Jaro 所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)区分战斗中条件转变与后续仪式。两个选定区域中任一个，都可在共享已播放标志未设时准入场景；包装器在脚本前设置该标志。未经改动的新编队不在两个区域内，因此开场模板不证明转变。到达转变时，将敌方 Jaro 战斗员移出战斗坐标，把其位置和物理行动者引用复制给己方 Jaro，设置成员资格/出战状态并启用 AI 控制，包括容量满时强制出战准入。它不复制敌方 HP，也不初始化/治疗己方角色，因此不保证存活单次行动。场景将叛离归因于拒绝恶魔。中断可在转变前留下已播放标志，不自动重试或修复。
 
-[Battle32 首次胜利场景](../../../../research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#complete-after-scene-actions-and-text)呈现 Jaro 请求为军团效力，独立于区域转变是否发生。它调用加入仪式并清除其 AI 控制位，再显式将他移出出战队伍并建立物理跟随。因此加入、受 AI 控制、部署与跟随是不同变化。此处没有玩家 Yes/No 招募选择。新大地图重建不保留整个场景跟随链。两个独立大地图入口请求 Moun；Battle33 准入需要自身解锁，由 Frayja 更早 Pacalon 邀请提供，不是 Battle32 完成或 Jaro 成员资格。解锁未设时，请求可改入城镇探索。
+[Battle32 首次胜利场景（英文）](../../../../research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#complete-after-scene-actions-and-text)呈现 Jaro 请求为军团效力，独立于区域转变是否发生。它调用加入仪式并清除其 AI 控制位，再显式将他移出出战队伍并建立物理跟随。因此加入、受 AI 控制、部署与跟随是不同变化。此处没有玩家 Yes/No 招募选择。新大地图重建不保留整个场景跟随链。两个独立大地图入口请求 Moun；Battle33 准入需要自身解锁，由 Frayja 更早 Pacalon 邀请提供，不是 Battle32 完成或 Jaro 成员资格。解锁未设时，请求可改入城镇探索。
 
-[Battle33 开场](../../../../research/chapters/moun-nazca-grans/battle33-initialization-and-opening.md#keyed-texts-join-ceremony-and-actual-replacement-rule)将开门归于 Frayja 使用钥匙，再呈现他面对敌意欢迎的痛苦和参战请求。叙述不执行物品栏钥匙检查或移除。更早跟随没有已经招募他：本开场调用正式加入，再确保出战成员资格。若尚未出战，其替换辅助选择所测试前缀中首名死亡成员，否则选重建出战列表最后成员；这不是玩家选择替补。因此普通满队情况可将另一成员送回 Caravan。开场另行记录局部场景状态，并在后续重建前清除 Frayja 随从标志。变化/短列表限制保留在所有者中；它不是通用安全队伍替换服务。
+[Battle33 开场（英文）](../../../../research/chapters/moun-nazca-grans/battle33-initialization-and-opening.md#keyed-texts-join-ceremony-and-actual-replacement-rule)将开门归于 Frayja 使用钥匙，再呈现他面对敌意欢迎的痛苦和参战请求。叙述不执行物品栏钥匙检查或移除。更早跟随没有已经招募他：本开场调用正式加入，再确保出战成员资格。若尚未出战，其替换辅助选择所测试前缀中首名死亡成员，否则选重建出战列表最后成员；这不是玩家选择替补。因此普通满队情况可将另一成员送回 Caravan。开场另行记录局部场景状态，并在后续重建前清除 Frayja 随从标志。变化/短列表限制保留在所有者中；它不是通用安全队伍替换服务。
 
-[Battle33 首次胜利](../../../../research/chapters/moun-nazca-grans/battle33-outcomes-and-zynk-handoff.md#complete-rock-and-zynk-scene)有移动岩石/Zynk 场景：Zynk 说幸存者在下面，并请队伍跟随。岩石、Zynk 当前物理行动者和之后布局复制记录是独立效果。该场景既不加入 Zynk，也不设置其普通随从标志。新 Moun 探索从当前标志重建行动者与布局，不保留场景位置。两个声明地下入口独立于 Zynk 成员资格检查；实际地形/移动准入仍未观察。
+[Battle33 首次胜利（英文）](../../../../research/chapters/moun-nazca-grans/battle33-outcomes-and-zynk-handoff.md#complete-rock-and-zynk-scene)有移动岩石/Zynk 场景：Zynk 说幸存者在下面，并请队伍跟随。岩石、Zynk 当前物理行动者和之后布局复制记录是独立效果。该场景既不加入 Zynk，也不设置其普通随从标志。新 Moun 探索从当前标志重建行动者与布局，不保留场景位置。两个声明地下入口独立于 Zynk 成员资格检查；实际地形/移动准入仍未观察。
 
-在[地下](../../../../research/chapters/moun-nazca-grans/moun-underground-gyan-and-zynk.md#gyans-complete-zone-scene-and-formal-recruitment)，初始区域（事件）场景呈现 Gyan 得知隧道及回家路线可用，继而选择帮助对抗恶魔。它正式加入 Gyan 并尝试当前跟随；只有返回后调用方才设置选择有人城镇/地下内容的共享记录。出战队伍满可让普通招募者留在后备。改变该记录会切换后续回调，同时保留已加载居民。Zynk 的[独立交互](../../../../research/chapters/moun-nazca-grans/moun-underground-gyan-and-zynk.md#zynks-entity-scene-and-later-reconstruction)表达想去 Grans，建立跟随，再记录随从标志与局部对话状态。不加入他。因此跟随中断和标志写入中断可产生不同当前/重建队伍；岩石场景及未触发开场都不建立其之后招募。
+在[地下（英文）](../../../../research/chapters/moun-nazca-grans/moun-underground-gyan-and-zynk.md#gyans-complete-zone-scene-and-formal-recruitment)，初始区域（事件）场景呈现 Gyan 得知隧道及回家路线可用，继而选择帮助对抗恶魔。它正式加入 Gyan 并尝试当前跟随；只有返回后调用方才设置选择有人城镇/地下内容的共享记录。出战队伍满可让普通招募者留在后备。改变该记录会切换后续回调，同时保留已加载居民。Zynk 的[独立交互（英文）](../../../../research/chapters/moun-nazca-grans/moun-underground-gyan-and-zynk.md#zynks-entity-scene-and-later-reconstruction)表达想去 Grans，建立跟随，再记录随从标志与局部对话状态。不加入他。因此跟随中断和标志写入中断可产生不同当前/重建队伍；岩石场景及未触发开场都不建立其之后招募。
 
 #### 可选 Moun 交互与 Arm 持有
 
-[有人 Moun](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#residents-and-ordinary-interaction)在地下返回之外增加居民、商店与教堂访问。选定对话和服务有自身调用方；抵达不完成事务或收集全部物品。[画家](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#painter-first-choice-movement-revisit-and-picture)在询问 Yes/No 前记录首次交互。拒绝（包括 B）重复恳求与选择，不退出。接受则继续布置绘画场景；之后交谈使用重复对话。独立调查画作位置使用同一记录。因此首次尝试被中断，可在未证明肖像完成时选择重复对话或画作请求。该源码路径不建立渲染画作。
+[有人 Moun（英文）](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#residents-and-ordinary-interaction)在地下返回之外增加居民、商店与教堂访问。选定对话和服务有自身调用方；抵达不完成事务或收集全部物品。[画家（英文）](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#painter-first-choice-movement-revisit-and-picture)在询问 Yes/No 前记录首次交互。拒绝（包括 B）重复恳求与选择，不退出。接受则继续布置绘画场景；之后交谈使用重复对话。独立调查画作位置使用同一记录。因此首次尝试被中断，可在未证明肖像完成时选择重复对话或画作请求。该源码路径不建立渲染画作。
 
-[Arm of Golem](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#arm-of-golem-appearance-and-search-admission)是自定义搜索交互，独立于普通宝箱/地面物品拾取和画家。城镇区域（事件）先显露当前行动者，场景后记录出现。在该位置，菜单搜索可到达拾取回调；普通快捷行动的资格值不同。已出现且授予记录未设才允许实际拾取问题。No 留下物品；Yes 尝试已加入军团物品栏，包括后备，而非仅 Bowie 槽位。全员满时，该调用方报告失败并保留 Arm 可领取，不启用丢弃菜单。成功先增加物品，再记录授予并将行动者移至地图外。
+[Arm of Golem（英文）](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#arm-of-golem-appearance-and-search-admission)是自定义搜索交互，独立于普通宝箱/地面物品拾取和画家。城镇区域（事件）先显露当前行动者，场景后记录出现。在该位置，菜单搜索可到达拾取回调；普通快捷行动的资格值不同。已出现且授予记录未设才允许实际拾取问题。No 留下物品；Yes 尝试已加入军团物品栏，包括后备，而非仅 Bowie 槽位。全员满时，该调用方报告失败并保留 Arm 可领取，不启用丢弃菜单。成功先增加物品，再记录授予并将行动者移至地图外。
 
-[重载/重试后果](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#award-removal-and-reload-are-separate-state-changes)体现这种区分：有人城镇重载时，已记录出现但未授予会清除出现记录，使之后区域（事件）可再次显露。已授予记录抑制再次拾取，即便物品之后遗失。反之，增加物品后、记录前中断，可留下持有却无记录。不提供自动协调。持有 Arm 只是独立 [Claude 支线](#可选-magic-tunnel-与-claude)的物品条件。
+[重载/重试后果（英文）](../../../../research/chapters/moun-nazca-grans/moun-town-painter-and-golem-arm.md#award-removal-and-reload-are-separate-state-changes)体现这种区分：有人城镇重载时，已记录出现但未授予会清除出现记录，使之后区域（事件）可再次显露。已授予记录抑制再次拾取，即便物品之后遗失。反之，增加物品后、记录前中断，可留下持有却无记录。不提供自动协调。持有 Arm 只是独立 [Claude 支线](#可选-magic-tunnel-与-claude)的物品条件。
 
 #### Nazca、Cameela 与 Sky Orb
 
-[Moun 至 Nazca 路线](../../../../research/chapters/moun-nazca-grans/moun-to-nazca-and-battle34-admission.md)经北方大地图返回。向西滚动加载 Nazca 区域，同时保留当前人口和探索调用；不扫描战斗或运行新人口配置。之后显式 Nazca 入口请求在持有解锁时可选择 Battle34。Frayja 更早邀请提供该解锁，独立于 Moun 人口或 Zynk 跟随；无解锁则选择探索。遭遇编号和滚动本身都不提供准入。
+[Moun 至 Nazca 路线（英文）](../../../../research/chapters/moun-nazca-grans/moun-to-nazca-and-battle34-admission.md)经北方大地图返回。向西滚动加载 Nazca 区域，同时保留当前人口和探索调用；不扫描战斗或运行新人口配置。之后显式 Nazca 入口请求在持有解锁时可选择 Battle34。Frayja 更早邀请提供该解锁，独立于 Moun 人口或 Zynk 跟随；无解锁则选择探索。遭遇编号和滚动本身都不提供准入。
 
-在 [Battle34 首次后续](../../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#complete-cameela-geshp-and-orb-scene)，Cameela 承认败北、显露 Orb、解释其用于船只，并开始警告 Geshp 的花。Geshp 威胁她并声称陷阱早已安排；顾问对其被杀作出反应并怀疑陷阱。Zynk 可选、依赖跟随的台词将花与古代边界联系。这些是归属明确的叙事含义。物理 Cameela、Geshp 和 Orb 行动者是场景资源：Geshp 远程台词不证明地图上抵达，死亡呈现独立于此前战斗结果。Wish Staff 与条件 Iron Ball 是[行动侧掉落](../../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#terminal-selection-cleanup-and-separate-battle-drops)，有各自攻击/物品/掉落条件；它们不是 Sky Orb 或保证胜利奖励。
+在 [Battle34 首次后续（英文）](../../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#complete-cameela-geshp-and-orb-scene)，Cameela 承认败北、显露 Orb、解释其用于船只，并开始警告 Geshp 的花。Geshp 威胁她并声称陷阱早已安排；顾问对其被杀作出反应并怀疑陷阱。Zynk 可选、依赖跟随的台词将花与古代边界联系。这些是归属明确的叙事含义。物理 Cameela、Geshp 和 Orb 行动者是场景资源：Geshp 远程台词不证明地图上抵达，死亡呈现独立于此前战斗结果。Wish Staff 与条件 Iron Ball 是[行动侧掉落（英文）](../../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#terminal-selection-cleanup-and-separate-battle-drops)，有各自攻击/物品/掉落条件；它们不是 Sky Orb 或保证胜利奖励。
 
-场景[在尝试物品栏授予前隐藏 Orb 行动者](../../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#sky-orb-mandatory-inventory-award)。辅助先尝试全部已加入成员，包括后备/死亡成员。全满时，该调用方要求丢弃流程：取消或拒绝丢弃会循环，不可出售物品被拒，诅咒已装备物品也可被拒。丢弃珍稀物品会送到特卖并继续选择，不立即接受新空槽；返回的替换要求接受一次非珍稀丢弃。因此静态代码不保证每个满物品栏状态都能完成授予。隐藏行动者可与未完成物品栏/场景进度并存。物品增加也先于其消息及战斗完成尾部。已持有完成跳过整个 after 场景，不检查或修复缺失 Orb 持有。
+场景[在尝试物品栏授予前隐藏 Orb 行动者（英文）](../../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#sky-orb-mandatory-inventory-award)。辅助先尝试全部已加入成员，包括后备/死亡成员。全满时，该调用方要求丢弃流程：取消或拒绝丢弃会循环，不可出售物品被拒，诅咒已装备物品也可被拒。丢弃珍稀物品会送到特卖并继续选择，不立即接受新空槽；返回的替换要求接受一次非珍稀丢弃。因此静态代码不保证每个满物品栏状态都能完成授予。隐藏行动者可与未完成物品栏/场景进度并存。物品增加也先于其消息及战斗完成尾部。已持有完成跳过整个 after 场景，不检查或修复缺失 Orb 持有。
 
 #### 登船、起航与被中断的航行
 
-[登船](../../../../research/chapters/moun-nazca-grans/nazca-ship-boarding-and-departure-admission.md#boarding-request-and-actor-preconditions)使用持有 Battle34 完成的 Nazca 区域（事件）。它依次请求 Bowie、Peter 和当前顾问随从缩小/移动，并在持有 Zynk 随从标志时有条件请求 Zynk，再发布船内部请求。不测试物品栏、地下 Zynk 对话记录或坠船标志。未返回的行动者等待可阻止请求产生。新船配置布置船员并抑制普通随从；按已加入状态隐藏独立于固定模板。船员位置不证明招募。
+[登船（英文）](../../../../research/chapters/moun-nazca-grans/nazca-ship-boarding-and-departure-admission.md#boarding-request-and-actor-preconditions)使用持有 Battle34 完成的 Nazca 区域（事件）。它依次请求 Bowie、Peter 和当前顾问随从缩小/移动，并在持有 Zynk 随从标志时有条件请求 Zynk，再发布船内部请求。不测试物品栏、地下 Zynk 对话记录或坠船标志。未返回的行动者等待可阻止请求产生。新船配置布置船员并抑制普通随从；按已加入状态隐藏独立于固定模板。船员位置不证明招募。
 
-[起航](../../../../research/chapters/moun-nazca-grans/nazca-ship-boarding-and-departure-admission.md#sky-orb-producer-callback-and-launch-boundary)是另一行动：站在船的 `(8,11)` 瓦片，朝 Left 使用 Sky Orb。匹配回调要求坠船记录未设、地下 Zynk 对话记录已持有。缺后者则给出选定拒绝/建议对话，不起航。位置/朝向/物品错误或坠船记录已设时，经通用无效果物品路径返回。自然菜单选择通常提供已持有物品；回调自身不复查持有。可见场景 Orb 和单凭 Battle34 完成都不满足这些使用条件。登船和起航不提供新的 Yes/No 离开选择。
+[起航（英文）](../../../../research/chapters/moun-nazca-grans/nazca-ship-boarding-and-departure-admission.md#sky-orb-producer-callback-and-launch-boundary)是另一行动：站在船的 `(8,11)` 瓦片，朝 Left 使用 Sky Orb。匹配回调要求坠船记录未设、地下 Zynk 对话记录已持有。缺后者则给出选定拒绝/建议对话，不起航。位置/朝向/物品错误或坠船记录已设时，经通用无效果物品路径返回。自然菜单选择通常提供已持有物品；回调自身不复查持有。可见场景 Orb 和单凭 Battle34 完成都不满足这些使用条件。登船和起航不提供新的 Yes/No 离开选择。
 
-[航行程序](../../../../research/chapters/moun-nazca-grans/nazca-voyage-and-map59-arrival.md#admission-and-complete-voyage-order)请求振动、Zynk 驾驶舱移动与升起/旅行服务，交替加载船内部和 Nazca 大地图场景，重建舞台行动者，再发布 Map59 请求。它不移除 Sky Orb、不加入任何人，也不设置坠船记录或后续遭遇解锁。这些场景加载并非每次都经过普通探索/战斗准入。最终请求需要独立消费者和实时目的地选择器：后续战斗解锁及完成/坠船状态未设时，新 Map59 探索分发敌方会议。变化标志可选择不同边界；地图名字不证明遭遇或带可用控制的抵达。
+[航行程序（英文）](../../../../research/chapters/moun-nazca-grans/nazca-voyage-and-map59-arrival.md#admission-and-complete-voyage-order)请求振动、Zynk 驾驶舱移动与升起/旅行服务，交替加载船内部和 Nazca 大地图场景，重建舞台行动者，再发布 Map59 请求。它不移除 Sky Orb、不加入任何人，也不设置坠船记录或后续遭遇解锁。这些场景加载并非每次都经过普通探索/战斗准入。最终请求需要独立消费者和实时目的地选择器：后续战斗解锁及完成/坠船状态未设时，新 Map59 探索分发敌方会议。变化标志可选择不同边界；地图名字不证明遭遇或带可用控制的抵达。
 
-[击落/坠船说明](../../../../research/chapters/moun-nazca-grans/nazca-ship-shootdown-and-crash-handoff.md#five-scenes-in-source-order)连接该会议、Prism Flower 准备、飞行切镜、开火及受损船下降。场景投射物、闪光和对话描绘攻击，不实现战斗伤害或己方 HP 损失。最后场景发布返回船请求。仅五个场景全部返回后，初始化器才记录坠船、选择 Dojo 作 egress 地图并设置多个后续遭遇解锁，包括 Prism Flowers。已发布传送或更早场景地图变化不建立该尾部。服务中断可留下已到达前缀，而无后续写入或控制。在调用不中断且无外部变更时，更早航行加本序列保持 Orb 持有不变；保留它不允许在坠船记录已设时再次起航。
+[击落/坠船说明（英文）](../../../../research/chapters/moun-nazca-grans/nazca-ship-shootdown-and-crash-handoff.md#five-scenes-in-source-order)连接该会议、Prism Flower 准备、飞行切镜、开火及受损船下降。场景投射物、闪光和对话描绘攻击，不实现战斗伤害或己方 HP 损失。最后场景发布返回船请求。仅五个场景全部返回后，初始化器才记录坠船、选择 Dojo 作 egress 地图并设置多个后续遭遇解锁，包括 Prism Flowers。已发布传送或更早场景地图变化不建立该尾部。服务中断可留下已到达前缀，而无后续写入或控制。在调用不中断且无外部变更时，更早航行加本序列保持 Orb 持有不变；保留它不允许在坠船记录已设时再次起航。
 
-新的[坠船后船入场](../../../../research/chapters/moun-nazca-grans/post-crash-ship-and-nazca-overworld-return.md#first-post-crash-scene-and-return-to-event-waiting)使用替代船员/init 路径。Peter 抱怨着陆并寻找 Astral；局部记录是临时的，场景后设置，之后新入场清除。Astral 独立交谈警告追兵、催促撤离，并在设置另一临时记录前隐藏当前行动者。与他交谈不是共享出口条件。该出口请求 Nazca；通常已清除的 Battle34 解锁允许探索，而传入的已持有解锁可重新准入遭遇。
+新的[坠船后船入场（英文）](../../../../research/chapters/moun-nazca-grans/post-crash-ship-and-nazca-overworld-return.md#first-post-crash-scene-and-return-to-event-waiting)使用替代船员/init 路径。Peter 抱怨着陆并寻找 Astral；局部记录是临时的，场景后设置，之后新入场清除。Astral 独立交谈警告追兵、催促撤离，并在设置另一临时记录前隐藏当前行动者。与他交谈不是共享出口条件。该出口请求 Nazca；通常已清除的 Battle34 解锁允许探索，而传入的已持有解锁可重新准入遭遇。
 
-持有坠船记录时，[Nazca 初始化器向外返回场景](../../../../research/chapters/moun-nazca-grans/post-crash-ship-and-nazca-overworld-return.md#map55-initializer-and-the-resulting-map75-context)在场景内加载大地图、重建当前随从并移动 Bowie，再通过既有探索调用在新地图上下文返回。即便船中行动者之前已隐藏，Astral 也可从普通随从标志重建。这既不是新战斗扫描，也不保证可用输入：待处理事件优先，运动/显示服务必须完成。当前登船/航行编译器限制和原生/特殊行动者缺口仍由所有者负责；这些静态连接不构成可玩航行包。
+持有坠船记录时，[Nazca 初始化器向外返回场景（英文）](../../../../research/chapters/moun-nazca-grans/post-crash-ship-and-nazca-overworld-return.md#map55-initializer-and-the-resulting-map75-context)在场景内加载大地图、重建当前随从并移动 Bowie，再通过既有探索调用在新地图上下文返回。即便船中行动者之前已隐藏，Astral 也可从普通随从标志重建。这既不是新战斗扫描，也不保证可用输入：待处理事件优先，运动/显示服务必须完成。当前登船/航行编译器限制和原生/特殊行动者缺口仍由所有者负责；这些静态连接不构成可玩航行包。
 
 #### 可选 Dojo 与 Sheela
 
-[Dojo 分支](../../../../research/chapters/moun-nazca-grans/dojo-exploration-and-sheela-recruitment.md#entrance-live-setup-and-the-two-areas)是独立 Nazca 大地图入口，传送行没有坠船或招募谓词。它不是 Roft 前提。当地僧侣提供训练对话，祭司调用教堂服务。搜索记录只有在实际搜索/标记与收集状态条件通过时才提供 Mithril、Vigor Ball 和 Brave Apple。全军团物品栏满走既有拾取失败/标志修复路径；抵达或听到服务提议均不授予这些物品。
+[Dojo 分支（英文）](../../../../research/chapters/moun-nazca-grans/dojo-exploration-and-sheela-recruitment.md#entrance-live-setup-and-the-two-areas)是独立 Nazca 大地图入口，传送行没有坠船或招募谓词。它不是 Roft 前提。当地僧侣提供训练对话，祭司调用教堂服务。搜索记录只有在实际搜索/标记与收集状态条件通过时才提供 Mithril、Vigor Ball 和 Brave Apple。全军团物品栏满走既有拾取失败/标志修复路径；抵达或听到服务提议均不授予这些物品。
 
-[被调用的 Y17 区域（事件）](../../../../research/chapters/moun-nazca-grans/dojo-exploration-and-sheela-recruitment.md#zone-admission-and-complete-recruitment-command-order)可在 Sheela 未加入时运行其场景。对话确认她是 Astral 旧学生，并将其目的归于 Red Baron 冲突。场景最终调用加入并建立临时跟随；没有 Yes/No 招募提示或物品栏费用。普通加入仅在容量允许时让她进入出战队伍，因此满队可获得后备成员。之后区域（事件）在已持有成员资格时跳过场景，即便先前加入后效果被中断。[返回/重访所有者](../../../../research/chapters/moun-nazca-grans/dojo-exploration-and-sheela-recruitment.md#join-effects-changed-states-and-five-returns)区分内部保留人口传送与新大地图出口：后者丢失 Sheela 场景专用跟随，不撤销成员资格。均不建立从 Dojo 到下一遭遇的强制或自然行走旅行。
+[被调用的 Y17 区域（事件）（英文）](../../../../research/chapters/moun-nazca-grans/dojo-exploration-and-sheela-recruitment.md#zone-admission-and-complete-recruitment-command-order)可在 Sheela 未加入时运行其场景。对话确认她是 Astral 旧学生，并将其目的归于 Red Baron 冲突。场景最终调用加入并建立临时跟随；没有 Yes/No 招募提示或物品栏费用。普通加入仅在容量允许时让她进入出战队伍，因此满队可获得后备成员。之后区域（事件）在已持有成员资格时跳过场景，即便先前加入后效果被中断。[返回/重访所有者（英文）](../../../../research/chapters/moun-nazca-grans/dojo-exploration-and-sheela-recruitment.md#join-effects-changed-states-and-five-returns)区分内部保留人口传送与新大地图出口：后者丢失 Sheela 场景专用跟随，不撤销成员资格。均不建立从 Dojo 到下一遭遇的强制或自然行走旅行。
 
 #### Roft、Petro 与 Zynk 独立招募
 
-[Nazca 向西滚动](../../../../research/chapters/moun-nazca-grans/nazca-to-roft-and-battle35-admission.md#west-scroll-and-the-regional-declarations)加载 Roft 区域，保留人口且不扫描战斗。之后调用的区域事件在 Battle35 未完成时设置其解锁并发布当前地图重载。仅后续扫描可准入遭遇。独立城镇传送请求 Roft 及条件问候。表格和脚本均不使入城与 Battle35 成为强制顺序。
+[Nazca 向西滚动（英文）](../../../../research/chapters/moun-nazca-grans/nazca-to-roft-and-battle35-admission.md#west-scroll-and-the-regional-declarations)加载 Roft 区域，保留人口且不扫描战斗。之后调用的区域事件在 Battle35 未完成时设置其解锁并发布当前地图重载。仅后续扫描可准入遭遇。独立城镇传送请求 Roft 及条件问候。表格和脚本均不使入城与 Battle35 成为强制顺序。
 
-[Battle35 结果](../../../../research/chapters/moun-nazca-grans/battle35-outcomes-and-roft-return.md)的 defeated/after 脚本为空，但其首领规则可在选定首领死亡且 Bowie 存活后移除剩余敌人。胜利返回区域探索；不是抵达城镇或 Zynk 招募场景。Heat Axe 是独立条件行动侧掉落。败北/获准撤退使用实际 egress 状态，没有 Battle35 特定 Roft 目的地。Roft 入口与教堂存档点是不同种子。
+[Battle35 结果（英文）](../../../../research/chapters/moun-nazca-grans/battle35-outcomes-and-roft-return.md)的 defeated/after 脚本为空，但其首领规则可在选定首领死亡且 Bowie 存活后移除剩余敌人。胜利返回区域探索；不是抵达城镇或 Zynk 招募场景。Heat Axe 是独立条件行动侧掉落。败北/获准撤退使用实际 egress 状态，没有 Battle35 特定 Roft 目的地。Roft 入口与教堂存档点是不同种子。
 
-[Roft 局部说明](../../../../research/chapters/moun-nazca-grans/roft-town-interactions-and-zynk-recruitment.md#two-zone-callbacks-and-their-changed-state-admission)分别解释 Petro 场景与之后 Zynk 区域（事件）。对话呈现 Petro 与 Paseran 失去的飞行/家园希望；其动画/音乐/文本操作既不删除 Petro，也不写其 HP。调用方返回后记录场景。招募区域（事件）要求该记录，以及 Zynk 普通随从标志，或另一种后期状态组合：F921 已持有、Zynk 未加入、且本次访问持有 Paseran（resident137）首次交谈记录。另一居民交谈设置不同记录，不足以满足替代条件。新重访清除临时交谈记录；F921 init 可不重放场景而设置 Petro 场景记录。随从分支不检查替代条件的成员资格/交谈守卫。没有条件检查 Battle35 胜利。精确变化状态谓词留在所有者中，不暗示通用对话行程。
+[Roft 局部说明（英文）](../../../../research/chapters/moun-nazca-grans/roft-town-interactions-and-zynk-recruitment.md#two-zone-callbacks-and-their-changed-state-admission)分别解释 Petro 场景与之后 Zynk 区域（事件）。对话呈现 Petro 与 Paseran 失去的飞行/家园希望；其动画/音乐/文本操作既不删除 Petro，也不写其 HP。调用方返回后记录场景。招募区域（事件）要求该记录，以及 Zynk 普通随从标志，或另一种后期状态组合：F921 已持有、Zynk 未加入、且本次访问持有 Paseran（resident137）首次交谈记录。另一居民交谈设置不同记录，不足以满足替代条件。新重访清除临时交谈记录；F921 init 可不重放场景而设置 Petro 场景记录。随从分支不检查替代条件的成员资格/交谈守卫。没有条件检查 Battle35 胜利。精确变化状态谓词留在所有者中，不暗示通用对话行程。
 
-[招募场景](../../../../research/chapters/moun-nazca-grans/roft-town-interactions-and-zynk-recruitment.md#complete-zynk-scene-join-and-following)将 Zynk 愤怒与参战决定归于恶魔残酷。它正式加入他，再清除普通 Zynk 跟随并建立场景链；区域（事件）返回后再次清除随从标志。出战准入依赖容量。因此更早地下同伴可在此成为军团成员，不保证部署或永久场上跟随。已完成成员资格可与中断的对话/跟随并存。商店、教堂、搜索及显式返回区域仍是独立行动。
+[招募场景（英文）](../../../../research/chapters/moun-nazca-grans/roft-town-interactions-and-zynk-recruitment.md#complete-zynk-scene-join-and-following)将 Zynk 愤怒与参战决定归于恶魔残酷。它正式加入他，再清除普通 Zynk 跟随并建立场景链；区域（事件）返回后再次清除随从标志。出战准入依赖容量。因此更早地下同伴可在此成为军团成员，不保证部署或永久场上跟随。已完成成员资格可与中断的对话/跟随并存。商店、教堂、搜索及显式返回区域仍是独立行动。
 
 #### Galam 区域旅行、Dry Stone 与可选锻造
 
-[Roft 出口与区域向西滚动](../../../../research/chapters/moun-nazca-grans/roft-to-galam-and-battle36-admission.md#roft-departure-and-retained-regional-scrolling)连接 Galam 区域。滚动不执行新入场或遭遇扫描。两个独立入口请求 Prism Flowers 地图；其战斗需要击落尾部提供的 Prism Flowers 解锁。在区域本身，被调用的默认区域（事件）可在 Red Baron 遭遇未完成时独立解锁它并请求重载。该事件与 Red Baron 准入均不检查 Prism Flowers 完成。因此跳过访问、击败编号遭遇和到达区域（事件）是不同前提。
+[Roft 出口与区域向西滚动（英文）](../../../../research/chapters/moun-nazca-grans/roft-to-galam-and-battle36-admission.md#roft-departure-and-retained-regional-scrolling)连接 Galam 区域。滚动不执行新入场或遭遇扫描。两个独立入口请求 Prism Flowers 地图；其战斗需要击落尾部提供的 Prism Flowers 解锁。在区域本身，被调用的默认区域（事件）可在 Red Baron 遭遇未完成时独立解锁它并请求重载。该事件与 Red Baron 准入均不检查 Prism Flowers 完成。因此跳过访问、击败编号遭遇和到达区域（事件）是不同前提。
 
-[Dry Stone 交互](../../../../research/chapters/moun-nazca-grans/roft-to-galam-and-battle36-admission.md#dry-stone-caller-scene-and-changed-layout-lifetime)要求在 `(43,42)` 朝 Left 使用该物品。首次使用在隆隆声/地震及工作布局复制之前记录标志；重复使用报告无效果，不重放场景。两者都保留 Stone。之后基础布局加载应用记录的复制，普通当前地图重载则保留现有布局。因此首次场景中断可留下标志与当前地形不一致。区域另行声明 Dwarven Village 入口；布局变化、可通行、匹配传送和自然行走是不同主张。该村庄不是之前 Fairy/Cannon 说明中的矿洞。
+[Dry Stone 交互（英文）](../../../../research/chapters/moun-nazca-grans/roft-to-galam-and-battle36-admission.md#dry-stone-caller-scene-and-changed-layout-lifetime)要求在 `(43,42)` 朝 Left 使用该物品。首次使用在隆隆声/地震及工作布局复制之前记录标志；重复使用报告无效果，不重放场景。两者都保留 Stone。之后基础布局加载应用记录的复制，普通当前地图重载则保留现有布局。因此首次场景中断可留下标志与当前地形不一致。区域另行声明 Dwarven Village 入口；布局变化、可通行、匹配传送和自然行走是不同主张。该村庄不是之前 Fairy/Cannon 说明中的矿洞。
 
-[村庄铁匠](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#complete-placement-gates-and-committed-order)可在确认及金币足够后，为符合资格的转职后职业用 Mithril 委托武器。材料持有者、顾客职业及之后收件人是不同选择。取消、材料错误、未转职/不合资格顾客或资金不足，走各自拒绝/重试分支；仅交谈不会获得武器。付款与 Mithril 移除先于所选武器订单写入。武器在此时选择，而非领取时，四个订单槽是普通容量边界。中断或变化存储没有回滚保护。
+[村庄铁匠（英文）](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#complete-placement-gates-and-committed-order)可在确认及金币足够后，为符合资格的转职后职业用 Mithril 委托武器。材料持有者、顾客职业及之后收件人是不同选择。取消、材料错误、未转职/不合资格顾客或资金不足，走各自拒绝/重试分支；仅交谈不会获得武器。付款与 Mithril 移除先于所选武器订单写入。武器在此时选择，而非领取时，四个订单槽是普通容量边界。中断或变化存储没有回滚保护。
 
-[就绪](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#all-eighteen-warps-and-f80-lifetime)使用探索入场标志，不用经过时间：成功下单清除，之后显式探索入场可再次设置。等待、走楼梯或重复交谈不提供新就绪过渡。内部当前地图传送保留标志；按所述路线条件离开并显式重入可使订单就绪。[领取](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#fulfillment-inventory-and-optional-equipment)时，取消或收件人物品栏满可让订单未领取。无法装备武器的收件人仍可同意携带。交付先于可选装备，因此拒绝装备或受诅咒装备阻挡不恢复订单或退还材料/金币。再下订单会在下一次菜单入场清除剩余订单就绪。村庄返回区域面对既有战斗选择器；锻造绕行不绕过区域遭遇。
+[就绪（英文）](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#all-eighteen-warps-and-f80-lifetime)使用探索入场标志，不用经过时间：成功下单清除，之后显式探索入场可再次设置。等待、走楼梯或重复交谈不提供新就绪过渡。内部当前地图传送保留标志；按所述路线条件离开并显式重入可使订单就绪。[领取（英文）](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#fulfillment-inventory-and-optional-equipment)时，取消或收件人物品栏满可让订单未领取。无法装备武器的收件人仍可同意携带。交付先于可选装备，因此拒绝装备或受诅咒装备阻挡不恢复订单或退还材料/金币。再下订单会在下一次菜单入场清除剩余订单就绪。村庄返回区域面对既有战斗选择器；锻造绕行不绕过区域遭遇。
 
 #### Prism Flowers、Red Baron 与 Geshp 返回
 
-[Battle36 结果](../../../../research/chapters/moun-nazca-grans/battle36-outcomes-and-galam-return.md)记录 Prism Flowers 完成，并用场景前种子返回其地图。首次 after 场景中，Geshp 注意到 Flowers 失去，威胁带 Red Baron 返回。其舞台地图和行动者变化既不覆盖该种子，也不开始 Battle37。Battle Sword 是 Executioner 的独立行动侧掉落，不是胜利奖励。两个地图出口均请求 Galam 区域，之后区域（事件）/扫描仍独立于 Battle36 完成。
+[Battle36 结果（英文）](../../../../research/chapters/moun-nazca-grans/battle36-outcomes-and-galam-return.md)记录 Prism Flowers 完成，并用场景前种子返回其地图。首次 after 场景中，Geshp 注意到 Flowers 失去，威胁带 Red Baron 返回。其舞台地图和行动者变化既不覆盖该种子，也不开始 Battle37。Battle Sword 是 Executioner 的独立行动侧掉落，不是胜利奖励。两个地图出口均请求 Galam 区域，之后区域（事件）/扫描仍独立于 Battle36 完成。
 
-[Battle37 首次后续](../../../../research/chapters/moun-nazca-grans/battle37-outcomes-and-lemon-aftermath.md#complete-lemon-scene-and-identity-boundaries)在移除面具后把败北 Red Baron 呈现为 Lemon。Lemon 回忆杀戮，顾问归因于恶魔控制，Lemon 谈着以死赎罪离开。之后不死解释是对话，不是新 HP 规则。场景己方 Lemon 行动者不同于交战 Red Baron；该场景和公共 after-join 尾部均不招募 Lemon。Red Baron 的 Dark Sword 不是胜利奖励，该遭遇没有敌人掉落记录。胜利记录完成，并在已保存成员位置重建区域探索，而非场景最终姿势。重复可跳过揭示，同时仍走公共结果路径。
+[Battle37 首次后续（英文）](../../../../research/chapters/moun-nazca-grans/battle37-outcomes-and-lemon-aftermath.md#complete-lemon-scene-and-identity-boundaries)在移除面具后把败北 Red Baron 呈现为 Lemon。Lemon 回忆杀戮，顾问归因于恶魔控制，Lemon 谈着以死赎罪离开。之后不死解释是对话，不是新 HP 规则。场景己方 Lemon 行动者不同于交战 Red Baron；该场景和公共 after-join 尾部均不招募 Lemon。Red Baron 的 Dark Sword 不是胜利奖励，该遭遇没有敌人掉落记录。胜利记录完成，并在已保存成员位置重建区域探索，而非场景最终姿势。重复可跳过揭示，同时仍走公共结果路径。
 
-[向南滚动到 Granseal 大地图](../../../../research/chapters/moun-nazca-grans/granseal-overworld-return-and-battle38-admission.md)保留行动者，不扫描战斗。仅之后调用 Y9/Y10 区域（事件），在 Red Baron 完成且 Geshp 未完成时，才设置 Geshp 解锁并发布重载。独立有序扫描随后可选择 Battle38。四个较早符合资格的大地图遭遇先于它，包括一个已完成但解锁仍持有的遭遇；默认区域（事件）也可请求较早随机遭遇。它们可在该扫描抢先于 Geshp。战斗裁切是输出，不要求队伍站在矩形内。单凭 Red Baron 完成既不是自动请求，也不是 Battle38 选择器重新检查的新前提。
+[向南滚动到 Granseal 大地图（英文）](../../../../research/chapters/moun-nazca-grans/granseal-overworld-return-and-battle38-admission.md)保留行动者，不扫描战斗。仅之后调用 Y9/Y10 区域（事件），在 Red Baron 完成且 Geshp 未完成时，才设置 Geshp 解锁并发布重载。独立有序扫描随后可选择 Battle38。四个较早符合资格的大地图遭遇先于它，包括一个已完成但解锁仍持有的遭遇；默认区域（事件）也可请求较早随机遭遇。它们可在该扫描抢先于 Geshp。战斗裁切是输出，不要求队伍站在矩形内。单凭 Red Baron 完成既不是自动请求，也不是 Battle38 选择器重新检查的新前提。
 
-[Battle38 结果](../../../../research/chapters/moun-nazca-grans/battle38-outcomes-and-geshp-aftermath.md#complete-geshp-scene-and-identities)区分交战 Geshp 败北与后续场景 Geshp、效果行动者及画面外说话者。Geshp 试图逃跑；顾问表示宽恕，远程说话者随后因失败的宝石任务谴责他。顾问对 Zeon 残酷作出反应，队伍决意继续。这些归属明确的含义不会把场景效果变为另一交战行动。Buster Shot 是条件行动侧掉落，不是后续奖励。首次胜利可运行场景；已持有完成则跳过。公共尾部清除解锁、记录完成，再由新 Map66 探索在场景前种子重建行动者。败北/获准撤退保留上文公共未成功结果区别。两种结果都不自动访问 Yeel 或运行 Battle39。
+[Battle38 结果（英文）](../../../../research/chapters/moun-nazca-grans/battle38-outcomes-and-geshp-aftermath.md#complete-geshp-scene-and-identities)区分交战 Geshp 败北与后续场景 Geshp、效果行动者及画面外说话者。Geshp 试图逃跑；顾问表示宽恕，远程说话者随后因失败的宝石任务谴责他。顾问对 Zeon 残酷作出反应，队伍决意继续。这些归属明确的含义不会把场景效果变为另一交战行动。Buster Shot 是条件行动侧掉落，不是后续奖励。首次胜利可运行场景；已持有完成则跳过。公共尾部清除解锁、记录完成，再由新 Map66 探索在场景前种子重建行动者。败北/获准撤退保留上文公共未成功结果区别。两种结果都不自动访问 Yeel 或运行 Battle39。
 
 #### 可选 Magic Tunnel 与 Claude
 
-[Magic Tunnel 说明](../../../../research/chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md)把 Granseal 大地图入口与 Achilles Shrines 连接到枢纽、桥切换、内部传送和脚本 Pipe 旅程。它们是 Grans 返回旁的可选声明，不证明自然行走绕路，也不授予新 Arm。各自布局/行动者生命周期不同；脚本 Pipe 重建与新入场不同于保留当前地图旅行。返回大地图或神殿仍面对各自遭遇选择。
+[Magic Tunnel 说明（英文）](../../../../research/chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md)把 Granseal 大地图入口与 Achilles Shrines 连接到枢纽、桥切换、内部传送和脚本 Pipe 旅程。它们是 Grans 返回旁的可选声明，不证明自然行走绕路，也不授予新 Arm。各自布局/行动者生命周期不同；脚本 Pipe 重建与新入场不同于保留当前地图旅行。返回大地图或神殿仍面对各自遭遇选择。
 
-对 [Claude](../../../../research/chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md#talk-and-explicit-item-use-custody-and-result)，未加入时交谈搜索已加入军团的 Arm of Golem。没有则给出选定缺 Arm 对话；有则在唤醒前尝试移除；在 `(21,26)` 朝 Up 显式使用 Arm 是另一调用方。移除搜索整个已加入军团，包括后备/死亡成员，因此消费的 Arm 不必是菜单所选持有者的那份。两个调用方均不要求 Moun 授予记录。它们在场景前忽略移除结果，因此注入匹配物品请求不证明自然持有或保证事务。
+对 [Claude（英文）](../../../../research/chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md#talk-and-explicit-item-use-custody-and-result)，未加入时交谈搜索已加入军团的 Arm of Golem。没有则给出选定缺 Arm 对话；有则在唤醒前尝试移除；在 `(21,26)` 朝 Up 显式使用 Arm 是另一调用方。移除搜索整个已加入军团，包括后备/死亡成员，因此消费的 Arm 不必是菜单所选持有者的那份。两个调用方均不要求 Moun 授予记录。它们在场景前忽略移除结果，因此注入匹配物品请求不证明自然持有或保证事务。
 
-[唤醒场景](../../../../research/chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md#awakening-membership-and-immediate-following)呈现恢复移动及 Claude 保护队伍的提议，再加入他并追加当前跟随。出战队伍满可让他作为后备加入。移除后、加入前中断可失去 Arm 却未招募；成员资格提交而跟随未完成，会使后续有守卫调用跳过修复。新入场或 Pipe 重建丢失场景专用 Claude 跟随，同时保留成员资格。因此 Moun 收集的 Arm、变化雕像精灵和出战战斗员是三个不同边界。
+[唤醒场景（英文）](../../../../research/chapters/moun-nazca-grans/magic-tunnel-hub-and-claude-recruitment.md#awakening-membership-and-immediate-following)呈现恢复移动及 Claude 保护队伍的提议，再加入他并追加当前跟随。出战队伍满可让他作为后备加入。移除后、加入前中断可失去 Arm 却未招募；成员资格提交而跟随未完成，会使后续有守卫调用跳过修复。新入场或 Pipe 重建丢失场景专用 Claude 跟随，同时保留成员资格。因此 Moun 收集的 Arm、变化雕像精灵和出战战斗员是三个不同边界。
 
 #### 后期 Yeel：钢琴、Chaz 与 Lemon
 
-[后期 Yeel](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#live-setup-complete-late-populations-and-local-interactions)有两个独立大地图入口，后期人口由较早神殿战斗完成标志选择，或由更高优先级 Lemon 成员资格选择。入口自身不检查任一招募。若标志变化而不重建，当前行动者可与之后回调不一致。首次选定后期初始化器可布置 Lemon 内疚与悬崖场景，再记录它；之后访问使用其浸没姿势。对话解释不死，但场景不写 HP 死亡或招募。加入 Lemon 选择另一初始化器，绕过该前缀。交谈或调查洞可产生独立文本/姿势分支，不是加入。
+[后期 Yeel（英文）](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#live-setup-complete-late-populations-and-local-interactions)有两个独立大地图入口，后期人口由较早神殿战斗完成标志选择，或由更高优先级 Lemon 成员资格选择。入口自身不检查任一招募。若标志变化而不重建，当前行动者可与之后回调不一致。首次选定后期初始化器可布置 Lemon 内疚与悬崖场景，再记录它；之后访问使用其浸没姿势。对话解释不死，但场景不写 HP 死亡或招募。加入 Lemon 选择另一初始化器，绕过该前缀。交谈或调查洞可产生独立文本/姿势分支，不是加入。
 
-[调查钢琴](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#piano-and-the-church-entrance-scene)在记录未设时提供真正 Yes/No 问题。No/B 返回，不打开楼梯；Yes 请求音乐/地震、复制教堂楼梯格，再记录。复制与标志之间中断可留下部分进展；之后新布局加载消费标志。随后教堂区域（事件）需要该记录及自身场景记录未设。场景呈现祭司误认队伍为恶魔，再认出 Hawel 之子 Chaz。继续依较晚故事标志 F930 不同：未设讨论 Chaz 工作与问题；已持有讨论已解秘密/塔。两分支都不加入 Chaz 或将队伍传送到地下。调用方只在返回后记录完成；实际楼梯/传送准入是另一步。
+[调查钢琴（英文）](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#piano-and-the-church-entrance-scene)在记录未设时提供真正 Yes/No 问题。No/B 返回，不打开楼梯；Yes 请求音乐/地震、复制教堂楼梯格，再记录。复制与标志之间中断可留下部分进展；之后新布局加载消费标志。随后教堂区域（事件）需要该记录及自身场景记录未设。场景呈现祭司误认队伍为恶魔，再认出 Hawel 之子 Chaz。继续依较晚故事标志 F930 不同：未设讨论 Chaz 工作与问题；已持有讨论已解秘密/塔。两分支都不加入 Chaz 或将队伍传送到地下。调用方只在返回后记录完成；实际楼梯/传送准入是另一步。
 
-[地下初始化器](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#late-init-cliff-scene-and-underground-return)使用自身一次性记录与实际物理入场位置，在任何先前 Lemon 场景之后检查。不会仅因钢琴或教堂对话完成便触发。其 F930-clear 继续呈现顾问寻 Holy Sword、Chaz 查书找到不完整段落，以及队伍被催促寻找剑/门；已持有分支承认之后知识并要求平安返回。两者都不加入 Chaz 或设置 F930。这些替代对话不建立强制对话顺序或打开最终塔。当前地图楼梯保留行动者/布局并重跑 init；新访问重建并应用已记录布局复制。
+[地下初始化器（英文）](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#late-init-cliff-scene-and-underground-return)使用自身一次性记录与实际物理入场位置，在任何先前 Lemon 场景之后检查。不会仅因钢琴或教堂对话完成便触发。其 F930-clear 继续呈现顾问寻 Holy Sword、Chaz 查书找到不完整段落，以及队伍被催促寻找剑/门；已持有分支承认之后知识并要求平安返回。两者都不加入 Chaz 或设置 F930。这些替代对话不建立强制对话顺序或打开最终塔。当前地图楼梯保留行动者/布局并重跑 init；新访问重建并应用已记录布局复制。
 
-[与 Chaz 交谈](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#chaz-join-lemon-join-and-changed-party-states)是独立招募场景：他请求旅行，顾问最初反对，Peter 支持，顾问同意。场景调用加入及当前跟随，没有玩家 Yes/No、Sword 持有检查或局部 F930/楼梯/对话记录前提。交谈没有局部已加入守卫，虽然后续新 init 会把已加入 Chaz 移至地图外。Chaz 已加入、Lemon 未加入时，实际调用 Y42 区域（事件）可运行 Lemon 请求参战场景。它加入 Lemon、建立跟随，仅在返回后记录普通跟随与局部状态。加入后中断可留下成员资格而没有后续效果；下一次区域（事件）便跳过场景。普通容量可把两位任一招募者置于后备，加入不治疗、不重置职业/物品，也不保证部署。
+[与 Chaz 交谈（英文）](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#chaz-join-lemon-join-and-changed-party-states)是独立招募场景：他请求旅行，顾问最初反对，Peter 支持，顾问同意。场景调用加入及当前跟随，没有玩家 Yes/No、Sword 持有检查或局部 F930/楼梯/对话记录前提。交谈没有局部已加入守卫，虽然后续新 init 会把已加入 Chaz 移至地图外。Chaz 已加入、Lemon 未加入时，实际调用 Y42 区域（事件）可运行 Lemon 请求参战场景。它加入 Lemon、建立跟随，仅在返回后记录普通跟随与局部状态。加入后中断可留下成员资格而没有后续效果；下一次区域（事件）便跳过场景。普通容量可把两位任一招募者置于后备，加入不治疗、不重置职业/物品，也不保证部署。
 
-Yeel [大地图出口](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#entrances-resources-and-six-exits)仍是独立请求，返回时可被符合资格遭遇拦截。内部楼梯、服务访问与可选搜索不保证全部内容或持久存档。Lemon 另有[替代后期招募所有者](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map41-opening-and-lemon-recruitment)，条件独立；Yeel 招募无需 Sword 使用，该后续路线不在本章。
+Yeel [大地图出口（英文）](../../../../research/chapters/moun-nazca-grans/late-yeel-chaz-and-lemon-recruitment.md#entrances-resources-and-six-exits)仍是独立请求，返回时可被符合资格遭遇拦截。内部楼梯、服务访问与可选搜索不保证全部内容或持久存档。Lemon 另有[替代后期招募所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map41-opening-and-lemon-recruitment)，条件独立；Yeel 招募无需 Sword 使用，该后续路线不在本章。
 
 #### 后续交接与证据限制
 
-[Geshp 返回](../../../../research/chapters/moun-nazca-grans/battle38-outcomes-and-geshp-aftermath.md#exploration-rebuild-and-battle39-admission-boundary)之后，后续调用的大地图 Y28 区域（事件）需要 Battle38 完成且 Battle39 未完成，才设置下一解锁并发布重载。Battle38 返回自身不进行新战斗扫描。之后扫描中，较早符合资格的 Map66 遭遇（包括重新持有 Geshp 解锁）仍可先于 Battle39。这是通向[最终对决与结局](#最终对决与结局)的出站接口，止于 Battle39 主体、Force Sword 获得/使用、Devils Head 及最终塔/结局之前。
+[Geshp 返回（英文）](../../../../research/chapters/moun-nazca-grans/battle38-outcomes-and-geshp-aftermath.md#exploration-rebuild-and-battle39-admission-boundary)之后，后续调用的大地图 Y28 区域（事件）需要 Battle38 完成且 Battle39 未完成，才设置下一解锁并发布重载。Battle38 返回自身不进行新战斗扫描。之后扫描中，较早符合资格的 Map66 遭遇（包括重新持有 Geshp 解锁）仍可先于 Battle39。这是通向[最终对决与结局](#最终对决与结局)的出站接口，止于 Battle39 主体、Force Sword 获得/使用、Devils Head 及最终塔/结局之前。
 
-本章复用已接受所有者的选定源码/消费者连接和变化状态审阅。审阅检查其开场/激活/结果区别、具键文本归属、物品栏及加入/随从操作、请求消费者和新/保留返回。链接的[名册合同](../../../contracts/party/party-roster-state.md#evidence-and-runtime-boundary)及 `sf2-force-state-active-party-runtime-v1` 测试夹具确认处理器局部接缝，不确认这些自然招募；[服务合同](../../../contracts/party/service-interactions.md#blacksmith-source-boundary)和 `sf2-common-menus-static-v1` 保留铁匠源码顺序，不确认已完成村庄访问。后续局部说明提供历史通用测试夹具缺失的含义与谓词；旧未知项不取代选定静态事实。不增加原始提取、新运行时、降低过程重跑或历史比较。原生/特殊实体与未绑定后期内容缺口仍由所有者负责；[原版与重制前沿](#原版观察与重制支持)不变，保留的已完成失败同样不变。该英文章节当时延后中文同步的范围已由后续独立翻译验收接续，不改变历史证据。
+本章复用已接受所有者的选定源码/消费者连接和变化状态审阅。审阅检查其开场/激活/结果区别、具键文本归属、物品栏及加入/随从操作、请求消费者和新/保留返回。链接的[名册合同](../../contracts/party/party-roster-state.md#证据与运行时边界)及 `sf2-force-state-active-party-runtime-v1` 测试夹具确认处理器局部接缝，不确认这些自然招募；[服务合同](../../contracts/party/service-interactions.md#blacksmith-源码边界)和 `sf2-common-menus-static-v1` 保留铁匠源码顺序，不确认已完成村庄访问。后续局部说明提供历史通用测试夹具缺失的含义与谓词；旧未知项不取代选定静态事实。不增加原始提取、新运行时、降低过程重跑或历史比较。原生/特殊实体与未绑定后期内容缺口仍由所有者负责；[原版与重制前沿](#原版观察与重制支持)不变，保留的已完成失败同样不变。该英文章节当时延后中文同步的范围已由后续独立翻译验收接续，不改变历史证据。
 
 ### 最终对决与结局
 
 本章承接 [Geshp 至 Battle39 交接](#后续交接与证据限制)：之后 Map66 区域（事件）可解锁 Battle39，但后续扫描仍让较早符合资格遭遇优先。**推断设计联系：** 最终路线连接已获得的关键武器、已打开入口、迷宫与塔过渡、连续对峙，以及剩余决定围绕 Elis 的返回。这些是连贯内容依赖，不是强制编号行程。
 
-以下操作在链接的已接受所有者内为**已确认静态内容**。对话含义归属其说话者；手势和场景请求不是额外玩家选择。超出具名观察的自然穿越、完整呈现和持久存档仍为**未知**。[Force Sword/塔覆盖](../../../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)与[结局覆盖](../../../../research/story-content-coverage.md#epilogue-credits-and-the-hidden-battle)提供证据路线；[原版观察与重制支持](#原版观察与重制支持)保留现有前沿。Fnnn 表示编号游戏标志；地图/战斗编号和行动者别名识别局部源码记录，不保证物理行动者或自然行程。
+以下操作在链接的已接受所有者内为**已确认静态内容**。对话含义归属其说话者；手势和场景请求不是额外玩家选择。超出具名观察的自然穿越、完整呈现和持久存档仍为**未知**。[Force Sword/塔覆盖（英文）](../../../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)与[结局覆盖（英文）](../../../../research/story-content-coverage.md#epilogue-credits-and-the-hidden-battle)提供证据路线；[原版观察与重制支持](#原版观察与重制支持)保留现有前沿。Fnnn 表示编号游戏标志；地图/战斗编号和行动者别名识别局部源码记录，不保证物理行动者或自然行程。
 
 | 连接 | 使下一部分可行的条件 | 重要替代分支或限制 |
 | --- | --- | --- |
@@ -535,15 +535,15 @@ Yeel [大地图出口](../../../../research/chapters/moun-nazca-grans/late-yeel-
 
 #### Battle39 结果与神殿进路
 
-[Battle39 开场/控制所有者](../../../../research/chapters/final-confrontations-ending/battle39-opening-and-first-control.md)区分舞台介绍、新交战初始化和条件首次控制。其 Hydra 使用普通首领 AI；没有区域不代表敌人不存在或战斗已胜。[结果所有者](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#terminal-detection-and-selected39-hooks)保留败北优先级：Bowie HP0 即败，即便敌人也已消失。Bowie 存活且 Hydra128 HP0 时，首领钩子可将其余敌人扫出计数；普通零敌人数也可不经该钩子获胜。不因此授予每名敌人声明物品。Evil Ring 和 Holy Thunder 需要独立行动侧掉落事务；被扫除的存活敌人不提供这种事务。
+[Battle39 开场/控制所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle39-opening-and-first-control.md)区分舞台介绍、新交战初始化和条件首次控制。其 Hydra 使用普通首领 AI；没有区域不代表敌人不存在或战斗已胜。[结果所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#terminal-detection-and-selected39-hooks)保留败北优先级：Bowie HP0 即败，即便敌人也已消失。Bowie 存活且 Hydra128 HP0 时，首领钩子可将其余敌人扫出计数；普通零敌人数也可不经该钩子获胜。不因此授予每名敌人声明物品。Evil Ring 和 Holy Thunder 需要独立行动侧掉落事务；被扫除的存活敌人不提供这种事务。
 
 本章复用[公共结果/返回机制](tactical-battle-loop.md#行动后单次行动后与结果)，在此链接局部例外，不重复整个算法。未变 Battle39 的胜利没有编写的后续，经共享 join-byte0 调用重新加入 Bowie，清除解锁 F439 并设置完成 F539。返回 Map66 位置在后续包装器前从首个出战成员生成种子，不是固定神殿坐标。败北经公共路径减半金币并恢复 Bowie；获准 Egress/Angel Wing 支付自身 MP/物品并绕过败北效果。两者到达39 特殊 egress 辅助，即便 F539 未设也清除 F439。均不完成遭遇。之后返回 Y28 区域（事件），仅在 F538 已持有、F539 未设时可重新启用 F439；完成 F539 自身不会在该区域（事件）抹除独立传入的 F439。
 
-[Map41 两个入口](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map-connections-and-complete-local-data)通向独立头部与神殿外部区域。Map41 向前连接 shrine42，并在头部连接 labyrinth28；神殿有内部当前地图转移及返回41。传送记录不增加 F539、Sword 或 Lemon 谓词。布局标记、碰撞及到达的请求调用方仍有影响，因此声明入口不证明从胜利返回点行走。Sword 通过配置描述回调获得，不是宝箱记录或 Battle39 奖励。
+[Map41 两个入口（英文）](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map-connections-and-complete-local-data)通向独立头部与神殿外部区域。Map41 向前连接 shrine42，并在头部连接 labyrinth28；神殿有内部当前地图转移及返回41。传送记录不增加 F539、Sword 或 Lemon 谓词。布局标记、碰撞及到达的请求调用方仍有影响，因此声明入口不证明从胜利返回点行走。Sword 通过配置描述回调获得，不是宝箱记录或 Battle39 奖励。
 
 #### 吸引首领、拔取 Sword、再使用
 
-[神殿所有者](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map42-attraction-extraction-and-mandatory-inventory)区分三个操作。在调用的19,21 区域（事件），持有 F999 且 F901 未设准入吸引场景，返回后设置 F901。叙述描述宝石光吸引首领；FOLLOWER_B 评论开口。场景改变工作布局，但不授予 Sword 或设置拔取 F902。缺 F999 或已持有 F901 跳过吸引；此处不检查 F902。
+[神殿所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map42-attraction-extraction-and-mandatory-inventory)区分三个操作。在调用的19,21 区域（事件），持有 F999 且 F901 未设准入吸引场景，返回后设置 F901。叙述描述宝石光吸引首领；FOLLOWER_B 评论开口。场景改变工作布局，但不授予 Sword 或设置拔取 F902。缺 F999 或已持有 F901 跳过吸引；此处不检查 F902。
 
 F902 未设时，对39,2 的搜索由激活的场景菜单搜索回调运行拔取，再设置 F902。不要求 F999、F901、Battle39 完成或 Lemon。快捷调查用另一回调：F902 未设时描述嵌入 Sword，不拔取。F902 一旦已持有，两种描述都使用拔取后后备，即便物品已不在物品栏。这是在同一目标尝试不同动作，不是一次自动拾取的矛盾说明。
 
@@ -551,85 +551,85 @@ F902 未设时，对39,2 的搜索由激活的场景菜单搜索回调运行拔�
 
 重访行为同样不能简化成一个“已获得 Sword”状态。持有 F901 在新加载时重放两次布局复制；持有 F902 重放 Sword 替换。拔取的当前大复制在 F901 而非 F902 下重放。因此传入 F901-clear/F902-held 可跳过拔取却仍准入吸引；此处丢失物品不重置两标志。部分当前复制或物品栏效果可先于标志，没有回滚。当前地图转移和新重建必须各自保留布局语义。
 
-在 [Devils Head](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map41-opening-and-lemon-recruitment)，头部仍关闭时，激活搜索检查已加入军团所持 Sword，并可描述嘴缝；快捷描述则给出警告。真正打开用 Item → Use：玩家首个实体位于6,8、朝 Up，选择已持有 Force Sword。持有者不必是 Bowie、HERO 职业或已装备；选定持有经场景菜单到达回调。匹配不额外检查 F999/F901/F902/F539/F71。位置、朝向或物品错误走通用无效果路径。该事件不消费 Sword。
+在 [Devils Head（英文）](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map41-opening-and-lemon-recruitment)，头部仍关闭时，激活搜索检查已加入军团所持 Sword，并可描述嘴缝；快捷描述则给出警告。真正打开用 Item → Use：玩家首个实体位于6,8、朝 Up，选择已持有 Force Sword。持有者不必是 Bowie、HERO 职业或已装备；选定持有经场景菜单到达回调。匹配不额外检查 F999/F901/F902/F539/F71。位置、朝向或物品错误走通用无效果路径。该事件不消费 Sword。
 
 F930 未设则运行打开，随后设置 F930。若 Lemon28 未加入，独立编写的恳求/邀请场景加入他、建立跟随，再设置 F71；该序列无 Yes/No 拒绝。Lemon 已加入则跳过招募和 F71 写入。持有 F930 跳过两主体，既不修复缺失成员资格，也不修复缺失 F71。因此打开中断可在招募前留下 F930 已持有；之后重入恢复打开头部布局，不重放恳求。这是[后期 Yeel 招募](#后期-yeel钢琴chaz-与-lemon)的替代路线，谓词独立：不能引入 Yeel 条件，也不能将随从 F71 当作已加入/出战成员资格。头部声明传送目标为 labyrinth28,16,30/Up；到达并消费仍独立于成功物品使用场景。
 
 #### 迷宫交互与 Odd Eye 准入
 
-[迷宫所有者](../../../../research/chapters/final-confrontations-ending/devils-head-labyrinth-and-battle40-admission.md#default-zone-callback-and-the-two-direction-scripts)解释局部动作，而非已解迷宫。默认区域（事件）回调分发后，等待 physical entity 0 停止，再读其朝向字节。Right0 选择右下移动脚本；每个非零字节都选择左下，并在跳跃前增加延迟。脚本通过 Bowie 别名行动，不写故事标志。相对移动从服务处理过的当前位置开始，因此仅入场坐标不能预测最终瓦片。空固定 NPC 记录仍允许普通玩家/随从初始化。
+[迷宫所有者（英文）](../../../../research/chapters/final-confrontations-ending/devils-head-labyrinth-and-battle40-admission.md#default-zone-callback-and-the-two-direction-scripts)解释局部动作，而非已解迷宫。默认区域（事件）回调分发后，等待 physical entity 0 停止，再读其朝向字节。Right0 选择右下移动脚本；每个非零字节都选择左下，并在跳跃前增加延迟。脚本通过 Bowie 别名行动，不写故事标志。相对移动从服务处理过的当前位置开始，因此仅入场坐标不能预测最终瓦片。空固定 NPC 记录仍允许普通玩家/随从初始化。
 
-[两个踩踏触发布局复制](../../../../research/chapters/final-confrontations-ending/devils-head-labyrinth-and-battle40-admission.md#working-layout-copies-f100-and-ordered-exits)可经门标记调用方改变当前工作地图。不设置完成标志，也不从已保存踩踏历史重放。独立已持有 F100 复制在新加载应用；F100 也是战斗 region10 的数字标志，有自身产生方和清除规则。迷宫不设置或清除它。因此传入 F100 可独立于踩踏改变重建布局。所有这些复制均不证明永久解谜、可通行已解码路线或持久存档。
+[两个踩踏触发布局复制（英文）](../../../../research/chapters/final-confrontations-ending/devils-head-labyrinth-and-battle40-admission.md#working-layout-copies-f100-and-ordered-exits)可经门标记调用方改变当前工作地图。不设置完成标志，也不从已保存踩踏历史重放。独立已持有 F100 复制在新加载应用；F100 也是战斗 region10 的数字标志，有自身产生方和清除规则。迷宫不设置或清除它。因此传入 F100 可独立于踩踏改变重建布局。所有这些复制均不证明永久解谜、可通行已解码路线或持久存档。
 
-Y15 行出站有标记传送可请求 Map54,16,41/Up；Y31 则请求返回 Devils Head。记录中通配 X 不使两行每个瓦片都有标记或可通行。[Map54 Battle40 扫描](../../../../research/chapters/final-confrontations-ending/devils-head-labyrinth-and-battle40-admission.md#map54-admission-fallback-and-reentry-interface)要求 F440，其已知较早产生方为 Nazca 交接，而非迷宫已解谓词或 Sword 持有。F440 未设时，扫描顺落至普通探索。持有 F440 则选择 Battle40；已持有 F540 仅在选择后清除 F440，该次调用仍返回 Battle40。普通 Map54 有带玩家/随从的空配置后备，不是地图缺失失败。
+Y15 行出站有标记传送可请求 Map54,16,41/Up；Y31 则请求返回 Devils Head。记录中通配 X 不使两行每个瓦片都有标记或可通行。[Map54 Battle40 扫描（英文）](../../../../research/chapters/final-confrontations-ending/devils-head-labyrinth-and-battle40-admission.md#map54-admission-fallback-and-reentry-interface)要求 F440，其已知较早产生方为 Nazca 交接，而非迷宫已解谓词或 Sword 持有。F440 未设时，扫描顺落至普通探索。持有 F440 则选择 Battle40；已持有 F540 仅在选择后清除 F440，该次调用仍返回 Battle40。普通 Map54 有带玩家/随从的空配置后备，不是地图缺失失败。
 
 #### Odd Eye 告别与登塔
 
-[Battle40 结果及后续](../../../../research/chapters/final-confrontations-ending/battle40-outcomes-and-odd-eye-aftermath.md)再次保留败北优先级及 Bowie 存活/首领 HP0 扫除。Fairy Tear 与 Counter Sword 为条件行动掉落；Counter Sword 还需选定随机抽样。单凭胜利不保证任何一个。首次完成时，F540 守卫的后续将 Odd Eye 布置为 scene131，与 combat128 分开。Odd Eye 回忆作为 Oddler 与大家旅行，承认他们力量，并希望能过上非恶魔生活。Peter 催他活下去；Lemon 记得他，编写的 FOLLOWER_B 台词将责任转向 Zeon 并催促队伍前行。这些是所请求对话的归属含义，不证明每个当前别名就是该说话者。
+[Battle40 结果及后续（英文）](../../../../research/chapters/final-confrontations-ending/battle40-outcomes-and-odd-eye-aftermath.md)再次保留败北优先级及 Bowie 存活/首领 HP0 扫除。Fairy Tear 与 Counter Sword 为条件行动掉落；Counter Sword 还需选定随机抽样。单凭胜利不保证任何一个。首次完成时，F540 守卫的后续将 Odd Eye 布置为 scene131，与 combat128 分开。Odd Eye 回忆作为 Oddler 与大家旅行，承认他们力量，并希望能过上非恶魔生活。Peter 催他活下去；Lemon 记得他，编写的 FOLLOWER_B 台词将责任转向 Zeon 并催促队伍前行。这些是所请求对话的归属含义，不证明每个当前别名就是该说话者。
 
-[普通返回](../../../../research/chapters/final-confrontations-ending/battle40-outcomes-and-odd-eye-aftermath.md#ordinary-exploration-rebuild-and-exits)使用布置前保存的 Map54 种子。它重建普通实体和布局，不保留告别行动者、位置、效果或跟随链。当前后续复制与按标志重载复制不同；无条件当前复制不会新设置 F388。持有 F540 在重复胜利跳过场景，但仍加入 Bowie、清除 F440、设置 F540 并用预存种子。败北/获准撤退在原 F540 未设时保留 F440，原 F540 已持有时清除；既不运行告别，也不新完成40。Egress 目的地仍是实时存档点状态。
+[普通返回（英文）](../../../../research/chapters/final-confrontations-ending/battle40-outcomes-and-odd-eye-aftermath.md#ordinary-exploration-rebuild-and-exits)使用布置前保存的 Map54 种子。它重建普通实体和布局，不保留告别行动者、位置、效果或跟随链。当前后续复制与按标志重载复制不同；无条件当前复制不会新设置 F388。持有 F540 在重复胜利跳过场景，但仍加入 Bowie、清除 F440、设置 F540 并用预存种子。败北/获准撤退在原 F540 未设时保留 F440，原 F540 已持有时清除；既不运行告别，也不新完成40。Egress 目的地仍是实时存档点状态。
 
-Map54 南出口请求 labyrinth28；北出口请求 tower56,16,48/Up。记录不增加 F540 或 Creed 检查。[塔所有者](../../../../research/chapters/final-confrontations-ending/ancient-tower-ascent-creed-and-battle41-admission.md)随后区分对话、服务、内部旅行与战斗准入。F903 未设时和 Creed128 交谈会运行欢迎、返回后设置 F903，再提供 Church 服务。重复跳过欢迎，仍提供服务。Creed 说来帮忙，并在附近没有教堂处提供祭司服务。交谈或取消服务均不写 F441/F904；仅确认 Church Save 在 SaveGame 前把 egress 选择更新为本图。仅抵达不足。
+Map54 南出口请求 labyrinth28；北出口请求 tower56,16,48/Up。记录不增加 F540 或 Creed 检查。[塔所有者（英文）](../../../../research/chapters/final-confrontations-ending/ancient-tower-ascent-creed-and-battle41-admission.md)随后区分对话、服务、内部旅行与战斗准入。F903 未设时和 Creed128 交谈会运行欢迎、返回后设置 F903，再提供 Church 服务。重复跳过欢迎，仍提供服务。Creed 说来帮忙，并在附近没有教堂处提供祭司服务。交谈或取消服务均不写 F441/F904；仅确认 Church Save 在 SaveGame 前把 egress 选择更新为本图。仅抵达不足。
 
-被调用的43,40 区域（事件）先测试 F904。未设时，仅在 F903 未设才运行欢迎，再设置 F903、解锁 F441 和 F904。F904 已持有则什么也不做，即便缺 F441。因此先交谈与先到区域（事件）不同：前者让战斗保持锁定直到区域（事件）；后者可无需之后对话便解锁。区域（事件）返回到探索等待循环。后续 [map56/Y24 扫描](../../../../research/chapters/final-confrontations-ending/ancient-tower-ascent-creed-and-battle41-admission.md#selected-battle41-boundary)需要 F441 和匹配 Y；初始16,48 入场不匹配。持有 F541 可清除 F441，但该次调用仍选择 Battle41。仅听 Creed 从不替代此链。
+被调用的43,40 区域（事件）先测试 F904。未设时，仅在 F903 未设才运行欢迎，再设置 F903、解锁 F441 和 F904。F904 已持有则什么也不做，即便缺 F441。因此先交谈与先到区域（事件）不同：前者让战斗保持锁定直到区域（事件）；后者可无需之后对话便解锁。区域（事件）返回到探索等待循环。后续 [map56/Y24 扫描（英文）](../../../../research/chapters/final-confrontations-ending/ancient-tower-ascent-creed-and-battle41-admission.md#selected-battle41-boundary)需要 F441 和匹配 Y；初始16,48 入场不匹配。持有 F541 可清除 F441，但该次调用仍选择 Battle41。仅听 Creed 从不替代此链。
 
 无战斗优先时，塔内部 CURRENT-map 传送保留行动者、别名、临时标志和工作布局。显式请求另一地图会重建目的地。内部抵达43,40 不自动调用区域（事件）；仍需移动标记与事件分发。后续阶梯也适用这些区别，不能把每次淡入淡出视为新楼层，或每对声明楼梯视为保证互逆行走路线。
 
 #### 阶梯、Galam 与之后 Zeon 扫描
 
-Battle41 有自身 [Reaper 开场与条件首次控制](../../../../research/chapters/final-confrontations-ending/battle41-opening-activation-and-first-control.md)；Creed 服务 NPC 不是该交战身份。[Battle41 结果所有者](../../../../research/chapters/final-confrontations-ending/battle41-outcomes-and-ancient-tower-stairway.md#empty-aftermath-return-seed-and-state-ownership)记录没有编写后续或新招募：共享 join-byte0 重新加入 Bowie，胜利清除 F441 并设置 F541，普通 Map56 重建使用场景前首个出战成员种子。条件 Holy Staff 掉落独立于胜利。败北/获准撤退既不完成41，也不重跑 Creed 区域（事件）；原 F541 未设保留 F441，已持有则清除 F441。任何结果都不改 F903/F904。因此局部不自动修复已消耗 F904 而缺 F441 的状态。
+Battle41 有自身 [Reaper 开场与条件首次控制（英文）](../../../../research/chapters/final-confrontations-ending/battle41-opening-activation-and-first-control.md)；Creed 服务 NPC 不是该交战身份。[Battle41 结果所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle41-outcomes-and-ancient-tower-stairway.md#empty-aftermath-return-seed-and-state-ownership)记录没有编写后续或新招募：共享 join-byte0 重新加入 Bowie，胜利清除 F441 并设置 F541，普通 Map56 重建使用场景前首个出战成员种子。条件 Holy Staff 掉落独立于胜利。败北/获准撤退既不完成41，也不重跑 Creed 区域（事件）；原 F541 未设保留 F441，已持有则清除 F441。任何结果都不改 F903/F904。因此局部不自动修复已消耗 F904 而缺 F441 的状态。
 
-Y5 独立有标记塔出口请求 stairway60,57,24/Up。60 没有战斗地图行。[内部 CURRENT 转移和出站请求](../../../../research/chapters/final-confrontations-ending/battle41-outcomes-and-ancient-tower-stairway.md#all23-warps-and-direct-receiving-interfaces)按实际目标类型保留或重建状态。较早精确传送行可胜过后续通配，因此仅行坐标不是充分路线描述。一个出站请求指定58,13,36/Up。MainLoop 的 SwitchMap 仅在持有 F999 时替换为59，保留坐标；F999 未设则保留58 及旧 Battle7 接口。另一出口到57 保留旧 Battle1 接口。Battle41 胜利与携带 Sword 均不执行替换或写 F999。
+Y5 独立有标记塔出口请求 stairway60,57,24/Up。60 没有战斗地图行。[内部 CURRENT 转移和出站请求（英文）](../../../../research/chapters/final-confrontations-ending/battle41-outcomes-and-ancient-tower-stairway.md#all23-warps-and-direct-receiving-interfaces)按实际目标类型保留或重建状态。较早精确传送行可胜过后续通配，因此仅行坐标不是充分路线描述。一个出站请求指定58,13,36/Up。MainLoop 的 SwitchMap 仅在持有 F999 时替换为59，保留坐标；F999 未设则保留58 及旧 Battle7 接口。另一出口到57 保留旧 Battle1 接口。Battle41 胜利与携带 Sword 均不执行替换或写 F999。
 
-对有效 Map59，扫描先检查 Battle42、再 Battle43，各有自身解锁。持有 F442 即使也持有 F443 仍优先；持有 F542 清除 F442，但当前仍选择 Battle42。[Galam 首次后续](../../../../research/chapters/final-confrontations-ending/battle42-outcomes-and-zeon-admission.md#complete-aftermath-in-narrative-order)由 F542 守卫。加载场景并独立重建行动者：scene128 Galam、129 Elis 和130 Zeon 不是交战槽或后续结局配置别名。Elis 醒来、Galam 移动、震颤与 Zeon 对峙引出队伍参战决心；脚本结尾设置解锁 F443。场景手势和台词不招募 Elis、不改变其交战 HP，也不初始化43。
+对有效 Map59，扫描先检查 Battle42、再 Battle43，各有自身解锁。持有 F442 即使也持有 F443 仍优先；持有 F542 清除 F442，但当前仍选择 Battle42。[Galam 首次后续（英文）](../../../../research/chapters/final-confrontations-ending/battle42-outcomes-and-zeon-admission.md#complete-aftermath-in-narrative-order)由 F542 守卫。加载场景并独立重建行动者：scene128 Galam、129 Elis 和130 Zeon 不是交战槽或后续结局配置别名。Elis 醒来、Galam 移动、震颤与 Zeon 对峙引出队伍参战决心；脚本结尾设置解锁 F443。场景手势和台词不招募 Elis、不改变其交战 HP，也不初始化43。
 
-因此[完整首次 Battle42 胜利](../../../../research/chapters/final-confrontations-ending/battle42-outcomes-and-zeon-admission.md#return-loop-and-conditional-battle43-handoff)为：场景设置 F443 → 加入 Bowie → 清除 F442 → 设置 F542 → 普通59 重建。战斗返回绕过即时 CheckBattle。F543 未设时，持有 F999 和 F443 使默认配置发布新59,13,34/Up 请求。只有该事件消费后，MainLoop 才再次扫描并可能选择 Battle43。不证明两战之间存在玩家控制时段。F442 仍/再次持有则42 先胜出；完成 F542 不使扫描跳过它。胜利时 F542 已持有，则跳过场景不重建缺失 F443。传入 F999 未设改走更早 Nazca init 分支，可重新启用 F442 和 F443。保留这些局部状态，不能假定不可变“下个首领”指针。败北/获准撤退使用实时 egress 状态，不授予场景解锁或新完成。
+因此[完整首次 Battle42 胜利（英文）](../../../../research/chapters/final-confrontations-ending/battle42-outcomes-and-zeon-admission.md#return-loop-and-conditional-battle43-handoff)为：场景设置 F443 → 加入 Bowie → 清除 F442 → 设置 F542 → 普通59 重建。战斗返回绕过即时 CheckBattle。F543 未设时，持有 F999 和 F443 使默认配置发布新59,13,34/Up 请求。只有该事件消费后，MainLoop 才再次扫描并可能选择 Battle43。不证明两战之间存在玩家控制时段。F442 仍/再次持有则42 先胜出；完成 F542 不使扫描跳过它。胜利时 F542 已持有，则跳过场景不重建缺失 F443。传入 F999 未设改走更早 Nazca init 分支，可重新启用 F442 和 F443。保留这些局部状态，不能假定不可变“下个首领”指针。败北/获准撤退使用实时 egress 状态，不授予场景解锁或新完成。
 
 #### Zeon 胜利准入结局，之后场景提供返回
 
-[Battle43 结果](../../../../research/chapters/final-confrontations-ending/battle43-outcomes-and-ending-admission.md#victory-defeat-retreat-and-repeated-completion)保留败北优先级与自身条件 Healing Rain 事务。完整首次胜利在 F543 未设时运行 after43：隐藏战斗 Zeon 别名，请求连续布局/效果变化，写返回参数59,12,11/Up 并清除随从标志 F67/F70/F71/F76。共享 join0 再先于清除 F443、设置 F543。传送命令参数替换较早成员种子，通过 BattleLoop 返回；探索在入场时清除所发布事件。不是第二个独立消费的传送。持有 F543 在重复胜利跳过场景，保留成员种子和随从状态，但仍加入/设置完成。败北/获准撤退不运行 after43 或新设 F543；原 F543 未设保留 F443，原 F543 已持有则清除。任何分支都不建立已完成尾声。
+[Battle43 结果（英文）](../../../../research/chapters/final-confrontations-ending/battle43-outcomes-and-ending-admission.md#victory-defeat-retreat-and-repeated-completion)保留败北优先级与自身条件 Healing Rain 事务。完整首次胜利在 F543 未设时运行 after43：隐藏战斗 Zeon 别名，请求连续布局/效果变化，写返回参数59,12,11/Up 并清除随从标志 F67/F70/F71/F76。共享 join0 再先于清除 F443、设置 F543。传送命令参数替换较早成员种子，通过 BattleLoop 返回；探索在入场时清除所发布事件。不是第二个独立消费的传送。持有 F543 在重复胜利跳过场景，保留成员种子和随从状态，但仍加入/设置完成。败北/获准撤退不运行 after43 或新设 F543；原 F543 未设保留 F443，原 F543 已持有则清除。任何分支都不建立已完成尾声。
 
-F543 稳定时，普通59 人口和 init 选择结局配置，其主体在调用[完整后续场景](../../../../research/chapters/final-confrontations-ending/zeon-aftermath-and-granseal-return.md)前再次检查 F543。选择器是独立实时读取，不是原子场景快照。此入口未证明有独立已播放结局守卫。战斗 Zeon128 与中立 Elis 被该配置的效果、固定己方与非己方角色替换；必须重新读取行动者身份。
+F543 稳定时，普通59 人口和 init 选择结局配置，其主体在调用[完整后续场景（英文）](../../../../research/chapters/final-confrontations-ending/zeon-aftermath-and-granseal-return.md)前再次检查 F543。选择器是独立实时读取，不是原子场景快照。此入口未证明有独立已播放结局守卫。战斗 Zeon128 与中立 Elis 被该配置的效果、固定己方与非己方角色替换；必须重新读取行动者身份。
 
 编写场景中 Galam 看似恢复，随后成为 Zeon 人质对峙。Peter 移除宝石及 Zeon 恢复由叙述和布置表达，没有物品栏 AddItem/RemoveItem。Lemon 经受攻击，随后在消失序列带走 Galam。Astral 报告 Elis 仍呼吸；Mitula 指出她昏迷且中毒，请求两颗宝石重新封印，并让队伍撤离。她将后续苏醒与毒消退及亲吻联系，恢复间隔不确定。Astral 将扰动解释为封印；Bowie 在撤退时抱着 Elis。这些是场景请求支持的说话者/叙述者含义，不是新交战、中毒状态、宝石持有或永久队伍移除事务。After43 清除的随从标志、场景隐藏/别名和已加入成员资格仍是独立状态通道。
 
-[共享尾部](../../../../research/chapters/final-confrontations-ending/zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return)加载 Granseal 景色并保留场景行动者，尚未构建城镇人口。叙述说重新封印后已过两年，保留的 Woman136 评论 Elis 气色。这是叙事时间跳跃，不是时钟/日历增量。尾部清除 F384/F385，重置全部 30 名己方角色战斗属性，并发布 Granseal3,56,3/Down。重置包括未加入、后备与 HP0 记录，恢复 HP/MP 并重算当前属性，不抹除等级、EXP、物品栏或成员资格。STUN/POISON 保留；CURSE 从已装备诅咒物品重算，因此中间状态掩码不保证最终诅咒保留。没有存档调用。
+[共享尾部（英文）](../../../../research/chapters/final-confrontations-ending/zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return)加载 Granseal 景色并保留场景行动者，尚未构建城镇人口。叙述说重新封印后已过两年，保留的 Woman136 评论 Elis 气色。这是叙事时间跳跃，不是时钟/日历增量。尾部清除 F384/F385，重置全部 30 名己方角色战斗属性，并发布 Granseal3,56,3/Down。重置包括未加入、后备与 HP0 记录，恢复 HP/MP 并重算当前属性，不抹除等级、EXP、物品栏或成员资格。STUN/POISON 保留；CURSE 从已装备诅咒物品重算，因此中间状态掩码不保证最终诅咒保留。没有存档调用。
 
 待处理请求在普通玩家控制行动前消费。MainLoop 仍应用 SwitchMap：F640 未设得到3；持有 F640 则替换为 earthquake4，该尾部不防止。Map3 上稳定 F543 赢得较后配置选择，重建普通居民和己方角色并运行仅 rts 的 init。先前抱人姿势、场景人口与临时跟随不是新城镇。独立 Map59 zone36 可在 F543 下仅调用尾部，不证明此前抱人、封印或撤离；已返回前缀同样不证明被省略工作。
 
 #### Granseal 居民、Astral 护送与议事
 
-[城镇尾声所有者](../../../../research/chapters/final-confrontations-ending/granseal-epilogue-and-castle-admission.md#what-the-residents-say)将恢复与重建报告归于居民。工人报告 Elis 好转与 Lemon 纪念设施；己方角色谈 Astral 召集和亲吻。普通对话不唤醒 Elis、不授予物品、不招募或选择亲吻者。可选搜索及布置的 Woman135/Man136 对话保留自身交互。新 Man136 不是此前 Granseal 景色上说话的保留 Woman136。西侧区域（事件）调用守卫接近与限制对话；所引不许离开命令不是全局出口表锁定。
+[城镇尾声所有者（英文）](../../../../research/chapters/final-confrontations-ending/granseal-epilogue-and-castle-admission.md#what-the-residents-say)将恢复与重建报告归于居民。工人报告 Elis 好转与 Lemon 纪念设施；己方角色谈 Astral 召集和亲吻。普通对话不唤醒 Elis、不授予物品、不招募或选择亲吻者。可选搜索及布置的 Woman135/Man136 对话保留自身交互。新 Man136 不是此前 Granseal 景色上说话的保留 Woman136。西侧区域（事件）调用守卫接近与限制对话；所引不许离开命令不是全局出口表锁定。
 
-[与城镇 Astral138 交谈](../../../../research/chapters/final-confrontations-ending/granseal-epilogue-and-castle-admission.md#astrals-choice-and-complete-escort)询问 Bowie 是否准备去城堡。Yes0 显示接受回应，在护送前设置 F981，并发布 Castle2F19,26,30/Up。No 或 B 取消显示 Astral 反对，返回而无护送；不清除已持有 F981。回调无一次性 F981 守卫，因此再次 Yes 可再次请求护送。已持有 F981 也可能是中断前缀，不证明抵达城堡。脚本跟随是临时实体工作，不是招募，完成独立于所发布地图请求。
+[与城镇 Astral138 交谈（英文）](../../../../research/chapters/final-confrontations-ending/granseal-epilogue-and-castle-admission.md#astrals-choice-and-complete-escort)询问 Bowie 是否准备去城堡。Yes0 显示接受回应，在护送前设置 F981，并发布 Castle2F19,26,30/Up。No 或 B 取消显示 Astral 反对，返回而无护送；不清除已持有 F981。回调无一次性 F981 守卫，因此再次 Yes 可再次请求护送。已持有 F981 也可能是中断前缀，不证明抵达城堡。脚本跟随是临时实体工作，不是招募，完成独立于所发布地图请求。
 
-普通19 入场时，选定 F543/F982 init 将未加入的可选 Sheela/May/Chaz 行动者移至地图外，不改成员资格，并请求 Rohde NPC 精灵。[议事分支](../../../../research/chapters/final-confrontations-ending/granseal-royal-council-and-chamber-admission.md#admission-and-actor-continuity)需要持有 F981、F982 未设。F981 未设或 F982 已持有则走音乐/淡入淡出，不重放议事。场景对话提名并选定 Bowie：Peter/Luke 推荐他，Jaha 自荐，Sarah 反应，Kazin 陪她离场，Astral 确认选择。May 自己的发言依赖已加入标志。此处无玩家 Yes/No 投票，台词不暗示婚姻或队伍成员资格写入。
+普通19 入场时，选定 F543/F982 init 将未加入的可选 Sheela/May/Chaz 行动者移至地图外，不改成员资格，并请求 Rohde NPC 精灵。[议事分支（英文）](../../../../research/chapters/final-confrontations-ending/granseal-royal-council-and-chamber-admission.md#admission-and-actor-continuity)需要持有 F981、F982 未设。F981 未设或 F982 已持有则走音乐/淡入淡出，不重放议事。场景对话提名并选定 Bowie：Peter/Luke 推荐他，Jaha 自荐，Sarah 反应，Kazin 陪她离场，Astral 确认选择。May 自己的发言依赖已加入标志。此处无玩家 Yes/No 投票，台词不暗示婚姻或队伍成员资格写入。
 
 仅完整议事返回后，init 才设置 F982 并终止临时随从列表。Sarah/Kazin 隐藏移除当前别名，不取消加入。当前行动者保持场景状态，后续交互立即针对这些别名重选 F982 事件表。未来普通重建使用 F982 的不同人口；设置标志并不已经执行重建。重复宾客交谈是可选对话，不是另一议事或选择。共享楼梯可请求 chamber20,23,37/Down，没有表级 F981/F982 检查；仍需实际标记和旅行。Map20 用 F543 而非 F982 作最终配置选择器。持有 F982 仅在短 init 移动 Minister；两种 init 均不亲吻 Elis 或写提示标志。
 
 #### Minister 提示与玩家真正的亲吻选择
 
-[房间交互](../../../../research/chapters/final-confrontations-ending/granseal-chamber-interactions-and-ending-kiss.md#zone-admission-flags-and-complete-choice-route)区分可选建议与接受。在被调用的 X26/通配 Y 区域（事件），持有 F982 且 F983 未设准入 Minister 首个提示，再设置 F983；重复跳过。27,52 处 F984 未设准入第二提示，再设置 F984，不检查 F982/F983。普通 Minister 对话也随 F982 变化，但不设置这些提示标志。搜索描述书、壁橱和 Elis；其立绘眼睛服务和睡眠描述不写 HP、睡眠状态或苏醒标志。
+[房间交互（英文）](../../../../research/chapters/final-confrontations-ending/granseal-chamber-interactions-and-ending-kiss.md#zone-admission-flags-and-complete-choice-route)区分可选建议与接受。在被调用的 X26/通配 Y 区域（事件），持有 F982 且 F983 未设准入 Minister 首个提示，再设置 F983；重复跳过。27,52 处 F984 未设准入第二提示，再设置 F984，不检查 F982/F983。普通 Minister 对话也随 F982 变化，但不设置这些提示标志。搜索描述书、壁橱和 Elis；其立绘眼睛服务和睡眠描述不写 HP、睡眠状态或苏醒标志。
 
 被调用的19,52 区域（事件）中，实际亲吻问题不检查 F982/F983/F984。它淡出声音、初始化 Bowie 动作脚本、请求颤抖，再经原始 YesNoPrompt 提问。Yes0 运行接近与亲吻图像服务；No 或 B 取消恢复声音驱动/城镇音乐并返回。拒绝保留提示标志原样，不保存永久选择；后续获准分发可再次询问。不保证静止玩家自动重触发。因此 Minister 提示不是编码前提，提示前编写的颤抖不是玩家同意。
 
-Yes 时，[接近和服务](../../../../research/chapters/final-confrontations-ending/granseal-chamber-interactions-and-ending-kiss.md#kiss-service-resourcewindow-interface-and-return)请求移动、呈现资源、窗口工作与等待。安装运动不证明此前每个移动已完成，实时 HP/别名/服务状态仍有影响。局部主体不写婚姻、苏醒或结局完成标志。只有亲吻脚本返回后，调用方才进入 PlayEndingCredits。该调用边界区分已接受答案、已请求图像及服务完成，无需逐字抄录或虚构已苏醒世界行动者。
+Yes 时，[接近和服务（英文）](../../../../research/chapters/final-confrontations-ending/granseal-chamber-interactions-and-ending-kiss.md#kiss-service-resourcewindow-interface-and-return)请求移动、呈现资源、窗口工作与等待。安装运动不证明此前每个移动已完成，实时 HP/别名/服务状态仍有影响。局部主体不写婚姻、苏醒或结局完成标志。只有亲吻脚本返回后，调用方才进入 PlayEndingCredits。该调用边界区分已接受答案、已请求图像及服务完成，无需逐字抄录或虚构已苏醒世界行动者。
 
 #### 字幕、终场、完成存储与隐藏战斗
 
-[字幕/终场所有者](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#credits-entry-portraits-and-completion)继续已返回的 Yes 分支。字幕构建已加入军团立绘列表，不过滤 HP 或限于出战队伍，在上下文服务下推进制作人员数据。局部主体无控制器跳过分支；不证明外部中断不可能。字幕返回后，城堡终场布置 Bowie、Elis、宫廷与抵达同伴，没有对话或婚姻/苏醒标志。脚本点头和抵达不是额外选择。调用方随后尾部进入 WitchEnd 和 EndGame，不返回普通房间探索。
+[字幕/终场所有者（英文）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#credits-entry-portraits-and-completion)继续已返回的 Yes 分支。字幕构建已加入军团立绘列表，不过滤 HP 或限于出战队伍，在上下文服务下推进制作人员数据。局部主体无控制器跳过分支；不证明外部中断不可能。字幕返回后，城堡终场布置 Bowie、Elis、宫廷与抵达同伴，没有对话或婚姻/苏醒标志。脚本点头和抵达不是额外选择。调用方随后尾部进入 WitchEnd 和 EndGame，不返回普通房间探索。
 
-[EndGame 完成写入](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#witchend-text-and-completion-storage)设置 SRAM 映射 SAVE_FLAGS 字节 bit7，保留其余位。独立于故事 F543、任何所选存档槽数据及 SaveGame/校验和操作。女巫释放与告别属于归属明确的结局文本；随后女巫/宝石显示请求和长等待不是实测硬件时序。已有 bit7 不独证该路线执行，因为存在其他已接受写入方。硬件写入成功、断电保留及整队结局存档在此边界为**未知**。
+[EndGame 完成写入（英文）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#witchend-text-and-completion-storage)设置 SRAM 映射 SAVE_FLAGS 字节 bit7，保留其余位。独立于故事 F543、任何所选存档槽数据及 SaveGame/校验和操作。女巫释放与告别属于归属明确的结局文本；随后女巫/宝石显示请求和长等待不是实测硬件时序。已有 bit7 不独证该路线执行，因为存在其他已接受写入方。硬件写入成功、断电保留及整队结局存档在此边界为**未知**。
 
-宝石呈现及额外内容通知后，[特殊调用方](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)清除实体、设置解锁 F400、提供 map63，调用 CheckBattle 再 BattleLoop。选定 row0 使用通配坐标；持有完成 F500 清除 F400，但该调用仍选择0。这是具体 EndGame 准入，不是从 Magic Tunnel 普通旅行，也不是任何地图都能进入 Battle0 的一般权利。继承挂起 F88 仍是独立传入状态路径；普通 Battle0 菜单不能产生它。
+宝石呈现及额外内容通知后，[特殊调用方（英文）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)清除实体、设置解锁 F400、提供 map63，调用 CheckBattle 再 BattleLoop。选定 row0 使用通配坐标；持有完成 F500 清除 F400，但该调用仍选择0。这是具体 EndGame 准入，不是从 Magic Tunnel 普通旅行，也不是任何地图都能进入 Battle0 的一般权利。继承挂起 F88 仍是独立传入状态路径；普通 Battle0 菜单不能产生它。
 
-[隐藏 Battle0](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)无首领扫除：仅打败其中 Zeon 仍留下其他可计数敌人，同时终局条件下败北仍优先。首次胜利请求短 game-over 文本、重新加入 Bowie、清除 F400 并设置 F500；已持有 F500 跳过文本，保留包装器/标志工作。败北执行公共 Bowie 恢复/金币损失。获准 Egress 或 Angel Wing 要求普通可行动玩家选择/支付条件，再绕过胜利和败北后缀；取消、MP 不足或未确认目标不准入逃脱。普通 Suspend 在提示、标志 F88 写入、SaveGame 或 WitchSuspend 之前被拒；选择它返回战斗菜单。
+[隐藏 Battle0（英文）](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)无首领扫除：仅打败其中 Zeon 仍留下其他可计数敌人，同时终局条件下败北仍优先。首次胜利请求短 game-over 文本、重新加入 Bowie、清除 F400 并设置 F500；已持有 F500 跳过文本，保留包装器/标志工作。败北执行公共 Bowie 恢复/金币损失。获准 Egress 或 Angel Wing 要求普通可行动玩家选择/支付条件，再绕过胜利和败北后缀；取消、MP 不足或未确认目标不准入逃脱。普通 Suspend 在提示、标志 F88 写入、SaveGame 或 WitchSuspend 之前被拒；选择它返回战斗菜单。
 
 每次实际胜利、败北或获准撤退返回，EndGame 都忽略返回参数和结果。它请求白色淡入淡出、清除上下文 VInt、禁用显示/中断、恢复初始栈、加载起始向量并跳转。BattleLoop 内计算的 Egress 坐标在该调用方下不导致场景探索。明确的**软件重置**是本章终点。等待/中断/不返回服务不建立其已发生；产生的菜单、新游戏加行为和持久重置后状态仍为**未知**。更早 SRAM 映射位写入不序列化隐藏战斗之后的 HP、金币、物品或结果标志。
 
 #### 证据审阅与章节边界
 
-本章审阅十四个具名[最终路线与尾声所有者](../../../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)、选定源码/调用方连接、归属文本及变化状态表，复用保留审阅，不重跑源码提取或运行时观察。更严格局部边界支配本说明：吸引与收取/使用、当前与重建布局、交谈与解锁、当前与未来行动者、结果与后续扫描、脚本手势与选择、场景请求与返回、完成存储与存档。较早静态/处理器总结不取代后续选定事实。尤其是后续[全己方角色刷新推导](../../../../research/chapters/final-confrontations-ending/zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return)限定了把中间诅咒掩码描述为最终状态保留的旧总结。
+本章审阅十四个具名[最终路线与尾声所有者（英文）](../../../../research/story-content-coverage.md#force-sword-devils-head-and-the-final-tower)、选定源码/调用方连接、归属文本及变化状态表，复用保留审阅，不重跑源码提取或运行时观察。更严格局部边界支配本说明：吸引与收取/使用、当前与重建布局、交谈与解锁、当前与未来行动者、结果与后续扫描、脚本手势与选择、场景请求与返回、完成存储与存档。较早静态/处理器总结不取代后续选定事实。尤其是后续[全己方角色刷新推导（英文）](../../../../research/chapters/final-confrontations-ending/zeon-aftermath-and-granseal-return.md#shared-tail-scene-load-reset-text-and-posted-return)限定了把中间诅咒掩码描述为最终状态保留的旧总结。
 
 历史选择器测试夹具 `sf2-map-setup-selection-runtime-v1`（[载荷](../../../../../tests/fixtures/h3/map-setup-selection-v1.json)）包括 Map3 的 F543 和 Map19 的 F982 最后持有用例；未观察这些尾声访问。过渡测试夹具 `sf2-map-script-transition-runtime-v1`（[载荷](../../../../../tests/fixtures/h3/map-script-transition-v1.json)）观察受限处理器/事件产生，不观察本章自然旅行、事件消费、服务完成或呈现。其 schema、聚焦验证器/测试所有者及复现命令保留在链接研究和[历史证据矩阵](#证据矩阵)；不暗示回放或新运行时闭合。
 
@@ -657,7 +657,7 @@ F418 未设时，神殿探索改为检查 F725：未设运行 Taros 警告并请
 
 ### 装备资格是交战条件
 
-[Battle18 初始化与规则所有者](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)晚于准入指南的激活前终点，提供实际出战队伍/装备及首次条件控制边界。Battle18 初始 Taros 伤害门槛仅在行动者为 **Bowie**、行动为 **ATTACK**、当前目标具有 Taros 敌人定义且 Bowie 实际已装备武器为 **Achilles Sword** 时允许选定攻击。仅携带 Sword、由其他己方角色装备，或 Bowie 选择法术/物品使用，都不满足该初始门槛。符合资格仍不保证命中、伤害量、完成单次行动或胜利。
+[Battle18 初始化与规则所有者（英文）](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)晚于准入指南的激活前终点，提供实际出战队伍/装备及首次条件控制边界。Battle18 初始 Taros 伤害门槛仅在行动者为 **Bowie**、行动为 **ATTACK**、当前目标具有 Taros 敌人定义且 Bowie 实际已装备武器为 **Achilles Sword** 时允许选定攻击。仅携带 Sword、由其他己方角色装备，或 Bowie 选择法术/物品使用，都不满足该初始门槛。符合资格仍不保证命中、伤害量、完成单次行动或胜利。
 
 这是初始行动脚本/伤害辅助边界，不是关于所有目标/效果或反击路径的定理。所有者保留生命周期与反击方向例外。编队位置、场景说话者和中立 Caravan 精灵不证明实际交战成员资格或已获得交通。Taros 独立条件 Sword 掉落也不授予 Caravan。
 
@@ -675,30 +675,30 @@ F418 未设时，神殿探索改为检查 F725：未设运行 Taros 警告并请
 
 随后 Caravan 移动可依自身布局/控制器规则请求传送或登陆。登陆独立返回 walking mode 0。步行区域（事件）产生方随后可请求 Battle19；Caravan 控制器没有该产生方。不禁止独立传入解锁在另一次地图扫描准入 Battle19。同样，C 交互的 Caravan 菜单调用是不同准入，不证明存储或队伍事务。可选 [Rick 招募](../chapters/southern-travel-creed/hassan-rick-recruitment.md)不是获得与使用之间必经绕路。
 
-**未知：** 该组合示例的自然接近及不中断持有/旅行、实际标志/出战队伍/装备、服务与呈现完成、响应控制及存档/恢复持久性。[当前生产前沿](../../../../../remake/docs/capability-status.md)不含 Battle18 和该交通链；已接受静态解释既不授予引擎支持，也不授予分发权。示例让条件可理解，不闭合这些缺口。
+**未知：** 该组合示例的自然接近及不中断持有/旅行、实际标志/出战队伍/装备、服务与呈现完成、响应控制及存档/恢复持久性。[当前生产前沿（英文）](../../../../../remake/docs/capability-status.md)不含 Battle18 和该交通链；已接受静态解释既不授予引擎支持，也不授予分发权。示例让条件可理解，不闭合这些缺口。
 
 ### 本示例的证据审阅
 
-本解释复用五个起始所有者中的已接受审阅：[Sword 指南追踪/审阅](../chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md#证据追踪与审查限制)、[准入指南追踪/审阅](../chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md#证据追踪与审查边界)、[Battle18 初始化/规则](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md)、[结果指南追踪/审阅](../chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md#证据追踪与审查边界)及[登乘指南追踪/审阅](../chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md#证据追踪与审查边界)。Rohde [选择所有者](../chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)提供不同拒绝与重复条件。相关地图/对话/名册/交战/服务边界保留精确源码、测试夹具/schema/消费者身份、复现命令和已接受交接。
+本解释复用五个起始所有者中的已接受审阅：[Sword 指南追踪/审阅](../chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md#证据追踪与审查限制)、[准入指南追踪/审阅](../chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md#证据追踪与审查边界)、[Battle18 初始化/规则（英文）](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md)、[结果指南追踪/审阅](../chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md#证据追踪与审查边界)及[登乘指南追踪/审阅](../chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md#证据追踪与审查边界)。Rohde [选择所有者](../chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)提供不同拒绝与重复条件。相关地图/对话/名册/交战/服务边界保留精确源码、测试夹具/schema/消费者身份、复现命令和已接受交接。
 
 审阅区分掩码收取与已装备武器查找、F418 准入与 F725 警告选择、首次/重复 F518 与获得 F65，以及 F65 人口与最终 mode 1 写入。公共测试夹具投影不包含组合 Sword→Taros→Caravan 运行；较新 Battle18 规则说明不增加可执行遭遇测试夹具。支持交战段落的是选定已接受源码连接，而非聚合测试夹具计数或准入指南更早停止点。本文不要求新提取、运行时获取或历史比较。未选出需要 Layer A 修复的冲突。详细所有者保留已完成失败与未知项。另有 [#1047 已完成结果交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1047#issuecomment-6204168133)保留十二项未解决比较；它们不是中断运行，也不是本示例新证据。
 
 ## 原版观察与重制支持
 
-**已确认受限原版观察：** [当前原版前沿](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier)现从受控 R1 经存档状态关联的获胜路线到稳定 Map57 返回；另一个已接受扩展观察普通 Down 输入与位移。更早通用处理器矩阵和本文历史审计仍是受限接缝。其未知项不抹除后续选定路线，该路线也不证明完整战役时间线、未观察选择或持久故事状态。
+**已确认受限原版观察：** [当前原版前沿](../milestones/map3-battle01-readiness.md#已接受原版前沿)现从受控 R1 经存档状态关联的获胜路线到稳定 Map57 返回；另一个已接受扩展观察普通 Down 输入与位移。更早通用处理器矩阵和本文历史审计仍是受限接缝。其未知项不抹除后续选定路线，该路线也不证明完整战役时间线、未观察选择或持久故事状态。
 
-**已确认已接受私有重制里程碑：** [当前组合](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)在现代时钟/默认键盘 A 范围下接受选定连续胜利与可用 5B 返回，包括已到达内容消费者、完成与输入就绪。历史报告结论仍由各自所有者负责。下方更广框架不要求重新证明已接受段；原版硬件时序和更广可达性仍是独立**未知项**。
+**已确认已接受私有重制里程碑：** [当前组合](../milestones/map3-battle01-readiness.md#当前已接受里程碑)在现代时钟/默认键盘 A 范围下接受选定连续胜利与可用 5B 返回，包括已到达内容消费者、完成与输入就绪。历史报告结论仍由各自所有者负责。下方更广框架不要求重新证明已接受段；原版硬件时序和更广可达性仍是独立**未知项**。
 
 ## 综合前证据审计
 
 下方原框架审计对照精确可执行所有者；已复现结果是保留证据，不是本次章节修订的新运行。[完整示例审阅](#本示例的证据审阅)覆盖选定较新内容。历史审计不只依赖文字或源码名字，并保留这些区别：
 
-- [gameflow 研究](../../../../research/system/gameflow-core.md)拥有静态 `MainLoop` 与 `ExplorationLoop` 顺序，没有精确过渡帧或中断边缘事件/输入时序的运行时测试夹具。
-- [map-data 研究](../../../../research/world/map-data-inventory.md)及配置测试夹具拥有有序配置与事件选择。配置选择是**最后设置标志胜出**；事件分发是**首个匹配记录胜出**。两者不可互换。
-- [common-scripting 研究](../../../../research/world/common-scripting.md)拥有完整程序语料及处理器局部命令族。静态引用证明图拓扑，不证明正常故事可达性。
+- [gameflow 研究（英文）](../../../../research/system/gameflow-core.md)拥有静态 `MainLoop` 与 `ExplorationLoop` 顺序，没有精确过渡帧或中断边缘事件/输入时序的运行时测试夹具。
+- [map-data 研究（英文）](../../../../research/world/map-data-inventory.md)及配置测试夹具拥有有序配置与事件选择。配置选择是**最后设置标志胜出**；事件分发是**首个匹配记录胜出**。两者不可互换。
+- [common-scripting 研究（英文）](../../../../research/world/common-scripting.md)拥有完整程序语料及处理器局部命令族。静态引用证明图拓扑，不证明正常故事可达性。
 - map-lifecycle 运行时测试夹具拥有五个直接处理器回放、直接 JSR 位置顺序、重置尾部和受限布局/当前地图字段。独立 map-script transition 测试夹具拥有五个 `ExecuteMapScript` 流，包括 `warp`、opcode/A6/dispatcher/handler/fall-through 时间顺序、受限 `csc07` 事件字节及直接服务进入/返回接缝。两者都不拥有事件消费、可见过渡行为、正常故事可达性或持久性。
-- [对话](../../../contracts/interface/dialogue-system.md)与[出战队伍/名册](../../../contracts/party/party-roster-state.md)拥有自身状态及运行时边界。两个测试夹具均不证明谁说话、成员为何加入或正常游玩中事件如何呈现。
-- [存档](../../../contracts/system/save-system.md)拥有双槽表示与受限进程内动作矩阵。不证明每个故事相关子系统在进程重启或断电后存活。
+- [对话](../../contracts/interface/dialogue-system.md)与[出战队伍/名册](../../contracts/party/party-roster-state.md)拥有自身状态及运行时边界。两个测试夹具均不证明谁说话、成员为何加入或正常游玩中事件如何呈现。
+- [存档](../../contracts/system/save-system.md)拥有双槽表示与受限进程内动作矩阵。不证明每个故事相关子系统在进程重启或断电后存活。
 
 聚焦审计复现 map-script、配置、事件、故事状态、对话、force-state、控制/音频、map-lifecycle、map-script-transition、新游戏及存档动作测试夹具。这些所有者之间未发现不一致。精确测试夹具身份仍见[证据矩阵](#证据矩阵)。
 
@@ -859,17 +859,17 @@ flowchart TD
 
 | 边界 | 证据标签与受限主张 | 精确可执行所有者 | 这些测试夹具的剩余问题 |
 | --- | --- | --- | --- |
-| 顶层游戏流程 | **已确认静态内容**：地图切换、战斗哨兵/调用顺序、返回的 `BattleLoop` 调用再次经过地图切换、探索返回和先事件后行动分支优先级 | [gameflow 研究](../../../../research/system/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 运行时时序、战斗结果语义、过渡帧、正常战役时间线 |
-| 完整脚本图 | **已确认静态内容**：304 程序/13,515 命令语料和已解析显式转移 | [common-scripting 研究](../../../../research/world/common-scripting.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)） | 正常存档准入及可达路线顺序 |
-| 配置选择 | **已确认静态/运行时内容**：有序地图/标志扫描、最后设置胜出、别名与缺失/默认用例 | [map-data 研究](../../../../research/world/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../../../tests/fixtures/h2/map-setup-static-v1.json)）和 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 可达地图/标志组合及所选配置效果 |
-| 事件选择 | **已确认静态/运行时内容**：有序记录和首匹配实体/区域（事件）/物品目标选择 | [地图探索](../../../contracts/world/map-exploration.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../../../tests/fixtures/h2/map-events-static-v1.json)）和 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本效果、正常可达性、呈现 |
+| 顶层游戏流程 | **已确认静态内容**：地图切换、战斗哨兵/调用顺序、返回的 `BattleLoop` 调用再次经过地图切换、探索返回和先事件后行动分支优先级 | [gameflow 研究（英文）](../../../../research/system/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 运行时时序、战斗结果语义、过渡帧、正常战役时间线 |
+| 完整脚本图 | **已确认静态内容**：304 程序/13,515 命令语料和已解析显式转移 | [common-scripting 研究（英文）](../../../../research/world/common-scripting.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)） | 正常存档准入及可达路线顺序 |
+| 配置选择 | **已确认静态/运行时内容**：有序地图/标志扫描、最后设置胜出、别名与缺失/默认用例 | [map-data 研究（英文）](../../../../research/world/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../../../tests/fixtures/h2/map-setup-static-v1.json)）和 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 可达地图/标志组合及所选配置效果 |
+| 事件选择 | **已确认静态/运行时内容**：有序记录和首匹配实体/区域（事件）/物品目标选择 | [地图探索](../../contracts/world/map-exploration.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../../../tests/fixtures/h2/map-events-static-v1.json)）和 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本效果、正常可达性、呈现 |
 | 故事状态命令 | **已确认静态/运行时内容**：条件极性、直接设置/清除、标志 89 提示极性和 400 基础写入算术 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-story-state-runtime-v2`（[`story-state-v2.json`](../../../../../tests/fixtures/h3/story-state-v2.json)） | 标志含义、提示后果、持久性、正常可达性 |
-| 对话接缝 | **已确认静态/运行时内容**：六形式语料及处理器局部游标、分支、状态写入和服务调用边界 | [对话合同](../../../contracts/interface/dialogue-system.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../../../../tests/fixtures/h3/map-script-dialogue-v1.json)） | 内容、说话者、无垫片服务、输入/时序、正常路线 |
-| 名册/出战队伍接缝 | **已确认静态/运行时子集**：名册/死亡形式和九个出战队伍/AI/重置/随从用例 | [出战队伍/名册合同](../../../contracts/party/party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../../../../tests/fixtures/h3/force-state-active-party-v1.json)） | 招募含义、容量生命周期、持久性、呈现 |
+| 对话接缝 | **已确认静态/运行时内容**：六形式语料及处理器局部游标、分支、状态写入和服务调用边界 | [对话合同](../../contracts/interface/dialogue-system.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../../../../tests/fixtures/h3/map-script-dialogue-v1.json)） | 内容、说话者、无垫片服务、输入/时序、正常路线 |
+| 名册/出战队伍接缝 | **已确认静态/运行时子集**：名册/死亡形式和九个出战队伍/AI/重置/随从用例 | [出战队伍/名册合同](../../contracts/party/party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../../../../tests/fixtures/h3/force-state-active-party-v1.json)） | 招募含义、容量生命周期、持久性、呈现 |
 | 脚本控制 | **已确认静态/运行时内容**：等待/跳过、空操作、声音 trap、子程序、跳转及结束接缝 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-map-script-control-audio-runtime-v1`（[`map-script-control-audio-v1.json`](../../../../../tests/fixtures/h3/map-script-control-audio-v1.json)） | 时长、服务效果、可听结果、正常可达性 |
 | 地图生命周期 | **已确认静态/运行时内容**：重置/加载/重载处理器及有序直接调用位置边界 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-map-lifecycle-runtime-v1`（[`map-lifecycle-v1.json`](../../../../../tests/fixtures/h3/map-lifecycle-v1.json)） | 可见过渡、实体/布局后果、持久性、正常路线 |
 | 地图脚本过渡 | **已确认受限运行时内容**：含 `warp` 的五个解释器流，带 opcode/A6/handler/dispatcher/fall-through 时序、受限事件字节、直接服务接缝及源码 `OUT_TO_BLACK=2` 对照观察的首次等待 `FADING_SETTING=0` | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-map-script-transition-runtime-v1`（[`map-script-transition-v1.json`](../../../../../tests/fixtures/h3/map-script-transition-v1.json)） | 事件消费、呈现/淡入淡出/显示时序、正常可达性、持久性、碰撞/寻路、未观察效果 |
-| 新游戏和读档重入 | **已确认受限运行时内容**：受控地图 3/存档/MainLoop 交接与标志 88 读档路由 | [存档合同](../../../contracts/system/save-system.md)；`sf2-witch-new-game-lifecycle-runtime-v1`（[`witch-new-game-lifecycle-v1.json`](../../../../../tests/fixtures/h3/witch-new-game-lifecycle-v1.json)）和 `sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 玩家驱动 UX、标志含义、完整持久性、跨进程行为 |
+| 新游戏和读档重入 | **已确认受限运行时内容**：受控地图 3/存档/MainLoop 交接与标志 88 读档路由 | [存档合同](../../contracts/system/save-system.md)；`sf2-witch-new-game-lifecycle-runtime-v1`（[`witch-new-game-lifecycle-v1.json`](../../../../../tests/fixtures/h3/witch-new-game-lifecycle-v1.json)）和 `sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 玩家驱动 UX、标志含义、完整持久性、跨进程行为 |
 | 存档表示 | **已确认静态内容**：双槽、校验和/检查顺序、占用状态及受限战斗员数据复制方向 | `sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../../../../tests/fixtures/h2/tech-services-static-v1.json)） | 规范故事存档 schema 及持久介质行为 |
 
 ## 原版保真与现代化

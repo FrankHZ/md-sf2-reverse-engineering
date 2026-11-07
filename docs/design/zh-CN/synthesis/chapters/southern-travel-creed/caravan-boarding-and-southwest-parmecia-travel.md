@@ -1,8 +1,10 @@
 # Caravan 登乘与 Southwest Parmecia 旅行
 
+> 本文是[英文规范原文](../../../../synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 获取 Caravan 会准备一个新的大地图随从；进入它和控制它是独立操作。步行可请求登乘顺序，使 Bowie 与选定随从缩小，随后将控制器改为模式 1。该控制器可以移动、请求传送或请求登陆。登陆使步行行动者变大，并在返回模式 0 之前重新安装随从动作。后续步行区域（事件）可请求 Battle19；Caravan 控制器不生产该区域事件。
 
-**已确认：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)确立这些选定的静态生产方、完整登乘／登陆程序及紧邻使用方。**推断：**它们共同说明进入 Caravan、乘坐旅行及离开。**未知：**自然行经路线、实际传入状态、表现／服务完成、能响应的控制及存档／恢复持久性。源码顺序不确立组合运行时成功。
+**已确认：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)确立这些选定的静态生产方、完整登乘／登陆程序及紧邻使用方。**推断：**它们共同说明进入 Caravan、乘坐旅行及离开。**未知：**自然行经路线、实际传入状态、表现／服务完成、能响应的控制及存档／恢复持久性。源码顺序不确立组合运行时成功。
 
 此前的 F65/F84 变更及有条件神殿返回见 [Battle18 结果与获取](battle18-outcomes-and-caravan-acquisition.md)，独立警告／准入见 [Taros 进入](southwest-parmecia-through-taros-battle18-entry.md)。[Rick 招募（中文）](hassan-rick-recruitment.md)说明可选的当前跟随，不是必经绕路。[木筏指南（中文）](polca-raft-boarding-through-south-parmecia-entry.md)保留其不同模式与保存位置生命周期。本指南停止于登陆后有条件的步行控制，或 MainLoop 的 Battle19 交接，早于开场、放置、回合（单次行动）或结果。C 键菜单准入止于菜单调用；不包含事务、存储、村庄内容或后续旅行。独立接受的结果／到达边界见 [Battle19 结果与独立 Elven Village 进入（中文）](battle19-outcomes-through-elven-village-entry.md)；本指南仍停止于准入。Fnnn 表示标志 nnn。瓦片坐标与等待为源码操作数，不是观察到的位置或时长。
 
@@ -150,4 +152,4 @@ Schema／使用方配对为[初始化 schema](../../../../../../schemas/h2-map-i
 
 保留 [PR854 原始证据](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/854#issuecomment-6161835568)、[变基后最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/854#issuecomment-6161892874)与[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/854#issuecomment-6161933230)：保留的 18,285,979-byte 比较、选定 9/3/34 程序／回调／辅助关联、已修正／失败检查、原始／变基后身份及实际 CI。它们保留链接的 PR849/846/842 历史。已接受比较不会仅因文字说明而重放；不弱化测试夹具／schema／黄金夹具，也不将聚合事实提升为组合运行时观察。
 
-**未知：**自然到达／瓦片／门／传送／登陆可达性及实际输入；传入标志／计数器／种子、HP／职业、行动者映射／列表及残留参数；运动／尺寸调整／精灵／声音／淡入淡出／视野服务完成；能响应的步行／载具控制及持久性。它们继续按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 延后处理。本指南不选择重制版规则、新验证机制或自动运行时工作，也不使用未接受的后续发现。
+**未知：**自然到达／瓦片／门／传送／登陆可达性及实际输入；传入标志／计数器／种子、HP／职业、行动者映射／列表及残留参数；运动／尺寸调整／精灵／声音／淡入淡出／视野服务完成；能响应的步行／载具控制及持久性。它们继续按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 延后处理。本指南不选择重制版规则、新验证机制或自动运行时工作，也不使用未接受的后续发现。

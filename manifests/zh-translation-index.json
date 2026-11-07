@@ -83,7 +83,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle/combat-resolution.md",
       "sourceSha256": "640ba9bb817524185ee9d98b8b400c8701b5669f1958efd2e0036000e46b09d3",
-      "mirrorSha256": "258a98d440396d5fb05119107a2274cb14472f97b60082d0e0864b49e79353dc",
+      "mirrorSha256": "c524f6fcca9699c106de602f4ffa2890349f432fe6b3255c25e69c83ff14c14a",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-08-20"
     },
@@ -605,7 +605,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/world/map-exploration.md",
       "sourceSha256": "a4be315f0cbab36b05c25d1b5189b40f671a040fb6410f6cd8cb871102233c89",
-      "mirrorSha256": "082841a72174d634727bdcd524677f4db655c822c137b004c9cf042c3b99b2f0",
+      "mirrorSha256": "8d2304eb300bb6794c376e3b7c15c755f308cddbb4feee0f93b6da927cd054cb",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-25"
     },
@@ -632,7 +632,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
       "sourceSha256": "4bada27715eaffe2bad44489d084f572d124884861208c71f8a5afe340b9d666",
-      "mirrorSha256": "7513279c17f7a7f11289100c348520ab0b8a516698a5cf13001a89bc810649b5",
+      "mirrorSha256": "22178024a7bace7fa7a61bd86b678008b0c20b793fbd73d53b6f50b369483f33",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-29"
     },
@@ -1113,7 +1113,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md",
       "sourceSha256": "745c841bc95514dd9d6e87ed91dcc6ba3100d648aaea320becf28272e77afb8a",
-      "mirrorSha256": "d33e9dc8b8bde7e1558a62a249e20a8c02c3a349c686143abc79ab33446fe70d",
+      "mirrorSha256": "f58993e01018c51a734455d7e8c4f6abc6907a9c26ddd29623fc6793e85f5471",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-25"
     },
@@ -1194,7 +1194,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md",
       "sourceSha256": "82cfb41171d1cfe3b37c04444309d4254295772d843530d4b0e5ed32ad5d4900",
-      "mirrorSha256": "0dab621dad0421e2a7f04af7cad78e0a2dbac65d8f149bdd2f9a09ee1421db3b",
+      "mirrorSha256": "bdcb5f0266accf6a0f6e8500a06d6fbf16116d42813738fd00e3268c5c4f7952",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-25"
     },
@@ -1419,7 +1419,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md",
       "sourceSha256": "4e8ba53e42d7fe1ce79f35fe1b7284fe70f9abbe6e79ecd5eb5a998870772633",
-      "mirrorSha256": "b67d9975f5eb35beb83c59fd4c0da865b13c17b87d325e514e8eeb08afc30c3f",
+      "mirrorSha256": "0d765ea7f46bb5a034713a04293fc1c78bcb47a7b95694162f5b99f8631cf019",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-25"
     },
@@ -1437,7 +1437,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/gameplay-overview.md",
       "sourceSha256": "0cd8d0bb12adfa1d85450e98c2ef1fa2bfe37a880d40534ae1ef91edc4c44d95",
-      "mirrorSha256": "7c1028aa70d69a741b460c7e2defe4511e49fbb889700c06acc639aa1f35c874",
+      "mirrorSha256": "77fb4841d92fa17ac0ccc1df55e9ae0e23967341acc35c168ffaa736b7d30757",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-25"
     },
@@ -1482,7 +1482,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/themes/story-progression.md",
       "sourceSha256": "30a7c11973d52403e1c983c2c892fcb6cf544aa1bb3fad03693176208cec8e03",
-      "mirrorSha256": "9efe1537e4601b0e4fdb858fceabaee5729ebe698e46f8b08e07f107cc281ae3",
+      "mirrorSha256": "b3915491c08e2507dc21e422e5f4153ddb9e29a8137fbe791296dd81fcdb799b",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-10-25"
     },

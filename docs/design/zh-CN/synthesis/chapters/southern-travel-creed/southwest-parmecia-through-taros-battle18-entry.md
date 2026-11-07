@@ -1,8 +1,10 @@
 # Southwest Parmecia、Taros 的警告与有条件的 Battle18 进入
 
+> 本文是[英文规范原文](../../../../synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 South Parmecia 选定的西侧出口通过滚动进入 Southwest Parmecia，探索继续。神殿入口采用另一条路径：返回 MainLoop；在那里，已解锁的 Battle18 会先被选中，随后才可能运行神殿的探索警告。未获该战斗准入时，Rohde 的接受标志决定队伍是否听到 Taros 的警告并请求撤退。全新 Battle18 有自己的对峙场景，之后另行重建交战行动者。
 
-**已确认：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)确立这些条件转移、完整警告与战前场景，以及全新／已保存进入边界。**推断：**对话将 Taros 呈现为取得 Caravan 的障碍。**未知：**自然旅程、实际传入状态、服务完成、表现、可用输入及持久性。Fnnn 表示标志 nnn；坐标单位为地图瓦片，表索引从零开始。等待计数、摄像机速度和移动操作数描述源码请求，不是实测时长。
+**已确认：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)确立这些条件转移、完整警告与战前场景，以及全新／已保存进入边界。**推断：**对话将 Taros 呈现为取得 Caravan 的障碍。**未知：**自然旅程、实际传入状态、服务完成、表现、可用输入及持久性。Fnnn 表示标志 nnn；坐标单位为地图瓦片，表索引从零开始。等待计数、摄像机速度和移动操作数描述源码请求，不是实测时长。
 
 前一选定区域见 [Hassan 离开与 Battle17 返回（中文）](hassan-departure-and-battle17-outcomes.md)，独立的接受／跟随写入见 [Rohde 的提议（中文）](hassan-ancestry-and-rohde-caravan-choice.md)，有条件的物品持有见 [Achilles Sword 谜题](ribble-tree-opening-and-achilles-sword.md)。这些链接不确立必需的时间顺序旅程。本指南停止于有条件的探索返回、无关战斗准入或 Battle18 激活前的开始交接。独立的结果／场景及紧接的返回边界见 [Battle18 结果与 Caravan 获取](battle18-outcomes-and-caravan-acquisition.md)。Caravan 操作、Rick 与后续旅行需要各自的所有者；此处未观察交战或可玩回合（单次行动）。
 
@@ -136,4 +138,4 @@ LoadBattle 淡出、加载瓦片并清除 VInt。PositionBattleEntities 清空�
 
 [PR842 最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161224116)、[原始交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161137887)与[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/842#issuecomment-6161232331)保留原始／变基后 CI、保留比较、已修正／失败检查及链接的前序结果。猜测路径失败或输出过大都不是不存在的证据。已接受结果不会仅因文字说明而重放；聚合测试夹具不会变成组合运行时覆盖。
 
-**未知：**自然旅行／准入／撤退；实际标志、HP、列表、映射、运输／木筏及待处理／输入状态；动作／所有行动者／服务完成、渲染出的摄像机／文本／音频、可用控制及存档／恢复持久性。它们继续按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 延后处理，不授权获取证据、后续剧情调查或新的重制版能力。
+**未知：**自然旅行／准入／撤退；实际标志、HP、列表、映射、运输／木筏及待处理／输入状态；动作／所有行动者／服务完成、渲染出的摄像机／文本／音频、可用控制及存档／恢复持久性。它们继续按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 延后处理，不授权获取证据、后续剧情调查或新的重制版能力。
