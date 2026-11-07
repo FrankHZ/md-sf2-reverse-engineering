@@ -1,10 +1,10 @@
 # East Shrine 返回至 Battle11 洞窟准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 洞窟遭遇可接续 Battle10 直接大地图返回，也可接续可选 East Shrine 访问。选定连接从 Map70 向西、从 Map69 向北，再从 Map72 进入 Dark Caves。若洞窟请求使 Battle11 准入且其介绍尚未播放，Peter 会描述通道、回应声音，并遇见欢迎又威胁访客的 hobgoblin。战斗准备随后以实际战斗员替换此场景角色阵容。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)支持下文连接、准入与开场。**推断：**它们构成从 Battle10/可选神殿前沿走向洞窟遭遇的候选内容序列。**未知：**自然穿行、提供的行动者/故事/出战队伍状态、已完成服务和可见黑暗。这既不是强制神殿路线，也不是观察到的可玩入场或重制就绪主张。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)支持下文连接、准入与开场。**推断：**它们构成从 Battle10/可选神殿前沿走向洞窟遭遇的候选内容序列。**未知：**自然穿行、提供的行动者/故事/出战队伍状态、已完成服务和可见黑暗。这既不是强制神殿路线，也不是观察到的可玩入场或重制就绪主张。
 
 本文承接 [Battle10 结果与可选神殿访问](battle10-outcomes-through-east-shrine-visit.md)，止于新战斗 start 分发器返回、紧邻 `ActivateEnemies` 之前。交战、结果、穿越洞窟和后续目标在本文之外。继续阅读 [Battle11 结果至 Polca 首次 Oddler 抵达](battle11-outcomes-through-polca-arrival.md)，了解独立战后返回、选定洞窟出口与首次城镇事件。Fnnn 表示标志 nnn；地图与战斗 ID 保留源码编号。
 
@@ -24,7 +24,7 @@
 
 神殿出口也经过战斗选择，不同于 Battle10 即时胜利返回。提供的 F410 可在那里选择 Battle10；F410 未设时，F414 可选择 Battle14。匹配的完成标志会清除解锁，但仍在同一次调用中选择该战斗。仅在没有战斗符合时才普通进入 Map70。它重建实体/随从、清除待处理与临时标志 256–383、治疗存活/不死己方角色，并运行空固定列表/仅返回 init。这些重置不清除持久故事或出战队伍标志；恢复输入仍依赖服务以待处理为零返回。
 
-选定连接沿途还可能有其他中断。Map70 与 Map69 保留各自的特定/默认 zone 遭遇请求；特定匹配不会仅因辅助拒绝便落入默认。固定 Map69→72 请求可在普通 Map72 入场前，从 Battle8、Battle24、Battle26 中选择第一个提供的解锁，而不受其战斗区域输出限制。若普通入场发生，Map72 的 F716 已设/F10 未设 init 会调用后续场景，而非立即返回。其 zone 也可请求遭遇或后续内容。研究的[中断审阅](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#interruptions-before-the-cave-request)拥有完整谓词与请求谱系。没有任何提供元组或完成的神殿对话能证明路线不受中断。传送与 zone 产生也各自要求布局属性；可变请求可能在消费前改变。
+选定连接沿途还可能有其他中断。Map70 与 Map69 保留各自的特定/默认 zone 遭遇请求；特定匹配不会仅因辅助拒绝便落入默认。固定 Map69→72 请求可在普通 Map72 入场前，从 Battle8、Battle24、Battle26 中选择第一个提供的解锁，而不受其战斗区域输出限制。若普通入场发生，Map72 的 F716 已设/F10 未设 init 会调用后续场景，而非立即返回。其 zone 也可请求遭遇或后续内容。研究的[中断审阅（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#interruptions-before-the-cave-request)拥有完整谓词与请求谱系。没有任何提供元组或完成的神殿对话能证明路线不受中断。传送与 zone 产生也各自要求布局属性；可变请求可能在消费前改变。
 
 ## 洞窟抵达与战斗准入相互独立
 
@@ -71,13 +71,13 @@ Peter 先向 Left 移动一瓦片、再向 Up 一瓦片，均带行动等待，�
 
 Peter 再向 Up 移动一次。sleep 五帧后，Bowie 启动 `eas_2xRightLeft`；再过五帧，Peter 启动 `eas_2xUpDown`。这两个往复命令自身不等待完成。随后 sleep 120 帧。Bowie 面向 Up，Peter 再带等待向 Up 移动并询问谁在说话；128 表明身份。摄像机随后收到速度 `$20` 并以 128 为目标。Hobgoblin 欢迎访客、带等待向 Down 移动一瓦片、发出威胁，脚本在终止前再请求声音淡出。
 
-这些节点概述七个编写文本请求，ID 2483–2489（`09B3..09B9`），由 Peter 和 128 说话。其中没有场景选择、条件跳转、故事写入、传送或交战决定。四次显式 sleep 共请求 150 帧，不是场景经过时长。文本增加自身滚动/窗口/sleep 服务，调试跳过可省略文本、游标推进和 sleep。完整记录/文本组合仍归[开场研究](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#opening-records-guards-and-services)所有。
+这些节点概述七个编写文本请求，ID 2483–2489（`09B3..09B9`），由 Peter 和 128 说话。其中没有场景选择、条件跳转、故事写入、传送或交战决定。四次显式 sleep 共请求 150 帧，不是场景经过时长。文本增加自身滚动/窗口/sleep 服务，调试跳过可省略文本、游标推进和 sleep。完整记录/文本组合仍归[开场研究（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#opening-records-guards-and-services)所有。
 
 命令的状态要求也不同。Peter/Bowie 朝向会跳过**字** HP 为零的己方角色；HP256 非零。行动安装/移动与摄像机目标没有同等 HP 守卫，且仅指定摄像机目标不等待滚动。缺失 character 映射解析为槽位 0，而非安全跳过。因此行动者名称和对话不能证明移动成功、映射正确、发声、摄像机到达或服务完成。脚本终止符条件性等待视野滚动并清除滚动速度；本文不主张组合运行时观察。
 
 ## 黑暗呈现与战斗交接
 
-**已确认平面服务：**`csub_458E` 在第二次 Bowie 摄像机请求之后运行。它使用既有摄像机/图层辅助写入平面 B 坐标及目标字、构建环形计数器并设置平面 B 更新位。既有 VInt/平面使用方将这些字段用于布局和 VRAM 工作。输入依赖实际实体、摄像机和图层状态；固定开场坐标不能替代它们。它不设置可见半径、出战队伍/故事标志或实体群体，也不等待渲染输出。研究的[辅助审阅](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#plane-b-helper-and-darkness-evidence-boundary)拥有运算、描述符及使用方链。
+**已确认平面服务：**`csub_458E` 在第二次 Bowie 摄像机请求之后运行。它使用既有摄像机/图层辅助写入平面 B 坐标及目标字、构建环形计数器并设置平面 B 更新位。既有 VInt/平面使用方将这些字段用于布局和 VRAM 工作。输入依赖实际实体、摄像机和图层状态；固定开场坐标不能替代它们。它不设置可见半径、出战队伍/故事标志或实体群体，也不等待渲染输出。研究的[辅助审阅（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#plane-b-helper-and-darkness-evidence-boundary)拥有运算、描述符及使用方链。
 
 **推断：**刷新让洞窟次级平面相对于选定行动者对齐，用于黑暗相关呈现。**未知：**自然入场时可见遮罩、照亮区域、遮挡、调色板及硬件时序。后续淡入淡出、移动、摄像机变化及战斗加载增加服务并重载状态；辅助写入不证明其组合结果或持久性。
 
@@ -96,6 +96,6 @@ Peter 再向 Up 移动一次。sleep 五帧后，Bowie 启动 `eas_2xRightLeft`�
 | 场景命令、映射与等待 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，其 `bbcs_11` 切换/实体群体/摄像机选择及放置/行动/对话/控制处理器事实。它保留族位置与守卫，而非完整公开场景记录。已接受研究提供完整有序记录、实体群体、文本和随从组合。 |
 | 平面刷新与最终实体群体 | 公共地图平面更新事实及 [sf2-battle-spriteset-data-static-v1](../../../../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json)。`rowContentTracked=false`；精确 Battle11 放置与辅助/加载顺序来自已接受研究。两个汇总夹具均不验证可见黑暗或自然出战放置。 |
 
-[地图 init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与 [schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)保留主体/操作顺序。[脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)与[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)保留处理器、操作数及族位置边界。窄所有者是既有 `uv run sf2 h2 map-data`、`map-setup`、`map-init`、`map-script-engine`、`common-maps`、`battle-global-data`、`battle-cutscenes`、`battle-routing-data` 和 `battle-spriteset-data` 命令；列明它们是可追溯性，不主张新提取。研究的[复现边界](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#existing-evidence-reproduction-and-unknowns)保留精确选定比较路径。不单为本篇文字选择广泛测试套件。
+[地图 init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与 [schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)保留主体/操作顺序。[脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)与[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)保留处理器、操作数及族位置边界。窄所有者是既有 `uv run sf2 h2 map-data`、`map-setup`、`map-init`、`map-script-engine`、`common-maps`、`battle-global-data`、`battle-cutscenes`、`battle-routing-data` 和 `battle-spriteset-data` 命令；列明它们是可追溯性，不主张新提取。研究的[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#existing-evidence-reproduction-and-unknowns)保留精确选定比较路径。不单为本篇文字选择广泛测试套件。
 
 **未知：**无碰撞且不中断的旅行；实际行动者/映射/标志/HP/出战队伍/AI 状态；请求存续及完成的步行/文本/输入/摄像机/淡入淡出服务；组合黑暗与时序；连续可玩的 Battle11 入场。这些限制不授权采集或新机制。本指南不选择产品/引擎，也未完成战役。

@@ -1,10 +1,10 @@
 # Bedoe 国王讲话与首次觐见
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 国王讲话编排关于 devils 的报告、下令警戒并遣散七名卫兵。首次觐见让 Peter 和 Bowie 与 Luke、国王及一名 birdwoman 交谈：介绍后是 Zeon 警告和拜见 Volcanon 的邀请。这是两个独立准入的场景。其对话提供从 [Bedoe 初始卫兵遭遇](battle12-outcomes-through-bedoe-entry.md)接续的候选内容连接，但不强制将该遭遇或国王讲话作为觐见前提。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md)支持下文请求、行动者和调用方边界。**推断：**这些场景构成英文内容指南的候选接续。**未知：**自然楼层访问及顺序、传入状态、服务完成、可见表现和可用输入。本指南不增加重制能力或产品决定。全部交谈概述都是有归属的台词，不是独立确立的 Grans、devils 或 Volcanon 历史。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md)支持下文请求、行动者和调用方边界。**推断：**这些场景构成英文内容指南的候选接续。**未知：**自然楼层访问及顺序、传入状态、服务完成、可见表现和可用输入。本指南不增加重制能力或产品决定。全部交谈概述都是有归属的台词，不是独立确立的 Grans、devils 或 Volcanon 历史。
 
 止于首次觐见调用方及条件控制恢复。独立的 [Bedoe 至 Volcanon 觐见指南](bedoe-to-volcanon-audience.md)继续解释选定神殿请求、交谈、Peter 成员资格/AI/跟随变化与条件 Map11 控制。该连接保留自身准入及自然路线限制。`cs_5766C` 与之后国王选择、Skreech、后续招募、服务/楼层清单、Battle13 及未合并后继发现仍不在本文范围内。Fnnn 表示标志 nnn；坐标为地图瓦片，另注单位者除外。
 
@@ -97,11 +97,11 @@ Peter 的 F67 声明独立于已加入/出战 F7/F39、字 HP 和军团 AI。Luk
 
 ## 证据审阅与剩余限制
 
-本指南消费 [PR #786](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/786) 已接受研究及 [PR #785](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/785) 前序英文指南。研究保留 USA 零售版身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、115 条记录、全部 39 个文本键与内联行动。其[复现边界](../../../../../research/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md#caller-return-reproduction-and-stopping-boundary)拥有直接源码及保留比较。本正文切片审阅已接受研究和限定 tracked 测试夹具选择，没有重复源码调查、生成/复制可选载荷或采集运行时证据。
+本指南消费 [PR #786](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/786) 已接受研究及 [PR #785](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/785) 前序英文指南。研究保留 USA 零售版身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、115 条记录、全部 39 个文本键与内联行动。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md#caller-return-reproduction-and-stopping-boundary)拥有直接源码及保留比较。本正文切片审阅已接受研究和限定 tracked 测试夹具选择，没有重复源码调查、生成/复制可选载荷或采集运行时证据。
 
 | 审阅关系 | 可执行所有者与合同 | 对抗性审阅边界 |
 | --- | --- | --- |
-| 独立调用方 | [sf2-map-events-static-v1, zone-programs](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)、[地图探索](../../../contracts/world/map-exploration.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)。 | 选定程序保留 `chkFlg`→分支→脚本→`setFlg`→返回、独立 720/721 及一/两行引用。研究拥有精确 zone 行和产生方/使用方组合；坐标匹配本身不证明步行。 |
+| 独立调用方 | [sf2-map-events-static-v1, zone-programs](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)、[地图探索](../../../contracts/world/map-exploration.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)。 | 选定程序保留 `chkFlg`→分支→脚本→`setFlg`→返回、独立 720/721 及一/两行引用。研究拥有精确 zone 行和产生方/使用方组合；坐标匹配本身不证明步行。 |
 | 配置、init 与登场实体 | [sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json) bodies 14/15、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)、[出战队伍/名册](../../../contracts/party/party-roster-state.md)。 | 汇总清单不是每行/列表的独立解码。已接受研究拥有 F722 替换、行动者关联与新映射；body 14 区分 F719 场景与 F720 移出地图处理。 |
 | 对话与编排 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、[对话](../../../contracts/interface/dialogue-system.md)。 | 公开命令族事实不含完整文本转录，也不确立场景可达。研究拥有讲话 1641–1650/觐见 1651–1679 及其 115 条记录；请求、内联行动与服务完成保持区别。 |
 | 隐藏、HP 与跟随 | 同一静态夹具的放置/行动/生命周期/关系族与 [sf2-map-entity-gesture-relationship-motion-runtime-v1](../../../../../../tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json)、[地图探索](../../../contracts/world/map-exploration.md)。 | 宏操作数宽度、查找/HP 辅助调用与受控跟随边界仍窄于自然场景。研究提供隐藏与重入、更新排除、高字节准入、像素偏移及基于坐标的 main 停止组合。 |

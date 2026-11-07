@@ -7,7 +7,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battle-ai-decision.md`](../../../contracts/battle/battle-ai-decision.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-ai-decision.md`（英文规范源）](../../../contracts/battle/battle-ai-decision.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 5. 顶层指令集、激活/待机/swarm 与特殊攻击者路线；
 6. 最终攻击动作/目标选择的显式受限运行时观察。
 
-它不拥有真实战斗/法术结果、战场传播内部、战斗动作构建、玩家战术、遭遇平衡或呈现。那些仍属于[交战解决](../../../contracts/battle/combat-resolution.md)、[法术解决](../../../contracts/battle/spell-resolution.md)、[战场导航](../../../contracts/battle/battlefield-navigation.md)、[战斗动作构建](../../../contracts/battle/battle-action-construction.md)与[战斗控制/生命周期](../../../contracts/battle/battle-control-lifecycle.md)。
+它不拥有真实战斗/法术结果、战场传播内部、战斗动作构建、玩家战术、遭遇平衡或呈现。那些仍属于[交战解决](combat-resolution.md)、[法术解决](spell-resolution.md)、[战场导航](battlefield-navigation.md)、[战斗动作构建](battle-action-construction.md)与[战斗控制/生命周期](battle-control-lifecycle.md)。
 
 可执行所有者是：
 
@@ -40,7 +40,7 @@
 - `sf2-battle-ai-action-choice-runtime-v1`，位于
   `tests/fixtures/h3/battle-ai-action-choice-v1.json`。
 
-研究所有者是[Battle AI 静态清单与决定合同](../../../../research/battle/battle-ai.md)。
+研究所有者是[Battle AI 静态清单与决定合同（英文）](../../../../research/battle/battle-ai.md)。
 
 ## 规范决定状态
 

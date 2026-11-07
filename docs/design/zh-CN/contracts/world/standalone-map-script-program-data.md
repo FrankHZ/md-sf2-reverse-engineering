@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`standalone-map-script-program-data.md`](../../../contracts/world/standalone-map-script-program-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`standalone-map-script-program-data.md`（英文规范源）](../../../contracts/world/standalone-map-script-program-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. 更广 init-script 目标集与 12 个本 standalone 语料拥有目标之间的精确静态连接；
 5. 私有无损导入形式与受限公开元数据/溯源投影。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-map-scripts-static-v1`，位于 [`tests/fixtures/h2/map-scripts-static-v1.json`](../../../../../tests/fixtures/h2/map-scripts-static-v1.json)。其验证器是[`src/sf2tool/h2/map_scripts.py`](../../../../../src/sf2tool/h2/map_scripts.py)，其带来源所有者是[Map Data Inventory](../../../../research/world/map-data-inventory.md)的 **Standalone Setup Scripts** 段。
+此处消费的唯一可执行所有者是 fixture id `sf2-map-scripts-static-v1`，位于 [`tests/fixtures/h2/map-scripts-static-v1.json`](../../../../../tests/fixtures/h2/map-scripts-static-v1.json)。其验证器是[`src/sf2tool/h2/map_scripts.py`](../../../../../src/sf2tool/h2/map_scripts.py)，其带来源所有者是[Map Data Inventory（英文）](../../../../research/world/map-data-inventory.md)的 **Standalone Setup Scripts** 段。
 
 精确未来 research-index 关联只有 `map.data.cs-5e772`。该记录把代表符号 `cs_5E772` 绑定在 ROM `0x5E772`（`386930`）。它是进入完整 47 文件语料的一个追踪锚点，不是语料只包含该程序或该程序有特权运行时含义的陈述。
 
@@ -262,11 +262,11 @@ StandaloneMapScriptPublicSummary {
 
 ## 跨系统分离
 
-- [Map Exploration](../../../contracts/world/map-exploration.md) 拥有已接受解释器面向命令、处理器、实体、摄像机、放置、生命周期、过渡与受限 H3 接缝。本数据合同不复制那些运行时语义，也不注册 `sf2-map-script-engine-static-v1`。
-- [Map Entry Routing State](../../../contracts/world/map-entry-routing-state.md) 保留其 SwitchMap、CheckBattle 与存档点辅助接缝。已接受地图配置证据与[Map Exploration](../../../contracts/world/map-exploration.md) 保留配置选择、init 准入与分发器顺序。十二目标连接不是路线准入合同。
+- [Map Exploration](map-exploration.md) 拥有已接受解释器面向命令、处理器、实体、摄像机、放置、生命周期、过渡与受限 H3 接缝。本数据合同不复制那些运行时语义，也不注册 `sf2-map-script-engine-static-v1`。
+- [Map Entry Routing State](map-entry-routing-state.md) 保留其 SwitchMap、CheckBattle 与存档点辅助接缝。已接受地图配置证据与[Map Exploration](map-exploration.md) 保留配置选择、init 准入与分发器顺序。十二目标连接不是路线准入合同。
 - [Story Progression](../../synthesis/themes/story-progression.md) 拥有跨子系统故事/状态综合；此处的源标签与引用不定义情节顺序或存档持久性。
-- [Dialogue System](../../../contracts/interface/dialogue-system.md)、[Party Roster State](../../../contracts/party/party-roster-state.md)、[Audio System](../../../contracts/interface/audio-system.md)与实体/呈现所有者保留各自命令族、状态接缝、可见内容、声音与运行时行为。
-- [Map Entity Data](../../../contracts/world/map-entity-data.md)、[Map Area Description Routing](../../../contracts/world/map-area-description-routing.md)、地图布局/调色板/瓦片集/精灵所有者与图形/中断合同保留其自身数据、选择、渲染与硬件边界。
+- [Dialogue System](../interface/dialogue-system.md)、[Party Roster State](../party/party-roster-state.md)、[Audio System](../interface/audio-system.md)与实体/呈现所有者保留各自命令族、状态接缝、可见内容、声音与运行时行为。
+- [Map Entity Data](map-entity-data.md)、[Map Area Description Routing](map-area-description-routing.md)、地图布局/调色板/瓦片集/精灵所有者与图形/中断合同保留其自身数据、选择、渲染与硬件边界。
 - `sf2-map-data-static-v1`、所有其他 `map.data.*` 记录、`map.setup.*`、`scripting.map.*`、服务、处理器与呈现记录保持排除且不变。
 - 现代脚本语言、编辑器 UX、本地化、可访问性、替换、许可与分发选择保持未来所有者。
 
@@ -321,10 +321,10 @@ H4 实现可以在导入时间解析源码形状私有输入，或消费单独�
 | --- | --- | --- | --- |
 | 文件/程序语料 | **已确认静态** | `sf2-map-scripts-static-v1`；[fixture](../../../../../tests/fixtures/h2/map-scripts-static-v1.json) | 47 个文件、178 个私有程序、8,058 个操作；无运行时准入声称 |
 | 标签分类法 | **已确认源分类** / **推断含义** | 同一 fixture 与固定源 | 精确前缀派生计数；无故事、实体、调色板或呈现含义 |
-| 目标与引用图 | **已确认静态** | 同一 fixture；[map-data 研究](../../../../research/world/map-data-inventory.md) | 完整私有拓扑与受限公开总计；词法引用不是可达性 |
+| 目标与引用图 | **已确认静态** | 同一 fixture；[map-data 研究（英文）](../../../../research/world/map-data-inventory.md) | 完整私有拓扑与受限公开总计；词法引用不是可达性 |
 | init 目标所有权连接 | **已确认静态** | 同一 fixture/验证器 | 75 = 12 standalone + 63 非 standalone；无选择或分发行为 |
 | 命令直方图 | **已确认源计数** | 同一 fixture | 公开前十二与私有完整直方图；不是运行时频率或命令效果 |
-| 完整解释器/运行时行为 | 独立所有者 / **未知** | [map exploration](../../../contracts/world/map-exploration.md)及其 H2/H3 所有者 | 本合同拥有编写程序数据，而非处理器、效果、调度或呈现 |
+| 完整解释器/运行时行为 | 独立所有者 / **未知** | [map exploration](map-exploration.md)及其 H2/H3 所有者 | 本合同拥有编写程序数据，而非处理器、效果、调度或呈现 |
 | 聚合 map-data 成员 | 排除执行所有者 | `sf2-map-data-static-v1` | 无聚合注册或兄弟 `map.data.*` 关联 |
 | 公开原版内容 | 禁止 | 版权/私有输入边界 | 仅聚合元数据；完整程序、操作数、图、hash 与捕获保持私有 |
 

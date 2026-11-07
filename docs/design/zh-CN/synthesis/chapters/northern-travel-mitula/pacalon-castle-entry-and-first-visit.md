@@ -1,6 +1,6 @@
 # Pacalon 城堡：入口与首次旱灾状态访问
 
-> 本文是[规范英文原文：Pacalon castle: entry and the first drought-state visit](../../../../synthesis/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Pacalon castle: entry and the first drought-state visit](../../../../synthesis/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 城堡首次访问对话描述饥饿、干旱与关闭 Moun 大门的代价。国王请访客去 Tristan 救 Mitula；一名 centaur 自愿战斗，随后说自己太饿。祭司、书与雕像、三种可能拾取及四个内部楼梯请求同属此访问。**已确认：** 这些是独立互动。国王请求不创建本地任务标志或选择分支，出口记录也不以任何这些互动为前提。
 
@@ -8,7 +8,7 @@
 
 ## 证据与范围
 
-**已确认的证据所有者：** [Pacalon 城堡入口与首次访问](../../../../../research/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)，经 [#1025 / PR1028](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1028)在 `1d62ba1cd233577ddda8275d70ff1b8f9a41572a` 接受，提供完整选定表、文本字面量、命令载荷与实际消费者连接。已接受[城镇指南](pacalon-interactions-and-castle-handoff.md)与其[研究所有者](../../../../../research/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)保留传入请求及共享互动/拾取/服务限制。以下源码路径相对 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 的 `disasm/`；研究保留 USA retail ROM 身份与源码/地址溯源。标志用 Fnnn，索引从零起，地址区间左闭右开。
+**已确认的证据所有者：** [Pacalon 城堡入口与首次访问（英文）](../../../../../research/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)，经 [#1025 / PR1028](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1028)在 `1d62ba1cd233577ddda8275d70ff1b8f9a41572a` 接受，提供完整选定表、文本字面量、命令载荷与实际消费者连接。已接受[城镇指南](pacalon-interactions-and-castle-handoff.md)与其[研究所有者（英文）](../../../../../research/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)保留传入请求及共享互动/拾取/服务限制。以下源码路径相对 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 的 `disasm/`；研究保留 USA retail ROM 身份与源码/地址溯源。标志用 Fnnn，索引从零起，地址区间左闭右开。
 
 Standard 严谨级别仍适合 [#1030](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1030)：成员资格、跟随、物理身份、当前配置、脚本返回与重载生命周期各有谓词。其五个 Markdown 路径是唯一写入。F530 已设的人口/指针边界是上下文；后续 Frayja 回调、恢复降雨对话与 `cs_5DA28` 延后。离开研究、UI692、运行时、采集、新比较机制、通用服务/战斗审计与中文同步在原切片范围外。此设计环境无源码/配对；复用已接受溯源，不复制输入或声称新私有比较。
 
@@ -163,7 +163,7 @@ CheckArea 清姓名槽/台词为0，调查 NAME 因此指 Bowie 姓名。先请�
 
 物品5/118/123 低于金币阈值，走普通物品栏分支。通用尾部请求413（发现物品，W2/CLEAR），查 Bowie 四槽，有空调 AddItem；之后请求物品音乐、415 与独立 FadeOut_WaitForP1Input。Bowie 满时 UpdateForce 构建加入成员，有序 OTHER_FORCE_MEMBERS_LIST 找空位；之后 AddItem、音乐、带收取者姓名替换的416 与输入/淡入淡出。回退不限出战队伍、无 HP 门槛。列表在 TARGETS_LIST 后一字节开始，假定已加入 Bowie 为首：变化为 Bowie 未加入时仍试0，但省略实际首个加入回退成员。415/416 无 W1/W2；普通输入独立。容量读取后变化可令 AddItem 失败，调用方不测返回。听似成功的文本不证明交付。
 
-全满则在保存候选坐标的 **CloseChest 与 RefillNonChestItem 两者之前**请求417。各重找自身表：Mithril 恢复清176，写关闭图块55297/$D801 并更新平面；非宝箱恢复清174/175。只有抵达恢复才可重试。中断可留有标志无物品，或物品已插入而表现未完成。收集非原子事务，不建立 Pegasus Wing 使用、转职或 Mithril 锻造。已接受[拾取所有者](../../../../../research/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)与修正城镇指南保留共享文本/顺序/军团语义。
+全满则在保存候选坐标的 **CloseChest 与 RefillNonChestItem 两者之前**请求417。各重找自身表：Mithril 恢复清176，写关闭图块55297/$D801 并更新平面；非宝箱恢复清174/175。只有抵达恢复才可重试。中断可留有标志无物品，或物品已插入而表现未完成。收集非原子事务，不建立 Pegasus Wing 使用、转职或 Mithril 锻造。已接受[拾取所有者（英文）](../../../../../research/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)与修正城镇指南保留共享文本/顺序/军团语义。
 
 共享 zone/物品事件表仅默认 RTS。包装器仍清理/等待；物品使用提供 d6=0，与收集不同。两默认均不授物、不加入 Frayja，也不提交离开请求。
 
@@ -205,7 +205,7 @@ LoadMap 符号扩展 CURRENT255，直接分支到区域指针：无新调色板/
 |教堂拒绝、Save、继续/挂起或中断|服务循环不同于存档与挂起；调用不证明持久性。|
 |CURRENT/显式地图、有符号哨兵值、高字节或待处理替换|行动者/布局/临时状态保留或重建依实际消费操作数。|
 
-合成前审阅消费完整已接受 #1025 研究与先前互动指南，以及必需[入口](../../../../../research/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)、[互动](../../../../../research/world/map-event-interaction-state.md)、[对话](../../../../../research/world/map-event-dialogue-state.md)、[请求](../../../../../research/world/map-event-request-state.md)、[消费](../../../../../research/world/map-event-request-consumption.md)、[地图](../../../../../research/world/common-maps.md)、[脚本/行动](../../../../../research/world/common-scripting.md)、描述、拾取与服务所有者。检查选定真实公共载荷、schema 与验证器消费者，不以聚合计数替代：
+合成前审阅消费完整已接受 #1025 研究与先前互动指南，以及必需[入口（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)、[互动（英文）](../../../../../research/world/map-event-interaction-state.md)、[对话（英文）](../../../../../research/world/map-event-dialogue-state.md)、[请求（英文）](../../../../../research/world/map-event-request-state.md)、[消费（英文）](../../../../../research/world/map-event-request-consumption.md)、[地图（英文）](../../../../../research/world/common-maps.md)、[脚本/行动（英文）](../../../../../research/world/common-scripting.md)、描述、拾取与服务所有者。检查选定真实公共载荷、schema 与验证器消费者，不以聚合计数替代：
 
 | 公共测试夹具 / 实际消费者 | 已检查边界与限制 |
 | --- | --- |

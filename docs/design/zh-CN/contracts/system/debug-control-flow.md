@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版战斗测试、配置与调试战斗动作控制面的实现无关重构，不把源标签或辅助身份提升为普通玩家可达性、UI、运行时效果、持久性、音频或战斗解决含义
 
-> 本文件是 [`debug-control-flow.md`](../../../contracts/system/debug-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`debug-control-flow.md`（英文规范源）](../../../contracts/system/debug-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -18,13 +18,13 @@
 
 ## 证据所有者与关联审计
 
-`sf2-remaining-core-static-v1`（[`remaining-core-static-v1.json`](../../../../../tests/fixtures/h2/remaining-core-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`remaining_core.py`](../../../../../src/sf2tool/h2/remaining_core.py)，所属解释是[ROM Header、Window Engine 与 Special Debug Flows](../../../../research/system/remaining-core.md)。本合同只消费 `expected.debugFacts` 与以下三条研究记录：
+`sf2-remaining-core-static-v1`（[`remaining-core-static-v1.json`](../../../../../tests/fixtures/h2/remaining-core-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`remaining_core.py`](../../../../../src/sf2tool/h2/remaining_core.py)，所属解释是[ROM Header、Window Engine 与 Special Debug Flows（英文）](../../../../research/system/remaining-core.md)。本合同只消费 `expected.debugFacts` 与以下三条研究记录：
 
 - `debug.battle-test`；
 - `debug.configuration`；
 - `debug.battle-actions`。
 
-fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既有[window-system](../../../contracts/interface/window-system.md)合同。`core.rom-header` 保持未关联。两条记录都不因共享执行所有者而获得本合同。
+fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既有[window-system](../interface/window-system.md)合同。`core.rom-header` 保持未关联。两条记录都不因共享执行所有者而获得本合同。
 
 源审计使用固定上游 commit `c834c652b6862bc5679fd7f69a38a7093206efc6`。其三个所选源文件包含八个已接受条目：
 
@@ -43,7 +43,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 
 ## 战斗测试配置
 
-**已确认静态：** `DebugModeBattleTest` 以写入 `-1` 开始，目标依次是 `DEBUG_MODE_TOGGLE` 与 `SPECIAL_TURBO_TOGGLE`。然后为 fixture 的精确有序 29 标签非 Bowie 名册调用 `j_JoinForce`。本合同保留该有序符号序列，而不推断结果活跃队伍、计数列表同步、地图放置或后续名册状态。那些属于[party-membership state 合同](../../../contracts/party/party-membership-state.md)或保持 **未知**。
+**已确认静态：** `DebugModeBattleTest` 以写入 `-1` 开始，目标依次是 `DEBUG_MODE_TOGGLE` 与 `SPECIAL_TURBO_TOGGLE`。然后为 fixture 的精确有序 29 标签非 Bowie 名册调用 `j_JoinForce`。本合同保留该有序符号序列，而不推断结果活跃队伍、计数列表同步、地图放置或后续名册状态。那些属于[party-membership state 合同](../party/party-membership-state.md)或保持 **未知**。
 
 源接下来选择 `ALLY_BOWIE`、加载源值 99，并按顺序调用这些设置器：
 
@@ -56,7 +56,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 7. `j_SetCurrentDef`；
 8. `j_SetCurrentHp`。
 
-这是静态调用与操作数合同。它不重新定义由[combatant-state access](../../../contracts/party/combatant-state-access.md)拥有的夹断、选择器有效性、派生属性一致性或调用方可视结果。
+这是静态调用与操作数合同。它不重新定义由[combatant-state access](../party/combatant-state-access.md)拥有的夹断、选择器有效性、派生属性一致性或调用方可视结果。
 
 在本合同之外的其他源交接后，函数注册 `VInt_UpdateWindows`，使用源 `VINT_FUNCTIONS`/`VINTS_ADD` 形式，并调用 `InitializeWindowProperties`。指针与交接身份是已确认静态。中断节奏、回调执行、窗口组合、DMA 与可见呈现在本合同之外。
 
@@ -106,7 +106,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 | 452 | 写 `-1` 到 `AUTO_BATTLE_TOGGLE` | 无该写入继续 |
 | 455 | 设置存档标志位 7 | 清除存档标志位 7 |
 
-这些是源静态结果测试与写入。它们不建立提示按钮含义、初始切换值、互斥、持久性、存档有效性、可访问性、本地化文本或切换名暗示的运行时效果。[special-screen control-flow 合同](../../../contracts/system/special-screen-control-flow.md) 拥有独立 Sega-logo 调试序列与配置处理器边界；它不把该准入证据转移给本合同。
+这些是源静态结果测试与写入。它们不建立提示按钮含义、初始切换值、互斥、持久性、存档有效性、可访问性、本地化文本或切换名暗示的运行时效果。[special-screen control-flow 合同](special-screen-control-flow.md) 拥有独立 Sega-logo 调试序列与配置处理器边界；它不把该准入证据转移给本合同。
 
 ## 调试战斗动作构建
 
@@ -124,7 +124,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 
 `Magic` 提示 `1..4`、减一、把结果左移六，并在存储打包字前把它加到 `0..42` 中的第二提示结果。`Item` 获得 `0..127`，然后敌人目标，然后 `0..3`。`DebugModeSelectTargetEnemy` 准入源值 `128..159`。
 
-范围与打包步骤不是法术、物品、目标或战斗语义的验证。它们不建立每个准入数字表示内容、每个嵌套提示后取消被处理，或下游战斗引擎接受结果字。普通[battle-action construction 合同](../../../contracts/battle/battle-action-construction.md)、物品与法术数据合同与运行时战斗证据保持独立。
+范围与打包步骤不是法术、物品、目标或战斗语义的验证。它们不建立每个准入数字表示内容、每个嵌套提示后取消被处理，或下游战斗引擎接受结果字。普通[battle-action construction 合同](../battle/battle-action-construction.md)、物品与法术数据合同与运行时战斗证据保持独立。
 
 `DebugModeSelectHits` 按源顺序执行四个提示/测试/`seq` 组，并写入这些栈帧别名：
 
@@ -135,7 +135,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 | 3 | `debugDouble` | -21 |
 | 4 | `debugCounter` | -20 |
 
-本合同保留别名、偏移、顺序与源 `seq` 操作。它不声称特定提示响应、概率、攻击结果、dodge/critical/后续行为或调用方可视效果。[randomness 合同](../../../contracts/system/randomness.md) 拥有独立调试 RNG 证据；它不为此处手动栈写入提供证据。
+本合同保留别名、偏移、顺序与源 `seq` 操作。它不声称特定提示响应、概率、攻击结果、dodge/critical/后续行为或调用方可视效果。[randomness 合同](randomness.md) 拥有独立调试 RNG 证据；它不为此处手动栈写入提供证据。
 
 ## 直接调用方清单
 
@@ -150,14 +150,14 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 
 调试路线编排许多相邻系统而不拥有它们：
 
-- [party-membership state](../../../contracts/party/party-membership-state.md) 拥有已接受加入与计数前缀行为；
-- [combatant-state access](../../../contracts/party/combatant-state-access.md) 拥有属性访问、选择器与夹断边界；
-- [global-flag state](../../../contracts/world/global-flag-state.md) 拥有标志存储与包装器结构；
-- [window-system](../../../contracts/interface/window-system.md) 拥有窗口分配、运动、VInt 组合与 DMA 调用边界；
-- [special-screen control flow](../../../contracts/system/special-screen-control-flow.md) 拥有 Sega-logo 与 Witch 控制面；
-- [battle-action construction](../../../contracts/battle/battle-action-construction.md) 拥有普通动作构建；
-- [item-definition data](../../../contracts/party/item-definition-data.md)与[spell-definition data](../../../contracts/party/spell-definition-data.md) 拥有静态身份与打包定义；
-- [randomness](../../../contracts/system/randomness.md) 拥有基础/调试 RNG 行为，而非手动调试提示。
+- [party-membership state](../party/party-membership-state.md) 拥有已接受加入与计数前缀行为；
+- [combatant-state access](../party/combatant-state-access.md) 拥有属性访问、选择器与夹断边界；
+- [global-flag state](../world/global-flag-state.md) 拥有标志存储与包装器结构；
+- [window-system](../interface/window-system.md) 拥有窗口分配、运动、VInt 组合与 DMA 调用边界；
+- [special-screen control flow](special-screen-control-flow.md) 拥有 Sega-logo 与 Witch 控制面；
+- [battle-action construction](../battle/battle-action-construction.md) 拥有普通动作构建；
+- [item-definition data](../party/item-definition-data.md)与[spell-definition data](../party/spell-definition-data.md) 拥有静态身份与打包定义；
+- [randomness](randomness.md) 拥有基础/调试 RNG 行为，而非手动调试提示。
 
 菜单内部、服务事务、战斗结果、输入采样、音频、文本资源、呈现、地图数据、存档与故事状态保持其专用所有者或 **未知**。没有相邻研究记录仅因交接被命名而获得本合同。
 

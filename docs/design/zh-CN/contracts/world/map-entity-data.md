@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`map-entity-data.md`](../../../contracts/world/map-entity-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-entity-data.md`（英文规范源）](../../../contracts/world/map-entity-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. 固定、行走与序列记录种类清单；
 5. 受限初始地图精灵值与 `InitializeMapEntities` 消费者规则。
 
-可执行所有者是 fixture id `sf2-map-entities-static-v1`，位于 [`tests/fixtures/h2/map-entities-static-v1.json`](../../../../../tests/fixtures/h2/map-entities-static-v1.json)。研究所有者是[Map Data Inventory 与 Setup/Event Surfaces](../../../../research/world/map-data-inventory.md)。本合同消费 fixture 的完整 `expected` 对象与 `InitializeMapEntities` 的受限溯源，其 ROM 地址为 `278732`（`0x440CC`）。
+可执行所有者是 fixture id `sf2-map-entities-static-v1`，位于 [`tests/fixtures/h2/map-entities-static-v1.json`](../../../../../tests/fixtures/h2/map-entities-static-v1.json)。研究所有者是[Map Data Inventory 与 Setup/Event Surfaces（英文）](../../../../research/world/map-data-inventory.md)。本合同消费 fixture 的完整 `expected` 对象与 `InitializeMapEntities` 的受限溯源，其 ROM 地址为 `278732`（`0x440CC`）。
 
 精确未来 research-index 关联只有 `scripting.map.mapfunctions`。函数身份与地址把静态消费者绑定到其源所有者；它们不使本合同成为地图配置选择、运行时实体人口、实体动作、移动或呈现的所有者。
 
@@ -42,7 +42,7 @@ H2 fixture 直接绑定恰好一条 research-index 记录：
 相邻 `sf2-entity-population-reload-runtime-v1` fixture 此处不消费。其精确索引链接分母是十条记录：
 
 - 同一候选 `scripting.map.mapfunctions`；
-- 八条既有[map-exploration](../../../contracts/world/map-exploration.md)关联保持不变的记录：`scripting.map.mapsetupsfunctions-1`、`map.entity-population.get-entity-address`、`map.entity-population.initialize-new-entity`、`map.entity-population.load-entity-mapsprites`、`map.entity-population.load-from-map-setup`、`map.entity-population.load-map-entities`、`map.entity-population.new-entity` 与 `map.entity-population.reload-entities`；
+- 八条既有[map-exploration](map-exploration.md)关联保持不变的记录：`scripting.map.mapsetupsfunctions-1`、`map.entity-population.get-entity-address`、`map.entity-population.initialize-new-entity`、`map.entity-population.load-entity-mapsprites`、`map.entity-population.load-from-map-setup`、`map.entity-population.load-map-entities`、`map.entity-population.new-entity` 与 `map.entity-population.reload-entities`；
 - 未关联的 `map.setup.entity-list`，保持独立配置选择边界，不获得本合同。
 
 这是精确 `1 + 8 + 1` 分区。H3 成员不扩大本合同证据或关联集。特别是，七条 `map.entity-population.*` 记录只是八条不变 map-exploration 组的一部分；它们不是完整运行时分母。
@@ -135,7 +135,7 @@ fixture 保留每行的精确源路径、fallthrough 地址与两个符号。那
 - 共享哨兵普通身份 `237..239` 缺席；
 - 无支撑特殊身份 `240..250` 缺席。
 
-逐列表引用直方图对这些高值匹配物理直方图。三个特殊身份此处只保留其已接受声明路线分类。特殊精灵载荷、指针/分发支撑、渲染器行为、可见时序与呈现保持[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)或 **未知**。
+逐列表引用直方图对这些高值匹配物理直方图。三个特殊身份此处只保留其已接受声明路线分类。特殊精灵载荷、指针/分发支撑、渲染器行为、可见时序与呈现保持[graphics-service-state](../graphics/graphics-service-state.md)或 **未知**。
 
 该域只闭合初始实体列表源记录。后续过场、实体动作、战斗员派生、调试、畸形与直接 RAM 赋值面保持独立。该语料缺席不证明身份全局不可达或不被每个原版调用方支持。
 
@@ -205,9 +205,9 @@ MapEntityPublicSummary {
 
 本合同不拥有：
 
-- 配置选择、配置指针槽语义、地图切换、存档点或战斗准入，仍归[map-entry-routing-state](../../../contracts/world/map-entry-routing-state.md)、地图配置证据或 **未知**；
-- 运行时人口、重载、新实体分配、map-script 放置、工作状态或持久性，仍归[map-exploration](../../../contracts/world/map-exploration.md)及其已接受 H3 所有者；
-- block/layout 载荷与不可变地图几何，仍归[map-layout-data](../../../contracts/graphics/map-layout-data.md)；
+- 配置选择、配置指针槽语义、地图切换、存档点或战斗准入，仍归[map-entry-routing-state](map-entry-routing-state.md)、地图配置证据或 **未知**；
+- 运行时人口、重载、新实体分配、map-script 放置、工作状态或持久性，仍归[map-exploration](map-exploration.md)及其已接受 H3 所有者；
+- block/layout 载荷与不可变地图几何，仍归[map-layout-data](../graphics/map-layout-data.md)；
 - 事件表匹配、实体动作程序、移动执行、碰撞、寻路、AI、对话、物品、队伍、战斗或故事行为；
 - 初始实体列表记录之外的地图精灵赋值域、特殊精灵载荷、图形路由、渲染器状态、VDP/DMA 节奏、动画或最终呈现；
 - 私有原版实体行、地图内容、图形、对话或音频载荷；
@@ -264,12 +264,12 @@ H4 可以把导入记录存储为类型化组件、不可变 blob、编译生成
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | fixture 与消费者溯源 | **已确认静态** | `sf2-map-entities-static-v1`；[fixture](../../../../../tests/fixtures/h2/map-entities-static-v1.json) | `InitializeMapEntities` 身份/地址与解码规则；无生命周期或第二条关联 |
-| 指针/列表根拓扑 | **已确认静态** | 同一 fixture；[map-data 研究](../../../../research/world/map-data-inventory.md) | 126 引用、125 根、精确重复目标；无配置选择含义 |
+| 指针/列表根拓扑 | **已确认静态** | 同一 fixture；[map-data 研究（英文）](../../../../research/world/map-data-inventory.md) | 126 引用、125 根、精确重复目标；无配置选择含义 |
 | 物理/引用语料 | **已确认静态** | 同一 fixture | 980 物理对 987 引用记录与精确种类/宏计数；无运行时容量 |
 | fallthrough/终止符 | **已确认静态** | 同一 fixture | 九个片段、116 个终止符、一个七记录共享后缀；畸形恢复保持开放 |
 | 初始地图精灵值 | **已确认静态** | 同一 fixture | 113 个不同值、精确高值计数与受限特殊/缺席集；无全局赋值或呈现声称 |
-| 实体人口/重载分母 | 排除运行时所有者 | `sf2-entity-population-reload-runtime-v1`；[map-exploration](../../../contracts/world/map-exploration.md) | 精确 `1 + 8 + 1` 索引链接分区；不消费 H3 证据或兄弟关联 |
-| 配置选择与地图布局 | 独立所有者证据 | 地图配置所有者；[map-layout-data](../../../contracts/graphics/map-layout-data.md) | 实体列表数据不定义配置选择、布局、碰撞或地图生命周期 |
+| 实体人口/重载分母 | 排除运行时所有者 | `sf2-entity-population-reload-runtime-v1`；[map-exploration](map-exploration.md) | 精确 `1 + 8 + 1` 索引链接分区；不消费 H3 证据或兄弟关联 |
+| 配置选择与地图布局 | 独立所有者证据 | 地图配置所有者；[map-layout-data](../graphics/map-layout-data.md) | 实体列表数据不定义配置选择、布局、碰撞或地图生命周期 |
 | 移动、动作、持久性、图形、时序与呈现 | 独立所有者 / **未知** | 相邻合同与未来运行时/呈现轨道 | 静态行与标签不证明效果、可达性、帧或玩家可见结果 |
 
 ## 开放问题

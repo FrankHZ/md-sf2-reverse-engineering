@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版 VInt 调度器、上下文函数槽、等待/睡眠握手、DMA 控制路线、淡入状态机与受限 trap 服务的实现无关重构，不把源静态顺序转换成硬件时序、可见呈现、队列安全、输入/UI 含义或下游子系统效果
 
-> 本文件是 [`interrupt-dma-and-trap-state.md`](../../../contracts/system/interrupt-dma-and-trap-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`interrupt-dma-and-trap-state.md`（英文规范源）](../../../contracts/system/interrupt-dma-and-trap-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -18,12 +18,12 @@
 
 ## 证据所有者与关联审计
 
-`sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`interrupts.py`](../../../../../src/sf2tool/h2/interrupts.py)，其带来源解释是[Technical Interrupt、DMA 与 Trap Services](../../../../research/system/technical-interrupts.md)。本合同消费 `expected.interruptFacts` 的所选字段，不消费 H3 fixture。
+`sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`interrupts.py`](../../../../../src/sf2tool/h2/interrupts.py)，其带来源解释是[Technical Interrupt、DMA 与 Trap Services（英文）](../../../../research/system/technical-interrupts.md)。本合同消费 `expected.interruptFacts` 的所选字段，不消费 H3 fixture。
 
 可执行所有者直接绑定 21 条研究记录。精确未来关联分区是：
 
 - 20 条当前未关联 `tech.interrupts.*` 记录；
-- 一个刻意重叠 `tech.interrupts.trap-flags`，其既有[global-flag state](../../../contracts/world/global-flag-state.md)关联保持完整。
+- 一个刻意重叠 `tech.interrupts.trap-flags`，其既有[global-flag state](../world/global-flag-state.md)关联保持完整。
 
 重叠很窄。本合同只消费 fixture 拥有的 `flagTrapCount=4` 清单事实。global-flag 合同保持代表 Trap 4 地址与受限 Check/Set/Clear 分组及存储接缝的所有者。内联操作数解码、保存返回移动、调用方可视结果、条件码行为、精确逐 trap 映射与运行时可达性此处不消费，保持 **未知**。
 
@@ -69,7 +69,7 @@
 
 上下文函数后，VInt 清除 `WaitForVInt` 等待的标志。门控更新块被跳过时帧计数器仍递增。这些是源静态顺序与状态事实，不是周期计数、帧完美呈现、设备完成或每个阶段每次调用都执行工作的证明。
 
-源还包含通过配置的一次性指针在观察到 Start 时的条件 intro 逃逸。本合同只保留分支能力。指针配置、精确输入采样、正常 intro 可达性、继续行为、可见过渡与玩家意图保持[startup control flow](../../../contracts/system/startup-control-flow.md)、[special-screen control flow](../../../contracts/system/special-screen-control-flow.md)、输入所有者或 **未知**。
+源还包含通过配置的一次性指针在观察到 Start 时的条件 intro 逃逸。本合同只保留分支能力。指针配置、精确输入采样、正常 intro 可达性、继续行为、可见过渡与玩家意图保持[startup control flow](startup-control-flow.md)、[special-screen control flow](special-screen-control-flow.md)、输入所有者或 **未知**。
 
 ## 上下文函数、等待与睡眠
 
@@ -87,7 +87,7 @@ Trap 9 恰好暴露五个源动作：
 
 `WaitForVInt` 设置更新启用位并自旋直到 VInt 清除其等待标志。`Sleep(0)` 不等待即返回；正源参数为请求帧数重复 VInt 握手。已接受关系不建立精确经过时间、主机线程行为、中断延迟、跳过 VInt 顺序或失败恢复。
 
-[input-system 合同](../../../contracts/interface/input-system.md) 拥有已接受直接等待辅助 H3 进展与静态/运行时 24 帧初始输入重复延迟及六帧重复节奏。尽管那些 `inputRepeat` 事实在同一 H2 fixture 中，本合同刻意不把它们变成 H4 保真面，也不添加输入特定研究关联。
+[input-system 合同](../interface/input-system.md) 拥有已接受直接等待辅助 H3 进展与静态/运行时 24 帧初始输入重复延迟及六帧重复节奏。尽管那些 `inputRepeat` 事实在同一 H2 fixture 中，本合同刻意不把它们变成 H4 保真面，也不添加输入特定研究关联。
 
 ## DMA 控制路线
 
@@ -100,7 +100,7 @@ Trap 9 恰好暴露五个源动作：
 
 源谓词要求处理请求，除非 DMA 已活跃。合同不推断队列容量、溢出保护、精确命令布局、原子性、队列大小重置、部分完成、转移成功、总线释放时序或无效条目恢复。
 
-`ApplyVramDmaFill`、`WaitDmaEnd`、`ApplyImmediateVramDma` 与 `ApplyImmediateVramDmaOnCompressedTiles` 保持条目/控制身份。压缩载荷布局、解码器微实现、资源溯源、解码字节、目标与渲染结果保持[graphics-service state](../../../contracts/graphics/graphics-service-state.md)、适当资源合同或 **未知**。
+`ApplyVramDmaFill`、`WaitDmaEnd`、`ApplyImmediateVramDma` 与 `ApplyImmediateVramDmaOnCompressedTiles` 保持条目/控制身份。压缩载荷布局、解码器微实现、资源溯源、解码字节、目标与渲染结果保持[graphics-service state](../graphics/graphics-service-state.md)、适当资源合同或 **未知**。
 
 ## 淡入控制
 
@@ -119,17 +119,17 @@ Trap 9 恰好暴露五个源动作：
 
 ### 声音命令 trap
 
-**已确认静态：** 声音 trap 有四个命令槽。内联参数 `-1` 从 `d0` 选择值，禁用声音命令导致命令被丢弃。这是受限命令传输事实，不是音频队列容量证明、命令域合同、可听输出声称或驱动时序保证。那些保持[audio-system](../../../contracts/interface/audio-system.md)或 **未知**。
+**已确认静态：** 声音 trap 有四个命令槽。内联参数 `-1` 从 `d0` 选择值，禁用声音命令导致命令被丢弃。这是受限命令传输事实，不是音频队列容量证明、命令域合同、可听输出声称或驱动时序保证。那些保持[audio-system](../interface/audio-system.md)或 **未知**。
 
 ### 标志 trap
 
-**已确认静态清单 only：** fixture 记录 `flagTrapCount=4`。此处不消费额外标志 trap 行为。[global-flag state 合同](../../../contracts/world/global-flag-state.md) 保持其已接受地址/分组/存储接缝的唯一设计所有者，所有内联操作数、返回地址、结果、条件码、映射与运行时问题保持本合同之外。
+**已确认静态清单 only：** fixture 记录 `flagTrapCount=4`。此处不消费额外标志 trap 行为。[global-flag state 合同](../world/global-flag-state.md) 保持其已接受地址/分组/存储接缝的唯一设计所有者，所有内联操作数、返回地址、结果、条件码、映射与运行时问题保持本合同之外。
 
 ### 文本与 map-script trap
 
 **已确认静态：** 文本 trap 把源文本索引 `-1` 当作其关闭对话路线。其他索引交接给文本显示。map-script trap 在其 map-script 执行交接前激活实体 VInt 函数。
 
-`-1` 路线与交接顺序不导入文本解码、对话窗口状态、命令时序、map-script 分发、实体行为、故事含义、呈现或调用方可达性。那些保持[dialogue-system](../../../contracts/interface/dialogue-system.md)、[map-exploration](../../../contracts/world/map-exploration.md)、其证据所有者或 **未知**。
+`-1` 路线与交接顺序不导入文本解码、对话窗口状态、命令时序、map-script 分发、实体行为、故事含义、呈现或调用方可达性。那些保持[dialogue-system](../interface/dialogue-system.md)、[map-exploration](../world/map-exploration.md)、其证据所有者或 **未知**。
 
 ## 仅清单处理器
 
@@ -141,14 +141,14 @@ Trap 9 恰好暴露五个源动作：
 
 中断代码是传输与调度面，不是每个被调方的所有权：
 
-- [input-system](../../../contracts/interface/input-system.md) 拥有控制器采样、重复节奏与直接等待辅助 H3 行为；
-- [global-flag state](../../../contracts/world/global-flag-state.md) 拥有已接受标志存储与包装器边界；
-- [audio-system](../../../contracts/interface/audio-system.md) 拥有声音命令域、驱动状态与可听边界；
-- [dialogue-system](../../../contracts/interface/dialogue-system.md) 拥有文本命令与调用方接缝；
-- [map-exploration](../../../contracts/world/map-exploration.md) 拥有已接受 map-script、实体、布局与呈现行为；
-- [graphics-service state](../../../contracts/graphics/graphics-service-state.md) 拥有图形服务与解压条目边界；
-- [window-system](../../../contracts/interface/window-system.md) 拥有窗口组合及其转移调用顺序；
-- [startup control flow](../../../contracts/system/startup-control-flow.md)与[special-screen control flow](../../../contracts/system/special-screen-control-flow.md) 拥有启动与 intro/标题路线。
+- [input-system](../interface/input-system.md) 拥有控制器采样、重复节奏与直接等待辅助 H3 行为；
+- [global-flag state](../world/global-flag-state.md) 拥有已接受标志存储与包装器边界；
+- [audio-system](../interface/audio-system.md) 拥有声音命令域、驱动状态与可听边界；
+- [dialogue-system](../interface/dialogue-system.md) 拥有文本命令与调用方接缝；
+- [map-exploration](../world/map-exploration.md) 拥有已接受 map-script、实体、布局与呈现行为；
+- [graphics-service state](../graphics/graphics-service-state.md) 拥有图形服务与解压条目边界；
+- [window-system](../interface/window-system.md) 拥有窗口组合及其转移调用顺序；
+- [startup control flow](startup-control-flow.md)与[special-screen control flow](special-screen-control-flow.md) 拥有启动与 intro/标题路线。
 
 本合同不因隐含而关联任何输入、标志、音频、对话、地图、图形、窗口或启动研究记录。唯一刻意重叠是 `tech.interrupts.trap-flags`，且限于上文描述的四 trap 清单计数。
 
@@ -244,8 +244,8 @@ InterruptServicePlan
 | 立即/排队 DMA 控制与处理顺序 | **已确认静态** | 同一所有者 | 容量、溢出、命令布局、硬件时序/完成 |
 | 淡入状态与设置清除加一次额外 VInt 控制握手 | **已确认静态** | 同一所有者 | 转移完成、调色板内容、可见淡入完成/时长、CRAM-DMA 节奏 |
 | 声音/文本/map-script trap 传输与交接 | **已确认静态** | 同一所有者 | 下游音频/对话/地图行为与调用方准入 |
-| 四个标志 trap | **已确认静态清单 only** | 同一所有者计数；[global-flag state](../../../contracts/world/global-flag-state.md) 其已接受地址/分组/存储接缝 | 操作数、返回移动、结果/CCR、精确映射、运行时可达性 |
-| 输入重复与直接等待辅助运行时进展 | **独立所有者已确认** | [input-system](../../../contracts/interface/input-system.md) | 此处不是 H4 面 |
+| 四个标志 trap | **已确认静态清单 only** | 同一所有者计数；[global-flag state](../world/global-flag-state.md) 其已接受地址/分组/存储接缝 | 操作数、返回移动、结果/CCR、精确映射、运行时可达性 |
+| 输入重复与直接等待辅助运行时进展 | **独立所有者已确认** | [input-system](../interface/input-system.md) | 此处不是 H4 面 |
 | 面向硬件意图 | **推断** | 源寄存器与总线操作 | 精确设备时序保持 **未知** |
 | 可见与可听结果 | **未知** | 未来受限运行时证据 | 不得从静态顺序推断呈现一致性 |
 

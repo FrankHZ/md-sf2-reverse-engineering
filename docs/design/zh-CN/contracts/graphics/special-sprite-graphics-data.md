@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`special-sprite-graphics-data.md`](../../../contracts/graphics/special-sprite-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`special-sprite-graphics-data.md`（英文规范源）](../../../contracts/graphics/special-sprite-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. 精确聚合 source、调色板、压缩、解码、解码器诊断与一致性元数据；
 5. 与受限公开投影分离的私有 source/H1/ROM 往返验证。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-special-sprite-decode-v1`，位于 [`tests/fixtures/h2/special-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json)，由 [`src/sf2tool/h2/special_sprites.py`](../../../../../src/sf2tool/h2/special_sprites.py) 实现。其带来源所有者是[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)。
+此处消费的唯一可执行所有者是 fixture id `sf2-special-sprite-decode-v1`，位于 [`tests/fixtures/h2/special-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json)，由 [`src/sf2tool/h2/special_sprites.py`](../../../../../src/sf2tool/h2/special_sprites.py) 实现。其带来源所有者是[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)。
 
 消费字段闭合。本数据合同消费：
 
@@ -28,7 +28,7 @@
 - `summary` 中恰好这些数据语料字段：`pointerCount`、`uniquePointerPayloadCount`、`aliasPointerCount`、`resourceCount`、`paletteCount`、`animationOnlyStreamCount`、`battleSizedStreamCount`、`explorationSizedStreamCount`、`sourceByteCount`、`paletteByteCount`、`compressedByteCount`、`decodedByteCount`、`commandGroupCount`、`literalWordCount`、`copyCommandCount`、`copiedWordCount`、`minimumTrailingBits`、`maximumTrailingBits`、`maximumCopyOffsetWords`、`maximumCopyLengthWords`、`pointerTableRomParityCount` 与 `payloadRomParityCount`；
 - 私有规范输出的有序 `aliases` 与 `resources` 用于导入验证。
 
-它不把其余分发、路线、源引用或普通哨兵摘要字段，以及 `function`、`routing`、`regularSentinelReferences` 或 `runtimeQuestions` 作为数据保真消费。那些字段支持[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)中的服务/路由所有权或保留开放研究边界。宽 `sf2-auxiliary-data-static-v1`、聚合 `sf2-tech-graphics-static-v1` 与独立 `sf2-map-sprite-assignments-static-v1` fixture 不是本合同的执行所有者。
+它不把其余分发、路线、源引用或普通哨兵摘要字段，以及 `function`、`routing`、`regularSentinelReferences` 或 `runtimeQuestions` 作为数据保真消费。那些字段支持[graphics-service-state](graphics-service-state.md)中的服务/路由所有权或保留开放研究边界。宽 `sf2-auxiliary-data-static-v1`、聚合 `sf2-tech-graphics-static-v1` 与独立 `sf2-map-sprite-assignments-static-v1` fixture 不是本合同的执行所有者。
 
 精确未来 research-index 关联只有：
 
@@ -174,9 +174,9 @@ SpecialSpriteGraphicsPublicSummary {
 
 本合同不拥有：
 
-- 特殊精灵加载/更新函数、精确 `9 + 1 + 6` 路线分类、战斗对探索分发、palette-4 时间线、立即对排队转移接缝或 `table_2784C` 服务身份，那些仍归[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)；
+- 特殊精灵加载/更新函数、精确 `9 + 1 + 6` 路线分类、战斗对探索分发、palette-4 时间线、立即对排队转移接缝或 `table_2784C` 服务身份，那些仍归[graphics-service-state](graphics-service-state.md)；
 - Stack 解压服务 ABI 或编解码器微实现，也由 `graphics-service-state` 拥有；
-- 构建地图精灵赋值域，仍归[map-sprite-assignment-surface](../../../contracts/graphics/map-sprite-assignment-surface.md)及其已接受 Common Scripting 所有者；该结果此处不作为可执行证据消费；
+- 构建地图精灵赋值域，仍归[map-sprite-assignment-surface](map-sprite-assignment-surface.md)及其已接受 Common Scripting 所有者；该结果此处不作为可执行证据消费；
 - 普通地图精灵图形、特殊画面图形、战斗/UI/立绘语料、实体定义、地图人口、对话属性或调用方准入；
 - 动画序列、帧选择、调色板应用、缓存生命周期、持久性、VInt/DMA/CRAM 调度、转移完成、硬件时序、渲染或可见呈现；
 - `sf2-auxiliary-data-static-v1`、`sf2-tech-graphics-static-v1`、`sf2-map-sprite-assignments-static-v1` 或任何兄弟 research-index 关联；
@@ -232,9 +232,9 @@ H4 可以在运行时前或惰性导入、解码与变换私有特殊精灵数�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 指针/资源目录与一致性 | **已确认静态** | `sf2-special-sprite-decode-v1`；[fixture](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json) | 10 私有槽、5 初始所有者、5 别名、6 资源；完整图与资源保持私有 |
-| 语料核算与解码器诊断 | **已确认静态** | 同一 fixture；[technical-graphics 研究](../../../../research/presentation/technical-graphics.md) | `6742 = 160 + 6582`、解码 16,704、一致性 10/6；无必需 Stack 微实现 |
-| 加载/更新路线、分发、调色板与转移接缝 | 独立所有者 **已确认静态** | [graphics-service-state](../../../contracts/graphics/graphics-service-state.md) | 精确 `9 + 1 + 6` 服务分类；此处无重复路线 H4 |
-| 完整构建赋值排除 ID `237..250` | 独立所有者 **已确认静态** | [map-sprite-assignment-surface](../../../contracts/graphics/map-sprite-assignment-surface.md)与[Common Scripting](../../../../research/world/common-scripting.md) | 非消费证据；畸形/调试/原始 RAM 可达性保持未知 |
+| 语料核算与解码器诊断 | **已确认静态** | 同一 fixture；[technical-graphics 研究（英文）](../../../../research/presentation/technical-graphics.md) | `6742 = 160 + 6582`、解码 16,704、一致性 10/6；无必需 Stack 微实现 |
+| 加载/更新路线、分发、调色板与转移接缝 | 独立所有者 **已确认静态** | [graphics-service-state](graphics-service-state.md) | 精确 `9 + 1 + 6` 服务分类；此处无重复路线 H4 |
+| 完整构建赋值排除 ID `237..250` | 独立所有者 **已确认静态** | [map-sprite-assignment-surface](map-sprite-assignment-surface.md)与[Common Scripting（英文）](../../../../research/world/common-scripting.md) | 非消费证据；畸形/调试/原始 RAM 可达性保持未知 |
 | 运行时准入、动画、DMA/VInt/CRAM 与呈现 | **未知** | 未来运行时/呈现证据 | 源身份与解码形式不证明可见行为 |
 | 替换资源、可访问性与分发 | 刻意设计 | 未来产品/内容决定 | 需要独立溯源与验收 |
 

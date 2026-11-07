@@ -1,6 +1,6 @@
 # Battle24 结果至 North Cliff 准备
 
-> 本文是[规范英文原文：Battle24 Outcomes through North Cliff Preparation](../../../../synthesis/chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文：Battle24 Outcomes through North Cliff Preparation](../../../../synthesis/chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 Battle24 根据场上仍被计数的战斗员结束。打败首个 Dark Bishop 不会自动获胜。胜利把队伍送回探索，位置由当前队伍状态推导；败北与逃脱使用不同目的地选择器。North Cliff 洞穴警告是后续独立获准、使用当前物品栏与当前行动者的相遇，不是自动胜利场景。
 
@@ -10,9 +10,9 @@ Battle24 根据场上仍被计数的战斗员结束。打败首个 Dark Bishop �
 
 ## 证据与阅读边界
 
-已接受 Layer A 所有者为 [Battle24 结果至 North Cliff 准备](../../../../../research/chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md)，经 [#981 / PR984](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/984)接受。它固定 USA retail SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。以下源码路径相对 `disasm/`；Fnnn 表示标志 nnn。路线图拥有 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。解释不增加原版新发现或重制行为。
+已接受 Layer A 所有者为 [Battle24 结果至 North Cliff 准备（英文）](../../../../../research/chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md)，经 [#981 / PR984](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/984)接受。它固定 USA retail SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。以下源码路径相对 `disasm/`；Fnnn 表示标志 nnn。路线图拥有 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。解释不增加原版新发现或重制行为。
 
-[准入指南](new-granseal-departure-through-battle24-admission.md)解释此前请求、有序选择与重新编队。[Battle23 结果](../southern-travel-creed/battle23-outcomes-and-burrow-return.md)及已接受[战斗循环](../../../../../research/battle/battle-loop.md)、[过场包装器](../../../../../research/battle/battle-cutscenes.md)、[物品栏搜索](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)、[请求状态](../../../../../research/world/map-event-request-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)所有者提供共享机制。[遭遇定义](../../../contracts/battle/battle-encounter-definition.md)与[过场路由](../../../contracts/battle/battle-cutscene-routing.md)合同保留结构限制。以下深入选定事实来自 #981。
+[准入指南](new-granseal-departure-through-battle24-admission.md)解释此前请求、有序选择与重新编队。[Battle23 结果](../southern-travel-creed/battle23-outcomes-and-burrow-return.md)及已接受[战斗循环（英文）](../../../../../research/battle/battle-loop.md)、[过场包装器（英文）](../../../../../research/battle/battle-cutscenes.md)、[物品栏搜索（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)、[请求状态（英文）](../../../../../research/world/map-event-request-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)所有者提供共享机制。[遭遇定义](../../../contracts/battle/battle-encounter-definition.md)与[过场路由](../../../contracts/battle/battle-cutscene-routing.md)合同保留结构限制。以下深入选定事实来自 #981。
 
 ## 胜利是计数规则
 

@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`unused-technical-asset-data.md`](../../../contracts/system/unused-technical-asset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`unused-technical-asset-data.md`（英文规范源）](../../../contracts/system/unused-technical-asset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -19,9 +19,9 @@
 3. 受限 source/H1/ROM 溯源、聚合解码器结果与静态符号引用事实；
 4. 私有无损导入形式与公开仅元数据投影。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-unused-technical-assets-static-v1`，位于 [`tests/fixtures/h2/unused-technical-assets-static-v1.json`](../../../../../tests/fixtures/h2/unused-technical-assets-static-v1.json)。其带来源所有者是[Technical Graphics](../../../../research/presentation/technical-graphics.md)与[Technical Services](../../../../research/system/technical-services.md)。
+此处消费的唯一可执行所有者是 fixture id `sf2-unused-technical-assets-static-v1`，位于 [`tests/fixtures/h2/unused-technical-assets-static-v1.json`](../../../../../tests/fixtures/h2/unused-technical-assets-static-v1.json)。其带来源所有者是[Technical Graphics（英文）](../../../../research/presentation/technical-graphics.md)与[Technical Services（英文）](../../../../research/system/technical-services.md)。
 
-更宽 `sf2-tech-services-static-v1` fixture 被刻意排除。其通用服务、压缩、显示与资源清单不是本合同的执行依赖。同样，Stack 解码器实现属于既有[graphics-service 合同](../../../contracts/graphics/graphics-service-state.md)；本数据合同消费解码输出证据而不创建新解压服务关联。
+更宽 `sf2-tech-services-static-v1` fixture 被刻意排除。其通用服务、压缩、显示与资源清单不是本合同的执行依赖。同样，Stack 解码器实现属于既有[graphics-service 合同](../graphics/graphics-service-state.md)；本数据合同消费解码输出证据而不创建新解压服务关联。
 
 精确未来 research-index 关联集是：
 
@@ -196,11 +196,11 @@ SymbolicReferenceInventory {
 
 ## 跨系统分离
 
-- [Graphics Service State](../../../contracts/graphics/graphics-service-state.md) 拥有受限 Stack 解压服务合同。它不拥有这两个载荷身份，本合同不创建解压记录关联。
-- [Special-Screen Asset Data](../../../contracts/graphics/special-screen-asset-data.md) 拥有其专用标题、女巫、挂起与结尾资源语料。含未使用 cloud 定义的源路径不使该载荷成为该已接受语料的一部分。
-- [UI Graphics Asset Data](../../../contracts/graphics/ui-graphics-asset-data.md)与[UI Layout Data](../../../contracts/interface/ui-layout-data.md) 拥有其专用 UI 资源与布局；它们此处不提供调色板或 cloud 消费者证据。
-- [Startup Control Flow](../../../contracts/system/startup-control-flow.md)与已接受基础瓦片所有者保留系统初始化与基础瓦片交接。`UnusedBase` 源身份不暗示启动使用。
-- [Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md) 拥有受限队列/服务状态，而非转移完成、CRAM 节奏或这些资源的运行时路线。
+- [Graphics Service State](../graphics/graphics-service-state.md) 拥有受限 Stack 解压服务合同。它不拥有这两个载荷身份，本合同不创建解压记录关联。
+- [Special-Screen Asset Data](../graphics/special-screen-asset-data.md) 拥有其专用标题、女巫、挂起与结尾资源语料。含未使用 cloud 定义的源路径不使该载荷成为该已接受语料的一部分。
+- [UI Graphics Asset Data](../graphics/ui-graphics-asset-data.md)与[UI Layout Data](../interface/ui-layout-data.md) 拥有其专用 UI 资源与布局；它们此处不提供调色板或 cloud 消费者证据。
+- [Startup Control Flow](startup-control-flow.md)与已接受基础瓦片所有者保留系统初始化与基础瓦片交接。`UnusedBase` 源身份不暗示启动使用。
+- [Interrupt、DMA 与 Trap State](interrupt-dma-and-trap-state.md) 拥有受限队列/服务状态，而非转移完成、CRAM 节奏或这些资源的运行时路线。
 - 渲染器、动画、呈现、可访问性、替换、许可与分发选择保持未来所有者。本静态合同不选择现代引擎策略。
 
 ## 判断边界
@@ -250,9 +250,9 @@ H4 可以在导入时间、构建时间或其他私有预处理阶段解码。�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | cloud 容器与流 | **已确认静态** | `sf2-unused-technical-assets-static-v1`；[fixture](../../../../../tests/fixtures/h2/unused-technical-assets-static-v1.json) | 一个私有 5,694 字节容器、四个有序流/结果；无动画或可见含义 |
-| Stack 解码 | 受限解码输出证据 | 同一 fixture；[technical-graphics 研究](../../../../research/presentation/technical-graphics.md) | 精确结果/诊断；无编解码器微实现要求 |
+| Stack 解码 | 受限解码输出证据 | 同一 fixture；[technical-graphics 研究（英文）](../../../../research/presentation/technical-graphics.md) | 精确结果/诊断；无编解码器微实现要求 |
 | base 调色板与指针 | **已确认静态** | 同一 fixture | 两个私有有序调色板加不同指针；无运行时解引用或赋值声称 |
-| 符号引用清单 | **已确认静态** | 同一 fixture；[technical-services 研究](../../../../research/system/technical-services.md) | 精确注释剥离 token 计数；零符号消费者不是死代码 |
+| 符号引用清单 | **已确认静态** | 同一 fixture；[technical-services 研究（英文）](../../../../research/system/technical-services.md) | 精确注释剥离 token 计数；零符号消费者不是死代码 |
 | 源标签 | **推断分类法 only** | 固定源身份/注释 | `Unused`/`Cloud`/`Base` 保留，无玩家面向或运行时含义 |
 | 通用技术服务 | 排除执行所有者 | `sf2-tech-services-static-v1` | 无聚合 fixture 注册或兄弟关联 |
 | 渲染器与硬件服务 | 独立所有者 / **未知** | 图形、中断、UI、启动与呈现合同 | 无 VDP/DMA/CRAM 节奏、完成、渲染或可达性声称 |

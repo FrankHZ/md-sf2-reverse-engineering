@@ -4,7 +4,7 @@
 - 证据日期：2026-08-14
 - 范围：原版法术、召唤、状态动画与战斗过渡图形语料作为私有、引擎无关导入
 
-> 本文件是 [`battle-effect-graphics-data.md`](../../../contracts/graphics/battle-effect-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-effect-graphics-data.md`（英文规范源）](../../../contracts/graphics/battle-effect-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -16,7 +16,7 @@
 
 ## 证据所有者与消费面
 
-本合同消费的唯一可执行数据所有者是 `sf2-battle-effect-graphics-decode-v1`（[fixture](../../../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/battle_effect_graphics.py)、[schema](../../../../../schemas/h2-battle-effect-graphics-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/battle-effect-graphics-decode.json)）。其文章所有者是[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)与[Battle Scene Engine](../../../../research/battle/battle-scene-engine.md)。
+本合同消费的唯一可执行数据所有者是 `sf2-battle-effect-graphics-decode-v1`（[fixture](../../../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/battle_effect_graphics.py)、[schema](../../../../../schemas/h2-battle-effect-graphics-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/battle-effect-graphics-decode.json)）。其文章所有者是[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)与[Battle Scene Engine（英文）](../../../../research/battle/battle-scene-engine.md)。
 
 本数据合同消费：
 
@@ -25,7 +25,7 @@
 - `spellGraphics[23]`、`invocationContainers[4]`、`invocationStreams[30]`、`statusAnimation` 与 `transitionGraphics[2]` 中的完整生成私有行；以及
 - 已接受的上游、ROM 与规范输出溯源。
 
-`function` 身份与 `summary.invocationTransferByteCount` / `summary.invocationTransferTailByteCount` 只作为外部消费者/服务见证元数据保留。效果选择、法术/召唤/状态/过渡消费者接缝、Stack 交接、固定转移请求与未知召唤尾仍归[Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md)。`LoadStackCompressedData` 仍归[Graphics Service State](../../../contracts/graphics/graphics-service-state.md)，面向硬件的转移服务仍归[Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md)。那些函数记录都不属于本合同。
+`function` 身份与 `summary.invocationTransferByteCount` / `summary.invocationTransferTailByteCount` 只作为外部消费者/服务见证元数据保留。效果选择、法术/召唤/状态/过渡消费者接缝、Stack 交接、固定转移请求与未知召唤尾仍归[Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md)。`LoadStackCompressedData` 仍归[Graphics Service State](graphics-service-state.md)，面向硬件的转移服务仍归[Interrupt、DMA 与 Trap State](../system/interrupt-dma-and-trap-state.md)。那些函数记录都不属于本合同。
 
 生成私有行保留在忽略的 `local/derived/battle-effect-graphics-decode.json` 下。其完整图、源符号与路径、资源地址、精确容器与流偏移、逐资源大小与 hash、调色板字节、压缩字节与解码美术都是私有验证输入，不是公开合同载荷。
 
@@ -202,9 +202,9 @@ H4 不要求原版选择器、加载器微实现、召唤转移尾内容、转�
 
 ## 跨系统分离
 
-- [Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md) 消费本合同的规范记录，并保留召唤/法术加载器、状态初始化消费、过渡选择、Stack 交接、固定转移请求、512 字节未知召唤尾边界、场景时间线与呈现 未知。它不再独立拥有或重新验证本静态目录。
-- [Graphics Service State](../../../contracts/graphics/graphics-service-state.md) 保留 Stack 解压。此处的聚合解码器诊断不转移服务所有权。
-- [Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA、CRAM、转移完成与硬件时序边界。
+- [Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md) 消费本合同的规范记录，并保留召唤/法术加载器、状态初始化消费、过渡选择、Stack 交接、固定转移请求、512 字节未知召唤尾边界、场景时间线与呈现 未知。它不再独立拥有或重新验证本静态目录。
+- [Graphics Service State](graphics-service-state.md) 保留 Stack 解压。此处的聚合解码器诊断不转移服务所有权。
+- [Interrupt、DMA 与 Trap State](../system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA、CRAM、转移完成与硬件时序边界。
 - 法术解决与战斗动作合同保留效果选择与玩法后果；它们不拥有这些图形载荷。
 - 行动者精灵/动画、背景、武器/地面、立绘、地形、特殊/地图/UI 图形、本地化、可访问性、替换资源、许可与渲染仍归其自身合同或保持 未知。
 

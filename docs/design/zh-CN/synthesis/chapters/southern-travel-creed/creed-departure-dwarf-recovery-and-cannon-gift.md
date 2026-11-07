@@ -1,18 +1,18 @@
 # Creed 离开、矮人恢复与 Cannon 赠礼
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 Fairy 请求见生病的矮人，为他检查，随后布置明亮的恢复序列。矮人恢复动画，说自己感觉好了。Fairy 拒绝给自己的奖励，请矮人改为帮助出战队伍首领。他们出于感谢提出赠送 Cannon，随后返回挖掘通往 Grans 的道路。
 
 **推断：**这是 Fairy 帮助矮人、矮人回报帮助的故事。**已确认：**恢复布置、物品栏处理、挖掘、调用方标志及后来地图重建是独立操作。**未知：**自然穿行与交互、实际传入状态、呈现完成、可用控制及存档持久性。恢复不改变战斗员 HP；赠礼既不保证发生，也不是通用的一次性奖励。
 
-本指南接续 [Oddler 留下与 Fairy 交接](oddler-stays-and-fairy-handoff.md)，使用 main `c430f26f69a01a0f6e917660e34503c6bcccbec4` 上[已接受的 #961 研究](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)及其已接受前篇。它止于紧接的实体/区域（事件）返回及相关重新入场后果。Cannon 使用、后续旅程和 New Granseal/Astral 内容在本指南之外。此 Layer B 解释不选择重制规则或新观察工作。
+本指南接续 [Oddler 留下与 Fairy 交接](oddler-stays-and-fairy-handoff.md)，使用 main `c430f26f69a01a0f6e917660e34503c6bcccbec4` 上[已接受的 #961 研究（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)及其已接受前篇。它止于紧接的实体/区域（事件）返回及相关重新入场后果。Cannon 使用、后续旅程和 New Granseal/Astral 内容在本指南之外。此 Layer B 解释不选择重制规则或新观察工作。
 
 [返回 New Granseal 与 Astral 跟随（中文）](../northern-travel-mitula/new-granseal-return-and-astral-following.md)独立接续选定的矿洞至城堡返回及回顾式顾问觐见；不把持有 Cannon 设为觐见前提。
 
 ## 离开 Creed，进入矿洞
 
-**已确认：**选定路线是 Mansion33 → Devil's Tail67 → Southwest Parmecia68 → 矿洞内部30。[路线所有者](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#selected-departure-and-mine-entry-route)保留精确表行、请求消费者、坐标、战斗前提和模式差异。这些是条件连接，不是已证明的强制地形行走路线。
+**已确认：**选定路线是 Mansion33 → Devil's Tail67 → Southwest Parmecia68 → 矿洞内部30。[路线所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#selected-departure-and-mine-entry-route)保留精确表行、请求消费者、坐标、战斗前提和模式差异。这些是条件连接，不是已证明的强制地形行走路线。
 
 宅邸任意 X/Y31 的行请求无滚动进入 Map67 `(26,23)` Up。Map67 的 X63/任意 Y 边界则请求 Right scroll16 进入 Map68，X1 并保留 Y。该滚动路径在探索内改变当前地图和工作布局，保留行动者及随从查找/列表。它跳过无滚动 MainLoop 战斗检查、新行动者构建、临时标志重置和选定 init。请求的 Right 朝向字节不在那里应用；采样的是主行动者当前朝向。普通 X1 推导还要求返回坐标高字节为零。
 
@@ -34,7 +34,7 @@ Map68 的 `(57,24)` 行请求无滚动进入 Map30 `(8,20)` Up。Map30 是直接
 | F785 | Dwarf128 `(11,11)` Down；129 `(16,12)` Left；130 `(15,12)` Down；131 `(15,11)` Down；132 `(15,13)` Up。全部以 Init 开始。 |
 | F761 | 没有居民。回调地址仍存在，但重新构建不提供矮人。 |
 
-[人口/init 所有者](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#complete-map30-population-and-init)保留声明行动、查找分配及变化状态用例。Resident130 是病矮人，不是 Fairy。Fairy 是由 F69 独立选择的 FOLLOWER_C158、lookup62；居民128–132 使用 lookups32–36。他们是 NPC 精灵，不是军团成员或具有交战 HP 的病患。
+[人口/init 所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#complete-map30-population-and-init)保留声明行动、查找分配及变化状态用例。Resident130 是病矮人，不是 Fairy。Fairy 是由 F69 独立选择的 FOLLOWER_C158、lookup62；居民128–132 使用 lookups32–36。他们是 NPC 精灵，不是军团成员或具有交战 HP 的病患。
 
 通常 Creed 之后的选择器 F67/F69 已设置、F68 未设置，提供 Peter 与 Fairy，省略普通 B31/Oddler。没有额外随从时，F785 居民占 physical3–7，位于 Bowie0、Peter1、Fairy2 之后。**缺失 B 的零查找解析为 physical0/Bowie**，所以不能简单把场景 B 命令叙述成 Oddler 仍在队伍。其 B 跟随请求可让 Bowie 跟随 Peter；B 布置/朝向也能影响 Bowie。稍后显式 Bowie 布置可覆盖那次布置。若 F68 也已设置，B 则在所述普通分配下是不同的行动者。F74/F70 及重复 ID 可提供其他 B 映射；隐藏查找变为 -1。局部没有修复来规范化缺失或别名行动者。
 
@@ -42,7 +42,7 @@ Map30 init 先在761 已设置时运行 F761 布局程序，再独立于此前�
 
 ## 对话与恢复邀请
 
-**已确认：**[六个实体回调与区域（事件）所有者](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#six-entity-rows-and-the-two-row-zone-table)把交谈与恢复准入分开。Dwarf128 起初说为 Mithril 从 Grans 而来。760 设置后，他的回调改为调用赠礼辅助程序，没有761 守卫。Dwarf129 报告地震堵住隧道，需要生病的朋友；130 在抱怨冷之前和之后发抖。这两段对话均设置759。761 未设置时，Dwarf131 说有矮人去找 Fairy，并设置759；761 已设置时则邀请大家去 Grans 的 Dwarven Village。Dwarf132 唱着挖向 Grans 的歌。默认仅返回。
+**已确认：**[六个实体回调与区域（事件）所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#six-entity-rows-and-the-two-row-zone-table)把交谈与恢复准入分开。Dwarf128 起初说为 Mithril 从 Grans 而来。760 设置后，他的回调改为调用赠礼辅助程序，没有761 守卫。Dwarf129 报告地震堵住隧道，需要生病的朋友；130 在抱怨冷之前和之后发抖。这两段对话均设置759。761 未设置时，Dwarf131 说有矮人去找 Fairy，并设置759；761 已设置时则邀请大家去 Grans 的 Dwarven Village。Dwarf132 唱着挖向 Grans 的歌。默认仅返回。
 
 这些回调并非全部受恢复门槛控制：直接调用130 回调在760 后仍发抖，129 仍报告病情，131 只检查761。基线没有132，重新761 没有任何居民。因此，选定回调地址不证明普通玩家能与该行动者交谈。目标范围、布局、列表排除、查找顺序及实际精灵仍是交互的一部分。包装器使128 转向玩家但不恢复，使129/131/132 转向并恢复，对130/默认则两者都不做。
 
@@ -50,7 +50,7 @@ Map30 init 先在761 已设置时运行 F761 布局程序，再独立于此前�
 
 ## Fairy 检查病人
 
-**已确认：**[完整恢复场景](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#complete-recovery-scene)按以下阶段排序。行动者标签描述预期的不同映射；此前别名、HP、人口和模式前提仍适用。
+**已确认：**[完整恢复场景（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#complete-recovery-scene)按以下阶段排序。行动者标签描述预期的不同映射；此前别名、HP、人口和模式前提仍适用。
 
 Fairy 收到等待式较慢 Init。随后场景请求方向2 的 B→Peter 跟随；编码高字节在解码 B 前检查 Bowie HP。Bowie HP0 跳过该关系，而非整个恢复。之后 Fairy 收到等待式自定义零速行动、目的地 `(8,11)`，并询问生病矮人在哪。Init 和自定义行动替换此前行动指针，不移除已有探索列表条目或重置位置。后续目的地有独立移动/坐标等待。
 
@@ -68,13 +68,13 @@ Dwarf129 左右转头，走 Down1，询问病人情况。Dwarf132 摇头，说�
 
 Hide 把 Fairy 当前/目的地坐标移到 `$7000`，使匹配查找失效，并从探索列表移除她的物理行动者。记录/行动在普通实体服务下保持休眠。这隐藏当前 C 行动者，却不清除 F69；区域（事件）调用方更晚才清除69。它不是军团成员移除，也不是已保存离开的证明。
 
-[文本/服务所有者](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#exact-text-and-immediate-services)保留全部 28 个精确文本关联 1705–1732、说话者操作数和控制。LEADER 是 UpdateForce 后首名出战军团成员的名字，可不同于 Bowie。普通映射下，Fairy/Dwarf 精灵选择不同提示音且无立绘；变化精灵或别名会改变此上下文。恢复、感谢或挖掘对话中没有 Yes/No 菜单。
+[文本/服务所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#exact-text-and-immediate-services)保留全部 28 个精确文本关联 1705–1732、说话者操作数和控制。LEADER 是 UpdateForce 后首名出战军团成员的名字，可不同于 Bowie。普通映射下，Fairy/Dwarf 精灵选择不同提示音且无立绘；变化精灵或别名会改变此上下文。恢复、感谢或挖掘对话中没有 Yes/No 菜单。
 
 N 插入换行；W1/W2 等待输入，W2 有继续/声音行为。单条文本关闭窗口并 sleeps 10；继续文本不如此。Fairy 单条告别1725 内部的 W2 与单条1731 末尾的 W2 是不同等待位置。入口清除跳过状态后，Debug/P2 Start 可锁存过场文本跳过，跳过游标推进/显示和编码等待，而其他命令仍执行。辅助程序直接 txt 调用及其 Sleep100 是独立消费者。仅源码序列不能证明渲染时序、输入完成或已观察文本/音频。
 
 ## 接受或推迟 Cannon
 
-**已确认：**恢复返回后，区域（事件）调用 [Cannon 辅助程序](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#cannon-helper-and-complete-digging-scene)。它把恢复归功于对话对象并提出赠礼，然后计数 **Bowie** 全部四个非 NOTHING 物品槽。Slot0 不必空闲。固定接收者是 combatant0，独立于 LEADER 替换名字；没有全出战队伍容量后备方案。
+**已确认：**恢复返回后，区域（事件）调用 [Cannon 辅助程序（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#cannon-helper-and-complete-digging-scene)。它把恢复归功于对话对象并提出赠礼，然后计数 **Bowie** 全部四个非 NOTHING 物品槽。Slot0 不必空闲。固定接收者是 combatant0，独立于 LEADER 替换名字；没有全出战队伍容量后备方案。
 
 若字计数等于 4，辅助程序说对话对象双手已满，推迟赠礼。它在 AddItem、物品音乐、761 或挖掘之前返回。获准序列中的恢复已发生，区域（事件）仍继续设置760 并清除69。若当前 dwarf128 保留，之后他的760 已设置回调可在腾出空间后重试邀请。
 
@@ -86,7 +86,7 @@ N 插入换行；W1/W2 等待输入，W2 有继续/声音行为。单条文本�
 
 ## 矮人返回挖掘
 
-**已确认：**[完整挖掘场景](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#cannon-helper-and-complete-digging-scene)将129–132 转 Left，请求视野 `(6,7)`。Dwarf128 解释 Cannon 可摧毁巨石，走 Right1，召集矮人返回 Grans 并命令挖掘。这是建议和意图，不是 Cannon 使用或旅行。
+**已确认：**[完整挖掘场景（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#cannon-helper-and-complete-digging-scene)将129–132 转 Left，请求视野 `(6,7)`。Dwarf128 解释 Cannon 可摧毁巨石，走 Right1，召集矮人返回 Grans 并命令挖掘。这是建议和意图，不是 Cannon 使用或旅行。
 
 四名矮人129–132 分两组跳跃。每组给四者都安装行动，但只等待132。Bowie 收到等待式 Init 和 Left1，Peter 收到目的地 `(8,10)`。矮人向 Left 移动：128/132 为 2，129/130/131 为 1，仅等待132。随后 Bowie、Peter 和 B 朝 Right。
 
@@ -94,7 +94,7 @@ N 插入换行；W1/W2 等待输入，W2 有继续/声音行为。单条文本�
 
 最后，128/129/130/131/132 被放在 `(7,3)/(8,3)/(7,4)/(8,4)/(7,5)` Up。脚本从 `(21,6)` 向 `(7,5)` 复制 2×2 布局矩形并返回。这些布置设置当前/目的地坐标，不清除其他行动指针。等待132 或130 不证明所有矮人都完成；在变化时序/映射下，更早异步行动仍可能有关。这里没有矮人隐藏或传送。
 
-当前场景只执行该 2×2 复制。后来重新761 init 重复它，并额外从 `(21,0)` 向 `(6,0)` 复制 4×4，同时不构建居民。当前复制及额外重新加载复制，均不证明渲染出的挖掘、碰撞开口或自然可用后续路线。[行动/布局所有者](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#action-layout-and-return-semantics)保留各行动者等待、布置、摄像机、闪光/淡入淡出和复制语义。
+当前场景只执行该 2×2 复制。后来重新761 init 重复它，并额外从 `(21,0)` 向 `(6,0)` 复制 4×4，同时不构建居民。当前复制及额外重新加载复制，均不证明渲染出的挖掘、碰撞开口或自然可用后续路线。[行动/布局所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#action-layout-and-return-semantics)保留各行动者等待、布置、摄像机、闪光/淡入淡出和复制语义。
 
 ## 返回、重复与中断
 
@@ -112,14 +112,14 @@ N 插入换行；W1/W2 等待输入，W2 有继续/声音行为。单条文本�
 
 | 审阅表面 | 处置 |
 | --- | --- |
-| [#961 研究](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)及已接受旅行/告别前篇 | 路线、实际行动者、完整恢复/辅助程序/挖掘顺序、文本及变化状态限制在已接受静态边界上一致。 |
+| [#961 研究（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)及已接受旅行/告别前篇 | 路线、实际行动者、完整恢复/辅助程序/挖掘顺序、文本及变化状态限制在已接受静态边界上一致。 |
 | `sf2-map-events-static-v1`：[routing](../../../../../../tests/fixtures/h2/map-events/routing-setup.json)、[实体程序](../../../../../../tests/fixtures/h2/map-events/entity-programs.json)、[区域（事件）程序](../../../../../../tests/fixtures/h2/map-events/zone-programs.json) | 选定 Map30 行、六个实体上下文、两个区域（事件）上下文和共享返回重叠保留分支极性与调用方顺序。不从回调目标虚增辅助程序覆盖。 |
 | `sf2-map-init-static-v1`：[fixture](../../../../../../tests/fixtures/h2/map-init-static-v1.json) | 三条路由共用 init；独立761/760 决策及完整嵌入布局/患病体一致。 |
 | `sf2-map-script-engine-static-v1`：[fixture](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)及 [schema](../../../../../../schemas/h2/map-script-engine-fixture.schema.json) | 选定布置/行动/hide/follow/布局/对话事实保留守卫与服务边界，不证明自然执行。 |
 | [事件加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)、[事件验证器](../../../../../../src/sf2tool/h2/map_events.py)、[脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py) | Schema/身份/顺序检查与源码输出溯源/相等是独立职责；合法 fixture 形状不是新源码证据。 |
-| [名册合同](../../../contracts/party/party-roster-state.md#处理器边界)、[对话合同](../../../contracts/interface/dialogue-system.md#已确认的静态合同)、[物品事务所有者](../../../../../research/world/map-event-item-transactions.md) | 成员资格、台词、服务和事务接缝不提供此场景的自然可达、已完成赠礼或持久性。Cannon 辅助程序细节仍归 #961。 |
+| [名册合同](../../../contracts/party/party-roster-state.md#处理器边界)、[对话合同](../../../contracts/interface/dialogue-system.md#已确认的静态合同)、[物品事务所有者（英文）](../../../../../research/world/map-event-item-transactions.md) | 成员资格、台词、服务和事务接缝不提供此场景的自然可达、已完成赠礼或持久性。Cannon 辅助程序细节仍归 #961。 |
 
-[复现所有者](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#reproduction-and-review-boundary)固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。保留比较未变，18,285,979 bytes、0.081s，含 144 个记录、25 个完整内联体、两个自定义体及 28 个文本关联。所有者命令仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events` 和 `uv run sf2 h2 map-script-engine`。原英文综合切片的检出缺固定 upstream/保留对：不获取、不重新生成，也不声称新比较。
+[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md#reproduction-and-review-boundary)固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。保留比较未变，18,285,979 bytes、0.081s，含 144 个记录、25 个完整内联体、两个自定义体及 28 个文本关联。所有者命令仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events` 和 `uv run sf2 h2 map-script-engine`。原英文综合切片的检出缺固定 upstream/保留对：不获取、不重新生成，也不声称新比较。
 
 [#961 原始交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/961#issuecomment-6179316611)、[变基回执](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/961#issuecomment-6179363538)及 [PR964 验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/964#issuecomment-6179370463)保留原始 608987b9/tree6c4bf429/base936748b0 和最终 eea8829e/tree2b329756/base3b5df736、CI38643445482/38643827378，以及已完成的 ac_setSpeed 编码大小检查失败/修正。所链接原始诊断及 #957/#953/#949/#945/#941/#937 回执、失败和未知项，包括 [#954 回调修正](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/954#issuecomment-6178761171)，均保留，不重启。
 

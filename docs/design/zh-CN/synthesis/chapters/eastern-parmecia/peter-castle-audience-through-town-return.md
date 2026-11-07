@@ -1,20 +1,20 @@
 # Peter 城堡觐见与返回城镇
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Peter 在 New Granseal 受到接待后，接续独立城堡觐见。Astral 与国王听取有关 phoenix 和 Volcanon 的讲述；Astral 提议陪 Peter 向东，但大臣与国王坚持让他留下，改派出战队伍。Peter 自我介绍，国王下令赠礼，Astral 在队伍出发前告别。**推断的叙事含义：**Peter 成为旅伴，而 Astral 留下。**已确认静态行为：**觐见使 Peter 以 AI 控制加入，布置临时随从并请求返回城镇；调用方随后设置独立完成与随从标志。**未知：**自然旅行、行动者/服务完成、观察到的金币余额和实际可用目标控制。
 
-本文承接[New Granseal 城镇：Peter 首次登场](new-granseal-town-through-peter-introduction.md)。接续[New Granseal 出发至 Battle09 准入](new-granseal-departure-through-battle09.md)，了解选定大地图连接、条件战斗选择与激活前空开场。已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)提供场景、文本、处理器及调用方审阅。本指南止于城镇首次 init 后待处理/控制读取。大地图出发、Battle09 和后续觐见不在本分段内。本文不增加重制能力，也不决定如何处理礼物。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#751](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/751) 的 Standard 严谨度协议。
+本文承接[New Granseal 城镇：Peter 首次登场](new-granseal-town-through-peter-introduction.md)。接续[New Granseal 出发至 Battle09 准入](new-granseal-departure-through-battle09.md)，了解选定大地图连接、条件战斗选择与激活前空开场。已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)提供场景、文本、处理器及调用方审阅。本指南止于城镇首次 init 后待处理/控制读取。大地图出发、Battle09 和后续觐见不在本分段内。本文不增加重制能力，也不决定如何处理礼物。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#751](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/751) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。源码身份使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。下方命令索引是从零开始的源码记录，不是帧数或实测时长。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。下方命令索引是从零开始的源码记录，不是帧数或实测时长。
 
 ## 1. 返回城堡是独立准入
 
 **已确认条件连接：**前一个 Peter 事件以调用方 F701 结束。它既不让 Peter 加入、不设置 F702/F67，也不重载实体群或请求此次城堡旅行。城镇北出口行匹配 Y=0、X 通配，经无滚动传送请求城堡 Map7 `(11,22)`、Up。普通移动在较早移动/碰撞工作后，对选定传送布局属性测试此行。匹配行不证明瓦片可通行，也不证明从 Peter 接待处自然步行而来。
 
-若请求存续，探索在分发前消费并清除它，将显式元组返回 `MainLoop`。Map7 没有替换或战斗坐标行，因此进入普通探索入场。它清除待处理，应用已接受[存活/不死角色治疗与状态限制](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)，设置地图/非战斗状态，重建实体/精灵，清除临时标志 256–383，设置 F80，加载地图并在控制前运行 init。这不是全军团重置。
+若请求存续，探索在分发前消费并清除它，将显式元组返回 `MainLoop`。Map7 没有替换或战斗坐标行，因此进入普通探索入场。它清除待处理，应用已接受[存活/不死角色治疗与状态限制（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)，设置地图/非战斗状态，重建实体/精灵，清除临时标志 256–383，设置 F80，加载地图并在控制前运行 init。这不是全军团重置。
 
 正常完成的前篇历史携带 F707/F411、`EGRESS_MAP=6` 与 `PLAYER_TYPE=0`。F706 属于独立水手/卫兵场景，不必随 F701 一起设置。其他出战队伍、随从和后期历史状态仍是提供的输入。
 
@@ -62,7 +62,7 @@ F707、F706、F67、成员身份、AI 与行动者存在都不守卫早期觐见
 
 重建先于可能的出战标志写入，`JoinForce` 内没有第二次重建，因此列表可滞后于新设置的出战标志。本次觐见较后正常文本处理很关键：礼物文本的 `{LEADER}` 替换调用 `UpdateForceAndGetFirstBattlePartyMemberIndex`，先重建，再查首名出战成员名字。调试文本跳过可绕过该重建。辅助局部测试夹具和静态顺序都不建立城镇控制时观察到的列表。加入处理器不重置 HP、不重命名 Peter、不播放加入音乐、不安装随从，也不设置 F67。
 
-**已确认临时跟随：**命令 62–66 在守卫允许时，安装 Peter 跟随 Bowie、Sarah 跟随 Peter、Chester 跟随 Sarah，以及 Jaha/Kazin 分别按不同偏移跟随 Bowie。三个操作数都是字；依该顺序，随从字为 `$0007,$0001,$0002,$0003,$0004`。HP 探测读取各首字的高字节，即零：五次调用全都检查 Bowie。Bowie HP=0 会跳过每次调用；Bowie 存活时，Peter 或其他具名随从 HP=0 本身不跳过这些命令。这些提供状态区分守卫，不证明自然可达性或行动者存在。允许时，`followEntity` 解析两个引用，调用 `AddFollower` 安装行走脚本并登记物理随从。[研究操作数/处理器审阅](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md#membership-ai-and-the-two-follower-mechanisms)保留精确三元组与已有受控高字节观察。复用探索列表中已有随从仍会替换其行走脚本。这些操作不让任何人加入或出战，也不设置持久故事随从标志。其表偏移不保证观察到的最终位置。
+**已确认临时跟随：**命令 62–66 在守卫允许时，安装 Peter 跟随 Bowie、Sarah 跟随 Peter、Chester 跟随 Sarah，以及 Jaha/Kazin 分别按不同偏移跟随 Bowie。三个操作数都是字；依该顺序，随从字为 `$0007,$0001,$0002,$0003,$0004`。HP 探测读取各首字的高字节，即零：五次调用全都检查 Bowie。Bowie HP=0 会跳过每次调用；Bowie 存活时，Peter 或其他具名随从 HP=0 本身不跳过这些命令。这些提供状态区分守卫，不证明自然可达性或行动者存在。允许时，`followEntity` 解析两个引用，调用 `AddFollower` 安装行走脚本并登记物理随从。[研究操作数/处理器审阅（英文）](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md#membership-ai-and-the-two-follower-mechanisms)保留精确三元组与已有受控高字节观察。复用探索列表中已有随从仍会替换其行走脚本。这些操作不让任何人加入或出战，也不设置持久故事随从标志。其表偏移不保证观察到的最终位置。
 
 **已确认目标跟随：**只有 zone 调用方在脚本返回后设置 F67。目标重建替换临时行动者/脚本，使用普通随从表 F67 行分配 Peter。该行测试 F67，而非 F7/F39 或 AI 控制；即使提供 Caravan F65，Map6 也使用此普通表。其他随从标志仍独立。场景不设置持久 Sarah/Chester/Jaha/Kazin 随从标志。任何状态说明都必须区分成员身份、出战成员身份、AI 控制、临时跟随和 F67。
 
@@ -72,7 +72,7 @@ F707、F706、F67、成员身份、AI 与行动者存在都不守卫早期觐见
 
 完整程序没有自定义调用或金币变更命令。受审显示/token 链为 `{LEADER}` 重建列表，并执行文本/布局/输入工作；不经 `SetGold`、`IncreaseGold` 或 `DecreaseGold` 调用赠礼授予，也不直接写 `CURRENT_GOLD`。zone 调用方只设置 F702/F67。因此该受限源码链不实现所宣称的 +100 奖励。列表重建是真实文本侧状态效果，与入账分开。
 
-**未知：**自然到达的零售版觐见前后金币余额、创作者意图，以及针对该差异的任何重制决定。本指南保留叙事/状态不符，不提供运行时余额主张或修复。[研究礼物审阅](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md#the-narrated-gold-gift)拥有精确文本与服务锚点。
+**未知：**自然到达的零售版觐见前后金币余额、创作者意图，以及针对该差异的任何重制决定。本指南保留叙事/状态不符，不提供运行时余额主张或修复。[研究礼物审阅（英文）](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md#the-narrated-gold-gift)拥有精确文本与服务锚点。
 
 ## 6. 出发先产生请求，再设置调用方标志
 
@@ -119,6 +119,6 @@ init 返回与此读取之间没有无条件待处理清除。F702 已设/F67 �
 | 待处理使用方/控制 | [sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)，`eventRequestConsumption.consumerContexts.waitForEvent`；[sf2-common-maps-static-v1](../../../../../../tests/fixtures/h2/common-maps-static-v1.json) 与 [sf2-common-scripting-static-v1](../../../../../../tests/fixtures/h2/common-scripting-static-v1.json)。 | 共享访问/使用方事实，没有已执行的连续觐见至城镇组合。 |
 
 [脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)、[schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)、[状态块 schema](../../../../../../schemas/h2/map-script-engine-state-block.schema.json)、[map-init 验证器](../../../../../../src/sf2tool/h2/map_init.py) / [测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)，以及[请求消费验证器](../../../../../../src/sf2tool/h2/map_event_request_consumption.py)保留各自受限比较。其既有窄命令是 `uv run sf2 h2` 后接 `map-script-engine`、`common-stats`、`map-setup`、`map-entities`、`map-init`、`map-events`、`map-event-request-consumption`、`common-maps` 或 `common-scripting`。
-**本次文档切片未重跑这些验证轨道与 H3 测试夹具。**[研究复现所有者](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md#coverage-discriminators-and-reproduction)保留源码锚点与剩余组合。不主张重新调查源码或运行时观察，保留的未知项不自动授权获取。
+**本次文档切片未重跑这些验证轨道与 H3 测试夹具。**[研究复现所有者（英文）](../../../../../research/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md#coverage-discriminators-and-reproduction)保留源码锚点与剩余组合。不主张重新调查源码或运行时观察，保留的未知项不自动授权获取。
 
 本指南既不完成战役时序，也不完成 epic #514。英文原文将中文同步留待路线图另行安排；原版证据与未来重制决定保留各自所有者。

@@ -1,10 +1,10 @@
 # New Granseal 出发至 Battle09 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Peter 城堡觐见之后的选定接续始于 New Granseal 南出口。其大地图连接向东进入 Bedoe 区域，再向南进入 South Parmecia。**推断：**这是通往名为 `BATTLE_TO_RIBBLE` 遭遇的候选接续。**已确认静态内容：**跨越这些滚动边界时，探索继续运行；Battle09 准入则依赖普通入场或存续的重载请求，以及战斗解锁状态。两个开场脚本为空，但共享包装器仍改变介绍标志。**未知：**自然连续步行，以及此边界处完成的战斗准备。
 
-本文承接[Peter 城堡觐见与返回城镇](peter-castle-audience-through-town-return.md)。已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md)提供选定连接、使用方、zone 谓词与开场顺序。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#755](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/755) 的 Standard 严谨度协议。本指南支持内容/设计规划，止于 Battle09 start 分发器返回、紧邻 `ActivateEnemies` 之前；交战、结果、Ribble 内容和重制就绪不在本分段内。Fnnn 表示标志 nnn，战斗 ID 使用源码从零开始的表行。
+本文承接[Peter 城堡觐见与返回城镇](peter-castle-audience-through-town-return.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md)提供选定连接、使用方、zone 谓词与开场顺序。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#755](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/755) 的 Standard 严谨度协议。本指南支持内容/设计规划，止于 Battle09 start 分发器返回、紧邻 `ActivateEnemies` 之前；交战、结果、Ribble 内容和重制就绪不在本分段内。Fnnn 表示标志 nnn，战斗 ID 使用源码从零开始的表行。
 
 ## 1. 离开城镇携带历史、出战队伍状态与随从
 
@@ -43,7 +43,7 @@ Peter 城堡觐见之后的选定接续始于 New Granseal 南出口。其大地
 
 **已确认静态内容：**移动需要 zone 布局属性 `$1400` 才产生 zone 事件。zone 表默认项不意味着每个普通瓦片都分发它。在 Map72，选择先检查 X32/33/34、Y 通配的随机 Battle26 辅助，再检查 X25–30,Y37 的后期大炮处理器。F750 已设或 F805 未设时，大炮处理器立即返回；其较后函数体不在本分段内。默认项在 F523 未设时调用 Battle08 辅助，F523 已设时调用 Battle24 辅助。
 
-携带的 F508 已设使 Battle08 辅助进入已完成/随机分支，因此不保证选定 Map72 步行期间没有事件。[随机战斗所有者](../../../../../research/world/map-event-random-battle-state.md)拥有步数计数器、RNG 与请求产生。若请求到达普通战斗选择，Map72 行按 8,24,26 排序，触发点均通配：首个已解锁行胜出，而非最近战斗区域。这些可能中断阻止连续无中断旅程主张；其遭遇和较后场景函数体不在此审计。
+携带的 F508 已设使 Battle08 辅助进入已完成/随机分支，因此不保证选定 Map72 步行期间没有事件。[随机战斗所有者（英文）](../../../../../research/world/map-event-random-battle-state.md)拥有步数计数器、RNG 与请求产生。若请求到达普通战斗选择，Map72 行按 8,24,26 排序，触发点均通配：首个已解锁行胜出，而非最近战斗区域。这些可能中断阻止连续无中断旅程主张；其遭遇和较后场景函数体不在此审计。
 
 在 Map69，特定与默认 zone 后果不同：
 
@@ -102,11 +102,11 @@ F88 已设时，独立恢复分支恢复已存秒数，清除 F88 和 AI 内存�
 | 普通入场与战斗选择 | [sf2-common-maps-static-v1](../../../../../../tests/fixtures/h2/common-maps-static-v1.json)，`expected.mapFacts.battleTrigger`；[入场路由合同](../../../contracts/world/map-entry-routing-state.md)与[探索合同](../../../contracts/world/exploration-control-flow.md)。 | 通配符、区域先于完成、辅助局部变更；选定连接元组和滚动组合来自已接受研究，不是自然步行测试夹具。 |
 | 目标 init | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，`expected.primarySourceBodies[76]`、`[78]`、`[79]`。 | Map69 返回、Map72 F716/F10 与 Map73 F700/F508/F705 选择器；不保证滚动运行它们或服务完成。 |
 | zone 处理器选择/效果 | [sf2-map-events-static-v1](../../../../../../tests/fixtures/h2/map-events-static-v1.json) 与 [zone 程序分片](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)，Map69/72/73 的 `expected.zoneTargetPrograms`。 | 具名谓词和请求写入；不是自然首次 zone 或可通行布局。 |
-| 待处理请求与中断 | [sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)，`eventRequestConsumption.consumerContexts.waitForEvent` / `processMapEvent`；[请求所有者](../../../../../research/world/map-event-request-consumption.md)与[随机战斗所有者](../../../../../research/world/map-event-random-battle-state.md)。 | 轮询/清除/访问与共享辅助边界；行动者状态、剩余参数字节和请求存续需要上文保留的调用方历史。 |
+| 待处理请求与中断 | [sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)，`eventRequestConsumption.consumerContexts.waitForEvent` / `processMapEvent`；[请求所有者（英文）](../../../../../research/world/map-event-request-consumption.md)与[随机战斗所有者（英文）](../../../../../research/world/map-event-random-battle-state.md)。 | 轮询/清除/访问与共享辅助边界；行动者状态、剩余参数字节和请求存续需要上文保留的调用方历史。 |
 | 开场包装器与准备 | [sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)，`expected.cutsceneFacts.intro`；[sf2-battle-control-static-v1](../../../../../../tests/fixtures/h2/battle-control-static-v1.json)，`expected.controlFacts.mainLoop`；[sf2-battle-loop-static-v1](../../../../../../tests/fixtures/h2/battle-loop-static-v1.json)，`expected.lifecycleFacts`；[介绍合同](../../../contracts/battle/battle-cutscene-routing.md)。 | 共享标志与恢复/初始化边界；行 9 空目标与激活前组合是已接受研究，没有就绪回合（单次行动）或服务完成证明。 |
 | Peter 与脚本返回 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，force-state/control 命令事实；[出战队伍/名册合同](../../../contracts/party/party-roster-state.md)与前篇指南。 | 已加入/出战/AI/随从区别及终止符语义；不主张已加载行动者群、Peter AI 行动或自然控制。 |
 
-[map-init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与[测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)、[请求消费验证器](../../../../../../src/sf2tool/h2/map_event_request_consumption.py)与[schema](../../../../../../schemas/h2/map-event-request-consumption-static-fixture.schema.json)，以及[过场验证器](../../../../../../src/sf2tool/h2/battle_cutscenes.py)与[schema](../../../../../../schemas/h2-battle-cutscenes-static-fixture.schema.json)比较受限结构、溯源与测试夹具事实，不证明本自然路线。其 CLI 所有者是 `uv run sf2 h2` 后接 `map-init`、`map-events`、`map-event-request-consumption`、`map-event-random-battle-state`、`common-maps`、`battle-control`、`battle-loop`、`battle-cutscenes` 或 `map-script-engine`。**本次设计切片未重跑这些提取/运行时验证轨道。**[研究复现边界](../../../../../research/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md#coverage-controls-and-reproduction)拥有源码锚点与保留比较；可选派生载荷既不要求，也未生成。
+[map-init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与[测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)、[请求消费验证器](../../../../../../src/sf2tool/h2/map_event_request_consumption.py)与[schema](../../../../../../schemas/h2/map-event-request-consumption-static-fixture.schema.json)，以及[过场验证器](../../../../../../src/sf2tool/h2/battle_cutscenes.py)与[schema](../../../../../../schemas/h2-battle-cutscenes-static-fixture.schema.json)比较受限结构、溯源与测试夹具事实，不证明本自然路线。其 CLI 所有者是 `uv run sf2 h2` 后接 `map-init`、`map-events`、`map-event-request-consumption`、`map-event-random-battle-state`、`common-maps`、`battle-control`、`battle-loop`、`battle-cutscenes` 或 `map-script-engine`。**本次设计切片未重跑这些提取/运行时验证轨道。**[研究复现边界（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md#coverage-controls-and-reproduction)拥有源码锚点与保留比较；可选派生载荷既不要求，也未生成。
 
 **未知：**自然出口/边界/zone 可达性、碰撞及首次 zone 坐标；可达输入标志、随从与出战队伍；穿过全部服务后的完整行动者/请求状态；完成的滚动、加载、音乐/淡入淡出与解释器效果；实际战斗/输入就绪；以及存档持久性。这些缺口不是自动获取队列。Battle09 结果与 Ribble 需要另行已接受的后继证据。本指南既不完成战役时序，也不完成 epic #514，不选择引擎/产品变更；英文原文将中文同步留待路线图另行安排。
 

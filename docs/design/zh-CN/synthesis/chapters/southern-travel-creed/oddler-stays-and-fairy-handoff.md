@@ -1,12 +1,12 @@
 # Oddler 留下与 Fairy 交接
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 Oddler 说他想留在 Creed 身边，却解释不出原因。Creed 建议他休息并道别。场景布置这次告别，隐藏 Oddler 当前行动者，请求 Peter 和 Fairy 随队跟随。仅场景返回后，调用方才改变之后重新入场时用于选择 Oddler 与 Fairy 的标志。
 
 **推断：**这表达 Oddler 留在 Creed 身边、Fairy 随队同行。**已确认：**获准源码序列把当前行动者操作、有序调用方标志及后来人口重建分开。**未知：**自然到达区域（事件）、实际传入状态、呈现/跟随完成、可用控制及存档持久性。
 
-本指南接续 [Creed 返回与招募选择](creed-return-fairy-and-recruitment-choices.md)，消费 main `936748b0715fdc992b05833745b566953dc77de3` 上[已接受的 #957 研究](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)及已接受前篇。它止于紧接的条件区域（事件）返回及相关重新入场后果。步行离开宅邸、大地图路线和矮人治疗各有独立边界；Creed 建议向北不等于执行该旅程。此 Layer B 指南不选择重制规则或新观察工作。
+本指南接续 [Creed 返回与招募选择](creed-return-fairy-and-recruitment-choices.md)，消费 main `936748b0715fdc992b05833745b566953dc77de3` 上[已接受的 #957 研究（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)及已接受前篇。它止于紧接的条件区域（事件）返回及相关重新入场后果。步行离开宅邸、大地图路线和矮人治疗各有独立边界；Creed 建议向北不等于执行该旅程。此 Layer B 指南不选择重制规则或新观察工作。
 
 继续阅读 [Creed 离开、矮人恢复与 Cannon 赠礼](creed-departure-dwarf-recovery-and-cannon-gift.md)，了解选定矿洞路线、Fairy 恢复场景、依赖容量的赠礼及挖掘，直至各自调用方和重新入场边界。
 
@@ -14,7 +14,7 @@ Oddler 说他想留在 Creed 身边，却解释不出原因。Creed 建议他休
 
 **已确认：**房间区域（事件）表把 `(15,21)` 关联到 Map33_ZoneEvent0。匹配回调先检查 F774。未设置时选择[更早的 Goliath 场景](creed-mansion-entry-and-first-goliath-scene.md)，仅在其返回后设置 F774，然后返回，不继续落入 Oddler 告别。F785/F786 不能覆盖这个优先级。
 
-F774 已设置时，还必须 F785 已设置、F786 未设置才调用 `cs_5B466`。F785 来自更早的 Fairy 交互，即使其中受 Bowie-HP 守卫的跟随被跳过也会写入。告别门槛不检查 F787 或可招募者已加入标志：选择一名可招募者不是局部前提。它也没有 F784、F783、F762、F67/F68、HP、容量或成功跟随前提。[请求与门槛所有者](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#request-gate-and-actual-actors)保留全部三个表行、六条配置路由及精确分支/PC 关联。
+F774 已设置时，还必须 F785 已设置、F786 未设置才调用 `cs_5B466`。F785 来自更早的 Fairy 交互，即使其中受 Bowie-HP 守卫的跟随被跳过也会写入。告别门槛不检查 F787 或可招募者已加入标志：选择一名可招募者不是局部前提。它也没有 F784、F783、F762、F67/F68、HP、容量或成功跟随前提。[请求与门槛所有者（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#request-gate-and-actual-actors)保留全部三个表行、六条配置路由及精确分支/PC 关联。
 
 区域（事件）请求仍依赖工作布局类型、移动/碰撞和坐标产生。分发在选择回调前清除待处理事件；包装器重新选择当前配置并比较坐标低字节。传入一个 `(15,21)` 回调不是普通步行到达的证据。F785 未设置或 F786 已设置时，跳过告别及后续三次写入，但被调用回调仍会返回。默认回调仅返回；另一个特定行 `(12,14)` 有独立的 F783 守卫场景。
 
@@ -28,7 +28,7 @@ F774 已设置时，还必须 F785 已设置、F786 未设置才调用 `cs_5B466
 
 ## 房间中的告别
 
-**已确认：**[完整场景所有者](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#complete-scene-and-embedded-actions)按以下顺序布置、交谈和行动。摄像机目的地是视野请求，不是玩家移动或显示摄像机位置的证明。
+**已确认：**[完整场景所有者（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#complete-scene-and-embedded-actions)按以下顺序布置、交谈和行动。摄像机目的地是视野请求，不是玩家移动或显示摄像机位置的证明。
 
 场景请求视野 `(12,15)`，暂停，将 Peter 和 Bowie 转 Up，让 Oddler 发抖。Peter 询问 Oddler 的情况；Creed 说他明白了。Oddler 和 Fairy 朝 Up，Creed 被放到 `(17,15)` 朝 Down，并请求第二个视野 `(12,7)`。Peter、Oddler 和 Fairy 各收到等待式 Init 行动。它替换此前行动，包括 Fairy 更早的跟随和较慢 Init 属性；不重置位置，也不移除已有探索列表条目。
 
@@ -42,13 +42,13 @@ Creed 走 Right1 并朝 Down。他告诉首领以后会明白原因，请他们�
 
 在不同映射且布置/移动完成的前提下，Creed 路径为 `(17,15)→(17,17)→(15,17)→(15,21)→(16,21)→(15,21)→(14,21)→(15,21)`。Oddler 在隐藏前的路径为 `(16,22)→(16,21)→(15,21)→(15,20)→(15,17)`。五个 `faceDown1` 操作数改变朝向、更新精灵并 wait1，不增加 Down 移动。这些坐标推导要求相对行动完成，不证明观察到的无碰撞运动。
 
-[对话与行动消费者所有者](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#dialogue-action-consumers-and-limits)保留全部十四个文本位置1932–1945、所归属说话者、命令形式和控制。Oddler 四条台词使用编码 `$801F`；实际映射精灵决定立绘/提示音，已打开的立绘不会替换。LEADER 重建军团，读取首名出战成员名字，不一定是 Bowie。这不改变独立 Bowie HP 守卫。虚弱、意愿和 Creed 的解释是台词，不是已实现治疗，也不证明 Oddler 状况的成因。
+[对话与行动消费者所有者（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#dialogue-action-consumers-and-limits)保留全部十四个文本位置1932–1945、所归属说话者、命令形式和控制。Oddler 四条台词使用编码 `$801F`；实际映射精灵决定立绘/提示音，已打开的立绘不会替换。LEADER 重建军团，读取首名出战成员名字，不一定是 Bowie。这不改变独立 Bowie HP 守卫。虚弱、意愿和 Creed 的解释是台词，不是已实现治疗，也不证明 Oddler 状况的成因。
 
 N 为换行；W1/W2 等待输入，W2 带继续箭头/声音行为。单条文本关闭窗口并 sleeps10；继续文本不如此。解释器入口清除跳过状态后，Debug/P2 Start 可锁存文本跳过，省略显示和游标推进，而其他命令仍执行。发抖、点头、摄像机滚动、精灵更新和源码睡眠是服务请求，不是实测呈现或经过时间的证据。内联行动等待只轮询选定行动者的 Idle 指针，没有超时或全局屏障。异步实体服务和指针替换在全文中仍有关。
 
 ## 隐藏与新的当前跟随
 
-**已确认：**[HideEntity 与跟随消费者](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#five-hides-two-current-follows-and-ordered-return)区分可见布置、查找/列表状态与军团成员资格。每次隐藏把当前/目的地坐标设为 `$7000`，使所有匹配查找失效，若物理行动者在探索列表中则移除。它保留记录、精灵/标志及旧行动指针；普通实体服务在当前 X 至少为 `$7000` 时跳过，使其休眠。
+**已确认：**[HideEntity 与跟随消费者（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#five-hides-two-current-follows-and-ordered-return)区分可见布置、查找/列表状态与军团成员资格。每次隐藏把当前/目的地坐标设为 `$7000`，使所有匹配查找失效，若物理行动者在探索列表中则移除。它保留记录、精灵/标志及旧行动指针；普通实体服务在当前 X 至少为 `$7000` 时跳过，使其休眠。
 
 因此，四名可招募者隐藏移除当前跟随/列表参与，不移除招募或出战资格。它们不等待先前缩小。更早缩小尾部停在 `(63,63)`，低于该服务阈值，并保留查找/列表条目。隐藏和缩小后果不同。别名可使一次隐藏令多个逻辑行动者失效，并重定向后续操作；五次隐藏不保证影响五个不同物理行动者，也不证明渲染消失。
 
@@ -66,7 +66,7 @@ N 为换行；W1/W2 等待输入，W2 带继续箭头/声音行为。单条文�
 
 ## 后来重新入场选择什么
 
-**已确认：**[重新入场与变化前提证据](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#current-population-fresh-entry-and-changed-premises)独立于这些当前操作。告别返回不重载房间。Goliath128 仍是当前行动者，Creed129 仍是场景布置后的行动者，Fairy130 仍是当前 Fairy；B31 与可招募者隐藏/休眠。跟随/服务运行后，最后一次显式 Bowie/Peter/Fairy 布置不保证是稳定位置。此时尚未构建居民 Oddler130。
+**已确认：**[重新入场与变化前提证据（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#current-population-fresh-entry-and-changed-premises)独立于这些当前操作。告别返回不重载房间。Goliath128 仍是当前行动者，Creed129 仍是场景布置后的行动者，Fairy130 仍是当前 Fairy；B31 与可招募者隐藏/休眠。跟随/服务运行后，最后一次显式 Bowie/Peter/Fairy 布置不保证是稳定位置。此时尚未构建居民 Oddler130。
 
 显式重新 LoadMap 重建随从/居民并运行选定 init。CURRENT255 复用保留当前行动者/布局。重新入场清除临时256–383 并设置80，保留这里讨论的非临时标志；这是加载行为，不是已验证存档存储。访问器重新选择当前标志，因此它们之间的变化可产生混合前提。
 
@@ -90,14 +90,14 @@ N 为换行；W1/W2 等待输入，W2 带继续箭头/声音行为。单条文�
 
 | 审阅表面 | 处置 |
 | --- | --- |
-| [#957 研究](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)与 [#953 前篇](../../../../../research/chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md) | 完整告别、行动者/行动、文本、Init 替换、编码高字节守卫、有序返回及重新构建/复用选择仍分开。 |
+| [#957 研究（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)与 [#953 前篇（英文）](../../../../../research/chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md) | 完整告别、行动者/行动、文本、Init 替换、编码高字节守卫、有序返回及重新构建/复用选择仍分开。 |
 | `sf2-map-events-static-v1`：[routing-setup](../../../../../../tests/fixtures/h2/map-events/routing-setup.json)、[zone-programs](../../../../../../tests/fixtures/h2/map-events/zone-programs.json) | 选定载荷/schema 检查在三个行、六条路由、全部十四个 zone0 操作、相邻 zone1 和默认上一致；不声称自然可达。 |
 | `sf2-map-init-static-v1`：[fixture](../../../../../../tests/fixtures/h2/map-init-static-v1.json) | Schema 及完整选定普通/替代体在独立784 尾部、F22 分支和替代返回上一致。 |
 | `sf2-map-script-engine-static-v1`：[fixture](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json) | Schema 与选定 Init/内联行动/hide/follow 守卫一致；处理器事实不提供私有完整场景语料。 |
 | [事件加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)、[事件验证器](../../../../../../src/sf2tool/h2/map_events.py)、[脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)、[脚本 schema](../../../../../../schemas/h2/map-script-engine-fixture.schema.json) | 分片身份/形状/顺序与溯源/预期相等是独立检查；仅形状合法不证明原版行为。 |
 | [出战队伍/名册](../../../contracts/party/party-roster-state.md#处理器边界)与[对话](../../../contracts/interface/dialogue-system.md#已确认的静态合同) | 跟随、成员资格、名字/游标和输入服务保留有界范围，不证明自然可达或持久性。 |
 
-[复现所有者](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#reproduction-and-review-boundary)固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。它拥有完整67 记录、九个内联体及十四个文本关联。原英文综合切片的检出缺少固定 upstream 和保留对：不获取、不重新生成，也不声称新源码/输出比较。所有者命令仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events` 和 `uv run sf2 h2 map-script-engine`；原英文切片不为文字修改而运行这些命令。
+[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md#reproduction-and-review-boundary)固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。它拥有完整67 记录、九个内联体及十四个文本关联。原英文综合切片的检出缺少固定 upstream 和保留对：不获取、不重新生成，也不声称新源码/输出比较。所有者命令仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events` 和 `uv run sf2 h2 map-script-engine`；原英文切片不为文字修改而运行这些命令。
 
 [#957 冻结交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/957#issuecomment-6178978855)及[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/959#issuecomment-6179038849)保留 head5f45f3f8/treee851dcc4/base17718cd3、未变18,285,979-byte 对0.085s、CI38640917634 和完整关联。Init/F22/编码结束修正，以及已修正源码路径/截断输出诊断，仍作为检查证据保留。
 

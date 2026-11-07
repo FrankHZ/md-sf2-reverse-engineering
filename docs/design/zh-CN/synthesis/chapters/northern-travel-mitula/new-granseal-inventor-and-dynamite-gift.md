@@ -1,16 +1,16 @@
 # New Granseal 发明家与 Dynamite 赠礼
 
-> 本文是[规范英文原文：New Granseal Inventor and Dynamite Gift](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文：New Granseal Inventor and Dynamite Gift](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 在 New Granseal，发明家有可清除 North Cave 岩石的爆炸物，却警告使用者也会被炸飞。后来他要求 Astral 许可。返回觐见标志设置后，已加入军团的可搜索物品栏中实际存在 Cannon 会改变交谈：发明家认出安全投送方法，随从 B 点头，发明家提供 Dynamite。最早有空间的已加入成员可收取。物品栏全满则推迟赠礼，保留重试机会。
 
 **推断：**故事表现 Astral 许可将爆炸物与 Cannon 配合使用。**已确认：**许可标志、实际物品栏、映射行动者手势、物品插入、收取宣布与调用方完成各自独立。此交互既不消费 Cannon，也不打开洞穴。**未知：**自然可达、传入状态、表现/服务完成、可用控制与存档持久性。
 
-本文接续[返回 New Granseal 与 Astral 跟随](new-granseal-return-and-astral-following.md)，依据 main `36b0026bca3f7aaa5dee2b1d366312534000c522` 上[已接受的 #969 研究](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)及其前序成果。指南止于发明家局部交互返回及必要的重新入场后果。Janet 招募与 North Cave 爆破有独立边界。此 Layer B 解释不选择重制规则或新观察工作。
+本文接续[返回 New Granseal 与 Astral 跟随](new-granseal-return-and-astral-following.md)，依据 main `36b0026bca3f7aaa5dee2b1d366312534000c522` 上[已接受的 #969 研究（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)及其前序成果。指南止于发明家局部交互返回及必要的重新入场后果。Janet 招募与 North Cave 爆破有独立边界。此 Layer B 解释不选择重制规则或新观察工作。
 
 ## 从城堡到发明家
 
-**已确认：**[选定返回与人口所有者](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#castle-exit-current-town-and-fresh-population)指出 Map7 任意 X/Y23 的南出口行：无滚动到城镇 Map6 `(11,1)` Down。通配不证明每个 X 都可通行。移动必须产生布局传送请求，请求还须在待处理槽保留到分发。坐标低字节替换保留已接受高字节前提。Town6 没有标志切换地图或战斗坐标行。这是条件连接，不证明自然步行到发明家的路线。
+**已确认：**[选定返回与人口所有者（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#castle-exit-current-town-and-fresh-population)指出 Map7 任意 X/Y23 的南出口行：无滚动到城镇 Map6 `(11,1)` Down。通配不证明每个 X 都可通行。移动必须产生布局传送请求，请求还须在待处理槽保留到分发。坐标低字节替换保留已接受高字节前提。Town6 没有标志切换地图或战斗坐标行。这是条件连接，不证明自然步行到发明家的路线。
 
 普通重新探索准入清除待处理状态，应用带 HP/状态限制的已接受存活/不死治疗，重建行动者与精灵，清除临时标志256–383，设置 F80 并运行 init。剧情标志、军团成员资格与玩家模式仍是传入状态。当前城镇中的回调不重复该准入，也不重建随从。
 
@@ -22,7 +22,7 @@
 
 ## 早期警告与许可
 
-**已确认：**[完整回调](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#complete-callback-and-nod-scene)先检查 F802。未设时，F702 选择早期爆炸物警告（1063–1065）；F702 未设则给发明家的沉思行1055。警告点名洞穴岩石，随后因使用者危险而收回提议。即使传入 F804/F805 也不能覆盖这个早期分支。
+**已确认：**[完整回调（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#complete-callback-and-nod-scene)先检查 F802。未设时，F702 选择早期爆炸物警告（1063–1065）；F702 未设则给发明家的沉思行1055。警告点名洞穴岩石，随后因使用者危险而收回提议。即使传入 F804/F805 也不能覆盖这个早期分支。
 
 F802 已设时，在 F805 前检查 F804。F804 已设显示1122，请求移除洞穴岩石，不搜索物品栏，也不提供替代品。F804 未设/F805 未设时，1114–1115 说 Astral 禁止使用，需要许可。该分支没有 Cannon 搜索或 B 查找。
 
@@ -38,7 +38,7 @@ F802 已设时，在 F805 前检查 F804。F804 已设显示1122，请求移除�
 
 ## 怎样才算持有 Cannon
 
-**已确认：**[物品栏搜索与收件人分析](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#inventory-predicate-and-admitted-recipient)区分已加入军团成员资格与出战成员资格。UpdateForce 升序扫描成员 IDs0–29，把所有已加入成员放入 TARGETS_LIST，包括后备与死亡成员。Active 标志另建出战/后备列表。两个选定物品服务均不筛选 HP、职业、当前地图可见性或跟随；B31 在已加入成员扫描之外。
+**已确认：**[物品栏搜索与收件人分析（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#inventory-predicate-and-admitted-recipient)区分已加入军团成员资格与出战成员资格。UpdateForce 升序扫描成员 IDs0–29，把所有已加入成员放入 TARGETS_LIST，包括后备与死亡成员。Active 标志另建出战/后备列表。两个选定物品服务均不筛选 HP、职业、当前地图可见性或跟随；B31 在已加入成员扫描之外。
 
 GetItemInventoryLocation 重建该列表，再升序检查成员。它计数全部四个字槽的占用项，却只搜索 `count-1` 降至0 的槽。每项索引先以 `$7F` 掩码，再与未掩码请求字比较，此处为 Cannon `$72`。因此装备/损坏项位不阻碍这个精确请求。首个匹配成员胜出，该成员已检查匹配槽中最高者胜出。穷尽返回完整字 `-1`；调用方以该哨兵值比较 `d0.w`，忽略返回的持有者/槽。字节测试或布尔值不是这个合同。
 
@@ -50,7 +50,7 @@ GetItemInventoryLocation 重建该列表，再升序检查成员。它计数全�
 
 B 是查找选择器，不是物理槽位，也不保证是 Astral。解析掩码为一个字节，将映射物理索引乘32。普通查找缺失可别名到 physical0；隐藏 `-1` 映射没有安全缺失守卫。变化或重复映射改变实际行动者。字节朝向命令的死亡己方角色守卫只适用于30 以下，因此31 即使映射死亡 Bowie 也绕过。字操作数点头没有存活状态守卫。它请求动画计数器变化、Sleep10/20/10、变换/DMA 与精灵更新，再将计数器归0；不验证 Astral 精灵、不恢复旧计数器，也不等待所有运动。可见点头完成仍未知。
 
-Cannon 搜索失败时，1116 询问 Astral，随后回调借 B 的立绘/台词上下文显示关于危险与安全引爆的1117–1118。[上下文所有者](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#text-borrowed-context-and-receiving-acknowledgement)区分预期 Astral209（portrait31/bleep6）与实际映射精灵。B 缺失/变化影响台词、立绘与布置。回调在借用前复制当前 speech，却不在返回前恢复该副本。仅关闭对话不等于恢复 speech 或关闭立绘。
+Cannon 搜索失败时，1116 询问 Astral，随后回调借 B 的立绘/台词上下文显示关于危险与安全引爆的1117–1118。[上下文所有者（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#text-borrowed-context-and-receiving-acknowledgement)区分预期 Astral209（portrait31/bleep6）与实际映射精灵。B 缺失/变化影响台词、立绘与布置。回调在借用前复制当前 speech，却不在返回前恢复该副本。仅关闭对话不等于恢复 speech 或关闭立绘。
 
 成功点头场景不解析 speech/portrait。因此1120 与收取辅助程序继承发明家包装器上下文：普通 dwarf226 无立绘、bleep6。点头和收取宣布都不切换到旁白，也不使 B 成为收件人。
 
@@ -74,7 +74,7 @@ AddItem 从0 向上搜索全部四槽，找首个掩码索引为 NOTHING 的项�
 
 直接 `txt`/`clsTxt` 不使用过场跳过锁存。点头脚本在入场清除锁存，但没有可跳过文本或 csWait。其结束在对话打开时有条件地等待视野滚动，清除滚动速度并返回。跳过场景不能成为省略直接赠礼文本或输入服务的依据。
 
-[实体包装器与有序返回](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#ordered-return-retries-and-changed-state)重新选择当前配置/事件表，解析交互行动者，保存其映射物理身份、朝向与选项。行 bit0 可选等待一个 VInt，让该行动者朝传入相对方向的反向；default0 禁用，后期1 启用。它在回调期间清除 VInt_UpdateEntities。这些发明家行的 bit1 未设，因此不请求恢复保存朝向。回调返回时关闭立绘、关闭对话、重新启用实体更新、恢复寄存器并返回。不恢复借用 speech/name RAM、不等待全部行动者，也不证明下一次可用控制读取。实体清理区别于前序区域（事件）包装器等待。
+[实体包装器与有序返回（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md#ordered-return-retries-and-changed-state)重新选择当前配置/事件表，解析交互行动者，保存其映射物理身份、朝向与选项。行 bit0 可选等待一个 VInt，让该行动者朝传入相对方向的反向；default0 禁用，后期1 启用。它在回调期间清除 VInt_UpdateEntities。这些发明家行的 bit1 未设，因此不请求恢复保存朝向。回调返回时关闭立绘、关闭对话、重新启用实体更新、恢复寄存器并返回。不恢复借用 speech/name RAM、不等待全部行动者，也不证明下一次可用控制读取。实体清理区别于前序区域（事件）包装器等待。
 
 ## 变化状态、重复与中断前缀
 

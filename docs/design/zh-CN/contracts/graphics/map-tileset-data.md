@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`map-tileset-data.md`](../../../contracts/graphics/map-tileset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-tileset-data.md`（英文规范源）](../../../contracts/graphics/map-tileset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. 引用瓦片集与瓦片计数元数据的 32 个有序私有动画头记录；
 5. 受限公开总计、使用计数、分布、一致性结果与溯源。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-map-tileset-decode-v1`，位于 [`tests/fixtures/h2/map-tileset-decode-v1.json`](../../../../../tests/fixtures/h2/map-tileset-decode-v1.json)。其带来源所有者是[Map Content Tables 与 Binary Payload 一致性](../../../../research/world/map-content.md)与[Technical Graphics](../../../../research/presentation/technical-graphics.md)。受限源根是 `data/graphics/maps/maptilesets/entries.asm`、115 个私有压缩资源文件、`data/maps/entries/mapXX/00-tilesets.asm` 下的 79 个地图头源、`data/maps/entries/mapXX/9-animations.asm` 下的 32 个在场动画头与 `code/common/maps/mapload.asm` 中的资源消费者身份。
+此处消费的唯一可执行所有者是 fixture id `sf2-map-tileset-decode-v1`，位于 [`tests/fixtures/h2/map-tileset-decode-v1.json`](../../../../../tests/fixtures/h2/map-tileset-decode-v1.json)。其带来源所有者是[Map Content Tables 与 Binary Payload 一致性（英文）](../../../../research/world/map-content.md)与[Technical Graphics（英文）](../../../../research/presentation/technical-graphics.md)。受限源根是 `data/graphics/maps/maptilesets/entries.asm`、115 个私有压缩资源文件、`data/maps/entries/mapXX/00-tilesets.asm` 下的 79 个地图头源、`data/maps/entries/mapXX/9-animations.asm` 下的 32 个在场动画头与 `code/common/maps/mapload.asm` 中的资源消费者身份。
 
 精确未来 research-index 关联只有 `auxiliary.data.pt-maptilesets`。fixture 的 `p_pt_MapTilesets`、`LoadStackCompressedData`、`LoadMapTilesets` 与 `LoadMapArea` 身份保持受限溯源。它们不获得本合同，也不把私有静态资源合同变成指针接口、解压服务、地图生命周期、动画、转移或渲染合同。
 
@@ -103,7 +103,7 @@ fixture 还记录聚合解码器诊断：
 
 公开投影只保留 79 地图、395 位置、326 引用、69 哨兵与 100 唯一索引总计。它不发布完整地图到槽赋值图。静态引用不建立自然故事可达性、访问顺序、实际加载频率或最终渲染。
 
-共享六字节地图头的调色板字节属于[map-palette-data](../../../contracts/graphics/map-palette-data.md)。本合同验证瓦片集引用边界，而不声称或复制调色板身份、颜色零变换或呈现语义。
+共享六字节地图头的调色板字节属于[map-palette-data](map-palette-data.md)。本合同验证瓦片集引用边界，而不声称或复制调色板身份、颜色零变换或呈现语义。
 
 ## 有序动画引用边界
 
@@ -128,7 +128,7 @@ fixture 还记录聚合解码器诊断：
 
 私有导入器保留每个动画头的有序地图索引、源路径、头地址、瓦片集索引与瓦片计数。公开投影只保留总计与分布，而非完整赋值列表。
 
-动画头证明静态引用与受限元数据形状。它不证明回调节奏、缓存布局、替换顺序、VRAM 目标、可见动画、帧时序、正常故事可达性或已接受 source/消费者边界之外的瓦片计数字段含义。那些行为保持[map-exploration](../../../contracts/world/map-exploration.md)及其运行时所有者。
+动画头证明静态引用与受限元数据形状。它不证明回调节奏、缓存布局、替换顺序、VRAM 目标、可见动画、帧时序、正常故事可达性或已接受 source/消费者边界之外的瓦片计数字段含义。那些行为保持[map-exploration](../world/map-exploration.md)及其运行时所有者。
 
 ## 组合静态使用边界
 
@@ -210,11 +210,11 @@ MapTilesetPublicSummary {
 
 本合同不拥有：
 
-- 地图选择、加载时间线、重载、工作状态、区域选择、运行时块变更、动画调度或持久性，仍归[map-exploration](../../../contracts/world/map-exploration.md)及其证据所有者；
-- blockset、解码 64×64 布局、别名、碰撞与可通过性，仍归[map-layout-data](../../../contracts/graphics/map-layout-data.md)与相邻地图所有者；
-- 调色板身份、颜色字、颜色零变换、淡入或调色板呈现，仍归[map-palette-data](../../../contracts/graphics/map-palette-data.md)与图形所有者；
-- Stack 解压服务 ABI 或任何必需编解码器微实现，仍归[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)与 technical-graphics 所有者；
-- VInt 调度、CRAM/VRAM DMA、中断节奏、转移完成与硬件时序，仍归[interrupt-dma-and-trap-state](../../../contracts/system/interrupt-dma-and-trap-state.md)；
+- 地图选择、加载时间线、重载、工作状态、区域选择、运行时块变更、动画调度或持久性，仍归[map-exploration](../world/map-exploration.md)及其证据所有者；
+- blockset、解码 64×64 布局、别名、碰撞与可通过性，仍归[map-layout-data](map-layout-data.md)与相邻地图所有者；
+- 调色板身份、颜色字、颜色零变换、淡入或调色板呈现，仍归[map-palette-data](map-palette-data.md)与图形所有者；
+- Stack 解压服务 ABI 或任何必需编解码器微实现，仍归[graphics-service-state](graphics-service-state.md)与 technical-graphics 所有者；
+- VInt 调度、CRAM/VRAM DMA、中断节奏、转移完成与硬件时序，仍归[interrupt-dma-and-trap-state](../system/interrupt-dma-and-trap-state.md)；
 - 地图精灵图形、特殊精灵、UI 图形、战斗图形、立绘、瓦片集到布局组合、瓦片语义、动画帧或最终可见呈现；
 - `sf2-auxiliary-data-static-v1`、`tech.interfaces.ptr-s08`、`map.data.*`、函数/服务记录与所有兄弟关联；
 - 私有原版压缩字节、解码美术、hash 与完整赋值图；
@@ -274,13 +274,13 @@ H4 可以在导入构建、惰性或运行时前解码与变换私有瓦片集�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 指针与载荷语料 | **已确认静态** | `sf2-map-tileset-decode-v1`；[fixture](../../../../../tests/fixtures/h2/map-tileset-decode-v1.json) | 115 个有序私有资源、固定解码形状、精确一致性；载荷/hash 保持私有 |
-| 普通地图引用 | **已确认静态** | 同一 fixture；[map-content 研究](../../../../research/world/map-content.md) | 79 个私有五槽头与公开总计；无自然可达性或运行时生命周期声称 |
+| 普通地图引用 | **已确认静态** | 同一 fixture；[map-content 研究（英文）](../../../../research/world/map-content.md) | 79 个私有五槽头与公开总计；无自然可达性或运行时生命周期声称 |
 | 动画引用 | **已确认静态** | 同一 fixture；map-content/technical-graphics 所有者 | 32 个私有头与公开分布；无节奏、缓存、转移或可见帧含义 |
 | 组合静态使用 | **已确认静态缺席** | 同一 fixture | 114 已引用且索引 29 缺席静态面；运行时不可达性保持未知 |
-| 解码器诊断 | **已确认静态元数据** | 同一 fixture；[technical-graphics 研究](../../../../research/presentation/technical-graphics.md) | 语料诊断不规定编解码器微实现 |
+| 解码器诊断 | **已确认静态元数据** | 同一 fixture；[technical-graphics 研究（英文）](../../../../research/presentation/technical-graphics.md) | 语料诊断不规定编解码器微实现 |
 | auxiliary 聚合 | 排除执行所有者 | `sf2-auxiliary-data-static-v1` | 宽清单此处不提供注册或兄弟关联 |
-| 地图构建与动画生命周期 | 独立所有者证据 | [map-exploration](../../../contracts/world/map-exploration.md) | 私有资源语料不拥有加载顺序、变更、缓存、持久性或动画运行时 |
-| 解压、DMA 与渲染 | 独立所有者 / **未知** | [graphics service](../../../contracts/graphics/graphics-service-state.md)；[interrupt 合同](../../../contracts/system/interrupt-dma-and-trap-state.md) | 溯源身份不证明转移完成、时序或最终呈现 |
+| 地图构建与动画生命周期 | 独立所有者证据 | [map-exploration](../world/map-exploration.md) | 私有资源语料不拥有加载顺序、变更、缓存、持久性或动画运行时 |
+| 解压、DMA 与渲染 | 独立所有者 / **未知** | [graphics service](graphics-service-state.md)；[interrupt 合同](../system/interrupt-dma-and-trap-state.md) | 溯源身份不证明转移完成、时序或最终呈现 |
 
 ## 开放问题
 

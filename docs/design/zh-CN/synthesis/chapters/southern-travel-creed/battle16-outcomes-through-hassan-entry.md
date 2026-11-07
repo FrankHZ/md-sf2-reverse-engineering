@@ -1,10 +1,10 @@
 # Battle16 结果、下筏与条件 Hassan 入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 击败 Kraken 可让出战队伍以木筏模式返回 South Parmecia。败北或逃脱改选 Polca 存档点。离筏是独立事件：保存离开位置、安排向前一步、恢复跟随，最后返回步行模式。随后选定 South Parmecia 出口请求 Hassan，其实体群与 init 取决于当前标志。出口与城镇入场均不确立所有人已上岸或步行控制可用。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md)支持下文结果、下筏与入场机制。**推断：**一致的行动者与已完成移动可以组合为遭遇后的成功登陆。**未知：**自然交战/旅行、实际调用方状态、服务完成、原版表现、可用输入与持久性。Fnnn 表示标志 nnn；除另指外，坐标为地图瓦片操作数，记录索引从零开始。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md)支持下文结果、下筏与入场机制。**推断：**一致的行动者与已完成移动可以组合为遭遇后的成功登陆。**未知：**自然交战/旅行、实际调用方状态、服务完成、原版表现、可用输入与持久性。Fnnn 表示标志 nnn；除另指外，坐标为地图瓦片操作数，记录索引从零开始。
 
 前段准入/start 边界见 [Kraken 现身与 Battle16 进入](south-parmecia-through-kraken-battle16-entry.md)，独立登乘机制见[木筏登乘](polca-raft-boarding-through-south-parmecia-entry.md)。本指南止于重建 Hassan 的 init 与首次条件控制交接，早于城镇行动、zone、实体、物品、服务对话、祭司事件、Rick/Rohde 互动或后续剧情。不增加连续游玩或重制能力。
 
@@ -16,7 +16,7 @@
 
 Battle16 钩子要求 Bowie 存活且 enemy128 为零 HP。第一个初始化敌人行是 Kraken 头；谓词测试该槽位 HP，不测试名称或精灵。F516 清除选择空败北脚本；F516 已设则跳过。两者都到达首领尾部。Battle16 首领行值为 -1，因此尾部将全部剩余非零 HP 敌人加入死亡处理队列。
 
-死亡处理执行表现/属性记账，并把列出的战斗员 X 标为 -1。计数要求 X 非负且 HP 非零；Bowie HP0 强制零己方。因此击败头部可将存活肢体排除计数，而不把其 HP 变为零。两类计数同时为零选择败北。头部若仅在行动后效果中死亡，该处不会额外调用钩子；死亡服务停滞不能确立胜利完成。[结果所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#outcome-selection-and-return-state)保留精确调用方、首领与计数关联。
+死亡处理执行表现/属性记账，并把列出的战斗员 X 标为 -1。计数要求 X 非负且 HP 非零；Bowie HP0 强制零己方。因此击败头部可将存活肢体排除计数，而不把其 HP 变为零。两类计数同时为零选择败北。头部若仅在行动后效果中死亡，该处不会额外调用钩子；死亡服务停滞不能确立胜利完成。[结果所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#outcome-selection-and-return-state)保留精确调用方、首领与计数关联。
 
 | 选定结果 | 状态与返回后果 |
 | --- | --- |
@@ -51,13 +51,13 @@ Battle16 钩子要求 Bowie 存活且 enemy128 为零 HP。第一个初始化敌
 
 重新返回 Map69 时，探索清除待处理状态、减少/钳位步数计数器、治疗符合条件己方、加载地图/瓦片并重建实体。选择当前 map69/battle255，清除临时 flags256–383，设置 F80。Map69 无固定配置行动者，init 直接返回。战斗行动者/查找表被替换。Mode2 给 main0 木筏精灵，将探索列表行动者移至 `(64,64)` 并安装站立行动，在该处以 Left 声明独立物理木筏31，lookup63→31。此分支既不需要 F64，也不需要 RAFT_MAP=69，不保存元组。
 
-当前随从标志提供新实体群；F65 与 overworld69 共同选择大地图表。实体群与治疗均不证明特定出战名册。随后为条件音乐/淡入和 `WaitForEvent`；待处理为零时，物理0 接收 mode2 控制器。[返回所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#complete-after-scene-and-fresh-south-parmecia-return)保留完整场景与实体群边界；实际更新/输入完成仍未知。
+当前随从标志提供新实体群；F65 与 overworld69 共同选择大地图表。实体群与治疗均不证明特定出战名册。随后为条件音乐/淡入和 `WaitForEvent`；待处理为零时，物理0 接收 mode2 控制器。[返回所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#complete-after-scene-and-fresh-south-parmecia-return)保留完整场景与实体群边界；实际更新/输入完成仍未知。
 
 ## 离开木筏
 
 **已确认生产者：**尽管源码名称如此，mode2 选择 `eas_Caravan` 和实际实体 opcode8。输入、边界与当前行动者阻挡检查后，门/传送/移动标记分支优先。否则原始工作布局字按无符号解释小于 `$C000` 时请求**数值5**，不执行移动尾部；至少 `$C000` 则不请求。尝试朝向可能已经改变，但 type5 分支不推进目的地。F64、木筏坐标、成员资格和战斗标志不是附加生产测试。
 
-固定源码中 `MAP_EVENT_GETOUTOFCARAVAN=5`，`MAP_EVENT_GETOUTOFRAFT=4`。实际 numeric5 路径为 `ProcessMapEventType5_GetOutOfRaft → j_MapEventType5 → MapEventType5`。探索先清除待处理状态。与登乘不同，此消费者没有对齐/准入拒绝。[完整顺序所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#numeric-type5-tuple-save-disembark-and-restoration)支持如下序列：
+固定源码中 `MAP_EVENT_GETOUTOFCARAVAN=5`，`MAP_EVENT_GETOUTOFRAFT=4`。实际 numeric5 路径为 `ProcessMapEventType5_GetOutOfRaft → j_MapEventType5 → MapEventType5`。探索先清除待处理状态。与登乘不同，此消费者没有对齐/准入拒绝。[完整顺序所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#numeric-type5-tuple-save-disembark-and-restoration)支持如下序列：
 
 1. 把当前地图与**物理0 的目的地**保存至 RAFT_MAP/X/Y。每个目的地字先符号扩展，再除以每瓦片384 内部单位，存入商的低字节。此为向前移动之前的离筏位置，不是登陆点或物理31 位置。它是 RAM 更新，不是磁盘/SRAM 持久性回执。
 2. 令物理0 空闲，设置精灵链接排序 byte_FFAFB0=1，运行 `cs_45470` 全部四条记录。
@@ -87,7 +87,7 @@ Battle16 钩子要求 Bowie 存活且 enemy128 为零 HP。第一个初始化敌
 
 本请求包含传送声音，且**确实使用普通探索 type1 消费**：清除待处理，请求/清除声音，令 main0 空闲，退出探索调用层，采样玩家坐标，替换非负 X/Y 并使用传入朝向。返回 `(9,14,1,Down,result0)` 至 `MainLoop/@Start`。保留 PLAYER_TYPE 与 RAFT_MAP/X/Y。单独传入非零 parameter1 会走滚动，而非本行无滚动路线。
 
-Map9 没有切换表替换，且**没有战斗地图行**。因此不论传入解锁标志如何，CheckBattle 此处均不准入战斗。Hassan 入场本身不启动 Battle17/18。[请求所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#selected-map69-to-hassan-request)保留完整行比较与符号到编号关联。
+Map9 没有切换表替换，且**没有战斗地图行**。因此不论传入解锁标志如何，CheckBattle 此处均不准入战斗。Hassan 入场本身不启动 Battle17/18。[请求所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#selected-map69-to-hassan-request)保留完整行比较与符号到编号关联。
 
 ## Hassan 实体群与条件控制
 
@@ -110,11 +110,11 @@ Map9 没有切换表替换，且**没有战斗地图行**。因此不论传入�
 
 交通实体群先于 init。Mode2 再次给 main0 木筏精灵，把列表随从放在 `(64,64)` 站立，并在该处声明物理31，不论 F64/已保存地图。Mode0 用 Bowie 精灵，且仅当 F64 与 RAFT_MAP=9 时声明独立木筏；保存在69 的元组不合格。两条路径均不改变已保存元组或规范化模式。Init 随后可移动映射行动者，包括传入 Rick 用例中的 main0。
 
-init 后为条件音乐/淡入与 `WaitForEvent`。无待处理事件时，物理0 在 mode0 接收步行控制，在 mode2 接收 opcode8 控制器。其他传入模式保留共享选择器行为。init 已返回、主角在地图外或服务未完成，都不能确立可用步行。[实体群/控制所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#fresh-hassan-population-init-and-conditional-control)保留精确操作与行动者规则。本指南止于任何城镇输入或交互之前。
+init 后为条件音乐/淡入与 `WaitForEvent`。无待处理事件时，物理0 在 mode0 接收步行控制，在 mode2 接收 opcode8 控制器。其他传入模式保留共享选择器行为。init 已返回、主角在地图外或服务未完成，都不能确立可用步行。[实体群/控制所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#fresh-hassan-population-init-and-conditional-control)保留精确操作与行动者规则。本指南止于任何城镇输入或交互之前。
 
 ## 证据追踪与未解问题
 
-**已确认溯源：**已接受 #824/PR826 研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现所有者](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#reproduction-and-evidence-limits)列出源码主体、选定记录与未改变的保留比较配方。本指南使用该已接受审阅，不重新调查源码、重建载荷或采集运行时。
+**已确认溯源：**已接受 #824/PR826 研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md#reproduction-and-evidence-limits)列出源码主体、选定记录与未改变的保留比较配方。本指南使用该已接受审阅，不重新调查源码、重建载荷或采集运行时。
 
 | 边界 | 现有合同与精确夹具追踪 | 覆盖限制 |
 | --- | --- | --- |
@@ -126,4 +126,4 @@ init 后为条件音乐/淡入与 `WaitForEvent`。无待处理事件时，物�
 
 [PR826 最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/826#issuecomment-6160352020)通过其[完整交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/826#issuecomment-6160316137)保留已完成比较、最终 CI，以及早前已修正的敌人宏断言/检查失败。[PR822](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/822#issuecomment-6160096072)保留其检查、检查/说明修正与被拒命令历史；[PR818 最初目的地失败](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/818#issuecomment-6159788942)和[修正最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/818#issuecomment-6159852108)保留实际状态。本文件切片不重放或替换它们。
 
-**未知：**自然结果/旅行/登陆以及调用方模式、标志、HP、成员资格、映射、列表、布局/占用/输入；全部行动者/服务完成、原版渲染/音频、可用 Hassan 输入与存档/恢复/持久性。这些是 [ADR 0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR 0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)下延期限制，不是自动采集队列。
+**未知：**自然结果/旅行/登陆以及调用方模式、标志、HP、成员资格、映射、列表、布局/占用/输入；全部行动者/服务完成、原版渲染/音频、可用 Hassan 输入与存档/恢复/持久性。这些是 [ADR 0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR 0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)下延期限制，不是自动采集队列。

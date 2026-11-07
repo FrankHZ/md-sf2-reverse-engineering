@@ -1,6 +1,6 @@
 # 战术战斗循环与状态交接
 
-> 本文件是 [`tactical-battle-loop.md`](../../../synthesis/themes/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签使用固定中文译法，源码标识符、fixture ID 与路径原样保留。主题与现有详细指南之间使用中文导航；明示英文规范源、证据、研究、ADR 与引擎/验收的链接保留各自所有者。全部已索引设计文档已有独立验收的完整中文镜像；当前同步规则见[中文路线图](../../documentation-roadmap.md)。
+> 本文件是 [`tactical-battle-loop.md`（英文规范源）](../../../synthesis/themes/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签使用固定中文译法，源码标识符、fixture ID 与路径原样保留。主题与现有详细指南之间使用中文导航；英文规范源与原始证据保留各自所有者；研究、ADR 与引擎文档没有中文镜像时明确标注英文回退。先前已接受的设计语料已有完整中文镜像，新增战斗分析页仍为 `pending`；当前同步规则见[中文路线图](../../documentation-roadmap.md)。
 
 一场战斗连接三类选择与后果：战斗员能站在哪里、能从该状态提交什么行动，以及效果结算后留下什么。
 随后，控制器决定能否继续下一次行动，还是必须把结果返回调用方。**推断的设计联系：** 定位、行动资格与持久资源形成共同的战术循环。
@@ -26,7 +26,7 @@
 
 **已确认静态：** 挂起后的入场则恢复保存的已用秒数，清除挂起标志与 AI 记忆，重新加载战斗状态，并恢复单次行动循环。
 它不会像开始新遭遇那样重复全新战斗的名册构建与回合入口。这证明了代码内的恢复路径；跨进程挂起存档恢复与断电恢复仍为**未知**。
-[战斗生命周期合同](../../../contracts/battle/battle-control-lifecycle.md#entry-and-round-scheduling)与[存档合同](../../../contracts/system/save-system.md)分别维护这些边界。
+[战斗生命周期合同](../../contracts/battle/battle-control-lifecycle.md#入口与回合调度)与[存档合同](../../contracts/system/save-system.md)分别维护这些边界。
 
 ### 一个回合依次激活、准入与调度
 
@@ -37,16 +37,16 @@
 隐藏或重生候选有各自的准入门禁。**已确认静态重置拒绝条件：** 候选必须位于遭遇声明的敌人条目范围内，
 其起始格也不能与任何己方或敌方战斗员的存储坐标相同。该占用检查包括死亡战斗员和候选自身。
 拒绝后，候选保持未放置，当前与最大 HP 均为零，并且不进入生成列表。后续尝试仍取决于生成模式及适用的区域标志、最大 HP 门禁；
-失败不保证无条件重试或最终出现。较新的[生成/重置检查](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
+失败不保证无条件重试或最终出现。较新的[生成/重置检查（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)
 限定了较早生命周期摘要的含义。这些拒绝的自然发生及生成呈现的完成仍为**未知**。
 
 只有已放置且存活的战斗员才进入生成的行动顺序。敏捷提供基值，随后按顺序施加随机调整；敏捷高位可产生第二个条目。
 排序保留同分时的插入顺序，使用原版发生回绕的有符号分数。因此，名义敏捷本身不保证下一位行动者，名册或初始阵型也不证明首次玩家控制。
 遇到行动顺序终止符时，控制器开始下一回合。精确资格、有符号边界、第二条目算术及 RNG 顺序属于
-[战斗生命周期](../../../contracts/battle/battle-control-lifecycle.md#turn-order-construction)。
+[战斗生命周期](../../contracts/battle/battle-control-lifecycle.md#行动顺序构建)。
 
 **已确认受限观察：** Battle01 激活与调度测试夹具闭合了所提供的位置、种子和辅助程序边界；它们不是完整游玩遭遇。
-较后接受的[原版 Map3–Battle01 前沿](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier)另外到达自然首位行动者 **2**、
+较后接受的[原版 Map3–Battle01 前沿](../milestones/map3-battle01-readiness.md#已接受原版前沿)另外到达自然首位行动者 **2**、
 获胜行动、胜利及场景地图就绪；较早预置种子的行动者 1 桥接仍属受控证据。两者均不提供所有遭遇的先手顺序、激活历史或 AI 决策。
 
 ### 谁控制已调度的行动者？
@@ -58,8 +58,8 @@ SLEEP、STUN 与已提交的 STAY 会消耗该次行动，而不构建战斗演�
 MUDDLE 有两种不同含义。非零 MUDDLE 计数器把控制权交给 AI；附加的等级 2 标志与该计数器一起，
 才启用阵营翻转选择所用的混乱谓词。**已确认于谓词/行动守卫接缝：** MUDDLE 1 不自动等于等级 2 混乱，
 混乱行动仍可因受保护的同阵营目标或自身目标随机判定而被拒绝。这些规则不确立每种混乱目标的自然产生。
-参见[玩家/控制路由](../../../contracts/battle/battle-functions-control-flow.md#individual-turn-control)及
-[MUDDLE 的不同消费者](../../../contracts/battle/combat-resolution.md#1a-distinguish-muddle-controlled-turns-from-level-2-confusion)。
+参见[玩家/控制路由](../../contracts/battle/battle-functions-control-flow.md#单回合控制)及
+[MUDDLE 的不同消费者](../../contracts/battle/combat-resolution.md#1a-区分-muddle-控制回合与二级混乱)。
 
 ## 移动、目标与控制归属
 
@@ -68,7 +68,7 @@ MUDDLE 有两种不同含义。非零 MUDDLE 计数器把控制权交给 AI；�
 **已确认静态及受限移动观察：** 移动从行动者原点消耗按地形加权的预算。当前 MOV 在寻路器的单位下提供普通预算。
 地形类型在行动者移动表内选择消耗；即使预算有余，占用/阻挡也可拒绝相邻空间。恰好耗尽预算到达的目的地会被准入，但不再向外扩展。
 相同路程不一定有相同移动消耗。固定战场网格、受控加权示例及原版传播/平局规则属于
-[战场导航](../../../contracts/battle/battlefield-navigation.md#movement-initialization-and-admission)。
+[战场导航](../../contracts/battle/battlefield-navigation.md#移动初始化与准入)。
 受控的平坦行跨越边界不确立原版发行内容中的正常可达性，也不要求重制进行不安全的内存访问。
 
 行动范围是独立于行进的另一项测试。攻击与普通法术范围使用曼哈顿距离环；武器、法术定义与具名徒手例外提供各自范围。
@@ -78,8 +78,8 @@ MUDDLE 有两种不同含义。非零 MUDDLE 计数器把控制权交给 AI；�
 
 例外很重要。AURA 4 与 SHINE 枚举整个给定阵营，而不使用普通距离环与中立过滤；Burst Rock 使用双方阵营并排除中心。
 AURA 已接受的几何用例确立了其自身的目标生成与顺序。其他多目标算术用例通常接收已排好序的列表，因此不能证明自然目标选择的几何形状。
-把规则推广至其他效果前，应阅读[范围与目标构建](../../../contracts/battle/battlefield-navigation.md#range-and-target-construction)及
-[法术结算](../../../contracts/battle/spell-resolution.md)。
+把规则推广至其他效果前，应阅读[范围与目标构建](../../contracts/battle/battlefield-navigation.md#范围与目标构建)及
+[法术结算](../../contracts/battle/spell-resolution.md)。
 
 ### 玩家选择、取消与提交
 
@@ -90,7 +90,7 @@ AURA 已接受的几何用例确立了其自身的目标生成与顺序。其他
 例如，玩家可以暂时移动、打开行动选择，再取消移动/行动路径。源码恢复原先局部位置，并把行动留为 `-1`（未提交）。
 后续行动构建器没有已提交攻击可从该结果结算。选择 Attack 同样不会在目标列表为空时凭空造出对手。
 这是**已确认静态取消/无目标边界**，并不表示所有嵌套菜单取消都有相同回滚，也不表示该次行动已经支付法术/物品成本。
-[控制合同](../../../contracts/battle/battle-functions-control-flow.md#player-control-surface)维护该路径；原版输入时序、预览、高亮及每种嵌套重入仍为**未知**。
+[控制合同](../../contracts/battle/battle-functions-control-flow.md#玩家控制面)维护该路径；原版输入时序、预览、高亮及每种嵌套重入仍为**未知**。
 
 STAY 是已提交结果，与取消不同。它经过后续状态和结果处理，但不构建普通演出。搜索则可进入宝箱专用路径：
 陷阱选择陷阱宝箱行动并请求生成；已解决的非陷阱用例选择 STAY，物品栏已满则请求关闭宝箱并返回菜单。
@@ -114,7 +114,7 @@ Healing Rain 则保留 AI 所有者中更早的独立准入门禁。施法者若
 AI 给候选结果评分，而不运行真正的伤害结算器。物理估算使用 ATT/DEF 与地形；法术估算使用威力与抗性，优先级脚本还可使用 HP、
 此前目标、职业、移动及随机性。这些分数选择行动/目标，不承诺伤害、公平性或意图。**已确认受限运行时：** 最终攻击选择矩阵覆盖其
 七种非空物理/法术/物品可行性组合及普通优先级/移动平局。它不确立每个指令集、有符号边界或自然地图路径。
-[AI 合同](../../../contracts/battle/battle-ai-decision.md)保留这些门禁、无可行行动时的待机结果、资源特例及各自静态/运行时限制。
+[AI 合同](../../contracts/battle/battle-ai-decision.md)保留这些门禁、无可行行动时的待机结果、资源特例及各自静态/运行时限制。
 
 ## 已提交行动能改变什么
 
@@ -128,7 +128,7 @@ AI 给候选结果评分，而不运行真正的伤害结算器。物理估算�
 反击另有范围、睡眠、眩晕、同阵营及按方向区分的特殊敌人排除条件。其中若干属于受控验证器观察，不是自然选中的行动。
 致命物理一击也会跳过行动所有者规定的后续异常状态/诅咒/后续攻击构建阶段。
 精确资格、特殊攻击概率（会心/二连/反击）用例、算术，以及自然 RNG 决策与强制有效验证器输入的区别，仍由
-[交战结算](../../../contracts/battle/combat-resolution.md)及[行动构建](../../../contracts/battle/battle-action-construction.md#physical-route-chronology)维护。
+[交战结算](../../contracts/battle/combat-resolution.md)及[行动构建](../../contracts/battle/battle-action-construction.md#物理路线时间线)维护。
 
 ### 魔法、治疗与辅助
 
@@ -139,18 +139,18 @@ AI 给候选结果评分，而不运行真正的伤害结算器。物理估算�
 状态与辅助效果可在不同阶段改变存储计数器与派生属性。SLEEP、MUDDLE、DISPEL、SLOW、ATTACK、BOOST 与 DETOX
 各有效果生效、已有状态、等级或解除门禁。效果失败并非一律无操作：已确认的 ATTACK/BOOST 重施特例可先写入刷新的计数器，再报失败，
 而旧派生属性保留到刷新时。DISPEL 则有自己的已知法术门禁及回放时状态变更。
-具名[法术结算子集](../../../contracts/battle/spell-resolution.md)支持这些陈述；它们没有完成每种法术、重施、自然区域形状或重复生命周期的验证。
+具名[法术结算子集](../../contracts/battle/spell-resolution.md)支持这些陈述；它们没有完成每种法术、重施、自然区域形状或重复生命周期的验证。
 
 ### 物品：持有、装备与使用各不相同
 
 **已确认静态：** 战斗 Use 把物品定义的法术/等级交给施法路径；持有物品本身不确立其战斗使用资格。
 AI 资格是额外过滤，与玩家持有不同。使用后构建器消耗非装备物品；装备仅在可损坏且由己方角色使用时进入损坏路径。
 已损坏装备被销毁；原本完好的可损坏装备在所属随机门禁结果为零时损坏。这不提供通用的玩家可见损坏概率。
-参见[物品使用与损坏路由](../../../contracts/battle/battle-action-construction.md#item-use-and-break-routing)。
+参见[物品使用与损坏路由](../../contracts/battle/battle-action-construction.md#物品使用与损坏路由)。
 
 给予/装备/丢弃通过各自分支操作持有与装备状态。已装备的诅咒物品阻止给予/丢弃和交换路径。
 转移在请求添加物品前清除局部装备位；接收方物品栏已满时选择交易，完成 Give 时选择 STAY，Drop 则须确认，并另有珍稀物品特卖请求。
-[控制所有者](../../../contracts/battle/battle-functions-control-flow.md#equipment-items-and-chests)确立这些局部分支和请求，而非已完成的物品栏/经济交易。
+[控制所有者](../../contracts/battle/battle-functions-control-flow.md#装备物品与宝箱)确立这些局部分支和请求，而非已完成的物品栏/经济交易。
 使用、转移、装备资格与使用后销毁不能合并成一个泛化的物品效果。
 
 ## 行动提交、构建与回放
@@ -158,12 +158,12 @@ AI 资格是额外过滤，与玩家持有不同。使用后构建器消耗非�
 
 **已确认静态：** 普通已提交行动进入演出构建器；它清除临时奖励/行动累加器，构建并排序目标，然后处理各目标的效果与物品掉落接缝。
 之后才处理行动者闲置、已用物品及后续攻击验证，Burst Rock 有特殊重入。选择顺序、构建顺序与渲染顺序有不同证明边界。
-[行动合同](../../../contracts/battle/battle-action-construction.md#top-level-action-pipeline)维护精确顺序与特殊情况。
+[行动合同](../../contracts/battle/battle-action-construction.md#顶层动作管线)维护精确顺序与特殊情况。
 
 **已确认于物理/法术回放子集：** 原版可在临时状态上计算、构建反应，并在执行命令前恢复保存的 HP。该恢复不是治疗。
 随后，演出解释器把有序 HP/MP/状态/奖励命令应用于持久状态。有些效果在构建时写状态，有些在播放时写；
 “所有变更都等待动画”的单一规则无法涵盖它们。演出/行动请求也不证明文本、输入等待、图形、音频或清理已完成。
-[演出引擎](../../../../research/battle/battle-scene-engine.md#confirmed-engine-boundary)记录静态命令分发；实际完成须由具名观察/消费者边界证明。
+[演出引擎（英文）](../../../../research/battle/battle-scene-engine.md#confirmed-engine-boundary)记录静态命令分发；实际完成须由具名观察/消费者边界证明。
 
 **已确认静态延续：** 普通演出执行后，单次行动控制先请求演出结束和战场重载，再返回控制器后缀。
 这一请求序列不确立每个调用方都完成了渲染或重载效果。
@@ -176,7 +176,7 @@ AI 资格是额外过滤，与玩家持有不同。使用后构建器消耗非�
 同一状态下，另行观察的不带该标记的 SPOIT 法术仍会执行；SILENCE 是依赖属性的门禁，不是阻止全部魔法。
 
 该例连接提交、法术属性、命令构建、持久资源与失败，不假定 Bowie 自然学会该法术或呈现已全部完成。
-它不同于提交前取消或没有收到目标。[SILENCE 成本顺序所有者](../../../contracts/battle/spell-resolution.md#confirmed-silence-cast-gate-and-cost-order)与
+它不同于提交前取消或没有收到目标。[SILENCE 成本顺序所有者](../../contracts/battle/spell-resolution.md#已确认的-silence-施法门控与消耗顺序)与
 [`sf2-silenced-caster-blocks-blaze1-v1`](../../../../../tests/fixtures/h3/spell-silence-gate-v1.json)保留精确受控配置与断言。
 
 ### 奖励经各自路径变为持久状态
@@ -185,8 +185,8 @@ AI 资格是额外过滤，与玩家持有不同。使用后构建器消耗非�
 治疗/状态奖励另有自身条件；伤害、成功状态、击杀与最终命令奖励是不同量。Battle01 的 EXP 削减不是通用金币削减。
 EXP 命令回放可跨越等级阈值并刷新成长，而不恢复当前 HP/MP。击杀的物品掉落查找、一次性标志、移除与接收方/特卖路由，
 独立于伤害和金币奖励。因此，物品栏已满可影响物品交付，但不会撤销已经结算的击杀。
-精确算术与受限交付观察仍由[交战奖励](../../../contracts/battle/combat-resolution.md#9-award-confirmed-battle-01-exp)和
-[法术奖励](../../../contracts/battle/spell-resolution.md)维护；更广的成长/经济背景见[成长与经济](progression-and-economy.md)。
+精确算术与受限交付观察仍由[交战奖励](../../contracts/battle/combat-resolution.md#9-发放已确认的-battle-01-exp)和
+[法术奖励](../../contracts/battle/spell-resolution.md)维护；更广的成长/经济背景见[成长与经济](progression-and-economy.md)。
 
 ## 行动后、单次行动后与结果
 <a id="动作后回合后与结果"></a>
@@ -204,13 +204,13 @@ HP 归零与之后的死亡列表清理是不同步骤。清理记录适用的�
 统计要求已放置且 HP 为正。Bowie 的 HP 为零会强制己方计数为零；己方为零选择败北，**先于**敌方为零选择胜利。
 因此，击败最后一个敌人不会覆盖同时发生的领队损失。敌方首领清理可通过战斗专用钩子改变剩余敌人，
 所以“杀死每个初始已放置敌人”不是通用胜利方案。
-[生命周期合同](../../../contracts/battle/battle-control-lifecycle.md#post-action-and-after-turn-order)维护通用顺序；较后接受的
-[终局优先级检查](../../../../research/chapters/final-confrontations-ending/battle43-outcomes-and-ending-admission.md#death-hook-leader-sweep-and-terminal-priority)分别检查实际共享控制器和遭遇专用钩子。
+[生命周期合同](../../contracts/battle/battle-control-lifecycle.md#动作后与回合后顺序)维护通用顺序；较后接受的
+[终局优先级检查（英文）](../../../../research/chapters/final-confrontations-ending/battle43-outcomes-and-ending-admission.md#death-hook-leader-sweep-and-terminal-priority)分别检查实际共享控制器和遭遇专用钩子。
 
 **已确认受限单次行动后观察：** MUDDLE 与 SILENCE 可按其随机计数规则到期或递减；SLOW、ATTACK 与 BOOST 在观察步骤确定性递减。
 到期消息、最终派生属性/装备归一化另有顺序。这些单步用例不确立完整自然多回合生命周期或每种异常状态。
 第一次终局检查很重要：若某行动已结束战斗，就不会继续原本应执行的单次行动后处理。
-参见[状态转换矩阵所有者](../../../contracts/battle/spell-resolution.md#confirmed-after-turn-counter-transition-matrix)。
+参见[状态转换矩阵所有者](../../contracts/battle/spell-resolution.md#已确认的回合后计数器转换矩阵)。
 
 ### 胜利、败北与获准撤退留下不同状态
 
@@ -219,15 +219,15 @@ HP 归零与之后的死亡列表清理是不同步骤。清理记录适用的�
 
 普通败北更新重复/解锁状态，恢复 Bowie 的 HP，以整数向下取整除法把金币减半，取得撤退位置并返回 `D4=-1`。
 它不执行胜利的新完成/战后程序序列，也不承诺全队复活。
-[Battle4 特殊败北指南（规范英文）](../../../synthesis/chapters/grans-opening/battle04-outcomes-through-battle05.md)解释其硬编码完成/升级路径，以及**支付败北成本后**的零结果。
+[Battle4 特殊败北指南](../chapters/grans-opening/battle04-outcomes-through-battle05.md)解释其硬编码完成/升级路径，以及**支付败北成本后**的零结果。
 零返回值不等于撤退、免费恢复或剧情要求必败。
 
 **获准的 EGRESS 或 Angel Wing 行动**在普通演出构建前、行动后终局后缀前退出。法术路径请求定义的 MP 成本；物品路径请求移除物品。
 共享退出请求关闭窗口、更新重复/解锁状态、取得撤退参数并返回 `D4=0`，绕过败北 HP/金币后缀及胜利的新完成后缀。
 准入仍要求适用的可行动行动者、法术/物品选择及支付条件；取消、无目标或 MP 不足不准入撤退。菜单标签本身不给予无条件逃脱。
-[Battle0 准入检查](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)即使在特殊调用方下也保留普通选择/支付门禁。
-[局部控制合同](../../../contracts/battle/battle-functions-control-flow.md#egress-and-angel-wing)证明请求顺序与局部代码，较后的
-[结果/被调用方检查](../../../../research/chapters/final-confrontations-ending/battle43-outcomes-and-ending-admission.md#victory-defeat-retreat-and-repeated-completion)则限定实际成本、重复状态及实时撤退来源。
+[Battle0 准入检查（英文）](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)即使在特殊调用方下也保留普通选择/支付门禁。
+[局部控制合同](../../contracts/battle/battle-functions-control-flow.md#egress-与-angel-wing)证明请求顺序与局部代码，较后的
+[结果/被调用方检查（英文）](../../../../research/chapters/final-confrontations-ending/battle43-outcomes-and-ending-admission.md#victory-defeat-retreat-and-repeated-completion)则限定实际成本、重复状态及实时撤退来源。
 调用方专属目的地仍由章节所有者维护；它们不是同一个固定城镇或存档点。
 
 ### 从战斗返回尚不等于可用探索
@@ -239,11 +239,11 @@ HP 归零与之后的死亡列表清理是不同步骤。清理记录适用的�
 另有调用方例外：隐藏 **Battle0** 返回 EndGame。对于每次实际胜利、败北或获准撤退返回，该调用方丢弃返回参数，
 执行软件重置转移，而非转入探索。它的 Suspend 选择返回菜单，不存档，也不离开战斗。实际硬件/SRAM 保留及重置后菜单仍为**未知**。
 [剧情推进](story-progression.md)与
-[Battle0 重置所有者](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)保留该例外；通用规则说明不扩展其遭遇档案。
+[Battle0 重置所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)保留该例外；通用规则说明不扩展其遭遇档案。
 
 其他位置的正常挂起路径会复制已用秒数、设置标志 88、请求 SaveGame 并向 WitchSuspend 转移。
 这些源码操作不证明成功的持久存档或恢复。挂起、结果返回与可用地图返回仍是不同主张。
-持久化应阅读[存档系统边界](../../../contracts/system/save-system.md)，而不能假定每次战斗退出都会保存军团。
+持久化应阅读[存档系统边界](../../contracts/system/save-system.md)，而不能假定每次战斗退出都会保存军团。
 
 ## 遭遇规则如何改变通用循环
 
@@ -265,19 +265,19 @@ HP 归零与之后的死亡列表清理是不同步骤。清理记录适用的�
 [Taros/Caravan 章节示例](story-progression.md#完整示例taros-与-caravan)解释探索选择如何提供该解锁。
 随后全新交战按阵型坐标放置实际已加入且出战的队伍；印出的十二份己方模板不会招募十二名治疗者，也不会替换队伍装备和 AI。
 Taros 的特殊精灵是呈现映射。完成标志未设置时，中立 Caravan 的 HP 为零，不计入剩余敌人。
-可见 Caravan 或 Rohde 的随从角色均不表示已取得交通工具。参见[名册与中立所有者](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#twelve-templates-and-the-actual-party)。
+可见 Caravan 或 Rohde 的随从角色均不表示已取得交通工具。参见[名册与中立所有者（英文）](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#twelve-templates-and-the-actual-party)。
 
 在 Battle18 初始行动脚本构建时，有效的合取条件为 **Bowie + ATTACK + 具有 Taros 敌人定义的目标 + 实际装备的 Achilles Sword**。
 携带却未装备、其他己方角色持剑攻击，或 Bowie 选择法术/物品使用，都不满足该合取。例如，Bowie 仅携带 Sword 时攻击会设置无效开关；
 到达其 Taros 伤害辅助程序时，会请求无效消息，并在 HP 损失与伤害/击杀奖励前返回。合格攻击仍需要后续命中/伤害路径。
-[装备门禁所有者](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)限定初始测试及其生命周期：
+[装备门禁所有者（英文）](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#bowies-equipped-achilles-gate-and-its-lifetime)限定初始测试及其生命周期：
 这不是对每种可能效果、每个后续目标或每条反击路径的免疫主张。
 
 终局规则又是另一回事。Bowie 存活且 enemy128/Taros 的 HP 为零时，被击败钩子可把剩余存活敌人加入清理队列；
 清理返回后可把它们从计数中移除。通用的败北优先规则仍适用，单次行动后后缀没有第二次被击败钩子。这不要求逐一击败每个初始敌人。
 Taros Sword 掉落则需要行动侧死亡、实际持有物品、随机门禁成功及一次性位未设置。
 存活且有空位的接收方会收到物品；HP 为零或物品栏已满则走珍稀物品特卖回退。
-首领清理不会凭空完成物品掉落交易；[掉落所有者](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody)把这些条件与胜利区分开。
+首领清理不会凭空完成物品掉落交易；[掉落所有者（英文）](../../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md#taros-sword-action-drop-custody)把这些条件与胜利区分开。
 
 完成标志未设置时的首次胜利运行取得场景：到达末尾写入后，授予 Caravan 获取状态，并清除 Rohde 的普通跟随标志，而不让 Rohde 加入军团。
 重复胜利跳过该场景，保留给定的获取状态；它不会修复缺失的 Caravan 标志。胜利返回场景前取得的神殿地图种子；
@@ -290,24 +290,24 @@ Taros Sword 掉落则需要行动侧死亡、实际持有物品、随机门禁�
 **已确认静态：** Battle32 的两个区域条件可准入同一 Jaro 场景。它要求区域标志已设置、共享已播放标志 F386 未设置；
 全新放置本身不证明到达任一区域。包装程序在运行场景**之前**设置 F386，普通全新入场不会清除它。
 若场景从未到达转换，或在该标志写入后中断，后续携带 F386 的调用会跳过场景。这是保留状态边界，不保证完成或自动重试。
-[区域准入所有者](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)区分几何、激活与场景历史。
+[区域准入所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)区分几何、激活与场景历史。
 
 到达转换时，它先取得 enemy143 坐标，把其当前 HP 归零并移除战斗坐标，再把己方 Jaro23 放在那里。
 它设置已加入/出战成员资格，并复制物理行动者查找关系，但不复制敌人 HP/属性、不治疗 Jaro，也不分配新精灵。
 显式出战队伍写入可超出普通十二人成员容量；它不证明通用的容量安全招募规则。场景后续非零 `joinForceAI` 操作数设置 AI 控制 bit2。
 因此，可见 Jaro、已转换己方角色与手动控制的单次行动是不同事实。
-[逻辑/物理转换所有者](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)保留精确前缀与中断限制。
+[逻辑/物理转换所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#logical-conversion-membership-and-physical-aliases)保留精确前缀与中断限制。
 
 随后调度测试 Jaro **自身**的放置、HP 与当前敏捷。死亡的己方 Jaro 不会因转换而复活，也不贡献单次行动；原敌人的敏捷不会继承。
 若合格并经新 AI 位路由，他使用己方 AI，而非普通手动输入。这不能推出固定首位行动者或一对一调度替换。
 已加入的 Jaro 还会使全新敌方初始化器跳过 143，**但不清除其旧字段**；若随后准入转换，仍会读取该保留槽位。
-[初始化所有者](../../../../research/chapters/moun-nazca-grans/battle32-initialization-and-opening.md#jaro-joined-list-empty-list-and-skipped-old-slot)与
-[队列所有者](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#eligibility-agirng-and-first-call)限定这些已改变前提，而不假定看似正常的场景已修复它们。
+[初始化所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle32-initialization-and-opening.md#jaro-joined-list-empty-list-and-skipped-old-slot)与
+[队列所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#eligibility-agirng-and-first-call)限定这些已改变前提，而不假定看似正常的场景已修复它们。
 
 首次胜利的后续场景即使从未发生区域转换，也可招募 Jaro。到达其后缀时，让他加入、只清除 AI 控制位、从出战队伍移除，并请求跟随：
 已加入资格保留，出战资格清除。这允许之后选择他出战，不会自动让他在下场战斗出战。
 完成标志已设置会跳过整段场景，包括这些修复；共享加入尾部属于 Bowie。败北/获准撤退不运行胜利招募。
-参见[结果/队伍所有者](../../../../research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)与
+参见[结果/队伍所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle32-outcomes-and-moun-entry.md#physical-population-aliases-and-logical-jaro-state)与
 [Moun 章节](story-progression.md#jaro-叛离frayja-加入与-moun-幸存者)，了解独立的后续剧情条件。
 完成过场、成为随从与永久军团成员资格不能互相推导。
 
@@ -317,13 +317,13 @@ Taros Sword 掉落则需要行动侧死亡、实际持有物品、随机门禁�
 按未改变的模式扫描，没有普通生成候选；这不排除之后的事件/调试请求或已改变生成模式。
 三个区域可影响其他敌人，但选定表内没有 Battle36 区域场景。已放置且存活的敌人可在激活前被调度，
 首次分发仍取决于实际出战队伍、当前敏捷与 RNG。
-[初始化所有者](../../../../research/chapters/moun-nazca-grans/battle36-initialization-and-opening.md#map-full-formation-and-definitions)及
-[激活/生成所有者](../../../../research/chapters/moun-nazca-grans/battle36-activation-and-first-turn-dispatch.md#complete-activation-rows-and-normal-spawn-candidates)区分这些声明与已执行控制。
+[初始化所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle36-initialization-and-opening.md#map-full-formation-and-definitions)及
+[激活/生成所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle36-activation-and-first-turn-dispatch.md#complete-activation-rows-and-normal-spawn-candidates)区分这些声明与已执行控制。
 
 对于实际路由到 AI 的存活 Flower，未改变的 15/15 触发对绕过普通未激活敌人的待命门禁。
 随后 kind93 分支在普通指令集执行**之前**选择直线攻击者 AI。HEALER1、零 MOV 与法术列表中的 LASER 条目不实现这条规则。
 改为非 15 触发且没有激活位时，则可选择待命；对手玩家控制可以绕过 AI 准备。Sleep/Stun 也可在准备后阻止后续行动执行。
-[特殊控制所有者](../../../../research/chapters/moun-nazca-grans/battle36-activation-and-first-turn-dispatch.md#first-individual-turn-control-and-the-flower-kind-branch)解释为何单凭放置或 AI 标签都不保证射击。
+[特殊控制所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle36-activation-and-first-turn-dispatch.md#first-individual-turn-control-and-the-flower-kind-branch)解释为何单凭放置或 AI 标签都不保证射击。
 
 激光方向来自战斗/序号表，独立于显示朝向。它从行动者当前位置，在固定 48×48 战术存储中扫描一格宽的上下左右射线，
 不测试墙壁、普通法术范围或更窄的战斗裁剪。AI 先把合格的存活、已定位、非中立**己方角色**加入占用表。
@@ -336,12 +336,12 @@ Flower130 在 `(6,11)` 时，若唯一己方角色位于 `(8,12)`，就不会落
 并不会转为新的 STAY。对普通有效目标，激光使用基础威力 16 和两次普通浮动抽样，在 HP 钳位前产生 12–16 伤害。
 它不使用 ATT/DEF、地形保护、普通法术抗性，也不扣 MP。强制调试输入另有例外。
 临时 HP 计算、恢复后的构建状态与之后的反应回放仍是不同环节。
-[激光所有者](../../../../research/chapters/moun-nazca-grans/battle36-prism-flower-laser.md#occupancy-decision-and-changed-state-examples)连接射线、重建与伤害，不证明动画完成或完整游玩回合。
+[激光所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle36-prism-flower-laser.md#occupancy-decision-and-changed-state-examples)连接射线、重建与伤害，不证明动画完成或完整游玩回合。
 
 Flowers 也不同于目标首领：enemy128 是 **Executioner**，不是 Flower，也不是之后的 Geshp 场景行动者。
 Bowie 存活时，Executioner 的行动侧死亡可触发首领清场；其他敌人仍计数时，摧毁全部八个 Flowers 本身不会获胜。
 首次胜利运行 Geshp 战后场景，并使用场景前队伍种子返回 Map53；完成标志已设置则跳过场景。
-[结果所有者](../../../../research/chapters/moun-nazca-grans/battle36-outcomes-and-galam-return.md#terminal-selection-leader-cleanup-and-accounting)与
+[结果所有者（英文）](../../../../research/chapters/moun-nazca-grans/battle36-outcomes-and-galam-return.md#terminal-selection-leader-cleanup-and-accounting)与
 [Galam 区域章节](story-progression.md#prism-flowersred-baron-与-geshp-返回)保留独立奖励、返回与后续准入规则。
 友军误伤或首领清理不证明存在归属己方的击杀/掉落交易。
 
@@ -351,43 +351,43 @@ Bowie 存活时，Executioner 的行动侧死亡可触发首领清场；其他�
 若没有战斗解锁或完成结果分支，地图初始化会邀请尝试。确认 Yes 请求开始传送并设置 F444；No 或 B 请求返回村庄而不开始。
 MainLoop 在地图初始化前检查战斗准入，所以给定解锁可绕过邀请。即使完成 F544 已设置，也不拒绝同时已解锁的战斗：
 选择会清除解锁，但仍准入本次调用。
-[邀请/准入所有者](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#east-exit-admission-and-invitation)区分提示、待处理传送、准入与全新战斗。
+[邀请/准入所有者（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#east-exit-admission-and-invitation)区分提示、待处理传送、准入与全新战斗。
 阵型同样放置实际出战队伍，不会选择固定十二人试炼队伍。
 
 此遭遇改变敌人的生命周期。受区域门禁控制的 HIDDEN 模式只在最大 HP 为零时允许首次出现；成功出现并普通死亡后，它在未改变的该次试炼中不会重新出现。
 字面 mode3 可在后续死亡后重新出现，前提是区域仍已设置且重置成功；出现发生在后续回合前缀，而非击杀时立即发生。
 声明范围或起始格占用所致拒绝保留通用重置失败状态，包括上文的死亡/自身占用情况。
 后续尝试仍取决于模式与 HP/区域条件；不存在无条件生成承诺。全新重试会另行重建定义/区域。
-参见[生成生命周期所有者](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)。
+参见[生成生命周期所有者（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#regions-checked-bits-hidden-appearance-and-reappearance)。
 
 邀请询问能多快击败所有隐藏怪物，但终局谓词并不要求十五个全杀。enemy128 是 **Bubbling Ooze**，启用了首领清场。
 Bowie 存活时，其行动侧死亡可经清理移除剩余存活敌人，即使隐藏条目从未出现。若双方都耗尽，败北仍优先；
 单次行动后效果造成的首领死亡不会在同一后缀额外得到被击败钩子。
 空钩子与纪录祝贺不增加试炼完成物品奖品。
-这个[目标/奖励边界](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#queue-control-terminal-and-rewards)限定挑战措辞，不赋予难度或预期策略。
+这个[目标/奖励边界（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#queue-control-terminal-and-rewards)限定挑战措辞，不赋予难度或预期策略。
 
 计时引入多个状态，而非一只秒表。全新战斗重置秒数长字，却不改动独立帧子计数器。每六十次启用的上下文更新推进秒数计数器。
 计时器窗口回调把变化的秒数复制到结果快照；关闭/移除回调可冻结快照，而计数器继续运行。普通行动演出关闭/重开窗口，
 所以隐藏窗口不证明时钟暂停。胜利先治疗，再关闭窗口；试炼结果是最后一次回调副本，可能在关闭等待中更新，不是精确采样首领击杀时刻。
 显示数字另有分钟钳位，对话格式化器则没有。这些是源码计数器/回调操作，**不是硬件时长测量**。
-[计时器所有者](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#timer-lifetime-snapshot-record-and-save-boundary)区分计数器、可见格式、快照与最佳纪录。
+[计时器所有者（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#timer-lifetime-snapshot-record-and-save-boundary)区分计数器、可见格式、快照与最佳纪录。
 
 胜利返回 Map24 结果初始化。只有**按无符号比较严格更小**的快照才更新最佳纪录；相等/更慢结果不改动纪录。
 该更新是 RAM 状态，结果分支没有 SaveGame 调用。纪录位于另行序列化的存档范围内，但这不证明存档完成或最佳用时持久保存。
 两个结果分支都先请求返回村庄，再清除完成。胜利时解锁也已清除，因此之后再访东出口可再次邀请尝试，不论是否刷新纪录。
-[结果/重试所有者](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#victory-result-record-comparison-and-retry)限定重复路径，不声称自然游玩过完整返回与重试循环。
+[结果/重试所有者（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#victory-result-record-comparison-and-retry)限定重复路径，不声称自然游玩过完整返回与重试循环。
 
 败北或获准 Egress/Angel Wing 不产生新完成纪录，并保留普通恢复/金币或支付规则。给定存档点不一定是邀请/结果所用村庄出口。
 此处允许普通 Suspend，与 Battle0 不同；获准的已存状态入场恢复保存的队列/秒数，而非重建全新试炼。
 实际存档完成、硬件时序与持久化仍为**未知**。
-[败北/撤退/挂起所有者](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#defeat-escape-suspend-and-the-village-stopping-boundary)保留各自重试/返回条件。
+[败北/撤退/挂起所有者（英文）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md#defeat-escape-suspend-and-the-village-stopping-boundary)保留各自重试/返回条件。
 
 ### 调用方改变目的地：隐藏 Battle0
 
 **已确认静态：** 结尾之后，EndGame 清除实体、设置 F400、提供 map63 并调用战斗选择器。
 Row0 坐标是通配符；完成 F500 已设置时会清除解锁，但仍在该次调用选择 Battle0。这是具体的特殊调用方，
 不是可自由进入的 Magic Tunnel 遭遇，也不允许从任意地图启动。
-[结尾准入所有者](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)与
+[结尾准入所有者（英文）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)与
 [结尾章节](story-progression.md#字幕终场完成存储与隐藏战斗)区分之前的完成存储/显示序列与战斗入场。
 继承的 F88 有给定状态恢复路径；普通 Battle0 Suspend 选择不能产生它。
 
@@ -400,7 +400,7 @@ Row0 坐标是通配符；完成 F500 已设置时会清除解锁，但仍在该
 与上文普通 MainLoop 返回不同，**每次实际胜利、败北或获准撤退返回都回到 EndGame**，它忽略结果与地图参数。
 它请求白色淡出、清除上下文 VInt、禁用显示/中断、恢复初始栈并经启动向量跳转：即软件重置。
 因此，在该调用方下，计算出的撤退存档点不是场景地图旅行。服务处于等待、中断或未返回，不证明重置后缀已运行。
-[Battle0 结果/重置所有者](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)止于该转移；
+[Battle0 结果/重置所有者（英文）](../../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md#outcomes-escape-and-the-actual-reset-return)止于该转移；
 重置后菜单、new-game-plus 行为，以及后续 HP、金币、物品或结果标志的持久保留仍为**未知**。
 较早映射至 SRAM 的结尾位不等于保存了隐藏遭遇结果。
 
@@ -410,31 +410,31 @@ Row0 坐标是通配符；完成 F500 已设置时会清除解锁，但仍在该
 
 即使较后的章节研究闭合了某个调用方、标志或目的地，上述源码支持规则仍保留静态限制。
 较早“所有结果的战役含义都未知”这一全局陈述如今过宽：[剧情推进](story-progression.md)与
-[内容覆盖](../../../../research/story-content-coverage.md#four-different-frontiers)链接了贯穿结尾/重置的已接受章节联系。
+[内容覆盖（英文）](../../../../research/story-content-coverage.md#four-different-frontiers)链接了贯穿结尾/重置的已接受章节联系。
 自然完整战役游玩、所有合法行动、完整挂起持久化及硬件呈现仍为**未知**。
-已接受的[原版前沿](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier)不会把受控 H3 算术/选择用例提升为自然行动历史。
+已接受的[原版前沿](../milestones/map3-battle01-readiness.md#已接受原版前沿)不会把受控 H3 算术/选择用例提升为自然行动历史。
 
 ### 已接受的重制选择
 
-**已确认已接受决定：** [ADR0019](../../../../decisions/0019-state-and-content-driven-remake-engine.md)选择状态/内容驱动引擎方向及其行为测试政策。
-[现代有限音乐时钟](../../../contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)把确定性逻辑工作与实际播放完成的匹配分开；
+**已确认已接受决定：** [ADR0019（英文）](../../../../decisions/0019-state-and-content-driven-remake-engine.md)选择状态/内容驱动引擎方向及其行为测试政策。
+[现代有限音乐时钟](../../contracts/interface/music-wait-service.md#已接受的现代有限音乐策略)把确定性逻辑工作与实际播放完成的匹配分开；
 宿主延迟交付不会增加逻辑机会或欠账。它可改变整段历史的 RNG、行动顺序与后续资源。
-因此，[现代时钟比较政策](../../../contracts/milestones/map3-battle01-continuous-scenario.md#modern-clock-applicability)在匹配状态下比较适用局部规则，
+因此，[现代时钟比较政策](../../contracts/milestones/map3-battle01-continuous-scenario.md#现代时钟适用性)在匹配状态下比较适用局部规则，
 同时保留必需路径效果、手动自主操作与可用返回。它不允许实时生产重设种子，也不允许仅因时间政策改变就解释掉未解决不匹配。
 
 主 RNG 与实时思考状态仍有区别。原版文本/菱形菜单轮询可在 AI 读取前覆盖思考字节；当前现代文本路径把其副本绑定到实时思考映像。
 初始字节覆盖不能确立首次 AI 前原版路径的最后有效写入方，现代修正前的捕获也不能确立修正后可执行程序的轨迹。
-[随机性所有者](../../../contracts/system/randomness.md#initial-byte-versus-live-caller-state)同时保留修正机制及原版/消费者的这些**未知项**。
+[随机性所有者](../../contracts/system/randomness.md#初始字节与实时调用方状态)同时保留修正机制及原版/消费者的这些**未知项**。
 缺失字段不会因假定变成零，旧捕获也不会因假定变成修正后证据。
 
 有证据支持的玩家 Wait、可重映射输入、减少闪光及可调/即时文本也各有已接受所有者。
 [总览的决定路径](../gameplay-overview.md#已作出的重制选择与尚待决定的产品选择)与
-[当前里程碑](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)定义其范围；默认键盘 A 与现代时钟/7C/8D/10A 组合是当前已接受边界。
+[当前里程碑](../milestones/map3-battle01-readiness.md#当前已接受里程碑)定义其范围；默认键盘 A 与现代时钟/7C/8D/10A 组合是当前已接受边界。
 其他 UI 重设计、重平衡、持久用户存档与更广行动覆盖仍是独立产品选择。描述原版不会在这里选定这些选择。
 
 ### 生产支持与验证
 
-[能力台账](../../../../../remake/docs/capability-status.md)维护实际可运行内容：通用移动/取消、自动回合、选定物理/AI/奖励规则、
+[能力台账（英文）](../../../../../remake/docs/capability-status.md)维护实际可运行内容：通用移动/取消、自动回合、选定物理/AI/奖励规则、
 HEAL 1–3 与 Medical Herb 消费者，以及受限连接的结果/返回行为。已接受的私有 Map3–Battle01 里程碑不是全游戏模拟。
 EGRESS、更广法术/物品/状态、特殊敌人及遭遇专用程序，在台账中仍为 Unsupported 或有更窄限制；静态知识不会实现它们。
 
@@ -442,9 +442,9 @@ EGRESS、更广法术/物品/状态、特殊敌人及遭遇专用程序，在台
 原版测试夹具仍是证据；生产规则遵循当前 ADR0019 边界与选定直接比较。
 在受支持主张需要时，保持临时计算、持久变更、消费者完成与场景地图就绪可区分，无须原版 RAM 布局或命令缓冲实现。
 
-[保留失败所有者](../../../../research/story-content-coverage.md#unknowns-retained-failures-and-next-decision)保留 #1047 的十二项已完成未解决比较及其他原版/现代失败。
+[保留失败所有者（英文）](../../../../research/story-content-coverage.md#unknowns-retained-failures-and-next-decision)保留 #1047 的十二项已完成未解决比较及其他原版/现代失败。
 它们仍是已完成结果，不是通过或中断运行。现代修正不会追溯验证旧捕获。
-英文综合当时保留的中文漂移已在后续独立翻译验收中处理；未来变化遵循[路线图（规范英文）](../../../documentation-roadmap.md)的持续同步规则，历史失败仍保留原有结论。
+英文综合当时保留的中文漂移已在后续独立翻译验收中处理；未来变化遵循[路线图](../../documentation-roadmap.md)的持续同步规则，历史失败仍保留原有结论。
 
 ## 证据导航与审阅边界
 
@@ -453,13 +453,13 @@ EGRESS、更广法术/物品/状态、特殊敌人及遭遇专用程序，在台
 
 | 读者问题 | 所属合同与原版证据 |
 | --- | --- |
-| 入场、激活、调度、清理与通用结果 | [战斗生命周期](../../../contracts/battle/battle-control-lifecycle.md)、[战斗循环研究](../../../../research/battle/battle-loop.md)；`sf2-battle-control-static-v1`、`sf2-battle-loop-static-v1` 及具名 Battle01 激活/行动顺序 H3 用例。 |
-| 玩家/AI 控制、无目标、取消、物品/菜单与挂起请求 | [战斗函数控制流](../../../contracts/battle/battle-functions-control-flow.md)、[共享函数研究](../../../../research/battle/battle-functions.md)；`sf2-battle-functions-static-v1`。 |
-| 移动消耗、范围与目标合法性 | [战场导航](../../../contracts/battle/battlefield-navigation.md)、[寻路研究](../../../../research/battle/battlefield-pathfinding.md)；`sf2-battlefield-static-v1` 与 `sf2-battlefield-movement-runtime-v1`。 |
-| AI 命令/资源过滤与评分 | [AI 决策](../../../contracts/battle/battle-ai-decision.md)、[AI 研究](../../../../research/battle/battle-ai.md)；静态行动/治疗/辅助/优先级/移动所有者及 `sf2-battle-ai-action-choice-runtime-v1`。 |
-| 行动排序、物品使用与演出构建 | [行动构建](../../../contracts/battle/battle-action-construction.md)、[行动研究](../../../../research/battle/battle-actions.md)；`sf2-battle-actions-static-v1`。 |
-| 伤害、魔法、辅助、奖励与持久回放 | [物理交战](../../../contracts/battle/combat-resolution.md)、[法术](../../../contracts/battle/spell-resolution.md)、[运行时算术](../../../../research/battle/runtime-rng-and-battle-math.md)；各合同具名 H3 子集，包括上文 SILENCE 失败示例。 |
-| 命令请求与呈现的区别 | [演出引擎](../../../../research/battle/battle-scene-engine.md)；`sf2-battle-scene-engine-static-v1`。实际当前消费者仍由能力台账及其链接所有者维护。 |
+| 入场、激活、调度、清理与通用结果 | [战斗生命周期](../../contracts/battle/battle-control-lifecycle.md)、[战斗循环研究（英文）](../../../../research/battle/battle-loop.md)；`sf2-battle-control-static-v1`、`sf2-battle-loop-static-v1` 及具名 Battle01 激活/行动顺序 H3 用例。 |
+| 玩家/AI 控制、无目标、取消、物品/菜单与挂起请求 | [战斗函数控制流](../../contracts/battle/battle-functions-control-flow.md)、[共享函数研究（英文）](../../../../research/battle/battle-functions.md)；`sf2-battle-functions-static-v1`。 |
+| 移动消耗、范围与目标合法性 | [战场导航](../../contracts/battle/battlefield-navigation.md)、[寻路研究（英文）](../../../../research/battle/battlefield-pathfinding.md)；`sf2-battlefield-static-v1` 与 `sf2-battlefield-movement-runtime-v1`。 |
+| AI 命令/资源过滤与评分 | [AI 决策](../../contracts/battle/battle-ai-decision.md)、[AI 研究（英文）](../../../../research/battle/battle-ai.md)；静态行动/治疗/辅助/优先级/移动所有者及 `sf2-battle-ai-action-choice-runtime-v1`。 |
+| 行动排序、物品使用与演出构建 | [行动构建](../../contracts/battle/battle-action-construction.md)、[行动研究（英文）](../../../../research/battle/battle-actions.md)；`sf2-battle-actions-static-v1`。 |
+| 伤害、魔法、辅助、奖励与持久回放 | [物理交战](../../contracts/battle/combat-resolution.md)、[法术](../../contracts/battle/spell-resolution.md)、[运行时算术（英文）](../../../../research/battle/runtime-rng-and-battle-math.md)；各合同具名 H3 子集，包括上文 SILENCE 失败示例。 |
+| 命令请求与呈现的区别 | [演出引擎（英文）](../../../../research/battle/battle-scene-engine.md)；`sf2-battle-scene-engine-static-v1`。实际当前消费者仍由能力台账及其链接所有者维护。 |
 | 章节终局优先级、调用方目的地或特殊返回 | [剧情推进](story-progression.md)及其已接受结果调查；上文链接的共享终局优先级与 Battle0 所有者限定较早聚合摘要。 |
 
 **范围约定 — Standard：** 跨系统依赖要求源码/主张审阅；限定结果是可读的通用战术规则与五个代表遭遇比较，包括必要条件与非成功路径。
@@ -469,7 +469,7 @@ EGRESS、更广法术/物品/状态、特殊敌人及遭遇专用程序，在台
 综合前审阅检查了相关研究、全部六份核心合同及更严格的战斗函数控制合同、选定测试夹具载荷及其 schema/验证器边界，
 以及当前观察/决定/能力所有者。[Issue #1268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1268) 的审阅记录列明精确表面与直接检查。
 较早研究/测试夹具对菜单、物品栏、挂起和呈现效果已完成的简写，按更严格合同的局部写入/请求边界解读。
-较早成组的运行时队列在[静态优先延期](../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)下仍是未解决问题，不是新采集义务。
+较早成组的运行时队列在[静态优先延期（英文）](../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)下仍是未解决问题，不是新采集义务。
 AI 测试夹具较早的思考“低字节”措辞，由已接受随机性所有者的高字节操作数限定；其观察保留。
 本说明不静默修复任何 Layer A 所有者、测试夹具或历史失败。
 

@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：已加入部队与活跃队伍成员状态、计数前缀重建与源审查成员辅助的实现无关重构，不导入 map-script 命令行为、持久性、UI、名册选择策略、呈现或平衡含义
 
-> 本文件是 [`party-membership-state.md`](../../../contracts/party/party-membership-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`party-membership-state.md`（英文规范源）](../../../contracts/party/party-membership-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,11 +14,11 @@
 - **已确认直接源码审查**：六个辅助身份及其受限指令/调用顺序；`UpdateForce` 写入计数前缀及其计数而无观察到的后备尾清除；`JoinForce` 设置已加入成员、重建、检查容量并条件调用 `JoinBattleParty`；三个活跃队伍辅助检查、设置或清除活跃标志；两个离开辅助保留不同源码形状 X 写入。
 - **未知**：数字标志索引、部队容量、己方基数、畸形选择器行为、调用方可视条件码含义、`JoinBattleParty`、`LeaveForce` 或 `LeaveBattleParty` 后的自动列表同步、正常剧情可达性、死亡/状态交互、存档/读档持久性、map-script 命令结果、AI/随从行为、UI 与玩家名册选择策略、呈现与平衡意图。
 
-[party 与 roster state 合同](../../../contracts/party/party-roster-state.md) 拥有十个已接受 map-script 命令形式及其受限处理器局部运行时观察。[global flag 合同](../../../contracts/world/global-flag-state.md) 拥有通用标志索引寻址，[new-game initialization 合同](../../../contracts/system/new-game-state-initialization.md) 只拥有其已接受初始化顺序边。本合同在借用那些相邻合同关联的情况下拥有更低队伍成员状态面。
+[party 与 roster state 合同](party-roster-state.md) 拥有十个已接受 map-script 命令形式及其受限处理器局部运行时观察。[global flag 合同](../world/global-flag-state.md) 拥有通用标志索引寻址，[new-game initialization 合同](../system/new-game-state-initialization.md) 只拥有其已接受初始化顺序边。本合同在借用那些相邻合同关联的情况下拥有更低队伍成员状态面。
 
 ## 证据所有者与源审计
 
-`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../../research/party/common-stats.md)。
+`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services（英文）](../../../../research/party/common-stats.md)。
 
 fixture 绑定 `UpdateForce`，其十进制地址为 `39168`，并拥有恰好四个 `expected.statsFacts.party` 事实。那四个语义事实不被静默扩展成完整运行时合同。
 

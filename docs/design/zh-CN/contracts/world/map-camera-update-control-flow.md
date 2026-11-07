@@ -5,7 +5,7 @@
 - 现代化：**允许** 在已准入兼容输入上使用引擎原生摄像机状态与调度，同时保留等价抽象决定/更新轨迹
 - 未知：自然调用方准入、运行时目标域、被调方效果、寄存器/CCR ABI、中断节奏、滚动轨迹、VDP 可见输出、帧时序与呈现
 
-> 本文件是 [`map-camera-update-control-flow.md`](../../../contracts/world/map-camera-update-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-camera-update-control-flow.md`（英文规范源）](../../../contracts/world/map-camera-update-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 
@@ -44,7 +44,7 @@
 - 任何 H3 摄像机、地图、中断、图形或呈现 fixture；
 - `sf2-map-data-static-v1` 或任何聚合 map-data 记录。
 
-所属[common-map 研究](../../../../research/world/common-maps.md)、可执行[`maps.py`](../../../../../src/sf2tool/h2/maps.py)与提取[`manifest`](../../../../../manifests/extractions/common-maps-static.json) 保留完整七文件清单与已接受摘要。生成清单行 hash 完整双函数源文件，因此其文件级调用计数不得被误认为该函数受限双调用面。
+所属[common-map 研究（英文）](../../../../research/world/common-maps.md)、可执行[`maps.py`](../../../../../src/sf2tool/h2/maps.py)与提取[`manifest`](../../../../../manifests/extractions/common-maps-static.json) 保留完整七文件清单与已接受摘要。生成清单行 hash 完整双函数源文件，因此其文件级调用计数不得被误认为该函数受限双调用面。
 
 受限源形状直接在固定[`camerafunctions.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/maps/camerafunctions.asm)中审查。H1 列表提供条目与排他结束身份。当前 H2 所有者不证明对 H1 与 ROM 的逐字节指令体一致性，本合同不声称它。
 
@@ -101,7 +101,7 @@ fixture 的源成员面包含跨七个源路径的八条记录。六条携带直
 
 计数器每个目标交接递增一次，而非每调整轴一次。更早带符号负目标分支在不取任一计数器路径的情况下到达速度派生，而非零 `IsMapScrollingToViewTarget` 分支在速度派生前返回。这三条路线必须保持不同。
 
-`SetViewDestination` 调用是交接身份。目标轴计算、下游状态写入、运行时命令行为与可见滚动仍归[`map-exploration`](../../../contracts/world/map-exploration.md)及其已接受摄像机证据。
+`SetViewDestination` 调用是交接身份。目标轴计算、下游状态写入、运行时命令行为与可见滚动仍归[`map-exploration`](map-exploration.md)及其已接受摄像机证据。
 
 ## 速度选择与四个宽度受限写入
 
@@ -132,11 +132,11 @@ fixture 的源成员面包含跨七个源路径的八条记录。六条携带直
 
 ## 跨系统分离
 
-- [`map-exploration`](../../../contracts/world/map-exploration.md) 保留摄像机命令记录、H3 目标/目标/速度观察、`SetCameraDestination`、`SetViewDestination` 行为、`WaitForViewScrollEnd`、区域视差/自动滚动输入与地图生命周期。本合同只拥有受限更新函数。
-- [`graphics-service-state`](../../../contracts/graphics/graphics-service-state.md) 继续排除 `graphicsFacts.viewDestination`；它把该源静态更新算法委托此处，同时保留其图形服务职责。
-- [`interrupt-dma-and-trap-state`](../../../contracts/system/interrupt-dma-and-trap-state.md) 拥有回调注册、VInt/中断传输、DMA 接缝与时序边界。`VInt_` 源前缀不复制该合同。
-- [`map-entity-data`](../../../contracts/world/map-entity-data.md) 与实体状态所有者保留记录身份、人口与运行时状态。此处的两次字读取不创建第二实体 schema。
-- [`map-layout-data`](../../../contracts/graphics/map-layout-data.md)、[`map-entry-routing-state`](../../../contracts/world/map-entry-routing-state.md)、[`unused-mapload-control-flow`](../../../contracts/system/unused-mapload-control-flow.md)与地图动画所有者保留其既有数据与控制流记录。
+- [`map-exploration`](map-exploration.md) 保留摄像机命令记录、H3 目标/目标/速度观察、`SetCameraDestination`、`SetViewDestination` 行为、`WaitForViewScrollEnd`、区域视差/自动滚动输入与地图生命周期。本合同只拥有受限更新函数。
+- [`graphics-service-state`](../graphics/graphics-service-state.md) 继续排除 `graphicsFacts.viewDestination`；它把该源静态更新算法委托此处，同时保留其图形服务职责。
+- [`interrupt-dma-and-trap-state`](../system/interrupt-dma-and-trap-state.md) 拥有回调注册、VInt/中断传输、DMA 接缝与时序边界。`VInt_` 源前缀不复制该合同。
+- [`map-entity-data`](map-entity-data.md) 与实体状态所有者保留记录身份、人口与运行时状态。此处的两次字读取不创建第二实体 schema。
+- [`map-layout-data`](../graphics/map-layout-data.md)、[`map-entry-routing-state`](map-entry-routing-state.md)、[`unused-mapload-control-flow`](../system/unused-mapload-control-flow.md)与地图动画所有者保留其既有数据与控制流记录。
 - 渲染器组合、可访问性策略、替换内容、呈现与硬件保真保持未来刻意设计或 **未知**。
 
 ## 实现无关模型

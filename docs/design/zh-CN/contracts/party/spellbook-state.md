@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：存储习得法术条目、所选槽与习得计数访问、定义未命中回退与 `LearnSpell` 结果/变更顺序的实现无关重构，不导入运行时获取、持久性、UI、战斗解决、呈现或平衡含义
 
-> 本文件是 [`spellbook-state.md`](../../../contracts/party/spellbook-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`spellbook-state.md`（英文规范源）](../../../contracts/party/spellbook-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,11 +14,11 @@
 - **已确认直接源码审查**：`GetSpellDefinitionAddress` 把原始传入 `d1.b` 与定义条目身份字节比较，且自身不应用 `SPELLENTRY_MASK_INDEX`；`GetSpellAndNumberOfSpells` 返回调用方所选槽的条目，同时独立扫描每个源槽计算习得计数；`LearnSpell` 在任何空槽搜索前完成已知基础扫描。
 - **未知**：数字掩码、移位、槽计数、Nothing 与定义计数常量；受限源码形式之外的畸形或重复存储条目行为；无效战斗员、槽或定义输入；运行时调用方可达性与变更结果；事务/回滚行为；存档/读档持久性；获取策略；UI、名称/本地化、MP 使用、目标、范围、效果、battle-scene 呈现、音频与平衡意图。
 
-[spell-definition-data 合同](../../../contracts/party/spell-definition-data.md) 拥有不可变法术身份与记录打包。[Level-up](../../../contracts/party/level-up.md) 拥有其已接受调用方路线，[spell resolution](../../../contracts/battle/spell-resolution.md) 拥有战斗执行，[combatant state access](../../../contracts/party/combatant-state-access.md) 拥有通用战斗员条目访问。[new-game initialization 合同](../../../contracts/system/new-game-state-initialization.md) 只拥有其已接受符号空槽初始化事实。本合同不借用那些相邻合同的 research-index 关联。
+[spell-definition-data 合同](spell-definition-data.md) 拥有不可变法术身份与记录打包。[Level-up](level-up.md) 拥有其已接受调用方路线，[spell resolution](../battle/spell-resolution.md) 拥有战斗执行，[combatant state access](combatant-state-access.md) 拥有通用战斗员条目访问。[new-game initialization 合同](../system/new-game-state-initialization.md) 只拥有其已接受符号空槽初始化事实。本合同不借用那些相邻合同的 research-index 关联。
 
 ## 证据所有者与源审计
 
-`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../../research/party/common-stats.md)。
+`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services（英文）](../../../../research/party/common-stats.md)。
 
 fixture 绑定 `spellstats.asm` 服务面，其代表入口是 `GetSpellName`，十进制地址为 `37318`，并拥有恰好五个 `expected.statsFacts.spells` 事实。那五个事实不构成运行时观察，也不建立每个辅助的完整 API。
 

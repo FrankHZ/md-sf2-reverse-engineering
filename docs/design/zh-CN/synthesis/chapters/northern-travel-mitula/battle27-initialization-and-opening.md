@@ -1,6 +1,6 @@
 # Battle27：初始编队与限制对峙
 
-> 本文是[规范英文原文：Battle27: initial formation and the restrictions confrontation](../../../../synthesis/chapters/northern-travel-mitula/battle27-initialization-and-opening.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle27: initial formation and the restrictions confrontation](../../../../synthesis/chapters/northern-travel-mitula/battle27-initialization-and-opening.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 Battle27 首次激活前，三名敌人质问军团。**已确认：** 两名 Dark Soldier 问访客从何而来、是否知道限制；Lizardman 不接受“不知道”的借口。问题无玩家选择命令。新入口在开场前构建实际队伍与十六敌人，但对话与放置均不证明它们已激活、可见或准备单次行动。
 
@@ -24,13 +24,13 @@ Battle27 首次激活前，三名敌人质问军团。**已确认：** 两名 Da
 
 **已确认：** 治疗独立于成员资格扫描全部30 己方。存活者以及始终符合的 Peter7/Lemon28 获最大 HP/MP；其他死者跳过。先将状态掩为 STUN|POISON|CURSE（`$0007`），再重算派生属性、状态/装备效果与诅咒。中间掩码不承诺最终诅咒。治疗不招募、转职、替换物品栏或选择出战队伍。HP 为字；MP 与位置字段为字节。
 
-己方初始化先将每名己方 X 设 -1，再调 UpdateForce。成员标志按己方 ID 升序重建加入/出战/预备列表；所供陈旧列表不具权威。头声明 **12 个己方放置槽、16 敌行、4 区域与1 点**。[完整十二位置表](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#actual-party-and-all-twelve-placement-slots)将存活出战成员放在局部 X14–17/Y44–46 附近。每行向下一个符合成员提供 X/Y，不提供己方身份。其 HEALER1、NOTHING、NONE/region15、filler0 与 STARTING 字段不覆盖己方 AI、物品栏或其他状态。
+己方初始化先将每名己方 X 设 -1，再调 UpdateForce。成员标志按己方 ID 升序重建加入/出战/预备列表；所供陈旧列表不具权威。头声明 **12 个己方放置槽、16 敌行、4 区域与1 点**。[完整十二位置表（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#actual-party-and-all-twelve-placement-slots)将存活出战成员放在局部 X14–17/Y44–46 附近。每行向下一个符合成员提供 X/Y，不提供己方身份。其 HEALER1、NOTHING、NONE/region15、filler0 与 STARTING 字段不覆盖己方 AI、物品栏或其他状态。
 
 死亡出战成员消费一个已处理成员槽，但不推进放置指针，因此下一存活者用较早未用位置。十二限制已处理成员数，不保证十二行动者。超额出战成员经 LeaveBattleParty 清出战位并设 X=-1，不立即重建列表/计数。符合成员较少则行动者较少。零成员计数在首次成员读取前递减，无空列表守卫；任意不一致空状态未建立安全性。编队数不保证 Bowie，Higins19 仅在实际成员资格与 HP 允许时参与。
 
 ## 六种敌人，十六初始化行
 
-**已确认：** BattleSpriteset27 为390 字节：头4、己方行144、敌行192、区域48、点2。CURRENT_BATTLE 选指针；子段偏移来自所选头。每战斗员行12 字节，包括类型/序号、X/Y、指令集、物品字、两组命令/区域对，以及作为字读取的 filler/spawn 对。[完整十六行表与编码结果](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#complete-enemy-declarations-and-initialization)仍是行权威。此处按身份紧凑分组：
+**已确认：** BattleSpriteset27 为390 字节：头4、己方行144、敌行192、区域48、点2。CURRENT_BATTLE 选指针；子段偏移来自所选头。每战斗员行12 字节，包括类型/序号、X/Y、指令集、物品字、两组命令/区域对，以及作为字读取的 filler/spawn 对。[完整十六行表与编码结果（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#complete-enemy-declarations-and-initialization)仍是行权威。此处按身份紧凑分组：
 
 | 类型 / 存储 ID | 行（战斗员128 + 行） | 此处声明作用 |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ Battle27 首次激活前，三名敌人质问军团。**已确认：** 两名 Da
 
 指令集名称、数量与引用不证明战术或行动。全部行 item NOTHING、filler0/STARTING0，使所有初始化字为 `$0000`。全部 spawn 半字节低于 HIDDEN2，因此128–143 调 InitializeEnemyStats。Battle32 的 Jaro 例外不跳 Battle27 行15。新初始化不检查起始位置占用；ResetSpawningEnemyStats 属另一个后续消费者。
 
-六种[定义、武器、法术与属性表](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#definitions-weapons-spells-and-stats)解释实际初始化输入。每56 字节定义按14 长字复制，当前 HP/MP 设最大值，写位置/类型，movetype/指令集装入不同半字节。全部 ENHANCED 法术威力、无初始状态。Soldier/Lizardman 保留已装备 Large Axe，Sniper 保留 Hyper Cannon，Wizard/Bishop 保留 Flail；Wyvern 无武器。行 NOTHING 在 AddItem/装备前返回，不抹去复制武器，也不加 Black Ring。Soldier ATTACK、Wyvern FLAME、Wizard BLAZE LV3 与 Bishop AURA/BLAST LV3 是声明，不是使用法术证据。
+六种[定义、武器、法术与属性表（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#definitions-weapons-spells-and-stats)解释实际初始化输入。每56 字节定义按14 长字复制，当前 HP/MP 设最大值，写位置/类型，movetype/指令集装入不同半字节。全部 ENHANCED 法术威力、无初始状态。Soldier/Lizardman 保留已装备 Large Axe，Sniper 保留 Hyper Cannon，Wizard/Bishop 保留 Flail；Wyvern 无武器。行 NOTHING 在 AddItem/装备前返回，不抹去复制武器，也不加 Black Ring。Soldier ATTACK、Wyvern FLAME、Wizard BLAZE LV3 与 Bishop AURA/BLAST LV3 是声明，不是使用法术证据。
 
 难度调整在 SUPER 比较后有连续 `beq` 指令。所有难度均应用 floor(base ATT*5/4)，SUPER 应用两次。装备效果再为 Axe/Cannon/Flail 加25/40/19 ATT。例如 Soldier 基础/当前 ATT 普通为38/63，SUPER 为47/72；所属表列全部六种结果。无初始状态定义下 DEF/AGI/MOV 保持声明值。这建立条件初始化属性，不建立伤害、命中率或预期难度。
 
@@ -51,7 +51,7 @@ Battle27 首次激活前，三名敌人质问军团。**已确认：** 两名 Da
 
 Battle27 不在完整随机升级列表，升级选择因此在完成/等级/RNG 检查前拒绝。持有 F527 不升级这些定义。也不在中立表：F527 未设查不到组，持有 F527 则跳扫描。两路均不创建中立 Higins。不能将 Battle26 升级/中立事实转用此处。
 
-[四区域与点0](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#four-regions-and-one-point)是战斗局部声明。区域0–3 对应 F90–93；type4 消费者用四顶点字构成三角形1/2/4 与3/2/4。第二/尾字节不是几何操作数。Region15 是无触发哨兵值，不是另一多边形。Point0=`(15,23)` 为行0 MOVE_TO 引用。FOLLOW_ENEMY 操作数指战斗员128/137/136/133/132/138/142。本终点内不执行区域求值、目标选择、路径或移动。
+[四区域与点0（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md#four-regions-and-one-point)是战斗局部声明。区域0–3 对应 F90–93；type4 消费者用四顶点字构成三角形1/2/4 与3/2/4。第二/尾字节不是几何操作数。Region15 是无触发哨兵值，不是另一多边形。Point0=`(15,23)` 为行0 MOVE_TO 引用。FOLLOW_ENEMY 操作数指战斗员128/137/136/133/132/138/142。本终点内不执行区域求值、目标选择、路径或移动。
 
 ## 重建战场，而非保留大地图阵容
 
@@ -139,7 +139,7 @@ F477 是包装器写入，**不证明开场完成**。写后中断可抑制之�
 
 ## 证据审阅与保留结果
 
-完整已接受 [Battle27 研究](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md)是**已确认的静态证据所有者**，以 [#1033 / PR1036](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1036)在 `85016e1c27af3fd91cd82d0468b37c896c69f3b4` 接受。固定 SF2DISASM `master` 为 `c834c652b6862bc5679fd7f69a38a7093206efc6`；溯源绑定根 README 的 USA retail ROM 身份。源码路径、地址、完整表、文本与私有比较仍由其拥有。Fnnn 指标志 nnn；行/查找索引从零起。
+完整已接受 [Battle27 研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-initialization-and-opening.md)是**已确认的静态证据所有者**，以 [#1033 / PR1036](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1036)在 `85016e1c27af3fd91cd82d0468b37c896c69f3b4` 接受。固定 SF2DISASM `master` 为 `c834c652b6862bc5679fd7f69a38a7093206efc6`；溯源绑定根 README 的 USA retail ROM 身份。源码路径、地址、完整表、文本与私有比较仍由其拥有。Fnnn 指标志 nnn；行/查找索引从零起。
 
 完整已接受前序提供准入，不证明新初始化。[遭遇合同](../../../contracts/battle/battle-encounter-definition.md)、[战斗控制合同](../../../contracts/battle/battle-control-lifecycle.md)与[对话合同](../../../contracts/interface/dialogue-system.md)保留结构/运行时限制。更广未知队列不覆盖更深已接受 Battle27 谓词，也不建立自然抵达。未发现阻塞证据冲突；未来冲突返回研究，不作 Layer B 修补。
 
@@ -158,4 +158,4 @@ F477 是包装器写入，**不证明开场完成**。写后中断可抑制之�
 
 [#1033 最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1033#issuecomment-6183638591)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1036#issuecomment-6183661030)保留最终直接0.202s/独立0.195s/CI38675636173，与原0.207s/CI38675382781、更早0.215s 及 schema-path/local-$ref 守卫失败分别保留。独立的不存在区域文件名探测已改为既有所有者，未改数据。变基研究逐字节相同。[#1034 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1034#issuecomment-6183549178)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1035#issuecomment-6183600028)保留作者1.414s/独立1.433s/CI38674976874 及已修正检查/检查器诊断。前序保留 #1029 不同原/最终结果、失败与所链更早未知项；无完成套件重置。
 
-[#1038](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1038)的 Standard 严谨级别区分新/续接状态、成员资格、物理身份与介绍完成。[当前协议](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)拥有五 Markdown 路径与验收边界。交接记录完整文字/diff/变化状态审阅、实际公共 schema/消费者连接、导航/链接/锚点/UTF-8/私有检查、已配置干净提交 planner 与实际精确提交头范围 CI。文档范围跳过笼统 normal/full/Python/.NET/Godot/H3/H4/翻译套件。原切片未消费激活研究与 UI692；无新运行时队列。
+[#1038](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1038)的 Standard 严谨级别区分新/续接状态、成员资格、物理身份与介绍完成。[当前协议](../../../documentation-roadmap.md#当前基线与近期综合)拥有五 Markdown 路径与验收边界。交接记录完整文字/diff/变化状态审阅、实际公共 schema/消费者连接、导航/链接/锚点/UTF-8/私有检查、已配置干净提交 planner 与实际精确提交头范围 CI。文档范围跳过笼统 normal/full/Python/.NET/Godot/H3/H4/翻译套件。原切片未消费激活研究与 UI692；无新运行时队列。

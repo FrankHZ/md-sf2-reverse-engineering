@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`portrait-window-state.md`](../../../contracts/interface/portrait-window-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`portrait-window-state.md`（英文规范源）](../../../contracts/interface/portrait-window-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -31,9 +31,9 @@
 - `sf2-portrait-graphics-decode-v1`，位于
   [`tests/fixtures/h2/portrait-graphics-decode-v1.json`](../../../../../tests/fixtures/h2/portrait-graphics-decode-v1.json)，由 [`src/sf2tool/h2/portraits.py`](../../../../../src/sf2tool/h2/portraits.py) 实现。
 
-所属研究文章是[Common Menu Engines 与 Services](../../../../research/presentation/common-menus.md)与[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)。
+所属研究文章是[Common Menu Engines 与 Services（英文）](../../../../research/presentation/common-menus.md)与[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)。
 
-立绘 fixture 此处保持受限 `LoadPortrait` 消费者见证。静态表身份、指针顺序、载荷所有者别名、头/调色板/流分区、字节/解码计数、一致性与私有导入保真由[Portrait Graphics Data](../../../contracts/graphics/portrait-graphics-data.md)拥有。本合同从该所有者消费规范记录，不独立拥有或重新验证目录。
+立绘 fixture 此处保持受限 `LoadPortrait` 消费者见证。静态表身份、指针顺序、载荷所有者别名、头/调色板/流分区、字节/解码计数、一致性与私有导入保真由[Portrait Graphics Data](../graphics/portrait-graphics-data.md)拥有。本合同从该所有者消费规范记录，不独立拥有或重新验证目录。
 
 ## 合同前证据审计
 
@@ -82,7 +82,7 @@ common-menus fixture 是聚合清单。本合同只消费五个所选函数身�
 2. 非负字节调用 `GetAllyPortrait`；
 3. 两条路线经同一出口返回。
 
-这是原始符号分支合同。它不证明哪些战斗员种类或调用方状态供给每条路线。敌人/实体查找由[Sprite-Dialogue Property Data](../../../contracts/interface/sprite-dialogue-property-data.md)独立拥有；本合同不消费其 fixture，也不复制其表/查找 H4 面。
+这是原始符号分支合同。它不证明哪些战斗员种类或调用方状态供给每条路线。敌人/实体查找由[Sprite-Dialogue Property Data](sprite-dialogue-property-data.md)独立拥有；本合同不消费其 fixture，也不复制其表/查找 H4 面。
 
 ### 己方/职业重映射
 
@@ -100,7 +100,7 @@ common-menus fixture 是聚合清单。本合同只消费五个所选函数身�
 
 ## 规范立绘数据消费
 
-完整表、载荷所有者图、计数条目序列、调色板、压缩流、解码身份、大小、一致性与公开/私有投影由[Portrait Graphics Data](../../../contracts/graphics/portrait-graphics-data.md)定义。本合同为有效已接受选择器从该所有者接收一个规范逻辑立绘记录。它只依赖下文源时间线需要的消费者面向形状：
+完整表、载荷所有者图、计数条目序列、调色板、压缩流、解码身份、大小、一致性与公开/私有投影由[Portrait Graphics Data](../graphics/portrait-graphics-data.md)定义。本合同为有效已接受选择器从该所有者接收一个规范逻辑立绘记录。它只依赖下文源时间线需要的消费者面向形状：
 
 ```text
 CanonicalPortraitRecord {
@@ -153,7 +153,7 @@ CanonicalPortraitRecord {
 8. 通过 VInt 函数 trap 注册 `VInt_PerformPortraitBlinking`；
 9. 把眨眼控制字节设置为 `-1`、恢复寄存器并返回。
 
-普通/镜像 8×10 布局数据与精确原始 160 字节内容保持[UI Layout Data](../../../contracts/interface/ui-layout-data.md)拥有。本合同只保留源布局身份选择与复制大小；它不消费 UI-layout fixture，也不添加布局关联。
+普通/镜像 8×10 布局数据与精确原始 160 字节内容保持[UI Layout Data](ui-layout-data.md)拥有。本合同只保留源布局身份选择与复制大小；它不消费 UI-layout fixture，也不添加布局关联。
 
 ### 关闭
 
@@ -246,7 +246,7 @@ NameWindowState {
 
 ## 保真、现代化与版权边界
 
-静态立绘数据兼容被委托给[Portrait Graphics Data](../../../contracts/graphics/portrait-graphics-data.md)。本合同要求保留选择器分支/顺序、规范记录消费、开/关状态顺序、精确 `LoadPortrait` 复制/尾操作数与调用、静态动画操作数/后加与名称窗口零/非零分支。
+静态立绘数据兼容被委托给[Portrait Graphics Data](../graphics/portrait-graphics-data.md)。本合同要求保留选择器分支/顺序、规范记录消费、开/关状态顺序、精确 `LoadPortrait` 复制/尾操作数与调用、静态动画操作数/后加与名称窗口零/非零分支。
 
 重制可以在导入期间转码私有立绘流、使用现代纹理图集、用可访问性安全策略替换随机眨眼、选择不同窗口运动或使用编写的区域特定名称呈现。那些决定必须报告为刻意现代化，而非关于原版可见行为的证据。
 
@@ -271,10 +271,10 @@ H4 不要求原版汇编指令、Mega Drive VDP 模拟器、公开构建中的�
 | 合同区域 | 证据标签 | 所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 六个函数身份与 H1 绑定地址 | **已确认静态清单** | `sf2-common-menus-static-v1` 与 `sf2-portrait-graphics-decode-v1`（上文链接 fixture） | 所选记录之外的聚合服务/菜单事实被排除 |
-| 规范目录身份、别名、载荷分区、解码保真与私有投影 | **独立所有者已确认静态** | [Portrait Graphics Data](../../../contracts/graphics/portrait-graphics-data.md) | 本合同消费记录但不独立拥有或重新验证目录 |
+| 规范目录身份、别名、载荷分区、解码保真与私有投影 | **独立所有者已确认静态** | [Portrait Graphics Data](../graphics/portrait-graphics-data.md) | 本合同消费记录但不独立拥有或重新验证目录 |
 | 选择器、开/关、LoadPortrait、更新、回调与名称窗口指令/调用顺序 | **已确认静态源审查** | commit `c834c652b6862bc5679fd7f69a38a7093206efc6` 的固定源路径 | 自然调用方、外部不一致状态与运行时结果保持 **未知** |
-| 立绘属性查找与对话命令/调用方接缝 | **独立所有者** | [Sprite-Dialogue Property Data](../../../contracts/interface/sprite-dialogue-property-data.md)与[Dialogue System](../../../contracts/interface/dialogue-system.md) | 端到端对话呈现保持未闭合 |
-| 普通/镜像立绘布局载荷 | **独立所有者** | [UI Layout Data](../../../contracts/interface/ui-layout-data.md) | 本合同保留选择身份/复制大小但不消费布局 fixture |
+| 立绘属性查找与对话命令/调用方接缝 | **独立所有者** | [Sprite-Dialogue Property Data](sprite-dialogue-property-data.md)与[Dialogue System](dialogue-system.md) | 端到端对话呈现保持未闭合 |
+| 普通/镜像立绘布局载荷 | **独立所有者** | [UI Layout Data](ui-layout-data.md) | 本合同保留选择身份/复制大小但不消费布局 fixture |
 | VInt 回调执行、RNG 分布、DMA 队列处理/完成、可见时序与最终帧 | **未知 / 独立所有者** | 未来受限运行时/呈现证据 | 静态调用顺序不是运行时节奏 |
 | 渲染器、可访问性、本地化、替换立绘与许可内容 | **刻意设计** | 未来产品/内容决定 | 需要独立溯源与验收 |
 

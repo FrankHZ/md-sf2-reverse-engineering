@@ -1,18 +1,18 @@
 # Evil Spirit 咨询与条件区域（事件）返回
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 Creed 召唤 Evil Spirit，询问 Zeon。首次接触受阻，Peter 因而提醒他注意首领的宝石。检查后，Creed 要求向灵体展示。灵体报告再次出现的威胁；自称 Zeon 的声音打断，在 Arc Valley 索取 Jewel of Evil，并提出用 Elis 交换。随后布置描绘灵体爆炸。Creed 与 Fairy 讨论失去灵体，并离开房间。
 
 **推断：**这是有序布置的叙事含义。**已确认：**这些是归属于说话者的对话声明与源码命令，不是已实现的宝石移除、交换、Elis 返回或招募。程序不含物品栏事务。**未知：**自然可达、实际传入状态、服务完成、渲染表现、可用控制和持久性。
 
-本指南从[神殿入口与场景准入](evil-spirit-shrine-entry-and-scene-admission.md)继续，消费已接受 main `9de649eb1da588065f513b5d0f32819636bb8933` 上 #949/PR952 的[完整咨询研究](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md)。它解释完整场景，止于有条件的调用方/包装器返回。后续步行返回、宅邸重新入场、Fairy 事件、招募及 Oddler 离开仍为独立边界。此 Layer B 解释不选择重制行为或新运行时工作。
+本指南从[神殿入口与场景准入](evil-spirit-shrine-entry-and-scene-admission.md)继续，消费已接受 main `9de649eb1da588065f513b5d0f32819636bb8933` 上 #949/PR952 的[完整咨询研究（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md)。它解释完整场景，止于有条件的调用方/包装器返回。后续步行返回、宅邸重新入场、Fairy 事件、招募及 Oddler 离开仍为独立边界。此 Layer B 解释不选择重制行为或新运行时工作。
 
 继续阅读 [Creed 返回、Fairy 跟随与招募选择（中文）](creed-return-fairy-and-recruitment-choices.md)，了解独立宅邸返回与紧接的房间交互。
 
 ## 谁在场，以及什么准入场景
 
-**已确认：**独立产生的 type6 请求匹配 Map34 通配 X 与 Y 低字节13 时，选择 Map34_ZoneEvent0。消费者清待处理类型，并在回调检查 F784 前为 physical0 安装 Init。未设置则准入 cs_5B6C0；已设置则跳过场景与两个调用方写入。F783、F523 和 F802 均非额外谓词，进入神殿本身不触发咨询。[入口所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#actual-zone-request-and-scene-call-boundary)保留布局、候选/目的地与请求产生前提。
+**已确认：**独立产生的 type6 请求匹配 Map34 通配 X 与 Y 低字节13 时，选择 Map34_ZoneEvent0。消费者清待处理类型，并在回调检查 F784 前为 physical0 安装 Init。未设置则准入 cs_5B6C0；已设置则跳过场景与两个调用方写入。F783、F523 和 F802 均非额外谓词，进入神殿本身不触发咨询。[入口所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#actual-zone-request-and-scene-call-boundary)保留布局、候选/目的地与请求产生前提。
 
 新 F784 未设置入场声明21 名居民。其逻辑 ID 经实际查找状态解析；逻辑、物理与存储 ENTNUM 值不同：
 
@@ -25,7 +25,7 @@ Creed 召唤 Evil Spirit，询问 Zeon。首次接触受阻，Peter 因而提醒
 | 效果133–148 | 十六个独立 EFFECT1=63 居民，physical N+5 至 N+20。 |
 | Bowie0、Peter7 与 FOLLOWER_B31 | 独立主角/随从查找；仅在基线随从前提下 B 才是 Oddler。 |
 
-N 计居民之前的普通随从。仅 F67/F68 时 N=2：Peter/B 为 physical1/2，Creed/Fairy3/4，131/132 为 physical5/6，效果7–22。灵体仍为 physical47。不同随从标志可使 B 解析为 Astral；重复 B 分配覆盖该查找。缺席行可经零映射解析为 physical0。隐藏将匹配查找改为-1，无局部修复。新 F784 已设置入场不创建居民；在保留实体群上改变标志不重建它。[已接受行动者前提](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#actor-and-admission-premises)负责 HP/职业/模式/木筏及分配限制。
+N 计居民之前的普通随从。仅 F67/F68 时 N=2：Peter/B 为 physical1/2，Creed/Fairy3/4，131/132 为 physical5/6，效果7–22。灵体仍为 physical47。不同随从标志可使 B 解析为 Astral；重复 B 分配覆盖该查找。缺席行可经零映射解析为 physical0。隐藏将匹配查找改为-1，无局部修复。新 F784 已设置入场不创建居民；在保留实体群上改变标志不重建它。[已接受行动者前提（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#actor-and-admission-premises)负责 HP/职业/模式/木筏及分配限制。
 
 以下名义故事假设不同的基线映射及返回的服务。场景没有命令创建这些演员、改变其居民地图精灵 ID 或操作132。特殊图形选择与对话行动者131 仍独立。
 
@@ -49,7 +49,7 @@ Bowie 向灵体前进，Creed 异步让开。无归属文本3240 叙述首领展
 
 **已确认，行180–196 / 文本3243–3257：**灵体说 Arc Valley 已打开、Zeon 已复活，devils 正飞向 North Parmecia。Creed 怀疑涉及 Mitula 的事件。灵体说看不到 Zeon，将他定位于 Arc Valley，并说力量尚未完全恢复。Creed 问其力量；灵体开始解释。
 
-这些是归属于说话者的报告，不是新验证的战役事实。Creed 跨3254–3255 的陈述保持一次续文：3254 仅以 `{N}` 结束；3255 以 `{N}{W2}` 继续。两者之间不要插入确认或关闭。[精确文本/控制所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#text-identity-speaker-and-continuation-state)保留全部73 关联，包括此仅 N 段。
+这些是归属于说话者的报告，不是新验证的战役事实。Creed 跨3254–3255 的陈述保持一次续文：3254 仅以 `{N}` 结束；3255 以 `{N}{W2}` 继续。两者之间不要插入确认或关闭。[精确文本/控制所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#text-identity-speaker-and-continuation-state)保留全部73 关联，包括此仅 N 段。
 
 ## Zeon 打断与索求
 
@@ -69,7 +69,7 @@ Bowie 向灵体前进，Creed 异步让开。无归属文本3240 叙述首领展
 | 外侧145–148 | 置于(8,6)、(7,7)、(6,6)、(7,5)，Left；分别获 Right1/Down1/Left1/Up1，睡眠2 后 StopMoving；进入逆时针循环程序的四个阶段。 |
 | 射线133–140 | 五次爆发各自开始前，全部重置为(7,6)、Right。分别获得 Right4、Up4、Left4、Down4、UpRight4、UpLeft4、DownLeft4、DownRight4。仅等待140。 |
 
-循环程序由相对移动、目的地等待与回分支组成，无 Idle 出口。源码标签不可靠描述首操作数：`eas_ClockwiseMoveUpRight` 从(-1,+1) 开始。内侧移动若完成，经过菱形各阶段；外侧轨迹从实际停止坐标开始，不是假设的整瓦片偏移。[完整轨迹](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#sixteen-effect-trajectories-and-hides)保留每个入口、增量和循环尾部。两组均不证明实测半径、同步环或渲染圆形。
+循环程序由相对移动、目的地等待与回分支组成，无 Idle 出口。源码标签不可靠描述首操作数：`eas_ClockwiseMoveUpRight` 从(-1,+1) 开始。内侧移动若完成，经过菱形各阶段；外侧轨迹从实际停止坐标开始，不是假设的整瓦片偏移。[完整轨迹（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#sixteen-effect-trajectories-and-hides)保留每个入口、增量和循环尾部。两组均不证明实测半径、同步环或渲染圆形。
 
 每次爆发在射线前请求死亡 SFX。重置位置并替换未等待完成的射线行动可中断其先前移动。爆发3 后隐藏灵体，并再请求隆隆声；之后爆发4、5。爆发5 后，133–140 按序隐藏，再睡眠40，141–148 按序隐藏。这些效果不实现战斗员死亡、EXP 奖励或 `eas_Die` 事务。
 
@@ -81,17 +81,17 @@ Hide 将当前和目的地坐标写为($7000,$7000)，使全部匹配查找失�
 
 Creed 获等待的 Down1、Left1、Down5 路径并隐藏。Fairy 获等待的 Left1、Down1 路径，呼唤他，带等待跳两次，叫他等候，再获 Down5 并隐藏。她最后台词前，Peter 和 B 被朝 Down；Bowie 更早的 Down 朝向有自身 HP 守卫。Creed Init 后移动可经自动朝向改变朝向，因此最后显式朝向不是无条件最终方向。
 
-最后程序请求 Peter→Bowie 方向2，再 B→Peter 方向2。编码随从字为7 和31，但处理器先测试高字节，再解码完整字。两高字节均0，因此两调用均由 Bowie HP 守卫，而非 Peter 或 B。准入时方向2 选择偏移(-24,0)；AddFollower 安装修补的42 字节跟随模板，仅在缺席时将物理随从追加到探索列表。不招募、不设 F67/F68、不瞬移、不修复查找，也不等待跟随稳定。别名可产生自我跟随或替换首个关系。[条件结束所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#conditional-end-state-and-zone-caller-return)保留精确守卫和模板重置/跟随边界。
+最后程序请求 Peter→Bowie 方向2，再 B→Peter 方向2。编码随从字为7 和31，但处理器先测试高字节，再解码完整字。两高字节均0，因此两调用均由 Bowie HP 守卫，而非 Peter 或 B。准入时方向2 选择偏移(-24,0)；AddFollower 安装修补的42 字节跟随模板，仅在缺席时将物理随从追加到探索列表。不招募、不设 F67/F68、不瞬移、不修复查找，也不等待跟随稳定。别名可产生自我跟随或替换首个关系。[条件结束所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#conditional-end-state-and-zone-caller-return)保留精确守卫和模板重置/跟随边界。
 
 ## 阅读文本、移动与表现请求
 
-**已确认：**完整场景有409 条顶层记录、58 个移动主体、16 个自定义主体和73 个精确文本/控制关联。上述六个叙事阶段覆盖场景行4–580，不遗漏无对话爆炸区间。[完整有序所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#complete-ordered-scene)保留全部连续记录分区；本指南不重复逐字稿或操作码清单。
+**已确认：**完整场景有409 条顶层记录、58 个移动主体、16 个自定义主体和73 个精确文本/控制关联。上述六个叙事阶段覆盖场景行4–580，不遗漏无对话爆炸区间。[完整有序所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#complete-ordered-scene)保留全部连续记录分区；本指南不重复逐字稿或操作码清单。
 
 名义游标经过3207–3279，结束于3280。`nextSingleText` 显示、递增、关闭立绘/文本并睡眠10；`nextText` 保留续文打开。W1/W2 是输入等待，不是选择，命令形式不决定等待数量。Creed 用修饰符 $80，请求右侧不镜像立绘；其他行动者用0。基线 Creed 选择 CREED/bleep8，Fairy NONE/1，灵体 NONE/8，131 NONE/6。Peter 实际基础/转职后精灵选择立绘及 bleep4/5；改变精灵可不同。叙述3240 用 `$FFFF` 和语音 SFX0。已有打开立绘或 NONE 结果可抑制打开；选择131 不请求 Zeon 立绘。
 
 ExecuteMapScript 入场清文本跳过锁存。调试模式加 P2 Start 可锁存，跳过后续文本显示/游标推进及分发器 csWait 睡眠。其他行动/辅助命令及内部等待保留。因此73 个名义关联不是73 次观察显示，调试跳过会改变并发移动可用时间。
 
-行动安装替换解析行动者指针并初始化等待计时器。等待安装无超时轮询该行动者至 Idle；生成的移动等待比较当前/目的地坐标。不等待其他行动者。Bowie/Peter Up1 与 B 等待的 Up1 并发、Creed 在 Bowie 等待靠近期间让开、分组跳跃和全部五次射线重置都必须保留此区别。StopMoving 经 moveRel(0,0) 从当前坐标重新定目标，不完成被覆盖移动。`stopEntity`/`startEntity` 写动画计数器-1/0，是不同操作。Init 重置其具名移动默认值，不重置坐标或所有标志。己方布置和朝向可跳过 ID 小于30、HP0 者；行动安装及选定闪光/手势不共享此跳过。别名或服务延迟下，替换可改变名义编排。见[行动与完成](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#actions-placement-and-completion)。
+行动安装替换解析行动者指针并初始化等待计时器。等待安装无超时轮询该行动者至 Idle；生成的移动等待比较当前/目的地坐标。不等待其他行动者。Bowie/Peter Up1 与 B 等待的 Up1 并发、Creed 在 Bowie 等待靠近期间让开、分组跳跃和全部五次射线重置都必须保留此区别。StopMoving 经 moveRel(0,0) 从当前坐标重新定目标，不完成被覆盖移动。`stopEntity`/`startEntity` 写动画计数器-1/0，是不同操作。Init 重置其具名移动默认值，不重置坐标或所有标志。己方布置和朝向可跳过 ID 小于30、HP0 者；行动安装及选定闪光/手势不共享此跳过。别名或服务延迟下，替换可改变名义编排。见[行动与完成（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#actions-placement-and-completion)。
 
 表现有独立直接效果与完成限制：
 
@@ -105,7 +105,7 @@ ExecuteMapScript 入场清文本跳过锁存。调试模式加 P2 Start 可锁�
 | 实体闪光/手势 | Creed100 请求26 次闪光循环；每个 Bowie40 请求11 次。精灵标志/更新等待、nod/headshake/shiver 变换和共享大小恢复有自身效果，不完成全部移动。 |
 | 震动/音频 | 振幅5 启动爆炸；完成的 $4005 经五个下降写入留下0。内部睡眠不受调试文本跳过影响。声音请求既不证明播放，也不证明视听完成。 |
 
-[选定辅助程序/服务所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#special-graphics-palettes-and-presentation-services)保留精确序列、调色板算术、闪光计数器和消费者。名称、睡眠与服务返回不确立实测时序或渲染结果。
+[选定辅助程序/服务所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#special-graphics-palettes-and-presentation-services)保留精确序列、调色板算术、闪光计数器和消费者。名称、睡眠与服务返回不确立实测时序或渲染结果。
 
 ## 条件调用方与包装器返回
 
@@ -140,7 +140,7 @@ ExecuteMapScript 入场清文本跳过锁存。调试模式加 P2 Start 可锁�
 
 原英文切片直接对两个事件分片/预期段和地图脚本 fixture 做 schema 验证。按更严格研究边界检查精确回调关联和选定处理器事实。[对话合同](../../../contracts/interface/dialogue-system.md)、[图形服务合同](../../../contracts/graphics/graphics-service-state.md)与[特殊精灵数据合同](../../../contracts/graphics/special-sprite-graphics-data.md)保留自身受控/汇总范围；均不独立证明此咨询的自然文本、渲染图形或传输完成。
 
-研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#changed-premises-evidence-limits-and-reproduction)具名保留比较配方、按 id=cs_5B6C0 的完整程序选择、源码/文本关联和直接消费者。原英文切片检出缺该 upstream 与保留对；不声称新比较、提取、获取或运行时结果。窄所有者仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events` 和 `uv run sf2 h2 map-script-engine`，配合既有保留配方。
+研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md#changed-premises-evidence-limits-and-reproduction)具名保留比较配方、按 id=cs_5B6C0 的完整程序选择、源码/文本关联和直接消费者。原英文切片检出缺该 upstream 与保留对；不声称新比较、提取、获取或运行时结果。窄所有者仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events` 和 `uv run sf2 h2 map-script-engine`，配合既有保留配方。
 
 [#949 冻结交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/949#issuecomment-6178414274)与 [PR952 验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/952#issuecomment-6178451561)保留 head3917f0e9/tree46e77101/base4a87e98e、未改变18,285,979 字节对比较0.079s、完整409/58/16/73 源码/主体/文本关联及 CI38636725332 scope14s/research-public36s PASS。其修正休眠槽、文本与编码跟随事实，以及全部检查/解析诊断继续保留。这些是已接受结果，不是新重跑。
 

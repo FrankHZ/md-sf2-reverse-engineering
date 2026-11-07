@@ -1,10 +1,10 @@
 # Evil Spirit Shrine 入口与咨询准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境、验证及中文同步推迟记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境、验证及中文同步推迟记录保留原英文综合切片的时间范围。
 
 前篇跟随 Creed 和 Fairy 从宅邸主房间离开的请求，前往咨询 Evil Spirit。**推断：**神殿准备的演员属于该预期咨询。**已确认：**宅邸有独立出口进入 Evil Spirit Shrine，两个局部转移连接其声明区域，后续区域（事件）请求可准入场景。进入房间本身不启动咨询。
 
-本指南从 [Creed 恢复与主房间离开](creed-restoration-and-basement-departure.md)继续，仅消费 #945/PR948 已接受[入口/准入研究](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)。它止于 cs_5B6C0 调用。咨询对话与效果、招募、Oddler 离开和场景后控制仍为更晚边界。**未知：**自然旅行、实际传入状态、服务完成、表现及持久性。这是实现中立的 Layer B 解释，不是重制需求或完整战役路线。
+本指南从 [Creed 恢复与主房间离开](creed-restoration-and-basement-departure.md)继续，仅消费 #945/PR948 已接受[入口/准入研究（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)。它止于 cs_5B6C0 调用。咨询对话与效果、招募、Oddler 离开和场景后控制仍为更晚边界。**未知：**自然旅行、实际传入状态、服务完成、表现及持久性。这是实现中立的 Layer B 解释，不是重制需求或完整战役路线。
 
 后续 [Evil Spirit 咨询与条件区域（事件）返回](evil-spirit-consultation-and-zone-return.md)解释完整获准场景及紧接的调用方/包装器边界。
 
@@ -16,7 +16,7 @@
 
 匹配写待处理传送请求。WaitForEvent 优先处理待处理事件；ProcessMapEvent 在分发前清类型。不滚动消费者将元组返回 MainLoop，其中 SwitchMap 无 Map34 替换，CheckBattle 无 Map34 战斗行，因此选定路线准入探索。介入写入者或未消费请求仍为独立问题。
 
-显式目的地字节仅替换从 physical0 先前位置派生坐标的低字节。将结果读作精确 `(26,28)` 假设继承高字节为零；目的地不修复任意传入高字节。完整地图探索加载也意味着坐标不相对于 Battle23 裁切战场。已接受研究负责[完整路线及直接消费者](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#mansion-exit-and-fresh-map34-admission)。
+显式目的地字节仅替换从 physical0 先前位置派生坐标的低字节。将结果读作精确 `(26,28)` 假设继承高字节为零；目的地不修复任意传入高字节。完整地图探索加载也意味着坐标不相对于 Battle23 裁切战场。已接受研究负责[完整路线及直接消费者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#mansion-exit-and-fresh-map34-admission)。
 
 ## 在神殿区域之间移动
 
@@ -32,7 +32,7 @@
 
 CURRENT255 走保留地图路径。更新主角当前/目的地位置、朝向和己方精灵，可在步行模式重置既有随从位置。不重新声明居民，不清新地图临时标志，也不经新入场分支设置 F80。公共加载/init 仍运行，使用 Map34 与当前选定配置。Caravan/木筏模式有不同随从与木筏处理；局部转移不将它们规范为步行。
 
-同样，请求宅邸不证明返回完成、特定场景后实体群或玩家控制恢复。目的地配置和 init 仍属 [Creed 指南](creed-restoration-and-basement-departure.md)。源码表和保留路径消费者见研究的[三个传送审阅](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#return-only-local-surfaces-and-the-three-warps)。
+同样，请求宅邸不证明返回完成、特定场景后实体群或玩家控制恢复。目的地配置和 init 仍属 [Creed 指南](creed-restoration-and-basement-departure.md)。源码表和保留路径消费者见研究的[三个传送审阅（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#return-only-local-surfaces-and-the-three-warps)。
 
 ## 新房间准备了谁
 
@@ -42,7 +42,7 @@ CURRENT255 走保留地图路径。更新主角当前/目的地位置、朝向�
 
 **已确认分配细节：**Evil Spirit 精灵252 走特殊路径：logical130 映射 physical47，存储 ENTNUM32。它消费查找条目但不推进普通物理计数器。Creed/Fairy、Beastman/Boy 及全部十六个 EFFECT1 精灵63 行使用普通分配。选定 N 个普通随从时，Creed/Fairy 占 N+1/N+2，Beastman/Boy 占 N+3/N+4，效果占 N+5 至 N+20。研究仅 F67/F68 的示例中，Peter 与 B/Oddler 占 physical1/2、Creed/Fairy3/4、Beastman/Boy5/6、效果7–22；Evil Spirit 仍为47。逻辑 ID、查找偏移、物理槽和 ENTNUM 在此是不同身份。
 
-五个角色行安装 eas_Init；效果行安装 eas_InitFixedSprite。两者在设置移动/碰撞/精灵属性后均止于 eas_Idle；固定精灵版本还禁用自动朝向与 motion。其精灵大小写入指向共享状态，不是独立证明的持久身体比例。**未知：**这些异步行动是否在自然到达的房间执行、稳定或渲染。`(63,63)` 仍是分配，不是 HideEntity；EFFECT1 名称不证明召唤、爆炸、动画或可见布置。研究保留[全部行身份与完整行动主体](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#setup-pointers-and-all-resident-identities)。
+五个角色行安装 eas_Init；效果行安装 eas_InitFixedSprite。两者在设置移动/碰撞/精灵属性后均止于 eas_Idle；固定精灵版本还禁用自动朝向与 motion。其精灵大小写入指向共享状态，不是独立证明的持久身体比例。**未知：**这些异步行动是否在自然到达的房间执行、稳定或渲染。`(63,63)` 仍是分配，不是 HideEntity；EFFECT1 名称不证明召唤、爆炸、动画或可见布置。研究保留[全部行身份与完整行动主体（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#setup-pointers-and-all-resident-identities)。
 
 主角/Bowie 以传入抵达元组和己方精灵独立声明于 physical0。随从依自身标志、职业/HP 和映射状态；出战队伍成员资格不能替代跟随。Map34 没有大地图 Caravan 前缀。F69 下 Fairy 随从为 logical158，独立于 resident129。重复 B 随从行可分别分配并覆盖同一查找；缺席 Peter/B 或居民留下可别名 physical0 的零查找。咨询调用前没有局部实体群检查修复别名。
 
@@ -66,7 +66,7 @@ Y13 匹配时，Map34_ZoneEvent0 检查 F784。已设置则返回，无场景调
 
 只有该尚未在本指南分析的场景返回，调用方才先设置 F784、再 F802。这些是有条件的有序效果，不是完成事实或原子对。返回前中断可使两个调用方写入均不发生；两个写入之间中断可使 F784 已设置而 F802 未改变。场景内部可能有其他效果；本指南不声称只有这些写入，也不证明持久性。外部传入 F784 已设置可抑制场景，不证明曾运行。
 
-回调返回时，区域（事件）包装器关闭立绘/文本、等待一个 VInt，再等待 physical0 当前坐标等于目的地。该等待不等待所有行动者/行动/服务。寄存器恢复同样依赖相关调用返回。这些边界不确立场景后玩家控制、招募或离开。精确回调及 trap/包装器关联属于[已接受准入所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#actual-zone-request-and-scene-call-boundary)。
+回调返回时，区域（事件）包装器关闭立绘/文本、等待一个 VInt，再等待 physical0 当前坐标等于目的地。该等待不等待所有行动者/行动/服务。寄存器恢复同样依赖相关调用返回。这些边界不确立场景后玩家控制、招募或离开。精确回调及 trap/包装器关联属于[已接受准入所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#actual-zone-request-and-scene-call-boundary)。
 
 ## 改变状态会改变可作出的声明
 
@@ -82,7 +82,7 @@ Y13 匹配时，Map34_ZoneEvent0 检查 F784。已设置则返回，无场景调
 
 ## 证据审阅与剩余限制
 
-**已确认溯源：**已接受 main `c6bbc1c11ea52d9a0828abf2280e9ff125bfaf91` 包含 #945/PR948 和已接受前篇。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#changed-premise-checks-and-reproduction)保留源码路径、地址、操作数、直接消费者与命令。原英文切片不以并行咨询研究为本指南证据。
+**已确认溯源：**已接受 main `c6bbc1c11ea52d9a0828abf2280e9ff125bfaf91` 包含 #945/PR948 和已接受前篇。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md#changed-premise-checks-and-reproduction)保留源码路径、地址、操作数、直接消费者与命令。原英文切片不以并行咨询研究为本指南证据。
 
 原英文切片的对抗审阅覆盖完整已接受正文、两个完整传送表、全部居民/分配/行动区别、仅返回局部表面及候选/布局/目的地/请求关联。选定可执行所有者为：
 
@@ -99,4 +99,4 @@ schema 在 schemas/（map-event/map-script 分片在 schemas/h2/），消费者�
 
 原英文切片执行直接完整正文/diff、证据/链接/锚点、英文/私有边界检查和 git diff --check，再检查已配置干净已提交 planner 及实际精确 head CI。该仅文档改动不要求局部一揽子套件或翻译检查。**在原英文切片当时，中文同步仍被推迟**；这保留该切片的历史范围，不是本译文当前阻碍。
 
-**未知：**自然旅行及活动布局/碰撞、传入标志/实体群、职业/HP/映射/模式/木筏、请求时机、服务/行动完成、渲染行动者/效果/摄像机/文本/音频、可用控制及持久性。咨询主体与全部后续招募/离开结果仍在此入口/准入指南外。[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)不创建自动运行时队列或扩大重制验收。
+**未知：**自然旅行及活动布局/碰撞、传入标志/实体群、职业/HP/映射/模式/木筏、请求时机、服务/行动完成、渲染行动者/效果/摄像机/文本/音频、可用控制及持久性。咨询主体与全部后续招募/离开结果仍在此入口/准入指南外。[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)不创建自动运行时队列或扩大重制验收。

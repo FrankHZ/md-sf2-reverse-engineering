@@ -1,14 +1,14 @@
 # 地震城镇出口至码头出航
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 离开地震城镇后，前方港口的实体群由后续标志选择。**推断的叙事连接：**王室一行准备撤离，选择出发，并在船离岸时目睹 Granseal 毁灭。**已确认静态内容：**选定城镇出口请求 Map44；一名特定老人实体提供出航选择；Yes 运行有序场景，清除随从/地震标志并产生 Map73 请求。**未知：**合法行走、自然交互、场景服务完成及出站使用方实际读取的请求。
 
-本文承接[塔后返回至地震城镇入场](post-tower-return-through-earthquake-entry.md)。已接受的[研究所有者](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md)提供溯源、选定记录、对话审阅和使用方顺序。本指南支持内容/设计规划，止于向主循环的条件 Map73 请求交接，不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#727](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/727) 的 Standard 严谨度协议。
+本文承接[塔后返回至地震城镇入场](post-tower-return-through-earthquake-entry.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md)提供溯源、选定记录、对话审阅和使用方顺序。本指南支持内容/设计规划，止于向主循环的条件 Map73 请求交接，不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#727](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/727) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。原版源码引用使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。下方命令索引是从零开始的脚本记录，不是帧数或实测时长。对话依据已接受研究概述。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。下方命令索引是从零开始的脚本记录，不是帧数或实测时长。对话依据已接受研究概述。
 
 ## 1. 东出口请求改变后的港口
 
@@ -16,7 +16,7 @@
 
 场地请求退出探索，随后 `MainLoop/@Start` 先调用 `SwitchMap`，再调用 `CheckBattle`。Map44 没有替换行，也没有第一列地图字段为 44 的遭遇行，因此将此选定请求交给探索。遭遇表其他位置的 44 是尺寸，不是另一个遭遇谓词。这一局部结果不建立自然旅程。
 
-显式 Map44 入场时，探索清除待处理事件、治疗存活/不死己方角色、加载选定内容，并在配置 init 前初始化新的实体群。Map44 标志/踩踏事件表只有终止符，不提供创作中的登船路径布局复制证据。[入场审阅](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#town-exit-and-map44-admission)拥有生产方、无滚动使用方及准入顺序。
+显式 Map44 入场时，探索清除待处理事件、治疗存活/不死己方角色、加载选定内容，并在配置 init 前初始化新的实体群。Map44 标志/踩踏事件表只有终止符，不提供创作中的登船路径布局复制证据。[入场审阅（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#town-exit-and-map44-admission)拥有生产方、无滚动使用方及准入顺序。
 
 **已确认配置优先级：**Map44 配置行依次是 default、F609、F506、F507。选择器扫描所有标志行并保留最后一个已设的行，因此即使 F609/F506 已设，F507 仍胜出。没有 F507 时，F506 优先于 F609；否则应用 F609 或 default。F507 是内容选择器，不证明撤离或其前提已完成。
 
@@ -24,7 +24,7 @@
 
 实体重建期间，F74 启用 Astral (`FOLLOWER_B`)、King Granseal (`FOLLOWER_A`) 和 Minister (`FOLLOWER_D`)。Map44 允许这些标志选择的随从。F74 缺失则不声明这一组；F68/F70 也可使用 B，F77 使用 A，F83 在 F74 之后使用 A/D。额外声明可能覆盖所寻址随从映射。首次胜利的 F83 未设状态有意义，但不证明其他标志均未设；该场景不修复缺失/冲突映射。随从是当前行动者，不是新军团招募；仅 F507 不建立场景期待的说话者。
 
-init 后，只有待处理字读取为零，`WaitForEvent` 才安装实体 0 控制。普通 `PLAYER_TYPE=0` 选择角色移动；任意木筏/Caravan 输入不同。待处理事件会绕过控制安装。早先清除以及 init 没有显式生产方，并不证明较后读取为零。这些[配置/随从/控制边界](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#setup-followers-and-conditional-control)仍是内容解释的条件。
+init 后，只有待处理字读取为零，`WaitForEvent` 才安装实体 0 控制。普通 `PLAYER_TYPE=0` 选择角色移动；任意木筏/Caravan 输入不同。待处理事件会绕过控制安装。早先清除以及 init 没有显式生产方，并不证明较后读取为零。这些[配置/随从/控制边界（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#setup-followers-and-conditional-control)仍是内容解释的条件。
 
 ## 2. 登船保留行动者；离开再入场会重建
 
@@ -40,7 +40,7 @@ init 后，只有待处理字读取为零，`WaitForEvent` 才安装实体 0 控
 
 从西侧离开，再经显式 Map44 请求返回，会重建选定实体群。F640 已设时，西侧 Map3 请求变成 Map4；F640 未设则保留 Map3。那些返回 init 细节仍属前篇。同地图登船不是显式 Map44 重入。
 
-**未知通行与占位：**F507 实体群在三个码头触发坐标上均有固定行动者。这种重叠是不能仅从传送记录推断畅通的具体原因。碰撞、随从状态、行走及服务完成仍未证明。[登船/交互审阅](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#boarding-records-and-actual-entity-interaction)拥有这些记录和各自使用方。
+**未知通行与占位：**F507 实体群在三个码头触发坐标上均有固定行动者。这种重叠是不能仅从传送记录推断畅通的具体原因。碰撞、随从状态、行走及服务完成仍未证明。[登船/交互审阅（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#boarding-records-and-actual-entity-interaction)拥有这些记录和各自使用方。
 
 ## 3. 出航选择由老人提供
 
@@ -55,7 +55,7 @@ init 后，只有待处理字读取为零，`WaitForEvent` 才安装实体 0 控
 | Yes | 初始选择的结果为 0；Left 选中，A/C 确认。零运行 `cs_54578`，随后到达公共处理器返回。 |
 | No 或取消 | Right 选择 No；A/C 确认，或 B 产生相同的 -1 结果。非零显示催促尽快回来的 1010，然后到达公共返回，不运行出航脚本或其 F74/F640 清除。 |
 
-在该返回处，No 与取消无法区分。正常清理经 `ProcessPlayerAction` 返回；只有下次待处理事件读取为零才恢复控制。拒绝不保证立即输入就绪，同意也不提供随从的自然就绪检查。[选择审阅](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#departure-choice-and-ordered-script)保留提示和两个分支。
+在该返回处，No 与取消无法区分。正常清理经 `ProcessPlayerAction` 返回；只有下次待处理事件读取为零才恢复控制。拒绝不保证立即输入就绪，同意也不提供随从的自然就绪检查。[选择审阅（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#departure-choice-and-ordered-script)保留提示和两个分支。
 
 ## 4. 同意后分阶段安排出航
 
@@ -80,7 +80,7 @@ init 后，只有待处理字读取为零，`WaitForEvent` 才安装实体 0 控
 
 **已确认条件使用方：**若请求保留至 `WaitForEvent`，非零字绕过控制安装。`ProcessMapEvent` 清除请求，其无滚动传送使用方消费/清除已有 `WARP_SFX`，让当前实体 0 进入 idle，退出探索，并向主循环交付 `d0=73, d1=26, d2=13, d3=Right, d4=0`。
 
-在此静态交接处，F74/F640 已被显式清除，出航中没有清除 F507，脚本当前行动者是 Map66 上的船精灵。该路径既不建立也不要求在场景与出站消费之间存在普通 Map66 玩家控制帧。实际待处理值、中间生产方及完成的服务仍为**未知**。[返回/使用方所有者](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#return-pending-request-and-stopping-boundary)保留该限制。
+在此静态交接处，F74/F640 已被显式清除，出航中没有清除 F507，脚本当前行动者是 Map66 上的船精灵。该路径既不建立也不要求在场景与出站消费之间存在普通 Map66 玩家控制帧。实际待处理值、中间生产方及完成的服务仍为**未知**。[返回/使用方所有者（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#return-pending-request-and-stopping-boundary)保留该限制。
 
 这就是停止边界。`MAP_OVERWORLD_NEW_GRANSEAL_KINGDOM` 命名出站 Map73；目的地配置/init、自然抵达、航行/定居及 Battle08 不在本指南范围内。假设重入 Map44，仍可能选择 F507，而此时 F74 已清除，除非其他所有者改变这些标志。这里没有使重复交互保持一致的“已完成出航”锁存。这是不能把配置选择当作完整场景状态的反例，不是自然可达返回声明。
 
@@ -90,7 +90,7 @@ init 后，只有待处理字读取为零，`WaitForEvent` 才安装实体 0 控
 
 **已确认静态异常：**Map44 四种配置共用 `ms_map44_ZoneEvents`。其 `$FD00` 默认值和相对表达式 `byte_54868+4-ms_map44_ZoneEvents` 选择 **`0x5486C`**，不是相邻的 `Map44_DefaultZoneEvent` 返回 `0x5445C`。目标位于 Map6 固定实体记录内的动作脚本指针字段。区域（事件）使用方加上位移并调用该地址；表/使用方数据独立于源码 bug 注释建立此不匹配。
 
-现有区域（事件）测试夹具将 `raw-map44-zone-default-expression-boundary` 保留为排除项，而非已准入区域程序主体。**未知：**自然区域（事件）生产方是否沿该路线到达此处，以及在那里执行会发生什么。不要推断正常空操作或崩溃，也不要将无关实体列表重新解释为场景。该区域（事件）使用方不同于与出航老人进行的普通实体事件交互。[异常所有者](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#selected-zone-table-anomaly)保留限定调查。
+现有区域（事件）测试夹具将 `raw-map44-zone-default-expression-boundary` 保留为排除项，而非已准入区域程序主体。**未知：**自然区域（事件）生产方是否沿该路线到达此处，以及在那里执行会发生什么。不要推断正常空操作或崩溃，也不要将无关实体列表重新解释为场景。该区域（事件）使用方不同于与出航老人进行的普通实体事件交互。[异常所有者（英文）](../../../../../research/chapters/grans-opening/earthquake-town-through-docks-departure.md#selected-zone-table-anomaly)保留限定调查。
 
 ## 证据审阅与剩余限制
 

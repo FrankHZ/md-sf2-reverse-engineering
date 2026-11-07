@@ -1,12 +1,12 @@
 # Battle06 结果、Granseal 内容与 Battle07 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/battle06-outcomes-through-battle07.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/battle06-outcomes-through-battle07.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Battle06 胜利准备大地图返回；选定城镇与城堡内容描述 Galam 入侵后的 Granseal。Kiwi 可以被命名并招募，城堡事件描写 Astral 与 Lemon 前往塔楼，并添加国王及大臣为随从，塔中对话通向与 Galam 对峙。
 **已确认：**这些是条件源码程序与状态消费者。**推断：**它们组成预期的返回 Granseal 和营救连接。
 **未知：**自然连续走过这些内容。尤其是，Battle06 开场写 F407，胜利写 F506：遭遇准入与局部内容改变各自独立。
 
-本英文指南的中文镜像承接 [Battle05 结果至 Battle06 准入](battle05-outcomes-through-battle06.md)。它消费[已接受分段研究](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md)，止于 Battle07 before/start，早于其结算。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#715](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/715) 的 Standard 严谨度协议。此处不接受可玩重制能力或新观察。
+本英文指南的中文镜像承接 [Battle05 结果至 Battle06 准入](battle05-outcomes-through-battle06.md)。它消费[已接受分段研究（英文）](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md)，止于 Battle07 before/start，早于其结算。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#715](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/715) 的 Standard 严谨度协议。此处不接受可玩重制能力或新观察。
 
 接着读 [Battle07 结果与探索交接（中文）](battle07-outcomes-and-aftermath.md)，了解胜利/重复/败北/逃脱、长塔楼场景及条件恢复探索。
 
@@ -78,7 +78,7 @@ Kiwi 场景在场、选定名字、已加入成员资格、出战标志、重建
 
 ## 4. 塔楼进路是条件请求链
 
-**已确认选定出口：**下表每行是 `warpNoScroll` 记录，表示若该标记产生请求会发生什么，不确立从一个抵达点走到下一标记；255 表示坐标通配值。[请求所有者](../../../../../research/world/map-event-request-consumption.md#confirmed-consumer-topology)闭合局部轮询/清除接缝，[分段请求审阅](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#conditional-onward-map-requests)拥有选定源码组合。
+**已确认选定出口：**下表每行是 `warpNoScroll` 记录，表示若该标记产生请求会发生什么，不确立从一个抵达点走到下一标记；255 表示坐标通配值。[请求所有者（英文）](../../../../../research/world/map-event-request-consumption.md#confirmed-consumer-topology)闭合局部轮询/清除接缝，[分段请求审阅（英文）](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#conditional-onward-map-requests)拥有选定源码组合。
 
 | 请求地图 / 标记 | 目的地 / 朝向 | 内容或准入条件 |
 | --- | --- | --- |
@@ -118,7 +118,7 @@ F506、F620、F621、F83 和 Kiwi 成员资格均不在 `CheckBattle` 行 7 谓�
 
 **已确认编写对话：**普通 ID 2357–2384 描写 Galam 威胁 Elis、Astral 与 Galam 对峙并相互定身、Elis 逃跑受阻、Astral 请 Bowie 营救她，以及 Galam 召唤攻击者。这是在为遭遇作铺垫；程序没有新军团加入或后续 `setStoryFlag`，本指南不解释其结果。
 
-BattleLoop 在 before 后恢复传入地图/战斗、清除区域标志 90–105、治疗符合资格己方角色、初始化己方/敌方位置、清除 AI 内存并加载战斗，之后调用 start。行 7 start 目标为 `ms_Empty`；包装器在分发前设置 F457。空终止保留解释器清理/等待，不证明瞬间完成。F457 原已设置会跳过两个脚本，包括 F83 清除。F88 挂起入场恢复保存秒数、清除 F88/AI 内存并重载战斗状态，绕过新战斗初始化及 before/start。[开场合同](../../../contracts/battle/battle-cutscene-routing.md#共享-intro-门)拥有包装器门槛；[选定入场审阅](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#battle07-admission-and-beforestart-stopping-boundary)拥有其顺序位置和 Battle07 目标。
+BattleLoop 在 before 后恢复传入地图/战斗、清除区域标志 90–105、治疗符合资格己方角色、初始化己方/敌方位置、清除 AI 内存并加载战斗，之后调用 start。行 7 start 目标为 `ms_Empty`；包装器在分发前设置 F457。空终止保留解释器清理/等待，不证明瞬间完成。F457 原已设置会跳过两个脚本，包括 F83 清除。F88 挂起入场恢复保存秒数、清除 F88/AI 内存并重载战斗状态，绕过新战斗初始化及 before/start。[开场合同](../../../contracts/battle/battle-cutscene-routing.md#共享-intro-门)拥有包装器门槛；[选定入场审阅（英文）](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#battle07-admission-and-beforestart-stopping-boundary)拥有其顺序位置和 Battle07 目标。
 
 `BattleSpriteset07`（`0x1B3720`）声明 7 个己方布置、10 个敌人、4 个 AI 区域及 1 个 AI 点。初始化消费实际已加入/出战/存活军团：七个布置不强制 Kiwi 出战，也不证明七名己方存活。止于此选定 before/start 边界。Battle07 结算、其后长场景及之后战役为独立工作。
 
@@ -136,4 +136,4 @@ BattleLoop 在 before 后恢复传入地图/战斗、清除区域标志 90–105
 
 控制器合同 New Battle 总览对 before/start 的归组比选定顺序更宽；使用上方精确包装器/分段顺序。成员资格合同有意保留符号值，不闭合同步列表。请求所有者历史 H3 问题队列及研究可能的现有所有者扩展是未知项处置，不是获准采集。这些更窄边界与可执行所有者一致；本指南不导出 Layer A 修复或新测试夹具主张。
 
-**推断：**连接 Granseal 与塔楼的预期营救旅程。**未知：**自然结果及传入标志/存档点/调用方/行动者/HP/出战队伍状态；合法行走、随机遭遇、工作布局碰撞与占位、塔楼/楼梯可达或绕过；重入和冲突随从；服务完成与呈现/输入时序；持久性和可获胜性。[研究缺口所有者](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#existing-coverage-and-gap-disposition)保留其区分性对照。具名 H2 命令是复现路线，不是新 PASS 声明；启动前在同一进程加载 `local/private-inputs.ps1`。不消费未合并 Battle07 结果结论，指南不增加重制、UI 或翻译支持。
+**推断：**连接 Granseal 与塔楼的预期营救旅程。**未知：**自然结果及传入标志/存档点/调用方/行动者/HP/出战队伍状态；合法行走、随机遭遇、工作布局碰撞与占位、塔楼/楼梯可达或绕过；重入和冲突随从；服务完成与呈现/输入时序；持久性和可获胜性。[研究缺口所有者（英文）](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#existing-coverage-and-gap-disposition)保留其区分性对照。具名 H2 命令是复现路线，不是新 PASS 声明；启动前在同一进程加载 `local/private-inputs.ps1`。不消费未合并 Battle07 结果结论，指南不增加重制、UI 或翻译支持。

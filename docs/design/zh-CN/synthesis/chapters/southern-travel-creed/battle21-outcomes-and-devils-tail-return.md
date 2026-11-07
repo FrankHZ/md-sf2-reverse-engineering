@@ -1,6 +1,6 @@
 # Battle21 结果与 Devil's Tail 返回
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Battle21 可在敌方首领死亡、Bowie 存活后结束，无需军团逐个击杀全部十二名初始敌人。
 首次符合条件的胜利，其战后场景从交战转到 Peter 对移动中同伴的疑问，以及他们要见 Mr. Creed 的意图。
@@ -11,7 +11,7 @@ Battle21 可在敌方首领死亡、Bowie 存活后结束，无需军团逐个�
 有关视力的对话不确立生理事实或后续设定，请求返回也不是已游玩行程。
 
 本指南接续 [Battle21 开场与初始名册](battle21-opening-and-initial-roster.md)，
-使用[已接受结果研究](../../../../../research/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md)。
+使用[已接受结果研究（英文）](../../../../../research/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md)。
 止于条件 Map67 探索/控制或待处理返回，或传入败北/逃脱目的地的继续。
 宅邸初始化/室内、Battle22、后续招募/设定、伤害/AI/掉落/地形重建及重制实现不在范围内。
 Fnnn 表示标志 nnn；命令索引从零开始。坐标、速度及等待是源码操作数。
@@ -259,8 +259,8 @@ debug 加 P1 Start 则在存档调用后清除 F88 并返回菜单。没有胜�
 **已确认溯源：**本指南使用 main `f43add920e4c905195f35cb6009d870433153f19` 上已接受研究，
 源码为 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，
 USA 零售 ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
-[研究结果所有者](../../../../../research/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md#actual-outcome-routing)
-及[复现边界](../../../../../research/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md#defeatescape-continuation-and-verification-limits)
+[研究结果所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md#actual-outcome-routing)
+及[复现边界（英文）](../../../../../research/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md#defeatescape-continuation-and-verification-limits)
 负责精确源码路径、槽位/地址、完整选定命令/程序体/实体/文本及使用方。这里不声称重新调查原始源码、重新生成载荷/比较或采集运行时。
 
 | 已审阅证据所有者 | 本指南保留的支持与限制 |

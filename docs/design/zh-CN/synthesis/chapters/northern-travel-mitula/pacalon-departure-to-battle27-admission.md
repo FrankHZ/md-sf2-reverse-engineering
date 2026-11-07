@@ -1,6 +1,6 @@
 # Pacalon 离开：北向滚动与有条件 Battle27 准入
 
-> 本文是[规范英文原文：Pacalon departure: the north scroll and conditional Battle27 admission](../../../../synthesis/chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Pacalon departure: the north scroll and conditional Battle27 admission](../../../../synthesis/chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 离开 Pacalon 不立即开始前往 Tristan 路上的战斗。**已确认：** 城堡南向请求先允许城镇战斗检查；城镇南向请求随后构建新大地图探索。向北滚动加载 Map74，同时保留该探索的行动者与脚本。独立获准 zone 回调可解锁战斗并请求重载。只有之后 MainLoop 扫描才选 battle27 或32。
 
@@ -10,7 +10,7 @@
 
 ## 证据与范围
 
-完整已接受[离开研究](../../../../../research/chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)是**已确认的静态证据所有者**，经 [#1029 / PR1032](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1032)在 `369757a59864cef7d4c0bf0e40769659fbab219d` 接受。已接受城堡指南与其[研究所有者](../../../../../research/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)、[城镇离开请求](../../../../../research/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md#ordered-exits-and-outgoing-mainloop-request)、[入口/生命周期](../../../../../research/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)、[请求写入](../../../../../research/world/map-event-request-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)、[共享地图](../../../../../research/world/common-maps.md)与[随机战斗所有者](../../../../../research/world/map-event-random-battle-state.md)保留各自证据边界。[地图/探索合同](../../../contracts/world/map-exploration.md)区分静态记录、受控观察与自然进展。
+完整已接受[离开研究（英文）](../../../../../research/chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)是**已确认的静态证据所有者**，经 [#1029 / PR1032](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1032)在 `369757a59864cef7d4c0bf0e40769659fbab219d` 接受。已接受城堡指南与其[研究所有者（英文）](../../../../../research/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)、[城镇离开请求（英文）](../../../../../research/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md#ordered-exits-and-outgoing-mainloop-request)、[入口/生命周期（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)、[请求写入（英文）](../../../../../research/world/map-event-request-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)、[共享地图（英文）](../../../../../research/world/common-maps.md)与[随机战斗所有者（英文）](../../../../../research/world/map-event-random-battle-state.md)保留各自证据边界。[地图/探索合同](../../../contracts/world/map-exploration.md)区分静态记录、受控观察与自然进展。
 
 源码路径相对 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 的 `disasm/`；研究保留 USA retail ROM 身份与源码/地址连接。Fnnn 指标志 nnn；行从零起。此设计检出无源码/配对。18,285,979 字节保留配对的已接受0.083s 比较仅属溯源，不在此复制源码、采集或作新私有比较。
 

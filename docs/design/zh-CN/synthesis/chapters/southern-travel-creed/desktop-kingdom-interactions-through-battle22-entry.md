@@ -1,13 +1,13 @@
 # Desktop Kingdom：对话与棋盘挑战
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**King Ponpei 的最后一句战前台词返回后，他才授予靠近棋盘的许可。独立区域（事件）检查该许可并启动遭遇场景；其存续传送请求随后可准入 Battle22。**推断：**King 将打败其军队作为离开的条件。**未知：**自然行程、实际传入状态、已完成服务、表现与可用控制。单凭对话不能确立这些结果。
 
 本指南从 [Desktop Kingdom 首次抵达](desktop-kingdom-first-arrival.md)的条件局部返回接续。仅使用
-[已接受对话/准入研究](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)，依据
+[已接受对话/准入研究（英文）](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)，依据
 [Issue #907](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/907) 和
-[当前 Standard 约定](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+[当前 Standard 约定](../../../documentation-roadmap.md#当前基线与近期综合)。
 选定前提是 F522 未设置，每次交互都重新解析实际行动者映射。
 F777 可以已经设置；F776 不作为这些普通对话的门控。
 
@@ -85,7 +85,7 @@ Caravan 消息例程选择 **F70 未设置时 Rohde 立绘 11，F70 已设置时
 
 Event6 直接调用 ChurchMenu。它在条件开场中使用 CURRENT_PORTRAIT，显示欢迎文本，关闭窗口，然后进入 MENU_CHURCH。
 选择 -1 进入 ExitMenu：条件立绘、告别、窗口关闭、栈帧/寄存器还原和返回。
-其他选择仍由[通用菜单研究所有者](../../../../../research/presentation/common-menus.md)负责。
+其他选择仍由[通用菜单研究所有者（英文）](../../../../../research/presentation/common-menus.md)负责。
 
 局部回调只确立这些有边界的交接与可能返回。它们不确立已完成存档、治疗、转职、仓储/出战队伍交易或服务后玩家控制，
 也不添加局部 EGRESS/存档点写入。返回的服务到达实体包装器；未返回的服务不会。包装器清理不撤销服务变更。
@@ -286,7 +286,7 @@ F777 未设置/F522 已设置的区域（事件）绕过不写 EGRESS_MAP、F422
 
 **已确认溯源：**已接受 main `ccf4a57360fea5b62160fe959a5d2dbca6dd8736` 包含
 [PR906](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/906)。其
-[研究所有者](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md#agreement-and-provenance)
+[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md#agreement-and-provenance)
 固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)
 及 USA 零售 ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
 本综合指南审阅已接受关联，不重新调查原始源码、不提取或运行运行时。
@@ -302,7 +302,7 @@ F777 未设置/F522 已设置的区域（事件）绕过不写 EGRESS_MAP、F422
 
 [entity-program 分片](../../../../../../tests/fixtures/h2/map-events/entity-programs.json)含 18 个选定 Map22 程序/76 操作；
 [zone-program 分片](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)含两个/八个。
-其 [schema 所有者](../../../../../../schemas/README.md)及
+其 [schema 所有者（英文）](../../../../../../schemas/README.md)及
 [fixture 加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)定义封闭分片边界；
 [验证器](../../../../../../src/sf2tool/h2/map_events.py)保留完整相等。
 选定 `programCorpus.programs` 条目关联全部八个场景命令和终止符。
@@ -342,6 +342,6 @@ CI38605731097/38606392847、未改变对/0.081s、已解决的 csc2D FLAGS_A5/6 
 **未知：**自然局部激活/区域（事件）可达性/行程；传入标志、HP/职业、出战队伍、别名/映射、模式和待处理状态；
 已完成服务/摄像机/文本/包装器工作；可见或可听演出、可用控制和存档持久性。
 上文改变状态示例是静态反例，不是已执行场景；依
-[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
-[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
+[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
+[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
 本有边界指南既未完成战役，也未完成 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。

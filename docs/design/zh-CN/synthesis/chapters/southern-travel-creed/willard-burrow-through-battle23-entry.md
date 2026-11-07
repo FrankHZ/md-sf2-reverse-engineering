@@ -1,12 +1,12 @@
 # Willard Burrow 探索与 Battle23 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 **已确认：**Willard Burrow 有三名基线居民、八条局部/出口传送记录，以及独立获准的对峙。完成对峙会解锁 Battle23 并请求返回 Map27；调用方的场景标志与待处理请求消费是之后两个不同边界。**推断：**居民威胁要吃掉出战队伍。**未知：**自然迷宫路线、传入行动者/状态、行动/表现完成、可用控制及持久性。本指南止于 BattleLoop 调用，早于初始化。
 
 从此终点可继续阅读 [Battle23 初始编队与挂起入场](battle23-initialization-and-roster.md)，它消费已接受 #932 研究，止于新激活/回合或已保存单次行动读取之前。本前篇保留自身准入边界。
 
-本指南从 [Floor World 对外准入](floor-world-interactions-and-exits.md)继续，使用已接受的 [Willard Burrow 研究](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md)，依据 [#934](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/934) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它解释原版内容和条件消费者，不提供迷宫解法、期望游戏玩法/UI 政策或重制实现。Fnnn 表示标志 nnn；坐标、速度和等待是源码操作数，不是实测性能。下文源码路径相对于研究固定的 `disasm/` 根目录。
+本指南从 [Floor World 对外准入](floor-world-interactions-and-exits.md)继续，使用已接受的 [Willard Burrow 研究（英文）](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md)，依据 [#934](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/934) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它解释原版内容和条件消费者，不提供迷宫解法、期望游戏玩法/UI 政策或重制实现。Fnnn 表示标志 nnn；坐标、速度和等待是源码操作数，不是实测性能。下文源码路径相对于研究固定的 `disasm/` 根目录。
 
 ## 入场与两种新实体群
 
@@ -36,7 +36,7 @@ InitializeMapEntities 清 49 个物理记录和 64 个查找字节，从 physica
 
 场景使用 B=FOLLOWER_B31 和 Peter=ALLY_PETER7。仅有 F67/Peter、F68/B(Oddler)，映射一致且各不相同并无覆盖时，两者以 eas_Follower1/2 占 physical1/2，居民128–130 占 physical3–5。仅己方成员资格不分配 Peter；F67 才是随从选择器。Peter 的 HP/职业影响地图精灵，包括探索中死亡己方角色的 BLUE_FLAME。场景自身既不验证行动者，也不复活他们。
 
-已接受的[完整随从选择](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#admission-setup-and-the-complete-population)顺序为 F66/Sarah、F67/Peter、F72/Kazin、F73/Slade、F74/B(Astral)、F66/Chester、F68/B(Oddler)、F75/Luke、F69/C(Fairy)、F70/B(Astral)、F74/A(King)、F71/Lemon、F74/D(Minister)、F76/Zynk、F77/A(Old Man)、F82/Frayja、F83/A(King)、F83/D(Minister)、F84/Rohde。Map27 既非无随从地图，也非大地图入场，因此 F65 不提供 Caravan/A 前缀。只有选中行推进行动游标。更多随从会移动居民的物理槽位；后续 B/A/D 声明覆盖逻辑映射，早先物理记录则保留。任意宽泛的标志组合并非已证明支持的输入。
+已接受的[完整随从选择（英文）](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#admission-setup-and-the-complete-population)顺序为 F66/Sarah、F67/Peter、F72/Kazin、F73/Slade、F74/B(Astral)、F66/Chester、F68/B(Oddler)、F75/Luke、F69/C(Fairy)、F70/B(Astral)、F74/A(King)、F71/Lemon、F74/D(Minister)、F76/Zynk、F77/A(Old Man)、F82/Frayja、F83/A(King)、F83/D(Minister)、F84/Rohde。Map27 既非无随从地图，也非大地图入场，因此 F65 不提供 Caravan/A 前缀。只有选中行推进行动游标。更多随从会移动居民的物理槽位；后续 B/A/D 声明覆盖逻辑映射，早先物理记录则保留。任意宽泛的标志组合并非已证明支持的输入。
 
 F523 已设置的新入场让居民查找32–34 保持零。零解析为 physical0，并非安全跳过缺席行动者。`$FF` 或其他无效查找值同样没有安全的缺席行动者守卫。因此 F523 已设置且 F781 未设置时，场景可获准，其居民命令却别名到主角。即使预期居民存在，逻辑替换也可改变命令实际消费谁的行动、目的地或说话者。
 
@@ -83,7 +83,7 @@ WaitForEvent 优先处理待处理类型而非 A/C 输入，有待处理事件�
 
 ### 按阅读顺序呈现完整场景
 
-cs_59FB8 位于 `$59FB8..$5A09E`，有41 条顶层命令，索引0–40。[已接受精确命令表](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#y19-zone-scene-entry-and-the-complete-confrontation)负责每个源码顺序操作数。下列阶段覆盖完整序列；合并描述的行动者仍按顺序执行命令，并非同时。
+cs_59FB8 位于 `$59FB8..$5A09E`，有41 条顶层命令，索引0–40。[已接受精确命令表（英文）](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#y19-zone-scene-entry-and-the-complete-confrontation)负责每个源码顺序操作数。下列阶段覆盖完整序列；合并描述的行动者仍按顺序执行命令，并非同时。
 
 第一阶段布置 B 和 Peter，让他们评论气味。视野随后移至 Willard 与两只鼠，表现笑声、旋转和跳跃，随后是 Peter 的反应，以及 Willard 发出的开饭威胁。后面的标志和传送命令将这场布置好的遭遇连接到条件战斗准入；文本自身不实现对出战队伍的伤害。
 
@@ -127,7 +127,7 @@ Peter 的 shiver 保存共享精灵大小/计数器，使用大小21/计数器-1
 | 1737 | 129 / `$C0` | 欢迎 | W2 |
 | 1738 | 129 / `$C0` | 宣布开饭时间 | W1 |
 
-研究的[字面文本表](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#six-texts-and-actual-speaker-selection)保留键06C5–06CA 和 `{N}` 换行。**推断：**文本与即将开始的战斗暗示吞食威胁。选定命令均不实现气味检测、生物成长、食物消费或出战队伍伤害。
+研究的[字面文本表（英文）](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#six-texts-and-actual-speaker-selection)保留键06C5–06CA 和 `{N}` 换行。**推断：**文本与即将开始的战斗暗示吞食威胁。选定命令均不实现气味检测、生物成长、食物消费或出战队伍伤害。
 
 实际逻辑映射/地图精灵选择立绘与语音。B/Oddler 为立绘40/bleep4；B/Astral 为31/6。Peter 基础职业为7/4，转职后为48/5；HP/职业或改变的映射可改变它们。WILLARD154 不在完整 sprite-dialog 表中，因此查找得到 DEFAULT(-1)/bleep6，而非 Willard 立绘。`$C0` 请求右侧/镜像 bits 15/14（129 为 `$C081`），不会创建缺席立绘；csc1D 保留已打开立绘。均未使用 `$FFFF` 无说话者哨兵值。缺失或别名查找可改变属性，而非安全抑制语音。
 
@@ -168,9 +168,9 @@ F423、请求存储、F781 与包装器之间没有回滚。场景返回前中�
 
 ## 证据审阅与保留限制
 
-**已确认溯源：**已接受 main `53df4b5cbf6d0b75136d5dfa737d125e2f08d551` 包含 #928/PR931 和 #930/PR933。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[研究复现所有者](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#reproduction-and-remaining-limits)保留源码符号/地址、精确场景/行动/传送关联与未改变载荷比较。本综合指南不增加原版观察或提取。
+**已确认溯源：**已接受 main `53df4b5cbf6d0b75136d5dfa737d125e2f08d551` 包含 #928/PR931 和 #930/PR933。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[研究复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#reproduction-and-remaining-limits)保留源码符号/地址、精确场景/行动/传送关联与未改变载荷比较。本综合指南不增加原版观察或提取。
 
-原英文切片的对抗审阅阅读完整已接受研究和前篇，再按下列选定公共 fixture/schema/验证器边界核对解释。[配置选择](../../../../../research/world/map-event-flag-route-selection.md)、[交互状态](../../../../../research/world/map-event-interaction-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)及[探索](../../../contracts/world/map-exploration.md)保留各自声明。
+原英文切片的对抗审阅阅读完整已接受研究和前篇，再按下列选定公共 fixture/schema/验证器边界核对解释。[配置选择（英文）](../../../../../research/world/map-event-flag-route-selection.md)、[交互状态（英文）](../../../../../research/world/map-event-interaction-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)及[探索](../../../contracts/world/map-exploration.md)保留各自声明。
 
 | 声明 | 可执行所有者与选定边界 |
 | --- | --- |
@@ -185,4 +185,4 @@ F423、请求存储、F781 与包装器之间没有回滚。场景返回前中�
 
 保留 [#928 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/928#issuecomment-6176708249)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/931#issuecomment-6176742983)：精确 Git 对象、CI38624813497、未改变 18,285,979 字节对/0.080s、检查失败及已修正 D159/raft63 假设，并链接 #924/#920 前篇修正。保留 [#930 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/930#issuecomment-6176889129)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/933#issuecomment-6176904018)、CI38626011000 及链接的 #926/#923 记录。这些收据不替换任何已完成结果，无需复制历史台账。原英文切片未消费未合并的 Battle23 初始化内容。
 
-**未知：**自然抵达/迷宫/区域（事件）/退出可达性；实际标志、行动者/查找、别名、HP/职业/出战队伍、布局、模式/行动、请求和当前/目的地状态；输入/文本/摄像机/行动完成、可见/可听时序、可用控制及存档/读档持久性。未评估目的地 Floor World/Creed init 或 Battle23 初始化/结果。[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)保留这些限制，不创建自动运行时队列。这既未完成战役，也未完成设计 epic，不改变重制验收边界。
+**未知：**自然抵达/迷宫/区域（事件）/退出可达性；实际标志、行动者/查找、别名、HP/职业/出战队伍、布局、模式/行动、请求和当前/目的地状态；输入/文本/摄像机/行动完成、可见/可听时序、可用控制及存档/读档持久性。未评估目的地 Floor World/Creed init 或 Battle23 初始化/结果。[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)保留这些限制，不创建自动运行时队列。这既未完成战役，也未完成设计 epic，不改变重制验收边界。

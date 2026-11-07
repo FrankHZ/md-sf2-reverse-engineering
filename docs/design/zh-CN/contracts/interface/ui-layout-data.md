@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`ui-layout-data.md`](../../../contracts/interface/ui-layout-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`ui-layout-data.md`（英文规范源）](../../../contracts/interface/ui-layout-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -21,9 +21,9 @@
 5. 不重叠覆盖 source/ROM 地址范围的精确 5,614 字节并集；
 6. 基于身份、维度、地址、计数与 hash 而非版权布局或瓦片载荷的公开 H4 面。
 
-它不拥有运行时窗口引擎、菜单准入、文本组合、调色板或 DMA 选择、动画、输入、音频、本地化、可访问性或最终呈现。相邻[window-system 合同](../../../contracts/interface/window-system.md) 拥有已接受八槽运行时分配、坐标、移动状态、组合与 VInt/DMA 调用顺序边界。两个合同单独都不证明玩家可见帧或调用方生命周期。
+它不拥有运行时窗口引擎、菜单准入、文本组合、调色板或 DMA 选择、动画、输入、音频、本地化、可访问性或最终呈现。相邻[window-system 合同](window-system.md) 拥有已接受八槽运行时分配、坐标、移动状态、组合与 VInt/DMA 调用顺序边界。两个合同单独都不证明玩家可见帧或调用方生命周期。
 
-可执行所有者是 `sf2-ui-layout-static-v1`，位于 [`tests/fixtures/h2/ui-layout-static-v1.json`](../../../../../tests/fixtures/h2/ui-layout-static-v1.json)，由 [`src/sf2tool/h2/ui_layouts.py`](../../../../../src/sf2tool/h2/ui_layouts.py) 实现。研究所有者是[Common Menu Engines 与 Services](../../../../research/presentation/common-menus.md)与[Technical Graphics](../../../../research/presentation/technical-graphics.md)的完整静态 UI 布局段。
+可执行所有者是 `sf2-ui-layout-static-v1`，位于 [`tests/fixtures/h2/ui-layout-static-v1.json`](../../../../../tests/fixtures/h2/ui-layout-static-v1.json)，由 [`src/sf2tool/h2/ui_layouts.py`](../../../../../src/sf2tool/h2/ui_layouts.py) 实现。研究所有者是[Common Menu Engines 与 Services（英文）](../../../../research/presentation/common-menus.md)与[Technical Graphics（英文）](../../../../research/presentation/technical-graphics.md)的完整静态 UI 布局段。
 
 ## 合同前证据审计
 
@@ -238,7 +238,7 @@ H4 不要求重制使用 Genesis VDP 字或原版布局作为其编写或运行�
 | 一等 64 字节法术等级指针表、有序 16 条目关系与十个目标身份 | **已确认静态** | `sf2-ui-layout-static-v1`（[`ui-layout-static-v1.json`](../../../../../tests/fixtures/h2/ui-layout-static-v1.json)） | 原始字节保持私有；路线索引消费者语义与玩家面向含义保持未闭合 |
 | 四个边框、四个资源与 5,614 字节不重叠覆盖并集 | **已确认静态** | `sf2-ui-layout-static-v1`（[`ui-layout-static-v1.json`](../../../../../tests/fixtures/h2/ui-layout-static-v1.json)） | 运行时复制、调色板使用、动画与可见像素 |
 | 排除窗口边框聚合与战斗机迷你状态 alternate | **已确认从 vanilla 组装一致性语料排除** | `sf2-ui-layout-static-v1`（[`ui-layout-static-v1.json`](../../../../../tests/fixtures/h2/ui-layout-static-v1.json)） | alternate 构建意图、使用与可达性保持 **未知** |
-| 八槽分配、移动、组合与转移调用顺序 | **独立所有者** | [window-system 合同](../../../contracts/interface/window-system.md) | 端到端呈现保持未闭合 |
+| 八槽分配、移动、组合与转移调用顺序 | **独立所有者** | [window-system 合同](window-system.md) | 端到端呈现保持未闭合 |
 | 本地化、可访问性、替换美术与可分发内容 | **刻意设计** | 未来产品/内容决定 | 需要溯源、许可与独立验收 |
 
 ## 复现

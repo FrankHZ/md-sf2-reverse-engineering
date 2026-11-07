@@ -1,10 +1,10 @@
 # Battle23 结果与返回 Willard Burrow
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 **已确认：**Battle23 可通过首领清理或敌人数为空结束。胜利治疗符合条件的己方角色、标记战斗完成，并返回从当前出战队伍派生的位置。新 Map27 返回重建没有居民的完整洞穴。败北和获准 Egress/Angel Wing 则使用存档点选择器，费用与恢复效果不同。**推断：**改变后的居民选择移除了 Willard 对峙实体群。**未知：**自然交战/穿行、传入状态、服务完成、表现、可用控制及持久性。
 
-本指南从 [Battle23 初始编队与挂起入场](battle23-initialization-and-roster.md)继续，使用[已修正接受的结果研究](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md)，依据 [#942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/942) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它从行动后结束检查开始，不模拟初始化与该接缝之间的行动。它止于有条件的洞穴探索或下一地图准入，早于目的地初始化或任何 Creed 场景。后续 [Creed 恢复与主房间离开](creed-restoration-and-basement-departure.md)从独立获准的 Map33 加载开始，保留本指南退出限制。Fnnn 表示标志 nnn；槽位从零计。下例在传入前提下区分源码分支，不是已执行场景。
+本指南从 [Battle23 初始编队与挂起入场](battle23-initialization-and-roster.md)继续，使用[已修正接受的结果研究（英文）](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md)，依据 [#942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/942) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它从行动后结束检查开始，不模拟初始化与该接缝之间的行动。它止于有条件的洞穴探索或下一地图准入，早于目的地初始化或任何 Creed 场景。后续 [Creed 恢复与主房间离开](creed-restoration-and-basement-departure.md)从独立获准的 Map33 加载开始，保留本指南退出限制。Fnnn 表示标志 nnn；槽位从零计。下例在传入前提下区分源码分支，不是已执行场景。
 
 ## 什么结束战斗
 
@@ -30,7 +30,7 @@ Battle23 的 defeated 表选择 `ms_Empty`。F523 未设置则分发，已设置
 
 因此，在**首次钩子接缝**中 Bowie 存活、Willard HP0，并且已布置出战队伍一致、列表/映射有效且服务完成时，可不逐个杀死每只 Rat/Ooze 而胜利。若 Willard 仅在行动后效果中死亡，第二次检查不运行该首领尾部：剩余计数敌人仍阻止胜利。反之，只要己方仍存在，零计数敌人允许不使用首领尾部而胜利。
 
-没有需要增加的局部死亡对话或布置覆盖：defeated 与 after 表选择仅终止符脚本，完整 leader-position 表只有 Battle05，region-script 表只有战斗32/40。[研究表/包装器关联](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#post-action-checks-and-leader-cleanup)负责精确选定槽位和完整排除检查。
+没有需要增加的局部死亡对话或布置覆盖：defeated 与 after 表选择仅终止符脚本，完整 leader-position 表只有 Battle05，region-script 表只有战斗32/40。[研究表/包装器关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#post-action-checks-and-leader-cleanup)负责精确选定槽位和完整排除检查。
 
 ## 胜利从当前出战队伍状态返回
 
@@ -51,7 +51,7 @@ JoinForce(0) 设置 Bowie 已加入标志 F0 并重建军团列表。出战数�
 
 空脚本仍初始化工作状态/文本跳过处理，有对话窗口时，清滚动速度并返回前等待视野滚动。脚本未完成会阻止加入/标志；加入未完成会阻止清/设。已完成前缀保留。空脚本不提供替换元组；最终读取前的竞争参数写入可改变返回字节，无需等待传送消费。
 
-Battle23 三种结果均恢复到 MainLoop 的**替代入口**：SwitchMap 后 ExplorationLoop，绕过 CheckBattle。该调用方不按 d4 符号分支。没有标志切换 Map27 替换改变此显式返回。[胜利消费者关联](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#victory-order-and-the-actual-return-seed)保留精确种子、映射、包装器和调用方溯源。
+Battle23 三种结果均恢复到 MainLoop 的**替代入口**：SwitchMap 后 ExplorationLoop，绕过 CheckBattle。该调用方不按 d4 符号分支。没有标志切换 Map27 替换改变此显式返回。[胜利消费者关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#victory-order-and-the-actual-return-seed)保留精确种子、映射、包装器和调用方溯源。
 
 ## 败北与撤退使用存档点选择器
 
@@ -79,7 +79,7 @@ GetEgressPositionForBattle 将 **EGRESS_MAP 作为地图选择器**读取，再�
 
 BattleLoop 在新或挂起入场前设置 F399，因此未设置示例是传入调用反例。具名选择器没有特殊木筏行；其他 Hassan/Polca/Bedoe 行不改变这些示例。
 
-Floor World 已完成首次抵达 init 先设置 F779，再 EGRESS_MAP26；F779 已设置的重复跳过该赋值。洞穴 init、对峙和 Battle23 钩子/结果不替换它。**若保留该更早选择器**，败北/撤退返回 Map26。进入洞穴或仅传入 F779 已设置，不足以保证 Floor World。见已接受 [Floor World 抵达](floor-world-first-arrival.md)及[存档点消费者关联](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#defeat-egress-and-the-savepoint-selector)。
+Floor World 已完成首次抵达 init 先设置 F779，再 EGRESS_MAP26；F779 已设置的重复跳过该赋值。洞穴 init、对峙和 Battle23 钩子/结果不替换它。**若保留该更早选择器**，败北/撤退返回 Map26。进入洞穴或仅传入 F779 已设置，不足以保证 Floor World。见已接受 [Floor World 抵达](floor-world-first-arrival.md)及[存档点消费者关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#defeat-egress-and-the-savepoint-selector)。
 
 三种结果的替代 MainLoop 返回均绕过 CheckBattle。因此保留的 F423 不在那里即时重新准入 Battle23；后续普通 MainLoop 遍处理可能使用它。实际返回地图/状态控制加载器。Map26/22 时本指南止于准入，早于目的地 init。
 
@@ -96,7 +96,7 @@ LoadMap 接收 d0=-1 用于视野选择，但**完整加载使用 d1=27**。CURR
 
 配置指针表共享回调、区域（事件）、描述、Section5 和 init；仅居民列表指针不同。每个访问器重新选择配置。胜利在选择前设置 F523。行动者记录/查找清除；随从从 physical1 分配，然后居民，Bowie 则以返回元组/eas_Idle 声明于 physical0。主角坐标乘384，不使用居民行的六位坐标掩码。空居民列表仍允许主角和传入随从。
 
-普通随从示例中，仅 F67/F68 分配 Peter (7) 于 physical1、B (logical31)/Oddler 于 physical2；仅成员资格不会。其他标志移动分配/别名，模式/木筏规则仍适用。BattleLoop 将 PLAYER_TYPE 清为0；这些结果/init 不改变它。前篇[完整实体群所有者](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#admission-setup-and-the-complete-population)保留其他分配及逻辑/物理/木筏别名。
+普通随从示例中，仅 F67/F68 分配 Peter (7) 于 physical1、B (logical31)/Oddler 于 physical2；仅成员资格不会。其他标志移动分配/别名，模式/木筏规则仍适用。BattleLoop 将 PLAYER_TYPE 清为0；这些结果/init 不改变它。前篇[完整实体群所有者（英文）](../../../../../research/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md#admission-setup-and-the-complete-population)保留其他分配及逻辑/物理/木筏别名。
 
 战斗敌人128 是 Willard，而基线探索 logical129 是 Willard，128/130 是 Rats。F523 已设置时，清除后居民查找32–34 保持零。缺席居民脚本查找解析为 physical0，而非安全无操作。战斗行动者映射不能复用于该新探索列表。
 
@@ -104,7 +104,7 @@ Map27 init **仅为 rts**。不增加对话、布置、奖励、传送、EGRESS 
 
 ### CURRENT255 保留不同状态
 
-传入地图255 重新入场保留当前地图/实体群，跳过新瓦片集、分配、临时重置和 CURRENT_BATTLE 赋值，更新主角及木筏/随从，再复用工作布局并调用 init。仅 F523 不能在此路径移除已分配居民或规范保留战斗状态。这不同于普通显式 Map27 胜利加载。[新/保留返回关联](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#fresh-map27-return-and-conditional-exploration)负责两个完整加载分支。
+传入地图255 重新入场保留当前地图/实体群，跳过新瓦片集、分配、临时重置和 CURRENT_BATTLE 赋值，更新主角及木筏/随从，再复用工作布局并调用 init。仅 F523 不能在此路径移除已分配居民或规范保留战斗状态。这不同于普通显式 Map27 胜利加载。[新/保留返回关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#fresh-map27-return-and-conditional-exploration)负责两个完整加载分支。
 
 ## 既有出口仍是条件请求
 
@@ -142,7 +142,7 @@ SwitchMap 不替换26/27/33/255。显式26/33 无战斗行并准入探索；止�
 
 ## 证据审阅与剩余限制
 
-**已确认溯源：**已接受 main `6498fd588d3ed12b9d38392d97778e9e4b90af90` 包含已修正 #937/PR939 和 #938/PR940。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#reproduction-and-remaining-boundaries)保留精确源码符号/地址、表槽位和完整消费者关联。不使用新观察、提取或 #941 发现。
+**已确认溯源：**已接受 main `6498fd588d3ed12b9d38392d97778e9e4b90af90` 包含已修正 #937/PR939 和 #938/PR940。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md#reproduction-and-remaining-boundaries)保留精确源码符号/地址、表槽位和完整消费者关联。不使用新观察、提取或 #941 发现。
 
 原英文切片的对抗审阅覆盖完整修正研究、前篇编队/准入和选定控制合同、公共 fixture 载荷、schema 及验证器。逐个比较精确十二身份、1/5/6 数量、八条传送和结果顺序，不从总数推断。选定表关联为 defeated48、leader45、after48、join52 的 slot23；cutscenes 的 join 表负责 Bowie0，而非名称相似的全局表。
 
@@ -160,4 +160,4 @@ schema 位于 `schemas/`；验证器位于 `src/sf2tool/h2/`。既有窄命令�
 
 原英文切片执行直接完整正文/diff、表/顺序/改变状态、链接/锚点、英文/私有检查及 git diff --check，然后检查已配置干净已提交 planner 与实际最终 head CI。不单因正文选择局部一揽子套件、获取或新机制。
 
-**未知：**自然首领/全敌结果和退出可达性；传入死亡列表、出战队伍/HP/布置/映射/标志/当前或保存几何、EGRESS_MAP、模式/木筏；脚本/加载/表现/输入服务完成；可见/可听时序、可用控制及持久性。空/满队伍与中断前缀示例保留这些限制。[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)不创建自动运行时队列。目的地 init、地下室/招募、Creed 场景和后续战斗仍在本指南及重制验收之外。
+**未知：**自然首领/全敌结果和退出可达性；传入死亡列表、出战队伍/HP/布置/映射/标志/当前或保存几何、EGRESS_MAP、模式/木筏；脚本/加载/表现/输入服务完成；可见/可听时序、可用控制及持久性。空/满队伍与中断前缀示例保留这些限制。[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)不创建自动运行时队列。目的地 init、地下室/招募、Creed 场景和后续战斗仍在本指南及重制验收之外。

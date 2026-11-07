@@ -4,7 +4,7 @@
 - 证据日期：2026-08-14
 - 范围：原版立绘指针与载荷语料作为私有、引擎无关导入
 
-> 本文件是 [`portrait-graphics-data.md`](../../../contracts/graphics/portrait-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`portrait-graphics-data.md`（英文规范源）](../../../contracts/graphics/portrait-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -16,7 +16,7 @@
 
 ## 证据所有者与消费面
 
-本合同消费的唯一可执行所有者是 `sf2-portrait-graphics-decode-v1`（[fixture](../../../../../tests/fixtures/h2/portrait-graphics-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/portraits.py)、[schema](../../../../../schemas/h2-portrait-graphics-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/portrait-graphics-decode.json)）。其文章所有者是[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)。
+本合同消费的唯一可执行所有者是 `sf2-portrait-graphics-decode-v1`（[fixture](../../../../../tests/fixtures/h2/portrait-graphics-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/portraits.py)、[schema](../../../../../schemas/h2-portrait-graphics-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/portrait-graphics-decode.json)）。其文章所有者是[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)。
 
 本数据合同消费：
 
@@ -25,7 +25,7 @@
 - `aliases` 中的四条受追踪行；以及
 - 已接受的上游、ROM 与规范输出溯源。
 
-`function` 身份只作为外部消费者/服务见证保留。`LoadPortrait` 选择、解析、调色板复制、Stack 调用、VRAM/CRAM 交接与窗口状态接缝仍归[Portrait Window 与 State](../../../contracts/interface/portrait-window-state.md)。`LoadStackCompressedData` 仍归[Graphics Service State](../../../contracts/graphics/graphics-service-state.md)。两个函数记录都不属于本合同。
+`function` 身份只作为外部消费者/服务见证保留。`LoadPortrait` 选择、解析、调色板复制、Stack 调用、VRAM/CRAM 交接与窗口状态接缝仍归[Portrait Window 与 State](../interface/portrait-window-state.md)。`LoadStackCompressedData` 仍归[Graphics Service State](graphics-service-state.md)。两个函数记录都不属于本合同。
 
 完整生成 `payloads[52]` 行保留在忽略的 `local/derived/portrait-graphics-decode.json` 下。其源路径、地址、精确头条目、逐载荷大小、元数据/调色板 hash、压缩流细节与解码 hash 是私有验证输入，不是公开合同载荷。
 
@@ -162,11 +162,11 @@ H4 不要求原版选择器规则、加载器微实现、窗口状态、暂存�
 
 ## 跨系统分离
 
-- [Portrait Window 与 State](../../../contracts/interface/portrait-window-state.md) 消费本合同的规范记录，并保留立绘选择、`LoadPortrait` 解析/复制/调用顺序、窗口状态、眼/嘴更新控制、名称窗口行为、转移边界及其 未知。它不再独立拥有或重新验证本静态目录。
-- [Graphics Service State](../../../contracts/graphics/graphics-service-state.md) 保留 `LoadStackCompressedData`、其 ABI 与服务边界。此处的聚合编解码器诊断不转移该所有权。
-- [Sprite-Dialogue Property Data](../../../contracts/interface/sprite-dialogue-property-data.md) 保留实体地图精灵到立绘/SFX 查找身份与行为。
-- [UI Layout Data](../../../contracts/interface/ui-layout-data.md) 保留普通/镜像立绘窗口布局载荷。
-- [Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA 与 CRAM 服务/时序边界。
+- [Portrait Window 与 State](../interface/portrait-window-state.md) 消费本合同的规范记录，并保留立绘选择、`LoadPortrait` 解析/复制/调用顺序、窗口状态、眼/嘴更新控制、名称窗口行为、转移边界及其 未知。它不再独立拥有或重新验证本静态目录。
+- [Graphics Service State](graphics-service-state.md) 保留 `LoadStackCompressedData`、其 ABI 与服务边界。此处的聚合编解码器诊断不转移该所有权。
+- [Sprite-Dialogue Property Data](../interface/sprite-dialogue-property-data.md) 保留实体地图精灵到立绘/SFX 查找身份与行为。
+- [UI Layout Data](../interface/ui-layout-data.md) 保留普通/镜像立绘窗口布局载荷。
+- [Interrupt、DMA 与 Trap State](../system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA 与 CRAM 服务/时序边界。
 - 对话、菜单、battle-scene、map-script、文本、本地化、可访问性、许可、替换资源与渲染仍归其自身合同或保持 未知。
 
 ## 证据矩阵

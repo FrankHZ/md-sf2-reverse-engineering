@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`sprite-dialogue-property-data.md`](../../../contracts/interface/sprite-dialogue-property-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`sprite-dialogue-property-data.md`（英文规范源）](../../../contracts/interface/sprite-dialogue-property-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,9 +20,9 @@
 4. 完整源静态查找顺序、匹配结果、未命中终止与回退值；
 5. 基于结构、身份、计数、直方图、地址与 hash 而非原版行载荷的公开 H4 面。
 
-它不拥有对话命令解码、文本选择、窗口组合、立绘像素、语音播放、控制器等待、调用方可达性、地图精灵赋值或最终呈现。相邻[dialogue-command 合同](../../../contracts/interface/dialogue-system.md) 拥有命令与调用方局部接缝。[audio-system 合同](../../../contracts/interface/audio-system.md) 拥有其受限音乐/SFX 命令域与驱动数据；两个相邻合同都不把属性表语音 SFX 身份变成观察音频行为。
+它不拥有对话命令解码、文本选择、窗口组合、立绘像素、语音播放、控制器等待、调用方可达性、地图精灵赋值或最终呈现。相邻[dialogue-command 合同](dialogue-system.md) 拥有命令与调用方局部接缝。[audio-system 合同](audio-system.md) 拥有其受限音乐/SFX 命令域与驱动数据；两个相邻合同都不把属性表语音 SFX 身份变成观察音频行为。
 
-唯一可执行所有者是 `sf2-sprite-dialogue-static-v1`，位于 [`tests/fixtures/h2/sprite-dialogue-static-v1.json`](../../../../../tests/fixtures/h2/sprite-dialogue-static-v1.json)，由 [`src/sf2tool/h2/sprite_dialogue.py`](../../../../../src/sf2tool/h2/sprite_dialogue.py) 实现。研究所有者是[Auxiliary Data Inventory](../../../../research/presentation/auxiliary-data-inventory.md)与[Common Scripting](../../../../research/world/common-scripting.md)的精灵对话段。
+唯一可执行所有者是 `sf2-sprite-dialogue-static-v1`，位于 [`tests/fixtures/h2/sprite-dialogue-static-v1.json`](../../../../../tests/fixtures/h2/sprite-dialogue-static-v1.json)，由 [`src/sf2tool/h2/sprite_dialogue.py`](../../../../../src/sf2tool/h2/sprite_dialogue.py) 实现。研究所有者是[Auxiliary Data Inventory（英文）](../../../../research/presentation/auxiliary-data-inventory.md)与[Common Scripting（英文）](../../../../research/world/common-scripting.md)的精灵对话段。
 
 ## 合同前证据审计
 
@@ -196,8 +196,8 @@ H4 不要求原版线性表作为重制运行时存储。它要求确定性保�
 | --- | --- | --- | --- |
 | 119 条四字节记录、独立终止符、478 字节范围/hash、唯一键、立绘/SFX/保留聚合 | **已确认静态** | `sf2-sprite-dialogue-static-v1`（[`sprite-dialogue-static-v1.json`](../../../../../tests/fixtures/h2/sprite-dialogue-static-v1.json)） | 原始行保持私有；自然键可达性保持未闭合 |
 | 完整查找顺序、带符号立绘命中结果、零扩展 SFX 命中结果、终止与回退 | **已确认静态** | `sf2-sprite-dialogue-static-v1`（[`sprite-dialogue-static-v1.json`](../../../../../tests/fixtures/h2/sprite-dialogue-static-v1.json)） | 自然回退可达性与调用方可视使用保持 **未知** |
-| 命令/调用方局部对话接缝 | **独立所有者** | [dialogue-command 合同](../../../contracts/interface/dialogue-system.md) | 端到端文本/立绘/音频呈现保持未闭合 |
-| 语音 SFX 驱动/域数据 | **独立所有者** | [audio-system 合同](../../../contracts/interface/audio-system.md) | 播放准入、波形、时序与同步保持未闭合 |
+| 命令/调用方局部对话接缝 | **独立所有者** | [dialogue-command 合同](dialogue-system.md) | 端到端文本/立绘/音频呈现保持未闭合 |
+| 语音 SFX 驱动/域数据 | **独立所有者** | [audio-system 合同](audio-system.md) | 播放准入、波形、时序与同步保持未闭合 |
 | 本地化、可访问性、语音策略、替换资源、可分发内容 | **刻意设计** | 未来产品/内容决定 | 需要溯源、许可与独立验收 |
 
 ## 复现

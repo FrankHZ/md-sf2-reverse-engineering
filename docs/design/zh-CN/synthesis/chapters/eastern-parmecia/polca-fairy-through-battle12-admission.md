@@ -1,10 +1,10 @@
 # Polca 仙女互动至 Battle12 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Polca 提供可选遭遇：一只乌龟请求帮助翻身。Bowie 和 Peter 收到编排的移动和推撞请求；脚本请求仙女精灵与马赛克效果时，乌龟最后的台词描述考验和离去。向东离开城镇独立于该互动。在普通 Mount Volcano 入场分支中，之后 zone 可编排 Peter 观察四名搜寻的 devils、他们对战斗痕迹和岩石的叙述，以及与访客的对峙。场景随后请求同地图返回，可能使 Battle12 准入。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md)支持下文互动、连接及有序交接。**推断：**它们构成 [Polca 首次 Oddler 抵达](battle11-outcomes-through-polca-arrival.md)之后的候选内容接续。**未知：**自然旅行、提供的标志和行动者、完成的服务、已渲染变身和可玩战斗入场。帮助乌龟与见证 Oddler 抵达均不是选定东出口的必需谓词。本指南不增加重制能力或产品决定。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md)支持下文互动、连接及有序交接。**推断：**它们构成 [Polca 首次 Oddler 抵达](battle11-outcomes-through-polca-arrival.md)之后的候选内容接续。**未知：**自然旅行、提供的标志和行动者、完成的服务、已渲染变身和可玩战斗入场。帮助乌龟与见证 Oddler 抵达均不是选定东出口的必需谓词。本指南不增加重制能力或产品决定。
 
 止于新战斗 start 分发器返回、紧邻 `ActivateEnemies` 之前。交战、结果、`cs_5C622`、Bedoe/Volcanon 场景和后继发现均在本文之外。Fnnn 表示标志 nnn；地图和战斗编号保留源码含义。
 
@@ -44,7 +44,7 @@ F711 不是专属救助历史位。已接受研究记录另一产生方：`Map11
 
 **已确认服务限制：**七次 sleep 共请求 200 帧，不是场景时长。带等待行动轮询 `eas_Idle`，没有通用缺失行动者或 HP 跳过。`setDest` 将瓦片乘以 384，并在此等待运动；它不瞬间放置 Peter。朝向使用字 HP 守卫。Quake 写入幅度。马赛克选择器进入十六次迭代源码循环，调用精灵加载、处理、DMA 和 VInt 服务。该结构及其间不等待的精灵行动均不证明可见变身或时序。
 
-[既有受控效果证据](../../../../../research/world/common-scripting.md#confirmed-map-script-entity-presentation-fx-command-family)仅在具名接缝确认选择器进入/循环/返回顺序。该矩阵中解析、加载、裁剪/DMA 等服务被垫片替代，原始主体不执行。它不保证此 Polca 场景渲染或完成。
+[既有受控效果证据（英文）](../../../../../research/world/common-scripting.md#confirmed-map-script-entity-presentation-fx-command-family)仅在具名接缝确认选择器进入/循环/返回顺序。该矩阵中解析、加载、裁剪/DMA 等服务被垫片替代，原始主体不执行。它不保证此 Polca 场景渲染或完成。
 
 末尾 `followEntity` 将 Peter 编码为字 `$0007`。处理器探测该字高字节，因此字 HP 检查属于 **Bowie0**，而非 Peter7。Bowie HP 为零跳过操作数。Bowie 存活且映射有效时，选择器 2 添加 Peter 以 `(-24,0)` 跟随 Bowie，独立于 Peter HP。缺失 Peter 可解析为 main。这不写入 F7、F39、F67 或军团 AI 成员状态，也不授予玩家对 Peter 的控制。
 
@@ -54,7 +54,7 @@ F711 不是专属救助历史位。已接受研究记录另一产生方：`Map11
 
 **已确认选定连接：**Map13 东传送 row 3，X31/Y 通配，请求 Map52 `(1,28)`、Right，不滚动。Map52 是 Mount Volcano。该行不测试 F710、F711、Battle11 完成或 Peter 成员身份。在 `(31,31)`，较早的 X 通配/Y31 南出口胜出；此重叠处不选择东行。
 
-移动必须遇到布局 `$1000` 属性，传送产生方才扫描有序行。使用方在分发前清除待处理类型、执行声音和运动/返回服务，并将可变地图/X/Y/朝向元组提供给 `MainLoop`，用于 `SwitchMap` 和 `CheckBattle`。Map52 没有按标志切换的替代。匹配坐标或目标行既不证明无碰撞旅行，也不证明参数能在中间服务/写入方之后存续。[请求所有者](../../../../../research/world/map-event-request-consumption.md)保留该边界。
+移动必须遇到布局 `$1000` 属性，传送产生方才扫描有序行。使用方在分发前清除待处理类型、执行声音和运动/返回服务，并将可变地图/X/Y/朝向元组提供给 `MainLoop`，用于 `SwitchMap` 和 `CheckBattle`。Map52 没有按标志切换的替代。匹配坐标或目标行既不证明无碰撞旅行，也不证明参数能在中间服务/写入方之后存续。[请求所有者（英文）](../../../../../research/world/map-event-request-consumption.md)保留该边界。
 
 Map52 战斗 row 12 的区域为 `(0,0,32,32)`，触发通配 `(255,255)`，解锁 F412、完成 F512。选择器测试触发，不测试是否包含于输出区域。因此完整东出口请求有下列替代：
 
@@ -106,7 +106,7 @@ before 返回与 start 分发之间，循环恢复地图/战斗、清除区域�
 
 ## 证据审阅与剩余限制
 
-本指南使用 [PR #778](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/778) 接受的研究及 [PR #777](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/777) 的前序英文指南，没有堆叠依赖或使用后继内容。研究拥有固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、USA retail 身份、精确源码/文本/行组合与[复现边界](../../../../../research/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md#reproduction-and-review-boundary)。有界审阅使用已接受文字、选定受跟踪夹具及其合同/schema/验证器；不需要生成/复制可选载荷、重新调查源码或运行时观察。
+本指南使用 [PR #778](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/778) 接受的研究及 [PR #777](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/777) 的前序英文指南，没有堆叠依赖或使用后继内容。研究拥有固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、USA retail 身份、精确源码/文本/行组合与[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md#reproduction-and-review-boundary)。有界审阅使用已接受文字、选定受跟踪夹具及其合同/schema/验证器；不需要生成/复制可选载荷、重新调查源码或运行时观察。
 
 | 审阅关系 | 既有证据及其限制 |
 | --- | --- |

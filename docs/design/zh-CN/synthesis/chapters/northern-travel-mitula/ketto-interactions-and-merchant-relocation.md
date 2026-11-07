@@ -1,10 +1,10 @@
 # Ketto：对话、商店与商人搬移
 
-> 本文是[规范英文原文：Ketto: Conversations, Shops and the Merchant's Move](../../../../synthesis/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Ketto: Conversations, Shops and the Merchant's Move](../../../../synthesis/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 **已确认：** Ketto 居民描述恶魔强加的隔离，而独立回调提供真正 Yes/No 对话、布置商人搬移、调用商店/教堂，并处理检查与两件可收取物品。话语、标志、移动与服务结果各有后果。**推断：** 这些是已接受 [Ketto 入场](battle25-outcomes-through-ketto-entry.md)后的局部活动，不是必需序列。**未知：** 自然访问、传入状态、已完成服务、表现/时序、可用控制及存读档持久性。
 
-此英文指南消费完整已接受 [Ketto 交互研究](../../../../../research/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)，其固定源码、ROM 身份、符号、地址、字面量和复现配方拥有原版证据。它为 [#1002](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1002)遵循 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。不增加原版发现或重制行为，止于局部返回和条件 Map72 准入，早于 Battle26 场景、名册或交战。
+此英文指南消费完整已接受 [Ketto 交互研究（英文）](../../../../../research/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)，其固定源码、ROM 身份、符号、地址、字面量和复现配方拥有原版证据。它为 [#1002](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1002)遵循 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。不增加原版发现或重制行为，止于局部返回和条件 Map72 准入，早于 Battle26 场景、名册或交战。
 
 Fnnn 表示标志 nnn；对话数字标识选定文本，不是序列门槛。
 

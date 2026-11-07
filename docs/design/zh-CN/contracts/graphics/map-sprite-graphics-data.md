@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`map-sprite-graphics-data.md`](../../../contracts/graphics/map-sprite-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-sprite-graphics-data.md`（英文规范源）](../../../contracts/graphics/map-sprite-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -21,9 +21,9 @@
 5. 不导入运行时呈现或转移含义的受限消费者选择溯源；
 6. 与私有原版内容分离的公开聚合元数据/溯源。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-map-sprite-decode-v1`，位于 [`tests/fixtures/h2/map-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/map-sprite-decode-v1.json)。其带来源所有者是[Technical Graphics](../../../../research/presentation/technical-graphics.md)。受限源根是 `data/graphics/mapsprites/entries.asm` 与 `code/common/scripting/entity/entityscriptengine_2.asm` 中的普通消费者接缝。
+此处消费的唯一可执行所有者是 fixture id `sf2-map-sprite-decode-v1`，位于 [`tests/fixtures/h2/map-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/map-sprite-decode-v1.json)。其带来源所有者是[Technical Graphics（英文）](../../../../research/presentation/technical-graphics.md)。受限源根是 `data/graphics/mapsprites/entries.asm` 与 `code/common/scripting/entity/entityscriptengine_2.asm` 中的普通消费者接缝。
 
-精确未来 research-index 关联只有 `auxiliary.data.pt-mapsprites`。同一 fixture 还绑定 `tech.graphics.decompression`，它只与[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)关联。本合同不把自己添加进该记录，也不把私有资源语料变成通用 Basic 解压服务合同。
+精确未来 research-index 关联只有 `auxiliary.data.pt-mapsprites`。同一 fixture 还绑定 `tech.graphics.decompression`，它只与[graphics-service-state](graphics-service-state.md)关联。本合同不把自己添加进该记录，也不把私有资源语料变成通用 Basic 解压服务合同。
 
 ## 合同前证据审计
 
@@ -42,7 +42,7 @@ fixture 直接绑定恰好两条 research-index 记录：
 
 后一记录还携带宽 `sf2-auxiliary-data-static-v1` 清单所有者。本合同不消费该聚合 fixture、不导入任何兄弟记录，也不把聚合清单用作该图形语料的权威。
 
-独立 `sf2-map-sprite-assignments-static-v1` 所有者确认完整已接受原版构建输入域不写 ID `237..250`。该结果通过[Common Scripting](../../../../research/world/common-scripting.md)作为独立所有者静态边界链接；赋值 fixture 不是注册给本合同的可执行证据。其结果不证明通用运行时不可达性、哨兵安全或原始 RAM、畸形、损坏、调试或修改输入下的行为。
+独立 `sf2-map-sprite-assignments-static-v1` 所有者确认完整已接受原版构建输入域不写 ID `237..250`。该结果通过[Common Scripting（英文）](../../../../research/world/common-scripting.md)作为独立所有者静态边界链接；赋值 fixture 不是注册给本合同的可执行证据。其结果不证明通用运行时不可达性、哨兵安全或原始 RAM、畸形、损坏、调试或修改输入下的行为。
 
 没有特殊精灵、地图实体、己方/敌人定义、对话属性、地图生命周期、服务、中断、DMA 或呈现记录获得本合同。所有既有关联保持不变。
 
@@ -128,7 +128,7 @@ fixture 直接绑定恰好两条 research-index 记录：
 
 这是源码形状选择与交接溯源，不是完整运行时合同。它不声称每个数字普通候选有效、哨兵安全解码、所有源面向状态自然发生或 DMA 完成。它不拥有沉浸效果行为、实体状态、VRAM 槽计算、缓存容量、动画、VInt 调度、硬件时序或可见帧。
 
-截止也不使 ID `240..255` 成为该普通语料的一部分。特殊精灵资源及其不对称指针/分发路由保持[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)与专用特殊精灵所有者。
+截止也不使 ID `240..255` 成为该普通语料的一部分。特殊精灵资源及其不对称指针/分发路由保持[graphics-service-state](graphics-service-state.md)与专用特殊精灵所有者。
 
 ## 实现无关导入模型
 
@@ -206,14 +206,14 @@ MapSpriteGraphicsPublicSummary {
 
 本合同不拥有：
 
-- Basic 解压服务 ABI 或编解码器微实现，仍与[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)关联；
+- Basic 解压服务 ABI 或编解码器微实现，仍与[graphics-service-state](graphics-service-state.md)关联；
 - ID `240..255` 的特殊精灵资源或路由，仍归特殊精灵所有者与 graphics-service 合同；
-- 原版构建赋值域，仍归[Common Scripting](../../../../research/world/common-scripting.md)中描述的地图精灵赋值所有者；
-- 初始实体列表记录及其地图精灵值，仍归[map-entity-data](../../../contracts/world/map-entity-data.md)；
-- 己方/敌人定义地图精灵表、职业派生、NPC 尾可达性或战斗身份，仍归[ally-definition-data](../../../contracts/party/ally-definition-data.md)与[enemy-definition-data](../../../contracts/party/enemy-definition-data.md)；
-- 地图精灵到立绘/语音 SFX 查找，仍归[sprite-dialogue-property-data](../../../contracts/interface/sprite-dialogue-property-data.md)；
+- 原版构建赋值域，仍归[Common Scripting（英文）](../../../../research/world/common-scripting.md)中描述的地图精灵赋值所有者；
+- 初始实体列表记录及其地图精灵值，仍归[map-entity-data](../world/map-entity-data.md)；
+- 己方/敌人定义地图精灵表、职业派生、NPC 尾可达性或战斗身份，仍归[ally-definition-data](../party/ally-definition-data.md)与[enemy-definition-data](../party/enemy-definition-data.md)；
+- 地图精灵到立绘/语音 SFX 查找，仍归[sprite-dialogue-property-data](../interface/sprite-dialogue-property-data.md)；
 - 实体生命周期、移动、朝向含义、沉浸效果、动画、地图持久性或缓存；
-- VInt 调度、VRAM DMA、中断节奏、转移完成与硬件时序，仍归[interrupt-dma-and-trap-state](../../../contracts/system/interrupt-dma-and-trap-state.md)；
+- VInt 调度、VRAM DMA、中断节奏、转移完成与硬件时序，仍归[interrupt-dma-and-trap-state](../system/interrupt-dma-and-trap-state.md)；
 - 调色板、瓦片解读、纹理布局、渲染帧、UI、对话、音频或最终呈现；
 - `sf2-auxiliary-data-static-v1`、`sf2-map-sprite-assignments-static-v1`、`map.data.*` 或任何兄弟 research-index 关联；
 - 私有原版载荷、解码美术、hash、个别大小与完整别名；
@@ -273,12 +273,12 @@ H4 可以在导入、惰性或运行时前解码与变换私有地图精灵数�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 指针与载荷语料 | **已确认静态** | `sf2-map-sprite-decode-v1`；[fixture](../../../../../tests/fixtures/h2/map-sprite-decode-v1.json) | 720 私有槽、670 所有者、50 别名、精确一致性；资源/hash 保持私有 |
-| 有效 Basic 流 | **已确认静态** | 同一 fixture；[technical-graphics 研究](../../../../research/presentation/technical-graphics.md) | 669 个固定大小解码形式与聚合诊断；无必需编解码器微实现 |
+| 有效 Basic 流 | **已确认静态** | 同一 fixture；[technical-graphics 研究（英文）](../../../../research/presentation/technical-graphics.md) | 669 个固定大小解码形式与聚合诊断；无必需编解码器微实现 |
 | 哨兵身份 | **已确认静态** | 同一 fixture | 一个 `0xFFFF` 所有者与槽 711..719；不是有效 Basic 流或运行时不可达性证明 |
-| 构建赋值排除 | 独立所有者 **已确认静态** | [common-scripting 研究](../../../../research/world/common-scripting.md) | 完整构建域省略 237..250；畸形/调试/原始 RAM 注入保持未知 |
-| 解压服务 | 既有独立关联 | [graphics-service-state](../../../contracts/graphics/graphics-service-state.md) | `tech.graphics.decompression` 保持不变且不获得新设计合同 |
-| 特殊精灵路由 | 独立所有者证据 | [graphics-service-state](../../../contracts/graphics/graphics-service-state.md) | ID 240..255 在该普通资源语料之外 |
-| 实体生命周期、DMA 与渲染 | 独立所有者 / **未知** | [map exploration](../../../contracts/world/map-exploration.md)；[interrupt 合同](../../../contracts/system/interrupt-dma-and-trap-state.md) | 源交接不证明缓存、时序、完成或可见呈现 |
+| 构建赋值排除 | 独立所有者 **已确认静态** | [common-scripting 研究（英文）](../../../../research/world/common-scripting.md) | 完整构建域省略 237..250；畸形/调试/原始 RAM 注入保持未知 |
+| 解压服务 | 既有独立关联 | [graphics-service-state](graphics-service-state.md) | `tech.graphics.decompression` 保持不变且不获得新设计合同 |
+| 特殊精灵路由 | 独立所有者证据 | [graphics-service-state](graphics-service-state.md) | ID 240..255 在该普通资源语料之外 |
+| 实体生命周期、DMA 与渲染 | 独立所有者 / **未知** | [map exploration](../world/map-exploration.md)；[interrupt 合同](../system/interrupt-dma-and-trap-state.md) | 源交接不证明缓存、时序、完成或可见呈现 |
 | auxiliary 聚合 | 排除执行所有者 | `sf2-auxiliary-data-static-v1` | 宽清单此处不提供注册或兄弟关联 |
 
 ## 开放问题

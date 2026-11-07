@@ -7,7 +7,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battle-control-lifecycle.md`](../../../contracts/battle/battle-control-lifecycle.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-control-lifecycle.md`（英文规范源）](../../../contracts/battle/battle-control-lifecycle.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -38,7 +38,7 @@
 - `sf2-after-turn-status-lifecycle-v1`，位于
   `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`。
 
-研究所有者是[battle loop 与生命周期](../../../../research/battle/battle-loop.md)、[Battle 01 放置](../../../../research/chapters/grans-opening/battle01-placement.md)，以及[运行时 RNG 与战斗数学](../../../../research/battle/runtime-rng-and-battle-math.md)的受限回合/状态部分。
+研究所有者是[battle loop 与生命周期（英文）](../../../../research/battle/battle-loop.md)、[Battle 01 放置（英文）](../../../../research/chapters/grans-opening/battle01-placement.md)，以及[运行时 RNG 与战斗数学（英文）](../../../../research/battle/runtime-rng-and-battle-math.md)的受限回合/状态部分。
 
 ## 规范控制器状态
 
@@ -59,7 +59,7 @@
 
 ### 新战斗
 
-**已确认静态顺序：** 新战斗清除经过秒数，执行战前过场接缝，清除战斗区域标志 90 到 105，治疗符合条件的出战队伍，依次初始化己方、敌人战斗状态，清除 AI 记忆，加载战斗，最后执行开战过场接缝。已接受的[精确新战斗入口轨迹](../../../../research/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md#admission-fresh-entry-and-scene-gates)在固定源码基线的 `code/gameflow/battle/battleloop_1.asm:BattleLoop` 中记录了此顺序。战斗间治疗步骤：
+**已确认静态顺序：** 新战斗清除经过秒数，执行战前过场接缝，清除战斗区域标志 90 到 105，治疗符合条件的出战队伍，依次初始化己方、敌人战斗状态，清除 AI 记忆，加载战斗，最后执行开战过场接缝。已接受的[精确新战斗入口轨迹（英文）](../../../../research/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md#admission-fresh-entry-and-scene-gates)在固定源码基线的 `code/gameflow/battle/battleloop_1.asm:BattleLoop` 中记录了此顺序。战斗间治疗步骤：
 
 - 跳过其他死亡己方角色，但总是处理 Peter (7) 与 Lemon (28)；
 - 把当前 HP 与 MP 恢复到最大值；
@@ -71,7 +71,7 @@
 
 **已确认静态顺序：** 挂起入口恢复已保存秒数计数器、清除标志 88、清除 AI 记忆、重载战斗状态并恢复单次行动循环。AI 记忆重置用 `0xFF` 填充 48 个最后目标字节，并把 48 个记忆字节清零。
 
-这证明代码内交接，而非跨进程 SRAM 持久性、断电恢复、精确恢复 UI 或自然挂起存档生命周期。那些保持 **未知**，并继续受[存档系统合同](../../../contracts/system/save-system.md)约束。
+这证明代码内交接，而非跨进程 SRAM 持久性、断电恢复、精确恢复 UI 或自然挂起存档生命周期。那些保持 **未知**，并继续受[存档系统合同](../system/save-system.md)约束。
 
 ### 回合顺序
 
@@ -148,7 +148,7 @@
 
 **已确认运行时，受限：** 五次带受控 RNG 接缝的自然 Battle 01 `ProcessAfterTurnEffects` 调用复现单步 MUDDLE 与 SILENCE 过期/继续、确定性 SLOW/ATTACK/BOOST 计数器递减、有序状态写入/消息与一次最终 `UpdateCombatantStats` 归一化。空装备导致瞬态 CURSE 被该最终刷新移除。
 
-该测试夹具证明一次过渡，而非完整多回合生命周期、自然携带状态、每个回合后分支或玩家可见消息时序。详细计数器单位与精确结果仍归[法术解决合同](../../../contracts/battle/spell-resolution.md)所有。
+该测试夹具证明一次过渡，而非完整多回合生命周期、自然携带状态、每个回合后分支或玩家可见消息时序。详细计数器单位与精确结果仍归[法术解决合同](spell-resolution.md)所有。
 
 ## 结果合同
 

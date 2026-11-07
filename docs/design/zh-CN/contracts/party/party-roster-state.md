@@ -3,9 +3,9 @@
 - **已确认的原版结构与有界行为：** 十种源码命名的地图脚本命令形式、它们的物理流布局、命名处理器的分支/变更/调用顺序、源码位置语料、直接/有效调用方身份，以及到 common-stats 与随从所有者的溯源连接。
 - **推断的原版行为：** 本合同中没有推断。
 - **未知的原版行为：** 正常剧情可达性、名册/列表容量、玩家可见的名册/死亡结果，以及物理/跨进程 SRAM 持久性。
-- 重制状态：实现无关的 Phase 3 合同；实现方向与能力状态由 [ADR 0019](../../../../decisions/0019-state-and-content-driven-remake-engine.md) 和[重制能力台账](../../../../../remake/docs/capability-status.md)负责。
+- 重制状态：实现无关的 Phase 3 合同；实现方向与能力状态由 [ADR 0019（英文）](../../../../decisions/0019-state-and-content-driven-remake-engine.md) 和[重制能力台账（英文）](../../../../../remake/docs/capability-status.md)负责。
 
-> 本文件是 [`party-roster-state.md`](../../../contracts/party/party-roster-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`party-roster-state.md`（英文规范源）](../../../contracts/party/party-roster-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 导入边界
 

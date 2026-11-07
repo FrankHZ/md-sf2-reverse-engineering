@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：原版全局标志状态的实现无关存储与操作身份，不指定战役、持久性、调用方、呈现或平衡含义
 
-> 本文件是 [`global-flag-state.md`](../../../contracts/world/global-flag-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`global-flag-state.md`（英文规范源）](../../../contracts/world/global-flag-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,13 +14,13 @@
 - **推断**：无。高层意图刻意不从存储与包装器形状推断。
 - **未知**：已接受掩蔽事实之外的精确可用标志域大小；单个标志的名称与含义；自然与运行时调用方可达性；存档/读档持久性；跨系统顺序；调用方可视结果或条件码使用；内联 trap 操作数解码；返回地址移动；UI 与呈现；调试路由；以及平衡或战役意图。
 
-[存档系统合同](../../../contracts/system/save-system.md) 拥有已接受存档结构与动作，而非全局标志持久性，除非证据所有者闭合该连接。[故事推进综合](../../../synthesis/themes/story-progression.md) 可以解释已接受消费者，但不得把该低级存储合同变成故事状态分类法。
+[存档系统合同](../system/save-system.md) 拥有已接受存档结构与动作，而非全局标志持久性，除非证据所有者闭合该连接。[故事推进综合](../../synthesis/themes/story-progression.md) 可以解释已接受消费者，但不得把该低级存储合同变成故事状态分类法。
 
 ## 证据所有者
 
-`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是标志寻址事实的专用 H2 所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../../research/party/common-stats.md)。本合同只消费所有者的 `flags` 事实：掩蔽索引、每字节八位、位 7 优先选择与共享 `GetFlag` 解析路径。
+`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是标志寻址事实的专用 H2 所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services（英文）](../../../../research/party/common-stats.md)。本合同只消费所有者的 `flags` 事实：掩蔽索引、每字节八位、位 7 优先选择与共享 `GetFlag` 解析路径。
 
-`sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)）是受限 trap 清单的专用 H2 所有者。其验证器是[`interrupts.py`](../../../../../src/sf2tool/h2/interrupts.py)，其带来源解释是[Technical Interrupts](../../../../research/system/technical-interrupts.md)。本合同只消费 `flagTrapCount=4`、代表 `Trap4_CheckFlag` 身份/地址与所有者文章中 Check/Set/Clear 包装器分组。
+`sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)）是受限 trap 清单的专用 H2 所有者。其验证器是[`interrupts.py`](../../../../../src/sf2tool/h2/interrupts.py)，其带来源解释是[Technical Interrupts（英文）](../../../../research/system/technical-interrupts.md)。本合同只消费 `flagTrapCount=4`、代表 `Trap4_CheckFlag` 身份/地址与所有者文章中 Check/Set/Clear 包装器分组。
 
 common-scripting 与 battle-functions 聚合被刻意排除。其排队所有者修正确认既不是本合同的证据依赖也不是合并依赖。Map-script、战斗、菜单与调试消费者也保持在 research-index 关联边界之外。
 
@@ -106,7 +106,7 @@ trap 清单是元数据，不是可执行 ABI 规范。重制可以在没有机�
 | 掩蔽标志索引、每字节八位存储、位 7 优先选择 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 数字掩码、总容量、语义标志域 |
 | 共享 Check/Set/Clear 引用解析 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 运行时结果、顺序、调用方可视 Check 语义 |
 | 四个标志 trap 与代表 `Trap4_CheckFlag`（地址 `5888`） | **已确认静态清单** | `sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)） | 完整逐 trap 映射、内联 ABI、运行时可达性 |
-| trap 1-4 围绕 Check/Set/Clear 分组 | **已确认所有者文章** | [Technical Interrupts](../../../../research/system/technical-interrupts.md) 加 `sf2-tech-interrupts-static-v1` | 操作数解码、返回移动、结果与条件 |
+| trap 1-4 围绕 Check/Set/Clear 分组 | **已确认所有者文章** | [Technical Interrupts（英文）](../../../../research/system/technical-interrupts.md) 加 `sf2-tech-interrupts-static-v1` | 操作数解码、返回移动、结果与条件 |
 | 战役消费者、持久性、UI、调试路由、平衡 | **独立所有者 / 未知** | 相邻合同与未来运行时/综合工作 | 不得从存储或包装器形状推断高层含义 |
 
 ## 复现

@@ -1,16 +1,16 @@
 # 返回 New Granseal 与 Astral 跟随
 
-> 本文是[规范英文原文：New Granseal Return and Astral Following](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文：New Granseal Return and Astral Following](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 回到 New Granseal Castle，minister 欢迎队伍，Astral 询问新伙伴。Peter 说 Elis 还活着。Bowie 和 Peter 随后讲述经历，king 因而要求打败 Zeon、救出 Elis。Astral 提议去 Tristan 求知，并请求以顾问身份同行。场景宣布这个身份，再改变当前跟随关系，记录供后续城堡访问使用的标志。
 
 **推断：**这是一次回顾式觐见，让 Astral 作为顾问加入旅程。**已确认：**汇报、宣布、当前行动者关系、调用方标志与后续随从重建是不同操作。场景不救出 Elis、不招募战斗伙伴，也不向北旅行。**未知：**自然抵达、实际传入状态、表现完成、可用控制与存档持久性。
 
-本文接续 [Creed 离开、矮人恢复与 Cannon 赠礼](../southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)，依据 main `af7a1e656eddc4a0252b9f5cee4bbe31288369a3` 上[已接受的 #965 研究](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)及其前序成果。指南止于觐见有条件的调用方返回，以及相关当前/重新入场后果。Janet、发明家赠礼与 North Cave 爆破是后续边界。Inventor/Dynamite 属于独立研究成果，不是本指南的证据依赖。此 Layer B 解释不选择重制规则或新观察工作。
+本文接续 [Creed 离开、矮人恢复与 Cannon 赠礼](../southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)，依据 main `af7a1e656eddc4a0252b9f5cee4bbe31288369a3` 上[已接受的 #965 研究（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)及其前序成果。指南止于觐见有条件的调用方返回，以及相关当前/重新入场后果。Janet、发明家赠礼与 North Cave 爆破是后续边界。Inventor/Dynamite 属于独立研究成果，不是本指南的证据依赖。此 Layer B 解释不选择重制规则或新观察工作。
 
 ## 从矿洞返回
 
-**已确认：**选定连接为矿洞内部 Map30 → Southwest Parmecia Map68 → Map73 → 城镇 Map6 → 城堡 Map7。[路线所有者](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#selected-return-route-and-admission)保留精确表行、请求消费者与坐标前提。这些是条件替代路径，不是强制行程或已观察的步行。持有 Cannon 和 F761 都不是这些表行或觐见的前提。
+**已确认：**选定连接为矿洞内部 Map30 → Southwest Parmecia Map68 → Map73 → 城镇 Map6 → 城堡 Map7。[路线所有者（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#selected-return-route-and-admission)保留精确表行、请求消费者与坐标前提。这些是条件替代路径，不是强制行程或已观察的步行。持有 Cannon 和 F761 都不是这些表行或觐见的前提。
 
 Map30 在任意 X/Y21 的出口行请求无滚动进入 Map68 `(57,25)` Down。该无滚动返回可能遇到 Map68 的 Battle19 准入：F419 选择它，已设置的 F519 仅在选择后清除 F419，该次调用仍返回 Battle19。返回矩形是战斗几何，不是范围包含测试。继续旅行假定没有拦截（通常 F419 未设）；获准战斗是停止边界。
 
@@ -22,7 +22,7 @@ Map73 的 `(29,52)` 行请求无滚动进入城镇6 `(20,30)` Up；城镇6 北�
 
 ## 返回时谁在场
 
-**已确认：**[人口与 init 选择](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#town-and-castle-population-and-init)独立于返回觐见，依赖更早历史。城镇 Map6 依次选择 default、F701、F702，最后适用选择器胜出。F802/F805 不选择居民列表。早期 default 声明 Peter 与19 名 NPC；后两个列表各声明14 名 NPC，没有固定 Peter。它们的位置/行动不同，完整表由研究所有者保留。标志选择的随从在居民之前构建，所以仅选择后期城镇配置不建立实际 Peter 在场。
+**已确认：**[人口与 init 选择（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#town-and-castle-population-and-init)独立于返回觐见，依赖更早历史。城镇 Map6 依次选择 default、F701、F702，最后适用选择器胜出。F802/F805 不选择居民列表。早期 default 声明 Peter 与19 名 NPC；后两个列表各声明14 名 NPC，没有固定 Peter。它们的位置/行动不同，完整表由研究所有者保留。标志选择的随从在居民之前构建，所以仅选择后期城镇配置不建立实际 Peter 在场。
 
 城镇共享 init 优先检查 F802：将 priest132 放到 `(11,18)` Down，不检查 F706 便返回。F802 未设/F706 已设时，改将 worker138 放到 `(63,63)` Down、guard139 放到 `(15,23)` Down；两者均未设则返回。这些是当前查找重定位，不是隐藏或持久人口变化，均不运行觐见。
 
@@ -30,13 +30,13 @@ Map73 的 `(29,52)` 行请求无滚动进入城镇6 `(20,30)` Up；城镇6 北�
 
 预期觐见行动者为 minister128、King Granseal129、Astral139、Peter7 与 Bowie0。Default 的 minister/king/Astral 声明分别为 `(12,5)` Down、`(11,4)` Down、`(10,5)` Down，采用较慢 Init。F701 则使用普通 Init，Astral 在 `(10,6)` Right。完整 guard/soldier/maid 与己方角色声明留在研究所有者；变化人口不能默认为同等布置。
 
-共享城堡 init 先检查 F707。已设置便立即返回，保留传入 Egress 目的地和 F411。未设置则指定 Egress map6，运行[早期一年后场景与显式 default 居民重载](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#reload-caller-flags-and-first-control-read)，再在场景返回后设置 F707 和 F411。因此即使 F805 选择的入场，在 F707 未设时也可被 default 居民替换。F411 自身不是即时战斗请求。普通返回布置假定 F707 已设；缺失历史仍是另一用例。
+共享城堡 init 先检查 F707。已设置便立即返回，保留传入 Egress 目的地和 F411。未设置则指定 Egress map6，运行[早期一年后场景与显式 default 居民重载（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#reload-caller-flags-and-first-control-read)，再在场景返回后设置 F707 和 F411。因此即使 F805 选择的入场，在 F707 未设时也可被 default 居民替换。F411 自身不是即时战斗请求。普通返回布置假定 F707 已设；缺失历史仍是另一用例。
 
 引用是查找选择器，不是物理槽位。解析器掩码为一个字节，读取映射，将物理索引乘32。缺失普通映射可保持0，别名到主行动者；隐藏映射可为 -1，解析器没有安全守卫。重复映射可覆盖彼此的行动、台词上下文或跟随。Resident139 与随从 B31 即使都用 Astral 精灵，仍相互独立。任何声明都不证明军团成员资格、HP、Init 完成或行动者可正常服务。
 
 ## 觐见准入
 
-**已确认：**城堡五条显式区域（事件）行位于 Y8、X9–13，目标为 Map7_ZoneEvent0。[区域（事件）所有者](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#complete-castle-zone-admission)保留精确共享 default 返回。坐标本身不调用它：普通移动必须产生布局区域（事件）请求，由消费者初始化 physical0，再分发选定回调。
+**已确认：**城堡五条显式区域（事件）行位于 Y8、X9–13，目标为 Map7_ZoneEvent0。[区域（事件）所有者（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#complete-castle-zone-admission)保留精确共享 default 返回。坐标本身不调用它：普通移动必须产生布局区域（事件）请求，由消费者初始化 physical0，再分发选定回调。
 
 | 回调状态 | 条件结果 |
 | --- | --- |
@@ -49,7 +49,7 @@ F707、F70、Cannon 与 F761 不是局部准入测试。F802 优先于旧701/702
 
 ## 欢迎与 Peter 汇报
 
-**已确认：**[完整场景](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#complete-return-scene-and-action-premises)先初始化 Peter 并等待。Minister 欢迎 LEADER；给 Bowie 目的地 `(11,7)`，不等待坐标；给 Peter `(10,8)` 并等待。摄像机请求 `(6,2)`，Bowie/Peter 朝 Up。Bowie 目的地编码字32768 解析为行动者0 加不等待位，不是额外行动者。两个目的地均不测试 HP。
+**已确认：**[完整场景（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#complete-return-scene-and-action-premises)先初始化 Peter 并等待。Minister 欢迎 LEADER；给 Bowie 目的地 `(11,7)`，不等待坐标；给 Peter `(10,8)` 并等待。摄像机请求 `(6,2)`，Bowie/Peter 朝 Up。Bowie 目的地编码字32768 解析为行动者0 加不等待位，不是额外行动者。两个目的地均不测试 HP。
 
 Astral 评论交换伙伴，minister 欢迎新朋友并赞扬队伍，Astral 汇报 Bedoe 消息：Zeon 复活、Volcanon 愤怒。Minister 问起 Elis，Peter 说她活着。King、Astral 与 minister 接受速度48/48 自定义行动，在一次场景暂停与战场死亡音效请求期间暂停动画。他们分两组跳跃，每组只等待 minister，再恢复动画。暂停动画不等于暂停移动。
 
@@ -65,7 +65,7 @@ King 的问题和 Peter 的回答是对话，不创建 yes/no 菜单，也不变
 
 Peter 的 Down1,Left1,Down1 行动安装后不立即等待；minister 朝 Down，然后场景显式等待 Peter 的 Idle 指针并让他朝 Up。随后调用调色板恢复，再暂停。Minister 惊叹 LEADER、Peter 及其经历；Astral 沉思，minister 向他说话。
 
-[调色板所有者](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#palette-remap-and-restore)在这两个调用处复用已接受的咨询辅助程序。第一个通过已接受颜色表把64 个 CURRENT 颜色重映射到 BASE；它不是实测灰度或棕褐色外观的证据。第二个将选定 COPY 快照复制到 BASE，**然后才用**当时的当前调色板**替换 COPY**。它不重载不可变房间调色板。两者均清除自动反转字节，请求共享32 次更新插值与 CRAM DMA；均不等待全部32 次更新。暂停/文本不证明可见完成，中断或其他调色板服务可影响结果。
+[调色板所有者（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#palette-remap-and-restore)在这两个调用处复用已接受的咨询辅助程序。第一个通过已接受颜色表把64 个 CURRENT 颜色重映射到 BASE；它不是实测灰度或棕褐色外观的证据。第二个将选定 COPY 快照复制到 BASE，**然后才用**当时的当前调色板**替换 COPY**。它不重载不可变房间调色板。两者均清除自动反转字节，请求共享32 次更新插值与 CRAM DMA；均不等待全部32 次更新。暂停/文本不证明可见完成，中断或其他调色板服务可影响结果。
 
 ## 选择下一目标与顾问
 
@@ -77,7 +77,7 @@ Astral 提议前往 North Parmecia，向 Tristan 的说书人求知。Minister �
 
 ## 宣布、输入与当前跟随
 
-**已确认：**[文本与即时服务](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#text-identity-and-service-sequence)保留41 个有序位置1249–1289，本指南不逐字转录。普通 minister 没有立绘，bleep5；king 使用 portrait32/bleep6，Astral 使用 portrait31/bleep6，Peter 的 portrait/bleep 依赖精灵。变化精灵、别名或已打开立绘窗口会改变上下文。Narrator 操作数选择 speech0，绕过立绘解析，不是行动者255。King 的立绘修饰符改变选项，不改变行动者129。
+**已确认：**[文本与即时服务（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#text-identity-and-service-sequence)保留41 个有序位置1249–1289，本指南不逐字转录。普通 minister 没有立绘，bleep5；king 使用 portrait32/bleep6，Astral 使用 portrait31/bleep6，Peter 的 portrait/bleep 依赖精灵。变化精灵、别名或已打开立绘窗口会改变上下文。Narrator 操作数选择 speech0，绕过立绘解析，不是行动者255。King 的立绘修饰符改变选项，不改变行动者129。
 
 单段文本等待视野滚动、显示、推进游标，再关闭立绘/文本并睡眠10。连续文本保留窗口。N 表示换行；W1/W2 等待输入，W2 带有继续/确认音效行为。最终建议既有内部 W2，又有末尾 W1；更早连续 Zeon 汇报的末尾 W1 仍是等待。没有 yes/no 决策。脚本入场清除文本跳过后，Debug/P2 Start 可锁存跳过，略过显示/游标推进及编码脚本暂停/等待，而其他命令继续。锁存后，后续显示文本未必维持名义位置到 ID 映射。
 
@@ -91,7 +91,7 @@ Init/自定义/内联行动替换行动指针，不独立修复映射、位置�
 
 ## 当前返回与后续重建
 
-**已确认：**[跟随与调用方返回](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#following-caller-return-and-changed-state)让当前 Astral 仍是 resident139。场景不把他重命名为 B31，也不重载阵容。它在脚本内设置 F70 后结束；脚本返回后，区域（事件）调用方才设置 F805 并再次设置 F70。脚本结束有条件地等待视野滚动并返回；区域（事件）包装器关闭窗口，等待一个 VInt 及 physical0 坐标相等。没有一个等待全部随从、确认可用控制或执行原子存档事务。
+**已确认：**[跟随与调用方返回（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#following-caller-return-and-changed-state)让当前 Astral 仍是 resident139。场景不把他重命名为 B31，也不重载阵容。它在脚本内设置 F70 后结束；脚本返回后，区域（事件）调用方才设置 F805 并再次设置 F70。脚本结束有条件地等待视野滚动并返回；区域（事件）包装器关闭窗口，等待一个 VInt 及 physical0 坐标相等。没有一个等待全部随从、确认可用控制或执行原子存档事务。
 
 后续普通重建时，F70 在居民前选择 B31/Astral 随从声明。其物理分配与首领依赖此前启用的随从声明。多个 B 声明不去重：后来的 F70 可覆盖 lookup31，而更早 F74/Astral 或 F68/Oddler 分配仍留在列表。城堡 Map7 使用普通随从表，没有 Caravan 大地图前缀。F805 则独立选择不含139 的居民。
 
@@ -117,13 +117,13 @@ Janet 城镇区域（事件）有自己的 F805 已设/F806 未设准入。发�
 
 | 已审查表面 | 处置 |
 | --- | --- |
-| [#965 研究](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)及已接受路线、城镇、一年后、调色板与矮人前序成果 | 完整返回故事、选定人口/历史、Battle19 拦截、行动者身份、服务/顺序与变化状态限制一致。 |
+| [#965 研究（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)及已接受路线、城镇、一年后、调色板与矮人前序成果 | 完整返回故事、选定人口/历史、Battle19 拦截、行动者身份、服务/顺序与变化状态限制一致。 |
 | `sf2-map-events-static-v1`：[routing](../../../../../../tests/fixtures/h2/map-events/routing-setup.json)、[zones](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)、[zone schema](../../../../../../schemas/h2/map-events-zone-programs.schema.json) | 五条显式行加 default、16+1 个回调操作/共享 rts，以及 F802/F805 对701/702 的极性一致。发明家范围止于已识别准入边界。 |
 | `sf2-map-init-static-v1`：[fixture](../../../../../../tests/fixtures/h2/map-init-static-v1.json) | 选定 Map6/7/68/73 主体保留8/7/1/13 个有序操作；城镇 F802 优先与共享 F707 城堡 init 不意味着滚动重新 init 或独立 F805 主体。 |
 | `sf2-map-script-engine-static-v1`：[fixture](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、[schema](../../../../../../schemas/h2/map-script-engine-fixture.schema.json) | 选定布置/行动/生命周期/关系/名册事实保留操作数宽度、守卫、调用与源码身份。合法处理器夹具不证明自然场景完成。 |
 | [事件加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)、[事件验证器](../../../../../../src/sf2tool/h2/map_events.py)、[脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)、[名册合同](../../../contracts/party/party-roster-state.md#处理器边界) | Schema/分片身份/顺序、完整源码输出相等与溯源是独立检查；随从分配不是军团成员资格或场景专属存档验收。 |
 
-[复现所有者](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#reproduction-and-review-boundary)固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。所属命令仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events`、`uv run sf2 h2 map-script-engine`。原综合切片工作树缺少固定上游/保留数据对：不采集、不重新生成，也不声称新比较。
+[复现所有者（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md#reproduction-and-review-boundary)固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。所属命令仍为 `uv run sf2 h2 map-init`、`uv run sf2 h2 map-events`、`uv run sf2 h2 map-script-engine`。原综合切片工作树缺少固定上游/保留数据对：不采集、不重新生成，也不声称新比较。
 
 [#965 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/965#issuecomment-6179605996)与 [PR968 验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/968#issuecomment-6179629067)保留最终4f09a34a/tree fe46c1e9/base 7c8a9760 及原始97181f64/CI38645456942；最终 CI38645631608 通过 scope15s/research46s。不变的18,285,979 字节数据对的0.087/0.081/0.080s 回执仍相互区别；main-gate 保留其自身0.080s 完整关联比较。这些关联包含134 条记录、九个自定义及11 个移动主体、41 个文本位置和774 字节区间。保留 Map68 Battle19 与32 字节实体步长修正及检查诊断。
 

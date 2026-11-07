@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`map-layout-data.md`](../../../contracts/graphics/map-layout-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-layout-data.md`（英文规范源）](../../../contracts/graphics/map-layout-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,11 +20,11 @@
 4. 解码 block 与 layout 形状、语料总计、索引边界与聚合解码器族计数器；
 5. 每个拥有压缩载荷的 source/ROM 一致性。
 
-可执行所有者是 `sf2-map-layout-decode-v1`，位于 [`tests/fixtures/h2/map-layout-decode-v1.json`](../../../../../tests/fixtures/h2/map-layout-decode-v1.json)。研究所有者是[Common Map Engine](../../../../research/world/common-maps.md)与[Map Content Tables 与 Binary Payload 一致性](../../../../research/world/map-content.md)。
+可执行所有者是 `sf2-map-layout-decode-v1`，位于 [`tests/fixtures/h2/map-layout-decode-v1.json`](../../../../../tests/fixtures/h2/map-layout-decode-v1.json)。研究所有者是[Common Map Engine（英文）](../../../../research/world/common-maps.md)与[Map Content Tables 与 Binary Payload 一致性（英文）](../../../../research/world/map-content.md)。
 
 fixture 还绑定 `LoadMapLayoutData` 与 `LoadMapBlocks` 的身份。两个身份都是该数据边界的一部分，但 `LoadMapBlocks` 不创建第二条 research-index 关联。唯一关联记录保持 `maps.map-layout`。
 
-既有[map-exploration 合同](../../../contracts/world/map-exploration.md) 是更高层消费者。它拥有已接受地图构建、配置、事件、工作布局、实体、移动与运行时交接规则。本合同不复制那些规则、不改变该合同的 fixture 注册，也不代其添加关联。
+既有[map-exploration 合同](../world/map-exploration.md) 是更高层消费者。它拥有已接受地图构建、配置、事件、工作布局、实体、移动与运行时交接规则。本合同不复制那些规则、不改变该合同的 fixture 注册，也不代其添加关联。
 
 ## 合同前证据审计
 
@@ -195,7 +195,7 @@ MapLayoutPublicSummary {
 - 渲染器构建、VDP 上传、滚动、层、动画节奏或最终像素；
 - 畸形流恢复、mod 准入、编辑器 UX、可访问性或平衡。
 
-[map-exploration 合同](../../../contracts/world/map-exploration.md)与[map-design 综合](../../synthesis/themes/map-design-principles.md) 可以消费该静态语料，同时保留其自身证据与 **未知** 边界。它们不得用聚合命令计数替代运行时或呈现证据。
+[map-exploration 合同](../world/map-exploration.md)与[map-design 综合](../../synthesis/themes/map-design-principles.md) 可以消费该静态语料，同时保留其自身证据与 **未知** 边界。它们不得用聚合命令计数替代运行时或呈现证据。
 
 ## 判断边界
 
@@ -242,12 +242,12 @@ H4 实现可以急切、惰性或导入构建期间解码。那些选择只在�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 函数身份 | **已确认静态** | `sf2-map-layout-decode-v1`；[fixture](../../../../../tests/fixtures/h2/map-layout-decode-v1.json) | 仅 `LoadMapLayoutData` 与 `LoadMapBlocks` 身份/地址；无第二条记录关联 |
-| 所有者/引用图 | **已确认静态** | 同一 fixture；[common-map 研究](../../../../research/world/common-maps.md) | 77 所有者、79 引用与两个精确别名；无可变运行时共享声称 |
-| 解码 blockset | **已确认静态** | 同一 fixture；[map-content 研究](../../../../research/world/map-content.md) | 19,771 个 3×3 block、177,939 字、22..666 范围；原始字保持私有 |
-| 解码 layout | **已确认静态** | 同一 fixture；[map-content 研究](../../../../research/world/map-content.md) | 77 个 64×64 layout、315,392 字、630,784 字节、最大索引 665；无碰撞或层含义 |
+| 所有者/引用图 | **已确认静态** | 同一 fixture；[common-map 研究（英文）](../../../../research/world/common-maps.md) | 77 所有者、79 引用与两个精确别名；无可变运行时共享声称 |
+| 解码 blockset | **已确认静态** | 同一 fixture；[map-content 研究（英文）](../../../../research/world/map-content.md) | 19,771 个 3×3 block、177,939 字、22..666 范围；原始字保持私有 |
+| 解码 layout | **已确认静态** | 同一 fixture；[map-content 研究（英文）](../../../../research/world/map-content.md) | 77 个 64×64 layout、315,392 字、630,784 字节、最大索引 665；无碰撞或层含义 |
 | 解码器族总计 | **已确认静态** | 同一 fixture | 精确聚合 8 加 6 计数器；无逐地图分类、编解码器意图或畸形输入行为 |
 | 压缩一致性 | **已确认静态** | 同一 fixture | 77 block 加 77 layout source/ROM 匹配；无公开载荷或 hash |
-| 地图构建与变更 | 独立所有者证据 | [map-exploration 合同](../../../contracts/world/map-exploration.md) | 运行时加载阶段、事件、工作布局状态、重置与持久性此处不复制 |
+| 地图构建与变更 | 独立所有者证据 | [map-exploration 合同](../world/map-exploration.md) | 运行时加载阶段、事件、工作布局状态、重置与持久性此处不复制 |
 | 渲染与呈现 | **未知** | 无消费运行时/呈现 fixture | VDP 一致性、滚动、动画、可见时序与最终像素保持开放 |
 
 ## 开放问题

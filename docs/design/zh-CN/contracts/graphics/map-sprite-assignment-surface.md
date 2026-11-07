@@ -4,7 +4,7 @@
 - 证据日期：2026-08-14
 - 范围：原版实体地图精灵赋值起源与它们准入的受限域
 
-> 本文件是 [`map-sprite-assignment-surface.md`](../../../contracts/graphics/map-sprite-assignment-surface.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-sprite-assignment-surface.md`（英文规范源）](../../../contracts/graphics/map-sprite-assignment-surface.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -18,7 +18,7 @@
 
 ## 证据所有者与消费面
 
-本合同消费的唯一可执行所有者是 `sf2-map-sprite-assignments-static-v1`（[fixture](../../../../../tests/fixtures/h2/map-sprite-assignments-static-v1.json)、[verifier](../../../../../src/sf2tool/h2/map_sprite_assignments.py)、[schema](../../../../../schemas/h2-map-sprite-assignments-static-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/map-sprite-assignments-static.json)）。其带来源文章所有者是[Common Scripting](../../../../research/world/common-scripting.md)。
+本合同消费的唯一可执行所有者是 `sf2-map-sprite-assignments-static-v1`（[fixture](../../../../../tests/fixtures/h2/map-sprite-assignments-static-v1.json)、[verifier](../../../../../src/sf2tool/h2/map_sprite_assignments.py)、[schema](../../../../../schemas/h2-map-sprite-assignments-static-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/map-sprite-assignments-static.json)）。其带来源文章所有者是[Common Scripting（英文）](../../../../research/world/common-scripting.md)。
 
 合同消费以下受追踪 fixture 字段：
 
@@ -45,7 +45,7 @@
 | `scripting.entity.getallymapsprite` | `GetAllyMapsprite` | 281,030 | 新关联候选 |
 | `scripting.entity.updateentityproperties` | `UpdateEntityProperties` | 24,658 | 新关联候选 |
 | `scripting.map.csc1a-setentitysprite` | `csc1A_setEntitySprite` | 289,352 | 新关联候选 |
-| `ally.data.map-sprites` | `table_AllyMapsprites` | 281,182 | 不变；只由[Ally Definition 与 Growth Data](../../../contracts/party/ally-definition-data.md)拥有 |
+| `ally.data.map-sprites` | `table_AllyMapsprites` | 281,182 | 不变；只由[Ally Definition 与 Growth Data](../party/ally-definition-data.md)拥有 |
 
 本合同不关联其他 `scripting.entity.*`、`scripting.map.*`、`ally.data.*`、`enemy.*`、`map.entity-population.*`、`map.data.*`、`tech.graphics.*` 或 auxiliary-data 记录。
 
@@ -98,7 +98,7 @@
 
 1. 上文总结的 81 个构建脚本赋值；
 2. 20 个分类 `UpdateEntityProperties` 输入；
-3. 独立[Map Entity Data](../../../contracts/world/map-entity-data.md)所有者的 980 个已接受初始实体记录；
+3. 独立[Map Entity Data](../world/map-entity-data.md)所有者的 980 个已接受初始实体记录；
 4. 外部拥有的己方与敌人定义表。
 
 受追踪见证摘要：
@@ -192,13 +192,13 @@ H4 不要求原版写入循环、调用时序、图形队列、DMA 行为、渲�
 
 ## 跨系统分离
 
-- [Ally Definition 与 Growth Data](../../../contracts/party/ally-definition-data.md) 保持 30 行己方地图精灵表、其身份顺序与行内容的唯一所有者。
-- [Enemy Definition Data](../../../contracts/party/enemy-definition-data.md) 保留 166 行敌人地图精灵表与普通对尾定义边界。
-- [Map Entity Data](../../../contracts/world/map-entity-data.md) 保留 980 条物理初始实体记录、记录打包、列表拓扑与初始地图精灵字段。
-- [Map-Sprite Graphics Data](../../../contracts/graphics/map-sprite-graphics-data.md) 保留 720 个普通源槽、670 个载荷身份、别名关系、Basic 流与哨兵结构。
-- [Graphics Service State](../../../contracts/graphics/graphics-service-state.md) 保留特殊精灵指针/分发与解压服务边界。
-- [Map 与 Exploration](../../../contracts/world/map-exploration.md) 与 Common Scripting 保留运行时实体变更、移动、动作分发、生命周期、摄像机与呈现交接。
-- [Sprite Dialogue Property Data](../../../contracts/interface/sprite-dialogue-property-data.md) 保留地图精灵到立绘与语音 SFX 属性查找。
+- [Ally Definition 与 Growth Data](../party/ally-definition-data.md) 保持 30 行己方地图精灵表、其身份顺序与行内容的唯一所有者。
+- [Enemy Definition Data](../party/enemy-definition-data.md) 保留 166 行敌人地图精灵表与普通对尾定义边界。
+- [Map Entity Data](../world/map-entity-data.md) 保留 980 条物理初始实体记录、记录打包、列表拓扑与初始地图精灵字段。
+- [Map-Sprite Graphics Data](map-sprite-graphics-data.md) 保留 720 个普通源槽、670 个载荷身份、别名关系、Basic 流与哨兵结构。
+- [Graphics Service State](graphics-service-state.md) 保留特殊精灵指针/分发与解压服务边界。
+- [Map 与 Exploration](../world/map-exploration.md) 与 Common Scripting 保留运行时实体变更、移动、动作分发、生命周期、摄像机与呈现交接。
+- [Sprite Dialogue Property Data](../interface/sprite-dialogue-property-data.md) 保留地图精灵到立绘与语音 SFX 属性查找。
 - 故事选择、存档持久性、可见朝向/动画、图形加载、VInt/DMA 节奏、本地化、可访问性与替换策略保持独立所有者、未知或刻意重制设计。
 
 ## 证据矩阵

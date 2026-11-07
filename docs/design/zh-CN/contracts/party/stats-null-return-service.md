@@ -5,7 +5,7 @@
 - 现代化：**允许** 擦除、内联或保留引擎原生 no-op 兼容接缝
 - 未知：自然可达性、调用方准入、运行时结果、原版栈/寄存器/CCR 行为、时序、玩法含义，以及重制是否需要可调用端点
 
-> 本文件是 [`stats-null-return-service.md`](../../../contracts/party/stats-null-return-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`stats-null-return-service.md`（英文规范源）](../../../contracts/party/stats-null-return-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 
@@ -31,7 +31,7 @@
 - `expected.representativeSymbols["unusedsub_9482.asm"]`；
 - `upstreamCommit` 与 `romSha256` 溯源。
 
-所属[common-stats 研究](../../../../research/party/common-stats.md)、可执行[`stats.py`](../../../../../src/sf2tool/h2/stats.py)与提取[`manifest`](../../../../../manifests/extractions/common-stats-static.json) 保留完整源清单与已接受输出摘要。`code/common/stats/unusedsub_9482.asm` 的摘要绑定生成行记录：
+所属[common-stats 研究（英文）](../../../../research/party/common-stats.md)、可执行[`stats.py`](../../../../../src/sf2tool/h2/stats.py)与提取[`manifest`](../../../../../manifests/extractions/common-stats-static.json) 保留完整源清单与已接受输出摘要。`code/common/stats/unusedsub_9482.asm` 的摘要绑定生成行记录：
 
 | 清单字段 | 已接受值 |
 | --- | ---: |
@@ -90,15 +90,15 @@ exclusive end at 0x9484
 
 | 区间 | 所有者边界 |
 | --- | --- |
-| 在 `0x9482` 结束 | `GetDistanceBetweenCombatants`，由[`combatant-state-access`](../../../contracts/party/combatant-state-access.md)拥有 |
+| 在 `0x9482` 结束 | `GetDistanceBetweenCombatants`，由[`combatant-state-access`](combatant-state-access.md)拥有 |
 | `0x9482..0x9484` | `nullsub_9482`，由本合同拥有 |
-| 在 `0x9484` 开始 | `LevelUp`，由[`level-up`](../../../contracts/party/level-up.md)合同与推进证据拥有 |
+| 在 `0x9484` 开始 | `LevelUp`，由[`level-up`](level-up.md)合同与推进证据拥有 |
 
 共享边界不把战斗员距离 ABI 扩展进 null 条目，也不把 null 条目变成升级行为的一部分。
 
 ### 独立跳转接口见证
 
-固定 `s02_jumpinterface.asm` 包含 `j_nullsub_9482`，其地址为 `0x81F4`，源体跳转到 `nullsub_9482`。[technical-interface 研究](../../../../research/system/technical-interfaces.md) 保留该聚合接口源。其存在是外部源见证，不是普通调用方调用该条目的证据。
+固定 `s02_jumpinterface.asm` 包含 `j_nullsub_9482`，其地址为 `0x81F4`，源体跳转到 `nullsub_9482`。[technical-interface 研究（英文）](../../../../research/system/technical-interfaces.md) 保留该聚合接口源。其存在是外部源见证，不是普通调用方调用该条目的证据。
 
 本合同**不**消费 `sf2-tech-interfaces-static-v1`、不拥有 S02 接口，也不关联 `tech.interfaces.jump-s02`。该记录保持不变且未关联。见证被精确记录以阻止“unused”被改写成“no exported seam”。
 
@@ -170,10 +170,10 @@ H4 不需要原版版权载荷。合成适配器状态对可选逻辑 no-op 检�
 
 ## 跨系统分离
 
-- [`combatant-state-access`](../../../contracts/party/combatant-state-access.md) 在 `0x9482` 结束其距离辅助，并保留战斗员获取器、设置器、夹断、距离与类型编码。本合同不添加战斗员 ABI。
-- [`level-up`](../../../contracts/party/level-up.md) 与推进所有者保留从 `0x9484` 开始的所有行为。
-- [Technical-interface 研究](../../../../research/system/technical-interfaces.md) 保留 S02 跳转表与 `j_nullsub_9482` 见证。此处不注册 technical-interface fixture。
-- [`graphics-service-state`](../../../contracts/graphics/graphics-service-state.md)、[`debug-control-flow`](../../../contracts/system/debug-control-flow.md)、脚本所有者与战斗所有者保留其自身名义未使用或 null 条目。相似标签不创造共享行为或所有权。
+- [`combatant-state-access`](combatant-state-access.md) 在 `0x9482` 结束其距离辅助，并保留战斗员获取器、设置器、夹断、距离与类型编码。本合同不添加战斗员 ABI。
+- [`level-up`](level-up.md) 与推进所有者保留从 `0x9484` 开始的所有行为。
+- [Technical-interface 研究（英文）](../../../../research/system/technical-interfaces.md) 保留 S02 跳转表与 `j_nullsub_9482` 见证。此处不注册 technical-interface fixture。
+- [`graphics-service-state`](../graphics/graphics-service-state.md)、[`debug-control-flow`](../system/debug-control-flow.md)、脚本所有者与战斗所有者保留其自身名义未使用或 null 条目。相似标签不创造共享行为或所有权。
 - `stats.item-inventory` 与 `stats.item-stats` 保持未关联。其大源文件与调用方相关行为不由该完整单语句切片暗示。
 
 ## 证据矩阵

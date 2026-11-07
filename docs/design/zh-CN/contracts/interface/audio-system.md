@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`audio-system.md`](../../../contracts/interface/audio-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`audio-system.md`（英文规范源）](../../../contracts/interface/audio-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -34,7 +34,7 @@
   [`tests/fixtures/h2/gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)，
   仅用于 `InitializeZ80` 启动交接。
 
-主要研究所有者是[Z80 music-bank 与 runtime-state inventory](../../../../research/presentation/sound-data-inventory.md)。启动边界额外由[gameflow 研究](../../../../research/system/gameflow-core.md)约束。已接受[ADR 0005](../../../../decisions/0005-remake-value-driven-driver-freeze.md) 冻结更深硬件与驱动精确度，除非具体重制验收需要重开一个问题。
+主要研究所有者是[Z80 music-bank 与 runtime-state inventory（英文）](../../../../research/presentation/sound-data-inventory.md)。启动边界额外由[gameflow 研究（英文）](../../../../research/system/gameflow-core.md)约束。已接受[ADR 0005（英文）](../../../../decisions/0005-remake-value-driven-driver-freeze.md) 冻结更深硬件与驱动精确度，除非具体重制验收需要重开一个问题。
 
 ## 合同前证据审计
 
@@ -205,8 +205,8 @@ H4 不要求芯片寄存器、波形、PCM 率或墙钟时序一致性，除非�
 | 56 个 SFX 命令、头拓扑、活跃流 token 化、计数循环 | **已确认静态** | `sf2-sound-data-static-v1`（[`sound-data-static-v1.json`](../../../../../tests/fixtures/h2/sound-data-static-v1.json)） | 优先级、中断、时长、混音、可听等价 |
 | 四个命令用例、12 个检查点、120 个通道快照 | **已确认受限运行时** | `sf2-sound-timing-runtime-v1`（[`sound-timing-v1.json`](../../../../../tests/fixtures/h3/sound-timing-v1.json)） | 自然可达性、完成、循环/淡入淡出/恢复语义、墙钟时间 |
 | 启动声驱交接 | **已确认静态** | `sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 字节计数解读、总线/重置时序、失败、首次可听输出 |
-| 可听乐器/包络含义 | **推断** | [sound 研究](../../../../research/presentation/sound-data-inventory.md) | 重制验收需要时需受限重开问题 |
-| 硬件/波形保真与现代资源策略 | **未知 / 刻意设计** | [ADR 0005](../../../../decisions/0005-remake-value-driven-driver-freeze.md) | 除非具名触发重开一个受限问题，否则冻结 |
+| 可听乐器/包络含义 | **推断** | [sound 研究（英文）](../../../../research/presentation/sound-data-inventory.md) | 重制验收需要时需受限重开问题 |
+| 硬件/波形保真与现代资源策略 | **未知 / 刻意设计** | [ADR 0005（英文）](../../../../decisions/0005-remake-value-driven-driver-freeze.md) | 除非具名触发重开一个受限问题，否则冻结 |
 
 ## 复现
 

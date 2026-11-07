@@ -1,18 +1,18 @@
 # Battle26 准入与 Geshp 对峙
 
-> 本文是[规范英文原文：Battle26 Admission and the Geshp Confrontation](../../../../synthesis/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle26 Admission and the Geshp Confrontation](../../../../synthesis/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 **已确认：** 获准的新 Battle26 可在战斗初始化之前布置 Geshp 与 Higins 及两名 Pacalon 士兵的对峙。场景表现 Geshp 的残忍、他对 Higins 身体的觊觎，以及 Granseal 军团的打断。场地行动者与表面死亡不同于交战记录、HP、阵营和招募。
 
 **推断：** 这是 [Ketto 交互与商人搬移](ketto-interactions-and-merchant-relocation.md)的候选接续。**未知：** 从 Ketto 自然旅行、实际传入标志与队伍、已完成服务、可见时序、可用控制与持久性。本指南解释已接受源码行为直到 before-battle 包装器返回，止于新治疗、编队、战斗加载与 start 之前。
 
-证据所有者为完整已接受 [Battle26 准入与 Geshp 对峙研究](../../../../../research/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md)。其固定源码为 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`，对照该处记录的 USA ROM 身份。以下源码路径相对该固定版本的 `disasm/`。Fnnn 表示标志 nnn；索引从零开始。对话 ID 标识 `data/scripting/text/gamescript.txt` 实际字面量；场景程序为 `data/battles/entries/battle26/cs_beforebattle.asm:bbcs_26`。正文转述对话，保留完整有意义内容与说话顺序；精确控制/字面量由研究所有者保留。
+证据所有者为完整已接受 [Battle26 准入与 Geshp 对峙研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md)。其固定源码为 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`，对照该处记录的 USA ROM 身份。以下源码路径相对该固定版本的 `disasm/`。Fnnn 表示标志 nnn；索引从零开始。对话 ID 标识 `data/scripting/text/gamescript.txt` 实际字面量；场景程序为 `data/battles/entries/battle26/cs_beforebattle.asm:bbcs_26`。正文转述对话，保留完整有意义内容与说话顺序；精确控制/字面量由研究所有者保留。
 
 ## 从 Ketto 出口到选定遭遇
 
 **已确认：** Ketto 唯一出口传送行匹配通配 X255/Y31，请求无滚动 Map72、名义目标 (31,27)、Down。不测试购物、F800、胜利 525 或解锁 426。普通步行仍需符合传送布局类型 `$1000` 与位置。坐标行不证明出口可达。
 
-生产者写可变 type 1/PARAM1–5 与传送声音。消费在分发前清事件类型、消费/清声音、令物理行动者 0 Idle 并退出探索。无滚动消费者采样位置、替换非负目标低字节、应用朝向并返回 d4=0。名义 (31,27) 假定普通采样高字节。替换请求或中断消费者可改变结果。已接受[请求消费者](../../../../../research/world/map-event-request-consumption.md)拥有此接缝。
+生产者写可变 type 1/PARAM1–5 与传送声音。消费在分发前清事件类型、消费/清声音、令物理行动者 0 Idle 并退出探索。无滚动消费者采样位置、替换非负目标低字节、应用朝向并返回 d4=0。名义 (31,27) 假定普通采样高字节。替换请求或中断消费者可改变结果。已接受[请求消费者（英文）](../../../../../research/world/map-event-request-consumption.md)拥有此接缝。
 
 MainLoop 运行 SwitchMap 再 CheckBattle；Map72 无已接受标志切换替代。CURRENT255 经 CURRENT_MAP 解析。Map72 完整候选顺序为：
 
@@ -121,7 +121,7 @@ Geshp 质疑南方军团怎会在此，问其来自何处（2631–2632）。B �
 
 Geshp 决定该离开（2635）、朝 Up，命令恶魔士兵阻止 Granseal 军团（2636）。他朝 Down；Demon 开始另一次异步 Jump；Geshp 接收 MOSAIC_OUT (6)，脚本结束。无最终汇合等待 Demon 的 Jump。Geshp 离去是视觉请求，不是删除、战斗胜利或控制授予。
 
-开场与五个对峙阶段保留全部 41 个对话 ID 2596–2636 及有意义的有序行动序列。研究所有者[完整有序程序](../../../../../research/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md#complete-ordered-program)保留详尽 130 命令表与源码宽度计量；精确编码细节沿此阅读，不再复制另一张编码表。
+开场与五个对峙阶段保留全部 41 个对话 ID 2596–2636 及有意义的有序行动序列。研究所有者[完整有序程序（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md#complete-ordered-program)保留详尽 130 命令表与源码宽度计量；精确编码细节沿此阅读，不再复制另一张编码表。
 
 ## 等待、移动与效果的实际含义
 
@@ -155,7 +155,7 @@ ExecuteMapScript 入场清 SKIP_CUTSCENE_TEXT；调试模式加 P2 Start 可在�
 
 csc_end 在有开放对话窗口时有条件等待滚动，清 VIEW_SCROLLING_SPEED、恢复解释器寄存器并返回。before 包装器恢复 d1，在 loc_47AE8 返回。尾部不恢复全部行动者或速度/效果、不移除场景分配、不汇合 Demon 最终异步 Jump、不初始化交战，也不授予玩家控制。
 
-下一已接受调用者边界是[新 BattleLoop 初始化](../../../../../research/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md#before-dispatcher-and-exact-endpoint)：只有此返回之后，调用者才恢复/重新赋值保存地图/战斗、重置区域标志 90–105、治疗存活/不死伙伴、先初始化己方再敌方位置、清 AI、为战斗员 0 LoadBattle 并调用 start。场景不建立初始战斗员/中立名册、已激活敌人、单次行动、结果或 Higins 招募。
+下一已接受调用者边界是[新 BattleLoop 初始化（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md#before-dispatcher-and-exact-endpoint)：只有此返回之后，调用者才恢复/重新赋值保存地图/战斗、重置区域标志 90–105、治疗存活/不死伙伴、先初始化己方再敌方位置、清 AI、为战斗员 0 LoadBattle 并调用 start。场景不建立初始战斗员/中立名册、已激活敌人、单次行动、结果或 Higins 招募。
 
 [Battle26 初始编队与中立 Higins](battle26-initialization-and-roster.md)从此返回继续解释实际队伍/敌人初始化、物理替换、完成门控的中立 Higins 与空 start 钩子。止于 ActivateEnemies 紧前，保留传入状态、升级、查找、服务与表现限制。激活、单次行动、结果与招募仍是独立范围。
 

@@ -7,7 +7,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battlefield-navigation.md`](../../../contracts/battle/battlefield-navigation.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battlefield-navigation.md`（英文规范源）](../../../contracts/battle/battlefield-navigation.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -27,7 +27,7 @@
   `tests/fixtures/h3/battlefield-movement-matrix-v1.json`；
 - `sf2-battle-terrain-decode-v1`，位于
   `tests/fixtures/h2/battle-terrain-decode-v1.json`；
-- [battlefield/pathfinding 研究](../../../../research/battle/battlefield-pathfinding.md)，拥有证据限制与复现上下文。
+- [battlefield/pathfinding 研究（英文）](../../../../research/battle/battlefield-pathfinding.md)，拥有证据限制与复现上下文。
 
 这些测试夹具建立 source/ROM 结构与受限运行时观察。它们不建立遭遇设计意图、路径合意性、受控边界用例的正常游玩可达性或渲染行为。
 

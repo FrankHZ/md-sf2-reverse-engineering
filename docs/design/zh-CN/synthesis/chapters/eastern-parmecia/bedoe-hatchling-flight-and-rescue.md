@@ -1,10 +1,10 @@
 # Bedoe 雏鸟飞行与救援
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Bedoe 的一只雏鸟提出演示飞行，两次尝试都不顺利，最后声称取得有限成功。另一独立场景编排坠落、birdwoman 惊呼及她向 Bowie 道谢。这些是调用方独立的可选互动。救援不要求演示或国王接受，birdwoman 报告安全也不确立之后招募。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)支持下文选定对话、行动与状态边界。**推断：**编排描绘尝试飞行与救援。**未知：**自然互动/zone 可达、传入行动者、服务完成、可见飞行、坠落/接触和可玩连续性。本指南不增加重制能力或产品决定。Fnnn 表示标志 nnn；坐标与基本方向移动计数为地图瓦片，另注者除外。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)支持下文选定对话、行动与状态边界。**推断：**编排描绘尝试飞行与救援。**未知：**自然互动/zone 可达、传入行动者、服务完成、可见飞行、坠落/接触和可玩连续性。本指南不增加重制能力或产品决定。Fnnn 表示标志 nnn；坐标与基本方向移动计数为地图瓦片，另注者除外。
 
 [Volcanon 返回与国王选择指南](volcanon-return-through-bedoe-king-choice.md)解释周围 Bedoe 配置。其选择独立于这些事件。本文止于两个选定调用方返回及其条件控制交接；Bedoe 出口、Polca、Battle13 和未来 Skreech 招募仍在范围外。
 
@@ -76,7 +76,7 @@ Peter 在 Left 朝向请求前没有初始待机屏障；其 wait 60/Left 4 可�
 
 ## 正确理解等待、动画与跟随
 
-**已确认使用方区别：**[研究使用方章节](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#action-animation-priority-hp-and-hide-consumers)和[通用脚本所有者](../../../../../research/world/common-scripting.md)保留下列限制：
+**已确认使用方区别：**[研究使用方章节（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#action-animation-priority-hp-and-hide-consumers)和[通用脚本所有者（英文）](../../../../../research/world/common-scripting.md)保留下列限制：
 
 - 安装行动立即替换指针。带等待形式轮询该行动者指针是否为 `eas_Idle`；它们不是队列、全局屏障或无阻挡移动保证。基本方向差值按每瓦片 384 内部单位相乘，使用当前坐标。速度 4/16/32/48/64 是成对 X/Y 操作数，不是瓦片计数或时长；`faceUp 5` 是朝向/精灵/等待工作，不是 Up 5。Jump/Bump 行动发出定时相对目的地，单凭名称不保证位移。
 - Init 设置速度 32、加速因子零、加速/减速 OFF、阻挡 ON、实体/地图不可碰撞 OFF、自动朝向 ON、定向 Up、浸没 OFF、大小 24，再待机。InitSlow 设置速度 16、因子 `(1,1)` 与源码 `(-2,ON)` 加速/减速对，之后阻挡/自动朝向/定向/大小配置相同。两者都不重置坐标。
@@ -110,15 +110,15 @@ Peter 在 Left 朝向请求前没有初始待机屏障；其 wait 60/Left 4 可�
 
 ## 证据审阅与剩余限制
 
-本指南消费 [PR #798 已接受研究](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/798)及 [PR #797 前序英文指南](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/797)。原版溯源仍为固定 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 与[研究协议](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#agreement-provenance-and-resources)中的 USA 零售版身份。审阅使用限定 tracked 选择，没有复制/生成可选派生载荷、重复源码调查或采集运行时。选定调用方与 init 和已接受研究一致。处理器测试夹具确立源码结构，不是组合雏鸟观察。
+本指南消费 [PR #798 已接受研究](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/798)及 [PR #797 前序英文指南](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/797)。原版溯源仍为固定 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 与[研究协议（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#agreement-provenance-and-resources)中的 USA 零售版身份。审阅使用限定 tracked 选择，没有复制/生成可选派生载荷、重复源码调查或采集运行时。选定调用方与 init 和已接受研究一致。处理器测试夹具确立源码结构，不是组合雏鸟观察。
 
 | 审阅面 | 追踪与结论 |
 | --- | --- |
-| 十条不同文本、两个完整场景及内联体 | [飞行](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#complete-flight-demonstration)、[救援](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#complete-fall-and-rescue-scene)和[复现选择](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#reproduction-and-review-boundary)保留 48/78 条记录与键 `0690..0699`。本指南概述全部 1680–1689 及重复 1685，不提升有归属的安全说法或渲染运动。完整命令台账比较仍为保留研究证据，不是此处新执行。 |
+| 十条不同文本、两个完整场景及内联体 | [飞行（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#complete-flight-demonstration)、[救援（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#complete-fall-and-rescue-scene)和[复现选择（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#reproduction-and-review-boundary)保留 48/78 条记录与键 `0690..0699`。本指南概述全部 1680–1689 及重复 1685，不提升有归属的安全说法或渲染运动。完整命令台账比较仍为保留研究证据，不是此处新执行。 |
 | 独立调用方谓词 | 测试夹具 ID `sf2-map-events-static-v1`：[实体分片](../../../../../../tests/fixtures/h2/map-events/entity-programs.json) program 30，位于 `0x56F68`，及 [zone 分片](../../../../../../tests/fixtures/h2/map-events/zone-programs.json) program 5，位于 `0x56FC8`。各自全部七个操作、分支目标/极性和各一个表引用均已审阅。它们确认返回后 F723/F724 写入、重复 1685 及救援不测试 F723/F799。 |
 | 替代 init | 测试夹具 ID `sf2-map-init-static-v1`、[测试夹具](../../../../../../tests/fixtures/h2/map-init-static-v1.json)、`expected.primarySourceBodies[15]`，位于 `0x5708E`。全部九个操作保留独立 F799/Luke 和 F724/152 移除，不读取 F13/F723。仅坐标效果由研究使用方支持，不由调用名称支持。 |
-| 单位、行动/放置、动画、优先级与跟随 | 测试夹具 ID `sf2-map-script-engine-static-v1`、[测试夹具](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、选定 `entityPlacementCommandFacts`、`entityActionBridgeCommandFacts`、`entityLifecyclePresentationCommandFacts` 和 `entityGestureRelationshipMotionCommandFacts`；[研究使用方](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#action-animation-priority-hp-and-hide-consumers)提供解释。字/高字节 HP、瓦片/速度/像素单位、动画与运动、链接与瓦片优先级保持区别。 |
-| 激活、zone 产生与条件控制 | [调用方准入](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#callers-and-admission-boundaries)、[调用方返回/重入](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#caller-return-re-entry-and-independent-ordering)和[地图/探索合同](../../../contracts/world/map-exploration.md)。不推断朝向前提、自然穿越、全体行动者屏障、已修复无效映射或无条件控制。 |
+| 单位、行动/放置、动画、优先级与跟随 | 测试夹具 ID `sf2-map-script-engine-static-v1`、[测试夹具](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、选定 `entityPlacementCommandFacts`、`entityActionBridgeCommandFacts`、`entityLifecyclePresentationCommandFacts` 和 `entityGestureRelationshipMotionCommandFacts`；[研究使用方（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#action-animation-priority-hp-and-hide-consumers)提供解释。字/高字节 HP、瓦片/速度/像素单位、动画与运动、链接与瓦片优先级保持区别。 |
+| 激活、zone 产生与条件控制 | [调用方准入（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#callers-and-admission-boundaries)、[调用方返回/重入（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md#caller-return-re-entry-and-independent-ordering)和[地图/探索合同](../../../contracts/world/map-exploration.md)。不推断朝向前提、自然穿越、全体行动者屏障、已修复无效映射或无条件控制。 |
 
 [地图事件 schema](../../../../../../schemas/h2/map-events-target-program.schema.json)与[加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)保留有序操作、目标和分片组合。[Init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)与[验证器](../../../../../../src/sf2tool/h2/map_init.py)保留体/溯源相等性。[地图脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)与 [schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)保持不同命令族及使用方。聚焦所有者为 `tests/python/test_map_events.py`、`test_map_init.py` 和 `test_map_script_engine.py`；窄复现路线为 `uv run sf2 h2 map-events`、`map-init` 和 `map-script-engine`。这些是证据导航，不是新执行门禁声明。
 

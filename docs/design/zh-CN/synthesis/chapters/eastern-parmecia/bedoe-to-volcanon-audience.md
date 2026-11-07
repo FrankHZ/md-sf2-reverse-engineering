@@ -1,10 +1,10 @@
 # Bedoe 至 Volcanon 觐见
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Peter 返回神殿，介绍 Bowie，并向 Volcanon 求助。交谈由欢迎转为对 Grans 和 Zeon 的愤怒，之后是关于宝石的建议。Peter 最后承诺帮助 Bowie。脚本独立请求其加入消息、改变成员资格和一个 AI 位，并尝试让他跟随 Bowie。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)支持下文选定请求、交谈与服务边界。**推断：**这是 [Bedoe 首次觐见](bedoe-king-address-through-first-audience.md)的候选内容接续。**未知：**自然楼层穿行、实际传入状态、服务完成、表现与可用输入。国王邀请是对话，不是神殿准入要求。本指南不增加重制能力或产品决定；说话者的说法仍为有归属的台词。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)支持下文选定请求、交谈与服务边界。**推断：**这是 [Bedoe 首次觐见](bedoe-king-address-through-first-audience.md)的候选内容接续。**未知：**自然楼层穿行、实际传入状态、服务完成、表现与可用输入。国王邀请是对话，不是神殿准入要求。本指南不增加重制能力或产品决定；说话者的说法仍为有归属的台词。
 
 止于选定调用方及 Map11 首次条件控制。[Volcanon 返回至 Bedoe 国王选择](volcanon-return-through-bedoe-king-choice.md)独立接续选定返回请求、可选问题及 Luke 离开请求。自然楼层旅行、雏鸟/Skreech、城镇/服务/楼层清单、后续旅行与 Battle13 仍在范围外。Fnnn 表示标志 nnn；坐标为地图瓦片，另注者除外。
 
@@ -113,11 +113,11 @@ F722 之后选择 Bedoe 替代配置；本调用方不返回那里或执行其�
 
 ## 证据审阅与剩余限制
 
-本指南消费 [PR #790](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/790) 已接受研究和 [PR #789](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/789) 前序英文指南。研究保留 USA 零售版身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、全部 113 条场景记录、37 个交谈键、独立加入键及十七个内联移动。其[复现边界](../../../../../research/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md#reproduction-and-evidence-limits)拥有源码/保留比较。本切片审阅已接受正文和限定 tracked 测试夹具选择，不重新调查源码、生成/复制可选载荷或新增观察。
+本指南消费 [PR #790](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/790) 已接受研究和 [PR #789](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/789) 前序英文指南。研究保留 USA 零售版身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、全部 113 条场景记录、37 个交谈键、独立加入键及十七个内联移动。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md#reproduction-and-evidence-limits)拥有源码/保留比较。本切片审阅已接受正文和限定 tracked 测试夹具选择，不重新调查源码、生成/复制可选载荷或新增观察。
 
 | 审阅关系 | 可执行/合同所有者 | 对抗性审阅结论 |
 | --- | --- | --- |
-| 调用方/init | [sf2-map-events-static-v1:zone-programs](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)，programs 6/7；[sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，body 16；[请求消费](../../../../../research/world/map-event-request-consumption.md)。 | 六个有序操作保留唯一 F722 检查、脚本及后续 722/711 写入；default/init 均返回。坐标不是自然移动证明。 |
+| 调用方/init | [sf2-map-events-static-v1:zone-programs](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)，programs 6/7；[sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，body 16；[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)。 | 六个有序操作保留唯一 F722 检查、脚本及后续 722/711 写入；default/init 均返回。坐标不是自然移动证明。 |
 | 入场/配置/登场实体 | [sf2-map-data-static-v1](../../../../../../tests/fixtures/h2/map-data-static-v1.json)、[sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)、[地图探索](../../../contracts/world/map-exploration.md)。 | 汇总清单不解码每个选定行/实体群。已接受研究拥有显式/当前地图组合与 speaker128 实际映射；归属不提供新渲染事实。 |
 | 文本/运动/服务 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，对话/放置/行动/关系/表现族；[对话](../../../contracts/interface/dialogue-system.md)。 | 命令族事实不包含完整转录或观察场景。研究提供全部交谈键及独立 446；请求/等待/单位保持区别于表现。 |
 | 加入/AI/跟随 | 同夹具的 `forceStateCommandFacts` 与 `activePartyCommandFacts`、[sf2-common-stats-static-v1](../../../../../../tests/fixtures/h2/common-stats-static-v1.json)、[出战队伍/名册](../../../contracts/party/party-roster-state.md)。 | 宏/处理器顺序与溯源关联窄于容量生命周期或可玩单次行动。研究拥有此选定加入/人数快照、bit2 清除、高字节 HP 准入及未变 F67。 |

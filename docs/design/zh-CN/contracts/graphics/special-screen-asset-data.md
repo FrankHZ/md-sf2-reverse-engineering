@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`special-screen-asset-data.md`](../../../contracts/graphics/special-screen-asset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`special-screen-asset-data.md`（英文规范源）](../../../contracts/graphics/special-screen-asset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 
 它还定义基于符号、地址、维度、计数、所选关系与 hash 而非版权图形载荷的公开 H4 面。
 
-它不拥有 logo、标题、witch、挂起或结尾画面引擎；存档服务或新游戏生命周期；标题/logo 输入与作弊处理；窗口分配；调色板上传或转移服务语义；淡入；音频；像素填充执行；或最终呈现。相邻[graphics-service 合同](../../../contracts/graphics/graphics-service-state.md) 只拥有其受限解压与显示服务状态，而[window-system 合同](../../../contracts/interface/window-system.md) 拥有共享窗口状态。两个合同都不证明渲染特殊画面帧。
+它不拥有 logo、标题、witch、挂起或结尾画面引擎；存档服务或新游戏生命周期；标题/logo 输入与作弊处理；窗口分配；调色板上传或转移服务语义；淡入；音频；像素填充执行；或最终呈现。相邻[graphics-service 合同](graphics-service-state.md) 只拥有其受限解压与显示服务状态，而[window-system 合同](../interface/window-system.md) 拥有共享窗口状态。两个合同都不证明渲染特殊画面帧。
 
 可执行所有者是：
 
@@ -31,7 +31,7 @@
 - `sf2-witch-menu-graphics-static-v1`，位于
   [`tests/fixtures/h2/witch-menu-graphics-static-v1.json`](../../../../../tests/fixtures/h2/witch-menu-graphics-static-v1.json)。
 
-研究所有者是[Special Screens](../../../../research/presentation/special-screens.md)与[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)中的相关资源语料。聚合 `sf2-special-screens-static-v1` fixture 刻意不被消费。
+研究所有者是[Special Screens（英文）](../../../../research/presentation/special-screens.md)与[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)中的相关资源语料。聚合 `sf2-special-screens-static-v1` fixture 刻意不被消费。
 
 ## 合同前证据审计
 
@@ -211,7 +211,7 @@ SpecialScreenAssetCorpus {
 - 调色板上传顺序、布局变更、滚动、像素填充顺序、层组合、音频与可见时序；
 - 本地化、可访问性、替换美术、分辨率策略与许可分发。
 
-聚合[Special Screens](../../../../research/presentation/special-screens.md) 所有者可以描述那些相邻控制流身份。本合同不消费其聚合 fixture，也不把那些身份变成资源导入要求。
+聚合[Special Screens（英文）](../../../../research/presentation/special-screens.md) 所有者可以描述那些相邻控制流身份。本合同不消费其聚合 fixture，也不把那些身份变成资源导入要求。
 
 ## 保真、现代化与版权边界
 
@@ -244,7 +244,7 @@ H4 不要求现代渲染器在运行时使用 Genesis 瓦片或颜色格式。�
 | 八个固定转移、三个精确与五个超大，加不同结尾之吻像素填充边界 | **已确认静态** | `sf2-special-screen-graphics-decode-v1`（[`special-screen-graphics-decode-v1.json`](../../../../../tests/fixtures/h2/special-screen-graphics-decode-v1.json)） | 尾内容、初始化、稳定性与可见使用保持 **未知** |
 | 七个调色板、五个布局、8,832 一致性字节与标题 ASM/镜像关系 | **已确认静态** | `sf2-special-screen-presentation-static-v1`（[`special-screen-presentation-static-v1.json`](../../../../../tests/fixtures/h2/special-screen-presentation-static-v1.json)） | 上传顺序、淡入、变更、滚动、组合与呈现 |
 | witch 调色板、指针、有序 4x3x5x8 表、位置重复、变换与计时器阶段表 | **已确认静态** | `sf2-witch-menu-graphics-static-v1`（[`witch-menu-graphics-static-v1.json`](../../../../../tests/fixtures/h2/witch-menu-graphics-static-v1.json)） | CRAM/DMA 节奏、重绘、窗口运动、感知时序与像素 |
-| logo/标题/witch/挂起/结尾控制流与存档生命周期 | **独立所有者** | [Special Screens](../../../../research/presentation/special-screens.md)与已接受兄弟合同 | 聚合 fixture 此处不消费 |
+| logo/标题/witch/挂起/结尾控制流与存档生命周期 | **独立所有者** | [Special Screens（英文）](../../../../research/presentation/special-screens.md)与已接受兄弟合同 | 聚合 fixture 此处不消费 |
 | 渲染器架构、可访问性、替换美术、本地化与可分发内容 | **刻意设计** | 未来产品/内容决定 | 需要溯源、许可与独立验收 |
 
 ## 复现

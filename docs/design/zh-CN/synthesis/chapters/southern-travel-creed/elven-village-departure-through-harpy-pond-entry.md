@@ -1,12 +1,12 @@
 # Elven Village 离开至 Harpy Pond 入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 离开 Elven Village 可使队伍返回 Southwest Parmecia。另行选定的西边界滚动将当前队伍带入 Devil's Tail，Oddler 在那里听见有人求救，可打断移动。该场景请求 Harpy Pond；独立入口也请求池塘。若普通入场没有先接纳 Battle20，池塘初始场景便指出一名陷入困境的 精灵男孩，并提议帮助他。
 
 **已确认：**这些是选定源码程序及条件请求／实体生成使用方。**推断：**两段场景引出救援。**未知：**自然村庄至池塘行程、实际调用方状态、表现完成和可用控制。对话提出帮助；两段场景均不救援或招募 Elric、不打开通道，也不解锁战斗。
 
-本指南使用已接受的[离开与入场研究](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md)，接续可选[村庄对话与局部探索](elven-village-conversations-and-local-exploration.md)。选定出口／请求程序不施加村庄活动前提。范围止于条件池塘控制、另一待处理或获准继续，或**开场前** Battle20 准入。池塘接近／出口警告、战斗内容／结果、Elric 救援／招募、F751 通道、Fairy Cave/Creed 及 Battle21 内容均不在范围内。独立的 [Harpy Pond 接近至 Battle20 入场](harpy-pond-approach-through-battle20-entry.md)指南接续此停止边界。Fnnn 表示标志 nnn；行和命令记录从零开始。
+本指南使用已接受的[离开与入场研究（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md)，接续可选[村庄对话与局部探索](elven-village-conversations-and-local-exploration.md)。选定出口／请求程序不施加村庄活动前提。范围止于条件池塘控制、另一待处理或获准继续，或**开场前** Battle20 准入。池塘接近／出口警告、战斗内容／结果、Elric 救援／招募、F751 通道、Fairy Cave/Creed 及 Battle21 内容均不在范围内。独立的 [Harpy Pond 接近至 Battle20 入场](harpy-pond-approach-through-battle20-entry.md)指南接续此停止边界。Fnnn 表示标志 nnn；行和命令记录从零开始。
 
 ## 选定村庄出口
 
@@ -164,7 +164,7 @@ init 后，共享循环有条件提交音乐／淡入淡出。待处理为零才
 
 ## 证据追踪与审阅边界
 
-**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md#reproduction-and-remaining-limits)保留精确选定源码路径、地址、程序及紧接的使用方连接。地图表路径始于 `data/maps/entries/`，位于固定的 `disasm/` 中。本综合不开展新源码调查、完整程序比较、H1／ROM 采集或组合运行时观察。
+**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md#reproduction-and-remaining-limits)保留精确选定源码路径、地址、程序及紧接的使用方连接。地图表路径始于 `data/maps/entries/`，位于固定的 `disasm/` 中。本综合不开展新源码调查、完整程序比较、H1／ROM 采集或组合运行时观察。
 
 | 解释 | 合同与可执行证据 | 有意保留的限制 |
 | --- | --- | --- |
@@ -186,4 +186,4 @@ schema／使用方所有者为 [请求写入 schema](../../../../../../schemas/h
 
 保留 [PR866 原始交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/864#issuecomment-6170376311)、[更新交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/864#issuecomment-6170461179)及[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/866#issuecomment-6170476818)，包括未改变的保留配对、原始／变基后 CI、完整连接及已修正检查。保留 [PR865 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863#issuecomment-6170364766)及[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/865#issuecomment-6170393336)，以及链接的前序证据／失败。不替换或重放已完成结果、黄金夹具、测试夹具或私有载荷来刷新此文字。
 
-**未知：**自然访问／地形／路线、传入标志／HP／映射／成员资格／模式／木筏、生产方选择、动作／文本／淡入淡出／摄像机／服务完成、表现、响应控制及持久性。这些按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 继续延后，不是自动运行时队列。此段既不确立组合运行时路线，也不完成战役／设计 epic。
+**未知：**自然访问／地形／路线、传入标志／HP／映射／成员资格／模式／木筏、生产方选择、动作／文本／淡入淡出／摄像机／服务完成、表现、响应控制及持久性。这些按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 继续延后，不是自动运行时队列。此段既不确立组合运行时路线，也不完成战役／设计 epic。

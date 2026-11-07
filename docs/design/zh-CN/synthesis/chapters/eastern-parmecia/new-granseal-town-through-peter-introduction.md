@@ -1,14 +1,14 @@
 # New Granseal 城镇：Peter 首次登场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 城堡一年后讲话之后，接下来的城镇场景将注意力引向一只大鸟与围观人群。孩子们追逐、威胁 Peter，发现他会说话，并受到大臣训斥。大臣道歉，欢迎 Peter 来到新定居点，并邀请他见国王。**推断的叙事含义：**陌生访客从被围观转为作为宾客受到接待。**已确认静态行为：**两个独立 zone 调用方布置这些场景，并在脚本返回后各自标记完成。**未知：**自然旅行、行动者和呈现工作完成，以及实际可用控制。
 
-本文承接[New Granseal 城堡：一年后讲话与首次控制交接](new-granseal-castle-year-later-control.md)。已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md)提供源码、对话、实体群和处理器审阅。本指南止于 Peter 城镇事件及调用方 F701 之后的首次待处理/控制读取。城堡觐见、后续城镇服务、大地图和战斗需要独立已接受所有者。本文不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#747](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/747) 的 Standard 严谨度协议。
+本文承接[New Granseal 城堡：一年后讲话与首次控制交接](new-granseal-castle-year-later-control.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md)提供源码、对话、实体群和处理器审阅。本指南止于 Peter 城镇事件及调用方 F701 之后的首次待处理/控制读取。城堡觐见、后续城镇服务、大地图和战斗需要独立已接受所有者。本文不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#747](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/747) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。源码身份使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。脚本命令索引指从零开始的源码记录，不是帧数或实测时长。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。脚本命令索引指从零开始的源码记录，不是帧数或实测时长。
 
 ## 1. 离开城堡请求独立城镇访问
 
@@ -16,7 +16,7 @@
 
 前篇正常完成的首次讲话留下 F707/F411 已设及 `EGRESS_MAP=6`；重复城堡入场保留提供的 egress/F411。南出口不测试这些值。仅设置 egress 从不将玩家移到城镇。匹配移动请求必须在单个可变待处理槽位中存续，直到探索消费它。使用方在分发前清除待处理字，使主实体 idle，并将显式城镇元组返回 `MainLoop`。
 
-Map6 没有标志替换或战斗坐标行，因此该准入保留 Map6 并选择探索，独立于携带的 F411。探索清除待处理，按[共享 HP/状态限制](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)治疗存活/不死己方角色，设置地图 6 和非战斗状态，选择/重建实体并加载精灵，清除临时标志 256–383，设置 F80，加载地图，并在首次控制读取前运行 init。持久故事与军团/随从历史仍为提供的输入；这不是全军团重置。
+Map6 没有标志替换或战斗坐标行，因此该准入保留 Map6 并选择探索，独立于携带的 F411。探索清除待处理，按[共享 HP/状态限制（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)治疗存活/不死己方角色，设置地图 6 和非战斗状态，选择/重建实体并加载精灵，清除临时标志 256–383，设置 F80，加载地图，并在首次控制读取前运行 init。持久故事与军团/随从历史仍为提供的输入；这不是全军团重置。
 
 ## 2. 城镇历史选择角色群；init 单独调整
 
@@ -28,7 +28,7 @@ Map6 没有标志替换或战斗坐标行，因此该准入保留 Map6 并选择
 | F702 未设，F701 已设 | `ms_map6_flag701_Entities`：14 个 NPC 声明，没有固定 Peter 或大臣/护送者记录。 |
 | F702 已设，F701 任意 | `ms_map6_flag702_Entities`：14 个 NPC 声明，同样没有那些固定记录；仅属后期历史选择。 |
 
-默认列表将 `ALLY_PETER`（己方 ID 7）放在 `(18,25)`、Up，带水平循环动作。男孩 136/137/140 围绕该区域，位于 `(16,25)`、`(21,25)` 和 `(19,28)`。引用 138 使用工人精灵，位于 `(10,12)`、Right；139 使用卫兵精灵，位于 `(11,12)`、Left。水手/士兵描述来自调用方注释与叙事，而非独立物理槽位身份。大臣 144、卫兵 145 和工人 146 起始于 `(63,63)`、Down，准备接受显式场景放置。附近其他市民组成围观人群。[实体群所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md#setup-ordinary-population-and-init)保留完整声明列表。
+默认列表将 `ALLY_PETER`（己方 ID 7）放在 `(18,25)`、Up，带水平循环动作。男孩 136/137/140 围绕该区域，位于 `(16,25)`、`(21,25)` 和 `(19,28)`。引用 138 使用工人精灵，位于 `(10,12)`、Right；139 使用卫兵精灵，位于 `(11,12)`、Left。水手/士兵描述来自调用方注释与叙事，而非独立物理槽位身份。大臣 144、卫兵 145 和工人 146 起始于 `(63,63)`、Down，准备接受显式场景放置。附近其他市民组成围观人群。[实体群所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md#setup-ordinary-population-and-init)保留完整声明列表。
 
 这些引用经当前角色到实体映射解析。初始化先创建按标志选定的随从；已映射己方角色跳过固定声明。因此提供的 Peter 随从可改变本场景使用的实体与起始位置。NPC 引用与物理分配独立映射。固定 Peter 实体不是军团成员身份的证据。
 
@@ -107,7 +107,7 @@ zone 分发前已清除待处理，两个早期程序与调用方都不产生请
 | 动作、姿态与隐藏 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，`expected.entityActionBridgeCommandFacts`、`entityPlacementCommandFacts`、`entityLifecyclePresentationCommandFacts`；`map-script-engine`。 | 源码位置键包括 `cs_54E86:21:setActscript`、`cs_54E86:33:hide`、`cs_54F26:138:entityActions` 至 `141:entityActionsWait`，以及隐藏 142–145。处理器守卫不证明离开已完成。 |
 | 待处理与控制 | [sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)，`eventRequestConsumption.consumerContexts.waitForEvent` (`wait-for-event`)；[sf2-common-maps-static-v1](../../../../../../tests/fixtures/h2/common-maps-static-v1.json)、[sf2-common-scripting-static-v1](../../../../../../tests/fixtures/h2/common-scripting-static-v1.json)；相同 basename 命令。 | 共享使用方，没有从城镇准入到实际可用控制的可执行组合。 |
 
-[map-init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与[测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)、[脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)与[schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)，以及[请求消费验证器](../../../../../../src/sf2tool/h2/map_event_request_consumption.py)保留比较边界。[配置合同](../../../contracts/world/map-setup-data.md#合同边界)与[地图探索合同](../../../contracts/world/map-exploration.md#加载与选择顺序)约束共享入场语义。[研究复现所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md#coverage-counterexamples-and-reproduction)保留源码锚点和缺失组合；本指南不需要新比较器。
+[map-init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与[测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)、[脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)与[schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)，以及[请求消费验证器](../../../../../../src/sf2tool/h2/map_event_request_consumption.py)保留比较边界。[配置合同](../../../contracts/world/map-setup-data.md#合同边界)与[地图探索合同](../../../contracts/world/map-exploration.md#加载与选择顺序)约束共享入场语义。[研究复现所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md#coverage-counterexamples-and-reproduction)保留源码锚点和缺失组合；本指南不需要新比较器。
 
 **未知，保留：**自然出口/zone 旅行与可达配置/随从历史；实际映射、HP、阻挡和动作完成；显示/摄像机/文本/音频时序；待处理存续或覆盖、玩家类型历史、实际可用控制和存档持久性。没有 F706 的独立第二次分发、F702 选定而缺失的行动者、死亡或已映射己方角色、隐藏时未完成动作、服务停滞，以及非零待处理/玩家类型状态都约束解释。它们不建立自动运行时获取队列。
 

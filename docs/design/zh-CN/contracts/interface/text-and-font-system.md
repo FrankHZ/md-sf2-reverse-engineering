@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`text-and-font-system.md`](../../../contracts/interface/text-and-font-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`text-and-font-system.md`（英文规范源）](../../../contracts/interface/text-and-font-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. ASCII 字节到字形映射与可变宽度字形记录元数据；
 5. 基于结构、计数、地址与 hash 而非版权文本或字体像素的公开 H4 面。
 
-它不拥有 map-script 对话命令路由、立绘或语音 SFX 选择、控制码执行、名称/物品/法术替换、窗口、字形光栅组合、输入等待、音频、战役顺序、翻译或最终呈现。相邻[dialogue-command 合同](../../../contracts/interface/dialogue-system.md) 拥有源命令布局与处理器局部游标接缝；它刻意不解码或渲染本语料。
+它不拥有 map-script 对话命令路由、立绘或语音 SFX 选择、控制码执行、名称/物品/法术替换、窗口、字形光栅组合、输入等待、音频、战役顺序、翻译或最终呈现。相邻[dialogue-command 合同](dialogue-system.md) 拥有源命令布局与处理器局部游标接缝；它刻意不解码或渲染本语料。
 
 可执行证据所有者是：
 
@@ -31,7 +31,7 @@
 - `sf2-variable-width-font-static-v1`，位于
   [`tests/fixtures/h2/variable-width-font-static-v1.json`](../../../../../tests/fixtures/h2/variable-width-font-static-v1.json)。
 
-研究所有者是[common scripting](../../../../research/world/common-scripting.md)、[technical services](../../../../research/system/technical-services.md)、[auxiliary data](../../../../research/presentation/auxiliary-data-inventory.md)与[technical graphics](../../../../research/presentation/technical-graphics.md)的文本与字体段。
+研究所有者是[common scripting（英文）](../../../../research/world/common-scripting.md)、[technical services（英文）](../../../../research/system/technical-services.md)、[auxiliary data（英文）](../../../../research/presentation/auxiliary-data-inventory.md)与[technical graphics（英文）](../../../../research/presentation/technical-graphics.md)的文本与字体段。
 
 ## 合同前证据审计
 
@@ -137,7 +137,7 @@
 
 ## 调用方与相邻系统边界
 
-[dialogue-command 合同](../../../contracts/interface/dialogue-system.md) 对照连续 0 到 4,266 域验证行 ID 操作数，并拥有命令/游标排序。本合同拥有有效行 ID 如何选择存储文本以及解码符号如何与字体身份相关。两个合同单独都不证明端到端玩家可见对话。
+[dialogue-command 合同](dialogue-system.md) 对照连续 0 到 4,266 域验证行 ID 操作数，并拥有命令/游标排序。本合同拥有有效行 ID 如何选择存储文本以及解码符号如何与字体身份相关。两个合同单独都不证明端到端玩家可见对话。
 
 窗口构建、立绘放置、说话声、控制器等待、map-script 可达性、故事顺序与存档持久性仍归各自所有者。调用方可以只保留行 ID，而文本系统可以向后续服务返回不透明符号/控制流。该接缝优于把窗口或故事行为嵌入解码器。
 
@@ -176,7 +176,7 @@ H4 不要求原版 Huffman 格式或位图字体作为重制编写/运行时格�
 | 255 偏移、86 树、打包、码、解码器状态与上下文可达性 | **已确认静态** | `sf2-text-huffman-static-v1`（[`text-huffman-static-v1.json`](../../../../../tests/fixtures/h2/text-huffman-static-v1.json)） | 符号含义、控制效果、非标准注入 |
 | 17 库、4,267 记录、指针形状、完整确定性回放、聚合 hash | **已确认静态** | `sf2-text-banks-static-v1`（[`text-banks-static-v1.json`](../../../../../tests/fixtures/h2/text-banks-static-v1.json)） | 明文语义、替换、呈现、调用方可达性 |
 | 80 字形记录、256 ASCII 映射、字体消费者/地址/推进事实 | **已确认静态** | `sf2-variable-width-font-static-v1`（[`variable-width-font-static-v1.json`](../../../../../tests/fixtures/h2/variable-width-font-static-v1.json)） | 公开工件中的像素、重叠、调色板、DMA、可见时序 |
-| map-script 对话命令与游标路由 | **独立所有者** | [dialogue-command 合同](../../../contracts/interface/dialogue-system.md) | 端到端解码/渲染对话保持未闭合 |
+| map-script 对话命令与游标路由 | **独立所有者** | [dialogue-command 合同](dialogue-system.md) | 端到端解码/渲染对话保持未闭合 |
 | 控制码执行与完整呈现 | **未知** | 未来受限消费者/运行时所有者 | 不得从源标签或语料出现推断效果 |
 | 本地化、现代标记/字体、可访问性、可分发内容 | **刻意设计** | 未来产品/内容决定 | 需要溯源、许可与独立验收 |
 

@@ -1,6 +1,6 @@
 # North Cliff 打开与 Rohde 招募
 
-> 本文是[规范英文原文：North Cliff Opening and Rohde Recruitment](../../../../synthesis/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文：North Cliff Opening and Rohde Recruitment](../../../../synthesis/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 North Cliff 洞穴守卫准入队伍后，同时携带 Cannon 与 Dynamite 会选择不同于缺物警告的场景。调用方尝试各移除一个，再布置炮击、改变入口布局并让 Rohde 加入。Rohde 请求使用武器，但场景不提供玩家 yes/no 选择。加入不转移或装备物品栏 Cannon。
 
@@ -8,9 +8,9 @@ North Cliff 洞穴守卫准入队伍后，同时携带 Cannon 与 Dynamite 会�
 
 ## 证据与阅读边界
 
-已接受 Layer A 所有者为 [North Cliff 打开与 Rohde 招募](../../../../../research/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)，经 [#985 / PR987](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/987)接受。它固定 USA retail SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。源码路径相对 `disasm/`；Fnnn 表示标志 nnn。路线图拥有 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。英文规范源解释已接受证据，不增加原版发现或重制行为。
+已接受 Layer A 所有者为 [North Cliff 打开与 Rohde 招募（英文）](../../../../../research/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)，经 [#985 / PR987](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/987)接受。它固定 USA retail SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。源码路径相对 `disasm/`；Fnnn 表示标志 nnn。路线图拥有 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。英文规范源解释已接受证据，不增加原版发现或重制行为。
 
-[Battle24 结果至 North Cliff 准备](battle24-outcomes-through-north-cliff-preparation.md)解释此前结果、探索返回、洞穴准入与缺物重试。已接受[物品栏搜索](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)、[物品事务边界](../../../../../research/world/map-event-item-transactions.md)、[Caravan 消费者](../../../../../research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)、[请求状态](../../../../../research/world/map-event-request-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)所有者提供共享机制。这里详细场景与被调用方事实消费 #985 完整选定审查。单凭公开结构夹具不证明私有场景、文本或布局画面。
+[Battle24 结果至 North Cliff 准备](battle24-outcomes-through-north-cliff-preparation.md)解释此前结果、探索返回、洞穴准入与缺物重试。已接受[物品栏搜索（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)、[物品事务边界（英文）](../../../../../research/world/map-event-item-transactions.md)、[Caravan 消费者（英文）](../../../../../research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)、[请求状态（英文）](../../../../../research/world/map-event-request-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)所有者提供共享机制。这里详细场景与被调用方事实消费 #985 完整选定审查。单凭公开结构夹具不证明私有场景、文本或布局画面。
 
 ## 检查两种物品，再重新搜索移除
 
@@ -42,7 +42,7 @@ Init 请求 speed32/32、零加速度因子，关闭加速/减速，开启阻挡
 
 ## 布置与炮击
 
-已接受程序有114 条顶层记录（含终止符），覆盖 `$4FFDA..$5023E`/612 编码字节。[完整命令清单](../../../../../research/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md#complete-scene-program)说明每条命令与内联主体。以下连接阶段保留有意义顺序，不把编码字节当作玩法时长。
+已接受程序有114 条顶层记录（含终止符），覆盖 `$4FFDA..$5023E`/612 编码字节。[完整命令清单（英文）](../../../../../research/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md#complete-scene-program)说明每条命令与内联主体。以下连接阶段保留有意义顺序，不把编码字节当作玩法时长。
 
 **已确认（静态）：**场景设普通文本游标3341，准备上述行动者。摄像机请求 `(21,33)`。A、B、P 接受不等待目的地 `(27,39)`、`(28,37)`、`(25,37)`；Bowie 接受 `(26,37)` 并等待位置。目的地写行程与幅度32 有符号速度。Bowie 抵达及随后固定60-tick 脚本等待不汇合另外三者抵达。别名可覆盖旧目的地。
 

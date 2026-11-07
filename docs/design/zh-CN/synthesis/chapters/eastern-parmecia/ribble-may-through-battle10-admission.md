@@ -1,10 +1,10 @@
 # Ribble 可选 May 招募至 Battle10 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Ribble 欢迎场景之后，出战队伍可以遇见 May、听取旅行建议并离开城镇。May 的邀请直接进入加入与当前跟随；选定出发和遭遇规则并不要求这段对话。随后向东的连接跨越两种不同地图生命周期，之后 zone 请求才可能使 Battle10 准入。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)支持下文互动、状态变化及选定 Map8→69→70 连接。**推断：**建议和东向遭遇构成欢迎之后的叙事接续。**未知：**合法步行、实际行动者与出战队伍状态、请求存续、服务完成，以及连续可玩的路线。本指南支持内容/设计规划，不确立重制就绪或实际游玩的攻略。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)支持下文互动、状态变化及选定 Map8→69→70 连接。**推断：**建议和东向遭遇构成欢迎之后的叙事接续。**未知：**合法步行、实际行动者与出战队伍状态、请求存续、服务完成，以及连续可玩的路线。本指南支持内容/设计规划，不确立重制就绪或实际游玩的攻略。
 
 始于[欢迎指南的条件性控制交接](battle09-outcomes-through-ribble-welcome.md)，止于 Battle10 start 分发器返回、紧邻 `ActivateEnemies` 之前。继续阅读 [Battle10 结果至可选 East Shrine 访问](battle10-outcomes-through-east-shrine-visit.md)，了解独立的结果/访问边界。交战模拟、洞窟和后续内容仍在本准入指南之外。Fnnn 表示标志 nnn；地图与战斗 ID 保留源码编号。
 
@@ -55,7 +55,7 @@ F8 已设时，`Map8_2C4_EntityEvent12` 不运行场景即返回。F8 未设时�
 
 **已确认条件连接：**选定 Ribble 出口是 Map8 首条传送行：X 通配、Y31，不滚动，通往 Map69 `(44,8)`、Down。普通移动必须先遇到传送布局属性；仅坐标匹配不确立合法路径。产生方写入完整 type-1 请求元组和传送 SFX。若请求存续且服务返回，无滚动使用方使 main 空闲、退出探索并将元组返回 `MainLoop`。
 
-该行及其使用方均不测试 F8、F708、F709 或指路对话。Map8/69/70 没有按标志切换的替换。main 在普通 Map69 入场前检查战斗：携带的 F409 可选择 Battle09；F409 未设时，F417 可选择 Battle17。[Map69 准入所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md#map69-zone-partial-reload-and-battle09-selection)保留其顺序与完成行为。
+该行及其使用方均不测试 F8、F708、F709 或指路对话。Map8/69/70 没有按标志切换的替换。main 在普通 Map69 入场前检查战斗：携带的 F409 可选择 Battle09；F409 未设时，F417 可选择 Battle17。[Map69 准入所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md#map69-zone-partial-reload-and-battle09-selection)保留其顺序与完成行为。
 
 若两场战斗均不满足，普通提供地图入场设置当前地图/非战斗状态、重建实体和标志随从、清除临时标志 256–383，并在地图加载/init 前设置 F80。F8/F40/F67/F708/F709 及战斗标志在该临时重置后保留。Map69 有空固定列表和 `rts` init。此重建不保留 May 当前跟随；她的已加入成员身份是另一项保留事实。
 
@@ -78,7 +78,7 @@ Map70 只有默认配置、空固定实体列表和 `rts` init。没有故事标
 | 特定 X16–19 | 向 `CheckRandomBattle` 请求 Battle14。F514 未设时立即请求。已完成时，非零步数计数器拒绝；否则，range-8 抽取为零则请求，非零抽取则建立 range-4-plus-2 冷却。请求设置 F414、写入 `$000100FF`、将步数计数器设为 30000，并执行其等待/SFX/闪光服务。 |
 | 默认 | 若 F510 已设，不写入即返回。否则设置 F410 并写入 `$000100FF`。不增加招募、介绍、步数计数器或 RNG 谓词。 |
 
-[随机战斗所有者](../../../../../research/world/map-event-random-battle-state.md)保留辅助规则；[请求所有者](../../../../../research/world/map-event-request-consumption.md)保留可变待处理槽位。type-6 zone 产生方将字 X 放入参数 1/2、字 Y 放入 3/4。其使用方初始化 main actscript 并调用 zone 分发器，后者在处理器之后关闭窗口、等待一个 VInt 和物理实体 0 停止。它不擦除新写入的请求。这是一个可变请求槽位，不是队列。
+[随机战斗所有者（英文）](../../../../../research/world/map-event-random-battle-state.md)保留辅助规则；[请求所有者（英文）](../../../../../research/world/map-event-request-consumption.md)保留可变待处理槽位。type-6 zone 产生方将字 X 放入参数 1/2、字 Y 放入 3/4。其使用方初始化 main actscript 并调用 zone 分发器，后者在处理器之后关闭窗口、等待一个 VInt 和物理实体 0 停止。它不擦除新写入的请求。这是一个可变请求槽位，不是队列。
 
 长字重载写入覆盖 type=1、参数 1=0（不滚动）和参数 2=255（`MAP_CURRENT`）；参数 3/4/5 保留。无滚动使用方采样 main 位置，但用对应非负参数替换各坐标，并始终将参数 5 用作朝向。对于完整普通 zone 谱系且 Y 在 0–63 时，返回元组为 `MAP_CURRENT,(0,Y),retained parameter 5`，未必是 main 采样位置/朝向。前序滚动向参数 5 写入 Right；只有没有中间写入方才保留它。
 
@@ -112,6 +112,6 @@ F88 已设则走替代恢复路径：恢复已保存秒数、清除 F88/AI 内�
 | zone 请求与行优先级 | [zone 程序分片](../../../../../../tests/fixtures/h2/map-events/zone-programs.json) 顺序 132/133、[sf2-map-event-random-battle-state-static-v1](../../../../../../tests/fixtures/h2/map-event-random-battle-state-static-v1.json)、[sf2-common-maps-static-v1](../../../../../../tests/fixtures/h2/common-maps-static-v1.json)、[sf2-battle-global-data-static-v1](../../../../../../tests/fixtures/h2/battle-global-data-static-v1.json)。产生方/辅助/选择器事实保持独立，不含连续组合。 |
 | 空介绍与实际出战放置 | [sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)、[sf2-battle-routing-data-static-v1](../../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)、[sf2-battle-spriteset-data-static-v1](../../../../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json)；[过场合同](../../../contracts/battle/battle-cutscene-routing.md)。routing 的 `routeTargetsParsed=false` 不能证明精确目标；已接受研究拥有 row-10 `ms_Empty` 读取。没有夹具提供实际游玩的 Battle10 开场。 |
 
-[地图脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)和[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)保留字段封闭的处理器/源码位置事实；[地图事件夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)和[验证器](../../../../../../src/sf2tool/h2/map_events.py)保留有序分片与原始操作数。[地图 init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)和[验证器](../../../../../../src/sf2tool/h2/map_init.py)保留精确主体，而不证明自然调用方。研究的[覆盖与复现边界](../../../../../research/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md#existing-coverage-reproduction-and-remaining-unknowns)列明各自所属窄 H2 命令及选定使用方。本篇文字不选择整套测试。
+[地图脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)和[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)保留字段封闭的处理器/源码位置事实；[地图事件夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)和[验证器](../../../../../../src/sf2tool/h2/map_events.py)保留有序分片与原始操作数。[地图 init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)和[验证器](../../../../../../src/sf2tool/h2/map_init.py)保留精确主体，而不证明自然调用方。研究的[覆盖与复现边界（英文）](../../../../../research/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md#existing-coverage-reproduction-and-remaining-unknowns)列明各自所属窄 H2 命令及选定使用方。本篇文字不选择整套测试。
 
 **未知：**合法路径/布局及激活行动者；当前物理映射、HP、出战/AI/随从状态；自然文本/输入/实体/滚动完成；待处理/参数存续；May 跨存档呈现和随从容量；连续可玩的 Battle10 入场。保持缺口明确，不将其变成模拟器采集队列。其他城镇内容、East Shrine/洞窟和 Battle10 结果在本指南之外；本文不选择新引擎或产品行为。

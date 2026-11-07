@@ -1,13 +1,13 @@
 # Creed 魔法门与 Desktop 转移
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**独立 Creed Mansion 区域事件编排警告、闪烁、缩小动作、旁白拾取和收藏，再请求 Desktop Kingdom。
 **推断：**场景描绘出战队伍成为 Goliath 的收藏。对话解释魔法门，但选定代码不授予收藏成员资格或持久玩法尺寸。
 **未知：**自然到达、实际传入行动者/状态、服务完成、渲染拾取及可用目的地控制。
 
 本指南接续[首次 Goliath 阻拦](creed-mansion-entry-and-first-goliath-scene.md)，
-使用[已接受魔法门/转移研究](../../../../../research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)。
+使用[已接受魔法门/转移研究（英文）](../../../../../research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)。
 Standard 协议见 [Issue #899](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/899)
 及[文档路线图](../../../documentation-roadmap.md#当前基线与近期综合)。
 止于全新 Map22 探索入场的**实体生成/init 之前**，或选定 Battle22 交接的**开场之前**。
@@ -23,7 +23,7 @@ Zone1 检查 F783：已设置则返回，未设置则运行完整 `cs_5AF36` 后
 基线配置提供该区域表。当前配置选择仍按顺序扫描 F523、F783、F784、F786、F22 覆盖，最后设置标志优先。
 坐标或基线指针不证明自然到达，也不证明另一选定配置提供此回调。
 区域调用方首先清除旧事件类型，对 physical actor 0 应用 init 动作，再分发选定配置的匹配区域行。
-这些调用方边界见[配置选择](../../../../../research/world/map-event-flag-route-selection.md)及[请求使用](../../../../../research/world/map-event-request-consumption.md)。
+这些调用方边界见[配置选择（英文）](../../../../../research/world/map-event-flag-route-selection.md)及[请求使用（英文）](../../../../../research/world/map-event-request-consumption.md)。
 
 场景不创建行动者。它通过既有查找表操作 logical Bowie 0、Peter 7、B 31 和 NPC 128。
 [前篇实体群审阅](creed-mansion-entry-and-first-goliath-scene.md)负责六个固定行及随从分配。
@@ -183,7 +183,7 @@ F522 已设置随后清除 F422，但不取消此次 Battle22 选择。Zone1、�
 **已确认溯源：**研究已在 main `73366b7a557fe03399a675a4103d89b89c9f9806` 接受，固定于
 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，
 USA ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
-[研究所有者](../../../../../research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md#agreement-and-provenance)负责精确路径、行范围及直接源码关联。
+[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md#agreement-and-provenance)负责精确路径、行范围及直接源码关联。
 其完整选定审阅确立局部场景/动作/文本/使用方边界；公开汇总不证明整个场景或运行时成功。
 
 | 已审阅证据表面 | 支持内容与停止点 |
@@ -199,7 +199,7 @@ USA ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351
 [事件验证器](../../../../../../src/sf2tool/h2/map_events.py)比较完整组装 fixture 语义。
 [Map-init](../../../../../../src/sf2tool/h2/map_init.py) 和 [setup](../../../../../../src/sf2tool/h2/map_setup.py)负责各自独立 fixture/schema 检查。
 这些是既有验证边界，不是每句话已独立执行的证据。
-[研究复现路线](../../../../../research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md#counterexamples-and-reproduction)负责保留相等比较及选定直接源码检查。
+[研究复现路线（英文）](../../../../../research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md#counterexamples-and-reproduction)负责保留相等比较及选定直接源码检查。
 本综合不重跑/重新生成它们。
 
 保留 [#896 原始交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/896#issuecomment-6173732542)、
@@ -222,6 +222,6 @@ USA ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351
 
 这些示例不是已执行场景。**未知：**自然触发可达；实际配置、标志、出战队伍、HP/职业、查找、来源位置、模式及待处理状态；
 服务/并发动作完成；渲染缩小、影子及拾取；实际目的地准入/控制及持久性。
-依 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
-和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，这些不创建自动运行时队列，
+依 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
+和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，这些不创建自动运行时队列，
 也不完成战役或[设计 epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。
