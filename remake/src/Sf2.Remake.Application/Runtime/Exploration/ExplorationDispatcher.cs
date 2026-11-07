@@ -42,7 +42,7 @@ internal static class ExplorationDispatcher
         if (start.EntryProgram is { } entry && (entry.Instruction != 0 || !definition.Exploration.Programs.ContainsKey(entry.Program)))
             throw new BattleRuleException("program-entry", "start.program");
         if (start.Display is not null) MapTransfer.ValidateDisplay(start.Display);
-        var story = new StoryState(start.Flags, start.EntryProgram ?? map.OnLoad,
+        var story = new StoryState(start.Flags, start.EntryProgram ?? world.Definition.OnLoad,
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
             display: start.Display, textSettings: start.TextSettings, stepCounter: start.StepCounter ?? map.Caravan?.InitialStepCounter,

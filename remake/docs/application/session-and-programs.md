@@ -883,6 +883,45 @@ events, programs and text; start data contains the selected map/player, position
 flags. An optional start `program` invokes instruction zero of a whole program in a fresh session.
 It does not import a PC inside that program, a call stack, an active wait or any executed history.
 
+### Exploration start setup
+
+**Implemented; Standard rigor.** Startup must use one flag-selected setup for both population and
+default OnLoad. The bounded scope is exploration initialization, its behavior tests and this owner;
+normal map transfers, source-story rules, persistence recipes and explicit controlled starts retain
+their existing contracts. No new state or save format is needed.
+
+`MapTransfer.Build` selects the map setup from the start flags. `ExplorationDispatcher.Initialize`
+uses the resulting world's definition for its default OnLoad, including a selected setup with no
+OnLoad. Selection scans alternatives in declaration order: the last set flag wins, including an
+alias back to the default. This reuses the accepted
+[setup/init contract](../../../docs/design/contracts/world/map-exploration.md#load-and-selection-order)
+and [pinned source evidence](../../../docs/research/world/map-data-inventory.md#setup-selection-and-rom-parity).
+These establish the source selection rule, not natural reach of an arbitrary controlled start.
+
+An explicit `EntryProgram` still replaces the default entry without replacing population. It must
+name an existing whole program at instruction zero and uses `FieldInput` continuation; omitted
+entry uses `MapLoaded` continuation. Explicit starts such as `scene-music-context.json` intentionally
+select their own program. Neither a missing setup nor an invalid explicit entry silently falls back.
+
+**Confirmed (call-chain inspection):** ordinary New Game passes through `OpeningNewGame.Prepare`
+and this initializer for initial-save capture, before executing any OnLoad. Initial-recipe Restore
+then uses `Sf2OpeningRestore.InitialStart` and the same dispatcher to execute the default entry once.
+The current source New Game start is Map3 at (56,3), flags 0/32/80, with no explicit entry; it selects
+the default setup. Later supported field restores instead use `OpeningRestore.Build` and
+`Sf2OpeningRestore.Rebuild`, reconstructing the admitted savepoint without executing OnLoad.
+This correction does not change that path or establish prior ordinary-game/save corruption.
+
+[`ExplorationStartSetupTests`](../../tests/Sf2.Remake.Engine.Tests/ExplorationStartSetupTests.cs)
+checks population/entry agreement, later and competing flags, default aliases, absent OnLoad,
+explicit entry, another map and rejected missing/unsupported/invalid inputs, through actual engine
+initialization and session execution. Initial-save capture is checked before program side effects.
+After loading the existing environment, `uv run sf2 verify engine` runs these checks;
+`uv run sf2 verify adapter` compiles the actual consumer without a Godot launch.
+The original #1611 failure remains recorded in [#1629](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1629)
+and [PR #1628](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1628).
+**Unknown:** natural original-game reach/timing and uninspected private controlled-start intent;
+this engine correction does not authorize new runtime acquisition or broaden savepoint admission.
+
 The Content reader links all call/jump/branch targets, including untaken branches, and checks map
 references, duplicate IDs, scalar domains and terminal fallthrough. Entity references that depend
 on runtime population are checked when reached. Typed operations support flags, calls/returns,
