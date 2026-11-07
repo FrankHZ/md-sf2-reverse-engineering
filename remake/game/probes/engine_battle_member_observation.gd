@@ -15,8 +15,8 @@ func open_members() -> bool:
     await act("confirm")
     if not await inspect_page("Options"): return false
     if not check(("地图" if chinese else "Map") in state().inspection.hint, "Map remains an offered option"): return false
-    await act("down")
-    if not check(state().inspection.optionIndex == 1, "Directions choose Member"): return false
+    await act("up")
+    if not check(state().inspection.optionIndex == 0, "Up chooses Member"): return false
     await send_action("confirm", true)
     await frames(10)
     if not await inspect_page("Members"): return false
@@ -86,8 +86,8 @@ func run() -> void:
     if not purity(baseline, "host pause and return to roster"): return
     await act("cancel")
     if not await inspect_page("Options"): return
-    if not check(state().inspection.optionIndex == 1, "Member caller retains option selection"): return
-    await act("up"); await act("confirm")
+    if not check(state().inspection.optionIndex == 0, "Member caller retains option selection"): return
+    await act("left"); await act("confirm")
     if not await inspect_page("Map"): return
     await act("cancel")
     if not await inspect_page("Options"): return

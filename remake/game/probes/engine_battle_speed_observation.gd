@@ -21,9 +21,7 @@ func open_speed() -> bool:
         if not await cursor_to(3,2): return false
         await act("confirm")
     if not await inspect_page("Options"): return false
-    for n in range(3):
-        if state().inspection.optionIndex == 2: break
-        await act("down")
+    await act("right")
     await send_action("confirm",true); await frames(4)
     if not check(settings() != null and settings_state().battleOnly, "Speed opens the two-setting host draft"): return false
     await send_action("confirm",false)

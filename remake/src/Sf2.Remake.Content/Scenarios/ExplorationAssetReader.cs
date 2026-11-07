@@ -12,7 +12,7 @@ internal static class ExplorationAssetReader
 {
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu");
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu", "shopMenu");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -98,41 +98,37 @@ internal static class ExplorationAssetReader
                 Require(audio.TryAdd(cue, new(command, timerB, rate, channels, pcm, digest, begin, end, modernEnd)),
                     "duplicate-audio-cue", "presentation.audio");
             }
-        Dictionary<string, ExplorationRaster>? churchMenu = null;
-        if (row.TryGetProperty("churchMenu", out var menu))
-        {
-            string[] keys = ["raise.normal", "raise.selected", "cure.normal", "cure.selected",
-                "promote.normal", "promote.selected", "save.normal", "save.selected"];
-            Object(menu, "presentation.churchMenu", keys);
-            churchMenu = keys.ToDictionary(key => key, key => Raster(menu.GetProperty(key)), StringComparer.Ordinal);
-            Require(churchMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
-                "church-menu-shape", "presentation.churchMenu");
-        }
-        Dictionary<string, ExplorationRaster>? fieldMenu = null;
-        if (row.TryGetProperty("fieldMenu", out var field))
-        {
-            string[] keys = ["member.normal", "member.selected", "magic.normal", "magic.selected",
-                "item.normal", "item.selected", "search.normal", "search.selected"];
-            Object(field, "presentation.fieldMenu", keys);
-            fieldMenu = keys.ToDictionary(key => key, key => Raster(field.GetProperty(key)), StringComparer.Ordinal);
-            Require(fieldMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
-                "field-menu-shape", "presentation.fieldMenu");
-        }
-        Dictionary<string, ExplorationRaster>? itemMenu = null;
-        if (row.TryGetProperty("itemMenu", out var item))
-        {
-            string[] keys = ["use.normal", "use.selected", "give.normal", "give.selected",
-                "equip.normal", "equip.selected", "drop.normal", "drop.selected"];
-            Object(item, "presentation.itemMenu", keys);
-            itemMenu = keys.ToDictionary(key => key, key => Raster(item.GetProperty(key)), StringComparer.Ordinal);
-            Require(itemMenu.Values.All(raster => raster.Width == 24 && raster.Height == 24),
-                "item-menu-shape", "presentation.itemMenu");
-        }
+        var churchMenu = Menu(row, "churchMenu", ["raise", "cure", "promote", "save"]);
+        var fieldMenu = Menu(row, "fieldMenu", ["member", "magic", "item", "search"]);
+        var itemMenu = Menu(row, "itemMenu", ["use", "give", "equip", "drop"]);
+        var shopMenu = Menu(row, "shopMenu", ["buy", "sell", "repair", "deals"]);
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
-            churchMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(churchMenu),
-            fieldMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(fieldMenu), IdentityIconReader.Read(row),
-            itemMenu is null ? null : new ReadOnlyDictionary<string, ExplorationRaster>(itemMenu));
+            churchMenu,
+            fieldMenu, IdentityIconReader.Read(row),
+            itemMenu, shopMenu);
+    }
+
+    private static IReadOnlyDictionary<string, ExplorationRaster>? Menu(JsonElement row, string property, string[] names)
+    {
+        if (!row.TryGetProperty(property, out var menu)) return null;
+        string[] keys = names.SelectMany(name => new[] { name + ".normal", name + ".selected" }).ToArray();
+        Object(menu, "presentation." + property, keys);
+        var rasters = keys.ToDictionary(key => key, key => Raster(menu.GetProperty(key)), StringComparer.Ordinal);
+        Require(rasters.Values.All(raster => raster.Width == 24 && raster.Height == 24), property[..^4].ToLowerInvariant() + "-menu-shape", "presentation." + property);
+        return new ReadOnlyDictionary<string, ExplorationRaster>(rasters);
+    }
+
+    internal static void BattlefieldMenu(IReadOnlyDictionary<string, ExplorationRaster> rasters)
+    {
+        const string prefix = "battlefield-menu.";
+        var entries = rasters.Where(row => row.Key.StartsWith(prefix, StringComparison.Ordinal)).ToArray();
+        if (entries.Length == 0) return;
+        string[] keys = new[] { "member", "map", "speed", "quit" }
+            .SelectMany(name => new[] { prefix + name + ".normal", prefix + name + ".selected" }).ToArray();
+        Require(entries.Length == keys.Length && keys.All(rasters.ContainsKey) &&
+            entries.All(row => row.Value.Width == 24 && row.Value.Height == 24),
+            "battlefield-menu-resources", "battleScenes.rasters");
     }
 
     private static IReadOnlyList<PortraitTileChange>? PortraitChanges(JsonElement portrait, string key)

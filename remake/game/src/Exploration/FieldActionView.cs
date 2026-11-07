@@ -18,7 +18,8 @@ internal sealed partial class FieldActionView : Control
     private readonly List<Label> _rows = [];
     private readonly List<IdentityIcon> _icons = [];
     private IdentityIcons _iconOwner = null!;
-    private readonly ItemOperationMenu _operations = new() { Name = "ItemOperations" };
+    private readonly DiamondMenuView _operations = new("item-menu", ("Use", "prepare.use"),
+        ("Give", "prepare.give"), ("Equip", "prepare.equip"), ("Drop", "prepare.drop")) { Name = "ItemOperations" };
     private object? _iconSource;
     private readonly List<(Func<string> Label, Action Choose, bool Available)> _options = [];
     private readonly MenuPointer _pointer = new();

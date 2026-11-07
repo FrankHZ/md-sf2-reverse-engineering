@@ -171,27 +171,8 @@ internal sealed partial class ChurchServiceView : Control
         _requiresRelease = true; _pointer.Suspend();
         foreach (var command in _commands) command.StopFocusEmphasis();
     }
-    private void ConfigureAssets(IReadOnlyDictionary<string, Sf2.Remake.Application.Content.Scenarios.ExplorationRaster>? rasters)
-    {
-        var textures = new List<ImageTexture>();
-        try
-        {
-            if (rasters is not null)
-                foreach (var command in _commands)
-                    foreach (string state in new[] { "normal", "selected" })
-                    {
-                        var raster = rasters[command.Identity.ToLowerInvariant() + "." + state];
-                        using var image = raster.Format == "rgba8"
-                            ? Image.CreateFromData(24, 24, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
-                        if (raster.Format != "rgba8" && image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok)
-                            throw new InvalidOperationException("church-menu-resource-invalid");
-                        textures.Add(ImageTexture.CreateFromImage(image));
-                    }
-        }
-        catch { foreach (var texture in textures) texture.Dispose(); throw; }
-        for (int i = 0; i < _commands.Length; i++)
-            _commands[i].SetArt(rasters is null ? null : textures[i * 2], rasters is null ? null : textures[i * 2 + 1]);
-    }
+    private void ConfigureAssets(IReadOnlyDictionary<string, Sf2.Remake.Application.Content.Scenarios.ExplorationRaster>? rasters) =>
+        MenuRasterTextures.Configure(_commands, rasters, "", "church-menu");
     private void Choose(ChurchCommand? command)
     {
         if (IsMenu) _serviceIndex = _index;

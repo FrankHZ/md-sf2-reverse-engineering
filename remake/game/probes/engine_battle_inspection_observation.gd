@@ -196,7 +196,7 @@ func real_returns() -> bool:
     await act("confirm")
     if not await inspect_page("Options"): return false
     var camera_before := [board().cameraX,board().cameraY]
-    await act("confirm")
+    await act("left"); await act("confirm")
     if not await inspect_page("Map"): return false
     var map := sample("on-demand-map")
     if not check(map.inspection.overview.units == units and not map.inspection.overview.pointerActions
@@ -331,7 +331,7 @@ func ui_projection() -> bool:
     if not await wait_for(func(_s): return board().settled,"UI Map camera baseline"): return false
     await act("confirm")
     if not check("战场选项" in state().inspection.hint,"Options localized"): return false
-    await act("confirm")
+    await act("left"); await act("confirm")
     if not await inspect_page("Map"): return false
     if not await terrain_projection(): return false
     var map: Dictionary = state().inspection

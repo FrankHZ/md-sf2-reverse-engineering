@@ -538,9 +538,11 @@ $audioArgs = foreach ($candidate in $reviewedCandidates) { '--audio-candidate'; 
 uv run python -m sf2tool.remake_exploration_content --canonical $canonical --upstream $upstream `
   --rom-path $rom --presentation-root $assets --selection remake/content/private/pre-voyage-opening.json `
   --encounter-inputs $encounterList --output $freshWorld @audioArgs
-$env:SF2_PRIVATE_EXPLORATION_CONTENT = $freshWorld
+# Base gameplay world prepared; publish/select the complete product-art pack below before play.
 ```
 
+Before ordinary play, use the [complete menu publication and paired world/scene selection](../content/presentation-assets.md#final-publication-and-ordinary-selection).
+The base `$freshWorld` above is not the complete product-art pack.
 Launch the ordinary title without diagnostic start arguments. Use an external disposable save
 namespace as in the [save recipe](../verification/host.md#opening-save-and-continue).
 The current world is 117,949,866 bytes, below the 128 MiB reader limit. Keep the unchanged 01/C2 main-theme WAV and its candidate
