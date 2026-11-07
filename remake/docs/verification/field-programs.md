@@ -3093,3 +3093,71 @@ aggregate failures and #1583 completed long-observation failures remain in their
 none is rerun or reclassified. Original natural reach/cadence, hardware raster, physical device
 delivery and the user's overall visual approval remain **Unknown**. Source coordinates and
 bounded actual draw operands support this fix, not whole-campaign rendering completeness.
+
+
+## Held exploration rate (#1619 A)
+
+Use [the current contract](../godot/presentation.md#held-exploration-acceleration-1619-a) and its
+accepted High timing-boundary design. Application/Domain/Content rules are unchanged; actual adapter
+compilation and native consumers are A's checks, without tests of the observer. The tracked
+[field-rate probe](../../game/probes/engine_field_rate_observation.gd) drives mapped InputEvents
+through GameRoot and reads live state/audio/projections. It records semantic counters/endpoints,
+no screenshots or serialized per-frame world state.
+
+Reuse `local/worktree-environment-reuse/environment.ps1`, then existing final-content selections
+`local/issue1666/inputs.ps1` and `local/issue1669/select-content.ps1`. Build Debug in the existing
+project using the selected absolute DOTNET_BIN/DOTNET_CLI_HOME and
+DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false. No owned instance existed at entry; startup loads the changed
+adapter. Focus uses one short native sibling window. Other instances, saves and failures stay intact.
+
+The ignored `local/issue1619/run.ps1` loads those selections in the launch process, selects fresh
+run-local application-data/TEMP/report paths and a unique disposable namespace beneath the configured
+external save root. SF2_RATE_NAMESPACE must equal SF2_SAVE_NAMESPACE. SF2_RATE_OUTPUT is explicit;
+SF2_RATE_START selects the controlled start. Retained successful cases:
+
+| Case / named run | Actual boundary |
+| --- | --- |
+| clock: clock-30-1-01, clock-30-fast-01, clock-60-1-pilot, clock-60-fast-01, clock-120-1-01, clock-120-fast-01 | Final world; controlled Map3 (32,13), North, speed 32, flags 0/1/2/32/33/66/80/600/602/603/604/605 and initialized party. Stop the real view at exactly 60 ordinary opportunities through its result signal. Compare initial/final actor position/target/facing/animation/cursor/wait fields, seeds, map/flags/gold across 1×/1.5× at real --max-fps 30/60/120; no --fixed-fps. |
+| continue: continue-04 | Game writes a disposable Map3 slot through Save, remounts title and ordinary Continue, then Shift alone, both key orders/locations, direction retained after release, echo, Menu/Party and release-barrier returns. No edited save or continuous New Game-route claim. |
+| automatic: automatic-01 | Ignored harbor-arrival copy adds a 60-tick wait before existing invitation text. Actual Talk while Shift is held reaches the wait then input-owned text at 1×. Reveal remains 30 cps; Shift cannot acknowledge. Authored admission, not new original evidence. |
+| remapped: remapped-01 | Format 1 custom Right=J, Accelerate=Q/RightY-. Shift chords cease being exempt; keyboard and optional signed pad axis aggregate/release without stealing default buttons. |
+| focus: focus-02 | Actual native focus loss pauses/disarms; continued hold cannot resume and the first new press after release works. On a second native transfer the old host input route is intentionally muted during Godot's key-up, reproducing the missing callback; return reconciles neutrality. Explicit mapped-event fault injection, not a human OS-keyboard test. |
+| transfer: transfer-01 | Separate controlled final-world Map3 gate start (28,3), North. Two real Up steps reach the admitted Map19 castle warp and disarm held acceleration. The church door is only a door-open event. |
+| stall: stall-01 | One 350 ms render stall with Shift held; service never exceeds 4/callback and no catch-up whole debt survives. Integer counters, no frame-state log. |
+| battle: battle-02 | Authored stone-court, held Shift and one legal Up step. Shared input stays healthy and rate remains 1×; this does not accept stage B acceleration. |
+
+From the owning root, with fresh run names:
+
+```powershell
+./local/issue1619/run.ps1 -Run clock-60-review -Case clock -Factor 1.5 -Fps 60
+./local/issue1619/run.ps1 -Run continue-review -Case continue -Fps 60
+./local/issue1619/run.ps1 -Run focus-review -Case focus -Factor 1.5 -Fps 60 -Native
+```
+
+Direct launch after the same ignored environment/input/save setup uses
+`--script res://probes/engine_field_rate_observation.gd -- --input-settings <settings>`.
+Automatic additionally selects its small authored package; battle selects
+`remake/content/authored/stone-court.json`.
+
+**Confirmed, bounded remake:** all six clock endpoints agree at tick 60; main seed advances from
+3669142477 to 3734744013 through NPC service, thinking seed stays 305397760. Compared actor fields,
+map, flags and gold agree. Wall times were 0.969/0.674 s at 30 FPS, 0.988/0.678 s at 60 FPS and 0.956/0.666 s
+at 120 FPS (1×/1.5×). Initial callback/loading and measurement boundaries are included; these short
+observations are not a benchmark or exact cadence promise. Audio node pitch is 1; playback is not
+retimed. Reading/input/resource/audio gates can prevent whole sequences from taking exactly 2/3 time.
+
+The pilot used 18 serial native attempts, 13 selected successful cases, about273 KiB total native
+JSON, each under 100 KiB, within 20 cases/30 s per case/2 MiB reports. Preserve failed attempts:
+continue-01 needed separate reveal/activation at gradual Witch text; continue-02 exited 0 but had
+SCRIPT ERROR from a nonexistent player key and is **not PASS**; continue-03 wrongly expected a church
+map transfer; focus-01 set force_native on a visible Window; battle-01 requested an occupied Right
+cell and got movement-range refusal. Corrected probes use the actual boundaries above. The wrapper
+rejects SCRIPT ERROR/ERROR output even on exit 0. Compiler failures build-01 CS0136 and debug-03 CS0833
+and narrow corrections remain retained. Several runs retain 2/4-instance ObjectDB teardown warnings;
+later success does not erase those warnings or establish warning-free shutdown.
+
+Use `uv run sf2 verify adapter`, clean committed planner and scoped CI. No full private engine suite,
+full-route replay, emulator, content regeneration or comparison platform is required. Human physical
+input/all-device timing, comfort, original cadence and B/C acceptance remain **Unknown**. Exact local
+input selections, wrappers, compile/CI results and final writer/process state live in the ignored
+A handoff; repository owners retain the behavior and reproduction boundary.

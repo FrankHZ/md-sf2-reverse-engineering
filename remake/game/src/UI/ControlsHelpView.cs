@@ -1,5 +1,6 @@
 using Godot;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
@@ -16,6 +17,8 @@ internal sealed partial class ControlsHelpView : Control
             [new(GameAction.Up, "Walk north"), new(GameAction.Right, "Walk east")]),
         new("Exploration", "Directions also select menu rows or choices when those controls are open.",
             [new(GameAction.Down, "Walk south"), new(GameAction.Left, "Walk west")]),
+        new("Exploration", "controls.acceleration.note",
+            [new(GameAction.Accelerate, "controls.acceleration.hold")]),
         new("Exploration", "Only currently available interactions are offered. Waiting advances field time while held.",
             [new(GameAction.Confirm, "Talk to the faced NPC; otherwise Search when offered"), new(GameAction.Wait, "Hold: wait at field input"), new(GameAction.Equipment, "Open Party Status")]),
         new("Exploration", "Cancel opens the gameplay diamond at settled field input: Up Member, Left Magic, Right Item, Down Search. Party Status remains a shortcut. Menu separately pauses exploration or battle for Settings, Save and Quit.",
@@ -73,11 +76,12 @@ internal sealed partial class ControlsHelpView : Control
     {
         var page = Pages[_page];
         _title.Text = $"Controls · {page.Group} · {_page + 1}/{Pages.Length}";
-        _body.Text = page.Note + string.Concat(page.Rows.Select(row => $"\n\n{row.Meaning}\n{Input.Hint(row.Action)}"));
+        _body.Text = Text(page.Note) + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Input.Hint(row.Action)}"));
         _hint.Text = $"{Input.CompactHint(GameAction.Left)} / {Input.CompactHint(GameAction.Right)}: Page  •  {Input.CompactHint(GameAction.Confirm)}: Next\n" +
             $"{Input.CompactHint(GameAction.Up)} / {Input.CompactHint(GameAction.Down)}: Scroll  •  {Input.CompactHint(GameAction.Cancel)}: Back to Settings";
         _scroll.ScrollVertical = 0;
     }
+    private static string Text(string value) => value.StartsWith("controls.", StringComparison.Ordinal) ? GameText.Get(value) : value;
     internal void SuspendPointer() => _pointer.Suspend();
     public override void _Process(double delta)
     {

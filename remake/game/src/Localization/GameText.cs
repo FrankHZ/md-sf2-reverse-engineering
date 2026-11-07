@@ -20,6 +20,8 @@ internal static class GameText
     private static readonly Dictionary<string, int> Arguments = new()
     {
         ["entry.loading"] = 0,
+        ["controls.acceleration.note"] = 0,
+        ["controls.acceleration.hold"] = 0,
         ["battle.speed.title"] = 0,
         ["battle.speed.custom"] = 1,
         ["battle.speed.value"] = 1,
@@ -501,6 +503,8 @@ internal static class GameText
     };
     private static readonly Dictionary<string, string> Recovery = new()
     {
+        ["controls.acceleration.note"] = "Hold for exploration at 1.5x; release returns to 1x. NPCs and automatic events share the rate. Text and music keep normal speed. After a menu, dialogue, map change or focus loss, release and press again. Battle acceleration is not available yet.",
+        ["controls.acceleration.hold"] = "Hold: temporary exploration 1.5x",
         ["ui.settings.title"] = "Settings",
         ["ui.settings.language"] = "Language: {0}",
         ["ui.settings.text"] = "Text: {0}",

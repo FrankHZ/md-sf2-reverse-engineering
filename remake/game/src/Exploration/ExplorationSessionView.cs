@@ -133,6 +133,7 @@ public sealed partial class ExplorationSessionView : Control
     }
     public override void _ExitTree()
     {
+        SuspendPacing();
         ObservationCapture.Find(this)?.ViewDetached("exploration");
         _movementHold.Clear(_input);
         CancelFieldWait();
@@ -149,6 +150,7 @@ public sealed partial class ExplorationSessionView : Control
 
     private void SuspendClock()
     {
+        SuspendPacing();
         CancelMenuEntry("save-entry-paused");
         _readingConfirmation = null;
         _choicePointer.Suspend();
@@ -211,6 +213,7 @@ public sealed partial class ExplorationSessionView : Control
     {
         _choicePointer.ReleaseIfNeutral();
         if (_session is null) return;
+        _input.AllowAcceleration(CanAccelerate);
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
         if (!_input.GameplayHeld) _skipRequiresRelease = false;
@@ -225,6 +228,7 @@ public sealed partial class ExplorationSessionView : Control
         if (FinishEntryHandoff()) return;
         if (_handedOff || _session.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
         if (_resumeAutomatic) { delta = 0; _resumeAutomatic = false; }
+        double gameplayDelta = GameplayDelta(delta);
         if (!ChoiceButtonsHeld) _choiceRequiresRelease = false;
         if (_session.Current.Story.Wait is ChoiceWait { Work.Phase: ChoicePhase.Entry } entry)
         { Send(new ChoiceHeldInput(entry.Token, ChoiceButtonsHeld)); return; }
@@ -251,7 +255,7 @@ public sealed partial class ExplorationSessionView : Control
         if (_presentation is { } presentation)
         {
             var beforePresentation = _session.Current.Story.Wait?.Token;
-            foreach (var completion in presentation.Update(delta, _session.Current))
+            foreach (var completion in presentation.Update(gameplayDelta, _session.Current))
             {
                 Send(completion);
                 if (_handedOff || _battleHandoffPending || _result?.Failure is not null) return;
@@ -287,7 +291,7 @@ public sealed partial class ExplorationSessionView : Control
         CheckMenuEntry();
         if (!CanProcess()) return;
         if (_session.Current.HasOrdinaryFieldTime)
-        { AdvanceOrdinaryTime(delta); return; }
+        { AdvanceOrdinaryTime(gameplayDelta); return; }
         if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
         {
             // Text/choice input retains its explicit service contract.
@@ -302,17 +306,15 @@ public sealed partial class ExplorationSessionView : Control
         if (NeedsTicks(_session.Current))
         {
             const double tickDuration = 1.0 / 60;
-            _tickTime += delta;
-            int ticks = (int)Math.Min(600, Math.Floor(_tickTime / tickDuration));
+            _tickTime += gameplayDelta;
+            int ticks = (int)Math.Min(4, Math.Floor(_tickTime / tickDuration));
+            // Keep only a fractional step. Mandatory work remains pending in the
+            // session, but a slow callback cannot leave a catch-up burst behind.
+            _tickTime %= tickDuration;
             if (ticks > 0)
             {
-                long before = _session.Current.Story.SimulationTick;
                 var token = _session.Current.Story.Wait?.Token;
                 Send(new AdvanceSimulation(_session.Current.Story.Wait?.Token, ticks));
-                long executed = _session.Current.Story.SimulationTick - before;
-                // The engine may yield before consuming the batch. Retain its unused time
-                // for automatic continuation, but never carry paused input time into a new wait.
-                _tickTime = Math.Max(0, _tickTime - executed * tickDuration);
                 if (_handedOff || token != _session.Current.Story.Wait?.Token || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || !NeedsTicks(_session.Current)) _tickTime = 0;
             }
         }
@@ -354,6 +356,7 @@ public sealed partial class ExplorationSessionView : Control
         { BeginFieldMenu(); return; }
         if (action == GameAction.Equipment && current.CanWaitAtInput && !_battleMounted)
         {
+            SuspendPacing();
             _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
             _partyStatus.Begin(_session, _input); Present(); return;
         }
@@ -472,6 +475,11 @@ public sealed partial class ExplorationSessionView : Control
         var submitted = _session.Submit(new(current.SessionId, revision ?? current.Revision, null, command));
         if (recoverable && submitted.Failure is not null && ReferenceEquals(current, submitted.Snapshot)) return submitted;
         _result = submitted;
+        if (current.SessionId != submitted.Snapshot.SessionId || current.Exploration?.Definition != submitted.Snapshot.Exploration?.Definition ||
+            SessionPresentationOwner.IsBattle(submitted.Snapshot) || submitted.Failure is not null ||
+            submitted.Observations.Any(row => row.Kind == "map-transferred" || row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
+            _input.DisarmAcceleration();
+        _ = GameplayDelta(0);
         if (command is LeaveChurch { Save: true } && submitted.Failure is null) _churchSaveRequested = true;
         _movementHold.Observe(_input, current, _result, command);
         bool ordinaryTransition = current.HasOrdinaryFieldTime != _session.Current.HasOrdinaryFieldTime;
@@ -781,6 +789,7 @@ public sealed partial class ExplorationSessionView : Control
             canWaitForChoice = current?.CanWaitForChoice, choice = current?.Story.Wait as ChoiceWait,
             movementDirection = _input.MovementDirection?.ToString(),
             gameplayHeld = _input.GameplayHeld, choiceRequiresRelease = _choiceRequiresRelease,
+            acceleration = _input.ObserveAccelerationState(),
             entrySkip = current?.Story.EntrySkip, skipRequiresRelease = _skipRequiresRelease, battleHandoffPending = _battleHandoffPending,
             choiceProjection = new { tick = current?.Story.SimulationTick, token = (current?.Story.Wait as ChoiceWait)?.Token.Value,
                 visible = _choice.Visible, x = _choice.Position.X, y = _choice.Position.Y, width = _choice.Size.X, height = _choice.Size.Y,

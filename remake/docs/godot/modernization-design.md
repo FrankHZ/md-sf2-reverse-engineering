@@ -461,8 +461,14 @@ those checks; the design's source and document checks cannot pass them.
 
 ## Held 1.5× acceleration (#1619)
 
-**Proposed, not implemented.** [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619)
+**Accepted design; implementation staged.** [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619)
 requires hold Shift for temporary 1.5× in both exploration and battle; release restores 1×.
+Stage A implements the shared hold and exploration domain under the
+[current presentation contract](presentation.md#held-exploration-acceleration-1619-a) and
+[bounded native acceptance](../verification/field-programs.md#held-exploration-rate-1619-a).
+Battle acceleration and B/C integrated acceptance remain unimplemented; A alone does not complete
+this Issue. The paths below describe the staged design; those current owners identify A's actual
+consumers and observations.
 This is an intentional modern pacing feature. It is independent of original message Speed,
 text suppression, Reduced Flash and the existing battle-entry skip. No persistent toggle, rules
 change, universal skip or global appearance decision is included.
@@ -647,11 +653,12 @@ Stop/replan if a case needs more time/records, any output exceeds its cap, or a 
 be reached with admitted content; missing observations remain explicit. The pilot does not authorize
 cleanup of retained evidence or another instance. Subjective comfort, exact original natural timing,
 all-device behavior and existing unrelated shutdown warnings remain **Unknown**. No observation or
-implementation acceptance in this section has yet passed.
+stage B/C implementation acceptance in this section has yet passed; A's current observations are linked above.
 
-## Design-task verification
+## Design-only verification
 
-Design tasks #1578 and #1619 change only this owner; source, runtime and other design owners are read-only.
+The design-only stages of #1578 and #1619 change this owner; A implementation instead uses its
+linked adapter/native acceptance. The following checks do not establish runtime acceptance.
 Acceptance is source-chain review, local Markdown target/anchor and scope checks, `git diff --check`,
 the clean committed `uv run sf2 verify plan --base origin/main --head HEAD`, and actual scoped CI.
 Load the owning ignored input configuration for the planner as required by the repository. No SDK,

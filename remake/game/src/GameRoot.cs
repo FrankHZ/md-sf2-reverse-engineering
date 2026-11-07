@@ -27,11 +27,18 @@ public sealed partial class GameRoot : Node
     private SystemMenuView? _systemMenu;
     private bool _releaseBarrier;
 
-    public override void _ExitTree() { ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost; _audio?.Dispose(); ClearPreparedNewGame(); }
+    public override void _ExitTree()
+    {
+        ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
+        GetWindow().FocusEntered -= PacingFocusReturned; Godot.Input.JoyConnectionChanged -= PacingDeviceChanged;
+        _audio?.Dispose(); ClearPreparedNewGame();
+    }
     public string ReadAudioObservationJson() => System.Text.Json.JsonSerializer.Serialize(_audio?.ObservePlayback());
 
     public override void _Input(InputEvent input)
     {
+        _input?.AllowAcceleration(!_releaseBarrier && _exploration?.CanAccelerate == true);
+        _input?.ObserveAccelerationInput(input);
         if (BlockSettingsRelease(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_releaseBarrier && input is not InputEventMouse)
         {
@@ -97,6 +104,8 @@ public sealed partial class GameRoot : Node
         _hostUi = UI.PresentationCanvas.Mount(this, "HostUi", UI.PresentationCanvas.Host);
         GetTree().AutoAcceptQuit = false;
         GetWindow().FocusExited += SettingsFocusLost;
+        GetWindow().FocusEntered += PacingFocusReturned;
+        Godot.Input.JoyConnectionChanged += PacingDeviceChanged;
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         var arguments = OS.GetCmdlineUserArgs();
         for (int index = 0; index < arguments.Length; index++)
@@ -153,9 +162,15 @@ public sealed partial class GameRoot : Node
 
     private void DisarmInput()
     {
+        _input?.AllowAcceleration(false); _exploration?.SuspendPacing();
         _input?.DisarmMovement(); _input?.DisarmWait();
         _releaseBarrier = _input?.GameplayHeld == true;
     }
+
+    private void PacingDeviceChanged(long device, bool connected)
+    { if (!connected) { _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); } }
+
+    private void PacingFocusReturned() => _input?.ReconcileAccelerationNeutral();
 
     private void ReleaseSession()
     {
