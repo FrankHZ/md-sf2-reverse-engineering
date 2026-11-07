@@ -1,8 +1,10 @@
 # Ribble 树洞开启与 Achilles Sword
 
+> 本文是[英文规范原文](../../../../synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 已接受的物品内容支持这样一个谜题：取得 Wooden Panel，在 Ribble 面朝树使用它，随后搜索另一处神殿宝箱以取得 Achilles Sword。开启程序先请求跳跃、向下移动、震动及三次图块替换，再标记树已开启并尝试移除一块 Panel。此后，Sword 的持有状态可以满足 Hassan 中 Rohde 的首次持有检查。
 
-**推断：**这是预期的 Panel／树／Sword 关联。**已确认：**下文选定的宝箱、物品使用、场景、物品栏和地图请求规则来自已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)。**未知：**自然接近、在共用神殿地图内行走、场景／服务实际完成、开启画面的渲染、连续持有、可用控制以及存档／恢复持久性。本指南是有条件的玩法内容说明，不规定它与编号战斗或 Hassan 对话之间的必经顺序。
+**推断：**这是预期的 Panel／树／Sword 关联。**已确认：**下文选定的宝箱、物品使用、场景、物品栏和地图请求规则来自已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)。**未知：**自然接近、在共用神殿地图内行走、场景／服务实际完成、开启画面的渲染、连续持有、可用控制以及存档／恢复持久性。本指南是有条件的玩法内容说明，不规定它与编号战斗或 Hassan 对话之间的必经顺序。
 
 Fnnn 表示标志 nnn；坐标单位为地图瓦片；记录索引从零开始。Map8 为 Ribble，Map50 为 `MAP_ACHILLES_SHRINES`，Map61 则是独立的 `MAP_RIBBLE_SHRINE_EXTERIOR`。共用 Map50 身份并不能证明其不同区域之间存在步行路径。城镇配置见 [Ribble 的欢迎（中文）](../eastern-parmecia/battle09-outcomes-through-ribble-welcome.md)，后续持有检查调用方见 [Hassan 的 Rohde 选择（中文）](hassan-ancestry-and-rohde-caravan-choice.md#与-rohde-交谈)。两者都不是此处新增的前置条件。
 
@@ -128,4 +130,4 @@ Panel/Sword 持有状态及 F731 既不能确立这两个标志的值，也不�
 
 [PR833 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/833#issuecomment-6160733380)与[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/833#issuecomment-6160756298)保留实际留存的比较、CI 以及已修正的检查／核对失败。其链接的 [#828 原始记录](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828#issuecomment-6160524404)与[最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828#issuecomment-6160569868)保留 PR826/822/818 结果／失败。[#831 修正后交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/831#issuecomment-6160802747)区分 Rohde 首次的 13 个文本位置与重复的 2 个；这些计数不属于此处无文本的开启程序。本指南不重启任何这些已完成运行，也不改变其标签。
 
-**未知：**自然接近／搜索／使用／传送，传入物品栏／标志／HP／映射／列表，碰撞／分配／动作及服务完成，输入／释放，音频／窗口／VDP／震动表现，可用控制、连续持有以及存档／恢复持久性。它们保持 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)／[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 的边界，不成为运行时队列或扩大的战役／重制版主张。
+**未知：**自然接近／搜索／使用／传送，传入物品栏／标志／HP／映射／列表，碰撞／分配／动作及服务完成，输入／释放，音频／窗口／VDP／震动表现，可用控制、连续持有以及存档／恢复持久性。它们保持 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)／[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 的边界，不成为运行时队列或扩大的战役／重制版主张。

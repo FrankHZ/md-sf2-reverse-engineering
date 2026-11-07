@@ -6,7 +6,7 @@
 - 证据日期：2026-08-13
 - 重制状态：实现无关 Phase 3 私有导入与路由合同；未选择对话、渲染器、故事、存档或地图生命周期实现
 
-> 本文件是 [`map-area-description-routing.md`](../../../contracts/world/map-area-description-routing.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-area-description-routing.md`（英文规范源）](../../../contracts/world/map-area-description-routing.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -36,7 +36,7 @@
 
 - [受追踪 fixture](../../../../../tests/fixtures/h2/map-descriptions-static-v1.json)；
 - [维护验证器](../../../../../src/sf2tool/h2/map_descriptions.py)；
-- [所属研究文章](../../../../research/world/map-data-inventory.md)。
+- [所属研究文章（英文）](../../../../research/world/map-data-inventory.md)。
 
 已接受基线上新鲜复现产生：
 
@@ -250,10 +250,10 @@ MapAreaDescriptionPublicSummary {
 
 ## 跨系统分离
 
-- [Map Exploration](../../../contracts/world/map-exploration.md) 拥有 `CheckArea`、探索交互循环及其已接受运行时生命周期。本合同只拥有被调用描述选择器/扫描。
-- [Map Entry Routing State](../../../contracts/world/map-entry-routing-state.md)、配置选择证据与[Story Progression](../../synthesis/themes/story-progression.md) 保留配置与故事状态选择。配置引用不是自然故事准入的证明。
+- [Map Exploration](map-exploration.md) 拥有 `CheckArea`、探索交互循环及其已接受运行时生命周期。本合同只拥有被调用描述选择器/扫描。
+- [Map Entry Routing State](map-entry-routing-state.md)、配置选择证据与[Story Progression](../../synthesis/themes/story-progression.md) 保留配置与故事状态选择。配置引用不是自然故事准入的证明。
 - 实体、区域与物品选择器保留其自身表格式、匹配规则、效果与关联。它们此处不获得合同。
-- [Text 与 Font System](../../../contracts/interface/text-and-font-system.md)、[Dialogue System](../../../contracts/interface/dialogue-system.md)、立绘、窗口与 UI 所有者保留文本资源、解码、呈现与时序。
+- [Text 与 Font System](../interface/text-and-font-system.md)、[Dialogue System](../interface/dialogue-system.md)、立绘、窗口与 UI 所有者保留文本资源、解码、呈现与时序。
 - 排除 `sf2-map-data-static-v1` 聚合与每个 `map.data.*` 记录保持不变。
 - 地图布局、调色板、瓦片集、精灵、碰撞、寻路、摄像机、VInt/DMA、音频与渲染保持其专用合同或 **未知**。
 - 存档/读档持久性、故事含义、本地化、可访问性、内容替换与产品策略是刻意后期设计面。
@@ -310,11 +310,11 @@ H4 可以把私有表编译为索引结构或其他引擎原生表示。该表�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 分发器身份与地址 | **已确认静态** | `sf2-map-descriptions-static-v1` | 恰好两个未来 research-index 关联 |
-| 126 引用 / 75 可调用目标 | **已确认静态** | 同一 fixture 与[map-data 研究](../../../../research/world/map-data-inventory.md) | 完整图保持私有；无自然可达性声称 |
+| 126 引用 / 75 可调用目标 | **已确认静态** | 同一 fixture 与[map-data 研究（英文）](../../../../research/world/map-data-inventory.md) | 完整图保持私有；无自然可达性声称 |
 | 包装器、存根、表、条目与终止符 | **已确认静态** | 同一 fixture/验证器 | 原始字节、完整赋值、索引、目标与 hash 保持私有 |
 | 坐标/条件/载荷/首匹配规则 | **已确认静态 source/ROM** | 同一所有者 | 无畸形输入或调用方可视恢复合同 |
 | 唯一组装 `d6=1` 调用路径 | **已确认静态调用图** | 同一所有者 | 直接/修改 `d6=0` 可达性保持 **未知** |
-| 探索准入与 `CheckArea` 生命周期 | **独立所有者** | [map-exploration](../../../contracts/world/map-exploration.md) | 此处无输入边、帧或交互结果声称 |
+| 探索准入与 `CheckArea` 生命周期 | **独立所有者** | [map-exploration](map-exploration.md) | 此处无输入边、帧或交互结果声称 |
 | 配置/故事选择 | **独立所有者** | 地图配置证据与[story progression](../../synthesis/themes/story-progression.md) | 配置成员不是故事可达性 |
 | 文本/对话/立绘/窗口结果 | **未知 / 独立所有者** | 文本、对话、立绘、窗口与呈现合同 | 静态交接不证明可见内容或时序 |
 | 宽 map-data 语料 | **排除执行所有者** | `sf2-map-data-static-v1` | 所有 `map.data.*` 记录保持不变 |

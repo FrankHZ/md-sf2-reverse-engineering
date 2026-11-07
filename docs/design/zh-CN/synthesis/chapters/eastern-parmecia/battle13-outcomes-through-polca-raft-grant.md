@@ -1,10 +1,10 @@
 # Battle13 结果至 Polca 木筏授予
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Polca 战斗后，Luke 提议向市长索取木筏。胜利后全新返回时，Polca 使用不同实体群，市长的可选对话可引出交易：只要市长给 Bowie 木筏，Luke 就不声张市长的行为。对话以 Peter 和 Luke 跟随请求结束，随后调用方为另一张地图记录木筏。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)支持下文结果、实体群、归属文本、服务及有序状态写入。**推断：**这些调度描绘 Luke 陪同 Bowie，并从歉疚市长处取得木筏承诺。**未知：**自然战斗/接触可达、传入行动者/状态有效性、服务完成、表现与河流通行。本文不增加重制能力或产品决策。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)支持下文结果、实体群、归属文本、服务及有序状态写入。**推断：**这些调度描绘 Luke 陪同 Bowie，并从歉疚市长处取得木筏承诺。**未知：**自然战斗/接触可达、传入行动者/状态有效性、服务完成、表现与河流通行。本文不增加重制能力或产品决策。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
 
 前序对峙、Gerhalt 加入和战斗交接见 [Bedoe 返回至 Battle13 准入](bedoe-return-through-battle13-admission.md)。本指南止于选定市长调用方及条件控制返回。接续 [Polca 的 Oddler 选择与跟随](polca-oddler-choice-and-following.md)，了解独立 Y11/Y30 请求、不同拒绝路径和共同结尾。实际离开、河流旅行、登乘和 Battle14 仍在这些指南边界之外。
 
@@ -142,7 +142,7 @@ F513 实体群有十三条普通 NPC 行128–140，没有固定 Peter 或 Luke�
 
 ## 证据审阅与剩余限制
 
-本指南从已接受 main 消费 [PR #805](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/805) 接受的研究及前序英文指南。研究拥有 USA 零售身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、后续 `0x4ACF8`、实体群 `0x4AD96`、市长调用方 `0x581A2` 及场景 `0x58856`。其[复现边界](../../../../../research/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md#reproduction-and-evidence-limits)保留完整场景/文本/内联/源码比较。本切片审阅已接受正文、合同和限定 tracked 测试夹具选择，不重新调查源码、复制/生成可选载荷或进行运行时观察。
+本指南从已接受 main 消费 [PR #805](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/805) 接受的研究及前序英文指南。研究拥有 USA 零售身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、后续 `0x4ACF8`、实体群 `0x4AD96`、市长调用方 `0x581A2` 及场景 `0x58856`。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md#reproduction-and-evidence-limits)保留完整场景/文本/内联/源码比较。本切片审阅已接受正文、合同和限定 tracked 测试夹具选择，不重新调查源码、复制/生成可选载荷或进行运行时观察。
 
 | 审阅边界 | 既有测试夹具 / 合同 / 消费者 | 结论 |
 | --- | --- | --- |
@@ -150,7 +150,7 @@ F513 实体群有十三条普通 NPC 行128–140，没有固定 Peter 或 Luke�
 | 结果 | [sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)、[路由合同](../../../contracts/battle/battle-cutscene-routing.md)、[过场验证器](../../../../../../src/sf2tool/h2/battle_cutscenes.py)。 | 共享包装器/领袖/加入顺序独立于已接受研究提供的 row13 目标与完整循环/Egress 组合；汇总清单不证明完整结果。 |
 | 全新城镇 | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，body 18；[init 验证器](../../../../../../src/sf2tool/h2/map_init.py)、[地图探索](../../../contracts/world/map-exploration.md)。 | 十三个 init 操作保留独立 F711/F716/F718 测试。完整实体群/随从分配与全新/当前状态区别由选定研究保有。 |
 | 文本、行动者与跟随 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、[对话](../../../contracts/interface/dialogue-system.md)、[出战队伍/名册](../../../contracts/party/party-roster-state.md)、[地图脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)。 | 处理器/命令族事实保留行动、目的地、隐藏及跟随边界；不是完整场景语料或自然表现证明。研究拥有全部 38 条文本、内联组合与高字节 HP 准入。 |
-| 请求与木筏 | [sf2-map-event-request-state-static-v1](../../../../../../tests/fixtures/h2/map-event-request-state-static-v1.json)、[sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)、[请求消费所有者](../../../../../research/world/map-event-request-consumption.md)。 | 待处理返回及条件声明事实不让五次调用方写入成为原子，也不证明通达/登乘。选定直接消费者仍归研究所有。 |
+| 请求与木筏 | [sf2-map-event-request-state-static-v1](../../../../../../tests/fixtures/h2/map-event-request-state-static-v1.json)、[sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)、[请求消费所有者（英文）](../../../../../research/world/map-event-request-consumption.md)。 | 待处理返回及条件声明事实不让五次调用方写入成为原子，也不证明通达/登乘。选定直接消费者仍归研究所有。 |
 
 [Init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)和[地图脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)保留限定证据形状。既有聚焦检查包括 `tests/python/test_map_events.py`、`test_map_init.py` 和 `test_map_script_engine.py`。既有窄路线为 `uv run sf2 h2 map-events`、`map-init`、`map-script-engine`、`battle-cutscenes`、`battle-routing-data`、`map-setup`、`map-entities`、`map-event-request-state` 与 `map-event-request-consumption`。命名它们不声称新执行，也不是新文档门禁。
 

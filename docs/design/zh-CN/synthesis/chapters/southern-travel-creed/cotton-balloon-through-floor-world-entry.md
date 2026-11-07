@@ -1,6 +1,6 @@
 # Cotton Balloon 获取与前往 Floor World
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**Desktop 宝箱在物品栏交付之前打开，Guard136 检查该宝箱标志，而非当前物品持有。
 在玩家自身 `(35,24)` 瓦片使用选定 Cotton Balloon，会分发独立的物品栏搜索、条件移除及完整离开场景。
@@ -9,9 +9,9 @@
 **未知：**自然到达、实际选择/持有/状态、移动/服务完成、表现、可用控制及持久性。
 
 本指南接续[棋盘结果与 Desktop 返回](battle22-outcomes-and-desktop-return.md)，
-使用[已接受 Cotton Balloon 研究](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md)，依据
+使用[已接受 Cotton Balloon 研究（英文）](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md)，依据
 [Issue #919](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/919) 和
-[当前 Standard 约定](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+[当前 Standard 约定](../../../documentation-roadmap.md#当前基线与近期综合)。
 止于条件目的地探索加载器准入，在 Floor World 实体群/init、内部内容或 Battle23 开场之前。
 Fnnn 表示标志 nnn；命令索引从零开始。坐标、速度和等待为源码操作数，
 不是测得移动、帧时长或已证明可行走的行程。
@@ -40,7 +40,7 @@ F212 已设置则返回 NOTHING，随后搜索称宝箱为空。没有匹配宝�
 AddItem 写首个经掩码后的 NOTHING 槽位并返回成功 0；无空间则不写、返回失败 1。
 调用方依赖先前槽位计数，不测试该返回值。因此成功交付物品栏指实际物品写入，
 不只是宝箱已打开、接收者已选或出现收取台词。选定分支请求物品音乐、收取/转交文本及输入等待。
-[字面文本/控制符表](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#chest-appearance-search-and-inventory-delivery)
+[字面文本/控制符表（英文）](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#chest-appearance-search-and-inventory-delivery)
 保留发现/收到/转交/空/满消息，包括原版拼写。
 
 若未找到接收者，双手已满文本先于 CloseChest；后者清 F212 并还原 `$D801`。
@@ -137,7 +137,7 @@ FieldMenu 在 d6 非零时退出。默认 0 产生已使用物品文本 73，再
 替代对象是已分配的固定精灵行动者，不是新生成或附着到己方角色的物品。
 场景从不替换其地图精灵。基线加载则移动这些 ID 上的 King/Queen/Bishop，不是旧 ORB153–155。
 分配后改变 F522 影响后续配置选择，不改变活动精灵。
-[精确实体群/随从所有者](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#all-actors-and-the-complete-departure-program)
+[精确实体群/随从所有者（英文）](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#all-actors-and-the-complete-departure-program)
 保留三十/十四行及分配前提。
 
 Map22 不是大地图，因此 F65 不前置 Caravan/A。Peter 需要 F67；
@@ -150,7 +150,7 @@ HP/职业决定己方精灵，包括死亡探索己方的 BLUE_FLAME，但不补
 ### 阅读全部二十九个命令
 
 **已确认：**`0x599B2` 的 cs_599B2 有二十九个顶层命令。
-此分组覆盖每个索引；[精确有序命令及嵌套体表](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#all-actors-and-the-complete-departure-program)
+此分组覆盖每个索引；[精确有序命令及嵌套体表（英文）](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#all-actors-and-the-complete-departure-program)
 为操作数权威。
 
 | 索引 | 有序工作与后果 |
@@ -258,7 +258,7 @@ Battle22 使用 Map22；Battle23 使用 Map27。其解锁、介绍/完成或 F88
 交易 fixture 在顶层存储 sourceContext/eventItemTransactions；其分组未知及汇总不验证服务程序体或自然选择。
 编写程序合同负责数据，不负责移动执行或渲染。
 
-[交易概览逐服务所有权](../../../../../research/world/map-event-item-transactions.md#ownership-and-unknown-boundary)
+[交易概览逐服务所有权（英文）](../../../../../research/world/map-event-item-transactions.md#ownership-and-unknown-boundary)
 及其 fixture 与 #916 精确解析一致：GetItemInventoryLocation 和 RemoveItemBySlot 属于 `code/common/stats/itemstats.asm`；
 ReceiveMandatoryItem 和 RemoveItemFromInventory 属于 `code/common/stats/iteminventory.asm`。
 替代 `code/common/stats/items/itemfunctions_s7_0.asm` 仍排除。概览保留仅调用方边界；
@@ -279,11 +279,11 @@ ReceiveMandatoryItem 和 RemoveItemFromInventory 属于 `code/common/stats/itemi
 直接验收审阅完整正文/diff、每组命令和数量、坐标/身份/等待范围、溯源、链接/片段、英文/私有边界及空白。
 检查已配置的干净已提交依赖规划器及实际最终 head CI。
 不单因正文选择局部 normal/full/engine/Godot/H3/H4 或翻译套件；研究的
-[复现边界](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#reproduction-checks-and-retained-limits)继续负责比较和输入。
+[复现边界（英文）](../../../../../research/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md#reproduction-checks-and-retained-limits)继续负责比较和输入。
 
 **未知：**自然宝箱/守卫/物品使用可达性及持有/选择；实际标志、军团/物品栏/HP/职业、随从/行动者/木筏别名、
 布局/当前与已保存位置；已完成输入/文本/行动/滚动/精灵/转换服务；实际运动、视觉/音频表现、可用控制及持久性。
 此处反例是传入源码状态，不是已执行场景；依
-[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
-[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
+[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
+[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
 这既未完成战役，也未完成 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。

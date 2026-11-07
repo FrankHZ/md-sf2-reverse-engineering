@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版顶层探索交接、地图事件与玩家动作优先级、交互准入、物品补充边界与受限探索操作清单的实现无关重构，不导入启动、地图数据、输入时序、战斗结果、下游服务行为、呈现或故事含义
 
-> 本文件是 [`exploration-control-flow.md`](../../../contracts/world/exploration-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`exploration-control-flow.md`（英文规范源）](../../../contracts/world/exploration-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,11 +14,11 @@
 - **推断**：无。玩家意图、故事含义与可见响应不从静态分支顺序或操作身份推断。
 - **未知**：精确 VInt 边界发布对输入采样时序；自然调用方与故事可达性；全部 48 个候选槽的有效性与生命周期；384 内部距离值到屏幕像素或现代世界单位的转换；私有地图与区域内容；事件处理器、菜单、对话、音频、物品、队伍与战斗结果；状态持久性；滚动、门、屋顶、宝箱、传送与车辆帧；渲染呈现；畸形或注入状态；以及平衡、可访问性或战役意图。
 
-[map-entry routing 合同](../../../contracts/world/map-entry-routing-state.md) 拥有已接受 `SwitchMap` 与 `CheckBattle` 辅助局部规则。本合同只记录其顶层调用顺序与结果交接。[map 与 exploration 合同](../../../contracts/world/map-exploration.md) 保留地图导入、构建、工作布局变更、map-script、实体、摄像机与已接受运行时轨道。两个兄弟合同都不被静默吸收。
+[map-entry routing 合同](map-entry-routing-state.md) 拥有已接受 `SwitchMap` 与 `CheckBattle` 辅助局部规则。本合同只记录其顶层调用顺序与结果交接。[map 与 exploration 合同](map-exploration.md) 保留地图导入、构建、工作布局变更、map-script、实体、摄像机与已接受运行时轨道。两个兄弟合同都不被静默吸收。
 
 ## 证据所有者与源审计
 
-`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`gameflow.py`](../../../../../src/sf2tool/h2/gameflow.py)，其带来源解释是[Startup、Main Loop 与 Exploration Core](../../../../research/system/gameflow-core.md)。本合同只消费 `expected.explorationFacts` 与以下六条记录身份：
+`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`gameflow.py`](../../../../../src/sf2tool/h2/gameflow.py)，其带来源解释是[Startup、Main Loop 与 Exploration Core（英文）](../../../../research/system/gameflow-core.md)。本合同只消费 `expected.explorationFacts` 与以下六条记录身份：
 
 - `gameflow.main-loop`；
 - `gameflow.exploration.engine`；
@@ -37,7 +37,7 @@ fixture 的完整源成员集包含 14 条记录，而 13 条记录携带直接 
 - `gameflow.start.region`；
 - `gameflow.start.system-init`。
 
-两条直接 fixture 链接记录保持其既有合同而不获得本合同：`gameflow.start.base-tiles` 仍归[UI graphics asset data](../../../contracts/graphics/ui-graphics-asset-data.md)，`gameflow.start.z80-init` 仍归[audio system](../../../contracts/interface/audio-system.md)。仅成员 `map.block-mutation.copy-helper` 保留其 H3 所有者与[map-exploration](../../../contracts/world/map-exploration.md)关联。这些区分防止一个聚合 fixture 成为吸收无关启动、资源、音频或地图变更面的借口。
+两条直接 fixture 链接记录保持其既有合同而不获得本合同：`gameflow.start.base-tiles` 仍归[UI graphics asset data](../graphics/ui-graphics-asset-data.md)，`gameflow.start.z80-init` 仍归[audio system](../interface/audio-system.md)。仅成员 `map.block-mutation.copy-helper` 保留其 H3 所有者与[map-exploration](map-exploration.md)关联。这些区分防止一个聚合 fixture 成为吸收无关启动、资源、音频或地图变更面的借口。
 
 ## 主循环交接顺序
 
@@ -74,7 +74,7 @@ fixture 的完整源成员集包含 14 条记录，而 13 条记录携带直接 
 
 因此当两个值在一个源静态轮询/分发迭代中已可见时，地图事件胜出。这是分支优先级合同，不是精确同时性的观察。fixture 把实体脚本发布事件与控制器采样之间的 VInt 边界显式保持 **未知**。
 
-[input-system 合同](../../../contracts/interface/input-system.md) 保留采样、当前/重复状态与等待辅助行为。本合同不重新定义控制器端口、按下/释放时序、重复策略或动作输入值的溯源。
+[input-system 合同](../interface/input-system.md) 保留采样、当前/重复状态与等待辅助行为。本合同不重新定义控制器端口、按下/释放时序、重复策略或动作输入值的溯源。
 
 ## 地图事件分发边界
 
@@ -87,7 +87,7 @@ fixture 的完整源成员集包含 14 条记录，而 13 条记录携带直接 
 5. `GetOutOfRaft`；
 6. `ZoneEvent`。
 
-那六个之外的事件类型发出 `SFX_BATTLEFIELD_DEATH` 命令身份并返回。[audio-system 合同](../../../contracts/interface/audio-system.md) 拥有已接受声音命令域与播放状态边界。此处不声称可听结果、音量、时序、回退意图或呈现含义。
+那六个之外的事件类型发出 `SFX_BATTLEFIELD_DEATH` 命令身份并返回。[audio-system 合同](../interface/audio-system.md) 拥有已接受声音命令域与播放状态边界。此处不声称可听结果、音量、时序、回退意图或呈现含义。
 
 warp 路线包含硬编码 Pacalon 分支标志身份 `530`。本合同只保留原始标志身份与该分支存在。它不给标志 530 指定战役含义、不证明自然可达性、不定义持久性或导入下游地图过渡时间线。
 
@@ -97,7 +97,7 @@ warp 路线包含硬编码 Pacalon 分支标志身份 `530`。本合同只保留
 
 **已确认静态：** 已接受玩家动作优先级是 A 先于 C。源码形状回退在没有更早已接受 C 路线消费动作时打开野外菜单交接，而 A 直接到达野外菜单交接。
 
-该优先级不导入完整调试、车队、实体事件、区域查看或菜单时间线。它也不证明哪个按钮状态在 VInt 边界可见。[service-interactions 合同](../../../contracts/party/service-interactions.md)、菜单合同与未来运行时证据保留其下游行为。
+该优先级不导入完整调试、车队、实体事件、区域查看或菜单时间线。它也不证明哪个按钮状态在 VInt 边界可见。[service-interactions 合同](../party/service-interactions.md)、菜单合同与未来运行时证据保留其下游行为。
 
 `GetActivatedEntity` 暴露该受限准入面：
 
@@ -130,7 +130,7 @@ warp 路线包含硬编码 Pacalon 分支标志身份 `530`。本合同只保留
 
 **已确认静态清单：** 所有者把探索源边界内的门、屋顶、宝箱与平面更新分类。本合同保留那四个操作族身份，使未来兼容适配器不静默丢弃交接。
 
-清单不是完整变更序列。它不建立精确调用顺序、地址、帧节奏、地图内容可达性、VInt/DMA 时序、渲染瓦片、碰撞效果、声音或可见性。那些问题保持[map exploration](../../../contracts/world/map-exploration.md)、摄像机、地图动画、图形与呈现所有者。
+清单不是完整变更序列。它不建立精确调用顺序、地址、帧节奏、地图内容可达性、VInt/DMA 时序、渲染瓦片、碰撞效果、声音或可见性。那些问题保持[map exploration](map-exploration.md)、摄像机、地图动画、图形与呈现所有者。
 
 ## 跨系统分离
 

@@ -1,10 +1,10 @@
 # Battle23 初始编队与挂起入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle23-initialization-and-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle23-initialization-and-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 **已确认：**新 Battle23 入场治疗符合条件的己方角色，并从传入军团建立编队，敌方为 Willard、五只 Rat 和六只 Bubbling Ooze。十二个己方布置槽位不保证十二名存活英雄或具名出战队伍。挂起入场则加载当前状态，不执行该新配置。**推断：**具名敌方编队布置了洞穴遭遇。**未知：**自然准入、实际传入状态、服务完成、可见/可听表现、可用控制和持久性。
 
-本指南从 [Willard Burrow 准入](willard-burrow-through-battle23-entry.md)的 BattleLoop 调用继续，使用[已接受 Battle23 研究](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md)，依据 [#938](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/938) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它解释原版配置与条件消费者。新入场止于 `BattleLoop:@Start`，**早于 ActivateEnemies**、区域激活与初始回合创建。挂起入场止于 `@IndividualTurns_Loop`，早于读取或执行单次行动。Fnnn 表示标志 nnn；下文坐标、属性值和 AI 标签为源码数据或初始化器结果，不是观察到的游玩。
+本指南从 [Willard Burrow 准入](willard-burrow-through-battle23-entry.md)的 BattleLoop 调用继续，使用[已接受 Battle23 研究（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md)，依据 [#938](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/938) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它解释原版配置与条件消费者。新入场止于 `BattleLoop:@Start`，**早于 ActivateEnemies**、区域激活与初始回合创建。挂起入场止于 `@IndividualTurns_Loop`，早于读取或执行单次行动。Fnnn 表示标志 nnn；下文坐标、属性值和 AI 标签为源码数据或初始化器结果，不是观察到的游玩。
 
 ## 准入与新配置
 
@@ -29,7 +29,7 @@ before 包装器先于治疗及双方名册。更早的探索实体群或当前�
 | 未设置 | 分发空脚本而不写 F473 | 在分发空脚本**之前**设置 F473 |
 | 已设置 | 跳过分发 | 跳过标志写入和分发 |
 
-跳过两个钩子不跳过新重置、治疗、编队或加载。F473 已设置不证明开场曾被游玩。即使空分发也初始化脚本状态、保存寄存器并清文本跳过字节；共享调试/输入处理可再次设置它。尾部在有对话窗口时条件等待滚动、清滚动速度、恢复寄存器并返回。等待可阻止完成，包括 start 包装器已设置 F473 之后。[研究钩子关联](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#empty-hooks-still-have-wrapper-effects)负责表、主体及完整包装器溯源。
+跳过两个钩子不跳过新重置、治疗、编队或加载。F473 已设置不证明开场曾被游玩。即使空分发也初始化脚本状态、保存寄存器并清文本跳过字节；共享调试/输入处理可再次设置它。尾部在有对话窗口时条件等待滚动、清滚动速度、恢复寄存器并返回。等待可阻止完成，包括 start 包装器已设置 F473 之后。[研究钩子关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#empty-hooks-still-have-wrapper-effects)负责表、主体及完整包装器溯源。
 
 ## 哪些己方角色接收十二个槽位
 
@@ -50,7 +50,7 @@ before 包装器先于治疗及双方名册。更早的探索实体群或当前�
 
 位置初始化器先将全部三十名己方角色 X=-1。UpdateForce 按己方 ID 升序重建已加入/出战列表，替换陈旧列表顺序。列表中存活成员取得下一对未消费坐标。死亡成员消费一个已处理成员槽位，**不推进布置指针**。因此后续存活成员取得更早未用坐标对。上限是十二名已处理成员，存活行动者可能更少。多余成员离开出战队伍并保持 X=-1；LeaveBattleParty 不即时重建列表/计数。符合条件成员更少时布置更少。传入零长度列表在首次条目读取前没有守卫，因此任意不一致空状态并非已证明安全的部署。
 
-[完整编队与队伍关联](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#complete-spriteset-and-ally-formation)保留306 字节精灵集、记录解码器及实际成员资格/治疗消费者。它支持状态相关出战队伍，而非固定角色序列。
+[完整编队与队伍关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#complete-spriteset-and-ally-formation)保留306 字节精灵集、记录解码器及实际成员资格/治疗消费者。它支持状态相关出战队伍，而非固定角色序列。
 
 ## Willard 与完整敌方编队
 
@@ -87,7 +87,7 @@ before 包装器先于治疗及双方名册。更早的探索实体群或当前�
 
 法术 NOTHING 为 `$3F`；AQUA=`$28` 与 LV2=`$40` 组合为 `$68`。Ooze 在零 MP 下声明法术，不证明后续 AI 选择或费用。Willard 原始 AGI165 是复制数据，不是显示敏捷或行动次数结果。定义还提供等级、抗性、特殊攻击概率（会心/二连/反击）与法术威力字段；后续行动/伤害解释在本入场边界外。
 
-激活写入后，先调整难度，再重建派生属性。已接受连续分支分析表示**所有难度**先应用 floor(baseATT*5/4)；SUPER (2) 再应用一次。因此 Willard/Rat/Ooze 在 NORMAL (0)、HARD (1) 或 OUCH (3) 的初始化基础 ATT 为62/56/47，在 SUPER (2) 为77/70/58。这些是初始化攻击值，不是伤害。UpdateCombatantStats 从基础/状态/装备重建当前属性值；选定定义不引入初始状态或已装备物品效果。完整选定定义及消费者见[定义/难度关联](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#definitions-items-spells-and-difficulty)。
+激活写入后，先调整难度，再重建派生属性。已接受连续分支分析表示**所有难度**先应用 floor(baseATT*5/4)；SUPER (2) 再应用一次。因此 Willard/Rat/Ooze 在 NORMAL (0)、HARD (1) 或 OUCH (3) 的初始化基础 ATT 为62/56/47，在 SUPER (2) 为77/70/58。这些是初始化攻击值，不是伤害。UpdateCombatantStats 从基础/状态/装备重建当前属性值；选定定义不引入初始状态或已装备物品效果。完整选定定义及消费者见[定义/难度关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#definitions-items-spells-and-difficulty)。
 
 ### 一个区域与一个点不确立战术
 
@@ -95,7 +95,7 @@ before 包装器先于治疗及双方名册。更早的探索实体群或当前�
 
 新入场清 F90。后续区域消费者将区域0 关联 F90，并独立于存储触发区域字节写激活位。区域15 是 NONE 哨兵值，不是十五个多边形。清标志90–105 自身不声称每个 AI 临时字段均已重置。MOVE_TO|0 通过低半字节点索引选择 point 0；FOLLOW_ENEMY|9 编码战斗员137（FOLLOW_ENEMY|0 编码128）。FOLLOW_TARGET|0 保留目标操作数0。这些是消费者关系，不是选定路线、到达的点、目标或攻击。在本指南终点没有已证明触发的声明区域。
 
-完整随机战斗表排除 Battle23，因此完成 F523 不升级这些类型。完整中立表同样没有 Battle23 组：F523 已设置则跳过扫描，未设置则扫描至末而不匹配。均不增加新中立角色，也不改用158/159。[记录/激活关联](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#twelve-enemy-records-and-initialization)和[区域/点关联](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#region-0-and-point-0-are-inputs-not-fired-triggers)保留完整字节与排除证据。不从 LEADER、ATTACKER、STEALTH 或编队布置推断战术意图。
+完整随机战斗表排除 Battle23，因此完成 F523 不升级这些类型。完整中立表同样没有 Battle23 组：F523 已设置则跳过扫描，未设置则扫描至末而不匹配。均不增加新中立角色，也不改用158/159。[记录/激活关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#twelve-enemy-records-and-initialization)和[区域/点关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#region-0-and-point-0-are-inputs-not-fired-triggers)保留完整字节与排除证据。不从 LEADER、ATTACKER、STEALTH 或编队布置推断战术意图。
 
 ## 加载战场重建行动者身份
 
@@ -113,7 +113,7 @@ before 包装器先于治疗及双方名册。更早的探索实体群或当前�
 
 完整加载应用地图标志复制/宝箱覆盖，将源码原点 `(23,14)`、大小27x16 裁切到工作原点 `(0,0)`。战斗 layer1 范围终点为 `(26,15)*384`；其他图层操作数仍是地图区域数据。编队、敌人、区域及点已是局部坐标；辅助程序不再次减23/14。布置0 `(4,5)` 对应源码 Map27 `(27,19)`，Willard `(18,7)` 对应 `(41,21)`，point0 `(22,3)` 对应 `(45,17)`。这是裁切对应，不是观察到的从传入 `(0,0)` 传送位置移动，也不证明地形合法性。LoadBattle 不重跑 CheckBattle；传入区域字节可改变裁切。
 
-地图精灵、基础 VInts 和地形后，LoadBattle 提交地图音乐并淡入。Battle23 不走 Battle44 计时窗口分支。只有返回才允许 start 包装器及新入场终点。[加载/实体/裁切关联](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#battle-load-entities-and-coordinate-domains)区分物理声明、视野参数和完整加载几何。仅调用返回既不证明精确可见时序，也不证明可用控制。
+地图精灵、基础 VInts 和地形后，LoadBattle 提交地图音乐并淡入。Battle23 不走 Battle44 计时窗口分支。只有返回才允许 start 包装器及新入场终点。[加载/实体/裁切关联（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#battle-load-entities-and-coordinate-domains)区分物理声明、视野参数和完整加载几何。仅调用返回既不证明精确可见时序，也不证明可用控制。
 
 ## 挂起入场使用传入当前状态
 
@@ -128,11 +128,11 @@ before 包装器先于治疗及双方名册。更早的探索实体群或当前�
 | 视野/加载 | 显式战斗员0；重建实体查找 | 无显式 d0 清零；传入参数与当前状态加载 |
 | 下一边界 | ActivateEnemies 和初始回合前 | 读取/执行已保存单次行动前 |
 
-HP/MP/状态/物品/职业、成员资格、位置/激活、区域、地图/战斗与保存的行动/顺序仍是传入前提。改变 CURRENT_BATTLE 可选择另一战斗数据/中立实体群，即使传入27/23。LoadBattle 重建物理行动者并加载实际当前地图/地形；视野参数不选择该地图。不由此保证全新健康、固定行动者数量、自动修复或跨进程持久性。即使保存顺序哨兵值分支也在本指南终点之后。[保存入场研究](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#suspendedcurrent-state-entry-and-changed-premises)负责这些改变状态示例，不是已游玩的恢复演示。
+HP/MP/状态/物品/职业、成员资格、位置/激活、区域、地图/战斗与保存的行动/顺序仍是传入前提。改变 CURRENT_BATTLE 可选择另一战斗数据/中立实体群，即使传入27/23。LoadBattle 重建物理行动者并加载实际当前地图/地形；视野参数不选择该地图。不由此保证全新健康、固定行动者数量、自动修复或跨进程持久性。即使保存顺序哨兵值分支也在本指南终点之后。[保存入场研究（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#suspendedcurrent-state-entry-and-changed-premises)负责这些改变状态示例，不是已游玩的恢复演示。
 
 ## 证据审阅与保留限制
 
-**已确认溯源：**已接受 main `424b8eaeb2f467f3f714d39b73d255f2a3c9dd27` 包含 #932/PR935 和 #934/PR936。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#reproduction-retained-results-and-limits)保留精确符号/地址、完整选定记录与源码关联。本指南不增加原版观察或提取。
+**已确认溯源：**已接受 main `424b8eaeb2f467f3f714d39b73d255f2a3c9dd27` 包含 #932/PR935 和 #934/PR936。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md#reproduction-retained-results-and-limits)保留精确符号/地址、完整选定记录与源码关联。本指南不增加原版观察或提取。
 
 原英文切片的对抗审阅阅读完整已接受研究和前篇，比较全部布置/敌人行、共享字段、数量和生命周期区别。选定公共 fixture/schema/验证器边界如下：
 
@@ -148,4 +148,4 @@ schema 在 `schemas/`；验证器在 `src/sf2tool/h2/`。既有窄路线为 `uv 
 
 保留 [#932 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/932#issuecomment-6176988463)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/935#issuecomment-6177066791)，包括对比较0.081s、CI38626848120、已完成诊断与前篇修正；[#934 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/934#issuecomment-6177126852)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/936#issuecomment-6177145045)保留 CI38627848438、局部输入缺席、#928 结果及其失败。原英文切片执行直接文档/diff、数值/顺序/表/链接/英文/私有检查与 `git diff --check`，然后检查已配置干净已提交 planner 及实际最终 head CI。不单因正文选择局部一揽子套件。
 
-**未知：**自然准入；实际标志、出战队伍/HP/职业/物品、模式/别名、位置/激活、当前/保存区域/地图/战斗和行动/顺序；脚本/加载/淡入淡出/VInt 服务完成、可见/可听名册/表现、可用控制和持久性。本指南及其配置均不证明已执行战术、显示敏捷、结果、首领死亡、战后或 Creed 进展。独立的[结果与洞穴返回指南](battle23-outcomes-and-burrow-return.md)使用已修正接受的 #937 从行动后检查继续，不填补两边界间未观察的行动。这些缺口仍受 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)约束，不创建自动运行时队列、新重制验收或完整战役完成声明。
+**未知：**自然准入；实际标志、出战队伍/HP/职业/物品、模式/别名、位置/激活、当前/保存区域/地图/战斗和行动/顺序；脚本/加载/淡入淡出/VInt 服务完成、可见/可听名册/表现、可用控制和持久性。本指南及其配置均不证明已执行战术、显示敏捷、结果、首领死亡、战后或 Creed 进展。独立的[结果与洞穴返回指南](battle23-outcomes-and-burrow-return.md)使用已修正接受的 #937 从行动后检查继续，不填补两边界间未观察的行动。这些缺口仍受 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)约束，不创建自动运行时队列、新重制验收或完整战役完成声明。

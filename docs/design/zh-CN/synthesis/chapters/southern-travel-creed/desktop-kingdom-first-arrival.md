@@ -1,6 +1,6 @@
 # Desktop Kingdom：首次抵达与条件控制
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**Map22 全新探索抵达构建新实体群，编排出战队伍降落和讨论，再安装跟随，有条件地返回探索。
 **推断：**场景表现 Goliath 将缩小的队伍放到桌上；Peter 四处查看的建议给出下一局部目标。
@@ -8,7 +8,7 @@
 
 本指南从[魔法门转移](creed-magic-door-and-desktop-transfer.md)获准的全新 Map22 探索端点接续；
 基线首次抵达要求 F422 未设置，F522/F776 未设置。Fnnn 表示标志 nnn。
-仅使用[已接受抵达研究](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md)，依据
+仅使用[已接受抵达研究（英文）](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md)，依据
 [Issue #903](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/903) 及
 [Standard 路线图协议](../../../documentation-roadmap.md#当前基线与近期综合)。
 止于条件局部首次抵达返回/重复，在局部交互、独立 `cs_5996E` 分支或 Battle22 开场、名册及结果之前。
@@ -246,7 +246,7 @@ Mode 0 使用 eas_ControlledCharacter；mode 1 使用源码名 eas_Raft（Carava
 
 **已确认溯源：**已接受 main `e120a9b6890527eb018e081f1c5b1907c21155bc` 包含
 [PR902](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/902) 修正研究。
-其[研究所有者](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md#agreement-and-provenance)固定
+其[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md#agreement-and-provenance)固定
 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，
 USA 零售 ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
 它负责完整 30 行实体群、136 命令场景、七个自定义/十三个内联体、十五个文本/控制符/说话者关联及具名直接使用方。
@@ -256,7 +256,7 @@ USA 零售 ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0
 其 [schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json) 和[验证器](../../../../../../src/sf2tool/h2/map_init.py)，
 以及 [map-script fixture sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、
 其 [schema](../../../../../../schemas/h2/map-script-engine-fixture.schema.json) 和[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)。
-既有所有者为 `h2 map-init` 和 `h2 map-script-engine`；已接受[保留比较配方](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#reproduction-and-review-boundary)
+既有所有者为 `h2 map-init` 和 `h2 map-script-engine`；已接受[保留比较配方（英文）](../../../../../research/chapters/grans-opening/battle06-to-battle07-content-route.md#reproduction-and-review-boundary)
 使用 map-init 相等、`_verify_map_script_engine_fixture` 和 `_cutscene_facts` 相等，不重新生成载荷。
 Map-init 提供选定分发器/指针顺序。Map-script 汇总及动作桥事实确立具名流/处理器边界，不确立每项局部动作、文本、分配或服务声明。
 完整已接受选定直接源码关联补充它们；任何汇总都不证明自然到达、表现或组合运行时成功。此边界未发现冲突的已接受所有者。
@@ -292,6 +292,6 @@ Map-init 提供选定分发器/指针顺序。Map-script 汇总及动作桥事�
 
 这些是静态区分条件，不是已执行场景。**未知：**自然到达；传入标志、配置、出战队伍/HP/职业/查找、模式/木筏/待处理状态；
 服务和并发动作完成；渲染 ORB/影子/尺寸/姿态/NPC 演出；可听声音；可用控制及存档持久性。
-依 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
-和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，这些不创建自动运行时队列。
+依 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)
+和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，这些不创建自动运行时队列。
 后续局部交互和战后/Battle22 内容仍独立；战役及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)均未完成。

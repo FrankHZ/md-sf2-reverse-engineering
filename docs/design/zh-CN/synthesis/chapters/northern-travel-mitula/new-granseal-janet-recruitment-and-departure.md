@@ -1,6 +1,6 @@
 # New Granseal Janet 招募与离开
 
-> 本文是[规范英文原文：New Granseal Janet Recruitment and Departure](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-janet-recruitment-and-departure.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文：New Granseal Janet Recruitment and Departure](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-janet-recruitment-and-departure.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 队伍准备离开 New Granseal 时，Janet 找到他们。她询问 Elric，说明自己想陪伴他，即便被警告旅途危险仍坚持同行。队伍接受她；招募宣布之后，场景请求新的局部跟随链。**推断：**这是自愿团聚与接纳，由脚本对话和手势表达。没有 yes/no 菜单或玩家拒绝分支。
 
@@ -8,7 +8,7 @@
 
 ## 证据与阅读边界
 
-已接受 Layer A 所有者是 [New Granseal Janet 招募与离开](../../../../../research/chapters/northern-travel-mitula/new-granseal-janet-recruitment-and-departure.md)，经 [#973 / PR975](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/975)接受。它固定 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 及 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。以下源码路径相对其 `disasm/`；Fnnn 表示标志 nnn。路线图拥有原切片的 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+已接受 Layer A 所有者是 [New Granseal Janet 招募与离开（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-janet-recruitment-and-departure.md)，经 [#973 / PR975](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/975)接受。它固定 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 及 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。以下源码路径相对其 `disasm/`；Fnnn 表示标志 nnn。路线图拥有原切片的 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。
 
 [城镇/Peter 指南](../eastern-parmecia/new-granseal-town-through-peter-introduction.md)与 [Astral 返回指南](new-granseal-return-and-astral-following.md)说明既有人口、随从声明顺序与觐见。[成员资格合同](../../../contracts/party/party-membership-state.md)拥有 joined/active 状态与重建时序；[名册合同](../../../contracts/party/party-roster-state.md)拥有地图脚本命令边界。Janet 已接受研究增加选定数值与实际被调用方审查，不扩大这些合同较早的符号或处理器局部范围。研究描述原版；本指南不选择重制行为。
 
@@ -18,7 +18,7 @@
 
 谓词不测试 F804、Cannon、Dynamite、F70、Elric 成员资格、HP 或出战容量。剧情关于 Elric 的陈述与早期 Cannon/Dynamite 事务都不增加该测试。传入805/806 可独立于这些历史准入或抑制相遇。
 
-坐标匹配需要真实事件产生器。步行须获准移动，到达布局属性 `$1400` 路径，位置为 `entityscriptengine_2.asm:loc_5294`，提交 event6。待处理请求是单个可变槽；能否保留以及移动/布局条件都是前提。`ProcessMapEvent` 先清除请求类型，区域（事件）处理器才在 physical0 安装 `eas_Init`、加载坐标字并调用 `RunMapSetupZoneEvent`。包装器选择当前配置/表，却不重建行动者。直接调用场景绕过区域（事件）谓词，自身不写调用方806。见已接受的[请求状态](../../../../../research/world/map-event-request-state.md)与[请求消费](../../../../../research/world/map-event-request-consumption.md)所有者。
+坐标匹配需要真实事件产生器。步行须获准移动，到达布局属性 `$1400` 路径，位置为 `entityscriptengine_2.asm:loc_5294`，提交 event6。待处理请求是单个可变槽；能否保留以及移动/布局条件都是前提。`ProcessMapEvent` 先清除请求类型，区域（事件）处理器才在 physical0 安装 `eas_Init`、加载坐标字并调用 `RunMapSetupZoneEvent`。包装器选择当前配置/表，却不重建行动者。直接调用场景绕过区域（事件）谓词，自身不写调用方806。见已接受的[请求状态（英文）](../../../../../research/world/map-event-request-state.md)与[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)所有者。
 
 Map6 有序 default/F701/F702 配置选择，以及独立的 F802 优先、随后 F706 init 仍适用。三个配置共用此区域（事件）表与 init。F802 已设时，init 把132 移到 `(11,18)` Down；否则 F706 把138 移到 `(63,63)`、139 移到 `(15,23)` Down。这些是当前查找写入。805/806 均不选择人口或构建 Janet。Default 在 `(18,25)` Up 有固定 Peter7，除非已有 follower7 映射抑制；701/702 居民列表没有固定 Peter。其139 是**城镇 guard**，分别声明在 `(11,12)` Left、`(13,24)` Up 或 `(18,28)` Up。它区别于城堡 Astral139 和 B31，即使叙事顾问为 Astral。
 

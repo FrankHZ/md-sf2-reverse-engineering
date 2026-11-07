@@ -5,7 +5,7 @@
 - 现代化：**允许** 在准入域内使用引擎原生缓冲与平台 `memmove` 等价物
 - 未知：零长度支持、跨符号边界顺序、地址/长度回绕、畸形或硬件映射范围、调用方可达性、原子性、并发、时序与硬件效果
 
-> 本文件是 [`byte-copy-service.md`](../../../contracts/system/byte-copy-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`byte-copy-service.md`（英文规范源）](../../../contracts/system/byte-copy-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 
@@ -34,7 +34,7 @@
 
 fixture 中“destination is higher”措辞只通过原版源条件解读：`cmpa.l a0,a1` 后接带符号大于 `bgt.w`。它不得被静默加宽为任意 32 位地址表示上的无符号比较。
 
-受限源时间线对照固定[`bytecopy.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/bytecopy.asm)检查，并由所属[`technical-services.md`](../../../../research/system/technical-services.md)描述。可执行验证器仍是[`services.py`](../../../../../src/sf2tool/h2/services.py)。
+受限源时间线对照固定[`bytecopy.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/bytecopy.asm)检查，并由所属[`technical-services.md`（英文）](../../../../research/system/technical-services.md)描述。可执行验证器仍是[`services.py`](../../../../../src/sf2tool/h2/services.py)。
 
 本合同**不**消费 `expected.resourceFacts`、`expected.soundDriverFacts`、`expected.inputFacts`、`expected.randomServicesFacts`、`expected.sramFacts`、音乐等待事实或聚合 fixture 的任何其他兄弟字段。
 
@@ -164,12 +164,12 @@ PrivateOriginalProvenance {
 
 ## 跨系统分离
 
-- [`map-palette-data`](../../../contracts/graphics/map-palette-data.md) 拥有其源码形状 32 字节复制交接与调色板规则，而非通用 `CopyBytes` 微实现。
-- [`save-system`](../../../contracts/system/save-system.md) 拥有 `CopyBytesToSram` 与 `CopyBytesFromSram`，包括其交错物理字节/校验和行为。那些是不同例程。
-- [`graphics-service-state`](../../../contracts/graphics/graphics-service-state.md) 拥有解压服务边界，而非通用字节复制行为。
-- [`interrupt-dma-and-trap-state`](../../../contracts/system/interrupt-dma-and-trap-state.md) 拥有已接受 DMA、VInt 与 trap 接缝。本合同不建立转移调度或中断行为。
+- [`map-palette-data`](../graphics/map-palette-data.md) 拥有其源码形状 32 字节复制交接与调色板规则，而非通用 `CopyBytes` 微实现。
+- [`save-system`](save-system.md) 拥有 `CopyBytesToSram` 与 `CopyBytesFromSram`，包括其交错物理字节/校验和行为。那些是不同例程。
+- [`graphics-service-state`](../graphics/graphics-service-state.md) 拥有解压服务边界，而非通用字节复制行为。
+- [`interrupt-dma-and-trap-state`](interrupt-dma-and-trap-state.md) 拥有已接受 DMA、VInt 与 trap 接缝。本合同不建立转移调度或中断行为。
 - 窗口、菜单、标题、挂起、实体与图形合同保留其自身调用方事务与可见结果。对 `CopyBytes` 的源调用不把那些语义转移到这里。
-- `tech.services.music-wait` 与[`audio-system`](../../../contracts/interface/audio-system.md) 保持独立；本合同不拥有等待、邮箱、驱动或可听结果规则。
+- `tech.services.music-wait` 与[`audio-system`](../interface/audio-system.md) 保持独立；本合同不拥有等待、邮箱、驱动或可听结果规则。
 
 ## H4 验收面
 

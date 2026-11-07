@@ -1,6 +1,6 @@
 # Battle26：激活与首次单次行动交接
 
-> 本文是[规范英文原文：Battle26: activation and the first turn handoff](../../../../synthesis/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle26: activation and the first turn handoff](../../../../synthesis/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 **已确认：** 未变的新初始化之后，即便队伍不触发三个区域中的任何一个，Battle26 十五名存活敌人也可进入行动顺序。其 STARTING 模式也产生空生成列表。区域激活、生成与单次行动资格是独立规则。最终首个行动者依赖实际队伍、当前敏捷与连续 RNG；本指南止于首次调用 ExecuteIndividualTurn，早于任何单次行动执行。
 
@@ -8,9 +8,9 @@
 
 ## 范围与连续性
 
-本指南在新 LoadBattle 与 start 包装器返回后的 `BattleLoop:@Start`，接续 [Battle26 初始编队与中立 Higins](battle26-initialization-and-roster.md)。消费完整已接受[激活与分发研究](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md)，包括变化状态分析。[准入与对峙指南](battle26-admission-and-geshp-confrontation.md)拥有更早剧情场景。场景行动者与初始化指令集名称均不建立谁控制单次行动。
+本指南在新 LoadBattle 与 start 包装器返回后的 `BattleLoop:@Start`，接续 [Battle26 初始编队与中立 Higins](battle26-initialization-and-roster.md)。消费完整已接受[激活与分发研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md)，包括变化状态分析。[准入与对峙指南](battle26-admission-and-geshp-confrontation.md)拥有更早剧情场景。场景行动者与初始化指令集名称均不建立谁控制单次行动。
 
-Standard 严谨级别区分区域几何、已检查标志、激活字、生成模式、调度记录与被调用行动。这是 [#514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下 [#1014](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1014)的英文 Layer B 结果，[路线图（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)拥有当前协议。不增加原版发现、引擎政策或运行时观察。已执行单次行动、战术、移动、伤害、结果、招募与后续探索在本指南终点外。[Battle26 结果与 Higins 招募（中文）](battle26-outcomes-and-higins-recruitment.md)从已接受结果证据继续到返回 MainLoop 交接，不提供中间交战记录或之后城镇准入。独立 UI 工作不在此提供证据。
+Standard 严谨级别区分区域几何、已检查标志、激活字、生成模式、调度记录与被调用行动。这是 [#514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下 [#1014](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1014)的英文 Layer B 结果，[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有当前协议。不增加原版发现、引擎政策或运行时观察。已执行单次行动、战术、移动、伤害、结果、招募与后续探索在本指南终点外。[Battle26 结果与 Higins 招募（中文）](battle26-outcomes-and-higins-recruitment.md)从已接受结果证据继续到返回 MainLoop 交接，不提供中间交战记录或之后城镇准入。独立 UI 工作不在此提供证据。
 
 以下全部**已确认**原版声明是从固定 SF2DISASM [`c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)与锁定 USA retail 基线的已接受 Layer A 作条件推导，不是新 Battle26 游玩。研究所有者保留指令地址、源码路径、别名与复现命令。Fnnn 表示标志 nnn；激活表所列为十六进制字。
 
@@ -106,7 +106,7 @@ Type 3 用三角形1/2/3。其他类型先试三角形1/2/4，仅当前者无符
 
 特卖解码器选 `DEALS_ITEMS+floor(item/2)`，偶数物品在高半字节，奇数在低半字节。若伪 X 通过、ring 数量字非零，且非15 伪触发引用持有 F90–104 标志，普通激活设置器向 Goddess Staff 数量 OR 位 0，或在次要路径 OR 位 0/1。其他数量位保留；已设位未必改变数量。这是条件位写入，不是无条件加 staff、饱和递增、商店事务或已观察购物证明。
 
-未变新 Battle26 中，F90–105 已清，无几何设置它们。即便其他特卖字节符合，也找不到持有触发标志，因此额外调用不写特卖。变化位置/标志/特卖可改变结果；同前缀更早激活写入已可见。[研究别名连接](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#the-extra-fall-through-and-its-selected-ram-alias)保留精确地址/getter/setter 和指令溯源；源码 BUG 注释本身不是证明。
+未变新 Battle26 中，F90–105 已清，无几何设置它们。即便其他特卖字节符合，也找不到持有触发标志，因此额外调用不写特卖。变化位置/标志/特卖可改变结果；同前缀更早激活写入已可见。[研究别名连接（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#the-extra-fall-through-and-its-selected-ram-alias)保留精确地址/getter/setter 和指令溯源；源码 BUG 注释本身不是证明。
 
 ## 区域钩子返回，新生成被跳过
 

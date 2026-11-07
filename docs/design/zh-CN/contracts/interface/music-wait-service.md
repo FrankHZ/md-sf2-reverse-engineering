@@ -5,11 +5,11 @@
 - 现代化：**允许** 在源兼容轨迹背后使用引擎原生异步完成、事件、future 或回调
 - 未知：调用方准入、命令传输与接受、声音侧标志生命周期、可听完成、过渡行为、调度、经过时间、失败处理与呈现
 
-> 本文件是 [`music-wait-service.md`](../../../contracts/interface/music-wait-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`music-wait-service.md`（英文规范源）](../../../contracts/interface/music-wait-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 已接受的现代有限音乐策略
 
-[ADR0010](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)接受此有界现代执行策略。下文原版静态证据与未知项保留各自范围；本节是产品决定，不是原版时序主张。
+[ADR0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)接受此有界现代执行策略。下文原版静态证据与未知项保留各自范围；本节是产品决定，不是原版时序主张。
 
 1. 语义音乐请求创建进度为 0 的乐段/代次。实际播放器启动时间独立。可选类型化内容 `modernEndStep` 是正值的有限音乐终点；缺少该值时允许普通播放，但不允许依赖它的确定性等待。初始有原版依据的准入是不中断的 MUSIC_JOIN19/end505。其他创作的有限配置使用同一规则。
 2. 每次既有的已绑定公共服务推进一次进度，以终点为上限，即使实体服务禁用也如此。这不增加实体 tick。音乐在门采样及既有实体/视图/窗口/立绘上下文服务之前推进；前置的原始文本工作也遵循此顺序。
@@ -20,7 +20,7 @@
 
 辅助函数不处于活动状态时，地图/区域/战斗选择变化会使跟踪历史与有限阶段失效。返回旧上下文也不能恢复它们。宿主观察到结果前可能发生多次变化，因此当前地图选择无法重建实际的上一曲目栈。失效后的首次显式音乐请求只建立当前乐段，不建立上一曲目栈或有限配置；后续不同请求才可再次绑定已知上一曲目与有限配置。没有已知历史的上一曲目请求仍为 Unsupported。此边界保留普通播放，排除未知历史，而不猜测已保存曲目。
 
-原版首通道序号 505 被复用为显式选定的现代步数终点。它不是 505 次 VInt、实体更新或 PCM 推导时长。原版定时器重载/轮询相位、队列传输与中断对齐仍未知。缺少有限配置时仍显式保留 `field-music-progress-unbound` Unsupported。循环音乐与既有未绑定播放保留独立范围。[执行](../../../../../remake/docs/application/session-and-programs.md#modern-finite-music)与[验证](../../../../../remake/docs/verification/field-programs.md#modern-finite-music-observation)拥有实现与实际宿主证据。
+原版首通道序号 505 被复用为显式选定的现代步数终点。它不是 505 次 VInt、实体更新或 PCM 推导时长。原版定时器重载/轮询相位、队列传输与中断对齐仍未知。缺少有限配置时仍显式保留 `field-music-progress-unbound` Unsupported。循环音乐与既有未绑定播放保留独立范围。[执行（英文）](../../../../../remake/docs/application/session-and-programs.md#modern-finite-music)与[验证（英文）](../../../../../remake/docs/verification/field-programs.md#modern-finite-music-observation)拥有实现与实际宿主证据。
 
 ## 目的
 
@@ -58,7 +58,7 @@
 
 fixture 字段名包含“FrameCount”，但本合同只把其值解读为提供给 `Sleep` 的源参数。精确帧节奏与墙钟时长不由该 fixture 建立。
 
-受限时间线直接在固定[`music.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/sound/music.asm)中审查，并由所属[`technical-services.md`](../../../../research/system/technical-services.md)总结。可执行静态验证器是[`services.py`](../../../../../src/sf2tool/h2/services.py)。
+受限时间线直接在固定[`music.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/sound/music.asm)中审查，并由所属[`technical-services.md`（英文）](../../../../research/system/technical-services.md)总结。可执行静态验证器是[`services.py`](../../../../../src/sf2tool/h2/services.py)。
 
 验证器解析 H1 条目身份，并在已接受 ROM SHA 溯源下检查具名源片段。它不建立该函数体、宏展开或指令编码的逐字节 H1/ROM 一致性。那些更强比较此处不是已确认事实或 H4 要求。
 
@@ -71,7 +71,7 @@ fixture 字段名包含“FrameCount”，但本合同只把其值解读为提�
 | 记录 | 本合同后的设计所有权 |
 | --- | --- |
 | `tech.services.music-wait` | 本合同；注册前当前未关联 |
-| `tech.services.byte-copy` | 仍归[`byte-copy-service`](../../../contracts/system/byte-copy-service.md) |
+| `tech.services.byte-copy` | 仍归[`byte-copy-service`](../system/byte-copy-service.md) |
 | `tech.services.resource-icon` | 仍归 `ui-graphics-asset-data` |
 | `tech.services.resource-graphics` | 仍归 `text-and-font-system` |
 | `tech.services.resource-text-trees` | 仍归 `text-and-font-system` |
@@ -118,9 +118,9 @@ fixture 字段名包含“FrameCount”，但本合同只把其值解读为提�
 
 ### 独立所有者等待语义
 
-[interrupt/DMA/trap 合同](../../../contracts/system/interrupt-dma-and-trap-state.md) 拥有 `Sleep` 与 `WaitForVInt` 的已接受静态行为：正源参数重复其等待握手。本合同只保留调用顺序与参数 `3`。它不消费中断 fixture、不定义 VInt 节奏，也不把三个源等待迭代转换成墙钟时间。
+[interrupt/DMA/trap 合同](../system/interrupt-dma-and-trap-state.md) 拥有 `Sleep` 与 `WaitForVInt` 的已接受静态行为：正源参数重复其等待握手。本合同只保留调用顺序与参数 `3`。它不消费中断 fixture、不定义 VInt 节奏，也不把三个源等待迭代转换成墙钟时间。
 
-同样，[audio-system 合同](../../../contracts/interface/audio-system.md) 拥有声音驱动数据、命令选择、受限播放状态、通道行为与既有可听/时序 未知。本合同不把其谓词重新解读为可听完成。
+同样，[audio-system 合同](audio-system.md) 拥有声音驱动数据、命令选择、受限播放状态、通道行为与既有可听/时序 未知。本合同不把其谓词重新解读为可听完成。
 
 ## 实现无关模型
 
@@ -173,8 +173,8 @@ MusicWaitServiceEvidence
 
 ## 跨系统分离
 
-- [`audio-system`](../../../contracts/interface/audio-system.md) 保留声音命令、Z80 驱动/通道状态、受限播放观察与所有可听、过渡、淡入淡出、恢复、优先级、混音与时序边界。
-- [`interrupt-dma-and-trap-state`](../../../contracts/system/interrupt-dma-and-trap-state.md) 保留声音 trap 传输事实与 `Sleep`/`WaitForVInt` 控制语义。本合同不消费该 fixture。
+- [`audio-system`](audio-system.md) 保留声音命令、Z80 驱动/通道状态、受限播放观察与所有可听、过渡、淡入淡出、恢复、优先级、混音与时序边界。
+- [`interrupt-dma-and-trap-state`](../system/interrupt-dma-and-trap-state.md) 保留声音 trap 传输事实与 `Sleep`/`WaitForVInt` 控制语义。本合同不消费该 fixture。
 - 菜单、服务、战斗、地图、故事与特殊画面所有者保留其自身调用方与场景含义。直接调用方清单与自然可达性在本合同之外。
 - `byte-copy-service`、输入、随机性、SRAM、文本/字体、UI 图形与未使用技术资源保持兄弟合同，其事实与关联不变。
 - 禁用声音行为、命令丢失、队列压力、可重入性、取消与失败恢复保持 **未知**，而非从源循环推断。

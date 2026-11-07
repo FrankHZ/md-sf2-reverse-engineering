@@ -3,7 +3,7 @@
 <a id="map-design-principles-evidence-bounded-structural-patterns"></a>
 <a id="地图设计原则证据受限的结构模式"></a>
 
-> 本文件是 [`map-design-principles.md`](../../../synthesis/themes/map-design-principles.md) 的中文镜像，审阅基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。主题与现有详细指南之间使用中文导航；明示英文规范源、证据、研究、ADR 与引擎/验收的链接保留各自所有者。全部已索引设计文档已有独立验收的完整中文镜像；正文中的历史修订、审计与复现保留英文来源当时的范围，不产生新原版证据。当前同步规则见[中文路线图](../../documentation-roadmap.md)。
+> 本文件是 [`map-design-principles.md`（英文规范源）](../../../synthesis/themes/map-design-principles.md) 的中文镜像，审阅基线为 `f154275e875bd6cfd13496784a2f2ddaba775677`。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。主题与现有详细指南之间使用中文导航；英文规范源与原始证据保留各自所有者；研究、ADR 与引擎文档没有中文镜像时明确标注英文回退。先前已接受的设计语料已有完整中文镜像，新增战斗分析页仍为 `pending`；正文中的历史修订、审计与复现保留英文来源当时的范围，不产生新原版证据。当前同步规则见[中文路线图](../../documentation-roadmap.md)。
 
 探索把一次行动尝试与它留下的状态连接起来。玩家移动或转向，面向一个行动者或可搜索的地点，然后请求交互。当前地图、标志、工作地形和当前活动的行动者共同决定该请求能否到达处理器。一次已返回的对话可能改变标志或配置交通工具；离开再回来时，地点可能根据这些条件重建。战斗返回又能改变这次重建。继续游玩与保存游戏是两个独立边界。
 
@@ -24,19 +24,19 @@
 
 ## 判断边界
 
-当前 Standard 约定见[文档路线图（英文）](../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)与 [Issue #1276](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1276)。读者应能沿着“条件 → 尝试行动 → 状态改变或被拒绝 → 继续执行或返回”理解流程。只修改现有的本主题所有者。研究、合同、其他主题、代码、UI/UX 与中文镜像仍归各自所有者。解释已接受事实不需要空间分析、原版观察或验证平台。
+当前 Standard 约定见[文档路线图](../../documentation-roadmap.md#当前基线与近期综合)与 [Issue #1276](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1276)。读者应能沿着“条件 → 尝试行动 → 状态改变或被拒绝 → 继续执行或返回”理解流程。只修改现有的本主题所有者。研究、合同、其他主题、代码、UI/UX 与中文镜像仍归各自所有者。解释已接受事实不需要空间分析、原版观察或验证平台。
 
-保持四条前沿独立：已接受的原版静态知识延伸到选定结尾与重置路径；有界原版观察有各自的 [Map3–Battle01 证据谱系（英文）](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier)；英文综合在具名范围内使用这些证据；生产能力归[重制能力台账（英文）](../../../../../remake/docs/capability-status.md)所有。已接受的私有连续 [Map3–Battle01 胜利与可用返回（英文）](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)没有实现 Polca、木筏行程或 Taros。更广路线、碰撞/呈现用例与耐久持久性，在其所有者如此标记的地方仍为 **未知**。重新组织本说明不确立全游戏完整性。英文来源与中文镜像的独立验收及后续来源稳定性，另由路线图负责。
+保持四条前沿独立：已接受的原版静态知识延伸到选定结尾与重置路径；有界原版观察有各自的 [Map3–Battle01 证据谱系](../milestones/map3-battle01-readiness.md#已接受原版前沿)；英文综合在具名范围内使用这些证据；生产能力归[重制能力台账（英文）](../../../../../remake/docs/capability-status.md)所有。已接受的私有连续 [Map3–Battle01 胜利与可用返回](../milestones/map3-battle01-readiness.md#当前已接受里程碑)没有实现 Polca、木筏行程或 Taros。更广路线、碰撞/呈现用例与耐久持久性，在其所有者如此标记的地方仍为 **未知**。重新组织本说明不确立全游戏完整性。英文来源与中文镜像的独立验收及后续来源稳定性，另由路线图负责。
 
 ## 行动与交互
 
 ### 移动或转向尚未选择对话
 
-**已确认静态：** 普通受控移动先按边界和行动者阻挡评估方向输入，再检查候选点的工作布局标记。阻挡的行动者能阻止进入标记分支。受控行走依次判断进入 Caravan、进入木筏、门、传送、区域（事件），然后判断可通过性。门处理会在变更后重新读取地形。这些规则在移动内部运作，与配置选择或行动按键优先级分开。[地图合同（英文）](../../../contracts/world/map-exploration.md#areas-events-and-items)与[木筏请求产生方审阅（英文）](../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)保留精确的标记与行动者测试。被阻挡或产生事件的尝试未必推进该行动者的目的地；下方登乘实例能在转向的同时请求事件。
+**已确认静态：** 普通受控移动先按边界和行动者阻挡评估方向输入，再检查候选点的工作布局标记。阻挡的行动者能阻止进入标记分支。受控行走依次判断进入 Caravan、进入木筏、门、传送、区域（事件），然后判断可通过性。门处理会在变更后重新读取地形。这些规则在移动内部运作，与配置选择或行动按键优先级分开。[地图合同](../../contracts/world/map-exploration.md#区域事件与物品)与[木筏请求产生方审阅（英文）](../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)保留精确的标记与行动者测试。被阻挡或产生事件的尝试未必推进该行动者的目的地；下方登乘实例能在转向的同时请求事件。
 
-**已确认有界移动观察：** 实体行动命令分别保留位置、目的地、行进、速度、朝向与行动指针状态。启用的更新先推进运动，再分发下一条命令。启用阻挡标志后，若另一个非空槽位的候选目的地与其曼哈顿距离严格小于 384 内部单位，就可能让移动命令停留在当前指针处，直到能够继续。该命令层谓词不能替代受控行走或载具控制器自身的阻挡测试。[实体移动章节（英文）](../../../contracts/world/map-exploration.md#entity-movement-and-action-timing)与 `sf2-entity-movement-runtime-v1` 拥有十三用例/二十 tick 的边界。转向、安装移动、到达目的地，以及玩家看到移动，是不同主张。
+**已确认有界移动观察：** 实体行动命令分别保留位置、目的地、行进、速度、朝向与行动指针状态。启用的更新先推进运动，再分发下一条命令。启用阻挡标志后，若另一个非空槽位的候选目的地与其曼哈顿距离严格小于 384 内部单位，就可能让移动命令停留在当前指针处，直到能够继续。该命令层谓词不能替代受控行走或载具控制器自身的阻挡测试。[实体移动章节](../../contracts/world/map-exploration.md#实体移动与动作时序)与 `sf2-entity-movement-runtime-v1` 拥有十三用例/二十 tick 的边界。转向、安装移动、到达目的地，以及玩家看到移动，是不同主张。
 
-**已确认静态：** 探索等待与外层分发都在玩家行动之前测试待处理地图事件。若同一轮迭代已经同时看到二者，事件优先。待处理槽位在事件分发前被清除；它不是队列，也不保证每个产生方的请求都能保留。在行动路径内，A 先于 C。A 打开场景菜单路径；C 可以使用同位置的 Caravan、激活实体、检查区域，或退回菜单。实体激活扫描 48 个候选，跳过玩家/随从，并使用自身的距离/朝向和桌面/柜台延伸规则。[控制流合同（英文）](../../../contracts/world/exploration-control-flow.md#player-action-and-entity-interaction-boundary)与[游戏流程研究（英文）](../../../../research/system/gameflow-core.md#main-and-exploration-contract)保留 fixture 所属子集及更广的源码审阅。槽位数量或可见精灵均不能确立有效交谈目标；精确的输入发布时序仍为 **未知**。
+**已确认静态：** 探索等待与外层分发都在玩家行动之前测试待处理地图事件。若同一轮迭代已经同时看到二者，事件优先。待处理槽位在事件分发前被清除；它不是队列，也不保证每个产生方的请求都能保留。在行动路径内，A 先于 C。A 打开场景菜单路径；C 可以使用同位置的 Caravan、激活实体、检查区域，或退回菜单。实体激活扫描 48 个候选，跳过玩家/随从，并使用自身的距离/朝向和桌面/柜台延伸规则。[控制流合同](../../contracts/world/exploration-control-flow.md#玩家动作与实体交互边界)与[游戏流程研究（英文）](../../../../research/system/gameflow-core.md#main-and-exploration-contract)保留 fixture 所属子集及更广的源码审阅。槽位数量或可见精灵均不能确立有效交谈目标；精确的输入发布时序仍为 **未知**。
 
 ### 交谈、搜索、物品使用与区域（事件）的调用方不同
 
@@ -50,11 +50,11 @@
 
 ## 对话与继续执行
 
-已显示的回应仍可能占有本次交互。**已确认原版源码与有界观察：** W1、W2 与普通输入辅助是不同使用方。W1 的接受轮询在输入测试前包含 RNG 抽取/复制与等待工作；W2 有自己的辅助/确认工作。普通 JOIN 输入先测试输入再等待，而且 JOIN 文本没有额外的 W1/W2 token。一行显示文本不对应一种通用的确认继续。[对话合同（英文）](../../../contracts/interface/dialogue-system.md#poll-order-and-distinct-consumers)绑定已到达的原版读取，并把未观察到的交错执行保留为 **未知**。[输入合同（英文）](../../../contracts/interface/input-system.md#runtime-matrix-boundary)的直接采样/输入重复/等待矩阵不能确立所有正常调用方或硬件延迟。
+已显示的回应仍可能占有本次交互。**已确认原版源码与有界观察：** W1、W2 与普通输入辅助是不同使用方。W1 的接受轮询在输入测试前包含 RNG 抽取/复制与等待工作；W2 有自己的辅助/确认工作。普通 JOIN 输入先测试输入再等待，而且 JOIN 文本没有额外的 W1/W2 token。一行显示文本不对应一种通用的确认继续。[对话合同](../../contracts/interface/dialogue-system.md#轮询顺序与不同消费者)绑定已到达的原版读取，并把未观察到的交错执行保留为 **未知**。[输入合同](../../contracts/interface/input-system.md#运行时矩阵边界)的直接采样/输入重复/等待矩阵不能确立所有正常调用方或硬件延迟。
 
-**已确认源码选择规则：** `YesNoPrompt` 返回的 Yes 设置 F89，No 清除 F89，随后执行源码中的延迟/返回。完整使用方包括打开、释放进入时已按住的输入、选择、确认/取消、关闭和结果发布。只写一个标志不能实现该流程。[源码绑定选择所有者（英文）](../../../contracts/world/map-exploration.md#source-bound-choice-consumer)把原版已观察 Yes 路径与现代 No 验证分开。在剧情内容中，[Polca 的 Oddler 选择（中文）](../chapters/eastern-parmecia/polca-oddler-choice-and-following.md)说明拒绝为什么是真实分支：首次拒绝直接返回，后一次拒绝后的劝说则不再提示，直接汇合。选择结果、跟随与调用方标志仍是独立效果。
+**已确认源码选择规则：** `YesNoPrompt` 返回的 Yes 设置 F89，No 清除 F89，随后执行源码中的延迟/返回。完整使用方包括打开、释放进入时已按住的输入、选择、确认/取消、关闭和结果发布。只写一个标志不能实现该流程。[源码绑定选择所有者](../../contracts/world/map-exploration.md#源码绑定的选择使用方)把原版已观察 Yes 路径与现代 No 验证分开。在剧情内容中，[Polca 的 Oddler 选择（中文）](../chapters/eastern-parmecia/polca-oddler-choice-and-following.md)说明拒绝为什么是真实分支：首次拒绝直接返回，后一次拒绝后的劝说则不再提示，直接汇合。选择结果、跟随与调用方标志仍是独立效果。
 
-**已确认的已接受重制政策：** 仅揭示文本的输入只让文本可见，不确认其逻辑等待、不增加 tick/RNG 工作，也不完成服务。实际匹配的视图交付、确认继续和符合条件的显式 Wait 是不同输入。必需的接受轮询工作归获准进入的逻辑使用方；适配器延迟不会产生额外轮询或欠账。[逻辑输入所有者（英文）](../../../contracts/interface/dialogue-system.md#logical-input-ownership-and-implementation-gap)、[ADR0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md)与[宿主语义接口（英文）](../../../../../remake/docs/godot/presentation.md#semantic-interface)拥有这一现代确定性时钟与继续执行边界。脚本指令返回，不会自动等于区域（事件）调用方返回或普通输入变得可用。
+**已确认的已接受重制政策：** 仅揭示文本的输入只让文本可见，不确认其逻辑等待、不增加 tick/RNG 工作，也不完成服务。实际匹配的视图交付、确认继续和符合条件的显式 Wait 是不同输入。必需的接受轮询工作归获准进入的逻辑使用方；适配器延迟不会产生额外轮询或欠账。[逻辑输入所有者](../../contracts/interface/dialogue-system.md#逻辑输入所有权与实现缺口)、[ADR0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md)与[宿主语义接口（英文）](../../../../../remake/docs/godot/presentation.md#semantic-interface)拥有这一现代确定性时钟与继续执行边界。脚本指令返回，不会自动等于区域（事件）调用方返回或普通输入变得可用。
 
 已接受的[快速文本台词政策（英文）](../../../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)省略被跳过字符揭示的台词音效。揭示保留已经播放中的尾音；之后仍可进行合法的音效提示替换。仍需源码特定的确认，但不为每次确认继续都增加声音；确认继续也不等待每段音频尾音。这些是在其获准范围内已接受的现代选择，不是新的原版音频/节奏证据。此处不选择 UI 布局、美术、无障碍、音频资源或额外时钟。
 
@@ -116,7 +116,7 @@ flowchart TD
 
 ### 4. 让可变地形成为派生状态
 
-**已确认加载路径规则：** 非负地图加载与滚动传送从源码重建工作布局，并重放各自所属的标志/宝箱状态。负的当前地图重载在屋顶评估前保留缓冲区。显式重置清空该缓冲区并走保留路径；它不会隐式重新解码源码。地图配置初始化在 `LoadMap` 返回后执行。标志、屋顶、宝箱、踩踏和门变更发生在不同阶段。这些规则归[地图加载合同（英文）](../../../contracts/world/map-exploration.md#load-and-selection-order)所有。
+**已确认加载路径规则：** 非负地图加载与滚动传送从源码重建工作布局，并重放各自所属的标志/宝箱状态。负的当前地图重载在屋顶评估前保留缓冲区。显式重置清空该缓冲区并走保留路径；它不会隐式重新解码源码。地图配置初始化在 `LoadMap` 返回后执行。标志、屋顶、宝箱、踩踏和门变更发生在不同阶段。这些规则归[地图加载合同](../../contracts/world/map-exploration.md#加载与选择顺序)所有。
 
 布局保留与行动者保留分开。滚动可以在保留当前物理实体分布的同时重建地形；显式入场则可以按标志重建随从。因此，局部隐藏或改变的行动指针未必能在全新入场后保留。无论保留缓冲区还是重放标志，都不能确立完整存档/读档持久性或所有碰撞使用方。
 
@@ -152,7 +152,7 @@ Caravan 有另一套生命周期。[Taros 的结果/获取（中文）](../chapt
 
 ## 返回与持久性
 
-**已确认静态路由：** 普通主入口先切换地图，再在探索之前检查战斗准入。返回中的普通 `BattleLoop` 调用则经地图切换进入探索。辅助程序选中的地图或战斗索引，本身不是已加载地图、已完成战斗或输入就绪的返回。`CheckBattle` 检查地图、解锁和触发坐标；其区域矩形是输出，且完成处理可能在选择后清除解锁。应结合实际调用方使用[路由合同（英文）](../../../contracts/world/map-entry-routing-state.md#battle-candidate-selection)，如 row6/row9 分支所示。
+**已确认静态路由：** 普通主入口先切换地图，再在探索之前检查战斗准入。返回中的普通 `BattleLoop` 调用则经地图切换进入探索。辅助程序选中的地图或战斗索引，本身不是已加载地图、已完成战斗或输入就绪的返回。`CheckBattle` 检查地图、解锁和触发坐标；其区域矩形是输出，且完成处理可能在选择后清除解锁。应结合实际调用方使用[路由合同](../../contracts/world/map-entry-routing-state.md#战斗候选选择)，如 row6/row9 分支所示。
 
 | 边界 | 已确立什么 | 必须保持独立的内容 |
 | --- | --- | --- |
@@ -168,7 +168,7 @@ Caravan 有另一套生命周期。[Taros 的结果/获取（中文）](../chapt
 
 [战术结果](tactical-battle-loop.md#胜利败北与获准撤退留下不同状态)保留精确损失、撤退准入与 Battle0 的软件重置例外。选定原版 Battle01 证据谱系到达稳定场景端点及其独立移动扩展；已接受的私有重制则组合出可用返回。这些具名边界强于函数返回，也窄于所有战役返回。
 
-[存档系统（英文）](../../../contracts/system/save-system.md)拥有两个逻辑槽位及进程内存档/读档/复制/删除。后来的[序列化审阅（英文）](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#existing-observations-and-serialization-boundary)把游戏标志、己方角色/物品记录、金币与订单字绑定到存档域。包含这些内容，不证明序列化了每个当前活动行动者、工作布局字或待处理交互，也不证明每条路线的完整持久性。[教堂存档](progression-and-economy.md#教堂恢复转职与存档)区分拒绝、实际 SaveGame 返回、继续与已观察 WitchSuspend 入口；其资源所有者仍有权威。当前重制存档政策 6A 没有用户持久性界面，并会重启到获准状态。本综合不选择耐久存档或恢复语义。
+[存档系统](../../contracts/system/save-system.md)拥有两个逻辑槽位及进程内存档/读档/复制/删除。后来的[序列化审阅（英文）](../../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md#existing-observations-and-serialization-boundary)把游戏标志、己方角色/物品记录、金币与订单字绑定到存档域。包含这些内容，不证明序列化了每个当前活动行动者、工作布局字或待处理交互，也不证明每条路线的完整持久性。[教堂存档](progression-and-economy.md#教堂恢复转职与存档)区分拒绝、实际 SaveGame 返回、继续与已观察 WitchSuspend 入口；其资源所有者仍有权威。当前重制存档政策 6A 没有用户持久性界面，并会重启到获准状态。本综合不选择耐久存档或恢复语义。
 
 ## 当前语料能与不能描述什么
 
@@ -186,7 +186,7 @@ Caravan 有另一套生命周期。[Taros 的结果/获取（中文）](../chapt
 
 以下为原始结构审计及其已解决的 #22 失败记录。其限制适用于当时的这些 fixture；后来接受的章节与使用方证据，在具名范围内限定了旧的地图整体未知措辞，而不会追溯扩大旧观察。
 
-该审计比较了所属研究文章、证据绑定的[地图与探索合同（英文）](../../../contracts/world/map-exploration.md)、fixture 载荷与 ID，以及每个所有者命名的聚焦命令。它特意检查了聚合单位、别名计数、选择量词、变更生命周期，以及运行时测试台是否执行后期剧情或呈现效果。
+该审计比较了所属研究文章、证据绑定的[地图与探索合同](../../contracts/world/map-exploration.md)、fixture 载荷与 ID，以及每个所有者命名的聚焦命令。它特意检查了聚合单位、别名计数、选择量词、变更生命周期，以及运行时测试台是否执行后期剧情或呈现效果。
 
 | 审查面 | 交叉检查与处置 | 保留的边界 |
 | --- | --- | --- |
@@ -227,8 +227,8 @@ Caravan 有另一套生命周期。[Taros 的结果/获取（中文）](../chapt
 | 状态选择的配置 | **已确认静态/运行时** 64 条路由、126 个配置定义、15 条缺失路由、全行扫描、最后设置标志胜出与有界默认/别名用例 | [地图数据研究（英文）](../../../../research/world/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../../../tests/fixtures/h2/map-setup-static-v1.json)）与 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 正常存档组合、所选配置含义与剧情可达性 |
 | 实体/区域（事件）/物品选择器 | **已确认静态/运行时** 1,134 条物理记录、首匹配规则与九个有界选中目标用例 | [地图数据研究（英文）](../../../../research/world/map-data-inventory.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../../../tests/fixtures/h2/map-events-static-v1.json)）与 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本被替换为空实现；后续效果与呈现为 **未知** |
 | 区域描述 | **已确认静态** 75 个目标、227 条物理条目、首匹配形状与正常探索 `d6` 边界 | [地图数据研究（英文）](../../../../research/world/map-data-inventory.md)；`sf2-map-descriptions-static-v1`（[`map-descriptions-static-v1.json`](../../../../../tests/fixtures/h2/map-descriptions-static-v1.json)） | 文本、非标准调用方、运行时可达性与呈现 |
-| 脚本化图块变更 | **已确认静态/运行时接缝** 源码形状的图块复制命令加上七个有界前向复制/更新观察 | [地图/探索合同（英文）](../../../contracts/world/map-exploration.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-block-mutation-runtime-v1`（[`map-block-mutation-v1.json`](../../../../../tests/fixtures/h3/map-block-mutation-v1.json)） | 碰撞/寻路使用方、持久性、正常可达性与可见时序 |
-| 屋顶与踩踏触发 | **已确认有界运行时** 原版处理器与表扫描上的六个命中/未命中/门控用例 | [地图/探索合同（英文）](../../../contracts/world/map-exploration.md)；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../../../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 完整布局效果、碰撞/寻路、音频/呈现、持久性与剧情可达性 |
+| 脚本化图块变更 | **已确认静态/运行时接缝** 源码形状的图块复制命令加上七个有界前向复制/更新观察 | [地图/探索合同](../../contracts/world/map-exploration.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-block-mutation-runtime-v1`（[`map-block-mutation-v1.json`](../../../../../tests/fixtures/h3/map-block-mutation-v1.json)） | 碰撞/寻路使用方、持久性、正常可达性与可见时序 |
+| 屋顶与踩踏触发 | **已确认有界运行时** 原版处理器与表扫描上的六个命中/未命中/门控用例 | [地图/探索合同](../../contracts/world/map-exploration.md)；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../../../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 完整布局效果、碰撞/寻路、音频/呈现、持久性与剧情可达性 |
 | 摄像机接缝 | **已确认有界运行时** 七个目标/目的地/速度处理器用例与状态/服务时间线 | [通用脚本研究（英文）](../../../../research/world/common-scripting.md)；`sf2-map-camera-control-runtime-v1`（[`map-camera-control-v1.json`](../../../../../tests/fixtures/h3/map-camera-control-v1.json)） | 玩家可见摄像机行为与正常剧情可达性 |
 | 过渡接缝 | **已确认有界运行时** 五条解释器流，含 `warp`、有界事件字节、状态字段与直接服务进入/返回 | [通用脚本研究（英文）](../../../../research/world/common-scripting.md)；`sf2-map-script-transition-runtime-v1`（[`map-script-transition-v1.json`](../../../../../tests/fixtures/h3/map-script-transition-v1.json)） | 事件消费、淡入淡出/显示时序、持久性、碰撞/寻路与正常剧情可达性 |
 
@@ -242,4 +242,4 @@ Caravan 有另一套生命周期。[Taros 的结果/获取（中文）](../chapt
 
 剩余限制取决于具体主张。解释另一个已接受章节，可以复用其有来源的条件与分支/返回边界。真正新增的可遍历性、可见取景、自然可达或持久性主张，需要在该精确使用方/生命周期处提供证据；未解决问题留在其所有者处，直到具名决定要求更多。空间度量、渲染语料比较与正常路线采集不是本说明的前提，也不是自动排期工作。
 
-[保留比较（英文）](../../../../../remake/docs/evidence/retained-comparisons.md)保留已完成失败与十二项已完成但未解决的比较。早期审计、原始/修正检查与 CI 仍归各自交接；不会为了清除文字中的问题重跑历史 suite。当时英文修订保留的中文漂移已由独立翻译验收处理；[英文优先政策（英文）](../../../documentation-roadmap.md#authoring-language-policy)继续要求后续变更先审阅内容，再更新受影响版本锚。独立 main-gate 审阅与整合读者验收仍与本主题完成分开。
+[保留比较（英文）](../../../../../remake/docs/evidence/retained-comparisons.md)保留已完成失败与十二项已完成但未解决的比较。早期审计、原始/修正检查与 CI 仍归各自交接；不会为了清除文字中的问题重跑历史 suite。当时英文修订保留的中文漂移已由独立翻译验收处理；[英文优先政策](../../documentation-roadmap.md#编写语言政策)继续要求后续变更先审阅内容，再更新受影响版本锚。独立 main-gate 审阅与整合读者验收仍与本主题完成分开。

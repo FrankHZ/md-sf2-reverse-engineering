@@ -1,12 +1,14 @@
 # 战斗函数控制流合同
 
+> 本文是[英文规范原文](../../../contracts/battle/battle-functions-control-flow.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 - **已确认原版行为：** fixture 受限的单回合路线、Kiwi 转换门、EGRESS 与 Angel Wing 请求顺序、战斗加载与移动命令选择顺序、光标与目标列表控制、战斗与战场菜单分支，以及所列局部动作/结果写入。
 - **推断原版角色：** 源码名与注释暗示网格动画、AI 目标显示、玩家面向菜单用途与战术意图，但那些含义不是可执行证据。
 - **未知或独立：** 自然 Map 3 或 Battle 01 可达性、输入获取与时序、目标列表构建、被调方成功与持久效果、完整取消嵌套、战斗解决、渲染或可听输出、畸形状态行为与平台 ABI。
 
 ## 目的
 
-本合同为共享战斗函数定义实现无关控制边界，其已接受静态证据由 `sf2-battle-functions-static-v1` 拥有。它闭合[Map 3 至 Battle 01 就绪](../../../synthesis/milestones/map3-battle01-readiness.md)识别的缺口：玩家与单回合控制事实有已接受证据，但此前没有证据绑定设计合同。
+本合同为共享战斗函数定义实现无关控制边界，其已接受静态证据由 `sf2-battle-functions-static-v1` 拥有。它闭合[Map 3 至 Battle 01 就绪](../../synthesis/milestones/map3-battle01-readiness.md)识别的缺口：玩家与单回合控制事实有已接受证据，但此前没有证据绑定设计合同。
 
 合同保留抽象路线决定、fixture 显式局部结果与有序源请求轨迹。它不把源调用变成被调方成功、玩家看到或听到效果、或分支在 Battle 01 中自然到达的证明。它不是场景合同，也不启动 Phase 4。
 
@@ -20,7 +22,7 @@
 
 ## 证据合同
 
-本合同消费的唯一可执行所有者是 `sf2-battle-functions-static-v1`，位于 [`battle-functions-static-v1.json`](../../../../../tests/fixtures/h2/battle-functions-static-v1.json)，由 [`battle_functions.py`](../../../../../src/sf2tool/h2/battle_functions.py) 验证并由[Shared Battle Functions](../../../../research/battle/battle-functions.md)解释。提取 manifest 是 [`battle-functions-static.json`](../../../../../manifests/extractions/battle-functions-static.json)。
+本合同消费的唯一可执行所有者是 `sf2-battle-functions-static-v1`，位于 [`battle-functions-static-v1.json`](../../../../../tests/fixtures/h2/battle-functions-static-v1.json)，由 [`battle_functions.py`](../../../../../src/sf2tool/h2/battle_functions.py) 验证并由[Shared Battle Functions（英文）](../../../../research/battle/battle-functions.md)解释。提取 manifest 是 [`battle-functions-static.json`](../../../../../manifests/extractions/battle-functions-static.json)。
 
 此处不消费 battle-control、battlefield、battle-action、输入、音频、存档、摄像机、聚合战斗或 H3 测试夹具作为可执行所有者。
 
@@ -68,7 +70,7 @@ fixture 的源根成员连接包含跨七个源路径的十六条记录。直接
 | `battle.functions.relative-move-table` | `table_RelativeTileMoveX` | `0x256A2` |
 | `battle.functions.move-sfx` | `SetMoveSfx` | `0x25790` |
 
-第十六条成员行是 `map.camera-control.destination-service`。它共享 `battlefunctions_0.asm`，但不直接绑定本 fixture。它仍只与[地图探索](../../../contracts/world/map-exploration.md)关联，其摄像机行为受[Map Camera Update Control Flow](../../../contracts/world/map-camera-update-control-flow.md)约束。它不得获得本合同。
+第十六条成员行是 `map.camera-control.destination-service`。它共享 `battlefunctions_0.asm`，但不直接绑定本 fixture。它仍只与[地图探索](../world/map-exploration.md)关联，其摄像机行为受[Map Camera Update Control Flow](../world/map-camera-update-control-flow.md)约束。它不得获得本合同。
 
 未来语义关联集恰好是表中的十五条 `battle.functions.*` 行。没有其他记录获得或失去关联。
 
@@ -91,7 +93,7 @@ fixture 的源根成员连接包含跨七个源路径的十六条记录。直接
 
 对源类身份 `28`，只有物理攻击路线请求 `RNG(4)`。结果零选择 Kiwi 法术转换；非零保持物理路线不变。所选法术等级由有序等级阈值 `32`、`40` 与 `50` 决定，产生等级 `0`、`1`、`2` 与 `3`。
 
-操作数 `4`、成功结果 `0`、阈值与等级身份是 **已确认静态**。RNG 状态、分布、调用时序、自然类/动作准入、伤害、动画与可见含义仍归[随机性](../../../contracts/system/randomness.md)、解决合同、呈现或 **未知**。
+操作数 `4`、成功结果 `0`、阈值与等级身份是 **已确认静态**。RNG 状态、分布、调用时序、自然类/动作准入、伤害、动画与可见含义仍归[随机性](../system/randomness.md)、解决合同、呈现或 **未知**。
 
 ### EGRESS 与 Angel Wing
 
@@ -121,7 +123,7 @@ fixture 标签被解读为源码形状请求，而非已完成服务效果：
 
 Fairy Woods 分支额外到达源码具名的计时器开启请求。该列表只保留调用身份与顺序。它不确认图形、地图、实体、地形、VInt、音乐、淡入或计时器服务已完成、什么中间状态可见或任何步骤耗时。
 
-`SetMoveSfx` 在战斗外选择源命令身份零，在战斗中选行走身份。Chirrup Sandals 条件用源身份 `BLOAB` 覆盖任一状态。选择与覆盖顺序是静态事实；声音传输、命令接受、波形、可听性与时序仍归[音频系统](../../../contracts/interface/audio-system.md)或 **未知**。
+`SetMoveSfx` 在战斗外选择源命令身份零，在战斗中选行走身份。Chirrup Sandals 条件用源身份 `BLOAB` 覆盖任一状态。选择与覆盖顺序是静态事实；声音传输、命令接受、波形、可听性与时序仍归[音频系统](../interface/audio-system.md)或 **未知**。
 
 ## 玩家控制面
 
@@ -129,7 +131,7 @@ Fairy Woods 分支额外到达源码具名的计时器开启请求。该列表�
 
 fixture 记录跨九个源范围的六个所选条目，有 `1,039` 条语句、`231` 个分支站点、`207` 个直接调用站点（指向 `84` 个唯一目标）、`5` 条所选内部调用边、`59` 个全局状态身份、全部 `8` 个具名输入位、`4` 个战斗动作常量与 `4` 个菜单常量。这些是闭合清单与溯源计数器。重制不得复现这些计数、源范围、分支拓扑或调用站点总计。
 
-具名输入位是原版分支消费的抽象观察。本合同不拥有控制器获取、边界发布、重复、同时性、节奏、电气行为或现代平台映射；那些仍归[输入系统](../../../contracts/interface/input-system.md)与后续产品决定。
+具名输入位是原版分支消费的抽象观察。本合同不拥有控制器获取、边界发布、重复、同时性、节奏、电气行为或现代平台映射；那些仍归[输入系统](../interface/input-system.md)与后续产品决定。
 
 ### 光标与提供的目标列表
 
@@ -142,7 +144,7 @@ fixture 记录跨九个源范围的六个所选条目，有 `1,039` 条语句、
 - A 或 C 确认并返回战斗员索引；以及
 - UP、LEFT、DOWN 与 RIGHT 在候选中循环。
 
-[战场导航](../../../contracts/battle/battlefield-navigation.md)保留提供列表的构建、合法性、排序、阵营选择与空间含义。本合同不使无效或畸形列表安全，也不定义目标高亮或移动动画。
+[战场导航](battlefield-navigation.md)保留提供列表的构建、合法性、排序、阵营选择与空间含义。本合同不使无效或畸形列表安全，也不定义目标高亮或移动动画。
 
 ### 战斗动作与战场菜单
 
@@ -185,16 +187,16 @@ fixture 闭合以下分支与请求身份：
 
 ## 跨系统分离
 
-- [Battle Control 与 Combatant Lifecycle](../../../contracts/battle/battle-control-lifecycle.md) 保留战斗入口、回合、死亡、动作后、结果与调用方准入语义。
-- [战场导航](../../../contracts/battle/battlefield-navigation.md) 保留移动、范围、目标列表形成与合法空间状态。
-- [Battle Action Construction](../../../contracts/battle/battle-action-construction.md) 保留已提交动作到演出脚本的构建。本合同在选择与有序交接处结束。
-- [Battle AI Decision](../../../contracts/battle/battle-ai-decision.md) 保留打分与动作选择。本合同只保留静态 AI 对玩家路线与 AI 视觉入口身份。
-- [交战解决](../../../contracts/battle/combat-resolution.md)、[法术解决](../../../contracts/battle/spell-resolution.md)与[随机性](../../../contracts/system/randomness.md)保留算术、效果、回放与 RNG 行为。
-- [输入系统](../../../contracts/interface/input-system.md) 保留控制器状态的获取与发布。
-- [存档系统](../../../contracts/system/save-system.md)、服务、物品与经济所有者保留菜单、装备、物品、宝箱与挂起请求背后的持久变更与完成语义。
-- [Battle Scene Presentation](../../../contracts/battle/battle-scene-presentation.md)与[音频系统](../../../contracts/interface/audio-system.md)保留可见与可听执行、加载器、淡入、时序与面向硬件效果。
-- [地图探索](../../../contracts/world/map-exploration.md) 保留摄像机跨所有者记录与目标服务。
-- [战术战斗循环](../../../synthesis/themes/tactical-battle-loop.md)、[游戏总览](../../../synthesis/gameplay-overview.md)与[Map 3 至 Battle 01 就绪](../../../synthesis/milestones/map3-battle01-readiness.md)保持综合消费者。它们不是可执行证据所有者。
+- [Battle Control 与 Combatant Lifecycle](battle-control-lifecycle.md) 保留战斗入口、回合、死亡、动作后、结果与调用方准入语义。
+- [战场导航](battlefield-navigation.md) 保留移动、范围、目标列表形成与合法空间状态。
+- [Battle Action Construction](battle-action-construction.md) 保留已提交动作到演出脚本的构建。本合同在选择与有序交接处结束。
+- [Battle AI Decision](battle-ai-decision.md) 保留打分与动作选择。本合同只保留静态 AI 对玩家路线与 AI 视觉入口身份。
+- [交战解决](combat-resolution.md)、[法术解决](spell-resolution.md)与[随机性](../system/randomness.md)保留算术、效果、回放与 RNG 行为。
+- [输入系统](../interface/input-system.md) 保留控制器状态的获取与发布。
+- [存档系统](../system/save-system.md)、服务、物品与经济所有者保留菜单、装备、物品、宝箱与挂起请求背后的持久变更与完成语义。
+- [Battle Scene Presentation](battle-scene-presentation.md)与[音频系统](../interface/audio-system.md)保留可见与可听执行、加载器、淡入、时序与面向硬件效果。
+- [地图探索](../world/map-exploration.md) 保留摄像机跨所有者记录与目标服务。
+- [战术战斗循环](../../synthesis/themes/tactical-battle-loop.md)、[游戏总览](../../synthesis/gameplay-overview.md)与[Map 3 至 Battle 01 就绪](../../synthesis/milestones/map3-battle01-readiness.md)保持综合消费者。它们不是可执行证据所有者。
 
 ## 实现无关模型
 

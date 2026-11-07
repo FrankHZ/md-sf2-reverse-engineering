@@ -1,12 +1,12 @@
 # Battle20 结果与 Elric 招募
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 首次 Battle20 胜利后，Elric 自称 弓箭手，感谢一行救了他并提出帮忙。Peter 将功劳归于 Oddler，欢迎新朋友。场景明确将 Elric 加入军团，随后短暂使其跟随一行。返回普通 Harpy Pond 探索会重建行动者：Elric 的成员资格保留，临时随从却不保留。重复胜利跳过他的整个场景，不修复缺失成员资格。
 
 **已确认：**已接受静态程序及其使用方确立下述条件顺序。**推断：**对话呈现救援与自愿帮忙提议。**未知：**自然交战／结果／调用方状态、服务完成、渲染表现、响应控制及存档持久性。角色陈述仍为归属台词，不是独立证明的历史。
 
-本指南接续 [Harpy Pond 接近至 Battle20 入场](harpy-pond-approach-through-battle20-entry.md)，使用已接受的 [Battle20 结果／招募研究](../../../../../research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)。止于紧接的条件 Map51 控制或选定无关存档点继续。后续池塘离开、F751 通道、Fairy Cave/Creed 旅行及 Battle21 均不在范围内。独立有边界的离开、通道及条件洞穴入场说明见 [Harpy Pond 离开至 Fairy Cave 入场](harpy-pond-departure-through-fairy-cave-entry.md)。Fnnn 表示标志 nnn；记录与槽位从零开始。坐标及等待是源码操作数，不是观察位置、实测时间或自然到达场景的证明。
+本指南接续 [Harpy Pond 接近至 Battle20 入场](harpy-pond-approach-through-battle20-entry.md)，使用已接受的 [Battle20 结果／招募研究（英文）](../../../../../research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)。止于紧接的条件 Map51 控制或选定无关存档点继续。后续池塘离开、F751 通道、Fairy Cave/Creed 旅行及 Battle21 均不在范围内。独立有边界的离开、通道及条件洞穴入场说明见 [Harpy Pond 离开至 Fairy Cave 入场](harpy-pond-departure-through-fairy-cave-entry.md)。Fnnn 表示标志 nnn；记录与槽位从零开始。坐标及等待是源码操作数，不是观察位置、实测时间或自然到达场景的证明。
 
 ## 战斗如何结束
 
@@ -35,7 +35,7 @@
 
 ## Elric 的完整招募场景
 
-**已确认：**`abcs_battle20`（`0x4B6CE`） 含 36 个顶层记录及一个完整内联移动。下文覆盖每个选定记录和对话键，转述自[研究所属程序及字面文本连接](../../../../../research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md#complete-selected-elric-program-and-replacement-population)。B 表示 logical FOLLOWER_B31。其身份取决于传入实体生成；脚本不独立检查它是否表现 Oddler。
+**已确认：**`abcs_battle20`（`0x4B6CE`） 含 36 个顶层记录及一个完整内联移动。下文覆盖每个选定记录和对话键，转述自[研究所属程序及字面文本连接（英文）](../../../../../research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md#complete-selected-elric-program-and-replacement-population)。B 表示 logical FOLLOWER_B31。其身份取决于传入实体生成；脚本不独立检查它是否表现 Oddler。
 
 | 记录 | 对话与动作顺序 |
 | --- | --- |
@@ -109,7 +109,7 @@ SwitchMap 先于探索，无战斗准入。匹配替换为 Map3→4/F640、Map71
 
 ## 证据追踪与审阅边界
 
-**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者](../../../../../research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md#reproduction-and-remaining-limits)保留精确源码路径、符号、源码行连接及使用方审阅。选定原文为 `disasm/data/battles/entries/battle20/cs_afterbattle.asm` lines4–44（程序／ce_4B780）、text2566–2575/446、实际过场表 slot20 及首领 row20。所 include 的过场加入表提供 Bowie0；名称相近全局表的未使用功能注释不能抹去此已执行加入。本指南使用已接受证据，不开展新源码调查、运行时或重新生成。
+**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md#reproduction-and-remaining-limits)保留精确源码路径、符号、源码行连接及使用方审阅。选定原文为 `disasm/data/battles/entries/battle20/cs_afterbattle.asm` lines4–44（程序／ce_4B780）、text2566–2575/446、实际过场表 slot20 及首领 row20。所 include 的过场加入表提供 Bowie0；名称相近全局表的未使用功能注释不能抹去此已执行加入。本指南使用已接受证据，不开展新源码调查、运行时或重新生成。
 
 | 解释 | 合同／可执行所有者 | 结论限制 |
 | --- | --- | --- |
@@ -129,4 +129,4 @@ schema／验证器路线为 [过场 schema](../../../../../../schemas/h2-battle-
 
 保留 [PR874 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/872#issuecomment-6171350805)及[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/874#issuecomment-6171383624)，包括未改变比较、最终 head CI、已解决检查失败及链接的前序回执／失败。新的文字检查不隐藏任何已完成失败。
 
-**未知：**自然交战／结果／路线；实际标志、HP、职业、成员资格、查找、模式、木筏及存档点；文本／动作／摄像机／淡入淡出／音乐／输入服务完成；渲染场景、可用控制及存档持久性。独立 F420/F470/F520、满／超容量／空队伍、重复／传入成员资格、死亡／缺失行动者、debug 跳过及部分服务约束此静态说明；它们不是已执行场景。按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，它们不产生自动运行时队列。本指南既不确立组合运行时路线，也不完成战役／设计 epic。
+**未知：**自然交战／结果／路线；实际标志、HP、职业、成员资格、查找、模式、木筏及存档点；文本／动作／摄像机／淡入淡出／音乐／输入服务完成；渲染场景、可用控制及存档持久性。独立 F420/F470/F520、满／超容量／空队伍、重复／传入成员资格、死亡／缺失行动者、debug 跳过及部分服务约束此静态说明；它们不是已执行场景。按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，它们不产生自动运行时队列。本指南既不确立组合运行时路线，也不完成战役／设计 epic。

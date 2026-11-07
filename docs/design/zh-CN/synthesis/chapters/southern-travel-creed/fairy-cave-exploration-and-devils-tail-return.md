@@ -1,6 +1,6 @@
 # Fairy Cave 探索与 Devil's Tail 返回
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Fairy Cave 包含四项选定宝箱奖励：Angel Wing、Brave Apple、Medical Herb 和 Mithril。
 符合准入条件的搜索可以领取奖励、让已领取的宝箱保持空置，或在无人有物品栏空间时还原宝箱。
@@ -11,7 +11,7 @@ Fairy Cave 包含四项选定宝箱奖励：Angel Wing、Brave Apple、Medical H
 这些是条件内容规则，不是连续游玩行程，也不保证四个宝箱都能自然到达。
 
 本指南接续 [Harpy Pond 离开至 Fairy Cave 入场](harpy-pond-departure-through-fairy-cave-entry.md)，
-使用[已接受探索/返回研究](../../../../../research/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md)。
+使用[已接受探索/返回研究（英文）](../../../../../research/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md)。
 后续见 [Battle21 开场与初始名册](battle21-opening-and-initial-roster.md)。
 止于完成的条件局部交互/搜索、Map67 控制或选定请求，或开场前 Battle21 准入。
 Creed 穿行/内容、Battle21 场景/名册/交战/结果、地形重建、物品使用效果及经济不在本指南范围内。
@@ -74,7 +74,7 @@ GetChestItem/GetItem 选择当前地图宝箱表及其首个 X/Y 匹配。CURREN
 关闭的 `$D801` 和打开的 `$D802` 经掩码均为宝箱类型。标志已设置的重复搜索发出 403/408，不授予物品；持有另一份物品不是重复谓词。
 反之，传入未设置标志配合外观已打开的宝箱，仍可选中奖励。
 
-[共享接收者与回滚所有者](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers)
+[共享接收者与回滚所有者（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers)
 提供物品系统细节。此处的直接后果为：
 
 1. 发现物品文本 413 先于测试 ally index 0 的四个槽位。有空间时，AddItem 写入掩码物品 ID 为 127 的首个槽位，保留索引/损坏位。
@@ -128,13 +128,13 @@ Map67 有一套六指针配置、空固定实体列表及仅返回的 init。共
 Map67 是大地图：仅 F65/F67/F68 时，physical 1/2/3 为 Caravan/A、Peter 和 Oddler/B。额外选择器可添加 Sarah/Chester 或替换 A/B 映射。
 这些标志不测试成员资格/HP，也不添加 Elric 行。全新重建丢弃洞穴专属行动者及地图局部跟随。
 
-[共享模式/木筏所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)保留传入状态。
+[共享模式/木筏所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)保留传入状态。
 Mode 2 下，physical 0 使用木筏精灵，随从以站立脚本停放在 `(64,64)`，并在那里声明独立 raft 31。
 其他模式仅在 F64 且已保存 RAFT_MAP=67 时，以掩码后的已保存坐标声明 raft 31。Mode 1 不重复登乘。
 两个出口/init 均不重写已保存木筏坐标/地图，不下船，也不修复任意运输状态。
 
 F751 独立控制后续加载器从 `(0,0)` 到 `(56,22)` 的 3x2 图块复制。
-[通道所有者](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#live-block-change-completion-flag-and-request-return)
+[通道所有者（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#live-block-change-completion-flag-and-request-return)
 区分当前复制、脚本后标志写入及后续重新应用。返回不会重放场景。仅有标志或文本不证明可通行、可见开口或当前布局修复。
 
 在条件音乐/淡入淡出后，pending 0 让 WaitForEvent 跟随 physical 0 并安装控制：mode 0 步行；mode 1 源码名 eas_Raft，实际 Caravan；
@@ -146,10 +146,10 @@ F751 独立控制后续加载器从 `(0,0)` 到 `(56,22)` 的 3x2 图块复制�
 `(57,25)` 选择独立 F751/F13/HP 通道；`(56,26)`、`(57,26)`、`(58,24)`、`(58,25)` 选择 F520 求救；其他坐标选择默认项。
 两个洞穴返回均不会仅因抵达而分发区域事件。单独提交任一返回坐标，都选择默认项。
 
-符合准入的求救事件在 F520 已设置时返回，否则执行[完整已接受分支](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md#complete-call-for-help-program)，
+符合准入的求救事件在 F520 已设置时返回，否则执行[完整已接受分支（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md#complete-call-for-help-program)，
 包括当前 B/A/Peter 动作、文本 2543–2549 及最终 Map51 `(11,22)`、Up 请求。
-其[请求/准入边界](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md#independent-pond-requests-and-admission-before-init)保留部分服务/替换限制。
-`(57,25)` 通道属于[独立已接受谓词与场景](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#separate-map67-zone-selection-and-passage-admission)。
+其[请求/准入边界（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md#independent-pond-requests-and-admission-before-init)保留部分服务/替换限制。
+`(57,25)` 通道属于[独立已接受谓词与场景（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#separate-map67-zone-selection-and-passage-admission)。
 两个分支均不是在 `(57,23)` 检查岩石的后果。
 
 后续默认区域事件中，步行 `$1400` 生产方在原始布局阻挡测试前提交 event 6 和字 X/Y。
@@ -170,7 +170,7 @@ Map67_DefaultZoneEvent 加载 BATTLE_DEVIL_TAIL=21 并调用 CheckRandomBattle�
 
 压缩写入提供 event 1、no-scroll parameter 1=0 和 parameter 2=255/MAP_CURRENT；parameters 3–5 及 WARP_SFX 保持不变。
 未改变的步行区域链中，字 parameter 3 仍含区域 Y：使用时替换 X=0 和该 Y，以残留 parameter 5 为朝向，提交/清除残留 WARP_SFX。
-这不一定是在原位置重载。[压缩重载所有者](../../../../../research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md#packed-reload-and-residual-parameters)
+这不一定是在原位置重载。[压缩重载所有者（英文）](../../../../../research/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md#packed-reload-and-residual-parameters)
 保留其他传入字节和有符号坐标情形。
 
 包装器返回后，待处理优先于控制。Type 1 返回 map 255；SwitchMap 无 255 行，CheckBattle 解析当前 Map67，
@@ -228,7 +228,7 @@ Map67 默认实体/物品回调都仅返回。实体包装器仍可解析立绘/
 **已确认溯源：**本综合使用 main 提交 `05e2fd194be07c6581e4fd3fe1abf3b38854ae65` 上的已接受研究，原始源码为
 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，
 USA 零售 ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
-[研究复现边界](../../../../../research/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md#reproduction-and-retained-limits)
+[研究复现边界（英文）](../../../../../research/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md#reproduction-and-retained-limits)
 负责源码路径、地址、字面文本/控制符关联和直接使用方。本说明不重新调查原始源码、不重新生成载荷，也不新增运行时采集。
 
 | 已审阅表面 | 声明边界 |

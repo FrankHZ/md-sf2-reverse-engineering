@@ -1,6 +1,6 @@
 # Floor World 首次抵达与条件探索
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/floor-world-first-arrival.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/floor-world-first-arrival.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**存续的 Cotton Balloon 离开请求准入 Map26 探索，重建九个实体群行。
 F779 未设置时，目的地 init 运行完整降落场景，然后设置 F779 并写 EGRESS_MAP=26。
@@ -8,9 +8,9 @@ F780 独立控制居民 129 的停放。**推断：**六个行动者表现 ballo
 **未知：**自然抵达、实际传入状态、行动/服务完成、视听表现、可用控制及持久性。
 
 本指南从 [Cotton Balloon 获取与离开](cotton-balloon-through-floor-world-entry.md)的条件加载器准入接续。
-仅使用已接受 [Floor World 抵达研究](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md)，依据
+仅使用已接受 [Floor World 抵达研究（英文）](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md)，依据
 [Issue #926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/926) 和
-[当前 Standard 约定](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+[当前 Standard 约定](../../../documentation-roadmap.md#当前基线与近期综合)。
 止于条件局部控制器安装或待处理事件处理。
 [居民、巨环和退出后续](floor-world-interactions-and-exits.md)解释下一局部交互，直至条件目的地准入。
 目的地 init、隧道内容、Battle23 和招募仍是后续边界。
@@ -36,7 +36,7 @@ InitializeMapEntities 清记录/查找，从 physical 1 分配选定随从，再
 它在 physical 0 按请求位置/朝向、eas_Idle 声明 Bowie，写共享 SPRITE_SIZE=16，
 终止随从列表，并进行独立木筏刷新。
 
-完整[实体群与映射所有者](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md#complete-population-and-logical-to-physical-mapping)
+完整[实体群与映射所有者（英文）](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md#complete-population-and-logical-to-physical-mapping)
 为 `$59D20..$59D6A` 的 `s1_entities.asm`。
 下文 physical 示例假设仅 F67/Peter、F68/Oddler，没有跳过己方行，映射互异且无覆盖。
 Init/Fixed 表示 eas_Init/eas_InitFixedSprite。
@@ -81,7 +81,7 @@ B 是脚本身份：Oddler 示例要求 F68。已接受随从声明顺序也允�
 **已确认：**`$59DDC` 的 init `ms_map26_InitFunction` 先测试 F779。
 未设置则运行 `$59E04` 的 `cs_59E04`；已设置则绕过。
 此分组覆盖源码行 28–98 中全部 41 个顶层命令。
-[精确命令与嵌套体表](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md#init-dispatcher-and-all-41-landing-commands)
+[精确命令与嵌套体表（英文）](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md#init-dispatcher-and-all-41-landing-commands)
 仍为操作数权威。嵌入的 map-init fixture 还记录 71 条语句，包括十八条自定义体和十二条内联体语句；
 它们不是 71 个顶层场景命令。
 
@@ -284,19 +284,19 @@ base `5e874fc507c0d740fb7a64536a69aa9a2c0d1d18`。
 GetItemInventoryLocation `$81D0` → `$9146` 和 RemoveItemBySlot `$819C` → `$8E76` 属于 itemstats.asm；
 ReceiveMandatoryItem `$4F48A` 和 RemoveItemFromInventory `$4F542` 属于 iteminventory.asm。
 替代 items/itemfunctions_s7_0.asm 仍排除。前篇
-[逐服务所有权边界](../../../../../research/world/map-event-item-transactions.md#ownership-and-unknown-boundary)及调用方/被调用方区别不变。
+[逐服务所有权边界（英文）](../../../../../research/world/map-event-item-transactions.md#ownership-and-unknown-boundary)及调用方/被调用方区别不变。
 [#919 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/919#issuecomment-6175962879)/[PR921 验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/921#issuecomment-6176035685)
 及其 [#916 证据收据](cotton-balloon-through-floor-world-entry.md#证据审阅与剩余限制)
 保留全部更早对象、比较、已完成失败及未知。
 
 直接验收覆盖完整自有正文/diff、数量和命令覆盖、等待/HP/查找区别、溯源、相对链接/片段、表/代码围栏、英文/私有边界及 git diff --check。
 检查已配置的干净已提交 `uv run sf2 verify plan --base origin/main --head HEAD` 和实际最终 head CI。
-研究的[复现所有者](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md#reproduction-and-retained-limits)保留输入/比较命令；
+研究的[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/floor-world-first-arrival.md#reproduction-and-retained-limits)保留输入/比较命令；
 本正文切片不选择局部一揽子 normal/full/engine/Godot/H3/H4 或翻译套件、获取或再生成。
 
 **未知：**自然抵达；实际军团/HP/职业、标志、随从/查找、模式/木筏、布局及位置；
 已完成行动、精灵、滚动、文本/输入、淡入淡出/音乐/控制服务；运动/时长、视听表现、可用探索、存档及持久性。
 改变状态示例是源码反例，不是已游玩场景；依
-[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
-[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
+[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
+[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
 本指南既未完成战役，也不扩展重制验收。

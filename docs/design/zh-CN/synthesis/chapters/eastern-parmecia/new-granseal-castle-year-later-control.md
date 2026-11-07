@@ -1,22 +1,22 @@
 # New Granseal 城堡：一年后讲话与首次控制交接
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 建设分段请求 New Granseal 城堡。其首次访问场景呈现一年后的集会：大臣肯定重建工作，国王谢绝讲话，Astral 提议建立贸易联盟，大臣遣散众人。**推断的叙事含义：**新定居点已经建成，注意力从建设转向未来。**已确认静态行为：**城堡初始化通过 F707 选择场景，以普通实体群替换集会实体群，然后返回首次待处理事件/控制读取。**未知：**自然抵达、移动及呈现服务完成，以及实际可用控制。
 
-本文承接[Battle08 结果至 New Granseal 城堡交接](battle08-outcomes-through-new-granseal-handoff.md)。已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md)提供固定源码、对话、行动者列表及调用方审阅。本指南止于首次 init 后待处理/控制读取。后续 Peter 内容、城镇探索和战斗仍是独立工作；本文不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#743](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/743) 的 Standard 严谨度协议。
+本文承接[Battle08 结果至 New Granseal 城堡交接](battle08-outcomes-through-new-granseal-handoff.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md)提供固定源码、对话、行动者列表及调用方审阅。本指南止于首次 init 后待处理/控制读取。后续 Peter 内容、城镇探索和战斗仍是独立工作；本文不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#743](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/743) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。源码身份使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。命令索引是从零开始的脚本记录，不是帧数或实测时长。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。命令索引是从零开始的脚本记录，不是帧数或实测时长。
 
 ## 1. 抵达先选择实体群，再选择讲话
 
 **已确认条件入场：**前篇提供城堡 Map7 `(11,10)`、Up。Map7 没有标志替换或战斗坐标行，因此该已接受准入选择探索。预期完成历史携带 F408 未设、F508/F700/F705 已设和玩家类型 0；F458 来自普通 Battle08 start。这些事实不重置无关故事或随从历史，不建立自然抵达，也不提供 F707 值。
 
-探索清除旧待处理字，治疗存活/不死己方角色，并执行入场加载。它设置当前地图 7 和非战斗状态，选择/重建实体并加载精灵，清除临时标志 256–383，设置 F80，加载地图/基础 VInt，然后在安装控制前调用 init。临时清除不包括 F411/F707 和下方配置标志。此入场治疗保留[共享 HP/状态限制](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)；不重复建设的全军团重置。
+探索清除旧待处理字，治疗存活/不死己方角色，并执行入场加载。它设置当前地图 7 和非战斗状态，选择/重建实体并加载精灵，清除临时标志 256–383，设置 F80，加载地图/基础 VInt，然后在安装控制前调用 init。临时清除不包括 F411/F707 和下方配置标志。此入场治疗保留[共享 HP/状态限制（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)；不重复建设的全军团重置。
 
-[已接受配置审阅](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#entry-setup-priority-and-init-selection)区分**实体群选择**与**场景选择**。Map7 依次扫描默认、F701、F702 和 F805；每个已设标志替换候选，因此最后适用行胜出。
+[已接受配置审阅（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#entry-setup-priority-and-init-selection)区分**实体群选择**与**场景选择**。Map7 依次扫描默认、F701、F702 和 F805；每个已设标志替换候选，因此最后适用行胜出。
 
 | 提供的配置历史 | 初始实体群 |
 | --- | --- |
@@ -40,7 +40,7 @@
 
 ## 3. 集会赋予重建叙事含义
 
-**已确认有序布置：**`cs_55832` 加载 Map7，摄像机为 `(6,2)`，安装集会列表 `ce_559AE`，等待 Bowie init，重置/重载显示并呈现一年后叙述。列表将 Bowie 放在 `(11,7)`、Up，面向前方国王与大臣。卫兵和士兵、两名女仆及 Astral 组成 NPC 角色群；Jaha、Sarah、Kazin 和 Chester 有固定己方声明。[行动者与阶段所有者](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#address-actors-and-ordered-phases)保留其精确引用、声明和全部 78 条命令。
+**已确认有序布置：**`cs_55832` 加载 Map7，摄像机为 `(6,2)`，安装集会列表 `ce_559AE`，等待 Bowie init，重置/重载显示并呈现一年后叙述。列表将 Bowie 放在 `(11,7)`、Up，面向前方国王与大臣。卫兵和士兵、两名女仆及 Astral 组成 NPC 角色群；Jaha、Sarah、Kazin 和 Chester 有固定己方声明。[行动者与阶段所有者（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#address-actors-and-ordered-phases)保留其精确引用、声明和全部 78 条命令。
 
 这些是经 `ENTITY_INDEX_LIST` 解析的场景引用，不是物理槽位或军团成员身份。实体初始化先声明按标志选定的随从；已映射己方角色可保留该映射，而不接受固定放置。NPC 引用分配独立。因此角色群描述集会预期布置，不证明各行动者实际起始位置、招募或随从状态。加载列表不治疗或招募任何人。
 
@@ -52,7 +52,7 @@ Astral 谈到过去一年、建设完成和缺乏贸易，然后提议联盟。�
 
 **已确认处理器区别：**`mapLoad` 和 `loadMapFadeIn` 中正 Map7 操作数，即使当前地图已是 7，也走 `LoadMap` 的新地图显示分支。它们重载地图资源/布局，以 `(6,2)` 为摄像机输入，而非 Bowie 目标。它们不再次调用城堡 init、重建实体、清除故事标志或安装控制。`loadMapFadeIn` 在顺序进入地图加载处理器前设置淡出状态种子；较后的显式淡入仍独立。
 
-`resetMap` 清除工作布局存储并以地图索引 -1 加载；`reloadMap` 也以 -1 和其摄像机操作数调用。这些影响当前地图显示/区域状态，不影响持久进度或探索初始化。[共享地图加载合同](../../../contracts/world/map-exploration.md#加载与选择顺序)与[场景处理器审阅](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#map-loading-and-action-semantics)使这些路径分离。调用不建立可见淡入淡出、摄像机、文本或音乐时序。
+`resetMap` 清除工作布局存储并以地图索引 -1 加载；`reloadMap` 也以 -1 和其摄像机操作数调用。这些影响当前地图显示/区域状态，不影响持久进度或探索初始化。[共享地图加载合同](../../../contracts/world/map-exploration.md#加载与选择顺序)与[场景处理器审阅（英文）](../../../../../research/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md#map-loading-and-action-semantics)使这些路径分离。调用不建立可见淡入淡出、摄像机、文本或音乐时序。
 
 ## 4. 遣散先启动离开，再恢复普通实体群
 

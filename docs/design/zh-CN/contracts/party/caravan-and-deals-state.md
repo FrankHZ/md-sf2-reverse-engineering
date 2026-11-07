@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：已接受车队物品归一化/压缩边界与打包 Deals 计数边界的实现无关表示，不指定服务、运行时、持久性、呈现或平衡含义
 
-> 本文件是 [`caravan-and-deals-state.md`](../../../contracts/party/caravan-and-deals-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`caravan-and-deals-state.md`（英文规范源）](../../../contracts/party/caravan-and-deals-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -15,11 +15,11 @@
 - **独立所有者已确认**：同一已接受 common-stats 所有者确认 `newGame.clearsFlagsDealsAndCaravan=true`、标志、Deals 与车队的源码静态 `NewGame` 清除路线。该相邻排序/集成事实仍归 `stats.new-game`，不由本合同消费或关联。
 - **未知**：数字物品状态掩码；车队容量；Deals 物品域、字节数与物品到打包字段映射；数字返回值与条件码使用；自然/运行时调用方可达性；事务排序或原子性；调用方可视/运行时重置结果；存档/读档持久性；菜单、消息与其他呈现；以及经济或平衡意图。
 
-[item-definition-data 合同](../../../contracts/party/item-definition-data.md) 拥有物品身份与固定数据，而非可变所有权。[service-interactions 合同](../../../contracts/party/service-interactions.md) 拥有受限源码静态商店、车队、教堂与铁匠动作顺序，而非这些存储的最终状态。[交战解决合同](../../../contracts/battle/combat-resolution.md) 拥有其已接受战斗掉落与 Deals 路由子集。[存档系统合同](../../../contracts/system/save-system.md) 拥有已接受存档结构与动作回放，而非每个车队或 Deals 变更在每个生命周期路径存活的证明。
+[item-definition-data 合同](item-definition-data.md) 拥有物品身份与固定数据，而非可变所有权。[service-interactions 合同](service-interactions.md) 拥有受限源码静态商店、车队、教堂与铁匠动作顺序，而非这些存储的最终状态。[交战解决合同](../battle/combat-resolution.md) 拥有其已接受战斗掉落与 Deals 路由子集。[存档系统合同](../system/save-system.md) 拥有已接受存档结构与动作回放，而非每个车队或 Deals 变更在每个生命周期路径存活的证明。
 
 ## 证据所有者
 
-`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../../research/party/common-stats.md)。
+`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services（英文）](../../../../research/party/common-stats.md)。
 
 fixture 拥有六个已接受 `expected.statsFacts.inventories` 事实，并绑定代表 `AddItemToCaravan` 地址 `39484` 与 `GetDealsItemAmount` 地址 `39390`。所有者文章提供显式双四位计数措辞与符号 `ITEM_NOTHING` 尾身份。这些是静态存储事实，不是经菜单、战斗奖励、存档或新游戏路径的运行时观察。
 
@@ -125,8 +125,8 @@ DealsMutation
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 状态位剥离与满添加忽略 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 数字掩码、容量、返回/调用方结果 |
-| 车队压缩与 `ITEM_NOTHING` 尾写入 | **已确认静态** | `sf2-common-stats-static-v1` 加[所有者文章](../../../../research/party/common-stats.md) | 数字哨兵、所选槽 ABI、运行时结果 |
-| 每字节两个四位 Deals 计数 | **已确认静态** | `sf2-common-stats-static-v1` 加[所有者文章](../../../../research/party/common-stats.md) | 物品域、总字节数、物品到字段映射 |
+| 车队压缩与 `ITEM_NOTHING` 尾写入 | **已确认静态** | `sf2-common-stats-static-v1` 加[所有者文章（英文）](../../../../research/party/common-stats.md) | 数字哨兵、所选槽 ABI、运行时结果 |
+| 每字节两个四位 Deals 计数 | **已确认静态** | `sf2-common-stats-static-v1` 加[所有者文章（英文）](../../../../research/party/common-stats.md) | 物品域、总字节数、物品到字段映射 |
 | Deals 添加饱和与零移除忽略 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 运行时可达性、返回值、事务结果 |
 | 源码静态 `NewGame` 清除标志、Deals 与车队 | **独立所有者已确认静态** | `sf2-common-stats-static-v1`；`stats.new-game` 保持排除 | 排序/集成此处不消费；运行时重置结果与持久性保持 **未知** |
 | 服务/掉落/存档/UI/平衡与调用方可视重置语义 | **独立所有者 / 未知** | 相邻合同与未来运行时/综合工作 | 不得从存储辅助推断高层行为 |

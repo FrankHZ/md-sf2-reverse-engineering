@@ -1,13 +1,13 @@
 # Phase 4 引导计划
 
-Canonical source: [English](../../../synthesis/milestones/phase4-bootstrap-plan.md). 英文为规范审阅基线；本译文遵循[术语表](../../../glossary.md)。
+Canonical source: [English（英文规范源）](../../../synthesis/milestones/phase4-bootstrap-plan.md). 英文为规范审阅基线；本译文遵循[术语表（英文）](../../../glossary.md)。
 
 - 状态：**历史提案——作为实现指导已被取代**
 - 记录日期：2026-08-20
 - 审计基线：已接受 `main` 提交 `c812ad61395e7b42ca91a9aee044dc04375522de`，树 `7da7aa9a13b148756fad5e8f31654e5f975ae782`
 - 层：基于已接受架构和就绪边界的 **Layer B 设计综合**
 - 范围：启动前有关 Phase 4 项目拓扑、引导准入、CLI 门禁、观察端口、配置分离及实现启动检查清单的历史提案
-- 就绪影响：**无**；当前里程碑验收归[就绪台账](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)所有
+- 就绪影响：**无**；当前里程碑验收归[就绪台账](map3-battle01-readiness.md#当前已接受里程碑)所有
 
 ## 当前阅读路线
 
@@ -15,17 +15,17 @@ Canonical source: [English](../../../synthesis/milestones/phase4-bootstrap-plan.
 
 请改用以下已接受所有者：
 
-- [ADR 0019](../../../../decisions/0019-state-and-content-driven-remake-engine.md)：已采用的状态/内容驱动引擎方向、生产/参考分离及迁移边界；
-- [Remake README](../../../../../remake/README.md)及[能力状态](../../../../../remake/docs/capability-status.md)：已实现与不支持的行为；
-- [开发与验证](../../../../../remake/docs/development-and-verification.md)：当前工具链选择及按范围确定的检查，而非下文提议的门禁/测试清单。
+- [ADR 0019（英文）](../../../../decisions/0019-state-and-content-driven-remake-engine.md)：已采用的状态/内容驱动引擎方向、生产/参考分离及迁移边界；
+- [Remake README（英文）](../../../../../remake/README.md)及[能力状态（英文）](../../../../../remake/docs/capability-status.md)：已实现与不支持的行为；
+- [开发与验证（英文）](../../../../../remake/docs/development-and-verification.md)：当前工具链选择及按范围确定的检查，而非下文提议的门禁/测试清单。
 
-这些实现所有者不提供原版游戏证据。[就绪台账](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)拥有在组合 8D/H4 边界上经独立接受的当前私有连续里程碑；[连续场景合同](../../../contracts/milestones/map3-battle01-continuous-scenario.md)拥有其比较规则与保留证据限制。[ADR 0010](../../../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)以 8D 取代硬件精确 8C，其[现代时钟修订](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)控制受影响历史比较。历史失败、未知项和报告结论保持不变。从“判断边界”开始的其余内容保留原始审计基线上的提案，包括其就绪、时序和注册陈述；凡有差异，均以当前已接受所有者为准。
+这些实现所有者不提供原版游戏证据。[就绪台账](map3-battle01-readiness.md#当前已接受里程碑)拥有在组合 8D/H4 边界上经独立接受的当前私有连续里程碑；[连续场景合同](../../contracts/milestones/map3-battle01-continuous-scenario.md)拥有其比较规则与保留证据限制。[ADR 0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)以 8D 取代硬件精确 8C，其[现代时钟修订（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)控制受影响历史比较。历史失败、未知项和报告结论保持不变。从“判断边界”开始的其余内容保留原始审计基线上的提案，包括其就绪、时序和注册陈述；凡有差异，均以当前已接受所有者为准。
 
 ## 判断边界
 
 **时机分类：现在确定。**
 
-本文件将已接受架构转化为可审阅的未来引导计划。它消费 [ADR 0008](../../../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)、[ADR 0009](../../../../decisions/0009-first-phase4-playable-slice.md)、[ADR 0010](../../../../decisions/0010-map3-battle01-product-acceptance.md)及 [ADR 0011](../../../../decisions/0011-phase4-remake-runtime-architecture.md)，不重启其中关于 Godot 4.7.2 .NET/C#、连续里程碑、产品配置或运行时架构的决策。
+本文件将已接受架构转化为可审阅的未来引导计划。它消费 [ADR 0008（英文）](../../../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)、[ADR 0009（英文）](../../../../decisions/0009-first-phase4-playable-slice.md)、[ADR 0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md)及 [ADR 0011（英文）](../../../../decisions/0011-phase4-remake-runtime-architecture.md)，不重启其中关于 Godot 4.7.2 .NET/C#、连续里程碑、产品配置或运行时架构的决策。
 
 这是 Layer B 综合，不是原版游戏证据、证据绑定子系统合同、可执行 schema 或实现。其语义关联刻意为空：
 
@@ -35,7 +35,7 @@ Canonical source: [English](../../../synthesis/milestones/phase4-bootstrap-plan.
 - 可执行验证器或 CLI 注册：无；
 - 新证据标签、计数或已接受命令族：无。
 
-已接受[就绪台账](../../../synthesis/milestones/map3-battle01-readiness.md)对最终连续里程碑验收仍为 **NOT READY**，已接受 [Research 缺口审计](../../../../research/chapters/grans-opening/map3-battle01-audit.md)仍为 **OPEN**。本计划不填入任何 RA-01..RA-12 值，不选择路线或种子，不定义精确状态，不命名新测试夹具，不接受命令，不标识采集，不陈述可观察结果，也不选择比较容差。按 [ADR 0016](../../../../decisions/0016-remake-start-evidence-deferral.md)，这些状态不是经用户另行授权的有界实现启动的默认阻塞项。
+已接受[就绪台账](map3-battle01-readiness.md)对最终连续里程碑验收仍为 **NOT READY**，已接受 [Research 缺口审计（英文）](../../../../research/chapters/grans-opening/map3-battle01-audit.md)仍为 **OPEN**。本计划不填入任何 RA-01..RA-12 值，不选择路线或种子，不定义精确状态，不命名新测试夹具，不接受命令，不标识采集，不陈述可观察结果，也不选择比较容差。按 [ADR 0016（英文）](../../../../decisions/0016-remake-start-evidence-deferral.md)，这些状态不是经用户另行授权的有界实现启动的默认阻塞项。
 
 本提案不创建 `remake/`，不选择精确 .NET SDK、目标框架或包集合，不编写引擎代码，不安装或运行 Godot，不调用编辑器/导入/导出，不选择或使用 MCP，不授权 7C 下的公开发布，不报告就绪，也不启动 Phase 4。下述每个具体项目文件和每项可执行实现仍受单独用户 Phase 4 启动操作约束。
 
@@ -345,7 +345,7 @@ Godot `InputMap` 将键盘和控制器输入转换为语义方向、确认、取
 
 **时机分类：有界进程/工具经验及明确排除项现在确定；任何独立编写的生产运行器均在用户单独启动 Phase-4 后实现。**
 
-已接受 [Godot AI 探针](../../../../../tools/godot-ai-probe/README.md)是一次性能力与工具证据。其安全、有界的经验包括：
+已接受 [Godot AI 探针（英文）](../../../../../tools/godot-ai-probe/README.md)是一次性能力与工具证据。其安全、有界的经验包括：
 
 - 在 scratch/构建/导入变更前检查精确 Godot 版本；
 - 将声明的受跟踪输入复制到新建忽略 scratch 根；

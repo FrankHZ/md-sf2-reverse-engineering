@@ -1,10 +1,10 @@
 # Volcanon 返回至 Bedoe 国王选择
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 返回 Bedoe 后，国王询问 Bowie 是否接受 Volcanon 击败 Zeon 的要求。接受会引出关于 Creed 的建议，并请求 Luke 离开安排木筏。拒绝会收到留在 Bedoe 的提议；接受后的后续互动则仅提供鼓励。台词、Luke 局部离开与调用方标志写入是独立结果。没有一项确立木筏已准备或可用。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md)支持下文选定返回请求、提示与行动者/服务边界。**推断：**这是[神殿觐见](bedoe-to-volcanon-audience.md)的可选内容接续。**未知：**自然楼层旅行、实际传入状态、输入/服务完成、表现与可玩连续性。本指南不增加重制能力或产品决定。Fnnn 表示标志 nnn；坐标为地图瓦片，另注者除外。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md)支持下文选定返回请求、提示与行动者/服务边界。**推断：**这是[神殿觐见](bedoe-to-volcanon-audience.md)的可选内容接续。**未知：**自然楼层旅行、实际传入状态、输入/服务完成、表现与可玩连续性。本指南不增加重制能力或产品决定。Fnnn 表示标志 nnn；坐标为地图瓦片，另注者除外。
 
 止于首次选定国王回应、调用方完成和条件控制交接。Bedoe 出口、Polca 抵达或木筏服务、雏鸟/Skreech/救援、Luke 招募及 Battle13 仍在范围外。建议的旅程是有归属的建议，不是已确立路线。
 
@@ -105,13 +105,13 @@ Creed 历史、建议河流路线和可能的木筏仍是国王说法/建议。L
 
 ## 证据审阅与剩余限制
 
-本指南消费 [PR #794](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/794) 已接受研究及 [PR #793](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/793) 已接受前序英文指南，不叠加依赖。研究保留 USA 零售版身份和固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、调用方 `0x56F0C`、init `0x5708E`、场景 `0x5797A` 及命名提示/行动者/控制使用方。其[复现边界](../../../../../research/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md#return-control-and-reproduction-boundary)拥有源码/保留比较。本切片审阅已接受正文和限定 tracked 测试夹具选择，无源码重新调查、可选载荷生成/复制或新增观察。
+本指南消费 [PR #794](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/794) 已接受研究及 [PR #793](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/793) 已接受前序英文指南，不叠加依赖。研究保留 USA 零售版身份和固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、调用方 `0x56F0C`、init `0x5708E`、场景 `0x5797A` 及命名提示/行动者/控制使用方。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md#return-control-and-reproduction-boundary)拥有源码/保留比较。本切片审阅已接受正文和限定 tracked 测试夹具选择，无源码重新调查、可选载荷生成/复制或新增观察。
 
 | 审阅关系 | 可执行/合同所有者 | 对抗性审阅结论 |
 | --- | --- | --- |
 | 选择调用方与 init | [sf2-map-events-static-v1:entity-programs](../../../../../../tests/fixtures/h2/map-events/entity-programs.json)，program25；[sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，body15。 | 全部 15 个调用方操作保留 F799 测试、实际提示别名、拒绝/重复文本及先脚本后写入。九个 init 操作保留独立 F799/F724 读取与坐标移除调用，不写入。 |
-| 返回、激活与实体群 | [地图探索](../../../contracts/world/map-exploration.md)、[互动状态](../../../../../research/world/map-event-interaction-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)。 | 已接受选定研究拥有行/映射/标志位组合；单凭清单或处理器边界都不证明自然楼层可达或可用组合互动。 |
-| 提示、文本与行动者服务 | [通用菜单输入](../../../../../research/presentation/common-menus.md#confirmed-input-contracts)、[对话](../../../contracts/interface/dialogue-system.md)、[sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，放置/行动/生命周期/手势族。 | 已协调通用菜单概述和已接受选定研究区分方向选择与确认返回、B 取消及无输入待处理；时序仍未知。命令族测试夹具身份不包含完整场景，也不观察它；研究提供八条请求、两个行动体和处理器区别。 |
+| 返回、激活与实体群 | [地图探索](../../../contracts/world/map-exploration.md)、[互动状态（英文）](../../../../../research/world/map-event-interaction-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)。 | 已接受选定研究拥有行/映射/标志位组合；单凭清单或处理器边界都不证明自然楼层可达或可用组合互动。 |
+| 提示、文本与行动者服务 | [通用菜单输入（英文）](../../../../../research/presentation/common-menus.md#confirmed-input-contracts)、[对话](../../../contracts/interface/dialogue-system.md)、[sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，放置/行动/生命周期/手势族。 | 已协调通用菜单概述和已接受选定研究区分方向选择与确认返回、B 取消及无输入待处理；时序仍未知。命令族测试夹具身份不包含完整场景，也不观察它；研究提供八条请求、两个行动体和处理器区别。 |
 
 [实体程序 schema](../../../../../../schemas/h2/map-events-entity-programs.schema.json)与[测试夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)保留有序操作、目标和分片组合。[Init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)与[验证器](../../../../../../src/sf2tool/h2/map_init.py)保留体/溯源相等性；[地图脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)与 [schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)保留独立族/使用方。其聚焦检查位于 `tests/python/test_map_events.py`、`test_map_init.py` 和 `test_map_script_engine.py`。既有窄路线为 `uv run sf2 h2 map-events`、`map-init`、`map-script-engine`、`map-data`、`map-setup` 和 `map-entities`；命名它们不是新执行声明。通用菜单 Yes/No 概述已与同一已接受提示证据协调；其清单及时序/表现未知项未变。
 

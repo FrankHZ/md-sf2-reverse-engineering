@@ -11,9 +11,9 @@
 - 可追溯性：`tests/fixtures/h2/map-script-engine-static-v1.json` 中的 `sf2-map-script-engine-static-v1`；以及
   `tests/fixtures/h3/map-script-dialogue-v1.json` 中的 `sf2-map-script-dialogue-runtime-v1`；`src/sf2tool/h2/map_script_engine.py`；
   `src/sf2tool/h3/map_script_dialogue.py`；以及 `docs/research/world/common-scripting.md`。
-  已到达等待绑定则使用[开场对话证据](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#opening-dialogue-return-and-subsequent-actions)中的保留观察与固定源码。
+  已到达等待绑定则使用[开场对话证据（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#opening-dialogue-return-and-subsequent-actions)中的保留观察与固定源码。
 
-> 本文件是 [`dialogue-system.md`](../../../contracts/interface/dialogue-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`dialogue-system.md`（英文规范源）](../../../contracts/interface/dialogue-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 已确认的静态合同
 
@@ -37,9 +37,9 @@
 
 ## 已到达的 W1 消费者绑定
 
-**已确认（固定源码与保留观察）：** 开场 `cs_5145C` 依次显示文本 510、511、483。其有序源码 token 分别包含 W2、W2、W1。既有观察把 `DisplayText` 目标 483 与 `symbol_wait1`、接受输入的 `loc_65B4` 读取及该文本调用返回配对。后续基于 trap 的显示也以 483 为目标，而过场游标仍为 484；游标不是当前文本身份。[研究所有者](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#reached-text-wait-source-binding)保留精确边界与复现路线。这证明具名已到达消费者，不证明全部自然文本等待或其间的服务状态。
+**已确认（固定源码与保留观察）：** 开场 `cs_5145C` 依次显示文本 510、511、483。其有序源码 token 分别包含 W2、W2、W1。既有观察把 `DisplayText` 目标 483 与 `symbol_wait1`、接受输入的 `loc_65B4` 读取及该文本调用返回配对。后续基于 trap 的显示也以 483 为目标，而过场游标仍为 484；游标不是当前文本身份。[研究所有者（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#reached-text-wait-source-binding)保留精确边界与复现路线。这证明具名已到达消费者，不证明全部自然文本等待或其间的服务状态。
 
-必须保留完整有序 token 流，以及每个等待在流中的位置。不得推断每个显示行只有一次确认、每个 `ShowText` 只有一次等待，或从 `Single`/`Continued` 模式推断等待。同一文本中的多个等待仍是不同消费者。文本解码与字形数据仍归[文本与字体数据](../../../contracts/interface/text-and-font-system.md)所有；识别控制 token 无需把私有对话复制进公开 fixture。
+必须保留完整有序 token 流，以及每个等待在流中的位置。不得推断每个显示行只有一次确认、每个 `ShowText` 只有一次等待，或从 `Single`/`Continued` 模式推断等待。同一文本中的多个等待仍是不同消费者。文本解码与字形数据仍归[文本与字体数据](text-and-font-system.md)所有；识别控制 token 无需把私有对话复制进公开 fixture。
 
 ### 轮询顺序与不同消费者
 
@@ -57,18 +57,18 @@
 | --- | --- | --- |
 | W1 | 抽样/复制、等待、输入测试；接受时恢复逐字显示。 | 已观察文本 483 的具名接受读取；未观察完整实时服务/立绘状态。 |
 | W2 | `ParseSpecialTextSymbol:@wait2/loc_6472` 抽样/复制，调用 `sub_64A8`，等待并测试输入；接受时请求 `SFX_VALIDATION`，以零调用 `sub_64A8`，并恢复逐字显示。 | 文本 510/511 的源码 token 与文本返回有依据。此 W1 观测手段未观察其精确 W2 接受读取；W2 循环入口回调不是之后的输入读取。 |
-| 普通 JOIN 输入 | `input.asm:WaitForPlayerInput` 在等待前测试输入；接受的输入不增加 W1/W2 前导或接受轮询 tick。 | [自然 JOIN 证据](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)绑定音乐处理后的具名辅助函数；音频结束/交错与完整服务门条件仍独立。 |
+| 普通 JOIN 输入 | `input.asm:WaitForPlayerInput` 在等待前测试输入；接受的输入不增加 W1/W2 前导或接受轮询 tick。 | [自然 JOIN 证据（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#natural-join-audio-and-input-boundary)绑定音乐处理后的具名辅助函数；音频结束/交错与完整服务门条件仍独立。 |
 
 JOIN 文本 446/447 没有 W1/W2 token。其调用方在 `FadeOut_WaitForP1Input` 的音乐处理后提供独立普通输入辅助函数。不得在该辅助函数前增加文本确认、对其应用 W1 的 RNG 前导，或从进入文本等待推断音频完成。
 
 ### 逻辑输入所有权与实现缺口
 
-依据 [ADR 0010 Option A](../../../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)与[连续 Wait 合同](../../../contracts/milestones/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)，接受输入的 W1 轮询是消费该次确认所必需的工作。额外非接受轮询，只有在已识别且符合资格、服务门条件/顺序已准入的消费者处，才可成为玩家 Wait。仅揭示输入、呈现交付完成、接受轮询与可选非接受 Wait 是不同事件。交付延迟不提供额外轮询或 tick 欠账，也不能删去必需工作。这些规则不规定墙钟速率或历史轮询配额；它们保留共享 RNG 与全部选定玩法断言。
+依据 [ADR 0010 Option A（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)与[连续 Wait 合同](../milestones/map3-battle01-continuous-scenario.md#有证据支持的玩法等待)，接受输入的 W1 轮询是消费该次确认所必需的工作。额外非接受轮询，只有在已识别且符合资格、服务门条件/顺序已准入的消费者处，才可成为玩家 Wait。仅揭示输入、呈现交付完成、接受轮询与可选非接受 Wait 是不同事件。交付延迟不提供额外轮询或 tick 欠账，也不能删去必需工作。这些规则不规定墙钟速率或历史轮询配额；它们保留共享 RNG 与全部选定玩法断言。
 
-**已确认（有界重制实现）：** 实体事件服务受抑制的消费者中的有序 W1 区段，以及显式[已绑定探索文本配置](../../../../../remake/docs/application/session-and-programs.md#bound-field-text-work)，现在各自负责接受输入的抽样/复制/服务/输入序列。后者还执行常规字形、窗口、视图辅助与 W2 工作，独立于实际显示交付。通用未绑定 `ShowText` 仍使用 `DialogueWait`；它不建立原版时序。JOIN 发出 `waitForAcknowledgement: false`，之后发出 `wait-text-input`；其先测试输入的辅助函数仍独立。已完成的有限 JOIN 诊断在音频交付期间记录 5,313 个服务结果与 572 次最小 LCG 等效推进；逐实体归因与通用跨时钟调度仍 **未知**；保留[诊断所有者](../../../../../remake/docs/evidence/retained-comparisons.md#retained-first-control-opportunity-alignment)。更早的 5,000 帧超时是已完成的失败，不是需要重启的中断运行。
+**已确认（有界重制实现）：** 实体事件服务受抑制的消费者中的有序 W1 区段，以及显式[已绑定探索文本配置（英文）](../../../../../remake/docs/application/session-and-programs.md#bound-field-text-work)，现在各自负责接受输入的抽样/复制/服务/输入序列。后者还执行常规字形、窗口、视图辅助与 W2 工作，独立于实际显示交付。通用未绑定 `ShowText` 仍使用 `DialogueWait`；它不建立原版时序。JOIN 发出 `waitForAcknowledgement: false`，之后发出 `wait-text-input`；其先测试输入的辅助函数仍独立。已完成的有限 JOIN 诊断在音频交付期间记录 5,313 个服务结果与 572 次最小 LCG 等效推进；逐实体归因与通用跨时钟调度仍 **未知**；保留[诊断所有者（英文）](../../../../../remake/docs/evidence/retained-comparisons.md#retained-first-control-opportunity-alignment)。更早的 5,000 帧超时是已完成的失败，不是需要重启的中断运行。
 
-**已确认（选定的受控开场）：** [有界 R1 回读](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#controlled-opening-scalar-readback)在输入前、各值首次适用的源码读取处，以及脚本返回清除视图之前，观察到 mouth0/view override0。这为这些受控准入值提供直接证据。
-**推断（自然前序来源）：** 前面的 StartWitchScreen/reset 前序来源仍在该观察之外；更早的 speed2/settings 构造与后续保存字节佐证保留其[绑定证据](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)。
+**已确认（选定的受控开场）：** [有界 R1 回读（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#controlled-opening-scalar-readback)在输入前、各值首次适用的源码读取处，以及脚本返回清除视图之前，观察到 mouth0/view override0。这为这些受控准入值提供直接证据。
+**推断（自然前序来源）：** 前面的 StartWitchScreen/reset 前序来源仍在该观察之外；更早的 speed2/settings 构造与后续保存字节佐证保留其[绑定证据（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#opening-field-text-settings-and-view-binding)。
 **未知：** 该配置之外完整的原版立绘/服务时序、硬件呈现与整条路线 9A/H4 仍开放。仅凭说话者提示、立绘身份或已清除的逐字显示字节，不能准入活动或未知立绘。下文源码绑定的实体事件规则显式准入已注册立绘。重制测试/原生观察证明消费者，不增加原版运行时观察。
 
 后续行为验收必须使用已准入的源码驱动消费者，并检查不同种子与行动者阶段、服务启用/禁用、零/一/多次额外 Wait 后接必需接受轮询、过期 token/修订，以及同一文本中的多个等待 token。在即时/可调揭示与仅揭示 Confirm 下，比较相同语义 Wait/确认流；状态/RNG 必须一致，实际呈现条件仍须成立。W2 与普通输入用例保持独立。此处不豁免任何既有失败、黄金基准或未决首次传送时序字段。
@@ -104,28 +104,28 @@ JOIN 文本 446/447 没有 W1/W2 token。其调用方在 `FadeOut_WaitForP1Input
 
 已绑定的重制消费者必须把 D1 保留为类型化 token，不产生字形、游标推进、首字形状态变化、W1/W2 抽样/复制或确认。其中性延迟必须在逐字显示被清除时执行 22 次既有公共服务，并在下一 token 前恢复实际保存的逻辑标志。非零 mouth-control 不贡献延迟服务。token 顺序、重复/末尾/输入前后的位置、符合条件的实体/立绘 RNG，以及单次/批量服务等价，保留各自既有所有者。揭示完成与仅揭示 Confirm 不得代替源码的持续逻辑输入。此现代消费者仍未准入持续输入缩短；D3 与其他未绑定控制仍为 Unsupported。旧服务受抑制的 W1 捷径不能通过忽略服务来消费 D1。
 
-**已确认（静态源码）：** `mapscriptengine_2.asm:csc00_displaySingleTextbox` 在操作数 FFFF 时跳过立绘查找，写入 `CURRENT_SPEECH_SFX=0`，然后执行视图等待/文本及普通关闭/Sleep10 尾部。显式 sourceFF/null/no-event-speaker 旁白可以无行动者地使用已绑定文本；任意缺失/无效行动者仍为错误。跳过查找必须保留已经打开的立绘，不能据此证明立绘不存在。即使保留立绘，实际台词音效也必须静音；显式源码关闭仍负责其生命周期。[已绑定引擎执行](../../../../../remake/docs/application/session-and-programs.md#bound-map-initialization-lifecycle)与[原生验收](../../../../../remake/docs/verification/field-programs.md#bound-map-initialization-observation)验证已准入消费者。原版自然节奏、台词调度与整条路线 H4 仍 **未知**。
+**已确认（静态源码）：** `mapscriptengine_2.asm:csc00_displaySingleTextbox` 在操作数 FFFF 时跳过立绘查找，写入 `CURRENT_SPEECH_SFX=0`，然后执行视图等待/文本及普通关闭/Sleep10 尾部。显式 sourceFF/null/no-event-speaker 旁白可以无行动者地使用已绑定文本；任意缺失/无效行动者仍为错误。跳过查找必须保留已经打开的立绘，不能据此证明立绘不存在。即使保留立绘，实际台词音效也必须静音；显式源码关闭仍负责其生命周期。[已绑定引擎执行（英文）](../../../../../remake/docs/application/session-and-programs.md#bound-map-initialization-lifecycle)与[原生验收（英文）](../../../../../remake/docs/verification/field-programs.md#bound-map-initialization-observation)验证已准入消费者。原版自然节奏、台词调度与整条路线 H4 仍 **未知**。
 
 ## 实体事件立绘服务
 
-**已确认（静态源码）：** 在 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` 中，`portraitwindow.asm` 在实体包装器的朝向等待前打开立绘；移动完成后注册，关闭移动前移除注册。已打开立绘予以保留。新计数器为 blink20/mouth6。`portraitfunctions.asm:VInt_PerformPortraitBlinking` 在 blink3/0 时更新眼睛，并在 0 时抽取主 RNG120+30。逐字显示推进嘴部，在 5 时选择替代瓦片，在 0 时用 RNG5+10 重置正常瓦片；不逐字显示时 mouth<=5 立即重置。眨眼先于嘴部。逐字显示与 mouth-control 输入缩短是独立门条件。`textfunctions_1.asm:DisplayText` 只在 `CreateDialogueWindow` 返回后设置逐字显示。新窗口清除/移动等待必须保留传入值，同时眨眼与既有非逐字显示 mouth<=5 重置仍有效。复用窗口立即返回；空文本/仅 W 的文本可在无中间服务时设置再清除逐字显示。[研究绑定](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)负责精确符号、源码顺序与已到达示例。
+**已确认（静态源码）：** 在 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` 中，`portraitwindow.asm` 在实体包装器的朝向等待前打开立绘；移动完成后注册，关闭移动前移除注册。已打开立绘予以保留。新计数器为 blink20/mouth6。`portraitfunctions.asm:VInt_PerformPortraitBlinking` 在 blink3/0 时更新眼睛，并在 0 时抽取主 RNG120+30。逐字显示推进嘴部，在 5 时选择替代瓦片，在 0 时用 RNG5+10 重置正常瓦片；不逐字显示时 mouth<=5 立即重置。眨眼先于嘴部。逐字显示与 mouth-control 输入缩短是独立门条件。`textfunctions_1.asm:DisplayText` 只在 `CreateDialogueWindow` 返回后设置逐字显示。新窗口清除/移动等待必须保留传入值，同时眨眼与既有非逐字显示 mouth<=5 重置仍有效。复用窗口立即返回；空文本/仅 W 的文本可在无中间服务时设置再清除逐字显示。[研究绑定（英文）](../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#classroom-portrait-entity-event-binding)负责精确符号、源码顺序与已到达示例。
 
 已准入实现必须保留单一实时立绘身份、打包位置与镜像标志、眼/嘴瓦片映射、注册生命周期与共享 RNG 效果。未知立绘状态不能回退为 Closed 或静态脸。W1/W2 在已启用 NPC/立绘服务前复制轮询结果；之后的抽样不得覆写该副本。打开/关闭移动请求既有 menu-switch65 乐段。这不建立新的台词策略。
 
 实时实体启用标志在包装器入口/抑制及 Trap6 激活时变化；它必须跨脚本返回保留。源码地图脚本结束时，若对话存在则等待视图，随后清除覆盖；原生子程序返回仍独立。包装器返回时恢复朝向，移除/关闭立绘，关闭对话，最后以实体启用状态释放控制。若没有脚本激活实体，抑制持续到关闭尾部结束。
 
-**已确认（有界重制）：** [实体事件消费者](../../../../../remake/docs/application/session-and-programs.md#bound-entity-event-portrait)对受支持实时状态/内容使用这些规则，在三种显示设置下以相同语义输入到达 Sarah 首次课堂调用方返回。下文源码区域节单独准入首次介绍。
+**已确认（有界重制）：** [实体事件消费者（英文）](../../../../../remake/docs/application/session-and-programs.md#bound-entity-event-portrait)对受支持实时状态/内容使用这些规则，在三种显示设置下以相同语义输入到达 Sarah 首次课堂调用方返回。下文源码区域节单独准入首次介绍。
 **未知：** 后续区域立绘、摄像机、JOIN 与战斗消费者服务调度、原版 DMA/呈现时序，以及既有整条路线验收缺口。本次准入不增加原版运行时观察。
 
 ## 源码区域调用方直至返回
 
-**已确认（静态源码）：** 固定 `ProcessMapEventType6_ZoneEvent` 安装玩家 `eas_Init` 后，立即调用 `RunMapSetupZoneEvent`。请求在玩家实体服务期间产生；其余实体完成本轮处理后，处理器才运行。实体阻挡先于请求；地图通行性检查后于请求。因此，受地图阻挡的标记仍可调用处理器，被实体阻挡的目标则不能。初始化安装必须保留当前位置、目的地、速度与定时器；其动作在后续服务执行。[空间所有者](../../../../research/chapters/grans-opening/map3-controlled-start-egress-transition.md#source-zone-request-order)记录源码符号与合法楼梯示例。
+**已确认（静态源码）：** 固定 `ProcessMapEventType6_ZoneEvent` 安装玩家 `eas_Init` 后，立即调用 `RunMapSetupZoneEvent`。请求在玩家实体服务期间产生；其余实体完成本轮处理后，处理器才运行。实体阻挡先于请求；地图通行性检查后于请求。因此，受地图阻挡的标记仍可调用处理器，被实体阻挡的目标则不能。初始化安装必须保留当前位置、目的地、速度与定时器；其动作在后续服务执行。[空间所有者（英文）](../../../../research/chapters/grans-opening/map3-controlled-start-egress-transition.md#source-zone-request-order)记录源码符号与合法楼梯示例。
 
 区域调用方必须与实体交互区分：它不隐含交互朝向/抑制，也不隐含朝向恢复。实际实时实体启用标志必须贯穿原生代码与脚本调用。复用已准入立绘/文本/视图工作，包括传入逐字显示、已注册立绘保留、未知状态拒绝与轮询副本保留。
 
 处理器返回后，先关闭/移除立绘，再关闭对话，然后执行一次无条件 VInt 机会。只有之后才比较玩家物理 X/Y 与其 X/Y 目的地；不相等时重复 VInt/重新检查。脚本空闲与聚合 Busy 不得替代该谓词。空/跳过处理器或已到达的玩家仍须执行无条件机会。只有此调用方尾部完成后，才恢复普通探索控制。
 
-**已确认（有界重制）：** [源码区域消费者](../../../../../remake/docs/application/session-and-programs.md#source-zone-caller)使用单一实时调用方权威，在三种显示设置下，从保留的已绑定起点到达首次 Astral 介绍返回。这包括更早开场区域的同一规则。
+**已确认（有界重制）：** [源码区域消费者（英文）](../../../../../remake/docs/application/session-and-programs.md#source-zone-caller)使用单一实时调用方权威，在三种显示设置下，从保留的已绑定起点到达首次 Astral 介绍返回。这包括更早开场区域的同一规则。
 **未知：** 后续区域/摄像机/选择/JOIN/战斗消费者调度与原版硬件时序。不隐含任何新的原版运行时观察。
 
 ## 重制边界

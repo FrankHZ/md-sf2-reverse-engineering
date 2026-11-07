@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：七个已接受 `NewGame` 初始化事实的实现无关重构，不导入冷启动路由、数字内容常量、运行时结果、持久性、UI、呈现或平衡含义
 
-> 本文件是 [`new-game-state-initialization.md`](../../../contracts/system/new-game-state-initialization.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`new-game-state-initialization.md`（英文规范源）](../../../contracts/system/new-game-state-initialization.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,11 +14,11 @@
 - **推断**：无。故事意图与调用方可视含义刻意不从静态初始化序列推断。
 - **未知**：数字起始金币与空法术常量；己方基数、身份内容与迭代顺序；已接受设置清除目标之间的顺序；七个已接受事实之外的设置字段；自然/运行时调用方可达性；调用方可视返回与部分失败行为；冷启动、系统初始化、标题/开场路由与新游戏 UI/取消；存档/读档持久性；呈现、音频、本地化与平衡意图。
 
-[ally-definition-data 合同](../../../contracts/party/ally-definition-data.md) 拥有己方身份、定义与成长数据，而不提供本例程的运行时含义。[combatant-state-access 合同](../../../contracts/party/combatant-state-access.md) 拥有低级战斗员条目访问面，而非新游戏生命周期。[Party-roster state](../../../contracts/party/party-roster-state.md)、[global flags](../../../contracts/world/global-flag-state.md)与[Caravan/Deals state](../../../contracts/party/caravan-and-deals-state.md) 拥有各自状态边界；本合同只记录已接受初始化交接。
+[ally-definition-data 合同](../party/ally-definition-data.md) 拥有己方身份、定义与成长数据，而不提供本例程的运行时含义。[combatant-state-access 合同](../party/combatant-state-access.md) 拥有低级战斗员条目访问面，而非新游戏生命周期。[Party-roster state](../party/party-roster-state.md)、[global flags](../world/global-flag-state.md)与[Caravan/Deals state](../party/caravan-and-deals-state.md) 拥有各自状态边界；本合同只记录已接受初始化交接。
 
 ## 证据所有者与源审计
 
-`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../../research/party/common-stats.md)。
+`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services（英文）](../../../../research/party/common-stats.md)。
 
 fixture 绑定 `NewGame`，其十进制地址为 `38710`，并拥有恰好七个 `expected.statsFacts.newGame` 事实。对固定源的只读审计确认相同受限形状：设置调用先于己方循环；起始金币分配先于 Bowie 加入；己方初始化器包含已接受空法术赋值与已接受职业/初始/派生属性阶段顺序；设置例程包含三个已接受清除目标加消息速度 `2`。
 
@@ -53,7 +53,7 @@ fixture 不在全部己方初始化完成与起始金币分配之间添加顺序
 
 已接受顺序防止重制导入器把职业派生字段、初始属性与派生属性刷新压平成无序写入。它不定义完整战斗员记录、法术槽数量或打包、职业/属性公式、成长曲线、装备效果或任何字段的最终运行时值。
 
-[spell-definition-data 合同](../../../contracts/party/spell-definition-data.md) 拥有固定法术身份与定义，而非可变法术槽存储。[Level-up](../../../contracts/party/level-up.md) 拥有其已接受成长与法术学习路线。两个合同都不向本初始化合同提供数字空槽编码。
+[spell-definition-data 合同](../party/spell-definition-data.md) 拥有固定法术身份与定义，而非可变法术槽存储。[Level-up](../party/level-up.md) 拥有其已接受成长与法术学习路线。两个合同都不向本初始化合同提供数字空槽编码。
 
 ## 设置初始化边界
 
@@ -78,7 +78,7 @@ NewGame 例程不是完整新游戏体验：
 - 存档证据不证明新初始化状态跨每个进程或断电路径持久；
 - UI、确认/取消、音频、呈现、本地化与起始平衡策略不从该静态调用顺序派生。
 
-[故事推进综合](../../../synthesis/themes/story-progression.md) 可以把已接受交接放入更大解释，但不得用本合同作为自然运行时可达性或玩家可见时间线的证明。
+[故事推进综合](../../synthesis/themes/story-progression.md) 可以把已接受交接放入更大解释，但不得用本合同作为自然运行时可达性或玩家可见时间线的证明。
 
 ## 实现无关状态模型
 

@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`map-palette-data.md`](../../../contracts/graphics/map-palette-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-palette-data.md`（英文规范源）](../../../contracts/graphics/map-palette-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. 受限源颜色字计数与已接受 `0x0EEE` 掩码检查；
 5. 源码形状调色板查找/复制/首字清除时间线。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-map-palette-static-v1`，位于 [`tests/fixtures/h2/map-palette-static-v1.json`](../../../../../tests/fixtures/h2/map-palette-static-v1.json)。其带来源所有者是[Map Content Tables 与 Binary Payload 一致性](../../../../research/world/map-content.md)与[Technical Graphics](../../../../research/presentation/technical-graphics.md)。受限源根是 `data/graphics/maps/mappalettes/entries.asm`、`data/maps/entries/mapXX/00-tilesets.asm` 下的 79 个地图头源与 `code/common/maps/mapload.asm`。
+此处消费的唯一可执行所有者是 fixture id `sf2-map-palette-static-v1`，位于 [`tests/fixtures/h2/map-palette-static-v1.json`](../../../../../tests/fixtures/h2/map-palette-static-v1.json)。其带来源所有者是[Map Content Tables 与 Binary Payload 一致性（英文）](../../../../research/world/map-content.md)与[Technical Graphics（英文）](../../../../research/presentation/technical-graphics.md)。受限源根是 `data/graphics/maps/mappalettes/entries.asm`、`data/maps/entries/mapXX/00-tilesets.asm` 下的 79 个地图头源与 `code/common/maps/mapload.asm`。
 
 精确未来 research-index 关联只有 `auxiliary.data.pt-mappalettes`。`LoadMap` 与 `CopyBytes` 身份是该 fixture 内的证据；它们不获得本合同，也不把静态资源合同变成地图生命周期、字节复制实现、DMA 或呈现合同。
 
@@ -182,10 +182,10 @@ MapPalettePublicSummary {
 
 本合同不拥有：
 
-- 地图定义解析、地图选择、调色板槽运行时选择、构建顺序、工作布局状态、重载行为或持久性，仍归[map-exploration](../../../contracts/world/map-exploration.md)及其证据所有者；
-- blockset、64×64 布局、别名、碰撞或可通过性，仍归[map-layout-data](../../../contracts/graphics/map-layout-data.md)与其他地图所有者；
-- 调色板插值、过渡计时器、队列交接、显示初始化或 flash 状态，仍归[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)；
-- 淡入等待/控制状态、VInt 调度、CRAM/VRAM DMA、中断节奏或硬件时序，仍归[interrupt-dma-and-trap-state](../../../contracts/system/interrupt-dma-and-trap-state.md)；
+- 地图定义解析、地图选择、调色板槽运行时选择、构建顺序、工作布局状态、重载行为或持久性，仍归[map-exploration](../world/map-exploration.md)及其证据所有者；
+- blockset、64×64 布局、别名、碰撞或可通过性，仍归[map-layout-data](map-layout-data.md)与其他地图所有者；
+- 调色板插值、过渡计时器、队列交接、显示初始化或 flash 状态，仍归[graphics-service-state](graphics-service-state.md)；
+- 淡入等待/控制状态、VInt 调度、CRAM/VRAM DMA、中断节奏或硬件时序，仍归[interrupt-dma-and-trap-state](../system/interrupt-dma-and-trap-state.md)；
 - 瓦片集、地图精灵图形、特殊精灵、UI 调色板、战斗调色板、立绘或特殊画面资源；
 - 渲染组合、颜色零视觉语义、动画、最终帧、截图或玩家面向呈现；
 - 私有原版调色板字、载荷、hash 或逐地图赋值；
@@ -243,12 +243,12 @@ H4 可以在导入构建、惰性或运行时前解码或变换私有调色板�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 指针与载荷语料 | **已确认静态** | `sf2-map-palette-static-v1`；[fixture](../../../../../tests/fixtures/h2/map-palette-static-v1.json) | 十六个有序资源、精确维度与一致性；原始载荷/hash 保持私有 |
-| 源颜色字边界 | **已确认静态** | 同一 fixture；[technical-graphics 研究](../../../../research/presentation/technical-graphics.md) | 256 掩码有效字与 69 个不同值；无连续域、别名或视觉含义 |
-| 地图引用面 | **已确认静态** | 同一 fixture；[map-content 研究](../../../../research/world/map-content.md) | 79 个私有有序引用与精确公开直方图；无自然可达性或运行时生命周期声称 |
+| 源颜色字边界 | **已确认静态** | 同一 fixture；[technical-graphics 研究（英文）](../../../../research/presentation/technical-graphics.md) | 256 掩码有效字与 69 个不同值；无连续域、别名或视觉含义 |
+| 地图引用面 | **已确认静态** | 同一 fixture；[map-content 研究（英文）](../../../../research/world/map-content.md) | 79 个私有有序引用与精确公开直方图；无自然可达性或运行时生命周期声称 |
 | 源到有效规则 | **已确认静态时间线** | 同一 fixture 与受限 `mapload.asm` 源 | 32 字节复制交接后首字清除；无 CopyBytes 微实现、DMA、转移或渲染完成 |
 | auxiliary 聚合 | 排除执行所有者 | `sf2-auxiliary-data-static-v1` | 宽清单此处不提供注册或兄弟关联 |
-| 地图构建与重载 | 独立所有者证据 | [map-exploration](../../../contracts/world/map-exploration.md) | 调色板语料不拥有地图选择、构建、缓存、变更或持久性 |
-| 淡入、中断、DMA 与渲染 | 独立所有者 / **未知** | [graphics service](../../../contracts/graphics/graphics-service-state.md)；[interrupt 合同](../../../contracts/system/interrupt-dma-and-trap-state.md) | 状态/控制身份不证明最终颜色、节奏、完成或可见呈现 |
+| 地图构建与重载 | 独立所有者证据 | [map-exploration](../world/map-exploration.md) | 调色板语料不拥有地图选择、构建、缓存、变更或持久性 |
+| 淡入、中断、DMA 与渲染 | 独立所有者 / **未知** | [graphics service](graphics-service-state.md)；[interrupt 合同](../system/interrupt-dma-and-trap-state.md) | 状态/控制身份不证明最终颜色、节奏、完成或可见呈现 |
 
 ## 开放问题
 

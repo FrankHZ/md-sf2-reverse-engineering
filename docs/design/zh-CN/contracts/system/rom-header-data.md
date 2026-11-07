@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`rom-header-data.md`](../../../contracts/system/rom-header-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`rom-header-data.md`（英文规范源）](../../../contracts/system/rom-header-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -17,7 +17,7 @@
 1. 控制台头之前 64 条目向量表的元数据；
 2. 可执行所有者接受的所选字面控制台头字段。
 
-可执行所有者是 fixture id `sf2-remaining-core-static-v1`，位于 [`tests/fixtures/h2/remaining-core-static-v1.json`](../../../../../tests/fixtures/h2/remaining-core-static-v1.json)。本合同只消费 `expected.headerFacts`。研究所有者是[ROM Header、Window Engine 与 Special Debug Flows](../../../../research/system/remaining-core.md)，受限源所有者是固定基线处的 `code/romheader.asm`。
+可执行所有者是 fixture id `sf2-remaining-core-static-v1`，位于 [`tests/fixtures/h2/remaining-core-static-v1.json`](../../../../../tests/fixtures/h2/remaining-core-static-v1.json)。本合同只消费 `expected.headerFacts`。研究所有者是[ROM Header、Window Engine 与 Special Debug Flows（英文）](../../../../research/system/remaining-core.md)，受限源所有者是固定基线处的 `code/romheader.asm`。
 
 research-index 溯源记录是 `core.rom-header`，绑定到源符号 `InitialStack`，其 ROM 地址为 `0`。该符号/地址对只是证据锚点。它不建立初始栈值、栈配置、重置语义或任何调用方可视行为。
 
@@ -38,14 +38,14 @@ fixture 直接绑定恰好五条 research-index 记录：
 | 记录 | 既有设计所有者 |
 | --- | --- |
 | `core.rom-header` | 无；本合同精确未来关联 |
-| `core.window-engine` | [window-system](../../../contracts/interface/window-system.md) |
-| `debug.battle-test` | [debug-control-flow](../../../contracts/system/debug-control-flow.md) |
-| `debug.configuration` | [debug-control-flow](../../../contracts/system/debug-control-flow.md) |
-| `debug.battle-actions` | [debug-control-flow](../../../contracts/system/debug-control-flow.md) |
+| `core.window-engine` | [window-system](../interface/window-system.md) |
+| `debug.battle-test` | [debug-control-flow](debug-control-flow.md) |
+| `debug.configuration` | [debug-control-flow](debug-control-flow.md) |
+| `debug.battle-actions` | [debug-control-flow](debug-control-flow.md) |
 
 只有 `core.rom-header` 未关联。其他四条记录保留其既有合同与语义。本合同不因那些段共享 fixture 而消费 `expected.windowFacts` 或 `expected.debugFacts`。
 
-已接受头事实与仓库[README](../../../../README.md)中总结的独立 H0 身份轨道一致。该一致是佐证，不是合并证据所有者：本合同中的存储头校验和保持与 H0 独立计算校验和验证不同。
+已接受头事实与仓库[README（英文）](../../../../README.md)中总结的独立 H0 身份轨道一致。该一致是佐证，不是合并证据所有者：本合同中的存储头校验和保持与 H0 独立计算校验和验证不同。
 
 ## 向量表元数据
 
@@ -127,11 +127,11 @@ ConsoleHeaderMetadata {
 
 本合同不拥有：
 
-- `InitialStack`/`p_Start` 启动与重置时间线，仍归[startup-control-flow](../../../contracts/system/startup-control-flow.md)；
-- 中断注册、VInt/HInt 处理、DMA 队列、淡入控制、设备面向意图或 trap 运行时接缝，仍归[interrupt-dma-and-trap-state](../../../contracts/system/interrupt-dma-and-trap-state.md)；
-- 标志存储与受限标志 trap 分组，仍归[global-flag-state](../../../contracts/world/global-flag-state.md)；
-- 声音命令传输与驱动状态，仍归[audio-system](../../../contracts/interface/audio-system.md)；
-- 存档布局、初始化、SRAM 持久性、挂起行为或断电恢复，仍归[save-system](../../../contracts/system/save-system.md)；
+- `InitialStack`/`p_Start` 启动与重置时间线，仍归[startup-control-flow](startup-control-flow.md)；
+- 中断注册、VInt/HInt 处理、DMA 队列、淡入控制、设备面向意图或 trap 运行时接缝，仍归[interrupt-dma-and-trap-state](interrupt-dma-and-trap-state.md)；
+- 标志存储与受限标志 trap 分组，仍归[global-flag-state](../world/global-flag-state.md)；
+- 声音命令传输与驱动状态，仍归[audio-system](../interface/audio-system.md)；
+- 存档布局、初始化、SRAM 持久性、挂起行为或断电恢复，仍归[save-system](save-system.md)；
 - 区域准入、平台兼容性、校验和拒绝、模拟器策略或硬件时序；
 - 来自共享 remaining-core fixture 其他段的窗口或调试语义。
 
@@ -183,12 +183,12 @@ H4 验收不要求重制在内部复现原版硬件头。它要求私有导入/�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 溯源锚点 | **已确认静态** | `sf2-remaining-core-static-v1`；[fixture](../../../../../tests/fixtures/h2/remaining-core-static-v1.json) | `InitialStack` / 地址 0 仅溯源；无栈或重置语义 |
-| 向量表摘要 | **已确认静态** | 同一 fixture；[remaining-core 研究](../../../../research/system/remaining-core.md) | 64 条目、HInt 4、VInt 6、范围 `[0,9]`；无完整映射、ABI 或可达性 |
+| 向量表摘要 | **已确认静态** | 同一 fixture；[remaining-core 研究（英文）](../../../../research/system/remaining-core.md) | 64 条目、HInt 4、VInt 6、范围 `[0,9]`；无完整映射、ABI 或可达性 |
 | 控制台头字面量 | **已确认静态** | 同一 fixture | 精确产品/校验和/ROM 末端/SRAM 范围/区域字段；无硬件或平台行为 |
-| 存储校验和佐证 | 独立所有者证据 | 仓库[H0 摘要](../../../../README.md) | 计算验证保持与存储字段所有权和算法语义不同 |
-| 启动/重置控制 | 独立所有者证据 | [startup-control-flow](../../../contracts/system/startup-control-flow.md) | `InitialStack` 与 `p_Start` 活跃时间线此处不复制 |
-| 中断与 trap 行为 | 独立所有者证据 / **未知** | [interrupt 合同](../../../contracts/system/interrupt-dma-and-trap-state.md)；[flag 合同](../../../contracts/world/global-flag-state.md) | 已接受受限接缝留在其所有者；未观察映射、ABI、时序与结果保持开放 |
-| SRAM/存档行为 | 独立所有者证据 / **未知** | [save-system](../../../contracts/system/save-system.md) | 声明范围被保留；启用、持久性、断电与集成不被声称 |
+| 存储校验和佐证 | 独立所有者证据 | 仓库[H0 摘要（英文）](../../../../README.md) | 计算验证保持与存储字段所有权和算法语义不同 |
+| 启动/重置控制 | 独立所有者证据 | [startup-control-flow](startup-control-flow.md) | `InitialStack` 与 `p_Start` 活跃时间线此处不复制 |
+| 中断与 trap 行为 | 独立所有者证据 / **未知** | [interrupt 合同](interrupt-dma-and-trap-state.md)；[flag 合同](../world/global-flag-state.md) | 已接受受限接缝留在其所有者；未观察映射、ABI、时序与结果保持开放 |
+| SRAM/存档行为 | 独立所有者证据 / **未知** | [save-system](save-system.md) | 声明范围被保留；启用、持久性、断电与集成不被声称 |
 | 公开载荷 | **未知** / 排除 | 无消费再分发所有者 | 仅元数据与溯源；原始版权头/标题载荷保持私有 |
 
 ## 开放问题

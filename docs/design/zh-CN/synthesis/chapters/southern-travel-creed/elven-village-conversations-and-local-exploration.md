@@ -1,12 +1,12 @@
 # Elven Village 对话与局部探索
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Elven Village 提供关于 仙女 与 Elric 的对话、可搜索的书籍和物品、一名 祭司 及一对内部楼梯。这些机会的后果不同。居民选定对话体读取或描述剧情状态；它们不招募 Elric，也不开通前往 Creed 的路线。获准物品搜索可改变物品栏及收集标志。楼梯在当前地图内移动，同时保留已有居民与工作布局。
 
 **已确认：**已接受证据确立这些静态选择及紧接的使用方。**推断：**它们构成可选的村庄对话与探索段落。**未知：**自然行程、实际调用方状态、服务成功、表现完成与响应输入。下述坐标标识内容和条件触发，不是攻略或重建的地形布局。
 
-这份实现中立的英文指南使用已接受的[局部研究](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md)及[抵达指南](battle19-outcomes-through-elven-village-entry.md)。按 [Issue #863](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863)，交互、物品栏、请求消费与地图重载分别有所有者，适合 Standard 严谨度。止于获准教堂调用及条件返回，或局部对话、搜索、楼梯之后的条件 Map23 控制。排除外部出口、Map24/Battle20、Fairy Cave/Creed 旅行、Elric 救援或招募、F762 生产方、物品使用／转职及教堂事务。本指南不选择重制规则、运行时采集或中文同步。
+这份实现中立的英文指南使用已接受的[局部研究（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md)及[抵达指南](battle19-outcomes-through-elven-village-entry.md)。按 [Issue #863](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/863)，交互、物品栏、请求消费与地图重载分别有所有者，适合 Standard 严谨度。止于获准教堂调用及条件返回，或局部对话、搜索、楼梯之后的条件 Map23 控制。排除外部出口、Map24/Battle20、Fairy Cave/Creed 旅行、Elric 救援或招募、F762 生产方、物品使用／转职及教堂事务。本指南不选择重制规则、运行时采集或中文同步。
 
 ## 选择对话
 
@@ -174,7 +174,7 @@ ExplorationLoop 仍清除待处理状态，将踩踏计数器减去 20000 并以
 
 ## 证据追踪与审阅边界
 
-**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#reproduction-and-retained-limits)保留源码路径、地址、字面控制、比较及紧接的使用方连接。此处 Map23 配置文件名相对于 `data/maps/entries/map23/mapsetups/`，地图表相对于 `data/maps/entries/map23/`，均位于固定的 `disasm/` 下。不重新调查源码。
+**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#reproduction-and-retained-limits)保留源码路径、地址、字面控制、比较及紧接的使用方连接。此处 Map23 配置文件名相对于 `data/maps/entries/map23/mapsetups/`，地图表相对于 `data/maps/entries/map23/`，均位于固定的 `disasm/` 下。不重新调查源码。
 
 | 解释 | 合同／精确可执行证据 | 有意保留的限制 |
 | --- | --- | --- |
@@ -202,4 +202,4 @@ schema／使用方配对为 [交互 schema](../../../../../../schemas/h2/map-eve
 
 保留 [PR862 原始交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/860#issuecomment-6162414060)、[变基后交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/860#issuecomment-6162442630)及[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/862#issuecomment-6162494122)，包括未改变的保留比较、原始／最终 CI、已修正截断／查找／表检查及所链接前序失败。保留 [PR861 验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/861#issuecomment-6162400984)及其[交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/859#issuecomment-6162382778)。此处不重新生成或替代任何测试夹具、schema、黄金夹具、私有载荷或已完成失败。
 
-**未知：**自然访问／地形、实际行动者查找／朝向／柜台／布局、调用方标志、成员资格／物品栏／收件人、服务返回、教堂结果、文本替换／节奏、物品收集／持久性、当前模式／随从／木筏、已完成楼梯／加载／init 及响应输入。这些缺口按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 继续延后，不是自动采集队列。此可选段落既不完成设计 epic，也不完成一条战役路线。
+**未知：**自然访问／地形、实际行动者查找／朝向／柜台／布局、调用方标志、成员资格／物品栏／收件人、服务返回、教堂结果、文本替换／节奏、物品收集／持久性、当前模式／随从／木筏、已完成楼梯／加载／init 及响应输入。这些缺口按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 继续延后，不是自动采集队列。此可选段落既不完成设计 epic，也不完成一条战役路线。

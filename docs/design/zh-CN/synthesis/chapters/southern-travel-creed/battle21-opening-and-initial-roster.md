@@ -1,6 +1,6 @@
 # Battle21 开场与初始名册
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 在获准的 Devil's Tail 遭遇中，Skeleton 要求来者离开 Mr. Creed 的领地。Peter 请求通行；Skeleton 拒绝，
 随后在另外三名场景行动者出现时下令攻击。之后的战斗配置以传入军团及选定敌人记录替换该角色群。
@@ -11,7 +11,7 @@ Fairy Cave 抵达和对峙行动者列表都不选择玩家的交战出战队伍
 这是内容和配置说明，不是已游玩遭遇、战术建议，也不声称攻击威胁成功执行。
 
 本指南接续 [Fairy Cave 探索与 Devil's Tail 返回](fairy-cave-exploration-and-devils-tail-return.md)，
-使用[已接受 Battle21 研究](../../../../../research/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md)。
+使用[已接受 Battle21 研究（英文）](../../../../../research/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md)。
 全新入场止于 `BattleLoop:@Start`，在 **ActivateEnemies 之前**；挂起入场止于 `@IndividualTurns_Loop` 前。
 交战执行、结果、Creed 入场/室内及地形重建不在本指南范围内。Fnnn 表示标志 nnn；行索引从零开始。
 坐标、等待及速度是源码操作数，不是观察位置或实测时长。
@@ -246,7 +246,7 @@ LoadBattle 初始化精灵、加载当前地图/视野及实体精灵、安装�
 **已确认溯源：**本指南使用 main `0a4e8c6980086ad712ce1bcde740583d21f69a87` 上已接受研究，
 源码为 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，
 USA 零售 ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
-[研究复现边界](../../../../../research/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md#counterexamples-reproduction-and-limits)
+[研究复现边界（英文）](../../../../../research/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md#counterexamples-reproduction-and-limits)
 负责具名源码路径、地址、完整选定命令/实体/文本/放置及使用方关联。本指南不重新调查原始源码，不重新生成比较或采集运行时。
 
 | 已审阅所有者 | 支持内容与范围外事项 |

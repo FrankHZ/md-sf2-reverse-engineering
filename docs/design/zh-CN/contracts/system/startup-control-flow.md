@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版 `Start`、`InitializeSystem`、`InitializeGame`、intro/标题交接与区域门控制面的实现无关重构，不把源静态循环范围转换成硬件时序，也不导入资源、音频、新游戏、输入、呈现、持久性或平台生命周期语义
 
-> 本文件是 [`startup-control-flow.md`](../../../contracts/system/startup-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`startup-control-flow.md`（英文规范源）](../../../contracts/system/startup-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -18,7 +18,7 @@
 
 ## 证据所有者与源审计
 
-`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`gameflow.py`](../../../../../src/sf2tool/h2/gameflow.py)，其带来源解释是[Startup、Main Loop 与 Exploration Core](../../../../research/system/gameflow-core.md)。本合同消费所选 `expected.startupFacts` 与以下五条记录身份：
+`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`gameflow.py`](../../../../../src/sf2tool/h2/gameflow.py)，其带来源解释是[Startup、Main Loop 与 Exploration Core（英文）](../../../../research/system/gameflow-core.md)。本合同消费所选 `expected.startupFacts` 与以下五条记录身份：
 
 - `gameflow.start.cold-start`；
 - `gameflow.start.system-init`；
@@ -30,10 +30,10 @@ fixture 的完整源成员集包含 14 条记录。十三条有直接 `sf2-gamef
 
 - 上文选出的五条启动记录；
 - 两条直接 fixture 链接启动记录，保留其既有合同；
-- 六条已归[exploration-control-flow](../../../contracts/world/exploration-control-flow.md)的主循环与探索记录；
-- 一条仅成员地图块记录，其 H3 证据与[map-exploration](../../../contracts/world/map-exploration.md)关联保持不变。
+- 六条已归[exploration-control-flow](../world/exploration-control-flow.md)的主循环与探索记录；
+- 一条仅成员地图块记录，其 H3 证据与[map-exploration](../world/map-exploration.md)关联保持不变。
 
-`gameflow.start.base-tiles` 仍归[UI graphics asset data](../../../contracts/graphics/ui-graphics-asset-data.md)，而 `gameflow.start.z80-init` 仍归[audio system](../../../contracts/interface/audio-system.md)。本合同只把 `LoadBaseTiles` 与 `InitializeZ80` 命名为有序交接身份。它不给任一条研究记录添加本合同。
+`gameflow.start.base-tiles` 仍归[UI graphics asset data](../graphics/ui-graphics-asset-data.md)，而 `gameflow.start.z80-init` 仍归[audio system](../interface/audio-system.md)。本合同只把 `LoadBaseTiles` 与 `InitializeZ80` 命名为有序交接身份。它不给任一条研究记录添加本合同。
 
 已接受源审计在固定上游 commit `c834c652b6862bc5679fd7f69a38a7093206efc6` 检查这些代表条目：
 
@@ -81,7 +81,7 @@ map-data 聚合与每个 `map.data.*` 表记录在本合同消费证据之外。
 
 `InitializeVdp` 源循环消费 19 个维护 VDP 初始化条目。这是表与循环基数，不是可移植显示规范或可见状态声称。
 
-`InitializeZ80` 在本合同只是交接身份。生成声驱载荷、复制长度解读、总线/重置协议、活跃 Z80 状态、首命令、可听结果与失败行为保持[audio-system](../../../contracts/interface/audio-system.md)或 **未知**。
+`InitializeZ80` 在本合同只是交接身份。生成声驱载荷、复制长度解读、总线/重置协议、活跃 Z80 状态、首命令、可听结果与失败行为保持[audio-system](../interface/audio-system.md)或 **未知**。
 
 `InitializeVdpData` 同样是交接身份。队列布局、滚动缓冲、调色板、精灵表、DMA 处理、控制器端口配置、完成与渲染在本合同之外。现代实现可以用一个验证服务替换三个平台辅助，前提是其兼容轨迹能在请求原版路线一致性时复现已接受有序交接。
 
@@ -94,11 +94,11 @@ map-data 聚合与每个 `map.data.*` 表记录在本合同消费证据之外。
 3. `NewGame`；
 4. `DisplaySegaLogo`。
 
-本合同不消费 `baseTileCount` 或 `baseTileCompressionMode`。源操作数 `4096`、压缩资源身份、解码器行为、转移形式、目标与渲染结果保持[UI graphics asset data](../../../contracts/graphics/ui-graphics-asset-data.md)及其专用证据。`LoadBaseTiles` 只是上文命名的有序交接。
+本合同不消费 `baseTileCount` 或 `baseTileCompressionMode`。源操作数 `4096`、压缩资源身份、解码器行为、转移形式、目标与渲染结果保持[UI graphics asset data](../graphics/ui-graphics-asset-data.md)及其专用证据。`LoadBaseTiles` 只是上文命名的有序交接。
 
-[new-game state initialization 合同](../../../contracts/system/new-game-state-initialization.md) 拥有已接受 `NewGame` 变更及其内部顺序。本合同只拥有交接发生在区域辅助返回后、logo 交接前的事实。它不定义存档创建、战役状态、持久性或玩家可见新游戏行为。
+[new-game state initialization 合同](new-game-state-initialization.md) 拥有已接受 `NewGame` 变更及其内部顺序。本合同只拥有交接发生在区域辅助返回后、logo 交接前的事实。它不定义存档创建、战役状态、持久性或玩家可见新游戏行为。
 
-`DisplaySegaLogo` 返回后，已接受源分支把非零结果直接发送到 `AfterGameIntro`。零结果继续到调试切换与 intro 路由源。[special-screen control-flow 合同](../../../contracts/system/special-screen-control-flow.md) 拥有 logo 内部及其受限输入序列面。本合同不声称 Start 按下或任何精确输入采样如何创建结果，也不声称分支在特定帧可见。
+`DisplaySegaLogo` 返回后，已接受源分支把非零结果直接发送到 `AfterGameIntro`。零结果继续到调试切换与 intro 路由源。[special-screen control-flow 合同](special-screen-control-flow.md) 拥有 logo 内部及其受限输入序列面。本合同不声称 Start 按下或任何精确输入采样如何创建结果，也不声称分支在特定帧可见。
 
 其余调试模式分支不被提升为完整调试合同。其自然可达性、输入时序、地图/战斗测试语义与下游状态为 **未知** 或属于独立所有者。
 
@@ -119,7 +119,7 @@ map-data 聚合与每个 `map.data.*` 表记录在本合同消费证据之外。
 - 非零结果分支到 `StartWitchScreen`；
 - 零结果提高源中断掩码、从 `InitialStack` 重载栈、通过 `p_Start` 加载目标并跳转到它。
 
-第二条路径保留为源码形状启动向量重置路线，不是硬件重置或完整平台重新初始化的证明。标题循环、输入轮询、Witch 准入、存档动作、淡入、音乐与可见过渡行为保持[special-screen-control-flow](../../../contracts/system/special-screen-control-flow.md)、其他专用合同或 **未知**。
+第二条路径保留为源码形状启动向量重置路线，不是硬件重置或完整平台重新初始化的证明。标题循环、输入轮询、Witch 准入、存档动作、淡入、音乐与可见过渡行为保持[special-screen-control-flow](special-screen-control-flow.md)、其他专用合同或 **未知**。
 
 ## 区域准入分支
 
@@ -139,12 +139,12 @@ map-data 聚合与每个 `map.data.*` 表记录在本合同消费证据之外。
 
 启动路线是编排器。具名交接不转移被调方所有权：
 
-- [UI graphics asset data](../../../contracts/graphics/ui-graphics-asset-data.md) 拥有基础瓦片资源与转移元数据；
-- [audio-system](../../../contracts/interface/audio-system.md) 拥有声驱与活跃音频边界；
-- [new-game state initialization](../../../contracts/system/new-game-state-initialization.md) 拥有已接受 `NewGame` 状态事实；
-- [special-screen control flow](../../../contracts/system/special-screen-control-flow.md) 拥有 logo、标题与 Witch 内部；
-- [input-system](../../../contracts/interface/input-system.md) 拥有已接受控制器采样与等待辅助行为；
-- [exploration-control-flow](../../../contracts/world/exploration-control-flow.md) 拥有后续主循环与探索面。
+- [UI graphics asset data](../graphics/ui-graphics-asset-data.md) 拥有基础瓦片资源与转移元数据；
+- [audio-system](../interface/audio-system.md) 拥有声驱与活跃音频边界；
+- [new-game state initialization](new-game-state-initialization.md) 拥有已接受 `NewGame` 状态事实；
+- [special-screen control flow](special-screen-control-flow.md) 拥有 logo、标题与 Witch 内部；
+- [input-system](../interface/input-system.md) 拥有已接受控制器采样与等待辅助行为；
+- [exploration-control-flow](../world/exploration-control-flow.md) 拥有后续主循环与探索面。
 
 地图数据表、地图加载、工作布局变更、战斗结果、存档持久性、对话、菜单、呈现资源与故事含义保持本合同之外。没有相邻研究记录因隐含获得本合同。
 
@@ -253,7 +253,7 @@ StartupControlPlan
 | 游戏初始化交接顺序与 logo 返回绕过 | **已确认静态** | `sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 资源载荷、NewGame 变更、输入生成、调试路线 |
 | intro 继续指针与标题结果路线 | **已确认静态加固定源时间线** | `sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 标题/Witch 内部、可达性、重置硬件效果、呈现 |
 | 区域掩码、已接受值、返回/局部循环拆分 | **已确认静态** | `sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 真实硬件域、兼容性、警告输出、恢复 |
-| base-tile 与 Z80 启动记录 | **独立所有者已确认静态** | [UI graphics asset data](../../../contracts/graphics/ui-graphics-asset-data.md)与[audio-system](../../../contracts/interface/audio-system.md) | 此处仅交接身份；无新关联 |
+| base-tile 与 Z80 启动记录 | **独立所有者已确认静态** | [UI graphics asset data](../graphics/ui-graphics-asset-data.md)与[audio-system](../interface/audio-system.md) | 此处仅交接身份；无新关联 |
 | 运行时、硬件、持久性、输入、调试、资源、音频与呈现含义 | **独立所有者 / 未知** | 相邻合同与未来运行时工作 | 不得从静态控制推断完整启动体验 |
 
 ## 复现

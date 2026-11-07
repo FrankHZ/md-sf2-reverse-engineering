@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：对 56 字节战斗员条目域的源码形状访问，不指定更高层战斗、名册、持久性、呈现或平衡含义
 
-> 本文件是 [`combatant-state-access.md`](../../../contracts/party/combatant-state-access.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`combatant-state-access.md`（英文规范源）](../../../contracts/party/combatant-state-access.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,11 +14,11 @@
 - **推断**：仅无效选择器路线的调用方可视意图。源写错误码、通过 trap 参数禁用 VInt 并循环，但没有已接受运行时所有者闭合调用方或玩家观察什么。
 - **未知**：九操作矩阵之外的调用方相关获取器与变更结果；`DecreaseAndClampWord`、两个 Long 辅助、decrease-current-ATT、间接辅助可达性、选择器-160 运行时使用、距离边界行为、名册与战斗生命周期、存档持久性、UI 与呈现，以及平衡意图。
 
-[party-roster 合同](../../../contracts/party/party-roster-state.md) 拥有成员与活跃队伍命令。[battle-control 合同](../../../contracts/battle/battle-control-lifecycle.md) 拥有战斗准入、回合、清理与结果。[Level-up](../../../contracts/party/level-up.md)、[交战解决](../../../contracts/battle/combat-resolution.md)与[战场导航](../../../contracts/battle/battlefield-navigation.md) 拥有更高层消费者。那些合同可以变更或读取该状态，但其生命周期语义不折叠进该低级 ABI。
+[party-roster 合同](party-roster-state.md) 拥有成员与活跃队伍命令。[battle-control 合同](../battle/battle-control-lifecycle.md) 拥有战斗准入、回合、清理与结果。[Level-up](level-up.md)、[交战解决](../battle/combat-resolution.md)与[战场导航](../battle/battlefield-navigation.md) 拥有更高层消费者。那些合同可以变更或读取该状态，但其生命周期语义不折叠进该低级 ABI。
 
 ## 证据所有者
 
-`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是专用 H2 所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../../research/party/common-stats.md)。所有者保留此处使用受限面的完整指令与局部标签语料、source/H1 地址、字段宽度与偏移使用站点、辅助 ABI、调用方身份与精确顺序。
+`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../../tests/fixtures/h2/common-stats-static-v1.json)）是专用 H2 所有者。其验证器是[`stats.py`](../../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services（英文）](../../../../research/party/common-stats.md)。所有者保留此处使用受限面的完整指令与局部标签语料、source/H1 地址、字段宽度与偏移使用站点、辅助 ABI、调用方身份与精确顺序。
 
 `sf2-stat-clamp-boundaries-v1`（[`stat-clamp-boundaries-v1.json`](../../../../../tests/fixtures/h3/stat-clamp-boundaries-v1.json)）是 Slade/THIF 升级用例（含九个受控包装器操作）的受限 H3 所有者。它不确认每个包装器或辅助。其与升级合同的既有关联保持有效；本合同只消费同一 fixture 观察的低级夹断结果。
 

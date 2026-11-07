@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：原版己方身份、起始记录、职业元数据、呈现引用、转职映射、成长投影、法术学习列表与指针拓扑
 
-> 本文件是 [`ally-definition-data.md`](../../../contracts/party/ally-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`ally-definition-data.md`（英文规范源）](../../../contracts/party/ally-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,16 +14,16 @@
 - **推断**：无。movement、resistance、prowess、class type 与 promotion 等源码标签作为存储词汇保留，但本文档不从那些标签推断完整行为。
 - **未知**：起始记录槽 30 与 31 的自然可达性；战斗精灵职业条目为 `NONE` 时的可见回退；故事加入顺序；运行时职业/转职准入；名册成员与活跃队伍选择；完整呈现选择；平衡意图；以及任何己方、职业、成长曲线或法术列表的玩家面向价值。
 
-[party 与 roster state 合同](../../../contracts/party/party-roster-state.md) 拥有运行时成员与活跃队伍变更。[升级合同](../../../contracts/party/level-up.md) 拥有属性增益、职业块扫描、法术学习、上限、夹断与战斗员刷新。[service-interactions 合同](../../../contracts/party/service-interactions.md) 拥有受限教堂转职路径。那些动态行为都不在此重新定义。
+[party 与 roster state 合同](party-roster-state.md) 拥有运行时成员与活跃队伍变更。[升级合同](level-up.md) 拥有属性增益、职业块扫描、法术学习、上限、夹断与战斗员刷新。[service-interactions 合同](service-interactions.md) 拥有受限教堂转职路径。那些动态行为都不在此重新定义。
 
 ## 证据所有者
 
 主要可执行所有者是 `sf2-ally-data-static-v1`（[`ally-data-static-v1.json`](../../../../../tests/fixtures/h2/ally-data-static-v1.json)）。它清单 `data/stats/allies` 下全部 42 个文件、证明 12 个直接布局 include 加 30 个嵌套属性 include 覆盖完整源边界、每文件解析一个代表 H1 地址，并重新检查下文总结的静态事实。
 
-其详细带来源所有者是[ally 与 class data inventory](../../../../research/party/ally-data-inventory.md)。该清单交叉检查两个更早规范轨道而不替换它们：
+其详细带来源所有者是[ally 与 class data inventory（英文）](../../../../research/party/ally-data-inventory.md)。该清单交叉检查两个更早规范轨道而不替换它们：
 
-- [static core data](../../../../research/party/static-core-data.md)、其[manifest](../../../../../manifests/extractions/static-data.json)与[schema](../../../../../schemas/static-data.schema.json) 拥有名称、起始记录、职业记录、打包与 source/ROM 一致性；
-- [ally growth 与 spell learning](../../../../research/party/ally-growth.md)、其[manifest](../../../../../manifests/extractions/growth-data.json)与[schema](../../../../../schemas/growth-data.schema.json) 拥有局部生成的行级成长与习得法术表示。
+- [static core data（英文）](../../../../research/party/static-core-data.md)、其[manifest](../../../../../manifests/extractions/static-data.json)与[schema](../../../../../schemas/static-data.schema.json) 拥有名称、起始记录、职业记录、打包与 source/ROM 一致性；
+- [ally growth 与 spell learning（英文）](../../../../research/party/ally-growth.md)、其[manifest](../../../../../manifests/extractions/growth-data.json)与[schema](../../../../../schemas/growth-data.schema.json) 拥有局部生成的行级成长与习得法术表示。
 
 `sf2-map-sprite-assignments-static-v1`（[`map-sprite-assignments-static-v1.json`](../../../../../tests/fixtures/h2/map-sprite-assignments-static-v1.json)）是次级消费者所有者。它确认 30 行己方地图精灵表并分类已接受写入器/调用方边界。它不证明故事放置、呈现时序或任意注入地图精灵 ID 的有效性。
 
@@ -167,11 +167,11 @@ H4 不要求重制复现原版源文件或字节表布局。它要求确定性�
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 42 文件边界、H1 地址、表维度、职业/转职/成长/属性/指针摘要 | **已确认静态** | `sf2-ally-data-static-v1`（[`ally-data-static-v1.json`](../../../../../tests/fixtures/h2/ally-data-static-v1.json)） | 完整运行时消费与设计意图 |
-| 名称、32 个起始记录、32 个职业记录、固定打包与 source/ROM 一致性 | **已确认静态** | [static-core owner](../../../../research/party/static-core-data.md)、[manifest](../../../../../manifests/extractions/static-data.json)与[schema](../../../../../schemas/static-data.schema.json) | 槽 30/31 可达性与完整字段语义 |
-| 五条曲线、59 个职业记录与 122 个习得法术条目 | **已确认静态** | [growth owner](../../../../research/party/ally-growth.md)、[manifest](../../../../../manifests/extractions/growth-data.json)与[schema](../../../../../schemas/growth-data.schema.json) | 运行时增益、扫描、学习、上限、夹断与刷新行为由[level-up](../../../contracts/party/level-up.md)拥有 |
+| 名称、32 个起始记录、32 个职业记录、固定打包与 source/ROM 一致性 | **已确认静态** | [static-core owner（英文）](../../../../research/party/static-core-data.md)、[manifest](../../../../../manifests/extractions/static-data.json)与[schema](../../../../../schemas/static-data.schema.json) | 槽 30/31 可达性与完整字段语义 |
+| 五条曲线、59 个职业记录与 122 个习得法术条目 | **已确认静态** | [growth owner（英文）](../../../../research/party/ally-growth.md)、[manifest](../../../../../manifests/extractions/growth-data.json)与[schema](../../../../../schemas/growth-data.schema.json) | 运行时增益、扫描、学习、上限、夹断与刷新行为由[level-up](level-up.md)拥有 |
 | 30 个己方地图精灵行与已接受派生调用方边界 | **已确认静态** | `sf2-map-sprite-assignments-static-v1`（[`map-sprite-assignments-static-v1.json`](../../../../../tests/fixtures/h2/map-sprite-assignments-static-v1.json)） | 故事选择、注入 ID、加载器失败模式、可见时序 |
-| 成员、活跃队伍选择、加入/移除/重入变更 | **独立所有者** | [party 与 roster state](../../../contracts/party/party-roster-state.md) | 战役时间线与玩家选择空间保持未闭合 |
-| 转职事务与玩家面向服务流 | **独立所有者** | [service interactions](../../../contracts/party/service-interactions.md) | 完整转职变更、物品边界、持久性与 UX |
+| 成员、活跃队伍选择、加入/移除/重入变更 | **独立所有者** | [party 与 roster state](party-roster-state.md) | 战役时间线与玩家选择空间保持未闭合 |
+| 转职事务与玩家面向服务流 | **独立所有者** | [service interactions](service-interactions.md) | 完整转职变更、物品边界、持久性与 UX |
 | 名册构成、数值曲线、平衡与现代推进策略 | **未知 / 刻意设计** | 未来综合与模拟所有者 | 不得从原版表推断意图 |
 
 ## 复现

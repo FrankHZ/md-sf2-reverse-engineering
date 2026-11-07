@@ -1,12 +1,12 @@
 # Harpy Pond 接近至 Battle20 入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 在 Harpy Pond，Elric 感谢抵达的一行为他提供帮助。一个隐藏怪物打断对话，声称池塘用于捕获食物，并威胁吃掉 精灵。Peter 作出反应，摄像机转向怪物，对峙以解锁 Battle20 及请求转换结束。对峙标志尚未设置时，独立警告可使 Bowie 从南侧两个格子后退。随后的全新战斗以战斗员替换探索行动者；Elric 独立的中立池塘行动者不确立军团成员资格。
 
 **已确认：**选定静态程序、对话及条件使用方确立下述顺序。**推断：**遭遇将战斗呈现为围绕受困 精灵 展开。**未知：**自然访问、实际调用方状态、服务完成、渲染表现、可用输入及持久性。角色陈述仍为归属于角色的台词。对峙和战斗入场均不救援或招募 Elric。
 
-本指南接续 [Elven Village 离开至 Harpy Pond 入场](elven-village-departure-through-harpy-pond-entry.md)，使用已接受的[接近与 Battle20 入场研究](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md)。全新入场止于 BattleLoop 的 `@Start`，即 **ActivateEnemies 之前**。挂起入场止于 `@IndividualTurns_Loop` 之前。无关请求止于自己的继续边界。激活、回合（单次行动）、战术、结果、救援／招募、F751 通道、Fairy Cave/Creed、Battle21 及地形重建均不在范围内。Fnnn 表示标志 nnn；行和记录从零开始。下文等待次数与位置是命令输入，不是实测时间或观察移动。
+本指南接续 [Elven Village 离开至 Harpy Pond 入场](elven-village-departure-through-harpy-pond-entry.md)，使用已接受的[接近与 Battle20 入场研究（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md)。全新入场止于 BattleLoop 的 `@Start`，即 **ActivateEnemies 之前**。挂起入场止于 `@IndividualTurns_Loop` 之前。无关请求止于自己的继续边界。激活、回合（单次行动）、战术、结果、救援／招募、F751 通道、Fairy Cave/Creed、Battle21 及地形重建均不在范围内。Fnnn 表示标志 nnn；行和记录从零开始。下文等待次数与位置是命令输入，不是实测时间或观察移动。
 
 [Battle20 结果与 Elric 招募](battle20-outcomes-and-elric-recruitment.md)另行接续选定后续及条件探索返回。
 
@@ -28,7 +28,7 @@
 
 ## 对峙顺序
 
-**已确认：**`cs_5C312` 含 29 个顶层记录及一个完整内联移动。在普通映射角色配置下，源码按下列顺序组织内容与动作。对话转述自 keys 2555–2564；精确键、修饰符和控制保留于[完整研究程序](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md#complete-approach-program)。
+**已确认：**`cs_5C312` 含 29 个顶层记录及一个完整内联移动。在普通映射角色配置下，源码按下列顺序组织内容与动作。对话转述自 keys 2555–2564；精确键、修饰符和控制保留于[完整研究程序（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md#complete-approach-program)。
 
 | 记录 | 内容与动作顺序 |
 | --- | --- |
@@ -100,7 +100,7 @@ F88 已设置入场则恢复已保存秒数、清除 F88 与 AI 内存、清除�
 
 ## 战斗角色配置被重建
 
-**已确认：**BattleSpriteset20 含十二个己方放置行、十二个敌人行，AI 区域／点为零。完整位置、行值和使用方归[选定名册研究](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md#complete-selected-spriteset-and-roster-consumers)。本指南不维护第二份底层名册表。
+**已确认：**BattleSpriteset20 含十二个己方放置行、十二个敌人行，AI 区域／点为零。完整位置、行值和使用方归[选定名册研究（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md#complete-selected-spriteset-and-roster-consumers)。本指南不维护第二份底层名册表。
 
 己方行是当前已加入／出战列表的位置，不是十二名具名己方角色或新招募列表。初始化清除全部 30 名己方角色的 X，调用 UpdateForce 并消费该队伍及行 X/Y。死亡成员消耗队伍／循环槽位，但不推进放置行；超过容量的其余成员可离开出战队伍。不由此保证存活十二人军团、Peter、Oddler 或 Elric 成员资格。首个队伍条目在检查数量耗尽前读取，因此空／不一致列表不保证安全。行 HEALER1/NOTHING 与 NONE/15 操作数不安装新己方 AI 或物品。
 
@@ -120,7 +120,7 @@ LoadBattle 随后选择 d0 实体（全新入场提供 combatant 0）、初始�
 
 ## 证据追踪与审阅边界
 
-**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md#reproduction-and-remaining-limits)保留精确源码路径、地址、完整程序、字面文本及紧接使用方。本综合不增加原始源码调查、载荷重新生成或运行时观察。
+**已确认溯源：**已接受研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。其[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md#reproduction-and-remaining-limits)保留精确源码路径、地址、完整程序、字面文本及紧接使用方。本综合不增加原始源码调查、载荷重新生成或运行时观察。
 
 | 解释 | 合同与可执行所有者 | 本指南保留的边界 |
 | --- | --- | --- |
@@ -143,4 +143,4 @@ schema／验证器路线为 [区域 schema](../../../../../../schemas/h2/map-eve
 
 审阅使用上述已接受研究、共享合同、有边界公开测试夹具分区及 schema／使用方边界。完整程序、选定表行及字面文本经已接受研究及其回执使用，不在此独立复现。保留 [PR870 原始交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/868#issuecomment-6170807905)、[变基后交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/868#issuecomment-6170840743)及[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/870#issuecomment-6170954167)，包括未改变比较、原始／变基后 CI、检查修正及链接的前序失败。内容专属静态连接不全局闭合共享合同未知项。
 
-审阅状态包括独立 F470/F420/F520、直接准入、缺失／死亡／错误映射行动者、改变的随从、空／超容量队伍、F88 已保存状态、debug 文本跳过、部分服务及被覆盖待处理请求。它们约束此说明，不是已执行场景。**未知：**自然地形／访问／生产方选择、实际标志／HP／职业／成员资格／查找／模式、动作／文本／摄像机／淡入淡出服务完成、渲染场景、可用控制及持久性。它们按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md) 继续延后，不是自动运行时队列。本指南既不确立组合运行时路线，也不完成战役／设计 epic。
+审阅状态包括独立 F470/F420/F520、直接准入、缺失／死亡／错误映射行动者、改变的随从、空／超容量队伍、F88 已保存状态、debug 文本跳过、部分服务及被覆盖待处理请求。它们约束此说明，不是已执行场景。**未知：**自然地形／访问／生产方选择、实际标志／HP／职业／成员资格／查找／模式、动作／文本／摄像机／淡入淡出服务完成、渲染场景、可用控制及持久性。它们按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md) 继续延后，不是自动运行时队列。本指南既不确立组合运行时路线，也不完成战役／设计 epic。

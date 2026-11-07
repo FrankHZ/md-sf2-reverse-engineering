@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`graphics-service-state.md`](../../../contracts/graphics/graphics-service-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`graphics-service-state.md`（英文规范源）](../../../contracts/graphics/graphics-service-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -18,7 +18,7 @@
 2. 已接受显示初始化顺序，而不声称可见帧或硬件时序一致性；
 3. 精灵表链接初始化器与独立清单的战斗精灵链接辅助的存在；
 4. 调色板过渡计时器/步/权重状态及其受限源可见队列交接；
-5. 精确特殊精灵加载/更新路由拆分与加载对刷新转移接缝，消费[special-sprite-graphics-data](../../../contracts/graphics/special-sprite-graphics-data.md)的规范指针/资源身份；
+5. 精确特殊精灵加载/更新路由拆分与加载对刷新转移接缝，消费[special-sprite-graphics-data](special-sprite-graphics-data.md)的规范指针/资源身份；
 6. 固定三字 flash 脚本；
 7. 名义未使用显示/图形辅助的身份与源使用清单。
 
@@ -33,7 +33,7 @@
   [`tests/fixtures/h2/special-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json)，由
   [`src/sf2tool/h2/special_sprites.py`](../../../../../src/sf2tool/h2/special_sprites.py) 实现。
 
-所属研究文章是[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)。相邻呈现与资源导入合同保留其自身证据与验收面。
+所属研究文章是[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)。相邻呈现与资源导入合同保留其自身证据与验收面。
 
 ## 合同前证据审计
 
@@ -77,10 +77,10 @@ Status PASS
 
 审计刻意只消费聚合 tech-graphics fixture 的所选字段：
 
-- `graphicsFacts.viewDestination` 被整体排除。额外索引记录 `map.camera-control.set-view-destination`、区域视差/自动滚动输入、摄像机命令/H3 行为与目标轴写入保持已接受 map-camera H3 轨道与[map-exploration 合同](../../../contracts/world/map-exploration.md)拥有。`VInt_UpdateViewData` 内的独立源静态目标跟随与滚动速度派生属于[map-camera-update-control-flow](../../../contracts/world/map-camera-update-control-flow.md)。
+- `graphicsFacts.viewDestination` 被整体排除。额外索引记录 `map.camera-control.set-view-destination`、区域视差/自动滚动输入、摄像机命令/H3 行为与目标轴写入保持已接受 map-camera H3 轨道与[map-exploration 合同](../world/map-exploration.md)拥有。`VInt_UpdateViewData` 内的独立源静态目标跟随与滚动速度派生属于[map-camera-update-control-flow](../world/map-camera-update-control-flow.md)。
 - 从 `graphicsFacts.inventoryBoundary`，本合同消费 `unusedDisplayAndGraphicsHelpersInventoried` 加视觉/VDP 时序与特殊精灵帧呈现的显式队列。它不消费战斗、地图、UI、立绘、特殊画面或其他资源语料完成布尔值，也不把 fixture 的历史剩余语料队列变成重制要求。
 - `stackHistoryBytes`、初始历史字、位流语法、复制循环细节与编解码器实现是独立所有者静态证据。它们此处不是 H4 保真要求。
-- 特殊精灵服务与路由声称使用专用特殊精灵 fixture，而非聚合清单完成标志。静态指针/资源目录与私有导入保真被委托给[special-sprite-graphics-data](../../../contracts/graphics/special-sprite-graphics-data.md)。
+- 特殊精灵服务与路由声称使用专用特殊精灵 fixture，而非聚合清单完成标志。静态指针/资源目录与私有导入保真被委托给[special-sprite-graphics-data](special-sprite-graphics-data.md)。
 
 ## 解压服务 ABI
 
@@ -134,7 +134,7 @@ Status PASS
 
 **已确认静态：** `LoadSpecialSprite` 在 ROM 地址 154,660 开始，`AnimateSpecialSprite` 在 154,806 开始。指针表在 154,620 开始。专用 fixture 包含解析到五个初始载荷的十个指针槽，加一个仅动画流，但十个指针不意味着十个完整路由地图精灵 ID。
 
-十槽指针与六资源目录由[special-sprite-graphics-data](../../../contracts/graphics/special-sprite-graphics-data.md)规范化。本服务合同消费那些记录进行路由与转移测试；它不独立拥有或重新验证资源目录、别名、调色板、压缩/解码载荷、大小或私有导入图。
+十槽指针与六资源目录由[special-sprite-graphics-data](special-sprite-graphics-data.md)规范化。本服务合同消费那些记录进行路由与转移测试；它不独立拥有或重新验证资源目录、别名、调色板、压缩/解码载荷、大小或私有导入图。
 
 已接受路由拆分精确：
 
@@ -148,7 +148,7 @@ Status PASS
 
 单独索引特殊精灵动画表身份 `table_2784C` 在 ROM 地址 161,868 H1 绑定。本合同保留该身份及其与特殊精灵服务清单的关系；它不单独从表名或地址声称解码帧顺序、可见动画时序或最终输出。
 
-已接受[Common Scripting](../../../../research/world/common-scripting.md) 所有者已静态排除完整原版构建地图精灵赋值域中的 ID `237..250`。本合同不消费该所有者 fixture 或复制其 H4 面，但把结果保留为 **独立所有者已确认静态边界**。因此它不把所有保留/特殊可达性重新标记为未知。刻意畸形脚本、仅调试赋值、原始 RAM 注入、调用方可视失败行为与强制值的最终呈现保持 **未知** 或刻意测试输入。
+已接受[Common Scripting（英文）](../../../../research/world/common-scripting.md) 所有者已静态排除完整原版构建地图精灵赋值域中的 ID `237..250`。本合同不消费该所有者 fixture 或复制其 H4 面，但把结果保留为 **独立所有者已确认静态边界**。因此它不把所有保留/特殊可达性重新标记为未知。刻意畸形脚本、仅调试赋值、原始 RAM 注入、调用方可视失败行为与强制值的最终呈现保持 **未知** 或刻意测试输入。
 
 ## 固定 Flash 脚本
 
@@ -215,7 +215,7 @@ GraphicsServiceInventoryEntry {
 }
 ```
 
-模型刻意没有 view-destination、摄像机更新或视差对象，也没有资源载荷集合。摄像机命令/数据与目标服务行为保持[`map-exploration`](../../../contracts/world/map-exploration.md)；受限 VInt 更新算法保持[`map-camera-update-control-flow`](../../../contracts/world/map-camera-update-control-flow.md)。规范特殊精灵资源记录从[special-sprite-graphics-data](../../../contracts/graphics/special-sprite-graphics-data.md)消费。原版压缩字节、解码美术、调色板、瓦片图、渲染帧与截图保持私有/生成或单独许可数据。
+模型刻意没有 view-destination、摄像机更新或视差对象，也没有资源载荷集合。摄像机命令/数据与目标服务行为保持[`map-exploration`](../world/map-exploration.md)；受限 VInt 更新算法保持[`map-camera-update-control-flow`](../world/map-camera-update-control-flow.md)。规范特殊精灵资源记录从[special-sprite-graphics-data](special-sprite-graphics-data.md)消费。原版压缩字节、解码美术、调色板、瓦片图、渲染帧与截图保持私有/生成或单独许可数据。
 
 ## 跨系统分离
 
@@ -261,10 +261,10 @@ H4 不要求 Mega Drive VDP 模拟器、指令相同解压器、运行时原版�
 | --- | --- | --- | --- |
 | 解压条目身份与 `a0`/`a1`/`d0` ABI | **已确认静态** | `sf2-tech-graphics-static-v1`（[`tech-graphics-static-v1.json`](../../../../../tests/fixtures/h2/tech-graphics-static-v1.json)）；Stack 条目也由 `sf2-special-sprite-decode-v1`（[`special-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json)）绑定 | 编解码器历史、语法、复制循环、畸形输入行为与微实现是 H4 之外 |
 | 显示初始化、精灵链接形状、调色板计时器/权重/队列接缝、flash 字 | **已确认静态** | `sf2-tech-graphics-static-v1`（[`tech-graphics-static-v1.json`](../../../../../tests/fixtures/h2/tech-graphics-static-v1.json)） | 可见帧、VInt/CRAM-DMA 节奏、硬件时序与呈现保持 **未知** |
-| 规范数据记录上的精确 `9 + 1 + 6` 特殊 ID 路由拆分 | **已确认静态** | `sf2-special-sprite-decode-v1`（[`special-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json)）；目录由[special-sprite-graphics-data](../../../contracts/graphics/special-sprite-graphics-data.md)拥有 | 本合同保留路线/加载器/转移接缝但不独立拥有十指针/六资源目录；强制无效/调试行为与渲染帧保持 **未知** |
-| 完整原版构建赋值排除 ID `237..250` | **独立所有者已确认静态** | [Common Scripting](../../../../research/world/common-scripting.md)，本合同之外 | 本合同不复制其 fixture 或 H4 面；强制畸形/调试/原始 RAM 行为保持 **未知** |
-| 摄像机命令、区域输入与目标轴行为 | **独立所有者** | [map-exploration 合同](../../../contracts/world/map-exploration.md)及其 H3 摄像机所有者 | `graphicsFacts.viewDestination` 此处显式不消费 |
-| 源静态 VInt 目标跟随与滚动速度派生 | **独立所有者** | [map-camera-update-control-flow](../../../contracts/world/map-camera-update-control-flow.md) | 本合同不消费 common-map 摄像机事实或更新算法 |
+| 规范数据记录上的精确 `9 + 1 + 6` 特殊 ID 路由拆分 | **已确认静态** | `sf2-special-sprite-decode-v1`（[`special-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/special-sprite-decode-v1.json)）；目录由[special-sprite-graphics-data](special-sprite-graphics-data.md)拥有 | 本合同保留路线/加载器/转移接缝但不独立拥有十指针/六资源目录；强制无效/调试行为与渲染帧保持 **未知** |
+| 完整原版构建赋值排除 ID `237..250` | **独立所有者已确认静态** | [Common Scripting（英文）](../../../../research/world/common-scripting.md)，本合同之外 | 本合同不复制其 fixture 或 H4 面；强制畸形/调试/原始 RAM 行为保持 **未知** |
+| 摄像机命令、区域输入与目标轴行为 | **独立所有者** | [map-exploration 合同](../world/map-exploration.md)及其 H3 摄像机所有者 | `graphicsFacts.viewDestination` 此处显式不消费 |
+| 源静态 VInt 目标跟随与滚动速度派生 | **独立所有者** | [map-camera-update-control-flow](../world/map-camera-update-control-flow.md) | 本合同不消费 common-map 摄像机事实或更新算法 |
 | 名义未使用显示/图形辅助身份 | **已确认静态清单** | `sf2-tech-graphics-static-v1`（[`tech-graphics-static-v1.json`](../../../../../tests/fixtures/h2/tech-graphics-static-v1.json)） | 死代码状态、运行时可达性与调用方效果保持 **未知** |
 | 渲染器架构、可访问性策略、替换资源、本地化与许可内容 | **刻意设计** | 未来产品/内容决定 | 需要独立溯源与验收 |
 

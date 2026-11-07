@@ -1,10 +1,10 @@
 # Battle12 结果至 Bedoe 初始卫兵遭遇
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 击败 Mount Volcano 的首领可经共享敌人移除与计数序列使战斗获胜。首次完成分支中，敌人认出 Bowie 的宝石，返回将众人放回山上。Peter 对敌人的说法另有独立回应。选定山地出口通向 Bedoe；默认首次入场场景编排两名卫兵盘问访客、认出 Peter、谈论 devils，并请他觐见国王。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md)支持下文条件、请求与调用方顺序。**推断：**它们构成 [Battle12 准入指南](polca-fairy-through-battle12-admission.md)的候选接续，不是已演示的自然游玩流程。**未知：**步行、传入状态、服务完成、可见表现与可用输入。本说明不增加重制能力或产品决定。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md)支持下文条件、请求与调用方顺序。**推断：**它们构成 [Battle12 准入指南](polca-fairy-through-battle12-admission.md)的候选接续，不是已演示的自然游玩流程。**未知：**步行、传入状态、服务完成、可见表现与可用输入。本说明不增加重制能力或产品决定。
 
 止于 Bedoe 默认/替代 init 及首次条件性控制恢复。国王讲话 `cs_573EC`、觐见、Volcanon、后续选择、Skreech、招募、商店、楼层路线、Battle13 和未合并后继发现均不在本文范围内。Fnnn 表示标志 nnn；地图和战斗编号保留源码含义。下文坐标为地图瓦片，明确注明内部单位者除外。
 
@@ -101,13 +101,13 @@ Peter 同样来自 F67，没有固定行。Luke 声明不是招募，卫兵脚�
 
 ## 证据审阅与剩余限制
 
-本指南消费 [PR #781](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/781) 已接受研究及 [PR #782](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/782) 前序指南，不叠加或消费后继。研究拥有固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、USA 零售版身份、精确行/文本/命令与[复现边界](../../../../../research/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md#caller-restored-control-and-reproduction)。限定审阅使用已接受正文及选定 tracked 测试夹具；无需生成/复制可选载荷、重新调查源码或采集运行时证据。
+本指南消费 [PR #781](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/781) 已接受研究及 [PR #782](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/782) 前序指南，不叠加或消费后继。研究拥有固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、USA 零售版身份、精确行/文本/命令与[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md#caller-restored-control-and-reproduction)。限定审阅使用已接受正文及选定 tracked 测试夹具；无需生成/复制可选载荷、重新调查源码或采集运行时证据。
 
 | 审阅关系 | 既有可执行证据与合同 | 审阅边界 |
 | --- | --- | --- |
 | 战斗结果与后续返回 | [sf2-battle-global-data-static-v1](../../../../../../tests/fixtures/h2/battle-global-data-static-v1.json)、[sf2-battle-routing-data-static-v1](../../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)、[sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)、[战斗生命周期](../../../contracts/battle/battle-control-lifecycle.md)。 | 聚合路由保留 `routeTargetsParsed=false`；已接受研究提供精确 row 12、HP/F512 包装器及首领/加入/返回组合。通用合同不证明这场自然胜利。 |
 | 山地回应与 Bedoe 调用方 | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json) bodies 65/14/15、[地图探索](../../../contracts/world/map-exploration.md)。 | Body 65 在 F714 测试/分支后结束；研究提供辅助程序后续。Body 14 保留脚本→F719→F720，15 保留 F799/F724 而无默认场景。 |
-| 出口、配置与行动者身份 | [sf2-map-data-static-v1](../../../../../../tests/fixtures/h2/map-data-static-v1.json)、[sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)、[请求所有者](../../../../../research/world/map-event-request-consumption.md)。 | 汇总清单不独立解析每个选定行/列表。研究提供选定连接及 Luke/普通查找关联；二者都不证明步行或当前行动者。 |
+| 出口、配置与行动者身份 | [sf2-map-data-static-v1](../../../../../../tests/fixtures/h2/map-data-static-v1.json)、[sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)、[请求所有者（英文）](../../../../../research/world/map-event-request-consumption.md)。 | 汇总清单不独立解析每个选定行/列表。研究提供选定连接及 Luke/普通查找关联；二者都不证明步行或当前行动者。 |
 | 脚本编排与跟随 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)、[sf2-map-entity-gesture-relationship-motion-runtime-v1](../../../../../../tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json)、[出战队伍/名册](../../../contracts/party/party-roster-state.md)。 | 公开命令族/处理器事实和受控 HP/跟随边界不是整场转录。研究保留 122 条记录、内联行动、真实单位、高字节 HP 准入及当前跟随限制。 |
 
 [地图 init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与[测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)保留溯源和完整分界操作体。[地图脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)与 [schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)保留独立命令族事实及其使用方。审阅未发现本说明需要 Layer A 修正。既有窄复现路线包括 `uv run sf2 h2 map-init`、`map-script-engine`、`map-data`、`map-setup`、`map-entities`、`battle-global-data`、`battle-routing-data` 和 `battle-cutscenes`；它们是路线，不是在本纯正文切片中新执行的声明。

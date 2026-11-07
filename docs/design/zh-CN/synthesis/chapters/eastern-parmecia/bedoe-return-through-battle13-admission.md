@@ -1,10 +1,10 @@
 # Bedoe 返回至 Battle13 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 返回 Polca 的途中可选中一场对峙：恶魔攻击两名鸟人，Luke 讲述被扣押的经过，Gerhalt 请求加入 Bowie 的军团。场景让 Gerhalt 加入并请求战斗交接。旅行、场景选择、成员资格与战斗准入各有独立条件；其中任何一项都不单独证明连续可玩的返回。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md)支持下文选定出口、实体群、文本与服务顺序。**推断：**这些调度描绘对 Bedoe 士兵的攻击，以及 Gerhalt 为保护 Oddler 而介入。**未知：**自然旅行、传入状态、服务完成、渲染动作及可用战斗输入。本指南不增加重制能力或产品决策。Fnnn 表示标志 nnn；坐标单位为地图瓦片。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md)支持下文选定出口、实体群、文本与服务顺序。**推断：**这些调度描绘对 Bedoe 士兵的攻击，以及 Gerhalt 为保护 Oddler 而介入。**未知：**自然旅行、传入状态、服务完成、渲染动作及可用战斗输入。本指南不增加重制能力或产品决策。Fnnn 表示标志 nnn；坐标单位为地图瓦片。
 
 前序[国王选择指南](volcanon-return-through-bedoe-king-choice.md)说明可提供 F799 的可选接受分支。[雏鸟飞行与救援](bedoe-hatchling-flight-and-rescue.md)仍是独立可选内容：F723 与 F724 都不控制这些出口或对峙。这条阅读路线不要求雏鸟前提或强制顺序。止于新战斗 start 分发器返回、紧接 `ActivateEnemies` 之前；交战、结果、市长、木筏履行和 Oddler 离开仍不在范围内。
 
@@ -145,7 +145,7 @@ Luke 的替换不等待其目的地，也不清除位置、目的地、速度或
 
 ## 证据审阅与剩余限制
 
-本指南仅从已接受 main 消费 [PR #802](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/802) 接受的研究，以及前序英文国王选择与可选雏鸟指南。研究拥有 USA 零售 ROM 身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、场景 `0x585FE`、zone `0x5823A`、init `0x582E0` 及选定源码/服务组合。其[复现边界](../../../../../research/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md#reproduction-and-evidence-limits)保留源码/保留载荷比较。本切片审阅已接受正文和限定 tracked 测试夹具选择，不重新调查源码、不复制/生成派生载荷或新增观察。
+本指南仅从已接受 main 消费 [PR #802](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/802) 接受的研究，以及前序英文国王选择与可选雏鸟指南。研究拥有 USA 零售 ROM 身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、场景 `0x585FE`、zone `0x5823A`、init `0x582E0` 及选定源码/服务组合。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md#reproduction-and-evidence-limits)保留源码/保留载荷比较。本切片审阅已接受正文和限定 tracked 测试夹具选择，不重新调查源码、不复制/生成派生载荷或新增观察。
 
 | 审阅边界 | 既有测试夹具 / 合同 / 消费者 | 结论 |
 | --- | --- | --- |
@@ -153,7 +153,7 @@ Luke 的替换不等待其目的地，也不清除位置、目的地、速度或
 | Init 与实体群 | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，body 18/65；[init 验证器](../../../../../../src/sf2tool/h2/map_init.py)；[地图探索](../../../contracts/world/map-exploration.md)。 | Body 18 的 13 个操作独立测试 F711/F716/F718。Body 65 的两操作边界止于 Map52 辅助函数之前；已接受选定研究提供该顺序落入路径。配置/实体清单不包含完整实体群组合。 |
 | 对话、行动者与加入 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)；[对话](../../../contracts/interface/dialogue-system.md)、[出战队伍/名册](../../../contracts/party/party-roster-state.md)；[地图脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)。 | 命令族事实拥有处理器，不拥有完整 100 记录场景/文本语料。已接受研究拥有全部 19 条文本、加入 446、行动中断及 F9/F41/缓存组合；共享运行时边界不是自然场景证明。 |
 | 战斗交接 | [sf2-battle-routing-data-static-v1](../../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)、[sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)、[战斗路由合同](../../../contracts/battle/battle-cutscene-routing.md)；[过场验证器](../../../../../../src/sf2tool/h2/battle_cutscenes.py)。 | 路由测试夹具显式保留精确目标未解析；包装器事实拥有共享标志顺序。实际行 13 空目标来自已接受选定研究，与 Battle12 独立。 |
-| 战斗实体群 | [sf2-battle-spriteset-data-static-v1](../../../../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json)；[放置研究](../../../../../research/battle/battle-spriteset-data.md)。 | `rowContentTracked=false`：选定行 13 数量是已接受源码证据，不是逐行测试夹具覆盖或 Gerhalt 放置证明。 |
+| 战斗实体群 | [sf2-battle-spriteset-data-static-v1](../../../../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json)；[放置研究（英文）](../../../../../research/battle/battle-spriteset-data.md)。 | `rowContentTracked=false`：选定行 13 数量是已接受源码证据，不是逐行测试夹具覆盖或 Gerhalt 放置证明。 |
 
 [Init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)和验证器保留完整体/溯源相等性；[地图脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)保持命令族独立。既有聚焦检查位于 `tests/python/test_map_events.py`、`test_map_init.py` 和 `test_map_script_engine.py`；本文档范围不重跑它们。
 

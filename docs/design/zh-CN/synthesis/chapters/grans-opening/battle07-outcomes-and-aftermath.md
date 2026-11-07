@@ -1,18 +1,18 @@
 # Battle07 结果与探索交接
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/battle07-outcomes-and-aftermath.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/battle07-outcomes-and-aftermath.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Battle07 首次胜利后，恢复探索之前有一段很长的塔楼场景。**推断的叙事连接：**营救 Elis 失败，Bowie 获得 Galam 的宝石，众人在塔楼摇晃中撤退。**已确认的创作内容与静态状态：**after 程序安排了这一序列，写入宝石/随从/地震标志，并准备返回 Map58。这些事实不独立确认角色的解释，也不证明观察到自然游玩流程。
 
-本文承接 [Battle06 结果至 Battle07 准入](battle06-outcomes-through-battle07.md)。已接受的[研究所有者](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md)提供选定源码组合与溯源。本指南止于首个条件探索控制边界及 Map58 紧接的出站记录；城堡/城镇撤离、出航及 Battle08 不在范围内。它不增加重制能力或产品/UI 决策。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#719](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/719) 的 Standard 严谨度协议。
+本文承接 [Battle06 结果至 Battle07 准入](battle06-outcomes-through-battle07.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md)提供选定源码组合与溯源。本指南止于首个条件探索控制边界及 Map58 紧接的出站记录；城堡/城镇撤离、出航及 Battle08 不在范围内。它不增加重制能力或产品/UI 决策。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#719](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/719) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。下方原版源码引用使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)记录的 USA 零售 ROM 身份。命令索引是从零开始的地图脚本记录，不是帧数或源码行数。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)记录的 USA 零售 ROM 身份。命令索引是从零开始的地图脚本记录，不是帧数或源码行数。
 
 ## 1. 结果决定是否运行长场景
 
-**已确认静态规则：**Battle07 使用普通的阵营计数结果。已放置且存活的战斗员计入；Bowie 的 HP 为零时强制己方计数为零。先按己方为零选择败北，再按敌方为零选择胜利。仅击败敌方槽位 128 不构成 Battle07 特殊胜利：败敌路由为空，首领存在表行的值为零，位置/HP 覆盖表没有 Battle07 条目。作为场景行动者的 Galam 与 Dark Smokes 不改变这些规则。[控制器合同](../../../contracts/battle/battle-control-lifecycle.md#动作后与回合后顺序)及[选定结果审阅](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)拥有检查和选定表行。
+**已确认静态规则：**Battle07 使用普通的阵营计数结果。已放置且存活的战斗员计入；Bowie 的 HP 为零时强制己方计数为零。先按己方为零选择败北，再按敌方为零选择胜利。仅击败敌方槽位 128 不构成 Battle07 特殊胜利：败敌路由为空，首领存在表行的值为零，位置/HP 覆盖表没有 Battle07 条目。作为场景行动者的 Galam 与 Dark Smokes 不改变这些规则。[控制器合同](../../../contracts/battle/battle-control-lifecycle.md#动作后与回合后顺序)及[选定结果审阅（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)拥有检查和选定表行。
 
 | 结果 / 传入状态 | 有序后果 | 返回边界 |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ Battle07 首次胜利后，恢复探索之前有一段很长的塔楼场景。**
 
 **已确认程序形状：**`data/battles/entries/battle07/cs_afterbattle.asm` 中的 `abcs_battle07` (`0x49F7E`) 将命令 0–396 作为一个线性程序运行。它没有显式标志分支、子程序调用或中途场地控制返回；各处理器仍有存活检查和服务依赖。它的 `loadMapFadeIn` 设置 Map58/摄像机 `(8,16)`；随后的 `loadMapEntities ce_4A912` 重建场景实体群。摄像机坐标不同于 Bowie 的场景起始位置 `(13,23)` 及最终返回 `(13,35)`。
 
-**已确认创作对话：**从 2385 开始的单个游标提供普通未跳过的 ID 2385–2460。下列摘要消费已接受的文本/行动者审阅，不复制逐字对话。调试/P2-Start 跳过可以抑制普通文本和游标递增；该 after 程序内没有固定 ID 的 `txt` 命令。[对话合同](../../../contracts/interface/dialogue-system.md)拥有命令/输入边界；[场景审阅](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#long-scene-actors-phases-and-text)拥有阶段、说话者与文本溯源。
+**已确认创作对话：**从 2385 开始的单个游标提供普通未跳过的 ID 2385–2460。下列摘要消费已接受的文本/行动者审阅，不复制逐字对话。调试/P2-Start 跳过可以抑制普通文本和游标递增；该 after 程序内没有固定 ID 的 `txt` 命令。[对话合同](../../../contracts/interface/dialogue-system.md)拥有命令/输入边界；[场景审阅（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#long-scene-actors-phases-and-text)拥有阶段、说话者与文本溯源。
 
 | 场景阶段 | 创作内容与有意义的边界 |
 | --- | --- |
@@ -60,7 +60,7 @@ Battle07 首次胜利后，恢复探索之前有一段很长的塔楼场景。**
 | F74，命令 394 | 随从表准入三行：Astral `FOLLOWER_B`、国王 `FOLLOWER_A`、大臣 `FOLLOWER_D`。只写 Astral + King 的源码注释不完整。探索重建时，这些行与其他已启用行一起被选择。 |
 | F640，命令 395 | `SwitchMap` 消费标志切换表：之后的 Map3 请求变成地震城镇 Map4。该标志不替换 Map58。其后续清除/生命周期不在本段范围内。 |
 
-[持久效果审阅](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#persistent-effects-and-actual-return-consumer)列出菜单、随从和地图切换源码。通用清单没有以可执行验证闭合“场景写入至菜单”或随从重建组合。已接受的源码审阅支持这些条件静态关系；自然显示、随从行为与持久性仍为未知。
+[持久效果审阅（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#persistent-effects-and-actual-return-consumer)列出菜单、随从和地图切换源码。通用清单没有以可执行验证闭合“场景写入至菜单”或随从重建组合。已接受的源码审阅支持这些条件静态关系；自然显示、随从行为与持久性仍为未知。
 
 ## 4. 返回请求先于脚本和调用方完成
 
@@ -74,7 +74,7 @@ Battle07 首次胜利后，恢复探索之前有一段很长的塔楼场景。**
 6. 探索清除临时标志 256–383，设置 F80，加载地图并安装基本 VInt 函数。`RunMapSetupInitFunction` 对 `ms_Void` 跳过调用；Map58 没有额外 init 场景。F385/F74/F640/F507 不在临时清除范围内，因此保留。
 7. 条件音乐/淡入淡出调用之后，无待处理事件的 `WaitForEvent` 跟随实体 0 并安装 `SetControlledEntityActScript(0)`。BattleLoop 的 `PLAYER_TYPE=0` 选择 `eas_ControlledCharacter`。这是首个静态恢复控制边界，前提是先前服务完成。
 
-[请求使用方](../../../../../research/world/map-event-request-consumption.md#confirmed-consumer-topology)拥有局部重置/轮询/清除接缝；研究所有者提供选定战斗返回组合。[配置数据合同](../../../contracts/world/map-setup-data.md#合同边界)保留实体列表身份，[地图合同](../../../contracts/world/map-exploration.md)拥有选择器及转换边界。清单和受控转换观察均不证明这整个自然返回。
+[请求使用方（英文）](../../../../../research/world/map-event-request-consumption.md#confirmed-consumer-topology)拥有局部重置/轮询/清除接缝；研究所有者提供选定战斗返回组合。[配置数据合同](../../../contracts/world/map-setup-data.md#合同边界)保留实体列表身份，[地图合同](../../../contracts/world/map-exploration.md)拥有选择器及转换边界。清单和受控转换观察均不证明这整个自然返回。
 
 当前场景跟随不等于下一地图保留实体 ID。清除实体会移除它们的位置、行进、脚本和映射，随后重建按标志选择随从行。这独立于交战 HP 和[出战队伍/脚本合同](../../../contracts/party/party-roster-state.md#处理器边界)。F74 准入三行，不保证随从总数。跳过 intro 而保留的 F83 可以在 F74 之外启用额外国王/大臣行；初始化器不去重。其他随从标志和冲突调用方配置仍是显式输入，不用假设修补。
 
@@ -88,7 +88,7 @@ Battle07 首次胜利后，恢复探索之前有一段很长的塔楼场景。**
 
 ## 5. 下一边界是独立的场地请求
 
-**已确认紧接的出站记录：**Map58 的标志/踩踏表只有终止符。其位于 `0xB8A26` 的 `6-warp-events.asm` 记录为 `(255,37)` → Map60 `(8,52)`、Right、无滚动；255 是 X 通配符。这个较后的场地请求独立于战斗返回请求。下一所有者是 Map60 的地图内容/传送面，见[已接受出站边界](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#persistent-effects-and-actual-return-consumer)。
+**已确认紧接的出站记录：**Map58 的标志/踩踏表只有终止符。其位于 `0xB8A26` 的 `6-warp-events.asm` 记录为 `(255,37)` → Map60 `(8,52)`、Right、无滚动；255 是 X 通配符。这个较后的场地请求独立于战斗返回请求。下一所有者是 Map60 的地图内容/传送面，见[已接受出站边界（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#persistent-effects-and-actual-return-consumer)。
 
 **未知：**受控 Bowie 能否在实际布局、占位和随从条件下从 `(13,35)` 走到该标记。抵达 Map60、城堡/城镇撤离及 Battle08 需要各自已接受证据，才能继续综合。独立后续研究不是本指南消费的依赖。
 
@@ -107,6 +107,6 @@ Battle07 首次胜利后，恢复探索之前有一段很长的塔楼场景。**
 
 控制器概览较宽泛的 before/start 分组不能替代前篇精确的选定顺序。随从注释遗漏大臣；应使用三行表数据，并显式保留 F83/冲突标志。历史 H3 问题队列及扩展现有所有者的建议是未知处置，不是授权采集队列。这些更严格边界与已接受所有者一致；本篇不引入 Layer A 修正或新测试夹具。
 
-**推断：**从对峙经失败营救到撤退的预期叙事连接。**未知：**自然胜利/败北/逃脱及传入存档点/标志/HP/出战队伍/行动者状态；等待、滚动、音频、呈现的完成和时长；冲突随从与重入；合法行走、占位/碰撞、后续路线、持久性和可取胜性。[缺口所有者](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#coverage-gaps-and-reproduction)保留可区分条件的对照，如 F384 未设/F385 已设、F507 跳过、F83+F74 以及 F999 替换。
+**推断：**从对峙经失败营救到撤退的预期叙事连接。**未知：**自然胜利/败北/逃脱及传入存档点/标志/HP/出战队伍/行动者状态；等待、滚动、音频、呈现的完成和时长；冲突随从与重入；合法行走、占位/碰撞、后续路线、持久性和可取胜性。[缺口所有者（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#coverage-gaps-and-reproduction)保留可区分条件的对照，如 F384 未设/F385 已设、F507 跳过、F83+F74 以及 F999 替换。
 
-具名命令是复现路线，不是新的 PASS 声明。在启动命令的 PowerShell 进程中加载忽略的 `local/private-inputs.ps1`。研究所有者的[复现章节](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#coverage-gaps-and-reproduction)链接保留载荷配方及精确选定源码/程序/文本锚。英文指南的文档验收使用直接正文/分支/链接/私有边界/范围检查、`git diff --check`、干净提交后的验证计划和实际 CI，不运行 normal/full/engine/H3/H4/Godot 或翻译套件。
+具名命令是复现路线，不是新的 PASS 声明。在启动命令的 PowerShell 进程中加载忽略的 `local/private-inputs.ps1`。研究所有者的[复现章节（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#coverage-gaps-and-reproduction)链接保留载荷配方及精确选定源码/程序/文本锚。英文指南的文档验收使用直接正文/分支/链接/私有边界/范围检查、`git diff --check`、干净提交后的验证计划和实际 CI，不运行 normal/full/engine/H3/H4/Godot 或翻译套件。

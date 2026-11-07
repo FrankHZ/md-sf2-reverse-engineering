@@ -1,10 +1,10 @@
 # Hassan 出发、Battle17 进入与条件返回
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 离开 Hassan 可以直接进入战斗，或进入 South Parmecia 探索。在该处步行可请求名为 `BATTLE_TO_TAROS_SHRINE` 的 Battle17，但符合条件的 Battle9 优先。赢得 Battle17 后，一行人返回由当前出战队伍派生的位置；败北或 Egress 返回 Hassan。这些是条件源码路径，不是必需战役顺序或观察到的前往神殿旅程。
 
-**已确认：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md)确立此处说明的离开、请求/准入关联、战斗入场与直接结果消费者。**推断：**它们支持从 Hassan 朝神殿旅行。**未知：**自然旅行、传入状态、交战结果、服务/表现完成、可用输入与持久性。Fnnn 表示标志 nnn；坐标为地图瓦片，表索引从零开始。源码等待、速度和计数器是参数，不是测量的时长或移动。
+**已确认：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md)确立此处说明的离开、请求/准入关联、战斗入场与直接结果消费者。**推断：**它们支持从 Hassan 朝神殿旅行。**未知：**自然旅行、传入状态、交战结果、服务/表现完成、可用输入与持久性。Fnnn 表示标志 nnn；坐标为地图瓦片，表索引从零开始。源码等待、速度和计数器是参数，不是测量的时长或移动。
 
 城镇实体群和下筏限制见 [Battle16 结果至 Hassan 入场](battle16-outcomes-through-hassan-entry.md)，Rohde 独立提议见 [Hassan 对话](hassan-ancestry-and-rohde-caravan-choice.md)。两段对话、Achilles Sword 与 Rohde 跟随均不是选定 Battle17 前提。本指南止于战斗准入/start 或直接条件探索/控制返回。西部 Map68 旅行、Taros/Battle18、Caravan 运行、Rick 交互与交战模拟均不在范围内。
 
@@ -123,7 +123,7 @@ Hassan 默认/F518 替代配置共用 init 与普通随从表。[已接受实体
 
 ## 证据追踪与审阅边界
 
-**已确认溯源：**已接受 #836/PR838 研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现所有者](../../../../../research/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md#reproduction-and-evidence-limits)保留精确枚举/表/指针/参数/调用方关联。本综合使用已接受关联，不重新调查源码、重生成载荷或采集运行时。
+**已确认溯源：**已接受 #836/PR838 研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md#reproduction-and-evidence-limits)保留精确枚举/表/指针/参数/调用方关联。本综合使用已接受关联，不重新调查源码、重生成载荷或采集运行时。
 
 | 说明边界 | 合同与现有夹具追踪 | 限制 |
 | --- | --- | --- |
@@ -138,4 +138,4 @@ Hassan 默认/F518 替代配置共用 init 与普通随从表。[已接受实体
 
 [PR838 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/838#issuecomment-6160960756)与[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/838#issuecomment-6160982826)保留原始/rebase 后 CI、保留比较与已修正/失败检查，包括猜测场景路径失败和前段历史。不仅为说明而重放。[修正的 #831 计数](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/831#issuecomment-6160802747)仍为初次13 加重复2 个 Rohde 文本；Battle17 空场景不增加对话归属。
 
-**未知：**自然离开/zone/准入/返回可达；实际标志、计数器/种子、HP、名册、映射、请求字节与输入；行动/全部行动者/服务完成、渲染/音频、可用控制、连续交战至探索旅行与存档/恢复持久性。这些按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期。既不阻止此静态内容说明，也不授权采集队列、后续剧情扩展或新重制能力。
+**未知：**自然离开/zone/准入/返回可达；实际标志、计数器/种子、HP、名册、映射、请求字节与输入；行动/全部行动者/服务完成、渲染/音频、可用控制、连续交战至探索旅行与存档/恢复持久性。这些按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期。既不阻止此静态内容说明，也不授权采集队列、后续剧情扩展或新重制能力。

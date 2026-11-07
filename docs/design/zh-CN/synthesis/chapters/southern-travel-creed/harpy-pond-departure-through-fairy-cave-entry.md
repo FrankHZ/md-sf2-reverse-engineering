@@ -1,12 +1,12 @@
 # Harpy Pond 离开至 Fairy Cave 入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 离开 Harpy Pond 请求返回 Devil's Tail。附近独立区域可调度 Elric 打开通道：他解释 仙女 告诉他如何移动岩石，庆祝成功并呼唤领队向前。场景改变当前地图，隐藏新创建的 Elric 行动者并请求 Fairy Cave。军团成员资格、通道标志、当前地图改变及洞穴入场完成是独立状态；达到其中一个不能确立其余全部状态。
 
 **已确认：**已接受静态程序及其使用方确立下述条件顺序。**推断：**Elric 台词与图块改变表现打开通道。**未知：**自然旅行、传入行动者／出战队伍／运输状态、服务完成、渲染表现、响应输入及存档持久性。对话为归属台词，不证明此前与 仙女 相遇。
 
-本指南接续 [Battle20 结果与 Elric 招募](battle20-outcomes-and-elric-recruitment.md)，使用已接受的[离开与洞穴入场研究](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)。止于条件 Map32 入场控制、无关待处理继续，或开场前 Battle21 准入。独立范围的局部内容与返回见 [Fairy Cave 探索与 Devil's Tail 返回（中文）](fairy-cave-exploration-and-devils-tail-return.md)。洞穴探索、宝箱、搜索、岩石检查对话、后续移动、Creed 内容及战斗开场／结果均不在本指南范围内。Fnnn 表示标志 nnn；记录及行索引从零开始。坐标、等待及声音 ID 是源码操作数，不是观察位置、实测时长或可听结果。
+本指南接续 [Battle20 结果与 Elric 招募](battle20-outcomes-and-elric-recruitment.md)，使用已接受的[离开与洞穴入场研究（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)。止于条件 Map32 入场控制、无关待处理继续，或开场前 Battle21 准入。独立范围的局部内容与返回见 [Fairy Cave 探索与 Devil's Tail 返回（中文）](fairy-cave-exploration-and-devils-tail-return.md)。洞穴探索、宝箱、搜索、岩石检查对话、后续移动、Creed 内容及战斗开场／结果均不在本指南范围内。Fnnn 表示标志 nnn；记录及行索引从零开始。坐标、等待及声音 ID 是源码操作数，不是观察位置、实测时长或可听结果。
 
 ## 离开池塘独立于警告
 
@@ -121,15 +121,15 @@ Map32 外部出口恰位于这些抵达坐标：`(2,3)` 请求 Map67 `(51,23)`�
 
 ## 证据、审阅与剩余问题
 
-**已确认溯源：**原版源码为 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，由研究所有者连接到 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[研究复现／审阅边界](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#reproduction-and-remaining-limits)负责源码路径、命令、全部 33 个行／宏／参数连接、四个内联体、字面文本及紧接使用方。本综合使用已接受结果，不重新调查原始源码、不重新生成载荷，也不开展新运行时采集。
+**已确认溯源：**原版源码为 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，由研究所有者连接到 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[研究复现／审阅边界（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#reproduction-and-remaining-limits)负责源码路径、命令、全部 33 个行／宏／参数连接、四个内联体、字面文本及紧接使用方。本综合使用已接受结果，不重新调查原始源码、不重新生成载荷，也不开展新运行时采集。
 
 | 审阅表面 | 支持内容及保留问题 |
 | --- | --- |
-| 已接受离开研究、完整场景说明及[请求消费](../../../../../research/world/map-event-request-consumption.md)／[写入](../../../../../research/world/map-event-request-state.md) | 条件回调、当前／标志／加载顺序、待处理保留／替换、元组返回及实际 Map32 回退。自然生产方选择／完成仍未知。 |
+| 已接受离开研究、完整场景说明及[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)／[写入（英文）](../../../../../research/world/map-event-request-state.md) | 条件回调、当前／标志／加载顺序、待处理保留／替换、元组返回及实际 Map32 回退。自然生产方选择／完成仍未知。 |
 | `sf2-map-script-engine-static-v1`（[公开测试夹具](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）、保留的 `local/derived/map-script-engine-static.json` 中选定 `programCorpus.programs` id=`cs_4FC32` | 全部 33 个有序保留记录均已对照已接受研究检查。仅公开摘要／类别事实不暴露完整场景，也不证明自然执行；仍需研究所有者的内联／文本／使用方连接。 |
 | `sf2-map-init-static-v1`（[公开测试夹具](../../../../../../tests/fixtures/h2/map-init-static-v1.json)）及保留的 map-init 载荷 | 配置／分发器溯源及保留源码形态剖面；已接受完整 MapSetups／随从／大地图／战斗及选定表审阅提供 Map32 缺失／回退与角色配置结论。仅聚合相等不证明它们。 |
 | [地图探索](../../../contracts/world/map-exploration.md)、[对话](../../../contracts/interface/dialogue-system.md)、[出战队伍／名册](../../../contracts/party/party-roster-state.md)、[地图脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)、[测试夹具 schema](../../../../../../schemas/h2/map-script-engine-fixture.schema.json)及[输出 schema](../../../../../../schemas/h2/map-script-engine-output.schema.json) | 共享有序状态／命令／溯源边界、封闭的公开与完整程序结构，以及行动者与成员资格之别。不将受控边界扩展成战役或已完成表现。 |
 
-综合前审阅未发现需要新原版结论的所有者冲突。全文保留严格静态边界。现有配置命令及保留比较归[研究复现路线](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#reproduction-and-remaining-limits)；其已接受 PASS 不确立自然旅行，也不独立确立每条文字结论。保留[原始回执](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171704588)、[变基后回执](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171750883)及[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/878#issuecomment-6171765502)，包括检查／引号／路径失败、修正及不同的原始／最终 CI 结果。它们是审阅记录；跟踪的研究与精确已接受 Git 对象负责结论。
+综合前审阅未发现需要新原版结论的所有者冲突。全文保留严格静态边界。现有配置命令及保留比较归[研究复现路线（英文）](../../../../../research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md#reproduction-and-remaining-limits)；其已接受 PASS 不确立自然旅行，也不独立确立每条文字结论。保留[原始回执](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171704588)、[变基后回执](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/876#issuecomment-6171750883)及[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/878#issuecomment-6171765502)，包括检查／引号／路径失败、修正及不同的原始／最终 CI 结果。它们是审阅记录；跟踪的研究与精确已接受 Git 对象负责结论。
 
 **未知：**自然路线／地形／生产方选择、实际标志／成员资格／HP／职业／查找／模式／木筏、动作／文本／声音／淡入淡出／滚动服务完成、可见通道、可用输入及持久性。后备／死亡／缺失／重复行动者、传入标志、debug 跳过、部分返回及待处理替换是静态区分用例，不是已执行缺陷。扩展需要另行接受证据；这些未知项不自动排队运行时工作。本指南既不完成战役，也不改变重制行为或验收。

@@ -5,7 +5,7 @@
 - 现代化：**允许** 在私有导入等价适配器背后使用引擎原生索引资源
 - 未知：畸形或越界索引、运行时准入、所述字保留之外的调用方可视寄存器/CCR 依赖、编码、本地化、渲染、时序与玩家可见含义
 
-> 本文件是 [`name-table-lookup-service.md`](../../../contracts/interface/name-table-lookup-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`name-table-lookup-service.md`（英文规范源）](../../../contracts/interface/name-table-lookup-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 
@@ -33,7 +33,7 @@
 - `expected.representativeSymbols["findname.asm"]`；
 - `upstreamCommit` 与 `romSha256` 溯源。
 
-受限时间线直接在固定[`findname.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/findname.asm)中审查。所属[common-stats 研究](../../../../research/party/common-stats.md)、可执行[`stats.py`](../../../../../src/sf2tool/h2/stats.py)与提取[`manifest`](../../../../../manifests/extractions/common-stats-static.json) 保留完整源清单、已接受输出摘要与溯源。生成清单建立三个直接调用方出现而不发布任何名称表载荷。
+受限时间线直接在固定[`findname.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/findname.asm)中审查。所属[common-stats 研究（英文）](../../../../research/party/common-stats.md)、可执行[`stats.py`](../../../../../src/sf2tool/h2/stats.py)与提取[`manifest`](../../../../../manifests/extractions/common-stats-static.json) 保留完整源清单、已接受输出摘要与溯源。生成清单建立三个直接调用方出现而不发布任何名称表载荷。
 
 本合同**不**消费任何 `expected.statsFacts` 子树。特别是，它不因共享聚合 fixture 而消费战斗员获取器/变更/夹断/距离行为、队伍、标志、车队、Deals、法术、新游戏、战斗员类型或清单事实。
 
@@ -117,11 +117,11 @@
 
 | 调用方源 | 调用方拥有的准备 | 独立设计所有者 |
 | --- | --- | --- |
-| `combatantstats_1.asm` | 敌人选择与敌人名表选择 | [`combatant-state-access`](../../../contracts/party/combatant-state-access.md)与[`enemy-definition-data`](../../../contracts/party/enemy-definition-data.md) |
-| `itemstats.asm` | 物品条目掩蔽与物品名表选择 | [`item-definition-data`](../../../contracts/party/item-definition-data.md)；更广物品服务行为保持独立 |
-| `spellstats.asm` | 法术条目掩蔽与法术名表选择 | [`spellbook-state`](../../../contracts/party/spellbook-state.md)与[`spell-definition-data`](../../../contracts/party/spell-definition-data.md) |
+| `combatantstats_1.asm` | 敌人选择与敌人名表选择 | [`combatant-state-access`](../party/combatant-state-access.md)与[`enemy-definition-data`](../party/enemy-definition-data.md) |
+| `itemstats.asm` | 物品条目掩蔽与物品名表选择 | [`item-definition-data`](../party/item-definition-data.md)；更广物品服务行为保持独立 |
+| `spellstats.asm` | 法术条目掩蔽与法术名表选择 | [`spellbook-state`](../party/spellbook-state.md)与[`spell-definition-data`](../party/spell-definition-data.md) |
 
-职业表前端消费[`ally-definition-data`](../../../contracts/party/ally-definition-data.md)拥有的表。本合同不复制任何调用方的掩蔽、选择器、表基数、内容保真、运行时准入或显示行为。
+职业表前端消费[`ally-definition-data`](../party/ally-definition-data.md)拥有的表。本合同不复制任何调用方的掩蔽、选择器、表基数、内容保真、运行时准入或显示行为。
 
 ## 实现无关模型
 
@@ -190,10 +190,10 @@ H4 不得要求公开 fixture 中有原版字符串或表。它用合成行测�
 
 ## 跨系统分离
 
-- [`ally-definition-data`](../../../contracts/party/ally-definition-data.md)、[`item-definition-data`](../../../contracts/party/item-definition-data.md)、[`spell-definition-data`](../../../contracts/party/spell-definition-data.md)与[`enemy-definition-data`](../../../contracts/party/enemy-definition-data.md) 保留规范表身份、顺序、基数与私有内容。
-- [`combatant-state-access`](../../../contracts/party/combatant-state-access.md) 保留己方/敌人名选择及其受限 `GetCombatantName` 行为。
-- [`spellbook-state`](../../../contracts/party/spellbook-state.md) 保留法术条目掩蔽与法术查找调用方时间线。物品条目掩蔽与物品栏/装备行为保持本合同之外。
-- [`text-and-font-system`](../../../contracts/interface/text-and-font-system.md)与[`dialogue-system`](../../../contracts/interface/dialogue-system.md) 保留编码、字形、文本资源、渲染、对话替换、窗口、时序与玩家可见呈现。
+- [`ally-definition-data`](../party/ally-definition-data.md)、[`item-definition-data`](../party/item-definition-data.md)、[`spell-definition-data`](../party/spell-definition-data.md)与[`enemy-definition-data`](../party/enemy-definition-data.md) 保留规范表身份、顺序、基数与私有内容。
+- [`combatant-state-access`](../party/combatant-state-access.md) 保留己方/敌人名选择及其受限 `GetCombatantName` 行为。
+- [`spellbook-state`](../party/spellbook-state.md) 保留法术条目掩蔽与法术查找调用方时间线。物品条目掩蔽与物品栏/装备行为保持本合同之外。
+- [`text-and-font-system`](text-and-font-system.md)与[`dialogue-system`](dialogue-system.md) 保留编码、字形、文本资源、渲染、对话替换、窗口、时序与玩家可见呈现。
 - 聚合 common-stats fixture 中的队伍、标志、车队、Deals、战斗员变更、新游戏、清单与 unused-null 兄弟保持其当前所有者或未关联状态。
 
 ## 证据矩阵

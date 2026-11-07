@@ -1,6 +1,6 @@
 # Battle27：激活与首次单次行动交接
 
-> 本文是[规范英文原文：Battle27: activation and the first turn handoff](../../../../synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle27: activation and the first turn handoff](../../../../synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 军团可在全部声明区域外，而每个已放置敌人仍符合单次行动资格。**已确认：** 新 Battle27 初始化与开场完成后，十二编队位置均不触发四区域中的任何一个。十六初始化敌人却全部符合单次行动记录。区域激活、生成与单次行动准入判断不同问题。
 
@@ -8,7 +8,7 @@
 
 ## 从开场返回到单次行动调用
 
-**已确认：** 已接受[有序前缀](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#ordered-prefix-and-supplied-continuation)执行以下步骤：
+**已确认：** 已接受[有序前缀（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#ordered-prefix-and-supplied-continuation)执行以下步骤：
 
 1. 激活敌人，包括槽160 的额外顺落辅助调用。
 2. 运行当前战斗区域过场包装器。
@@ -27,7 +27,7 @@
 
 当前 Battle27 下，触发辅助扫描声明区域0–3。变化选择器若声明零区，在激活写入前返回。先测 NEWLY_TRIGGERED_BATTLE_REGIONS 的各位，即**已检查字**。已持有位跳几何；否则求区域，仅命中时设持久 F90+index，无论命中或未命中都设已检查位。前缀与辅助均不清该字或持久标志。新入口清 F90–105，**不清**已检查字。更晚 AI 侧清除在指南外，不提供其传入值前提。
 
-[完整几何、十二位置结果与拒绝算术](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#integer-region-join)是四个 type4 区域的权威。先用三角形1/2/4，必要时3/2/4。实际边消费者用有符号坐标字节、较大绝对增量（相等时水平）、向零截断的有符号乘/除与**从端点 B**的投影。边顺序、立即接受 result-1、对顶点比较与 bit0 例外均有关；通用浮点多边形模型不足。Region1 拒绝包含负 X 投影与实际 CCR/SynthesizeFlag 结果2，相对 vertex1 的0。源码注释不能替代。
+[完整几何、十二位置结果与拒绝算术（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#integer-region-join)是四个 type4 区域的权威。先用三角形1/2/4，必要时3/2/4。实际边消费者用有符号坐标字节、较大绝对增量（相等时水平）、向零截断的有符号乘/除与**从端点 B**的投影。边顺序、立即接受 result-1、对顶点比较与 bit0 例外均有关；通用浮点多边形模型不足。Region1 拒绝包含负 X 投影与实际 CCR/SynthesizeFlag 结果2，相对 vertex1 的0。源码注释不能替代。
 
 局部 X14–17/Y44–46 的每个编队序号均在**每个**区域外。完整所有者列出每序号全部四结果，不由包围矩形推断拒绝。几何考虑全部30 己方槽，要求**有符号正** HP 与有符号 X **及 Y** 非负。不查加入/出战成员资格；变化为存活已放置非成员也可触发。高位 HP、HP0 或负坐标失败。不考虑敌人/中立槽。不同于激活/单次行动准入的非零 HP 与无 Y 测试。区域索引守卫不是通用严格 index<count 验证；普通迭代提供0–3。Trigger15 是哨兵，不是第五多边形。
 
@@ -35,7 +35,7 @@
 
 ## 激活能对十六敌人改变什么
 
-**已确认：** [完整十六行触发/激活表](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#all-sixteen-row-effects-and-the-extra-call)将每行连接存储主/次半字节与结果字。全部新字不变：Bishop 行2/12/13 保持 `$3000`，其他 `$2000`，主/次 active 位未设。无区域标志设置。
+**已确认：** [完整十六行触发/激活表（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#all-sixteen-row-effects-and-the-extra-call)将每行连接存储主/次半字节与结果字。全部新字不变：Bishop 行2/12/13 保持 `$3000`，其他 `$2000`，主/次 active 位未设。无区域标志设置。
 
 表中变化标志后果可按下列分组阅读，覆盖全部十六行（战斗员 ID = 128 + 行）：
 
@@ -53,7 +53,7 @@
 
 ### 额外槽是有条件特卖别名
 
-32 槽循环后 d0.w=160、d7.w=`$FFFF`。ActivateEnemies 与辅助间无返回、分支或数据，因此再运行一次160。已接受[地址与压缩特卖连接](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#the-extra-fall-through-and-its-selected-ram-alias)表明地址辅助拒绝**大于**160 的 ID，准入160 本身：`(160-96)*56 + $FFE800 = $FFF600`，即 DEALS_ITEMS 旁 CURRENT_GOLD。
+32 槽循环后 d0.w=160、d7.w=`$FFFF`。ActivateEnemies 与辅助间无返回、分支或数据，因此再运行一次160。已接受[地址与压缩特卖连接（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#the-extra-fall-through-and-its-selected-ram-alias)表明地址辅助拒绝**大于**160 的 ID，准入160 本身：`(160-96)*56 + $FFE800 = $FFF600`，即 DEALS_ITEMS 旁 CURRENT_GOLD。
 
 `$FFF62E` 伪 X 是数量84/85；`$FFF60E` 伪 HP 是戒指20–23 数量；`$FFF636` 触发是数量100/101；`$FFF634` 激活是数量96–99。伪 X 非负、伪 HP 非零且持有非15 触发标志90–104 时，可将 bit0，或次选择的 bits0/1，OR 入 Goddess Staff99 计数半字节，保留其他位。已有位不一定改计数。这不是无条件添加物品、饱和递增或已证明商店访问/持久性。
 
@@ -61,11 +61,11 @@
 
 ## 无 Battle27 区域场景或新生成请求
 
-**已确认：** [完整区域钩子表与实际包装器](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#region-hook-and-spawn-admission)含四记录：battle32 区域0/1 共享 played flag386；battle40 区域0 用387、区域1 用388。CURRENT_BATTLE 始终27 时，包装器跳全部记录，在检查 played/区域标志、设 played 标志或分发 MAPSCRIPT 前返回。结论用完整表，不靠缺失猜测 Battle27 文件。变化当前战斗可匹配记录；此时 played 标志在脚本**前**写。中断可使场景未完成而标志已设。包装器后接调试诊断。
+**已确认：** [完整区域钩子表与实际包装器（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#region-hook-and-spawn-admission)含四记录：battle32 区域0/1 共享 played flag386；battle40 区域0 用387、区域1 用388。CURRENT_BATTLE 始终27 时，包装器跳全部记录，在检查 played/区域标志、设 played 标志或分发 MAPSCRIPT 前返回。结论用完整表，不靠缺失猜测 Battle27 文件。变化当前战斗可匹配记录；此时 played 标志在脚本**前**写。中断可使场景未完成而标志已设。包装器后接调试诊断。
 
 生成准入扫描全部32 敌槽，以 `$0F00` 掩 activation。十六新行全 STARTING0；缺席槽模式也0。区域激活只改 bits0/1，不能将 mode0 变生成模式。零跳 HP/区域/位置/重置/物品调用。TARGETS_LIST_LENGTH 变零；陈旧列表字节不消费。跳 SpawnEnemyWithCamera，因此新准备不建立生成动画、摄像机、物品或文本效果。
 
-变化模式使用已接受[生成/重置消费者](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#spawn-list-and-changed-state-conditions)，采用 Battle27 实际行数16：
+变化模式使用已接受[生成/重置消费者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#spawn-list-and-changed-state-conditions)，采用 Battle27 实际行数16：
 
 | 掩码模式 | 行重置前准入 |
 | --- | --- |
@@ -82,11 +82,11 @@
 
 ## 十六敌人符合资格，首行动者仍未知
 
-**已确认：** [完整当前属性表与构造器](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#turn-eligibility-records-and-call-boundary)将十六敌人连接至定义、装备与清初始状态后的当前 HP/AGI。Lizardman AGI38、Wyvern36、Bishop27、Soldier34、Sniper35、Wizard44。实际 HP 为正，各提供一条记录。难度影响 ATT，不影响此 AGI 连接；F527 不升级27。区域 active 位未设**不**排除这些单次行动。仅名称或 AGI 不能识别首行动者。
+**已确认：** [完整当前属性表与构造器（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md#turn-eligibility-records-and-call-boundary)将十六敌人连接至定义、装备与清初始状态后的当前 HP/AGI。Lizardman AGI38、Wyvern36、Bishop27、Soldier34、Sniper35、Wizard44。实际 HP 为正，各提供一条记录。难度影响 ATT，不影响此 AGI 连接；F527 不升级27。区域 active 位未设**不**排除这些单次行动。仅名称或 AGI 不能识别首行动者。
 
 构造器先将 `$FFF71A` 的64 条两字节记录清 `$FFFF`。先考虑己方0–29，再敌128–157；**排除158/159**，即使变化为存活已放置行动者。准入测有符号 X 非负与 HP 非零，无 Y、成员、中立、region-active 或指令集测试。新144–157 因 X 失败。所供存活已放置非成员与高位 HP 字可通过。
 
-已接受[分数、连续 RNG 与排序推导](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#turn-buffer-randomized-agility-and-first-dispatch)适用于这些调用方。对无符号当前 rawAGI，令 `A=rawAGI&127`，R(n) 为逐次直接 RNG 调用：
+已接受[分数、连续 RNG 与排序推导（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md#turn-buffer-randomized-agility-and-first-dispatch)适用于这些调用方。对无符号当前 rawAGI，令 `A=rawAGI&127`，R(n) 为逐次直接 RNG 调用：
 
 - 首分数：`A + R(A>>3) - R(A>>3) + R(3) - 1`。
 - rawAGI>=128 时，立即为同一行动者再追加，`B=floor(A*5/6)`，分数 `B + R(B>>3) - R(B>>3)`。
@@ -125,9 +125,9 @@
 
 ## 证据审阅与保留结果
 
-完整已接受 [Battle27 激活研究](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)是**已确认的静态证据所有者**，以 [#1037 / PR1039](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1039)在 `6334e76cf59e7f04ac871115d91a994f0c581e67` 接受。固定 SF2DISASM 修订为 `c834c652b6862bc5679fd7f69a38a7093206efc6`，绑定 USA retail ROM 身份。[已接受开场指南](battle27-initialization-and-opening.md#证据审阅与保留结果)与其 Layer A 所有者提供已完成新入口前提。地址、源码路径、完整表、整数算术与溯源仍由其拥有。
+完整已接受 [Battle27 激活研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)是**已确认的静态证据所有者**，以 [#1037 / PR1039](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1039)在 `6334e76cf59e7f04ac871115d91a994f0c581e67` 接受。固定 SF2DISASM 修订为 `c834c652b6862bc5679fd7f69a38a7093206efc6`，绑定 USA retail ROM 身份。[已接受开场指南](battle27-initialization-and-opening.md#证据审阅与保留结果)与其 Layer A 所有者提供已完成新入口前提。地址、源码路径、完整表、整数算术与溯源仍由其拥有。
 
-合成前审阅读完整已接受证据与变化状态行、前序、[生命周期合同](../../../contracts/battle/battle-control-lifecycle.md)、[过场路由合同](../../../contracts/battle/battle-cutscene-routing.md)、选定[放置/激活](../../../../../research/chapters/grans-opening/battle01-placement.md)与 [RNG/单次行动证据](../../../../../research/battle/runtime-rng-and-battle-math.md#confirmed-statically-and-at-runtime-turn-order-score)。合同紧凑“存活/已放置”措辞与旧广泛未知队列不替代更深已接受 HP/X/Y/边界/重置谓词。先前 Battle01 运行时及其几何模型只证明具名边界，不是通用整数边模型或自然 Battle27 穿行。未发现阻塞冲突；未来矛盾返回研究，不在 Layer B 静默修补。
+合成前审阅读完整已接受证据与变化状态行、前序、[生命周期合同](../../../contracts/battle/battle-control-lifecycle.md)、[过场路由合同](../../../contracts/battle/battle-cutscene-routing.md)、选定[放置/激活（英文）](../../../../../research/chapters/grans-opening/battle01-placement.md)与 [RNG/单次行动证据（英文）](../../../../../research/battle/runtime-rng-and-battle-math.md#confirmed-statically-and-at-runtime-turn-order-score)。合同紧凑“存活/已放置”措辞与旧广泛未知队列不替代更深已接受 HP/X/Y/边界/重置谓词。先前 Battle01 运行时及其几何模型只证明具名边界，不是通用整数边模型或自然 Battle27 穿行。未发现阻塞冲突；未来矛盾返回研究，不在 Layer B 静默修补。
 
 | 公共测试夹具 ID / 消费者 | 已审阅连接与限制 |
 | --- | --- |
@@ -146,4 +146,4 @@
 
 [#1037 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1037#issuecomment-6183776676)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1039#issuecomment-6183789330)保留作者0.340s、初始0.329s、独立0.332s 与 CI38676678592，包括 Region1 负投影/CCR 文字修正。[#1038 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1038#issuecomment-6183815772)与[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1040#issuecomment-6183838094)保留最终作者0.389s/独立0.393s/CI38677018042 与不同早期提交头/检查/CI/诊断。所链 #1033 原/变基结果、schema-path/local-$ref 失败及更早前序未知项继续保留。不重置已完成套件或失败记录。
 
-Standard 严谨级别与[当前协议](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)为 [#1042](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1042)区分这些状态权威。交接记录完整文字/diff/变化状态审阅、直接公共测试夹具/schema/消费者检查、五路径/导航/UTF-8/链接/私有检查、干净提交 planner 与精确提交头实际范围 CI。文档范围跳过笼统 normal/full/Python/.NET/Godot/H3/H4/翻译套件。原切片中结果研究 #1041 与 UI692 仍禁止触及且未消费。不增加运行时队列、引擎/平台变化、翻译或后续剧情范围。
+Standard 严谨级别与[当前协议](../../../documentation-roadmap.md#当前基线与近期综合)为 [#1042](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1042)区分这些状态权威。交接记录完整文字/diff/变化状态审阅、直接公共测试夹具/schema/消费者检查、五路径/导航/UTF-8/链接/私有检查、干净提交 planner 与精确提交头实际范围 CI。文档范围跳过笼统 normal/full/Python/.NET/Godot/H3/H4/翻译套件。原切片中结果研究 #1041 与 UI692 仍禁止触及且未消费。不增加运行时队列、引擎/平台变化、翻译或后续剧情范围。

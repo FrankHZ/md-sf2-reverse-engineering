@@ -1,11 +1,13 @@
 # Battle 02 结果至 Battle 03 准入
 
+> 本文是[英文规范原文](../../../../synthesis/chapters/grans-opening/battle02-outcome-through-battle03.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 Granseal 外的遭遇之后，胜利使出战队伍返回大地图。
 Yeel 提供关于 Hawel 的局部信息，以及 Kazin 提议带出战队伍去见他的内容。
 一个独立大地图区域事件调用方请求下一遭遇。
 **推断的剧情连接：**这些编写内容延续
 [Battle 01 返回至 Battle 02 准入](battle01-return-through-battle02.md)中的委任。
-**已确认静态：**已接受 [Battle02 至 Battle03 调查](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md)
+**已确认静态：**已接受 [Battle02 至 Battle03 调查（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md)
 把 Map66 上有条件的胜利返回连接到源码 Battle03 准入。
 **未知：**自然执行的行走、遭遇前是否访问 Yeel 或咨询 Kazin，以及实际返回和进入状态。
 
@@ -13,7 +15,7 @@ Yeel 提供关于 Hawel 的局部信息，以及 Kazin 提议带出战队伍去�
 它止于 Battle03 准入及选定入口依赖；Battle03 结算与 Hawel 住宅场景需要独立范围。
 原版基线是固定 US ROM 及 `ShiningForceCentral/SF2DISASM` `master` 的
 `c834c652b6862bc5679fd7f69a38a7093206efc6`，身份见
-[研究溯源](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#agreement-and-provenance)。
+[研究溯源（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#agreement-and-provenance)。
 这里没有重制实现提供证据。其[已接受私有里程碑](../../milestones/map3-battle01-readiness.md#当前已接受里程碑)
 止于 Battle01 可用返回；本指南不授予后期可玩支持。
 
@@ -33,7 +35,7 @@ Map66 是源码所称 Granseal Kingdom 大地图；Yeel 是 Map5。名称解释�
 所以击败处理包装器不使用其首领存在尾部杀死剩余敌人。
 有依据的获胜条件涉及所有剩余计入的敌人，不只敌人槽 128。
 [战斗控制合同](../../../contracts/battle/battle-control-lifecycle.md)和
-[选定结果分析](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
+[选定结果分析（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
 拥有该关系；它们不提供本遭遇的获胜行动序列。
 
 ### 胜利有空剧情程序，也有实际共享加入尾部
@@ -50,7 +52,7 @@ Map66 是源码所称 Granseal Kingdom 大地图；Yeel 是 Map5。名称解释�
 所以空编写内容不会消除包装器、解释器或加入消费者。
 [过场路由合同](../../../contracts/battle/battle-cutscene-routing.md)、
 [出战队伍成员资格合同](../../../contracts/party/party-membership-state.md)和
-[已接受选定源码分析](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
+[已接受选定源码分析（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
 将这些效果留给各自所有者。参与构建的加入表是
 `data/battles/cutscenes/afterbattlejoins.asm`；未使用的同名全局表不是该消费者的输入。
 
@@ -66,7 +68,7 @@ Map66 是源码所称 Granseal Kingdom 大地图；Yeel 是 Map5。名称解释�
 中间不调用 `CheckBattle`。该胜利序列不写 F403。
 **已确认静态后果：**胜利将控制交给场地探索，不立即启动 Battle03。
 **未知：**稳定后位置/朝向、自然可用输入与后续行走。
-[已接受返回所有者](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
+[已接受返回所有者（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
 将 `battleloop_2.asm` (`BattleLoop_Victory`、`0x23CBA`) 关联到 `mainloop.asm`。
 
 Map66 只有一个配置 `ms_map66`，普通实体列表为空、初始化为 RTS。
@@ -94,7 +96,7 @@ Yeel 在 Y=43 和 Y=0 的 X 通配出口返回 Map66 `(19,24)` 和 `(18,21)`，�
 这些记录在表中连接地点，不是从胜利终点出发的合法行走。
 Map66 的 F508/F611 图块复制、Yeel 持久 F940 教堂图块复制及四条门踩踏记录，是额外工作布局依赖。
 标记、碰撞与实体占位也有影响。
-[地图内容所有者](../../../../../research/world/map-content.md)和
+[地图内容所有者（英文）](../../../../../research/world/map-content.md)和
 [地图探索合同](../../../contracts/world/map-exploration.md)保留该边界，不公开布局。
 
 ### 选择哪种村庄内容？
@@ -110,7 +112,7 @@ F530/F28 选择本分支之外的后期共享处理器。
 默认实体事件表将 `ALLY_KAZIN` 配合 Down 朝向条件绑定到 `Map5_EntityEvent0`。
 程序物理上位于 `s2_entityevents_650.asm`，但默认表跨文件边界调用它。
 **已确认路由：**文件名后缀不是 F650 要求。
-[Yeel 内容调查](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#yeel-branch-content-without-an-invented-prerequisite)
+[Yeel 内容调查（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#yeel-branch-content-without-an-invented-prerequisite)
 和[地图配置合同](../../../contracts/world/map-setup-data.md)拥有选定绑定与共享选择器。
 
 ### Kazin 的提议改变跟随状态
@@ -125,7 +127,7 @@ F530/F28 选择本分支之外的后期共享处理器。
 F72 在 `data/scripting/entity/followers.asm` 中与 Kazin 关联，并由 `InitializeFollowerEntities` 消费。
 **已确认静态关系：**这确立跟随/F72，不是招募，也不是战斗解锁 F403。
 [出战队伍/名册合同](../../../contracts/party/party-roster-state.md)将成员资格命令保持独立，
-[通用脚本](../../../../../research/world/common-scripting.md)及已接受 Yeel 分析则拥有随从消费者。
+[通用脚本（英文）](../../../../../research/world/common-scripting.md)及已接受 Yeel 分析则拥有随从消费者。
 
 随从初始化先于配置实体初始化；已建立索引的己方角色条目被跳过。
 因此默认 Kazin 放置不证明重新进入后会出现第二个活跃 Kazin。
@@ -159,7 +161,7 @@ Map66 在 Y=9、Y=10 和 Y=28 的 X 通配行先于默认项：
 
 若其中一行匹配，但标志使其直接返回，仍不会继续落入默认项。
 普通瓦片不是默认区域触发，坐标匹配本身也不证明到达标记。
-[区域分发调查](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
+[区域分发调查（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
 连接移动、`ProcessMapEventType6_ZoneEvent` 与 `RunMapSetupZoneEvent` (`0x4751A`)。
 
 **已确认精确默认调用方：**位于 `0x4FAD4` 的 `Map66_DefaultZoneEvent`
@@ -177,8 +179,8 @@ Map66 在 Y=9、Y=10 和 Y=28 的 X 通配行先于默认项：
 **已确认静态顺序：**尽管辅助名为随机战斗，在该选定调用方，未完成遭遇的请求是确定性的。
 F502、F72 和 Yeel 访问都不是其门禁。
 辅助保留调用方的 `d1/d6/d7`；内部 `d1` 选择不是返回的成功标志。
-[精确随机调用方所有者](../../../../../research/world/map-event-random-battle-state.md)和
-[已接受路线调查](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
+[精确随机调用方所有者（英文）](../../../../../research/world/map-event-random-battle-state.md)和
+[已接受路线调查（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
 保留测试夹具及源码/H1/ROM 连接。
 **未知：**自然到达默认区域、等待完成、声音/闪光交付与输入可用性。
 
@@ -195,8 +197,8 @@ F502、F72 和 Yeel 访问都不是其门禁。
 **已确认源码边界：**该请求不是新鲜的位置/朝向快照。
 `CheckBattle` 从 `CURRENT_MAP` 解析 `MAP_CURRENT`；第 3 行 X/Y 通配触发
 使未知保留坐标不影响该行选择，却仍影响实际场地终点的主张。
-[请求消费所有者](../../../../../research/world/map-event-request-consumption.md)拥有轮询/分发；
-[已接受消费者组合](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
+[请求消费所有者（英文）](../../../../../research/world/map-event-request-consumption.md)拥有轮询/分发；
+[已接受消费者组合（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#conditional-transition-and-content-table)
 拥有下游 type-1 与选择器关系。
 
 当前为 Map66、所调查胜利已清除 F402、选定请求已设置 F403 时，
@@ -209,7 +211,7 @@ F502、F72 和 Yeel 访问都不是其门禁。
 类似地，若选定第 3 行的 F403/F503 均已设置，它清除 F403，同次调用仍返回索引 3。
 后续调用才看到改变后的标志。F403 未设置时，选择可继续到更晚的已解锁 Map66 行；
 不意味着通用“无遭遇”结果。
-[通用地图所有者](../../../../../research/world/common-maps.md#confirmed-map-routing)提供共享扫描，
+[通用地图所有者（英文）](../../../../../research/world/common-maps.md#confirmed-map-routing)提供共享扫描，
 已接受路线提供选定第 3 行操作数。任何拟议组合测试夹具都不被当作已经实现。
 
 ## 5. 选定 Battle03 入口声明了什么
@@ -219,8 +221,8 @@ F502、F72 和 Yeel 访问都不是其门禁。
 6 名敌人、1 个 AI 区域且无 AI 点。十二条放置行不确立十二名已加入或出战己方角色。
 地形槽 3 选择 `BattleTerrain03`；其后续别名不确立剧情顺序。
 [遭遇合同](../../../contracts/battle/battle-encounter-definition.md)、
-[精灵集所有者](../../../../../research/battle/battle-spriteset-data.md)和
-[地形/路由所有者](../../../../../research/battle/battle-routing-data.md)保留数据与载荷边界。
+[精灵集所有者（英文）](../../../../../research/battle/battle-spriteset-data.md)和
+[地形/路由所有者（英文）](../../../../../research/battle/battle-routing-data.md)保留数据与载荷边界。
 解释该准入不需要名册表或地形网格。
 
 战前槽选择 `bbcs_03` (`0x4980E`)，它执行 `csub_49816` 写入 `EGRESS_MAP=MAP_YEEL`，随后结束。
@@ -233,7 +235,7 @@ F502、F72 和 Yeel 访问都不是其门禁。
 **已确认共享顺序：**F88 未设置时，`BattleLoop` 安装当前地图/战斗，运行战前程序，
 清除区域标志、治疗/初始化战斗员，加载战斗内容并运行开始程序。
 [过场路由合同](../../../contracts/battle/battle-cutscene-routing.md#共享-intro-门)和
-[选定 Battle03 依赖](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#source-battle03-entry-dependencies)
+[选定 Battle03 依赖（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#source-battle03-entry-dependencies)
 拥有 F453 与 Egress 条件。共享控制器的 Battle01 证据不证明已初始化的 Battle03 出战队伍、激活或首次行动。
 
 接着读 [Battle 03 结果至 Battle 04 准入（中文）](battle03-outcome-through-battle04.md)，
@@ -257,7 +259,7 @@ F502、F72 和 Yeel 访问都不是其门禁。
 | 入口声明与选定过场 | [精灵集](../../../../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json)，`sf2-battle-spriteset-data-static-v1`；[路由](../../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)，`sf2-battle-routing-data-static-v1`；[精灵集](../../../../../../src/sf2tool/h2/battle_spriteset_data.py) / [路由](../../../../../../src/sf2tool/h2/battle_routing_data.py)验证器；`uv run sf2 h2 battle-spriteset-data`、`uv run sf2 h2 battle-routing-data` | `rowContentTracked=false` 和 `routeTargetsParsed=false` 保留清单限制。Battle03 的选定头部、战前/开始目标及有条件 EGRESS_MAP 写入来自调查，不是活跃入口证明。 |
 
 严格边界彼此一致：不存在需要所有者修正的证据分歧。
-[研究缺口处置](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#evidence-gaps-and-fixture-disposition)
+[研究缺口处置（英文）](../../../../../research/chapters/grans-opening/battle02-to-battle03-content-route.md#evidence-gaps-and-fixture-disposition)
 为缺失组合见证标识已有所有者。拟议扩展不是执行授权，通用运行时问题队列也不是自动采集工作。
 
 仍为**未知**：自然达到的 Battle02 结果/调用方状态与稳定返回终点；考虑标记/碰撞/占位的行走；

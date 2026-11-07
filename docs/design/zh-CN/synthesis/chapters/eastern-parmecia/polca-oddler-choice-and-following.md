@@ -1,10 +1,10 @@
 # Polca 的 Oddler 选择与跟随
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/polca-oddler-choice-and-following.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/polca-oddler-choice-and-following.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Polca 提供两次带上 Oddler 的请求。第一次由市长请一行人照顾他，Peter 请 Bowie 决定。拒绝会结束这次交流。第二次 Oddler 自己请求：Yes 到达共享接受对话，No 则进入较长劝说，结尾同样带上他。该劝说没有第二次提示。共同结尾请求新的跟随链并改变未来随从标志；不把 Oddler 或 Luke 招募进军团。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/polca-oddler-choice-and-following.md)支持下文调用方、归属对话、分支图和有序效果。**推断：**交流描绘一行人不情愿地承担照顾 Oddler 的责任。**未知：**自然可达、实际输入和行动者状态、服务完成、表现与持久性。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-oddler-choice-and-following.md)支持下文调用方、归属对话、分支图和有序效果。**推断：**交流描绘一行人不情愿地承担照顾 Oddler 的责任。**未知：**自然可达、实际输入和行动者状态、服务完成、表现与持久性。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
 
 Luke 陪同、变化后的城镇及市长交易见 [Battle13 结果至 Polca 木筏授予](battle13-outcomes-through-polca-raft-grant.md)。本指南消费该已接受前序，止于两个 Oddler 调用方及其条件控制返回。实际离开、登乘/河流旅行、Battle14、Luke 招募及之后 Oddler 剧情仍在边界外。接续 [Polca 出发与 Luke 招募](polca-departure-through-luke-recruitment.md)，了解选定南向传送、独立 init 条件及显式加入至条件探索控制。该接续既不要求 Oddler 跟随，也不要求木筏，不证明自然路线顺序。本指南不增加重制能力或产品决策。
 
@@ -161,7 +161,7 @@ Type6 返回探索。`WaitForEvent` 仅在待处理为零时重新指定 camera0
 
 ## 证据审阅与剩余限制
 
-本指南消费 main 上 [PR #809](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/809) 接受的研究与已接受前序指南。研究拥有 USA 零售身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、Map13 脚本行514–727、全部161条记录、21个内联行动体及文本/调用方/消费者比较。其[复现边界](../../../../../research/chapters/eastern-parmecia/polca-oddler-choice-and-following.md#reproduction-and-acceptance-limits)保留这些检查。本综合审阅已接受正文、合同和限定 tracked 测试夹具选择，不重新调查原始源码、不复制/生成载荷或运行时采集。
+本指南消费 main 上 [PR #809](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/809) 接受的研究与已接受前序指南。研究拥有 USA 零售身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、Map13 脚本行514–727、全部161条记录、21个内联行动体及文本/调用方/消费者比较。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/polca-oddler-choice-and-following.md#reproduction-and-acceptance-limits)保留这些检查。本综合审阅已接受正文、合同和限定 tracked 测试夹具选择，不重新调查原始源码、不复制/生成载荷或运行时采集。
 
 | 审阅边界 | 既有证据表面 | 结论 |
 | --- | --- | --- |

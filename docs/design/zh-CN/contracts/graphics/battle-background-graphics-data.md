@@ -4,7 +4,7 @@
 - 证据日期：2026-08-14
 - 范围：原版战斗背景指针与容器语料作为私有、引擎无关导入
 
-> 本文件是 [`battle-background-graphics-data.md`](../../../contracts/graphics/battle-background-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-background-graphics-data.md`（英文规范源）](../../../contracts/graphics/battle-background-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -16,7 +16,7 @@
 
 ## 证据所有者与消费面
 
-本合同消费的唯一可执行所有者是 `sf2-battle-background-decode-v1`（[fixture](../../../../../tests/fixtures/h2/battle-background-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/battle_backgrounds.py)、[schema](../../../../../schemas/h2-battle-background-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/battle-background-decode.json)）。其文章所有者是[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)。
+本合同消费的唯一可执行所有者是 `sf2-battle-background-decode-v1`（[fixture](../../../../../tests/fixtures/h2/battle-background-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/battle_backgrounds.py)、[schema](../../../../../schemas/h2-battle-background-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/battle-background-decode.json)）。其文章所有者是[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)。
 
 本数据合同消费：
 
@@ -25,7 +25,7 @@
 - `aliases` 中的三条受追踪行；以及
 - 已接受的上游、ROM 与规范输出溯源。
 
-`function` 身份只作为外部消费者/服务见证保留。`LoadBattlesceneBackground` 选择/加载器/调色板接缝仍归[Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md)，而 `LoadStackCompressedData` 仍归[Graphics Service State](../../../contracts/graphics/graphics-service-state.md)。两个函数记录都不属于本合同。
+`function` 身份只作为外部消费者/服务见证保留。`LoadBattlesceneBackground` 选择/加载器/调色板接缝仍归[Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md)，而 `LoadStackCompressedData` 仍归[Graphics Service State](graphics-service-state.md)。两个函数记录都不属于本合同。
 
 完整生成 `payloads[27]` 行保留在忽略的 `local/derived/battle-background-decode.json` 下。其源路径、地址、精确偏移、大小、调色板 hash、压缩流细节与解码 hash 是私有验证输入，不是公开合同载荷。
 
@@ -168,10 +168,10 @@ H4 不要求原版选择规则、加载器微实现、暂存地址、调色板�
 
 ## 跨系统分离
 
-- [Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md) 消费本合同的规范记录，并保留背景选择、`LoadBattlesceneBackground`、两个连续暂存目标、调色板字 0 清除/复制 15 时间线、转移/呈现边界及其 未知。它不再独立拥有或重新验证本目录。
-- [Graphics Service State](../../../contracts/graphics/graphics-service-state.md) 保留 `LoadStackCompressedData`、其 ABI 与服务边界。此处的聚合编解码器诊断不转移该所有权。
+- [Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md) 消费本合同的规范记录，并保留背景选择、`LoadBattlesceneBackground`、两个连续暂存目标、调色板字 0 清除/复制 15 时间线、转移/呈现边界及其 未知。它不再独立拥有或重新验证本目录。
+- [Graphics Service State](graphics-service-state.md) 保留 `LoadStackCompressedData`、其 ABI 与服务边界。此处的聚合编解码器诊断不转移该所有权。
 - battle AI、动作构建、交战解决与战斗生命周期合同保留场景选择输入、战斗效果与结果。
-- [Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA 与 CRAM 服务/时序边界。
+- [Interrupt、DMA 与 Trap State](../system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA 与 CRAM 服务/时序边界。
 - 行动者战斗精灵、武器、地面、效果、召唤、状态/过渡图形、特殊画面/UI/地图图形、本地化、可访问性与渲染仍归其自身合同或保持 未知。
 
 ## 证据矩阵

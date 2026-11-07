@@ -1,12 +1,12 @@
 # Battle26 初始编队与中立 Higins
 
-> 本文是[规范英文原文：Battle26 Initial Formation and Neutral Higins](../../../../synthesis/chapters/northern-travel-mitula/battle26-initialization-and-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle26 Initial Formation and Neutral Higins](../../../../synthesis/chapters/northern-travel-mitula/battle26-initialization-and-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 **已确认：** Geshp 对峙的 before 包装器返回后，新 Battle26 入场治疗符合资格的伙伴、布置实际出战军团与十五名敌人、替换场景人口并加载战场。完成未设的加载添加独立中立 Higins 行动者。他出现不招募 ally19。**推断：** 此编队布置 Ketto 外遭遇。**未知：** 自然抵达、传入状态、已完成服务、可见/可听表现、可用控制与持久性。
 
-此英文指南接续 [Battle26 准入与 Geshp 对峙](battle26-admission-and-geshp-confrontation.md)，使用 [#1010](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1010) 和 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下完整已接受[初始化研究](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md)。止于 `BattleLoop:@Start`，紧邻**首次 ActivateEnemies 之前**。不建立已激活演员表、首个行动者、移动、伤害、掉落、结果或 Higins 招募。F88 传入继续是独立对照，止于读取或执行其单次行动循环之前。
+此英文指南接续 [Battle26 准入与 Geshp 对峙](battle26-admission-and-geshp-confrontation.md)，使用 [#1010](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1010) 和 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下完整已接受[初始化研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md)。止于 `BattleLoop:@Start`，紧邻**首次 ActivateEnemies 之前**。不建立已激活演员表、首个行动者、移动、伤害、掉落、结果或 Higins 招募。F88 传入继续是独立对照，止于读取或执行其单次行动循环之前。
 
-Fnnn 表示标志 nnn；以下 ID 与坐标是源码操作数或条件初始化结果，不是运行时观察。源码身份与路径经研究所有者[协议与溯源](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#agreement-and-provenance)解析：USA retail 基线与 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`。此综合消费已接受 Layer A，不增加原版证据或重制规则。
+Fnnn 表示标志 nnn；以下 ID 与坐标是源码操作数或条件初始化结果，不是运行时观察。源码身份与路径经研究所有者[协议与溯源（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#agreement-and-provenance)解析：USA retail 基线与 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`。此综合消费已接受 Layer A，不增加原版证据或重制规则。
 
 ## 从对峙到新初始化
 
@@ -18,7 +18,7 @@ Fnnn 表示标志 nnn；以下 ID 与坐标是源码操作数或条件初始化�
 4. 清 d0.w 为零，为 combatant0 调用 LoadBattle。
 5. ExecuteBattleStartCutscene，再到 ActivateEnemies 前的 `@Start`。
 
-[有序后缀所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#return-from-before-and-ordered-fresh-initialization)保留选定 BattleLoop 源码与地址。Unlock426、intro476、completion526 与 continuation88 各有角色。仅当更早 Map72 候选408/424 失败，准入才能选26；持有完成的清理会清426，但仍准入该次选定调用。初始化不重复选择。持有476 跳过 before/start 分发，但仍运行新重置、治疗、名册和加载。每步要求先前服务返回；中断保留已完成前缀写入，不回滚。
+[有序后缀所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#return-from-before-and-ordered-fresh-initialization)保留选定 BattleLoop 源码与地址。Unlock426、intro476、completion526 与 continuation88 各有角色。仅当更早 Map72 候选408/424 失败，准入才能选26；持有完成的清理会清426，但仍准入该次选定调用。初始化不重复选择。持有476 跳过 before/start 分发，但仍运行新重置、治疗、名册和加载。每步要求先前服务返回；中断保留已完成前缀写入，不回滚。
 
 ## 谁获得治疗与初始位置
 
@@ -39,11 +39,11 @@ Fnnn 表示标志 nnn；以下 ID 与坐标是源码操作数或条件初始化�
 
 列表中死亡成员消费十二个处理成员槽之一，但不推进布置指针。之后存活成员用下个未消费位置。符合成员更少则行动者更少。多余出战成员经 LeaveBattleParty 清 active 标志与 X；该辅助不立即重建列表/计数。不一致的零成员数在首次读取前递减，无空列表守卫，因此不建立任意空状态安全。
 
-变化职业、HP、装备与状态影响资格、属性和精灵。陈旧传入出战列表不是权威，十二行不暗示十二名存活行动者。若传入 joined/active 标志已包括 Higins19，则独立按己方处理；之后中立行动者不加入他。[实际己方消费者审查](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#actual-allies-healing-and-formation)与[出战队伍/名册合同](../../../contracts/party/party-roster-state.md)保留成员资格、处理器和持久性边界。
+变化职业、HP、装备与状态影响资格、属性和精灵。陈旧传入出战列表不是权威，十二行不暗示十二名存活行动者。若传入 joined/active 标志已包括 Higins19，则独立按己方处理；之后中立行动者不加入他。[实际己方消费者审查（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#actual-allies-healing-and-formation)与[出战队伍/名册合同](../../../contracts/party/party-roster-state.md)保留成员资格、处理器和持久性边界。
 
 ## 十五名配置敌人
 
-**已确认：** BattleSpriteset26 声明 **12 个己方布置、15 名敌人、3 个区域和 1 个点**。初始未升级构成为一 Lizardman、一 Wizard、两 Dark Bishop、四 Lesser Demon、四 Dark Soldier、三 Dark Sniper。完整[行所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#complete-spriteset-and-fifteen-enemy-rows)解析槽26、366 字节范围、全部子节偏移和宏宽度。本指南保留有意义行，不复制编码布局。
+**已确认：** BattleSpriteset26 声明 **12 个己方布置、15 名敌人、3 个区域和 1 个点**。初始未升级构成为一 Lizardman、一 Wizard、两 Dark Bishop、四 Lesser Demon、四 Dark Soldier、三 Dark Sniper。完整[行所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#complete-spriteset-and-fifteen-enemy-rows)解析槽26、366 字节范围、全部子节偏移和宏宽度。本指南保留有意义行，不复制编码布局。
 
 敌人行 r 初始化 combatant128+r。每行用 STARTING=0 和 filler0；除 row2 编码 Black Ring 外，全部行物品为 NOTHING。Region15 表示无触发，不是第十五多边形。NONE 与 FOLLOW_ENEMY 是配置命令，不证明等待、追逐或已执行战术。
 
@@ -95,7 +95,7 @@ Fnnn 表示标志 nnn；以下 ID 与坐标是源码操作数或条件初始化�
 | Wizard | 40 | 59 | 50 / 69 |
 | Dark Bishop，两行 | 35 | 54 | 43 / 62 |
 
-这些是未升级前提下的初始化结果，不是之后单次行动中不可变属性。[定义/属性所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#selected-definitions-equipment-and-initialized-stats)点名精确敌人/物品定义、属性设置器和难度消费者。
+这些是未升级前提下的初始化结果，不是之后单次行动中不可变属性。[定义/属性所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#selected-definitions-equipment-and-initialized-stats)点名精确敌人/物品定义、属性设置器和难度消费者。
 
 ### Black Ring 为什么不增加攻击
 
@@ -109,7 +109,7 @@ Fnnn 表示标志 nnn；以下 ID 与坐标是源码操作数或条件初始化�
 
 辅助对 Soldier/Lizardman 选 melee，Demon 选 airborne，Sniper 选 ranged，Wizard 选 mage，Bishop 选 healer。使用 Bowie0 等级，class>11 时加20，减 battle26，并要求至少10 的正差。较小差保留原类型。类别范围参数5/2/2/1/2、RNG、边界、排除与重试/后备分支支配返回定义。其属性、物品栏、movetype、精灵和优先级可改变；Battle26 行坐标、指令、区域、命令及物品操作数仍为所选值，定义复制后仍处理难度。
 
-Airborne 排除列表为空，但消费者递减零计数并无零长度守卫地开始扫描。高等级或类别标签不保证安全升级 Demon。保留不确定性属于[全局数据升级所有者](../../../../../research/battle/battle-global-data.md#semantics-and-runtime-queue)及[选定 Battle26 升级审查](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#completion-held-upgrade-alternative)。不据此扩展升级/交战审计，也不保证确定重复名册。
+Airborne 排除列表为空，但消费者递减零计数并无零长度守卫地开始扫描。高等级或类别标签不保证安全升级 Demon。保留不确定性属于[全局数据升级所有者（英文）](../../../../../research/battle/battle-global-data.md#semantics-and-runtime-queue)及[选定 Battle26 升级审查（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#completion-held-upgrade-alternative)。不据此扩展升级/交战审计，也不保证确定重复名册。
 
 ## 区域与目标点配置后续工作
 
@@ -123,7 +123,7 @@ Airborne 排除列表为空，但消费者递减零计数并无零长度守卫�
 
 Type3 用顶点1/2/3；另一分支用三角形1/2/4 和3/2/4。区域1 第四坐标对不是该处几何操作数。每记录第二字节及尾字节为零，在选定路径不作几何操作数。新重置清相关标志，不表示事件已触发。之后区域/激活工作在终点外。
 
-Point0 为 `(23,7)`。Lizardman 的 MOVE_TO\|0 通过命令低半字节引用它。FOLLOW_ENEMY 操作数0/7/10/14/12 分别指战斗员128/135/138/142/140。例如 row13 引 rows14 和12，不是 ally14 或 ally12。这些是配置的点/战斗员引用，不建立所选战术目标或已完成移动。[区域/点消费者所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#three-regions-and-one-point)保留记录宽度、单位与选定读取路径。
+Point0 为 `(23,7)`。Lizardman 的 MOVE_TO\|0 通过命令低半字节引用它。FOLLOW_ENEMY 操作数0/7/10/14/12 分别指战斗员128/135/138/142/140。例如 row13 引 rows14 和12，不是 ally14 或 ally12。这些是配置的点/战斗员引用，不建立所选战术目标或已完成移动。[区域/点消费者所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#three-regions-and-one-point)保留记录宽度、单位与选定读取路径。
 
 ## 用物理战斗行动者替换场景
 
@@ -133,7 +133,7 @@ Point0 为 `(23,7)`。Lizardman 的 MOVE_TO\|0 通过命令低半字节引用它
 
 实际职业支配己方精灵，包括 Rohde 例外；战斗模式不用探索死亡己方 BLUE_FLAME 分支。存储敌人类型选精灵。未升级 Soldier82、Lizardman83、Demon109、Sniper126、Wizard136、Bishop145 低于特殊精灵阈值240，顺序分配。若声明 N 名己方，row r 用物理 N+r：十二己方时敌人占物理12–26。缺失/特殊/变化槽必须走实际分支，不套用条件映射。
 
-敌人 ID128–159 解析到查找偏移32–63；脚本别名 A30/B31 为独立项。被跳过普通查找保持 -1。49 条物理重置记录和固定扫描不是分配守卫；DeclareNewEntity 无容量检查。普通新入场最多用 12+15+1=28 行动者。不能承诺任意传入位置对扫描全部 62 战斗员槽都安全。[物理实体所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#battle-load-and-replacement-of-physical-entities)保留精确字段、哨兵及精灵/查找消费者。
+敌人 ID128–159 解析到查找偏移32–63；脚本别名 A30/B31 为独立项。被跳过普通查找保持 -1。49 条物理重置记录和固定扫描不是分配守卫；DeclareNewEntity 无容量检查。普通新入场最多用 12+15+1=28 行动者。不能承诺任意传入位置对扫描全部 62 战斗员槽都安全。[物理实体所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#battle-load-and-replacement-of-physical-entities)保留精确字段、哨兵及精灵/查找消费者。
 
 ### 中立 Higins 的三种身份
 
@@ -149,7 +149,7 @@ Point0 为 `(23,7)`。Lizardman 的 MOVE_TO\|0 通过命令低半字节引用它
 
 无 JoinForce、ally19 属性复制、己方治疗或 joined/active 标志写入。HP0 中立声明不证明 Higins 已死、加入或改变阵营。eas_LyingLeft 请求 orientLeft/updateSprite，顺落 motion OFF 并到 eas_Idle。Left orientation 不同于初始 Down facing；行动安装不是观察到的卧姿。LoadBattle 之后重新安装 VInt，行动可在 start 钩子前推进，但精确到达帧/行动为未知。
 
-持有526 时，新159 保持缺席，HP0/X=-1/activation0；B31 保持0，不加中立行动者。传入 F88 时，中立标记159 被普通遍历跳过，之后未设526 重写它。不一致的非中立159 若位置有效，可先分配普通行动者，再被中立遍历改用途，而不移除更早声明。不据此建立通用一一映射或传入状态修复。[中立行与查找证明](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#neutral-higins-slot159-script-b31-physical-n15)拥有表元组与精确写入。
+持有526 时，新159 保持缺席，HP0/X=-1/activation0；B31 保持0，不加中立行动者。传入 F88 时，中立标记159 被普通遍历跳过，之后未设526 重写它。不一致的非中立159 若位置有效，可先分配普通行动者，再被中立遍历改用途，而不移除更早声明。不据此建立通用一一映射或传入状态修复。[中立行与查找证明（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#neutral-higins-slot159-script-b31-physical-n15)拥有表元组与精确写入。
 
 ## 战场裁切、视野、地形与音乐
 
@@ -157,7 +157,7 @@ Point0 为 `(23,7)`。Lizardman 的 MOVE_TO\|0 通过命令低半字节引用它
 
 LoadBattle 恢复 d0=0、解析 combatant0、写 VIEW_TARGET_ENTITY，并将其物理瓦片位置采样到 BATTLE_ENTITY_CHOSEN_X/Y。负查找用物理0 后备读坐标，不创建 Bowie 或修复成员资格。它初始化精灵，以 **d0=-1** 调 LoadMap 表示按目标放置视野，并保留 **d1=72** 表示完整加载。负 d1 才表示独立重载路线；参数目的不同。
 
-Map72 选调色板 0 与瓦片集 106/102/107/108/105。唯一描述器覆盖 `(0,0)` 至 `(63,63)`，前/背景起点 0/0、视差对 256/256、零自动滚动、图层类型 254、MUSIC_MAIN_THEME1。描述器选择将目标内部坐标与乘 384 的边界比较，不加裁切 28/0；后备选首描述器，此处也是唯一描述器。[地图/裁切源码所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#map72-crop-descriptor-terrain-music-and-view)保留完整源码元组、范围和精确加载消费者。
+Map72 选调色板 0 与瓦片集 106/102/107/108/105。唯一描述器覆盖 `(0,0)` 至 `(63,63)`，前/背景起点 0/0、视差对 256/256、零自动滚动、图层类型 254、MUSIC_MAIN_THEME1。描述器选择将目标内部坐标与乘 384 的边界比较，不加裁切 28/0；后备选首描述器，此处也是唯一描述器。[地图/裁切源码所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#map72-crop-descriptor-terrain-music-and-view)保留完整源码元组、范围和精确加载消费者。
 
 基础图块/布局接收标志复制与已开宝箱覆盖，再将传入战斗矩形复制到工作原点0/0。裁切沿宽 64 的字行复制 1152 字/2304 字节，不建立新 36 宽存储步幅。战斗区域使用 layer1 原点0/0 与终点 `(35*384,31*384)=(13440,11904)`，其余描述器字段仍适用。所有编队、敌人、中立、区域与点坐标已是局部值；初始化不减28。源码布局对应为 `(localX+28,localY)`：placement0→`(35,25)`、Lizardman→`(50,7)`、point0→`(51,7)`、中立 Higins→`(46,14)`。这些关系不建立合法步行路径。
 
@@ -167,7 +167,7 @@ Map72 选调色板 0 与瓦片集 106/102/107/108/105。唯一描述器覆盖 `(
 
 **已确认：** 48 项 start 表槽26 选 ms_Empty，完整主体为 `$FFFF` 终止符。start 包装器检查476；未设时，**先设476**再保存 d0/a0 并分发 ExecuteMapScript。解释器返回后恢复 d0/a0，尾部恢复 d1 并返回。持有476 跳过此分发和标志写入，不跳过更早新配置。
 
-空分发仍保存解释器状态、初始化工作指针并清文本跳过。终止符在有对话窗口时有条件等待滚动、清 VIEW_SCROLLING_SPEED 并恢复寄存器。无局部文本、移动、选择、加入或地图加载。停滞共享尾部可使476 在返回前已设。只有包装器完成返回才到 ActivateEnemies 紧前的新终点。[start/继续所有者](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#empty-start-hook-supplied-continuation-and-changed-premises)保留精确表/目标地址和调用者分支。
+空分发仍保存解释器状态、初始化工作指针并清文本跳过。终止符在有对话窗口时有条件等待滚动、清 VIEW_SCROLLING_SPEED 并恢复寄存器。无局部文本、移动、选择、加入或地图加载。停滞共享尾部可使476 在返回前已设。只有包装器完成返回才到 ActivateEnemies 紧前的新终点。[start/继续所有者（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-initialization-and-roster.md#empty-start-hook-supplied-continuation-and-changed-premises)保留精确表/目标地址和调用者分支。
 
 持有 F88 时，BattleLoop 改为恢复保存秒数、清88 和 AI 内存、清 VIEW_TARGET_ENTITY，并在未显式清 d0 的情况下调用 LoadBattle。它跳 `@IndividualTurns_Loop`；之后到 `@Start` 的分支不可达。两种 AI 清除都写 48 个 last-target 字节255 和 48 个 memory 字节0。此传入路线不赋值 incoming72/26、不重置区域标志、不治疗/重建军团、不初始化敌人，也不执行任一钩子。当前地图/战斗/裁切、HP/状态/物品、位置、激活与单次行动状态均为传入值，同时受 LoadBattle 实体重建和中立写入影响。既不建立逐字节保留，也不建立新状态修复。
 

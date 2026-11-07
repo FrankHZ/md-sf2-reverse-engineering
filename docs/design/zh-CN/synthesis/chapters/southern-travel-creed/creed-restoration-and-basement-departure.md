@@ -1,16 +1,16 @@
 # Creed 恢复与主房间离开
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 **推断：**Creed 的法术让出战队伍脱离微型困境；Peter 随后询问 Zeon，Creed 和 Fairy 离开去咨询 Evil Spirit。**已确认：**选定源码按顺序安排该对话、精灵工作与离开，然后标记场景完成并选择 Hassan 供后续 Egress 使用。**未知：**自然抵达、传入行动者与状态、动画/服务完成、可见恢复、可用控制及持久性。所覆盖故事止于主房间，早于任何地下室访问或招募。
 
-本指南从 [Battle23 结果与返回 Willard Burrow](battle23-outcomes-and-burrow-return.md)继续，依据 [#946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/946) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它消费已接受[恢复研究](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)并解释条件结果。Fnnn 表示标志 nnn；命令和居民索引从零计。下文故事名字假设一致的逻辑至物理行动者映射。示例区分源码分支，不报告已游玩场景。
+本指南从 [Battle23 结果与返回 Willard Burrow](battle23-outcomes-and-burrow-return.md)继续，依据 [#946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/946) 及 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。它消费已接受[恢复研究（英文）](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)并解释条件结果。Fnnn 表示标志 nnn；命令和居民索引从零计。下文故事名字假设一致的逻辑至物理行动者映射。示例区分源码分支，不报告已游玩场景。
 
 ## 返回为场景准备的房间
 
 **已确认：**洞穴既有两个前往 Creed Mansion33 的出口请求 `(15,9)`、Right：Y0 任意 X，或 X21 任意 Y，首匹配胜出。均不测试 F523。准入仍需符合条件的布局、请求消费者与加载服务；显式目的地字节仅替换坐标低字节。它们不修复任意继承高字节，也不证明自然走过洞穴。见前篇[完整退出边界](battle23-outcomes-and-burrow-return.md#既有出口仍是条件请求)。
 
-显式 Map33 抵达执行新探索加载：清待处理事件类型、调整步数计数器、治疗符合条件的存活/不死己方角色、请求淡出、禁用视野跟随，并设置 CURRENT_MAP33/CURRENT_BATTLE255。它加载瓦片集、重建行动者/地图精灵、清临时标志256–383、设置 F80，并在调用 init 前加载完整地图。下述标志不受临时重置影响。传入 CURRENT255 入场则保留实体群和工作布局，更新主角/木筏属性；不会创建新七行房间。场景不改变 PLAYER_TYPE；一致的 Battle23 前篇提供步行模式0。其他传入模式/木筏状态保留 [Creed 入口所有者的限制](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)。
+显式 Map33 抵达执行新探索加载：清待处理事件类型、调整步数计数器、治疗符合条件的存活/不死己方角色、请求淡出、禁用视野跟随，并设置 CURRENT_MAP33/CURRENT_BATTLE255。它加载瓦片集、重建行动者/地图精灵、清临时标志256–383、设置 F80，并在调用 init 前加载完整地图。下述标志不受临时重置影响。传入 CURRENT255 入场则保留实体群和工作布局，更新主角/木筏属性；不会创建新七行房间。场景不改变 PLAYER_TYPE；一致的 Battle23 前篇提供步行模式0。其他传入模式/木筏状态保留 [Creed 入口所有者的限制（英文）](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)。
 
 配置选择扫描全部覆盖，保留**最后已设置**的一项：
 
@@ -23,7 +23,7 @@
 | F786 | 三名后期居民；仅返回的替代 init |
 | F22，最后 | 基线六居民；普通 init，也覆盖 F786 |
 
-返回前提为 F523 已设置且 F783/F784/F786/F22 未设置。F774 既不选择该配置，也不门控恢复。每个配置访问器依当前标志重新选择；其间标志改变可使实体群与 init 不一致。四个指针表共享事件、描述和 Section5。已接受[选择/实体群关联](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#admission-setup-selection-and-population)保留精确表、分配与跳转别名。
+返回前提为 F523 已设置且 F783/F784/F786/F22 未设置。F774 既不选择该配置，也不门控恢复。每个配置访问器依当前标志重新选择；其间标志改变可使实体群与 init 不一致。四个指针表共享事件、描述和 Section5。已接受[选择/实体群关联（英文）](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#admission-setup-selection-and-population)保留精确表、分配与跳转别名。
 
 该返回前提下，完整居民声明为：
 
@@ -53,7 +53,7 @@
 
 **命令52–88 / 文本1855–1867：**向上看并等待120 后，Creed 对声音作出反应，四下看、Down1/Left1，听到无归属插话。他再看，报告听到声音并 Left1。Peter 问他是否 Creed。Creed 跳起，认出收藏中有声音，认定新增者是 Goliath 的，并听 Peter 说他们来找他。Peter 请求恢复原来大小。Creed 再次惊讶他们找他并问原因；Peter 请求放大，抱怨脖子吃力。Creed 道歉，随后减速、禁用自动朝向、Up1，在间隔等待中 shiver 两次并念咒。
 
-研究的[完整命令表](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#complete-scene-and-embedded-actions)固定这些阶段及余下场景的每个等待、朝向和移动。24 个移动主体与六个自定义主体包含自身终止符；没有跳入下一程序 cs_5B466。六个自定义主体为等待的速度赋值，后接 idle 跳转/ac_end。移动使用实际当前坐标的有符号增量并检查目的地冲突，不假定前一故事终点已抵达。行动安装以解析物理索引初始化等待计时器。等待形式无超时地轮询该行动者指针至 eas_Idle，不等待无关行动者。RightLeft/UpDown 各执行四个朝向，每次精灵更新/等待30，然后 idle。Jump 禁用自动朝向，Up1/等待5、Down1/等待5，再相对0/0，恢复自动朝向并 idle。DeactivateAutoFacing 清该设置并跳 idle；无关后续行动字节不是其延续。
+研究的[完整命令表（英文）](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#complete-scene-and-embedded-actions)固定这些阶段及余下场景的每个等待、朝向和移动。24 个移动主体与六个自定义主体包含自身终止符；没有跳入下一程序 cs_5B466。六个自定义主体为等待的速度赋值，后接 idle 跳转/ac_end。移动使用实际当前坐标的有符号增量并检查目的地冲突，不假定前一故事终点已抵达。行动安装以解析物理索引初始化等待计时器。等待形式无超时地轮询该行动者指针至 eas_Idle，不等待无关行动者。RightLeft/UpDown 各执行四个朝向，每次精灵更新/等待30，然后 idle。Jump 禁用自动朝向，Up1/等待5、Down1/等待5，再相对0/0，恢复自动朝向并 idle。DeactivateAutoFacing 清该设置并跳 idle；无关后续行动字节不是其延续。
 
 ## 恢复法术的具体效果
 
@@ -83,7 +83,7 @@ Flash 操作数也需消费者解释：右移3 加 DBF 使每个4 对应一次 L
 
 ### 谁说话、等待什么、文本证明什么
 
-已接受 [58 行文本表](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#text-identities-and-immediate-consumers)将每个 ID1840–1897 关联命令、说话者/修饰符、含义转述与有序控制，以及 gamescript 键0730–0769。它是上述阶段的精确配套，含无归属1856 和叙述1875/1879。后两者使用 UpdateForce 后首个战斗队伍成员的 `{LEADER}`，点头命令则寻址 Bowie；传入成员资格不一定使名字一致。
+已接受 [58 行文本表（英文）](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#text-identities-and-immediate-consumers)将每个 ID1840–1897 关联命令、说话者/修饰符、含义转述与有序控制，以及 gamescript 键0730–0769。它是上述阶段的精确配套，含无归属1856 和叙述1875/1879。后两者使用 UpdateForce 后首个战斗队伍成员的 `{LEADER}`，点头命令则寻址 Bowie；传入成员资格不一定使名字一致。
 
 Creed 至1880 使用修饰符 `$80`，1882/1884/1886–1888/1891–1892/1894 使用0，1895–1896 再用 `$80`。Goliath、Peter、Fairy 用0。`$80` 请求右侧、不镜像立绘；0 两位均不设置。立绘/SFX 查找使用实际映射地图精灵，现有立绘状态可抑制打开。仅 logical129 不证明 Creed 立绘。无归属/叙述 `$FFFF` 调用绕过实体查找并设置语音 SFX0。
 
@@ -121,7 +121,7 @@ RunMapSetupInitFunction 恢复寄存器并直接返回，既不增加区域（�
 
 ## 证据审阅与剩余限制
 
-**已确认溯源：**已接受 main `2eddb2c6d00a748315d9a4671dca8429a8a1ea67` 包含 #941/PR944 和 #942/PR943。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#reproduction-and-review-boundary)保留源码符号/地址与精确命令配方。选定程序为 `$5B016` 的 cs_5B016，scripts.asm247–535，以自身 csc_end 结束于 cs_5B466 前。完整普通 init 为 `$5AB7C..$5AC56`；替代 init 为 `$5AC56` 的 rts。原英文切片不消费运行中的 #945 研究或未接受结论。
+**已确认溯源：**已接受 main `2eddb2c6d00a748315d9a4671dca8429a8a1ea67` 包含 #941/PR944 和 #942/PR943。研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 及 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md#reproduction-and-review-boundary)保留源码符号/地址与精确命令配方。选定程序为 `$5B016` 的 cs_5B016，scripts.asm247–535，以自身 csc_end 结束于 cs_5B466 前。完整普通 init 为 `$5AB7C..$5AC56`；替代 init 为 `$5AC56` 的 rts。原英文切片不消费运行中的 #945 研究或未接受结论。
 
 原英文切片的对抗审阅覆盖完整已接受恢复研究及前篇，经精确已接受关联检查各阶段0–51、52–88、89–124、125–147、148–177、178–200、201–211 的全部212 命令、全部58 条含义/说话者/控制行和30 个内嵌主体。检查七名居民身份、完整覆盖优先级、改变 HP/别名/标志/加载前提、长大的 Init 尾部、等待/替换区别、编码随从守卫和每个调用方布置/写入顺序。实际公共 fixture 载荷、schema 与验证器比较检查如下：
 
@@ -136,4 +136,4 @@ schema 在 schemas/，验证器在 src/sf2tool/h2/。原英文切片直接对两
 
 原英文切片执行直接完整正文/diff、阶段/文本/行动/顺序与改变状态审阅、链接/锚点、英文/私有边界和 git diff --check，然后检查已配置干净已提交 planner 及实际精确 head CI。不单因正文选择局部一揽子 Python/.NET/Godot/H3/H4 套件或翻译检查。
 
-**未知：**自然退出可达性；实际标志、出战队伍/HP/职业/映射、模式/木筏、布局和待处理状态；文本、移动、精灵、摄像机、淡入淡出、音频和控制器服务完成；渲染长大/阴影/手势；可用控制和持久性。恢复/离开的**推断**叙述不填补缺口。[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)不创建自动运行时队列。后续地下室/招募内容和重制验收仍在本指南外。
+**未知：**自然退出可达性；实际标志、出战队伍/HP/职业/映射、模式/木筏、布局和待处理状态；文本、移动、精灵、摄像机、淡入淡出、音频和控制器服务完成；渲染长大/阴影/手势；可用控制和持久性。恢复/离开的**推断**叙述不填补缺口。[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)不创建自动运行时队列。后续地下室/招募内容和重制验收仍在本指南外。

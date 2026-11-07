@@ -1,5 +1,7 @@
 # 开篇至 Battle 01：地点、人物与返回
 
+> 本文是[英文规范原文](../../../../synthesis/chapters/grans-opening/opening-through-battle01.md)的中文镜像；英文是审阅基线。普通阅读优先使用已有中文对应文档，原始证据及无中文镜像的英文入口保留明确标注。
+
 - 范围：[Issue #690](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/690) 所限定的开篇、城堡/塔路线、Battle 01 与可用场地返回的中文内容指南。
 - 证据基线：已接受仓库 `bda69671355cf8d60c15136b705fb842a76f6d16`；原版源码为
   `ShiningForceCentral/SF2DISASM` 的 `c834c652b6862bc5679fd7f69a38a7093206efc6`，USA ROM SHA-256 为
@@ -46,7 +48,7 @@
 **已确认受控准入：**R1 到达默认 `ms_map3` 配置及其第一个原版 `WaitForEvent`，
 MainLoop 在 Map 3 `(56,3)` 交接。该受控快照中仅己方角色 0 已加入并出战。
 输出的原始玩家坐标与这些交接参数是不同投影；时间被显式归一化，状态被省略，
-四个存储物品字节不是四个完整物品槽。精确状态见[准入起点](../../../../../research/chapters/grans-opening/map3-admitted-start.md#admitted-snapshot-and-setup-join)，
+四个存储物品字节不是四个完整物品槽。精确状态见[准入起点（英文）](../../../../../research/chapters/grans-opening/map3-admitted-start.md#admitted-snapshot-and-setup-join)，
 不要用后续出战队伍或重制状态填补空白。
 
 默认配置将实体、实体事件、区域（事件）、描述、物品事件和初始化分给不同所有者。
@@ -57,17 +59,17 @@ R1 观察到受检查的标志未设置，默认初始化返回而未请求程�
 **已确认有界开篇路线：**普通原版输入离开住宅，打开住宅与学校的门，与 Sarah 交互，
 使用两处学校楼梯传送，到达 Zone 7 的两个阶段，与实体 142 交互并到达信使程序入口。
 Map 3 内部传送连接 `(54,3) → (3,3)` 和 `(46,7) ↔ (59,12)`；它们仍是 Map 3 内的过渡。
-[自然路线所有者](../../../../../research/chapters/grans-opening/map3-battle01-natural-route.md#reached-opening-route)停在 `cs_5149A` 主体之前。
+[自然路线所有者（英文）](../../../../../research/chapters/grans-opening/map3-battle01-natural-route.md#reached-opening-route)停在 `cs_5149A` 主体之前。
 后续连续性来自采集所有者，不是扩大后的 R2 测试夹具。
 
 重要的对话与实体连接如下：
 
 | 触发与源码身份 | 对话/程序连接 | 状态或继续路径；证据边界 |
 | --- | --- | --- |
-| 住宅出口路线，`cs_5145C` 中的实体操作数 128 | 游标 510 产生 510/511，然后游标 483 产生 483。 | 文本前后有移动/初始化等待。[开篇对话证据](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#opening-dialogue-return-and-subsequent-actions)拥有三条命令的结构与已到达返回；仅凭 ID 不证明无垫片的确认。 |
+| 住宅出口路线，`cs_5145C` 中的实体操作数 128 | 游标 510 产生 510/511，然后游标 483 产生 483。 | 文本前后有移动/初始化等待。[开篇对话证据（英文）](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#opening-dialogue-return-and-subsequent-actions)拥有三条命令的结构与已到达返回；仅凭 ID 不证明无垫片的确认。 |
 | `ALLY_SARAH` / 行动者 1，`Map3_EntityEvent0` | 选定的 F603/F602/F256 均未设置分支使用 512、480、481 和 `cs_513D6`。 | 移动程序之后才写入 F256。其他标志分支使用不同文本/程序；[额外交互测试夹具](../../../../../../tests/fixtures/h2/map3-optional-interactions-static-v1.json)保留它们。 |
 | `Map3_ZoneEvent7`，F602 之前与之后 | 首次介绍使用 513；后续 F602 已设置/F603 未设置/F260 未设置阶段使用 514–516 和 `cs_5148C`。 | 后续定位先于 F260。[源码区域绑定](../../../contracts/interface/dialogue-system.md#源码区域调用方直至返回)区分调用方、文本、程序与包装器返回。 |
-| 实体别名 142，`Map3_EntityEvent15` | 文本 500/501，带 F261 分支及 F261/F602 写入。 | 选定开篇别名解析到物理槽 17；[实体 142 证据](../../../../../research/chapters/grans-opening/map3-entity142-interactable-reference.md)拥有该活跃身份，不保证重载后永久占据同一槽。楼梯重载也到达 `cs_513A0`。 |
+| 实体别名 142，`Map3_EntityEvent15` | 文本 500/501，带 F261 分支及 F261/F602 写入。 | 选定开篇别名解析到物理槽 17；[实体 142 证据（英文）](../../../../../research/chapters/grans-opening/map3-entity142-interactable-reference.md)拥有该活跃身份，不保证重载后永久占据同一槽。楼梯重载也到达 `cs_513A0`。 |
 
 Sarah 的具名己方角色身份不同于数字 NPC 别名。“Astral 介绍”是已接受所有者对 Zone 7 内容的描述；
 它不能仅凭精灵识别每次实体 142 的使用或发言者。
@@ -91,7 +93,7 @@ Sarah 的具名己方角色身份不同于数字 NPC 别名。“Astral 介绍�
 | 其他默认 NPC 路由、共享文本 494 目标及默认 RTS | 源码拥有的对话引用、目标共享与空回退。 | 精灵外观不赋予角色名；空回退不是凭空补出的对话。 |
 | 区域描述及宝箱/其他物品 | 已有描述与物品 include 所有者；`Map03s7_ChestItems` 和 `Map03s8_OtherItems` 不同。 | 可达性、拾取和路线相关性在此仍为**未知**。 |
 
-选择与物品规则见 [Map 3 额外交互](../../../../../research/chapters/grans-opening/map3-optional-interactions.md#confirmed-static-contract)
+选择与物品规则见 [Map 3 额外交互（英文）](../../../../../research/chapters/grans-opening/map3-optional-interactions.md#confirmed-static-contract)
 和[地图探索](../../../contracts/world/map-exploration.md#区域事件与物品)。选定参考路线排除额外交互与 FieldMenu；
 这不从原版地点内容中排除它们，也不把它们纳入重制里程碑。
 
@@ -111,7 +113,7 @@ Sarah 的具名己方角色身份不同于数字 NPC 别名。“Astral 介绍�
 `join 128` 选择器是源码命令操作数，不是第四名持久出战队伍成员。
 只有整个程序返回之后，`Map3_ZoneEvent8` 才提交 F603。
 随从就绪终点为 Map 3 `(43,10)`、Down，所跟踪的脚本/文本/提示/关闭消费者均已返回。
-[信使所有者](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#confirmed-source-and-runtime-facts)
+[信使所有者（英文）](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#confirmed-source-and-runtime-facts)
 和 [R2a 测试夹具](../../../../../../tests/fixtures/h3/map3-messenger-acceptance-v1.json)拥有这些事实。
 
 **已确认静态替代项；运行时未知：**拒绝/再次提示分支引用 532–533。
@@ -139,7 +141,7 @@ Map 19 初始化守卫在 `cs_53104` 前后检查 F605 和 F608；
 选定王室入口的初始化运行 `cs_53996`：游标 2176 属于该程序；源码效果把 Bowie 放在 `(23,39)`，
 移动别名 131、隐藏别名 130，随后调用方提交 F605。
 这些是程序结构内容与选定原版王室返回阶段，不证明每次进入 Map 20 都运行该场景。
-[城堡静态所有者](../../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#confirmed-static-derivation)约束入口选择器、程序与程序后占位。
+[城堡静态所有者（英文）](../../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#confirmed-static-derivation)约束入口选择器、程序与程序后占位。
 
 返回使用 Map 20 `(23,37) → Map 19 (23,3)`。**已确认静态：**目标朝向字段为 LEFT，
 来自 `warpFacing LEFT`。这是传送注记，不是目标初始化或后续运动后朝向的无条件结论。
@@ -157,7 +159,7 @@ F89 已设置选择 `cs_52F40`、游标 578；其源码效果移走别名 140 �
 Map 20 event 2 在 F256 条件下引用 570/571。
 这些是[实体程序语料](../../../../../../tests/fixtures/h2/map-events/entity-programs.json)中的**已确认静态**替代项，
 不是额外必需步骤。实体 ID 和发言者局限于选定配置；Map 19 别名 140 不能等同于 Map 3 别名 140。
-更广泛的[地图事件对话分析](../../../../../research/world/map-event-dialogue-state.md#runtime-boundary)
+更广泛的[地图事件对话分析（英文）](../../../../../research/world/map-event-dialogue-state.md#runtime-boundary)
 证明状态/引用结构，不证明自然显示的台词顺序或角色身份。
 
 ## 4. 塔守卫与通道：解锁遭遇
@@ -183,12 +185,12 @@ Map 20 event 2 在 F256 条件下引用 570/571。
 选定玩家终点为 `(5,15)`、Down。**已确认有条件静态：**缺少逻辑别名 135 本身不会拒绝原版命令：
 在默认的查找已初始化为零的条件下，它解析到物理槽 0。
 这不允许跳过朝向命令、其返回或之前的行动等待。
-[查找/继续路径所有者](../../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#flag-predicates-and-return-boundaries)拥有四个分支及该限制。
+[查找/继续路径所有者（英文）](../../../../../research/chapters/grans-opening/map3-castle-battle-unlock.md#flag-predicates-and-return-boundaries)拥有四个分支及该限制。
 F256 在局部处理器中复用，不是一个通用战役阶段名。
 
 从 Map 21 经选定出口 `(9,1) → Map 40 (4,30)`、Up，到达选定实体列表为空的通道配置。
 Map 40 的 X 通配/y=12 传送通向 Map 57 `(8,18)`、Up。
-[准入所有者](../../../../../research/chapters/grans-opening/map3-battle01-admission.md#confirmed-static-findings)仅识别两处可达传送事件终点
+[准入所有者（英文）](../../../../../research/chapters/grans-opening/map3-battle01-admission.md#confirmed-static-findings)仅识别两处可达传送事件终点
 `(14,12)` 和 `(15,12)`，并选择前者；该行其他普通可行走单元不是传送终点。
 这段 46 次输入的扩展是一条选定合法路线，不证明所有有效路线，也不是 Map 40 中已观察的对话场景。
 
@@ -201,8 +203,8 @@ Map 40 的 X 通配/y=12 传送通向 Map 57 `(8,18)`、Up。
 匹配后写入战斗矩形，再检查 +100 完成标志 F501。
 选定全新进入状态的 F501 未设置；该场景条件不是共享函数的额外拒绝规则。
 若 F501 已设置，同次调用清除 F401，仍返回索引 1；后续调用才看到已改变的解锁状态。
-[通用地图路由](../../../../../research/world/common-maps.md#confirmed-map-routing)和
-[已接受选择器分析](../../../../../research/chapters/grans-opening/battle01-to-battle02-content-route.md#battle-02-data-and-admission-semantics)
+[通用地图路由（英文）](../../../../../research/world/common-maps.md#confirmed-map-routing)和
+[已接受选择器分析（英文）](../../../../../research/chapters/grans-opening/battle01-to-battle02-content-route.md#battle-02-data-and-admission-semantics)
 拥有共享源码语义。战斗身份、地图身份和源码名称保持不同。
 
 新战斗的 F88 未设置分支中，战前程序 `bbcs_01` 先于加载与战斗开始路由。
@@ -219,8 +221,8 @@ Map 40 的 X 通配/y=12 传送通向 Map 57 `(8,18)`、Up。
 选定运行时行动者为己方角色 0/1/2 (Bowie/Sarah/Chester) 和敌人 128–133。
 这些敌方战斗员 ID 不是数字相同的 Map 3 NPC 别名。
 初始位置、地形、激活多边形与敌人定义从
-[Battle 01 放置](../../../../../research/chapters/grans-opening/battle01-placement.md#confirmed-placement-facts)、
-[战斗精灵集](../../../../../research/battle/battle-spriteset-data.md)和[遭遇定义](../../../contracts/battle/battle-encounter-definition.md)链接，
+[Battle 01 放置（英文）](../../../../../research/chapters/grans-opening/battle01-placement.md#confirmed-placement-facts)、
+[战斗精灵集（英文）](../../../../../research/battle/battle-spriteset-data.md)和[遭遇定义](../../../contracts/battle/battle-encounter-definition.md)链接，
 不复制成名册。
 
 激活、区域过场与生成工作先于行动顺序生成。Battle 01 没有区域过场行。
@@ -257,8 +259,8 @@ Map 40 的 X 通配/y=12 传送通向 Map 57 `(8,18)`、Up。
 已接受原版最后一段记录 **67 对已到达操作入口/返回**，然后是共享尾部/外层返回、
 标志更新、BattleLoop 返回、SwitchMap 和 ExplorationLoop。
 这是不同分母，不是缺失十七条运行时命令。
-[最终采集](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)拥有该观察；
-[静态胜利所有者](../../../../../research/chapters/grans-opening/map3-battle01-victory-return.md#static-boundary)
+[最终采集（英文）](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)拥有该观察；
+[静态胜利所有者（英文）](../../../../../research/chapters/grans-opening/map3-battle01-victory-return.md#static-boundary)
 停在尚未进入的 ExplorationLoop 调用处，本身不能确立可用返回。
 
 ## 7. 返回场地并结束本段
@@ -274,7 +276,7 @@ Map 40 的 X 通配/y=12 传送通向 Map 57 `(8,18)`、Up。
 它闭合具名输入/效果边界，不改变第一个终点，也不证明战役接下来的内容。
 本指南止于 Battle 01 返回。接着读
 [Battle 01 返回至 Battle 02 准入](battle01-return-through-battle02.md)，了解城堡驱魔/委任、Jaha 事件及有条件的下一遭遇。
-该指南使用[已接受静态路线调查](../../../../../research/chapters/grans-opening/battle01-to-battle02-content-route.md)，
+该指南使用[已接受静态路线调查（英文）](../../../../../research/chapters/grans-opening/battle01-to-battle02-content-route.md)，
 保留调用方/配置条件与合法行走/自然连续性的未知；不为本终点或已接受重制里程碑增加已观察扩展。
 
 **已确认已接受重制边界：**当前组合接受连续私有 Map 3 → Battle 01 胜利 → 可用 5B 返回，
@@ -285,7 +287,7 @@ C 是补充；B/D 被排除。原版行动者/顺序、103 次行动历史、金
 
 历史 A10/default/matrix 报告仍为 Unavailable 且 `milestonePass=false`，各限定里程碑字段也一样。
 本指南不产生新的完整可执行报告或修正后的整条 A 轨迹。
-[组合所有者](../../../../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
+[组合所有者（英文）](../../../../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
 保留历史种子、HEAL、溯源与审查失败。终点内部完成仍为**推断**，其延迟为**未知**。
 这些限制不重启已接受里程碑，也不形成自动模拟器队列。
 可用返回也不确立用户存档/读档、全游戏还原度、硬件输出相等或公共内容权利。
@@ -299,7 +301,7 @@ C 是补充；B/D 被排除。原版行动者/顺序、103 次行动历史、金
 | 内容连接 | 精确已接受载荷 / 测试夹具 ID 与验证器 | 审查结论及剩余边界 |
 | --- | --- | --- |
 | Map 3 准入/默认配置 | [R1](../../../../../../tests/fixtures/h3/map3-admitted-start-v1.json)，`sf2-map3-admitted-start-runtime-v1`：`static.map3`、`harness`、`expectedObservation`；[验证器](../../../../../../src/sf2tool/h3/map3_admitted_start.py)，`sf2 h3 map3-admitted-start` | 受控菜单/服务返回与时间归一化保持显式；状态/完整槽位来自后续已接受读回，不是虚构的 R1 字段。 |
-| 有序配置、区域、传送与内容 | [地图数据](../../../../../../tests/fixtures/h2/map-data-static-v1.json)，`sf2-map-data-static-v1`；[地图内容](../../../../../../tests/fixtures/h2/map-content-static-v1.json)，`sf2-map-content-static-v1`；[地图数据验证器](../../../../../../src/sf2tool/h2/map_data.py)、[内容验证器](../../../../../../src/sf2tool/h2/map_content.py)，`sf2 h2 map-data` / `sf2 h2 map-content` | 最后设置标志胜出的配置规则，与首匹配事件/传送规则保持不同。精确私有内容表不在此公开。[清单](../../../../../research/world/map-data-inventory.md#setup-selection-and-rom-parity)与[内容](../../../../../research/world/map-content.md#source-form-sections)拥有它们。 |
+| 有序配置、区域、传送与内容 | [地图数据](../../../../../../tests/fixtures/h2/map-data-static-v1.json)，`sf2-map-data-static-v1`；[地图内容](../../../../../../tests/fixtures/h2/map-content-static-v1.json)，`sf2-map-content-static-v1`；[地图数据验证器](../../../../../../src/sf2tool/h2/map_data.py)、[内容验证器](../../../../../../src/sf2tool/h2/map_content.py)，`sf2 h2 map-data` / `sf2 h2 map-content` | 最后设置标志胜出的配置规则，与首匹配事件/传送规则保持不同。精确私有内容表不在此公开。[清单（英文）](../../../../../research/world/map-data-inventory.md#setup-selection-and-rom-parity)与[内容（英文）](../../../../../research/world/map-content.md#source-form-sections)拥有它们。 |
 | 开篇移动与程序入口 | [R2](../../../../../../tests/fixtures/h3/map3-battle01-natural-route-v1.json)，`sf2-map3-battle01-natural-route-runtime-v1`：`static.route.warps`、`static.route.runtimeOpening`、`expectedObservation`；[验证器](../../../../../../src/sf2tool/h3/map3_battle01_natural_route.py)，`sf2 h3 map3-battle01-natural-route` | 名为“Battle 01”的验证轨道只到达信使入口；不能从名称制造主体或城堡观察。 |
 | Map 3 额外默认内容 | [额外交互测试夹具](../../../../../../tests/fixtures/h2/map3-optional-interactions-static-v1.json)，`sf2-map3-optional-interactions-static-v1`：`pointerSetup`、`entityEventRoutes`、聚合项；[验证器](../../../../../../src/sf2tool/h2/map3_optional_interactions.py)，`sf2 h2 map3-optional-interactions` | 精确 schema 加上重新解析相等检查约束结构/顺序；15 条路由及全部描述/物品的路线相关性仍为未知。 |
 | 信使选择、加入与随从 | [R2a](../../../../../../tests/fixtures/h3/map3-messenger-acceptance-v1.json)，`sf2-map3-messenger-acceptance-runtime-v1`：`static.stream`、`static.text`、`expectedObservation`；[验证器](../../../../../../src/sf2tool/h3/map3_messenger_acceptance.py)，`sf2 h3 map3-messenger-acceptance` | 发言者操作数保留打包/源码兼容形式；已接受 Yes 与整体返回，不同于静态拒绝及已渲染/确认文本。 |
@@ -307,8 +309,8 @@ C 是补充；B/D 被排除。原版行动者/顺序、103 次行动历史、金
 | 城堡分支与对话身份 | [实体程序](../../../../../../tests/fixtures/h2/map-events/entity-programs.json)，`sf2-map-events-static-v1` 的一部分：`Map19_EntityEvent12`、`Map21_EntityEvent0` 及其他局部目标；[对话状态测试夹具](../../../../../../tests/fixtures/h2/map-event-dialogue-state-static-v1.json)，`sf2-map-event-dialogue-state-static-v1`；[对话状态验证器](../../../../../../src/sf2tool/h2/map_event_dialogue_state.py)，`sf2 h2 map-event-dialogue-state` | 精确目标/分支/操作数顺序是静态证据。到达立绘/SFX 定义不证明自然查找输入/结果或可见发言者；通用对话/名册矩阵不提供这些连接。 |
 | 遭遇与首次控制接缝 | [准入](../../../../../../tests/fixtures/h2/map3-battle01-admission-static-v1.json)，`sf2-map3-battle01-admission-static-v1`：`static.admission`、`static.cutscenes`、`static.loadAndTurnOrder`；[R2d](../../../../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json)，`sf2-map3-battle01-player-ready-runtime-v1`：`static.bridge`、`expectedObservation`；[H2](../../../../../../src/sf2tool/h2/map3_battle01_admission.py) / [H3](../../../../../../src/sf2tool/h3/map3_battle01_player_ready.py)，`sf2 h2 map3-battle01-admission` / `sf2 h3 map3-battle01-player-ready` | 源码/ROM 与精确测试夹具/观察比较不消除已声明桥接。设定种子后的行动者 1、调试测试顺序和自然行动者 2 各自保留溯源。 |
 | 胜利程序与返回边 | [R4a](../../../../../../tests/fixtures/h2/map3-battle01-victory-return-static-v1.json)，`sf2-map3-battle01-victory-return-static-v1`：`victoryReturnSpine`；[验证器](../../../../../../src/sf2tool/h2/map3_battle01_victory_return.py)，`sf2 h2 map3-battle01-victory-return` | 验证器闭合保留所有者身份和精确源码/H1/ROM 结构；自然执行及稳定/输入就绪返回使用后续原版结果。 |
-| 原版连续性与可用输入 | [最终谱系](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)，采集源码 `9c3ea03ac5f5b467ee744f1ac624870da2408443`；[Down 扩展](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)；[连续合同](../../../contracts/milestones/map3-battle01-continuous-scenario.md#精确已观测端点) | 已有私有记录/18 对已验证父级关系及其只读审计方法确立有界结果。早期所有者队列是保留的历史边界，不是新增的里程碑缺失主张。 |
-| 重制交付 | [已接受组合](../../../../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)与[当前就绪性](../../milestones/map3-battle01-readiness.md#当前已接受里程碑) | 使用已接受组合，不重标历史报告、不重启比较，也不把重制结果当作原版证据。 |
+| 原版连续性与可用输入 | [最终谱系（英文）](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-victory-and-stable-field-readiness)，采集源码 `9c3ea03ac5f5b467ee744f1ac624870da2408443`；[Down 扩展（英文）](../../../../../research/chapters/grans-opening/map3-messenger-acceptance.md#native-post-victory-ordinary-input-result-issue-515)；[连续合同](../../../contracts/milestones/map3-battle01-continuous-scenario.md#精确已观测端点) | 已有私有记录/18 对已验证父级关系及其只读审计方法确立有界结果。早期所有者队列是保留的历史边界，不是新增的里程碑缺失主张。 |
+| 重制交付 | [已接受组合（英文）](../../../../../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)与[当前就绪性](../../milestones/map3-battle01-readiness.md#当前已接受里程碑) | 使用已接受组合，不重标历史报告、不重启比较，也不把重制结果当作原版证据。 |
 
 对抗性检查保留边界差异：R1 交接与原始坐标/不完整槽位；源码图与后续原版连续性；
 R2d 设定种子与自然首位行动者；脚本返回与调用方标志写入；文本 ID 与无垫片交付；

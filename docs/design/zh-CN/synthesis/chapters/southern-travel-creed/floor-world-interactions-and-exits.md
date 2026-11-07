@@ -1,6 +1,6 @@
 # Floor World 居民、巨环与对外退出
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/floor-world-interactions-and-exits.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/floor-world-interactions-and-exits.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**Floor World 有六个居民回调及一个无声默认回调、独立的 F780 门控区域（事件）场景，
 以及三个不滚动传送记录。场景以 resident129 为说话者，请求向上八瓦片移动，等待该行动者并隐藏它；
@@ -9,9 +9,9 @@
 **未知：**自然到达、实际传入状态、服务/行动完成、表现、可用控制及持久性。
 
 本指南从[首次抵达与条件探索](floor-world-first-arrival.md)的局部控制/待处理事件边界接续。
-使用已接受修正的[交互与退出研究](../../../../../research/chapters/southern-travel-creed/floor-world-interactions-and-exits.md)，依据
+使用已接受修正的[交互与退出研究（英文）](../../../../../research/chapters/southern-travel-creed/floor-world-interactions-and-exits.md)，依据
 [Issue #930](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/930)及
-[Standard 约定](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+[Standard 约定](../../../documentation-roadmap.md#当前基线与近期综合)。
 止于条件目的地地图/战斗准入，在目的地实体群/init、隧道内容、Battle23 初始化或后续招募之前。
 Fnnn 表示标志 nnn；索引从零开始。坐标、速度字节、等待为源码操作数，不是测得运动、像素或已过时间。
 
@@ -263,13 +263,13 @@ F779/F780 在范围外。战斗准入有独立所有者。
 研究固定 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)
 和 USA ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
 上文源码路径相对于 disasm；局部配置文件在 data/maps/entries/map26/mapsetups 下。
-已接受[研究复现所有者](../../../../../research/chapters/southern-travel-creed/floor-world-interactions-and-exits.md#reproduction-and-retained-limits)
+已接受[研究复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/floor-world-interactions-and-exits.md#reproduction-and-retained-limits)
 保留直接源码关联和未改变载荷比较配方。本综合指南不增加提取、运行时观察或重制决策。
 
 对抗审阅阅读完整修正研究、抵达指南及必需的
-[交互状态](../../../../../research/world/map-event-interaction-state.md)、
-[配置选择](../../../../../research/world/map-event-flag-route-selection.md)、
-[请求消费](../../../../../research/world/map-event-request-consumption.md)、
+[交互状态（英文）](../../../../../research/world/map-event-interaction-state.md)、
+[配置选择（英文）](../../../../../research/world/map-event-flag-route-selection.md)、
+[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)、
 [探索](../../../contracts/world/map-exploration.md)和服务边界。选定公共 fixture/schema/验证器所有者为：
 
 | 声明 | 可执行所有者 / 选定边界 |
@@ -304,6 +304,6 @@ F779/F780 在范围外。战斗准入有独立所有者。
 **未知：**自然抵达/激活/区域（事件）/退出可达性；实际标志、布局、查找/别名、HP/职业/出战队伍、
 行进模式、请求和当前/目的地状态；已完成服务、摄像机/文本/输入、运动、隐藏及可用控制；
 可见巨环演出、时长/音频和存档/读档持久性。静态改变状态示例不是已游玩场景。
-[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
-[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)保留这些限制，不创建运行时队列。
+[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)及
+[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)保留这些限制，不创建运行时队列。
 这既未完成战役，也未完成设计 epic，不选择期望游戏玩法/UI 政策或重制范围。

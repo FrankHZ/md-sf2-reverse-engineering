@@ -1,6 +1,6 @@
 # 棋盘结果与返回 Desktop Kingdom
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**击败 King 可通过首领清理路径结束 Battle22；普通敌人计数是独立结果检查。
 胜利完成战斗并返回重建后的 Desktop 实体群。独立门控场景宣布 Cotton Balloon，但不授予或使用它。
@@ -8,10 +8,10 @@
 **未知：**自然胜利、传入状态、服务完成、可见场景及可用控制。
 
 本指南接续[棋盘初始化与初始名册](battle22-initialization-and-roster.md)，
-使用[已接受 Battle22 结果研究](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)及
+使用[已接受 Battle22 结果研究（英文）](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)及
 [战斗生命周期合同](../../../contracts/battle/battle-control-lifecycle.md)，依据
 [Issue #915](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/915) 和
-[当前 Standard 约定](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+[当前 Standard 约定](../../../documentation-roadmap.md#当前基线与近期综合)。
 止于条件局部探索/控制或待处理返回，并包括改变后的 King/Maid 对话。
 [Cotton Balloon 获取与 Floor World 离开路线](cotton-balloon-through-floor-world-entry.md)
 继续说明独立宝箱/守卫/物品使用关联，直至条件 Map26 加载器准入、目的地实体群/init 之前。
@@ -85,7 +85,7 @@ F422 准入、F472 介绍、F522 完成及 F88 挂起仍彼此独立。
 F522 选择替代实体群，独立于 F776/F778。两个配置共享事件、区域（事件）、描述、Section5 和 init。
 替代实体群有**十四行**：Eric/Karna、Caravan、年轻男子/女子、老人、牧师、Maid/Ponpei、两个守卫，
 以及三个固定在 `(63,63)` 的 OBJECT1 占位角色。
-[完整实体群表](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md#f522-population-and-layout)
+[完整实体群表（英文）](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md#f522-population-and-layout)
 负责全部位置、朝向、精灵和行动。Eric 和老人使用步行动作；其他可见行使用 init 动作。
 列出的位置不预测后续移动。
 
@@ -162,7 +162,7 @@ F522 已设置/F776 未设置的抵达在**替代**实体群上运行。它引�
 
 1794–1796 使用 Ponpei 134：“Checkmate”和礼物介绍；说明里面有 Cotton Balloon；
 以及它能让队伍安全离开 Desktop Kingdom 的建议。
-[字面文本/控制符表](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md#camera-actor-and-text-services)
+[字面文本/控制符表（英文）](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md#camera-actor-and-text-services)
 保留键 0702–0704 和 W1/W2 控制符。普通 NPC 134 使用 KING_PONPEI188、无立绘及台词声音 bleep 6；
 他既不是 KING_GRANSEAL，也不是棋子 King。实际映射精灵和已打开立绘会影响服务。
 两个文本处理器均等待滚动；仅 nextSingleText 执行最终窗口关闭/sleep。
@@ -191,7 +191,7 @@ BattleLoop 提供 PLAYER_TYPE=0，因此一致路径选择 eas_ControlledCharact
 ## 再与 Ponpei 和 Maid 交谈
 
 **已确认：**共享事件表仍存在。实际激活和包装器返回由
-[交互所有者](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md#actual-activation-event-selection-and-return)负责；
+[交互所有者（英文）](../../../../../research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md#actual-activation-event-selection-and-return)负责；
 复用 physical 示例前先应用新实体群。这些回调使用 F522，独立于 F776/F778：
 
 | 交互/状态 | 内容与写入 |
@@ -261,7 +261,7 @@ fixture 载荷、schema 及既有验证器选择：
 [init](../../../../../../schemas/h2-map-init-static-fixture.schema.json)/[map_init.py](../../../../../../src/sf2tool/h2/map_init.py) 及
 [script](../../../../../../schemas/h2/map-script-engine-fixture.schema.json)/[map_script_engine.py](../../../../../../src/sf2tool/h2/map_script_engine.py)。
 精确十四行、两个复制、十二命令、字面文本及直接完整加载/随从/回调使用方仍由研究
-[复现边界](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md#reproduction-and-retained-limits)负责。
+[复现边界（英文）](../../../../../research/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md#reproduction-and-retained-limits)负责。
 routeTargetsParsed=false 的路由汇总不证明选定槽位目标。未发现已接受语义冲突。
 更早运行时问题队列依 ADR0014/0016 仍是暂缓歧义，不是获取指令。
 
@@ -286,7 +286,7 @@ base `f8cd67cd3818a1790b76354922015c13d8af083a`、
 **未知：**自然结果/返回/交互；传入标志、出战队伍、HP/职业/物品、查找/当前与已保存几何、模式/木筏；
 已完成输入/行动/文本/滚动/淡入淡出/服务；可见/可听演出、可用控制与持久性。
 上文反例是源码状态，不是已执行场景；依
-[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和
-[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
+[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和
+[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
 已接受 #916 后续属于 [Cotton Balloon 指南](cotton-balloon-through-floor-world-entry.md)。
 这既未完成战役，也未完成 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。

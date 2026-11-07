@@ -1,6 +1,6 @@
 # Map 3 受控准入合同
 
-Canonical source: [English](../../../contracts/milestones/map3-controlled-admission.md). 英文为规范审阅基线；本译文遵循[术语表](../../../glossary.md)。
+Canonical source: [English（英文规范源）](../../../contracts/milestones/map3-controlled-admission.md). 英文为规范审阅基线；本译文遵循[术语表（英文）](../../../glossary.md)。
 
 - 状态：**提议（Proposed）**
 - 证据日期：2026-08-20
@@ -8,9 +8,9 @@ Canonical source: [English](../../../contracts/milestones/map3-controlled-admiss
 
 ## 当前适用性
 
-本**提议**合同保留其证据日期及有界 R1 测试夹具投影。它不是当前里程碑就绪台账。[连续场景合同](../../../contracts/milestones/map3-battle01-continuous-scenario.md)拥有后续路线和比较要求，[就绪台账](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)拥有在组合 8D/H4 边界上已接受的当前私有里程碑。[ADR 0010](../../../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)及其[现代时钟修订](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)控制当前保真度和时钟适用性；[ADR 0019](../../../../decisions/0019-state-and-content-driven-remake-engine.md)拥有已采用的引擎方向和实现边界。下文有关未来实现/H4 和 Phase 4 启动的措辞描述的是本地提案，不是当前实现状态。
+本**提议**合同保留其证据日期及有界 R1 测试夹具投影。它不是当前里程碑就绪台账。[连续场景合同](map3-battle01-continuous-scenario.md)拥有后续路线和比较要求，[就绪台账](../../synthesis/milestones/map3-battle01-readiness.md#当前已接受里程碑)拥有在组合 8D/H4 边界上已接受的当前私有里程碑。[ADR 0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#current-acceptance-amendment)及其[现代时钟修订（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)控制当前保真度和时钟适用性；[ADR 0019（英文）](../../../../decisions/0019-state-and-content-driven-remake-engine.md)拥有已采用的引擎方向和实现边界。下文有关未来实现/H4 和 Phase 4 启动的措辞描述的是本地提案，不是当前实现状态。
 
-后续验收不会扩大本测试夹具投影、提升本合同状态，或解决其原有未知项。尤其是，原始受控 R1 测试夹具的金币 0/四字节物品投影，与后来连贯路线中选定 R1 的修正仍须区分；后者改为金币 60 及完整起始物品字，其结果和限制归[连续场景比较记录](../../../contracts/milestones/map3-battle01-continuous-scenario.md#remaining-acceptance-work)所有。历史失败和报告结论保持不变。
+后续验收不会扩大本测试夹具投影、提升本合同状态，或解决其原有未知项。尤其是，原始受控 R1 测试夹具的金币 0/四字节物品投影，与后来连贯路线中选定 R1 的修正仍须区分；后者改为金币 60 及完整起始物品字，其结果和限制归[连续场景比较记录](map3-battle01-continuous-scenario.md#剩余验收工作)所有。历史失败和报告结论保持不变。
 
 ## 判断边界
 
@@ -26,7 +26,7 @@ Canonical source: [English](../../../contracts/milestones/map3-controlled-admiss
 
 ## 唯一可执行所有者
 
-本合同消费的唯一可执行所有者是 [`map3-admitted-start-v1.json`](../../../../../tests/fixtures/h3/map3-admitted-start-v1.json) 中的 `sf2-map3-admitted-start-runtime-v1`。其验证器为 [`map3_admitted_start.py`](../../../../../src/sf2tool/h3/map3_admitted_start.py)，证据解释见 [Map 3 已准入起始状态证据](../../../../research/chapters/grans-opening/map3-admitted-start.md)。
+本合同消费的唯一可执行所有者是 [`map3-admitted-start-v1.json`](../../../../../tests/fixtures/h3/map3-admitted-start-v1.json) 中的 `sf2-map3-admitted-start-runtime-v1`。其验证器为 [`map3_admitted_start.py`](../../../../../src/sf2tool/h3/map3_admitted_start.py)，证据解释见 [Map 3 已准入起始状态证据（英文）](../../../../research/chapters/grans-opening/map3-admitted-start.md)。
 
 测试夹具通过 17 个绑定直接绑定 7 条研究记录。直接证据绑定与语义 Design 关联刻意采用不同分母：
 
@@ -92,7 +92,7 @@ R1 观察器仅在原版 `WaitForEvent` 之后、所有回调之外，规范化�
 
 ### 产品时钟所有权
 
-产品确定性时钟是 ADR 0011 下独立的 Application/H4 输入。当前政策由 [ADR 0010 的已接受现代时钟](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)拥有，比较适用性见[连续场景合同](../../../contracts/milestones/map3-battle01-continuous-scenario.md#modern-clock-applicability)。本地 R1 接缝不确立原版纪元、第一步或与后续时序证据的映射；它不准入原版时间相等比较，也不选择任何产品时钟值。其未发布原版计数器及边界后规范化，不会把已接受产品时钟重新变成未来工作。
+产品确定性时钟是 ADR 0011 下独立的 Application/H4 输入。当前政策由 [ADR 0010 的已接受现代时钟（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md#accepted-modern-finite-music-clock)拥有，比较适用性见[连续场景合同](map3-battle01-continuous-scenario.md#现代时钟适用性)。本地 R1 接缝不确立原版纪元、第一步或与后续时序证据的映射；它不准入原版时间相等比较，也不选择任何产品时钟值。其未发布原版计数器及边界后规范化，不会把已接受产品时钟重新变成未来工作。
 
 ### 受控 RNG 观察
 
@@ -138,15 +138,15 @@ RNG 区间在边界后时间规范化之前观察，不受该规范化变换。�
 
 | 相邻所有者 | 保留边界 |
 | --- | --- |
-| [新游戏状态初始化](../../../contracts/system/new-game-state-initialization.md) | 拥有原版新游戏初始化顺序与状态变更；本合同只消费到达的准入结果 |
-| [存档系统](../../../contracts/system/save-system.md) | 拥有 Witch/New 和 SRAM 服务行为；这些调用仍是原版证据溯源，按选项 6A 不出现在里程碑产品组合中 |
-| [探索控制流](../../../contracts/world/exploration-control-flow.md) | 拥有通用 MainLoop/ExplorationLoop 控制顺序；本合同仅拥有选定首次探索边界上的已准入交接/结果 |
-| [地图进入路由状态](../../../contracts/world/map-entry-routing-state.md) | 拥有通用地图/战斗路由辅助；自然 Map 3 路由及 Battle 01 准入仍归 R2 |
-| [地图配置数据](../../../contracts/world/map-setup-data.md) | 拥有私有配置拓扑/导入表面；本合同仅引用已接受选定配置/初始化结果 |
-| [地图与探索](../../../contracts/world/map-exploration.md) | 拥有通用选择器、初始化、实体、摄像机、地图脚本及探索验证轨道；本合同不吸收其更广的测试夹具或行为 |
+| [新游戏状态初始化](../system/new-game-state-initialization.md) | 拥有原版新游戏初始化顺序与状态变更；本合同只消费到达的准入结果 |
+| [存档系统](../system/save-system.md) | 拥有 Witch/New 和 SRAM 服务行为；这些调用仍是原版证据溯源，按选项 6A 不出现在里程碑产品组合中 |
+| [探索控制流](../world/exploration-control-flow.md) | 拥有通用 MainLoop/ExplorationLoop 控制顺序；本合同仅拥有选定首次探索边界上的已准入交接/结果 |
+| [地图进入路由状态](../world/map-entry-routing-state.md) | 拥有通用地图/战斗路由辅助；自然 Map 3 路由及 Battle 01 准入仍归 R2 |
+| [地图配置数据](../world/map-setup-data.md) | 拥有私有配置拓扑/导入表面；本合同仅引用已接受选定配置/初始化结果 |
+| [地图与探索](../world/map-exploration.md) | 拥有通用选择器、初始化、实体、摄像机、地图脚本及探索验证轨道；本合同不吸收其更广的测试夹具或行为 |
 | 状态/数据合同 | 保留标志、名册、出战队伍、战斗员、物品、法术、职业及内容字段语义；本合同组合一个由测试夹具拥有的快照，不重定义这些字段 |
-| [剧情推进](../../../synthesis/themes/story-progression.md) | 可解释已接受推进架构，但不能将此受控接缝变成自然剧情路线 |
-| [Map 3 至 Battle 01 就绪状态](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) | 拥有已接受的当前组合 8D/H4 里程碑；本地合同仅提供其有界 R1 接缝 |
+| [剧情推进](../../synthesis/themes/story-progression.md) | 可解释已接受推进架构，但不能将此受控接缝变成自然剧情路线 |
+| [Map 3 至 Battle 01 就绪状态](../../synthesis/milestones/map3-battle01-readiness.md#当前已接受里程碑) | 拥有已接受的当前组合 8D/H4 里程碑；本地合同仅提供其有界 R1 接缝 |
 
 本合同明确排除 R2 自然 Map 3 移动、对话、菜单、事件、切换及战斗准入；R3 Battle 01 完整游玩；R4 胜利、战后程序、返回及稳定端点；完整 8C 呈现/音频/硬件证据；存档/读档/检查点/中断保存/持久化；完整私有资产或采集载荷；畸形自然游戏状态恢复；路线或内容设计；以及任何已到达全部 26 条 Map 3 汇总记录的声明。
 
@@ -162,16 +162,16 @@ RNG 区间在边界后时间规范化之前观察，不受该规范化变换。�
 
 | 合同陈述 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
-| 受控原版时序到达 Map 3 第一次探索等待 | **已确认有界运行时** | `sf2-map3-admitted-start-runtime-v1`；[研究所有者](../../../../research/chapters/grans-opening/map3-admitted-start.md) | 时序是溯源，不是自然路线或产品要求 |
+| 受控原版时序到达 Map 3 第一次探索等待 | **已确认有界运行时** | `sf2-map3-admitted-start-runtime-v1`；[研究所有者（英文）](../../../../research/chapters/grans-opening/map3-admitted-start.md) | 时序是溯源，不是自然路线或产品要求 |
 | 完整源码形态交接、PC、地址、回调、非时间状态及配置/初始化结果 | **已确认有界运行时证据投影** | 同一测试夹具 | 原始证据字段保留在 `OriginalEvidenceReceipt` 中，不进入产品权威状态 |
 | 精确逻辑准入结果 | **已接受产品投影** | 同一唯一测试夹具；已接受相邻合同只定义语义 | 地图/起始位置/朝向/流程、军团/会话、配置/初始化、无请求及就绪值仍由黄金标准拥有；产品映射及 H4 实现属于未来工作 |
 | 直接证据分母为 7 条记录 / 17 个绑定 | **已确认索引关系** | 已接受[研究索引](../../../../../manifests/research-index.json) | 仅 4 条记录 / 9 个绑定组成提议语义关联子集 |
 | 原版原始时间值 | **未知/未发布** | R1 观察器读取忠于源码的区间 | 已发布规范化值不是原版快照事实 |
 | 边界后时间规范化 | **已确认受控测试台政策** | 同一测试夹具与验证器 | 不选择产品确定性时钟 |
 | 受控 RNG 状态 | **已确认（仅一个用例）** | 同一测试夹具 | 不是通用自然起始种子或后续 RNG 轨迹 |
-| 直接构造产品结果 | **已接受产品方向** | [ADR 0010](../../../../decisions/0010-map3-battle01-product-acceptance.md) 选项 1A | 实现及 H4 执行要求单独 Phase 4 启动 |
-| 权威状态、确定性时钟/RNG、内容准入及分层回执 | **已接受架构约束** | [ADR 0011](../../../../decisions/0011-phase4-remake-runtime-architecture.md) | 本接缝不提供产品时钟或后续场景事实；当前时钟及引擎方向归上文链接的 ADR 0010 和 ADR 0019 |
-| 通向端点的自然路线及完整 8C | **排除 / 未知** | [Research 审计](../../../../research/chapters/grans-opening/map3-battle01-audit.md)及[连续场景所有者](../../../contracts/milestones/map3-battle01-continuous-scenario.md) | 排除在本地 R1 接缝之外；当前组合 8D/H4 验收归[就绪台账](../../../synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)；硬件 8C 不属于该验收 |
+| 直接构造产品结果 | **已接受产品方向** | [ADR 0010（英文）](../../../../decisions/0010-map3-battle01-product-acceptance.md) 选项 1A | 实现及 H4 执行要求单独 Phase 4 启动 |
+| 权威状态、确定性时钟/RNG、内容准入及分层回执 | **已接受架构约束** | [ADR 0011（英文）](../../../../decisions/0011-phase4-remake-runtime-architecture.md) | 本接缝不提供产品时钟或后续场景事实；当前时钟及引擎方向归上文链接的 ADR 0010 和 ADR 0019 |
+| 通向端点的自然路线及完整 8C | **排除 / 未知** | [Research 审计（英文）](../../../../research/chapters/grans-opening/map3-battle01-audit.md)及[连续场景所有者](map3-battle01-continuous-scenario.md) | 排除在本地 R1 接缝之外；当前组合 8D/H4 验收归[就绪台账](../../synthesis/milestones/map3-battle01-readiness.md#当前已接受里程碑)；硬件 8C 不属于该验收 |
 
 ## 复现
 

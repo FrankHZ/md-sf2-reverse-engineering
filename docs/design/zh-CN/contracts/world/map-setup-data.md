@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`map-setup-data.md`](../../../contracts/world/map-setup-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-setup-data.md`（英文规范源）](../../../contracts/world/map-setup-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -21,7 +21,7 @@
 5. 受限 `GetMapSetupEntityList` 身份与源时间线；
 6. 不再分发完整路线或指针图的公开聚合投影。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-map-setup-static-v1`，位于 [`tests/fixtures/h2/map-setup-static-v1.json`](../../../../../tests/fixtures/h2/map-setup-static-v1.json)，由 [`src/sf2tool/h2/map_setup.py`](../../../../../src/sf2tool/h2/map_setup.py) 实现。其所属研究文章是[Map Data Inventory 与 Binary 一致性](../../../../research/world/map-data-inventory.md)。
+此处消费的唯一可执行所有者是 fixture id `sf2-map-setup-static-v1`，位于 [`tests/fixtures/h2/map-setup-static-v1.json`](../../../../../tests/fixtures/h2/map-setup-static-v1.json)，由 [`src/sf2tool/h2/map_setup.py`](../../../../../src/sf2tool/h2/map_setup.py) 实现。其所属研究文章是[Map Data Inventory 与 Binary 一致性（英文）](../../../../research/world/map-data-inventory.md)。
 
 消费 fixture 面刻意限定到：
 
@@ -53,7 +53,7 @@ fixture 直接绑定恰好三条 research-index 记录：
 | `map.setup.entity-list` | `GetMapSetupEntityList` | 无 | 未来关联 |
 | `map.setup.selector` | `GetCurrentMapSetup` | `map-exploration` | 不变独立所有者 |
 
-因此精确未来关联集只有 `map.data.mapsetups` 与 `map.setup.entity-list`。`map.setup.selector` 只与[Map 与 Exploration](../../../contracts/world/map-exploration.md)关联。
+因此精确未来关联集只有 `map.data.mapsetups` 与 `map.setup.entity-list`。`map.setup.selector` 只与[Map 与 Exploration](map-exploration.md)关联。
 
 `map.setup.entity-list` 记录还携带 `sf2-entity-population-reload-runtime-v1` 的已接受 H3 证据。该 H3 证据此处显式排除。共享索引记录不授权本合同声称人口、重载、调用方、运行时或呈现语义。
 
@@ -91,7 +91,7 @@ FlagRow             := flagWord setupPointer
 
 私有导入器必须保留地图行顺序、每个地图行内标志行顺序、默认与标志指针身份与两个终止符身份。它不得把源归一化为无序字典、因指针重复丢弃路线或从标志数字推断故事优先级。
 
-本合同保留有序路线数据，而非选择器所有权。已接受 `GetCurrentMapSetup` source/H3 选择行为（包括十个受追踪见证用例的含义）保持[Map 与 Exploration](../../../contracts/world/map-exploration.md)。见证用例可以作为已受追踪公开元数据暴露，但它们不是 H4 数据保真要求，也不在此创建第二条选择器声称。
+本合同保留有序路线数据，而非选择器所有权。已接受 `GetCurrentMapSetup` source/H3 选择行为（包括十个受追踪见证用例的含义）保持[Map 与 Exploration](map-exploration.md)。见证用例可以作为已受追踪公开元数据暴露，但它们不是 H4 数据保真要求，也不在此创建第二条选择器声称。
 
 ## 别名与定义拓扑
 
@@ -148,7 +148,7 @@ FlagRow             := flagWord setupPointer
 
 这建立所选定义、void 标记与槽 0 之间的受限关系。它不导入 `GetCurrentMapSetup` 选择行为、不把 `a0` 描述为现代 API、不证明任何调用方准入，也不定义后续代码用返回实体列表指针做什么。
 
-底层实体列表语料保持[Map Entity Data](../../../contracts/world/map-entity-data.md)。运行时人口与重载保持[Map 与 Exploration](../../../contracts/world/map-exploration.md)及其已接受 H3 所有者。本合同不消费那些 fixture，也不把其结果变成 H4 要求。
+底层实体列表语料保持[Map Entity Data](map-entity-data.md)。运行时人口与重载保持[Map 与 Exploration](map-exploration.md)及其已接受 H3 所有者。本合同不消费那些 fixture，也不把其结果变成 H4 要求。
 
 ## 实现无关导入模型
 
@@ -219,13 +219,13 @@ MapSetupPublicSummary {
 
 本合同不拥有：
 
-- `GetCurrentMapSetup` 运行时选择、标志求值、H3 用例或调用方可视返回行为，仍归[Map 与 Exploration](../../../contracts/world/map-exploration.md)；
-- 实体列表记录、地图精灵身份、初始放置或呈现，仍归[Map Entity Data](../../../contracts/world/map-entity-data.md)及其所有者；
+- `GetCurrentMapSetup` 运行时选择、标志求值、H3 用例或调用方可视返回行为，仍归[Map 与 Exploration](map-exploration.md)；
+- 实体列表记录、地图精灵身份、初始放置或呈现，仍归[Map Entity Data](map-entity-data.md)及其所有者；
 - 区域、物品、实体或初始化分发、事件效果、工作布局变更、地图生命周期、重载或过渡行为；
-- 区域描述匹配、文本/函数载荷或显示路由，仍归[Map Area-Description Routing](../../../contracts/world/map-area-description-routing.md)；
-- standalone map-script 程序与解释器行为，仍归[Standalone Map-Script Program Data](../../../contracts/world/standalone-map-script-program-data.md)、对话所有者与 map-exploration；
-- `SwitchMap`、`CheckBattle` 或存档点辅助，仍归[Map Entry Routing State](../../../contracts/world/map-entry-routing-state.md)；
-- block/layout、调色板、瓦片集与地图精灵载荷，仍归[Map Layout Data](../../../contracts/graphics/map-layout-data.md)、[Map Palette Data](../../../contracts/graphics/map-palette-data.md)、[Map Tileset Data](../../../contracts/graphics/map-tileset-data.md)与[Map-Sprite Graphics Data](../../../contracts/graphics/map-sprite-graphics-data.md)；
+- 区域描述匹配、文本/函数载荷或显示路由，仍归[Map Area-Description Routing](map-area-description-routing.md)；
+- standalone map-script 程序与解释器行为，仍归[Standalone Map-Script Program Data](standalone-map-script-program-data.md)、对话所有者与 map-exploration；
+- `SwitchMap`、`CheckBattle` 或存档点辅助，仍归[Map Entry Routing State](map-entry-routing-state.md)；
+- block/layout、调色板、瓦片集与地图精灵载荷，仍归[Map Layout Data](../graphics/map-layout-data.md)、[Map Palette Data](../graphics/map-palette-data.md)、[Map Tileset Data](../graphics/map-tileset-data.md)与[Map-Sprite Graphics Data](../graphics/map-sprite-graphics-data.md)；
 - 故事推进、标志持久性、存档/读档行为、UI、对话呈现、帧时序或玩家面向含义；
 - `sf2-map-data-static-v1`、`sf2-canonical-map-import-v1` 与上文排除的每个聚合或运行时 fixture。
 
@@ -281,9 +281,9 @@ Source/H1/ROM 字节、符号、指针值与 ROM 地址只是私有导入与往�
 | 合同面 | 证据标签 | 精确所有者 | 保留边界 |
 | --- | --- | --- | --- |
 | 路由表身份与序列化 | **已确认静态** | `sf2-map-setup-static-v1`；[fixture](../../../../../tests/fixtures/h2/map-setup-static-v1.json) | 64/66 行、130 个有序引用、终止符、910 字节；完整路线图私有 |
-| 定义拓扑 | **已确认静态** | 同一 fixture；[map-data 研究](../../../../research/world/map-data-inventory.md) | 126 个身份、各 6 槽、756 个槽、3,024 字节、四个别名；无字节内容唯一声称 |
+| 定义拓扑 | **已确认静态** | 同一 fixture；[map-data 研究（英文）](../../../../research/world/map-data-inventory.md) | 126 个身份、各 6 槽、756 个槽、3,024 字节、四个别名；无字节内容唯一声称 |
 | 实体列表访问接缝 | **已确认静态身份/源时间线** | 同一 fixture 加固定 `mapsetupsfunctions_1.asm` | 仅受限调用/测试/加载/返回顺序；H3 人口/重载证据排除 |
-| 紧凑选择用例 | 跨所有者公开见证元数据 | 同一受追踪 fixture；[Map 与 Exploration](../../../contracts/world/map-exploration.md)拥有选择器行为 | 不是 H4 要求，也不是第二条选择器声称 |
+| 紧凑选择用例 | 跨所有者公开见证元数据 | 同一受追踪 fixture；[Map 与 Exploration](map-exploration.md)拥有选择器行为 | 不是 H4 要求，也不是第二条选择器声称 |
 | 分发行为 | 排除 fixture 面 | `expected.sourceFacts.dispatch` 与专用分发器所有者 | 此处不消费 init/zone/item/entity/area-description 行为 |
 | 完整路线/目标内容 | 私有原版输入 | 忽略 `local/derived/map-setup-static.json` | 符号、地址、路径、指针与原始字节不公开 |
 | 故事、持久性、生命周期与呈现 | 独立所有者 / **未知** | 已接受相邻合同或未来受限证据 | 静态引用拓扑不证明运行时或玩家面向行为 |

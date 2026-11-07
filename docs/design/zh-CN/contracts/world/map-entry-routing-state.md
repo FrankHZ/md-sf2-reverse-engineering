@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：三个原版地图入口路由辅助的实现无关重构，不导入其私有表语料、故事含义、持久性、地图加载、战斗生命周期、呈现或畸形输入行为
 
-> 本文件是 [`map-entry-routing-state.md`](../../../contracts/world/map-entry-routing-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-entry-routing-state.md`（英文规范源）](../../../contracts/world/map-entry-routing-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,11 +14,11 @@
 - **推断**：无。战役意图、玩家面向含义与下游控制流不从这些静态选择器推断。
 - **未知**：私有表内容与基数；自然故事与调用方可达性；标志持久性与存档语义；返回候选后的战斗准入、战斗完成含义与战斗结果；地图加载、过渡、碰撞与生成行为；已接受值之外的调用方可视错误与返回约定；畸形、截断或未终止表；调试或注入状态；运行时时序；UI、音频与呈现；以及平衡或战役意图。
 
-[global-flag state 合同](../../../contracts/world/global-flag-state.md) 拥有低级标志寻址，而非路由标志的语义含义或持久性。[battle-encounter definition 合同](../../../contracts/battle/battle-encounter-definition.md) 拥有已接受遭遇数据，而非该候选选择辅助。[map-design principles 综合](../../../synthesis/themes/map-design-principles.md) 可以把已接受地图交接放入更宽玩家面向解释，但不得把那些静态选择器变成运行时可达性或可见过渡顺序的证明。
+[global-flag state 合同](global-flag-state.md) 拥有低级标志寻址，而非路由标志的语义含义或持久性。[battle-encounter definition 合同](../battle/battle-encounter-definition.md) 拥有已接受遭遇数据，而非该候选选择辅助。[map-design principles 综合](../../synthesis/themes/map-design-principles.md) 可以把已接受地图交接放入更宽玩家面向解释，但不得把那些静态选择器变成运行时可达性或可见过渡顺序的证明。
 
 ## 证据所有者与综合前审计
 
-`sf2-common-maps-static-v1`（[`common-maps-static-v1.json`](../../../../../tests/fixtures/h2/common-maps-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`maps.py`](../../../../../src/sf2tool/h2/maps.py)，其带来源解释是[Common Map Engine](../../../../research/world/common-maps.md)。本合同只消费这三条记录及其对应 `expected.mapFacts` 段：
+`sf2-common-maps-static-v1`（[`common-maps-static-v1.json`](../../../../../tests/fixtures/h2/common-maps-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`maps.py`](../../../../../src/sf2tool/h2/maps.py)，其带来源解释是[Common Map Engine（英文）](../../../../research/world/common-maps.md)。本合同只消费这三条记录及其对应 `expected.mapFacts` 段：
 
 - `maps.switch-map` 对应 `SwitchMap`；
 - `maps.battle-trigger` 对应 `CheckBattle`；
@@ -28,7 +28,7 @@
 
 `sf2-map-data-static-v1` 聚合与全部 `map.data.*` 研究记录在本合同消费证据之外，包括标志切换地图、存档点坐标与木筏重置坐标表身份。[Issue #99](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/99) 保留该聚合的修正轨迹；其状态此处不提供证据，解决它也不自动扩展本合同。因此本合同拥有辅助行为而不声称喂养它的私有表语料。
 
-同一 common-maps fixture 还包含摄像机、动画、布局与未使用加载器事实。此处不消费。特别是 `maps.camera`、`map.camera-control.wait-for-view-scroll-end`、`maps.animations`、`maps.map-layout` 与 `maps.unused-mapload` 保持其既有或未来所有者。[map-layout data 合同](../../../contracts/graphics/map-layout-data.md) 与既有摄像机运行时证据保持语义不变。
+同一 common-maps fixture 还包含摄像机、动画、布局与未使用加载器事实。此处不消费。特别是 `maps.camera`、`map.camera-control.wait-for-view-scroll-end`、`maps.animations`、`maps.map-layout` 与 `maps.unused-mapload` 保持其既有或未来所有者。[map-layout data 合同](../graphics/map-layout-data.md) 与既有摄像机运行时证据保持语义不变。
 
 ## 标志切换地图选择
 
@@ -92,7 +92,7 @@
 
 - 全局标志保留其自身寻址与生命周期边界；
 - 私有 `map.data.*` 表保持本合同消费证据之外；
-- 静态布局语料仍归[map-layout data](../../../contracts/graphics/map-layout-data.md)，而构建与工作布局变更仍归[map exploration](../../../contracts/world/map-exploration.md)；
+- 静态布局语料仍归[map-layout data](../graphics/map-layout-data.md)，而构建与工作布局变更仍归[map exploration](map-exploration.md)；
 - 碰撞、实体放置、摄像机状态与 VInt/DMA 呈现保持其独立地图、摄像机、运行时与呈现所有者；
 - 战斗遭遇组合与 battle-loop 控制仍归战斗合同；
 - 存档槽选择、SRAM 格式与持久性仍归 save-system 合同；

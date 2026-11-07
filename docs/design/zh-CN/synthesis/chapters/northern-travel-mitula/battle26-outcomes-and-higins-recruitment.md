@@ -1,10 +1,10 @@
 # Battle26 结果与 Higins 招募
 
-> 本文是[规范英文原文：Battle26 outcomes and Higins recruitment](../../../../synthesis/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle26 outcomes and Higins recruitment](../../../../synthesis/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 Battle26 已接受的后续有三种不同结果：战斗结束、一次行动转移 Black Ring，以及首次胜利场景招募 Higins。**已确认：** 各自具有独立的谓词与写入。首领清理不授予戒指，加入也不恢复 Higins 的 HP。营救对话请求去 Pacalon 帮忙，但战斗返回的是该对话之前选定的位置，并不将队伍运送到那里。
 
-本文接续[激活与首次单次行动交接](battle26-activation-and-first-turn-dispatch.md)，不补充首次调用与结果之间的交战记录。消费 [#1018](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1018)下已接受的 [Battle26 结果研究](../../../../../research/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)。除非明确指出既有受控观察，下文**已确认**指具名静态源码/消费者边界。**推断：** 云团离去表现了附身威胁被解除。**未知：** 自然抵达 Battle26、实际交战/奖励/状态、已完成服务、已呈现营救、可用探索与持久性。本指南不建立重制版能力或之后的城镇准入。
+本文接续[激活与首次单次行动交接](battle26-activation-and-first-turn-dispatch.md)，不补充首次调用与结果之间的交战记录。消费 [#1018](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1018)下已接受的 [Battle26 结果研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)。除非明确指出既有受控观察，下文**已确认**指具名静态源码/消费者边界。**推断：** 云团离去表现了附身威胁被解除。**未知：** 自然抵达 Battle26、实际交战/奖励/状态、已完成服务、已呈现营救、可用探索与持久性。本指南不建立重制版能力或之后的城镇准入。
 
 ## 结束战斗
 
@@ -18,7 +18,7 @@ Battle26 首领清理涉及初始首敌 **Lizardman128**，而非 Geshp 或战�
 
 之后计数使用不同谓词：30 个己方槽与32 个敌方槽中，X.b 非负且 HP.w 非零即计入。不看 Y、加入/出战成员资格、AI、区域或 neutral 位。Bowie HP0 强制己方计数为0。因此无需首领死亡也可由敌方为零而胜利；首领尾部则可通过清 X，将仍存活敌人移出计数。零计数或 HP 值均不证明所有表现/死亡服务完成。F88 延续消费所供槽、列表与标志，不重建新的十五敌人编队。
 
-共享[战斗生命周期](../../../../../research/battle/battle-loop.md)与[过场路由合同](../../../contracts/battle/battle-cutscene-routing.md)拥有通用机制；选定研究拥有这些精确 Battle26 分支。
+共享[战斗生命周期（英文）](../../../../../research/battle/battle-loop.md)与[过场路由合同](../../../contracts/battle/battle-cutscene-routing.md)拥有通用机制；选定研究拥有这些精确 Battle26 分支。
 
 ## Black Ring 属于独立的行动事务
 

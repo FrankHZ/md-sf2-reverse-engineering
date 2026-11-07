@@ -1,10 +1,10 @@
 # Battle19 结果与独立 Elven Village 入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Battle19 即使没有战斗专属场景，结束时仍可改变出战队伍、战斗和返回状态。胜利使队伍返回 Southwest Parmecia，位置取自当前出战名册。败北或获准逃脱使用传入存档点。Elven Village 有独立入口：选定的 Southwest Parmecia 传送不要求 Battle19 胜利。
 
-**已确认：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)确立选定静态路径、共享使用方及村庄初始实体生成。**推断：**它们解释战斗结果与村庄抵达这一段。**未知：**自然行程、实际调用方状态、服务完成、响应控制和持久性。未确立组合运行时结果或必须先胜利再入村的顺序。
+**已确认：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)确立选定静态路径、共享使用方及村庄初始实体生成。**推断：**它们解释战斗结果与村庄抵达这一段。**未知：**自然行程、实际调用方状态、服务完成、响应控制和持久性。未确立组合运行时结果或必须先胜利再入村的顺序。
 
 此前独立的步行请求／准入见 [Caravan 旅行](caravan-boarding-and-southwest-parmecia-travel.md)，F65/F84 见 [Battle18 获取](battle18-outcomes-and-caravan-acquisition.md)，仅当前跟随见[可选 Rick 招募](hassan-rick-recruitment.md)。本指南止于紧接的结果返回或条件 Map23 控制。村庄对话、搜索、宝物、楼梯、Map24/Battle20、后续旅行及 F762 的生产方均不在范围内。Fnnn 表示标志 nnn；表索引从零开始。坐标是源码操作数，不是观察到的位置。下文源码符号沿用已接受研究所有者的固定溯源。
 
@@ -141,7 +141,7 @@ Map23 既非排除随从地图，也非大地图，因此无论 F65 如何均使
 
 ## 证据追踪与审阅限制
 
-**已确认溯源：**已接受 #856/PR857 绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[研究复现所有者](../../../../../research/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#reproduction-and-remaining-limits)保留源码／表／include 连接及未改变的 map-init/script/cutscene 比较。本指南使用已接受证据；不重新调查源码或开展新采集。
+**已确认溯源：**已接受 #856/PR857 绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 及 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。[研究复现所有者（英文）](../../../../../research/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#reproduction-and-remaining-limits)保留源码／表／include 连接及未改变的 map-init/script/cutscene 比较。本指南使用已接受证据；不重新调查源码或开展新采集。
 
 | 解释边界 | 合同与精确测试夹具所有者 | 结论限制 |
 | --- | --- | --- |
@@ -168,4 +168,4 @@ schema／使用方配对为 [过场 schema](../../../../../../schemas/h2-battle-
 
 保留 [PR857 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/856#issuecomment-6162129601)及[独立验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/857#issuecomment-6162154889)，包括保留比较、已修正检查及精确 CI。保留 [PR858 更新交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/858#issuecomment-6162196284)及[验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/858#issuecomment-6162210098)，以及所链接的原始／前序失败。已接受比较无需为文字仪式性重放；测试夹具／schema／黄金夹具保持不变，也不会成为组合运行时观察。
 
-**未知：**自然可达入口／地形／路线或获胜轨迹；实际标志、HP、名册、映射、随机种子、存档点及运输；未选定存档点 init；服务／初始动作完成、渲染表现、响应输入和持久性。F762 的生产方及后续内容仍被排除。这些缺口继续按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)延后。本指南不选择重制规则，也不使用未接受的 Issue860 结论。
+**未知：**自然可达入口／地形／路线或获胜轨迹；实际标志、HP、名册、映射、随机种子、存档点及运输；未选定存档点 init；服务／初始动作完成、渲染表现、响应输入和持久性。F762 的生产方及后续内容仍被排除。这些缺口继续按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)延后。本指南不选择重制规则，也不使用未接受的 Issue860 结论。

@@ -1,20 +1,20 @@
 # 塔后返回至地震城镇入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/post-tower-return-through-earthquake-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/post-tower-return-through-earthquake-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 塔楼后续结束后，出战队伍面前是已发生变化的 Granseal。**推断的叙事连接：**众人穿过塔楼与城堡，回到正在因地震撤离的城镇。**已确认静态内容：**选定出口通向城镇请求，地震标志改变其有效地图，城镇有不同的首次与重复入场程序。**未知：**合法连续行走、自然完成的场景服务及初始化返回时实际的待处理事件值。
 
-本文承接 [Battle07 结果与探索交接](battle07-outcomes-and-aftermath.md)。已接受的[研究所有者](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md)提供溯源、精确记录和使用方顺序。本指南支持内容/设计规划，止于 Map4 初始化后的控制/事件检查，不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#723](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/723) 的 Standard 严谨度协议。
+本文承接 [Battle07 结果与探索交接](battle07-outcomes-and-aftermath.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md)提供溯源、精确记录和使用方顺序。本指南支持内容/设计规划，止于 Map4 初始化后的控制/事件检查，不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#723](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/723) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。原版源码引用使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。引用中的命令索引是从零开始的脚本记录，不是经过帧数。下方对话依据已接受审阅概述。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。引用中的命令索引是从零开始的脚本记录，不是经过帧数。下方对话依据已接受审阅概述。
 
 ## 1. 离开塔楼是一系列条件场地请求
 
 **已确认起始边界：**完成首次胜利后返回 Map58 `(13,35)`、Down，after 场景设置 F74/F640，战斗调用方清除 F407、设置 F507。必须 F999 未设才能保留 Map58。普通 before 场景清除 F83；跳过 intro 的调用方可能保留它。重复胜利不重新建立固定位置或随从/地震标志。[前篇返回边界](battle07-outcomes-and-aftermath.md#4-返回请求先于脚本和调用方完成)继续拥有这些替代路径及自然交战/服务限制。
 
-**已确认选定连接：**Map58 出站标记请求楼梯 Map60；选定 Map60 出口请求塔入口 Map57。后续记录依次请求外部 Map40、城堡 Map21 **3F**、Map20 **1F**、Map19 **2F**，最后是 Map3 `(29,2)`、Down。每个具名记录均使用无滚动传送。[选定请求审阅](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#starting-state-and-outgoing-requests)保留每个触发/目的地元组，包括通配坐标。这些记录描述各个独立使用方处可能发出的请求，不提供它们之间的行走路径。
+**已确认选定连接：**Map58 出站标记请求楼梯 Map60；选定 Map60 出口请求塔入口 Map57。后续记录依次请求外部 Map40、城堡 Map21 **3F**、Map20 **1F**、Map19 **2F**，最后是 Map3 `(29,2)`、Down。每个具名记录均使用无滚动传送。[选定请求审阅（英文）](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#starting-state-and-outgoing-requests)保留每个触发/目的地元组，包括通配坐标。这些记录描述各个独立使用方处可能发出的请求，不提供它们之间的行走路径。
 
 普通场地传送经请求使用方退出探索。在主循环中，`SwitchMap` 先于 `CheckBattle` 运行，只有未选中战斗才初始化探索。这不同于前篇直接战斗结果返回；后者绕过该遭遇检查。
 
@@ -33,7 +33,7 @@
 | Map21 城堡 3F 与 Map20 城堡 1F | F506 路由选择较后的 init 目标，绕过较早守卫位置/卧室程序。其选定实体/区域（事件）只有默认事件；共用实现文件名不意味着选择较早对话。 |
 | Map19 城堡 2F | F507 配置声明一个 Astral 精灵，引用 128，初始位于 `(63,63)`、Down。该配置行动者不同于标志选择的 `FOLLOWER_B`。其默认实体事件直接返回；两个区域（事件）对话仍可按各自谓词调用。 |
 
-四个外部/城堡 init 函数检查 F507，并调用同一个短呈现程序：请求首领攻击音乐，运行 `fadeInB`，结束。它不写推进标志、传送、加入或随从行。这是创作中的呈现请求，不确认服务已完成。Battle07 胜利不清除较后配置标志，因此该表不能描述任意重入状态。[城堡配置审阅](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#selected-castle-setups-and-events)拥有选定指针和覆盖。
+四个外部/城堡 init 函数检查 F507，并调用同一个短呈现程序：请求首领攻击音乐，运行 `fadeInB`，结束。它不写推进标志、传送、加入或随从行。这是创作中的呈现请求，不确认服务已完成。Battle07 胜利不清除较后配置标志，因此该表不能描述任意重入状态。[城堡配置审阅（英文）](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#selected-castle-setups-and-events)拥有选定指针和覆盖。
 
 ### Astral 的两次警告有独立重复控制
 
@@ -54,7 +54,7 @@
 
 F74 启用 Astral `FOLLOWER_B`、国王 `FOLLOWER_A`、大臣 `FOLLOWER_D`。选定内容不清除 F74。其他启用行仍是输入：跳过 intro 所保留的 F83 可以增加王室行，冲突的 `FOLLOWER_B` 声明可以改变脚本寻址的映射。初始化器不保证去重或随从总数固定为三；城镇 init 不修复缺失/冲突随从。跟随独立于军团招募或交战 HP。
 
-随后探索清除临时标志 256–383，设置 F80，加载地图并安装基本 VInt 函数，再运行配置 init。F74/F507/F622/F623/F624/F640 在临时清除后保留。标志选择的布局复制在加载时、init 脚本之前运行。[入场/实体群审阅](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#effective-map4-entry-and-population)及[地图加载合同](../../../contracts/world/map-exploration.md#加载与选择顺序)拥有该区别。
+随后探索清除临时标志 256–383，设置 F80，加载地图并安装基本 VInt 函数，再运行配置 init。F74/F507/F622/F623/F624/F640 在临时清除后保留。标志选择的布局复制在加载时、init 脚本之前运行。[入场/实体群审阅（英文）](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#effective-map4-entry-and-population)及[地图加载合同](../../../contracts/world/map-exploration.md#加载与选择顺序)拥有该区别。
 
 ## 4. 首次入场布置守卫与扩大的裂缝
 
@@ -71,7 +71,7 @@ F74 启用 Astral `FOLLOWER_B`、国王 `FOLLOWER_A`、大臣 `FOLLOWER_D`。选
 
 **已确认行动者边界：**坠落动作移动守卫，请求坠落音频，旋转/缩小精灵，等待到达目的地，停放在 `(0,0)` 并返回 idle。显式等待守卫 129；没有等价的后继命令等待 128 完成。这些操作不写交战 HP/死亡或军团成员身份。**推断的叙事解读：**场景描写守卫落入裂缝。**未知：**并发移动、等待终止、精确最终行动者状态、观感上的死亡及视听交付完成。叙述或动画中的坠落不是战斗伤亡规则。
 
-城镇六条文本命令消费普通未跳过的 ID 715–720；城堡对话使用 713/714。[首次/重复研究审阅](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#first-and-repeat-initialization)保留文本溯源、源码位置和命令顺序，不提供逐字转录。
+城镇六条文本命令消费普通未跳过的 ID 715–720；城堡对话使用 713/714。[首次/重复研究审阅（英文）](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#first-and-repeat-initialization)保留文本溯源、源码位置和命令顺序，不提供逐字转录。
 
 ## 5. 重复入场重建改变后的布局并跳过场景
 
@@ -85,7 +85,7 @@ F74 启用 Astral `FOLLOWER_B`、国王 `FOLLOWER_A`、大臣 `FOLLOWER_D`。选
 
 **未知：**该次读取的实际待处理值及自然输入就绪状态。入场清除事件不证明服务和脚本之后仍为零。各独立静态使用方没有以可执行验证闭合这整个调用方组合。这个条件读取是停止边界，不能声称连续可玩返回。
 
-Map4 默认区域（事件）与实体处理器直接返回。通用区域（事件）使用方仍关闭文本/立绘窗口，等待一个 VInt，并等待主实体停止。下一出站所有者是 [Map4 传送表](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map04/6-warp-events.asm)，见[已接受交接](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#immediate-controlevent-boundary-and-next-owner)。其东边缘记录指向码头请求。接着读[地震城镇出口至码头出航](earthquake-town-through-docks-departure.md)，了解已接受的请求、登船选择和条件出站交接。这些使用方、Battle08 及较后目的地内容不在本指南范围内。
+Map4 默认区域（事件）与实体处理器直接返回。通用区域（事件）使用方仍关闭文本/立绘窗口，等待一个 VInt，并等待主实体停止。下一出站所有者是 [Map4 传送表](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map04/6-warp-events.asm)，见[已接受交接（英文）](../../../../../research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#immediate-controlevent-boundary-and-next-owner)。其东边缘记录指向码头请求。接着读[地震城镇出口至码头出航](earthquake-town-through-docks-departure.md)，了解已接受的请求、登船选择和条件出站交接。这些使用方、Battle08 及较后目的地内容不在本指南范围内。
 
 ## 证据审阅与剩余限制
 

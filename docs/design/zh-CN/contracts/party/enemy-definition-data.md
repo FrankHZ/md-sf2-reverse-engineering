@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：103 个原版敌人身份与固定定义、其有序战斗/地图精灵引用、63 行 NPC 地图精灵尾与受限地图精灵查找消费者
 
-> 本文件是 [`enemy-definition-data.md`](../../../contracts/party/enemy-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`enemy-definition-data.md`（英文规范源）](../../../contracts/party/enemy-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -14,13 +14,13 @@
 - **推断**：无。源码标签保持存储词汇；其完整玩法或视觉含义此处不推断。
 - **未知**：敌人地图精灵索引 `103..165` 的刻意原版调试或其他非标准可达性；一个已接受名称中内嵌 null 的渲染器可见效果；完整生成变换效果；遭遇与升级选择；AI 行为；回合调度；战斗结果；奖励分配；呈现时序；难度曲线；以及作者或平衡意图。
 
-[battle encounter definition 合同](../../../contracts/battle/battle-encounter-definition.md) 拥有战斗局部敌人选择、放置与区域/地形数据。[battle AI 合同](../../../contracts/battle/battle-ai-decision.md) 拥有动作与移动决定。[Battle control](../../../contracts/battle/battle-control-lifecycle.md)、[交战解决](../../../contracts/battle/combat-resolution.md)与[battle-scene presentation](../../../contracts/battle/battle-scene-presentation.md) 拥有各自运行时与视觉行为。本文档定义那些系统可以引用的稳定输入数据。
+[battle encounter definition 合同](../battle/battle-encounter-definition.md) 拥有战斗局部敌人选择、放置与区域/地形数据。[battle AI 合同](../battle/battle-ai-decision.md) 拥有动作与移动决定。[Battle control](../battle/battle-control-lifecycle.md)、[交战解决](../battle/combat-resolution.md)与[battle-scene presentation](../battle/battle-scene-presentation.md) 拥有各自运行时与视觉行为。本文档定义那些系统可以引用的稳定输入数据。
 
 ## 证据所有者
 
-`sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../../tests/fixtures/h2/core-stats-data-static-v1.json)）是主要 H2 清单所有者。它证明五文件敌人数据源边界、代表 H1 地址与四个范围内名称、定义、战斗精灵与地图精灵表的基数。第五个文件包含独立拥有的敌人金币表。其带来源解释是[item、spell 与 enemy data inventory](../../../../research/party/core-stats-data-inventory.md)。
+`sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../../tests/fixtures/h2/core-stats-data-static-v1.json)）是主要 H2 清单所有者。它证明五文件敌人数据源边界、代表 H1 地址与四个范围内名称、定义、战斗精灵与地图精灵表的基数。第五个文件包含独立拥有的敌人金币表。其带来源解释是[item、spell 与 enemy data inventory（英文）](../../../../research/party/core-stats-data-inventory.md)。
 
-[enemy definitions 研究所有者](../../../../research/party/enemy-promotions.md)、[source manifest](../../../../../manifests/extractions/enemy-promotion-data.json)、[source schema](../../../../../schemas/enemy-promotion-data.schema.json)、[ROM layout](../../../../../manifests/extractions/enemy-promotion-rom-layout.json)与[ROM schema](../../../../../schemas/rom-enemy-promotion-data.schema.json) 独立导出源与 ROM 表示。已接受轨道比较 2,722 个字段且零不匹配，并保留下文描述的固定定义布局。该更广所有者中的转职与奖励材料在本合同之外。
+[enemy definitions 研究所有者（英文）](../../../../research/party/enemy-promotions.md)、[source manifest](../../../../../manifests/extractions/enemy-promotion-data.json)、[source schema](../../../../../schemas/enemy-promotion-data.schema.json)、[ROM layout](../../../../../manifests/extractions/enemy-promotion-rom-layout.json)与[ROM schema](../../../../../schemas/rom-enemy-promotion-data.schema.json) 独立导出源与 ROM 表示。已接受轨道比较 2,722 个字段且零不匹配，并保留下文描述的固定定义布局。该更广所有者中的转职与奖励材料在本合同之外。
 
 `sf2-enemy-map-sprites-static-v1`（[`enemy-map-sprites-static-v1.json`](../../../../../tests/fixtures/h2/enemy-map-sprites-static-v1.json)）逐字节比较全部 166 个地图精灵行、证明前 103/尾拆分、审计所有构建战斗与随机升级输入范围，并闭合 `GetCombatantMapsprite` 查找边界。该专用所有者对消费者接缝足够；聚合 common-scripting 清单此处刻意不是证据依赖。
 
@@ -162,10 +162,10 @@ H4 不需要运行时原版表布局。它要求保留溯源的导入，其变�
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 更广五文件敌人源边界内的四个范围内表，103/103/103/166 计数 | **已确认静态** | `sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../../tests/fixtures/h2/core-stats-data-static-v1.json)） | 敌人金币、完整消费者行为与设计意图 |
-| 103 个名称与固定 56 字节定义及 source/ROM 字段一致性 | **已确认静态** | [enemy definitions owner](../../../../research/party/enemy-promotions.md)、[manifest](../../../../../manifests/extractions/enemy-promotion-data.json)与[ROM layout](../../../../../manifests/extractions/enemy-promotion-rom-layout.json) | 名称渲染与完整生成变换 |
+| 103 个名称与固定 56 字节定义及 source/ROM 字段一致性 | **已确认静态** | [enemy definitions owner（英文）](../../../../research/party/enemy-promotions.md)、[manifest](../../../../../manifests/extractions/enemy-promotion-data.json)与[ROM layout](../../../../../manifests/extractions/enemy-promotion-rom-layout.json) | 名称渲染与完整生成变换 |
 | 166 个地图精灵行、`103 + 63` 拆分、构建输入域与未检查消费者 | **已确认静态** | `sf2-enemy-map-sprites-static-v1`（[`enemy-map-sprites-static-v1.json`](../../../../../tests/fixtures/h2/enemy-map-sprites-static-v1.json)） | 非标准尾可达性与可见加载器结果 |
-| 战斗选择、放置、区域与局部命令数据 | **独立所有者** | [battle encounter definition](../../../contracts/battle/battle-encounter-definition.md) | 运行时准入与故事选择 |
-| 动作/移动选择、回合调度、战斗、奖励与呈现 | **独立所有者** | [battle AI](../../../contracts/battle/battle-ai-decision.md)、[battle control](../../../contracts/battle/battle-control-lifecycle.md)、[交战解决](../../../contracts/battle/combat-resolution.md)与[battle-scene presentation](../../../contracts/battle/battle-scene-presentation.md) | 端到端多回合行为与玩家可见输出 |
+| 战斗选择、放置、区域与局部命令数据 | **独立所有者** | [battle encounter definition](../battle/battle-encounter-definition.md) | 运行时准入与故事选择 |
+| 动作/移动选择、回合调度、战斗、奖励与呈现 | **独立所有者** | [battle AI](../battle/battle-ai-decision.md)、[battle control](../battle/battle-control-lifecycle.md)、[交战解决](../battle/combat-resolution.md)与[battle-scene presentation](../battle/battle-scene-presentation.md) | 端到端多回合行为与玩家可见输出 |
 | 敌人数值曲线、名册难度、平衡、替换内容 | **未知 / 刻意设计** | 未来综合、模拟与内容所有者 | 不得从存储定义推断意图 |
 
 ## 复现

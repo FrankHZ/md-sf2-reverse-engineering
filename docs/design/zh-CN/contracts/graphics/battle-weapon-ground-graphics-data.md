@@ -4,7 +4,7 @@
 - 证据日期：2026-08-14
 - 范围：原版战斗武器、武器调色板与地面图形语料作为私有、引擎无关导入
 
-> 本文件是 [`battle-weapon-ground-graphics-data.md`](../../../contracts/graphics/battle-weapon-ground-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-weapon-ground-graphics-data.md`（英文规范源）](../../../contracts/graphics/battle-weapon-ground-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -16,7 +16,7 @@
 
 ## 证据所有者与消费面
 
-本合同消费的唯一可执行所有者是 `sf2-battle-weapon-ground-decode-v1`（[fixture](../../../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/battle_weapon_ground.py)、[schema](../../../../../schemas/h2-battle-weapon-ground-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/battle-weapon-ground-decode.json)）。其数据文章所有者是[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)，受限加载器上下文在[Battle Scene Engine](../../../../research/battle/battle-scene-engine.md)。
+本合同消费的唯一可执行所有者是 `sf2-battle-weapon-ground-decode-v1`（[fixture](../../../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)、[verifier](../../../../../src/sf2tool/h2/battle_weapon_ground.py)、[schema](../../../../../schemas/h2-battle-weapon-ground-decode-fixture.schema.json) 与 [manifest](../../../../../manifests/extractions/battle-weapon-ground-decode.json)）。其数据文章所有者是[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)，受限加载器上下文在[Battle Scene Engine（英文）](../../../../research/battle/battle-scene-engine.md)。
 
 本数据合同消费：
 
@@ -25,7 +25,7 @@
 - `groundAliases` 中的三条受追踪行；以及
 - 已接受的上游、ROM 与规范输出溯源。
 
-`function` 身份只作为外部消费者/服务见证保留。武器与地面选择、调色板消费、流查找、Stack 或压缩 DMA 交接与转移请求仍归[Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md)。`LoadStackCompressedData` 与面向硬件转移服务仍归[Graphics Service State](../../../contracts/graphics/graphics-service-state.md)与[Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md)。那些函数记录都不属于本合同。
+`function` 身份只作为外部消费者/服务见证保留。武器与地面选择、调色板消费、流查找、Stack 或压缩 DMA 交接与转移请求仍归[Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md)。`LoadStackCompressedData` 与面向硬件转移服务仍归[Graphics Service State](graphics-service-state.md)与[Interrupt、DMA 与 Trap State](../system/interrupt-dma-and-trap-state.md)。那些函数记录都不属于本合同。
 
 完整生成 `weaponSprites[23]`、`weaponPalettes[42]`、`groundHeaders[27]` 与 `groundTiles[10]` 行保留在忽略的 `local/derived/battle-weapon-ground-decode.json` 下。其完整图、源符号、路径、地址、精确相对字、逐资源大小、调色板与解码 hash、压缩流细节与原始或解码字节是私有验证输入，不是公开合同载荷。
 
@@ -51,7 +51,7 @@
 
 武器精灵表有 23 个与 23 个源流定义和所有者身份成源序一对一的 23 个有序指针槽。计数 23 不声称每个压缩字节序列或解码 hash 互不相同。
 
-每个私有流精确解码到 8,192 字节。23 个流占用 21,314 压缩字节并总共解码到 188,416 字节。解码记录包含四个 64 瓦片视图的源码格式陈述仍是[Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md)中的受限消费者/源见证；它不是本数据合同中的渲染布局、角度选择或可见性规则。
+每个私有流精确解码到 8,192 字节。23 个流占用 21,314 压缩字节并总共解码到 188,416 字节。解码记录包含四个 64 瓦片视图的源码格式陈述仍是[Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md)中的受限消费者/源见证；它不是本数据合同中的渲染布局、角度选择或可见性规则。
 
 武器调色板根标识 42 个连续源条目。每个条目恰好四字节，因此该独立语料占用 168 字节。这些条目是源码具名调色板记录，不是完整 16 色调色板或颜色含义的证明。选择器与任何调色板条目之间的完整私有关联仍是呈现/消费者关注点。
 
@@ -207,9 +207,9 @@ H4 不要求原版选择器、加载器微实现、调色板写入、暂存或 D
 
 ## 跨系统分离
 
-- [Battle Scene Command 与 Presentation Data](../../../contracts/battle/battle-scene-presentation.md) 消费本合同的规范记录，并保留仅己方/无效武器选择、武器调色板最终两色消费、受限四视图消费者接缝、武器 Stack 交接、地面调色板写入与自相对查找、压缩 DMA 交接与 `0x300` 请求、场景时间线、呈现边界及其 未知。它不再独立拥有或重新验证本静态目录。
-- [Graphics Service State](../../../contracts/graphics/graphics-service-state.md) 保留 Stack 解压与压缩 DMA 服务边界。此处的聚合解码器诊断不转移该所有权。
-- [Interrupt、DMA 与 Trap State](../../../contracts/system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA 与 CRAM 服务/时序边界。
+- [Battle Scene Command 与 Presentation Data](../battle/battle-scene-presentation.md) 消费本合同的规范记录，并保留仅己方/无效武器选择、武器调色板最终两色消费、受限四视图消费者接缝、武器 Stack 交接、地面调色板写入与自相对查找、压缩 DMA 交接与 `0x300` 请求、场景时间线、呈现边界及其 未知。它不再独立拥有或重新验证本静态目录。
+- [Graphics Service State](graphics-service-state.md) 保留 Stack 解压与压缩 DMA 服务边界。此处的聚合解码器诊断不转移该所有权。
+- [Interrupt、DMA 与 Trap State](../system/interrupt-dma-and-trap-state.md) 保留 VInt、DMA 与 CRAM 服务/时序边界。
 - 物品与己方定义合同保留武器身份/装备字段；它们不拥有这些图形载荷或调色板条目。
 - 行动者战斗精灵与动画、背景、地形、效果、立绘、特殊/地图/UI 图形、本地化、可访问性、许可、替换资源与渲染仍归其自身合同或保持 未知。
 

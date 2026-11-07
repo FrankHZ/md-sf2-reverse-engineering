@@ -1,10 +1,10 @@
 # South Parmecia、Kraken 现身与 Battle16 进入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 选定 South Parmecia 出口通往 Kraken 战场，已解锁战斗的重新入场可安排木筏停下、河中怪物浮现的场景。Peter 和条件性第二随从作出反应，随后游戏为 Battle16 重建出战队伍与敌人。抵达不保证准入，场景精灵不确立交战名册，start 包装器返回也不确立可玩的首个回合（单次行动）。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md)支持下文路线、完整遭遇和初始化。**推断：**场面描绘 Kraken 拦停木筏并从河中浮现。**未知：**自然通行、实际传入状态、服务完成、原版表现、输入就绪和持久性。Fnnn 表示标志 nnn；除另指外，坐标为地图瓦片，行号从零开始。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md)支持下文路线、完整遭遇和初始化。**推断：**场面描绘 Kraken 拦停木筏并从河中浮现。**未知：**自然通行、实际传入状态、服务完成、原版表现、输入就绪和持久性。Fnnn 表示标志 nnn；除另指外，坐标为地图瓦片，行号从零开始。
 
 前段条件 Map69 控制边界见[木筏登乘与 South Parmecia 入场](polca-raft-boarding-through-south-parmecia-entry.md)。本指南选择 Map69 row0，止于 Battle16 start 包装器返回后、敌人激活、区域/生成工作、行动生成、交战或结果之前。不施加 Battle14/15 前提或编号战斗的自然顺序，不确立重制能力或连续可玩性。
 
@@ -12,7 +12,7 @@
 
 ## 选择战场
 
-**已确认路线：**Map69 row0 匹配 `(28,51)`，将源码符号 `MAP_KRAKEN_BATTLEFIELD` 解析为 **Map49**，请求无滚动传送至 `(15,16)`、Up。其他七行不在该点竞争；row0 还具有首匹配优先级。[选定请求所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#selected-request-and-conditional-battle-admission)保留符号到编号关联与直接消费者。
+**已确认路线：**Map69 row0 匹配 `(28,51)`，将源码符号 `MAP_KRAKEN_BATTLEFIELD` 解析为 **Map49**，请求无滚动传送至 `(15,16)`、Up。其他七行不在该点竞争；row0 还具有首匹配优先级。[选定请求所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#selected-request-and-conditional-battle-admission)保留符号到编号关联与直接消费者。
 
 已提交的木筏 mode2 安装源码 `eas_Caravan` / opcode8，尽管符号名如此。经过输入、边界与行动者碰撞检查，拟移动点工作布局的 `$1000` 标记调用传送匹配器；之后仍执行移动尾部。普通步行也可调用该生产者。匹配行写入数值 type1、其元组与传送声音请求，不检查木筏所有权、成员资格或战斗标志。表与控制器均不证明存在通往 `(28,51)` 的自然水路。
 
@@ -34,7 +34,7 @@ Luke 已接受招募场景提供 F416 解锁。模式、F64、跟随标志和成
 
 通用探索生命周期仍清除待处理状态、治疗存活/不死己方角色、加载瓦片与地图、重建主角与按标志选择的随从、清除临时 flags256–383 并设置 F80。哨兵不提供固定配置行。Map49 使用普通随从表而非大地图表；其调色板/音乐/淡入淡出与事件等待路径可有条件地安装控制。
 
-保留的 mode2 给主角木筏精灵，将列表随从移至 `(64,64)` 并安装站立行动，在该处声明物理木筏31。其他模式仅在 F64 与传入已保存木筏地图匹配49 时声明独立木筏。这些分支解释传入状态，不证明此战斗专用地图上有可用探索或出口。[回退所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#no-admission-fallback-and-transport-boundary)保留实体群与交通细节；进一步回退旅行不在本指南内。
+保留的 mode2 给主角木筏精灵，将列表随从移至 `(64,64)` 并安装站立行动，在该处声明物理木筏31。其他模式仅在 F64 与传入已保存木筏地图匹配49 时声明独立木筏。这些分支解释传入状态，不证明此战斗专用地图上有可用探索或出口。[回退所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#no-admission-fallback-and-transport-boundary)保留实体群与交通细节；进一步回退旅行不在本指南内。
 
 ## 重新入场与遭遇实体群
 
@@ -46,11 +46,11 @@ Luke 已接受招募场景提供 F416 解锁。模式、F64、跟随标志和成
 
 Peter 是逻辑己方角色7。此地图中 F67 准入其随从，F68 以 Oddler 精灵提供 FOLLOWER_B31，但后续启用声明可覆盖同一查找表项。因此 Oddler 是**条件性**第二说话者，不是无条件脚本身份。FOLLOWER_B31 不同于物理木筏31，也不同于逻辑 FOLLOWER_D159/lookup63。重建时缺失查找映射可解析到物理 main0；命令不验证有效行动者。
 
-位置/朝向命令跳过零 HP 己方角色0–29，包括 Peter。FOLLOWER_B31 与场景行动者绕过该己方守卫；行动、等待和复制没有同等 HP 检查。死亡或缺失 Peter 可以跳过放置，却经解析映射接收行动。后续战斗重建治疗不能为其初始场景 HP 或在场提供依据。登场命令均不加入、移除或复活出战队伍成员，也不改变跟随标志。[实体群所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#fresh-caller-scene-population-and-identities)保留物理槽位与映射细节。
+位置/朝向命令跳过零 HP 己方角色0–29，包括 Peter。FOLLOWER_B31 与场景行动者绕过该己方守卫；行动、等待和复制没有同等 HP 检查。死亡或缺失 Peter 可以跳过放置，却经解析映射接收行动。后续战斗重建治疗不能为其初始场景 HP 或在场提供依据。登场命令均不加入、移除或复活出战队伍成员，也不改变跟随标志。[实体群所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#fresh-caller-scene-population-and-identities)保留物理槽位与映射细节。
 
 ## 完整现身场景
 
-**已确认编码顺序：**`bbcs_16` 含 78 条顶层记录和四个单独检查的内联主体。遭遇有七个普通文本位置，IDs2513–2519，没有选择或剧情分支。下表转述内容并标出说话者操作数；Bowie 没有文本位置。[完整程序与对话所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#complete-pre-battle-program-and-dialogue)保留精确记录范围、原始文本键与源码溯源。
+**已确认编码顺序：**`bbcs_16` 含 78 条顶层记录和四个单独检查的内联主体。遭遇有七个普通文本位置，IDs2513–2519，没有选择或剧情分支。下表转述内容并标出说话者操作数；Bowie 没有文本位置。[完整程序与对话所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#complete-pre-battle-program-and-dialogue)保留精确记录范围、原始文本键与源码溯源。
 
 第一行前，Bowie 接收一个被等待的 init 行动。脚本把 `(13,4)` 的 3×3 工作布局区域保存至 `(0,0)`，再以 `(31,4)` 的区域替换，让两条臂共享一个精灵槽位、八条腿共享另一个。随后是被等待的 Peter 与 FOLLOWER_B init 行动。淡入前 Peter 被放在 `(15,15)`、Left，FOLLOWER_B 在 `(13,14)`、Down。等待 30 与 5 后安装 Bowie 的 Right/Left/Right/Left 行动，等待 5，安装 Peter 的，等待 5，安装 FOLLOWER_B 的，再等待 120。这三次安装没有逐个等待。随后 Peter 被等待地 Right1 移动，等待20，三者均朝 Down。
 
@@ -70,7 +70,7 @@ texts2516 与2517 之间，摄像机请求 `(9,0)` 并等待滚动。隆隆声�
 
 图块操作复制九个工作布局字并请求视野平面更新；不改变 ROM，也不证明画面。`$8002` 震动请求幅度1,2，每次后 Sleep40；`$4002` 同样请求1,0。每次隆隆声提交 sound93，不等待音频完成。`SLIDE_IN=5` 请求 23 次地图精灵/裁切/DMA 迭代，每次等待两次 VInt；它改变精灵素材，不改变行动者位置。淡入淡出、摄像机、文本、声音与 FX 仍为所需服务，其原版渲染/音频完成未知。
 
-行动等待轮询具名解析行动者的指针是否空闲。固定睡眠不汇合三个并发摇晃行动。位置命令设置位置与目的地，但不清除行程/速度；init 不治疗或声明缺失行动者。文本从映射行动者解析立绘/台词属性，等待滚动并推进游标；单文本还关窗并睡眠10。调试文本跳过可抑制显示、游标增量与编码等待，却不跳过所有行动/效果。七个 ID 描述普通未跳过路径。终止符的条件滚动等待和速度清除不是全部行动者/服务的完成回执。[直接消费者所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#immediate-action-and-presentation-consumers)提供详细行动与表现边界。
+行动等待轮询具名解析行动者的指针是否空闲。固定睡眠不汇合三个并发摇晃行动。位置命令设置位置与目的地，但不清除行程/速度；init 不治疗或声明缺失行动者。文本从映射行动者解析立绘/台词属性，等待滚动并推进游标；单文本还关窗并睡眠10。调试文本跳过可抑制显示、游标增量与编码等待，却不跳过所有行动/效果。七个 ID 描述普通未跳过路径。终止符的条件滚动等待和速度清除不是全部行动者/服务的完成回执。[直接消费者所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#immediate-action-and-presentation-consumers)提供详细行动与表现边界。
 
 ## 重建实际战斗
 
@@ -82,7 +82,7 @@ BattleSpriteset16 提供 **12 条己方放置行与 11 条敌人定义**，AI �
 
 敌人初始化器用选定十一条定义初始化属性与位置；剩余槽位走隐藏/清除分支。不复制场景位置或克隆链接。`LoadBattle` 从已放置战斗员清除/重建行动者与查找表，选择请求战斗员的视野目标，重载地图/地形/地图精灵并请求音乐/淡入。第一条己方放置行是 `(15,15)`，取决于出战/存活列表，独立于 Bowie 场景 `(15,14)` 和传送 `(15,16)` 输入。
 
-F466 已设时 start 包装器跳过；否则**先设置 F466**，再执行 Battle16 共享的 `ms_Empty` 终止符。没有专用 Battle16 start 场景。本指南止于该包装器返回 `@Start`，早于 `ActivateEnemies`、区域、生成、行动、交战与结果。空脚本不证明首个回合（单次行动）就绪。[初始化所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#battle-initialization-and-stopping-boundary)保留精确指针/头部、放置与调用方顺序。
+F466 已设时 start 包装器跳过；否则**先设置 F466**，再执行 Battle16 共享的 `ms_Empty` 终止符。没有专用 Battle16 start 场景。本指南止于该包装器返回 `@Start`，早于 `ActivateEnemies`、区域、生成、行动、交战与结果。空脚本不证明首个回合（单次行动）就绪。[初始化所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#battle-initialization-and-stopping-boundary)保留精确指针/头部、放置与调用方顺序。
 
 ## 重复、中断与已保存入场
 
@@ -92,7 +92,7 @@ F88 已设则选择已保存入场。BattleLoop 已清除交通模式，但该�
 
 ## 证据追踪与未解问题
 
-**已确认溯源：**本指南使用 main 已接受的 #820/PR822 研究，绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现与覆盖所有者](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#reproduction-coverage-and-preserved-limits)列出精确源码主体、保留比较配方、夹具与直接关联。这不是新源码调查或运行时采集。
+**已确认溯源：**本指南使用 main 已接受的 #820/PR822 研究，绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现与覆盖所有者（英文）](../../../../../research/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md#reproduction-coverage-and-preserved-limits)列出精确源码主体、保留比较配方、夹具与直接关联。这不是新源码调查或运行时采集。
 
 | 边界 | 合同与现有夹具追踪 | 覆盖限制 |
 | --- | --- | --- |
@@ -104,4 +104,4 @@ F88 已设则选择已保存入场。BattleLoop 已清除交通模式，但该�
 
 [PR822 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/822#issuecomment-6160096072)保留已完成比较/CI、已解决的有界检查/路径错误、已修正说明标志 F466，以及被策略拒绝的组合交接命令。[PR818 修正交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/818#issuecomment-6159852108)保留最初目的地假设失败与修正关联。此处均不例行重放或提升为更广覆盖。
 
-**未知：**从 Map69 控制自然旅行；实际标志、模式、HP、成员资格、映射、列表与待处理参数；全部行动者/行动/服务完成；原版渲染/音频时序；可用输入；中断/重复历史、已保存入场一致性与持久性。这些按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期，不授权激活/行动/交战/结果调查、采集、战役完成或新产品决策。
+**未知：**从 Map69 控制自然旅行；实际标志、模式、HP、成员资格、映射、列表与待处理参数；全部行动者/行动/服务完成；原版渲染/音频时序；可用输入；中断/重复历史、已保存入场一致性与持久性。这些按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期，不授权激活/行动/交战/结果调查、采集、战役完成或新产品决策。

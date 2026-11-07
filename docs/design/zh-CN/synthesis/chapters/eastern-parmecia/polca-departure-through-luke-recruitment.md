@@ -1,10 +1,10 @@
 # Polca 出发与 Luke 招募
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Luke 离开场景呈现他自愿与 Bowie 同行和战斗。Polca 选定南出口请求大地图，招募场景可在地图初始化期间运行。它创建和调度一个 Luke 行动者，让 Luke 加入军团，随后移动并隐藏该行动者，再写入后续战斗解锁。这些是独立有序效果：陪同、场景出现、加入军团与在战斗中出战是不同状态。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)支持下文准入、完整场景和直接消费者。**推断：**归属交流描绘 Luke 自愿参加旅程。**未知：**自然离开、实际传入状态、服务完成、可见表现、响应输入及存档/读档持久性。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)支持下文准入、完整场景和直接消费者。**推断：**归属交流描绘 Luke 自愿参加旅程。**未知：**自然离开、实际传入状态、服务完成、可见表现、响应输入及存档/读档持久性。Fnnn 表示标志 nnn；除另指单位外，坐标为地图瓦片。
 
 两次请求及当前/未来跟随见 [Polca 的 Oddler 选择与跟随](polca-oddler-choice-and-following.md)；市长交易见[木筏授予](battle13-outcomes-through-polca-raft-grant.md)。本指南解释选定离开至条件探索控制。登乘、河流旅行和随后战斗准入仍在边界外。不增加重制能力或产品决策。接续 [Polca 木筏登乘与 South Parmecia 入场（中文）](../southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)，了解独立玩家请求、分阶段 mode2 提交及两个选定 Map69 入场生命周期。该指南保留本场景接触与自然路线限制。
 
@@ -12,7 +12,7 @@ Luke 离开场景呈现他自愿与 Bowie 同行和战斗。Polca 选定南出�
 
 **已确认选定请求：**Polca 南向传送匹配任意 X、Y31，请求 Map72 `(43,47)`、Down。更早两扇同地图铁匠门不离开城镇；之后东出口请求 Mount Volcano。在 `(31,31)`，南行胜过东行。普通移动必须从相应布局标记产生传送请求，其消费者必须经地图选择返回。单凭元组既不证明合法步行，也不证明旅行完成。
 
-南行没有 Oddler、木筏、招募或更早场景前提。Polca 独立 Y30 zone 可在 F716 已设/F718 未设时选择 Oddler 请求，但选定南向传送不证明到达、回答或绕过过该 zone。相邻坐标不推出自然场景顺序。[出口/准入所有者](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#selected-exit-and-interruption-before-entry)保留请求生产、待处理槽消费及源码优先级。
+南行没有 Oddler、木筏、招募或更早场景前提。Polca 独立 Y30 zone 可在 F716 已设/F718 未设时选择 Oddler 请求，但选定南向传送不证明到达、回答或绕过过该 zone。相邻坐标不推出自然场景顺序。[出口/准入所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#selected-exit-and-interruption-before-entry)保留请求生产、待处理槽消费及源码优先级。
 
 探索 init 前，普通准入按顺序检查 Map72 战斗行：
 
@@ -42,13 +42,13 @@ F67 声明 Peter7，F68 在 **FOLLOWER_B 查找 31** 下声明 Oddler 精灵，F
 
 木筏独立：普通非木筏玩家状态加 F64 及匹配 `RAFT_MAP`，在 init 前声明它。已接受授予元组将它放在 Map72 `(43,48)`。其 **physical 31、mapping 63** 不同于 FOLLOWER_B 的**查找 31、mapping 31**。F716 本身不声明或修复它。传入木筏玩家状态使用独立 main 精灵/站立随从/离图木筏分支。
 
-传入 `MAP_CURRENT` 请求走不重建替代路径：更新 main 并调用独立木筏消费者，不重构行动者或清除临时标志。init 仍可运行，但当前映射不同。选定南行是显式72。[实体群与入场所有者](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#fresh-population-raft-declaration-and-init-guard)保留两个入场分支和木筏限制。
+传入 `MAP_CURRENT` 请求走不重建替代路径：更新 main 并调用独立木筏消费者，不重构行动者或清除临时标志。init 仍可运行，但当前映射不同。选定南行是显式72。[实体群与入场所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#fresh-population-raft-declaration-and-init-guard)保留两个入场分支和木筏限制。
 
 **已确认新行动者：**场景在 `(43,47)`、Down 创建 Luke10，选择映射0–62中最大有符号非负物理索引加一。排除木筏映射63、覆盖查找10，不复用已有 Luke 或显式检查容量。`NOTHING_BYTE` 精灵操作数由 Luke HP/职业精灵选择替代：战斗外零字 HP 选择蓝焰；否则用职业/表精灵。创建既不加入、治疗，也不追加到探索随从列表。之后一帧 sleep 不是初始化完成的汇合等待。
 
 全新入场、普通玩家且仅 F67/F68 时，Peter 和 FOLLOWER_B 占 physical 1/2，新 Luke 占3。若还传入 F75，旧 Luke3 留在随从列表，新 Luke4 替换查找10。后续命令和 hide 解析新 Luke，不移除所有 Luke 精灵。仅加 F65 会使这些随从/新索引加一。这些示例要求所述映射，不定义永久角色槽位。
 
-放置和朝向可因零字 HP 跳过 Bowie/Peter/Luke；FOLLOWER_B31 绕过保护。映射查找不增加安全存在检查。HP 非零但缺失的 Peter 可解析为 main0；未声明31可将 main 移到 `(45,48)`、Left，而 Astral 映射则移动该行动者。脚本既不创建 Peter，也不创建31。精确查找与精灵消费者见[分配和调度所有者](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#new-luke-actor-and-explicit-staging)。
+放置和朝向可因零字 HP 跳过 Bowie/Peter/Luke；FOLLOWER_B31 绕过保护。映射查找不增加安全存在检查。HP 非零但缺失的 Peter 可解析为 main0；未声明31可将 main 移到 `(45,48)`、Left，而 Astral 映射则移动该行动者。脚本既不创建 Peter，也不创建31。精确查找与精灵消费者见[分配和调度所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#new-luke-actor-and-explicit-staging)。
 
 ## Luke 自愿加入
 
@@ -69,7 +69,7 @@ F67 声明 Peter7，F68 在 **FOLLOWER_B 查找 31** 下声明 Oddler 精灵，F
 
 **已确认成员资格时序：**`JoinForce(10)` 设置 **F10**，以 `UpdateForce` 重建已加入/出战/后备缓存，随后检查重建出战数与12。低于12时设置 **F42（`32+10`）**；否则保留传入出战标志。它既不驱逐其他成员，也不保证满员时新增出战槽。已设 F42 在传入超员状态仍保持已设。
 
-重建先于条件 F42 写入，辅助函数没有第二次重建。因此之前未出战 Luke 可留在缓存后备/计数快照中，直到另一次 `UpdateForce`。成员资格不确立即时缓存同步、HP、复活或玩家单次行动。此场景没有清除 F75、追加随从、跟随命令或军团 AI 写入。[成员资格时序合同](../../../contracts/party/party-membership-state.md#joinforce-时间线)与[场景所有者](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#membership-current-hiding-and-the-later-unlock)保持这些边界独立。
+重建先于条件 F42 写入，辅助函数没有第二次重建。因此之前未出战 Luke 可留在缓存后备/计数快照中，直到另一次 `UpdateForce`。成员资格不确立即时缓存同步、HP、复活或玩家单次行动。此场景没有清除 F75、追加随从、跟随命令或军团 AI 写入。[成员资格时序合同](../../../contracts/party/party-membership-state.md#joinforce-时间线)与[场景所有者（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#membership-current-hiding-and-the-later-unlock)保持这些边界独立。
 
 等待 Down1 后，hide 把当前映射 Luke 移出地图、使指向该物理行动者的每项映射失效，并在其存在于探索列表时移除。普通新行动者从未追加；不同物理索引上的较早 F75 随从可保留。Hide 不清 F10、F42 或 F75。之后全新入场时，F75 可独立于 F10 重建 Luke；F75 未设则空固定列表不提供他。F10 仍抑制招募。因此当前隐藏不是永久视觉移除，不重建入场也不是全新重构。
 
@@ -85,7 +85,7 @@ F67 声明 Peter7，F68 在 **FOLLOWER_B 查找 31** 下声明 Oddler 精灵，F
 
 ## 证据审阅与剩余限制
 
-本指南消费 main 上 [PR814 接受的研究](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/814)及已接受前序所有者。研究保留 USA 零售身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、完整场景/文本/内联行动体比较与直接消费者审阅。其[复现边界](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#reproduction-and-acceptance-limits)拥有原始源码检查。本综合审阅正文、合同和限定 tracked 测试夹具选择，不作新源码调查、载荷生成或运行时采集。
+本指南消费 main 上 [PR814 接受的研究](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/814)及已接受前序所有者。研究保留 USA 零售身份、固定 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`、完整场景/文本/内联行动体比较与直接消费者审阅。其[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#reproduction-and-acceptance-limits)拥有原始源码检查。本综合审阅正文、合同和限定 tracked 测试夹具选择，不作新源码调查、载荷生成或运行时采集。
 
 | 审阅边界 | 既有证据表面 | 结论 |
 | --- | --- | --- |

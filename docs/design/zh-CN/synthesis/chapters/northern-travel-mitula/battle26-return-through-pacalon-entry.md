@@ -1,10 +1,10 @@
 # Battle26 返回至有条件 Pacalon 入口
 
-> 本文是[规范英文原文：Battle26 return through conditional Pacalon entry](../../../../synthesis/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle26 return through conditional Pacalon entry](../../../../synthesis/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 Higins 请求去 Pacalon 帮忙，但招募不将队伍带到那里。**已确认：** 胜利先返回营救场景前准备的位置。新探索随后重建行动者，移除 Higins 临时跟随而保留其军团成员资格。选定东边界可滚动进入相邻大地图；进入 Pacalon 是另一请求，且可在城镇探索前准入 Battle31。这些是相连状态转换，不是一次未中断行走的证明。
 
-本指南接续 [Battle26 结果与 Higins 招募](battle26-outcomes-and-higins-recruitment.md)，使用完整已接受[返回/入口研究](../../../../../research/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)及前序所有者。它是 [#1022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1022)与 [Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下的英文 Layer B 合成。Standard 严谨级别适合独立返回、人口、滚动与准入生命周期。Pacalon 互动仍属独立已接受所有者。终点为有条件的首次 Map02 事件/控制读取，或 Battle31 执行前分流。不含城镇互动与城堡准入。续读 [Pacalon 对话、补给与城堡交接](pacalon-interactions-and-castle-handoff.md)，了解两种居民事件、服务、描述、可能拾取与离开传送消费；该指南止于目的地准入/初始化前。
+本指南接续 [Battle26 结果与 Higins 招募](battle26-outcomes-and-higins-recruitment.md)，使用完整已接受[返回/入口研究（英文）](../../../../../research/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)及前序所有者。它是 [#1022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1022)与 [Epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)下的英文 Layer B 合成。Standard 严谨级别适合独立返回、人口、滚动与准入生命周期。Pacalon 互动仍属独立已接受所有者。终点为有条件的首次 Map02 事件/控制读取，或 Battle31 执行前分流。不含城镇互动与城堡准入。续读 [Pacalon 对话、补给与城堡交接](pacalon-interactions-and-castle-handoff.md)，了解两种居民事件、服务、描述、可能拾取与离开传送消费；该指南止于目的地准入/初始化前。
 
 **未知：** 自然抵达、实际所供状态、解码可行走路径、服务完成、呈现、可用控制与存档/读档持久性。不改变重制版验收或原版观察前沿。Fnnn 指游戏标志 nnn；地图与战斗编号属不同域。除指明内部字/字节操作外，下文坐标均为瓦片请求。源码路径与数值身份仍属研究所有者。
 
@@ -34,7 +34,7 @@ InitializeMapEntities 将所供主坐标**字**乘384，清行动者记录、映
 
 因此 Higins 可保持招募而不在 Bowie 身后行走。普通随从表与 Map72 空固定列表均无 Higins 行。Join19 持久成员资格与营救临时 AddFollower 是不同权威。缺失逻辑映射可解析为 physical0；这不是独立隐形 Higins 行动者。
 
-Map72 是大地图，不在随从排除表中，有一个默认配置。F65 在普通随从前加 Caravan 前缀；固定列表仅 `msEntitiesEnd`。其 `$4FF2E` 初始化仅在 F716 已设且加入 F10 未设时运行已有所有者的 [Luke 招募](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#fresh-population-raft-declaration-and-init-guard)。不测试 F526 或 Battle26 完成前提。因此变化历史可在考虑控制前改变状态/坐标；本指南不复述该场景。
+Map72 是大地图，不在随从排除表中，有一个默认配置。F65 在普通随从前加 Caravan 前缀；固定列表仅 `msEntitiesEnd`。其 `$4FF2E` 初始化仅在 F716 已设且加入 F10 未设时运行已有所有者的 [Luke 招募（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#fresh-population-raft-declaration-and-init-guard)。不测试 F526 或 Battle26 完成前提。因此变化历史可在考虑控制前改变状态/坐标；本指南不复述该场景。
 
 BattleLoop 清 PLAYER_TYPE，普通 Battle26 结果不再改它，因此选定返回为 numeric mode0。所供其他模式仍独立。CURRENT255 探索入口仍清待处理、调整计数器、治疗/淡出、更新主角/筏、加载并运行初始化，但不重建行动者、不替换 CURRENT_BATTLE、不清临时标志。负坐标低字节跳过主坐标更新。直接脚本 LoadMap 与滚动又有不同生命周期。
 
@@ -177,7 +177,7 @@ A/B/C/D 是逻辑30/31/158/159 与查找偏移30/31/62/63。每启用行从1 分
 |64/65、筏地图或数值模式不同|前缀、筏行动者、随从重定位与已装控制脚本是独立决定。|
 |首次城镇读取时待处理非零|跳控制安装并返回事件，不承诺可用控制。|
 
-路线图要求的对抗审阅消费完整已接受 #1017、先前 Battle26 结果/入口所有者、[Luke 初始化](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)、[成员/随从生命周期](../../../../../research/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)、[共享地图](../../../../../research/world/common-maps.md)、[共享脚本](../../../../../research/world/common-scripting.md)、[请求状态](../../../../../research/world/map-event-request-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)，以及[地图/探索](../../../contracts/world/map-exploration.md)与[队伍/名册](../../../contracts/party/party-roster-state.md)合同。在以下边界检查选定公共载荷、schema 与实际消费者：
+路线图要求的对抗审阅消费完整已接受 #1017、先前 Battle26 结果/入口所有者、[Luke 初始化（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)、[成员/随从生命周期（英文）](../../../../../research/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)、[共享地图（英文）](../../../../../research/world/common-maps.md)、[共享脚本（英文）](../../../../../research/world/common-scripting.md)、[请求状态（英文）](../../../../../research/world/map-event-request-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)，以及[地图/探索](../../../contracts/world/map-exploration.md)与[队伍/名册](../../../contracts/party/party-roster-state.md)合同。在以下边界检查选定公共载荷、schema 与实际消费者：
 
 | 测试夹具 / 实际消费者 | 使用证明与更严格限制 |
 | --- | --- |

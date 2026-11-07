@@ -7,7 +7,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battle-scene-presentation.md`](../../../contracts/battle/battle-scene-presentation.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-scene-presentation.md`（英文规范源）](../../../contracts/battle/battle-scene-presentation.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 5. 法术动画配置/更新分发与战斗效果消费者/呈现接缝；
 6. 未来兼容适配器必须暴露而不规定渲染器的状态。
 
-它不拥有动作选择、目标选择、动作构建、伤害或法术算术、持久命令回放、战斗结果、输入/UI 策略或渲染时序。那些仍归[Battle AI decision](../../../contracts/battle/battle-ai-decision.md)、[battle action construction](../../../contracts/battle/battle-action-construction.md)、[交战解决](../../../contracts/battle/combat-resolution.md)、[法术解决](../../../contracts/battle/spell-resolution.md)与[battle control/lifecycle](../../../contracts/battle/battle-control-lifecycle.md)。
+它不拥有动作选择、目标选择、动作构建、伤害或法术算术、持久命令回放、战斗结果、输入/UI 策略或渲染时序。那些仍归[Battle AI decision](battle-ai-decision.md)、[battle action construction](battle-action-construction.md)、[交战解决](combat-resolution.md)、[法术解决](spell-resolution.md)与[battle control/lifecycle](battle-control-lifecycle.md)。
 
 可执行所有者是：
 
@@ -29,17 +29,17 @@
 - `sf2-battle-scene-animations-static-v1`，位于
   `tests/fixtures/h2/battle-scene-animations-static-v1.json`；
 - `sf2-battle-background-decode-v1`，位于
-  `tests/fixtures/h2/battle-background-decode-v1.json`，此处保留为受限加载器/呈现见证，而[Battle Background Graphics Data](../../../contracts/graphics/battle-background-graphics-data.md)拥有静态导入语料；
+  `tests/fixtures/h2/battle-background-decode-v1.json`，此处保留为受限加载器/呈现见证，而[Battle Background Graphics Data](../graphics/battle-background-graphics-data.md)拥有静态导入语料；
 - `sf2-battle-sprite-decode-v1`，位于
-  `tests/fixtures/h2/battle-sprite-decode-v1.json`，此处保留为受限行动者精灵加载器/呈现见证，而[Battle Sprite Graphics Data](../../../contracts/graphics/battle-sprite-graphics-data.md)拥有静态导入语料；
+  `tests/fixtures/h2/battle-sprite-decode-v1.json`，此处保留为受限行动者精灵加载器/呈现见证，而[Battle Sprite Graphics Data](../graphics/battle-sprite-graphics-data.md)拥有静态导入语料；
 - `sf2-battle-sprite-animation-static-v1`，位于
   `tests/fixtures/h2/battle-sprite-animation-static-v1.json`；
 - `sf2-battle-weapon-ground-decode-v1`，位于
-  `tests/fixtures/h2/battle-weapon-ground-decode-v1.json`，此处保留为受限武器/地面加载器与呈现见证，而[Battle Weapon 与 Ground Graphics Data](../../../contracts/graphics/battle-weapon-ground-graphics-data.md)拥有静态导入语料；
+  `tests/fixtures/h2/battle-weapon-ground-decode-v1.json`，此处保留为受限武器/地面加载器与呈现见证，而[Battle Weapon 与 Ground Graphics Data](../graphics/battle-weapon-ground-graphics-data.md)拥有静态导入语料；
 - `sf2-battle-effect-graphics-decode-v1`，位于
-  `tests/fixtures/h2/battle-effect-graphics-decode-v1.json`，此处保留为受限法术/召唤/状态/过渡消费者与呈现见证，而[Battle Effect Graphics Data](../../../contracts/graphics/battle-effect-graphics-data.md)拥有静态导入语料。
+  `tests/fixtures/h2/battle-effect-graphics-decode-v1.json`，此处保留为受限法术/召唤/状态/过渡消费者与呈现见证，而[Battle Effect Graphics Data](../graphics/battle-effect-graphics-data.md)拥有静态导入语料。
 
-研究所有者是[Battle Scene Engine](../../../../research/battle/battle-scene-engine.md)，压缩与加载器上下文在[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)。
+研究所有者是[Battle Scene Engine（英文）](../../../../research/battle/battle-scene-engine.md)，压缩与加载器上下文在[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)。
 
 ## 合同前证据审计
 
@@ -47,12 +47,12 @@
 
 以下范围修正约束本合同：
 
-- `sf2-battle-scene-replay-v1` 观察两条战斗演出命令后的持久 HP 与 EXP 变更。它是[交战解决](../../../contracts/battle/combat-resolution.md)的证据，不是渲染演出行为的证据，因此此处不注册。
+- `sf2-battle-scene-replay-v1` 观察两条战斗演出命令后的持久 HP 与 EXP 变更。它是[交战解决](combat-resolution.md)的证据，不是渲染演出行为的证据，因此此处不注册。
 - `TintScreen`、`VInt_UpdateBattlesceneGraphics` 与动画配置/更新标签等源码名标识静态分发与调用结构。它们不确认可见颜色、时序、组合或帧输出。
-- [Battle Background Graphics Data](../../../contracts/graphics/battle-background-graphics-data.md) 拥有 30 槽/27 容器静态导入语料、别名、前缀/调色板/流分区、压缩与解码身份、大小与私有往返证据。本合同只在背景选择、加载器、暂存、调色板操作与呈现接缝消费那些规范记录。
-- [Battle Sprite Graphics Data](../../../contracts/graphics/battle-sprite-graphics-data.md) 拥有独立的 32 槽己方与 54 槽敌人表、86 个源载荷身份、头/调色板/帧流分区、压缩与解码身份、聚合大小与私有往返证据。本合同只在行动者选择、属性/帧加载器、调色板操作、Stack 交接、DMA 请求与呈现接缝消费那些规范记录。
-- [Battle Weapon 与 Ground Graphics Data](../../../contracts/graphics/battle-weapon-ground-graphics-data.md) 拥有 23 槽武器表、42 个武器调色板条目、30 槽/27 头地面表与别名、33 个流身份、聚合大小与私有往返证据。本合同只在选择器、调色板、加载器、相对查找、服务交接、转移请求与呈现接缝消费那些规范记录。
-- [Battle Effect Graphics Data](../../../contracts/graphics/battle-effect-graphics-data.md) 拥有 23 个法术、30 个召唤、一个状态与两个过渡流身份、其私有容器/调色板/偏移图、压缩与解码身份、聚合大小与私有往返证据。本合同只在法术/召唤加载器、状态初始化、过渡选择、Stack 交接、转移请求与呈现接缝消费那些规范记录。
+- [Battle Background Graphics Data](../graphics/battle-background-graphics-data.md) 拥有 30 槽/27 容器静态导入语料、别名、前缀/调色板/流分区、压缩与解码身份、大小与私有往返证据。本合同只在背景选择、加载器、暂存、调色板操作与呈现接缝消费那些规范记录。
+- [Battle Sprite Graphics Data](../graphics/battle-sprite-graphics-data.md) 拥有独立的 32 槽己方与 54 槽敌人表、86 个源载荷身份、头/调色板/帧流分区、压缩与解码身份、聚合大小与私有往返证据。本合同只在行动者选择、属性/帧加载器、调色板操作、Stack 交接、DMA 请求与呈现接缝消费那些规范记录。
+- [Battle Weapon 与 Ground Graphics Data](../graphics/battle-weapon-ground-graphics-data.md) 拥有 23 槽武器表、42 个武器调色板条目、30 槽/27 头地面表与别名、33 个流身份、聚合大小与私有往返证据。本合同只在选择器、调色板、加载器、相对查找、服务交接、转移请求与呈现接缝消费那些规范记录。
+- [Battle Effect Graphics Data](../graphics/battle-effect-graphics-data.md) 拥有 23 个法术、30 个召唤、一个状态与两个过渡流身份、其私有容器/调色板/偏移图、压缩与解码身份、聚合大小与私有往返证据。本合同只在法术/召唤加载器、状态初始化、过渡选择、Stack 交接、转移请求与呈现接缝消费那些规范记录。
 
 不存在已接受运行时呈现矩阵。因此本合同不作新的 H3 声称，也不把研究运行时队列转成隐含行为。
 
@@ -88,7 +88,7 @@
 
 命令编号与处理器顺序是兼容性事实。`sleep`、`wait` 与 `displayMessageWithNoWait` 等标签不建立经过时间、已接受输入节奏、音频行为或玩家可见完成。那些效果在受限运行时所有者存在之前保持 **未知**。
 
-场景解释器消费[battle action construction](../../../contracts/battle/battle-action-construction.md)产生的流。持久反应与奖励效果由战斗/法术测试夹具单独证明；本合同不从静态处理器名推断每个变更。
+场景解释器消费[battle action construction](battle-action-construction.md)产生的流。持久反应与奖励效果由战斗/法术测试夹具单独证明；本合同不从静态处理器名推断每个变更。
 
 ## 初始化与选择器顺序
 
@@ -108,7 +108,7 @@
 
 ### 精灵容器与帧加载
 
-规范己方/敌人表、载荷所有者、头/调色板/帧流分区、压缩与解码身份、字节计数与私有往返证据由[Battle Sprite Graphics Data](../../../contracts/graphics/battle-sprite-graphics-data.md)拥有。本合同不独立拥有或重新验证该静态资源目录。
+规范己方/敌人表、载荷所有者、头/调色板/帧流分区、压缩与解码身份、字节计数与私有往返证据由[Battle Sprite Graphics Data](../graphics/battle-sprite-graphics-data.md)拥有。本合同不独立拥有或重新验证该静态资源目录。
 
 属性加载存储动画速度字与后续状态图标 X/Y 字节、相对头字 2 解析调色板、清除目标颜色 0 并复制其余 15 个调色板字。帧加载解析从头字节 6 开始的自相对字，并在 DMA 前 Stack 解码所选流。固定 DMA 长度是己方帧的 `0x900` 字与敌人帧的 `0xC00` 字。解码帧身份及其已接受 4,608 字节己方 / 6,144 字节敌人大小来自规范数据合同；本合同保留加载器如何消费那些记录并请求固定转移。
 
@@ -132,13 +132,13 @@
 
 ### 背景加载器与呈现接缝
 
-规范指针、容器、别名、前缀/调色板/流、压缩与解码记录由[Battle Background Graphics Data](../../../contracts/graphics/battle-background-graphics-data.md)拥有。本合同不独立拥有或重新验证该静态资源目录。
+规范指针、容器、别名、前缀/调色板/流、压缩与解码记录由[Battle Background Graphics Data](../graphics/battle-background-graphics-data.md)拥有。本合同不独立拥有或重新验证该静态资源目录。
 
 `LoadBattlesceneBackground` 消费一个所选规范记录，并把其两个有序流输入提交给独立拥有的 Stack 服务。源码形状的第二暂存目标在第一之后 `0x1800` 字节处。加载器清除目标调色板字 0 并复制其余 15 个源调色板字。本合同保留该选择/加载器接缝、暂存关系与调色板操作时间线，但不保留目录本身、转移完成或可见排列。
 
 ### 武器与地面
 
-规范武器指针/流记录、连续武器调色板条目、地面指针/头/别名/流记录、压缩与解码身份、字节计数与私有往返证据由[Battle Weapon 与 Ground Graphics Data](../../../contracts/graphics/battle-weapon-ground-graphics-data.md)拥有。本合同不独立拥有或重新验证那些静态语料。
+规范武器指针/流记录、连续武器调色板条目、地面指针/头/别名/流记录、压缩与解码身份、字节计数与私有往返证据由[Battle Weapon 与 Ground Graphics Data](../graphics/battle-weapon-ground-graphics-data.md)拥有。本合同不独立拥有或重新验证那些静态语料。
 
 `LoadWeaponPalette` 消费一个所选规范四字节调色板条目并写入源码具名的最终两个己方调色板颜色。`LoadWeaponsprite` 通过独立拥有的 Stack 服务消费一个所选规范武器流；已接受解码记录为 8,192 字节，源码格式消费者描述四个 64 瓦片视图而不建立其可见排列或角度选择规则。
 
@@ -161,7 +161,7 @@
 
 ## 战斗效果图形消费者接缝
 
-规范法术、召唤、状态动画与过渡记录由[Battle Effect Graphics Data](../../../contracts/graphics/battle-effect-graphics-data.md)拥有。本合同不独立拥有或重新验证其私有容器、调色板、偏移、流、压缩、解码或一致性身份。
+规范法术、召唤、状态动画与过渡记录由[Battle Effect Graphics Data](../graphics/battle-effect-graphics-data.md)拥有。本合同不独立拥有或重新验证其私有容器、调色板、偏移、流、压缩、解码或一致性身份。
 
 保留的源码形状消费者面由以下内容组成：
 
@@ -180,10 +180,10 @@
 
 - 命令字身份、21 条目分发顺序、终止符、死亡列表初始化与返回状态；
 - 已接受静态接缝处的场景初始化与选择器时间线；
-- 从[Battle Sprite Graphics Data](../../../contracts/graphics/battle-sprite-graphics-data.md)消费而不独立重新验证其目录的规范行动者精灵记录，加独立序列表、法术分发表与呈现驱动状态；
-- 从[Battle Background Graphics Data](../../../contracts/graphics/battle-background-graphics-data.md)消费而不独立重新验证其目录的规范背景记录，加已接受背景选择、暂存、调色板操作与呈现接缝；
-- 从[Battle Weapon 与 Ground Graphics Data](../../../contracts/graphics/battle-weapon-ground-graphics-data.md)消费而不独立重新验证其目录的规范武器与地面记录，加已接受选择、调色板操作、相对查找、服务交接、转移请求与呈现接缝；
-- 已接受行动者精灵属性/帧查找、调色板操作、Stack 交接与固定 DMA 接缝，加从[Battle Effect Graphics Data](../../../contracts/graphics/battle-effect-graphics-data.md)消费而不独立重新验证该目录的规范法术、召唤、状态与过渡记录，以及已接受加载器、指针选择、Stack 交接、转移请求、未知召唤尾与呈现接缝；
+- 从[Battle Sprite Graphics Data](../graphics/battle-sprite-graphics-data.md)消费而不独立重新验证其目录的规范行动者精灵记录，加独立序列表、法术分发表与呈现驱动状态；
+- 从[Battle Background Graphics Data](../graphics/battle-background-graphics-data.md)消费而不独立重新验证其目录的规范背景记录，加已接受背景选择、暂存、调色板操作与呈现接缝；
+- 从[Battle Weapon 与 Ground Graphics Data](../graphics/battle-weapon-ground-graphics-data.md)消费而不独立重新验证其目录的规范武器与地面记录，加已接受选择、调色板操作、相对查找、服务交接、转移请求与呈现接缝；
+- 已接受行动者精灵属性/帧查找、调色板操作、Stack 交接与固定 DMA 接缝，加从[Battle Effect Graphics Data](../graphics/battle-effect-graphics-data.md)消费而不独立重新验证该目录的规范法术、召唤、状态与过渡记录，以及已接受加载器、指针选择、Stack 交接、转移请求、未知召唤尾与呈现接缝；
 - 解码载荷、请求转移、命令/回放状态与可见呈现之间的区分；
 - 每个分项 **未知** 边界，而非用标签或现代约定填充它。
 
@@ -195,11 +195,11 @@
 
 1. 命令缓冲初始化、有序命令分发、终止与返回状态；
 2. 选择器输入/结果与场景初始化事件顺序；
-3. [Battle Sprite Graphics Data](../../../contracts/graphics/battle-sprite-graphics-data.md)通过所选己方/敌人属性与帧加载器提供的规范行动者精灵记录，包括动画速度/状态偏移消费、调色板选择与字 0 清除/复制 15 时间线、相对帧查找、Stack 交接与固定 `0x900`/`0xC00` DMA 请求；
+3. [Battle Sprite Graphics Data](../graphics/battle-sprite-graphics-data.md)通过所选己方/敌人属性与帧加载器提供的规范行动者精灵记录，包括动画速度/状态偏移消费、调色板选择与字 0 清除/复制 15 时间线、相对帧查找、Stack 交接与固定 `0x900`/`0xC00` DMA 请求；
 4. 全部 208 个序列身份、帧记录、保持/默认标志与选择器索引规则；
-5. [Battle Background Graphics Data](../../../contracts/graphics/battle-background-graphics-data.md)通过所选加载器接缝提供的规范背景记录、相隔 `0x1800` 的两个有序暂存目标，以及调色板字 0 清除/复制 15 时间线；加[Battle Weapon 与 Ground Graphics Data](../../../contracts/graphics/battle-weapon-ground-graphics-data.md)通过武器调色板、武器流与地面头加载器接缝提供的规范武器/地面记录，包括最终两色写入、受限四视图消费者形状、三个地面调色板字写入、自相对查找、服务交接与固定地面 `0x300` 字请求；
+5. [Battle Background Graphics Data](../graphics/battle-background-graphics-data.md)通过所选加载器接缝提供的规范背景记录、相隔 `0x1800` 的两个有序暂存目标，以及调色板字 0 清除/复制 15 时间线；加[Battle Weapon 与 Ground Graphics Data](../graphics/battle-weapon-ground-graphics-data.md)通过武器调色板、武器流与地面头加载器接缝提供的规范武器/地面记录，包括最终两色写入、受限四视图消费者形状、三个地面调色板字写入、自相对查找、服务交接与固定地面 `0x300` 字请求；
 6. 全部 32 个配置/更新槽身份、复用、禁用/减一门、镜像/变体值与更新切换/阶段准入；
-7. [Battle Effect Graphics Data](../../../contracts/graphics/battle-effect-graphics-data.md)通过已接受召唤与法术加载器、状态初始化、过渡选择、Stack 交接、固定召唤 `0x900` 字与状态 `0x270` 字请求，以及已声明未知召唤尾边界提供的规范法术、召唤、状态与过渡记录。
+7. [Battle Effect Graphics Data](../graphics/battle-effect-graphics-data.md)通过已接受召唤与法术加载器、状态初始化、过渡选择、Stack 交接、固定召唤 `0x900` 字与状态 `0x270` 字请求，以及已声明未知召唤尾边界提供的规范法术、召唤、状态与过渡记录。
 
 当重制没有等价内存布局时，H4 必须比较规范记录而非原版 RAM/ROM 地址。渲染像素、帧节奏、VDP/VInt 时间线、调色板外观、音频/输入时序、自然可达性与持久战斗结果需要独立已接受所有者。
 
@@ -209,12 +209,12 @@
 | --- | --- | --- | --- |
 | 命令解释器、初始化、选择器、法术配置/更新表 | **已确认静态** | `sf2-battle-scene-engine-static-v1`（[`battle-scene-engine-static-v1.json`](../../../../../tests/fixtures/h2/battle-scene-engine-static-v1.json)） | 运行时命令节奏、VInt/VDP/淡入效果、渲染结果 |
 | 完整配置/更新源配对 | **已确认静态** | `sf2-battle-scene-animations-static-v1`（[`battle-scene-animations-static-v1.json`](../../../../../tests/fixtures/h2/battle-scene-animations-static-v1.json)） | 逐帧状态与可见动画 |
-| 背景选择/加载器接缝、暂存关系、调色板操作 | **已确认静态** | `sf2-battle-background-decode-v1`（[`battle-background-decode-v1.json`](../../../../../tests/fixtures/h2/battle-background-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Background Graphics Data](../../../contracts/graphics/battle-background-graphics-data.md)拥有 | 转移完成、瓦片排列、层组合、可见调色板 |
-| 己方/敌人属性/帧加载器接缝、调色板操作、Stack 交接、DMA 请求 | **已确认静态** | `sf2-battle-sprite-decode-v1`（[`battle-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/battle-sprite-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Sprite Graphics Data](../../../contracts/graphics/battle-sprite-graphics-data.md)拥有 | 转移完成、放置、时序、渲染帧 |
+| 背景选择/加载器接缝、暂存关系、调色板操作 | **已确认静态** | `sf2-battle-background-decode-v1`（[`battle-background-decode-v1.json`](../../../../../tests/fixtures/h2/battle-background-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Background Graphics Data](../graphics/battle-background-graphics-data.md)拥有 | 转移完成、瓦片排列、层组合、可见调色板 |
+| 己方/敌人属性/帧加载器接缝、调色板操作、Stack 交接、DMA 请求 | **已确认静态** | `sf2-battle-sprite-decode-v1`（[`battle-sprite-decode-v1.json`](../../../../../tests/fixtures/h2/battle-sprite-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Sprite Graphics Data](../graphics/battle-sprite-graphics-data.md)拥有 | 转移完成、放置、时序、渲染帧 |
 | 208 个行动者动画序列与选择器规则 | **已确认静态** | `sf2-battle-sprite-animation-static-v1`（[`battle-sprite-animation-static-v1.json`](../../../../../tests/fixtures/h2/battle-sprite-animation-static-v1.json)） | 可达基础索引组合、时序、武器字段解读 |
-| 武器/地面选择与加载器接缝、调色板操作、相对查找、服务/转移交接 | **已确认静态** | `sf2-battle-weapon-ground-decode-v1`（[`battle-weapon-ground-decode-v1.json`](../../../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Weapon 与 Ground Graphics Data](../../../contracts/graphics/battle-weapon-ground-graphics-data.md)拥有 | 转移完成、角度选择、放置、组合 |
-| 法术/召唤/状态/过渡加载器与消费者接缝、Stack 交接、固定转移请求 | **已确认静态** | `sf2-battle-effect-graphics-decode-v1`（[`battle-effect-graphics-decode-v1.json`](../../../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Effect Graphics Data](../../../contracts/graphics/battle-effect-graphics-data.md)拥有 | 召唤尾内容/稳定性/可见性、转移完成、调色板、层/时序/过渡组合 |
-| 持久 HP/EXP 演出命令回放 | **独立已确认运行时子集** | [交战解决合同](../../../contracts/battle/combat-resolution.md) | 不是渲染呈现的证据 |
+| 武器/地面选择与加载器接缝、调色板操作、相对查找、服务/转移交接 | **已确认静态** | `sf2-battle-weapon-ground-decode-v1`（[`battle-weapon-ground-decode-v1.json`](../../../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Weapon 与 Ground Graphics Data](../graphics/battle-weapon-ground-graphics-data.md)拥有 | 转移完成、角度选择、放置、组合 |
+| 法术/召唤/状态/过渡加载器与消费者接缝、Stack 交接、固定转移请求 | **已确认静态** | `sf2-battle-effect-graphics-decode-v1`（[`battle-effect-graphics-decode-v1.json`](../../../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)）中的受限函数见证；规范资源记录由[Battle Effect Graphics Data](../graphics/battle-effect-graphics-data.md)拥有 | 召唤尾内容/稳定性/可见性、转移完成、调色板、层/时序/过渡组合 |
+| 持久 HP/EXP 演出命令回放 | **独立已确认运行时子集** | [交战解决合同](combat-resolution.md) | 不是渲染呈现的证据 |
 | 渲染像素、帧时序、VInt/VDP 效果、呈现意图 | **未知** | 无已接受可执行所有者 | 需要分组运行时呈现矩阵或未来产品决定 |
 
 ## 复现

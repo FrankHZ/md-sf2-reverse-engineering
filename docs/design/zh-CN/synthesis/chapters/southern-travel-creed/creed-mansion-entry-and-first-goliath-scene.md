@@ -1,12 +1,12 @@
 # Creed Mansion 入场与首次 Goliath 阻拦
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**Devil's Tail 门口请求全新 Creed Mansion 抵达。首次 Goliath 场景属于独立获准区域事件，不属于抵达初始化。
 完整场景表现请求觐见、遭拒、尝试进入、拦截及表面退让；改变两个当前布局图块并安装临时跟随。
 **推断：**预期第二名同伴是 Oddler。**未知：**自然到达、实际传入角色群/状态、服务完成、渲染演出、可用控制及持久性。
 
-本指南使用[已接受入场/场景研究](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)，
+本指南使用[已接受入场/场景研究（英文）](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)，
 接续 [Battle21 结果与 Devil's Tail 返回](battle21-outcomes-and-devils-tail-return.md)。
 Standard 协议见 [Issue #895](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/895)
 及[文档路线图](../../../documentation-roadmap.md#当前基线与近期综合)。
@@ -28,7 +28,7 @@ CURRENT_BATTLE=255 选择**完整地图**布局域。陈旧 Battle21 裁剪偏�
 显式 Map33 请求也走全新实体生成，而不是 map 255 保留实体群分支。
 WaitForEvent 中待处理工作优先；仅 pending-zero 将 physical main 0 安装为摄像机目标和当前模式控制器。
 [地图合同](../../../contracts/world/map-exploration.md#加载与选择顺序)负责通用加载/布局规则；
-[请求使用](../../../../../research/world/map-event-request-consumption.md)负责共享槽位生命周期。两者均不保证这条具体自然路线。
+[请求使用（英文）](../../../../../research/world/map-event-request-consumption.md)负责共享槽位生命周期。两者均不保证这条具体自然路线。
 
 ## 场景实际接收的配置与行动者
 
@@ -47,7 +47,7 @@ GetCurrentMapSetup 从默认项开始，对终止符前**每个**已设置行替
 五者均未设置选择 ms_map33，但指针身份不证明首次访问状态：F783 或 F22 可在较早替代项之后恢复同一指针。
 F774/F785 不选择指针。每个访问器重新解析配置，不保证调用间标志冻结。
 指针六字段为 Entities、EntityEvents、ZoneEvents、AreaDescriptions、Section5 和 InitFunction。
-[配置选择](../../../../../research/world/map-event-flag-route-selection.md)负责共享选择器；已接受入场研究提供完整 Map33 关联。
+[配置选择（英文）](../../../../../research/world/map-event-flag-route-selection.md)负责共享选择器；已接受入场研究提供完整 Map33 关联。
 
 基线实体列表声明六个固定行，均以 eas_Init 停放于 `(63,63)`：
 
@@ -225,7 +225,7 @@ OpenDoor 播放 SFX_DOOR_OPEN，并设置 MAP_AREA_LAYER_TYPE 的平面更新位
 它不写 F774、存档、传送或持久事件标志。Map33 完整标志事件表只有 F22 的大范围替换，没有 F774 重放这些复制。
 基线全新重新入场不会仅凭 F774 还原它们。旁白开锁及图块变更都不证明渲染开口或碰撞/通行。
 
-已接受[场景/动作使用方审阅](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md#block-copies-actions-and-presentation-boundaries)
+已接受[场景/动作使用方审阅（英文）](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md#block-copies-actions-and-presentation-boundaries)
 负责精确宏/处理器。摄像机目的地禁用跟随并等待滚动；摄像机行动者命令解析 physical 目标。
 setPos 同时改变位置和目的地；朝向/放置跳过零 HP 己方角色，不修复缺失查找。动作安装器没有该放置 HP 跳过。
 其等待变体及 waitIdle 只轮询解析行动者是否 eas_Idle，无超时/恢复。
@@ -269,7 +269,7 @@ F774/后期剧情/随从标志在临时 256–383 重置后保留，但 RAM 保�
 **已确认溯源：**所用研究已在 main `887c6f6772c0c5f785a3a3684a14a7b0cfd19d7e` 接受，固定于
 [SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm)，
 USA ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`。
-[研究所有者](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md#agreement-and-provenance)
+[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md#agreement-and-provenance)
 负责精确选定路径、地址、命令/程序体/字面文本及使用方关联。本综合审阅已接受证据，不重新调查原始源码或新增游玩流程。
 
 | 已审阅表面 | 支持与限制 |
@@ -288,7 +288,7 @@ USA ROM SHA-256 为 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351
 已审阅验证器为 [map_init.py](../../../../../../src/sf2tool/h2/map_init.py)、[map_setup.py](../../../../../../src/sf2tool/h2/map_setup.py)、
 [map_script_engine.py](../../../../../../src/sf2tool/h2/map_script_engine.py) 和 [map_events.py](../../../../../../src/sf2tool/h2/map_events.py)。
 形状/溯源/语义门禁不复现每项正文声明。
-[研究复现路线](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md#reproduction-and-review-boundary)负责保留相等比较及选定源码检查。
+[研究复现路线（英文）](../../../../../research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md#reproduction-and-review-boundary)负责保留相等比较及选定源码检查。
 这里不重新生成载荷、比较或观察。
 
 保留 [#892 交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/892#issuecomment-6173418824)

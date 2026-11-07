@@ -1,6 +1,6 @@
 # 棋盘：Battle22 初始化与初始名册
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle22-initialization-and-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/battle22-initialization-and-roster.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 **已确认：**获准的全新 Battle22 没有局部 before/start 场景，但仍治疗合格出战队伍、分配起始位置、初始化十六个棋子敌人并加载战斗地图。
 F522 未设置时，King Ponpei 和 Maid 作为中立行动者加入。
@@ -8,10 +8,10 @@ F522 未设置时，King Ponpei 和 Maid 作为中立行动者加入。
 **未知：**自然准入、传入出战队伍/当前状态、服务完成及实际可见遭遇。空场景不表示跳过初始化。
 
 本指南从 [Desktop 对话与棋盘挑战](desktop-kingdom-interactions-through-battle22-entry.md)的条件 BattleLoop 准入接续，
-使用[已接受 Battle22 研究](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md)及
+使用[已接受 Battle22 研究（英文）](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md)及
 [战斗控制/生命周期合同](../../../contracts/battle/battle-control-lifecycle.md)，依据
 [Issue #911](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/911) 和
-[当前 Standard 约定](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。
+[当前 Standard 约定](../../../documentation-roadmap.md#当前基线与近期综合)。
 它止于**全新入场的 ActivateEnemies 之前**，或**挂起入场的 IndividualTurns_Loop 之前**。
 战术、AI 执行、伤害、结果、战后 Desktop、Cotton Balloon 和 Floor World 均不属本指南。
 继续阅读[棋盘结果与 Desktop 返回](battle22-outcomes-and-desktop-return.md)，了解已接受结果、重建实体群、
@@ -64,7 +64,7 @@ F472 已设置时，两者跳过脚本分发，但仍执行全新治疗/名册/�
 ## 哪些己方角色获得起始位置
 
 **已确认：**选定精灵集声明十二个己方放置。
-[完整放置表](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#complete-spriteset-and-party-placement)
+[完整放置表（英文）](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#complete-spriteset-and-party-placement)
 给出有序坐标，从 placement0 `(18,18)` 至 placement11 `(17,18)`。
 这些行是当前出战队伍的位置，不是具名角色指派。
 
@@ -106,7 +106,7 @@ LeaveBattleParty 不立即重建列表/计数。后备成员和探索随从不�
 | 14 /142 | Pawn13 | `(9,6)` | SWARM |
 | 15 /143 | Pawn13 | `(23,6)` | ATTACKER2 |
 
-[已接受精确敌人表及解码器](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#sixteen-enemy-records-and-immediate-decoding)
+[已接受精确敌人表及解码器（英文）](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#sixteen-enemy-records-and-immediate-decoding)
 负责每项主/次指令、数字指令集及压缩字节。King row0 存储 MOVE_TO point0；唯一的点为 `(15,5)`。
 跟随指令指向敌人行，不是地图精灵或 physical 行动者 ID。
 Bishop row3 是唯一具有非 NONE 次指令的行：主 FOLLOW_ENEMY9、次 FOLLOW_ENEMY0。
@@ -125,7 +125,7 @@ LEADER、HEALER 和 SWARM 是存储标签，不是已执行战术、治疗或结
 **已确认：**每个敌人行存储精确物品字 NOTHING（`$007F`）。物品初始化器遇到该完整字哨兵值时在 AddItem 之前返回；
 它**不会**擦除从敌人定义复制的物品栏。King 携带已装备 FLAIL；Queen/Bishop 为已装备 POWER_STICK；
 Knight 为 POWER_SPEAR；Rook 为 ROBIN_ARROW；Pawn 为 BATTLE_AXE。各定义另外三个物品槽位均为 NOTHING。
-[定义物品栏表](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#row-nothing-versus-definition-inventory)
+[定义物品栏表（英文）](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#row-nothing-versus-definition-inventory)
 保留 HP/MP 最大值、移动类型及非哨兵解码器的独立限制。
 
 选择敌人类型 Bishop80，尽管其定义注释为 EVIL BISHOP；该注释不选择另一枚举。
@@ -251,7 +251,7 @@ Layer1 跨局部 `(0,0)` 至 `(29,29)`。
 [battle_routing_data.py](../../../../../../src/sf2tool/h2/battle_routing_data.py) 及
 [battle_spriteset_data.py](../../../../../../src/sf2tool/h2/battle_spriteset_data.py)。
 这些汇总相等不能守护每项新名册/加载操作数，也不能证明自然到达。
-已接受所有者的[复现边界](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#reproduction-retained-evidence-and-limits)
+已接受所有者的[复现边界（英文）](../../../../../research/chapters/southern-travel-creed/battle22-initialization-and-roster.md#reproduction-retained-evidence-and-limits)
 记录完整宏/常量、初始化、物品、中立、行动者及地图加载使用方关联。
 未发现冲突的已接受语义所有者。更早 battle-loop/spriteset 的“runtime queue”措辞，
 依 ADR0014/0016 仍是暂缓歧义登记，不是获取指令，也不是降低 Battle22 已接受静态关联等级的理由。
@@ -283,7 +283,7 @@ base `2c13623a3720199d2e92b13f9b353bcf054cc756`、
 **未知：**自然接近/准入；传入标志、成员资格、HP/职业/物品/当前/已保存状态；实际活动名册、查找和视野；
 已完成加载/淡入淡出/VInt/共享脚本返回服务；可见/可听演出、可用控制及跨进程持久性。
 改变状态示例是静态反例，不是已执行场景；依
-[ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和
-[ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
+[ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md)和
+[ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)，也不构成自动运行时队列。
 独立结果指南使用已接受 #912；本初始化指南保留自身停止点。
 本指南既未完成战役，也未完成 [epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514)。

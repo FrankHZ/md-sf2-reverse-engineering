@@ -1,10 +1,10 @@
 # Battle11 结果至 Polca 首次 Oddler 抵达
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 洞窟遭遇之后，胜利让出战队伍返回洞窟，而非送往 Polca。独立洞窟出口通向 Bedoe Kingdom 大地图，另一个选定入口通向 Polca。之后城镇 zone 编排受伤男孩抵达：一名 beastman 检查他、呼叫村长并请求治疗。场景末尾在调用方完成城镇状态变化和条件性恢复探索控制之前，先重建居民。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md)支持下文结果、连接、行动者及首个事件交接。**推断：**它们构成洞窟开场之后的候选接续。**未知：**自然洞窟/城镇穿行、提供的故事和行动者状态、完成的服务与可见呈现。表连接不确立强制或可玩序列；本指南不增加重制就绪主张。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md)支持下文结果、连接、行动者及首个事件交接。**推断：**它们构成洞窟开场之后的候选接续。**未知：**自然洞窟/城镇穿行、提供的故事和行动者状态、完成的服务与可见呈现。表连接不确立强制或可玩序列；本指南不增加重制就绪主张。
 
 本文承接 [East Shrine 返回至 Battle11 洞窟准入](east-shrine-return-through-battle11-admission.md)，止于首个 Oddler 场景调用方之后及首个条件性控制恢复边界。继续阅读 [Polca 仙女互动至 Battle12 准入](polca-fairy-through-battle12-admission.md)，了解可选乌龟遭遇、独立东向出发及搜寻 devils 交接。乌龟互动 `cs_58512`、F710 已设后续场景、村长/木筏/招募内容、Bedoe 和 Battle12/13 在本指南之外。Fnnn 表示标志 nnn；地图和战斗保留源码编号。
 
@@ -39,7 +39,7 @@ Map13 是 Polca；`(15,30)` 是抵达坐标，不是 Map15。返回方向 Map72 
 
 产生传送要求布局 `$1000` 属性与匹配行。探索使用方使 main 空闲、处理声音/返回服务，并将可变地图/X/Y/朝向请求提供给地图切换和战斗选择。仅有行既不证明无碰撞步行，也不证明参数能存续至消费。
 
-Map72 保留已接受的[中断限制](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#interruptions-before-the-cave-request)：有序 Battle8/24/26 解锁可截获普通入场；完成可清除选定解锁，但不拒绝同次调用。其 init 可在提供 F716 已设/F10 未设时调用后续内容，zone 也可请求遭遇或后续故事内容。抵达 `(56,46)` 不证明这些分支不存在。本指南复用该审阅，不扩展场景范围。
+Map72 保留已接受的[中断限制（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md#interruptions-before-the-cave-request)：有序 Battle8/24/26 解锁可截获普通入场；完成可清除选定解锁，但不拒绝同次调用。其 init 可在提供 F716 已设/F10 未设时调用后续内容，zone 也可请求遭遇或后续故事内容。抵达 `(56,46)` 不证明这些分支不存在。本指南复用该审阅，不扩展场景范围。
 
 Polca 有独立战斗区分条件。提供 F413 已设会在任意请求点选择 Battle13，包括 `(15,30)`。若 F513 同时已设，选择器清除 F413，仍在本次调用中选择 Battle13。F413 未设时，无论 F513 如何均允许普通城镇入场。Battle13 区域是输出，不是包含性谓词；F511 完成既不确立 F413，也不确立 F513。下文城镇内容描述普通入场分支，不解释 Battle13。
 
@@ -76,7 +76,7 @@ init 依序作三个独立选择。F711 未设时在 130 上运行 `cs_58310`；
 4. 村长谈到男孩眼伤，并将伤归因于喷发（1459–1460）。Beastman 靠近、请求治疗，村长命令将男孩带进去（1461–1462）。Beastman 收到点头请求。文本传达村民说法，不是独立观察到的医疗或喷发事件。
 5. 村长、beastman 和男孩接收短移动请求，被停止脚本中断。跟踪转为中性；村长与男孩开始 Left9 移动，beastman 的 Left9 行动被等待。男孩和 Bowie 收到初始化行动，脚本请求最终朝向、指示 Peter 跟随 Bowie，并显式重载 F710 实体群体。
 
-这些是概述，不是全文记录。场景没有选择、加入、传送、战斗完成测试或故事标志写入。村长首条眼伤文本使用 `nextText`；其他十条请求使用 `nextSingleText`。完整有序记录、内联行动和文本溯源仍归[场景研究](../../../../../research/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md#first-x24-event-and-scene-records)所有。
+这些是概述，不是全文记录。场景没有选择、加入、传送、战斗完成测试或故事标志写入。村长首条眼伤文本使用 `nextText`；其他十条请求使用 `nextSingleText`。完整有序记录、内联行动和文本溯源仍归[场景研究（英文）](../../../../../research/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md#first-x24-event-and-scene-records)所有。
 
 ## 请求、跟随与重建城镇
 
@@ -106,8 +106,8 @@ zone 分发器关闭立绘/文本、等待一个 VInt，并等待物理 main 停
 | 请求、配置与阵容 | [sf2-map-data-static-v1](../../../../../../tests/fixtures/h2/map-data-static-v1.json)、[sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)及[地图探索合同](../../../contracts/world/map-exploration.md)。清单/使用方事实自身不证明精确选定传送行、居民身份或自然旅行；研究提供这些关联。 |
 | init 与首个调用方 | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json)，body18/嵌入 `cs_58310`，以及 [sf2-map-events-static-v1:zone-programs](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)，program9 `Map13_ZoneEvent0`。有序操作保留独立 init 标志与脚本→F711 处理→F710 写入；后续分支保持排除。 |
 | 场景命令与实体群体替换 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，Polca 放置/关系/实体群体位置及处理器事实；[出战队伍/名册合同](../../../contracts/party/party-roster-state.md)。族位置索引从零开始，不同于研究从一开始的场景记录；它们不是完整公开场景记录。 |
-| 跟随守卫 | [sf2-map-entity-gesture-relationship-motion-runtime-v1](../../../../../../tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json)及[关系研究](../../../../../research/world/common-scripting.md#confirmed-map-script-entity-gesturerelationshipmotion-command-family)。受控处理器证据支持高字节 HP 接缝，而非此组合 Polca 事件或可见跟随。 |
+| 跟随守卫 | [sf2-map-entity-gesture-relationship-motion-runtime-v1](../../../../../../tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json)及[关系研究（英文）](../../../../../research/world/common-scripting.md#confirmed-map-script-entity-gesturerelationshipmotion-command-family)。受控处理器证据支持高字节 HP 接缝，而非此组合 Polca 事件或可见跟随。 |
 
-既有[地图 init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与 [schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)保留主体/操作顺序。[事件夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)和[分片 schema](../../../../../../schemas/h2/map-events-fixture-shard.schema.json)保留选定调用方。[脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)和[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)保留操作数、处理器及族位置限制。受跟踪 H2 夹具已在内存中对其所属 schema 验证。窄所有者包括 `uv run sf2 h2 map-data`、`map-setup`、`map-entities`、`map-init`、`map-events`、`map-script-engine`、`battle-global-data`、`battle-routing-data` 和 `battle-cutscenes`；这些名称是可追溯性，不主张新提取。研究的[复现边界](../../../../../research/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md#caller-handoff-and-evidence-boundary)拥有保留比较。纯文字工作选择直接检查及已提交头的 planner/CI。
+既有[地图 init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与 [schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)保留主体/操作顺序。[事件夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)和[分片 schema](../../../../../../schemas/h2/map-events-fixture-shard.schema.json)保留选定调用方。[脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)和[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)保留操作数、处理器及族位置限制。受跟踪 H2 夹具已在内存中对其所属 schema 验证。窄所有者包括 `uv run sf2 h2 map-data`、`map-setup`、`map-entities`、`map-init`、`map-events`、`map-script-engine`、`battle-global-data`、`battle-routing-data` 和 `battle-cutscenes`；这些名称是可追溯性，不主张新提取。研究的[复现边界（英文）](../../../../../research/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md#caller-handoff-and-evidence-boundary)拥有保留比较。纯文字工作选择直接检查及已提交头的 planner/CI。
 
 **未知：**自然无碰撞洞窟/城镇穿行和无中断旅行；实际标志、行动者、HP、出战队伍/AI 与映射；请求存续、待处理和步行/文本/摄像机/淡入淡出完成；地震/闪光/精灵外观及时序；连续可玩性。这些限制既不授权采集，也不授权新机制。本指南不作引擎/产品选择，也未完成战役或更广设计 epic。

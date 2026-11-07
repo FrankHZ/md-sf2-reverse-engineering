@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`special-screen-control-flow.md`](../../../contracts/system/special-screen-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`special-screen-control-flow.md`（英文规范源）](../../../contracts/system/special-screen-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,7 +20,7 @@
 4. 挂起源计数器、Start 提前退出分支与重置向量交接；
 5. 结尾之吻像素填充与结尾 witch 落宝石/控制所有权身份。
 
-可执行所有者是 `sf2-special-screens-static-v1`，位于 [`tests/fixtures/h2/special-screens-static-v1.json`](../../../../../tests/fixtures/h2/special-screens-static-v1.json)。研究所有者是[Special Screens](../../../../research/presentation/special-screens.md)，它记录固定 source/H1 审查，并显式把静态控制流与运行时呈现分开。
+可执行所有者是 `sf2-special-screens-static-v1`，位于 [`tests/fixtures/h2/special-screens-static-v1.json`](../../../../../tests/fixtures/h2/special-screens-static-v1.json)。研究所有者是[Special Screens（英文）](../../../../research/presentation/special-screens.md)，它记录固定 source/H1 审查，并显式把静态控制流与运行时呈现分开。
 
 本合同不拥有原版图形字节、调色板、布局、解压、转移执行、SRAM 变更语义、逐动作存档选择器与服务调用、新游戏生命周期、玩家驱动输入或可见呈现。那些是独立合同或保持 **未知**。
 
@@ -40,9 +40,9 @@ Files 19 / ScreenGroups 7 / Resources 18 / RuntimeQuestions 3 / PASS
 
 fixture 的已接受 `expected.indexedRecordIds` 成员语料包含 22 条记录。十九条有直接 `sf2-special-screens-static-v1` research-index 证据绑定。三条成员记录刻意使用更特定可执行所有者：
 
-- `screens.title.compressed-tiles` 由 `sf2-special-screen-graphics-decode-v1` 与[special-screen-asset-data](../../../contracts/graphics/special-screen-asset-data.md)拥有；
-- `screens.witch.new-game-lifecycle` 由 `sf2-witch-new-game-lifecycle-runtime-v1` 与[save-system](../../../contracts/system/save-system.md)拥有；
-- `screens.witch.save-menu-actions` 由 `sf2-witch-save-menu-actions-runtime-v1` 与[save-system](../../../contracts/system/save-system.md)拥有。
+- `screens.title.compressed-tiles` 由 `sf2-special-screen-graphics-decode-v1` 与[special-screen-asset-data](../graphics/special-screen-asset-data.md)拥有；
+- `screens.witch.new-game-lifecycle` 由 `sf2-witch-new-game-lifecycle-runtime-v1` 与[save-system](save-system.md)拥有；
+- `screens.witch.save-menu-actions` 由 `sf2-witch-save-menu-actions-runtime-v1` 与[save-system](save-system.md)拥有。
 
 `code/specialscreens/witch/witchstart.asm` 源关系恰好是 `screens.witch.new-game-lifecycle`、`screens.witch.save-menu-actions` 与 `screens.witch.start`。这些更特定所有者不是本合同的证据依赖或关联目标。
 
@@ -65,7 +65,7 @@ fixture 的已接受 `expected.indexedRecordIds` 成员语料包含 22 条记录
 - `screens.witchend.engine`；
 - `screens.witchend.init`。
 
-`screens.witch.menu` 已通过专用 witch 图形所有者属于[special-screen-asset-data](../../../contracts/graphics/special-screen-asset-data.md)。它是唯一刻意重叠：该资源合同保留调色板/帧数据，而本合同只保留 `ExecuteWitchMainMenu` 控制/页/导航接缝。
+`screens.witch.menu` 已通过专用 witch 图形所有者属于[special-screen-asset-data](../graphics/special-screen-asset-data.md)。它是唯一刻意重叠：该资源合同保留调色板/帧数据，而本合同只保留 `ExecuteWitchMainMenu` 控制/页/导航接缝。
 
 其余六条直接绑定是资源记录，其既有资源关联必须保持语义不变：
 
@@ -84,7 +84,7 @@ fixture 的已接受 `expected.indexedRecordIds` 成员语料包含 22 条记录
 
 - fixture 清单七个组的 19 个源文件与十八个资源身份，但本控制合同不声称资源载荷所有权；
 - fixture 布尔值与标量计数器建立受限事实，而非每个代表函数的详尽指令顺序；
-- 逐动作 New/Load/Delete/Copy 选择器变换、`CURRENT_SAVE_SLOT` 写入、服务调用顺序、读档后路由与 `MainLoop` 交接保持[save-system](../../../contracts/system/save-system.md)；
+- 逐动作 New/Load/Delete/Copy 选择器变换、`CURRENT_SAVE_SLOT` 写入、服务调用顺序、读档后路由与 `MainLoop` 交接保持[save-system](save-system.md)；
 - 源静态值 60 与 600 是计数器操作数，不是观察墙钟或可见帧时长；
 - 受追踪 fixture 只含小型元数据。ROM、存档、截图、图形、音频、轨迹与模拟器状态保持私有/生成。
 
@@ -106,7 +106,7 @@ fixture 的已接受 `expected.indexedRecordIds` 成员语料包含 22 条记录
 
 **已确认静态：** 已接受标题源组有 `StartTitleScreen` 条目、两个不同滚动循环函数与多阶段使用的受限 Start 轮询辅助。其源退出区分重置与继续到 witch 画面。已接受所有者确认该控制形状，而非滚动/淡入帧计数或渲染过渡。
 
-`screens.title.font` 只贡献 `LoadTitleScreenFont` 函数身份、源路径与地址。字体载荷字节、编解码器行为、布局、转移大小、VRAM 目标、字形含义与最终渲染在本合同之外。标题压缩瓦片成员记录保持[special-screen-asset-data](../../../contracts/graphics/special-screen-asset-data.md)。
+`screens.title.font` 只贡献 `LoadTitleScreenFont` 函数身份、源路径与地址。字体载荷字节、编解码器行为、布局、转移大小、VRAM 目标、字形含义与最终渲染在本合同之外。标题压缩瓦片成员记录保持[special-screen-asset-data](../graphics/special-screen-asset-data.md)。
 
 兼容适配器可以完全替换标题渲染，但原版路线模式必须把条目、双循环区分、受限轮询身份与重置对 witch 继续结果保持为独立可观察路线事实。
 
@@ -138,7 +138,7 @@ witch 边界刻意在顶层控制（此处拥有）与动作内部（他处拥�
 | 2 | `witchMenuAction_Del` | `0x7574` |
 | 3 | `witchMenuAction_Copy` | `0x754C` |
 
-本合同只把这些保留为分发交接身份。它不消费或重述动作的选择器变换、`CURRENT_SAVE_SLOT` 写入、提示、服务调用、调用顺序、读档后标志路线或 `MainLoop`/`alt_MainLoopEntry` 交接。那些保持[save-system](../../../contracts/system/save-system.md)中的独立所有者事实。
+本合同只把这些保留为分发交接身份。它不消费或重述动作的选择器变换、`CURRENT_SAVE_SLOT` 写入、提示、服务调用、调用顺序、读档后标志路线或 `MainLoop`/`alt_MainLoopEntry` 交接。那些保持[save-system](save-system.md)中的独立所有者事实。
 
 ### 通用菜单控制
 
@@ -258,10 +258,10 @@ SpecialScreenControlCorpus {
 
 把以下系统保持本合同之外：
 
-- [special-screen-asset-data](../../../contracts/graphics/special-screen-asset-data.md)：压缩与非压缩资源、调色板、布局、witch 帧、hash 与私有载荷；
-- [graphics-service-state](../../../contracts/graphics/graphics-service-state.md)：解压/显示服务状态及其面向硬件 未知；
-- [save-system](../../../contracts/system/save-system.md)：动作选择器、SRAM 变更、校验和、逐动作服务顺序、新游戏生命周期、读档后路由与持久性边界；
-- [input-system](../../../contracts/interface/input-system.md)：控制器采样、重复状态与等待辅助行为；
+- [special-screen-asset-data](../graphics/special-screen-asset-data.md)：压缩与非压缩资源、调色板、布局、witch 帧、hash 与私有载荷；
+- [graphics-service-state](../graphics/graphics-service-state.md)：解压/显示服务状态及其面向硬件 未知；
+- [save-system](save-system.md)：动作选择器、SRAM 变更、校验和、逐动作服务顺序、新游戏生命周期、读档后路由与持久性边界；
+- [input-system](../interface/input-system.md)：控制器采样、重复状态与等待辅助行为；
 - 更宽 gameflow/story 合同：普通路线准入、故事可达性与调用方含义；
 - 未来呈现工作：淡入、音频、时序、像素、可访问性、本地化与替换内容。
 
@@ -294,10 +294,10 @@ SpecialScreenControlCorpus {
 | 合同区域 | 证据标签 | 所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 21 成员源语料与 19 直接绑定拆分 | **已确认静态** | `sf2-special-screens-static-v1`（[`special-screens-static-v1.json`](../../../../../tests/fixtures/h2/special-screens-static-v1.json)）加精确 research-index 审计 | 两条更特定所有者记录保持本合同之外 |
-| Sega-logo 与标题受限控制事实 | **已确认静态** | 专用 fixture 与[Special Screens](../../../../research/presentation/special-screens.md) source/H1 审查 | 输入节奏、淡入、滚动时序、呈现与正常可达性 |
-| witch SRAM 结果/动作页/分发/菜单接缝 | **已确认静态** | 专用 fixture 与[Special Screens](../../../../research/presentation/special-screens.md) 固定三源审查 | 逐动作选择器、写入、服务、生命周期、持久性与玩家驱动行为是独立所有者 |
-| 挂起计数器、Start 分支与重置交接 | **已确认静态** | 专用 fixture 与[Special Screens](../../../../research/presentation/special-screens.md) 直接源审查 | 墙钟/可见时长、输入节奏、淡入、转移与硬件行为 |
-| 结尾操作所有权身份 | **已确认静态** | 专用 fixture 与[Special Screens](../../../../research/presentation/special-screens.md) 所有者文章 | 完整时间线、VInt 回调、像素、音频、故事可达性与可见一致性 |
+| Sega-logo 与标题受限控制事实 | **已确认静态** | 专用 fixture 与[Special Screens（英文）](../../../../research/presentation/special-screens.md) source/H1 审查 | 输入节奏、淡入、滚动时序、呈现与正常可达性 |
+| witch SRAM 结果/动作页/分发/菜单接缝 | **已确认静态** | 专用 fixture 与[Special Screens（英文）](../../../../research/presentation/special-screens.md) 固定三源审查 | 逐动作选择器、写入、服务、生命周期、持久性与玩家驱动行为是独立所有者 |
+| 挂起计数器、Start 分支与重置交接 | **已确认静态** | 专用 fixture 与[Special Screens（英文）](../../../../research/presentation/special-screens.md) 直接源审查 | 墙钟/可见时长、输入节奏、淡入、转移与硬件行为 |
+| 结尾操作所有权身份 | **已确认静态** | 专用 fixture 与[Special Screens（英文）](../../../../research/presentation/special-screens.md) 所有者文章 | 完整时间线、VInt 回调、像素、音频、故事可达性与可见一致性 |
 | 图形、存档/新游戏行为、输入与呈现 | **独立所有者** | 上文命名的已接受兄弟合同 | 此处不作为证据消费 |
 | 现代化、可访问性、本地化与替换内容 | **刻意设计** | 未来产品/内容决定 | 需要独立验收与许可 |
 

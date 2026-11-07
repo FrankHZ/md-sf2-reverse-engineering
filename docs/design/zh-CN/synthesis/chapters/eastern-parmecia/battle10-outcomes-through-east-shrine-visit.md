@@ -1,10 +1,10 @@
 # Battle10 结果至可选 East Shrine 访问
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Battle10 胜利让出战队伍以战斗导出位置返回大地图。East Shrine 是独立可选访问：居民误以为访客是 Petro，祖父解释一块被盗古石，之后另一段对话提出协助前往 Grans。该邀请通过不同机制改变当前跟随与后续实体群体选择。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)支持下文结果、选定 Map70→62 连接、调用方与状态变化。**推断：**此分支在向东遭遇之后发展 Sky Orb/Grans 故事。**未知：**自然穿行、实际行动者与映射、服务完成和连续可玩性。该访问不是已确立的 Battle11 必经路线，也不是重制就绪主张。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)支持下文结果、选定 Map70→62 连接、调用方与状态变化。**推断：**此分支在向东遭遇之后发展 Sky Orb/Grans 故事。**未知：**自然穿行、实际行动者与映射、服务完成和连续可玩性。该访问不是已确立的 Battle11 必经路线，也不是重制就绪主张。
 
 本文承接 [Battle10 准入](ribble-may-through-battle10-admission.md)，止于最终老人调用方之后及首个条件性探索控制恢复。南出口仅为接续边界；[选定返回至 Battle11 准入](east-shrine-return-through-battle11-admission.md)另有指南。后续旅行、洞窟/Battle11、wooden panel、Sky Orb 取得与之后神殿场景在本文之外。Fnnn 表示标志 nnn；地图/战斗 ID 保留源码编号。
 
@@ -68,7 +68,7 @@ F77 已设配置仅保留年轻人 128，编写位置 `(7,5)`、Down。交谈期
 
 **已确认当前命令：**最终对话请求 `followEntity 129,FOLLOWER_B,2`，然后设置 F77。`FOLLOWER_B=31` 是查找身份，区别于 Peter 的 7 和 `FOLLOWER_A=30`。三个字操作数是 `$0081,$001F,$0002`。在解析任一实体前，处理器探测首字高字节 0，因此其 HP 守卫在此检查 Bowie。它不验证老人、Peter、目标、映射新鲜度或容量。Bowie HP 为零会跳过跟随操作；若其余执行完成，后续 F77 和调用方 F729 写入仍发生。
 
-守卫允许执行时，目标来自实际 character-31 查找。仅 F67 将 Peter 映射为 7，不提供 31 映射：其已清零字节解析为物理槽位 0/main，这是零映射后果，不是显式 Bowie 回退或 Peter 同义词。F74 可将 Astral 映射为 31，F68 可用 Oddler 覆盖，F70 可再用 Astral 覆盖，顺序按源码如此。其他随从或临时 May 不会以当前列表尾部替换 31。[研究映射表](../../../../../research/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md#current-following-versus-the-f77-rebuild)拥有完整提供状态控制。
+守卫允许执行时，目标来自实际 character-31 查找。仅 F67 将 Peter 映射为 7，不提供 31 映射：其已清零字节解析为物理槽位 0/main，这是零映射后果，不是显式 Bowie 回退或 Peter 同义词。F74 可将 Astral 映射为 31，F68 可用 Oddler 覆盖，F70 可再用 Astral 覆盖，顺序按源码如此。其他随从或临时 May 不会以当前列表尾部替换 31。[研究映射表（英文）](../../../../../research/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md#current-following-versus-the-f77-rebuild)拥有完整提供状态控制。
 
 `AddFollower` 用循环跟随关系替换解析后 129 行动者的行动块，修补物理目标和 `(-24,0)` 偏移，再在尚未列入时追加其物理索引。替换先于重复检查。不同于 May 的 `addNewFollower`，此命令不选择列表尾部。它不等待可见跟随完成，也不保证间距。缺失的 129 同样解析为槽位 0，因此强制缺失映射可能改变 main，甚至令其跟随自身。
 
@@ -95,6 +95,6 @@ F77/F728/F729 在游戏标志存档域内；临时随从列表、walking 指针�
 | 对话/zone 谓词 | [sf2-map-events-static-v1](../../../../../../tests/fixtures/h2/map-events-static-v1.json)、[实体分片](../../../../../../tests/fixtures/h2/map-events/entity-programs.json) 顺序 610–612 和 [zone 分片](../../../../../../tests/fixtures/h2/map-events/zone-programs.json) 顺序 112–114。有序操作/原始操作数确认独立门控与调用方写入；四个完整短脚本/文本序列仍归研究所有。 |
 | 跟随守卫与生命周期 | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)，`entityGestureRelationshipMotionCommandFacts`，以及 [sf2-map-entity-gesture-relationship-motion-runtime-v1](../../../../../../tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json)，用例 `follow-selector-zero-live`、`follow-selector-seven-live`、`follow-zero-current-hp`；[出战队伍/名册合同](../../../contracts/party/party-roster-state.md)区分 May 的另一使用方。处理器守卫和受控高字节 HP 观察，不在运行时闭合本神殿组合。 |
 
-[事件夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)与[验证器](../../../../../../src/sf2tool/h2/map_events.py)保留有序分片/原始操作数；[地图 init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)与[验证器](../../../../../../src/sf2tool/h2/map_init.py)保留主体。[地图脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)、[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)、[关系夹具 schema](../../../../../../schemas/h3-map-entity-gesture-relationship-motion-fixture.schema.json)及[观察器](../../../../../../src/sf2tool/h3/map_entity_gesture_relationship_motion.py)保留处理器与受控用例边界。研究的[验证/复现边界](../../../../../research/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md#final-caller-continuation-and-verification-boundary)拥有窄比较；不单为本篇文字选择整套测试。
+[事件夹具加载器](../../../../../../src/sf2tool/h2/map_events_fixture.py)与[验证器](../../../../../../src/sf2tool/h2/map_events.py)保留有序分片/原始操作数；[地图 init schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)与[验证器](../../../../../../src/sf2tool/h2/map_init.py)保留主体。[地图脚本 schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)、[验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)、[关系夹具 schema](../../../../../../schemas/h3-map-entity-gesture-relationship-motion-fixture.schema.json)及[观察器](../../../../../../src/sf2tool/h3/map_entity_gesture_relationship_motion.py)保留处理器与受控用例边界。研究的[验证/复现边界（英文）](../../../../../research/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md#final-caller-continuation-and-verification-boundary)拥有窄比较；不单为本篇文字选择整套测试。
 
 **未知：**自然路径/碰撞，实际激活行动者/映射/HP/出战队伍/随从，已完成文本/输入/滚动/实体服务，待处理请求存续，可见跟随，任意随从容量，存档/重新入场呈现，以及连续可玩性。这些限制不创建模拟器工作队列。本指南不选择引擎/产品，也未完成战役。

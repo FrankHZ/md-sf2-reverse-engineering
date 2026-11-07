@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`ui-graphics-asset-data.md`](../../../contracts/graphics/ui-graphics-asset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`ui-graphics-asset-data.md`（英文规范源）](../../../contracts/graphics/ui-graphics-asset-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -19,7 +19,7 @@
 
 它还定义基于符号、地址、计数、路线元数据、存储角色、hash 与合成示例而非版权图形载荷的公开 H4 面。
 
-它不拥有布局网格、窗口分配、菜单状态机、服务准入、控制器输入、运行时图标选择、调色板上传、转移调度、可见动画、本地化或最终呈现。相邻[UI layout data 合同](../../../contracts/interface/ui-layout-data.md) 拥有已接受布局/指针/边框/直接布局资源语料，而[window-system 合同](../../../contracts/interface/window-system.md) 拥有共享运行时窗口状态。[graphics-service 合同](../../../contracts/graphics/graphics-service-state.md) 只拥有其受限解压/显示服务面。那些合同都不证明渲染菜单帧。
+它不拥有布局网格、窗口分配、菜单状态机、服务准入、控制器输入、运行时图标选择、调色板上传、转移调度、可见动画、本地化或最终呈现。相邻[UI layout data 合同](../interface/ui-layout-data.md) 拥有已接受布局/指针/边框/直接布局资源语料，而[window-system 合同](../interface/window-system.md) 拥有共享运行时窗口状态。[graphics-service 合同](graphics-service-state.md) 只拥有其受限解压/显示服务面。那些合同都不证明渲染菜单帧。
 
 可执行所有者是：
 
@@ -28,7 +28,7 @@
 - `sf2-icon-graphics-static-v1`，位于
   [`tests/fixtures/h2/icon-graphics-static-v1.json`](../../../../../tests/fixtures/h2/icon-graphics-static-v1.json)。
 
-研究所有者是[Common Menu Engines 与 Services](../../../../research/presentation/common-menus.md)与[Technical Graphics 与 Decompression Services](../../../../research/presentation/technical-graphics.md)的图形段。
+研究所有者是[Common Menu Engines 与 Services（英文）](../../../../research/presentation/common-menus.md)与[Technical Graphics 与 Decompression Services（英文）](../../../../research/presentation/technical-graphics.md)的图形段。
 
 ## 合同前证据审计
 
@@ -55,8 +55,8 @@ AvailablePayloads 167 / AssembledIcons 163 / UnassembledPayloads 4 / PASS
 
 其他两条 fixture 链接记录已属于已接受合同，必须保持语义不变：
 
-- `tech.graphics.stack-decompression` 仍与[graphics-service-state](../../../contracts/graphics/graphics-service-state.md)关联；
-- `tech.services.resource-graphics` 仍与[text-and-font-system](../../../contracts/interface/text-and-font-system.md)关联。
+- `tech.graphics.stack-decompression` 仍与[graphics-service-state](graphics-service-state.md)关联；
+- `tech.services.resource-graphics` 仍与[text-and-font-system](../interface/text-and-font-system.md)关联。
 
 候选记录还携带 common menus、technical interfaces、technical services、gameflow 或 auxiliary data 的聚合证据。本合同刻意不消费 `sf2-common-menus-static-v1`、`sf2-tech-interfaces-static-v1`、`sf2-tech-services-static-v1`、`sf2-gameflow-core-static-v1` 或 `sf2-auxiliary-data-static-v1`。专用 fixture 拥有此处提升的每个声称。
 
@@ -302,7 +302,7 @@ H4 不要求现代渲染器在运行时使用 Genesis 瓦片格式或原版物�
 | 有序三打包/六指针菜单表与七个主菜单记录 | **已确认静态** | `sf2-ui-graphics-decode-v1`（[`ui-graphics-decode-v1.json`](../../../../../tests/fixtures/h2/ui-graphics-decode-v1.json)） | 索引 6 动态可达性、调用方选择、动画与玩家面向含义 |
 | 167 个源载荷、精确 163 载荷 vanilla 组装与四个仅源例外 | **已确认静态** | `sf2-icon-graphics-static-v1`（[`icon-graphics-static-v1.json`](../../../../../tests/fixtures/h2/icon-graphics-static-v1.json)） | alternate 构建使用与非标准可达性保持 **未知** |
 | 物理图标角色/碰撞与受限复制/角/高亮操作 | **已确认静态** | `sf2-icon-graphics-static-v1`（[`icon-graphics-static-v1.json`](../../../../../tests/fixtures/h2/icon-graphics-static-v1.json)） | 调用方准入、无效索引、DMA/帧节奏、调色板与渲染输出 |
-| 布局网格、运行时窗口、菜单、服务与输入 | **独立所有者** | [UI layout](../../../contracts/interface/ui-layout-data.md)、[window system](../../../contracts/interface/window-system.md)与已接受菜单/服务/输入合同 | 端到端可见 UI 保持未闭合 |
+| 布局网格、运行时窗口、菜单、服务与输入 | **独立所有者** | [UI layout](../interface/ui-layout-data.md)、[window system](../interface/window-system.md)与已接受菜单/服务/输入合同 | 端到端可见 UI 保持未闭合 |
 | 渲染器架构、可访问性、本地化、替换美术与可分发内容 | **刻意设计** | 未来产品/内容决定 | 需要溯源、许可与独立验收 |
 
 ## 复现

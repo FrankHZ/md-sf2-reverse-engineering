@@ -1,10 +1,10 @@
 # Polca 木筏登乘与 South Parmecia 入场
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 登乘是 Luke 招募场景之后独立的玩家行动。符合条件的移动尝试可以请求登乘，但消费者仍必须在 Bowie 目的地正前方找到物理木筏。获准登乘会分阶段改变行动者与表现，最后提交木筏模式。在该模式下，Map72 选定的两个南出口都请求 South Parmecia，即 **Map69**，但通往探索或战斗准入的路径不同。
 
-**已确认静态内容与控制流：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)支持下文请求、行动者、控制器和选定入场后果。**推断：**这些操作实现登乘和水上旅行。**未知：**自然接触与通行、实际传入状态、服务完成、可见登乘/抵达、响应输入与持久性。Fnnn 表示标志 nnn；除明确注明内部单位外，坐标均为地图瓦片。
+**已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)支持下文请求、行动者、控制器和选定入场后果。**推断：**这些操作实现登乘和水上旅行。**未知：**自然接触与通行、实际传入状态、服务完成、可见登乘/抵达、响应输入与持久性。Fnnn 表示标志 nnn；除明确注明内部单位外，坐标均为地图瓦片。
 
 前段条件 Map72 控制边界见 [Polca 出发与 Luke 招募](../eastern-parmecia/polca-departure-through-luke-recruitment.md)，配置的 Map72 `(43,48)` 元组见[木筏授予](../eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)。本指南止于数值 type5 下筏请求、初始化前获准的战斗，或条件 Map69 探索控制。不增加重制能力、连续可玩性声明或后续剧情/交战说明。
 
@@ -18,7 +18,7 @@
 
 **已确认消费者门控：**`ProcessMapEvent` 在把 type3 分发至 `MapEventType3` 前清除待处理状态。其对齐辅助读取物理 main0 的目的地与朝向，在该方向加一瓦片（384 内部单位），再与**物理31 的目的地**比较。只有精确匹配朝向相邻目的地才准入登乘主体。当前位置重合、看似木筏的精灵或逻辑随从映射都不足够。辅助不复查 F64、当前战斗或 `RAFT_MAP`；传入的对齐状态可以在缺少这些生产者门控时通过。遭拒请求仍已被消费，玩家模式不变。
 
-待处理状态是可变槽位，不是队列或原子事务。插入服务后哪次写入保留仍未知。[请求与对齐所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#movement-request-and-the-separate-alignment-gate)保留精确生产者与目的地偏移消费者。
+待处理状态是可变槽位，不是队列或原子事务。插入服务后哪次写入保留仍未知。[请求与对齐所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#movement-request-and-the-separate-alignment-gate)保留精确生产者与目的地偏移消费者。
 
 ## 木筏模式提交前的变化
 
@@ -33,7 +33,7 @@
 | 列表行动者汇合并迁移 | `byte_45434` 请求朝物理0 移动，然后等待6/传送 SFX/自身目的地等待/复制物理31/空闲。在正常映射下物理31 此时位于地图外；行动者复制其状态，但保留各自精灵。 |
 | 木筏模式提交 | 列表等待按实际谓词返回，随后写入 `PLAYERTYPE_RAFT=2`。此前精灵与位置效果已经请求。 |
 
-两个被等待的 Bowie 命令均解析 lookup0。两次等待都没有逐行动者 HP 守卫。FOLLOWER_D 位置命令走存活状态辅助的非己方角色分支，因此 Bowie/Peter/Luke 的零 HP 不阻止该迁移。这些命令都不治疗、加入、清除随从标志、调用 `HideEntity` 或改变地图。独立行动脚本与[完整登乘所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#complete-boarding-and-actor-identity)保留所请求服务与完成限制。
+两个被等待的 Bowie 命令均解析 lookup0。两次等待都没有逐行动者 HP 守卫。FOLLOWER_D 位置命令走存活状态辅助的非己方角色分支，因此 Bowie/Peter/Luke 的零 HP 不阻止该迁移。这些命令都不治疗、加入、清除随从标志、调用 `HideEntity` 或改变地图。独立行动脚本与[完整登乘所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#complete-boarding-and-actor-identity)保留所请求服务与完成限制。
 
 三种身份必须区分：
 
@@ -73,7 +73,7 @@
 | 否则，原始字按无符号解释小于 `$C000` | 写入数值 type5 并跳过移动：下筏请求这一停止分支。 |
 | 否则，原始字至少为 `$C000` | 跳过移动，不发出该请求。 |
 
-移动尾部写入选定速度，为每个移动轴设置 384 行程，并在精灵更新前按选定瓦片偏移推进目的地。它不增加 F64/当前战斗/解锁门控，不产生 type6 zone，也不递减步数计数器。不在淡入淡出时，图块复制标记 `$0800/$0C00` 可以影响工作布局。这些测试和对话均不提供已解码水路、无碰撞旅行或输入回执。[控制器所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#installed-raft-controller-and-stopping-alternatives)保留脚本与布局顺序，不推广为 Caravan 操作。
+移动尾部写入选定速度，为每个移动轴设置 384 行程，并在精灵更新前按选定瓦片偏移推进目的地。它不增加 F64/当前战斗/解锁门控，不产生 type6 zone，也不递减步数计数器。不在淡入淡出时，图块复制标记 `$0800/$0C00` 可以影响工作布局。这些测试和对话均不提供已解码水路、无碰撞旅行或输入回执。[控制器所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#installed-raft-controller-and-stopping-alternatives)保留脚本与布局顺序，不推广为 Caravan 操作。
 
 ## 两个南出口与同一正确目的地
 
@@ -88,11 +88,11 @@
 
 South Parmecia69 不同于 `MAP_OVERWORLD_SOUTHEAST_PARMECIA=70`。负坐标字节为通配符；首匹配胜出。Rows0–5 不匹配选定点，rows6/9 不重叠。在 Y63 的其他 X，只要 opcode8 到达 `$1000` 布局调用，row9 就可能匹配。传送匹配先将拟移动内部坐标按有符号除法除以384，再写入 type1、其元组和传送 SFX；不要求木筏模式或剧情标志。
 
-Map72 与 Map69 声明 layer1 边界 `(0,0)..(63,63)`。Opcode8 使用这些未收缩边界，因此在输入、占用与布局条件满足时，选定点与南边缘兼容该生产者。普通角色控制在 `d7==0` 分支收缩一瓦片；`d7` 是剩余实体扫描计数器，不是固定物理0 身份。这种兼容性不证明可自然接近选定行。[出口所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#selected-map72-exits-and-producer-compatibility)保留符号到编号关联与优先级。
+Map72 与 Map69 声明 layer1 边界 `(0,0)..(63,63)`。Opcode8 使用这些未收缩边界，因此在输入、占用与布局条件满足时，选定点与南边缘兼容该生产者。普通角色控制在 `d7==0` 分支收缩一瓦片；`d7` 是剩余实体扫描计数器，不是固定物理0 身份。这种兼容性不证明可自然接近选定行。[出口所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#selected-map72-exits-and-producer-compatibility)保留符号到编号关联与优先级。
 
 ## 两个出口为何产生不同抵达后果
 
-**已确认 type1 消费：**两个分支都先清除待处理状态，均保留 `PLAYER_TYPE` 与已保存木筏元组；服务完成和中途参数写入仍未知。[入场生命周期所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#no-scroll-admission-versus-scrolling-continuation)区分下列调用。
+**已确认 type1 消费：**两个分支都先清除待处理状态，均保留 `PLAYER_TYPE` 与已保存木筏元组；服务完成和中途参数写入仍未知。[入场生命周期所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#no-scroll-admission-versus-scrolling-continuation)区分下列调用。
 
 **Row6，无滚动：**消费者请求/清除传送 SFX，令主角空闲，退出探索调用层，并将 Map69 `(41,16)`、Down 返回原始 `MainLoop/@Start`。`SwitchMap` 没有 Map69 替换。随后 `CheckBattle` 按顺序扫描这些实际 Map69 行：
 
@@ -111,17 +111,17 @@ Map72 与 Map69 声明 layer1 边界 `(0,0)..(63,63)`。Opcode8 使用这些未�
 
 **已确认重新入场边界：**此处只有未准入战斗的 row6 才到达重新入场的 `ExplorationLoop(69,41,16,Down)`。它清除待处理状态、调整步数、治疗存活/不死己方角色、淡出、设置 Map69/不在战斗中、加载瓦片并初始化行动者/地图精灵。配置清除临时 F256–383，并在地图加载、基础 VInt 与 init 前设置 F80。Map69 仅有默认配置、**空固定实体列表**，以及 `ms_map69_InitFunction`（位于 `0x4FDE2`），其唯一指令为 `rts`。该主体不带来新剧情场景或依赖 F416 的 init。
 
-固定实体群为空不代表没有行动者。Map69 是不在随从排除范围内的大地图。main0 与获准标志随从被重建：F65 可在前部加入 Caravan，F67 准入 Peter，F68 在冲突行限制下以 FOLLOWER_B31 提供 Oddler，F75 可重建 Luke，尽管前段当前实例已被隐藏。单凭成员资格不准入这些随从。[前段实体群边界](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#fresh-population-raft-declaration-and-init-guard)保留依赖 HP 的己方精灵、顺序与映射限制。没有固定 NPC 补救缺失随从。
+固定实体群为空不代表没有行动者。Map69 是不在随从排除范围内的大地图。main0 与获准标志随从被重建：F65 可在前部加入 Caravan，F67 准入 Peter，F68 在冲突行限制下以 FOLLOWER_B31 提供 Oddler，F75 可重建 Luke，尽管前段当前实例已被隐藏。单凭成员资格不准入这些随从。[前段实体群边界（英文）](../../../../../research/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md#fresh-population-raft-declaration-and-init-guard)保留依赖 HP 的己方精灵、顺序与映射限制。没有固定 NPC 补救缺失随从。
 
 **已确认保留 mode2：**重建时的木筏消费者给 main0 木筏精灵，把各列表随从移至 `$6000,$6000` 并安装站立行动。main0 不在该重建列表内，因此留在 `(41,16)`。另在 `(64,64)`、Left 声明独立物理31，使用木筏精灵与站立行动，并将 lookup63 设为31。此分支既不需要 F64，也不需要 `RAFT_MAP` 匹配，且不更新已保存元组。
 
 传入非木筏模式走另一分支：普通独立木筏声明要求 F64 且 `CURRENT_MAP==RAFT_MAP`。仍保存 Map72 的元组不会在 Map69 声明木筏。滚动时不重建的 `DeclareRaftEntity` 又不同：在 mode2 之外可迁移列表随从；F64 已设且地图不匹配时清除 lookup63，并把物理31 移至 `$7000,$7000`。这些分支解释传入状态，不声称登乘自然导致下筏。
 
-重新入场的无操作 init 后，仅当基础/当前调色板不同时才执行 `PlayMapMusic` 与 `FadeInFromBlack`。不存在无条件第二次音乐请求。下一次 `WaitForEvent` 中，待处理值为零会重新以物理0 为目标并安装所保留 mode2 的 opcode8 控制器；非零则延后控制配置，先处理事件。滚动以保留的实体群到达该条件配置，不经历重新入场生命周期。**止于条件控制。**两条路径本身都不证明抵达已渲染、输入响应或后续 zone/剧情行为。[实体群与控制所有者](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#ordinary-map69-population-and-conditional-control)保留重建与保留行动者的区别。
+重新入场的无操作 init 后，仅当基础/当前调色板不同时才执行 `PlayMapMusic` 与 `FadeInFromBlack`。不存在无条件第二次音乐请求。下一次 `WaitForEvent` 中，待处理值为零会重新以物理0 为目标并安装所保留 mode2 的 opcode8 控制器；非零则延后控制配置，先处理事件。滚动以保留的实体群到达该条件配置，不经历重新入场生命周期。**止于条件控制。**两条路径本身都不证明抵达已渲染、输入响应或后续 zone/剧情行为。[实体群与控制所有者（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#ordinary-map69-population-and-conditional-control)保留重建与保留行动者的区别。
 
 ## 证据追踪与未解问题
 
-**已确认溯源：**本综合使用 main 已接受的 PR818 研究，不是新源码调查。其所有者绑定固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM，列出精确生产者/行动/控制器/过渡源码主体，并提供[复现与覆盖限制](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#reproduction-and-coverage-limits)。[探索控制流合同](../../../contracts/world/exploration-control-flow.md)拥有顶层交接顺序；[地图入场路由合同](../../../contracts/world/map-entry-routing-state.md)拥有辅助局部选择，不拥有本内容特定路线或后续完成。
+**已确认溯源：**本综合使用 main 已接受的 PR818 研究，不是新源码调查。其所有者绑定固定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM，列出精确生产者/行动/控制器/过渡源码主体，并提供[复现与覆盖限制（英文）](../../../../../research/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#reproduction-and-coverage-limits)。[探索控制流合同](../../../contracts/world/exploration-control-flow.md)拥有顶层交接顺序；[地图入场路由合同](../../../contracts/world/map-entry-routing-state.md)拥有辅助局部选择，不拥有本内容特定路线或后续完成。
 
 | 跟踪的测试夹具与精确 ID | 选定关系与限制 |
 | --- | --- |
@@ -138,4 +138,4 @@ Map72 与 Map69 声明 layer1 边界 `(0,0)..(63,63)`。Opcode8 使用这些未�
 
 **未知：**从 Luke 出口自然到达登乘标记与任一南出口；实际布局、标志、HP、行动者映射与列表；待处理写入保留；行动、VInt/DMA、声音、精灵与过渡完成；所有随从完成；可见登乘/抵达、输入响应及已保存交通状态的持久性。即便 F64 已设仍不对齐、lookup63 别名、空/重排列表、更早随从仍忙碌、模式提交前表现被中断、角落行优先级、已完成但仍解锁的准入，以及同一 F417 状态走不同 row6/row9 生命周期，仍是用于区分行为的传入用例，不是观察到的自然历史。
 
-这些限制保留登乘/旅行含义的**推断**标签，并按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期。它们不授权采集、完整 type5 消费、后续 zone/Creed/Kraken 剧情、交战或战役/epic 完成。
+这些限制保留登乘/旅行含义的**推断**标签，并按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期。它们不授权采集、完整 type5 消费、后续 zone/Creed/Kraken 剧情、交战或战役/epic 完成。

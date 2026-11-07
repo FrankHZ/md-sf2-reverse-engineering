@@ -1,6 +1,6 @@
 # North Cliff 入场至 Battle25 准入
 
-> 本文是[规范英文原文：North Cliff Entry through Battle25 Admission](../../../../synthesis/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：North Cliff Entry through Battle25 Admission](../../../../synthesis/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 打开 North Cliff 通道并招募 Rohde 不会立即开始另一场战斗。存储的入口路线从 Map72 `(27,33)` 通往 Map48 `(55,29)`，朝 Up。若该请求在解锁 F425 已设置时到达普通准入，它选择 North Cave 遭遇 Battle25。打开通道、走到入口与战斗选择器各有条件。
 
@@ -10,7 +10,7 @@
 
 ## 证据与阅读边界
 
-接续 [North Cliff 打开与 Rohde 招募](north-cliff-opening-and-rohde-recruitment.md)。已接受 Layer A 所有者为 [North Cliff 入场至 Battle25 准入](../../../../../research/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md)，经 [#989 / PR992](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/992)接受。它固定 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。源码路径相对 `disasm/`；Fnnn 表示标志 nnn。索引从零开始。路线图拥有 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。此英文综合说明消费已接受证据，不增加原版发现或重制行为。原切片并行的 Battle25 结果研究与 UI 工作相互独立，不为本指南提供证据。
+接续 [North Cliff 打开与 Rohde 招募](north-cliff-opening-and-rohde-recruitment.md)。已接受 Layer A 所有者为 [North Cliff 入场至 Battle25 准入（英文）](../../../../../research/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md)，经 [#989 / PR992](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/992)接受。它固定 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。源码路径相对 `disasm/`；Fnnn 表示标志 nnn。索引从零开始。路线图拥有 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。此英文综合说明消费已接受证据，不增加原版发现或重制行为。原切片并行的 Battle25 结果研究与 UI 工作相互独立，不为本指南提供证据。
 
 [地图入场路由合同](../../../contracts/world/map-entry-routing-state.md)拥有有界选择器，[战斗遭遇合同](../../../contracts/battle/battle-encounter-definition.md)区分地图、战斗、布置、战斗员和脚本路由身份。#989 的选定源码审查补充其汇总边界；单凭任一合同都不能建立此遭遇或自然战役路线。
 
@@ -170,7 +170,7 @@ Map48 有两个描述器，主边界不同，其余配置相同：
 
 之后加载恢复基础 VInt、加载战斗地形、请求地图音乐与淡入，并返回空 start 包装器。包装器按需设置 F475 后返回。**本指南止于 `ActivateEnemies` 之前。**
 
-**推断：** 次平面支持相对所选行动者的洞穴黑暗。**未知：** 合成遮罩、照明半径、遮挡/调色板、稳定摄像机、VInt/DMA/帧时序、已完成淡入淡出或可用控制。Battle11 显式刷新不是 Battle25 渲染观察。编码/公式细节见 [Layer A 地图消费者](../../../../../research/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md#actual-map-crop-area-selection-and-secondary-layer)；不由此提出渲染保真声明。
+**推断：** 次平面支持相对所选行动者的洞穴黑暗。**未知：** 合成遮罩、照明半径、遮挡/调色板、稳定摄像机、VInt/DMA/帧时序、已完成淡入淡出或可用控制。Battle11 显式刷新不是 Battle25 渲染观察。编码/公式细节见 [Layer A 地图消费者（英文）](../../../../../research/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md#actual-map-crop-area-selection-and-secondary-layer)；不由此提出渲染保真声明。
 
 ## 变化或中断状态
 

@@ -1,20 +1,20 @@
 # Battle08 结果至 New Granseal 城堡交接
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 救援遭遇引向工人恢复意识、阻塞隧道的对话与返回船只。较后场景呈现船只拆解和 New Granseal 建设，然后请求其城堡。**推断的叙事含义：**这些场景将救援与定居点建立连接起来。**已确认静态行为：**首次胜利提供 Map73 返回；只有适当的 Map73 init 分支运行建设场景并请求 Map7。**未知：**自然完成的旅程、隧道通行、实际行动者/随从状态、服务完成与发出请求的存续。
 
-本文承接[损坏船只木板选择至 Battle08 准入](damaged-ship-plank-through-battle08.md)。已接受的[研究所有者](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md)提供固定源码、对话、动作及调用方审阅。本指南支持内容/设计规划，止于条件性发出 Map7 准入之后、**目标初始化之前**。接续[New Granseal 城堡：一年后讲话与首次控制交接](new-granseal-castle-year-later-control.md)，了解目标初始化；后续城镇/战役内容另行限定范围。本文不增加可玩重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#739](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/739) 的 Standard 严谨度协议。
+本文承接[损坏船只木板选择至 Battle08 准入](damaged-ship-plank-through-battle08.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md)提供固定源码、对话、动作及调用方审阅。本指南支持内容/设计规划，止于条件性发出 Map7 准入之后、**目标初始化之前**。接续[New Granseal 城堡：一年后讲话与首次控制交接](new-granseal-castle-year-later-control.md)，了解目标初始化；后续城镇/战役内容另行限定范围。本文不增加可玩重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#739](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/739) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。源码身份使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。命令索引指从零开始的脚本记录，不是帧数或实测时长。叙事摘要不增加玩法谓词。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。命令索引指从零开始的脚本记录，不是帧数或实测时长。叙事摘要不增加玩法谓词。
 
 ## 1. 胜利、败北与逃脱产生不同返回
 
 **已确认结果规则：**Battle08 使用共享战斗循环。行动与行动结束效果后，零己方角色优先于零敌人；Bowie 零 HP 提供己方失败覆盖。单独击败敌方槽位 128 不产生特殊的仅首领胜利。选定 defeated 路由为 `ms_Empty`；其包装器要求 Bowie 存活、槽位 128 死亡且 F508 未设。其首领存在行是零，首领位置表没有 Battle08 覆盖。因此该 defeated 钩子不提供工人救援，也不移除全部剩余敌人。
 
-独立的战后行仅在完成标志 F508 未设时选择 `abcs_battle08`。共享 after 包装器在执行与跳过路径上仍为 Bowie 调用 `JoinForce(0)`。这是实际使用的过场加入表行 8，而非名字相近的旧表。它既不招募工人，也不招募 Kiwi。[选定行审阅](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#outcomes-rows-and-return-fields)拥有这些精确源码选择；共享[过场合同](../../../contracts/battle/battle-cutscene-routing.md)拥有分发与加入边界。
+独立的战后行仅在完成标志 F508 未设时选择 `abcs_battle08`。共享 after 包装器在执行与跳过路径上仍为 Bowie 调用 `JoinForce(0)`。这是实际使用的过场加入表行 8，而非名字相近的旧表。它既不招募工人，也不招募 Kiwi。[选定行审阅（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#outcomes-rows-and-return-fields)拥有这些精确源码选择；共享[过场合同](../../../contracts/battle/battle-cutscene-routing.md)拥有分发与加入边界。
 
 | 结果与提供状态 | 已确认效果 | 提供给调用方的返回 |
 | --- | --- | --- |
@@ -25,7 +25,7 @@
 
 败北或逃脱时，`UpdateBattleUnlockedFlag` 在 F508 未设时保留 F408，在 F508 已设时清除 F408。两种结果都不产生完成。若前篇 `EGRESS_MAP=14` 未变，且 BattleLoop 设置了 F399，则损坏船只存档点为 Map14 `(45,7)`、Down。其他输入地图选择各自行或 `(1,1)`、Up 后备。共享 F64 木筏重置与 F399 未设的新游戏后备规则仍归研究所有者。这些结果返回使用 `SwitchMap` 并直接进入探索，不执行另一次战斗准入扫描。自然逃脱/败北重入为**未知**。
 
-胜利治疗及随后探索治疗会跳过死亡且非不死的己方角色。其精确 HP/MP 与状态掩码限制仍由[共享结果/治疗所有者](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)负责。较后建设重置范围更广。F458 独立于 F508 控制 before/start 场景；跳过介绍不建立完成。F88 挂起入场恢复秒数、清除 F88/AI 内存、加载战斗并恢复单次行动；它本身不抑制较后的 F508 未设 after 场景。有效挂起历史与自然交战仍为**未知**。
+胜利治疗及随后探索治疗会跳过死亡且非不死的己方角色。其精确 HP/MP 与状态掩码限制仍由[共享结果/治疗所有者（英文）](../../../../../research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md#outcome-branches-and-caller-order)负责。较后建设重置范围更广。F458 独立于 F508 控制 before/start 场景；跳过介绍不建立完成。F88 挂起入场恢复秒数、清除 F88/AI 内存、加载战斗并恢复单次行动；它本身不抑制较后的 F508 未设 after 场景。有效挂起历史与自然交战仍为**未知**。
 
 ## 2. 工人恢复意识，但隧道仍止于对话边界
 
@@ -35,7 +35,7 @@ F6 未设时，场景选择将 Kiwi 移到 `(63,63)`、Down；F6 已设则跳过
 
 向导靠近并对朋友作出反应。朋友先获得姿势精灵，再恢复工人精灵；随后动画与朝向动作伴随对话。**推断：**场景描绘落石后恢复意识。没有治疗、死亡、军团加入或物品获取操作实现该叙事。
 
-朋友描述石头和阻塞的隧道。摄像机转向隧道区域再转回；向导跳跃，感叹无法取得宝藏，并提议返回船只。**已确认源码内容，且有严格限制：**场景没有移除石头、图块复制或穿越隧道操作。对话不证明碰撞、可步行路径、通行或宝藏内容。[after 场景所有者](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#battle08-after-scene)绑定命令 0–60 与对话 ID `09A4..09B2`，不将对话转为路线证据。
+朋友描述石头和阻塞的隧道。摄像机转向隧道区域再转回；向导跳跃，感叹无法取得宝藏，并提议返回船只。**已确认源码内容，且有严格限制：**场景没有移除石头、图块复制或穿越隧道操作。对话不证明碰撞、可步行路径、通行或宝藏内容。[after 场景所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#battle08-after-scene)绑定命令 0–60 与对话 ID `09A4..09B2`，不将对话转为路线证据。
 
 具名等待也保留各自范围。朋友的 Right/Left 动作与向导的碰撞动作不等待完成地启动；等待 120 不是显式汇合。其他工人移动、init 动作和跳跃逐一等待。被等待的行动者或解释器条件性滚动等待，都不证明全部运动、摄像机、文本、淡入淡出或音频服务已完成。
 
@@ -56,7 +56,7 @@ F6 未设时，场景选择将 Kiwi 移到 `(63,63)`、Down；F6 已设则跳过
 | F700 已设，F508 已设，F705 已设 | 不运行任何一个场景，直接返回。 |
 | F700 已设，F508 已设，F705 未设 | 运行建设 `cs_50806`，然后设置 F705 并返回。 |
 
-较早[航行](../grans-opening/voyage-through-damaged-ship-control.md)在预期历史中提供 F700；本次胜利提供 F508。F705 未设是必要输入。F508 已设时直接进行 Map73 init，可以不经过本次工人 after 场景而选择建设；F700 未设则改选航行。重复胜利本身不提供 Map73 返回，因此不能保证每次胜利后都会建设。[战斗至 init 审阅](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#battle-caller-to-map73-init)拥有此条件连接。
+较早[航行](../grans-opening/voyage-through-damaged-ship-control.md)在预期历史中提供 F700；本次胜利提供 F508。F705 未设是必要输入。F508 已设时直接进行 Map73 init，可以不经过本次工人 after 场景而选择建设；F700 未设则改选航行。重复胜利本身不提供 Map73 返回，因此不能保证每次胜利后都会建设。[战斗至 init 审阅（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#battle-caller-to-map73-init)拥有此条件连接。
 
 ## 4. 返回船只呈现新城建设
 
@@ -71,9 +71,9 @@ F6 未设时，场景选择将 Kiwi 移到 `(63,63)`、Down；F6 已设则跳过
 
 `followEntity` 选择器 2 解析偏移 `(-24,0)`，并经 `AddFollower` 安装随从动作脚本；较后 `eas_Init` 替换会终止此脚本关系。尚未建立它跨新地图加载存续。三个 `setDest` 调用各自未改动的实体字，其位 15 均未设，因此 `csc29_setEntityDest` 在位置等于目标前等待，之后才返回。实际成功移动及其他服务仍为**未知**。
 
-`setBlocks` 调用 `CopyMapBlocks`，标记两个视图平面待更新。`setPosFlash` 在等待期间交替船只 X 坐标，然后赋予最终位置和目标。两种效果都不消耗建筑材料或物品栏物品。[建设所有者](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#map73-later-scene-and-castle-request)保留精确命令 0–52、复制顺序与对话 ID `08F0..08F3`；此叙事摘要不替代这些源码操作。
+`setBlocks` 调用 `CopyMapBlocks`，标记两个视图平面待更新。`setPosFlash` 在等待期间交替船只 X 坐标，然后赋予最终位置和目标。两种效果都不消耗建筑材料或物品栏物品。[建设所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#map73-later-scene-and-castle-request)保留精确命令 0–52、复制顺序与对话 ID `08F0..08F3`；此叙事摘要不替代这些源码操作。
 
-场景随后请求声音淡出并调用 `resetForceBattleStats`。**已确认重置范围：**`ResetAlliesBattleStats` 为索引 **0–29** 赋予最大 HP 和最大 MP，不按已加入、出战或存活过滤。它将已有状态掩码为 stun/poison/curse，重建属性值，随后从装备派生诅咒；保留位不是新施加的异常。与较早存活/不死角色治疗不同，此重置可恢复零 HP 己方角色。它不招募任何人，也不改变出战队伍成员身份。[已接受重置所有者](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#force-reset-and-entity-list-semantics)与[出战队伍/脚本合同](../../../contracts/party/party-roster-state.md#处理器边界)保留此区别。
+场景随后请求声音淡出并调用 `resetForceBattleStats`。**已确认重置范围：**`ResetAlliesBattleStats` 为索引 **0–29** 赋予最大 HP 和最大 MP，不按已加入、出战或存活过滤。它将已有状态掩码为 stun/poison/curse，重建属性值，随后从装备派生诅咒；保留位不是新施加的异常。与较早存活/不死角色治疗不同，此重置可恢复零 HP 己方角色。它不招募任何人，也不改变出战队伍成员身份。[已接受重置所有者（英文）](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#force-reset-and-entity-list-semantics)与[出战队伍/脚本合同](../../../contracts/party/party-roster-state.md#处理器边界)保留此区别。
 
 ## 5. 城堡请求先于调用方完成标志
 
@@ -81,7 +81,7 @@ F6 未设时，场景选择将 Kiwi 移到 `(63,63)`、Down；F6 已设则跳过
 
 探索在到达 `WaitForEvent` 前执行条件性音乐/淡入淡出调用。若类型 1 存续，非零读取跳过控制安装。`ProcessMapEvent` 在分发前清除待处理字。其类型 1 传送使用方走参数 1 为零分支，处理/清除 WARP_SFX，使实体 0 idle，退出探索，并在 d0–d3 返回地图/朝向及正 X/Y 字节，d4=0。此普通探索返回进入 `MainLoop/@Start`，同时执行 `SwitchMap` 与 `CheckBattle`。
 
-Map7 是 `MAP_NEW_GRANSEAL_CASTLE`。它没有地图替换或战斗坐标行，因此此条件准入保留 `(7,11,10,UP)` 并选择探索。**本指南止于 Map7 的 ExplorationLoop 初始化之前。**它既不建立城堡实体群/init 场景，也不建立城堡玩家就绪控制。[发出使用方所有者](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#pending-consumer-and-stopping-boundary)保留精确边界。
+Map7 是 `MAP_NEW_GRANSEAL_CASTLE`。它没有地图替换或战斗坐标行，因此此条件准入保留 `(7,11,10,UP)` 并选择探索。**本指南止于 Map7 的 ExplorationLoop 初始化之前。**它既不建立城堡实体群/init 场景，也不建立城堡玩家就绪控制。[发出使用方所有者（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#pending-consumer-and-stopping-boundary)保留精确边界。
 
 只有一个共享待处理槽位，不是队列。即使 F705 已设，覆盖或清除也可阻止城堡消费；若控制读取时待处理为零，Map73 可改为安装控制。显式目标入场前 Map73 仍为当前地图，因为请求本身不改变当前地图。
 
@@ -95,11 +95,11 @@ Map7 是 `MAP_NEW_GRANSEAL_CASTLE`。它没有地图替换或战斗坐标行，�
 
 | 主张与已接受所有者 | 已跟踪测试夹具选择 / 窄命令 | 保留边界 |
 | --- | --- | --- |
-| [结果与返回规则](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#outcomes-rows-and-return-fields) | [sf2-battle-control-static-v1](../../../../../../tests/fixtures/h2/battle-control-static-v1.json)、[sf2-battle-loop-static-v1](../../../../../../tests/fixtures/h2/battle-loop-static-v1.json)；`battle-control`、`battle-loop`。 | 共享检查、调用方标志与治疗；实际自然交战及结果历史仍未知。 |
-| [选定 after/defeated/加入行](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#outcomes-rows-and-return-fields) | [sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json) `expected.cutsceneFacts`；[sf2-battle-global-data-static-v1](../../../../../../tests/fixtures/h2/battle-global-data-static-v1.json)、[sf2-battle-routing-data-static-v1](../../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)；相同 basename 命令。 | 共享包装器事实绑定测试夹具；`routeTargetsParsed=false` 不解析行 8。实际使用的加入不同于未使用的旧加入聚合。 |
-| [Map73 选择](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#battle-caller-to-map73-init) | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json) `expected.primarySourceBodies[79]`、`ms_map73_InitFunction` 与 `cs_50806` 调用位置；[sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)；`map-init`、`map-setup`、`map-entities`。 | 静态选择器/配置身份一致；空固定条目不排除随从，也不证明自然抵达。 |
-| [after 与建设命令](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#map73-later-scene-and-castle-request) | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json) `expected.transitionCommandFacts`、`entityPopulationCommandFacts`、`mapBlockMutationCommandFacts`、`entityPlacementCommandFacts`、`entityGestureRelationshipMotionCommandFacts`、`forceStateCommandFacts.activePartyCommandFacts`；`map-script-engine`。 | 处理器事实与精简源码顺序证据保留这些操作。研究拥有已审阅的 `abcs_battle08` / `cs_50806` 程序流、内联动作、对话与列表。 |
-| [独立请求使用方](../../../../../research/world/map-event-request-consumption.md#confirmed-consumer-topology) | [sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json) `eventRequestConsumption.consumerContexts`；[sf2-common-maps-static-v1](../../../../../../tests/fixtures/h2/common-maps-static-v1.json)、[sf2-common-scripting-static-v1](../../../../../../tests/fixtures/h2/common-scripting-static-v1.json)；相同 basename 命令。 | BattleLoop 直接字段读取不同于探索待处理消费。没有主张可执行的组合自然链。 |
+| [结果与返回规则（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#outcomes-rows-and-return-fields) | [sf2-battle-control-static-v1](../../../../../../tests/fixtures/h2/battle-control-static-v1.json)、[sf2-battle-loop-static-v1](../../../../../../tests/fixtures/h2/battle-loop-static-v1.json)；`battle-control`、`battle-loop`。 | 共享检查、调用方标志与治疗；实际自然交战及结果历史仍未知。 |
+| [选定 after/defeated/加入行（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#outcomes-rows-and-return-fields) | [sf2-battle-cutscenes-static-v1](../../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json) `expected.cutsceneFacts`；[sf2-battle-global-data-static-v1](../../../../../../tests/fixtures/h2/battle-global-data-static-v1.json)、[sf2-battle-routing-data-static-v1](../../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)；相同 basename 命令。 | 共享包装器事实绑定测试夹具；`routeTargetsParsed=false` 不解析行 8。实际使用的加入不同于未使用的旧加入聚合。 |
+| [Map73 选择（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#battle-caller-to-map73-init) | [sf2-map-init-static-v1](../../../../../../tests/fixtures/h2/map-init-static-v1.json) `expected.primarySourceBodies[79]`、`ms_map73_InitFunction` 与 `cs_50806` 调用位置；[sf2-map-setup-static-v1](../../../../../../tests/fixtures/h2/map-setup-static-v1.json)、[sf2-map-entities-static-v1](../../../../../../tests/fixtures/h2/map-entities-static-v1.json)；`map-init`、`map-setup`、`map-entities`。 | 静态选择器/配置身份一致；空固定条目不排除随从，也不证明自然抵达。 |
+| [after 与建设命令（英文）](../../../../../research/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md#map73-later-scene-and-castle-request) | [sf2-map-script-engine-static-v1](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json) `expected.transitionCommandFacts`、`entityPopulationCommandFacts`、`mapBlockMutationCommandFacts`、`entityPlacementCommandFacts`、`entityGestureRelationshipMotionCommandFacts`、`forceStateCommandFacts.activePartyCommandFacts`；`map-script-engine`。 | 处理器事实与精简源码顺序证据保留这些操作。研究拥有已审阅的 `abcs_battle08` / `cs_50806` 程序流、内联动作、对话与列表。 |
+| [独立请求使用方（英文）](../../../../../research/world/map-event-request-consumption.md#confirmed-consumer-topology) | [sf2-map-event-request-consumption-static-v1](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json) `eventRequestConsumption.consumerContexts`；[sf2-common-maps-static-v1](../../../../../../tests/fixtures/h2/common-maps-static-v1.json)、[sf2-common-scripting-static-v1](../../../../../../tests/fixtures/h2/common-scripting-static-v1.json)；相同 basename 命令。 | BattleLoop 直接字段读取不同于探索待处理消费。没有主张可执行的组合自然链。 |
 
 相应[过场验证器](../../../../../../src/sf2tool/h2/battle_cutscenes.py)与[测试夹具 schema](../../../../../../schemas/h2-battle-cutscenes-static-fixture.schema.json)、[map-init 验证器](../../../../../../src/sf2tool/h2/map_init.py)与[测试夹具 schema](../../../../../../schemas/h2-map-init-static-fixture.schema.json)、[脚本验证器](../../../../../../src/sf2tool/h2/map_script_engine.py)与[schema 组合](../../../../../../src/sf2tool/h2/map_script_schema.py)，以及[请求消费验证器](../../../../../../src/sf2tool/h2/map_event_request_consumption.py)保留精确比较面。[地图合同](../../../contracts/world/map-exploration.md#加载与选择顺序)保留依路径而异的加载；[配置合同](../../../contracts/world/map-setup-data.md#合同边界)拥有配置身份。这些是证据边界，不是新重制架构或完成主张。
 

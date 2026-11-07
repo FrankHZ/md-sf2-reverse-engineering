@@ -7,7 +7,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battle-action-construction.md`](../../../contracts/battle/battle-action-construction.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-action-construction.md`（英文规范源）](../../../contracts/battle/battle-action-construction.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -20,9 +20,9 @@
 5. Taros 与 Burst Rock 特殊构建边界；
 6. 战斗演出消息命令的物理形状与静态源码语料。
 
-它不拥有玩家或 AI 如何选择动作、合法目标如何形成、详细伤害/法术/奖励公式、持久演出回放、渲染呈现或战斗结果。那些仍属于[战场导航合同](../../../contracts/battle/battlefield-navigation.md)、[交战解决合同](../../../contracts/battle/combat-resolution.md)、[法术解决合同](../../../contracts/battle/spell-resolution.md)与[战斗控制生命周期合同](../../../contracts/battle/battle-control-lifecycle.md)。
+它不拥有玩家或 AI 如何选择动作、合法目标如何形成、详细伤害/法术/奖励公式、持久演出回放、渲染呈现或战斗结果。那些仍属于[战场导航合同](battlefield-navigation.md)、[交战解决合同](combat-resolution.md)、[法术解决合同](spell-resolution.md)与[战斗控制生命周期合同](battle-control-lifecycle.md)。
 
-可执行所有者是 `sf2-battle-actions-static-v1`，位于 `tests/fixtures/h2/battle-actions-static-v1.json`。研究所有者是[battle action script construction](../../../../research/battle/battle-actions.md)。这是静态 source/ROM 合同。既有 H3 测试夹具只在其自身接缝闭合下游公式与回放；本文档不把它们聚合成新的运行时黄金值。
+可执行所有者是 `sf2-battle-actions-static-v1`，位于 `tests/fixtures/h2/battle-actions-static-v1.json`。研究所有者是[battle action script construction（英文）](../../../../research/battle/battle-actions.md)。这是静态 source/ROM 合同。既有 H3 测试夹具只在其自身接缝闭合下游公式与回放；本文档不把它们聚合成新的运行时黄金值。
 
 ## 规范构建状态
 
@@ -84,7 +84,7 @@ Burst Rock 爆炸在最终结束前重入目标与动作配置。该有序列表
 - 直接致命命中在异常、诅咒伤害与后续构建之前退出；
 - 致命诅咒伤害在 double/counter 构建之前退出。
 
-详细算术、HP 夹断、闪避/会心含义、反应回放、奖励入账与后续验证仍归[交战解决](../../../contracts/battle/combat-resolution.md)所有。本合同保留这些所有者如何被排序；它不复制或加宽其运行时用例。
+详细算术、HP 夹断、闪避/会心含义、反应回放、奖励入账与后续验证仍归[交战解决](combat-resolution.md)所有。本合同保留这些所有者如何被排序；它不复制或加宽其运行时用例。
 
 ## 物品使用与损坏路由
 
@@ -192,8 +192,8 @@ Burst Rock 爆炸在最终结束前重入目标与动作配置。该有序列表
 | --- | --- | --- | --- |
 | 完整清单、动作管线、物理顺序、物品、Taros、目标排序 | **已确认静态** | `sf2-battle-actions-static-v1`（[`battle-actions-static-v1.json`](../../../../../tests/fixtures/h2/battle-actions-static-v1.json)） | 自然调用方可达性、未建模子路线、时序/呈现 |
 | 消息宏、分发器连接、布局、54 站点语料、候选 ID | **已确认静态** | 同一 `sf2-battle-actions-static-v1` 可执行所有者 | 运行时等待/输入/完成行为、频率、渲染文本/布局 |
-| 物理算术与持久回放 | **独立已确认子集** | [交战解决合同](../../../contracts/battle/combat-resolution.md) | 其分项 **未知** 边界；无聚合完成声称 |
-| 法术/物品效果与状态/奖励回放 | **独立已确认子集** | [法术解决合同](../../../contracts/battle/spell-resolution.md) | 不受支持法术、自然多目标顺序、完整遭遇状态 |
+| 物理算术与持久回放 | **独立已确认子集** | [交战解决合同](combat-resolution.md) | 其分项 **未知** 边界；无聚合完成声称 |
+| 法术/物品效果与状态/奖励回放 | **独立已确认子集** | [法术解决合同](spell-resolution.md) | 不受支持法术、自然多目标顺序、完整遭遇状态 |
 | 动作选择、目标意图、战术、呈现、结果 | **未知 / 独立所有者** | 无聚合可执行所有者 | AI/玩家控制、渲染器、战斗控制器与未来产品决定 |
 
 ## 复现

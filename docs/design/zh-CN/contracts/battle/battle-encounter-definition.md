@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battle-encounter-definition.md`](../../../contracts/battle/battle-encounter-definition.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-encounter-definition.md`（英文规范源）](../../../contracts/battle/battle-encounter-definition.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -31,7 +31,7 @@
 - `sf2-battle-routing-data-static-v1`，位于
   [`tests/fixtures/h2/battle-routing-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)。
 
-研究所有者是[battle spriteset data](../../../../research/battle/battle-spriteset-data.md)、[global battle data](../../../../research/battle/battle-global-data.md)与[battle routing 与 terrain data](../../../../research/battle/battle-routing-data.md)。
+研究所有者是[battle spriteset data（英文）](../../../../research/battle/battle-spriteset-data.md)、[global battle data（英文）](../../../../research/battle/battle-global-data.md)与[battle routing 与 terrain data（英文）](../../../../research/battle/battle-routing-data.md)。
 
 ## 合同前证据审计
 
@@ -94,7 +94,7 @@
 - 每个源码放置立即可见的证明；
 - 特定 AI 策略、物品效果、跟随目标过渡或区域激活规则的证明。
 
-运行时战斗员准入与清理归[battle-control 合同](../../../contracts/battle/battle-control-lifecycle.md)。AI 解读归[battle-AI 决定合同](../../../contracts/battle/battle-ai-decision.md)，玩家发出命令归[battle-action 构建合同](../../../contracts/battle/battle-action-construction.md)。已接受受限运行时用例之外的隐藏/延迟生成状态保持 **未知**。
+运行时战斗员准入与清理归[battle-control 合同](battle-control-lifecycle.md)。AI 解读归[battle-AI 决定合同](battle-ai-decision.md)，玩家发出命令归[battle-action 构建合同](battle-action-construction.md)。已接受受限运行时用例之外的隐藏/延迟生成状态保持 **未知**。
 
 ## 地图坐标与触发元数据
 
@@ -105,7 +105,7 @@
 - 地图身份与战斗身份之间的区分；
 - 显式默认对非默认触发表示。
 
-触发行建立存储遭遇元数据，而非调用方准入测试、正常剧情可达性、碰撞行为、摄像机放置或过渡何时可见。地图移动与碰撞仍归[地图探索合同](../../../contracts/world/map-exploration.md)；战役选择在本合同之外。
+触发行建立存储遭遇元数据，而非调用方准入测试、正常剧情可达性、碰撞行为、摄像机放置或过渡何时可见。地图移动与碰撞仍归[地图探索合同](../world/map-exploration.md)；战役选择在本合同之外。
 
 ## 地形选择边界
 
@@ -116,7 +116,7 @@
 
 `LoadBattleTerrainData` 用 `CURRENT_BATTLE * 4` 索引指针表、写入固定战斗地形数组并调用已接受 Stack 解码器。每个唯一载荷产生一个 2,304 字节的 48×48 网格。
 
-本合同只拥有所选载荷身份与别名保留。地形值、移动消耗、阻挡、邻接、可达性、路线构建与光标交互归[战场导航合同](../../../contracts/battle/battlefield-navigation.md)。实现必须把别名保留为等价所选内容；它可以在内部去重存储。
+本合同只拥有所选载荷身份与别名保留。地形值、移动消耗、阻挡、邻接、可达性、路线构建与光标交互归[战场导航合同](battlefield-navigation.md)。实现必须把别名保留为等价所选内容；它可以在内部去重存储。
 
 ## 背景、队长与成员元数据
 
@@ -130,13 +130,13 @@
 | 敌人队长 | 45 个标志、28 个在场 | 成员已确认；败北/结果使用归 battle control |
 | 减半 EXP 成员 | 一个战斗条目 | 成员已确认；EXP 算术归交战解决 |
 
-战斗背景与开关不定义战斗演出排序、调色板时序或资源转移。那些仍归[battle-scene presentation 合同](../../../contracts/battle/battle-scene-presentation.md)。减半 EXP 行不得被用作计算或奖励时序的独立证明；那些归[交战解决合同](../../../contracts/battle/combat-resolution.md)。
+战斗背景与开关不定义战斗演出排序、调色板时序或资源转移。那些仍归[battle-scene presentation 合同](battle-scene-presentation.md)。减半 EXP 行不得被用作计算或奖励时序的独立证明；那些归[交战解决合同](combat-resolution.md)。
 
 ## 移动矩阵边界
 
 global-data 所有者确认一个包含 208 个条目（其中 127 个被阻挡）的 13×16 地形效果/移动消耗矩阵。本合同把该矩阵保留为被引用的遭遇支持域，而非遭遇编写行内容。
 
-移动类含义、消耗查找、阻挡、占用、可达性、路径平局打破与地图维度归[战场导航](../../../contracts/battle/battlefield-navigation.md)。除非后续设计决定显式创建带单一真相来源的派生编写视图，否则遭遇工具不得把该矩阵复制成独立可编辑平衡表。
+移动类含义、消耗查找、阻挡、占用、可达性、路径平局打破与地图维度归[战场导航](battlefield-navigation.md)。除非后续设计决定显式创建带单一真相来源的派生编写视图，否则遭遇工具不得把该矩阵复制成独立可编辑平衡表。
 
 ## 中立、激光、随机与特殊元数据
 
@@ -214,7 +214,7 @@ global-data 所有者确认一个包含 208 个条目（其中 127 个被阻挡�
 | spriteset 槽、头、聚合放置/AI 几何形状 | **已确认静态** | `sf2-battle-spriteset-data-static-v1`（[`battle-spriteset-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-spriteset-data-static-v1.json)） | 更深所有者之外的行级语义、非 Battle01 集成、隐藏/延迟过渡 |
 | 地图行、背景、队长、移动矩阵、中立/激光/随机/特殊表 | **已确认静态** | `sf2-battle-global-data-static-v1`（[`battle-global-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-global-data-static-v1.json)） | 调用方行为、呈现、准入、选择与平衡意图 |
 | 地形选择/别名与 48 槽过场路由表形状 | **已确认静态** | `sf2-battle-routing-data-static-v1`（[`battle-routing-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)） | 过场准入/回退/标志；地形行为归导航 |
-| 名册准入、回合、结果 | **独立所有者** | [Battle-control lifecycle](../../../contracts/battle/battle-control-lifecycle.md) | 不得从源码放置计数推断运行时生命周期 |
+| 名册准入、回合、结果 | **独立所有者** | [Battle-control lifecycle](battle-control-lifecycle.md) | 不得从源码放置计数推断运行时生命周期 |
 | AI、移动、解决、呈现与战役含义 | **独立所有者 / 未知** | 专用合同与未来证据 | 无聚合遭遇测试夹具闭合这些行为 |
 
 ## 复现

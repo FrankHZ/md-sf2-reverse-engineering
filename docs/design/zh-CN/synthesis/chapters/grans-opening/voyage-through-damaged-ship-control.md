@@ -1,14 +1,14 @@
 # 航行登陆至损坏船只控制
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/voyage-through-damaged-ship-control.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/voyage-through-damaged-ship-control.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 出航场景将船送向大陆。**推断的叙事连接：**航行抵达 Parmecia，猛烈登陆促使难民回收木材，而 Jaha 尝试帮忙后，众人要求 Bowie 将木板带到甲板上。**已确认静态内容：**Map73 首次抵达 init 包含整个序列，在脚本内将当前地图改为 Map14，返回后写入 F700。**未知：**自然抵达、服务完成、实际行动者状态，以及随后事件读取是否允许玩家控制。
 
-本文承接[地震城镇出口至码头出航](earthquake-town-through-docks-departure.md)。已接受的[研究所有者](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md)提供固定源码、对话、内联动作及调用方审阅。本指南支持内容/设计规划，止于 Map14 首次初始化后的控制/事件读取。下一条件分段见[损坏船只木板选择至 Battle08 准入（中文）](../eastern-parmecia/damaged-ship-plank-through-battle08.md)；城镇建设仍独立。本指南不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#731](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/731) 的 Standard 严谨度协议。
+本文承接[地震城镇出口至码头出航](earthquake-town-through-docks-departure.md)。已接受的[研究所有者（英文）](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md)提供固定源码、对话、内联动作及调用方审阅。本指南支持内容/设计规划，止于 Map14 首次初始化后的控制/事件读取。下一条件分段见[损坏船只木板选择至 Battle08 准入（中文）](../eastern-parmecia/damaged-ship-plank-through-battle08.md)；城镇建设仍独立。本指南不增加重制能力。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有 [#731](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/731) 的 Standard 严谨度协议。
 
 `Fnnn` 表示标志 nnn。源码引用使用
 [`ShiningForceCentral/SF2DISASM` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6`](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) 的 `disasm/`。
-研究与测试夹具绑定[根基线](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。下方命令索引是从零开始的脚本记录，不是帧数或实测时长。对话依据已接受研究概述；措辞不产生玩法谓词。
+研究与测试夹具绑定[根基线（英文）](../../../../../../README.md#pinned-original-baseline)中的 USA 零售 ROM。下方命令索引是从零开始的脚本记录，不是帧数或实测时长。对话依据已接受研究概述；措辞不产生玩法谓词。
 
 ## 1. 抵达先选择首次场景，再考虑交还控制
 
@@ -25,7 +25,7 @@ init 选择器区分首次抵达和后续访问：
 | F700 已设，F508 已设，F705 已设 | 不运行任何一个场景，直接返回；本次入场保留 Map73。 |
 | F700 已设，F508 已设，F705 未设 | 选择较后的 `cs_50806`，然后设置 F705 并返回。其城镇建设内容不在本指南范围内。 |
 
-F700 选择场景，不证明控制已安装或所有服务已完成。F74、F640、出战队伍就绪和 Battle08 完成都不是 F700 未设分支的额外谓词。[抵达/选择器审阅](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#map73-admission-and-init-selection)拥有这些区别。
+F700 选择场景，不证明控制已安装或所有服务已完成。F74、F640、出战队伍就绪和 Battle08 完成都不是 F700 未设分支的额外谓词。[抵达/选择器审阅（英文）](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#map73-admission-and-init-selection)拥有这些区别。
 
 ## 2. 航行重置属性值，并保留 Kiwi 内容的条件性
 
@@ -60,7 +60,7 @@ Astral 与大臣要求船长不顾损坏登陆，并讨论木材再利用 (29–
 
 这些是声明，不是观察到的最终位置或军团成员身份。`loadMapEntities` 清除实体、初始化随从、声明固定记录，并在精灵重载前声明主实体 0。逻辑引用通过实体索引映射解析。已映射己方角色会被跳过，因此 F66/F72/F73 可使 Sarah/Chester、Kazin 或 Slade 使用随从放置，而非其固定记录。F65 在 Map73 添加大地图随从前缀；Map14 使用普通随从列表。清除 F74 不会归一化这些输入，脚本也不归一化 `PLAYER_TYPE`。声明 Kiwi 精灵不招募他或设置 F6。
 
-[实体/重置审阅](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#force-reset-and-entity-list-semantics)拥有列表身份和随从反例。在该调用方处，所需行动者映射、自然移动及实际军团/出战队伍状态仍为**未知**。
+[实体/重置审阅（英文）](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#force-reset-and-entity-list-semantics)拥有列表身份和随从反例。在该调用方处，所需行动者映射、自然移动及实际军团/出战队伍状态仍为**未知**。
 
 ## 4. Jaha 木板场景改变布局与呈现
 
@@ -80,7 +80,7 @@ Astral 与大臣要求船长不顾损坏登陆，并讨论木材再利用 (29–
 - 图块复制变更工作地图并标记视野平面待更新。`(63,63)` 是临时布局单元，不是物品栏槽位。这些复制不提供物品获取或转移。
 - `setPriority` 解析当前实体，对零操作数写 0，对任意非零操作数写 1。因此最后一对操作针对 Bowie 和船内中间物体，而非此前使用 132 的航行船只或人群行动者。源码层名称不证明渲染覆盖关系。
 
-该脚本后面没有玩家控制的搬运、传送请求、剧情标志写入或第二次 init。Bowie 在创作放置 `(40,8)`、Left 之后没有移动。实际行动者位置、服务/等待终止、物体解读和视听结果仍受[完整脚本审阅](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#complete-first-arrival-script)限定。
+该脚本后面没有玩家控制的搬运、传送请求、剧情标志写入或第二次 init。Bowie 在创作放置 `(40,8)`、Left 之后没有移动。实际行动者位置、服务/等待终止、物体解读和视听结果仍受[完整脚本审阅（英文）](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#complete-first-arrival-script)限定。
 
 ## 5. Map73 调用方返回时，当前地图已是 Map14
 
@@ -99,7 +99,7 @@ Map14 默认 init 有 F703 控制的 `cs_58FA4` 调用及较后 EGRESS_MAP 写�
 
 早先入场清除以及 `cs_503A6` 没有显式传送，不证明该次读取为零：VInt 驱动的行动者/服务可在等待期间运行。F700 写入发生在**脚本之后、该条件控制使用方之前**。其源码注释不能证明玩家控制已恢复。
 
-后续事件查找使用当前 Map14 数据。`GetCurrentMapSetup` 选择默认配置，除非 F458 选择 `ms_map14_flag458`；这些配置有不同的实体/区域（事件）指针，并共用区域描述/物品指针。这标识未来事件所有者，不调用新 init，也不消费其玩家触发内容。[调用方/控制审阅](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#in-script-loading-caller-return-and-first-control-read)保留该边界。后续行走、木板选择和 Battle08 准入不在本指南范围内。
+后续事件查找使用当前 Map14 数据。`GetCurrentMapSetup` 选择默认配置，除非 F458 选择 `ms_map14_flag458`；这些配置有不同的实体/区域（事件）指针，并共用区域描述/物品指针。这标识未来事件所有者，不调用新 init，也不消费其玩家触发内容。[调用方/控制审阅（英文）](../../../../../research/chapters/grans-opening/voyage-through-damaged-ship-control.md#in-script-loading-caller-return-and-first-control-read)保留该边界。后续行走、木板选择和 Battle08 准入不在本指南范围内。
 
 ## 证据审阅与剩余限制
 

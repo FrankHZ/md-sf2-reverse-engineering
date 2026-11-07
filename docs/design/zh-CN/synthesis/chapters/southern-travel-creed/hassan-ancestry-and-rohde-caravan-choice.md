@@ -1,10 +1,10 @@
 # Hassan 祖先对话与 Rohde 的 Caravan 选择
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Hassan 提供两段独立对话。祭司询问一行人的来处，向 Peter 讲述祖先追随 Max 的故事。另一边，Rohde 认出 Achilles Sword，提议随行获取 Ancient Caravan。拒绝后可再次交谈选择；接受会请求跟随并设置未来剧情状态。不招募军团成员、消耗剑或使 Caravan 可运行。
 
-**已确认：**已接受的[研究所有者](../../../../../research/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)提供此处说明的静态准入、完整对话/行动图及直接调用方/消费者关联。**推断：**交流呈现祖先故事与未来交通工具向导。**未知：**自然准入、实际传入状态/输入、服务与表现完成、可用控制、说话者主张的历史真实性与持久保存。Fnnn 表示标志 nnn；坐标为地图瓦片，记录索引从零开始，下文对话为转述。
+**已确认：**已接受的[研究所有者（英文）](../../../../../research/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)提供此处说明的静态准入、完整对话/行动图及直接调用方/消费者关联。**推断：**交流呈现祖先故事与未来交通工具向导。**未知：**自然准入、实际传入状态/输入、服务与表现完成、可用控制、说话者主张的历史真实性与持久保存。Fnnn 表示标志 nnn；坐标为地图瓦片，记录索引从零开始，下文对话为转述。
 
 城镇实体群与交通限制见 [Battle16 结果至 Hassan 入场](battle16-outcomes-through-hassan-entry.md)。本指南不要求该结果或任何一段对话先发生。止于对话的条件调用方/控制返回，早于剑的获取、Rick、城镇离开、Taros 交战或 Caravan 使用。不增加重制能力或自然游玩流程。
 
@@ -88,7 +88,7 @@ Rohde 使用 `$C0,ALLY_ROHDE`；Peter 使用 `$0,ALLY_PETER`。Text1382/1384 与
 
 ### 选择 Yes 或 No
 
-已接受的[提示所有者](../../../../../research/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md#caller-prompt-result-and-response-texts)提供实际输入规则。初始选中 Yes。非零入口输入快照必须先释放至零。循环按 Left、Right、B、C、A 顺序测试：Left 选 Yes，Right 选 No；均不确认。B 选择 No 并退出；C/A 确认选项。无输入则等待，没有超时或自动接受。B 是拒绝，不是第三种剧情结果。
+已接受的[提示所有者（英文）](../../../../../research/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md#caller-prompt-result-and-response-texts)提供实际输入规则。初始选中 Yes。非零入口输入快照必须先释放至零。循环按 Left、Right、B、C、A 顺序测试：Left 选 Yes，Right 选 No；均不确认。B 选择 No 并退出；C/A 确认选项。无输入则等待，没有超时或自动接受。B 是拒绝，不是第三种剧情结果。
 
 提示窗口关闭后，d0=0 表示 Yes，d0=`$FFFF` 表示 No/B。脚本在零时设置 F89、非零时清除，再睡眠 10 后按标志分支。旧传入 F89 不能替代本次提示完成。实际采样输入、释放时序和可见选择仍未知。
 
@@ -139,14 +139,14 @@ FOLLOWER_B31 是逻辑查找映射，**不是物理31，也不自动等于 Peter
 
 ## 证据追踪与审阅边界
 
-**已确认溯源：**已接受 #828/PR830 研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现与覆盖所有者](../../../../../research/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md#reproduction-and-coverage-limits)涵盖100 条选定记录、十二个内联主体、25 个脚本文本位置1372–1396 和两个调用方位置1371。物理语料范围不是执行路线。本指南使用这些已接受关联，不调查原始源码、重生成载荷或采集运行时。
+**已确认溯源：**已接受 #828/PR830 研究绑定 SF2DISASM master `c834c652b6862bc5679fd7f69a38a7093206efc6` 与已注册 USA 零售 ROM。[复现与覆盖所有者（英文）](../../../../../research/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md#reproduction-and-coverage-limits)涵盖100 条选定记录、十二个内联主体、25 个脚本文本位置1372–1396 和两个调用方位置1371。物理语料范围不是执行路线。本指南使用这些已接受关联，不调查原始源码、重生成载荷或采集运行时。
 
 | 说明边界 | 现有所有者与可执行追踪 | 追踪不确立的内容 |
 | --- | --- | --- |
 | 祭司/交谈/物品调用方 | [地图探索](../../../contracts/world/map-exploration.md)；`sf2-map-events-static-v1` 分片[zone 程序](../../../../../../tests/fixtures/h2/map-events/zone-programs.json)、[实体程序](../../../../../../tests/fixtures/h2/map-events/entity-programs.json)、[物品程序](../../../../../../tests/fixtures/h2/map-events/item-programs.json)：programs148/671/78，全部5/25/6 操作 | 选定行、激活、物品栏服务主体与包装器是已接受研究关联；操作计数不是自然准入。 |
 | 完整场景、提示与标志 | [对话](../../../contracts/interface/dialogue-system.md)、[输入](../../../contracts/interface/input-system.md)；[地图脚本夹具](../../../../../../tests/fixtures/h2/map-script-engine-static-v1.json)中的 `sf2-map-script-engine-static-v1`，[菜单夹具](../../../../../../tests/fixtures/h2/common-menus-static-v1.json)中的 `sf2-common-menus-static-v1` | 跟踪命令事实投影保留位置/操作数；完整 programCorpus/内联主体与文本归属是保留研究选项。菜单/处理器矩阵不是这些选择的传入输入或启用服务观察。 |
-| 物品栏搜索与物品结果 | [物品事务研究](../../../../../research/world/map-event-item-transactions.md)；对应[物品](../../../../../../tests/fixtures/h2/map-event-item-transactions-static-v1.json)/[属性](../../../../../../tests/fixtures/h2/common-stats-static-v1.json)夹具中的 `sf2-map-event-item-transactions-static-v1`、`sf2-common-stats-static-v1` | 汇总调用方事实保留 Map9 交谈的定位调用与 FieldMenu/d6 接缝；不独立执行 Map9 物品使用、消耗或存储/持久性。 |
-| 跟随、实体群与返回 | [名册](../../../contracts/party/party-roster-state.md)、[探索流程](../../../contracts/world/exploration-control-flow.md)、[已接受跟随](../../../../../research/chapters/eastern-parmecia/polca-oddler-choice-and-following.md#current-chain-versus-future-follower-population)；[init](../../../../../../tests/fixtures/h2/map-init-static-v1.json)/[请求](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)夹具中的 `sf2-map-init-static-v1`、`sf2-map-event-request-consumption-static-v1` | 共享命令/服务、实体群与请求事实不证明当前链、全部行动者完成、响应输入或存档/恢复。 |
+| 物品栏搜索与物品结果 | [物品事务研究（英文）](../../../../../research/world/map-event-item-transactions.md)；对应[物品](../../../../../../tests/fixtures/h2/map-event-item-transactions-static-v1.json)/[属性](../../../../../../tests/fixtures/h2/common-stats-static-v1.json)夹具中的 `sf2-map-event-item-transactions-static-v1`、`sf2-common-stats-static-v1` | 汇总调用方事实保留 Map9 交谈的定位调用与 FieldMenu/d6 接缝；不独立执行 Map9 物品使用、消耗或存储/持久性。 |
+| 跟随、实体群与返回 | [名册](../../../contracts/party/party-roster-state.md)、[探索流程](../../../contracts/world/exploration-control-flow.md)、[已接受跟随（英文）](../../../../../research/chapters/eastern-parmecia/polca-oddler-choice-and-following.md#current-chain-versus-future-follower-population)；[init](../../../../../../tests/fixtures/h2/map-init-static-v1.json)/[请求](../../../../../../tests/fixtures/h2/map-event-request-consumption-static-v1.json)夹具中的 `sf2-map-init-static-v1`、`sf2-map-event-request-consumption-static-v1` | 共享命令/服务、实体群与请求事实不证明当前链、全部行动者完成、响应输入或存档/恢复。 |
 
 所有者复现命令包括 `uv run sf2 h2 map-events`、`map-script-engine`、`common-menus`、`common-stats`、`map-init`、`map-event-item-transactions` 与 `map-event-request-consumption`。受控复现于同一进程加载所属工作树忽略的私有输入配置。仅审阅说明不要求复现。
 
@@ -154,4 +154,4 @@ FOLLOWER_B31 是逻辑查找映射，**不是物理31，也不自动等于 Peter
 
 [#828 最终交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828#issuecomment-6160569868)与[独立 PR830 验收](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/830#issuecomment-6160579144)保留通过比较、实际最终 CI、已解决 PowerShell/路径/截断读取检查失败与[原始完整交接](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/828#issuecomment-6160524404)。链接的 PR826/822/818 比较、已修正宏/目的地/检查和被拒命令历史经该研究所有者保留其已完成状态；本切片不重放或替换。
 
-**未知：**自然 zone/交谈/选定物品可达；实际物品栏、标志、HP、映射、列表、布局、待处理/模式及输入/释放/回答；行动/窗口/更新/服务完成、文本/动作、渲染/重叠/音频、可用控制、传说与存档/恢复持久性。这些按 [ADR0014](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期。传入标志不是历史回执；未知不自动授权采集运行时证据或扩展至下个剧情节点。
+**未知：**自然 zone/交谈/选定物品可达；实际物品栏、标志、HP、映射、列表、布局、待处理/模式及输入/释放/回答；行动/窗口/更新/服务完成、文本/动作、渲染/重叠/音频、可用控制、传说与存档/恢复持久性。这些按 [ADR0014（英文）](../../../../../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) 与 [ADR0016（英文）](../../../../../decisions/0016-remake-start-evidence-deferral.md)继续延期。传入标志不是历史回执；未知不自动授权采集运行时证据或扩展至下个剧情节点。

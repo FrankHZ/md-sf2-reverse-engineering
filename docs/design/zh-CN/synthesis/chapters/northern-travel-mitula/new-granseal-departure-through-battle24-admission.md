@@ -1,6 +1,6 @@
 # New Granseal 离开至 Battle24 准入
 
-> 本文是[规范英文原文：New Granseal Departure through Battle24 Admission](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
+> 本文是[规范英文原文：New Granseal Departure through Battle24 Admission](../../../../synthesis/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。文末审阅、环境与验证记录保留原英文综合切片的时间范围。
 
 离开 New Granseal 后又是一段大地图旅行。选定南出口进入 Map73；其东边界滚动到 Map72，保留当前探索行动者。后续区域（事件）回调可请求 Battle24，即前往 North Parmecia 的接近战。**推断：**编队布置了这段接近；它不建立强制旅程或敌人已执行战术。
 
@@ -8,9 +8,9 @@
 
 ## 证据与阅读边界
 
-已接受 Layer A 所有者为 [New Granseal 离开至 Battle24 准入](../../../../../research/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md)，经 [#977 / PR979](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/979)修正并接受。它固定 USA retail SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。以下源码路径相对 `disasm/`；Fnnn 表示标志 nnn。路线图拥有 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。解释不引入原版新发现或重制行为。
+已接受 Layer A 所有者为 [New Granseal 离开至 Battle24 准入（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md)，经 [#977 / PR979](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/979)修正并接受。它固定 USA retail SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。以下源码路径相对 `disasm/`；Fnnn 表示标志 nnn。路线图拥有 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。解释不引入原版新发现或重制行为。
 
-[Janet 指南](new-granseal-janet-recruitment-and-departure.md)提供此前城镇相遇，不是准入要求。已接受[请求状态](../../../../../research/world/map-event-request-state.md)、[请求消费](../../../../../research/world/map-event-request-consumption.md)与 [Battle23 名册](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md)所有者提供共享机制。[遭遇定义](../../../contracts/battle/battle-encounter-definition.md)与[过场路由](../../../contracts/battle/battle-cutscene-routing.md)合同保留结构边界；#977 提供选定路线/名册的深入审查。交战、Battle24 结果/Egress、North Cave 准备/爆破、Rohde 加入及 Battle25 属于独立成果。
+[Janet 指南](new-granseal-janet-recruitment-and-departure.md)提供此前城镇相遇，不是准入要求。已接受[请求状态（英文）](../../../../../research/world/map-event-request-state.md)、[请求消费（英文）](../../../../../research/world/map-event-request-consumption.md)与 [Battle23 名册（英文）](../../../../../research/chapters/southern-travel-creed/battle23-initialization-and-roster.md)所有者提供共享机制。[遭遇定义](../../../contracts/battle/battle-encounter-definition.md)与[过场路由](../../../contracts/battle/battle-cutscene-routing.md)合同保留结构边界；#977 提供选定路线/名册的深入审查。交战、Battle24 结果/Egress、North Cave 准备/爆破、Rohde 加入及 Battle25 属于独立成果。
 
 ## 离开城镇并保留大地图状态
 
@@ -100,7 +100,7 @@ F88 已设选择传入挂起状态：恢复保存 seconds、清88、清 AI memor
 
 此前治疗已独立于成员资格访问全部30 名。存活己方与 Peter7/Lemon28 获 HP/MP 最大值，状态掩码为既有 STUN/POISON/CURSE，再重建属性/装备；其他死亡己方跳过。这不是全员复活。Janet 可后备、死亡或排序不同；加入不保证出战、健康或槽位。探索随从不因此入伍。
 
-布置索引0–5 为 `(4,18),(3,17),(3,18),(2,18),(3,19),(2,17)`；6–11 为 `(2,19),(2,16),(3,16),(1,16),(1,17),(1,18)`。只复制 X/Y。行中的 HEALER1、NOTHING、NONE 指令与15/15 区域不替换己方身份、物品栏或 AI。Layer A [完整槽位/消费者说明](../../../../../research/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md#complete-ally-slots-and-enemy-configuration)保留精确字段与例外状态。
+布置索引0–5 为 `(4,18),(3,17),(3,18),(2,18),(3,19),(2,17)`；6–11 为 `(2,19),(2,16),(3,16),(1,16),(1,17),(1,18)`。只复制 X/Y。行中的 HEALER1、NOTHING、NONE 指令与15/15 区域不替换己方身份、物品栏或 AI。Layer A [完整槽位/消费者说明（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md#complete-ally-slots-and-enemy-configuration)保留精确字段与例外状态。
 
 ### 十六名敌人与编写指令
 
@@ -152,7 +152,7 @@ F524 未设时，每名敌人在物品/激活、难度与最终属性重建之�
 
 STARTING0 只保留定义 `$F000`：重新 Bishops 得 `$3000`，其他类型 `$2000`；定义 BIT4/BIT5 被丢弃，普通激活前 active/neutral 位未设。所有难度应用 floor(baseATT*5/4)，SUPER2 再应用一次：Bishop35/43、Sniper13/16、Skeleton32/40、Demon61/76，分别普通/SUPER。这些是初始化**基础 ATT**；装备/当前属性效果随后处理。不是最终攻击或伤害。
 
-Battle24 属于 `list_RandomBattles`。复制前，升级辅助程序检查列表成员资格与完成 F524。524 未设保留原类型，不抽升级 RNG。524 已设允许 Bowie 有效等级/职业与 RNG 选择升级，即使直接传入424 准入。最后未转职职业之后的职业加20；减24 再除10 的商决定后续工作。非正或零商返回原类型。更高值使用 movetype 范围/排除及重试/default 分支。飞行表空排除列表进入减1 扫描，无零守卫。不保证成功、统一升级或单一重复名册/定义/装备。坐标、AI 与物品输入仍属 spriteset；复制定义和初始化结果可不同。见 Layer A [重复状态审查](../../../../../research/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md#fresh-definitions-and-repeat-state-distinction)。
+Battle24 属于 `list_RandomBattles`。复制前，升级辅助程序检查列表成员资格与完成 F524。524 未设保留原类型，不抽升级 RNG。524 已设允许 Bowie 有效等级/职业与 RNG 选择升级，即使直接传入424 准入。最后未转职职业之后的职业加20；减24 再除10 的商决定后续工作。非正或零商返回原类型。更高值使用 movetype 范围/排除及重试/default 分支。飞行表空排除列表进入减1 扫描，无零守卫。不保证成功、统一升级或单一重复名册/定义/装备。坐标、AI 与物品输入仍属 spriteset；复制定义和初始化结果可不同。见 Layer A [重复状态审查（英文）](../../../../../research/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md#fresh-definitions-and-repeat-state-distinction)。
 
 ### 物理行动者与最终边界
 

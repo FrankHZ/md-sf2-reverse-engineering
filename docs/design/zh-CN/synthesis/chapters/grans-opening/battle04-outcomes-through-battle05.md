@@ -1,20 +1,20 @@
 # Battle 04 结果至 Battle 05 准入
 
-> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/battle04-outcomes-through-battle05.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
+> 本文是[规范英文原文](../../../../synthesis/chapters/grans-opening/battle04-outcomes-through-battle05.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
 Battle04 有两条不同源码路径通向 Galam 俘虏情节：首次完成的胜利运行 Lemon 抓捕场景，特殊败北则在承担普通败北代价之后返回 Galam。逃脱遵循选定撤离状态。在 Galam 室内，监狱对话、打开牢房和 Slade 的捷径提供下一段编写内容；城堡守卫才提供 Battle05 的实际解锁与请求。
 **推断的剧情连接：**这些场景承接[Battle 03 结果至 Battle 04 准入](battle03-outcome-through-battle04.md)的遭遇。
-**已确认静态：**已接受的 [Battle04 至 Battle05 调查](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md)连接其条件调用方与消费者。
+**已确认静态：**已接受的 [Battle04 至 Battle05 调查（英文）](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md)连接其条件调用方与消费者。
 **未知：**自然交战结果、连续合法行走、传入实体状态和完成的呈现。源码不确立强制败北或成功攻略。
 
-本指南解释地点、行动者、对话内容和状态交接，直至 Battle05 before/start。Battle04 和 Battle05 是从零计数的源码槽位 4 和 5（`BATTLE_AMBUSHED_BY_GALAM_SOLDIERS` 与 `BATTLE_GALAM_CASTLE`），并非已验证的原版 UI 编号。Galam Castle 是 Map16；Galam 室内为 Map17；Hawel 住宅为 Map43。`Fnnn` 表示标志。原版证据使用 USA 零售 ROM 及 `ShiningForceCentral/SF2DISASM` `master` 的 `c834c652b6862bc5679fd7f69a38a7093206efc6`，身份见[研究溯源](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#agreement-and-provenance)。
+本指南解释地点、行动者、对话内容和状态交接，直至 Battle05 before/start。Battle04 和 Battle05 是从零计数的源码槽位 4 和 5（`BATTLE_AMBUSHED_BY_GALAM_SOLDIERS` 与 `BATTLE_GALAM_CASTLE`），并非已验证的原版 UI 编号。Galam Castle 是 Map16；Galam 室内为 Map17；Hawel 住宅为 Map43。`Fnnn` 表示标志。原版证据使用 USA 零售 ROM 及 `ShiningForceCentral/SF2DISASM` `master` 的 `c834c652b6862bc5679fd7f69a38a7093206efc6`，身份见[研究溯源（英文）](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#agreement-and-provenance)。
 **已确认**表示具名静态事实或明确受限的观察；**推断**表示叙事连接；**未知**指出缺少的执行边界。
 
 [已接受的私有重制里程碑](../../milestones/map3-battle01-readiness.md#当前已接受里程碑)止于 Battle01 可用返回。本解释不增加后续可玩支持，也不使用重制实现作为原版证据。
 
 ## 1. Battle04 结果通向不同返回路径
 
-**已确认共享结果规则：**控制器在行动死亡处理后，以及单次行动结束效果/死亡处理后统计战斗员。要求 X 非负且 HP 为正；Bowie HP 为零会强制己方为零。己方为零优先选择败北，然后才检查敌人为零的胜利。Battle04 的敌方首领存在行为零，敌人败北程序是 `ms_Empty`。因此，仅杀死槽位 128 既不提供其胜利规则，也不提供脚本强制败北。[战斗控制合同](../../../contracts/battle/battle-control-lifecycle.md)拥有共享生命周期；[选定结果分析](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#battle04-outcome-branches)拥有 Battle04 组合，不声称可获胜性。
+**已确认共享结果规则：**控制器在行动死亡处理后，以及单次行动结束效果/死亡处理后统计战斗员。要求 X 非负且 HP 为正；Bowie HP 为零会强制己方为零。己方为零优先选择败北，然后才检查敌人为零的胜利。Battle04 的敌方首领存在行为零，敌人败北程序是 `ms_Empty`。因此，仅杀死槽位 128 既不提供其胜利规则，也不提供脚本强制败北。[战斗控制合同](../../../contracts/battle/battle-control-lifecycle.md)拥有共享生命周期；[选定结果分析（英文）](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#battle04-outcome-branches)拥有 Battle04 组合，不声称可获胜性。
 
 | 结果与谓词 | 有序状态效果 | 返回边界 |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ Battle04 有两条不同源码路径通向 Galam 俘虏情节：首次完成的�
 
 ## 2. 在 Galam 醒来恢复战斗属性，不恢复资源
 
-**已确认配置边界：**Map17 的有序选择器是 default、F505、F530；最后匹配选择器胜出。下述早期内容假设 F505/F530 未设。Map16 与 Map17 都没有标志切换地图覆盖。后期配置是替代端点，不属于所声称的早期剧情路线。[地图配置合同](../../../contracts/world/map-setup-data.md)拥有配置结构；[俘虏分析](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#conditional-captivity-and-escape-content)拥有这些选定调用方。
+**已确认配置边界：**Map17 的有序选择器是 default、F505、F530；最后匹配选择器胜出。下述早期内容假设 F505/F530 未设。Map16 与 Map17 都没有标志切换地图覆盖。后期配置是替代端点，不属于所声称的早期剧情路线。[地图配置合同](../../../contracts/world/map-setup-data.md)拥有配置结构；[俘虏分析（英文）](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#conditional-captivity-and-escape-content)拥有这些选定调用方。
 
 默认 `ms_map17_InitFunction`（`0x52450`）仅在 F660 未设时调用 `cs_5249E`，然后设置 F660。之后，F663 已设会移除实体 131，并调用 `cs_5247C` 中四次门/图块复制。调用方总会设置 F611。F660 已设跳过醒来场景及其重置和放置：不能为此重复替代分支抹除胜利/败北不同的返回坐标。
 
@@ -80,9 +80,9 @@ Map16 选择器为 default、F663、F530。选定早期配置时，X=17/任意 Y
 2. 顺序落入 `cs_5227C`，请求 Map16 `(0,0)`、Right、事件类型 1/参数 1 为零。
 3. 脚本返回后，ASM 处理器设置 F664，先于探索分发请求。
 
-F663 和 F73 都不是守卫处理器的前提。F505 未设/F664 已设时，只调用 `cs_5227C`，重新发布传送，不执行对话或 F405 生产者。因此传入 F664 已设/F405 未设状态不会重新启用 Battle05。Map16 init 还会在 F664 已设入场时移除守卫 145，因此任意重入标志不保证首场景的行动者人口。[对话合同](../../../contracts/interface/dialogue-system.md)拥有游标/固定台词语义；[选定守卫分析](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#battle05-admission-and-start-boundary)拥有行动者绑定及剧情标志算术。F405 既不是已加入 F5，也不是完成 F505。
+F663 和 F73 都不是守卫处理器的前提。F505 未设/F664 已设时，只调用 `cs_5227C`，重新发布传送，不执行对话或 F405 生产者。因此传入 F664 已设/F405 未设状态不会重新启用 Battle05。Map16 init 还会在 F664 已设入场时移除守卫 145，因此任意重入标志不保证首场景的行动者人口。[对话合同](../../../contracts/interface/dialogue-system.md)拥有游标/固定台词语义；[选定守卫分析（英文）](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#battle05-admission-and-start-boundary)拥有行动者绑定及剧情标志算术。F405 既不是已加入 F5，也不是完成 F505。
 
-**已确认请求消费者：**`WaitForEvent` 轮询；`ProcessMapEvent` 清除待处理类型；参数 1 为零的传送分支从探索退回 MainLoop。SwitchMap 保持 Map16 不变，随后若 F405 已设，`CheckBattle` 选择行 5。参数 1 非零会留在探索滚动分支。[请求消费所有者](../../../../../research/world/map-event-request-consumption.md)止于局部分发；已接受研究提供下游组合。
+**已确认请求消费者：**`WaitForEvent` 轮询；`ProcessMapEvent` 清除待处理类型；参数 1 为零的传送分支从探索退回 MainLoop。SwitchMap 保持 Map16 不变，随后若 F405 已设，`CheckBattle` 选择行 5。参数 1 非零会留在探索滚动分支。[请求消费所有者（英文）](../../../../../research/world/map-event-request-consumption.md)止于局部分发；已接受研究提供下游组合。
 
 Map16 是行 5 的地图，也是唯一匹配该地图的行，因此较早解锁遭遇不能在此抢先。两个触发坐标均为通配值 255；`(0,14,24,14)` 是返回的战斗区域数据，不是会拒绝请求 `(0,0)` 的准入矩形。F405/F505 都已设会使选择器清除 F405，并仍在该次调用返回 5，尽管守卫调用方原会在 F505 已设时返回。它们是不同谓词。F663/F73 不是选择器要求。
 
@@ -90,7 +90,7 @@ Map16 是行 5 的地图，也是唯一匹配该地图的行，因此较早解�
 
 **已确认普通准备：**F88 未设时，BattleLoop 为 before 安装当前地图/战斗，随后恢复传入值、清除区域标志 90–105、治疗存活/不死己方角色、初始化双方名册、清除 AI 内存、加载战斗，最后调用 start。[共享开场门槛](../../../contracts/battle/battle-cutscene-routing.md#共享-intro-门)在 before 检查 F455 而不设置；start 在分发前设置 F455。两个行 5 目标都是 `ms_Empty`。逮捕对话属于此前场上脚本。空终止仍有解释器等待/滚动清理，不证明瞬间完成。
 
-F455 原已设置会跳过两个程序；F88 挂起入场绕过普通准备和这些包装器。`BattleSpriteset05`（`0x1B35A2`）声明 6 个己方布置、8 个敌人、1 个 AI 区域及 1 个 AI 点；地形行 5 选择 `BattleTerrain05`。六个布置不证明招募了六名己方角色或 Slade 参战。[遭遇合同](../../../contracts/battle/battle-encounter-definition.md)和[精灵集所有者](../../../../../research/battle/battle-spriteset-data.md)保留数据边界。
+F455 原已设置会跳过两个程序；F88 挂起入场绕过普通准备和这些包装器。`BattleSpriteset05`（`0x1B35A2`）声明 6 个己方布置、8 个敌人、1 个 AI 区域及 1 个 AI 点；地形行 5 选择 `BattleTerrain05`。六个布置不证明招募了六名己方角色或 Slade 参战。[遭遇合同](../../../contracts/battle/battle-encounter-definition.md)和[精灵集所有者（英文）](../../../../../research/battle/battle-spriteset-data.md)保留数据边界。
 **未知：**自然入场、实际 Battle05 出战队伍、已完成服务/呈现及首次单次行动。Battle05 结算与后续剧情不属本指南。
 
 ## 证据审阅与剩余限制
@@ -108,6 +108,6 @@ F455 原已设置会跳过两个程序；F88 挂起入场绕过普通准备和�
 
 控制器合同的 New Battle 总览把 before/start 归组过宽，不能见证其顺序位置。上方精确顺序遵循已接受选定源码分析和开场包装器所有者。旧 upgrade 标签同样收窄到调用，明确保留列表未命中因而无效果。这些差异在更严格边界下不阻塞；Layer A 不变。通用运行时队列与提议的现有所有者扩展不授权采集或新测试夹具。具名 H2 命令是复现所有者，不是本综合的新 PASS 声明；复现前在拥有该工作的进程中加载 `local/private-inputs.ps1`。
 
-**推断：**预期的俘虏/逃脱连接。**未知：**自然结果与返回状态、考虑标记/碰撞/占位的行走、传入随从和行动者、重入重建、场景/服务完成、渲染台词/输入/音频、存档持久性及实际 Battle05 出战队伍。[研究缺口处置](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#evidence-coverage-and-gap-disposition)保留缺失关系和区分性对照。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有未来范围；[剧情推进](../../themes/story-progression.md)提供更广状态框架。止于 Battle05 结算之前；不消费后续未合并研究。
+**推断：**预期的俘虏/逃脱连接。**未知：**自然结果与返回状态、考虑标记/碰撞/占位的行走、传入随从和行动者、重入重建、场景/服务完成、渲染台词/输入/音频、存档持久性及实际 Battle05 出战队伍。[研究缺口处置（英文）](../../../../../research/chapters/grans-opening/battle04-to-battle05-content-route.md#evidence-coverage-and-gap-disposition)保留缺失关系和区分性对照。[路线图](../../../documentation-roadmap.md#当前基线与近期综合)拥有未来范围；[剧情推进](../../themes/story-progression.md)提供更广状态框架。止于 Battle05 结算之前；不消费后续未合并研究。
 
 接着读 [Battle05 结果至 Battle06 准入](battle05-outcomes-through-battle06.md)，了解位置/HP 消费者、显式 Slade 招募、Galam 出口及条件 before/start。续篇保留结果、随从/出战队伍和自然路线限制。

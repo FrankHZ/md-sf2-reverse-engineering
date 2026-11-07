@@ -5,7 +5,7 @@
 - 现代化：**允许** 在独立已接受调用方要求生产端点前省略它，或在私有兼容适配器中使用引擎原生类型化写入关系
 - 未知：自然或计算准入、源词汇含义、RAM 用途、后期消费者、寄存器/CCR/栈行为、中断可见性、时序与玩家可见输出
 
-> 本文件是 [`unused-menu-constant-write-control-flow.md`](../../../contracts/system/unused-menu-constant-write-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`unused-menu-constant-write-control-flow.md`（英文规范源）](../../../contracts/system/unused-menu-constant-write-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 
@@ -40,7 +40,7 @@ H1 列表把完整函数放在排他区间 `0x15268..0x15284`（28 字节跨度�
 - 固定[`unusedsub_15268.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/unusedsub_15268.asm)中的受限时间线；
 - H1 条目、指令边界与排他结束身份。
 
-其可执行所有者是[`menus.py`](../../../../../src/sf2tool/h2/menus.py)，其文章所有者是[common-menu 研究](../../../../research/presentation/common-menus.md)。
+其可执行所有者是[`menus.py`](../../../../../src/sf2tool/h2/menus.py)，其文章所有者是[common-menu 研究（英文）](../../../../research/presentation/common-menus.md)。
 
 合同不消费 fixture 的任何 `expected.menuFacts`、根 `menuFacts` 或 `alternateSource` 字段。特别是它不消费菱形菜单、yes/no 提示、立绘、服务、物品、商店、成员画面、时序、输入或呈现事实。它也不消费 H3 测试夹具或 UI-graphics、UI-layout、window、graphics-service、interrupt 或 technical-interface 测试夹具。
 
@@ -51,7 +51,7 @@ H1 列表把完整函数放在排他区间 `0x15268..0x15284`（28 字节跨度�
 新 H2 连接包含 42 条 research-index 记录：
 
 - 41 条记录携带直接 `sf2-common-menus-static-v1` 证据；
-- `menus.load-portrait` 是唯一仅成员记录，带专用立绘证据与[`portrait-window-state`](../../../contracts/interface/portrait-window-state.md)所有权。
+- `menus.load-portrait` 是唯一仅成员记录，带专用立绘证据与[`portrait-window-state`](../interface/portrait-window-state.md)所有权。
 
 41 条直接绑定精确分化为：
 
@@ -63,9 +63,9 @@ H1 列表把完整函数放在排他区间 `0x15268..0x15284`（28 字节跨度�
 
 十一条既有直接关联精确保持：
 
-- `menus.blacksmith-actions`、`menus.caravan-actions`、`menus.church-actions` 与 `menus.shop-actions` 归[`service-interactions`](../../../contracts/party/service-interactions.md)；
-- `menus.ally-portrait`、`menus.combatant-portrait`、`menus.name-under-portrait`、`menus.portrait-functions` 与 `menus.portrait-window` 归[`portrait-window-state`](../../../contracts/interface/portrait-window-state.md)；
-- `menus.diamond` 与 `menus.tile-pointers` 归[`ui-graphics-asset-data`](../../../contracts/graphics/ui-graphics-asset-data.md)。
+- `menus.blacksmith-actions`、`menus.caravan-actions`、`menus.church-actions` 与 `menus.shop-actions` 归[`service-interactions`](../party/service-interactions.md)；
+- `menus.ally-portrait`、`menus.combatant-portrait`、`menus.name-under-portrait`、`menus.portrait-functions` 与 `menus.portrait-window` 归[`portrait-window-state`](../interface/portrait-window-state.md)；
+- `menus.diamond` 与 `menus.tile-pointers` 归[`ui-graphics-asset-data`](../graphics/ui-graphics-asset-data.md)。
 
 `menus.unused-12606`、`menus.unused-156a8`、`menus.yes-no-prompt` 与其他 26 条未关联直接兄弟保持未关联。最终语义关联差异恰好是：
 
@@ -181,9 +181,9 @@ UnusedMenuConstantWriteEvidence
 
 ## 跨系统分离
 
-- [`window-system`](../../../contracts/interface/window-system.md) 保留窗口分配、移动、更新与生命周期行为。本合同不把任一写入范围识别为窗口缓冲。
-- [`ui-layout-data`](../../../contracts/interface/ui-layout-data.md) 保留规范 UI 布局资源及其私有导入保真。此处不消费布局载荷或赋值。
-- [`graphics-service-state`](../../../contracts/graphics/graphics-service-state.md)与[`interrupt-dma-and-trap-state`](../../../contracts/system/interrupt-dma-and-trap-state.md) 保留图形服务与 VInt/DMA/转移边界。该源不发出此类请求。
+- [`window-system`](../interface/window-system.md) 保留窗口分配、移动、更新与生命周期行为。本合同不把任一写入范围识别为窗口缓冲。
+- [`ui-layout-data`](../interface/ui-layout-data.md) 保留规范 UI 布局资源及其私有导入保真。此处不消费布局载荷或赋值。
+- [`graphics-service-state`](../graphics/graphics-service-state.md)与[`interrupt-dma-and-trap-state`](interrupt-dma-and-trap-state.md) 保留图形服务与 VInt/DMA/转移边界。该源不发出此类请求。
 - `menus.yes-no-prompt` 保持未关联。其独立源在 `0x15284` 开始；与 `rts` 终止例程的相邻不建立行为接缝。
 - `menus.unused-12606` 与 `menus.unused-156a8` 保持未关联。相似上游名不建立共享行为。
 - 文本、声音、输入、UI 呈现、持久性与硬件时序保持其既有所有者或 未知。

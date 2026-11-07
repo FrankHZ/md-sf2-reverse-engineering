@@ -8,7 +8,7 @@
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
-> 本文件是 [`battle-cutscene-routing.md`](../../../contracts/battle/battle-cutscene-routing.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-cutscene-routing.md`（英文规范源）](../../../contracts/battle/battle-cutscene-routing.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -32,7 +32,7 @@
 - `sf2-battle-routing-data-static-v1`，位于
   [`tests/fixtures/h2/battle-routing-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)。
 
-研究所有者是[battle cutscene data](../../../../research/battle/battle-cutscene-data.md)、[battle cutscene routing](../../../../research/battle/battle-cutscenes.md)与[battle routing 与 terrain data](../../../../research/battle/battle-routing-data.md)的仅过场部分。
+研究所有者是[battle cutscene data（英文）](../../../../research/battle/battle-cutscene-data.md)、[battle cutscene routing（英文）](../../../../research/battle/battle-cutscenes.md)与[battle routing 与 terrain data（英文）](../../../../research/battle/battle-routing-data.md)的仅过场部分。
 
 ## 合同前证据审计
 
@@ -42,7 +42,7 @@
 - 87 个不同命令名是跨源语句计数的首 token，不是闭合的 MAPSCRIPT opcode 注册表，也不是所有 token 经同一解释器执行的证明；
 - 受追踪程序测试夹具保留地址、聚合计数与 hash，而非对话、编排或其他提取内容；
 - 未汇编的 Battle 01 区域源是孤儿，不是第四个构建区域程序；
-- 外层生命周期调用顺序仍归[battle-control 合同](../../../contracts/battle/battle-control-lifecycle.md)所有。
+- 外层生命周期调用顺序仍归[battle-control 合同](battle-control-lifecycle.md)所有。
 
 审计最初在 leader-position 所有者中发现两个聚合过度声称。Issue #59 修正了可执行合同，本文档现在消费其精确词汇：`offscreenLoop` 为己方 0 到 29 与敌人 128 到 157 设置 X 为 `-1`；`hpZeroLoop` 为那 30 个敌人槽调用 `SetCurrentHp(0)`；`positionOnlyTail` 为敌人槽 158 与 159 设置 X 为 `0`，且两者都不写 HP。这些范围与尾部值现在是 fixture 绑定事实。
 
@@ -60,7 +60,7 @@
 | 孤儿源 | Battle 01 `cs_regiontriggered_1.asm`，有标签但不在构建图中 |
 | map-script 命令 | 程序引用的解释器拥有行为，不由路由准入定义 |
 
-四个路由表可以共享数字槽索引，但不得折叠成一种路由种类。48 个路由槽不得被位置截断或描述为与 45 个遭遇槽相同的命名空间。[遭遇定义合同](../../../contracts/battle/battle-encounter-definition.md)从遭遇侧拥有该区分。
+四个路由表可以共享数字槽索引，但不得折叠成一种路由种类。48 个路由槽不得被位置截断或描述为与 45 个遭遇槽相同的命名空间。[遭遇定义合同](battle-encounter-definition.md)从遭遇侧拥有该区分。
 
 ## 路由表形状
 
@@ -109,7 +109,7 @@ layout 拥有的存储容器跨 34 个战斗索引 include 59 个带标签的过
 
 **已确认静态开战顺序：** 包装器检查同一标志，已设置时返回。否则在选择当前战斗条目并调用 `ExecuteMapScript` 之前设置标志。
 
-这证明标志极性与调用顺序。它不证明两个生命周期钩子为何共享一个标志、空目标是否立即返回、标志何时持久到存储，或两个钩子之间的可见时序。外层新战斗顺序仍归[battle control](../../../contracts/battle/battle-control-lifecycle.md)。
+这证明标志极性与调用顺序。它不证明两个生命周期钩子为何共享一个标志、空目标是否立即返回、标志何时持久到存储，或两个钩子之间的可见时序。外层新战斗顺序仍归[battle control](battle-control-lifecycle.md)。
 
 ## 战后路由与加入尾
 
@@ -133,7 +133,7 @@ layout 拥有的表包含 52 个字节且每个字节为零。源码把该特性
 - 清除标志选择当前败敌路由、调用 `ExecuteMapScript`，然后到达清理尾；
 - 设置标志跳过脚本并直接到达同一清理尾。
 
-在尾部，逐战斗敌人队长标志决定是否扫描全部 32 个敌人槽。每个当前 HP 非零的敌人被追加到既有死亡战斗员列表；下一字节写为 `0xFF`，列表长度递增。包装器不建立该列表何时被处理或 HP 何时随后清除。那些归[battle control](../../../contracts/battle/battle-control-lifecycle.md)所有。
+在尾部，逐战斗敌人队长标志决定是否扫描全部 32 个敌人槽。每个当前 HP 非零的敌人被追加到既有死亡战斗员列表；下一字节写为 `0xFF`，列表长度递增。包装器不建立该列表何时被处理或 HP 何时随后清除。那些归[battle control](battle-control-lifecycle.md)所有。
 
 ## 队长死亡位置准备
 
@@ -162,13 +162,13 @@ layout 拥有的表包含 52 个字节且每个字节为零。源码把该特性
 
 包装器在被准入 trap 之后没有重扫边；它 fall-through 到恢复并返回。这是静态控制流，不是自然触发顺序、标志持久性、脚本返回行为、可重复性或渲染排序的运行时证明。
 
-区域准入不同于敌人区域激活与生成准入。那些仍归[battle-control 合同](../../../contracts/battle/battle-control-lifecycle.md)，而非本过场路由表。
+区域准入不同于敌人区域激活与生成准入。那些仍归[battle-control 合同](battle-control-lifecycle.md)，而非本过场路由表。
 
 ## MAPSCRIPT 与跨系统边界
 
 路由包装器把控制转移到共享 map-script 系统。本合同在所选指针、调用/trap 接缝、分发前标志与显式确认的分发后尾部停止。
 
-地图加载、块/实体操作、摄像机与屏幕命令仍归[地图探索](../../../contracts/world/map-exploration.md)。对话处理器仍归[对话合同](../../../contracts/interface/dialogue-system.md)，force/active-party 变更仍归[队伍/名册合同](../../../contracts/party/party-roster-state.md)。资源准备与渲染战斗演出行为仍归[battle-scene presentation](../../../contracts/battle/battle-scene-presentation.md)。
+地图加载、块/实体操作、摄像机与屏幕命令仍归[地图探索](../world/map-exploration.md)。对话处理器仍归[对话合同](../interface/dialogue-system.md)，force/active-party 变更仍归[队伍/名册合同](../party/party-roster-state.md)。资源准备与渲染战斗演出行为仍归[battle-scene presentation](battle-scene-presentation.md)。
 
 程序名与注释不是每个被引用效果都已被解析或观察的证据。端到端故事副作用在对应命令所有者与自然调用方路径被显式连接之前保持 **未知**。
 
@@ -207,7 +207,7 @@ H4 不得要求受追踪提取对话、编排、地图资源或源程序。自�
 | 构建/排除程序语料、类型与命令形状计数 | **已确认静态** | `sf2-battle-cutscene-data-static-v1`（[`battle-cutscene-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-cutscene-data-static-v1.json)） | 程序内容、可达性、命令语义、时序、故事效果 |
 | intro/战后/败敌/区域包装器顺序与受限变更接缝 | **已确认静态** | `sf2-battle-cutscenes-static-v1`（[`battle-cutscenes-static-v1.json`](../../../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)） | 自然调用方、持久性、后期位置资格与 MAPSCRIPT 效果 |
 | 四个路由表形状、区域计数与零填充加入表 | **已确认静态** | `sf2-battle-routing-data-static-v1`（[`battle-routing-data-static-v1.json`](../../../../../tests/fixtures/h2/battle-routing-data-static-v1.json)） | 精确路由目标与空目标行为；地形记录排除 |
-| 外层战斗生命周期 | **独立所有者** | [Battle-control lifecycle](../../../contracts/battle/battle-control-lifecycle.md) | 不得从路由表推断包装器调用时序 |
+| 外层战斗生命周期 | **独立所有者** | [Battle-control lifecycle](battle-control-lifecycle.md) | 不得从路由表推断包装器调用时序 |
 | 对话、实体/force/地图效果、呈现与故事含义 | **独立所有者 / 未知** | 专用合同与未来证据 | 无聚合过场测试夹具闭合端到端行为 |
 
 ## 复现

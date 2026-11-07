@@ -1,6 +1,6 @@
 # Battle25 结果至 Ketto 入场
 
-> 本文是[规范英文原文：Battle25 Outcomes through Ketto Entry](../../../../synthesis/chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Battle25 Outcomes through Ketto Entry](../../../../synthesis/chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 赢得 North Cave 战斗后，队伍返回由当前成员生成的位置。胜利不会走任一洞穴出口、解锁 Battle26 或将队伍送至 Ketto。离开洞穴、之后战斗准入与城镇入口是独立转换。Ketto 是 Map25；North Cave 遭遇是 Battle25。共同数字不连接它们的表。
 
@@ -10,7 +10,7 @@
 
 ## 证据与阅读边界
 
-接续 [North Cliff 入场至 Battle25 准入](north-cliff-entry-through-battle25-admission.md)。已接受 Layer A 所有者为 [Battle25 结果至 Ketto 入场](../../../../../research/chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md)，经 [#993 / PR996](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/996)接受。其溯源固定 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。Fnnn 表示标志 nnn；行与身份从零开始。路线图拥有 [Standard 范围协议（英文）](../../../../documentation-roadmap.md#current-baseline-and-near-term-synthesis)。此英文综合说明不增加原版发现或重制行为。
+接续 [North Cliff 入场至 Battle25 准入](north-cliff-entry-through-battle25-admission.md)。已接受 Layer A 所有者为 [Battle25 结果至 Ketto 入场（英文）](../../../../../research/chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md)，经 [#993 / PR996](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/996)接受。其溯源固定 USA retail ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` 与 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6)。Fnnn 表示标志 nnn；行与身份从零开始。路线图拥有 [Standard 范围协议](../../../documentation-roadmap.md#当前基线与近期综合)。此英文综合说明不增加原版发现或重制行为。
 
 [战斗控制生命周期](../../../contracts/battle/battle-control-lifecycle.md)、[过场路由](../../../contracts/battle/battle-cutscene-routing.md)及[地图入场路由](../../../contracts/world/map-entry-routing-state.md)合同拥有共享规则。其公开汇总边界不独立证明选定私有行；#993 提供已接受选定审查。原切片并行 Ketto 交互研究与 UI 工作不在此提供证据。不包括交战模拟、Battle26 名册、商人对话、商店、教堂、物品或后续任务。
 

@@ -5,7 +5,7 @@
 - 现代化：**允许** 只把它保留为档案兼容元数据、用引擎原生服务替换其协作者，或省略生产端点，除非后续证据建立必需调用方
 - 未知：自然或调试可达性、被调方效果、循环活性、RNG 结果、VDP/VInt 与摄像机行为、时序、呈现，以及已接受辅助局部字保存之外的调用方可视 ABI
 
-> 本文件是 [`unused-mapload-control-flow.md`](../../../contracts/system/unused-mapload-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`unused-mapload-control-flow.md`（英文规范源）](../../../contracts/system/unused-mapload-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`（英文）](../../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 
@@ -45,7 +45,7 @@
 - 清单边界中的 `cameraStateMachineInventoried` 或 `cameraAndVdpTimingRemainQueued`；
 - 任何 H3 摄像机、地图、中断、图形或呈现 fixture。
 
-所属[common-map 研究](../../../../research/world/common-maps.md)、可执行[`maps.py`](../../../../../src/sf2tool/h2/maps.py)与提取[`manifest`](../../../../../manifests/extractions/common-maps-static.json) 保留完整七文件清单与已接受输出摘要。所选源的摘要绑定生成行记录：
+所属[common-map 研究（英文）](../../../../research/world/common-maps.md)、可执行[`maps.py`](../../../../../src/sf2tool/h2/maps.py)与提取[`manifest`](../../../../../manifests/extractions/common-maps-static.json) 保留完整七文件清单与已接受输出摘要。所选源的摘要绑定生成行记录：
 
 | 清单字段 | 已接受值 |
 | --- | ---: |
@@ -127,11 +127,11 @@ fixture 的源成员面包含跨七个源路径的八条记录。六条携带直
 
 ## 跨系统分离
 
-- [`randomness`](../../../contracts/system/randomness.md) 拥有已接受 RNG 算法与运行时矩阵。本合同只拥有四个调用站点请求操作数与结果暂存顺序。
-- [`graphics-service-state`](../../../contracts/graphics/graphics-service-state.md)与所属[technical-graphics 研究](../../../../research/presentation/technical-graphics.md) 保留显示辅助、VDP 寄存器服务与图形效果证据。其效果此处不导入。
-- [`interrupt-dma-and-trap-state`](../../../contracts/system/interrupt-dma-and-trap-state.md) 拥有已接受 `WaitForVInt`/VInt 握手与 DMA/中断边界。此处的源调用身份不复制该合同。
-- [`map-exploration`](../../../contracts/world/map-exploration.md) 拥有摄像机/滚动状态、地图 VInt 与运行时/呈现接缝。本合同不给四个速度字或被测试位域指定含义。
-- [`map-entry-routing-state`](../../../contracts/world/map-entry-routing-state.md) 拥有切换、战斗触发与存档点选择。[`map-layout-data`](../../../contracts/graphics/map-layout-data.md) 拥有静态解码布局语料。
+- [`randomness`](randomness.md) 拥有已接受 RNG 算法与运行时矩阵。本合同只拥有四个调用站点请求操作数与结果暂存顺序。
+- [`graphics-service-state`](../graphics/graphics-service-state.md)与所属[technical-graphics 研究（英文）](../../../../research/presentation/technical-graphics.md) 保留显示辅助、VDP 寄存器服务与图形效果证据。其效果此处不导入。
+- [`interrupt-dma-and-trap-state`](interrupt-dma-and-trap-state.md) 拥有已接受 `WaitForVInt`/VInt 握手与 DMA/中断边界。此处的源调用身份不复制该合同。
+- [`map-exploration`](../world/map-exploration.md) 拥有摄像机/滚动状态、地图 VInt 与运行时/呈现接缝。本合同不给四个速度字或被测试位域指定含义。
+- [`map-entry-routing-state`](../world/map-entry-routing-state.md) 拥有切换、战斗触发与存档点选择。[`map-layout-data`](../graphics/map-layout-data.md) 拥有静态解码布局语料。
 - `sf2-map-data-static-v1`、地图记录、碰撞、实体状态、故事状态与可见地图内容被排除。
 
 源标签 `sub_36B2` 与原始 RAM 符号是追踪锚点，不是新拥有服务或状态记录。

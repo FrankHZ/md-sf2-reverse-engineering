@@ -1,6 +1,6 @@
 # Pacalon：对话、补给与城堡交接
 
-> 本文是[规范英文原文：Pacalon: conversations, supplies and the castle handoff](../../../../synthesis/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
+> 本文是[规范英文原文：Pacalon: conversations, supplies and the castle handoff](../../../../synthesis/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译相邻指南与合同使用中文导航，未译指南标明英文回退；研究、源码与溯源链接保留英文所有者。历史环境、审阅和验证记录属于原英文切片。
 
 Pacalon 提供两组居民对话、相同武器与物品商店、一名祭司、调查文本与两种可能的非宝箱拾取。北出口记录请求城堡；南出口记录请求大地图。**已确认：** 这些是独立本地互动与请求路径。出口记录不要求任何对话、购买、教堂服务或拾取。**未知：** 自然抵达玩家可触及哪些互动、哪些屏上完成，以及哪些持久保留。
 
@@ -10,7 +10,7 @@ Pacalon 提供两组居民对话、相同武器与物品商店、一名祭司、
 
 ## 证据与阅读边界
 
-**已确认的证据所有者：** [Pacalon 互动与城堡交接](../../../../../research/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)，通过 [#1021 / PR1023](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1023)在 `ac35fe192edba718a3261fef67d92874a477fd76` 接受，提供选定本地表、完整文本字面量与消费者连接。已接受前序 [PR1024](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1024)提供入口/人口前提。以下源码身份相对 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 的 `disasm/`；研究所有者保留 USA retail ROM 与源码/地址溯源。F530 指标志530，索引从零起，地址区间为左闭右开。
+**已确认的证据所有者：** [Pacalon 互动与城堡交接（英文）](../../../../../research/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)，通过 [#1021 / PR1023](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1023)在 `ac35fe192edba718a3261fef67d92874a477fd76` 接受，提供选定本地表、完整文本字面量与消费者连接。已接受前序 [PR1024](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1024)提供入口/人口前提。以下源码身份相对 SF2DISASM `master` 提交 `c834c652b6862bc5679fd7f69a38a7093206efc6` 的 `disasm/`；研究所有者保留 USA retail ROM 与源码/地址溯源。F530 指标志530，索引从零起，地址区间为左闭右开。
 
 Standard 严谨级别适合此有界英文合成：当前表选择、保留行动者、服务提交与可变请求具有不同生命周期。[#1026](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1026)拥有其五个 Markdown 路径与直接验收。城堡内容、后续战斗、通用服务审计、源码/布局采集、运行时、工具与中文同步在该原切片范围外。并行城堡研究与 UI692 不提供证据。证据分歧返回研究所有者，不在此解释中修补。
 
@@ -169,7 +169,7 @@ WaitForEvent 在 A/C 轮询前读待处理事件字。零允许 physical0 控制
 |负字节、高字节或玩家运动不同|源通配、消费采样与低字节写入不同。|
 |待处理替换或下一 MainLoop 前改 F530|可变请求与之后切换不承诺一种目的地结果。|
 
-合成前审阅消费完整已接受 Pacalon 研究、前序入口指南、更窄[互动](../../../../../research/world/map-event-interaction-state.md)、[对话](../../../../../research/world/map-event-dialogue-state.md)、[请求写入者](../../../../../research/world/map-event-request-state.md)、[请求消费者](../../../../../research/world/map-event-request-consumption.md)、[Ketto 共享服务/拾取路径](../../../../../research/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)，以及服务/对话/描述合同。直接检查选定公共载荷、schema 与实际验证器消费者：
+合成前审阅消费完整已接受 Pacalon 研究、前序入口指南、更窄[互动（英文）](../../../../../research/world/map-event-interaction-state.md)、[对话（英文）](../../../../../research/world/map-event-dialogue-state.md)、[请求写入者（英文）](../../../../../research/world/map-event-request-state.md)、[请求消费者（英文）](../../../../../research/world/map-event-request-consumption.md)、[Ketto 共享服务/拾取路径（英文）](../../../../../research/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)，以及服务/对话/描述合同。直接检查选定公共载荷、schema 与实际验证器消费者：
 
 | 公共测试夹具与消费者 | 已检查边界与限制 |
 | --- | --- |
