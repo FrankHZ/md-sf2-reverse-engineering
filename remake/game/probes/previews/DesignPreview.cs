@@ -17,7 +17,11 @@ public partial class DesignPreview : Control
     private readonly MenuPointer _readerPointer = new();
     private Page _page, _targetParent;
     private int _scene, _focus, _rootFocus, _offer, _target;
-    private bool _english, _horizontal;
+    private bool _english, _steadyIcons;
+    private Choice? _animated;
+    private double _frameTime;
+    private const double IconFrameSeconds = 0.25;
+    private static readonly Vector2 CommandSize = new(528, 80);
     private string _result = "";
     private sealed record Choice(Button Hit, Label Name, TextureRect Art, string? Key, bool Enabled, string Reason);
     private string T(string zh, string en) => _english ? en : zh;
@@ -29,6 +33,9 @@ public partial class DesignPreview : Control
         Theme = StoryTheme.Create();
         AddChild(_stage);
         _stage.LoadSelection();
+        if (OS.GetCmdlineUserArgs().Contains("--battle")) _scene = 3;
+        GetWindow().FocusExited += StopIconAnimation;
+        GetWindow().FocusEntered += Refresh;
         Render();
     }
 
@@ -109,7 +116,6 @@ public partial class DesignPreview : Control
         _choices.Clear();
         _detail = null;
         _dialogue = null;
-        _horizontal = false;
         _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1);
         switch (_scene)
         {
@@ -129,7 +135,9 @@ public partial class DesignPreview : Control
         string art = _stage.AssetFailure is { } problem ? T("资源未齐 · ", "Art incomplete · ") + problem :
             (_scene == 0 ? _stage.HasWitch : _stage.HasWorld) ? T("原版素材 · 示例状态", "Original art · sample state") :
             T("无私有素材 · 线框", "Text-only · schematic");
-        Text(_surface, new(1228, 10, 425, 52), art, 22, "c1cfdf");
+        Text(_surface, new(1210, 10, 272, 52), art, 20, "c1cfdf");
+        Utility(new(1492, 10, 168, 52), _steadyIcons ? T("动效：关", "Motion: off") : T("动效：开", "Motion: on"),
+            () => { _steadyIcons = !_steadyIcons; Render(); });
         Utility(new(1674, 10, 216, 52), _english ? "中文   /   L" : "English   /   L", ToggleLanguage);
         Refresh();
     }
@@ -146,8 +154,9 @@ public partial class DesignPreview : Control
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
         };
         bool hasArt = key is not null && _stage.Icon(key, false) is not null;
-        float width = key?.StartsWith("identity-icon.", StringComparison.Ordinal) == true ? 64 : 96;
-        Put(hit, icon, new(20, (rect.Size.Y - 96) / 2, width, 96));
+        bool command = key is not null && !key.StartsWith("identity-icon.", StringComparison.Ordinal);
+        float width = command ? 72 : 64, height = command ? 72 : 96;
+        Put(hit, icon, new(20, (rect.Size.Y - height) / 2, width, height));
         int left = hasArt ? (int)width + 36 : 20;
         var caption = Text(hit, new(left, 0, rect.Size.X - left - 16, rect.Size.Y), name, 30);
         _choices.Add(new(hit, caption, icon, key, enabled, reason));
@@ -161,6 +170,7 @@ public partial class DesignPreview : Control
 
     private void Refresh()
     {
+        StopIconAnimation();
         for (int i = 0; i < _choices.Count; i++)
         {
             var row = _choices[i];
@@ -169,12 +179,37 @@ public partial class DesignPreview : Control
             foreach (var state in new[] { "normal", "hover", "pressed" }) row.Hit.AddThemeStyleboxOverride(state, style);
             row.Name.AddThemeColorOverride("font_color", !row.Enabled ? StoryTheme.Unavailable :
                 focused ? StoryTheme.Selected : new Color("f4f5fc"));
-            if (row.Key is not null) row.Art.Texture = _stage.Icon(row.Key, focused);
+            if (row.Key is not null)
+            {
+                row.Art.Texture = _stage.Icon(row.Key, focused);
+                if (focused && row.Enabled && !_steadyIcons && row.Art.Texture is not null &&
+                    !row.Key.StartsWith("identity-icon.", StringComparison.Ordinal))
+                    _animated = row;
+            }
         }
         if (_detail is not null && _choices.Count > 0) _detail.Text = _choices[_focus].Reason;
         if (_page == Page.Question && _dialogue is not null)
             _dialogue.Choices.Present(true, _focus == 0, true, true);
     }
+
+    private void StopIconAnimation()
+    {
+        if (_animated is { Key: { } key } row) row.Art.Texture = _stage.Icon(key, true);
+        _animated = null;
+        _frameTime = 0;
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_animated is not { Key: { } key } row) return;
+        bool wasSelectedFrame = _frameTime < IconFrameSeconds;
+        _frameTime = (_frameTime + delta) % (2 * IconFrameSeconds);
+        bool selectedFrame = _frameTime < IconFrameSeconds;
+        if (selectedFrame != wasSelectedFrame) row.Art.Texture = _stage.Icon(key, selectedFrame);
+    }
+
+    private static Rect2 CommandRow(Vector2 topLeft, int index) =>
+        new(topLeft + new Vector2(0, index * (CommandSize.Y + 8)), CommandSize);
 
     private void Footer(string hint)
     {
@@ -222,18 +257,19 @@ public partial class DesignPreview : Control
     private void Church()
     {
         Put(_surface, new ColorRect { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore }, new(0, 72, 1920, 1008));
-        var panel = Panel(new(1104, 110, 748, 849));
-        Text(panel, new(30, 14, 660, 64), T("教堂", "Church"), 36);
-        Text(panel, new(32, 84, 660, 56), T("持有金币   150", "Gold   150"), 26, "cad6e5");
+        bool choosing = _page == Page.Root;
+        var panel = Panel(choosing ? new(1288, 218, CommandSize.X + 48, 664) : new(1104, 110, 748, 849));
+        Text(panel, new(24, 12, 232, 60), T("教堂", "Church"), 36);
+        Text(panel, new(272, 16, 232, 54), T("持有金币   150", "Gold   150"), 26, "cad6e5");
         if (_page == Page.Root)
         {
             string[] names = [T("复活", "Raise"), T("治疗", "Cure"), T("转职 · 不可用", "Promotion · Unavailable"), T("记录冒险", "Record adventure")];
             string[] keys = ["raise", "cure", "promote", "save"];
             for (int i = 0; i < 4; i++)
-                Item(new(1136, 270 + i * 112, 684, 104), names[i], keys[i], i != 2,
+                Item(CommandRow(panel.Position + new Vector2(24, 94), i), names[i], keys[i], i != 2,
                     i == 2 ? T("这位神父没有提供转职服务。", "Promotion is unavailable from this priest.") : "");
-            _detail = Text(panel, new(32, 609, 684, 116), "", 30);
-            Item(new(1136, 860, 684, 70), T("离开", "Leave"));
+            _detail = Text(panel, new(24, 447, CommandSize.X, 103), "", 30);
+            Item(new(panel.Position + new Vector2(24, 574), new(CommandSize.X, 64)), T("离开", "Leave"));
         }
         else if (_page == Page.Quote)
         {
@@ -263,11 +299,10 @@ public partial class DesignPreview : Control
         Text(counts, new(16, 0, 470, 54), T("回合 3     金币 150", "Round 3     Gold 150"), 24);
         if (_page == Page.Root)
         {
-            _horizontal = true;
             string[] ids = ["attack", "magic", "item", "stay"];
             for (int i = 0; i < ids.Length; i++)
-                Item(new(32 + i * 322, 825, 310, 122), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
-            Footer(T("← → 选择指令     Enter 确认", "← → Select command     Enter Confirm"));
+                Item(CommandRow(new(32, 624), i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
+            Footer(T("↑ ↓ 选择指令     Enter 确认", "↑ ↓ Select command     Enter Confirm"));
         }
         else if (_page is Page.Spells or Page.Items)
         {
@@ -406,7 +441,7 @@ public partial class DesignPreview : Control
         else if (input.IsActionPressed("ui_accept") || input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true }) Activate();
         else
         {
-            bool sideways = _horizontal || _page is Page.Question or Page.Target;
+            bool sideways = _page is Page.Question or Page.Target;
             int direction = input.IsActionPressed(sideways ? "ui_left" : "ui_up") ? -1 :
                 input.IsActionPressed(sideways ? "ui_right" : "ui_down") ? 1 : 0;
             if (direction == 0) return;

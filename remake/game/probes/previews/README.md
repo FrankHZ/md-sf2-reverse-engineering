@@ -11,11 +11,21 @@ to continue and click a response to answer. Close the window to finish.
 | F1 · Witch | Read the greeting and compare the two action rows. Inspect unavailable Continue, then choose New Game. |
 | F2 · Dialogue | Advance from a portrait line to a question, choose either answer and read the reply. |
 | F3 · Church | Scan the four labeled services, focus Promotion for its reason, then open Cure and decline the price. Record shows the save handoff in text. |
-| F4 · Battle | Switch from the horizontal action bar to Magic. Pick a level and a target, then back out to the same level and command. Item, Attack and Stay have sample paths too. |
+| F4 · Battle | Move down the four command rows to Magic. Pick a level and a target, then back out to the same level and command. Item, Attack and Stay have sample paths too. |
 
 The layout follows the user-selected direction for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The [design review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1683) owns the shared
-component proposal. Church and battle orientations are candidates for human comparison.
+component proposal. In this preview, Church and battle use the same compact vertical list:
+528×80px rows with 8px gaps, 30px names and 24×24 command art at nearest 3× (72×72px).
+The focused available command alternates its two admitted images every 250ms while the row's
+outline and label stay steady. The motion button holds the selected image for comparison.
+Unavailable commands and spell/item identity highlights stay still. Text-only choices retain
+the same focus outline.
+
+The deployed [menu control](../../src/UI/DiamondCommandButton.cs) currently draws a 180ms
+rise/settle on focus entry and then holds the selected image. The preview's loop uses the two
+halves documented by the [asset owner](../../../docs/content/presentation-assets.md).
+Its cadence is a preview setting. Pass `-- --battle` on launch to open directly on the battle list.
 
 ## Run from the repository root
 
