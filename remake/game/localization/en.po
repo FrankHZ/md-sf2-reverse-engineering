@@ -1579,7 +1579,7 @@ msgid "battle.speed.hint"
 msgstr "{0}/{1}: Change   {2}/{3}: Accept and save   {4}: Cancel both changes"
 
 msgid "controls.acceleration.note"
-msgstr "Hold for exploration at 1.5x; release returns to 1x. NPCs and automatic events share the rate. Text and music keep normal speed. After a menu, dialogue, map change or focus loss, release and press again. Battle acceleration is not available yet."
+msgstr "Hold for exploration and battle at 1.5x; release returns to 1x. NPCs and automatic sequences share the rate. Reading, menu controls and music keep normal speed. After a menu, message, map change or focus loss, release and press again."
 
 msgid "controls.acceleration.hold"
-msgstr "Hold: temporary exploration 1.5x"
+msgstr "Hold: temporary 1.5x gameplay"

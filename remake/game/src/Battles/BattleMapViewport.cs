@@ -356,7 +356,8 @@ internal sealed partial class BattleMapViewport : Control
                 Vector2.One * CellSize));
     }
 
-    public override void _Process(double delta)
+    // BattleSessionView owns the one gameplay budget; inspection supplies real time.
+    internal void AdvanceCamera(double delta)
     {
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || _mapSize == Vector2.Zero) return;
         Frame();

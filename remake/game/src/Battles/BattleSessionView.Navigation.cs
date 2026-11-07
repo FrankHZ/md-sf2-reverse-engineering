@@ -14,6 +14,8 @@ public sealed partial class BattleSessionView
     private GameAction? _navigationDirection;
     private ulong _nextNavigation;
     private bool _navigationRejected;
+    private ulong NavigationNow => !_inspection.Active && _session?.Current.Selection?.Stage == BattleSelectionStage.Movement
+        ? (ulong)_movementNavigationMicros : Time.GetTicksUsec();
 
     private object? NavigationBoundary()
     {
@@ -42,7 +44,8 @@ public sealed partial class BattleSessionView
     public override void _Notification(int what)
     {
         if (what == NotificationPaused || what == NotificationUnpaused ||
-            what == NotificationVisibilityChanged && !IsVisibleInTree()) ClearNavigation();
+            what == NotificationVisibilityChanged && !IsVisibleInTree())
+        { ClearNavigation(); SuspendPacing(); }
     }
 
     internal void HandleAction(GameAction action, bool repeating = false)
@@ -58,7 +61,7 @@ public sealed partial class BattleSessionView
         if (!repeating)
         {
             _navigationBoundary = boundary; _navigationDirection = action;
-            _nextNavigation = Time.GetTicksUsec() + NavigationRepeatMicros;
+            _nextNavigation = NavigationNow + NavigationRepeatMicros;
         }
     }
 
@@ -67,8 +70,8 @@ public sealed partial class BattleSessionView
         if (_navigationDirection is not { } direction) return;
         if (!Equals(_navigationBoundary, NavigationBoundary()) || _input.MovementDirection != direction)
         { ClearNavigation(); return; }
-        if (_session!.Current.BattleMovement is not null || Time.GetTicksUsec() < _nextNavigation) return;
-        _nextNavigation = Time.GetTicksUsec() + NavigationRepeatMicros;
+        if (_session!.Current.BattleMovement is not null || NavigationNow < _nextNavigation) return;
+        _nextNavigation = NavigationNow + NavigationRepeatMicros;
         HandleAction(direction, repeating: true);
     }
 }

@@ -3059,3 +3059,89 @@ Gates are affected Content admission behavior plus existing FieldInventory/Recov
 adapter Release and necessary Debug build, direct source/docs/private checks and clean committed
 planner/actual CI. The unchanged source-path limitation in normal toolchain verification and completed
 old aggregate failures remain failures; this UI change does not require another full aggregate run.
+
+## Held battle rate (#1619 B/C)
+
+The [presentation owner](../godot/presentation.md#held-battle-acceleration-1619-bc) defines the
+clock and reset boundaries. `engine_battle_rate_observation.gd` uses actual mapped host keys,
+existing state/result signals and natural cue completion. It records selected endpoints and
+semantic counts, not frames, screenshots, asset data or a new comparison platform. Additional
+state is bounded; service cost is O(min(due,4) × existing consumer cost). The serial pilot used
+39 launches including failed setup/observer attempts, each with a 45 s deadline and 100 KiB report
+cap, within 2 MiB total semantic reports. No owned instance remained at takeover; changed Debug
+binaries required fresh finite observer processes in the retained project/installation.
+
+Load the existing ignored SDK/private configuration in the same process; build Debug once using
+the [locked workflow](../development-and-verification.md#locked-net-workflow). Use fresh ignored
+report/TEMP/APPDATA/LOCALAPPDATA and an external disposable `SF2_SAVE_NAMESPACE`. For an authored
+case, select version1 instant-text input settings (or adjustable 15 cps for `reading`):
+
+```powershell
+$env:SF2_BATTLE_RATE_CASE = 'heal' # movement, reading, story, appearance, private-egress
+$env:SF2_BATTLE_RATE_FACTOR = '1.5' # repeat matched work at '1'
+$env:SF2_BATTLE_RATE_OUTPUT = <absolute-new-ignored-report-path>
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 60 --resolution 1920x1080 `
+    --path remake/game --script res://probes/engine_battle_rate_observation.gd `
+    -- --authored-package <absolute-selected-package> --input-settings <absolute-settings>
+```
+
+`heal` uses `remake/content/authored/healing-rule-demo.json`; run each factor at 30/60/120 fps.
+`movement` and `reading` use `stone-court.json`. `appearance` uses `hidden-spawns.json` and
+performs real movement, Stay, two appearances, an attack, death message and field exit.
+`story` uses an ignored copy of `jaro-conversion.json`, inserting
+`{"op":"wait-ticks","ticks":60}` at the beginning of program `pledge`; other content is unchanged.
+It uses the existing region program/camera/conversion and both real dialogue acknowledgements.
+Retain stdout/stderr and require both a passing report and no `SCRIPT ERROR`/`ERROR:`: an observer
+exception can otherwise produce an incomplete report whose own `passed` value is misleading.
+
+For `private-egress`, retain the registered complete-world/scene selections. Omit
+`--authored-package` and set `SF2_BATTLE_RATE_START` to a fresh ignored copy of
+`remake/reference/inputs/engine-battle02-egress-start.json`, changing initial map to `map-3`,
+position to(1,26), facing2 and adding
+`start.partyInput = "remake/reference/inputs/battle02-outcome-party.json"`.
+The existing startup-only `StartPreVoyageLocalizationObservation` admits the complete world,
+then the controlled party through the existing reader/initialization. This optional parameter
+accepts a nonempty string resolving beneath `remake/reference/inputs/`, an existing file ≤64 KiB,
+and a valid controlled battle input. Other paths, nonstrings, absent files and oversize files are
+rejected as `observation-party-input`; production readers and active snapshots are unchanged.
+Derived initial progression carries the validated controlled resource caps and loadout; seeds stay
+those declared by the input. No post-start teleport/reseed/actor setter is used. Hold Left from
+the real Map3 field across its west warp to Map66/Battle02; ordinary Stay advances the queue to
+Bowie, real learned EGRESS pays 8 MP once, then actual presentation returns to usable Map3.
+This is controlled initial state, not proof of natural spell learning or chronology.
+
+**Confirmed:** the six HEAL rate/FPS combinations and final focused repeat match the accepted-A
+1× 60 fps baseline exactly in all 208 mandatory HEAL operations, semantic counts/phase order,
+final actor/resources/status/inventory, queue and both seeds. HP 30→40, MP 8→5, EXP 10;
+final main seed 247534132 and thinking seed 3203334210. A warmed 0.20 s movement segment takes
+212 ms at 1× and143 ms at 1.5×; first-load timing is excluded. Release during movement returns1×;
+undo/inspection preserves seeds/resources and spends no action. The 60 tick story wait takes 1000 ms
+versus 665 ms; story and appearance/death matched endpoints, semantic counts and phase order agree.
+15 cps reading stays unscaled and Shift cannot acknowledge or draw RNG. Focus signals stop service
+and cannot rearm a held key; a 120 ms rendering stall leaves at most 4 serviced opportunities and
+only fractional debt. This exercises installed handlers, not a physical OS-focus transition.
+
+Both private rates pass the actual Map3→Battle02→EGRESS→Map3 route. Field 1.5× is observed before
+the warp, battle entry and field return are 1×, same-session identity survives, and fresh Down
+moves the returned player. One MP payment and one field handoff occur. The actual retreat player
+emits `finished` once with pitch 1; it is not playing when close is requested. Its natural finish
+is 300 ms after effect request at 1.5× (335 ms at 1×); visual close follows at 351/468 ms. Music/other
+sample pitch is never changed by the implementation. The unchanged existing Speed transaction
+observer separately passes all four presets, custom 47.5 cps, rollback/Apply and paused fight state;
+no settings/suppression/rule implementation is changed.
+
+Retained failed attempts are discovery evidence: an observer incorrectly awaited HEAL delivery
+on RewardMessage; raw complete-world startup hit `encounter-selection-limit`; controlled party
+resources initially hit `numeric-range`; observers read prepared/retired/null/freed views before
+actual attach; two blocked Map3 starts hit `map-entry-position`; the appearance observer wrongly
+expected its selected killed actor to respawn; the full cumulative audio ledger hit the report cap.
+Fixes selected the actual consumers, validated initial caps and playback endpoints; none weaken
+production admission or golden state. Earlier movement first-load timings remain noncomparative.
+Exact attempts, errors and retained reports are in the local Issue handoff. Existing private
+ObjectDB exit warnings remain **Unknown**, separate from native script/engine errors (none in the
+final successful cases). Human comfort, all devices, physical battle focus and all-route timing
+remain **Unknown**. No new campaign, full-route or emulator observation is claimed.
+
+Validation is adapter Release/Debug compilation, direct source/docs/locale/private checks,
+committed dependency planner and exact-head scoped CI. Domain/Application/Content are unchanged;
+there are no new engine unit tests or tests of this observer, and no aggregate rerun is required.

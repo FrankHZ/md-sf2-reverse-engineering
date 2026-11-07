@@ -1579,7 +1579,7 @@ msgid "battle.speed.hint"
 msgstr "{0}/{1}：修改   {2}/{3}：接受并保存   {4}：放弃两项修改"
 
 msgid "controls.acceleration.note"
-msgstr "按住时以 1.5 倍速探索，松开恢复 1 倍速。NPC 和自动事件同步加速，文字与音乐保持正常速度。菜单、对白、地图切换或失焦后，需要松开并重新按住。战斗倍速尚未开放。"
+msgstr "按住时以 1.5 倍速探索和战斗，松开恢复 1 倍速。NPC 和自动演出同步加速，阅读、菜单操作与音乐保持正常速度。菜单、消息、地图切换或失焦后，需要松开并重新按住。"
 
 msgid "controls.acceleration.hold"
-msgstr "按住：临时探索 1.5 倍速"
+msgstr "按住：临时 1.5 倍速"

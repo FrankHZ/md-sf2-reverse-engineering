@@ -37,7 +37,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Input(InputEvent input)
     {
-        _input?.AllowAcceleration(!_releaseBarrier && _exploration?.CanAccelerate == true);
+        _input?.AllowAcceleration(!_releaseBarrier && (_exploration?.CanAccelerate == true || _battle?.CanAccelerate == true));
         _input?.ObserveAccelerationInput(input);
         if (BlockSettingsRelease(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_releaseBarrier && input is not InputEventMouse)
@@ -162,13 +162,13 @@ public sealed partial class GameRoot : Node
 
     private void DisarmInput()
     {
-        _input?.AllowAcceleration(false); _exploration?.SuspendPacing();
+        _input?.AllowAcceleration(false); _exploration?.SuspendPacing(); _battle?.SuspendPacing();
         _input?.DisarmMovement(); _input?.DisarmWait();
         _releaseBarrier = _input?.GameplayHeld == true;
     }
 
     private void PacingDeviceChanged(long device, bool connected)
-    { if (!connected) { _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); } }
+    { if (!connected) { _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); } }
 
     private void PacingFocusReturned() => _input?.ReconcileAccelerationNeutral();
 

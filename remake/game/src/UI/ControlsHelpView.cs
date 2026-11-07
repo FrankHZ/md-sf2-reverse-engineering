@@ -17,7 +17,7 @@ internal sealed partial class ControlsHelpView : Control
             [new(GameAction.Up, "Walk north"), new(GameAction.Right, "Walk east")]),
         new("Exploration", "Directions also select menu rows or choices when those controls are open.",
             [new(GameAction.Down, "Walk south"), new(GameAction.Left, "Walk west")]),
-        new("Exploration", "controls.acceleration.note",
+        new("Exploration / Battle", "controls.acceleration.note",
             [new(GameAction.Accelerate, "controls.acceleration.hold")]),
         new("Exploration", "Only currently available interactions are offered. Waiting advances field time while held.",
             [new(GameAction.Confirm, "Talk to the faced NPC; otherwise Search when offered"), new(GameAction.Wait, "Hold: wait at field input"), new(GameAction.Equipment, "Open Party Status")]),
