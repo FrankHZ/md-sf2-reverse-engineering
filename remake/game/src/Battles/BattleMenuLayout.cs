@@ -281,7 +281,8 @@ internal sealed partial class BattleMenuLayout : Control
             rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }).ToArray(),
     };
 
-    public override void _ExitTree() => Icons.Dispose();
+    // Field/battle handoff reparents this same view. Retain its borrowed textures until
+    // content replacement (ConfigureAssets) or actual managed disposal, not temporary tree exit.
     protected override void Dispose(bool disposing) { if (disposing) Icons.Dispose(); base.Dispose(disposing); }
 
     private static Label Text(string name, int size)

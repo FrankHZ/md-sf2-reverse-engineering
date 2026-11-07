@@ -4,6 +4,7 @@ using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Battles;
 using Sf2.Remake.GodotAdapter.UI;
+using Sf2.Remake.Application.Content.Scenarios;
 
 namespace Sf2.Remake.GodotAdapter.Exploration;
 
@@ -18,7 +19,10 @@ internal sealed partial class PartyDetailsPanel : Panel
     private readonly Label _magicTitle = Text("MagicTitle", 30), _itemsTitle = Text("ItemsTitle", 30);
     private readonly ScrollContainer _magic = Scroll("Magic"), _items = Scroll("Items");
     private readonly VBoxContainer _spells = new(), _inventory = new();
-    private readonly List<Label> _spellRows = [], _itemRows = [];
+    private readonly List<(HBoxContainer Row, Label Text, IdentityIcon Icon)> _spellRows = [], _itemRows = [];
+    private IdentityIcons _icons = null!;
+    private ScenarioDefinition _definition = null!;
+    internal void ConfigureIcons(IdentityIcons icons, ScenarioDefinition definition) { _icons = icons; _definition = definition; }
     private PartyMemberDetails? _member;
     private string? _inspectionActor;
     internal int FocusPane { get; set; }
@@ -57,10 +61,11 @@ internal sealed partial class PartyDetailsPanel : Panel
         if (member is not null && member.MaxMp is { } mp) _mp.Present(member.Carried.Mp, mp);
         var spells = member?.Spells is not { } learned ? new[] { GameText.Get("party.value-unavailable") } : learned.Count == 0 ? [GameText.Get("party.none-learned")] :
             learned.Select(spell => spell.Name is { } spellName ? DisplayNames.Spell(spell.Spell, spellName, level: true) : GameText.Get("party.spell-unavailable", spell.Spell.Level)).ToArray();
-        Rows(_spells, _spellRows, spells);
+        Rows(_spells, _spellRows, spells, member?.Spells?.Select(spell => IdentityIcons.Spell(_definition, spell.Spell)).ToArray() ?? []);
         Rows(_inventory, _itemRows, member?.Inventory.Select(slot => $"{slot.Slot + 1}. " +
             (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
-            (slot.Equipped ? "\n    " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")]);
+            (slot.Equipped ? "\n    " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")],
+            member?.Inventory.Select(slot => slot.ItemId is { } id ? IdentityIcons.Item(id) : null).ToArray() ?? []);
         Arrange();
     }
 
@@ -80,24 +85,34 @@ internal sealed partial class PartyDetailsPanel : Panel
         _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
         _magicTitle.Text = GameText.Get("party.magic"); _itemsTitle.Text = GameText.Get("party.items");
         Rows(_spells, _spellRows, unit.Spells.Count == 0 ? [GameText.Get("party.none-learned")] :
-            unit.Spells.Select(spell => DisplayNames.Spell(spell.Spell, spell.Name ?? GameText.Get("party.value-unavailable"), level: true)).ToArray());
+            unit.Spells.Select(spell => DisplayNames.Spell(spell.Spell, spell.Name ?? GameText.Get("party.value-unavailable"), level: true)).ToArray(),
+            unit.Spells.Select(spell => IdentityIcons.Spell(_definition, spell.Spell)).ToArray());
         Rows(_inventory, _itemRows, unit.Inventory.Select(slot => $"{slot.Slot + 1}. " +
             (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") :
                 DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
-            (slot.Equipped ? " · " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray());
+            (slot.Equipped ? " · " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray(),
+            unit.Inventory.Select(slot => slot.ItemId is { } id ? IdentityIcons.Item(id) : null).ToArray());
         Arrange();
     }
 
-    private static void Rows(VBoxContainer column, List<Label> labels, string[] rows)
+    private void Rows(VBoxContainer column, List<(HBoxContainer Row, Label Text, IdentityIcon Icon)> labels, string[] rows, string?[] identities)
     {
         while (labels.Count < rows.Length)
         {
             var label = Text("Entry" + labels.Count, 28);
             label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, 56);
-            column.AddChild(label); labels.Add(label);
+            var row = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            row.AddThemeConstantOverride("separation", 16);
+            var icon = new IdentityIcon(); row.AddChild(icon); row.AddChild(label);
+            column.AddChild(row); labels.Add((row, label, icon));
         }
-        for (int i = 0; i < labels.Count; i++) { labels[i].Visible = i < rows.Length; if (i < rows.Length) labels[i].Text = rows[i]; }
+        for (int i = 0; i < labels.Count; i++)
+        {
+            labels[i].Row.Visible = i < rows.Length;
+            labels[i].Icon.Present(_icons, i < identities.Length ? identities[i] : null, false);
+            if (i < rows.Length) labels[i].Text.Text = rows[i];
+        }
     }
 
     internal void Arrange()
@@ -135,9 +150,12 @@ internal sealed partial class PartyDetailsPanel : Panel
             labelRect = BattleMapViewport.Rectangle(pair.Title.GetGlobalRect()), valueRect = BattleMapViewport.Rectangle(pair.Value.GetGlobalRect()) }),
         magic = List(_magic, _spells, _spellRows), items = List(_items, _inventory, _itemRows),
         hpVisible = _hp.IsVisibleInTree(), mpVisible = _mp.IsVisibleInTree() };
-    private static object List(ScrollContainer scroll, Control column, List<Label> rows) => new
+    private static object List(ScrollContainer scroll, Control column, List<(HBoxContainer Row, Label Text, IdentityIcon Icon)> rows) => new
     { rect = BattleMapViewport.Rectangle(scroll.GetGlobalRect()), scroll = scroll.ScrollVertical, height = column.Size.Y,
-        entries = rows.Where(label => label.Visible).Select(label => new { text = label.Text, rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }) };
+        entries = rows.Where(row => row.Row.Visible).Select(row => new { text = row.Text.Text,
+            minimumHeight = row.Text.GetMinimumSize().Y,
+            rect = BattleMapViewport.Rectangle(row.Text.GetGlobalRect()), rowRect = BattleMapViewport.Rectangle(row.Row.GetGlobalRect()),
+            icon = row.Icon.Observe() }) };
     private static string Number(object? value) => value?.ToString() ?? GameText.Get("party.value-unavailable");
     private static Label Text(string name, int size)
     { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }

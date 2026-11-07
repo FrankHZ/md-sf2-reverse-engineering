@@ -182,11 +182,11 @@ original animation cadence or human visual acceptance.
 | Church Raise/Cure/Promo./Save: `tiles_ChurchMenu` ROM0x2B072, four sequential icons | `world.presentation.churchMenu` → existing admission → `ChurchServiceView` → shared button | **Confirmed** ordinary New Game, real Map3 stairs/walk/priest, normal/selected/unavailable/return. |
 | Spell and item identity icons: `data/graphics/icons/entries.asm`, `ItemIconNNN`, `OtherIconNNN`, `SpellIconNNN`, `p_Icons`;192 bytes per16×24 icon | Existing `texture_extract.extract_icons`, verified source reader, base palette and tile renderer. `loadhighlightableicon.asm` masks item index with0x7F; spell index with0x3F then adds130; empty spell uses icon127. Selected art is an AND overlay from `tiles_IconHighlight`, not a second stored image. | [#1667](#spell-and-item-identity-art-1667) publishes bounded validated bindings consumed by `BattleMenuLayout` spell/item rows, `BattleSessionView` equipment HUD and `FieldActionView` magic/use/equipment rows. The earlier diamond-only pack remains a distinct optional text mode for these lists. |
 | Spell level: `code/common/menus/magicmenu.asm:SelectSpellLevel`, `tiles_TextHighlight`; equipment: `equipmenu.asm:BuildBattleEquipWindow`, `itemmenu.asm` | Level text/selector and item icon are distinct source operands. Current localized text retains actual level/cost/slot and rules. | #1667 binds semantic spell/item IDs and retains localized level/cost/description text. No separate per-level picture is established by this source; exact original border/window presentation remains outside this ticket. |
-| Item operations Use/Give/Equip/Drop: `tiles_ItemMenu` ROM0x2A9C2; `pt_ItemMenuNames` gives source order. Member sheet: `memberscreen.asm:BuildMemberStatusWindow` loads spell/item icons and broken-item overlays. | Shared diamond decoder/palette for operation icons, `extract_icons` for individual slots. `FieldActionView` Use/Equip consumes identity art; Give/Drop, `BattleGiveView`, `BattleDiscardView` and shared `PartyDetailsPanel` retain text rows. | [#1668](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1668) consumes #1667's item/spell bindings for Member/inventory/Give/Drop; operation icons need their own small admitted set, not `command-menu.item` as a substitute. Broken overlay/current unsupported item states stay explicit. |
+| Item operations Use/Give/Equip/Drop: `tiles_ItemMenu` ROM0x2A9C2; `pt_ItemMenuNames` gives source order. Member sheet: `memberscreen.asm:BuildMemberStatusWindow` loads spell/item icons and broken-item overlays. | Shared diamond decoder/palette for operation icons, `extract_icons` for individual slots. Shared `PartyDetailsPanel`, field Give/Drop/exchange rows and the battle transaction HUD consume semantic identities. | [#1668](#member-inventory-and-item-operations-1668) adds the separate24×24 Item operation set and existing Member/inventory/Give/Drop consumers. Broken overlays/current unsupported item states stay explicit. |
 | Shop Buy/Sell/Repair/Deals: `tiles_ShopMenu` ROM0x2B418, `pt_ShopMenuNames`. Empty-ground Member/Map/Speed/Quit: `tiles_BattleFieldMenu` ROM0x2ACF6, `pt_BattlefieldMenuNames`. | Existing stack decoder, verified source, palette and 3×3 half renderer; current `ShopServiceView` and `BattleInspectionView` use text choices. Goods use the same individual item icon family. | [#1669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1669) owns new service/options consumers and bindings, preserving their current return/selection authority. Modern Map drawing, HP/MP gauges, panel chrome and Chinese font are accepted separate choices, not missing original menu assets. |
 
 The inventory is finite: sources, admission seams and actual consumers are named. #1667 implements
-the spell/Use/Equip subset; Member/Give/Drop and shop/options art remain #1668/#1669. Native entry/return coverage and static source facts are
+the spell/Use/Equip subset; #1668 extends Member/Give/Drop and Item operations. Shop/empty-ground options art remains #1669. Native entry/return coverage and static source facts are
 separate from the **Unknown** original natural/cadence/pixel parity and human/aesthetic approval.
 
 ## Private Command Menu Icons
@@ -429,8 +429,10 @@ is a ContentError. Absence of the entire optional namespace preserves legacy/pri
 world and scene, as before. No asset payload or additional repository is vendored.
 
 `IdentityIcons` alone creates/disposes identity textures; rows and the equipment HUD borrow them.
-The battle menu shares its owner with equipment. Field preparation retains its own owner for its
-view lifetime. `IdentityIcon` draws16×24 at integral4×/Nearest without tinting source pixels. Text
+The battle menu shares its owner with equipment, inspection and transaction HUDs, retaining it across
+the same view's field/battle reparenting until content replacement or disposal. Field Member and
+preparation share the parent `PartyStatusView` owner for its view/content lifetime.
+`IdentityIcon` draws16×24 at integral4×/Nearest without tinting source pixels. Text
 independently marks focus/availability and retains localized names, slot, level, MP and ATT/range.
 An unexpected runtime binding miss produces an explicit error marker/observation with usable Back,
 rather than throwing from a row or silently counting a placeholder as bound art. The current Content
@@ -441,3 +443,39 @@ add67,584 bytes per collection (one world and seven scene collections), about721
 metadata. Work stays O(input plus declared dependencies), with the existing<3GiB assumed process and
 1GiB scratch budgets. Do not publish separate worlds per language/case. Native/resource acceptance and
 its independent presenter limitation are in the [presentation owner](../godot/presentation.md#identity-art-acceptance-1667).
+
+## Member, inventory and Item operations (#1668)
+
+**Standard rigor:** extend the accepted identity bindings to the existing field/battle Member sheet,
+field Give/Drop/full-pack exchange, and battle Give/Drop selection and confirmation HUD. Preserve live
+slots, equipment, localized names, unavailable reasons, scrolling, caller-specific Back and actual
+transactions. This adds presentation only; Domain rules, inventory authority and gameplay admission
+do not depend on the art catalog. Public authored and old private namespaces remain explicit text.
+Shop and empty-ground options art stays with #1669; broken overlays, unadmitted item states and human
+visual approval remain outside this slice.
+
+`remake_command_menu --menu all --item-menu` consumes the accepted publication read-only and adds
+world `presentation.itemMenu`. The eight exact keys are `use/give/equip/drop.normal/selected`.
+`ExplorationAssetReader` requires the complete24×24 set and existing digest/byte admission; partial
+sets and conflicting existing publication resources reject. Whole-namespace absence is optional text.
+The producer verifies `tiles_ItemMenu`0x2A9C2, `tiles_BattleFieldMenu`0x2ACF6,
+`p_tiles_ItemMenu`0x28014 and `pt_tiles_Menu+12` against the pinned listing/accepted fixture and ROM.
+It stack-decodes820 source bytes into2304 bytes, then uses the existing base-palette3×3-tile renderer.
+`pt_ItemMenuNames` and diamond DMA slots select Up Use, Left Give, Right Equip, Down Drop.
+These are separate24×24 normal/selected source records; `command-menu.item` is not substituted.
+
+One publication reuses all seven unchanged scene sets and26 unchanged dependencies. The eight
+operation rasters add18,432 raw bytes, approximately25KiB base64; the resulting product pack remains
+about149MB. Time/space are O(input plus dependencies), with the existing<3GiB assumed process/1GiB
+scratch bounds; peak memory is not independently measured. Two additional world JSON variants for
+bounded corrupt-PNG and partial-set rejection observations reuse the same dependencies; no per-language packages,
+new extraction pipeline or public asset payload is created.
+
+Member rows borrow normal identity textures from their parent view owner, including distinct source
+empty127; unknown source slots remain text. The field operation menu owns its four pairs once per
+active content and reuses the existing diamond geometry/button lifecycle. Field Give/Drop and return
+slots use live item words with equipped flags masked. Battle HUD uses the same menu texture owner,
+with separate given/returned images outside its existing readable text column. No original recipient
+portrait, independent unavailable image, new fifth operation or per-level spell image is invented.
+The [presentation owner](../godot/presentation.md#member-inventory-art-acceptance-1668) records finite
+ordinary/controlled acceptance and remaining Unknowns.

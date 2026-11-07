@@ -32,6 +32,8 @@ internal sealed partial class BattleInspectionView : Control
     internal string Page => _page;
     internal Action? RequestSpeed { get; set; }
     internal Action? RequestQuit { get; set; }
+    internal void ConfigureIcons(IdentityIcons icons, Sf2.Remake.Application.Content.Scenarios.ScenarioDefinition definition) =>
+        _details.ConfigureIcons(icons, definition);
 
     public override void _Ready()
     {

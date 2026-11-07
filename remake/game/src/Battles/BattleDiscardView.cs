@@ -87,11 +87,11 @@ internal sealed partial class BattleDiscardView : Control
         return new SelectDiscardItem(items[(index + step + items.Count) % items.Count].Slot);
     }
 
-    internal static string Menu(GameSession session)
+    internal static string Menu(GameSession session, BattleDiscardChoices choices)
     {
         var selection = session.Current.Selection;
         if (!Selecting(selection?.Stage) || session.Current.BattleDiscard is not null) return "";
-        var items = session.QueryBattleChoices().Discard.Items;
+        var items = choices.Items;
         if (selection!.Stage == BattleSelectionStage.DiscardCommitReady)
             return GameText.Get("battle.discard-confirm",
                 items.FirstOrDefault(item => item.Slot == selection.ItemSlot) is { } selected ? DisplayNames.ItemWord(selected.Word, selected.Item.Name) : GameText.Get("battle.give-item"));

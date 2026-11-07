@@ -13,10 +13,12 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class FieldActionView : Control
 {
     private readonly Panel _panel = new();
+    private readonly ColorRect _shade = new() { Color = new(0, 0, 0, 0.8f), MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _title = Text("Title", 32), _hint = Text("Hint", 24);
     private readonly List<Label> _rows = [];
     private readonly List<IdentityIcon> _icons = [];
-    private readonly IdentityIcons _iconOwner = new();
+    private IdentityIcons _iconOwner = null!;
+    private readonly ItemOperationMenu _operations = new() { Name = "ItemOperations" };
     private object? _iconSource;
     private readonly List<(Func<string> Label, Action Choose, bool Available)> _options = [];
     private readonly MenuPointer _pointer = new();
@@ -33,39 +35,51 @@ internal sealed partial class FieldActionView : Control
     private Action? _restore;
     private bool _requiresRelease;
     internal bool Open => Visible;
+    internal bool ItemOperations => _stage == "item-actions";
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Stop;
-        var shade = new ColorRect { Color = new(0, 0, 0, 0.8f), MouseFilter = MouseFilterEnum.Ignore };
-        shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade); AddChild(_panel);
+        _shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_shade); AddChild(_panel);
         _panel.Position = new(424, 128); _panel.Size = new(1072, 824);
         _panel.AddChild(_title); _title.Position = new(32, 24); _title.Size = new(1008, 112);
         _title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _panel.AddChild(_hint); _hint.Position = new(32, 640); _hint.Size = new(1008, 164);
         _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart; _hint.CustomMaximumSize = new(1008, -1);
+        AddChild(_operations);
         Hide();
     }
 
     private string _entry = "actions";
-    internal void Begin(GameSession session, GameInput input, ActorRef member, string name, Func<FieldCommand, long, SessionResult> submit, string entry = "actions")
+    internal void Begin(GameSession session, GameInput input, ActorRef member, string name, Func<FieldCommand, long, SessionResult> submit, IdentityIcons icons, string entry = "actions")
     {
         _entry = entry;
-        _session = session; _input = input; _member = member; _name = name; _submit = submit;
+        _session = session; _input = input; _member = member; _name = name; _submit = submit; _iconOwner = icons;
         _parents.Clear(); _restore = null; _assetFailure = null; Show();
+        if (_entry == "item" && ConfigureOperations(session) is { } failure)
+        {
+            _assetFailure = failure;
+            Menu("result", () => GameText.Get("prepare.failure", Recovery("field-preparation-unsupported"),
+                failure.Code, failure.Field, failure.Message), [(() => GameText.Get("prepare.back"), Hide, true)]);
+            return;
+        }
+        Actions();
+    }
+    private SessionFailure? ConfigureOperations(GameSession session)
+    {
         if (!ReferenceEquals(_iconSource, session.Definition))
         {
-            try { _iconOwner.Configure(session.Definition.Exploration?.Visuals?.IdentityIcons); }
+            try
+            {
+                _operations.Configure(session.Definition.Exploration?.Visuals?.ItemMenu);
+            }
             catch (InvalidOperationException error)
             {
-                _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Identity icon decoding failed.");
-                Menu("result", () => GameText.Get("prepare.failure", Recovery("field-preparation-unsupported"),
-                    _assetFailure.Code, _assetFailure.Field, _assetFailure.Message), [(() => GameText.Get("prepare.back"), Hide, true)]);
-                return;
+                return new(SessionFailureKind.AdapterError, error.Message, "presentation.itemMenu", "Item operation icon decoding failed.");
             }
             _iconSource = session.Definition;
         }
-        Actions();
+        return null;
     }
     private SessionFailure? _assetFailure;
 
@@ -85,7 +99,8 @@ internal sealed partial class FieldActionView : Control
         while (_rows.Count < _options.Count)
         {
             var icon = new IdentityIcon(); _icons.Add(icon); _panel.AddChild(icon);
-            var row = Text("Choice" + _rows.Count, 28); _rows.Add(row); _panel.AddChild(row);
+            var row = Text("Choice" + _rows.Count, 28); row.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            _rows.Add(row); _panel.AddChild(row);
         }
         for (int i = 0; i < _rows.Count; i++)
         { _rows[i].Visible = i < _options.Count; _rows[i].Position = new(32, 160 + i * 68); _rows[i].Size = new(1008, 60); }
@@ -125,16 +140,20 @@ internal sealed partial class FieldActionView : Control
             new FieldEquip(_member, choice.Slot, choice.Slot == 4 ? null : _choices.Items.Single(item => item.Slot == choice.Slot).Word),
             () => GameText.Get("prepare.confirm-equip", EquipmentName(choice), choice.Attack))), true)));
 
+    private IReadOnlyList<FieldInventoryChoice> _exchangeItems = [];
     private void Give() => Menu("give-item", () => GameText.Get("prepare.give-item"), _choices.Items.Select(item =>
         ((Func<string>)(() => $"{item.Slot + 1}. {DisplayNames.ItemWord(item.Word, item.Name)}"), (Action)(() => Targets("give-target", () => GameText.Get("prepare.give-target"), true, target =>
         {
             var other = _session.QueryFieldActions(target);
             if (other.Error is { } error) { Message(() => GameText.Get("prepare.unavailable", Recovery(error), error)); return; }
             if (other.Items.Count == 4)
+            {
+                _exchangeItems = other.Items;
                 Menu("exchange", () => GameText.Get("prepare.exchange"), other.Items.Select(returned =>
                     ((Func<string>)(() => $"{returned.Slot + 1}. {DisplayNames.ItemWord(returned.Word, returned.Name)}"), (Action)(() => Confirm(
                         new FieldGive(_member, item.Slot, item.Word, target, returned.Slot, returned.Word),
                         () => GameText.Get("prepare.confirm-exchange", DisplayNames.ItemWord(item.Word, item.Name), DisplayNames.ItemWord(returned.Word, returned.Name)))), true)));
+            }
             else Confirm(new FieldGive(_member, item.Slot, item.Word, target), () => GameText.Get("prepare.confirm-give", DisplayNames.ItemWord(item.Word, item.Name)));
         })), true)));
 
@@ -199,14 +218,15 @@ internal sealed partial class FieldActionView : Control
         _title.Text = _titleText();
         _title.Size = new(1008, Math.Max(112, _title.GetMinimumSize().Y));
         float rowTop = Math.Max(160, _title.Position.Y + _title.Size.Y + 24);
-        bool artPage = _iconOwner.Mounted && _stage is "magic" or "use-item" or "equipment";
+        bool artPage = _iconOwner.Mounted && _stage is "magic" or "use-item" or "equipment" or "give-item" or "drop-item" or "exchange";
         float step = artPage ? 100 : 68;
         for (int i = 0; i < _rows.Count; i++)
         {
             string? identity = i >= _options.Count ? null : _stage switch
             {
                 "magic" when i < _choices.Spells.Count => IdentityIcons.Spell(_session.Definition, _choices.Spells[i].Spell),
-                "use-item" when i < _choices.Items.Count => IdentityIcons.Item(_choices.Items[i].Word),
+                "use-item" or "give-item" or "drop-item" when i < _choices.Items.Count => IdentityIcons.Item(_choices.Items[i].Word),
+                "exchange" when i < _exchangeItems.Count => IdentityIcons.Item(_exchangeItems[i].Word),
                 "equipment" when i < _choices.Equipment.Count => _choices.Equipment[i].Slot == 4 ? IdentityIcons.Unarmed :
                     IdentityIcons.Item(_choices.Items.Single(item => item.Slot == _choices.Equipment[i].Slot).Word),
                 _ => null,
@@ -215,8 +235,15 @@ internal sealed partial class FieldActionView : Control
             _icons[i].Position = new(32, rowTop + i * step); _icons[i].Size = new(64, 96);
             _rows[i].Position = new(_icons[i].Visible ? 112 : 32, rowTop + i * step);
             _rows[i].Size = new(_icons[i].Visible ? 928 : 1008, step);
+            _rows[i].CustomMaximumSize = new(_icons[i].Visible ? 928 : 1008, -1);
         }
         _hint.Position = new(32, Math.Max(640, rowTop + _options.Count * step + 24));
+        _operations.Visible = _stage == "item-actions";
+        _panel.Visible = _shade.Visible = !_operations.Visible;
+        if (_operations.Visible)
+        {
+            foreach (var row in _rows) row.Hide();
+        }
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < _options.Count; i++)
         {
@@ -224,19 +251,24 @@ internal sealed partial class FieldActionView : Control
             if (_options[i].Available && i != _index) _rows[i].RemoveThemeColorOverride("font_color");
             else _rows[i].AddThemeColorOverride("font_color", !_options[i].Available ? StoryTheme.Unavailable : StoryTheme.Selected);
         }
-        _hint.Text = GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
-            _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
+        _hint.Text = _operations.Visible ? GameText.Get("field-menu.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Left),
+            _input.CompactHint(GameAction.Right), _input.CompactHint(GameAction.Down), _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)) :
+            GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
+                _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
         if (GameText.Language == "zh-CN") _hint.Text += "\n" + GameText.Get("localization.names");
         string fallback = GameText.Fallback("prepare.", true);
         if (fallback.Length > 0) _hint.Text += "\n" + fallback;
+        if (_operations.Visible) _operations.Present(_input, _index, _title.Text, _hint.Text);
         float height = Math.Max(164, _hint.GetMinimumSize().Y);
         _hint.Size = new(1008, height); _panel.Size = new(1072, Math.Max(824, _hint.Position.Y + height + 20));
     }
-    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); }
+    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _operations.Suspend(); }
     internal void Handle(GameAction action)
     {
         _pointer.Cancel(); if (_requiresRelease) return;
         if (action is GameAction.Cancel or GameAction.Equipment) { Back(); return; }
+        if (_stage == "item-actions" && action is GameAction.Up or GameAction.Left or GameAction.Right or GameAction.Down)
+        { _index = action switch { GameAction.Up => 0, GameAction.Left => 1, GameAction.Right => 2, _ => 3 }; Present(); return; }
         if (action is GameAction.Up or GameAction.Down)
             _index = (_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count;
         else if (action == GameAction.Confirm) _options[_index].Choose();
@@ -247,10 +279,11 @@ internal sealed partial class FieldActionView : Control
         if (!GetWindow().HasFocus() || !CanProcess()) { Suspend(); return; }
         if (input is InputEventMouseMotion motion) { _pointer.Moved(motion); return; }
         if (input is not InputEventMouseButton button) return;
-        int hit = _rows.FindIndex(row => row.Visible && row.GetGlobalRect().HasPoint(button.Position));
-        bool back = button.ButtonIndex == MouseButton.Right;
+        int hit = _operations.Visible ? _operations.Hit(button.Position) : _rows.FindIndex(row => row.Visible && row.GetGlobalRect().HasPoint(button.Position));
+        bool back = button.ButtonIndex == MouseButton.Right || _operations.Visible && _operations.BackHit(button.Position);
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(),
-            back ? GetGlobalRect() : hit < 0 ? default : _rows[hit].GetGlobalRect(), _generation);
+            back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : _operations.BackRect : hit < 0 ? default :
+                _operations.Visible ? _operations.HitRect(hit) : _rows[hit].GetGlobalRect(), _generation);
         if (!_requiresRelease && clicked is not null)
         {
             if (clicked == "back") Back();
@@ -259,12 +292,13 @@ internal sealed partial class FieldActionView : Control
         Present();
     }
     internal object Observe() => new { visible = IsVisibleInTree(), stage = _stage, index = _index,
-        iconMode = _iconOwner.Mounted ? "bound" : "unmounted-text",
+        iconMode = _iconOwner?.Mounted == true ? "bound" : "unmounted-text",
         failure = _assetFailure, title = _title.Text, revision = _choices?.Revision, requiresRelease = _requiresRelease,
         icons = _icons.Select(icon => icon.Observe()).ToArray(),
-        rows = _rows.Where(row => row.Visible).Select(row => new { text = row.Text, rect = BattleMapViewport.Rectangle(row.GetGlobalRect()) }) };
-    public override void _ExitTree() { _iconOwner.Dispose(); _iconSource = null; }
-    protected override void Dispose(bool disposing) { if (disposing) _iconOwner.Dispose(); base.Dispose(disposing); }
+        operations = _operations.Observe(),
+        panelVisible = _panel.IsVisibleInTree(), veilVisible = _shade.IsVisibleInTree(),
+        rows = _rows.Where(row => row.Visible).Select(row => new { text = row.Text,
+            minimumWidth = row.GetMinimumSize().X, minimumHeight = row.GetMinimumSize().Y, rect = BattleMapViewport.Rectangle(row.GetGlobalRect()) }) };
     private static Label Text(string name, int size)
     { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }
 }

@@ -185,7 +185,7 @@ observer attempt. None is relabeled as a passing run. Some exits retain2–4 Obj
 work does not establish leak-free shutdown.
 
 **Unknown:** human aesthetic/readability approval, physical OS-device/focus behavior, original
-natural route/timing/pixel parity. Downstream Member/Give/Drop and shop/options art remain #1668/#1669;
+natural route/timing/pixel parity. Member/Give/Drop art has the separate #1668 acceptance below; shop/options art remains #1669;
 #1667 identity consumers have their separate acceptance below. No screenshot, full
 campaign run or original emulator observation is claimed. The contextual authored chest Search
 caption remains a text override; the ordinary admitted Battles01–07 do not expose that variant.
@@ -2642,7 +2642,7 @@ This is the Standard resource-consumer slice; current gameplay/confirmation rule
 localized level/cost/equipment text stay authoritative. Public authored inputs and older private
 packs without this optional namespace retain explicit text mode. Declared bundles reject missing/invalid bindings through Content; preparation rejects conflicting
 source resources. A defensive runtime marker or typed decoding error preserves navigation.
-Member/inventory/Give/Drop and shop/options art remain #1668/#1669. This does not complete those tickets.
+Member/inventory/Give/Drop and Item operations have the separate #1668 acceptance below; shop/options art remains #1669.
 
 **Confirmed functional/resource boundary:** ordinary title New Game exercises field Magic/Use/Equip
 and their parent returns; fresh title Continue exercises battle Magic/Item/Equip and returns to the
@@ -2665,3 +2665,57 @@ separate direct observations, not tests of the probe itself.
 **Unknown:** original natural reach, original timing/window/pixel parity, physical input-device focus,
 and human/aesthetic approval. Existing and observed ObjectDB shutdown warnings retain their recorded
 limits. Human visual acceptance remains #1456/#1616 and is not signed by engineering evidence.
+
+## Member inventory art acceptance (#1668)
+
+**Standard rigor:** extend the existing [source inventory](../content/presentation-assets.md#member-inventory-and-item-operations-1668)
+to actual field/battle Member sheets, field Give/Drop/full-pack return slots and battle transaction
+HUDs. Keep the existing layouts, inventory authority, available offers, localized labels/reasons and
+real transactions. Field Item operations now use the original separate24×24 art at4×/Nearest:
+Up Use, Left Give, Right Equip, Down Drop, then Confirm; mapped Cancel/right-click/Back returns to
+the same member caller. Child Back restores the selected operation and exact item/return slot.
+Only this new operation page hides the underlying Member layer, both veils and the list-page panel.
+The four icons are freestanding over the visible world; a separate adjacent explanation/Back frame
+leaves32px of world after the288px diamond, following the [design language](ui-design-language.md).
+Existing item/transaction lists retain their separate current layouts.
+The existing general Prepare list and battle auxiliary key entries remain working modern consumers;
+no unavailable fifth operation is drawn as an original command.
+
+`PartyDetailsPanel` uses shared borrowed16×24 textures in its independently scrolling magic/inventory
+columns. Normal icons accompany read-only rows; pane focus, equipped/broken text, levels, slot numbers
+and names remain separate. `PartyStatusView` configures one identity owner per active definition,
+shared with its preparation child. A decode error stays explicit in the Member hint/observation,
+retains the original read-only caller and exits through ordinary Back. Item operation decoding occurs
+only on Item preparation entry; its typed error page returns to that same member and cannot reopen itself
+from Member refresh. Battle Member, equipment and Give/Drop share the existing menu owner, retaining
+textures through temporary field/battle reparenting and releasing on content replacement/disposal.
+The battle HUD shows given/returned images separately outside the existing story panel text column;
+its one immutable projection reuses a single choices query, with no cross-frame cache.
+
+**Confirmed functional/resource boundary:** `probes/engine_inventory_art_observation.gd` reuses ordinary
+title New Game and fresh Continue. English/zh-CN select the actual #1602 world/entry catalogs and the
+same publication. Actual native state/draw reads cover Member rows, inventory scrolling, four cardinal
+operation images and selected/normal pixels, unavailable Use explanation, Give/Drop slot/confirmation
+Back, hidden parent and caller return. Continue covers battle Member list → selected sheet → same list,
+then Options/cursor → same actor Movement, and uncommitted Give/Drop with unchanged inventory.
+A local display-catalog stress variant changes only one item label to a long Chinese name; wrapped
+Member/Give rows retain measured text height and image separation. It is layout evidence, not an
+accepted translation or a new source item. Native projections verify the Item page's hidden common
+backgrounds, separate diamond/detail rectangles and viewport-fitting explanation.
+
+The same observer reuses `StartPreVoyageLocalizationObservation` for a declared three-member Map3
+field start: actual Give fills a recipient, full-pack exchange shows all live return slots, duplicate
+herbs borrow one texture and confirmation Back retains the second duplicate slot before real commit.
+This is a controlled presenter boundary, not natural membership/progression. Separately,
+`probes/engine_inventory_exchange_art_observation.gd` reuses #1647's actual connected Map57 approach
+and two-turn Give/exchange caller, including equipped transfers, real result/next-turn suffix and
+Chinese/remapped input. It proves identity textures survive the actual field-to-battle reparenting.
+Public authored and old private runs retain explicit text mode. One corrupt-PNG world variant proves
+typed Member/operation failures, repeated Member exit without redirect/reopen, and unchanged party
+resources; its expected codec errors remain recorded. Explicit bounded pixel reads compare textures
+with source receipts; ordinary Observe stays lightweight. No screenshots or full/H3 suite.
+
+**Unknown:** original natural reach, original timing/window/pixel parity, physical device/focus behavior,
+later catalog/unsupported states, broken overlays and human/aesthetic approval. Source choices do not
+grant gameplay legality. Observed ObjectDB shutdown warnings remain explicit. #1669 owns shop and
+empty-ground options art; #1456/#1616 retain human review without blocking this engineering boundary.
