@@ -445,7 +445,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 bool lowered = gesture && (sourceNod?.Lowered ?? _nodding);
                 int headShift = gesture && _cueResource == "shake-head" ? ExplorationStoryEffects.HeadShift(_cueAge) : 0;
                 var texture = Sprite(entity, lowered, headShift);
-                var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f);
+                // VInt_UpdateSprites places SAT Y at +112 (screen bias 128).
+                // UpdateVdpPlane places the map row at counter Y - 8, so the
+                // 24px sprite starts eight source pixels above its movement cell.
+                var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f - 8);
                 int shiverOffsetX = sourceNod is null && gesture && _shivering ? ((int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1) : 0;
                 point.X += shiverOffsetX;
                 double mosaicAge = _mosaicOut ? 0.5 - _cueAge : _cueAge;
