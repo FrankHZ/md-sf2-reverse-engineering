@@ -18,11 +18,16 @@ public partial class DesignPreview : Control
     private Page _page, _targetParent;
     private int _scene, _focus, _rootFocus, _offer, _target;
     private bool _english, _steadyIcons;
+    private bool _matchMenuWidth;
     private Choice? _animated;
     private double _frameTime;
     private const double IconFrameSeconds = 0.25;
     private static readonly Vector2 CommandSize = new(528, 80);
     private static readonly Vector2 CommandOrigin = new(1312, 312);
+    private const int PanelInset = 16, PanelHeader = 64;
+    private static readonly Vector2 PanelOrigin = CommandOrigin - new Vector2(PanelInset, PanelHeader);
+    private static float PanelWidth => CommandSize.X + 2 * PanelInset;
+    private float CardWidth => _matchMenuWidth ? PanelWidth : BattleStatusCard.CardSize.X;
     private string _result = "";
     private sealed record Choice(Button Hit, Label Name, TextureRect Art, string? Key, bool Enabled, string Reason);
     private string T(string zh, string en) => _english ? en : zh;
@@ -101,6 +106,12 @@ public partial class DesignPreview : Control
         Render();
     }
 
+    private void ToggleCardWidth()
+    {
+        _matchMenuWidth = !_matchMenuWidth;
+        Render();
+    }
+
     private void Show(Page page, int focus = 0)
     {
         _page = page;
@@ -126,7 +137,10 @@ public partial class DesignPreview : Control
             case 3: Battle(); break;
         }
         Panel(new(0, 0, 1920, 72), true);
-        Text(_surface, new(30, 6, 315, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
+        if (_scene == 3)
+            Utility(new(30, 10, 308, 52), $"{T("人物卡宽", "Card width")}  {CardWidth:0} px   [V]", ToggleCardWidth);
+        else
+            Text(_surface, new(30, 6, 315, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
         string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle")];
         for (int i = 0; i < tabs.Length; i++)
         {
@@ -229,13 +243,12 @@ public partial class DesignPreview : Control
 
     private Panel SidePage(string title, int rows, string context = "")
     {
-        const int inset = 16, header = 64;
-        float height = header + rows * CommandSize.Y + (rows - 1) * 8 + inset;
-        var panel = Panel(new(CommandOrigin - new Vector2(inset, header), new(CommandSize.X + 2 * inset, height)));
+        float height = PanelHeader + rows * CommandSize.Y + (rows - 1) * 8 + PanelInset;
+        var panel = Panel(new(PanelOrigin, new(PanelWidth, height)));
         float width = context.Length == 0 ? CommandSize.X : 320;
-        Text(panel, new(inset, 6, width, 52), title, 32);
+        Text(panel, new(PanelInset, 6, width, 52), title, 32);
         if (context.Length > 0)
-            Text(panel, new(inset + CommandSize.X - 200, 6, 200, 52), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
+            Text(panel, new(PanelInset + CommandSize.X - 200, 6, 200, 52), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
         return panel;
     }
 
@@ -354,10 +367,14 @@ public partial class DesignPreview : Control
 
     private void Battle()
     {
-        var card = Put(_surface, new BattleStatusCard(), new(32, 154, 500, 192));
+        float rightEdge = PanelOrigin.X + PanelWidth;
+        float leftInset = _surface.Size.X - rightEdge;
+        Vector2 cardSize = new(CardWidth, BattleStatusCard.CardSize.Y);
+        var card = Put(_surface, new BattleStatusCard { Name = "ActingStatus", CustomMinimumSize = cardSize },
+            new(leftInset, PanelOrigin.Y, cardSize.X, cardSize.Y));
         card.Present(new ActorRef("sarah"), T("莎拉", "Sarah"), T("行动角色", "Acting member"), 18, 24, 8, 12);
-        var counts = Panel(new(32, 88, 500, 54), true);
-        Text(counts, new(16, 0, 470, 54), T("回合 3     金币 150", "Round 3     Gold 150"), 24);
+        var counts = Panel(new(leftInset, PanelOrigin.Y - 66, cardSize.X, 54), true);
+        Text(counts, new(16, 0, cardSize.X - 32, 54), T("回合 3     金币 150", "Round 3     Gold 150"), 24);
         if (_page == Page.Root)
         {
             SidePage(T("战斗", "Battle"), 4);
@@ -384,7 +401,8 @@ public partial class DesignPreview : Control
         {
             bool attack = _targetParent == Page.Root;
             var who = attack ? T("对手", "Opponent") : _target == 0 ? T("鲍伊", "Bowie") : T("莎拉", "Sarah");
-            var targetCard = Put(_surface, new BattleStatusCard(), new(CommandOrigin.X, 154, 500, 192));
+            var targetCard = Put(_surface, new BattleStatusCard { Name = "TargetStatus", CustomMinimumSize = cardSize },
+                new(rightEdge - cardSize.X, PanelOrigin.Y, cardSize.X, cardSize.Y));
             targetCard.Present(new ActorRef("candidate"), who, T("当前目标", "Target"), attack ? 12 : 16, 24, 0, 0);
             string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
                 T("药草", "Medical Herb") : $"{T("回复", "HEAL")}   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
@@ -490,6 +508,8 @@ public partial class DesignPreview : Control
             { ChooseScene((int)key.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
             if (key.Keycode == Key.L)
             { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
+            if (key.Keycode == Key.V && _scene == 3)
+            { ToggleCardWidth(); GetViewport().SetInputAsHandled(); return; }
         }
         if (input.IsActionPressed("ui_cancel") || input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true }
             || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();

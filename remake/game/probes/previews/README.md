@@ -25,6 +25,11 @@ outline and label stay steady. The motion button holds the selected image for co
 Unavailable commands and spell/item identity highlights stay still. Text-only choices retain
 the same focus outline.
 
+In F4 the acting status card meets the top line of the right panel, with a 64px viewport
+margin on either side. Round and gold sit above that card. During targeting both cards share
+this top line. Press **V** or click **Card width** in the preview toolbar to compare the original
+500px width with the menu's 560px width. Both use the existing card, gauges and typography.
+
 Child menus replace the parent in the same column. Battle → Magic and Battle → Item reuse the
 root row size and anchor, with cost or slot aligned at the right edge. Church quotes and battle
 Stay use one confirmation layout: parent and action in the heading, consequence above the two
