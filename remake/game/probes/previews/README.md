@@ -15,7 +15,8 @@ to continue and click a response to answer. Close the window to finish.
 
 The layout follows the user-selected direction for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The [design review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1683) owns the shared
-component proposal. In this preview, Church and battle use the same compact vertical list:
+component proposal. Switch between Church and battle to compare their four commands in the
+same right-hand column. The first row starts at (1312, 312) on the preview canvas. Both use
 528×80px rows with 8px gaps, 30px names and 24×24 command art at nearest 3× (72×72px).
 The focused available command alternates its two admitted images every 250ms while the row's
 outline and label stay steady. The motion button holds the selected image for comparison.

@@ -22,6 +22,7 @@ public partial class DesignPreview : Control
     private double _frameTime;
     private const double IconFrameSeconds = 0.25;
     private static readonly Vector2 CommandSize = new(528, 80);
+    private static readonly Vector2 CommandOrigin = new(1312, 312);
     private string _result = "";
     private sealed record Choice(Button Hit, Label Name, TextureRect Art, string? Key, bool Enabled, string Reason);
     private string T(string zh, string en) => _english ? en : zh;
@@ -208,8 +209,8 @@ public partial class DesignPreview : Control
         if (selectedFrame != wasSelectedFrame) row.Art.Texture = _stage.Icon(key, selectedFrame);
     }
 
-    private static Rect2 CommandRow(Vector2 topLeft, int index) =>
-        new(topLeft + new Vector2(0, index * (CommandSize.Y + 8)), CommandSize);
+    private static Rect2 CommandRow(int index) =>
+        new(CommandOrigin + new Vector2(0, index * (CommandSize.Y + 8)), CommandSize);
 
     private void Footer(string hint)
     {
@@ -258,7 +259,7 @@ public partial class DesignPreview : Control
     {
         Put(_surface, new ColorRect { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore }, new(0, 72, 1920, 1008));
         bool choosing = _page == Page.Root;
-        var panel = Panel(choosing ? new(1288, 218, CommandSize.X + 48, 664) : new(1104, 110, 748, 849));
+        var panel = Panel(choosing ? new(CommandOrigin - new Vector2(24, 94), new(CommandSize.X + 48, 664)) : new(1104, 110, 748, 849));
         Text(panel, new(24, 12, 232, 60), T("教堂", "Church"), 36);
         Text(panel, new(272, 16, 232, 54), T("持有金币   150", "Gold   150"), 26, "cad6e5");
         if (_page == Page.Root)
@@ -266,7 +267,7 @@ public partial class DesignPreview : Control
             string[] names = [T("复活", "Raise"), T("治疗", "Cure"), T("转职 · 不可用", "Promotion · Unavailable"), T("记录冒险", "Record adventure")];
             string[] keys = ["raise", "cure", "promote", "save"];
             for (int i = 0; i < 4; i++)
-                Item(CommandRow(panel.Position + new Vector2(24, 94), i), names[i], keys[i], i != 2,
+                Item(CommandRow(i), names[i], keys[i], i != 2,
                     i == 2 ? T("这位神父没有提供转职服务。", "Promotion is unavailable from this priest.") : "");
             _detail = Text(panel, new(24, 447, CommandSize.X, 103), "", 30);
             Item(new(panel.Position + new Vector2(24, 574), new(CommandSize.X, 64)), T("离开", "Leave"));
@@ -301,7 +302,7 @@ public partial class DesignPreview : Control
         {
             string[] ids = ["attack", "magic", "item", "stay"];
             for (int i = 0; i < ids.Length; i++)
-                Item(CommandRow(new(32, 624), i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
+                Item(CommandRow(i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
             Footer(T("↑ ↓ 选择指令     Enter 确认", "↑ ↓ Select command     Enter Confirm"));
         }
         else if (_page is Page.Spells or Page.Items)
