@@ -23,6 +23,13 @@ outline and label stay steady. The motion button holds the selected image for co
 Unavailable commands and spell/item identity highlights stay still. Text-only choices retain
 the same focus outline.
 
+Child menus replace the parent in the same column. Battle → Magic and Battle → Item reuse the
+root row size and anchor, with cost or slot aligned at the right edge. Church quotes and battle
+Stay use one confirmation layout: parent and action in the heading, consequence above the two
+choices, safe return focused first. Target selection gives directions to the board, with the
+target card, action summary and pointer controls grouped on the right. Back from targeting
+restores the exact offer. Back from the offer list restores its parent command.
+
 The deployed [menu control](../../src/UI/DiamondCommandButton.cs) currently draws a 180ms
 rise/settle on focus entry and then holds the selected image. The preview's loop uses the two
 halves documented by the [asset owner](../../../docs/content/presentation-assets.md).

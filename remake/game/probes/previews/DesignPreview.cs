@@ -143,7 +143,7 @@ public partial class DesignPreview : Control
         Refresh();
     }
 
-    private void Item(Rect2 rect, string name, string? key = null, bool enabled = true, string reason = "")
+    private void Item(Rect2 rect, string name, string? key = null, bool enabled = true, string reason = "", string value = "")
     {
         int index = _choices.Count;
         var hit = Put(_surface, new Button { Name = "Choice" + index, FocusMode = FocusModeEnum.None }, rect);
@@ -156,10 +156,14 @@ public partial class DesignPreview : Control
         };
         bool hasArt = key is not null && _stage.Icon(key, false) is not null;
         bool command = key is not null && !key.StartsWith("identity-icon.", StringComparison.Ordinal);
-        float width = command ? 72 : 64, height = command ? 72 : 96;
+        float width = command ? 72 : 48, height = 72;
         Put(hit, icon, new(20, (rect.Size.Y - height) / 2, width, height));
         int left = hasArt ? (int)width + 36 : 20;
-        var caption = Text(hit, new(left, 0, rect.Size.X - left - 16, rect.Size.Y), name, 30);
+        float valueWidth = value.Length == 0 ? 0 : 132;
+        var caption = Text(hit, new(left, 0, rect.Size.X - left - 16 - valueWidth, rect.Size.Y), name, 30);
+        if (valueWidth > 0)
+            Text(hit, new(rect.Size.X - valueWidth - 16, 0, valueWidth, rect.Size.Y), value, 30)
+                .HorizontalAlignment = HorizontalAlignment.Right;
         _choices.Add(new(hit, caption, icon, key, enabled, reason));
         hit.GuiInput += input =>
         {
@@ -212,6 +216,23 @@ public partial class DesignPreview : Control
     private static Rect2 CommandRow(int index) =>
         new(CommandOrigin + new Vector2(0, index * (CommandSize.Y + 8)), CommandSize);
 
+    private Panel SidePage(string title, float height, string context = "")
+    {
+        var panel = Panel(new(CommandOrigin - new Vector2(24, 94), new(CommandSize.X + 48, height)));
+        float width = context.Length == 0 ? CommandSize.X : 320;
+        Text(panel, new(24, 12, width, 64), title, 32);
+        if (context.Length > 0)
+            Text(panel, new(352, 12, 200, 64), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
+        return panel;
+    }
+
+    private void Decision(Panel panel, string question, string confirm, string back)
+    {
+        Text(panel, new(24, 94, CommandSize.X, 156), question, 30);
+        Item(CommandRow(2), confirm);
+        Item(CommandRow(3), back);
+    }
+
     private void Footer(string hint)
     {
         var panel = Panel(new(32, 997, 1856, 60), true);
@@ -258,10 +279,11 @@ public partial class DesignPreview : Control
     private void Church()
     {
         Put(_surface, new ColorRect { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore }, new(0, 72, 1920, 1008));
-        bool choosing = _page == Page.Root;
-        var panel = Panel(choosing ? new(CommandOrigin - new Vector2(24, 94), new(CommandSize.X + 48, 664)) : new(1104, 110, 748, 849));
-        Text(panel, new(24, 12, 232, 60), T("教堂", "Church"), 36);
-        Text(panel, new(272, 16, 232, 54), T("持有金币   150", "Gold   150"), 26, "cad6e5");
+        string service = _rootFocus switch { 0 => T("复活", "Raise"), 1 => T("治疗", "Cure"),
+            3 => T("记录冒险", "Record adventure"), _ => T("离开", "Leave") };
+        string title = T("教堂", "Church") + (_page == Page.Root ? "" : " / " + service);
+        var panel = SidePage(title, _page == Page.Root ? 664 : 464,
+            _page == Page.Result ? "" : T("金币   150", "Gold   150"));
         if (_page == Page.Root)
         {
             string[] names = [T("复活", "Raise"), T("治疗", "Cure"), T("转职 · 不可用", "Promotion · Unavailable"), T("记录冒险", "Record adventure")];
@@ -274,22 +296,21 @@ public partial class DesignPreview : Control
         }
         else if (_page == Page.Quote)
         {
-            Text(panel, new(32, 170, 680, 158), _rootFocus == 0 ? T("让鲍伊复活需要 50 枚金币。要支付吗？", "Raise Bowie for 50 gold?") :
-                T("为莎拉治疗中毒需要 10 枚金币。要支付吗？", "Cure Sarah's poison for 10 gold?"), 30);
-            Item(new(1136, 504, 684, 82), T("确认支付", "Confirm payment"));
-            Item(new(1136, 598, 684, 82), T("拒绝", "Decline"));
+            Decision(panel, _rootFocus == 0 ? T("让鲍伊复活需要 50 枚金币。要支付吗？", "Raise Bowie for 50 gold?") :
+                T("为莎拉治疗中毒需要 10 枚金币。要支付吗？", "Cure Sarah's poison for 10 gold?"),
+                T("确认支付", "Confirm payment"), T("拒绝", "Decline"));
         }
         else
         {
-            Text(panel, new(32, 170, 684, 194), _result switch
+            Text(panel, new(24, 94, CommandSize.X, 156), _result switch
             {
                 "record" => T("正式游戏在这里进入存档选择。", "In the game, the save-slot choice opens here."),
                 "leave" => T("已离开服务菜单。", "You have left the service menu."),
                 _ => T("示例服务完成。", "Sample service complete.")
             }, 30);
-            Item(new(1136, 524, 684, 82), T("返回服务列表", "Return to services"));
+            Item(CommandRow(2), T("返回服务列表", "Return to services"));
         }
-        Footer(T("↑ ↓ 选择服务     Enter 确认     Esc 返回", "↑ ↓ Select service     Enter Confirm     Esc Back"));
+        Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
     }
 
     private void Battle()
@@ -308,44 +329,44 @@ public partial class DesignPreview : Control
         else if (_page is Page.Spells or Page.Items)
         {
             bool magic = _page == Page.Spells;
-            var list = Panel(new(32, 485, 810, 490));
-            Text(list, new(24, 12, 760, 62), magic ? T("魔法", "Magic") : T("道具", "Items"), 32);
+            SidePage(magic ? T("战斗 / 魔法", "Battle / Magic") : T("战斗 / 道具", "Battle / Item"),
+                magic ? 378 : 290);
             if (magic)
             {
-                Item(new(56, 573, 762, 108), T("回复   Lv. 1     3 MP", "HEAL   Lv. 1     3 MP"), "identity-icon.spell.0");
-                Item(new(56, 691, 762, 108), T("回复   Lv. 2     5 MP", "HEAL   Lv. 2     5 MP"), "identity-icon.spell.0");
+                Item(CommandRow(0), T("回复   Lv. 1", "HEAL   Lv. 1"), "identity-icon.spell.0", value: "3 MP");
+                Item(CommandRow(1), T("回复   Lv. 2", "HEAL   Lv. 2"), "identity-icon.spell.0", value: "5 MP");
             }
-            else Item(new(56, 573, 762, 108), T("药草     槽位 1", "Medical Herb     Slot 1"), "identity-icon.item.0");
-            Item(new(56, 823, 762, 78), T("返回", "Back"));
+            else Item(CommandRow(0), T("药草", "Medical Herb"), "identity-icon.item.0", value: T("槽位 1", "Slot 1"));
+            Item(CommandRow(magic ? 2 : 1), T("返回", "Back"));
             Footer(T("↑ ↓ 选择     Enter 选择目标     Esc 返回", "↑ ↓ Select     Enter Choose target     Esc Back"));
         }
         else if (_page == Page.Target)
         {
             bool attack = _targetParent == Page.Root;
             var who = attack ? T("对手", "Opponent") : _target == 0 ? T("鲍伊", "Bowie") : T("莎拉", "Sarah");
-            var targetCard = Put(_surface, new BattleStatusCard(), new(1388, 154, 500, 192));
+            var targetCard = Put(_surface, new BattleStatusCard(), new(CommandOrigin.X, 154, 500, 192));
             targetCard.Present(new ActorRef("candidate"), who, T("当前目标", "Target"), attack ? 12 : 16, 24, 0, 0);
-            var text = Panel(new(32, 798, 860, 160));
+            var text = Panel(new(CommandOrigin.X - 24, 376, CommandSize.X + 48, 294));
             string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
-                T("药草", "Medical Herb") : $"HEAL   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
-            Text(text, new(24, 12, 810, 78), action + "   →   " + who, 32);
-            Text(text, new(24, 94, 800, 52), attack ? T("选择对手", "Select opponent") : T("← → 切换队员", "← → Switch member"), 24);
-            if (!attack) Utility(new(916, 850, 252, 74), T("切换目标", "Switch target"), CycleTarget);
-            Utility(new(1184, 850, 294, 74), T("确认", "Confirm"), Activate);
-            Utility(new(1494, 850, 294, 74), T("返回", "Back"), Back);
+                T("药草", "Medical Herb") : $"{T("回复", "HEAL")}   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
+            Text(text, new(24, 12, CommandSize.X, 90), action + "   →   " + who, 30);
+            if (!attack) Utility(new(CommandOrigin.X, 490, CommandSize.X, 70),
+                T("← → 切换目标", "← → Switch target"), CycleTarget);
+            Utility(new(CommandOrigin.X, 574, 256, 72), T("确认", "Confirm"), Activate);
+            Utility(new(CommandOrigin.X + 272, 574, 256, 72), T("返回", "Back"), Back);
+            Footer(T("Enter 确认目标     Esc 返回上一级", "Enter Confirm target     Esc Back"));
         }
         else if (_page == Page.Stay)
         {
-            var prompt = Panel(new(540, 550, 840, 332));
-            Text(prompt, new(30, 24, 780, 78), T("让莎拉原地待机？", "Have Sarah stay here?"), 32);
-            Item(new(570, 666, 780, 76), T("待机", "Stay"));
-            Item(new(570, 752, 780, 76), T("返回", "Back"));
+            var prompt = SidePage(T("战斗 / 待机", "Battle / Stay"), 464);
+            Decision(prompt, T("让莎拉原地待机？", "Have Sarah stay here?"), T("待机", "Stay"), T("返回", "Back"));
+            Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
         }
         else
         {
-            var message = Panel(new(240, 714, 1440, 254));
-            Text(message, new(28, 20, 1384, 102), T("本次指令预览结束。", "Command preview complete."), 32);
-            Item(new(270, 844, 520, 80), T("返回战斗指令", "Return to battle commands"));
+            var message = SidePage(T("战斗 / 结果", "Battle / Result"), 378);
+            Text(message, new(24, 94, CommandSize.X, 156), T("本次指令预览结束。", "Command preview complete."), 30);
+            Item(CommandRow(2), T("返回战斗指令", "Return to battle commands"));
         }
     }
 
