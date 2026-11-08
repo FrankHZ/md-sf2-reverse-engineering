@@ -192,7 +192,18 @@ public partial class DesignPreview : Control
                     _animated = row;
             }
         }
-        if (_detail is not null && _choices.Count > 0) _detail.Text = _choices[_focus].Reason;
+        if (_detail is not null && _choices.Count > 0)
+        {
+            _detail.Text = _choices[_focus].Reason;
+            if (_scene == 2 && _detail.GetParent() is Panel panel)
+            {
+                _detail.Visible = _detail.Text.Length > 0;
+                var last = _choices[^1].Hit;
+                float bottom = last.Position.Y + last.Size.Y - panel.Position.Y;
+                if (_detail.Visible) bottom = _detail.Position.Y + _detail.GetMinimumSize().Y;
+                panel.Size = new(panel.Size.X, bottom + 16);
+            }
+        }
         if (_page == Page.Question && _dialogue is not null)
             _dialogue.Choices.Present(true, _focus == 0, true, true);
     }
@@ -216,27 +227,54 @@ public partial class DesignPreview : Control
     private static Rect2 CommandRow(int index) =>
         new(CommandOrigin + new Vector2(0, index * (CommandSize.Y + 8)), CommandSize);
 
-    private Panel SidePage(string title, float height, string context = "")
+    private Panel SidePage(string title, int rows, string context = "")
     {
-        var panel = Panel(new(CommandOrigin - new Vector2(24, 94), new(CommandSize.X + 48, height)));
+        const int inset = 16, header = 64;
+        float height = header + rows * CommandSize.Y + (rows - 1) * 8 + inset;
+        var panel = Panel(new(CommandOrigin - new Vector2(inset, header), new(CommandSize.X + 2 * inset, height)));
         float width = context.Length == 0 ? CommandSize.X : 320;
-        Text(panel, new(24, 12, width, 64), title, 32);
+        Text(panel, new(inset, 6, width, 52), title, 32);
         if (context.Length > 0)
-            Text(panel, new(352, 12, 200, 64), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
+            Text(panel, new(inset + CommandSize.X - 200, 6, 200, 52), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
         return panel;
     }
 
-    private void Decision(Panel panel, string question, string confirm, string back)
+    private void ReadingActions(Panel panel, string message, string first, string? second = null)
     {
-        Text(panel, new(24, 94, CommandSize.X, 156), question, 30);
-        Item(CommandRow(2), confirm);
-        Item(CommandRow(3), back);
+        var body = Text(panel, new(CommandOrigin - panel.Position, CommandSize), message, 30);
+        var extra = new Vector2(0, Mathf.Max(0, body.GetMinimumSize().Y - CommandSize.Y));
+        panel.Size += extra;
+        Item(new(CommandRow(1).Position + extra, CommandSize), first);
+        if (second is not null) Item(new(CommandRow(2).Position + extra, CommandSize), second);
     }
 
     private void Footer(string hint)
     {
         var panel = Panel(new(32, 997, 1856, 60), true);
         Text(panel, new(18, 0, 1816, 60), hint, 24, "cad6e5");
+    }
+
+    private void TargetFooter(string action, bool canCycle)
+    {
+        var panel = Panel(new(32, 997, 1856, 60), true);
+        var strip = Put(panel, new HBoxContainer(), new(18, 0, 1820, 60));
+        strip.AddThemeConstantOverride("separation", 24);
+        var summary = new Label { Text = action, SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
+        summary.AddThemeFontSizeOverride("font_size", 30);
+        strip.AddChild(summary);
+        void Hint(string caption, Action activate)
+        {
+            var hint = new Button { Text = caption, Flat = true, FocusMode = FocusModeEnum.None,
+                MouseDefaultCursorShape = CursorShape.PointingHand };
+            hint.AddThemeFontSizeOverride("font_size", 24);
+            hint.AddThemeColorOverride("font_color", new Color("cad6e5"));
+            strip.AddChild(hint);
+            hint.Pressed += activate;
+        }
+        if (canCycle) Hint(T("← →  切换目标", "← →  Switch target"), CycleTarget);
+        Hint(T("Enter / A  确认", "Enter / A  Confirm"), Activate);
+        Hint(T("Esc / B  取消", "Esc / B  Cancel"), Back);
     }
 
     private void Entry()
@@ -282,7 +320,7 @@ public partial class DesignPreview : Control
         string service = _rootFocus switch { 0 => T("复活", "Raise"), 1 => T("治疗", "Cure"),
             3 => T("记录冒险", "Record adventure"), _ => T("离开", "Leave") };
         string title = T("教堂", "Church") + (_page == Page.Root ? "" : " / " + service);
-        var panel = SidePage(title, _page == Page.Root ? 664 : 464,
+        var panel = SidePage(title, _page == Page.Root ? 5 : _page == Page.Quote ? 3 : 2,
             _page == Page.Result ? "" : T("金币   150", "Gold   150"));
         if (_page == Page.Root)
         {
@@ -291,24 +329,25 @@ public partial class DesignPreview : Control
             for (int i = 0; i < 4; i++)
                 Item(CommandRow(i), names[i], keys[i], i != 2,
                     i == 2 ? T("这位神父没有提供转职服务。", "Promotion is unavailable from this priest.") : "");
-            _detail = Text(panel, new(24, 447, CommandSize.X, 103), "", 30);
-            Item(new(panel.Position + new Vector2(24, 574), new(CommandSize.X, 64)), T("离开", "Leave"));
+            var leave = CommandRow(4);
+            Item(new(leave.Position, new(CommandSize.X, 64)), T("离开", "Leave"));
+            _detail = Text(panel, new(leave.Position - panel.Position + new Vector2(0, 72),
+                new(CommandSize.X, 0)), "", 30);
         }
         else if (_page == Page.Quote)
         {
-            Decision(panel, _rootFocus == 0 ? T("让鲍伊复活需要 50 枚金币。要支付吗？", "Raise Bowie for 50 gold?") :
+            ReadingActions(panel, _rootFocus == 0 ? T("让鲍伊复活需要 50 枚金币。要支付吗？", "Raise Bowie for 50 gold?") :
                 T("为莎拉治疗中毒需要 10 枚金币。要支付吗？", "Cure Sarah's poison for 10 gold?"),
                 T("确认支付", "Confirm payment"), T("拒绝", "Decline"));
         }
         else
         {
-            Text(panel, new(24, 94, CommandSize.X, 156), _result switch
+            ReadingActions(panel, _result switch
             {
                 "record" => T("正式游戏在这里进入存档选择。", "In the game, the save-slot choice opens here."),
                 "leave" => T("已离开服务菜单。", "You have left the service menu."),
                 _ => T("示例服务完成。", "Sample service complete.")
-            }, 30);
-            Item(CommandRow(2), T("返回服务列表", "Return to services"));
+            }, T("返回服务列表", "Return to services"));
         }
         Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
     }
@@ -321,6 +360,7 @@ public partial class DesignPreview : Control
         Text(counts, new(16, 0, 470, 54), T("回合 3     金币 150", "Round 3     Gold 150"), 24);
         if (_page == Page.Root)
         {
+            SidePage(T("战斗", "Battle"), 4);
             string[] ids = ["attack", "magic", "item", "stay"];
             for (int i = 0; i < ids.Length; i++)
                 Item(CommandRow(i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
@@ -330,7 +370,7 @@ public partial class DesignPreview : Control
         {
             bool magic = _page == Page.Spells;
             SidePage(magic ? T("战斗 / 魔法", "Battle / Magic") : T("战斗 / 道具", "Battle / Item"),
-                magic ? 378 : 290);
+                magic ? 3 : 2);
             if (magic)
             {
                 Item(CommandRow(0), T("回复   Lv. 1", "HEAL   Lv. 1"), "identity-icon.spell.0", value: "3 MP");
@@ -346,27 +386,20 @@ public partial class DesignPreview : Control
             var who = attack ? T("对手", "Opponent") : _target == 0 ? T("鲍伊", "Bowie") : T("莎拉", "Sarah");
             var targetCard = Put(_surface, new BattleStatusCard(), new(CommandOrigin.X, 154, 500, 192));
             targetCard.Present(new ActorRef("candidate"), who, T("当前目标", "Target"), attack ? 12 : 16, 24, 0, 0);
-            var text = Panel(new(CommandOrigin.X - 24, 376, CommandSize.X + 48, 294));
             string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
                 T("药草", "Medical Herb") : $"{T("回复", "HEAL")}   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
-            Text(text, new(24, 12, CommandSize.X, 90), action + "   →   " + who, 30);
-            if (!attack) Utility(new(CommandOrigin.X, 490, CommandSize.X, 70),
-                T("← → 切换目标", "← → Switch target"), CycleTarget);
-            Utility(new(CommandOrigin.X, 574, 256, 72), T("确认", "Confirm"), Activate);
-            Utility(new(CommandOrigin.X + 272, 574, 256, 72), T("返回", "Back"), Back);
-            Footer(T("Enter 确认目标     Esc 返回上一级", "Enter Confirm target     Esc Back"));
+            TargetFooter(action + "   →   " + who, !attack);
         }
         else if (_page == Page.Stay)
         {
-            var prompt = SidePage(T("战斗 / 待机", "Battle / Stay"), 464);
-            Decision(prompt, T("让莎拉原地待机？", "Have Sarah stay here?"), T("待机", "Stay"), T("返回", "Back"));
+            var prompt = SidePage(T("战斗 / 待机", "Battle / Stay"), 3);
+            ReadingActions(prompt, T("让莎拉原地待机？", "Have Sarah stay here?"), T("待机", "Stay"), T("返回", "Back"));
             Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
         }
         else
         {
-            var message = SidePage(T("战斗 / 结果", "Battle / Result"), 378);
-            Text(message, new(24, 94, CommandSize.X, 156), T("本次指令预览结束。", "Command preview complete."), 30);
-            Item(CommandRow(2), T("返回战斗指令", "Return to battle commands"));
+            var message = SidePage(T("战斗 / 结果", "Battle / Result"), 2);
+            ReadingActions(message, T("本次指令预览结束。", "Command preview complete."), T("返回战斗指令", "Return to battle commands"));
         }
     }
 

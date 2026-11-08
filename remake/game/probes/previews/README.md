@@ -15,8 +15,10 @@ to continue and click a response to answer. Close the window to finish.
 
 The layout follows the user-selected direction for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The [design review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1683) owns the shared
-component proposal. Switch between Church and battle to compare their four commands in the
-same right-hand column. The first row starts at (1312, 312) on the preview canvas. Both use
+component proposal. Church and battle frame their root commands and child lists in the same
+right-hand panel. Its height follows the visible rows, with 16px below the last row. A Church
+refusal expands the frame below Leave while every hit target stays in place. The
+first row starts at (1312, 312) on the preview canvas. Both use
 528×80px rows with 8px gaps, 30px names and 24×24 command art at nearest 3× (72×72px).
 The focused available command alternates its two admitted images every 250ms while the row's
 outline and label stay steady. The motion button holds the selected image for comparison.
@@ -26,8 +28,10 @@ the same focus outline.
 Child menus replace the parent in the same column. Battle → Magic and Battle → Item reuse the
 root row size and anchor, with cost or slot aligned at the right edge. Church quotes and battle
 Stay use one confirmation layout: parent and action in the heading, consequence above the two
-choices, safe return focused first. Target selection gives directions to the board, with the
-target card, action summary and pointer controls grouped on the right. Back from targeting
+choices, safe return focused first. During targeting the right column shows the target card.
+The bottom hint strip shows the current action and cost with inline Switch target (when applicable),
+Confirm and Cancel hints. Each hint is also clickable. Directions stay with the board, and Enter/A
+and Esc/B act directly without entering another menu. Back from targeting
 restores the exact offer. Back from the offer list restores its parent command.
 
 The deployed [menu control](../../src/UI/DiamondCommandButton.cs) currently draws a 180ms
