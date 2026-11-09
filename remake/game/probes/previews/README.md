@@ -13,7 +13,7 @@ to continue and click a response to answer. Close the window to finish.
 | F2 · Dialogue | Advance from a portrait line to a question, choose either answer and read the reply. |
 | F3 · Church | Scan the four labeled services, focus Promotion for its reason, then open Cure and decline the price. Record shows the save handoff in text. |
 | F4 · Battle | Move down the four command rows to Magic. Pick a level and a target, then back out to the same level and command. Item, Attack and Stay have sample paths too. |
-| F5 · Members | Browse Bowie and Sarah with Up/Down or click a name. Compare the portrait, class, level/EXP, HP/MP, attributes, spell levels/costs and the four numbered inventory slots. Esc, Back or F5 restores the underlying selection. Gamepad X opens/closes details. |
+| F5 · Members | Browse Bowie and Sarah with Up/Down or click a name. Inspect the portrait, class, level/EXP, HP/MP, attributes, spell costs and four inventory slots. Enter/A or Prepare opens the supply handoff. Esc/Back unwinds each step; F5 or gamepad X closes details. |
 
 The layout follows the user-selected direction for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The [design review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1683) owns the shared
@@ -36,7 +36,18 @@ compare Sarah's 8 MP with the 5 MP cost, choose Bowie, and switch layout again o
 Both share the same state, original icons, gauges, command focus and footer actions.
 The selected A design uses 36px HP/MP numbers above 232×28px gauges. The member sheet
 and B comparison use the same vital readout. Member stats and inventory are staged review
-examples; the sheet is read-only and portrait/icon selections come from the mounted pack.
+examples. Portrait/icon selections come from the mounted pack.
+
+### Give a supply
+
+In F5 select Sarah and press **Prepare**. Pick her slot 2 Medical Herb, choose Bowie, then
+select Confirm (Cancel has initial focus). His next free slot is 4. The result shows both packs
+and **View Bowie's pack** opens his updated sheet. Switch back to Sarah and offer her remaining
+Healing Seed: Bowie is now full. Select a numbered supply from his pack to give back and check
+both slot movements before confirming. Duplicate herbs remain distinguishable by slot.
+Back before commitment preserves both inventories. Already committed handoffs persist across
+member/scene switches for this preview process. This F5 exercise uses consumables, with weapons
+kept equipped. F4 uses its own fixed combat example. Restarting the preview restores the samples.
 
 Child menus replace the parent in the same column. Battle → Magic and Battle → Item reuse the
 root row size and anchor, with cost or slot aligned at the right edge. Church quotes and battle

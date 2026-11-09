@@ -9,6 +9,7 @@ public partial class DesignPreview
 
     private void ToggleMembers()
     {
+        _giveStep = GiveStep.Closed;
         if (!_showMembers)
             _sarahSelected = _scene == 3 && !(_page == Page.Target && _target == 0);
         _showMembers = !_showMembers;
@@ -31,9 +32,21 @@ public partial class DesignPreview
         if (input.IsActionPressed("ui_cancel") ||
             input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true } ||
             input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true })
-        { ToggleMembers(); return true; }
+        { if (Preparing) BackGive(); else ToggleMembers(); return true; }
+        if (input.IsActionPressed("ui_accept") ||
+            input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true })
+        { if (Preparing) Activate(); else OpenGive(); return true; }
         if (input.IsActionPressed("ui_down") || input.IsActionPressed("ui_up"))
-        { SelectMember(!_sarahSelected); return true; }
+        {
+            if (Preparing)
+            {
+                int delta = input.IsActionPressed("ui_down") ? 1 : -1;
+                _giveFocus = (_giveFocus + delta + _choices.Count) % _choices.Count;
+                Refresh();
+            }
+            else SelectMember(!_sarahSelected);
+            return true;
+        }
         return false;
     }
 
@@ -106,13 +119,15 @@ public partial class DesignPreview
             DetailRow(382, 410, 404, "identity-icon.spell.0", T("回复  Lv. 2", "HEAL  Lv. 2"), "5 MP");
         }
         else DetailRow(382, 328, 404, null, GameText.Get("party.none-learned"));
-        DetailRow(834, 328, 522, healer ? "identity-icon.item.85" : "identity-icon.item.71",
-            healer ? T("1. 木杖", "1. Wooden Rod") : T("1. 木剑", "1. Wooden Sword"), GameText.Get("party.equipped"));
-        DetailRow(834, 410, 522, "identity-icon.item.0", T("2. 药草", "2. Medical Herb"));
-        for (int slot = 3; slot <= 4; slot++)
-            DetailRow(834, 328 + (slot - 1) * 82, 522, null, $"{slot}. {GameText.Get("party.empty")}");
+        for (int slot = 0; slot < PackCapacity; slot++)
+        {
+            var id = SlotId(DonorPack, slot);
+            DetailRow(834, 328 + slot * 82, 522, ItemArt(id), SlotLabel(id, slot),
+                IsWeapon(id) ? GameText.Get("party.equipped") : "");
+        }
 
-        Footer(T("↑ ↓ 切换队员     Esc / B 返回", "↑ ↓ Switch member     Esc / B Back"));
+        Footer(T("↑ ↓ 切换队员     Enter / A 整备     Esc / B 返回", "↑ ↓ Switch member     Enter / A Prepare     Esc / B Back"));
+        Utility(new(1418, 1003, 204, 48), GameText.Get("party.prepare"), OpenGive);
         Utility(new(1642, 1003, 204, 48), T("返回", "Back"), ToggleMembers);
     }
 }

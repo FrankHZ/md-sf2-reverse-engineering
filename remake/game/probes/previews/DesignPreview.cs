@@ -94,6 +94,7 @@ public partial class DesignPreview : Control
 
     private void ChooseScene(int scene)
     {
+        _giveStep = GiveStep.Closed;
         _showMembers = false;
         _scene = scene;
         _page = Page.Root;
@@ -132,7 +133,8 @@ public partial class DesignPreview : Control
         _detail = null;
         _dialogue = null;
         _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1);
-        if (_showMembers) Members();
+        if (Preparing) PrepareGive();
+        else if (_showMembers) Members();
         else switch (_scene)
         {
             case 0: Entry(); break;
@@ -189,10 +191,10 @@ public partial class DesignPreview : Control
         _choices.Add(new(hit, caption, icon, key, enabled, reason));
         hit.GuiInput += input =>
         {
-            if (input is InputEventMouseMotion motion && motion.Relative != Vector2.Zero && _focus != index)
-            { _focus = index; Refresh(); }
+            if (input is InputEventMouseMotion motion && motion.Relative != Vector2.Zero && ChoiceFocus != index)
+            { ChoiceFocus = index; Refresh(); }
         };
-        hit.Pressed += () => { _focus = index; Refresh(); Activate(); };
+        hit.Pressed += () => { ChoiceFocus = index; Refresh(); Activate(); };
     }
 
     private void Refresh()
@@ -201,7 +203,7 @@ public partial class DesignPreview : Control
         for (int i = 0; i < _choices.Count; i++)
         {
             var row = _choices[i];
-            bool focused = _focus == i;
+            bool focused = ChoiceFocus == i;
             var style = Box(focused ? "273d56" : "102c50", focused ? "ffe19a" : "536c87", focused ? 3 : 1);
             foreach (var state in new[] { "normal", "hover", "pressed" }) row.Hit.AddThemeStyleboxOverride(state, style);
             row.Name.AddThemeColorOverride("font_color", !row.Enabled ? StoryTheme.Unavailable :
@@ -216,8 +218,8 @@ public partial class DesignPreview : Control
         }
         if (_detail is not null && _choices.Count > 0)
         {
-            _detail.Text = _choices[_focus].Reason;
-            if (_scene == 2 && _detail.GetParent() is Panel panel)
+            _detail.Text = _choices[ChoiceFocus].Reason;
+            if (!_showMembers && _scene == 2 && _detail.GetParent() is Panel panel)
             {
                 _detail.Visible = _detail.Text.Length > 0;
                 var last = _choices[^1].Hit;
@@ -473,7 +475,8 @@ public partial class DesignPreview : Control
 
     private void Activate()
     {
-        if (_choices.Count > 0 && !_choices[_focus].Enabled) return;
+        if (_choices.Count > 0 && !_choices[ChoiceFocus].Enabled) return;
+        if (Preparing) { AdvanceGive(); return; }
         if (_scene == 0) { Show(_page == Page.Root ? Page.Result : Page.Root); return; }
         if (_scene == 1)
         {
