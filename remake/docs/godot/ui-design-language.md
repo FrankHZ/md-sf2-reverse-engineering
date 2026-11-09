@@ -97,6 +97,13 @@ owns the ordinary command, item and spell resource identities.
 
 ## Focus, action and return
 
+**Keep item slots still.** Within the same inventory view, selectable, focused, unavailable
+and read-only versions of a slot share the row bounds and the same positions for icon, slot
+number/name and trailing status. Reserve these columns for empty slots and text-only fallback
+too. Use color, an outline or the selected image for feedback. A marker needs its own reserved
+space. Confirming a transfer may change which item occupies a slot. Moving focus or changing
+which pack accepts input must leave the slot geometry intact.
+
 ```text
 Normal                 Focused available       Focused unavailable
   Medical Herb  ×1     › Medical Herb  ×1      › HEAL 2   Unavailable
