@@ -171,23 +171,7 @@ public partial class DesignPreview : Control
     {
         int index = _choices.Count;
         var hit = Put(_surface, new Button { Name = "Choice" + index, FocusMode = FocusModeEnum.None }, rect);
-        var icon = new TextureRect
-        {
-            MouseFilter = MouseFilterEnum.Ignore,
-            TextureFilter = TextureFilterEnum.Nearest,
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
-        };
-        bool hasArt = key is not null && _stage.Icon(key, false) is not null;
-        bool command = key is not null && !key.StartsWith("identity-icon.", StringComparison.Ordinal);
-        float width = command ? 72 : 48, height = 72;
-        Put(hit, icon, new(20, (rect.Size.Y - height) / 2, width, height));
-        int left = hasArt ? (int)width + 36 : 20;
-        float valueWidth = value.Length == 0 ? 0 : 132;
-        var caption = Text(hit, new(left, 0, rect.Size.X - left - 16 - valueWidth, rect.Size.Y), name, 30);
-        if (valueWidth > 0)
-            Text(hit, new(rect.Size.X - valueWidth - 16, 0, valueWidth, rect.Size.Y), value, 30)
-                .HorizontalAlignment = HorizontalAlignment.Right;
+        var (caption, icon) = ItemContent(hit, name, key, value, Preparing && _giveStep is GiveStep.Item or GiveStep.Exchange);
         _choices.Add(new(hit, caption, icon, key, enabled, reason));
         hit.GuiInput += input =>
         {
@@ -197,9 +181,39 @@ public partial class DesignPreview : Control
         hit.Pressed += () => { ChoiceFocus = index; Refresh(); Activate(); };
     }
 
+    private (Label, TextureRect) ItemContent(Control row, string name, string? key, string value, bool slot)
+    {
+        var size = row.Size;
+        var icon = new TextureRect
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            TextureFilter = TextureFilterEnum.Nearest,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+        };
+        bool hasArt = key is not null && _stage.Icon(key, false) is not null;
+        bool command = !slot && key is not null && !key.StartsWith("identity-icon.", StringComparison.Ordinal);
+        float width = command ? 72 : 48, height = 72;
+        Put(row, icon, new(20, (size.Y - height) / 2, width, height));
+        int left = slot || hasArt ? (int)width + 36 : 20;
+        float valueWidth = slot || value.Length > 0 ? 132 : 0;
+        var caption = Text(row, new(left, 0, size.X - left - 16 - valueWidth, size.Y), name, 30);
+        if (value.Length > 0)
+            Text(row, new(size.X - valueWidth - 16, 0, valueWidth, size.Y), value, 30)
+                .HorizontalAlignment = HorizontalAlignment.Right;
+        return (caption, icon);
+    }
+
     private void Refresh()
     {
         StopIconAnimation();
+        if (Preparing && _giveStep == GiveStep.Recipient && _candidateIndex != _giveFocus)
+        {
+            _candidateIndex = _giveFocus;
+            _surface.RemoveChild(_receiverPanel);
+            _receiverPanel.QueueFree();
+            _receiverPanel = GivePack(ReceiverOrigin, Recipient, RecipientPack, false);
+        }
         for (int i = 0; i < _choices.Count; i++)
         {
             var row = _choices[i];

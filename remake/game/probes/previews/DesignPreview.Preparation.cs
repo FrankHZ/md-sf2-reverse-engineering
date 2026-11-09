@@ -8,8 +8,14 @@ public partial class DesignPreview
     private enum GiveStep { Closed, Item, Recipient, Exchange, Confirm, Result }
     private const int PackCapacity = 4;
     // Each review inventory is compact and ordered by slot. Weapons stay equipped in this supplies pilot.
-    private readonly List<int> _bowiePack = [71, 0, 1];
-    private readonly List<int> _sarahPack = [85, 0, 1];
+    private readonly Dictionary<Member, List<int>> _packs = new()
+    {
+        [Member.Bowie] = [71, 0, 1], [Member.Sarah] = [85, 0, 1], [Member.Chester] = [0, 1, 0, 1]
+    };
+    private Member[] _candidates = [];
+    private int _candidateIndex;
+    private static readonly Vector2 ReceiverOrigin = new(976, 244);
+    private Panel _receiverPanel = null!;
     private GiveStep _giveStep;
     private int _giveFocus, _givenSlot, _exchangeSlot;
     private int _givenId, _returnedId;
@@ -19,10 +25,11 @@ public partial class DesignPreview
         get => Preparing ? _giveFocus : _focus;
         set { if (Preparing) _giveFocus = value; else _focus = value; }
     }
-    private List<int> DonorPack => _sarahSelected ? _sarahPack : _bowiePack;
-    private List<int> RecipientPack => _sarahSelected ? _bowiePack : _sarahPack;
-    private string Donor => (_sarahSelected ? Sarah : Bowie).Name;
-    private string Recipient => (_sarahSelected ? Bowie : Sarah).Name;
+    private Member Candidate => _candidates[_candidateIndex];
+    private List<int> DonorPack => _packs[_member];
+    private List<int> RecipientPack => _packs[Candidate];
+    private string Donor => MemberUnit(_member).Name;
+    private string Recipient => MemberUnit(Candidate).Name;
 
     private static int SlotId(List<int> pack, int slot) => slot < pack.Count ? pack[slot] : -1;
     private static bool IsWeapon(int id) => id is 71 or 85;
@@ -37,6 +44,8 @@ public partial class DesignPreview
 
     private void OpenGive()
     {
+        _candidates = Enum.GetValues<Member>().Where(member => member != _member).ToArray();
+        _candidateIndex = 0;
         int supply = DonorPack.FindIndex(id => !IsWeapon(id));
         GivePage(GiveStep.Item, Math.Max(0, supply));
     }
@@ -53,10 +62,10 @@ public partial class DesignPreview
         switch (_giveStep)
         {
             case GiveStep.Recipient: GivePage(GiveStep.Item, _givenSlot); break;
-            case GiveStep.Exchange: GivePage(GiveStep.Recipient); break;
+            case GiveStep.Exchange: GivePage(GiveStep.Recipient, _candidateIndex); break;
             case GiveStep.Confirm:
                 if (_exchangeSlot >= 0) GivePage(GiveStep.Exchange, _exchangeSlot);
-                else GivePage(GiveStep.Recipient);
+                else GivePage(GiveStep.Recipient, _candidateIndex);
                 break;
             default: GivePage(GiveStep.Closed); break;
         }
@@ -70,9 +79,10 @@ public partial class DesignPreview
                 _givenSlot = _giveFocus;
                 _givenId = DonorPack[_givenSlot];
                 _exchangeSlot = -1;
-                GivePage(GiveStep.Recipient);
+                GivePage(GiveStep.Recipient, _candidateIndex);
                 break;
             case GiveStep.Recipient:
+                _exchangeSlot = -1;
                 if (RecipientPack.Count == PackCapacity)
                     GivePage(GiveStep.Exchange, RecipientPack.FindIndex(id => !IsWeapon(id)));
                 else GivePage(GiveStep.Confirm, 1);
@@ -94,7 +104,7 @@ public partial class DesignPreview
                 GivePage(GiveStep.Result);
                 break;
             case GiveStep.Result:
-                _sarahSelected = !_sarahSelected;
+                _member = Candidate;
                 GivePage(GiveStep.Closed);
                 break;
         }
@@ -123,20 +133,26 @@ public partial class DesignPreview
         var heading = Panel(new(224, 148, 1472, 76));
         Text(heading, new(24, 8, 1424, 60), title, 32);
         GivePack(new(224, 244), Donor, DonorPack, true);
-        GivePack(new(976, 244), Recipient, RecipientPack, false);
+        _receiverPanel = GivePack(ReceiverOrigin, Recipient, RecipientPack, false);
 
         var tray = Panel(new(224, 698, 1472, 180));
         string summary = _giveStep switch
         {
             GiveStep.Item => T("选择要交给同伴的消耗品。", "Choose a supply to give to the other member."),
-            GiveStep.Recipient or GiveStep.Exchange => $"{Donor}  →  {Recipient}     {SlotLabel(_givenId, _givenSlot)}",
+            GiveStep.Recipient => $"{Donor}    {SlotLabel(_givenId, _givenSlot)}",
+            GiveStep.Exchange => $"{Donor}  →  {Recipient}     {SlotLabel(_givenId, _givenSlot)}",
             _ => TransferSummary(_giveStep == GiveStep.Result)
         };
         Text(tray, new(24, 14, 822, 136), summary, 30);
         switch (_giveStep)
         {
             case GiveStep.Recipient:
-                Item(new(1094, 750, 578, 78), T($"交给{Recipient}", $"Give to {Recipient}"));
+                for (int i = 0; i < _candidates.Length; i++)
+                {
+                    Member member = _candidates[i];
+                    Item(new(1100, 715 + 75 * i, 572, 68), MemberUnit(member).Name,
+                        value: $"{_packs[member].Count}/{PackCapacity}");
+                }
                 break;
             case GiveStep.Confirm:
                 Item(new(1100, 715, 572, 68), T("确认", "Confirm"));
@@ -153,7 +169,7 @@ public partial class DesignPreview
         Utility(new(1642, 1003, 204, 48), T("返回", "Back"), BackGive);
     }
 
-    private void GivePack(Vector2 origin, string owner, List<int> pack, bool donor)
+    private Panel GivePack(Vector2 origin, string owner, List<int> pack, bool donor)
     {
         var panel = Panel(new(origin, new(720, 434)));
         panel.Name = donor ? "GiverPack" : "ReceiverPack";
@@ -178,18 +194,12 @@ public partial class DesignPreview
                 _giveStep == GiveStep.Confirm && i == _exchangeSlot;
             if (_giveStep == GiveStep.Result)
                 marked = (!donor || _exchangeSlot >= 0) && i == pack.Count - 1;
-            float left = 20;
-            if (ItemArt(id) is { } key && _stage.Icon(key, marked) is { } icon)
-            {
-                Put(panel, new TextureRect { Texture = icon, TextureFilter = TextureFilterEnum.Nearest,
-                    ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-                    MouseFilter = MouseFilterEnum.Ignore }, new(left, row.Position.Y + 4, 48, 72));
-                left += 64;
-            }
-            Text(panel, new(left, row.Position.Y, 500, 80), (marked ? "›  " : "") + SlotLabel(id, i),
-                30, marked ? "ffe19a" : id < 0 ? "8e9bab" : "f4f5fc");
-            if (note.Length > 0) Text(panel, new(556, row.Position.Y, 136, 80), note, 24, "cad6e5")
-                .HorizontalAlignment = HorizontalAlignment.Right;
+            var line = Put(panel, new Control { Name = $"Slot{i}", MouseFilter = MouseFilterEnum.Ignore }, row);
+            var key = ItemArt(id);
+            var (label, art) = ItemContent(line, SlotLabel(id, i), key, note, true);
+            art.Texture = key is null ? null : _stage.Icon(key, marked);
+            label.AddThemeColorOverride("font_color", new Color(marked ? "ffe19a" : id < 0 ? "8e9bab" : "f4f5fc"));
         }
+        return panel;
     }
 }

@@ -17,7 +17,7 @@ internal sealed partial class PreviewStage : Control
     private ExplorationDefinition? _world;
     private IReadOnlyDictionary<string, ExplorationRaster>? _battle;
     private int _scene, _target = -1;
-    private int _allySprite = 2, _opponentSprite = 103;
+    private int _allySprite = 2, _chesterSprite = 5, _opponentSprite = 103;
     internal bool HasWorld => _world?.Visuals is not null;
     internal bool HasWitch => _entry is not null;
     internal string? AssetFailure { get; private set; }
@@ -47,6 +47,7 @@ internal sealed partial class PreviewStage : Control
             if (battle?.FieldDeath is { } art)
             {
                 _allySprite = art.AllySprites.GetValueOrDefault(1, _allySprite);
+                _chesterSprite = art.AllySprites.GetValueOrDefault(2, _chesterSprite);
                 _opponentSprite = art.EnemySprites.Values.FirstOrDefault(_opponentSprite);
             }
             if (_world?.Visuals?.ChurchMenu is null || _battle?.ContainsKey("command-menu.attack.normal") != true)
@@ -75,7 +76,7 @@ internal sealed partial class PreviewStage : Control
         return _textures[state] = ImageTexture.CreateFromImage(image);
     }
 
-    internal Texture2D? MemberPortrait(bool sarah) => Portrait(sarah ? _allySprite : 0);
+    internal Texture2D? MemberPortrait(int member) => Portrait(member switch { 1 => _allySprite, 2 => _chesterSprite, _ => 0 });
 
     internal Texture2D? Portrait(int sprite = 1)
     {

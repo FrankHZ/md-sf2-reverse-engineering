@@ -5,21 +5,27 @@ namespace Sf2.Remake.GodotAdapter.Previews;
 
 public partial class DesignPreview
 {
-    private bool _showMembers, _sarahSelected;
+    private enum Member { Bowie, Sarah, Chester }
+    private bool _showMembers;
+    private Member _member;
+    private UnitSummary MemberUnit(Member member) => member switch
+    {
+        Member.Bowie => Bowie, Member.Sarah => Sarah, _ => new(T("切斯特", "Chester"), 22, 26, 0, 0)
+    };
 
     private void ToggleMembers()
     {
         _giveStep = GiveStep.Closed;
         if (!_showMembers)
-            _sarahSelected = _scene == 3 && !(_page == Page.Target && _target == 0);
+            _member = _scene == 3 && !(_page == Page.Target && _target == 0) ? Member.Sarah : Member.Bowie;
         _showMembers = !_showMembers;
         Render();
     }
 
-    private void SelectMember(bool sarah)
+    private void SelectMember(Member member)
     {
-        if (_sarahSelected == sarah) return;
-        _sarahSelected = sarah;
+        if (_member == member) return;
+        _member = member;
         Render();
     }
 
@@ -44,7 +50,7 @@ public partial class DesignPreview
                 _giveFocus = (_giveFocus + delta + _choices.Count) % _choices.Count;
                 Refresh();
             }
-            else SelectMember(!_sarahSelected);
+            else SelectMember((Member)(((int)_member + (input.IsActionPressed("ui_down") ? 1 : 2)) % 3));
             return true;
         }
         return false;
@@ -54,32 +60,32 @@ public partial class DesignPreview
     {
         Put(_surface, new ColorRect { Color = new Color(0, 0, 0, 0.5f), MouseFilter = MouseFilterEnum.Ignore },
             new(0, 72, 1920, 1008));
-        var roster = Panel(new(104, 186, 304, 302));
+        var roster = Panel(new(104, 186, 304, 376));
         Text(roster, new(20, 12, 264, 58), T("队伍", "Party"), 32);
-        void MemberRow(int index, UnitSummary unit, bool sarah)
+        foreach (Member member in Enum.GetValues<Member>())
         {
-            bool selected = sarah == _sarahSelected;
-            var row = Utility(new(124, 270 + index * 94, 264, 82), (selected ? "›   " : "") + unit.Name,
-                () => SelectMember(sarah), selected);
+            bool selected = member == _member;
+            var row = Utility(new(124, 270 + (int)member * 94, 264, 82), MemberUnit(member).Name,
+                () => SelectMember(member), selected);
             row.AddThemeFontSizeOverride("font_size", 30);
             if (selected) row.AddThemeColorOverride("font_color", new Color("ffe19a"));
         }
-        MemberRow(0, Bowie, false);
-        MemberRow(1, Sarah, true);
 
         var sheet = Panel(new(428, 186, 1388, 704));
         sheet.Name = "MemberSheet";
-        bool healer = _sarahSelected;
-        var unit = healer ? Sarah : Bowie;
-        var portrait = _stage.MemberPortrait(healer);
+        bool healer = _member == Member.Sarah;
+        var unit = MemberUnit(_member);
+        var portrait = _stage.MemberPortrait((int)_member);
         if (portrait is not null)
             Put(sheet, new TextureRect { Texture = portrait, TextureFilter = TextureFilterEnum.Nearest,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
                 MouseFilter = MouseFilterEnum.Ignore }, new(32, 28, 144, 192));
         int identityX = portrait is null ? 32 : 208;
         Text(sheet, new(identityX, 22, 470, 68), unit.Name, 40);
-        Text(sheet, new(identityX, 96, 470, 52), healer ? T("僧侣   ·   Lv. 4", "Priest   ·   Lv. 4")
-            : T("剑士   ·   Lv. 5", "Swordsman   ·   Lv. 5"), 30);
+        Text(sheet, new(identityX, 96, 470, 52), _member switch {
+            Member.Sarah => T("僧侣   ·   Lv. 4", "Priest   ·   Lv. 4"),
+            Member.Chester => T("骑士   ·   Lv. 4", "Knight   ·   Lv. 4"),
+            _ => T("剑士   ·   Lv. 5", "Swordsman   ·   Lv. 5") }, 30);
         Text(sheet, new(identityX, 155, 470, 48), healer ? "EXP    24" : "EXP    36", 24, "cad6e5");
         Vitals(sheet, new(808, 64), unit);
 
@@ -93,7 +99,7 @@ public partial class DesignPreview
         Section(382, 404, GameText.Get("party.magic"));
         Section(834, 522, GameText.Get("party.items"));
         string[] stats = ["attack", "defense", "agility", "move"];
-        int[] values = healer ? [11, 9, 12, 5] : [16, 12, 10, 6];
+        int[] values = _member switch { Member.Sarah => [11, 9, 12, 5], Member.Chester => [15, 13, 11, 7], _ => [16, 12, 10, 6] };
         for (int i = 0; i < stats.Length; i++)
         {
             Text(sheet, new(32, 332 + i * 76, 224, 64), GameText.Get("party.stat." + stats[i]), 30);
@@ -103,7 +109,7 @@ public partial class DesignPreview
         void DetailRow(float x, float y, float width, string? key, string label, string note = "")
         {
             var texture = key is null ? null : _stage.Icon(key, false);
-            float offset = texture is null ? 0 : 64;
+            const float offset = 64;
             if (texture is not null)
                 Put(sheet, new TextureRect { Texture = texture, TextureFilter = TextureFilterEnum.Nearest,
                     ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
