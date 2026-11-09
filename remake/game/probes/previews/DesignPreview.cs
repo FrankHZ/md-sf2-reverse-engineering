@@ -31,6 +31,7 @@ public partial class DesignPreview : Control
     private string T(string zh, string en) => _english ? en : zh;
     private readonly record struct UnitSummary(string Name, int Hp, int MaxHp, int Mp, int MaxMp);
     private UnitSummary Sarah => new(T("莎拉", "Sarah"), 18, 24, 8, 12);
+    private UnitSummary Bowie => new(T("鲍伊", "Bowie"), 16, 24, 0, 0);
 
     public override void _Ready()
     {
@@ -93,6 +94,7 @@ public partial class DesignPreview : Control
 
     private void ChooseScene(int scene)
     {
+        _showMembers = false;
         _scene = scene;
         _page = Page.Root;
         _focus = _rootFocus = _offer = _target = 0;
@@ -130,7 +132,8 @@ public partial class DesignPreview : Control
         _detail = null;
         _dialogue = null;
         _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1);
-        switch (_scene)
+        if (_showMembers) Members();
+        else switch (_scene)
         {
             case 0: Entry(); break;
             case 1: Dialogue(); break;
@@ -138,21 +141,22 @@ public partial class DesignPreview : Control
             case 3: Battle(); break;
         }
         Panel(new(0, 0, 1920, 72), true);
-        if (_scene == 3)
+        if (_scene == 3 && !_showMembers)
         {
             Utility(new(18, 10, 164, 52), T("A  合栏", "A  Combined"), () => SelectBattleLayout(false), !_bottomLayout);
             Utility(new(190, 10, 162, 52), T("B  底栏", "B  Bottom"), () => SelectBattleLayout(true), _bottomLayout);
         }
         else
             Text(_surface, new(30, 6, 315, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
-        string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle")];
+        string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle"), T("人物详情", "Members")];
         for (int i = 0; i < tabs.Length; i++)
         {
             int scene = i;
-            Utility(new(365 + i * 210, 10, 198, 52), $"F{i + 1}   {tabs[i]}", () => ChooseScene(scene), _scene == i);
+            Utility(new(365 + i * 168, 10, 158, 52), $"F{i + 1}  {tabs[i]}",
+                () => { if (scene == 4) ToggleMembers(); else ChooseScene(scene); }, _showMembers ? i == 4 : _scene == i);
         }
         string art = _stage.AssetFailure is { } problem ? T("资源未齐 · ", "Art incomplete · ") + problem :
-            (_scene == 0 ? _stage.HasWitch : _stage.HasWorld) ? T("原版素材 · 示例状态", "Original art · sample state") :
+            (_scene == 0 && !_showMembers ? _stage.HasWitch : _stage.HasWorld) ? T("原版素材 · 示例状态", "Original art · sample state") :
             T("无私有素材 · 线框", "Text-only · schematic");
         Text(_surface, new(1210, 10, 272, 52), art, 20, "c1cfdf");
         Utility(new(1492, 10, 168, 52), _steadyIcons ? T("动效：关", "Motion: off") : T("动效：开", "Motion: on"),
@@ -250,7 +254,7 @@ public partial class DesignPreview : Control
         float height = PanelHeader + rows * CommandSize.Y + (rows - 1) * 8 + PanelInset;
         if (_scene == 3 && !_bottomLayout)
         {
-            var combined = Panel(new(PanelOrigin - new Vector2(0, 54), new(PanelWidth, height + 54)));
+            var combined = Panel(new(PanelOrigin - new Vector2(0, 90), new(PanelWidth, height + 90)));
             combined.Name = "CombinedActions";
             StatusHeading(combined, Sarah, title);
             return combined;
@@ -269,9 +273,9 @@ public partial class DesignPreview : Control
         void Gauge(float x, string type, int current, int maximum)
         {
             var at = origin + new Vector2(x, 0);
-            Text(parent, new(at, new(148, 46)), maximum == 0 ? $"{type}  —" : $"{type}  {current}/{maximum}", 26);
+            Text(parent, new(at, new(240, 54)), maximum == 0 ? $"{type}  —" : $"{type}  {current}/{maximum}", 36);
             Put(parent, new BattleGaugeImage(type) { Fraction = maximum == 0 ? 0 : (float)current / maximum },
-                new(at + new Vector2(148, 14), new(88, 18)));
+                new(at + new Vector2(0, 55), new(232, 28)));
         }
         Gauge(0, "HP", unit.Hp, unit.MaxHp);
         Gauge(264, "MP", unit.Mp, unit.MaxMp);
@@ -286,13 +290,13 @@ public partial class DesignPreview : Control
 
     private void BottomStatus(UnitSummary? target = null)
     {
-        var strip = Panel(new(32, 901, target is null ? 916 : 1856, 80));
+        var strip = Panel(new(32, 869, target is null ? 916 : 1856, 112));
         strip.Name = "BattleStatusStrip";
         void Unit(float x, string role, UnitSummary unit)
         {
-            Text(strip, new(x, 14, 172, 52), unit.Name, 32);
-            Text(strip, new(x + 176, 14, 192, 52), role, 24, "cad6e5");
-            Vitals(strip, new(x + 374, 17), unit);
+            Text(strip, new(x, 30, 172, 52), unit.Name, 32);
+            Text(strip, new(x + 176, 30, 192, 52), role, 24, "cad6e5");
+            Vitals(strip, new(x + 374, 12), unit);
         }
         Unit(20, T("行动角色", "Acting member"), Sarah);
         if (target is { } candidate) Unit(952, T("当前目标", "Target"), candidate);
@@ -442,11 +446,11 @@ public partial class DesignPreview : Control
         {
             bool attack = _targetParent == Page.Root;
             var candidate = attack ? new UnitSummary(T("对手", "Opponent"), 12, 24, 0, 0)
-                : _target == 0 ? new UnitSummary(T("鲍伊", "Bowie"), 16, 24, 0, 0) : Sarah;
+                : _target == 0 ? Bowie : Sarah;
             if (_bottomLayout) BottomStatus(candidate);
             else
             {
-                var target = Panel(new(PanelOrigin - new Vector2(0, 54), new(PanelWidth, 118)));
+                var target = Panel(new(PanelOrigin - new Vector2(0, 90), new(PanelWidth, 154)));
                 target.Name = "TargetStatus";
                 StatusHeading(target, candidate, T("当前目标", "Target"));
             }
@@ -534,6 +538,7 @@ public partial class DesignPreview : Control
 
     public override void _Input(InputEvent input)
     {
+        if (MemberInput(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_dialogue is not null && input is InputEventMouseMotion motion) _readerPointer.Moved(motion);
         if (_dialogue is not null && input is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouse)
         {
@@ -554,9 +559,10 @@ public partial class DesignPreview : Control
             { ChooseScene((int)key.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
             if (key.Keycode == Key.L)
             { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
-            if (key.Keycode == Key.V && _scene == 3)
+            if (key.Keycode == Key.V && _scene == 3 && !_showMembers)
             { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         }
+        if (_showMembers) return;
         if (_scene == 3 && input is InputEventJoypadButton { ButtonIndex: JoyButton.Y, Pressed: true })
         { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         if (input.IsActionPressed("ui_cancel") || input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true }

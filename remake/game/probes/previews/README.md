@@ -1,7 +1,8 @@
 # Godot design-system preview
 
 Open `DesignPreview.tscn` in the remake Godot project and run the current scene (F6). The preview
-starts in Chinese. Click the scene names or use F1–F4. Click the language button or press L for
+starts in Chinese. Click a scene name or use F1–F4. F5 opens character details over the current
+selection. Click the language button or press L for
 English. Arrow keys move focus along the visible row or column, Enter confirms, and Esc returns.
 On a gamepad use the D-pad to select, A to confirm and B to return. In dialogue, click the text
 to continue and click a response to answer. Close the window to finish.
@@ -12,6 +13,7 @@ to continue and click a response to answer. Close the window to finish.
 | F2 · Dialogue | Advance from a portrait line to a question, choose either answer and read the reply. |
 | F3 · Church | Scan the four labeled services, focus Promotion for its reason, then open Cure and decline the price. Record shows the save handoff in text. |
 | F4 · Battle | Move down the four command rows to Magic. Pick a level and a target, then back out to the same level and command. Item, Attack and Stay have sample paths too. |
+| F5 · Members | Browse Bowie and Sarah with Up/Down or click a name. Compare the portrait, class, level/EXP, HP/MP, attributes, spell levels/costs and the four numbered inventory slots. Esc, Back or F5 restores the underlying selection. Gamepad X opens/closes details. |
 
 The layout follows the user-selected direction for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The [design review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1683) owns the shared
@@ -32,6 +34,9 @@ spell list. During targeting the same area identifies the candidate and their vi
 The strip expands to show the target alongside her when comparing units. Try Magic → HEAL Lv. 2:
 compare Sarah's 8 MP with the 5 MP cost, choose Bowie, and switch layout again on the board.
 Both share the same state, original icons, gauges, command focus and footer actions.
+The selected A design uses 36px HP/MP numbers above 232×28px gauges. The member sheet
+and B comparison use the same vital readout. Member stats and inventory are staged review
+examples; the sheet is read-only and portrait/icon selections come from the mounted pack.
 
 Child menus replace the parent in the same column. Battle → Magic and Battle → Item reuse the
 root row size and anchor, with cost or slot aligned at the right edge. Church quotes and battle

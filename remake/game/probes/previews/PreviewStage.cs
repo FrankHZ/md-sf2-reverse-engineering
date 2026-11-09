@@ -75,12 +75,15 @@ internal sealed partial class PreviewStage : Control
         return _textures[state] = ImageTexture.CreateFromImage(image);
     }
 
-    internal Texture2D? Portrait()
+    internal Texture2D? MemberPortrait(bool sarah) => Portrait(sarah ? _allySprite : 0);
+
+    internal Texture2D? Portrait(int sprite = 1)
     {
-        if (_textures.TryGetValue("portrait", out var ready)) return ready;
-        if (_world?.Visuals?.Sprites.GetValueOrDefault(1)?.Portrait is not int id ||
+        if (_world?.Visuals?.Sprites.GetValueOrDefault(sprite)?.Portrait is not int id ||
             !_world.Visuals.Portraits.TryGetValue(id, out var face)) return null;
-        return _textures["portrait"] = ExplorationRasterImages.Portrait(face);
+        string key = $"portrait-{id}";
+        if (_textures.TryGetValue(key, out var ready)) return ready;
+        return _textures[key] = ExplorationRasterImages.Portrait(face);
     }
 
     private void Character(int sprite, Vector2 at, int face)
