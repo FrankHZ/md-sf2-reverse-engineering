@@ -1,5 +1,4 @@
 using Godot;
-using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
@@ -18,7 +17,7 @@ public partial class DesignPreview : Control
     private Page _page, _targetParent;
     private int _scene, _focus, _rootFocus, _offer, _target;
     private bool _english, _steadyIcons;
-    private bool _matchMenuWidth;
+    private bool _bottomLayout;
     private Choice? _animated;
     private double _frameTime;
     private const double IconFrameSeconds = 0.25;
@@ -27,10 +26,11 @@ public partial class DesignPreview : Control
     private const int PanelInset = 16, PanelHeader = 64;
     private static readonly Vector2 PanelOrigin = CommandOrigin - new Vector2(PanelInset, PanelHeader);
     private static float PanelWidth => CommandSize.X + 2 * PanelInset;
-    private float CardWidth => _matchMenuWidth ? PanelWidth : BattleStatusCard.CardSize.X;
     private string _result = "";
     private sealed record Choice(Button Hit, Label Name, TextureRect Art, string? Key, bool Enabled, string Reason);
     private string T(string zh, string en) => _english ? en : zh;
+    private readonly record struct UnitSummary(string Name, int Hp, int MaxHp, int Mp, int MaxMp);
+    private UnitSummary Sarah => new(T("莎拉", "Sarah"), 18, 24, 8, 12);
 
     public override void _Ready()
     {
@@ -106,9 +106,10 @@ public partial class DesignPreview : Control
         Render();
     }
 
-    private void ToggleCardWidth()
+    private void SelectBattleLayout(bool bottom)
     {
-        _matchMenuWidth = !_matchMenuWidth;
+        if (bottom == _bottomLayout) return;
+        _bottomLayout = bottom;
         Render();
     }
 
@@ -138,7 +139,10 @@ public partial class DesignPreview : Control
         }
         Panel(new(0, 0, 1920, 72), true);
         if (_scene == 3)
-            Utility(new(30, 10, 308, 52), $"{T("人物卡宽", "Card width")}  {CardWidth:0} px   [V]", ToggleCardWidth);
+        {
+            Utility(new(18, 10, 164, 52), T("A  合栏", "A  Combined"), () => SelectBattleLayout(false), !_bottomLayout);
+            Utility(new(190, 10, 162, 52), T("B  底栏", "B  Bottom"), () => SelectBattleLayout(true), _bottomLayout);
+        }
         else
             Text(_surface, new(30, 6, 315, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
         string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle")];
@@ -244,12 +248,54 @@ public partial class DesignPreview : Control
     private Panel SidePage(string title, int rows, string context = "")
     {
         float height = PanelHeader + rows * CommandSize.Y + (rows - 1) * 8 + PanelInset;
+        if (_scene == 3 && !_bottomLayout)
+        {
+            var combined = Panel(new(PanelOrigin - new Vector2(0, 54), new(PanelWidth, height + 54)));
+            combined.Name = "CombinedActions";
+            StatusHeading(combined, Sarah, title);
+            return combined;
+        }
         var panel = Panel(new(PanelOrigin, new(PanelWidth, height)));
         float width = context.Length == 0 ? CommandSize.X : 320;
         Text(panel, new(PanelInset, 6, width, 52), title, 32);
         if (context.Length > 0)
             Text(panel, new(PanelInset + CommandSize.X - 200, 6, 200, 52), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
         return panel;
+    }
+
+    // Use the same identity, numbers and gauge art in both compositions.
+    private void Vitals(Control parent, Vector2 origin, UnitSummary unit)
+    {
+        void Gauge(float x, string type, int current, int maximum)
+        {
+            var at = origin + new Vector2(x, 0);
+            Text(parent, new(at, new(148, 46)), maximum == 0 ? $"{type}  —" : $"{type}  {current}/{maximum}", 26);
+            Put(parent, new BattleGaugeImage(type) { Fraction = maximum == 0 ? 0 : (float)current / maximum },
+                new(at + new Vector2(148, 14), new(88, 18)));
+        }
+        Gauge(0, "HP", unit.Hp, unit.MaxHp);
+        Gauge(264, "MP", unit.Mp, unit.MaxMp);
+    }
+
+    private void StatusHeading(Panel panel, UnitSummary unit, string context)
+    {
+        Text(panel, new(16, 6, 232, 52), unit.Name, 32);
+        Text(panel, new(250, 6, 294, 52), context, 24, "cad6e5").HorizontalAlignment = HorizontalAlignment.Right;
+        Vitals(panel, new(16, 58), unit);
+    }
+
+    private void BottomStatus(UnitSummary? target = null)
+    {
+        var strip = Panel(new(32, 901, target is null ? 916 : 1856, 80));
+        strip.Name = "BattleStatusStrip";
+        void Unit(float x, string role, UnitSummary unit)
+        {
+            Text(strip, new(x, 14, 172, 52), unit.Name, 32);
+            Text(strip, new(x + 176, 14, 192, 52), role, 24, "cad6e5");
+            Vitals(strip, new(x + 374, 17), unit);
+        }
+        Unit(20, T("行动角色", "Acting member"), Sarah);
+        if (target is { } candidate) Unit(952, T("当前目标", "Target"), candidate);
     }
 
     private void ReadingActions(Panel panel, string message, string first, string? second = null)
@@ -367,14 +413,9 @@ public partial class DesignPreview : Control
 
     private void Battle()
     {
-        float rightEdge = PanelOrigin.X + PanelWidth;
-        float leftInset = _surface.Size.X - rightEdge;
-        Vector2 cardSize = new(CardWidth, BattleStatusCard.CardSize.Y);
-        var card = Put(_surface, new BattleStatusCard { Name = "ActingStatus", CustomMinimumSize = cardSize },
-            new(leftInset, PanelOrigin.Y, cardSize.X, cardSize.Y));
-        card.Present(new ActorRef("sarah"), T("莎拉", "Sarah"), T("行动角色", "Acting member"), 18, 24, 8, 12);
-        var counts = Panel(new(leftInset, PanelOrigin.Y - 66, cardSize.X, 54), true);
-        Text(counts, new(16, 0, cardSize.X - 32, 54), T("回合 3     金币 150", "Round 3     Gold 150"), 24);
+        var round = Panel(new(32, 96, 164, 50), true);
+        Text(round, new(16, 0, 134, 50), T("回合 3", "Round 3"), 24);
+        if (_bottomLayout && _page != Page.Target) BottomStatus();
         if (_page == Page.Root)
         {
             SidePage(T("战斗", "Battle"), 4);
@@ -400,13 +441,18 @@ public partial class DesignPreview : Control
         else if (_page == Page.Target)
         {
             bool attack = _targetParent == Page.Root;
-            var who = attack ? T("对手", "Opponent") : _target == 0 ? T("鲍伊", "Bowie") : T("莎拉", "Sarah");
-            var targetCard = Put(_surface, new BattleStatusCard { Name = "TargetStatus", CustomMinimumSize = cardSize },
-                new(rightEdge - cardSize.X, PanelOrigin.Y, cardSize.X, cardSize.Y));
-            targetCard.Present(new ActorRef("candidate"), who, T("当前目标", "Target"), attack ? 12 : 16, 24, 0, 0);
+            var candidate = attack ? new UnitSummary(T("对手", "Opponent"), 12, 24, 0, 0)
+                : _target == 0 ? new UnitSummary(T("鲍伊", "Bowie"), 16, 24, 0, 0) : Sarah;
+            if (_bottomLayout) BottomStatus(candidate);
+            else
+            {
+                var target = Panel(new(PanelOrigin - new Vector2(0, 54), new(PanelWidth, 118)));
+                target.Name = "TargetStatus";
+                StatusHeading(target, candidate, T("当前目标", "Target"));
+            }
             string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
                 T("药草", "Medical Herb") : $"{T("回复", "HEAL")}   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
-            TargetFooter(action + "   →   " + who, !attack);
+            TargetFooter(action + "   →   " + candidate.Name, !attack);
         }
         else if (_page == Page.Stay)
         {
@@ -509,8 +555,10 @@ public partial class DesignPreview : Control
             if (key.Keycode == Key.L)
             { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
             if (key.Keycode == Key.V && _scene == 3)
-            { ToggleCardWidth(); GetViewport().SetInputAsHandled(); return; }
+            { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         }
+        if (_scene == 3 && input is InputEventJoypadButton { ButtonIndex: JoyButton.Y, Pressed: true })
+        { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         if (input.IsActionPressed("ui_cancel") || input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true }
             || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();
         else if (input.IsActionPressed("ui_accept") || input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true }) Activate();

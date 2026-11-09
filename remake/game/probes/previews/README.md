@@ -25,15 +25,18 @@ outline and label stay steady. The motion button holds the selected image for co
 Unavailable commands and spell/item identity highlights stay still. Text-only choices retain
 the same focus outline.
 
-In F4 the acting status card meets the top line of the right panel, with a 64px viewport
-margin on either side. Round and gold sit above that card. During targeting both cards share
-this top line. Press **V** or click **Card width** in the preview toolbar to compare the original
-500px width with the menu's 560px width. Both use the existing card, gauges and typography.
+In F4, click **A / B**, press **V**, or press gamepad **Y** to compare layouts on the current
+decision. **A · Combined** puts Sarah and her vitals at the head of the right-hand action or
+spell list. During targeting the same area identifies the candidate and their vitals.
+**B · Bottom** keeps the action list on the right and puts Sarah's vitals in a bottom strip.
+The strip expands to show the target alongside her when comparing units. Try Magic → HEAL Lv. 2:
+compare Sarah's 8 MP with the 5 MP cost, choose Bowie, and switch layout again on the board.
+Both share the same state, original icons, gauges, command focus and footer actions.
 
 Child menus replace the parent in the same column. Battle → Magic and Battle → Item reuse the
 root row size and anchor, with cost or slot aligned at the right edge. Church quotes and battle
 Stay use one confirmation layout: parent and action in the heading, consequence above the two
-choices, safe return focused first. During targeting the right column shows the target card.
+choices, safe return focused first.
 The bottom hint strip shows the current action and cost with inline Switch target (when applicable),
 Confirm and Cancel hints. Each hint is also clickable. Directions stay with the board, and Enter/A
 and Esc/B act directly without entering another menu. Back from targeting
