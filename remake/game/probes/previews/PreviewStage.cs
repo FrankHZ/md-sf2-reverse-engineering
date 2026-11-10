@@ -17,6 +17,8 @@ internal sealed partial class PreviewStage : Control
     private ExplorationDefinition? _world;
     internal BattleSceneDefinition? SceneArt { get; private set; }
     private int _scene, _target = -1;
+    private Vector2I? _cursor;
+    private bool _overview, _facingSign;
     private int _allySprite = 2, _chesterSprite = 5, _opponentSprite = 103;
     internal bool HasWorld => _world?.Visuals is not null;
     internal bool HasWitch => _entry is not null;
@@ -56,10 +58,11 @@ internal sealed partial class PreviewStage : Control
         else AssetFailure = result is ScenarioReadRejected rejected ? rejected.Failure.Code : "world";
     }
 
-    internal void ShowScene(int scene, int target = -1)
+    internal void ShowScene(int scene, int target, Vector2I? cursor, bool overview, bool facingSign)
     {
         _scene = scene;
         _target = target;
+        _cursor = cursor; _overview = overview; _facingSign = facingSign;
         QueueRedraw();
     }
 
@@ -68,7 +71,10 @@ internal sealed partial class PreviewStage : Control
         string state = key + (selected ? ".selected" : ".normal");
         if (_textures.TryGetValue(state, out var ready)) return ready;
         var visuals = _world?.Visuals;
-        var raster = key.StartsWith("command-menu.", StringComparison.Ordinal) ? SceneArt?.Rasters.GetValueOrDefault(state)
+        var raster = key.StartsWith("command-menu.", StringComparison.Ordinal) || key.StartsWith("battlefield-menu.", StringComparison.Ordinal)
+            ? SceneArt?.Rasters.GetValueOrDefault(state)
+            : key.StartsWith("field.", StringComparison.Ordinal) ? visuals?.FieldMenu?.GetValueOrDefault(state[6..])
+            : key.StartsWith("op.", StringComparison.Ordinal) ? visuals?.ItemMenu?.GetValueOrDefault(state[3..])
             : key.StartsWith("identity-icon.", StringComparison.Ordinal) ? visuals?.IdentityIcons?.GetValueOrDefault(state)
             : key.StartsWith("shop.", StringComparison.Ordinal) ? visuals?.ShopMenu?.GetValueOrDefault(state[5..])
             : visuals?.ChurchMenu?.GetValueOrDefault(state);
@@ -126,29 +132,49 @@ internal sealed partial class PreviewStage : Control
             else DrawRect(new(160, 92, 1024, 896), new Color("172638"));
             return;
         }
-        bool battle = _scene == 3;
+        bool battle = _scene is 3 or DesignPreview.InspectScene or DesignPreview.OutcomeScene;
         bool shop = _scene == DesignPreview.ShopScene;
         MapId id = new(battle ? "map-57" : shop ? "map-16" : "map-3");
-        Vector2I origin = _scene switch { 1 => new(33, 3), 2 => new(25, 6), DesignPreview.ShopScene => new(30, 19), _ => new(-2, 4) };
+        Vector2I origin = _scene switch { 1 or DesignPreview.FieldScene => new(33, 3), 2 => new(25, 6), DesignPreview.ShopScene => new(30, 19), _ => new(-2, 4) };
         var visual = _world?.Visuals?.Maps.GetValueOrDefault(id);
         var layout = _world?.Maps.GetValueOrDefault(id)?.Layout;
+        if (_overview) DrawRect(new(Vector2.Zero, Size), new Color("101c2e"));
         for (int y = 0; y < 12; y++)
             for (int x = 0; x < 20; x++)
             {
-                Rect2 cell = new(x * 96, y * 96, 96, 96);
+                Rect2 cell = _overview ? new(110 + x * 56, 186 + y * 56, 56, 56) : new(x * 96, y * 96, 96, 96);
                 if (battle && (x < 2 || x >= 18)) DrawRect(cell, new Color("111827"));
                 else if (layout is not null && visual is not null)
                     DrawTextureRect(_blocks.Block(visual, layout[x + origin.X, y + origin.Y] & 1023), cell, false);
                 else DrawRect(cell, (x + y) % 2 == 0 ? new Color("293e42") : new Color("30464a"));
             }
-        if (battle)
+        if (_overview)
+        {
+            foreach (var (cell, color) in new[] { (new Vector2(9,5), "91d1f3"), (new Vector2(11,5), "91d1f3"), (new Vector2(10,3), "ed987f") })
+            {
+                Vector2 point = new Vector2(138, 214) + cell * 56;
+                DrawCircle(point, 16, Colors.Black); DrawCircle(point, 12, new Color(color));
+                if (_cursor == (Vector2I)cell) DrawRect(new(point - Vector2.One * 25, Vector2.One * 50), new Color("ffe19a"), false, 4);
+            }
+        }
+        else if (battle)
         {
             Character(0, new(864, 480), 1);
             Character(_allySprite, new(1056, 480), 1);
             Character(_opponentSprite, new(960, 288), 0);
+            if (_cursor is { } cursor) DrawRect(new(cursor * 96, new Vector2(96,96)), new Color("ffe19a"), false, 4);
             if (_target >= 0)
                 DrawRect(new(_target switch { 0 => new Vector2(864, 480), 1 => new(1056, 480), _ => new(960, 288) }, new(96, 96)),
                     new Color("ffe19a"), false, 4);
+        }
+        else if (_scene == DesignPreview.FieldScene)
+        {
+            DrawRect(new(904, 524, 12, 48), new Color("60432f"));
+            DrawRect(new(874, 503, 72, 40), new Color("543c2e"));
+            DrawRect(new(878, 507, 64, 32), new Color("c5a778"));
+            DrawLine(new(887, 516), new(930, 516), new Color("675644"), 3);
+            DrawLine(new(887, 525), new(919, 525), new Color("675644"), 3);
+            Character(0, new(864, 576), _facingSign ? 2 : 1);
         }
         else
         {

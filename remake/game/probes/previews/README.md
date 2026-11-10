@@ -1,20 +1,47 @@
 # Godot design-system preview
 
 Open `DesignPreview.tscn` in the remake Godot project and run the current scene (F6). The preview
-starts in Chinese. Click a scene name or use F1–F4. F5 opens character details over the current
-selection. Click the language button or press L for
+starts in Chinese. Click a scene name or press its function key. F5 opens character details over the current
+selection. F10 opens the system menu. Click the language button or press L for
 English. Arrow keys move focus along the visible row or column, Enter confirms, and Esc returns.
 On a gamepad use the D-pad to select, A to confirm and B to return. In dialogue, click the text
 to continue and click a response to answer. Close the window to finish.
 
 | Scene | Try |
 | --- | --- |
-| F1 · Witch | Read the greeting and compare the two action rows. Inspect unavailable Continue, then choose New Game. |
+| F1 · Witch | Choose New Game, select either slot, type a name and review the destination. Continue can offer explicit backup recovery. |
 | F2 · Dialogue | Advance from a portrait line to a question, choose either answer and read the reply. |
-| F3 · Church | Scan the four labeled services, focus Promotion for its reason, then open Cure and decline the price. Record shows the save handoff in text. |
+| F3 · Church | Scan the four services, inspect Promotion or decline a Cure quote. Record opens the same slots as the system menu and returns to the service row. |
 | F4 · Battle | Move down the four command rows to Magic. Pick a level and a target, then back out to the same level and command. Item, Attack and Stay have sample paths too. |
 | F5 · Members | Browse Bowie, Sarah and Chester with Up/Down or click a name. Inspect the portrait, class, level/EXP, HP/MP, attributes, spell costs and four inventory slots. Enter/A or Prepare opens the supply handoff. Esc/Back unwinds each step; F5 or gamepad X closes details. |
 | F6 · Shop | Buy supplies for a chosen member or sell a specific numbered slot. Review the party balance and price, then confirm. The receipt and F5 show the resulting inventory. |
+| F7 · Field | Inspect a member, a caster's field spell availability or an owner's four item operations. Search the sign, dismiss the reading, turn away and inspect the unavailable Search row. |
+| F8 · Inspect | Move the board cursor. Confirm a unit for vitals or open options on empty ground. Map locates a unit, Speed adjusts F4 playback, and Quit can save the destination to a sample slot. |
+| F9 · Results | Read through victory, retreat or defeat. The final acknowledgement returns to town or the church. |
+| F10 · System | Cover the current scene, draft settings, save at an eligible location, start a sample journey or quit. Resume restores the covered selection or reading page. |
+
+### Entry, field and return paths
+
+Slot 1 starts with a damaged primary record and a recoverable Bowie sample. Slot 2 starts empty.
+New Game uses the existing physical-keyboard name editor and its seven-character validation.
+Confirm names the slot and any replacement, with Cancel focused first. Continue or recovery
+opens the recorded field or battlefield destination. The two slots retain the entered name and
+destination in memory for this preview process. They do not serialize inventories, campaign
+state or real player data. The prepared F4/F5 examples retain their named cast.
+
+F7 and F8 reuse the right-hand command column with the original field, item-operation and
+battlefield-option icons when available. F7 Give and confirmed Drop act on the same numbered
+slots as F5 and F6. Use and Equip show the limitations of these sample loadouts. F8 Map
+shows the staged board area and the three units. Arrow keys or the D-pad navigate the cursor.
+From an empty cell choose Map, select Sarah and confirm to locate her, then confirm to inspect.
+F9 reads the illustrative reward, growth and return messages in order. Its example numbers
+do not modify the roster. Use Enter/A or click the reading frame.
+
+F10 retains the covered decision. Settings applies its language and animation drafts together.
+The window-recovery sample button covers its current host page and restores its focus. It
+simulates that visual state without changing the desktop window. Quit defaults to Cancel.
+Choose Save and quit at an eligible field, inspection or church location to try the slot and
+receipt path. Launch with `-- --field` to start directly at the exploration commands.
 
 ### F4 action playback
 

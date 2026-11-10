@@ -49,6 +49,7 @@ public partial class DesignPreview : Control
         AddChild(_playback);
         if (OS.GetCmdlineUserArgs().Contains("--battle")) _scene = 3;
         if (OS.GetCmdlineUserArgs().Contains("--shop")) _scene = ShopScene;
+        if (OS.GetCmdlineUserArgs().Contains("--field")) _scene = FieldScene;
         GetWindow().FocusExited += StopIconAnimation;
         GetWindow().FocusEntered += Refresh;
         GetWindow().FocusExited += () => _playSuspended = true;
@@ -107,6 +108,11 @@ public partial class DesignPreview : Control
         _giveStep = GiveStep.Closed;
         _showMembers = false;
         _shopStep = ShopStep.Services;
+        _journey = JourneyPage.Closed;
+        _field = FieldPage.Commands;
+        _inspection = InspectPage.Cursor;
+        _cursor = new(9, 4);
+        _reading = 0;
         _scene = scene;
         if (scene == 3) (_sarahHp, _sarahMp, _bowieHp, _enemyHp) = (18, 8, 16, 12);
         _page = Page.Root;
@@ -144,10 +150,15 @@ public partial class DesignPreview : Control
         _choices.Clear();
         _detail = null;
         _dialogue = null;
-        _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1);
+        _editor = null;
+        bool inspecting = _scene == InspectScene && !_showMembers && _journey == JourneyPage.Closed;
+        _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1,
+            inspecting && _inspection is InspectPage.Cursor or InspectPage.Unit ? _cursor : null,
+            inspecting && _inspection == InspectPage.Map, _facingSign);
         _playback.Visible = !_showMembers && _scene == 3 && _page == Page.Playback;
         _stage.Visible = !_playback.Visible;
-        if (Preparing) PrepareGive();
+        if (_journey != JourneyPage.Closed) DrawJourney();
+        else if (Preparing) PrepareGive();
         else if (_showMembers) Members();
         else switch (_scene)
         {
@@ -156,29 +167,34 @@ public partial class DesignPreview : Control
             case 2: Church(); break;
             case 3: Battle(); break;
             case ShopScene: Shop(); break;
+            case FieldScene: DrawField(); break;
+            case InspectScene: DrawInspection(); break;
+            case OutcomeScene: DrawOutcome(); break;
         }
         Panel(new(0, 0, 1920, 72), true);
-        if (_scene == 3 && !_showMembers && _page != Page.Playback)
-        {
-            Utility(new(12, 10, 144, 52), T("A  合栏", "A  Combined"), () => SelectBattleLayout(false), !_bottomLayout);
-            Utility(new(160, 10, 136, 52), T("B  底栏", "B  Bottom"), () => SelectBattleLayout(true), _bottomLayout);
-        }
-        else
-            Text(_surface, new(26, 6, 264, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
-        string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle"), T("人物详情", "Members"), T("商店", "Shop")];
+        string[] tabs = [T("女巫", "Witch"), T("对白", "Dialogue"), T("教堂", "Church"), T("战斗", "Battle"), T("队员", "Members"), T("商店", "Shop"),
+            T("探索", "Field"), T("查看", "Inspect"), T("战果", "Results"), T("系统", "System")];
         for (int i = 0; i < tabs.Length; i++)
         {
-            int scene = i;
-            Utility(new(306 + i * 150, 10, 144, 52), $"F{i + 1}  {tabs[i]}",
-                () => { if (scene == 4) ToggleMembers(); else ChooseScene(scene); }, _showMembers ? i == 4 : _scene == i);
+            int tab = i;
+            bool active = _journey != JourneyPage.Closed && _fromMenu ? i == 9 : _showMembers ? i == 4 : _scene == i;
+            Utility(new(10 + i * 131, 10, 126, 52), $"F{i + 1}  {tabs[i]}", () => SelectTab(tab), active);
         }
-        string art = _stage.AssetFailure is { } problem ? T("资源未齐 · ", "Art incomplete · ") + problem :
+        if (_scene == 3 && !_showMembers && _page != Page.Playback && _journey == JourneyPage.Closed)
+        {
+            Utility(new(1324, 10, 116, 52), T("A 合栏", "A Combined"), () => SelectBattleLayout(false), !_bottomLayout);
+            Utility(new(1444, 10, 100, 52), T("B 底栏", "B Bottom"), () => SelectBattleLayout(true), _bottomLayout);
+        }
+        else
+        {
+            string art = _stage.AssetFailure is { } problem ? T("资源未齐 · ", "Art incomplete · ") + problem :
             (_scene == 0 && !_showMembers ? _stage.HasWitch : _stage.HasWorld) ? T("原版素材 · 示例状态", "Original art · sample state") :
             T("无私有素材 · 线框", "Text-only · schematic");
-        Text(_surface, new(1210, 10, 272, 52), art, 20, "c1cfdf");
-        Utility(new(1492, 10, 168, 52), _steadyIcons ? T("动效：关", "Motion: off") : T("动效：开", "Motion: on"),
+            Text(_surface, new(1326, 8, 220, 56), art, 18, "c1cfdf");
+        }
+        Utility(new(1560, 10, 153, 52), _steadyIcons ? T("动效：关", "Motion: off") : T("动效：开", "Motion: on"),
             () => { _steadyIcons = !_steadyIcons; Render(); });
-        Utility(new(1674, 10, 216, 52), _english ? "中文   /   L" : "English   /   L", ToggleLanguage);
+        Utility(new(1722, 10, 170, 52), _english ? "中文   /   L" : "English   /   L", ToggleLanguage);
         Refresh();
     }
 
@@ -222,7 +238,9 @@ public partial class DesignPreview : Control
     private void Refresh()
     {
         StopIconAnimation();
-        if (_scene == ShopScene && !_showMembers) RefreshShopPack();
+        if (_scene == InspectScene && _inspection == InspectPage.Map && !_showMembers && _journey == JourneyPage.Closed)
+            _stage.ShowScene(_scene, -1, UnitCells[_focus], true, false);
+        if (_scene == ShopScene && !_showMembers && _journey == JourneyPage.Closed) RefreshShopPack();
         if (Preparing && _giveStep == GiveStep.Recipient && _candidateIndex != _giveFocus)
         {
             _candidateIndex = _giveFocus;
@@ -249,7 +267,7 @@ public partial class DesignPreview : Control
         if (_detail is not null && _choices.Count > 0)
         {
             _detail.Text = _choices[ChoiceFocus].Reason;
-            if (!_showMembers && _scene == 2 && _detail.GetParent() is Panel panel)
+            if (!_showMembers && _scene is 2 or FieldScene && _detail.GetParent() is Panel panel)
             {
                 _detail.Visible = _detail.Text.Length > 0;
                 var last = _choices[^1].Hit;
@@ -271,7 +289,8 @@ public partial class DesignPreview : Control
 
     public override void _Process(double delta)
     {
-        if (_playback.Visible && !_playSuspended && !_playback.Finished) UpdatePlayback(delta);
+        if (_playback.Visible && _journey == JourneyPage.Closed && !_playSuspended && !_playback.Finished)
+            UpdatePlayback(delta * (1 + _rate * 0.5));
         if (_animated is not { Key: { } key } row) return;
         bool wasSelectedFrame = _frameTime < IconFrameSeconds;
         _frameTime = (_frameTime + delta) % (2 * IconFrameSeconds);
@@ -379,17 +398,9 @@ public partial class DesignPreview : Control
             Text(_surface, new(440, 462, 460, 100), T("女巫 · 原画区域", "Witch artwork"), 40);
         var frame = Panel(new(1216, 144, 640, 252));
         Text(frame, new(26, 16, 584, 54), T("女巫", "The Witch"), 32, "ffe19a");
-        Text(frame, new(26, 78, 584, 146), _page == Page.Result ? T("冒险将在这里开始。", "Your adventure begins here.") :
-            T("准备好出发了吗？请选择你的旅程。", "Are you ready to set out? Choose your journey."), 30);
-        if (_page == Page.Result)
-            Item(new(1216, 444, 640, 78), T("返回", "Back"));
-        else
-        {
-            Item(new(1216, 444, 640, 78), GameText.Get("entry.new"));
-            Item(new(1216, 534, 640, 78), T("继续游戏 · 不可用", "Continue · Unavailable"), enabled: false,
-                reason: T("预览没有连接存档。", "The preview has no save slot attached."));
-            _detail = Text(_surface, new(1216, 638, 640, 100), "", 30);
-        }
+        Text(frame, new(26, 78, 584, 146), T("准备好出发了吗？请选择你的旅程。", "Are you ready to set out? Choose your journey."), 30);
+        Item(new(1216, 444, 640, 78), GameText.Get("entry.new"));
+        Item(new(1216, 534, 640, 78), GameText.Get("entry.continue"));
         Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
     }
 
@@ -440,7 +451,6 @@ public partial class DesignPreview : Control
         {
             ReadingActions(panel, _result switch
             {
-                "record" => T("正式游戏在这里进入存档选择。", "In the game, the save-slot choice opens here."),
                 "leave" => T("已离开服务菜单。", "You have left the service menu."),
                 _ => T("示例服务完成。", "Sample service complete.")
             }, T("返回服务列表", "Return to services"));
@@ -517,9 +527,13 @@ public partial class DesignPreview : Control
     private void Activate()
     {
         if (_choices.Count > 0 && !_choices[ChoiceFocus].Enabled) return;
+        if (_journey != JourneyPage.Closed) { AdvanceJourney(); return; }
         if (Preparing) { AdvanceGive(); return; }
+        if (_scene == FieldScene) { AdvanceField(); return; }
+        if (_scene == InspectScene) { AdvanceInspection(); return; }
+        if (_scene == OutcomeScene) { AdvanceOutcome(); return; }
         if (_scene == ShopScene) { AdvanceShop(); return; }
-        if (_scene == 0) { Show(_page == Page.Root ? Page.Result : Page.Root); return; }
+        if (_scene == 0) { OpenSlots(_focus == 0 ? SlotTask.New : SlotTask.Continue); return; }
         if (_scene == 1)
         {
             if (_page == Page.Question) _result = _focus == 0 ? "yes" : "no";
@@ -531,7 +545,8 @@ public partial class DesignPreview : Control
             if (_page == Page.Root)
             {
                 _rootFocus = _focus;
-                _result = _focus == 3 ? "record" : _focus == 4 ? "leave" : "service";
+                if (_focus == 3) { OpenSlots(SlotTask.Save); return; }
+                _result = _focus == 4 ? "leave" : "service";
                 Show(_focus < 2 ? Page.Quote : Page.Result, _focus < 2 ? 1 : 0);
             }
             else if (_page == Page.Quote && _focus == 0) Show(Page.Result);
@@ -595,6 +610,10 @@ public partial class DesignPreview : Control
 
     private void Back()
     {
+        if (_journey != JourneyPage.Closed) { BackJourney(); return; }
+        if (_scene == FieldScene) { BackField(); return; }
+        if (_scene == InspectScene) { BackInspection(); return; }
+        if (_scene == OutcomeScene) { _reading = 0; _focus = _outcome; Render(); return; }
         if (_page == Page.Playback) { if (_playback.Finished) Show(Page.Root, _rootFocus); return; }
         if (_scene == ShopScene) { BackShop(); return; }
         if (_scene == 1 && _page == Page.Question) { _result = "no"; Show(Page.Reply); }
@@ -603,9 +622,24 @@ public partial class DesignPreview : Control
         else if (_page != Page.Root) Show(Page.Root, _scene >= 2 ? _rootFocus : 0);
     }
 
+    private void SelectTab(int tab)
+    {
+        if (tab == 9) OpenHost();
+        else if (tab == 4) { if (_journey == JourneyPage.Closed) ToggleMembers(); }
+        else ChooseScene(tab);
+    }
+
     public override void _Input(InputEvent input)
     {
-        if (MemberInput(input)) { GetViewport().SetInputAsHandled(); return; }
+        if (input is InputEventKey { Pressed: true, Echo: false, Keycode: >= Key.F1 and <= Key.F10 } shortcut)
+        { SelectTab((int)shortcut.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
+        if (_editor is not null)
+        {
+            if (input is InputEventKey editingKey) _editor.HandleKeyboard(editingKey);
+            return;
+        }
+        if (_journey == JourneyPage.Closed && MemberInput(input)) { GetViewport().SetInputAsHandled(); return; }
+        if (ExtraDirection(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_dialogue is not null && input is InputEventMouseMotion motion) _readerPointer.Moved(motion);
         if (_dialogue is not null && input is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouse)
         {
@@ -622,31 +656,27 @@ public partial class DesignPreview : Control
         }
         if (input is InputEventKey { Pressed: true, Echo: false } key)
         {
-            if (key.Keycode is >= Key.F1 and <= Key.F4)
-            { ChooseScene((int)key.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
             if (key.Keycode == Key.L)
             { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
-            if (key.Keycode == Key.F6)
-            { ChooseScene(ShopScene); GetViewport().SetInputAsHandled(); return; }
-            if (key.Keycode == Key.V && _scene == 3 && !_showMembers)
+            if (key.Keycode == Key.V && _scene == 3 && !_showMembers && _journey == JourneyPage.Closed)
             { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         }
         if (_showMembers) return;
-        if (_scene == 3 && input is InputEventJoypadButton { ButtonIndex: JoyButton.Y, Pressed: true })
+        if (_scene == 3 && _journey == JourneyPage.Closed && input is InputEventJoypadButton { ButtonIndex: JoyButton.Y, Pressed: true })
         { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         if (input.IsActionPressed("ui_cancel") || input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true }
             || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();
         else if (input.IsActionPressed("ui_accept") || input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true }) Activate();
         else
         {
-            bool sideways = _page is Page.Question or Page.Target;
+            bool sideways = _journey == JourneyPage.Closed && _page is (Page.Question or Page.Target);
             int direction = input.IsActionPressed(sideways ? "ui_left" : "ui_up") ? -1 :
                 input.IsActionPressed(sideways ? "ui_right" : "ui_down") ? 1 : 0;
             if (direction == 0) return;
-            if (_page == Page.Target) CycleTarget();
+            if (sideways && _page == Page.Target) CycleTarget();
             else
             {
-                int count = _page == Page.Question ? 2 : _choices.Count;
+                int count = sideways && _page == Page.Question ? 2 : _choices.Count;
                 if (count == 0) return;
                 _focus = (_focus + count + direction) % count;
                 Refresh();
