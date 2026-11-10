@@ -303,6 +303,21 @@ predicted action-order strip remain outside this design.
 
 ### Presentation, outcome and usable return
 
+**Close-up layout decision.** Use the original battlescene mini-status window placement during
+action playback. The ordinary ally/enemy opening places the ally's window at the **upper right**
+and the enemy's at the **lower left**. The command layout belongs to the board decision phase.
+
+**Confirmed (pinned US source).** At SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`InitializeBattlescene` opens each present combatant's window with a zero placement argument and
+skips an absent index (-1). In tile coordinates, the ally opener chooses x = 31 − window width,
+y = 1, and the enemy opener chooses x = 1, y = 20. Their nonzero branches change the horizontal
+side while retaining the respective row. The switch/reaction routines supply these placement
+flags when reopening windows. Use the actual scene participants and phase for cases such as
+ally-to-ally healing. Exact on-screen transitions in that particular case remain **Unknown**
+here. [Initialization](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/initializebattlescene.asm#L253-L269)
+· [window destinations](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L110-L205)
+· [ally reaction](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_0.asm#L1218-L1224)
+
 | Phase | Composition | Stress state, acknowledgement and return |
 | --- | --- | --- |
 | Physical / item / spell close-up | Hide the board under the existing close-up rule. Show only actual acting/current reaction-target cards and the current message; retire command panels and round/gold strip. Character/weapon/effects stay in their own local composition below UI. | Costs and HP/MP update at the real committed phases. Multi-target reactions switch the target card at that boundary. Long messages read/page without premature acknowledgement. [#1620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1620) investigates weapon overlap; no global Z flip or new pose here. |
