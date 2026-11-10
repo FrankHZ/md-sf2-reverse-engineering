@@ -50,7 +50,7 @@ internal sealed partial class PreviewStage : Control
                 _chesterSprite = art.AllySprites.GetValueOrDefault(2, _chesterSprite);
                 _opponentSprite = art.EnemySprites.Values.FirstOrDefault(_opponentSprite);
             }
-            if (_world?.Visuals?.ChurchMenu is null || _battle?.ContainsKey("command-menu.attack.normal") != true)
+            if (_world?.Visuals?.ChurchMenu is null || _world.Visuals.ShopMenu is null || _battle?.ContainsKey("command-menu.attack.normal") != true)
                 AssetFailure = "command art";
         }
         else AssetFailure = result is ScenarioReadRejected rejected ? rejected.Failure.Code : "world";
@@ -70,6 +70,7 @@ internal sealed partial class PreviewStage : Control
         var visuals = _world?.Visuals;
         var raster = key.StartsWith("command-menu.", StringComparison.Ordinal) ? _battle?.GetValueOrDefault(state)
             : key.StartsWith("identity-icon.", StringComparison.Ordinal) ? visuals?.IdentityIcons?.GetValueOrDefault(state)
+            : key.StartsWith("shop.", StringComparison.Ordinal) ? visuals?.ShopMenu?.GetValueOrDefault(state[5..])
             : visuals?.ChurchMenu?.GetValueOrDefault(state);
         if (raster is null) return null;
         using var image = ExplorationRasterImages.Open(raster);
@@ -117,8 +118,9 @@ internal sealed partial class PreviewStage : Control
             return;
         }
         bool battle = _scene == 3;
-        MapId id = new(battle ? "map-57" : "map-3");
-        Vector2I origin = _scene switch { 1 => new(33, 3), 2 => new(25, 6), _ => new(-2, 4) };
+        bool shop = _scene == DesignPreview.ShopScene;
+        MapId id = new(battle ? "map-57" : shop ? "map-16" : "map-3");
+        Vector2I origin = _scene switch { 1 => new(33, 3), 2 => new(25, 6), DesignPreview.ShopScene => new(30, 19), _ => new(-2, 4) };
         var visual = _world?.Visuals?.Maps.GetValueOrDefault(id);
         var layout = _world?.Maps.GetValueOrDefault(id)?.Layout;
         for (int y = 0; y < 12; y++)
@@ -141,9 +143,9 @@ internal sealed partial class PreviewStage : Control
         }
         else
         {
-            Vector2 speaker = _scene == 2 ? new(672, 480) : new(864, 480);
-            Character(_scene == 2 ? 192 : 1, speaker, 0);
-            Character(0, speaker + new Vector2(0, 96), 2);
+            Vector2 speaker = shop ? new(480, 480) : _scene == 2 ? new(672, 480) : new(864, 480);
+            Character(shop ? 193 : _scene == 2 ? 192 : 1, speaker, 0);
+            Character(0, speaker + new Vector2(0, shop ? 192 : 96), 2);
         }
     }
 

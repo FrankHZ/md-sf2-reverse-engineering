@@ -41,6 +41,7 @@ public partial class DesignPreview : Control
         AddChild(_stage);
         _stage.LoadSelection();
         if (OS.GetCmdlineUserArgs().Contains("--battle")) _scene = 3;
+        if (OS.GetCmdlineUserArgs().Contains("--shop")) _scene = ShopScene;
         GetWindow().FocusExited += StopIconAnimation;
         GetWindow().FocusEntered += Refresh;
         Render();
@@ -96,6 +97,7 @@ public partial class DesignPreview : Control
     {
         _giveStep = GiveStep.Closed;
         _showMembers = false;
+        _shopStep = ShopStep.Services;
         _scene = scene;
         _page = Page.Root;
         _focus = _rootFocus = _offer = _target = 0;
@@ -141,20 +143,21 @@ public partial class DesignPreview : Control
             case 1: Dialogue(); break;
             case 2: Church(); break;
             case 3: Battle(); break;
+            case ShopScene: Shop(); break;
         }
         Panel(new(0, 0, 1920, 72), true);
         if (_scene == 3 && !_showMembers)
         {
-            Utility(new(18, 10, 164, 52), T("A  合栏", "A  Combined"), () => SelectBattleLayout(false), !_bottomLayout);
-            Utility(new(190, 10, 162, 52), T("B  底栏", "B  Bottom"), () => SelectBattleLayout(true), _bottomLayout);
+            Utility(new(12, 10, 144, 52), T("A  合栏", "A  Combined"), () => SelectBattleLayout(false), !_bottomLayout);
+            Utility(new(160, 10, 136, 52), T("B  底栏", "B  Bottom"), () => SelectBattleLayout(true), _bottomLayout);
         }
         else
-            Text(_surface, new(30, 6, 315, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
-        string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle"), T("人物详情", "Members")];
+            Text(_surface, new(26, 6, 264, 58), T("场景预览  /  SF2", "Scene preview  /  SF2"), 26);
+        string[] tabs = [T("女巫入口", "Witch"), T("探索对白", "Dialogue"), T("教堂", "Church"), T("战斗指令", "Battle"), T("人物详情", "Members"), T("商店", "Shop")];
         for (int i = 0; i < tabs.Length; i++)
         {
             int scene = i;
-            Utility(new(365 + i * 168, 10, 158, 52), $"F{i + 1}  {tabs[i]}",
+            Utility(new(306 + i * 150, 10, 144, 52), $"F{i + 1}  {tabs[i]}",
                 () => { if (scene == 4) ToggleMembers(); else ChooseScene(scene); }, _showMembers ? i == 4 : _scene == i);
         }
         string art = _stage.AssetFailure is { } problem ? T("资源未齐 · ", "Art incomplete · ") + problem :
@@ -167,11 +170,11 @@ public partial class DesignPreview : Control
         Refresh();
     }
 
-    private void Item(Rect2 rect, string name, string? key = null, bool enabled = true, string reason = "", string value = "")
+    private void Item(Rect2 rect, string name, string? key = null, bool enabled = true, string reason = "", string value = "", bool slot = false)
     {
         int index = _choices.Count;
         var hit = Put(_surface, new Button { Name = "Choice" + index, FocusMode = FocusModeEnum.None }, rect);
-        var (caption, icon) = ItemContent(hit, name, key, value, Preparing && _giveStep is GiveStep.Item or GiveStep.Exchange);
+        var (caption, icon) = ItemContent(hit, name, key, value, slot || (Preparing && _giveStep is GiveStep.Item or GiveStep.Exchange));
         _choices.Add(new(hit, caption, icon, key, enabled, reason));
         hit.GuiInput += input =>
         {
@@ -207,6 +210,7 @@ public partial class DesignPreview : Control
     private void Refresh()
     {
         StopIconAnimation();
+        if (_scene == ShopScene && !_showMembers) RefreshShopPack();
         if (Preparing && _giveStep == GiveStep.Recipient && _candidateIndex != _giveFocus)
         {
             _candidateIndex = _giveFocus;
@@ -491,6 +495,7 @@ public partial class DesignPreview : Control
     {
         if (_choices.Count > 0 && !_choices[ChoiceFocus].Enabled) return;
         if (Preparing) { AdvanceGive(); return; }
+        if (_scene == ShopScene) { AdvanceShop(); return; }
         if (_scene == 0) { Show(_page == Page.Root ? Page.Result : Page.Root); return; }
         if (_scene == 1)
         {
@@ -547,6 +552,7 @@ public partial class DesignPreview : Control
 
     private void Back()
     {
+        if (_scene == ShopScene) { BackShop(); return; }
         if (_scene == 1 && _page == Page.Question) { _result = "no"; Show(Page.Reply); }
         else if (_scene == 3 && _page == Page.Target)
             Show(_targetParent, _targetParent == Page.Root ? _rootFocus : _offer);
@@ -576,6 +582,8 @@ public partial class DesignPreview : Control
             { ChooseScene((int)key.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
             if (key.Keycode == Key.L)
             { ToggleLanguage(); GetViewport().SetInputAsHandled(); return; }
+            if (key.Keycode == Key.F6)
+            { ChooseScene(ShopScene); GetViewport().SetInputAsHandled(); return; }
             if (key.Keycode == Key.V && _scene == 3 && !_showMembers)
             { SelectBattleLayout(!_bottomLayout); GetViewport().SetInputAsHandled(); return; }
         }

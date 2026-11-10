@@ -17,7 +17,8 @@ public partial class DesignPreview
     {
         _giveStep = GiveStep.Closed;
         if (!_showMembers)
-            _member = _scene == 3 && !(_page == Page.Target && _target == 0) ? Member.Sarah : Member.Bowie;
+            _member = _scene == ShopScene ? (_shopStep == ShopStep.Member ? (Member)_focus : _shopMember)
+                : _scene == 3 && !(_page == Page.Target && _target == 0) ? Member.Sarah : Member.Bowie;
         _showMembers = !_showMembers;
         Render();
     }
@@ -100,6 +101,8 @@ public partial class DesignPreview
         Section(834, 522, GameText.Get("party.items"));
         string[] stats = ["attack", "defense", "agility", "move"];
         int[] values = _member switch { Member.Sarah => [11, 9, 12, 5], Member.Chester => [15, 13, 11, 7], _ => [16, 12, 10, 6] };
+        // The two starting weapons each contribute 3 attack until sold.
+        if (_member != Member.Chester && !DonorPack.Any(IsWeapon)) values[0] -= 3;
         for (int i = 0; i < stats.Length; i++)
         {
             Text(sheet, new(32, 332 + i * 76, 224, 64), GameText.Get("party.stat." + stats[i]), 30);

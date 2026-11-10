@@ -37,6 +37,7 @@ public partial class DesignPreview
     private string ItemName(int id) => id switch
     {
         0 => T("药草", "Medical Herb"), 1 => T("回复种子", "Healing Seed"),
+        3 => T("解毒草", "Antidote"), 4 => T("天使之翼", "Angel Wing"),
         71 => T("木剑", "Wooden Sword"), 85 => T("木杖", "Wooden Rod"),
         _ => GameText.Get("party.empty")
     };

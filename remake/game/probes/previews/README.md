@@ -14,6 +14,24 @@ to continue and click a response to answer. Close the window to finish.
 | F3 · Church | Scan the four labeled services, focus Promotion for its reason, then open Cure and decline the price. Record shows the save handoff in text. |
 | F4 · Battle | Move down the four command rows to Magic. Pick a level and a target, then back out to the same level and command. Item, Attack and Stay have sample paths too. |
 | F5 · Members | Browse Bowie, Sarah and Chester with Up/Down or click a name. Inspect the portrait, class, level/EXP, HP/MP, attributes, spell costs and four inventory slots. Enter/A or Prepare opens the supply handoff. Esc/Back unwinds each step; F5 or gamepad X closes details. |
+| F6 · Shop | Buy supplies for a chosen member or sell a specific numbered slot. Review the party balance and price, then confirm. The receipt and F5 show the resulting inventory. |
+
+### Shop counter
+
+Press **F6** or launch with `-- --shop`. The staged counter uses the admitted Galam item-shop
+stock (Medical Herb 10 G, Healing Seed 200 G, Antidote 20 G, Angel Wing 40 G), the original
+service and item art when available, and a starting purse of 150 G. Repair and Deals retain
+their unavailable reasons. Buy a herb for Sarah: the quote shows slot 4 and 150 → 140 G.
+Then Sell → Sarah → slot 4 offers 7 G (three quarters of base price, rounded down).
+Only Confirm publishes the new gold and pack. The confirmation defaults to Cancel.
+Member focus previews the actual pack. Full packs and unaffordable stock have explicit reasons.
+Sale of a starting equipped weapon names the unequip consequence. Back from a quote restores
+the member selector. Original service behavior is documented in the
+[shop agreement](../../../docs/content/profiles-and-trust.md#finite-galam-shop-admission).
+
+Shop and F5 share their in-memory inventories. If a Give changes a quoted pack while F5 is open,
+return to the selector for fresh terms. Reopening the shop retains transactions for this process;
+restart for the initial examples. The Church and battle examples remain independently staged.
 
 The layout follows the user-selected direction for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The [design review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1683) owns the shared
