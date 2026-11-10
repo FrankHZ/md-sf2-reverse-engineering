@@ -7,7 +7,7 @@ namespace Sf2.Remake.GodotAdapter.Previews;
 
 public partial class DesignPreview : Control
 {
-    private enum Page { Root, Question, Reply, Quote, Result, Spells, Items, Target, Stay }
+    private enum Page { Root, Question, Reply, Quote, Result, Spells, Items, Target, Stay, Playback }
     private readonly PreviewStage _stage = new() { Name = "Artwork", Size = new(1920, 1080) };
     private readonly List<Choice> _choices = [];
     private Control _surface = null!;
@@ -30,8 +30,13 @@ public partial class DesignPreview : Control
     private sealed record Choice(Button Hit, Label Name, TextureRect Art, string? Key, bool Enabled, string Reason);
     private string T(string zh, string en) => _english ? en : zh;
     private readonly record struct UnitSummary(string Name, int Hp, int MaxHp, int Mp, int MaxMp);
-    private UnitSummary Sarah => new(T("莎拉", "Sarah"), 18, 24, 8, 12);
-    private UnitSummary Bowie => new(T("鲍伊", "Bowie"), 16, 24, 0, 0);
+    private PreviewBattlePlayback _playback = null!;
+    private Label _playMessage = null!;
+    private Button _playReturn = null!;
+    private bool _playSuspended;
+    private int _sarahHp = 18, _sarahMp = 8, _bowieHp = 16, _enemyHp = 12;
+    private UnitSummary Sarah => new(T("莎拉", "Sarah"), _sarahHp, 24, _sarahMp, 12);
+    private UnitSummary Bowie => new(T("鲍伊", "Bowie"), _bowieHp, 24, 0, 0);
 
     public override void _Ready()
     {
@@ -40,10 +45,14 @@ public partial class DesignPreview : Control
         Theme = StoryTheme.Create();
         AddChild(_stage);
         _stage.LoadSelection();
+        _playback = new PreviewBattlePlayback(_stage);
+        AddChild(_playback);
         if (OS.GetCmdlineUserArgs().Contains("--battle")) _scene = 3;
         if (OS.GetCmdlineUserArgs().Contains("--shop")) _scene = ShopScene;
         GetWindow().FocusExited += StopIconAnimation;
         GetWindow().FocusEntered += Refresh;
+        GetWindow().FocusExited += () => _playSuspended = true;
+        GetWindow().FocusEntered += () => _playSuspended = false;
         Render();
     }
 
@@ -99,6 +108,7 @@ public partial class DesignPreview : Control
         _showMembers = false;
         _shopStep = ShopStep.Services;
         _scene = scene;
+        if (scene == 3) (_sarahHp, _sarahMp, _bowieHp, _enemyHp) = (18, 8, 16, 12);
         _page = Page.Root;
         _focus = _rootFocus = _offer = _target = 0;
         Render();
@@ -135,6 +145,8 @@ public partial class DesignPreview : Control
         _detail = null;
         _dialogue = null;
         _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1);
+        _playback.Visible = !_showMembers && _scene == 3 && _page == Page.Playback;
+        _stage.Visible = !_playback.Visible;
         if (Preparing) PrepareGive();
         else if (_showMembers) Members();
         else switch (_scene)
@@ -146,7 +158,7 @@ public partial class DesignPreview : Control
             case ShopScene: Shop(); break;
         }
         Panel(new(0, 0, 1920, 72), true);
-        if (_scene == 3 && !_showMembers)
+        if (_scene == 3 && !_showMembers && _page != Page.Playback)
         {
             Utility(new(12, 10, 144, 52), T("A  合栏", "A  Combined"), () => SelectBattleLayout(false), !_bottomLayout);
             Utility(new(160, 10, 136, 52), T("B  底栏", "B  Bottom"), () => SelectBattleLayout(true), _bottomLayout);
@@ -259,6 +271,7 @@ public partial class DesignPreview : Control
 
     public override void _Process(double delta)
     {
+        if (_playback.Visible && !_playSuspended && !_playback.Finished) UpdatePlayback(delta);
         if (_animated is not { Key: { } key } row) return;
         bool wasSelectedFrame = _frameTime < IconFrameSeconds;
         _frameTime = (_frameTime + delta) % (2 * IconFrameSeconds);
@@ -437,6 +450,14 @@ public partial class DesignPreview : Control
 
     private void Battle()
     {
+        if (_page == Page.Playback)
+        {
+            var footer = Panel(new(32, 985, 1856, 74), true);
+            _playMessage = Text(footer, new(22, 0, 1340, 74), "", 30);
+            _playReturn = Utility(new(1480, 994, 384, 56), T("Enter / A  返回棋盘", "Enter / A  Return to board"), Activate);
+            UpdatePlayback(0);
+            return;
+        }
         var round = Panel(new(32, 96, 164, 50), true);
         Text(round, new(16, 0, 134, 50), T("回合 3", "Round 3"), 24);
         if (_bottomLayout && _page != Page.Target) BottomStatus();
@@ -445,7 +466,8 @@ public partial class DesignPreview : Control
             SidePage(T("战斗", "Battle"), 4);
             string[] ids = ["attack", "magic", "item", "stay"];
             for (int i = 0; i < ids.Length; i++)
-                Item(CommandRow(i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
+                Item(CommandRow(i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i], i != 0 || _enemyHp > 0);
+            if (_enemyHp == 0) Text(_surface, new(1312, 696, 528, 84), T("敌人已倒下。F4 重置示例。", "Enemy defeated. F4 resets the sample."), 24);
             Footer(T("↑ ↓ 选择指令     Enter 确认", "↑ ↓ Select command     Enter Confirm"));
         }
         else if (_page is Page.Spells or Page.Items)
@@ -455,8 +477,9 @@ public partial class DesignPreview : Control
                 magic ? 3 : 2);
             if (magic)
             {
-                Item(CommandRow(0), T("回复   Lv. 1", "HEAL   Lv. 1"), "identity-icon.spell.0", value: "3 MP");
-                Item(CommandRow(1), T("回复   Lv. 2", "HEAL   Lv. 2"), "identity-icon.spell.0", value: "5 MP");
+                Item(CommandRow(0), T("回复   Lv. 1", "HEAL   Lv. 1"), "identity-icon.spell.0", enabled: _sarahMp >= 3, value: "3 MP");
+                Item(CommandRow(1), T("回复   Lv. 2", "HEAL   Lv. 2"), "identity-icon.spell.0", enabled: _sarahMp >= 5, value: "5 MP");
+                if (_sarahMp < 5) Text(_surface, new(1312, 616, 528, 84), T("MP 不足的等级不可用。F4 重置示例。", "Levels above current MP are unavailable. F4 resets the sample."), 24);
             }
             else Item(CommandRow(0), T("药草", "Medical Herb"), "identity-icon.item.0", value: T("槽位 1", "Slot 1"));
             Item(CommandRow(magic ? 2 : 1), T("返回", "Back"));
@@ -465,7 +488,7 @@ public partial class DesignPreview : Control
         else if (_page == Page.Target)
         {
             bool attack = _targetParent == Page.Root;
-            var candidate = attack ? new UnitSummary(T("对手", "Opponent"), 12, 24, 0, 0)
+            var candidate = attack ? new UnitSummary(T("基兹莫", "Gizmo"), _enemyHp, 24, 0, 0)
                 : _target == 0 ? Bowie : Sarah;
             if (_bottomLayout) BottomStatus(candidate);
             else
@@ -531,7 +554,16 @@ public partial class DesignPreview : Control
             case Page.Stay:
                 if (_focus == 1) Back(); else Show(Page.Result);
                 break;
-            case Page.Target: Show(Page.Result); break;
+            case Page.Target:
+                if (_targetParent == Page.Items) { Show(Page.Result); break; }
+                bool heal = _targetParent == Page.Spells;
+                int hp = heal ? (_target == 0 ? _bowieHp : _sarahHp) : _enemyHp;
+                _playback.Begin(heal, heal && _target == 1, hp, _sarahMp, heal ? (_offer == 0 ? 3 : 5) : 0);
+                Show(Page.Playback);
+                break;
+            case Page.Playback:
+                if (_playback.Finished) Show(Page.Root, _rootFocus);
+                break;
             default: Show(Page.Root, _rootFocus); break;
         }
     }
@@ -543,6 +575,17 @@ public partial class DesignPreview : Control
         Show(Page.Target);
     }
 
+    private void UpdatePlayback(double delta)
+    {
+        _playback.Advance(delta, _english, _steadyIcons, _sarahHp, Bowie.Mp);
+        _sarahMp = _playback.ShownMp;
+        if (_targetParent == Page.Root) _enemyHp = _playback.ShownHp;
+        else if (_target == 0) _bowieHp = _playback.ShownHp;
+        else _sarahHp = _playback.ShownHp;
+        _playMessage.Text = _playback.Message;
+        _playReturn.Visible = _playback.Finished;
+    }
+
     private void CycleTarget()
     {
         if (_targetParent == Page.Root) return;
@@ -552,6 +595,7 @@ public partial class DesignPreview : Control
 
     private void Back()
     {
+        if (_page == Page.Playback) { if (_playback.Finished) Show(Page.Root, _rootFocus); return; }
         if (_scene == ShopScene) { BackShop(); return; }
         if (_scene == 1 && _page == Page.Question) { _result = "no"; Show(Page.Reply); }
         else if (_scene == 3 && _page == Page.Target)

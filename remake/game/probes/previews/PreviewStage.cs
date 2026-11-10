@@ -15,7 +15,7 @@ internal sealed partial class PreviewStage : Control
     private readonly Dictionary<string, ImageTexture> _textures = new();
     private EntryPresentationAssets? _entry;
     private ExplorationDefinition? _world;
-    private IReadOnlyDictionary<string, ExplorationRaster>? _battle;
+    internal BattleSceneDefinition? SceneArt { get; private set; }
     private int _scene, _target = -1;
     private int _allySprite = 2, _chesterSprite = 5, _opponentSprite = 103;
     internal bool HasWorld => _world?.Visuals is not null;
@@ -43,14 +43,14 @@ internal sealed partial class PreviewStage : Control
         {
             _world = accepted.Definition.Exploration;
             var battle = accepted.Definition.ScenesFor("battle-1");
-            _battle = battle?.Rasters;
+            SceneArt = battle;
             if (battle?.FieldDeath is { } art)
             {
                 _allySprite = art.AllySprites.GetValueOrDefault(1, _allySprite);
                 _chesterSprite = art.AllySprites.GetValueOrDefault(2, _chesterSprite);
                 _opponentSprite = art.EnemySprites.Values.FirstOrDefault(_opponentSprite);
             }
-            if (_world?.Visuals?.ChurchMenu is null || _world.Visuals.ShopMenu is null || _battle?.ContainsKey("command-menu.attack.normal") != true)
+            if (_world?.Visuals?.ChurchMenu is null || _world.Visuals.ShopMenu is null || SceneArt?.Rasters.ContainsKey("command-menu.attack.normal") != true)
                 AssetFailure = "command art";
         }
         else AssetFailure = result is ScenarioReadRejected rejected ? rejected.Failure.Code : "world";
@@ -68,13 +68,22 @@ internal sealed partial class PreviewStage : Control
         string state = key + (selected ? ".selected" : ".normal");
         if (_textures.TryGetValue(state, out var ready)) return ready;
         var visuals = _world?.Visuals;
-        var raster = key.StartsWith("command-menu.", StringComparison.Ordinal) ? _battle?.GetValueOrDefault(state)
+        var raster = key.StartsWith("command-menu.", StringComparison.Ordinal) ? SceneArt?.Rasters.GetValueOrDefault(state)
             : key.StartsWith("identity-icon.", StringComparison.Ordinal) ? visuals?.IdentityIcons?.GetValueOrDefault(state)
             : key.StartsWith("shop.", StringComparison.Ordinal) ? visuals?.ShopMenu?.GetValueOrDefault(state[5..])
             : visuals?.ChurchMenu?.GetValueOrDefault(state);
         if (raster is null) return null;
         using var image = ExplorationRasterImages.Open(raster);
         return _textures[state] = ImageTexture.CreateFromImage(image);
+    }
+
+    internal Texture2D BattleTexture(string resource)
+    {
+        if (_textures.TryGetValue(resource, out var texture)) return texture;
+        using var image = ExplorationRasterImages.Open(SceneArt!.Rasters[resource]);
+        var result = ImageTexture.CreateFromImage(image);
+        result.ResourceName = resource;
+        return _textures[resource] = result;
     }
 
     internal Texture2D? MemberPortrait(int member) => Portrait(member switch { 1 => _allySprite, 2 => _chesterSprite, _ => 0 });

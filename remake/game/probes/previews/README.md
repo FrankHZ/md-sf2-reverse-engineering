@@ -16,6 +16,27 @@ to continue and click a response to answer. Close the window to finish.
 | F5 · Members | Browse Bowie, Sarah and Chester with Up/Down or click a name. Inspect the portrait, class, level/EXP, HP/MP, attributes, spell costs and four inventory slots. Enter/A or Prepare opens the supply handoff. Esc/Back unwinds each step; F5 or gamepad X closes details. |
 | F6 · Shop | Buy supplies for a chosen member or sell a specific numbered slot. Review the party balance and price, then confirm. The receipt and F5 show the resulting inventory. |
 
+### F4 action playback
+
+- Choose **Attack → Gizmo → Confirm**. Sarah's window opens at upper right and Gizmo's at
+  lower left. Her rod follows the attack frames; the impact changes Gizmo's HP from 12 to 8
+  in the initial sample.
+- Choose **Magic → HEAL Lv. 1 or 2 → Bowie → Confirm**. Sarah casts in the upper-right
+  window, paying 3 or 5 MP. She gives way to Bowie on the left. His upper-left ally window
+  shows the recovery from 16 to 24 HP; the fairy effect retires and Sarah returns. Self-targeting
+  keeps the caster in place. The enemy window is absent for these ally-only scenes.
+- Enter/A or the return hint goes back to the board after the result. The board retains the
+  displayed HP and MP. F4 starts the sample again. Items and Stay keep their short result pages.
+
+The private pack supplies sprite poses, weapon transforms/layers, backdrop, ground and fairy
+rasters. The public fallback draws schematic actors. The two visual samples use a centered
+256×224 canvas, nearest 4× display, localized text and review-paced motion. Damage, recovery,
+fairy trajectory and pauses are staged; the production battle session owns gameplay resolution
+and audio. This visual preview does not write a game save. The status placement follows pinned
+SF2DISASM [window destinations](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L110-L205),
+[same-side target selection](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/animateaction.asm)
+and [ally switching](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_0.asm#L458-L627).
+
 ### Shop counter
 
 Press **F6** or launch with `-- --shop`. The staged counter uses the admitted Galam item-shop
