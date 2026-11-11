@@ -21,6 +21,7 @@ internal sealed partial class StoryDialoguePanel : Control
         StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = TextureFilterEnum.Nearest,
         MouseFilter = MouseFilterEnum.Ignore };
     internal Rect2? LayoutRegion { get; init; }
+    internal bool JourneyChoices { get; init; }
     private bool _placed, _top, _portrait, _right;
     private float _portraitY, _readThrough;
     private Rect2 _subject;
@@ -32,6 +33,7 @@ internal sealed partial class StoryDialoguePanel : Control
         Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
         AddChild(_frame); AddChild(_scroll); _scroll.AddChild(Body);
         AddChild(Portrait); AddChild(Choices); AddChild(Hint);
+        Choices.JourneyStyle = JourneyChoices;
         Hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
         Hide();
     }
@@ -57,7 +59,8 @@ internal sealed partial class StoryDialoguePanel : Control
         Hint.Text = _hint;
         Hint.CustomMaximumSize = new(bodyWidth, -1); Hint.Size = new(bodyWidth, 0);
         float hintHeight = Mathf.Max(34, Hint.GetMinimumSize().Y);
-        float footer = hintHeight + 16 + (Choices.Visible ? 60 : 0);
+        float choiceHeight = JourneyChoices ? 64 : 48;
+        float footer = hintHeight + 16 + (Choices.Visible ? choiceHeight + 12 : 0);
         float height = Mathf.Clamp(Mathf.Max(_portrait ? 304 : 280, bodyHeight + 48 + footer), 280, viewport.Y - inset * 2);
         Size = new(width, height);
         if (!_placed)
@@ -72,7 +75,7 @@ internal sealed partial class StoryDialoguePanel : Control
         _scroll.Position = new(_portrait && !_right ? 240 : 24, 24);
         _scroll.Size = new(bodyWidth, height - 48 - footer);
         Hint.Position = new(_scroll.Position.X, height - 24 - hintHeight); Hint.Size = new(bodyWidth, hintHeight);
-        Choices.Position = new(_scroll.Position.X, Hint.Position.Y - 60); Choices.Size = new(bodyWidth, 48);
+        Choices.Position = new(_scroll.Position.X, Hint.Position.Y - choiceHeight - 12); Choices.Size = new(bodyWidth, choiceHeight);
         if (IsVisibleInTree()) _readThrough = Mathf.Max(_readThrough, _scroll.ScrollVertical + _scroll.Size.Y);
         Hint.Text = _hint;
         Portrait.Visible = _portrait && Portrait.Texture is not null;

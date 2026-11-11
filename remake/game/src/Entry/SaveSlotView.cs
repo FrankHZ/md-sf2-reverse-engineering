@@ -15,6 +15,7 @@ internal sealed partial class SaveSlotView : Control
     private Label _coverage = null!;
     private PanelContainer _panel = null!;
     private VBoxContainer _column = null!;
+    private ScrollContainer? _reading;
     private readonly List<Button> _buttons = [];
     private readonly List<Action> _actions = [];
     private int _selected;
@@ -27,7 +28,7 @@ internal sealed partial class SaveSlotView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        Theme = StoryTheme.CreateEntry();
+        Theme = StoryTheme.CreateEntry(journey: OverEntry);
         var panel = _panel = new PanelContainer { Name = "SlotWindow" };
         if (OverEntry) { panel.Position = EntryLayout.Window.Position; panel.Size = EntryLayout.Window.Size; AddChild(panel); }
         else
@@ -37,8 +38,17 @@ internal sealed partial class SaveSlotView : Control
             var center = new CenterContainer(); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(center);
             center.AddChild(panel);
         }
-        _column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
-        _column.AddThemeConstantOverride("separation", OverEntry ? 20 : 12); panel.AddChild(_column);
+        _column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _column.AddThemeConstantOverride("separation", OverEntry ? 24 : 12);
+        VBoxContainer? layout = null;
+        if (OverEntry)
+        {
+            layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", 24); panel.AddChild(layout);
+            _reading = new ScrollContainer { Name = "SlotReading", SizeFlagsVertical = SizeFlags.ExpandFill,
+                HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+            layout.AddChild(_reading); _reading.AddChild(_column);
+        }
+        else panel.AddChild(_column);
         _title = new Label { Name = "SlotTitle", HorizontalAlignment = HorizontalAlignment.Center, Visible = !OverEntry };
         _title.AddThemeFontSizeOverride("font_size", 34); _column.AddChild(_title);
         _message = new Label { Name = "SlotMessage", HorizontalAlignment = HorizontalAlignment.Center,
@@ -47,7 +57,7 @@ internal sealed partial class SaveSlotView : Control
         _hint = new Label { Name = "SlotHint", HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
-        _column.AddChild(_hint);
+        (layout ?? _column).AddChild(_hint);
         _detail = new Label { Name = "SlotDetail", HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart, Visible = false };
         _detail.AddThemeFontSizeOverride("font_size", 20);
@@ -90,13 +100,13 @@ internal sealed partial class SaveSlotView : Control
         foreach (var (label, action) in choices)
         {
             int index = _buttons.Count;
-            var button = new Button { Text = label, AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(OverEntry ? 600 : 0, 76), FocusMode = FocusModeEnum.None };
+            var button = new Button { Text = label, AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 76), FocusMode = FocusModeEnum.None };
             button.Pressed += () => { if (_loading) { _loadingBack?.Invoke(); return; } Select(index); action(); };
             button.MouseEntered += () => Select(index);
             button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.Hint(GameAction.Confirm), Input.Hint(GameAction.Cancel));
-            _column.AddChild(button); _buttons.Add(button); _actions.Add(action);
+            _column.AddChild(button); if (OverEntry) StoryTheme.EntryChoice(button); _buttons.Add(button); _actions.Add(action);
         }
-        _column.MoveChild(_hint, _column.GetChildCount() - 1);
+        if (!OverEntry) _column.MoveChild(_hint, _column.GetChildCount() - 1);
         _column.MoveChild(_detail, _column.GetChildCount() - 1);
         _column.MoveChild(_coverage, _column.GetChildCount() - 1);
         Select(0);
@@ -116,6 +126,9 @@ internal sealed partial class SaveSlotView : Control
         _selected = index;
         for (int i = 0; i < _buttons.Count; i++)
             StoryTheme.Select(_buttons[i], i == index);
+        if (_reading is not null)
+            Callable.From(() => { if (index < _buttons.Count && _buttons[index].IsVisibleInTree())
+                _reading.EnsureControlVisible(_buttons[index]); }).CallDeferred();
     }
     public string ReadSaveObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { state = State, message = _message.Text, selected = _selected, choices = _buttons.Select(button => button.Text).ToArray() });
