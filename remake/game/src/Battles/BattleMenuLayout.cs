@@ -16,7 +16,8 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
-    internal readonly Control Diamond = new() { Name = "Diamond", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly Panel _commandsPanel = new() { Name = "CommandsPanel", MouseFilter = MouseFilterEnum.Ignore };
+    private UI.CompactCommandList _commandList = null!;
     internal readonly UI.DiamondCommandButton[] Commands = [new("Attack", "battle.command.attack", "command-menu"), new("Magic", "battle.command.magic", "command-menu"),
         new("Item", "battle.command.item", "command-menu"), new("Stay", "battle.command.stay", "command-menu")];
     private readonly PanelContainer _context = Frame("ContextPanel");
@@ -25,6 +26,7 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly ScrollContainer _scroll = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private readonly VBoxContainer _rows = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly List<Label> _rowLabels = [];
+    private readonly List<Label> _rowMarkers = [];
     private readonly List<HBoxContainer> _rowControls = [];
     private readonly List<UI.IdentityIcon> _rowIcons = [];
     internal readonly UI.IdentityIcons Icons = new();
@@ -52,15 +54,18 @@ internal sealed partial class BattleMenuLayout : Control
     public override void _Ready()
     {
         Theme = UI.StoryTheme.Create();
+        var insets = (StyleBoxFlat)Theme.GetStylebox("panel", "PanelContainer").Duplicate();
+        insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = 16;
+        foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);
         AddChild(_context); _context.AddChild(Context);
-        AddChild(Diamond);
-        foreach (var command in Commands) Diamond.AddChild(command);
-        foreach (var command in Commands) command.ItemRectChanged += () => InvalidatePointer();
-        Diamond.ItemRectChanged += () => InvalidatePointer();
+        _commandList = new(Commands) { Name = "Commands", InvalidatePointer = () => InvalidatePointer() };
+        AddChild(_commandsPanel); _commandsPanel.AddChild(_commandList);
+        _commandsPanel.ItemRectChanged += () => InvalidatePointer();
         AddChild(_list); _list.AddChild(_scroll); _scroll.AddChild(_rows);
         _scroll.GetVScrollBar().FocusMode = FocusModeEnum.None;
+        _rows.AddThemeConstantOverride("separation", 8);
         AddChild(_detail);
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", 9);
         _detail.AddChild(column); column.AddChild(Heading); column.AddChild(Detail); column.AddChild(Help);
@@ -97,58 +102,46 @@ internal sealed partial class BattleMenuLayout : Control
     internal void Arrange(Vector2 size)
     {
         Size = size;
-        const float margin = 32;
-        bool narrow = size.X < 700;
-        // Four display pixels per source pixel: keep the original icon crisp,
-        // and bring the cardinal centers closer without overlapping the square rasters.
-        float menuWidth = UI.DiamondMenuGeometry.Size.X, menuHeight = UI.DiamondMenuGeometry.Size.Y;
-        float listHeight = Mathf.Clamp(size.Y * 0.38f, 300, 420);
-        float detailWidth = _commandHint ? Mathf.Min(420, size.X - 2 * margin) :
-            narrow ? size.X - 2 * margin : Mathf.Clamp(size.X * 0.25f, 420, 520);
-        float detailHeight = _commandHint ? 88 : narrow ? 180 : listHeight;
-        _descriptionSize = new(detailWidth, detailHeight);
+        const float margin = 32, inset = 16;
+        float width = Mathf.Min(560, size.X - margin * 2);
+        float right = size.X - margin - width;
+        // Layout A: live acting vitals head the same right-hand command column.
+        // Child offers replace the root rows at the same origin; the board remains independent.
+        Actor.Visible = !Target.Visible;
+        Actor.Position = new(right, 112); Actor.Size = new(Mathf.Max(width, Actor.RequestedSize.X), Actor.RequestedSize.Y);
+        if (Actor.Size.X > width) Actor.Position = new(size.X - margin - Actor.Size.X, 112);
+        Target.Position = new(size.X - margin - Mathf.Max(width, Target.RequestedSize.X), 112);
+        Target.Size = new(Mathf.Max(width, Target.RequestedSize.X), Target.RequestedSize.Y);
+        _contextSize = new(300, 110); _context.Position = new(margin, 96); _context.Size = _contextSize;
+        float rowsTop = Actor.Position.Y + Actor.Size.Y + 8;
+        _commandList.Position = new(inset, inset); _commandList.Arrange(width - inset * 2);
+        _commandsPanel.Position = new(right, rowsTop);
+        _commandsPanel.Size = new(width, _commandList.RequestedHeight + inset * 2);
+        _list.Position = new(right, rowsTop);
+        _list.Size = new(width, _commandsPanel.Size.Y);
+        float detailTop = _commandsPanel.Visible ? _commandsPanel.Position.Y + _commandsPanel.Size.Y + 12 :
+            _list.Visible ? _list.Position.Y + _list.Size.Y + 12 :
+            Target.Visible ? Target.Position.Y + Target.Size.Y + 12 : rowsTop;
+        _descriptionSize = new(width, 0);
         SetTextWidths();
-        detailHeight = Mathf.Max(detailHeight, _detail.GetCombinedMinimumSize().Y);
-        float bottom = size.Y - margin - (narrow ? detailHeight + 12 : 0);
-        _contextSize = new(size.X * 0.45f - margin - 8, 110);
-        Actor.Position = new(margin, margin); Actor.Size = Actor.RequestedSize;
-        Target.Position = new(size.X - margin - Target.RequestedSize.X, margin);
-        Target.Size = Target.RequestedSize;
-        _context.Position = new(size.X * 0.55f + 8, Target.Visible ? margin + Target.Size.Y + 16 : margin);
-        Diamond.Position = new(margin, bottom - menuHeight); Diamond.Size = new(menuWidth, menuHeight);
-        UI.DiamondMenuGeometry.Arrange(Diamond, Commands);
-        _list.Position = new(margin, bottom - listHeight);
-        _list.Size = new(Mathf.Min(540, size.X - 2 * margin - (narrow ? 0 : detailWidth + 24)), listHeight);
-        _detail.Position = new(narrow ? margin : size.X - margin - detailWidth, size.Y - margin - detailHeight);
-        _descriptionSize = new(detailWidth, detailHeight);
+        _descriptionSize = new(width, _detail.GetCombinedMinimumSize().Y);
+        _detail.Position = new(right, detailTop); _detail.Size = _descriptionSize;
         SetTextWidths();
-        _context.Size = _contextSize;
-        _detail.Size = _descriptionSize;
-        SetTextWidths();
-        // Keep visible corner panels mutually clear as well as clear of the subject.
-        // The few vertical alternatives cover the selected 1080p layout; the world never moves for UI.
-        Control[] panels = [_list, _detail, Diamond, Actor, Target, _context];
-        foreach (var panel in panels.Where(panel => panel.Visible))
-        {
-            if (!new Rect2(panel.Position, panel.Size).Intersects(_subject.Grow(16))) continue;
-            foreach (float y in new[] { 192f, _subject.End.Y + margin,
-                _subject.Position.Y - margin - panel.Size.Y, size.Y - margin - panel.Size.Y, margin })
-            {
-                var candidate = new Rect2(new Vector2(panel.Position.X, y), panel.Size);
-                if (y < margin || candidate.End.Y > size.Y - margin || candidate.Intersects(_subject.Grow(16)) ||
-                    panels.Any(other => other != panel && other.Visible &&
-                        candidate.Intersects(new Rect2(other.Position, other.Size).Grow(8)))) continue;
-                panel.Position = candidate.Position;
-                break;
-            }
-        }
+    }
+
+    internal void ShowCommands(bool visible)
+    {
+        _commandsPanel.Visible = visible;
+        _commandList.Present(Commands.Select(command => command.Caption +
+            (command.Available ? "" : GameText.Get("battle.unavailable-tag"))).ToArray());
+        Arrange(Size);
     }
 
     internal void ShowCommandHint(bool compact)
     {
         _commandHint = compact;
         Detail.Visible = !compact || !string.IsNullOrWhiteSpace(Detail.Text);
-        Help.Visible = !compact;
+        Help.Visible = true;
         Arrange(Size);
     }
 
@@ -166,9 +159,8 @@ internal sealed partial class BattleMenuLayout : Control
     {
         foreach (var control in new[] { _previous, _next, _confirm, _back })
             if (control.IsVisibleInTree() && control.GetGlobalRect().HasPoint(position)) return (control.Name.ToString(), control.GetGlobalRect());
-        if (Diamond.IsVisibleInTree())
-            for (int i = 0; i < Commands.Length; i++)
-                if (Commands[i].GetGlobalRect().HasPoint(position)) return ($"command:{i}", Commands[i].GetGlobalRect());
+        var command = _commandList.Hit(position);
+        if (command.Index >= 0) return ($"command:{command.Index}", command.Rect);
         if (_list.IsVisibleInTree() && _scroll.GetGlobalRect().HasPoint(position))
             for (int i = 0; i < _rowLabels.Count; i++)
             {
@@ -190,29 +182,34 @@ internal sealed partial class BattleMenuLayout : Control
         Context.CustomMaximumSize = new(Mathf.Max(1, _contextSize.X - 28), -1);
         foreach (var label in new[] { Heading, Detail, Help })
         {
-            float width = Mathf.Max(1, _descriptionSize.X - 28);
+            float width = Mathf.Max(1, _descriptionSize.X - 32);
             label.CustomMinimumSize = new(width, 0);
             label.CustomMaximumSize = new(width, -1);
         }
-        foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, _list.Size.X - 48 - (_rowIcons.Any(icon => icon.Visible) ? 80 : 0)), -1);
+        foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, _list.Size.X - 48 - 108), -1);
     }
 
     internal void ShowRows(string[] labels, bool[] enabled, int selected, bool visible, string?[] identities)
     {
         bool changed = !labels.SequenceEqual(_labels) || selected != _selected || visible != _list.Visible;
         _list.Visible = visible;
-        Diamond.Visible = !visible;
+
         if (!labels.SequenceEqual(_labels))
         {
             InvalidatePointer();
             foreach (var child in _rows.GetChildren()) { _rows.RemoveChild(child); child.QueueFree(); }
-            _rowLabels.Clear(); _rowControls.Clear(); _rowIcons.Clear(); _labels = labels;
+            _rowLabels.Clear(); _rowMarkers.Clear(); _rowControls.Clear(); _rowIcons.Clear(); _labels = labels;
             foreach (string value in labels)
             {
                 var label = Text("Choice", 30); label.Text = value;
-                label.CustomMinimumSize = new(0, 64);
+                label.CustomMinimumSize = new(0, 80);
                 var row = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-                var icon = new UI.IdentityIcon(); row.AddChild(icon); row.AddChild(label);
+                row.AddThemeConstantOverride("separation", 8);
+                var marker = Text("Focus", 30); marker.CustomMinimumSize = new(20, 80);
+                marker.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+                var iconSlot = new Control { CustomMinimumSize = new(72, 80), MouseFilter = MouseFilterEnum.Ignore };
+                var icon = new UI.IdentityIcon(3) { Position = new(0, 4) }; iconSlot.AddChild(icon);
+                row.AddChild(marker); row.AddChild(iconSlot); row.AddChild(label); _rowMarkers.Add(marker);
                 _rows.AddChild(row); _rowLabels.Add(label); _rowControls.Add(row); _rowIcons.Add(icon);
                 label.ItemRectChanged += () => InvalidatePointer();
             }
@@ -220,7 +217,9 @@ internal sealed partial class BattleMenuLayout : Control
         for (int i = 0; i < _rowLabels.Count; i++)
         {
             _rowIcons[i].Present(Icons, identities[i], i == selected);
-            _rowLabels[i].Text = (i == selected ? "›  " : "   ") + labels[i];
+            _rowLabels[i].Text = labels[i];
+            _rowMarkers[i].Text = i == selected ? "›" : "";
+            _rowMarkers[i].AddThemeColorOverride("font_color", enabled[i] ? UI.StoryTheme.Selected : UI.StoryTheme.Unavailable);
             // Focus stays inspectable even when unavailable; the marker and reason are independent of color.
             if (enabled[i] && i != selected) _rowLabels[i].RemoveThemeColorOverride("font_color");
             else _rowLabels[i].AddThemeColorOverride("font_color", !enabled[i] ? UI.StoryTheme.Unavailable : UI.StoryTheme.Selected);
@@ -238,7 +237,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal object Observe() => new
     {
-        diamondVisible = Diamond.Visible, diamond = BattleMapViewport.Rectangle(Diamond.GetGlobalRect()),
+        commandList = _commandList.Observe(), commandPanel = BattleMapViewport.Rectangle(_commandsPanel.GetGlobalRect()),
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
         actorCard = Actor.Observe(), targetCard = Target.Observe(),

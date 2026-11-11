@@ -398,3 +398,92 @@ live gameplay and host-only states listed in [Preview coverage](#preview-coverag
 #1578 guidance, #1544 hint changes and an action-order strip retain separate scope.
 
 Product implementation requires its own bounded dispatch.
+
+## 10. Production Church and battle command lists
+
+**High rigor, bounded migration:** the shared design remains the agreement; this implementation
+changes the existing Church and battle command presenters, their input focus and directly used
+icon projection. It adds no gameplay/session authority or preview examples to the product.
+The [compact list](../../game/src/UI/CompactCommandList.cs) is shared by the two production
+presenters. It reserves the marker, 72×72 command icon and full 30px label within each 528px row;
+rows start at 80px with 8px gaps and grow for wrapped labels. Both admitted icon frames alternate
+at 250ms intervals while selected. Reduced Flash holds the selected frame. Unmounted public
+commands and Search show their full text without an invented icon. Existing diamond consumers
+retain their previous rendering until their own migration.
+
+Church places the measured 560px service panel on the right, below the host safe area, with the
+room under a 35% veil. The four services and separate Leave row use Up/Down; moving focus or
+showing a refusal leaves the root hit areas fixed. Promotion remains unavailable. Quotes retain
+the actual source-ordered member, condition, funds and exact price; Cancel declines and paid
+results stay paid. Record completes the caller before the shared Save host opens. Back from that
+host resumes field control; reopening services requires a fresh priest interaction.
+
+Battle uses layout A: actual acting vitals head the right command column; round/gold stays left.
+Up/Down scans Attack, Magic, Item and Stay (or the currently admitted Search replacement).
+The mapped action shortcuts still open their existing commands. Spell/item lists replace the
+root at its origin, use 48×72 identity icons, and retain their actual MP/slot labels, availability
+and scroll behavior. Unavailable focus is inspectable and cannot commit. Target direction and
+Confirm remain session-owned; Back restores the chosen spell/item, then its root command, then
+Movement. The recipient card replaces the acting card while targeting. Equipment/Give/Drop
+remain on their existing advertised bindings.
+
+### Direct reproduction
+
+The [bounded native observer](../../game/probes/engine_compact_commands_observation.gd) uses the
+ordinary production presenters and installed keyboard/pad bindings. It reads state, drawn icon
+identity and geometry only. It does not mutate a running session, take screenshots, copy a world,
+or write player saves. Select the registered full-world/entry/battle inputs and an independently
+named namespace beneath the external validation save root using the
+[environment owner](../../../docs/operations/local-private-inputs.md).
+
+After loading that environment in the launching PowerShell process:
+
+```powershell
+uv run sf2 verify adapter
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+$env:SF2_COMPACT_CASE = 'church' # or battle
+$env:SF2_COMPACT_START = $controlledStart
+$env:SF2_INSPECTION_ROUTE = 'pad' # keyboard, pad, or remapped (installed keyboard bindings)
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $freshRun 'native.json'
+& $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 `
+  --resolution 1920x1080 --script res://probes/engine_compact_commands_observation.gd `
+  -- --input-settings $inputSettings
+```
+
+The start file is beneath this checkout's ignored `local/` and is consumed through the existing
+`StartPreVoyageLocalizationObservation` before any session mounts. Church uses map3, entity0,
+cell `(32,13)`, facing1, speed32 and flags `0,1,2,32,33,34,66,67,80,600,602,603`.
+Battle uses `battle-1`, initial `ally-0` HP1 and `ally-2` HP0; ordinary Stay turns reach the
+actual learned-spell actor. These are controlled consumer starts, not claims of natural reach.
+Use English/zh-CN instant-text settings; the remapped observation used U/J/K/L, Q/B for
+Up/Down/Left/Right, Confirm/Cancel. Both routes resize their own viewport to 2560×1440 and back.
+
+For `authored-church`, derive an ignored copy of the public `localization-pilot.json`, changing
+only `start.program` to `{"program":"practice-church","instruction":0}`, and pass it through
+`--authored-package`. This observes the actual quoted Raise payment and held-confirm guard.
+For `authored-search`, pass the existing public `battle-search.json`; its ordinary movement and
+facing must produce the real Search offer, explicit confirmation and Item result. Neither authored
+case invokes private admission. Outputs and supporting scripts stay worktree-local; a few serial
+native cases are sufficient and each is bounded to under 60 seconds.
+
+**Confirmed:** English/zh-CN production Church and Battle01 command consumers, keyboard, custom
+bindings, pad, complete row clicks, canceled relayout gestures, two window sizes, selected source
+frames and Reduced Flash. Church refusal/no-member, authored quote/decline/payment, Record host
+return, actual learned HEAL target/directional return, item parent return, Stay cancellation and
+authored Search substitution/result were observed. Provisional battle pages preserve resources
+and both RNG seeds. Adapter Release and Debug builds compile the affected production code.
+
+Compared with the four-scene preview, F3 now uses real services, ordered quotes and caller-to-Save
+return rather than staged sample results. F4 retains the production status card's class/level/terrain
+body and separate command/detail frames; the preview uses one more compact combined heading.
+Its actual learned spell/item rows replace staged offers. F1 and F2 remain under #1606 and are not
+certified by this slice. The broader battle composition still needs its own production review.
+
+Remaining demo UI scope: entry/reading migration belongs to #1606; target/range/inspection,
+auxiliary battle pages, close-ups and outcome/retreat-return composition to #1686; field/party/shop
+to #1687; host/settings/save composition to #1688. This command migration does not make the staged
+F1–F10 preview a production campaign acceptance. Wider name/stat combinations, special/area
+presentations and foreground human visual coordination remain **Unknown** outside the observations
+above. Some native processes reported existing ObjectDB exit leaks (4 or 6 instances); clean
+shutdown cause remains **Unknown**, even where the consumer checks passed.
