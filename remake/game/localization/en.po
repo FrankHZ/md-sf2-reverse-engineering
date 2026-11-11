@@ -1614,7 +1614,7 @@ msgid "host.help-text-3"
 msgstr "Walk east"
 
 msgid "host.help-text-4"
-msgstr "Directions also select menu rows or choices when those controls are open."
+msgstr "Field commands, item operations and shop services use Up/Down to select rows. Left/Right scroll their reading area and pack. Other choices keep their displayed directions."
 
 msgid "host.help-text-5"
 msgstr "Walk south"
@@ -1716,7 +1716,7 @@ msgid "host.help-text-37"
 msgstr "Menus"
 
 msgid "host.help-text-38"
-msgstr "Up/Down select rows; Confirm chooses; Cancel goes Back. In battle, Back unwinds provisional choices. In Party Status, directions browse, Target changes the pane, Up/Down scroll details, Confirm opens Prepare and Equipment also closes."
+msgstr "Up/Down select rows; Confirm chooses; Cancel goes Back. Field and shop pages use Left/Right to scroll reading. In Party Status, Left/Right browse members; Target changes the pane; Up/Down browse members or scroll the focused details. Confirm opens Prepare; Equipment also closes. Battle Back unwinds provisional choices."
 
 msgid "host.help-text-39"
 msgstr "Choose / change"

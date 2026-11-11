@@ -225,7 +225,10 @@ project, runtime directory and process ownership. Initialize only necessary chan
 Launch the ordinary host with the selected `SF2_PRIVATE_EXPLORATION_CONTENT`, existing private static/
 party selections and `--private-exploration-start <start-item.json or start-weapon.json>`, adding
 `--script remake/game/probes/engine_shop_observation.gd` before `--`. `SF2_SHOP_CASE=item|weapon`
-selects the input witness. English item and Chinese weapon consumers check actual stock, Buy, recipient,
+selects the input witness. The current right-hand list uses Up/Down; Back remains outside the stock scroll.
+`SF2_SHOP_ART=1` checks the real caller with current3× command/item art (declare
+`SF2_MENU_ASSETS_EXPECT=original` when selecting the complete publication), refusal, held input,
+stock scrolling, sale/purchase, pointer selection and Leave. English item and Chinese weapon consumers check actual stock, Buy, recipient,
 payment/grant, sale of the actual new slot, gold/removal, caller return and further movement. They read
 current controls and labels/glyph/layout/errors; they do not mutate gameplay, synthesize delivery or
 capture screenshots. Names retain the established original-name fallback note.

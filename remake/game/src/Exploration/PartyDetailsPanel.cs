@@ -26,6 +26,7 @@ internal sealed partial class PartyDetailsPanel : Panel
     private PartyMemberDetails? _member;
     private string? _inspectionActor;
     internal int FocusPane { get; set; }
+    internal bool FieldLayout { get; init; }
 
     public override void _Ready()
     {
@@ -37,7 +38,7 @@ internal sealed partial class PartyDetailsPanel : Panel
             var value = Text(title + "Value", 30); value.HorizontalAlignment = HorizontalAlignment.Right;
             _stats.Add((label, value)); AddChild(label); AddChild(value);
         }
-        _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _name.AutowrapMode = _class.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
@@ -101,10 +102,12 @@ internal sealed partial class PartyDetailsPanel : Panel
         {
             var label = Text("Entry" + labels.Count, 28);
             label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, 56);
+            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, FieldLayout ? 80 : 56);
             var row = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
             row.AddThemeConstantOverride("separation", 16);
-            var icon = new IdentityIcon(); row.AddChild(icon); row.AddChild(label);
+            var icon = new IdentityIcon(FieldLayout ? 3 : 4);
+            var iconCell = new Control { CustomMinimumSize = new(FieldLayout ? 48 : 64, FieldLayout ? 80 : 96), MouseFilter = MouseFilterEnum.Ignore };
+            iconCell.AddChild(icon); row.AddChild(iconCell); row.AddChild(label);
             column.AddChild(row); labels.Add((row, label, icon));
         }
         for (int i = 0; i < labels.Count; i++)
@@ -116,6 +119,30 @@ internal sealed partial class PartyDetailsPanel : Panel
     }
 
     internal void Arrange()
+    {
+        if (!FieldLayout) { ArrangeInspection(); return; }
+        float width = Size.X;
+        float attributes = 280, magic = (width - 96 - attributes) * 0.43f, items = width - 96 - attributes - magic;
+        float magicX = 48 + attributes, itemsX = magicX + magic + 24;
+        _name.Position = new(208, 24); _name.Size = new(width - 752, 0);
+        _class.Position = new(208, 48 + _name.GetMinimumSize().Y); _class.Size = new(width - 752, 0);
+        foreach (var (control, y) in new[] { ((Control)_hp, 40), (_mp, 120), (_unknownHp, 40), (_unknownMp, 120) })
+        { control.Position = new(width - 504, y); control.Size = new(480, 56); }
+        float top = Math.Max(268, _class.Position.Y + _class.GetMinimumSize().Y + 32);
+        for (int i = 0; i < _stats.Count; i++)
+        {
+            _stats[i].Title.Position = new(24, top + 52 * i); _stats[i].Title.Size = new(176, 48);
+            _stats[i].Value.Position = new(200, top + 52 * i); _stats[i].Value.Size = new(attributes - 176, 48);
+        }
+        _magicTitle.Position = new(magicX, top - 54); _magicTitle.Size = new(magic, 44);
+        _itemsTitle.Position = new(itemsX, top - 54); _itemsTitle.Size = new(items, 44);
+        _magic.Position = new(magicX, top); _magic.Size = new(magic, Math.Max(80, Size.Y - top - 24));
+        _items.Position = new(itemsX, top); _items.Size = new(items, Math.Max(80, Size.Y - top - 24));
+        _magicTitle.Modulate = FocusPane == 1 ? StoryTheme.Selected : Colors.White;
+        _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
+    }
+
+    private void ArrangeInspection()
     {
         float half = (Size.X - 72) / 2;
         _name.Position = new(24, 16); _name.Size = new(Size.X - 48, 76);

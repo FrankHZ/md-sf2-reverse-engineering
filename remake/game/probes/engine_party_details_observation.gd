@@ -27,7 +27,7 @@ func party_check() -> void:
     await inspect_party()
 
 func resources(s: Dictionary) -> Array:
-    return [s.revision,s.party,s.gold,s.get("mainSeed"),s.get("thinkingSeed"),s.flags]
+    return [s.party,s.gold,s.get("mainSeed"),s.get("thinkingSeed"),s.flags]
 
 func inspect_party() -> void:
     var before := record("before-open")
@@ -35,10 +35,12 @@ func inspect_party() -> void:
         var leader: Dictionary = before.party.filter(func(a): return a.Actor.Value == "leader")[0]
         if not check(leader.Hp == 40 and leader.Exp == 48 and before.gold == 84, "Actual changed return resources: HP10 to40, EXP0 to48, gold73 to84"): return
     key_event(KEY_E,true)
+    Input.flush_buffered_events()
     await frames(4)
     key_event(KEY_DOWN,true)
     await frames(3)
-    if not check(state().partyStatus.index == 0 and resources(state()) == resources(before), "Held opening input cannot navigate or move"): return
+    record("held-opening")
+    if not check(state().partyStatus.index == 0 and state().revision == before.revision and resources(state()) == resources(before), "Held opening input cannot navigate or move"): return
     key_event(KEY_DOWN,false); key_event(KEY_E,false)
     await frames(5)
     var s := record("opened")
@@ -63,9 +65,9 @@ func inspect_party() -> void:
     if not check(state().partyStatus.index == (int(selected)+1)%party.size(), "Mapped pad roster navigation"): return
     await tap(KEY_LEFT)
     for count in range(int(state().partyStatus.index)): await tap(KEY_LEFT)
-    # Original member-screen grouping is the default; the roster is only a compact selector.
+    # F5 keeps the member column visible while the selected detail pane owns focus.
     s = record("source-layout")
-    if not check(not s.partyStatus.selectorOpen, "No persistent roster replaces original summary"): return
+    if not check(s.partyStatus.selectorOpen, "Member navigation remains visible beside details"): return
     if not source_layout(s.partyStatus): return
     if case_name == "private" and not check_portrait(): return
     await tap(KEY_TAB)
@@ -79,7 +81,7 @@ func inspect_party() -> void:
     # Mouse selector opens only when requested; complete gestures select and close it.
     await click(state().partyStatus.selectorRect)
     s = state()
-    if not check(s.partyStatus.selectorOpen, "Compact member dropdown opens"): return
+    if not check(s.partyStatus.selectorOpen, "Member column remains visible after header focus"): return
     var target := 0 if int(s.partyStatus.index) != 0 else mini(1,party.size()-1)
     var rect: Dictionary = s.partyStatus.rows[target].rect
     await mouse_button(center(rect), false)
@@ -92,7 +94,7 @@ func inspect_party() -> void:
     await mouse_button(center(rect), false)
     if not check(state().partyStatus.index == s.partyStatus.index, "Drag-out release rejected"): return
     await click(rect)
-    if not check(state().partyStatus.index == target and not state().partyStatus.selectorOpen, "Mouse member selection closes dropdown"): return
+    if not check(state().partyStatus.index == target and state().partyStatus.selectorOpen, "Mouse selects the member without hiding its column"): return
     if case_name == "private" and not check_portrait(): return
     var selected_before = state().partyStatus.index
     await click(state().partyStatus.nextRect)
@@ -110,7 +112,7 @@ func inspect_party() -> void:
         s = state()
         if not check(s.partyStatus.index == 13 and s.partyStatus.rows[-1].rect.y >= s.partyStatus.rosterRect.y and s.partyStatus.rows[-1].rect.y < s.partyStatus.rosterRect.y+s.partyStatus.rosterRect.height, "Keyboard selected member remains visible"): return
         await click(s.partyStatus.rows[-1].rect)
-        if not check(not state().partyStatus.selectorOpen, "Selected last member closes dropdown"): return
+        if not check(state().partyStatus.selectorOpen, "Selected last member remains visible"): return
     # Paired list panes retain distinct scroll positions; wheel cannot move the other pane.
     s = state()
     var magic_scroll = s.partyStatus.layout.magic.scroll
@@ -118,6 +120,7 @@ func inspect_party() -> void:
     s = record("items-scroll")
     if not check(s.partyStatus.layout.magic.scroll == magic_scroll and (s.partyStatus.layout.items.height <= s.partyStatus.layout.items.rect.height or s.partyStatus.layout.items.scroll > 0), "Independent items scroll"): return
     if not source_layout(s.partyStatus): return
+    if not check(state().revision == before.revision,"Paused browsing publishes no command or time step"): return
     # Hide/show is the existing visibility/focus suspension seam; a held press cannot resume it.
     view.hide()
     await frames(2)
@@ -148,10 +151,10 @@ func source_layout(p: Dictionary) -> bool:
         if not check(stats[index].value == expected, "Aligned stat value reads live projection"): return false
     if not check(p.kills == ("Unavailable" if member.Kills == null else str(int(member.Kills))) and p.defeats == ("Unavailable" if member.Defeats == null else str(int(member.Defeats))), "Left summary reads carried kills/defeats"): return false
     if not check(stats.map(func(row): return row.label) == ["LEVEL","ATTACK","DEFENSE","AGILITY","EXP","MOVE"], "Source-aligned stat labels"): return false
-    if not check(stats[0].labelRect.y == stats[1].labelRect.y and l.hpRect.y == stats[2].labelRect.y and l.mpRect.y == stats[3].labelRect.y and stats[4].labelRect.y == stats[5].labelRect.y, "Four original stat pairs align"): return false
-    if not check(p.portraitRect.x < l.rect.x and p.portraitRect.y+p.portraitRect.height <= p.recordRect.y and p.recordRect.y+p.recordRect.height <= p.goldRect.y, "Portrait records and gold remain left"): return false
+    if not check(stats.all(func(row):return row.labelRect.x == stats[0].labelRect.x) and l.hpRect.x == l.mpRect.x and l.hpRect.y+l.hpRect.height <= l.mpRect.y, "Field attributes align separately from paired vitals"): return false
+    if not check(p.portraitRect.x >= l.rect.x and p.portraitRect.y+p.portraitRect.height < stats[0].labelRect.y and p.recordRect.y >= l.rect.y+l.rect.height and p.recordRect.y == p.goldRect.y, "Portrait remains in identity group; records/gold below sheet"): return false
     if not check(l.magic.rect.y == l.items.rect.y and l.magic.rect.x+l.magic.rect.width < l.items.rect.x and l.items.rect.x+l.items.rect.width <= l.rect.x+l.rect.width, "Magic and items are parallel columns"): return false
-    if not check(l.rect.y+l.rect.height <= 960 and l.magic.rect.y > stats[4].labelRect.y and l.items.rect.y+l.items.rect.height <=960, "Readable groups remain inside1080p frame"): return false
+    if not check(l.rect.y+l.rect.height <= 960 and l.magic.rect.y == stats[0].labelRect.y and l.items.rect.y+l.items.rect.height <=960, "Readable groups remain inside1080p frame"): return false
     for value in p.recordValues:
         if not check(value.minimumWidth <= value.rect.width and value.rect.x+value.rect.width <= p.recordRect.x+p.recordRect.width-24, "Measured accounting value fits summary border"): return false
     for row in stats:
@@ -161,7 +164,7 @@ func source_layout(p: Dictionary) -> bool:
 func check_portrait() -> bool:
     var p: Dictionary = state().partyStatus
     var portrait := view.find_child("MemberPortrait",true,false) as TextureRect
-    return check(p.portraitVisible and portrait != null and portrait.texture != null and portrait.texture.get_size() == Vector2(48,64) and p.portraitRect.width ==192 and p.portraitRect.height ==256, "Reliably bound complete portrait at4x")
+    return check(p.portraitVisible and portrait != null and portrait.texture != null and portrait.texture.get_size() == Vector2(48,64) and p.portraitRect.width ==144 and p.portraitRect.height ==192, "Reliably bound complete portrait at3x")
 
 func center(rect: Dictionary) -> Vector2:
     return Vector2(rect.x+rect.width/2,rect.y+rect.height/2)
