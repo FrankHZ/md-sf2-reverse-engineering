@@ -33,6 +33,8 @@ F7 and F8 reuse the right-hand command column with the original field, item-oper
 battlefield-option icons when available. F7 Give and confirmed Drop act on the same numbered
 slots as F5 and F6. Use and Equip show the limitations of these sample loadouts. F8 Map
 shows the staged board area and the three units. Arrow keys or the D-pad navigate the cursor.
+Moving the mouse over a board cell also selects it. Left-click a unit for vitals or empty
+ground for options. Hover and click a unit marker on Map to locate it on the board.
 From an empty cell choose Map, select Sarah and confirm to locate her, then confirm to inspect.
 F9 reads the illustrative reward, growth and return messages in order. Its example numbers
 do not modify the roster. Use Enter/A or click the reading frame.
@@ -44,6 +46,11 @@ Choose Save and quit at an eligible field, inspection or church location to try 
 receipt path. Launch with `-- --field` to start directly at the exploration commands.
 
 ### F4 action playback
+
+On the board, hover a legal target to move its cursor and update the status card. Left-click
+the unit to confirm or right-click to return to the offer. A click on an empty tile or an
+ineligible unit cannot commit the last selected target. Leaving the pressed tile cancels the
+gesture. The footer controls and directional selection use the same target state.
 
 - Choose **Attack → Gizmo → Confirm**. Sarah's window opens at upper right and Gizmo's at
   lower left. Her rod follows the attack frames; the impact changes Gizmo's HP from 12 to 8
@@ -148,6 +155,25 @@ private New Game and select the [complete world and battle scene pair](../../../
 The preview consumes the existing content readers and runtime textures. With no private selections
 it opens a schematic with text-only commands. Incomplete selections are marked in the toolbar.
 The composition uses a 1920×1080 canvas that scales to the preview window.
+
+### Single-cell cursor
+
+To prepare the original F4/F8 cursor, load the worktree's private input configuration and run
+`uv run python remake/game/probes/previews/prepare_cursor.py` from its repository root before
+launch. The script verifies the registered US ROM and writes one 32×32 transparent PNG to
+`local/design-preview/cell-cursor.png`. The private scene uses nearest-neighbor scaling. The
+schematic and older unprepared checkouts draw four plain corner marks.
+
+**Confirmed:** in the pinned US disassembly, `DmaCursorTiles` loads `cursortiles.bin` into
+VRAM at $D000. The radius-zero entry in `sprite_Cursor` selects tile 1664, one 4×4-tile
+sprite on palette 3. The ROM stream at 0x23658–0x23757 expands to 2048 bytes. The first
+sprite with the display's base palette at 0x309E has a transparent center and four open
+corners, with white outer pixels and pale peach inner pixels. HEAL levels 1 and 2 both have
+radius zero. Larger radii use different sprite arrangements. The preview centers the single
+sprite on its own tile grid.
+[Cursor loader and sprite table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm#L955-L1129)
+· [base palette](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/graphics/displayinit.asm#L36-L47)
+· [HEAL definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm#L26-L41).
 
 Dialogue, prices, parties and positions are staged examples for judging layout. Only local preview
 state changes when you answer, switch language, pay or select a target. The preview opens no game

@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.UI;
 
@@ -9,8 +10,9 @@ public partial class DesignPreview
     private enum InspectPage { Cursor, Options, Map, Unit, Speed }
     private InspectPage _inspection;
     private Vector2I _cursor = new(9, 4);
-    private static readonly Vector2I[] UnitCells = [new(9,5), new(11,5), new(10,3)];
+    internal static readonly Vector2I[] UnitCells = [new(9,5), new(11,5), new(10,3)];
     private int _mapFocus, _rate, _draftRate, _outcome, _reading;
+    private readonly MenuPointer _boardPointer = new();
 
     private string InspectName(int i) => i switch { 0 => Bowie.Name, 1 => Sarah.Name, _ => T("基兹莫", "Gizmo") };
     private string Rate(int i) => i switch { 1 => "1.5×", 2 => "2×", _ => "1×" };
@@ -25,6 +27,7 @@ public partial class DesignPreview
         if (_inspection is InspectPage.Cursor or InspectPage.Unit)
         {
             var card = Panel(new(_cursor.X >= 13 ? 48 : 1296, 238, 560, _inspection == InspectPage.Unit ? 324 : 186));
+            card.Name = "InspectionCard";
             Text(card, new(16, 10, 520, 56), unit < 0 ? T("空地", "Open ground") : InspectName(unit), 36);
             Text(card, new(16, 76, 528, 74), T($"古代之塔   ·   地块 ({_cursor.X-2}, {_cursor.Y})",
                 $"Ancient Tower   ·   Cell ({_cursor.X-2}, {_cursor.Y})"), 28);
@@ -32,7 +35,7 @@ public partial class DesignPreview
                 Vitals(card, new(18, 180), unit == 0 ? Bowie : unit == 1 ? Sarah : new(InspectName(2), _enemyHp, 24, 0, 0));
             if (_inspection == InspectPage.Cursor)
             {
-                Footer(T("方向键移动光标     Enter / A  调查地块", "Directions move cursor     Enter / A  Inspect cell"));
+                Footer(T("方向键或鼠标选择地块     Enter / A 或左键调查", "Directions or mouse select a cell     Enter / A or click to inspect"));
                 Utility(new(1530, 1003, 316, 48), unit < 0 ? T("战场选项", "Battlefield options") : T("查看单位", "Inspect unit"), AdvanceInspection);
             }
             else ReviewFooter(T("Enter / A  返回地块", "Enter / A  Return to cell"), BackInspection);
@@ -132,5 +135,46 @@ public partial class DesignPreview
         if (delta == Vector2I.Zero) return false;
         _cursor = (_cursor + delta).Clamp(new Vector2I(2, 1), new Vector2I(17, 9));
         Render(); return true;
+    }
+
+    private bool BoardPointerInput(InputEventMouse mouse)
+    {
+        bool targeting = _scene == 3 && _page == Page.Target;
+        bool inspecting = _scene == InspectScene && _inspection is InspectPage.Cursor or InspectPage.Map;
+        if (_showMembers || _journey != JourneyPage.Closed || !(targeting || inspecting))
+        {
+            if (mouse is InputEventMouseButton { Pressed: false }) _boardPointer.ReleaseIfNeutral();
+            return false;
+        }
+        bool overview = inspecting && _inspection == InspectPage.Map;
+        var origin = PreviewStage.BoardCell(Vector2I.Zero, overview);
+        Vector2 local = GetGlobalTransformWithCanvas().AffineInverse() * mouse.Position;
+        var cell = (Vector2I)((local - origin.Position) / origin.Size).Floor();
+        var rect = GetGlobalTransformWithCanvas() * PreviewStage.BoardCell(cell, overview);
+        int unit = Array.IndexOf(UnitCells, cell);
+        bool allowed = targeting ? unit >= 0 && (_targetParent == Page.Root ? unit == 2 : unit < 2) :
+            overview ? unit >= 0 : cell.X is >= 2 and <= 17 && cell.Y is >= 1 and <= 9;
+        // The inspection card moves away from the hovered cell. Other HUD regions own their input.
+        if (allowed && _surface.GetChildren().OfType<Control>().Any(control => control.Visible &&
+                control.Name != "InspectionCard" && control.GetRect().HasPoint(local))) allowed = false;
+
+        if (mouse is InputEventMouseMotion motion)
+        {
+            if (!allowed) _boardPointer.Cancel();
+            _boardPointer.Moved(motion);
+            if (motion.Relative == Vector2.Zero || !allowed) return false;
+        }
+        else if (mouse is not InputEventMouseButton { ButtonIndex: MouseButton.Left }) return false;
+
+        if (allowed && (mouse is InputEventMouseMotion || mouse is InputEventMouseButton { Pressed: true }))
+        {
+            if (targeting && _target != unit) { _target = unit; Render(); }
+            else if (overview && _focus != unit) { _focus = unit; Refresh(); }
+            else if (inspecting && !overview && _cursor != cell) { _cursor = cell; Render(); }
+        }
+        if (mouse is InputEventMouseButton button &&
+            _boardPointer.Read(button, allowed ? cell.ToString() : null, rect, _surface) is not null)
+            Activate();
+        return allowed;
     }
 }

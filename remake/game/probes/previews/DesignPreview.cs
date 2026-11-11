@@ -51,6 +51,8 @@ public partial class DesignPreview : Control
         if (OS.GetCmdlineUserArgs().Contains("--shop")) _scene = ShopScene;
         if (OS.GetCmdlineUserArgs().Contains("--field")) _scene = FieldScene;
         GetWindow().FocusExited += StopIconAnimation;
+        GetWindow().FocusExited += _boardPointer.Suspend;
+        GetWindow().FocusEntered += _boardPointer.ReleaseIfNeutral;
         GetWindow().FocusEntered += Refresh;
         GetWindow().FocusExited += () => _playSuspended = true;
         GetWindow().FocusEntered += () => _playSuspended = false;
@@ -144,6 +146,7 @@ public partial class DesignPreview : Control
     private void Render()
     {
         _readerPointer.Cancel();
+        _boardPointer.Cancel();
         if (_surface is not null) { RemoveChild(_surface); _surface.QueueFree(); }
         _surface = new Control { Name = "PreviewControls", Size = new(1920, 1080), MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_surface);
@@ -509,7 +512,7 @@ public partial class DesignPreview : Control
             }
             string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
                 T("药草", "Medical Herb") : $"{T("回复", "HEAL")}   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
-            TargetFooter(action + "   →   " + candidate.Name, !attack);
+            TargetFooter(action + "   →   " + candidate.Name + T("     左键点选目标", "     Click a target"), !attack);
         }
         else if (_page == Page.Stay)
         {
@@ -631,6 +634,7 @@ public partial class DesignPreview : Control
 
     public override void _Input(InputEvent input)
     {
+        if (input is InputEventKey { Pressed: true } or InputEventJoypadButton { Pressed: true }) _boardPointer.Cancel();
         if (input is InputEventKey { Pressed: true, Echo: false, Keycode: >= Key.F1 and <= Key.F10 } shortcut)
         { SelectTab((int)shortcut.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }
         if (_editor is not null)
@@ -639,6 +643,8 @@ public partial class DesignPreview : Control
             return;
         }
         if (_journey == JourneyPage.Closed && MemberInput(input)) { GetViewport().SetInputAsHandled(); return; }
+        if (input is InputEventMouse mouseEvent && BoardPointerInput(mouseEvent))
+        { GetViewport().SetInputAsHandled(); return; }
         if (ExtraDirection(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_dialogue is not null && input is InputEventMouseMotion motion) _readerPointer.Moved(motion);
         if (_dialogue is not null && input is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouse)

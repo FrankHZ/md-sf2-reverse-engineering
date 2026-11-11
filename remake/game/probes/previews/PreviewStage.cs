@@ -18,6 +18,7 @@ internal sealed partial class PreviewStage : Control
     internal BattleSceneDefinition? SceneArt { get; private set; }
     private int _scene, _target = -1;
     private Vector2I? _cursor;
+    private readonly Sprite2D _cellCursor = new() { Name = "OriginalCellCursor", Centered = false, Visible = false };
     private bool _overview, _facingSign;
     private int _allySprite = 2, _chesterSprite = 5, _opponentSprite = 103;
     internal bool HasWorld => _world?.Visuals is not null;
@@ -26,6 +27,7 @@ internal sealed partial class PreviewStage : Control
 
     internal void LoadSelection()
     {
+        AddChild(_cellCursor);
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
         static string Env(string key) => System.Environment.GetEnvironmentVariable(key) ?? "";
@@ -46,6 +48,13 @@ internal sealed partial class PreviewStage : Control
             _world = accepted.Definition.Exploration;
             var battle = accepted.Definition.ScenesFor("battle-1");
             SceneArt = battle;
+            string cursorFile = ProjectSettings.GlobalizePath("res://../../local/design-preview/cell-cursor.png");
+            if (battle is not null && File.Exists(cursorFile))
+            {
+                using var image = Image.LoadFromFile(cursorFile);
+                if (image?.GetSize() == new Vector2I(32, 32))
+                    _cellCursor.Texture = _textures["cell-cursor"] = ImageTexture.CreateFromImage(image);
+            }
             if (battle?.FieldDeath is { } art)
             {
                 _allySprite = art.AllySprites.GetValueOrDefault(1, _allySprite);
@@ -63,6 +72,7 @@ internal sealed partial class PreviewStage : Control
         _scene = scene;
         _target = target;
         _cursor = cursor; _overview = overview; _facingSign = facingSign;
+        _cellCursor.Visible = false;
         QueueRedraw();
     }
 
@@ -81,6 +91,34 @@ internal sealed partial class PreviewStage : Control
         if (raster is null) return null;
         using var image = ExplorationRasterImages.Open(raster);
         return _textures[state] = ImageTexture.CreateFromImage(image);
+    }
+
+    internal static Rect2 BoardCell(Vector2I cell, bool overview)
+    {
+        Vector2 origin = overview ? new(110, 186) : Vector2.Zero;
+        int side = overview ? 56 : 96;
+        return new(origin + (Vector2)cell * side, new Vector2(side, side));
+    }
+
+    private void DrawCellCursor(Vector2I cell)
+    {
+        var rect = BoardCell(cell, _overview);
+        if (_cellCursor.Texture is not null)
+        {
+            // 24 source pixels per board cell. Center the private sprite on the review grid.
+            float scale = _overview ? 2 : 4;
+            _cellCursor.Scale = Vector2.One * scale;
+            _cellCursor.Position = rect.GetCenter() - Vector2.One * (16 * scale);
+            _cellCursor.Show();
+            return;
+        }
+        foreach (var dir in new[] { new Vector2(1, 1), new(-1, 1), new(1, -1), new(-1, -1) })
+        {
+            var corner = rect.GetCenter() - rect.Size * dir / 2;
+            float arm = rect.Size.X / 4;
+            DrawPolyline([corner + new Vector2(dir.X * arm, 0), corner, corner + new Vector2(0, dir.Y * arm)],
+                Colors.White, _overview ? 2 : 4);
+        }
     }
 
     internal Texture2D BattleTexture(string resource)
@@ -142,7 +180,7 @@ internal sealed partial class PreviewStage : Control
         for (int y = 0; y < 12; y++)
             for (int x = 0; x < 20; x++)
             {
-                Rect2 cell = _overview ? new(110 + x * 56, 186 + y * 56, 56, 56) : new(x * 96, y * 96, 96, 96);
+                Rect2 cell = BoardCell(new(x, y), _overview);
                 if (battle && (x < 2 || x >= 18)) DrawRect(cell, new Color("111827"));
                 else if (layout is not null && visual is not null)
                     DrawTextureRect(_blocks.Block(visual, layout[x + origin.X, y + origin.Y] & 1023), cell, false);
@@ -150,22 +188,20 @@ internal sealed partial class PreviewStage : Control
             }
         if (_overview)
         {
-            foreach (var (cell, color) in new[] { (new Vector2(9,5), "91d1f3"), (new Vector2(11,5), "91d1f3"), (new Vector2(10,3), "ed987f") })
+            for (int i = 0; i < DesignPreview.UnitCells.Length; i++)
             {
-                Vector2 point = new Vector2(138, 214) + cell * 56;
-                DrawCircle(point, 16, Colors.Black); DrawCircle(point, 12, new Color(color));
-                if (_cursor == (Vector2I)cell) DrawRect(new(point - Vector2.One * 25, Vector2.One * 50), new Color("ffe19a"), false, 4);
+                Vector2 point = BoardCell(DesignPreview.UnitCells[i], true).GetCenter();
+                DrawCircle(point, 16, Colors.Black); DrawCircle(point, 12, new Color(i == 2 ? "ed987f" : "91d1f3"));
             }
+            if (_cursor is { } located) DrawCellCursor(located);
         }
         else if (battle)
         {
-            Character(0, new(864, 480), 1);
-            Character(_allySprite, new(1056, 480), 1);
-            Character(_opponentSprite, new(960, 288), 0);
-            if (_cursor is { } cursor) DrawRect(new(cursor * 96, new Vector2(96,96)), new Color("ffe19a"), false, 4);
-            if (_target >= 0)
-                DrawRect(new(_target switch { 0 => new Vector2(864, 480), 1 => new(1056, 480), _ => new(960, 288) }, new(96, 96)),
-                    new Color("ffe19a"), false, 4);
+            Character(0, BoardCell(DesignPreview.UnitCells[0], false).Position, 1);
+            Character(_allySprite, BoardCell(DesignPreview.UnitCells[1], false).Position, 1);
+            Character(_opponentSprite, BoardCell(DesignPreview.UnitCells[2], false).Position, 0);
+            if (_cursor is { } cursor) DrawCellCursor(cursor);
+            else if (_target >= 0) DrawCellCursor(DesignPreview.UnitCells[_target]);
         }
         else if (_scene == DesignPreview.FieldScene)
         {
