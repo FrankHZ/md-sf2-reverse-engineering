@@ -186,6 +186,26 @@ func field_case() -> bool:
     await act("cancel")
     return expect(not state().flags.has(question.choice.ResultFlag), "Mapped Cancel still answers No without a second confirmation")
 
+func reading_case() -> bool:
+    for action in ["down","right"]:
+        if not await wait_for(func(s):return s.canWaitAtInput,"source reading approach"): return false
+        await act(action)
+    var deadline := Time.get_ticks_msec()+20000
+    while Time.get_ticks_msec()<deadline:
+        var s := state()
+        if s.dialoguePanel.visible and s.totalCharacters > 10 and s.visibleCharacters >= 0 and s.visibleCharacters < s.totalCharacters:
+            samples.append({"label":"partial-reader","panel":s.dialoguePanel,"characters":s.visibleCharacters,"total":s.totalCharacters})
+            if not expect("Reveal" in s.dialoguePanel.hint or "显示全文" in s.dialoguePanel.hint, "Actual partial text advertises its Reveal step"): return false
+            var scroll: float = s.dialoguePanel.scroll
+            await pad()
+            if not expect(state().dialoguePanel.scroll == scroll and hints().compact.Confirm in state().dialoguePanel.hint, "Partial reader gets active pad Reveal cue without resetting reading"): return false
+            await act("confirm")
+            var after := state()
+            samples.append({"label":"real-reveal","before":s.dialoguePanel,"after":after.dialoguePanel,"hints":hints()})
+            return expect(after.token != s.token and (after.visibleCharacters < 0 or after.visibleCharacters >= after.totalCharacters), "Ordinary source reading preserves the accepted one-fresh-Confirm reveal/continue boundary")
+        await process_frame
+    return expect(false,"Source approach reaches a real partially revealed message")
+
 func recovery_case() -> bool:
     var before := state()
     if OS.get_environment("SF2_HINT_NO_MENU_PAD") == "1":
@@ -253,5 +273,6 @@ func run() -> void:
     samples.append({"label":"native-device-boundary","connected":Input.get_connected_joypads(),"hints":hints()})
     if hint_case == "entry": finish(await entry_case()); return
     if not expect(host.call("StartPreVoyageLocalizationObservation",OS.get_environment("SF2_COMPACT_START")) == "started","Registered full-world prelaunch input admits"): return
+    if hint_case == "reading": finish(await reading_case()); return
     if hint_case == "recovery": finish(await recovery_case()); return
     finish(await field_case() if hint_case in ["field","menu"] else await battle_case())

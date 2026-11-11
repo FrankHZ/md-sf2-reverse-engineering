@@ -534,6 +534,7 @@ internal static class GameText
         ["field.return.retreat.ready"] = 0,
         ["field.return.retreat.pending"] = 0,
         ["field.reveal"] = 1,
+        ["field.reveal-continue"] = 1,
         ["field.more"] = 1,
         ["field.controls"] = 2,
         ["save.error.entry-limit"] = 0,

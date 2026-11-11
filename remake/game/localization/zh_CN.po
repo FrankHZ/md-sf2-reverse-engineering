@@ -1842,3 +1842,6 @@ msgstr "按键 {0}"
 
 msgid "battle.pointer-target-help"
 msgstr "悬停：预览 · 点击合法目标：立即执行"
+
+msgid "field.reveal-continue"
+msgstr "{0}：显示全文并继续"

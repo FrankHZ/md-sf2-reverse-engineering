@@ -147,14 +147,18 @@ internal sealed partial class ExplorationDialogueView : Control
     }
     internal void RefreshHint(GameSession session, GameInput input, bool battleMounted, bool revealed)
     {
+        // Present may have just installed a new span after its caller sampled the old reader.
+        revealed = _dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount();
         var current = session.Current;
         bool atInput = current.Story.Wait is DialogueWait or FieldSearchWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
         string hint = current.Story.Wait switch
         {
             FieldSearchWait when revealed => GameText.Get("search.continue", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
-            ChoiceWait => GameText.Get("story.choice-help", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
-            DialogueWait or FieldTextWait or W1TextWait when !Panel.MoreBelow => GameText.Get("story.continue", input.CompactHint(GameAction.Confirm)),
-            _ when Panel.Visible && !revealed => GameText.Get("field.reveal", input.CompactHint(GameAction.Confirm)),
+            ChoiceWait when revealed && current.CanWaitForChoice => GameText.Get("story.choice-help", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
+            DialogueWait or FieldTextWait or W1TextWait when revealed && !Panel.MoreBelow => GameText.Get("story.continue", input.CompactHint(GameAction.Confirm)),
+            _ when Panel.Visible && !revealed => GameText.Get(
+                (current.Story.Wait is DialogueWait or FieldTextWait or W1TextWait) && !Panel.MoreBelow
+                    ? "field.reveal-continue" : "field.reveal", input.CompactHint(GameAction.Confirm)),
             _ when Panel.Visible && atInput => GameText.Get("story.continue", input.CompactHint(GameAction.Confirm)),
             _ when current.CanWaitAtInput => session.QueryExplorationInteraction() is not null
                 ? GameText.Get("field.talk", input.CompactHint(GameAction.Confirm))

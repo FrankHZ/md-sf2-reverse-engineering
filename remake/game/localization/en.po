@@ -1842,3 +1842,6 @@ msgstr "Button {0}"
 
 msgid "battle.pointer-target-help"
 msgstr "Hover: preview · Click a legal target: execute"
+
+msgid "field.reveal-continue"
+msgstr "{0}: Reveal / Continue"

@@ -720,7 +720,9 @@ and service consumers read the current hint in their existing frame presentation
 its ordinary owner, and name entry keeps its physical-keyboard editor and fixed Enter/Escape.
 
 At settled exploration show legal Talk or Search only; retain the visible gameplay Menu and its Member
-entrance. Dialogue shows Reveal, Read more, Continue or automatic progress as actually admitted;
+entrance. Dialogue shows Reveal, Read more, Continue or automatic progress as actually admitted. Ordinary
+short Dialogue/W1/field spans retain #1582's one-fresh-Confirm Reveal / Continue; choices and overflowing
+readers retain their separate reveal/read/answer boundaries;
 choices explicitly say Choose/No. Battle Movement shows Actions; command/target contexts retain the
 selected action/cost/range/reason and one current choose/execute/back cue. Equipment/Give/Drop stay
 visible where they have no equivalent action rows and Help is unavailable. The full battle catalogue
@@ -737,7 +739,7 @@ prose. Story/battle Menu does not make Settings/Help newly available. Screenshot
 
 The focused [production observer](../../game/probes/engine_active_hints_observation.gd) reuses existing
 native input/state/geometry helpers and registered prelaunch content. It has `SF2_HINT_CASE=entry`,
-`field` or `battle` (`menu` stops after field modal/Apply checks; `recovery` checks the real undersized-client/Cancel route); output uses a fresh ignored `SF2_VIEWPORT_OUTPUT`. Start with the
+`field` or `battle` (`menu` stops after field modal/Apply checks; `recovery` checks the real undersized-client/Cancel route; `reading` stops after the first real partial-text Reveal); output uses a fresh ignored `SF2_VIEWPORT_OUTPUT`. Start with the
 [ordinary environment](../development-and-verification.md#locked-net-workflow), build the Debug adapter
 and import changed localization resources once. Select both final world/battle-scene publications.
 Use an explicit fresh disposable external save root/namespace and its `sf2-preferences/input.json`,
