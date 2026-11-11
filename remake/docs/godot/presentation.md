@@ -653,140 +653,134 @@ ordinary New Game route for a settled field comparison, then active dialogue/Chu
 Do not change user saves or canonical inputs to construct these disposable cases. Exact local receipts,
 retained failed observations and CI/head identities belong to the Issue/PR handoff.
 
-## Minimal contextual hints proposal (#1544)
+## Minimal contextual hints (#1544)
 
-**Standard rigor; design only.** The selected user outcome is intuitive operation with minimal
-contextual instruction. This section recommends the concrete default for a later, explicitly selected
-screen group; production controls and their existing agreements remain implemented as documented.
-Acceptance here is a bounded source/document review and an implementable information hierarchy.
-No UI change, new tutorial/hint platform, device service, Help entrance or gameplay rule is selected.
-Main-story delivery under #1538 retains priority. The
-[local-services/overview proposal](modernization-design.md) supplies no implemented capability.
+**High rigor, bounded implementation under the shared UI agreement.** Both input families remain
+usable at all times. Ordinary entry/host, exploration/story and battle cues show one installed binding
+for the most recently effective keyboard/mouse or pad input. This replaces the earlier deferral of
+automatic switching. Gameplay admission, source timing, transactions, save formats and physical-keyboard
+naming remain with their existing owners. No new device service, glyph dependency, tutorial storage,
+binding-capture UI, click-to-walk or Help entrance is added.
 
-### Current consumers and evidence boundary
+### Ownership and acceptance
 
-**Confirmed — source structure at accepted `6020e968`:** the table names the actual hint consumers
-and installed English/Chinese catalog keys. It is reproducible by reading those symbols and the
-two [existing](../../game/localization/en.po) [catalogs](../../game/localization/zh_CN.po);
-it adds no Godot, original-game or human observation. **Inferred:** simultaneous shortcut lists and
-repeated action labels can obscure the next step. Whether the proposed reductions improve discovery
-or reading comfort remains **Unknown** under [#1456](#human-opening-review-boundary-1456).
+The shared semantic boundary is Godot input observation and disposable hint projection. Exact owned
+paths, relative to `remake/`, are:
 
-| Current consumer / source fact | Recommended default and finite exception |
-| --- | --- |
-| [ExplorationDialogueView.RefreshHint](../../game/src/Exploration/ExplorationDialogueView.cs): `field.controls` appends Hold Wait and Party to legal Talk/Search. | At settled field input show only `[Confirm]: Talk` / `交谈`, otherwise legal Search / `搜索`; omit an empty interaction cue. Keep the existing visible Menu entry. Wait and Party stay in Help; a first-use contextual cue may expose Party/Wait as described below. No click-to-walk or mouse Talk is implied. |
-| The same consumer and [BattleStoryView.Hint](../../game/src/Battles/BattleStoryView.cs) select reveal, read-more, continue, automatic progress and eligible intro-skip hints; `story.choice-help` lists direction/Confirm/Cancel/right click. | Show the current reading step only: Reveal / `显示全文`, Read more / `阅读下文`, then Continue / `继续`. Keep focused Yes/No rows and `[Confirm]: Choose · [Cancel]: No` / `选择 · 否`; directional instruction belongs in first-use Help. Cancel means No here, never a generic Back. Retain Skip battle intro only while the real entry service admits it; automatic progress offers no false Continue. |
-| [BattleCommandMenu.Refresh](../../game/src/Battles/BattleCommandMenu.cs): movement has its own hint; target-help is followed by confirm-help, repeating commit/back; the main diamond appends Equipment/Give/Drop shortcuts. | Movement: `[Confirm]: Actions` / `指令`, with the existing range/current actor. Main diamond/list: current selection plus one Choose/Back cue. Target: one action-specific Execute/Back cue, retaining selected actor, action, MP/item cost, range and disabled reason. Preserve a compact Equipment/Give/Drop access cue on the main diamond: these have no equivalent visible action rows and Help cannot open here. Do not hide their only discoverable entrance. |
-| [BattleSessionView](../../game/src/Battles/BattleSessionView.cs) builds a full `_battleHelp` string as well as the diamond hint; auxiliary Give/Drop/Equipment and unread text have their own instructions. | Remove the general action catalogue from ordinary battle chrome only when its necessary current-step information is retained in the active menu/message. Keep recipient/slot/commit distinctions and any current Read more, timed Hold Wait or refusal. AI/round progress needs no command list. Existing result/reward sequence remains intact. |
-| [ShopServiceView.Present/Build](../../game/src/Exploration/ShopServiceView.cs): `shop.hint` repeats Buy/unequipped/Party guidance through all phases; actual offer text already names item/member/price. | Stock/member/slot: one Choose/Back cue. Keep current gold, prices, seller/recipient and selected slot. Confirm: retain Buy/Sell terms and unequipped consequence there; result: actual paid/received outcome and Continue. Deals/Repair unavailability remains readable. This is the bounded controlled Galam consumer, not ordinary campaign shop access. |
-| [ChurchServiceView.Present](../../game/src/Exploration/ChurchServiceView.cs): navigation, transient refusal, selected Save explanation and localization notes share a growing footer. | Service menu: Choose/Leave; offer: Confirm treatment/Decline with member, effect, cost and gold; result: outcome/payment and Continue. Keep unavailable Promotion/curse-removal reasons and no-applicable-member/insufficient-gold feedback. Selected Record adventure keeps the common-slot, savepoint and return explanation from #1519; it is decision content, not dispensable navigation. |
-| [PartyStatusView.Present/Handle](../../game/src/Exploration/PartyStatusView.cs) combines Prepare, focus-pane navigation, scrolling, two Close bindings and pointer/wheel notes; [FieldActionView](../../game/src/Exploration/FieldActionView.cs) repeats row navigation. | Keep visible member/pane focus and `[Confirm]: Prepare · [Cancel]: Close` / `整备 · 关闭`. Retain `[Target]: Change pane` and, when its list overflows, focused Up/Down scroll guidance: pane switching has no equivalent visible button today. Prepare uses its actual selected action and Back, with resource/eligibility details beside the row. Extra Close aliases and wheel instructions move to Help. |
-| [SystemMenuView](../../game/src/Entry/SystemMenuView.cs), [SaveSlotView](../../game/src/Entry/SaveSlotView.cs), [SettingsView](../../game/src/UI/SettingsView.cs) already have labeled controls plus compact mapped footers. | Use one shared Choose/Back cue per modal, without repeating the selected button's caption in another instruction bar. Preserve every disabled reason, save destination/ambient reset, overwrite/backup/quit/replacement consequence, storage failure/recovery notice and Settings draft/Apply/read-only distinction. Keep the visible Control help row and existing Menu pad-unavailable explanation. |
+- `game/src/Input/GameInput.cs`, `GameInput.Hints.cs` and `MenuPointer.cs`;
+- `game/src/GameRoot.cs` and `game/src/Entry/SettingsHost.cs`;
+- `game/src/Entry/SessionEntryView.cs`, `SaveSlotView.cs` and `SystemMenuView.cs`;
+- `game/src/UI/SettingsView.cs`, `ControlsHelpView.cs` and `WindowRecoveryView.cs`;
+- `game/src/Exploration/ExplorationDialogueView.cs`;
+- `game/src/Battles/BattleCommandMenu.cs`, `BattleSessionView.cs`, `BattleInspectionView.cs`,
+  `BattleStoryView.cs` and `BattleSceneView.cs`;
+- `game/src/Localization/GameText.cs`, `game/localization/en.po` and `zh_CN.po`;
+- `game/probes/engine_active_hints_observation.gd`, this agreement, the hint entry in
+  [opening UI gaps](../evidence/opening-ui-gaps.md#minimal-contextual-hints-1544), and the affected
+  [scene-review findings](ui-scene-review.md#9-remaining-differences-in-play).
 
-### Recommended information hierarchy
+Domain/Application, private inputs, player saves and delivered demo checkouts are outside ownership.
+Existing Party/preparation, field/service lists and Church/Shop directly consume `CompactHint` from
+their regular presentations; no second binding table or focus authority is introduced there.
 
-Use the existing owning panel and its focused control as the default source of meaning. The normal
-context cue names the current legal action and adds Back/Decline or a non-obvious operation only when
-needed to proceed or recover. Keep one contextual action area in the active panel; hide underlying
-gameplay instructions beneath a modal. This is a placement/default rule, not a fixed line, character
-or action-count budget. Costs, consequences, unread text and recovery can require more space.
-
-Keep decision information beside the selected item, target or confirmation, above optional controls:
-what changes, who is affected, what is paid/lost and why an action is unavailable. A button caption
-may carry its binding directly, or a shared cue can explain Confirm/Back once; do not add both a
-second caption and a duplicate footer. Existing supported focus markers and textual unavailable
-reasons accompany color. Keep selected-but-disabled inspection where supported; System Menu skips
-disabled rows, so its reasons must remain visible without requiring focus or hover.
-
-Do not reduce these cases to a generic Confirm or hide them in Help:
-
-- Paid Shop/Church offers retain exact item/treatment, member, amount, currency and applicable
-  consequences, then explicit accept/decline. Opening or browsing never pays. Preserve each service's
-  actual default selection and transaction authority; this proposal does not change them.
-- Save/overwrite/backup recovery, New Game replacing a journey and unsaved Quit retain explicit
-  consequences and their existing Cancel-first confirmations. Drop and other irreversible actions
-  retain their actual selected item/target and explicit commit boundary. No new destructive shortcut.
-- Invalid movement retains an actionable correction such as “Choose an unoccupied tile in the
-  highlighted range” / “请选择高亮移动范围内未被占用的格子”. Failures retain the actual reason and
-  available recovery; uncertain save publication still says to check Continue before retrying.
-  A stopped scene retains its failure/code and existing exits, without inventing Retry or skip.
-
-Context changes replace the old cue; refusal feedback clears on its existing valid context/focus
-change, not an arbitrary timeout. Save/storage outcomes and unresolved failures remain until their
-own explicit return/recovery. Preserve text reveal → read remaining pages → acknowledge, gesture
-completion, focus recovery and fresh-input/release barriers across every modal/choice transition.
+Acceptance requires current English/Chinese entry, system/Settings/Help, field reading/choice and
+battle decision/target inputs; cached cues must refresh without submitting an action or changing
+selection, target, reading position or name focus. Verify installed remapping and actual swap Apply,
+unknown layout, no attached pad, another pad identity, disconnect, drift/micro-motion/echo and native
+focus recovery. Preserve full Help, costs, refusal/recovery reasons, explicit payment/overwrite/quit
+consequences and existing Cancel-first confirmation owners. Adapter build, actual input/state/geometry
+observations, direct scope/private checks, committed planner and actual scoped CI are the gates.
+Independent main-gate integration and #1456 human hardware acceptance remain separate.
 
 ### Mappings, first use and reading limits
 
-**Concrete default:** reuse `GameInput.CompactHint`: one installed effective keyboard name and one
-installed pad alternative, if present, for each retained action; full alternatives use `GameInput.Hint`
-in the [existing grouped Help](#grouped-controls-help-and-remapping-boundary). Thus an illustrative
-standard cue is `Enter/South: Talk` / `Enter/South：交谈`; after a swap or custom configuration it
-must name the effective Confirm, not a hard-coded Enter. Battle's current `KeyHint` selects only the
-first keyboard name; unifying that consumer is proposed work, not already delivered pad annotation.
-An absent implicit Menu pad binding must never produce a fictitious glyph.
+`GameInput` owns only the active hint family, pad identity/layout and fresh-edge bookkeeping. Fresh
+non-echo keyboard presses, real mouse presses/wheel or obvious relative movement (at least4px), pad
+button presses and axis deflections beyond0.5 select the family. Releases, action echoes, emulated
+mouse events, sub4px motion, drift, unchanged holds, connection alone and focus transitions do not.
+Axis neutral below0.35 rearms both hint and existing action edges; gameplay retains its0.5 admission,
+so one deflection cannot execute Menu twice through dead-zone chatter. Focus return
+seeds held pad controls and mouse position rather than making a device choice. Disconnecting the
+active pad falls back to keyboard/mouse; idle controllers do not become active. Another effective pad
+updates identity even while the family remains pad. Mouse hover in native entry/slot buttons and
+existing `MenuPointer` consumers uses the same intentional-motion minimum.
 
-Device switching does not change this default: the same small cue remains usable for keyboard/pad;
-do not append all aliases or an entire device's controls. Automatic last-device switching is deferred,
-as in #1452; no platform glyph detector or device preference is needed for this design. Use supported
-textual logical key names and pad positions/axis signs; branded controller icons and physical-layout
-aliases are unverified. Mouse users use visible labeled controls and complete clicks; the supported
-right-click return is described in Help. Keep Cancel=No explicit on choices. No mouse-only campaign
-or keyboard-free naming claim follows. Name entry keeps its keyboard-only editor, fixed Enter/Escape
-and seven-character restricted ASCII alphabet; Unicode/IME names remain deferred under the
-[localization owner](../application/localization-design.md).
+Use the installed binding dictionary after Confirm/Cancel swap. `CompactHint` chooses only the current
+family's first effective alternative; if an action has no pad alternative it explicitly says Keyboard
+plus its real key. `Hint` retains all alternatives in Help. The existing native
+[Godot Input API](https://docs.godotengine.org/en/stable/classes/class_input.html#class-input-method-get-joy-name)
+supplies known status and mapped controller name. Recognized Xbox360/Xbox/XInput, PS3/PS4/PS5 and
+Switch Pro names select their face/shoulder/menu labels. Ambiguous names use localized face-position,
+D-pad, shoulder and stick-direction words, never internal South/East enums or a guessed brand.
+Physical layout recognition and OS/Steam remapping remain bounded by what Godot exposes.
 
-For a selected first-use implementation, show one dismissible, context-local instruction when the
-non-obvious control first becomes usable: for example hold directions to walk, or `[Equipment]:
-Party` at settled field input. Keep it through the first successful relevant input or deliberate
-dismissal; do not cover a choice/transaction, consume the opener as confirmation, or time out essential
-reading. An ordinary per-view lifetime is sufficient; cross-session “seen” storage and a tutorial
-sequence are outside scope. Until tested for that screen, retain its necessary access cue rather than
-assuming a new player read Help earlier. Supplemental battle/Party cues above remain while their
-actions lack equivalent visible entrances; first-use dismissal must not erase those entrances.
+The host refreshes mounted entry, slots, Menu, Settings/Help and recovery cues directly on a hint
+change or Apply. Battle decision/auxiliary footer caches refresh directly without resolving input again; active field
+and service consumers read the current hint in their existing frame presentations. Settings Help retains its page/scroll, the draft keeps
+its ordinary owner, and name entry keeps its physical-keyboard editor and fixed Enter/Escape.
 
-Detailed movement/menu shortcuts, pointer gestures, full bindings and control semantics stay in #1452's
-scrollable Help with fixed Previous/Next/Back and keyboard/pad reading. The existing route is title/
-Witch → Settings → Control help, or settled field → Menu → Settings → Control help. Battle/story can
-open Menu, but Settings/Help is unavailable there; do not show “Help now” or remove a necessary
-current-step control on that assumption. Help is currently authored in English, including its fixed
-navigation text; a Chinese Settings label does not establish fully localized Help. A later screen
-slice must retain necessary Chinese contextual text until any needed Help translation is delivered.
-Closing Help preserves draft, origin focus and scroll and submits no gameplay command or Apply.
+At settled exploration show legal Talk or Search only; retain the visible gameplay Menu and its Member
+entrance. Dialogue shows Reveal, Read more, Continue or automatic progress as actually admitted. Ordinary
+short Dialogue/W1/field spans retain #1582's one-fresh-Confirm Reveal / Continue; choices and overflowing
+readers retain their separate reveal/read/answer boundaries;
+choices explicitly say Choose/No. Battle Movement shows Actions; command/target contexts retain the
+selected action/cost/range/reason and one current choose/execute/back cue. Equipment/Give/Drop stay
+visible where they have no equivalent action rows and Help is unavailable. The full battle catalogue
+no longer occupies ordinary chrome. Keyboard/mouse targeting additionally states that hover previews
+and a complete legal-target click executes immediately. Existing invalid-target, press/release and
+single-action rules are unchanged. No first-use persistence or automatic tutorial is introduced.
 
-Chinese labels, maximum admitted names, long bindings and current English fallback notices must be measured as
-shaped text in the actual allotted panel. Wrap and grow within the supported bounds; use the existing
-scroll/reading-page mechanism for overflow, with reachable controls and keyboard/pad reading before
-commit. Never ellipsize a price, target, overwrite warning or disabled reason to meet a hint quota,
-or shrink below the owning theme's readable sizes. Preserve visible current-consumer fallback notices;
-moving repeated name-policy boilerplate requires an equally discoverable existing location and the
-localization owner's agreement. This proposal does not silently waive those localization contracts.
-Gameplay follows the current minimum 1920×1080 client; existing scaled entry/Settings/Help 720p
-observations do not admit 720p gameplay. Arbitrary font scaling, screen-reader support, all physical
-controllers/layouts/DPI and human Chinese reading comfort remain **Unknown**. Existing text speed,
-instant text, reduced flash and Confirm/Cancel swap retain their supported scope.
+Long text wraps and uses the owning reader/scroll mechanism, with existing30px body/24px hints and
+1920×1080 gameplay minimum. The cue may grow to retain a necessary reason or consequence. Help remains
+available through existing title/Witch or settled-field Settings, with full localized English/Chinese
+prose. Story/battle Menu does not make Settings/Help newly available. Screenshots are prohibited.
 
 ### Finite implementation and acceptance boundary
 
-After main-story priority, recommend one pilot: settled exploration Talk/Search → one dialogue
-reveal/read-more/choice → safe field return. Check discovery and recovery before selecting battle
-movement/diamond/target, then service/Party and Save/Settings groups. This order is a recommendation,
-not a dispatched implementation queue. No whole-interface redesign or new runtime authority follows.
+The focused [production observer](../../game/probes/engine_active_hints_observation.gd) reuses existing
+native input/state/geometry helpers and registered prelaunch content. It has `SF2_HINT_CASE=entry`,
+`field` or `battle` (`menu` stops after field modal/Apply checks; `recovery` checks the real undersized-client/Cancel route; `reading` stops after the first real partial-text Reveal); output uses a fresh ignored `SF2_VIEWPORT_OUTPUT`. Start with the
+[ordinary environment](../development-and-verification.md#locked-net-workflow), build the Debug adapter
+and import changed localization resources once. Select both final world/battle-scene publications.
+Use an explicit fresh disposable external save root/namespace and its `sf2-preferences/input.json`,
+never a player namespace. No game save is published by the observer. For remapped cases set real
+version1 preferences before startup (for example Confirm=Q/left face and Attack=F/lower face);
+field's actual Settings Apply then swaps Confirm/Cancel.
 
-Each later selected group must read actual input/state/projection/errors through its normal caller:
-standard and swapped/custom bindings, pad alternative/missing Menu pad, deliberate pointer input,
-held/focus/modal return, current English/Chinese and long text, unavailable actions and one relevant
-failure. Paid/overwrite cases retain preview, decline, explicit commit and resource/file preservation
-at the existing boundary. Verify that a first-use cue can be read/dismissed and that no necessary
-operation disappears while Help is inaccessible. Reuse the affected existing observation owners;
-no screenshot, new comparison framework or tests of verification tools. Human #1456 review must still
-answer whether a new player finds the action, understands No/Back/commit and can read long Chinese
-without a manual. Source review and green CI cannot answer those questions.
+```powershell
+$env:SF2_HINT_CASE = 'entry' # field / battle select the corresponding controlled start below
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+$env:SF2_COMPACT_START = $controlledStart
+& $env:GODOT_BIN --path remake/game --audio-driver Dummy --max-fps 120 `
+  --resolution 1920x1080 --script res://probes/engine_active_hints_observation.gd
+```
 
-This design's checks are source/caller/catalog correspondence, Markdown targets/anchors/tables,
-scope/private boundary, `git diff --check`, clean committed
-`uv run sf2 verify plan --base origin/main --head HEAD` and actual scoped CI. SDK, Godot, H3,
-aggregate tests and new runtime/experience evidence are outside this documentation-only acceptance.
+`entry` drives real title/Witch → New Game → empty disposable slot → keyboard name → Back. It checks
+noise/echo, another pad ID, a native focus-window round trip and disconnect-signal routing. `field`
+uses the existing prelaunch input: Map3/entity-0 at(42,9), facing3/speed32, flags0/32/256/260/261/601/602;
+ordinary Down/Right reaches the source531 question after its actual preceding scene. `battle` uses the
+existing initialized controlled Battle01 input and runs keyboard Actions → pad Attack → mouse target
+preview/full click. Controlled placement is not natural campaign-reach evidence.
+
+Budget one native process at a time,55s per launch (the existing observer has a50s deadline), under2MiB
+of new reports/logs per case, and no media copies or per-frame dumps. Field's source scene needs about
+46s, whereas entry/battle checks are a few seconds. Preserve failed pilots and rerun the affected case
+only. An initially shorter source deadline showed ordinary scene progress, not a gameplay deadlock.
+The local launch records and complete failures remain in the independent ignored `local/issue1544`
+namespace; only the reusable observer and reproduction contract are tracked.
+
+**Confirmed — bounded remake observations:** actual English/Chinese Witch/slots/name, ordinary
+Settings swap Apply and Help reading, source531 Cancel=No, private Battle01 keyboard→pad→mouse,
+axis Menu chatter, missing implicit Menu pad and native recovery/quit Cancel pass. Pure hint refresh
+retains their observed choices/readers/resources. Keyboard and pad remapping use the real installed
+InputMap; both families remain operable after the label changes.
+
+**Unknown:** physical hardware/glyph recognition, two actual connected controller replacement,
+OS/DPI/Steam combinations, human reading/discovery and aesthetic approval remain with #1456. Injected
+native pad events and disconnect signals establish software routing, not hotplug hardware acceptance.
+Existing ObjectDB-at-exit warnings remain separately attributed; a successful cue observation does not
+resolve their ownership. Paid-service, storage-error and full-campaign gates retain their earlier
+owners; this input-display change does not repeat or widen those claims.
 
 ## Grouped controls help and remapping boundary
 
@@ -870,7 +864,8 @@ name editing keeps its explicit LineEdit keyboard contract outside this action i
 - Confirm/Cancel swap is a view of the configured base pair: label base and effective bindings, store
   the existing `confirmCancel` value once and apply the swap once in `Prepare`. Conflict reporting
   uses base identities; installed help/menus always use effective ones. Use existing logical Godot Keycode names and pad positions; do not infer physical keyboard layout
-  aliases or platform-specific glyphs. No automatic device/layout service.
+  aliases. Active device labels follow the implemented [hint boundary](#mappings-first-use-and-reading-limits);
+  no separate device/layout service is introduced.
 - Validate the complete candidate with `GameInput.Prepare` before installation or writing. Reuse
   `SettingsStore.Write` atomic publication/error/conflict path, then `GameInput.Apply`; failures leave
   the previous runtime/file intact. Ordinary preferences persist and explicit launch overrides stay
@@ -2464,7 +2459,7 @@ retained draft/Back semantics. The controller alphabet grid and its key-theme va
 The existing entry editor-focus style and mouse Back/Use name buttons remain.
 
 One compact contextual line shows the primary keyboard binding and one mapped pad alternative for
-the currently available actions (for example `Enter/South: Choose • Escape/East: Back`);
+the currently available actions (for example `Enter: Choose • Escape: Back`, or the active pad labels);
 full alternatives remain in existing binding help/tooltips. It
 reads the installed mapping after Confirm/Cancel swap. No device detection or duplicated key table.
 Errors retain their diagnostic and safe retry/back actions; long slot labels wrap within the window.

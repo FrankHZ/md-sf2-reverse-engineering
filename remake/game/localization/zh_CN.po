@@ -831,7 +831,7 @@ msgid "battle.stay-here"
 msgstr "在此待机？"
 
 msgid "battle.move-help"
-msgstr "{0}：移动\n{1}：指令"
+msgstr "{0}：指令"
 
 msgid "battle.target-help"
 msgstr "{0}：下个目标\n{1}：执行 · {2}：返回"
@@ -1034,7 +1034,7 @@ msgstr "{0}：继续 >"
 
 #. Story controls/typed battle return only; source dialogue remains unchanged.
 msgid "story.choice-help"
-msgstr "{0} / {1}：选择    {2}：确认    {3} / 鼠标右键：否"
+msgstr "{0}：选择 · {1}：否"
 
 #. Story controls/typed battle return only; source dialogue remains unchanged.
 msgid "story.in-progress"
@@ -1801,3 +1801,47 @@ msgstr "当前屏幕无法提供游戏要求的最小尺寸，请切换屏幕或
 
 msgid "host.window-refused-fullscreen"
 msgstr "全屏仍未达到游戏要求的最小尺寸，冒险继续暂停。"
+
+# Active input labels; no device preference or binding-format change.
+
+msgid "input.keyboard-only"
+msgstr "键盘 {0}"
+
+msgid "input.face"
+msgstr "面键"
+
+msgid "input.dpad"
+msgstr "十字键"
+
+msgid "input.left-stick"
+msgstr "左摇杆"
+
+msgid "input.right-stick"
+msgstr "右摇杆"
+
+msgid "input.left-stick-click"
+msgstr "按下左摇杆"
+
+msgid "input.right-stick-click"
+msgstr "按下右摇杆"
+
+msgid "input.left-shoulder"
+msgstr "左肩键"
+
+msgid "input.right-shoulder"
+msgstr "右肩键"
+
+msgid "input.menu-button"
+msgstr "菜单键"
+
+msgid "input.view-button"
+msgstr "视图键"
+
+msgid "input.button"
+msgstr "按键 {0}"
+
+msgid "battle.pointer-target-help"
+msgstr "悬停：预览 · 点击合法目标：立即执行"
+
+msgid "field.reveal-continue"
+msgstr "{0}：显示全文并继续"

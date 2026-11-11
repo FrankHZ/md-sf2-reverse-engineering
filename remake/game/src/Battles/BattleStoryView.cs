@@ -41,7 +41,7 @@ internal sealed partial class BattleStoryView : Control
     {
         string hint = _wait is DialogueWait
             ? GameText.Get(Revealed ? _panel.MoreBelow ? "field.more" : "story.continue" : "field.reveal",
-                _input.Hint(GameAction.Confirm)) : GameText.Get("story.in-progress");
+                _input.CompactHint(GameAction.Confirm)) : GameText.Get("story.in-progress");
         if (_wait is DialogueWait && _text.IsVisibleInTree() && GameText.Language == "zh-CN")
             hint += "\n" + GameText.Get("localization.fallback", "unmigrated-consumer");
         _panel.SetHint(hint);

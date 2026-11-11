@@ -653,11 +653,11 @@ internal sealed partial class BattleSceneView : Control
             ? "field.reveal" : _messagePanel.MoreBelow ? "field.more"
             : state.Healing is { LogicalComplete: false, AtTimedInput: false }
             ? "battle.scene.in-progress" : "story.continue";
-        string hint = key == "battle.scene.in-progress" ? GameText.Get(key) : GameText.Get(key, _input.Hint(GameAction.Confirm));
+        string hint = key == "battle.scene.in-progress" ? GameText.Get(key) : GameText.Get(key, _input.CompactHint(GameAction.Confirm));
         var fallbacks = new List<string> { _messageFallback, GameText.Fallback(key, true, exact: true) };
         if (state.Healing is { AtTimedInput: true })
         {
-            hint += "    " + GameText.Get("battle.scene.wait", _input.Hint(GameAction.Wait));
+            hint += "    " + GameText.Get("battle.scene.wait", _input.CompactHint(GameAction.Wait));
             fallbacks.Add(GameText.Fallback("battle.scene.wait", true, exact: true));
         }
         // Only the current visible body/hint contributes a fallback notice.

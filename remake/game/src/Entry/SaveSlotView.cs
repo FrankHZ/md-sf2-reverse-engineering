@@ -71,6 +71,14 @@ internal sealed partial class SaveSlotView : Control
         }
     }
 
+    internal void RefreshInputHints()
+    {
+        foreach (var button in _buttons)
+            button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
+        _hint.Text = Input is null ? "" : GameText.Get("entry.choose-hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
+        if (Input is not null) _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
+    }
+
     internal void ShowDetail(string detail) { _detail.Text = detail; _detail.Show(); }
 
     internal void ShowLoading(string message, Action? back)
@@ -92,8 +100,7 @@ internal sealed partial class SaveSlotView : Control
             "recover-backup" => GameText.Get("slot.title.recover"), _ => GameText.Get("slot.title.default") };
         _message.AddThemeColorOverride("font_color", state.Contains("error") || state.Contains("uncertain")
             ? new Color("ffc4ad") : Colors.White);
-        _hint.Text = Input is null ? "" : GameText.Get("entry.choose-hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
-        if (Input is not null) _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
+        RefreshInputHints();
         foreach (var button in _buttons) { _column.RemoveChild(button); button.QueueFree(); }
         _buttons.Clear(); _actions.Clear(); _selected = 0;
         foreach (var (label, action) in choices)
@@ -101,8 +108,9 @@ internal sealed partial class SaveSlotView : Control
             int index = _buttons.Count;
             var button = new Button { Text = label, AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 76), FocusMode = FocusModeEnum.None };
             button.Pressed += () => { if (_loading) { _loadingBack?.Invoke(); return; } Select(index); action(); };
-            button.MouseEntered += () => Select(index);
-            button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.Hint(GameAction.Confirm), Input.Hint(GameAction.Cancel));
+            button.GuiInput += input => { if (Input?.KeyboardMouseHints == true &&
+                input is InputEventMouseMotion { Device: >= 0 } motion && motion.Relative.Length() >= 4) Select(index); };
+            button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
             _column.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button); _actions.Add(action);
         }
         _column.MoveChild(_detail, _column.GetChildCount() - 1);

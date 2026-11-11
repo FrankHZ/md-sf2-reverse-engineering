@@ -23,7 +23,7 @@ internal sealed class MenuPointer
     }
     internal bool Moved(InputEventMouseMotion motion)
     {
-        bool moved = motion.Relative != Vector2.Zero && _position != motion.Position;
+        bool moved = motion.Relative.Length() >= 4 && _position != motion.Position;
         _position = motion.Position;
         // Leaving the original control permanently cancels this gesture, even on re-entry.
         if (_press is { } press && !press.Rect.HasPoint(motion.Position)) Cancel();

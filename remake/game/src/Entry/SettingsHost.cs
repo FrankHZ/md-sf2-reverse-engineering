@@ -15,7 +15,7 @@ public sealed partial class GameRoot
     private bool _battleSettings;
 
     public string ReadSettingsHostObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
-    { applied = _input?.Settings, acceleration = _input?.ObserveAccelerationState(), releaseBarrier = _releaseBarrier, remapRelease = _settingsRelease?.AsText(),
+    { applied = _input?.Settings, hints = _input?.ObserveHints(), acceleration = _input?.ObserveAccelerationState(), releaseBarrier = _releaseBarrier, remapRelease = _settingsRelease?.AsText(),
         remapDevice = _settingsRelease?.Device, held = _input?.GameplayHeld, localization = GameText.Observe() });
 
     private void HandleSettingsAction(GameAction action, InputEvent input)
@@ -44,6 +44,7 @@ public sealed partial class GameRoot
 
     private void SettingsFocusLost()
     {
+        _input?.HintFocus(false);
         _input?.AllowAcceleration(false);
         _systemMenu?.SuspendPointer();
         if (_settings is null && _settingsRelease is null) return;
@@ -86,6 +87,19 @@ public sealed partial class GameRoot
         GameText.Initialize(settings.Language);
         if (GameText.StartupError is { } languageError) _settingsNotice = languageError + (_settingsNotice is null ? "" : "\n" + _settingsNotice);
         _input = new GameInput(settings);
+        _input.HintFocus(GetWindow().HasFocus(), GetViewport().GetMousePosition());
+        _input.HintsChanged += RefreshInputHints;
+    }
+
+    private void RefreshInputHints()
+    {
+        _entry?.RefreshInputHints(); _slots?.RefreshInputHints();
+        _systemMenu?.RefreshInputHints(); _settings?.RefreshInputHints();
+        _windowRecovery?.RefreshInputHints(); _windowQuit?.RefreshInputHints();
+        if (_menuButton is not null)
+            _menuButton.TooltipText = _input!.CompactHint(GameAction.Menu) +
+                (_input.MenuPadAvailable ? "" : "\n" + GameText.Get("system.no-pad"));
+        _battle?.RefreshInputHints();
     }
 
     private bool CanOpenSettings => _input is not null && _settings is null && _slots is null && _nameEntry is null &&
@@ -125,7 +139,7 @@ public sealed partial class GameRoot
         string? error = _preferences.Write(candidate, reset);
         if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");
         _settingsRelease = _settingsActivation;
-        _input!.Apply(candidate, prepared); GameText.Publish(display); _settingsNotice = null;
+        _input!.Apply(candidate, prepared); GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;
         _entry?.ConfigureHints(_input);
         RefreshSystemMenuLabels();
         return null;

@@ -76,7 +76,8 @@ public sealed partial class SessionEntryView : Control
             var button = new Button { Name = names[index], Text = index == names.Length - 1 ? GameText.Get(keys[index], "") : GameText.Get(keys[index]),
                 AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 76), FocusMode = FocusModeEnum.None, Visible = false };
             button.Pressed += () => Activate(selected);
-            button.MouseEntered += () => { if (_page == -2) Select(selected); };
+            button.GuiInput += input => { if (_page == -2 && _input?.KeyboardMouseHints == true &&
+                input is InputEventMouseMotion { Device: >= 0 } motion && motion.Relative.Length() >= 4) Select(selected); };
             actions.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button);
         }
         if (_assetError is not null)
@@ -90,23 +91,27 @@ public sealed partial class SessionEntryView : Control
 
     internal void ConfigureHints(GameInput input)
     {
-        _input = input; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
+        _input = input; RefreshInputHints();
+    }
+    internal void RefreshInputHints()
+    {
+        if (_input is not { } input) return; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
         _settingsAccess.Text = GameText.Get("ui.settings.entry", input.CompactHint(GameAction.Cancel));
         for (int i = 0; i < _buttons.Count - 1; i++)
             _buttons[i].Text = GameText.Get(i == 0 ? "entry.new" : Replacement ? "entry.cancel" : i == 1 ? "entry.continue" : "entry.quit");
         if (_buttons.Count > 0) _buttons[^1].Text = GameText.Get("ui.settings.entry", input.CompactHint(GameAction.Cancel));
         _settingsAccess.AddThemeFontSizeOverride("font_size", 24);
         _start.Text = GameText.Get("entry.start", input.CompactHint(GameAction.Confirm));
-        _start.TooltipText = input.Hint(GameAction.Confirm) + " / " + input.Hint(GameAction.Equipment);
+        _start.TooltipText = input.CompactHint(GameAction.Confirm) + " / " + input.CompactHint(GameAction.Equipment);
         foreach (var button in _buttons)
-            button.TooltipText = GameText.Get("entry.choose-tooltip", input.Hint(GameAction.Confirm), input.Hint(GameAction.Cancel));
+            button.TooltipText = GameText.Get("entry.choose-tooltip", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         if (_page == -2)
         {
             _entryDisplay = Replacement || _assetError is not null || _failure is not null ? null : _assets?.Dialogue(221);
             string text = _failure is not null ? FailureText() : _assetError is not null ? GameText.Get("entry.assets") :
                 Replacement ? GameText.Get("entry.replacement") : _entryDisplay?.Text ?? GameText.Get("entry.unavailable");
             if (_dialogue.Body.Text != text) { _dialogue.ResetReading(); _dialogue.Body.Text = text; }
-            _dialogue.Body.VisibleCharacters = -1;
+            if (Revealed) _dialogue.Body.VisibleCharacters = -1;
         }
         RefreshHint();
     }

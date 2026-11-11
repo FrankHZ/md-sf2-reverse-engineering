@@ -387,11 +387,12 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   with that script, `SF2_VITALS_CASE`, a fresh `SF2_VIEWPORT_OUTPUT`, matching input settings and
   `SF2_COMPACT_START` for private/field starts. [English](../../game/localization/en.po) ·
   [Chinese](../../game/localization/zh_CN.po) · [BoardTarget](../../game/src/Battles/BattleCommandMenu.cs)
-- **Pad discoverability.** At Battle01 Movement or the root command list, the footer shows the
-  first mapped keyboard key, including for the auxiliary actions. Pad actions work, but a player
-  looking for the corresponding pad button must consult Help before battle. The existing hint
-  proposal covers using the compact keyboard/pad binding where it fits. [Battle footer](../../game/src/Battles/BattleCommandMenu.cs) ·
-  [Mapped hints and deferred scope](presentation.md#mappings-first-use-and-reading-limits)
+- **Active input hints (#1544).** Movement, command/target and auxiliary cues now use the most
+  recently effective keyboard/mouse or pad binding. Pure cue refresh preserves the live command,
+  target and reader; full Help retains alternatives. Unknown layouts use localized positions;
+  physical controller recognition and human discovery remain with #1456.
+  [Battle footer](../../game/src/Battles/BattleCommandMenu.cs) ·
+  [Mappings and acceptance](presentation.md#mappings-first-use-and-reading-limits)
 - **Movement input.** The F4 example accepts a click on a cyan cell. In real Movement, use mapped
   directions, then Confirm. Mouse input is supported on command rows, eligible targets and the
   free-inspection board. Click-to-walk was outside the accepted movement scope. It would require
@@ -428,7 +429,7 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   choice or battle result. Optional destination guidance, shorter hints and predicted turn order
   retain their separate design scope. [Human review](../verification/host.md#later-physical-focus-human-checklist-1456) ·
   [Optional guidance](modernization-design.md#optional-objective-and-destination-guidance-1578) ·
-  [Hint proposal](presentation.md#minimal-contextual-hints-proposal-1544)
+  [Context hints](presentation.md#minimal-contextual-hints-1544)
 
 ## 10. Production Church and battle command lists
 
