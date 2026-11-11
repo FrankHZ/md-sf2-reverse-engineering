@@ -295,7 +295,10 @@ one row. Use a vertical alternative if the supported languages cannot fit or tar
 During free inspection, pointer hover and directional focus reveal the same short status.
 Put the unit name and its land-effect percentage on the first line, with the percentage at
 the trailing edge. The next row gives HP and MP equal space for values and gauges. The
-location sits below them. Empty ground shows the location alone. Confirm on a unit opens
+location sits below them. On an empty cell, keep the percentage in the same position and
+label it “Ground effect” for a regular ground unit. Show “Ground impassable” on cells it
+cannot enter, or a dash when terrain data is unavailable. Keep the coordinates below.
+Confirm on empty ground opens battlefield options. Confirm on a unit opens
 its read-only detail sheet. Back restores the inspected cell.
 
 For mouse camera control, use the exposed board edge during free inspection. On the 1080p
