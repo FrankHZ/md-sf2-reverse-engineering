@@ -61,16 +61,19 @@ internal sealed partial class PartyStatusView : Control
 
     public override void _ExitTree() { _portrait.Texture = null; _portraitTexture?.Dispose(); _icons.Dispose(); _iconSource = null; }
     private string _entry = "actions";
+    internal void PrepareGraphics(GameSession session)
+    {
+        if (ReferenceEquals(_iconSource, session.Definition)) return;
+        var visuals = session.Definition.Exploration?.Visuals;
+        _icons.Configure(visuals?.IdentityIcons, visuals?.HdIdentityIcons);
+        _iconSource = session.Definition; _assetFailure = null;
+    }
     internal void Begin(GameSession session, GameInput input, string entry = "actions")
     {
         _entry = entry;
-        if (!ReferenceEquals(_iconSource, session.Definition))
-        {
-            _iconSource = session.Definition; _assetFailure = null;
-            try { _icons.Configure(session.Definition.Exploration?.Visuals?.IdentityIcons); }
-            catch (InvalidOperationException error)
-            { _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Member identity icon decoding failed."); }
-        }
+        try { PrepareGraphics(session); }
+        catch (InvalidOperationException error)
+        { _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Member identity icon decoding failed."); }
         _details.ConfigureIcons(_icons, session.Definition);
         _session = session; _input = input; _index = 0; _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0;
         _requiresRelease = true; _pointer.Suspend(); _roster.ScrollVertical = 0; _details.ResetReading();
@@ -80,6 +83,7 @@ internal sealed partial class PartyStatusView : Control
 
     internal void Present(GameSession session, GameInput input)
     {
+        _icons.Mode = input.Settings.GraphicsMode;
         if (!Open) return;
         _memberLayer.Visible = !_actions.Open;
         if (_actions.Open) { _actions.Present(); return; }

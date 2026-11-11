@@ -134,12 +134,12 @@ func settings_flow() -> void:
     var initial := settings()
     var read_only: bool = initial.readOnly
     if read_only:
-        for i in range(7): check((find("Setting" + str(i)) as Button).disabled, "override prevents edit/apply " + str(i))
+        for i in range(8): check((find("Setting" + str(i)) as Button).disabled, "override prevents edit/apply " + str(i))
     if not read_only:
         await key(KEY_ENTER)
         check(settings().draft != initial.draft, "setting edit remains a draft")
     # Help is a child, with the same draft and focus on Back.
-    var help_button := find("Setting8") as Control
+    var help_button := find("Setting9") as Control
     await mouse(help_button, true); await mouse(help_button, false)
     check(settings().help, "pointer enters full controls help")
     geometry("HelpWindow")
@@ -153,10 +153,10 @@ func settings_flow() -> void:
             check(not "host.help" in page.body and (not settings().locale == "zh-CN" or "操作帮助" in page.title), "help uses selected catalog " + str(i))
             await key(KEY_DOWN); await key(KEY_RIGHT)
         await key(KEY_ESCAPE)
-    check(not settings().help and settings().selected == 8, "help Back restores settings row")
+    check(not settings().help and settings().selected == 9, "help Back restores settings row")
     if find("SystemMenuView") != null: await recover("SettingsWindow")
     # Orphan pointer release after relayout cannot apply or close settings.
-    var cancel := find("Setting7") as Control
+    var cancel := find("Setting8") as Control
     await mouse(cancel, true)
     root.size = Vector2i(2560, 1440); await frames()
     root.size = Vector2i(1920, 1080); await frames()
@@ -178,8 +178,8 @@ func apply_flow() -> void:
     if initial.is_empty(): return
     await key(KEY_ENTER)
     var draft: Dictionary = settings().draft
-    for i in range(6): await key(KEY_DOWN)
-    check(settings().selected == 6, "fixed Apply receives keyboard focus")
+    for i in range(7): await key(KEY_DOWN)
+    check(settings().selected == 7, "fixed Apply receives keyboard focus")
     await edge(KEY_ENTER, true); await frames(12)
     check(find("SettingsView") == null and selected_menu() == "Settings", "held Apply returns once to originating Menu")
     var applied: Dictionary = observation(host, "ReadSettingsHostObservationJson").applied

@@ -12,7 +12,7 @@ internal static class ExplorationAssetReader
 {
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu", "shopMenu");
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu", "shopMenu", "hdIdentityIcons");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -102,11 +102,12 @@ internal static class ExplorationAssetReader
         var fieldMenu = Menu(row, "fieldMenu", ["member", "magic", "item", "search"]);
         var itemMenu = Menu(row, "itemMenu", ["use", "give", "equip", "drop"]);
         var shopMenu = Menu(row, "shopMenu", ["buy", "sell", "repair", "deals"]);
+        var identityIcons = IdentityIconReader.Read(row);
         return new(new ReadOnlyDictionary<MapId, ExplorationMapVisual>(maps), new ReadOnlyDictionary<int, ExplorationSpriteVisual>(sprites),
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
             churchMenu,
-            fieldMenu, IdentityIconReader.Read(row),
-            itemMenu, shopMenu);
+            fieldMenu, identityIcons,
+            itemMenu, shopMenu, IdentityIconReader.ReadHd(row, identityIcons));
     }
 
     private static IReadOnlyDictionary<string, ExplorationRaster>? Menu(JsonElement row, string property, string[] names)

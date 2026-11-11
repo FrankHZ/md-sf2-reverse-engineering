@@ -1845,3 +1845,21 @@ msgstr "Hover: preview · Click a legal target: execute"
 
 msgid "field.reveal-continue"
 msgstr "{0}: Reveal / Continue"
+
+msgid "ui.settings.graphics"
+msgstr "Graphics: {0}"
+
+msgid "ui.settings.graphics-original"
+msgstr "Original"
+
+msgid "ui.settings.graphics-hd"
+msgstr "HD"
+
+msgid "ui.settings.graphics-coverage"
+msgstr "HD coverage: Medical Herb in field inventory and preparation, when installed. Other art uses Original; public profiles keep text icons."
+
+msgid "ui.settings.graphics-error"
+msgstr "Graphics could not be prepared. Previous graphics and preferences are retained."
+
+msgid "host.setting-description-5"
+msgstr "Apply switches this game immediately and saves the choice for the next launch."

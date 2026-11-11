@@ -63,7 +63,8 @@ public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMa
     IReadOnlyDictionary<string, ExplorationRaster>? FieldMenu = null,
     IReadOnlyDictionary<string, ExplorationRaster>? IdentityIcons = null,
     IReadOnlyDictionary<string, ExplorationRaster>? ItemMenu = null,
-    IReadOnlyDictionary<string, ExplorationRaster>? ShopMenu = null);
+    IReadOnlyDictionary<string, ExplorationRaster>? ShopMenu = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? HdIdentityIcons = null);
 public enum ExplorationEventKind { Step, Interact, Warp, SourceZone }
 public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,

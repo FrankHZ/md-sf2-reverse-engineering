@@ -136,10 +136,13 @@ public sealed partial class GameRoot
         catch (ArgumentException) { return GameText.Get("ui.settings.invalid"); }
         try { display = GameText.Prepare(candidate.Language); }
         catch (ArgumentException) { return GameText.Get("ui.settings.display"); }
+        try { _exploration?.PrepareGraphics(); }
+        catch (InvalidOperationException) { return GameText.Get("ui.settings.graphics-error"); }
         string? error = _preferences.Write(candidate, reset);
         if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");
         _settingsRelease = _settingsActivation;
         _input!.Apply(candidate, prepared); GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;
+        _exploration?.PublishGraphics();
         _entry?.ConfigureHints(_input);
         RefreshSystemMenuLabels();
         return null;

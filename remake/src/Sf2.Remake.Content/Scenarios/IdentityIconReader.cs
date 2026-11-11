@@ -45,4 +45,17 @@ internal static class IdentityIconReader
         Validate(rasters);
         return new System.Collections.ObjectModel.ReadOnlyDictionary<string, ExplorationRaster>(rasters);
     }
+
+    // The first admitted HD family is one field item, separate from battle/base rasters.
+    internal static IReadOnlyDictionary<string, ExplorationRaster>? ReadHd(JsonElement presentation,
+        IReadOnlyDictionary<string, ExplorationRaster>? originals)
+    {
+        if (!presentation.TryGetProperty("hdIdentityIcons", out var value)) return null;
+        string[] keys = ["identity-icon.item.0.normal", "identity-icon.item.0.selected"];
+        Object(value, "presentation.hdIdentityIcons", keys);
+        var rasters = keys.ToDictionary(key => key, key => ExplorationAssetReader.Raster(value.GetProperty(key)), StringComparer.Ordinal);
+        Require(rasters.Values.All(raster => raster.Width == 64 && raster.Height == 96), "hd-identity-icon-shape", "presentation.hdIdentityIcons");
+        Require(originals is not null && keys.All(originals.ContainsKey), "hd-identity-icon-baseline", "presentation.hdIdentityIcons");
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string, ExplorationRaster>(rasters);
+    }
 }

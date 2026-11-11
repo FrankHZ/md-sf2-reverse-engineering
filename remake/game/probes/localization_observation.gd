@@ -124,7 +124,7 @@ func _run() -> void:
         await press(KEY_ESCAPE)
         finish(); return
     if case_name == "read-only":
-        check(settings_state().readOnly and settings_state().selected == 7, "launch override read-only skips editable rows")
+        check(settings_state().readOnly and settings_state().selected == 8, "launch override read-only skips editable rows")
         await press(KEY_LEFT); await press(KEY_ESCAPE)
         check(JSON.parse_string(host.call("ReadSettingsHostObservationJson")).applied.Language == "en", "read-only launch preserves locale")
         finish(); return

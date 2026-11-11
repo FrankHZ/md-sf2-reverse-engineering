@@ -260,7 +260,7 @@ func help_flow() -> void:
     if settings_button == null: return
     var r: Rect2 = settings_button.get_global_rect()
     await click({"x":r.position.x,"y":r.position.y,"width":r.size.x,"height":r.size.y})
-    var help_button := host.find_child("Setting8",true,false) as Control
+    var help_button := host.find_child("Setting9",true,false) as Control
     check(help_button != null,"Settings exposes Help")
     if help_button == null:return
     r=help_button.get_global_rect()
