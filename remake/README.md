@@ -56,7 +56,7 @@ their own observation limits; broader #438 UI/UX and final human/aesthetic accep
 | Content and profile admission | [Runtime profiles and trust](docs/content/profiles-and-trust.md) |
 | Build, unit tests, reference or adapter observation | [Development and verification](./docs/development-and-verification.md) |
 | Godot input and rendering | [Host/presentation](./docs/godot/presentation.md), [audio](./docs/godot/audio.md), [battle scenes](./docs/godot/battle-scenes.md) |
-| Opening UI gaps and follow-up acceptance | [Opening UI assessment](./docs/evidence/opening-ui-gaps.md) |
+| Playable UI and opening review | [Pre-voyage scenes and controls](docs/godot/ui-scene-review.md#scenes-in-the-playable-demo), [Opening UI assessment](./docs/evidence/opening-ui-gaps.md) |
 | Local asset preparation | [Content presentation assets](./docs/content/presentation-assets.md) |
 | Historical comparisons and remaining Unknowns | [Retained evidence](./docs/evidence/retained-comparisons.md); current test policy is in the verification guide |
 
@@ -92,9 +92,14 @@ Explicit diagnostic play uses a start selection. The
 [Yeel–Battle03 recipe](./docs/verification/field-programs.md#yeel-guide-through-battle03)
 own preparation and reproduction; the launch above does not prepare original assets.
 
-Default directional input moves/selects; Confirm opens or confirms the cardinal battle menu, Cancel
-backs out through selection and provisional movement. Exploration exposes contextual Talk. At settled
-field input, E / Pad Start opens Party Status. Confirm or the Prepare button opens Equip,
+In battle, use directions to move within the cyan range. Confirm your stop to open the right-hand
+command list. Use Up/Down and Confirm to choose an action. On the board, directions cycle eligible
+targets and Confirm executes. Hover previews a target. Clicking that unit executes the action.
+Back unwinds the current choice. Cancel from Movement undoes the move and opens free inspection.
+
+In the field, hold a direction to walk and face someone to Talk. At settled field input, Cancel
+opens Member / Magic / Item / Search. Use Up/Down to select. E / Pad Start opens Party Status
+with the default bindings. Confirm or the Prepare button opens Equip,
 Give/exchange, Use, Magic and Drop for the selected member. Selection and Cancel are free;
 each change requires its own confirmation. HEAL and ordinary HP recovery items have no field
 effect in the original; the menu explains this and keeps their resources. Antidote and DETOX1
@@ -102,9 +107,10 @@ use their separately admitted poison-cure rules. On supported early overworld ma
 to the live refuge, including from enclosed victory positions; confirmation spends up to its MP cost
 and keeps gold/progress. See the [field EGRESS boundary](./docs/application/pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress).
 Defeated members retain inventory access.
-Up/Down selects a member; Tab / Pad RB cycles member, magic and inventory focus. Mouse opens the
-compact member selector or changes member with arrows, and scrolls within each list. Close bindings are displayed and configurable; follow
-the displayed hints and [input/presentation owner](./docs/godot/presentation.md#modern-ui-experiment).
+Select a member from the visible roster by clicking a row or using Left/Right. Tab / Pad RB cycles
+member, magic and inventory focus. Up/Down selects a member or scrolls the focused detail list.
+The [field controls](docs/godot/field-and-shop.md#reading-input-and-return) cover preparation and shop
+transactions. For a first session, follow the [short play route](docs/godot/ui-scene-review.md#short-play-route).
 For build/test selection continue to [Build and Test](#build-and-test); documentation-only edits do
 not require a game launch.
 
