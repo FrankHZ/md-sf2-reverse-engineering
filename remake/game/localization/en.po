@@ -831,7 +831,7 @@ msgid "battle.stay-here"
 msgstr "Stay here?"
 
 msgid "battle.move-help"
-msgstr "{0}: move\n{1}: actions"
+msgstr "{0}: Actions"
 
 msgid "battle.target-help"
 msgstr "{0}: next target\n{1}: commit · {2}: back"
@@ -1034,7 +1034,7 @@ msgstr "{0}: Continue >"
 
 #. Story controls/typed battle return only; source dialogue remains unchanged.
 msgid "story.choice-help"
-msgstr "{0} / {1}: Select    {2}: Confirm    {3} / Right click: No"
+msgstr "{0}: Choose · {1}: No"
 
 #. Story controls/typed battle return only; source dialogue remains unchanged.
 msgid "story.in-progress"
@@ -1801,3 +1801,44 @@ msgstr "This screen cannot provide the minimum gameplay client. Choose another s
 
 msgid "host.window-refused-fullscreen"
 msgstr "Fullscreen did not provide the minimum gameplay client. Your journey remains paused."
+
+# Active input labels; no device preference or binding-format change.
+
+msgid "input.keyboard-only"
+msgstr "Keyboard {0}"
+
+msgid "input.face"
+msgstr "Face"
+
+msgid "input.dpad"
+msgstr "D-pad"
+
+msgid "input.left-stick"
+msgstr "Left stick"
+
+msgid "input.right-stick"
+msgstr "Right stick"
+
+msgid "input.left-stick-click"
+msgstr "Left stick press"
+
+msgid "input.right-stick-click"
+msgstr "Right stick press"
+
+msgid "input.left-shoulder"
+msgstr "Left shoulder"
+
+msgid "input.right-shoulder"
+msgstr "Right shoulder"
+
+msgid "input.menu-button"
+msgstr "Menu button"
+
+msgid "input.view-button"
+msgstr "View button"
+
+msgid "input.button"
+msgstr "Button {0}"
+
+msgid "battle.pointer-target-help"
+msgstr "Hover: preview · Click a legal target: execute"

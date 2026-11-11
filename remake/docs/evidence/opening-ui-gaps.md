@@ -51,19 +51,16 @@ service. **Unknown:** the user's exact reported consumer and subjective acceptan
 behavior. Layout/line-break work and the broader opening experience remain separate; no original
 natural-timing, physical-device or all-consumer claim follows from these bounded observations.
 
-## Minimal contextual hints proposal (#1544)
+## Minimal contextual hints (#1544)
 
-The [design owner](../godot/presentation.md#minimal-contextual-hints-proposal-1544) recommends one
-current-action area, existing compact installed keyboard/pad names and #1452's on-demand Help, with
-a finite screen-difference table and later pilot order. The user's minimal/intuitive goal is selected;
-these presentation changes are **Not implemented** and main-story #1538 retains priority.
-**Confirmed — bounded source review:** exploration combines interaction/Wait/Party, battle target
-hints repeat confirmation, and Shop repeats unequipped guidance across phases. **Inferred:** this
-can obscure the next step. The proposal preserves payment/overwrite/failure/disabled information and
-necessary battle/Party access cues; Settings/Help cannot open during active battle/story. Help's
-English-only prose, deferred automatic device switching/rebinding UI and long-Chinese/layout limits
-are explicit. Discoverability, physical-device behavior and human reading benefit remain **Unknown**
-under #1456; no new runtime observation or full-interface implementation is claimed.
+The [presentation owner](../godot/presentation.md#minimal-contextual-hints-1544) implements active
+keyboard/mouse or pad cues in ordinary entry/host, field/story and battle. Full English/Chinese Help,
+actual bindings/swap, explicit consequences and necessary auxiliary entrances remain. The focused
+native observer checks device-noise/focus boundaries, actual Settings Apply, source reading/choice
+and keyboard→pad→mouse battle input. Its software evidence does not establish physical controller
+recognition, hotplug behavior or human discovery/reading benefit; those remain **Unknown** under #1456.
+Binding capture, a new Help route, first-use persistence and a full interface redesign are outside
+this implementation. Existing payment/storage/full-campaign observations retain their own scope.
 
 ## Local services and battle overview proposal (#1543)
 

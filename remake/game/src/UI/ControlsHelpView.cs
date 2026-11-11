@@ -75,6 +75,11 @@ internal sealed partial class ControlsHelpView : Control
         _panel.Size = new(Math.Min(1040, Math.Max(1, Size.X - 64)), Math.Min(900, Math.Max(1, Size.Y - 64)));
         _panel.Position = (Size - _panel.Size) / 2;
     }
+    internal void RefreshInputHints()
+    {
+        int scroll = _scroll.ScrollVertical;
+        Refresh(); _scroll.ScrollVertical = scroll;
+    }
     private void Refresh()
     {
         var page = Pages[_page];

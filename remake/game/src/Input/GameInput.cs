@@ -144,6 +144,7 @@ internal sealed partial class GameInput
             foreach (var input in events) InputMap.ActionAddEvent(name, input);
         }
         DisarmMovement(); DisarmWait(); DisarmAcceleration();
+        HintsChanged?.Invoke();
     }
 
     internal GameAction? Resolve(InputEvent input)
@@ -177,7 +178,10 @@ internal sealed partial class GameInput
             int direction = Math.Abs(motion.AxisValue) < 0.5f ? 0 : Math.Sign(motion.AxisValue);
             var key = (motion.Device, motion.Axis);
             int previous = _axes.GetValueOrDefault(key);
-            _axes[key] = direction;
+            // Keep the deflection latched through dead-zone chatter; only a clear
+            // neutral rearms it. This also prevents Menu reopening on one noisy hold.
+            if (Math.Abs(motion.AxisValue) < 0.35f) _axes[key] = 0;
+            else if (direction != 0) _axes[key] = direction;
             // Each mapped axis gets one edge per deflection. A release, noise on another
             // axis, or a held value cannot repeat a previous direction or cross a mode twice.
             if (direction == 0 || direction == previous) return null;
@@ -203,23 +207,6 @@ internal sealed partial class GameInput
         foreach (var action in _bindings.Keys) Godot.Input.ActionRelease(MapName(action));
     }
 
-    internal string Hint(GameAction action) => string.Join(" / ", _bindings[action].Select(Describe));
     internal bool MenuPadAvailable => _bindings[GameAction.Menu].Any(input => input is InputEventJoypadButton or InputEventJoypadMotion);
-    private static string Describe(InputEvent input) => input switch
-    {
-        InputEventKey key => key.Keycode.ToString(),
-        InputEventJoypadButton button => "Pad " + (button.ButtonIndex switch
-        { JoyButton.A => "South", JoyButton.B => "East", JoyButton.X => "West", JoyButton.Y => "North", _ => button.ButtonIndex.ToString() }),
-        InputEventJoypadMotion axis => $"Stick {axis.Axis}{(axis.AxisValue < 0 ? "-" : "+")}",
-        _ => "",
-    };
-    // Presentation only: use the admitted, possibly swapped mapping rather than a second key table.
-    internal string CompactHint(GameAction action) => string.Join("/", new[]
-    {
-        _bindings[action].OfType<InputEventKey>().First(),
-        _bindings[action].FirstOrDefault(input => input is InputEventJoypadButton or InputEventJoypadMotion),
-    }.OfType<InputEvent>().Select(input => Describe(input).Replace("Pad ", "", StringComparison.Ordinal)));
-    internal string MovementHint => string.Join("; ", new[] { GameAction.Up, GameAction.Right, GameAction.Down, GameAction.Left }
-        .Select(action => $"{action}: {Hint(action)}"));
     private static string MapName(GameAction action) => "sf2_" + action.ToString().ToLowerInvariant();
 }

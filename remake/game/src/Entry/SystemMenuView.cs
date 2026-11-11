@@ -80,11 +80,15 @@ internal sealed partial class SystemMenuView : Control
             _buttons[index].Text = GameText.Get(keys[index]); _buttons[index].Disabled = !allowed[index];
             _reasons[index].Text = allowed[index] ? "" : reasons[index]; _reasons[index].Visible = !allowed[index];
         }
+        RefreshInputHints();
+        Select(_selected);
+    }
+    internal void RefreshInputHints()
+    {
         _hint.Text = GameText.Get("system.hint", Input.CompactHint(GameAction.Menu),
             Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
         _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
         if (!Input.MenuPadAvailable) _hint.Text += "\n" + GameText.Get("system.no-pad");
-        Select(_selected);
     }
     private void Select(int index)
     {

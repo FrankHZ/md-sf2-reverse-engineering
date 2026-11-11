@@ -38,13 +38,14 @@ internal sealed partial class WindowRecoveryView : Control
                 AutowrapMode = TextServer.AutowrapMode.WordSmart };
             StoryTheme.EntryChoice(button); _buttons.Add(button); _panel.AddChild(button);
         }
-        _hint = new Label { Name = "RecoveryHint", AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            Text = GameText.Get("host.window-hint", Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down),
-                Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel),
-                Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right)) };
+        _hint = new Label { Name = "RecoveryHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", 24); _panel.AddChild(_hint);
-        Resized += Arrange; Arrange();
+        RefreshInputHints(); Resized += Arrange; Arrange();
     }
+
+    internal void RefreshInputHints() => _hint.Text = GameText.Get("host.window-hint", Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down),
+                Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel),
+                Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
 
     private void Arrange()
     {

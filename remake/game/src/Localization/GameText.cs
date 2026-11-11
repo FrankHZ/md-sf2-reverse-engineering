@@ -19,6 +19,12 @@ internal static class GameText
     internal sealed record Candidate(string Language, IReadOnlyDictionary<string, string> Rows, IReadOnlyDictionary<string, RowStatus> Status);
     private static readonly Dictionary<string, int> Arguments = new()
     {
+        ["input.keyboard-only"] = 1, ["input.button"] = 1,
+        ["input.face"] = 0, ["input.dpad"] = 0,
+        ["input.left-stick"] = 0, ["input.right-stick"] = 0,
+        ["input.left-stick-click"] = 0, ["input.right-stick-click"] = 0,
+        ["input.left-shoulder"] = 0, ["input.right-shoulder"] = 0,
+        ["input.menu-button"] = 0, ["input.view-button"] = 0,
         ["host.menu-reading"] = 2,
         ["host.settings-reading"] = 2,
         ["host.help-text-0"] = 0,
@@ -214,8 +220,9 @@ internal static class GameText
         ["battle.items"] = 0,
         ["battle.choose-target"] = 0,
         ["battle.stay-here"] = 0,
-        ["battle.move-help"] = 2,
+        ["battle.move-help"] = 1,
         ["battle.target-help"] = 3,
+        ["battle.pointer-target-help"] = 0,
         ["battle.choice-help"] = 1,
         ["battle.command-help"] = 1,
         ["battle.confirm-help"] = 2,
@@ -514,7 +521,7 @@ internal static class GameText
         ["search.unavailable"] = 1,
         ["search.continue"] = 2,
         ["story.continue"] = 1,
-        ["story.choice-help"] = 4,
+        ["story.choice-help"] = 2,
         ["story.in-progress"] = 0,
         ["story.skip"] = 1,
         ["story.skipping"] = 0,

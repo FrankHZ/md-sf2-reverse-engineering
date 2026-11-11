@@ -174,6 +174,8 @@ internal sealed partial class SettingsView : Control
         _pointer.Suspend(); _panel.Show(); Refresh();
     }
 
+    internal void RefreshInputHints() { Refresh(); _help?.RefreshInputHints(); }
+
     private void Refresh()
     {
         if (BattleOnly)

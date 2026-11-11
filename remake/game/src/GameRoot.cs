@@ -37,6 +37,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Input(InputEvent input)
     {
+        _input?.ObserveHintInput(input, GetWindow().HasFocus());
         _input?.AllowAcceleration(!_releaseBarrier && (_exploration?.CanAccelerate == true || _battle?.CanAccelerate == true));
         _input?.ObserveAccelerationInput(input);
         if (BlockSettingsRelease(input)) { GetViewport().SetInputAsHandled(); return; }
@@ -168,9 +169,9 @@ public sealed partial class GameRoot : Node
     }
 
     private void PacingDeviceChanged(long device, bool connected)
-    { if (!connected) { _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); } }
+    { _input?.HintDeviceChanged((int)device, connected); if (!connected) { _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); } }
 
-    private void PacingFocusReturned() => _input?.ReconcileAccelerationNeutral();
+    private void PacingFocusReturned() { _input?.HintFocus(true, GetViewport().GetMousePosition()); _input?.ReconcileAccelerationNeutral(); }
 
     private void ReleaseSession()
     {
@@ -312,7 +313,7 @@ public sealed partial class GameRoot : Node
         if (_menuButton is not null)
         {
             _menuButton.Text = GameText.Get("system.entry");
-            _menuButton.TooltipText = _input!.Hint(GameAction.Menu);
+            _menuButton.TooltipText = _input!.CompactHint(GameAction.Menu);
             if (!_input.MenuPadAvailable) _menuButton.TooltipText += "\n" + GameText.Get("system.no-pad");
         }
         if (_systemMenu is null) return;

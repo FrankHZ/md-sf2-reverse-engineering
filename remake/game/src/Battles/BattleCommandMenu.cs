@@ -259,12 +259,13 @@ internal sealed partial class BattleCommandMenu : Control
             Page.Commit => GameText.Get(selection?.Stage == BattleSelectionStage.SearchCommitReady ? "battle.search-confirm" : "battle.stay-here"), _ => _layout.Commands[_command].Caption,
         };
         string confirm = KeyHint(GameAction.Confirm), cancel = KeyHint(GameAction.Cancel);
-        string directions = string.Join("/", new[] { GameAction.Up, GameAction.Left, GameAction.Down, GameAction.Right }.Select(KeyHint));
-        _layout.Help.Text = moving ? GameText.Get("battle.move-help", directions, confirm) :
+        _layout.Help.Text = moving ? GameText.Get("battle.move-help", confirm) :
             _page == Page.Target ? GameText.Get("battle.target-help", KeyHint(GameAction.Target), confirm, cancel) :
             (list ? GameText.Get("battle.choice-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") :
                 _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") : "") +
                 GameText.Get("battle.confirm-help", confirm, cancel);
+        if (!moving && _page == Page.Target && _input.KeyboardMouseHints)
+            _layout.Help.Text += "\n" + GameText.Get("battle.pointer-target-help");
         if (!moving && _page == Page.Main)
             _layout.Help.Text += GameText.Get("battle.extra-help", KeyHint(GameAction.Equipment), KeyHint(GameAction.Give), KeyHint(GameAction.Discard));
         string description;
@@ -320,7 +321,9 @@ internal sealed partial class BattleCommandMenu : Control
         return text;
     }
     private static string Unavailable(SessionFailure reason) => GameText.BattleFailure(reason);
-    private string KeyHint(GameAction action) => _input.Hint(action).Split(" / ", 2)[0];
+    internal void RefreshInputHints() { if (_current is not null) Refresh(); }
+
+    private string KeyHint(GameAction action) => _input.CompactHint(action);
 
     internal object Observe() => new { page = _page.ToString(), command = _command, row = _row,
         candidate = TargetCandidate?.Value, visible = Visible, layout = _layout.Observe() };

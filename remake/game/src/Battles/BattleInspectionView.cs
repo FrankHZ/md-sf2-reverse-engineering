@@ -184,6 +184,8 @@ internal sealed partial class BattleInspectionView : Control
             _details.Wheel(mouse.Position, mouse.ButtonIndex == MouseButton.WheelUp ? -72 : 72);
     }
     private static string UnitName(BattleInspectionMarker unit) => DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName);
+    internal void RefreshInputHints() => Project();
+
     private void Project()
     {
         if (_snapshot is null) return;

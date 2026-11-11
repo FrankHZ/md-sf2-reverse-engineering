@@ -70,7 +70,6 @@ public sealed partial class BattleSessionView : Control
     private readonly UI.IdentityIcon _equipmentIcon = new() { Name = "EquipmentIcon" };
     private readonly UI.IdentityIcon _transactionIcon = new() { Name = "TransactionIcon" }, _returnIcon = new() { Name = "ReturnIcon" };
     private Rect2 _hudSubject;
-    private string _battleHelp = "";
     private BattleSceneView _scene = null!;
     private BattleRetreatView _retreat = null!;
     private BattleAppearanceView _appearance = null!;
@@ -115,16 +114,26 @@ public sealed partial class BattleSessionView : Control
     internal void ConfigureInput(GameInput input)
     {
         _input = input;
-        _help = $"{input.MovementHint}\n{input.Hint(GameAction.Confirm)}: choose action / commit\n" +
-            $"{input.Hint(GameAction.Spell)}: open magic list from diamond\n" +
-            $"{input.Hint(GameAction.Item)}: open item list from diamond\n" +
-            $"{input.Hint(GameAction.Discard)}: Drop; select slot, confirm, cancel returns\n" +
-            $"{input.Hint(GameAction.Give)}: Give; directions select item/recipient, confirm, cancel returns\n" +
-            $"{input.Hint(GameAction.Equipment)}: equipment; directions cycle, confirm equips, cancel returns\n" +
-            $"{input.Hint(GameAction.Attack)}: physical attack\n{input.Hint(GameAction.Target)}: cycle living targets\n" +
-            $"{input.Hint(GameAction.Stay)}: STAY\n{input.Hint(GameAction.Cancel)}: undo Movement, then inspect; menu Back returns one level\n" +
-            $"{input.Hint(GameAction.Wait)}: wait at a healing message\n\nAI and rounds advance automatically.";
-        _battleHelp = _help;
+        _help = "";
+    }
+
+    private string AuxiliaryHint(bool give, bool auxiliary) => !auxiliary ? "" :
+        GameText.Get("battle.aux-help", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
+            _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)) +
+        (give ? "\n" + GameText.Get("battle.give-recipient-help", _input.CompactHint(GameAction.Target)) : "");
+
+    internal void RefreshInputHints()
+    {
+        if (_session is null) return;
+        _menu.RefreshInputHints();
+        if (_inspection.Active) _inspection.RefreshInputHints();
+        if (_hud.Visible)
+        {
+            var stage = _session.Current.Selection?.Stage;
+            bool auxiliary = BattleGiveView.Selecting(stage) || BattleDiscardView.Selecting(stage) || stage == BattleSelectionStage.EquipmentChoice;
+            _help = AuxiliaryHint(BattleGiveView.Selecting(stage), auxiliary);
+            _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help);
+        }
     }
 
     public override void _EnterTree()
@@ -434,14 +443,14 @@ public sealed partial class BattleSessionView : Control
         var equipmentChoices = choices.Equipment;
         var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
         _equipment = currentActor?.Definition.Equipment is null ? "" :
-            GameText.Get("battle.equipment-current", _input.Hint(GameAction.Equipment),
+            GameText.Get("battle.equipment-current", _input.CompactHint(GameAction.Equipment),
                 equipmentChoices.FirstOrDefault(o => o.Equipped) is { } equipped ? DisplayNames.Equipment(equipped, _session.Current) : GameText.Get("prepare.unarmed"),
                 currentActor.Attack, BattleEquipment.Physical(currentActor)!.MinimumRange, BattleEquipment.Physical(currentActor)!.MaximumRange);
-        _spells = selection is null ? "" : $"Spells ({_input.Hint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
+        _spells = selection is null ? "" : $"Spells ({_input.CompactHint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             choices.Spells.Select(option =>
                 DisplayNames.Spell(option.Spell, option.Label, level: true) + (option.Spell == selection.Spell ? " · selected" : "") +
                 (option.Enabled ? "" : $" · unavailable: {option.Reason!.Code}")));
-        _items = selection is null ? "" : $"Items ({_input.Hint(GameAction.Item)} to cycle):\n" + string.Join("\n",
+        _items = selection is null ? "" : $"Items ({_input.CompactHint(GameAction.Item)} to cycle):\n" + string.Join("\n",
             choices.Items.Select(option => $"{option.Slot + 1}: {DisplayNames.BattleItem(_session.Current, option.Slot, option.Label)}" +
                 (option.Slot == selection.ItemSlot ? " · selected" : "") +
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
@@ -463,9 +472,7 @@ public sealed partial class BattleSessionView : Control
             string fallback = GameText.Fallback("battle.", includeKey: true);
             if (fallback.Length > 0) _equipment += "\n" + fallback;
         }
-        _help = auxiliary ? GameText.Get("battle.aux-help", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
-            _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)) +
-            (give ? "\n" + GameText.Get("battle.give-recipient-help", _input.CompactHint(GameAction.Target)) : "") : _battleHelp;
+        _help = AuxiliaryHint(give, auxiliary);
         // One readable current choice; directions still visit every typed offer. Reuse story reading
         // before Confirm rather than requiring a mouse wheel to reach long choice text.
         string body = _status + "\n\n" + (give ? _giveMenu : discard ? _discardMenu : equipment ? _equipment :

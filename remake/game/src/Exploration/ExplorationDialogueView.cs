@@ -151,22 +151,20 @@ internal sealed partial class ExplorationDialogueView : Control
         bool atInput = current.Story.Wait is DialogueWait or FieldSearchWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
         string hint = current.Story.Wait switch
         {
-            FieldSearchWait when revealed => GameText.Get("search.continue", input.Hint(GameAction.Confirm), input.Hint(GameAction.Cancel)),
-            ChoiceWait => GameText.Get("story.choice-help", input.Hint(GameAction.Left), input.Hint(GameAction.Right),
-                input.Hint(GameAction.Confirm), input.Hint(GameAction.Cancel)),
-            DialogueWait or FieldTextWait or W1TextWait when !Panel.MoreBelow => GameText.Get("story.continue", input.Hint(GameAction.Confirm)),
-            _ when Panel.Visible && !revealed => GameText.Get("field.reveal", input.Hint(GameAction.Confirm)),
-            _ when Panel.Visible && atInput => GameText.Get("story.continue", input.Hint(GameAction.Confirm)),
-            _ when current.CanWaitAtInput => GameText.Get("field.controls",
-                session.QueryExplorationInteraction() is not null ? GameText.Get("field.talk", input.Hint(GameAction.Confirm)) :
-                session.CanSearch ? GameText.Get("field.search", input.Hint(GameAction.Confirm)) : "",
-                input.Hint(GameAction.Equipment)),
+            FieldSearchWait when revealed => GameText.Get("search.continue", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
+            ChoiceWait => GameText.Get("story.choice-help", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
+            DialogueWait or FieldTextWait or W1TextWait when !Panel.MoreBelow => GameText.Get("story.continue", input.CompactHint(GameAction.Confirm)),
+            _ when Panel.Visible && !revealed => GameText.Get("field.reveal", input.CompactHint(GameAction.Confirm)),
+            _ when Panel.Visible && atInput => GameText.Get("story.continue", input.CompactHint(GameAction.Confirm)),
+            _ when current.CanWaitAtInput => session.QueryExplorationInteraction() is not null
+                ? GameText.Get("field.talk", input.CompactHint(GameAction.Confirm))
+                : session.CanSearch ? GameText.Get("field.search", input.CompactHint(GameAction.Confirm)) : "",
             _ => GameText.Get("story.in-progress"),
         };
-        if (Panel.Visible && Panel.MoreBelow && revealed) hint = GameText.Get("field.more", input.Hint(GameAction.Confirm));
-        if (current.Story.Wait is ChoiceWait { Work: null } && !revealed) hint = GameText.Get("field.reveal", input.Hint(GameAction.Confirm));
+        if (Panel.Visible && Panel.MoreBelow && revealed) hint = GameText.Get("field.more", input.CompactHint(GameAction.Confirm));
+        if (current.Story.Wait is ChoiceWait { Work: null } && !revealed) hint = GameText.Get("field.reveal", input.CompactHint(GameAction.Confirm));
         if (BattleEntrySkip.Eligible(current)) hint += current.Story.EntrySkip is null
-            ? "    " + GameText.Get("story.skip", input.Hint(GameAction.Cancel)) : "    " + GameText.Get("story.skipping");
+            ? "    " + GameText.Get("story.skip", input.CompactHint(GameAction.Cancel)) : "    " + GameText.Get("story.skipping");
         if (!Panel.Visible && ReturnNotice.Length > 0) hint = ReturnNotice + "\n" + hint;
         if (current.Story.Wait is FieldSearchWait && GameText.Language == "zh-CN")
         {
