@@ -16,10 +16,17 @@ internal sealed partial class NameEntryView : Control
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         var panel = new PanelContainer { Name = "NameWindow", Position = EntryLayout.Window.Position, Size = EntryLayout.Window.Size }; AddChild(panel);
-        var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddThemeConstantOverride("separation", 20); panel.AddChild(column);
-        column.AddChild(new Label { Text = MemberName is null ? GameText.Get("name.title") : GameText.Get("name.member-title", MemberName), HorizontalAlignment = HorizontalAlignment.Center });
+        var layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", 24); panel.AddChild(layout);
+        var reading = new ScrollContainer { Name = "NameReading", SizeFlagsVertical = SizeFlags.ExpandFill,
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        layout.AddChild(reading);
+        var column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", 20); reading.AddChild(column);
+        var title = new Label { Text = MemberName is null ? GameText.Get("name.title") : GameText.Get("name.member-title", MemberName),
+            AutowrapMode = TextServer.AutowrapMode.WordSmart, HorizontalAlignment = HorizontalAlignment.Center };
+        title.AddThemeFontSizeOverride("font_size", 32); column.AddChild(title);
         _edit = new LineEdit { Name = "NameInput", Text = Draft, PlaceholderText = GameText.Get("name.empty"), CustomMinimumSize = new(500, 64),
             Alignment = HorizontalAlignment.Center, ContextMenuEnabled = false, KeepEditingOnTextSubmit = true };
         column.AddChild(_edit);
@@ -32,19 +39,20 @@ internal sealed partial class NameEntryView : Control
             GameText.Fallback("entry.back", includeKey: true) }.Where(text => text != ""));
         if (fallback != "") help.Text += "\n" + fallback;
         _error = new Label { Name = "NameError", AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 68), HorizontalAlignment = HorizontalAlignment.Center }; column.AddChild(_error);
-        var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center }; column.AddChild(actions);
+        var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        actions.AddThemeConstantOverride("separation", 12); layout.AddChild(actions);
         if (Back is not null) AddAction("Back", "entry.back", () => Back.Invoke(_edit.Text));
         _use = AddAction("UseName", "name.use", Finish);
         var hint = new Label { Name = "NameHint", Text = GameText.Get(Back is null ? "name.confirm-hint" : "name.hint"),
-            HorizontalAlignment = HorizontalAlignment.Center };
-        hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(hint);
+            AutowrapMode = TextServer.AutowrapMode.WordSmart, HorizontalAlignment = HorizontalAlignment.Center };
+        hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); layout.AddChild(hint);
         Validate(); FocusEditor(); _edit.SelectAll();
         GetWindow().FocusEntered += FocusEditor;
 
         Button AddAction(string name, string key, Action action)
         {
-            var button = new Button { Name = name, Text = GameText.Get(key), CustomMinimumSize = new(250, 64), FocusMode = FocusModeEnum.None };
-            button.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
+            var button = new Button { Name = name, Text = GameText.Get(key), CustomMinimumSize = new(0, 64),
+                AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = SizeFlags.ExpandFill, FocusMode = FocusModeEnum.None };
             button.Pressed += action; actions.AddChild(button);
             return button;
         }

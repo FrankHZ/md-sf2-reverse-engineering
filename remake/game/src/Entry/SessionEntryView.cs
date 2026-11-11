@@ -19,6 +19,7 @@ public sealed partial class SessionEntryView : Control
     private Button _read = null!;
     private Button _settingsAccess = null!;
     private Label _hint = null!;
+    private ScrollContainer _actionScroll = null!;
     private readonly List<Button> _buttons = [];
     private GameInput? _input;
     private int _page = -1, _selection;
@@ -38,7 +39,7 @@ public sealed partial class SessionEntryView : Control
         // authored 1080p canvas, including when opened over an already mounted session.
         _previousScaleMode = GetWindow().ContentScaleMode;
         GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.CanvasItems;
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         try
         {
             _assets = new EntryPresentationAssets(); _assets.AttachAudio(this);
@@ -53,9 +54,15 @@ public sealed partial class SessionEntryView : Control
         _dialogue = new StoryDialoguePanel { Name = "EntryDialogue", LayoutRegion = EntryLayout.Greeting }; AddChild(_dialogue);
         _start = new Button { Name = "Start", Text = GameText.Get("entry.press-start"), Position = new(640, 900), Size = new(640, 72), FocusMode = FocusModeEnum.None };
         _start.Pressed += Advance; AddChild(_start); StoryTheme.Select(_start, true);
-        _read = new Button { Name = "ReadDialogue", Text = GameText.Get("entry.continue"), Position = new(1216, 548), Size = new(640, 76),
+        _actionScroll = new ScrollContainer { Name = "EntryActions", Position = new(1216, 548), Size = new(640, 340),
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        AddChild(_actionScroll);
+        var actions = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        actions.AddThemeConstantOverride("separation", 12); _actionScroll.AddChild(actions);
+        _read = new Button { Name = "ReadDialogue", Text = GameText.Get("entry.continue"), CustomMinimumSize = new(0, 76),
             FocusMode = FocusModeEnum.None, Visible = false };
-        _read.Pressed += () => { if (_page == -2) ReadMenu(); else Advance(); }; AddChild(_read); StoryTheme.Select(_read, true);
+        _read.Pressed += () => { if (_page == -2) ReadMenu(); else Advance(); }; actions.AddChild(_read);
+        StoryTheme.EntryChoice(_read); StoryTheme.Select(_read, true);
         _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 160), Text = GameText.Get("entry.normal"),
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hint);
@@ -67,10 +74,10 @@ public sealed partial class SessionEntryView : Control
         {
             int selected = index;
             var button = new Button { Name = names[index], Text = index == names.Length - 1 ? GameText.Get(keys[index], "") : GameText.Get(keys[index]),
-                Position = new(1216, 548 + 88 * index), Size = new(640, 76), FocusMode = FocusModeEnum.None, Visible = false };
+                AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 76), FocusMode = FocusModeEnum.None, Visible = false };
             button.Pressed += () => Activate(selected);
             button.MouseEntered += () => { if (_page == -2) Select(selected); };
-            AddChild(button); _buttons.Add(button);
+            actions.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button);
         }
         if (_assetError is not null)
         {
@@ -204,21 +211,24 @@ public sealed partial class SessionEntryView : Control
         _hint.Visible = _page != -1;
         _settingsAccess.Visible = _page == -1 && !_setup;
         _read.Visible = _page >= 0 || _page == -2 && _dialogue.MoreBelow;
-        if (_page == -2) _buttons[0].Visible = !_read.Visible;
+        foreach (var button in _buttons) button.Visible = _page == -2 && !_read.Visible;
+        _actionScroll.Visible = _page != -1;
         _read.Text = !Revealed ? GameText.Get("entry.reveal") : _dialogue.MoreBelow ? GameText.Get("entry.more") : GameText.Get("entry.continue");
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
         _hint.Text = Replacement ? GameText.Get("entry.new-hint") : GameText.Get("entry.journey-hint");
         if (GameText.Language != "en" && _entryDisplay?.Reason is { } reason)
         {
-            _hint.AddThemeFontSizeOverride("font_size", 20);
             _hint.Text += "\n" + GameText.Get("entry.fallback", reason);
         }
         string fallback = GameText.Fallback("entry.", includeKey: true);
         if (fallback != "")
         {
-            _hint.AddThemeFontSizeOverride("font_size", 20);
             _hint.Text += "\n" + fallback;
         }
+        _hint.Size = new(EntryLayout.Window.Size.X, 0);
+        float hintHeight = _hint.GetMinimumSize().Y;
+        _hint.Position = new(EntryLayout.Window.Position.X, EntryLayout.Window.End.Y - hintHeight);
+        _actionScroll.Size = new(640, _hint.Position.Y - 24 - _actionScroll.Position.Y);
         if (_input is null) return;
         _dialogue.SetHint(!Revealed ? GameText.Get("entry.reveal-hint", _input.CompactHint(GameAction.Confirm)) : _dialogue.MoreBelow
             ? GameText.Get("entry.more-hint", _input.CompactHint(GameAction.Confirm)) : _page >= 0
@@ -229,6 +239,8 @@ public sealed partial class SessionEntryView : Control
     {
         _selection = index;
         for (int i = 0; i < _buttons.Count; i++) StoryTheme.Select(_buttons[i], i == index);
+        Callable.From(() => { if (IsInstanceValid(_buttons[index]) && _buttons[index].IsVisibleInTree())
+            _actionScroll.EnsureControlVisible(_buttons[index]); }).CallDeferred();
     }
     private void Activate(int index)
     {

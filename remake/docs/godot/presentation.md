@@ -19,6 +19,90 @@ trace: source/accepted need → player decision and return → layer responsibil
 inspection contract (#1633) and distinguishes delivered battle Save/Continue from authored-only
 transactions and #1616's visual proposal. Update that entry with its detailed owner when a feature merges.
 
+## Production entry and field dialogue (#1606)
+
+**Standard rigor.** Apply the accepted [F1/F2 design](ui-scene-review.md#1-title-and-the-witch)
+to the ordinary game entry and real field questions. This is a bounded presentation migration:
+save publication/recovery, seven-character keyboard naming, source choice defaults and result
+flags retain their existing owners. F3–F10, gameplay rules, content admission and hint redesign
+remain outside this slice.
+
+F1 opts into square blue action surfaces, a reserved focus marker column, gold selection and the
+existing editor focus outline. Only `SessionEntryView`, `NameEntryView` and `SaveSlotView.OverEntry`
+select this treatment. Shared gameplay Save/Quit callers keep the prior theme. Entry actions wrap
+and scroll inside the right column; reading a long greeting owns the action area until its pages
+are read. Name/help/error content and slot/message/detail content have internal scrolling, with
+mapped hints and the name actions outside that scrolling region. The name editor retains its
+horizontal Back/Use actions, actual alphabet, draft and fixed Enter/Escape semantics.
+
+The entire Witch rectangle and right-column reservation remain as specified in the
+[entry agreement](#entry-windows-and-hints-1445). No veil or form covers her. Entry still uses its
+1080p scaled canvas; gameplay remains native. Body/action text stays 30px and hints 24px.
+
+F2 already uses the same `StoryDialoguePanel` as the accepted preview: retain measured reading,
+portrait columns, stable speaker avoidance and coordinated close. Only the field presenter opts
+its real Yes/No row into square surfaces and a 64px action region. The existing source/authored
+choice and pointer owners still decide focus, release admission, Cancel=No, commit and return.
+Other shared dialogue callers keep their prior choice geometry. No source text, original art,
+translation catalog, script or save format changes.
+
+**Confirmed — bounded remake observations:** the ordinary title/New Game path accepts English and
+real #1602 Chinese entry/world catalogs at 1920×1080 and 2560×1440. Native controls verify square
+styles, the unchanged Witch bounds, contained fixed hints, mapped pad focus, pointer New Game,
+invalid length/alphabet, retained name draft, safe final Back and real initial-save publication.
+A copied occupied disposable slot remains byte-identical through confirmation Back. A separate
+fresh process with a deliberately corrupt disposable primary offers explicit backup recovery,
+defaults to Cancel, returns safely and restores the actual saved field only after confirmation.
+An in-checkout save-root selection exercises the existing explicit configuration refusal and
+Cancel; it is not a simulated successful write or an operating-system disk-failure claim.
+
+A display-only Chinese entry stress variant reads 1,450 characters through the existing pages.
+A separate pre-admission UI translation variant wraps a long New Game action, an occupied slot
+description and name help; the real slot/name scroll containers retain their fixed hints/actions.
+It changes only in-memory display resources, never the tracked catalogs or save data.
+The actual Map3 source approach reaches text531's question with its supplied portrait. English
+1920×1080 covers directional selection and Cancel=No; Chinese 2560×1440 covers a 1,341-character
+question, retained control tokens, body growth/reading, separate choices/hints and a deliberate
+pointer Yes. Both verify the actual source result flag and choice retirement before continuation.
+The controlled start is not a claim of natural campaign reach. No screenshot, active snapshot
+setter, new comparison system, engine-rule test or full campaign replay is involved.
+
+The reusable observer is [`entry_ui_observation.gd`](../../game/probes/entry_ui_observation.gd).
+Load the owning checkout's current ignored environment and registered prepared inputs, including
+both final world/scene selections. Use a fresh ignored report/settings directory and an external
+disposable `SF2_SAVE_ROOT`; never select player slots. For Chinese, select both actual display
+catalogs and use a settings file with `language: "zh-CN"` (the switch alone is insufficient).
+
+```powershell
+$env:SF2_SAVE_NAMESPACE = 'issue1606-<fresh-case>'
+$env:SF2_ENTRY_UI_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
+$env:SF2_ENTRY_UI_LARGE = '0' # 1 selects 2560×1440
+$env:SF2_ENTRY_UI_ZH = '0' # 1 asserts the admitted Chinese question
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --path remake/game --script res://probes/entry_ui_observation.gd -- --input-settings $settings
+```
+
+For a real source question set `SF2_ENTRY_UI_CHOICE=no` or `yes`, remove `--headless`, and set
+`SF2_ENTRY_UI_START` to a fresh worktree-local controlled start consumed by the existing
+`StartPreVoyageLocalizationObservation`: Map3, entity-0, (42,9), facing3, speed32,
+flags0/32/256/260/261/601/602. The observer takes the owned native window off-screen, requests focus,
+walks Down/Right, reads the actual script and stops immediately after the answer. It checks focus
+and declared language. `SF2_ENTRY_UI_RECOVER=1` instead requires a valid copied `slot1.bak` and
+corrupt `slot1.json` in this disposable namespace. `SF2_ENTRY_UI_ERROR=1` expects the deliberately
+invalid save-root configuration. Unset case switches between runs. Adapter compilation, necessary
+Debug compilation for native loading, direct scope/private checks, the committed planner and scoped
+CI are the engineering gates.
+
+`SF2_ENTRY_UI_LABELS=1` selects that finite Chinese UI stress variant before host initialization;
+use it with a copied valid occupied slot and Chinese settings. It is layout input, not an accepted
+translation or a new naming capability.
+
+**Unknown / remaining demo UI gaps:** final visual harmony in the ordinary game still needs human
+review. Physical keyboard/controller behavior across devices, OS focus/DPI combinations, actual
+disk-full/permission/publication-uncertain failures and unobserved script/Search/long-label
+combinations retain their existing boundaries. The runs report ObjectDB shutdown warnings (two
+instances for entry, six for these controlled source questions); their exact ownership is unresolved.
+F2's separate field command list and F3–F10 production migration remain with #1616's later slices.
+
 ## Entry confirmation observation
 
 The [entry lifecycle agreement](../application/opening-session-lifecycle.md#entry-confirmation-responsiveness)

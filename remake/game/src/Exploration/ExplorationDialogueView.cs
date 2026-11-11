@@ -14,7 +14,7 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 // Field text projection only; the controller retains reveal delivery, input and completion tokens.
 internal sealed partial class ExplorationDialogueView : Control
 {
-    internal StoryDialoguePanel Panel { get; } = new() { Name = "DialoguePanel" };
+    internal StoryDialoguePanel Panel { get; } = new() { Name = "DialoguePanel", JourneyChoices = true };
     private ContextHint _context = new() { Name = "ContextHint" };
     internal Label ActiveHint => Panel.Visible ? Panel.Hint : _context.Text;
     private Label _dialogue => Panel.Body;
