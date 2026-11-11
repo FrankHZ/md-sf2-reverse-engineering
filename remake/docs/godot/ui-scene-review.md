@@ -290,6 +290,18 @@ one row. Use a vertical alternative if the supported languages cannot fit or tar
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
 | Commit | The explicit current command owns payment/action commitment; UI retires the provisional pages and switches to the real presentation phase. | A refusal/stale offer remains with its current responsible view and reason; do not invent success or silently submit a previous choice. Returning held directions/Confirm cannot act on the next phase. |
 
+### Showing range and choosing a target
+
+During movement, mark legal stopping cells using the actor's movement budget, terrain costs and
+occupancy. On Attack or a highlighted spell level, draw its reach from the selected stop and
+keep that reach visible while selecting a recipient. Draw the effect cursor on the recipient.
+Pulse the cells gently, with a steady version when motion is off. Up/Left selects the previous
+eligible combatant and Down/Right the next, wrapping within the action's living, in-range
+target list. Hover and click use that same list. A single candidate stays selected. With none,
+show the reason and Back. Returning to the command menu allows the player to reconsider the move.
+[Original grid construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
+and [target input](../../../docs/research/battle/battle-functions.md#confirmed-player-control-state-machine).
+
 ### Viewing the battlefield
 
 During free inspection, pointer hover and directional focus reveal the same short status.
