@@ -416,7 +416,7 @@ func help_case() -> bool:
     var settings := host.find_child("SettingsView",true,false)
     if not expect(settings != null,"Actual host Settings opens at its supported caller"): return false
     for i in range(10):
-        if JSON.parse_string(settings.call("ReadSettingsObservationJson")).selected == 8: break
+        if JSON.parse_string(settings.call("ReadSettingsObservationJson")).selected == 9: break
         await act("down")
     await act("confirm")
     var help := host.find_child("ControlsHelpView",true,false)

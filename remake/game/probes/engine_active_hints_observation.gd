@@ -135,7 +135,7 @@ func field_case() -> bool:
     await act("down"); await act("down"); await act("confirm")
     var settings := host.find_child("SettingsView",true,false)
     if not expect(settings != null, "Legal field Settings opens"): return false
-    for i in range(8): await act("down")
+    for i in range(9): await act("down")
     await act("confirm")
     var help := host.find_child("ControlsHelpView",true,false)
     if not expect(help != null, "Existing complete on-demand Help remains accessible"): return false
@@ -147,9 +147,9 @@ func field_case() -> bool:
     if not expect(" / " in help_after.body, "Full Help retains alternative bindings for both devices"): return false
     samples.append({"label":"help-active-pad","help":help_after})
     await act("cancel")
-    for i in range(6): await act("up")
+    for i in range(7): await act("up")
     await act("confirm") # Confirm/Cancel swap draft
-    for i in range(4): await act("down")
+    for i in range(5): await act("down")
     var old_confirm: InputEvent = events.confirm.duplicate()
     old_confirm.pressed = true; Input.parse_input_event(old_confirm); await frames(2)
     if not expect(JSON.parse_string(host.call("ReadSettingsHostObservationJson")).applied.ConfirmCancel == "swapped", "Ordinary Settings Apply publishes actual swapped mappings"): return false

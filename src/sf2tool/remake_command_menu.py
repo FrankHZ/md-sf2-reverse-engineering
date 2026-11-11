@@ -236,6 +236,35 @@ def write_json(path: Path, document: dict) -> None:
         json.dump(document, stream, ensure_ascii=False)
 
 
+def world_dependencies(document: dict, world: Path) -> set[str]:
+    """Validate the relative encounter/audio inputs of an existing publication."""
+    world_document = document.get("world", document)
+    dependencies = {
+        value
+        for row in document.get("encounters", [])
+        for value in row.values()
+        if value is not None
+    }
+    dependencies.update(
+        f"audio-{sound['command']:02x}-{sound['timerB']:02x}/"
+        f"command-{sound['command']:02x}-timer-{sound['timerB']:02x}.wav"
+        for sound in world_document["presentation"].get("audio", [])
+        if "runtimeWav" in sound
+    )
+    source_root = world.resolve().parent
+    for relative in dependencies:
+        path = Path(relative)
+        if (
+            path.is_absolute()
+            or ".." in path.parts
+            or not (source_root / path).resolve().is_relative_to(source_root)
+        ):
+            raise ValueError("world dependency escapes input package")
+        if not (source_root / path).is_file():
+            raise ValueError(f"world dependency missing: {relative}")
+    return dependencies
+
+
 def prepare_church(
     rom: Path,
     upstream: Path,
@@ -291,29 +320,8 @@ def prepare_church(
             if key in presentation and presentation[key] != assets[name][0]:
                 raise ValueError(f"input world already owns partial or different {key}")
             presentation[key] = assets[name][0]
-    dependencies = {
-        value
-        for row in document.get("encounters", [])
-        for value in row.values()
-        if value is not None
-    }
-    dependencies.update(
-        f"audio-{sound['command']:02x}-{sound['timerB']:02x}/"
-        f"command-{sound['command']:02x}-timer-{sound['timerB']:02x}.wav"
-        for sound in world_document["presentation"].get("audio", [])
-        if "runtimeWav" in sound
-    )
+    dependencies = world_dependencies(document, world)
     source_root = world.resolve().parent
-    for relative in dependencies:
-        path = Path(relative)
-        if (
-            path.is_absolute()
-            or ".." in path.parts
-            or not (source_root / path).resolve().is_relative_to(source_root)
-        ):
-            raise ValueError("world dependency escapes input package")
-        if not (source_root / path).is_file():
-            raise ValueError(f"world dependency missing: {relative}")
     scenes = {}
     if menu == "all":
         # The opening battle is an external selection; later battles are relative dependencies.

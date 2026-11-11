@@ -12,6 +12,7 @@ internal sealed class InputSettings
     public string ConfirmCancel { get; set; } = "standard";
     public bool ReducedFlash { get; set; }
     public string Language { get; set; } = "en";
+    public string GraphicsMode { get; set; } = "original";
     public string TextMode { get; set; } = "instant";
     public double CharactersPerSecond { get; set; } = 40;
     public bool SuppressBattleHitCoinMessages { get; set; }
@@ -42,6 +43,7 @@ internal sealed class InputSettings
         if (settings.ConfirmCancel is not ("standard" or "swapped"))
             throw new ArgumentException("confirmCancel must be standard or swapped.");
         if (settings.Language is not ("en" or "zh-CN")) throw new ArgumentException("language must be en or zh-CN.");
+        if (settings.GraphicsMode is not ("original" or "hd")) throw new ArgumentException("graphicsMode must be original or hd.");
         if (settings.TextMode is not ("instant" or "adjustable"))
             throw new ArgumentException("textMode must be instant or adjustable.");
         if (!double.IsFinite(settings.CharactersPerSecond) || settings.CharactersPerSecond is < 1 or > 240)
@@ -54,7 +56,7 @@ internal sealed class InputSettings
         var draft = defaults ? Load(null) : new InputSettings
         {
             FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
-            Language = Language, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
+            Language = Language, GraphicsMode = GraphicsMode, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
             SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
         draft.Bindings = Bindings;
@@ -65,6 +67,7 @@ internal sealed class InputSettings
     {
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
+        GraphicsMode = candidate.GraphicsMode;
         Bindings = candidate.Bindings;
         SuppressBattleHitCoinMessages = candidate.SuppressBattleHitCoinMessages;
     }

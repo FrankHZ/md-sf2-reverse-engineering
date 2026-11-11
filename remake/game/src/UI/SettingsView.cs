@@ -42,15 +42,15 @@ internal sealed partial class SettingsView : Control
         _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         column.AddChild(_message);
         var actions = new HBoxContainer { Name = "SettingsActions" }; actions.AddThemeConstantOverride("separation", 12);
-        for (int i = 0; i < (BattleOnly ? 2 : 9); i++)
+        for (int i = 0; i < (BattleOnly ? 2 : 10); i++)
         {
             var button = new Button { Name = "Setting" + i, CustomMinimumSize = new(0, 64), SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore,
-                AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && !BattleOnly && i < 7 };
+                AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && !BattleOnly && i < 8 };
             StoryTheme.EntryChoice(button);
-            if (!BattleOnly && i >= 6) actions.AddChild(button); else column.AddChild(button);
+            if (!BattleOnly && i >= 7) actions.AddChild(button); else column.AddChild(button);
             _buttons.Add(button);
-            if (!BattleOnly && i < 5)
+            if (!BattleOnly && i < 6)
             {
                 var description = new Label { Name = "SettingDescription" + i, Text = GameText.Get("host.setting-description-" + i),
                     AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = MouseFilterEnum.Ignore };
@@ -60,7 +60,7 @@ internal sealed partial class SettingsView : Control
         layout.AddChild(actions); actions.Visible = !BattleOnly;
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); layout.AddChild(_hint);
-        _selected = ReadOnly && !BattleOnly ? 7 : 0;
+        _selected = ReadOnly && !BattleOnly ? 8 : 0;
         Resized += Arrange; Arrange(); Refresh();
         GetWindow().SizeChanged += SuspendPointer;
     }
@@ -97,10 +97,10 @@ internal sealed partial class SettingsView : Control
         {
             int step = action == GameAction.Up ? -1 : 1;
             do { _selected = (_selected + step + _buttons.Count) % _buttons.Count; } while (_buttons[_selected].Disabled);
-            Refresh(); if (_selected < 6) _scroll.EnsureControlVisible(_buttons[_selected]);
+            Refresh(); if (_selected < 7) _scroll.EnsureControlVisible(_buttons[_selected]);
         }
         else if (action == GameAction.Confirm) Activate(1);
-        else if (action is GameAction.Left or GameAction.Right && _selected < 5) Activate(action == GameAction.Left ? -1 : 1);
+        else if (action is GameAction.Left or GameAction.Right && _selected < 6) Activate(action == GameAction.Left ? -1 : 1);
         else if (action is GameAction.Left or GameAction.Right)
             _scroll.ScrollVertical += action == GameAction.Left ? -112 : 112;
     }
@@ -139,13 +139,14 @@ internal sealed partial class SettingsView : Control
             case 2: _draft.ConfirmCancel = _draft.ConfirmCancel == "standard" ? "swapped" : "standard"; break;
             case 3: _draft.ReducedFlash = !_draft.ReducedFlash; break;
             case 4: _draft.Language = _draft.Language == "en" ? "zh-CN" : "en"; break;
-            case 5: _draft = Input.Settings.Draft(defaults: true); _reset = true; _status = GameText.Get("ui.settings.staged"); break;
-            case 6:
+            case 5: _draft.GraphicsMode = _draft.GraphicsMode == "original" ? "hd" : "original"; break;
+            case 6: _draft = Input.Settings.Draft(defaults: true); _reset = true; _status = GameText.Get("ui.settings.staged"); break;
+            case 7:
                 _status = Apply(_draft, _reset) ?? "";
                 if (_status == "") { Close(); return; }
                 break;
-            case 7: Close(); return;
-            case 8:
+            case 8: Close(); return;
+            case 9:
                 _pointer.Suspend(); _panel.Hide();
                 _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Back = CloseHelp };
                 AddChild(_help); break;
@@ -194,10 +195,12 @@ internal sealed partial class SettingsView : Control
             GameText.Get("ui.settings.confirm", GameText.Get(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")),
             GameText.Get("ui.settings.flash", GameText.Get(_draft.ReducedFlash ? "ui.settings.on" : "ui.settings.off")),
             GameText.Get("ui.settings.language", _draft.Language == "en" ? "English" : "简体中文"),
+            GameText.Get("ui.settings.graphics", GameText.Get("ui.settings.graphics-" + _draft.GraphicsMode)),
             GameText.Get("ui.settings.defaults"), GameText.Get("ui.settings.apply"),
             GameText.Get(ReadOnly ? "ui.settings.close" : "ui.settings.cancel"), GameText.Get("ui.settings.help")];
         for (int i = 0; i < labels.Length; i++) { _buttons[i].Text = labels[i]; StoryTheme.Select(_buttons[i], i == _selected); }
         _message.Text = _status != "" ? _status : Notice ?? GameText.Get("ui.settings.notice") + "\n" + GameText.Coverage;
+        _message.Text += "\n" + GameText.Get("ui.settings.graphics-coverage");
         _hint.Text = GameText.Get("ui.settings.hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
         _hint.Text += "\n" + GameText.Get("host.settings-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
     }

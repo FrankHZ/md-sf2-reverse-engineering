@@ -6,6 +6,10 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 public sealed partial class ExplorationSessionView
 {
+    // Prepare both texture sets before preference publication; toggles retain borrowed handles.
+    internal void PrepareGraphics() { if (_session is not null) _partyStatus.PrepareGraphics(_session); }
+    internal void PublishGraphics() { if (_session is not null) _partyStatus.Present(_session, _input); }
+
     private FieldMenuView _fieldMenu = null!;
     private bool _fieldMenuActive;
     private bool CanOpenFieldMenu => _session?.Current.CanWaitAtInput == true && !_battleMounted && !_partyStatus.Open &&

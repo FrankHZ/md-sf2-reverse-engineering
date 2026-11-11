@@ -1845,3 +1845,21 @@ msgstr "悬停：预览 · 点击合法目标：立即执行"
 
 msgid "field.reveal-continue"
 msgstr "{0}：显示全文并继续"
+
+msgid "ui.settings.graphics"
+msgstr "画面：{0}"
+
+msgid "ui.settings.graphics-original"
+msgstr "原版"
+
+msgid "ui.settings.graphics-hd"
+msgstr "高清"
+
+msgid "ui.settings.graphics-coverage"
+msgstr "高清覆盖：已安装的探索背包与准备菜单药草图标。其余画面使用原版；公开配置沿用文字图标。"
+
+msgid "ui.settings.graphics-error"
+msgstr "无法准备画面资源。已保留先前画面和偏好。"
+
+msgid "host.setting-description-5"
+msgstr "应用后在本局立即切换，并保存供下次启动使用。"
