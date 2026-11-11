@@ -292,6 +292,20 @@ one row. Use a vertical alternative if the supported languages cannot fit or tar
 
 ### Viewing the battlefield
 
+During free inspection, pointer hover and directional focus reveal the same short status.
+Put the unit name and its land-effect percentage on the first line, with the percentage at
+the trailing edge. The next row gives HP and MP equal space for values and gauges. The
+location sits below them. Empty ground shows the location alone. Confirm on a unit opens
+its read-only detail sheet. Back restores the inspected cell.
+
+For mouse camera control, use the exposed board edge during free inspection. On the 1080p
+review canvas the band is 32px wide, with a 180ms dwell and a speed of two to six cells
+per second according to pointer depth. The clear outer window rim also supports a pointer
+pushed against the top or bottom edge. Diagonals share the same maximum speed. Center axes
+that fit and stop scrolling at the encounter bounds. Keep hover and click aligned with the
+moving map. Interior movement, a button press, keyboard or pad navigation, window exit,
+focus loss and modal entry end the gesture. Re-entry requires fresh pointer movement.
+
 The [battle interaction baseline](battle-interaction-baseline.md) records the original inspection
 path and current cursor, details, Map, Member, Speed and Quit consumers. Empty-ground options
 use the same labeled command items with each option's original art. Identify the inspected unit and terrain beside the freely moved board cursor.
