@@ -41,7 +41,8 @@ Original pixels are not included in the public repository.
 `FieldChoicePanel` measures the full heading/quote and rows inside a native scroll region; hints and
 Back remain outside it. `FieldPackPanel` scrolls its own complete pack when needed. A command refusal
 scrolls below the fixed command/Back rows. Existing English/Chinese text and fallback notices remain.
-No global theme, localization framework or new input mapping is introduced.
+F10 Help also describes Up/Down selection and Left/Right field/shop reading. Only its corresponding
+English/Chinese help text fields change; no global theme, localization framework or new input mapping is introduced.
 
 Use mapped Up/Down for focus and Confirm for the selected action. Mapped Left/Right (the `↕` reading
 hint) scroll the current field/service reading region, including the adjacent pack. The pointer wheel
@@ -137,3 +138,18 @@ F5–F7 acceptance, not a fresh continuous Battles01–07-to-Map14 playthrough. 
 hardware timing are not established. Future content/translation changes require their actual reader
 check; the stress variants do not admit unlimited command-caption/footer sizes. Original unavailable
 services and the existing campaign/save boundaries remain with their capability owners.
+
+## Current verification entry points
+
+The [host verification route](../verification/host.md#exploration-gameplay-menu-observation) keeps
+`engine_field_menu_observation.gd` current for opening/release, pause, close-edge, pointer focus recovery,
+host/Save exclusion, pad shortcut, disabled Search, remap and Drop paths. It shares only input/report
+helpers with the F5–F7 observer. `engine_party_details_observation.gd` retains the independent public
+14-member/value/gesture/scroll witness; its recipe is in the same host owner. The
+[shop route](../development-and-verification.md#galam-shop-and-supply-observation) retains
+`engine_shop_observation.gd` and its supply consumer against the current list/page projection.
+
+Use `SF2_FIELD_MENU_CASE=help` with the F5–F7 observer to open actual F10 → Settings → Help,
+read the Exploration/Menus pages in the selected language and return to usable field control.
+Older combined field-art observers are explicitly historical at6c2d0982 under their presentation
+owner; their4×/cardinal geometry is not a current gate. No removed observation field is restored.

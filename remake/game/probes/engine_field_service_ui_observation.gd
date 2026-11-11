@@ -253,6 +253,32 @@ func shop_flow() -> void:
         check(state().party == field_before.party and state().gold == field_before.gold,"complete-world preparation inspection spends no party resources")
         state("complete-world-field-return")
 
+func help_flow() -> void:
+    await press(KEY_F10)
+    var settings_button := host.find_child("SystemSettings",true,false) as Control
+    check(settings_button != null,"F10 exposes Settings")
+    if settings_button == null: return
+    var r: Rect2 = settings_button.get_global_rect()
+    await click({"x":r.position.x,"y":r.position.y,"width":r.size.x,"height":r.size.y})
+    var help_button := host.find_child("Setting8",true,false) as Control
+    check(help_button != null,"Settings exposes Help")
+    if help_button == null:return
+    r=help_button.get_global_rect()
+    await click({"x":r.position.x,"y":r.position.y,"width":r.size.x,"height":r.size.y})
+    var help := host.find_child("ControlsHelpView",true,false)
+    check(help != null,"actual Controls Help opened")
+    if help == null:return
+    var chinese: bool = Array(OS.get_cmdline_user_args()).any(func(a):return "zh-CN" in a)
+    for i in range(13):
+        var page: Dictionary=JSON.parse_string(help.call("ReadControlsHelpObservationJson"))
+        if i in [1,4,10]:
+            samples.append({"label":"actual-help-"+str(i),"help":page})
+            check(("上 / 下" in page.body if chinese else "Up/Down" in page.body),"help describes vertical field selection")
+            if i in [1,10]:check(("左 / 右" in page.body if chinese else "Left/Right" in page.body),"help describes horizontal reading")
+        await press(KEY_RIGHT)
+    await press(back_key);await press(back_key);await press(back_key)
+    check(state().canWaitAtInput and not state().fieldMenu.visible,"Help Back restores usable field")
+
 func run() -> void:
     root.size = Vector2i(1920,1080)
     if OS.get_environment("SF2_FIELD_UI_LONG") == "1":
@@ -277,6 +303,7 @@ func run() -> void:
         if state().canWaitAtInput: break
         await frames(1)
     check(state().failure == null and state().canWaitAtInput,"initial usable field")
-    if mode == "shop": await shop_flow()
+    if mode == "help": await help_flow()
+    elif mode == "shop": await shop_flow()
     else: await field_flow()
     await finish()

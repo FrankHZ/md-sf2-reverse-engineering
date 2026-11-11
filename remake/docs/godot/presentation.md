@@ -232,7 +232,18 @@ selected rasters at nearest4×. The failure was missing assembled resources; ded
 success did not establish ordinary startup coverage. Public-authored scenes intentionally retain
 text fallback; private empty sets/partial sets are not silently called original presentation.
 
-Use `game/probes/engine_menu_assets_observation.gd` against the ordinary `Main.tscn`. It starts the
+**Current route:** F5–F7 uses [field/service observation](field-and-shop.md#reproduce-the-bounded-observations).
+The older combined `engine_menu_assets_observation.gd` field-new/field-continue command below,
+`engine_identity_icons_observation.gd` field subroute and `engine_inventory_art_observation.gd`
+field/field-controlled subroutes reproduce the earlier4×/cardinal composition only in a checkout
+pinned to [`6c2d0982`](https://github.com/FrankHZ/md-sf2-reverse-engineering/tree/6c2d098212efebb26d026d335eb45c369914cff4).
+Their source publication/pixel/error evidence is retained; do not run those historical field commands
+against the current presenters. Current fixed-slot, held confirmation, owner/recipient/Back and source
+art checks are in the F5–F7 observer; the [field-menu witness](../verification/host.md#exploration-gameplay-menu-observation)
+retains focus recovery, host exclusion, malformed field art and exact close-edge checks. Separate
+battle/Church histories keep their named owners rather than becoming this field correction's gates.
+
+**Historical command (pinned checkout above):** use `game/probes/engine_menu_assets_observation.gd` against the ordinary `Main.tscn`. It starts the
 actual title, submits mapped New Game/slot/name/Normal Start or Continue input, then reads existing
 state and `_Draw` resource projections. It never assigns a gameplay state or bypasses restoration.
 After the normal protected environment and both publication selections, use a fresh disposable save
@@ -273,6 +284,9 @@ campaign run or original emulator observation is claimed. The contextual authore
 caption remains a text override; the ordinary admitted Battles01–07 do not expose that variant.
 
 ## Exploration gameplay diamond agreement (#1588)
+
+Current F5–F7 layout/navigation is owned by [Field, party and shop UI](field-and-shop.md).
+The source/capability boundaries and retained earlier layout observations below keep their stated scope.
 
 Standard rigor: a bounded multi-consumer presentation change with existing command authority.
 Outcome: ordinary field control exposes a four-cardinal gameplay menu without another top bar.
@@ -973,6 +987,9 @@ feedback observations. The host owner records the exact evidence and retained li
 is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
 
 ## Party details agreement
+
+Current F5–F7 layout/navigation is owned by [Field, party and shop UI](field-and-shop.md).
+The source/capability boundaries and retained earlier layout observations below keep their stated scope.
 
 **Standard rigor; [#1416](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1416).**
 This bounded E7 extension lets the player inspect preparation and returned progression. The user's
@@ -2800,7 +2817,7 @@ cannot submit the field child confirmation. Availability and localized explanati
 from original normal/AND-selected pixels. Equipment covers the command menu; its16×24 image is64×96
 beside the existing preview text. The world remains1920×1080 with96px cells.
 
-`probes/engine_identity_icons_observation.gd` extends the ordinary menu observer. Read-only projection
+**Historical field subroute (pinned6c2d0982 above):** `probes/engine_identity_icons_observation.gd` extends the ordinary menu observer. Read-only projection
 records resource keys, actual ImageTexture instance IDs,4×/Nearest geometry, focus/visibility and
 errors. Only the explicit probe pixel observation reads native texture bytes/digests; ordinary host
 state reads do not. Compare those explicit digests with the publisher's source receipt.
@@ -2840,7 +2857,7 @@ textures through temporary field/battle reparenting and releasing on content rep
 The battle HUD shows given/returned images separately outside the existing story panel text column;
 its one immutable projection reuses a single choices query, with no cross-frame cache.
 
-**Confirmed functional/resource boundary:** `probes/engine_inventory_art_observation.gd` reuses ordinary
+**Confirmed historical field boundary (pinned6c2d0982 above):** `probes/engine_inventory_art_observation.gd` reuses ordinary
 title New Game and fresh Continue. English/zh-CN select the actual #1602 world/entry catalogs and the
 same publication. Actual native state/draw reads cover Member rows, inventory scrolling, four cardinal
 operation images and selected/normal pixels, unavailable Use explanation, Give/Drop slot/confirmation
@@ -2909,7 +2926,7 @@ private resource pack and public authored entry retain their admitted behavior. 
 PNG reports the resource error at its own shop/options menu and permits independent exit; expected
 codec errors remain recorded. Missing shop or battlefield halves reject Content before gameplay.
 The source-to-publication comparison preserves every unrelated world/scene value and dependency.
-The maintained Item/Member/Map/Speed/Quit/shop probes now use the actual cardinal inputs; their older
+The retained Item/Member/Map/Speed/Quit field-art records used their then-current cardinal inputs; their older
 reports retain their historical scope and are not claimed as rerun here.
 
 For direct native reproduction, load the selected environment/private inputs and both final pack

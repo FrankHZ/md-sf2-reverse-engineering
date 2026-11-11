@@ -958,7 +958,7 @@ member-status extension in [#1416](https://github.com/FrankHZ/md-sf2-reverse-eng
 `probes/engine_party_details_observation.gd` extends the existing
 `engine_battle_return_status_observation.gd` and its native focus/input/return helpers. It loads
 ordinary Main, sends mapped keys/pad and complete pointer events, and reads compact inspected fields,
-actual rectangles, aligned stat/value rows, independent magic/item scrolling, complete portraits
+actual rectangles, persistent member navigation, aligned stat/value rows, independent magic/item scrolling, complete portraits
 and carried resources. It never sets session state, constructs a battle
 for inspection, captures screenshots or records frames. Budget: one process, 75 seconds and less than
 5MiB/report; reuse prepared data/builds. The pilot reports were below0.5MiB and4 seconds for field-only
@@ -1006,14 +1006,17 @@ b["items"] = [dict(id=0, name="Authored restorative herb with a deliberately len
                    effect="consumable-healing", power=10, minimumRange=0, maximumRange=1)]
 for m in a["world"]["maps"]:
     m.update(battle=None, onLoad=None, events=[])
-victory = json.loads((repo / "remake/content/authored/leader-cleanup.json").read_text())
-victory["start"]["map"] = "arena"; victory["start"]["flags"].append(401)
-next(p for p in victory["world"]["programs"] if p["id"] == "before")["instructions"] = [dict(op="end")]
-private = json.loads((repo / "local/issue1391/scene-start.json").read_text(encoding="utf-8-sig"))
-private["start"]["flags"] = [0,1,2,32,33,34,256,260,261,601,602]
-for name, document in [("authored",a), ("victory",victory), ("private-start",private)]:
-    (out / f"{name}.json").write_text(json.dumps(document), encoding="utf-8")
+(out / "authored.json").write_text(json.dumps(a), encoding="utf-8")
 ```
+
+The `authored` recipe/command above is the current independent public entry and is directly rerun
+for F5. It preserves held-input, orphan/drag release,14-member scrolling, duplicate/full/empty slots,
+defeated-member, live value, independent pane, close/reopen and subsequent movement checks. The
+opening event is explicitly flushed before checking pause; normal field time may resume after close.
+The following private/victory setup and initial-layout reports are **historical reproductions at
+[`6c2d0982`](https://github.com/FrankHZ/md-sf2-reverse-engineering/tree/6c2d098212efebb26d026d335eb45c369914cff4)**,
+requiring those named retained inputs in that checkout. They are not a current mandatory replay queue.
+Current complete-world field/source-name/portrait observations use the [F5–F7 command](../godot/field-and-shop.md#reproduce-the-bounded-observations).
 
 The private start reuses the retained viewport Zone8 approach and admits three joined allies; the
 world remains the unchanged `local/issue1045/world-route-13.json`. Load `local/issue1045/inputs.ps1`
@@ -1027,6 +1030,10 @@ TEMP/TMP, `SF2_VIEWPORT_OUTPUT=<run>/native.json` and `SF2_VIEWPORT_CASE` below.
 Godot from the repository root with separate arguments:
 
 ```powershell
+$repo = (Get-Location).Path
+$entryOption = '--authored-package'
+$selectedInput = Join-Path $repo 'local/issue1416/authored.json'
+$env:SF2_VIEWPORT_CASE = 'authored'
 $nativeArguments = @('--headless', '--path', (Join-Path $repo 'remake/game'), '--max-fps', '60',
     '--resolution', '1920x1080', '--script', 'res://probes/engine_party_details_observation.gd',
     '--', $entryOption, $selectedInput)
@@ -1040,7 +1047,7 @@ separate from those assertions. Reports contain only semantic checkpoints.
 
 | Case / ordinary entry | Bounded executor observation |
 | --- | --- |
-| `authored` / `--authored-package local/issue1416/authored.json` | Original member-screen left summary/right status grouping, four aligned stat pairs, magic/items twin columns, compact14-member dropdown and four learned spells. Long admitted item labels, duplicate/full/empty inventory and defeated member; mapped focus/selection, dropdown visibility, independent scrolling, held opening/direction, orphan/drag releases, close and fresh field control. |
+| `authored` / `--authored-package local/issue1416/authored.json` | Persistent14-member navigation beside the field identity/vitals/attribute sheet, magic/items parallel columns and four learned spells. Long admitted item labels, duplicate/full/empty inventory and defeated member; mapped focus/selection, member-column visibility, independent scrolling, held opening/direction, orphan/drag releases, close and fresh field control. |
 | `private` / `--private-exploration-start local/issue1416/private-start.json` | Actual connected Bowie/Sarah/Chester names, EGRESS1/HEAL1, Wooden Sword/Wooden Rod/Wooden Stick and Medical Herb from admitted metadata; future seeded ally excluded by current joined flags. Reliably mapped complete48×64 portraits at192×256, carried kills/defeats availability, current resources/stats, four slots/equipped markers and unchanged revision/resources/flags/seeds while browsing. The earlier unchanged single-joined-member start also passes. |
 | `victory` / `--authored-package local/issue1416/victory.json` | The real accepted attack, reward/outcome and return route changes leader HP10→40, EXP0→48 and gold73→84. Read returned details, defeated-companion recovery, one outcome/return, repeated menu use and fresh field movement. No terminal state is injected. |
 
@@ -3006,10 +3013,10 @@ Physical hardware delivery, original menu animation/window pixels and human visu
 outside these observations; #1456 owns the latter. Run affected adapter compilation, direct resource
 preparation/provenance and document checks, committed planner selection and actual exact-head CI.
 
-## Exploration gameplay diamond observation
+## Exploration gameplay menu observation
 
-The [gameplay agreement](../godot/presentation.md#exploration-gameplay-diamond-agreement-1588) owns
-scope, source mapping and modern input decisions. `probes/engine_field_menu_observation.gd` drives
+The [current F5–F7 agreement](../godot/field-and-shop.md) owns the compact list and
+field/service reading layout. The [gameplay agreement](../godot/presentation.md#exploration-gameplay-diamond-agreement-1588) retains source mapping, pause and admission. `probes/engine_field_menu_observation.gd` drives
 actual Godot input and reads the ordinary session/presenter state. It never injects gameplay commands,
 completions or post-start state and captures no screenshots. Reuse the selected installation/project;
 a new native instance is necessary when no owned one remains or changed adapter binaries need loading.
@@ -3025,7 +3032,7 @@ resulting `world.json` as the authored package. After same-process configuration
 $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 $env:SF2_FIELD_MENU_OUTPUT = <absolute-new-ignored-report-path>
 $env:SF2_FIELD_MENU_CASE = 'public'
-& $env:GODOT_BIN --headless --fullscreen --fixed-fps 60 --resolution 1920x1080 `
+& $env:GODOT_BIN --headless --max-fps 60 --resolution 1920x1080 `
     --audio-driver Dummy --path remake/game --script res://probes/engine_field_menu_observation.gd `
     -- --authored-package <absolute-controlled-package> --input-settings <absolute-settings>
 ```
@@ -3051,9 +3058,9 @@ normal-route reach or support absent from that content. `bad-png` replaces magic
 valid-dimension/digest but undecodable PNG and observes one stopped failure through further input.
 
 **Confirmed:** bounded observations pass for these inputs and actual adapter projection/errors.
-Fallback English widths are Party68, Magic76, Item60 and Search89px, all within96px; Chinese labels
-and the selected full descriptions fit the measured panels. Original normal/selected resources use
-24px images at4× nearest. Menu idle and provisional navigation preserve revision, simulation tick,
+The four commands use 528px-wide rows at least80px tall, full wrapped captions and separate Back.
+Original normal/selected resources use24px images at3× nearest; description scrolling does not move
+the command hit regions. Up/Down traverses the list; mapped Left/Right reads its explanation. Menu idle and provisional navigation preserve revision, simulation tick,
 party and gold; closing edge submits no command, and ordinary field time resumes afterward. Final
 menu and shortcut Drop results are equal. The initial focus scenario exposed a neutral-release
 reset located below the new modal early return; moving it before modal dispatch restores fresh
