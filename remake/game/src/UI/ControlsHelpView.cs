@@ -13,31 +13,31 @@ internal sealed partial class ControlsHelpView : Control
     private sealed record Page(string Group, string Note, Row[] Rows);
     private static readonly Page[] Pages =
     [
-        new("Exploration", "At settled field input, hold a direction to walk. Story and movement waits own input until ready.",
-            [new(GameAction.Up, "Walk north"), new(GameAction.Right, "Walk east")]),
-        new("Exploration", "Directions also select menu rows or choices when those controls are open.",
-            [new(GameAction.Down, "Walk south"), new(GameAction.Left, "Walk west")]),
-        new("Exploration / Battle", "controls.acceleration.note",
+        new("host.help-text-0", "host.help-text-1",
+            [new(GameAction.Up, "host.help-text-2"), new(GameAction.Right, "host.help-text-3")]),
+        new("host.help-text-0", "host.help-text-4",
+            [new(GameAction.Down, "host.help-text-5"), new(GameAction.Left, "host.help-text-6")]),
+        new("host.help-text-7", "controls.acceleration.note",
             [new(GameAction.Accelerate, "controls.acceleration.hold")]),
-        new("Exploration", "Only currently available interactions are offered. Waiting advances field time while held.",
-            [new(GameAction.Confirm, "Talk to the faced NPC; otherwise Search when offered"), new(GameAction.Wait, "Hold: wait at field input"), new(GameAction.Equipment, "Open Party Status")]),
-        new("Exploration", "Cancel opens the gameplay diamond at settled field input: Up Member, Left Magic, Right Item, Down Search. Party Status remains a shortcut. Menu separately pauses exploration or battle for Settings, Save and Quit.",
-            [new(GameAction.Menu, "Open / close system Menu"), new(GameAction.Cancel, "Settled field: gameplay menu / Back"), new(GameAction.Stay, "Open Save")]),
-        new("Dialogue / choices", "Read all display pages before continuing. In Yes/No choices, Cancel means No. Church menus use Up/Down, Confirm and Cancel to choose or decline.",
-            [new(GameAction.Confirm, "Reveal text, read more, then continue / confirm choice"), new(GameAction.Cancel, "No / Back; close a search result; skip an eligible battle introduction"), new(GameAction.Left, "Select previous choice (Up also selects previous)")]),
-        new("Dialogue / choices", "During a battle message, Confirm reveals or continues. Wait is offered only where the current message allows it. A busy story cannot open Settings.",
-            [new(GameAction.Right, "Select next choice (Down also selects next)"), new(GameAction.Wait, "Hold: wait at an eligible healing message")]),
-        new("Battle", "During player command selection: directions move the provisional actor; in the diamond, Up/Left/Right/Down select Attack/Magic/Item/Stay. Availability and refusal reasons come from the current battle.",
-            [new(GameAction.Attack, "Open physical attack from the diamond"), new(GameAction.Spell, "Open Magic list from the diamond"), new(GameAction.Item, "Open Item list from the diamond")]),
-        new("Battle", "Lists use Up/Down and Confirm. Targets use directions or Target; disabled targets can be inspected but cannot be committed. AI and rounds advance automatically.",
-            [new(GameAction.Target, "Next target"), new(GameAction.Stay, "Open Stay confirmation"), new(GameAction.Confirm, "Choose / confirm current legal action or target")]),
-        new("Battle", "Supplementary actions are available from the command diamond when legal. Follow current item, recipient, equipment and confirmation rows; Cancel returns without committing a provisional choice.",
-            [new(GameAction.Equipment, "Open equipment choices"), new(GameAction.Give, "Open Give choices"), new(GameAction.Discard, "Open Drop choices")]),
-        new("Menus", "Up/Down select rows; Confirm chooses; Cancel goes Back. In battle, Back unwinds provisional choices. In Party Status, directions browse, Target changes the pane, Up/Down scroll details, Confirm opens Prepare and Equipment also closes.",
-            [new(GameAction.Confirm, "Choose / change"), new(GameAction.Cancel, "Back / close"), new(GameAction.Target, "Party Status: change pane")]),
-        new("Menus", "Title: Confirm or Equipment starts the Witch greeting; Equipment skips it. Settings edits stay in a draft until Apply. Control help Back keeps that draft and focus. Mouse: deliberate row clicks; battle target Previous/Next and Back/right click. No click-to-walk.",
-            [new(GameAction.Equipment, "Title start / skip Witch greeting")]),
-        new("Menus · name entry", "NAME ENTRY IS KEYBOARD ONLY. Type up to 7 supported letters, digits or punctuation. Backspace/Delete edit; Enter uses the name; Escape returns. Empty keeps Bowie. Gameplay bindings and their swap do not replace these editor keys. Other supported menus retain keyboard/pad controls.", [])
+        new("host.help-text-0", "host.help-text-8",
+            [new(GameAction.Confirm, "host.help-text-9"), new(GameAction.Wait, "host.help-text-10"), new(GameAction.Equipment, "host.help-text-11")]),
+        new("host.help-text-0", "host.help-text-12",
+            [new(GameAction.Menu, "host.help-text-13"), new(GameAction.Cancel, "host.help-text-14"), new(GameAction.Stay, "host.help-text-15")]),
+        new("host.help-text-16", "host.help-text-17",
+            [new(GameAction.Confirm, "host.help-text-18"), new(GameAction.Cancel, "host.help-text-19"), new(GameAction.Left, "host.help-text-20")]),
+        new("host.help-text-16", "host.help-text-21",
+            [new(GameAction.Right, "host.help-text-22"), new(GameAction.Wait, "host.help-text-23")]),
+        new("host.help-text-24", "host.help-text-25",
+            [new(GameAction.Attack, "host.help-text-26"), new(GameAction.Spell, "host.help-text-27"), new(GameAction.Item, "host.help-text-28")]),
+        new("host.help-text-24", "host.help-text-29",
+            [new(GameAction.Target, "host.help-text-30"), new(GameAction.Stay, "host.help-text-31"), new(GameAction.Confirm, "host.help-text-32")]),
+        new("host.help-text-24", "host.help-text-33",
+            [new(GameAction.Equipment, "host.help-text-34"), new(GameAction.Give, "host.help-text-35"), new(GameAction.Discard, "host.help-text-36")]),
+        new("host.help-text-37", "host.help-text-38",
+            [new(GameAction.Confirm, "host.help-text-39"), new(GameAction.Cancel, "host.help-text-40"), new(GameAction.Target, "host.help-text-41")]),
+        new("host.help-text-37", "host.help-text-42",
+            [new(GameAction.Equipment, "host.help-text-43")]),
+        new("host.help-text-44", "host.help-text-45", [])
     ];
     private int _page;
     private PanelContainer _panel = null!;
@@ -48,40 +48,45 @@ internal sealed partial class ControlsHelpView : Control
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         _panel = new PanelContainer { Name = "HelpWindow" }; AddChild(_panel);
         var column = new VBoxContainer(); column.AddThemeConstantOverride("separation", 12); _panel.AddChild(column);
         _title = new Label { Name = "HelpTitle", AutowrapMode = TextServer.AutowrapMode.WordSmart }; column.AddChild(_title);
         _scroll = new ScrollContainer { Name = "HelpScroll", SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled }; column.AddChild(_scroll);
         _body = new Label { Name = "HelpBody", AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            SizeFlagsHorizontal = SizeFlags.ExpandFill }; _body.AddThemeFontSizeOverride("font_size", 24); _scroll.AddChild(_body);
+            SizeFlagsHorizontal = SizeFlags.ExpandFill }; _body.AddThemeFontSizeOverride("font_size", 30); _scroll.AddChild(_body);
         _hint = new Label { Name = "HelpHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        _hint.AddThemeFontSizeOverride("font_size", 20); column.AddChild(_hint);
+        _hint.AddThemeFontSizeOverride("font_size", 24); column.AddChild(_hint);
         var actions = new HBoxContainer(); column.AddChild(actions);
         foreach (string text in new[] { "Previous", "Next", "Back" })
         {
             var button = new Button { Name = "Help" + text, Text = text, SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new(0, 58), FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore };
-            button.AddThemeFontSizeOverride("font_size", 22); actions.AddChild(button); _buttons.Add(button);
+                CustomMinimumSize = new(0, 64), FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore };
+            StoryTheme.EntryChoice(button); button.AddThemeFontSizeOverride("font_size", 24); actions.AddChild(button); _buttons.Add(button);
         }
         Resized += Arrange; Arrange(); Refresh();
+        GetWindow().SizeChanged += SuspendPointer;
     }
+    public override void _ExitTree() => GetWindow().SizeChanged -= SuspendPointer;
     private void Arrange()
     {
+        _pointer.Suspend();
         _panel.Size = new(Math.Min(1040, Math.Max(1, Size.X - 64)), Math.Min(900, Math.Max(1, Size.Y - 64)));
         _panel.Position = (Size - _panel.Size) / 2;
     }
     private void Refresh()
     {
         var page = Pages[_page];
-        _title.Text = $"Controls · {page.Group} · {_page + 1}/{Pages.Length}";
+        _title.Text = GameText.Get("host.help-title", Text(page.Group), _page + 1, Pages.Length);
         _body.Text = Text(page.Note) + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Input.Hint(row.Action)}"));
-        _hint.Text = $"{Input.CompactHint(GameAction.Left)} / {Input.CompactHint(GameAction.Right)}: Page  •  {Input.CompactHint(GameAction.Confirm)}: Next\n" +
-            $"{Input.CompactHint(GameAction.Up)} / {Input.CompactHint(GameAction.Down)}: Scroll  •  {Input.CompactHint(GameAction.Cancel)}: Back to Settings";
+        _hint.Text = GameText.Get("host.help-hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
+            Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down), Input.CompactHint(GameAction.Cancel));
+        string[] keys = ["host.help-previous", "host.help-next", "entry.back"];
+        for (int i = 0; i < _buttons.Count; i++) _buttons[i].Text = GameText.Get(keys[i]);
         _scroll.ScrollVertical = 0;
     }
-    private static string Text(string value) => value.StartsWith("controls.", StringComparison.Ordinal) ? GameText.Get(value) : value;
+    private static string Text(string value) => (value.StartsWith("controls.", StringComparison.Ordinal) || value.StartsWith("host.", StringComparison.Ordinal)) ? GameText.Get(value) : value;
     internal void SuspendPointer() => _pointer.Suspend();
     public override void _Process(double delta)
     {

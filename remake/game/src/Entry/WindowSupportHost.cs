@@ -1,6 +1,7 @@
 using Godot;
 using Sf2.Remake.GodotAdapter.Entry;
 using Sf2.Remake.GodotAdapter.UI;
+using Sf2.Remake.GodotAdapter.Localization;
 
 namespace Sf2.Remake.GodotAdapter;
 
@@ -74,6 +75,7 @@ public sealed partial class GameRoot
         {
             _windowEditorFocus = GetViewport().GuiGetFocusOwner();
             _systemMenu?.SuspendPointer();
+            _settings?.SuspendPointer();
             foreach (var view in new Control?[] { _entry, _slots, _nameEntry, _settings, _systemMenu })
                 if (view is not null) { _windowCoveredViews.Add((view, view.Visible)); view.Hide(); }
             _windowRecovery = new WindowRecoveryView { Name = "WindowRecoveryView", Input = _input!,
@@ -102,7 +104,7 @@ public sealed partial class GameRoot
     }
     private void RestoreGameplayWindow()
     {
-        if (!WindowCanFit) { WindowPlacementRefused("A 1080p window and its borders cannot fit the current desktop. Try fullscreen."); return; }
+        if (!WindowCanFit) { WindowPlacementRefused(GameText.Get("host.window-refused-fit")); return; }
         var window = GetWindow();
         var previousMode = window.Mode; var previousSize = window.Size; var previousPosition = window.Position;
         bool restored = false;
@@ -125,13 +127,13 @@ public sealed partial class GameRoot
         }
         finally { _updatingWindow = false; }
         RefreshWindowSupport();
-        if (!restored) WindowPlacementRefused("The requested client or its actual borders could not fit. The previous window mode was restored; choose fullscreen or Quit.");
+        if (!restored) WindowPlacementRefused(GameText.Get("host.window-refused-restore"));
     }
     private void UseGameplayFullscreen()
     {
-        if (!FullscreenCanFit) { WindowPlacementRefused("This screen cannot provide the minimum gameplay client. Choose another screen or Quit."); return; }
+        if (!FullscreenCanFit) { WindowPlacementRefused(GameText.Get("host.window-refused-screen")); return; }
         GetWindow().Mode = Window.ModeEnum.Fullscreen; RefreshWindowSupport();
-        if (!WindowClientAllowed) WindowPlacementRefused("Fullscreen did not provide the minimum gameplay client. Your journey remains paused.");
+        if (!WindowClientAllowed) WindowPlacementRefused(GameText.Get("host.window-refused-fullscreen"));
     }
     private void WindowPlacementRefused(string reason)
     { _windowRecovery?.Present(GetWindow().Size, WindowCanFit, FullscreenCanFit, reason); DisarmInput(); }

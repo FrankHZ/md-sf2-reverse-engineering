@@ -220,6 +220,11 @@ this design does not claim every full-game shop is connected.
 
 ## 7. Host Menu, Settings, Save and recovery
 
+The [implemented F10 host layout and finite observations](host-ui.md) apply this design to the
+ordinary Menu, preferences/help, shared slots and window recovery. Its access table retains the
+existing per-phase settings and save predicates; headless evidence does not imply desktop or human
+visual acceptance.
+
 The right-top Menu remains an unmistakable host entry with its own safe region. Its centered 800px
 menu retains Resume, the current Journey actions and Session actions. Use the shared square
 surface treatment and ≥64px rows. Existing unavailable rows keep their explanatory text even

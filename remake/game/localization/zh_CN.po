@@ -1583,3 +1583,212 @@ msgstr "按住时以 1.5 倍速探索和战斗，松开恢复 1 倍速。NPC 和
 
 msgid "controls.acceleration.hold"
 msgstr "按住：临时 1.5 倍速"
+
+# Host menu, preferences, controls help and window recovery.
+
+msgid "host.menu-reading"
+msgstr "{0}/{1}：向上 / 向下阅读"
+
+msgid "host.settings-reading"
+msgstr "选中底部操作时：{0}/{1} 滚动说明。"
+
+msgid "host.help-text-0"
+msgstr "探索"
+
+msgid "host.help-text-1"
+msgstr "可操作时，按住方向行走。剧情或移动尚未结束时，请等待。"
+
+msgid "host.help-text-2"
+msgstr "向北行走"
+
+msgid "host.help-text-3"
+msgstr "向东行走"
+
+msgid "host.help-text-4"
+msgstr "菜单打开时，方向键用于选择项目。"
+
+msgid "host.help-text-5"
+msgstr "向南行走"
+
+msgid "host.help-text-6"
+msgstr "向西行走"
+
+msgid "host.help-text-7"
+msgstr "探索 / 战斗"
+
+msgid "host.help-text-8"
+msgstr "只显示当前可用的交互。按住等待键可让场景时间继续。"
+
+msgid "host.help-text-9"
+msgstr "与面前的人交谈；无交谈对象时可调查"
+
+msgid "host.help-text-10"
+msgstr "按住：在场景中等待"
+
+msgid "host.help-text-11"
+msgstr "打开队伍状态"
+
+msgid "host.help-text-12"
+msgstr "可操作时按返回键打开成员、魔法、物品和调查菜单，用上 / 下选择。队伍状态保留快捷键。系统菜单可暂停探索或战斗，并按当前阶段提供设置、存档和退出。"
+
+msgid "host.help-text-13"
+msgstr "打开 / 关闭系统菜单"
+
+msgid "host.help-text-14"
+msgstr "可操作场景：游戏菜单 / 返回"
+
+msgid "host.help-text-15"
+msgstr "打开存档"
+
+msgid "host.help-text-16"
+msgstr "对白 / 选项"
+
+msgid "host.help-text-17"
+msgstr "读完各页后继续。是 / 否选项中，返回表示否。教堂菜单使用上 / 下、确认和返回选择或拒绝。"
+
+msgid "host.help-text-18"
+msgstr "显示全文、翻页，再继续 / 确认选项"
+
+msgid "host.help-text-19"
+msgstr "否 / 返回；关闭调查结果；跳过允许跳过的战斗开场"
+
+msgid "host.help-text-20"
+msgstr "选择上一项（上键也可）"
+
+msgid "host.help-text-21"
+msgstr "战斗消息中，确认键显示全文或继续。只在当前消息允许时提供等待。剧情进行时不能打开设置。"
+
+msgid "host.help-text-22"
+msgstr "选择下一项（下键也可）"
+
+msgid "host.help-text-23"
+msgstr "按住：在允许等待的治疗消息中等待"
+
+msgid "host.help-text-24"
+msgstr "战斗"
+
+msgid "host.help-text-25"
+msgstr "玩家回合中，方向键预览移动；打开指令后，用上 / 下选择攻击、魔法、物品或待机。可用性和拒绝理由以当前战斗为准。"
+
+msgid "host.help-text-26"
+msgstr "从指令菜单打开物理攻击"
+
+msgid "host.help-text-27"
+msgstr "从指令菜单打开魔法列表"
+
+msgid "host.help-text-28"
+msgstr "从指令菜单打开物品列表"
+
+msgid "host.help-text-29"
+msgstr "列表使用上 / 下和确认键。用方向键或切换目标键选择目标；可查看不可选目标，但不能提交行动。敌方行动和回合自动推进。"
+
+msgid "host.help-text-30"
+msgstr "下一个目标"
+
+msgid "host.help-text-31"
+msgstr "打开待机确认"
+
+msgid "host.help-text-32"
+msgstr "选择 / 确认当前合法行动或目标"
+
+msgid "host.help-text-33"
+msgstr "指令菜单按条件提供辅助操作。依次选择物品、接收者、装备并确认；返回会取消临时选择。"
+
+msgid "host.help-text-34"
+msgstr "打开装备选项"
+
+msgid "host.help-text-35"
+msgstr "打开交付选项"
+
+msgid "host.help-text-36"
+msgstr "打开丢弃选项"
+
+msgid "host.help-text-37"
+msgstr "菜单"
+
+msgid "host.help-text-38"
+msgstr "上 / 下选择，确认键选定，返回键逐层返回。战斗中返回会撤销临时选择。队伍状态中方向键浏览，切换目标键切换栏目，上 / 下滚动详情，确认打开整备，队伍快捷键也可关闭。"
+
+msgid "host.help-text-39"
+msgstr "选择 / 修改"
+
+msgid "host.help-text-40"
+msgstr "返回 / 关闭"
+
+msgid "host.help-text-41"
+msgstr "队伍状态：切换栏目"
+
+msgid "host.help-text-42"
+msgstr "标题中，确认或队伍快捷键开始女巫问候；队伍快捷键可跳过问候。设置在应用前都是草稿。从操作帮助返回会保留草稿与选中项。鼠标可点击菜单、切换战斗目标，并用右键返回；不能点击行走。"
+
+msgid "host.help-text-43"
+msgstr "标题：开始 / 跳过女巫问候"
+
+msgid "host.help-text-44"
+msgstr "菜单 · 输入姓名"
+
+msgid "host.help-text-45"
+msgstr "姓名仅支持键盘输入，最多七个受支持的字母、数字或标点。退格 / Delete 编辑，Enter 使用姓名，Escape 返回。留空保留默认姓名。游戏按键映射及确认 / 返回互换不会替换这些编辑键。其它支持的菜单保留键盘 / 手柄操作。"
+
+msgid "host.help-title"
+msgstr "操作帮助 · {0} · {1}/{2}"
+
+msgid "host.help-hint"
+msgstr "{0} / {1}：翻页  ·  {2}：下一页\n{3} / {4}：滚动  ·  {5}：返回设置"
+
+msgid "host.help-previous"
+msgstr "上一页"
+
+msgid "host.help-next"
+msgstr "下一页"
+
+msgid "host.setting-description-0"
+msgstr "对白立即显示，或逐字显示。"
+
+msgid "host.setting-description-1"
+msgstr "逐字模式下每秒显示的字符数。"
+
+msgid "host.setting-description-2"
+msgstr "互换已有确认和返回键；帮助显示已应用的映射。"
+
+msgid "host.setting-description-3"
+msgstr "减少闪烁演出，不改变游戏规则。"
+
+msgid "host.setting-description-4"
+msgstr "应用后，在此安全阶段切换界面语言。"
+
+msgid "host.window-title"
+msgstr "窗口大小"
+
+msgid "host.window-restore"
+msgstr "恢复 1080p 窗口"
+
+msgid "host.window-fullscreen"
+msgstr "使用全屏"
+
+msgid "host.window-message"
+msgstr "游戏需要至少 1920 × 1080 的窗口。当前：{0} × {1}。\n进度与已打开的菜单均已保留。\n{2}{3}"
+
+msgid "host.window-default"
+msgstr "请放大窗口，或选择以下显示模式。不会自动存档。"
+
+msgid "host.window-no-window"
+msgstr "\n窗口模式不可用：当前桌面容纳不了 1080p 客户区及边框。"
+
+msgid "host.window-no-fullscreen"
+msgstr "\n全屏不可用：当前屏幕小于游戏要求的最小尺寸。"
+
+msgid "host.window-hint"
+msgstr "{0}/{1}：选择 · {2}：确认 · {3}：退出…\n{4}/{5}：向上 / 向下阅读"
+
+msgid "host.window-refused-fit"
+msgstr "当前桌面无法容纳 1080p 窗口及边框，请尝试全屏。"
+
+msgid "host.window-refused-restore"
+msgstr "请求的窗口及实际边框无法容纳，已恢复原显示模式。请选择全屏或退出。"
+
+msgid "host.window-refused-screen"
+msgstr "当前屏幕无法提供游戏要求的最小尺寸，请切换屏幕或退出。"
+
+msgid "host.window-refused-fullscreen"
+msgstr "全屏仍未达到游戏要求的最小尺寸，冒险继续暂停。"

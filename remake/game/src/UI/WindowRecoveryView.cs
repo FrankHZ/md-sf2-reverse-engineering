@@ -1,5 +1,6 @@
 using Godot;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
@@ -20,28 +21,28 @@ internal sealed partial class WindowRecoveryView : Control
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         var shade = new ColorRect { Color = new("051225"), MouseFilter = MouseFilterEnum.Stop };
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
         _panel = new Panel { Name = "WindowRecoveryPanel" }; AddChild(_panel);
-        _title = new Label { Text = "Window size", HorizontalAlignment = HorizontalAlignment.Center }; _panel.AddChild(_title);
+        _title = new Label { Text = GameText.Get("host.window-title"), HorizontalAlignment = HorizontalAlignment.Center }; _panel.AddChild(_title);
         _scroll = new ScrollContainer { Name = "RecoveryReading", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         _panel.AddChild(_scroll);
         _message = new Label { Name = "RecoveryMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart,
             SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _scroll.AddChild(_message);
-        foreach (string title in new[] { "Restore 1080p window", "Use fullscreen", "Quit…" })
+        foreach (string title in new[] { "host.window-restore", "host.window-fullscreen", "entry.quit-menu" })
         {
-            var button = new Button { Name = "Recovery" + _buttons.Count, Text = title,
+            var button = new Button { Name = "Recovery" + _buttons.Count, Text = GameText.Get(title),
                 FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore,
                 AutowrapMode = TextServer.AutowrapMode.WordSmart };
-            _buttons.Add(button); _panel.AddChild(button);
+            StoryTheme.EntryChoice(button); _buttons.Add(button); _panel.AddChild(button);
         }
         _hint = new Label { Name = "RecoveryHint", AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            Text = $"{Input.CompactHint(GameAction.Up)}/{Input.CompactHint(GameAction.Down)}: Choose • " +
-                $"{Input.CompactHint(GameAction.Confirm)}: Select • {Input.CompactHint(GameAction.Cancel)}: Quit…\n" +
-                $"{Input.CompactHint(GameAction.Left)}/{Input.CompactHint(GameAction.Right)}: Read above/below" };
-        _hint.AddThemeFontSizeOverride("font_size", 20); _panel.AddChild(_hint);
+            Text = GameText.Get("host.window-hint", Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down),
+                Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel),
+                Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right)) };
+        _hint.AddThemeFontSizeOverride("font_size", 24); _panel.AddChild(_hint);
         Resized += Arrange; Arrange();
     }
 
@@ -64,14 +65,13 @@ internal sealed partial class WindowRecoveryView : Control
 
     internal void Present(Vector2I client, bool windowAvailable, bool fullscreenAvailable, string? reason)
     {
-        string unavailable = (windowAvailable ? "" : "\nWindow unavailable: a 1080p client and its borders do not fit this desktop.") +
-            (fullscreenAvailable ? "" : "\nFullscreen unavailable: this screen is smaller than the gameplay minimum.");
-        _message.Text = $"Gameplay needs a window at least 1920 × 1080. Current: {client.X} × {client.Y}.\n" +
-            "Your progress and open menus are kept.\n" +
-            (reason ?? "Enlarge the window or choose a mode below. Nothing is saved automatically.") + unavailable;
+        string unavailable = (windowAvailable ? "" : GameText.Get("host.window-no-window")) +
+            (fullscreenAvailable ? "" : GameText.Get("host.window-no-fullscreen"));
+        _message.Text = GameText.Get("host.window-message", client.X, client.Y,
+            reason ?? GameText.Get("host.window-default"), unavailable);
         _buttons[0].Disabled = !windowAvailable; _buttons[1].Disabled = !fullscreenAvailable;
-        _buttons[0].TooltipText = windowAvailable ? "" : "A 1080p window and its borders do not fit this desktop.";
-        _buttons[1].TooltipText = fullscreenAvailable ? "" : "This screen is smaller than the gameplay minimum.";
+        _buttons[0].TooltipText = windowAvailable ? "" : GameText.Get("host.window-no-window").Trim();
+        _buttons[1].TooltipText = fullscreenAvailable ? "" : GameText.Get("host.window-no-fullscreen").Trim();
         if (_buttons[_selected].Disabled) _selected = 2;
         Select();
     }
