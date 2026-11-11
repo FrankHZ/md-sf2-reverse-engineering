@@ -103,10 +103,9 @@ internal static class BattleMovement
     internal static WeightedMovementGrid Grid(EngineBattleState battle, ActorRef actorRef)
     {
         var actor = battle.GetActor(actorRef);
-        var costs = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
-        foreach (var opponent in battle.Actors.Where(a => a.Hp > 0 && a.Position is not null && a.Faction != actor.Faction))
-            costs[Offset(opponent.Position!)] = -1;
-        return WeightedMovement.Build(costs, Offset(actor.Position!), actor.Definition.Move * 2);
+        var enemies = battle.Actors.Where(a => a.Hp > 0 && a.Position is not null && a.Faction != actor.Faction);
+        return BattleTerrainRules.MovementGrid(battle.Definition.Terrain, actor.Position!, actor.Definition.Mover,
+            actor.Definition.Move, enemies.Select(a => a.Position!));
     }
 
     internal static void RequireStop(EngineBattleState battle, ActorRef actor, MapPosition destination, WeightedMovementGrid? aiGrid = null)
