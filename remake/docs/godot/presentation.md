@@ -2,8 +2,7 @@
 
 The [shared UI design language](ui-design-language.md) and
 [player-path scene review](ui-scene-review.md) own #1616's design decision to replace directional
-diamonds with labeled commands using the admitted original art. Scene placement and final visuals
-await review. The agreements below describe the controls and behavior in the current game.
+diamonds with labeled commands using the admitted original art. The scene review records the user-approved Godot layouts and their preview coverage. The agreements below describe the controls and behavior in the current game.
 
 The implemented bounded [game localization design](../application/localization-design.md) owns English/zh-CN
 catalogs, safe settings refresh, name/IME and font boundaries. Translated

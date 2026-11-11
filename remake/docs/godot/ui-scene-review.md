@@ -2,14 +2,26 @@
 
 This is the scene application of the [shared visual language](ui-design-language.md) for
 [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
-The shared icon-and-name rule is fixed. Scene placements below are **candidates for review**.
-The input change moves focus along the displayed list or bar. The current caller still owns
-eligibility, confirm, cancel, reading and return. The wireframes show candidate bounds.
+The user accepted the shared components and scene layouts shown in the Godot preview.
+The tables below record how they apply to the production journey. The gameplay or host
+caller owns eligibility, transaction state and return.
 
-Start visual review with sections 1, 3, 5 and 8: entry, exploration dialogue, Church and battle
-exercise four different compositions. Then check the remaining paths against the same rules.
-The tables describe visible states, not a new UI state machine. Application owns legality and
-transactions; the current view/input owners retain provisional focus, reading and Back semantics.
+### Preview coverage
+
+| Review entry | Interaction exercised | Related states outside the preview |
+| --- | --- | --- |
+| F1 Witch, slots and name | New Game, keyboard name validation, occupied slot and backup choice | Title entrance, real storage errors and fresh-process restore use their production owners. |
+| F2 dialogue / F7 field | Speech with an attached question, contextual Search, member, spell and item lists | Scripted scene transitions use the same reader. Field chest acquisition and full-pack messages need their actual script. |
+| F3 Church / F6 shop | Service selection, refusal and quote, Record to slots, purchase and sale with recipient, price and pack | Promotion, Repair and Deals are unavailable in these services. |
+| F5 party and preparation | Member details, four fixed slots, recipient selection, Give and full-pack exchange | Field Equip and Use retain their content-specific eligibility. |
+| F4 battle decision and playback | Movement, rod attack, HEAL levels, item, target cycle, physical and healing close-ups | Battle Search at a chest, battle Equip/Give/Drop, area spells and special attacks need their own live consumers. |
+| F8 inspection / F9 results | Hover terrain or units, details, overview map, speed and quit; victory/growth, retreat and defeat | Result and return sequences in the preview are staged. |
+| F10 host | Resume, settings draft, shared slots, quit and simulated window recovery | Full controls help, operating-system resize and real save failures need host verification. |
+
+The existing [Caravan travel scene](../capability-status.md#authored-caravan-agreement) uses
+field movement. Caravan depot and party recruitment services fall outside this review.
+The [Godot preview PR](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1684)
+has the runnable controls for all ten entries.
 
 ## 1. Title and the Witch
 
@@ -111,7 +123,7 @@ sprite or a party-name substitution. Long text uses existing measured expansion/
 | Closing / next speaker | Close portrait and frame as one visible result when the owning close is due. The [coordinated exit](presentation.md#coordinated-dialogue-exit-1613) keeps the portrait mounted through the existing wait and retires it with the window. |
 | Host cover / return | An allowed Menu covers the reading state without advancing it. Return restores that same phase and page; release barriers prevent an extra advance. A stopped scene displays its real failure over world fades, not an invented Continue. |
 
-For field commands, try a short labeled list beside the visible world. Member, Magic, Item and
+Field commands use the compact right-hand list beside the visible world. Member, Magic, Item and
 Search retain their original art and admission. Show Search's actual reason when it is unavailable.
 Back from preparation restores the initiating choice, then Back returns to field control. The
 [field menu agreement](presentation.md#exploration-gameplay-diamond-agreement-1588) owns deployed
@@ -140,7 +152,7 @@ action flow; it does not turn Party Status into a battle command sheet.
 | Member / pane selection | One marker per active navigation area; the selected member persists while a detail pane scrolls. Gauges and values remain current. Prepare/Close are ordinary actions, not both permanently gold. |
 | Item / spell / equipment | Current inventory slot and real item/spell name, cost and prospective equipment change are explicit. Selection previews; a separate existing confirmation commits. A long list scrolls with the selected row visible. |
 | Unavailable / no effect | Use the actual query reason; retain muted focus for inspectable unavailable rows. Field HEAL/Herb is not promised as free HP recovery. Unsupported effects remain explicit rather than looking like successful healing. |
-| Give/exchange / Drop | Show owner, item and recipient/destination before the existing confirmation; cancellation returns to the parent selection. Successful transfers or Drop remain completed when the result is dismissed. |
+| Give/exchange / Drop | Show the owner and item. Focusing a recipient reveals their four fixed slots. If their pack is full, select the numbered return slot before confirming the exchange. Back restores the parent selection. Successful transfers or Drop remain completed when the result is dismissed. |
 | Long names / wide values | Grow rows/detail within the reading region, preserve full counts and costs, and use existing detail scrolling. Keep fixed Prepare/Back areas outside scroll content; do not reduce all text to fit the longest metadata. |
 | Cover / Back | Back unwinds action → member/pane → originating field menu or direct field entry as currently owned. Party's current host-Menu exclusion stays; no new overlay access or remote-service return is introduced. |
 
@@ -152,10 +164,9 @@ when focus moves or Back restores a choice.
 
 ## 5. Church services
 
-**Candidate:** a vertical service list on the clear side of the priest. Each row uses the admitted
-normal/selected icon and a visible localized name. Move with Up/Down. Use the existing Leave
-action separately. The current game still draws a service diamond inside a shaded panel.
-Compare how easily the player can identify all four services before touching a direction.
+Use the compact right-hand service list with the priest visible. Each row shows the original
+command icon and its localized name. Up/Down changes the selected service. Leave has a
+separate row. A refusal expands the panel below Leave, keeping all service hit areas fixed.
 
 ```text
      priest and room                       Church          Gold [amount]
@@ -163,14 +174,16 @@ Compare how easily the player can identify all four services before touching a d
                                            [icon] Cure
                                          › [icon] Promotion   Unavailable
                                            [icon] Record adventure
+                                           [Leave]
                                            [actual reason for this choice]
-                                           [Leave]       [mapped hints]
+                                                         [mapped hints]
 ```
 
 In Chinese, scan 复活 / 治疗 / 转职 / 记录冒险…（存档） before moving focus. In English, compare
-full service names against the existing short icon captions. Move to an eligible service and confirm. In the same side region, replace the list with the member,
+full service names against the existing short icon captions. Confirming an eligible service replaces
+the list in the same side region with the member,
 condition, exact price and Confirm/Decline prompt. Check that the priest remains identifiable while
-reading the longest reason. Veil opacity and which side to use depend on that review.
+reading the longest reason. The reviewed Church veil dims the room while the list stays on the right.
 
 | State | Layout, transaction and return |
 | --- | --- |
@@ -181,16 +194,16 @@ reading the longest reason. Veil opacity and which side to use depend on that re
 | Result / Back | Result acknowledgement proceeds to the next real offer or services. Cancel declines the quote or leaves services as the existing wait dictates; prior paid treatment is retained. Restore the prior service focus where supported. |
 | Record / host overlap | Record completes the Church caller before the shared Save host opens at a legal settled point. Do not stack slots above an active ChurchWait or restore a consumed quote after Save. Other host/gameplay modals retain current exclusion. |
 
-This is a layout recommendation over the
+The reviewed layout uses the transactions defined by the
 [Church/save agreement](presentation.md#church-and-shared-save-agreement-1519).
 Promotion, curse removal and general free healing are not delivered by drawing their labels.
 
 ## 6. Shop: stock, recipient and price before commitment
 
-Try the Church vertical list for Buy, Sell, Repair and Deals, with their admitted original service
-icons, localized names and existing reasons. Keep the merchant visible. The stock or owned-item list sits left; selected item, real price,
-funds and destination/member detail sit right. The quote/confirmation replaces that working view
-when the transaction requires undivided attention.
+Buy, Sell, Repair and Deals use the right-hand service list. Stock, recipient or owner,
+slot and quote replace it in place. The person's four-slot pack sits immediately to its
+left during recipient, slot and quote decisions. The quote names the item, member and
+price and shows the balance before and after payment. Keep the merchant visible.
 
 | State | What must remain legible and actionable |
 | --- | --- |
@@ -233,50 +246,26 @@ The current user slot and backup must never be a design-validation fixture.
 
 ## 8. Battle: one complete decision, then its consequences
 
-Use the [battle feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
-for current source, decision/return, real layer consumers, Content guards, connected acceptance and
-uncovered implementation scopes. The following is #1616's tracked **Proposed** composition, not
-deployed UI or user visual approval; visual coverage does not close those functional gaps.
-
-The first visual question is “whose decision is this, and what am I considering?” The second is
-“what will it cost or affect?” Round and gold are useful context, not the primary headline.
-Keep the center available for the board and the currently considered subject. Use the measured
-region budgets and host exclusion from the [language page](ui-design-language.md#layout-that-preserves-the-world).
+The [battle feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
+owns gameplay and source evidence. Use **layout A** on the command board. Place the acting
+unit and HP/MP at the head of the right-hand panel. The four commands form a vertical list.
+The B comparison places vitals at the bottom and remains available in F4.
 
 ```text
-  Round 3 · Gold 1,250                                        [ Menu ]
-  +--------------------+                      +--------------------+
-  | Acting member      |                      | Current target     |
-  | HP 24/30  MP 8/12   |                      | HP 18/18  MP —     |
-  +--------------------+                      +--------------------+
+   Round                                              Sarah · Battle
+                                                      HP 18/24   MP 8/12
+               board and acting unit                  › [icon] Attack
+                                                        [icon] Magic
+                                                        [icon] Item
+                                                        [icon] Stay
 
-                       BOARD / VISIBLE TARGET
-                  range, cursor and actor stay readable
-
-  +--------------------+  +----------------------------------------+
-  | Spell list         |  | Selected spell · actual level / MP cost |
-  | › selected offer   |  | Current target / affected area          |
-  |   unavailable row  |  | Refusal reason when not legal           |
-  +--------------------+  | existing target / Confirm / Back actions|
-                          +----------------------------------------+
+   Direction / confirm hints                          Reposition
 ```
 
-This schematic shows the information grouping across list and target steps. The list is visible
-only while its page owns selection; on the target page it yields to the board/target controls.
-Numbers are illustrative. Here is the candidate root action bar for the phase *before* that list.
-Each [icon] is the command's own admitted normal or selected image.
-
-```text
-             acting unit / movement preview remains visible on the board
-
-  [icon] Attack     › [icon] Magic      [icon] Item      [icon] Stay
-  [actual refusal reason if needed]                     [mapped hints]
-```
-
-Read all four names at rest, including 攻击 / 魔法 / 道具 / 待机 in the Chinese layout. Left/Right moves between commands. Confirm on Magic replaces the
-bar with the spell list; Back from that list restores Magic. On the target page the board owns
-directional input. Compare the extra presses needed to reach Stay with the board space saved by
-one row. Use a vertical alternative if the supported languages cannot fit or targeting is obscured.
+Up/Down moves through commands. Magic or Item replaces the rows at the same origin.
+During targeting the board shows reach and the active recipient, the right card shows
+that recipient's values, and the footer owns cycle, Confirm and Back. Back restores the
+chosen level or command. Close-up windows follow the separate playback layout below.
 
 ### From entry to committed action
 
@@ -284,9 +273,9 @@ one row. Use a vertical alternative if the supported languages cannot fit or tar
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
 | Movement | Acting card plus quiet round/gold; legal range and current preview/cursor on the board. The player's attention stays on the proposed cell. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [#1615](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1615) owns held-direction repeat; this layout does not implement it. |
-| Main action | Four labeled command items in a horizontal bar. Show a detail only for a cost, consequence or refusal. At a registered faced chest, the fourth item becomes Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). Its authored text fallback remains available. | Disabled focus is inspectable and cannot commit. Long reason grows/pages the detail group. Back returns to movement and undoes the preview through the current Cancel contract. Stay retains explicit confirmation. |
-| Spell / item list | List replaces bar; selected offer shows actual spell level/cost or item/slot. Acting card remains; no stale target card. | Rows include actual unavailable reasons, scroll and retain focus. Confirm enters only an enabled offer. Back restores the same command focus with no resource/RNG change. |
-| Target / affected area | Acting and current target cards, board cursor/affected set, selected action and cost, actual target/Confirm/Back controls. List yields its space; detail names the considered target. | Disabled candidate stays identifiable and cannot confirm an earlier valid target. Long name uses the card policy; detail uses reading space. Back returns to the spell/item list or main action and clears provisional target through the existing return command. |
+| Main action | Four labeled command items in the right column beneath the acting unit's vitals. Show a detail only for a cost, consequence or refusal. At a registered faced chest, the fourth item becomes Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). Its authored text fallback remains available. | Disabled focus is inspectable and cannot commit. Long reason grows/pages the detail group. Back returns to movement and undoes the preview through the current Cancel contract. Stay retains explicit confirmation. |
+| Spell / item list | List replaces the command rows; selected offer shows actual spell level/cost or item/slot. Acting card remains; no stale target card. | Rows include actual unavailable reasons, scroll and retain focus. Confirm enters only an enabled offer. Back restores the same command focus with no resource/RNG change. |
+| Target / affected area | Replace the command panel with the selected recipient's card. Keep action reach and the effect cursor on the board. Show target cycling, Confirm and Back in the footer. | Clicking an empty, defeated, wrong-side or out-of-range cell cannot confirm an earlier valid target. Long name uses the card policy; detail uses reading space. Back returns to the spell/item list or main action and clears provisional target through the existing return command. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
 | Commit | The explicit current command owns payment/action commitment; UI retires the provisional pages and switches to the real presentation phase. | A refusal/stale offer remains with its current responsible view and reason; do not invent success or silently submit a previous choice. Returning held directions/Confirm cannot act on the next phase. |
 
@@ -295,8 +284,12 @@ one row. Use a vertical alternative if the supported languages cannot fit or tar
 During movement, mark legal stopping cells using the actor's movement budget, terrain costs and
 occupancy. On Attack or a highlighted spell level, draw its reach from the selected stop and
 keep that reach visible while selecting a recipient. Draw the effect cursor on the recipient.
-Pulse the cells gently, with a steady version when motion is off. Up/Left selects the previous
-eligible combatant and Down/Right the next, wrapping within the action's living, in-range
+Use cyan for movement and gold for action reach. Each tile has a bright inner rim and dark
+outer edge. The reviewed fill pulses between 53% and 68% opacity over 1.2 seconds. Motion
+off holds it at approximately 61%. These are preview values. The original varies the tile
+palette during its pulse.
+
+Up/Left selects the previous eligible combatant and Down/Right the next, wrapping within the action's living, in-range
 target list. Hover and click use that same list. A single candidate stays selected. With none,
 show the reason and Back. Returning to the command menu allows the player to reconsider the move.
 [Original grid construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
@@ -334,7 +327,8 @@ predicted action-order strip remain outside this design.
 
 **Close-up layout decision.** Use the original battlescene mini-status window placement during
 action playback. The ordinary ally/enemy opening places the ally's window at the **upper right**
-and the enemy's at the **lower left**. The command layout belongs to the board decision phase.
+and the enemy's at the **lower left**. In F4, Sarah's rod attack uses these two windows. For HEAL on Bowie, Sarah casts at the
+upper right, then Bowie appears at the upper left for recovery. Self-healing keeps Sarah in place.
 
 **Confirmed (pinned US source).** At SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `InitializeBattlescene` opens each present combatant's window with a zero placement argument and
@@ -372,9 +366,9 @@ platform, full campaign replay or demand to test every possible state cross-prod
 
 | Combination | What the design must make possible |
 | --- | --- |
-| 1920×1080, English and zh-CN | The four pilot scenes retain body/hint sizes, correct source-icon scale, readable reasons and distinct input owners. Every command name is readable before focus moves. Compare Church's vertical services and battle's horizontal bar, including their respective Up/Down and Left/Right hints. |
+| 1920×1080, English and zh-CN | The reviewed scene families retain body/hint sizes, compact source icons and readable reasons. Check Up/Down on field, Church, shop and battle lists and directional target cycling on the board. |
 | Long admitted text, fallback note, wide numbers | Choice/body/footer stay disjoint; prices and HP/MP digits remain complete. Reading/page/scrolling reaches all content before commitment. A short translated label does not conceal an English fallback overflow. |
-| Two widest allowed battle cards + host Menu + long action reason | Use the explicit top reservations and separate bottom group. Actual measured bounds, not intended sizes, must be disjoint. Target/preview remains visible. |
+| Wide battle status + host Menu + long action reason | Measure the right-hand combined panel, host reservation and footer together. Actual measured bounds, not intended sizes, must be disjoint. Target/preview remains visible. |
 | 2560×1440, native 4K and an already supported wide aspect | Edge anchors follow the viewport, centered reading panels keep bounded width, and the world remains 96px. Check the selected offer and subject remain visible after resize. |
 | Keyboard / supported pad / existing mouse path | Same current action and reason; actual remap/swap hints; disabled focus never activates; pointer press/release is cancelled by relayout/cover. Name entry remains the stated keyboard exception, and auxiliary battle controls keep their present device coverage. |
 | Menu → subpage → recovery → return | Exactly one active input owner; covered controls cannot click through. Focus, reading and provisional selection return intact after release, with no gameplay commit or unintended advance. |
@@ -387,7 +381,7 @@ coordinator serializes shared paths, especially `StoryTheme`, `GameRoot` and `pr
 
 | Order / outcome | Exact candidate product paths | Dependency and stopping condition |
 | --- | --- | --- |
-| 1. Four-scene visual pilot, with entry styling owned by #1606 | `remake/game/src/UI/StoryTheme.cs`; `remake/game/src/Entry/SessionEntryView.cs`; `remake/game/src/Entry/EntryLayout.cs`; `remake/game/src/Exploration/ExplorationDialogueView.cs`; `remake/game/src/Exploration/ChurchServiceView.cs`; `remake/game/src/Battles/BattleMenuLayout.cs`; `remake/game/src/Battles/BattleCommandMenu.cs` | Compare both candidates with full labels and original-size icons before freezing geometry. Keep axis navigation in the existing input owners. #1606 owns entry styling. Observe dialogue as a reading reference. Stop at human review before sibling migration. |
+| 1. Four-scene visual pilot, with entry styling owned by #1606 | `remake/game/src/UI/StoryTheme.cs`; `remake/game/src/Entry/SessionEntryView.cs`; `remake/game/src/Entry/EntryLayout.cs`; `remake/game/src/Exploration/ExplorationDialogueView.cs`; `remake/game/src/Exploration/ChurchServiceView.cs`; `remake/game/src/Battles/BattleMenuLayout.cs`; `remake/game/src/Battles/BattleCommandMenu.cs` | Implement the reviewed right-column commands with full labels and nearest 3× command icons. Keep axis navigation in the existing input owners. #1606 owns entry styling. Observe dialogue as a reading reference. Stop at human review before sibling migration. |
 | 2. Battle decision composition under #1616 | `remake/game/src/Battles/BattleMenuLayout.cs`; `remake/game/src/Battles/BattleCommandMenu.cs`; `remake/game/src/Battles/BattleSessionView.cs`; `remake/game/src/UI/BattleStatusCard.cs` | Consume the reviewed pilot and the [display contract](display-composition-contract.md), including close-up art/card resize at the retained phase under pause. Complete counter/host exclusion, card/list/target/auxiliary-page combinations and returns. No engine rules or inspection feature. |
 | 3. Field and service siblings under #1616 | `remake/game/src/Exploration/FieldMenuView.cs`; `remake/game/src/Exploration/ChurchServiceView.cs`; `remake/game/src/Exploration/ShopServiceView.cs`; `remake/game/src/Exploration/PartyStatusView.cs`; `remake/game/src/Exploration/PartyDetailsPanel.cs`; `remake/game/src/Exploration/FieldActionView.cs` | Consume the accepted shared theme with one writer. Keep each transaction/lifecycle owner intact; split Party/preparation from services if they cannot be reviewed as one coherent layout change. Stop at existing admitted consumers. |
 | 4. Remaining entry/host surfaces, preserving #1606 ownership | `remake/game/src/Entry/SaveSlotView.cs`; `remake/game/src/Entry/NameEntryView.cs`; `remake/game/src/Entry/SystemMenuView.cs`; `remake/game/src/UI/SettingsView.cs`; `remake/game/src/GameRoot.cs`; `remake/game/src/Entry/OpeningPersistenceHost.cs`; `remake/game/src/Entry/WindowSupportHost.cs` | Accepted pilot; preserve actual save/settings/recovery predicates and the existing owned instance. `GameRoot`/persistence changes require a specific demonstrated layout need, not a second navigation service. No save format or user-save experiment. |
@@ -399,7 +393,8 @@ behavior tests; a visual change does not justify tests of probes or a full legac
 tools/instances and disposable evidence namespaces, never screenshots or current user saves.
 Main-gate retains independent acceptance and integration; user visual acceptance remains separate.
 
-The composition and inspection contracts constrain these layouts. **Unknown:** final bilingual fit,
-controller comfort, room/board visibility and human acceptance. The next review compares four
-scenes with those criteria. #1578 guidance, #1544 hint changes and an action-order strip remain
-separate. Product implementation requires its own bounded dispatch.
+**Unknown:** production fit with long localized text, other supported window sizes, and the
+live gameplay and host-only states listed in [Preview coverage](#preview-coverage).
+#1578 guidance, #1544 hint changes and an action-order strip retain separate scope.
+
+Product implementation requires its own bounded dispatch.
