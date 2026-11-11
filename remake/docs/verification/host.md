@@ -1167,6 +1167,8 @@ is complete; [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull
 
 ## Battle status-card observation
 
+**Current production UI:** the full-card/cardinal-target geometry described here is retained historical evidence at [the pre-#1686 implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/tree/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes). Do not use its old layout assertions as current acceptance. The [current F4/F8/F9 recipe](../godot/battle-interaction-baseline.md#direct-production-reproduction) covers compact cards, legal targets, bilingual resources and inspection; underlying source/disclosure/resource identities retain their original scope.
+
 [E1's Standard agreement](../godot/presentation.md#battle-status-card-agreement) owns the outcome.
 `engine_battle_status_observation.gd` reuses the existing viewport observer's ordinary Main.tscn,
 mapped input, focus recovery, 75-second deadline and output helpers. It reads actual session actors,
@@ -1535,6 +1537,8 @@ Each launch tests an actual startup configuration in the retained project/instal
 project copy, screenshot, original emulator, reference replay or test of the observer is needed.
 
 ## Battle Movement Range Observation
+
+**Current production UI:** the full-card/cardinal-target geometry described here is retained historical evidence at [the pre-#1686 implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/tree/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes). Do not use its old layout assertions as current acceptance. The [current F4/F8/F9 recipe](../godot/battle-interaction-baseline.md#direct-production-reproduction) covers compact cards, legal targets, bilingual resources and inspection; underlying source/disclosure/resource identities retain their original scope.
 
 [B8 agreement](../godot/presentation.md#battle-movement-range-agreement) owns semantics and layering.
 `engine_movement_range_observation.gd` reuses the existing world-viewport observer's input, focus,
@@ -2512,6 +2516,8 @@ Unicode names, original natural reach/timing, public exports and human translati
 remain outside this check. Do not enlarge the field-only catalog's effect admission to test them.
 
 ## Localized battle commands targets and status
+
+**Current production UI:** the full-card/cardinal-target geometry described here is retained historical evidence at [the pre-#1686 implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/tree/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes). Do not use its old layout assertions as current acceptance. The [current F4/F8/F9 recipe](../godot/battle-interaction-baseline.md#direct-production-reproduction) covers compact cards, legal targets, bilingual resources and inspection; underlying source/disclosure/resource identities retain their original scope.
 
 The [M2d Standard agreement](../application/localization-design.md#implemented-m2d-battle-menu-and-status-boundary)
 is a Godot consumer slice. Compile with `uv run sf2 verify adapter`; build the actual Debug adapter

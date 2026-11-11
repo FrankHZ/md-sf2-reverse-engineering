@@ -9,20 +9,22 @@ namespace Sf2.Remake.GodotAdapter.UI;
 // Disposable projection of live actor state. No resource interpolation or gameplay clock.
 internal sealed partial class BattleStatusCard : PanelContainer
 {
+    internal bool Compact { get; init; }
     internal static readonly Vector2 CardSize = new(500, 192);
     internal Vector2 RequestedSize { get; private set; } = CardSize;
     private readonly Label _role = Text("Role", 18), _name = Text("CharacterName", 26);
     private readonly Label _land = Text("LandEffect", 18);
     private readonly BattleVitalGauge _hp = new("HP"), _mp = new("MP");
     private ActorRef? _actor;
+    private float _compactHeight = 148;
 
     public override void _Ready()
     {
         Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
         var column = new VBoxContainer(); column.AddThemeConstantOverride("separation", 2);
-        AddChild(column); column.AddChild(_role); column.AddChild(_name);
+        AddChild(column); column.AddChild(_role); column.AddChild(_name); _role.Visible = !Compact;
         _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _name.CustomMinimumSize = new(0, 64);
+        _name.CustomMinimumSize = new(0, Compact ? 36 : 64);
         _name.MaxLinesVisible = 2;
         _name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
         column.AddChild(_land); _land.Hide();
@@ -70,7 +72,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _actor = status?.Unit.Actor; Visible = status is not null;
         if (status is null) { _land.Hide(); return; }
         var unit = status.Unit;
-        _land.Show();
+        _land.Visible = !Compact;
         _land.Text = GameText.Get("battle.acting-land", status.Land.Percent, status.Land.Position.X, status.Land.Position.Y);
         PresentName(DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName));
         string header = unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
@@ -87,7 +89,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
     private void PresentName(string name)
     {
         if (_name.Text == name)
-        { RequestedSize = new(RequestedSize.X, CardSize.Y + (_land.Visible ? 26 : 0)); return; }
+        { RequestedSize = new(RequestedSize.X, Height); return; }
         _name.Text = name;
         var font = _name.GetThemeFont("font");
         using var shaped = new TextParagraph
@@ -108,9 +110,11 @@ internal sealed partial class BattleStatusCard : PanelContainer
         const float maximumNameWidth = 800 - 28;
         while (shaped.GetLineCount() > 2 && shaped.Width < maximumNameWidth)
             shaped.Width = Mathf.Min(shaped.Width + 16, maximumNameWidth);
-        RequestedSize = new(shaped.Width + 28, CardSize.Y + (_land.Visible ? 26 : 0));
+        _compactHeight = Mathf.Max(148, shaped.GetSize().Y + 100);
+        RequestedSize = new(shaped.Width + 28, Height);
         _name.AddThemeFontSizeOverride("font_size", fontSize);
     }
+    private float Height => Compact ? _compactHeight : CardSize.Y + (_land.Visible ? 26 : 0);
 
     internal object Observe() => new
     {

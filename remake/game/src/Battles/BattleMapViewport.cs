@@ -33,6 +33,7 @@ internal sealed partial class BattleMapViewport : Control
     private ExplorationVisuals? _visuals;
     private BattleSceneDefinition? _sceneContent;
     private BattleMovementRangeView _range = null!;
+    private BattleActionRangeView _actionRange = null!;
     private BattleSelectionView _selection = null!;
     private readonly List<ColorRect> _target = [];
     private IReadOnlyList<MapPosition> _focus = [];
@@ -42,19 +43,43 @@ internal sealed partial class BattleMapViewport : Control
     private BattleMapRegion? _region;
     private int _builds;
     private MapPosition? _inspectionFocus;
+    private Vector2? _inspectionPan;
     private BattleInspectionCursor _inspectionCursor = null!;
     internal Rect2 CameraCells => new Rect2((WorldViewport.Origin - (_region is null ? Vector2.Zero :
         new Vector2(_region.Origin.X, _region.Origin.Y) * 24)) / 24, Size / CellSize)
         .Intersection(new(Vector2.Zero, _mapSize / CellSize));
-    internal void Inspect(MapPosition? position)
+    internal void Inspect(MapPosition? position, bool reveal = true)
     {
+        if (reveal) _inspectionPan = null;
+        else _inspectionPan ??= WorldViewport.Origin;
         _inspectionFocus = position;
         if (_inspectionCursor is null) return;
         _inspectionCursor.Visible = position is not null;
         if (position is not null) _inspectionCursor.Position = new Vector2(position.X, position.Y) * CellSize;
-        if (position is not null) _range.Hide();
+        if (position is not null) { _range.Hide(); _actionRange.Hide(); }
         Frame();
     }
+    internal bool TryCell(Vector2 screen, out MapPosition cell)
+    {
+        Vector2 p = _board.GetGlobalTransformWithCanvas().AffineInverse() * screen;
+        if (!GetGlobalRect().HasPoint(screen) || p.X < 0 || p.Y < 0 || p.X >= _mapSize.X || p.Y >= _mapSize.Y)
+        { cell = new(0, 0); return false; }
+        cell = new((int)MathF.Floor(p.X / CellSize), (int)MathF.Floor(p.Y / CellSize));
+        return true;
+    }
+    internal Rect2 CellRect(MapPosition cell) => _board.GetGlobalTransformWithCanvas() *
+        new Rect2(new Vector2(cell.X, cell.Y) * CellSize, Vector2.One * CellSize);
+    internal bool PanInspection(Vector2 velocity, double delta)
+    {
+        var before = WorldViewport.Origin;
+        _inspectionPan = before + velocity * (float)Math.Min(delta, 0.05) / WorldViewportLayout.PixelScale;
+        Frame(); WorldViewport.Advance(0, immediate: true);
+        _inspectionPan = WorldViewport.Origin;
+        ApplyCamera(_region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24);
+        return before != WorldViewport.Origin;
+    }
+    internal void PreviewAction(BattleActionChoice? offer, SessionSnapshot current, ActorRef? candidate, bool steady)
+    { _range.Steady = steady; _actionRange.Present(offer, current, candidate, steady); }
 
     public override void _Ready()
     {
@@ -93,9 +118,11 @@ internal sealed partial class BattleMapViewport : Control
         }
         _range = new BattleMovementRangeView { Name = "MovementRange" };
         _board.AddChild(_range);
+        _actionRange = new BattleActionRangeView { Name = "ActionRange" };
+        _board.AddChild(_actionRange);
         _selection = new BattleSelectionView { Name = "Selection" };
         _board.AddChild(_selection);
-        _inspectionFocus = null;
+        _inspectionFocus = null; _inspectionPan = null;
         _inspectionCursor = new BattleInspectionCursor { Name = "InspectionCursor", Size = Vector2.One * CellSize, ZIndex = 4, Visible = false };
         _board.AddChild(_inspectionCursor);
         foreach (var actor in definition.Deployments)
@@ -221,7 +248,7 @@ internal sealed partial class BattleMapViewport : Control
                 _battleVisuals.Visuals.TryGetValue(slot, out var visual) ? visual.Facing : actor.Facing;
             node.Text = actor.Text + FacingMark(shownFacing);
             node.Modulate = actor.Ally ? Colors.LightSkyBlue : Colors.LightCoral;
-            if (actor.Targeted)
+            if (actor.Targeted && actor.Actor == candidate)
             {
                 var origin = new Vector2(actor.Position.X, actor.Position.Y) * CellSize;
                 foreach (var edge in new[] { new Rect2(1, 1, CellSize - 2, 2), new Rect2(1, CellSize - 3, CellSize - 2, 2),
@@ -256,7 +283,7 @@ internal sealed partial class BattleMapViewport : Control
                     retained.SetMeta("physicalAppearance", visual.Appearance.Value);
                 }
         _storyCamera = false;
-        var target = candidate ?? current.Selection?.Target;
+        var target = candidate;
         var targetMarker = target is null ? null : projection.Markers.FirstOrDefault(marker => marker.Actor == target);
         _focus = projection.Movement is { } moving ? [moving.To] :
             targetMarker is not null && current.Selection?.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady
@@ -343,7 +370,10 @@ internal sealed partial class BattleMapViewport : Control
         var positions = _inspectionFocus is { } inspecting ? new[] { inspecting } : _focus;
         var focus = positions.Count == 0 ? _mapSize / (2 * WorldViewportLayout.PixelScale)
             : new Vector2(positions[^1].X + 0.5f, positions[^1].Y + 0.5f) * 24;
-        WorldViewport.Focus(_map, new(offset, _mapSize / WorldViewportLayout.PixelScale), offset + focus, Size, _storyCamera);
+        if (_inspectionFocus is not null && _inspectionPan is { } pan)
+            focus = pan - offset + Size / (2 * WorldViewportLayout.PixelScale) - new Vector2(0, 24);
+        WorldViewport.Focus(_map, new(offset, _mapSize / WorldViewportLayout.PixelScale), offset + focus, Size,
+            _storyCamera || _inspectionFocus is not null && _inspectionPan is not null);
         ApplyCamera(offset);
     }
 
@@ -385,6 +415,7 @@ internal sealed partial class BattleMapViewport : Control
             outputHeight = (pair.Value.Texture?.GetHeight() ?? 0) * pair.Value.Scale.Y }),
         inspectionCursor = new { visible = _inspectionCursor.IsVisibleInTree(), position = _inspectionFocus, rect = Rectangle(_inspectionCursor.GetGlobalRect()) },
         movementRange = _range.Observe(),
+        actionRange = _actionRange.Observe(),
         selection = _selection.Observe(),
         previewZ = _selection.Visible ? new[] { _selection.ZIndex } : [],
         targets = _target.Select(node => new { name = node.Name.ToString(), z = node.ZIndex, rect = Rectangle(new Rect2(node.Position, node.Size)) }),

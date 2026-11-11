@@ -7,8 +7,8 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // Product UI geometry uses physical window units, independent of map tiles and source pixels.
 internal sealed partial class BattleMenuLayout : Control
 {
-    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard" };
-    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false };
+    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true };
+    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
@@ -37,6 +37,8 @@ internal sealed partial class BattleMenuLayout : Control
     private bool _commandHint;
     private Rect2 _subject;
     internal Action InvalidatePointer { get; set; } = () => { };
+    internal bool Covers(Vector2 p) => new Control[] { Actor, Target, _context, _commandsPanel, _list, _detail }
+        .Any(c => c.IsVisibleInTree() && c.GetGlobalRect().HasPoint(p));
 
     internal void AvoidSubject(Rect2 rectangle)
     {

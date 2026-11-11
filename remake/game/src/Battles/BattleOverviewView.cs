@@ -92,10 +92,18 @@ internal sealed partial class BattleOverviewView : Panel
         TerrainSurface.Deep => "#507fac", TerrainSurface.Desert => "#d2b371", TerrainSurface.Impassable => "#7e7a91",
         TerrainSurface.HighSky => "#a1cbdf", TerrainSurface.Barrier => "#404756", _ => throw new InvalidOperationException(),
     });
+    internal int Hit(Vector2 screen)
+    {
+        if (_snapshot is null) return -1;
+        var p = GetGlobalTransformWithCanvas().AffineInverse() * screen;
+        var scale = _mapRect.Size / new Vector2(_snapshot.Width, _snapshot.Height);
+        return _snapshot.Units.ToList().FindIndex(u => new Rect2(_mapRect.Position +
+            new Vector2(u.Position.X, u.Position.Y) * scale, scale).Grow(5).HasPoint(p));
+    }
     internal object Observe() => new { units = _snapshot?.Units, camera = BattleMapViewport.Rectangle(_camera),
         map = BattleMapViewport.Rectangle(_mapRect), selected = _selected, knownText = _known.Text,
         legend = _legend.Text, terrainTitle = _terrainTitle.Text, terrainCellCount = _drawnCells,
         lastTerrainCell = new { x = _lastCell.X, y = _lastCell.Y },
         terrainClasses = _drawnClasses.Select(pair => new { surface = pair.Key.ToString(), value = (int)pair.Key,
-            color = TerrainColor(pair.Key).ToHtml(), cells = pair.Value, label = _terrainLabels[pair.Key].Text }), pointerActions = false };
+            color = TerrainColor(pair.Key).ToHtml(), cells = pair.Value, label = _terrainLabels[pair.Key].Text }), pointerActions = true };
 }

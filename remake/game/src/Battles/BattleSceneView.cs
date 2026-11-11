@@ -30,7 +30,7 @@ internal sealed partial class BattleSceneView : Control
     private string _messageFallback = "";
     private readonly StoryDialoguePanel _messagePanel = new() { Name = "MessagePanel" };
     private GameInput _input = null!;
-    private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard" }, _targetCard = new() { Name = "TargetCard" };
+    private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard", Compact = true }, _targetCard = new() { Name = "TargetCard", Compact = true };
     private GameSession _session = null!;
     private InputSettings _settings = null!;
     private SessionAudio? _audio;
@@ -439,10 +439,23 @@ internal sealed partial class BattleSceneView : Control
         var battle = _session.Current.Battle;
         var actor = battle.GetActor(state.Actor);
         var target = !state.IsAfterTurnNotice && state.Target is { } id ? battle.GetActor(id) : null;
+        // Recovery occupies one actual scene side, switching on Application's displayed participant.
+        if (state.Spell is not null || state.Item is not null)
+        {
+            actor = battle.GetActor(state.DisplayedAlly ?? state.DisplayedEnemy ?? state.Actor);
+            target = null;
+        }
         _actorCard.Present(actor, ActorName(actor.Actor), GameText.Get("battle.acting"));
         _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), GameText.Get("battle.target"));
-        _actorCard.Position = new(32, 32); _actorCard.Size = _actorCard.RequestedSize;
-        _targetCard.Position = new(GetViewportRect().Size.X - 32 - _targetCard.RequestedSize.X, 32);
+        Vector2 Place(BattleActorState unit, Vector2 size)
+        {
+            bool recoveryTarget = (state.Spell is not null || state.Item is not null) && unit.Actor != state.Actor;
+            float bottom = _messagePanel.IsVisibleInTree() ? _messagePanel.Position.Y : GetViewportRect().Size.Y - 32;
+            return new(unit.IsAlly && !recoveryTarget ? GetViewportRect().Size.X - 32 - size.X : 32,
+                unit.IsAlly ? 32 : MathF.Max(32, bottom - size.Y - 16));
+        }
+        _actorCard.Position = Place(actor, _actorCard.RequestedSize); _actorCard.Size = _actorCard.RequestedSize;
+        if (target is not null) _targetCard.Position = Place(target, _targetCard.RequestedSize);
         _targetCard.Size = _targetCard.RequestedSize;
     }
 
@@ -651,6 +664,7 @@ internal sealed partial class BattleSceneView : Control
         if (_message.Text.Length > 0)
             foreach (string fallback in fallbacks.Where(value => value.Length > 0).Distinct()) hint += "\n" + fallback;
         _messagePanel.SetHint(hint);
+        PresentStatus(state);
     }
     internal object Observe() => new
     {

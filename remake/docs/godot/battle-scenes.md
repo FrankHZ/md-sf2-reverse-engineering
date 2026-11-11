@@ -7,12 +7,88 @@ story, appearance, death and EGRESS; they do not expand the original-scene claim
 
 ## Pre-voyage battle presentation audit
 
-**Decision for #1535.** Keep the working opening scenes, semantic spell effects and ordinary message
-controls. The first required presentation change is admitting the private Battle04 board and its
-combatants after Hawel. Battle03 outcome and chapter selection also need wiring. The later
-encounters have concrete admission limits today, but no connected Battle04–07 native run from
-which to report a failed turn. The [chapter acceptance table](../evidence/opening-ui-gaps.md#pre-voyage-implementation-order)
-assigns the minimum work to the issue that first needs it.
+The [current campaign agreement](../application/pre-voyage-campaign.md) admits Battles01–07
+through first Map14 control. Its resource/route evidence supersedes the former Battle04 frontier.
+The selector table below preserves original identity; its current consumers do not imply that every
+natural attack, counter, spell or equipment combination was newly observed. The
+[production UI coverage](battle-interaction-baseline.md#production-f4f8f9-contract) owns the accepted
+F4/F8/F9 rollout; the focused playback contract follows.
+
+## Production playback and result layout
+
+**Confirmed bounded remake, #1686:** compact live status cards use the accepted F4 placement.
+An ordinary ally/enemy close-up puts the ally upper right and enemy lower left, clearing the actual
+story reader beneath it. The lower position follows the reader's real height, including mapped hints.
+Friendly HEAL/item recovery shows only the currently displayed participant: caster upper right,
+then the other ally upper left at Application's actual target-switch phase; self recovery retains
+one caster window. Return-to-caster phases restore its side. AURA uses the same per-recipient
+projection. Physical, attack-spell, support and special scenes keep current actor/reaction-target
+identity; after-turn notices retain only the actor and field deaths hide close-up cards.
+
+Cards never predict damage, interpolate resources, pay costs or advance continuations. Their compact
+mode is explicit per battle consumer; shared field/full cards keep their existing geometry. Names
+retain two-line shaping and measured growth so an expanded name also reserves height above the
+reader. Commands, lists, range and round/gold retire during playback. The map remains hidden for
+full close-ups and visible for field-owned death/notices/return. Message paging and the actual
+session's confirmation/completion tokens retain their existing owners.
+
+The [direct production observer and initial recipes](battle-interaction-baseline.md#direct-production-reproduction)
+read actual Battle01 attack/damage/death/reward and Sarah-to-Bowie HEAL, including HP recovery,
+one MP payment, card switch and usable subsequent control. The existing authored BLAZE2 and AURA4
+packages check real multi-target result delivery, current recipient and one cost. Long authored
+identifiers exercise shaped names and decision/reader containment. The authored victory/defeat
+packages enter by normal field interaction, deliver real result/growth/outcome reading and return
+to usable field movement. Connected source Battle02 separately checks ordinary EGRESS cancellation,
+payment and usable Map3 return. No preview timeline supplies a gameplay result.
+
+These are state/input/projection/error observations at explicit controlled boundaries, not a full
+private campaign replay or human visual acceptance. Unreached natural enemy HEAL, special proc,
+item/loadout and species combinations retain their prior campaign/resource evidence and limits;
+no new original-effect art or timing is inferred. Some exits still report ObjectDB leaks. Their
+cause, physical-device/window/DPI coverage and final foreground appearance remain **Unknown**.
+
+## Original target and inspection cursor publication
+
+**Confirmed read-only inventory:** private asset Git
+`293c9460818f4768905be809e83488d77f698fba` is clean and contains
+`hud.tactical-selection-cursor`, a modern SVG-derived **58×58** logical cursor with linear-filtered
+2×/4× buckets. It is not the accepted original 32×32 four-corner sprite. The selected ordinary
+Battle01 scene and world-referenced Battles02–07 scene raster dictionaries contain no cursor binding;
+the producer/publication owners below likewise publish none. The preview prepares its original
+sprite independently; that preview path is not an ordinary input and is not read by production.
+
+Reproduce the inventory read-only after the registered environment selection: inspect
+`json.load(open(os.environ['SF2_PRIVATE_BATTLE_SCENE_CONTENT'], encoding='utf-8-sig'))['rasters']`,
+then the selected world's `encounters[].battleScenes` relative scene dictionaries. In the separate
+asset repository inspect the named Git object, `manifests/presentation-assets-v1.json` entry
+`hud.tactical-selection-cursor`, and its tracked master/runtime entries. Do not infer qualified
+original artwork from a filename or silently replace the accepted preview material with this SVG.
+
+The smallest independent content slice can reuse the source/ROM preparation already described in
+[`previews/README.md`](../../game/probes/previews/README.md#single-cell-cursor) and its
+[`prepare_cursor.py`](../../game/probes/previews/prepare_cursor.py): verified baseline ROM,
+compressed range `0x23658..0x23757`, 2048 decoded bytes, first column-major 4×4-tile sprite and base
+palette at `0x309E`. No new original runtime acquisition or general extraction platform is needed.
+Publish a named original single-cell raster through the maintained
+`src/sf2tool/remake_battle_scene_content.py` preparation and existing
+`src/sf2tool/remake_command_menu.py` all-scenes publication path, with the separate private asset
+manifest/provenance reviewed at its own Git boundary. `BattleSceneDefinition.Rasters` already
+carries named rasters; change schema/admission only if the actual binding requires it.
+
+Then bind that admitted resource to `BattleInspectionCursor` and the target/effect-center rendering
+in `BattleMapViewport`, retaining the modern `BattleSelectionView` acting-unit cue. A 32-source-pixel
+cursor at the existing 4× source scale occupies 128×128 physical pixels, centered on a 96×96 cell
+(16px overhang each side), with nearest sampling and existing world/UI clipping. Public authored
+content retains an explicit authored fallback. Validate private inspection, physical/HEAL/item
+target, hover, invalid/canceled target, map edges, normal/reduced rendering and existing area effects;
+do not claim larger original radius arrangements from the single-cell sprite alone.
+
+The preparation is bounded: one 256-byte compressed input span, 2048 decoded bytes, 4096-byte RGBA
+master, at most 16/64KiB raw 2×/4× derivatives, plus small manifest entries. Reuse the existing
+publication's O(world-size) copy and its resource budget rather than creating another world/export
+pipeline. This asset/publication change is deliberately left to main-gate's bounded content Issue.
+Until admitted and observed, F4/F8 original cursor appearance is an explicit gap, not a passed visual
+match; gameplay selection and area legality remain independently implemented.
 
 ### Which combatants need a scene
 
@@ -27,11 +103,11 @@ The remake column describes accepted code and the named observation only.
 | --- | --- | --- |
 | 01 · [opening acceptance](../evidence/opening-loop-acceptance.md) | Bowie SDMN (0/0) Wooden Sword 71, Sarah PRST (1/0) Wooden Rod 85, Chester KNTE (2/0) Wooden Stick 56 vs Gizmo (22/2). | Ordinary opening through victory and usable return. Map57 movement/death sprites and the Tower close-up are bound. Player and enemy hits, Chester's live stick, friendly Herb and Sarah's HEAL have bounded private witnesses below. Preserve these combinations. |
 | 02 · [formation](../../../docs/research/chapters/grans-opening/battle02-initialization-and-first-control.md), [outcomes and retry](../verification/field-programs.md#battle02-outcomes-and-retry) | Add joined Jaha WARR (3/0) Short Axe 33. Huge Rat (1/0), Ooze (0/1). | The selected Map66 board and private scene admit all four starting class/weapon pairs. Connected entry and selected outcome, defeat and retreat/retry have their own evidence. Binding a pair does not establish every attack, dodge or counter was played. |
-| 03 · [formation](../../../docs/research/chapters/grans-opening/battle03-initialization-and-first-control.md), [Yeel witness](../verification/field-programs.md#yeel-guide-through-battle03) | Same battle party. Kazin may follow in the field. Huge Rat, Ooze, Huge Bat (23/0) with sleep critical. | Selected Battle02-return start connects Yeel to Battle03 control. The real bat can inflict sleep, skip an entry and release control after waking in the bounded variation. Twelve formation rows are capacity. #1537 owns composing the ordinary route and the outcome. |
-| 04 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle04-initialization-and-first-control.md) | After Hawel add Kazin MAGE (4/0) Wooden Rod 85. Galam Soldier (2/0) Short Axe, Galam Archer (31/0) Wooden Arrow at distance 2, Huge Bat. | First unsupported private encounter. Sharing Sarah's rod does not supply Kazin's body, idle, item or attack sequence, even when Kazin is only the target. #1537 needs the new bindings plus bat reuse. The bow user here is an enemy. |
-| 05 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md) | Retain Kazin. Slade follows before his formal post-victory join. Galam Knight (3/0) Short Spear at 1–2, Archer, Soldier, Galam Mage (36/0) Short Rod and BLAZE1. | #1538 needs Knight/Mage and retained Soldier/Archer on this board. Mage's ordinary physical/defensive poses still need binding even though its fire effect renders independently. Slade's scripted positioning in the Knight outcome does not require a pre-join player attack. |
-| 06 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md) | Add Slade THIF (5/0) Short Knife 103. Actual equipment may now include Galam purchases. Dark Cleric (40/0) Short Rod and HEAL1, Galam Mage, Soldier, Knight, Archer. | #1538 owns the usable entrance with the real post-shop loadout. #1539 owns combat, including Slade physical and the cleric casting on its own faction. The authored enemy HEAL witness cannot supply a private cleric cast sequence. |
-| 07 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle07-opening-and-first-control.md) | Optional joined Kiwi TORT (6/0), unarmed. Dark Smoke (22/0), Galam Mage, Dark Cleric, Galam Archer, Galam Knight. Smoke has DISPEL1, silence critical and a possible extra round entry. | #1539 needs optional TORT class and scene/field bindings, plus Smoke with its own palette even though it shares Gizmo's sprite index. Keep the absent-Kiwi path and story followers distinct. Victory follows ordinary faction counts. No forced Smoke cast, critical or boss kill. |
+| 03 · [formation](../../../docs/research/chapters/grans-opening/battle03-initialization-and-first-control.md), [Yeel witness](../verification/field-programs.md#yeel-guide-through-battle03) | Same battle party. Kazin may follow in the field. Huge Rat, Ooze, Huge Bat (23/0) with sleep critical. | Selected Battle02-return start connects Yeel to Battle03 control. The real bat can inflict sleep, skip an entry and release control after waking in the bounded variation. Twelve formation rows are capacity; current connected route/outcome evidence belongs to the campaign agreement. |
+| 04 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle04-initialization-and-first-control.md) | After Hawel add Kazin MAGE (4/0) Wooden Rod 85. Galam Soldier (2/0) Short Axe, Galam Archer (31/0) Wooden Arrow at distance 2, Huge Bat. | Connected campaign content supplies Kazin and the admitted Soldier/Archer/bat bindings. Sharing Sarah's rod never substitutes for Kazin's body or sequences; the campaign owner retains the actual route/resource evidence. The bow user here is an enemy. |
+| 05 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md) | Retain Kazin. Slade follows before his formal post-victory join. Galam Knight (3/0) Short Spear at 1–2, Archer, Soldier, Galam Mage (36/0) Short Rod and BLAZE1. | The campaign admits Knight/Mage and retained Soldier/Archer on this board. Mage's ordinary physical/defensive poses still need binding even though its fire effect renders independently. Slade's scripted positioning in the Knight outcome does not require a pre-join player attack. |
+| 06 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md) | Add Slade THIF (5/0) Short Knife 103. Actual equipment may now include Galam purchases. Dark Cleric (40/0) Short Rod and HEAL1, Galam Mage, Soldier, Knight, Archer. | The campaign admits the post-shop loadout, Slade physical and cleric content. Authored enemy HEAL proves only its named semantic consumer, not every private cleric cast/recovery combination. |
+| 07 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle07-opening-and-first-control.md) | Optional joined Kiwi TORT (6/0), unarmed. Dark Smoke (22/0), Galam Mage, Dark Cleric, Galam Archer, Galam Knight. Smoke has DISPEL1, silence critical and a possible extra round entry. | The campaign admits optional TORT class/scene/field bindings and Smoke with its own palette despite sharing Gizmo's sprite index. Keep the absent-Kiwi path and story followers distinct. Victory follows ordinary faction counts. No forced Smoke cast, critical or boss kill. |
 
 To reproduce the original selectors without generating art, use the ROM identity and table offsets
 in the [ally fixture](../../../tests/fixtures/h2/ally-data-static-v1.json) and
@@ -69,9 +145,9 @@ project authorship or a compatible license.
    while the current separate weapon overlay belongs to the ally. Reuse the enemy's selected visual.
 3. **Enemy healing.** [HealingSceneCursor.RequireContent](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
    requires healing resources, a cast sequence for the caster and positive idle ticks on caster and
-   recipient. Today's producer emits `cast` only for the priest. Adding a Dark Cleric idle/attack
-   sprite alone still leaves its real HEAL target blocked by `healing-scene-content`.
-   Use the existing enemy-side switch and cast consumer with verified operands.
+   recipient. The selected private producer supplies admitted caster sequences, including the campaign's
+   cleric. An idle/attack sprite alone never satisfies `healing-scene-content`. Retain the actual
+   enemy-side switch/cast consumer and its validated operands.
 
 These are implementation boundaries for the chapter that needs them. **Inferred** risks for the
 newly connected route include a wrong identity after a recruit or equipment change, a stale target
@@ -137,9 +213,10 @@ windowed joypad interference are unchanged. No screenshots or original timing cl
 ## Shared action status cards
 
 Command, target and action scenes share the [E1 card](presentation.md#battle-status-card-agreement).
-The acting card follows the scene's Actor; the target card follows its current Target. In the
-existing scene contract Target is ReactionTarget, so multi-target Prism and AURA switch cards at
-the actual reaction boundary, including ally/enemy switches and defeated targets. The native
+The current [compact playback layout](#production-playback-and-result-layout) follows actual
+participants: ordinary scenes project Actor/current ReactionTarget; recovery projects the single
+displayed caster or recipient. Multi-target Prism and AURA therefore switch at the actual reaction
+boundary, including ally/enemy switches and defeated targets. The native
 [status witness](../verification/host.md#battle-status-card-observation) reads all reached Prism
 TargetEnter/Reaction/ResultMessage/DeathMessage targets rather than retaining the first victim.
 After-turn notices show the actor only; field-death delivery hides the close-up scene and its cards.
