@@ -16,7 +16,7 @@ to continue and click a response to answer. Close the window to finish.
 | F5 · Members | Browse Bowie, Sarah and Chester with Up/Down or click a name. Inspect the portrait, class, level/EXP, HP/MP, attributes, spell costs and four inventory slots. Enter/A or Prepare opens the supply handoff. Esc/Back unwinds each step; F5 or gamepad X closes details. |
 | F6 · Shop | Buy supplies for a chosen member or sell a specific numbered slot. Review the party balance and price, then confirm. The receipt and F5 show the resulting inventory. |
 | F7 · Field | Inspect a member, a caster's field spell availability or an owner's four item operations. Search the sign, dismiss the reading, turn away and inspect the unavailable Search row. |
-| F8 · Inspect | Move the board cursor. Confirm a unit for vitals or open options on empty ground. Map locates a unit, Speed adjusts F4 playback, and Quit can save the destination to a sample slot. |
+| F8 · Inspect | Hover or move onto a unit for its current HP/MP. Confirm opens its read-only detail sheet. Confirm on empty ground for options, including Map, Speed and Quit. |
 | F9 · Results | Read through victory, retreat or defeat. The final acknowledgement returns to town or the church. |
 | F10 · System | Cover the current scene, draft settings, save at an eligible location, start a sample journey or quit. Resume restores the covered selection or reading page. |
 
@@ -33,9 +33,19 @@ F7 and F8 reuse the right-hand command column with the original field, item-oper
 battlefield-option icons when available. F7 Give and confirmed Drop act on the same numbered
 slots as F5 and F6. Use and Equip show the limitations of these sample loadouts. F8 Map
 shows the staged board area and the three units. Arrow keys or the D-pad navigate the cursor.
-Moving the mouse over a board cell also selects it. Left-click a unit for vitals or empty
+Moving the mouse over a board cell also selects it. Left-click a unit for details or empty
 ground for options. Hover and click a unit marker on Map to locate it on the board.
 From an empty cell choose Map, select Sarah and confirm to locate her, then confirm to inspect.
+F8 focuses one combatant on its detail sheet. Its attributes, spells and four inventory slots
+use the F5 layout. Closing returns to the same cell and refreshes the short status. Gizmo
+uses his own attributes and empty loadout with the preview encounter's staged HP.
+Pass `-- --inspect` to launch directly on the inspection board.
+
+The US `BattlefieldMenu` tests A on a living combatant to open the member screen. C on a
+different combatant opens mini status and land effect. C on the acting combatant returns to
+movement. The F8 preview makes short status available on pointer or directional focus and
+uses a single confirm action for details. [Original battlefield menu](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm#L1059-L1109)
+
 F9 reads the illustrative reward, growth and return messages in order. Its example numbers
 do not modify the roster. Use Enter/A or click the reading frame.
 

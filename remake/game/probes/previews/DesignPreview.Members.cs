@@ -72,22 +72,35 @@ public partial class DesignPreview
             if (selected) row.AddThemeColorOverride("font_color", new Color("ffe19a"));
         }
 
-        var sheet = Panel(new(428, 186, 1388, 704));
+        DrawUnitSheet(new(428, 186), _member);
+        Footer(T("↑ ↓ 切换队员     Enter / A 整备     Esc / B 返回", "↑ ↓ Switch member     Enter / A Prepare     Esc / B Back"));
+        Utility(new(1418, 1003, 204, 48), GameText.Get("party.prepare"), OpenGive);
+        Utility(new(1642, 1003, 204, 48), T("返回", "Back"), ToggleMembers);
+    }
+
+    // A null roster member is the staged enemy. Its inventory and attributes are independent of the party.
+    private void DrawUnitSheet(Vector2 position, Member? member)
+    {
+        var sheet = Panel(new(position, new Vector2(1388, 704)));
         sheet.Name = "MemberSheet";
-        bool healer = _member == Member.Sarah;
-        var unit = MemberUnit(_member);
-        var portrait = _stage.MemberPortrait((int)_member);
+        bool healer = member == Member.Sarah;
+        var unit = member is { } ally ? MemberUnit(ally) : Gizmo;
+        var pack = member is { } owner ? _packs[owner] : null;
+        var portrait = member is { } actor ? _stage.MemberPortrait((int)actor) :
+            _stage.SceneArt?.Enemies.Values.FirstOrDefault() is { } enemy ? _stage.BattleTexture(enemy.Frames[0]) : null;
         if (portrait is not null)
             Put(sheet, new TextureRect { Texture = portrait, TextureFilter = TextureFilterEnum.Nearest,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
                 MouseFilter = MouseFilterEnum.Ignore }, new(32, 28, 144, 192));
         int identityX = portrait is null ? 32 : 208;
         Text(sheet, new(identityX, 22, 470, 68), unit.Name, 40);
-        Text(sheet, new(identityX, 96, 470, 52), _member switch {
+        Text(sheet, new(identityX, 96, 470, 52), member switch {
+            null => T("敌军", "Enemy"),
             Member.Sarah => T("僧侣   ·   Lv. 4", "Priest   ·   Lv. 4"),
             Member.Chester => T("骑士   ·   Lv. 4", "Knight   ·   Lv. 4"),
             _ => T("剑士   ·   Lv. 5", "Swordsman   ·   Lv. 5") }, 30);
-        Text(sheet, new(identityX, 155, 470, 48), healer ? "EXP    24" : "EXP    36", 24, "cad6e5");
+        if (member.HasValue)
+            Text(sheet, new(identityX, 155, 470, 48), healer ? "EXP    24" : "EXP    36", 24, "cad6e5");
         Vitals(sheet, new(808, 64), unit);
 
         void Section(float x, float width, string title)
@@ -100,9 +113,10 @@ public partial class DesignPreview
         Section(382, 404, GameText.Get("party.magic"));
         Section(834, 522, GameText.Get("party.items"));
         string[] stats = ["attack", "defense", "agility", "move"];
-        int[] values = _member switch { Member.Sarah => [11, 9, 12, 5], Member.Chester => [15, 13, 11, 7], _ => [16, 12, 10, 6] };
+        int[] values = member switch { null => [7, 5, 5, 5], Member.Sarah => [11, 9, 12, 5],
+            Member.Chester => [15, 13, 11, 7], _ => [16, 12, 10, 6] };
         // The two starting weapons each contribute 3 attack until sold.
-        if (_member != Member.Chester && !DonorPack.Any(IsWeapon)) values[0] -= 3;
+        if (pack is not null && member != Member.Chester && !pack.Any(IsWeapon)) values[0] -= 3;
         for (int i = 0; i < stats.Length; i++)
         {
             Text(sheet, new(32, 332 + i * 76, 224, 64), GameText.Get("party.stat." + stats[i]), 30);
@@ -130,13 +144,9 @@ public partial class DesignPreview
         else DetailRow(382, 328, 404, null, GameText.Get("party.none-learned"));
         for (int slot = 0; slot < PackCapacity; slot++)
         {
-            var id = SlotId(DonorPack, slot);
+            var id = pack is null ? -1 : SlotId(pack, slot);
             DetailRow(834, 328 + slot * 82, 522, ItemArt(id), SlotLabel(id, slot),
                 IsWeapon(id) ? GameText.Get("party.equipped") : "");
         }
-
-        Footer(T("↑ ↓ 切换队员     Enter / A 整备     Esc / B 返回", "↑ ↓ Switch member     Enter / A Prepare     Esc / B Back"));
-        Utility(new(1418, 1003, 204, 48), GameText.Get("party.prepare"), OpenGive);
-        Utility(new(1642, 1003, 204, 48), T("返回", "Back"), ToggleMembers);
     }
 }

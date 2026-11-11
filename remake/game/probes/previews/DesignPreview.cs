@@ -37,6 +37,7 @@ public partial class DesignPreview : Control
     private int _sarahHp = 18, _sarahMp = 8, _bowieHp = 16, _enemyHp = 12;
     private UnitSummary Sarah => new(T("莎拉", "Sarah"), _sarahHp, 24, _sarahMp, 12);
     private UnitSummary Bowie => new(T("鲍伊", "Bowie"), _bowieHp, 24, 0, 0);
+    private UnitSummary Gizmo => new(T("基兹莫", "Gizmo"), _enemyHp, 24, 0, 0);
 
     public override void _Ready()
     {
@@ -50,6 +51,7 @@ public partial class DesignPreview : Control
         if (OS.GetCmdlineUserArgs().Contains("--battle")) _scene = 3;
         if (OS.GetCmdlineUserArgs().Contains("--shop")) _scene = ShopScene;
         if (OS.GetCmdlineUserArgs().Contains("--field")) _scene = FieldScene;
+        if (OS.GetCmdlineUserArgs().Contains("--inspect")) _scene = InspectScene;
         GetWindow().FocusExited += StopIconAnimation;
         GetWindow().FocusExited += _boardPointer.Suspend;
         GetWindow().FocusEntered += _boardPointer.ReleaseIfNeutral;
@@ -501,7 +503,7 @@ public partial class DesignPreview : Control
         else if (_page == Page.Target)
         {
             bool attack = _targetParent == Page.Root;
-            var candidate = attack ? new UnitSummary(T("基兹莫", "Gizmo"), _enemyHp, 24, 0, 0)
+            var candidate = attack ? Gizmo
                 : _target == 0 ? Bowie : Sarah;
             if (_bottomLayout) BottomStatus(candidate);
             else

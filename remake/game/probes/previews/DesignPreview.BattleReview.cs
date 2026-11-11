@@ -14,7 +14,7 @@ public partial class DesignPreview
     private int _mapFocus, _rate, _draftRate, _outcome, _reading;
     private readonly MenuPointer _boardPointer = new();
 
-    private string InspectName(int i) => i switch { 0 => Bowie.Name, 1 => Sarah.Name, _ => T("基兹莫", "Gizmo") };
+    private UnitSummary InspectedUnit(int i) => i switch { 0 => Bowie, 1 => Sarah, _ => Gizmo };
     private string Rate(int i) => i switch { 1 => "1.5×", 2 => "2×", _ => "1×" };
     private void InspectAt(InspectPage page, int focus = 0)
     {
@@ -24,27 +24,30 @@ public partial class DesignPreview
     private void DrawInspection()
     {
         int unit = Array.IndexOf(UnitCells, _cursor);
-        if (_inspection is InspectPage.Cursor or InspectPage.Unit)
+        if (_inspection == InspectPage.Unit)
         {
-            var card = Panel(new(_cursor.X >= 13 ? 48 : 1296, 238, 560, _inspection == InspectPage.Unit ? 324 : 186));
+            Put(_surface, new ColorRect { Color = new Color(0, 0, 0, 0.5f), MouseFilter = MouseFilterEnum.Ignore },
+                new(0, 72, 1920, 1008));
+            DrawUnitSheet(new(266, 186), unit switch { 0 => Member.Bowie, 1 => Member.Sarah, _ => null });
+            ReviewFooter(T("Enter / A  或  Esc / B  返回原地块", "Enter / A or Esc / B  Return to cell"), BackInspection);
+            return;
+        }
+        if (_inspection == InspectPage.Cursor)
+        {
+            var card = Panel(new(_cursor.X >= 13 ? 48 : 1296, 238, 560, unit < 0 ? 150 : 250));
             card.Name = "InspectionCard";
-            Text(card, new(16, 10, 520, 56), unit < 0 ? T("空地", "Open ground") : InspectName(unit), 36);
-            Text(card, new(16, 76, 528, 74), T($"古代之塔   ·   地块 ({_cursor.X-2}, {_cursor.Y})",
-                $"Ancient Tower   ·   Cell ({_cursor.X-2}, {_cursor.Y})"), 28);
-            if (_inspection == InspectPage.Unit)
-                Vitals(card, new(18, 180), unit == 0 ? Bowie : unit == 1 ? Sarah : new(InspectName(2), _enemyHp, 24, 0, 0));
-            if (_inspection == InspectPage.Cursor)
-            {
-                Footer(T("方向键或鼠标选择地块     Enter / A 或左键调查", "Directions or mouse select a cell     Enter / A or click to inspect"));
-                Utility(new(1530, 1003, 316, 48), unit < 0 ? T("战场选项", "Battlefield options") : T("查看单位", "Inspect unit"), AdvanceInspection);
-            }
-            else ReviewFooter(T("Enter / A  返回地块", "Enter / A  Return to cell"), BackInspection);
+            Text(card, new(16, 10, 528, 56), unit < 0 ? T("空地", "Open ground") : InspectedUnit(unit).Name, 36);
+            if (unit >= 0) Vitals(card, new(16, 66), InspectedUnit(unit));
+            Text(card, new(16, unit < 0 ? 72 : 172, 528, 58), T($"古代之塔   ·   地块 ({_cursor.X-2}, {_cursor.Y})",
+                $"Ancient Tower   ·   Cell ({_cursor.X-2}, {_cursor.Y})"), 26, "cad6e5");
+            Footer(T("方向键或鼠标选择地块     Enter / A 或左键确认", "Directions or mouse select a cell     Enter / A or click to confirm"));
+            Utility(new(1530, 1003, 316, 48), unit < 0 ? T("战场选项", "Battlefield options") : T("单位详情", "Unit details"), AdvanceInspection);
             return;
         }
         if (_inspection == InspectPage.Map)
         {
             var legend = SidePage(T("战场地图", "Battlefield map"), 3);
-            for (int i = 0; i < UnitCells.Length; i++) Item(CommandRow(i), InspectName(i), value: i == 2 ? T("敌军", "Enemy") : T("我军", "Ally"));
+            for (int i = 0; i < UnitCells.Length; i++) Item(CommandRow(i), InspectedUnit(i).Name, value: i == 2 ? T("敌军", "Enemy") : T("我军", "Ally"));
             Text(_surface, new(legend.Position.X, legend.Position.Y + legend.Size.Y + 16, 560, 80),
                 T("选择单位，在地图上定位。", "Select a unit to locate it on the map."), 26);
         }
