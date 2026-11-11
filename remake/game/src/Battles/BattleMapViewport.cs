@@ -45,6 +45,7 @@ internal sealed partial class BattleMapViewport : Control
     private MapPosition? _inspectionFocus;
     private Vector2? _inspectionPan;
     private BattleInspectionCursor _inspectionCursor = null!;
+    private BattleInspectionCursor _targetCursor = null!;
     internal Rect2 CameraCells => new Rect2((WorldViewport.Origin - (_region is null ? Vector2.Zero :
         new Vector2(_region.Origin.X, _region.Origin.Y) * 24)) / 24, Size / CellSize)
         .Intersection(new(Vector2.Zero, _mapSize / CellSize));
@@ -56,7 +57,7 @@ internal sealed partial class BattleMapViewport : Control
         if (_inspectionCursor is null) return;
         _inspectionCursor.Visible = position is not null;
         if (position is not null) _inspectionCursor.Position = new Vector2(position.X, position.Y) * CellSize;
-        if (position is not null) { _range.Hide(); _actionRange.Hide(); }
+        if (position is not null) { _range.Hide(); _actionRange.Hide(); _targetCursor.Hide(); }
         Frame();
     }
     internal bool TryCell(Vector2 screen, out MapPosition cell)
@@ -124,7 +125,11 @@ internal sealed partial class BattleMapViewport : Control
         _board.AddChild(_selection);
         _inspectionFocus = null; _inspectionPan = null;
         _inspectionCursor = new BattleInspectionCursor { Name = "InspectionCursor", Size = Vector2.One * CellSize, ZIndex = 4, Visible = false };
+        _inspectionCursor.Configure(_sceneContent?.Rasters);
         _board.AddChild(_inspectionCursor);
+        _targetCursor = new BattleInspectionCursor { Name = "TargetCursor", Size = Vector2.One * CellSize, ZIndex = 3, Visible = false };
+        _targetCursor.Configure(_sceneContent?.Rasters);
+        _board.AddChild(_targetCursor);
         foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
@@ -236,6 +241,7 @@ internal sealed partial class BattleMapViewport : Control
         foreach (var sprite in _sprites.Values) sprite.Hide();
         foreach (var node in _target) { _board.RemoveChild(node); node.QueueFree(); }
         _target.Clear();
+        _targetCursor.Hide();
         foreach (var actor in projection.Markers)
         {
             var physical = PhysicalActor(actor.Actor);
@@ -251,7 +257,9 @@ internal sealed partial class BattleMapViewport : Control
             if (actor.Targeted && actor.Actor == candidate)
             {
                 var origin = new Vector2(actor.Position.X, actor.Position.Y) * CellSize;
-                foreach (var edge in new[] { new Rect2(1, 1, CellSize - 2, 2), new Rect2(1, CellSize - 3, CellSize - 2, 2),
+                if (_targetCursor.Original)
+                { _targetCursor.Position = origin; _targetCursor.Show(); }
+                else foreach (var edge in new[] { new Rect2(1, 1, CellSize - 2, 2), new Rect2(1, CellSize - 3, CellSize - 2, 2),
                     new Rect2(1, 1, 2, CellSize - 2), new Rect2(CellSize - 3, 1, 2, CellSize - 2) })
                 {
                     var border = new ColorRect { Name = "Target_" + actor.Actor.Value, Position = origin + edge.Position, Size = edge.Size,
@@ -413,7 +421,9 @@ internal sealed partial class BattleMapViewport : Control
             visible = pair.Value.IsVisibleInTree(), scale = pair.Value.Scale.X,
             outputWidth = (pair.Value.Texture?.GetWidth() ?? 0) * pair.Value.Scale.X,
             outputHeight = (pair.Value.Texture?.GetHeight() ?? 0) * pair.Value.Scale.Y }),
-        inspectionCursor = new { visible = _inspectionCursor.IsVisibleInTree(), position = _inspectionFocus, rect = Rectangle(_inspectionCursor.GetGlobalRect()) },
+        inspectionCursor = new { visible = _inspectionCursor.IsVisibleInTree(), position = _inspectionFocus,
+            rect = Rectangle(_inspectionCursor.GetGlobalRect()), art = _inspectionCursor.Observe() },
+        targetCursor = _targetCursor.Observe(),
         movementRange = _range.Observe(),
         actionRange = _actionRange.Observe(),
         selection = _selection.Observe(),

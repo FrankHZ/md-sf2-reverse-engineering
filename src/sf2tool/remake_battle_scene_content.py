@@ -82,6 +82,45 @@ def sprite_layout(columns: int, rows: int) -> list[int]:
     ]
 
 
+TARGET_CURSOR_RESOURCE = "battle-cursor.single-cell"
+
+
+def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
+    """The accepted radius-zero sprite, independent of preview paths or a mutable library."""
+    if len(rom) != ACCEPTED_ROM_SIZE or digest(rom) != ACCEPTED_ROM_SHA256:
+        raise ValueError("ROM identity drift")
+    decoded = decode_stack_compressed(rom[0x23658:0x23758], expected_output_bytes=2048)
+    palette = [
+        md_palette_color(int.from_bytes(rom[i : i + 2], "big") & 0x0EEE)
+        for i in range(0x309E, 0x30BE, 2)
+    ]
+    pixels = bytes(compose(decoded.output, palette, 32, 32, sprite_layout(4, 4)))
+    return dict(
+        width=32,
+        height=32,
+        format="rgba8",
+        data=base64.b64encode(pixels).decode(),
+        sha256=digest(pixels),
+    ), dict(
+        romSha256=ACCEPTED_ROM_SHA256,
+        upstreamRepository=ACCEPTED_UPSTREAM_REPOSITORY,
+        upstreamCommit=ACCEPTED_UPSTREAM_COMMIT,
+        resource=TARGET_CURSOR_RESOURCE,
+        source="disasm/data/graphics/tech/cursortiles.bin",
+        address=0x23658,
+        compressedBytes=256,
+        inputBitsConsumed=decoded.input_bits_consumed,
+        decodedBytes=2048,
+        paletteAddress=0x309E,
+        paletteBytes=32,
+        layout="first-column-major-4x4",
+        width=32,
+        height=32,
+        rgbaSha256=digest(pixels),
+        filter="nearest",
+    )
+
+
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
     if battle not in (1, 2, 3, 4, 5, 6, 7):
         raise ValueError("unsupported battle-scene selection")
@@ -205,6 +244,10 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         )
         return name
 
+    cursor, cursor_provenance = single_cell_cursor(rom)
+    cursor_tiles = decode_stack_compressed(read(0x23658, 256), expected_output_bytes=2048).output
+    raster(TARGET_CURSOR_RESOURCE, cursor_tiles, palette(0x309E), 32, 32, sprite_layout(4, 4))
+    rasters[TARGET_CURSOR_RESOURCE] = cursor
     sprites = table("battle-sprite-decode")
     animations = table("battle-sprite-animation-static")
     weapons = table("battle-weapon-ground-decode")
@@ -467,6 +510,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         memberNames=names,
         textSource="disasm/data/scripting/text/gamescript.txt",
         nameSource="disasm/data/stats/allies/allynames.asm",
+        targetCursor=cursor_provenance,
     )
     bundle_path = output / "source/battle-scenes/selection.json"
     write_json(bundle_path, bundle)

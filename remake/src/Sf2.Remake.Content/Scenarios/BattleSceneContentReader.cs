@@ -31,6 +31,10 @@ internal static class BattleSceneContentReader
         foreach (var row in root.GetProperty("rasters").EnumerateObject())
             Require(rasters.TryAdd(row.Name, ExplorationAssetReader.Raster(row.Value)), "scene-duplicate-resource", "battleScenes.rasters");
         ExplorationAssetReader.BattlefieldMenu(rasters);
+        var cursorKeys = rasters.Keys.Where(key => key.StartsWith("battle-cursor.", StringComparison.Ordinal)).ToArray();
+        Require(cursorKeys.Length == 0 || cursorKeys.Length == 1 &&
+            rasters.TryGetValue("battle-cursor.single-cell", out var cursor) && cursor.Width == 32 && cursor.Height == 32,
+            "scene-target-cursor", "battleScenes.rasters");
         IdentityIconReader.Validate(rasters);
         IdentityIconReader.Bindings(rasters, definitions);
         string background = Text(root, "background"), ground = Text(root, "ground");

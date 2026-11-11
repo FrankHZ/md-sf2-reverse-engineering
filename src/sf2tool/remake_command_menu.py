@@ -248,6 +248,7 @@ def prepare_church(
     identity_icons: bool = False,
     item_menu: bool = False,
     shop_battlefield: bool = False,
+    target_cursor: bool = False,
 ) -> None:
     """Publish once, including every declared encounter when selecting all menus."""
     if out_dir.exists():
@@ -256,6 +257,8 @@ def prepare_church(
         raise ValueError("all menus require the opening battle scene")
     if item_menu and menu != "all":
         raise ValueError("item-menu requires all menus")
+    if target_cursor and menu != "all":
+        raise ValueError("target-cursor requires all menus")
     menus = ("field", "church", "command") if menu == "all" else (menu,)
     if item_menu:
         menus += ("item",)
@@ -265,6 +268,11 @@ def prepare_church(
         menus += ("shop", "battlefield")
     assets = {name: menu_assets(rom, upstream, listing, rom_assets, name) for name in menus}
     icons = None
+    cursor = None
+    if target_cursor:
+        from sf2tool.remake_battle_scene_content import single_cell_cursor
+
+        cursor = single_cell_cursor(rom.read_bytes())
     if identity_icons:
         from sf2tool.remake_identity_icons import identity_assets
 
@@ -320,6 +328,8 @@ def prepare_church(
                     (source_root / relative).read_text(encoding="utf-8-sig")
                 )
         for battle_scene in scenes.values():
+            if cursor:
+                mount(battle_scene["rasters"], {"single-cell": cursor[0]}, "battle-cursor.")
             mount(battle_scene["rasters"], assets["command"][0], "command-menu.")
             if shop_battlefield:
                 mount(battle_scene["rasters"], assets["battlefield"][0], "battlefield-menu.")
@@ -347,6 +357,8 @@ def prepare_church(
     )
     if icons:
         provenance["identityIcons"] = icons[1]
+    if cursor:
+        provenance["targetCursor"] = cursor[1]
     provenance["copiedDependencies"] = sorted(dependencies - scenes.keys())
     provenance["preparedBattleScenes"] = sorted(scenes)
     write_json(out_dir / "provenance.json", provenance)
@@ -376,7 +388,14 @@ def main() -> None:
         action="store_true",
         help="Add source shop and empty-ground options art with --menu all",
     )
+    parser.add_argument(
+        "--target-cursor",
+        action="store_true",
+        help="Add original single-cell F4/F8 art to all scenes",
+    )
     args = parser.parse_args()
+    if args.target_cursor and args.menu != "all":
+        parser.error("--target-cursor requires --menu all")
     if args.shop_battlefield and args.menu != "all":
         parser.error("--shop-battlefield requires --menu all")
     if args.item_menu and args.menu != "all":
@@ -403,6 +422,7 @@ def main() -> None:
             args.identity_icons,
             args.item_menu,
             args.shop_battlefield,
+            args.target_cursor,
         )
     else:
         prepare(args.rom, args.upstream, args.scene, args.out_dir, args.listing, args.rom_assets)
