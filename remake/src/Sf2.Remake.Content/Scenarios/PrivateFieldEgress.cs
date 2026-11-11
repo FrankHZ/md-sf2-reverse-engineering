@@ -25,7 +25,7 @@ internal static class PrivateFieldEgress
             new ResetPartyBattleStats(LivingOnly: true), new EndProgram()]);
         var bound = new ExplorationDefinition(world.Maps.Values, world.Programs.Values.Append(sequence),
             world.Texts, world.Provenance, world.PartyFlags, world.Visuals, world.MemberNames,
-            world.TextTokens, world.TextFont) { GameplayRevision = world.GameplayRevision };
+            world.TextTokens, world.TextFont) { GameplayRevision = world.GameplayRevision, Guidance = world.Guidance };
         return (bound, new(System.Array.AsReadOnly(maps), new(program, 0)));
     }
 }

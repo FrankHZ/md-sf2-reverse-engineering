@@ -18,6 +18,7 @@ internal sealed partial class FieldServiceMenu : Panel
     private readonly ScrollContainer _reading = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private CompactCommandList _list = null!;
     internal Action InvalidatePointer { get; set; } = () => { };
+    internal Rect2? ProtectedSubject { get; set; }
     internal FieldServiceMenu(string owner, params (string Id, string Key)[] commands)
     { _owner = owner; _keys = commands.Select(c => c.Key).ToArray(); _icons = commands.Select(c => new DiamondCommandButton(c.Id, c.Key, owner)).ToArray(); }
     public override void _Ready()
@@ -51,12 +52,14 @@ internal sealed partial class FieldServiceMenu : Panel
         float height = Math.Min(_reason.GetMinimumSize().Y, Math.Max(64, GetViewportRect().Size.Y - 144 - top - 16));
         _reading.Position = new(16, top); _reading.Size = new(inner, height);
         Size = new(width, top + height + 16); Position = new(GetViewportRect().Size.X - 32 - width, 112);
+        if (ProtectedSubject is { } subject && GetRect().Intersects(subject)) Position = new(32, 112);
     }
     internal int Hit(Vector2 p) => _list.Hit(p).Index;
     internal Rect2 RowRect(int index) => ((Control)_list.GetChild(index)).GetGlobalRect();
     internal Rect2 BackRect => _back.GetGlobalRect();
     internal bool BackHit(Vector2 p) => BackRect.HasPoint(p);
     internal void Wheel(int step) { _reading.ScrollVertical += step; InvalidatePointer(); }
+    internal bool ReadingOverflow => _reason.GetMinimumSize().Y > _reading.Size.Y + 1;
     internal void Suspend() { foreach (var icon in _icons) icon.StopFocusEmphasis(); }
     public override void _Process(double delta) { if (IsVisibleInTree()) { Arrange(); foreach (var icon in _icons) icon.AdvanceFocus(delta); } }
     internal object Observe() => new { visible = IsVisibleInTree(), rect = Rect(this), title = _title.Text, list = _list.Observe(),

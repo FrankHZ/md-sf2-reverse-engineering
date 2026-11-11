@@ -117,6 +117,7 @@ public sealed partial class ExplorationSessionView : Control
         };
         ui.AddChild(_partyStatus);
         _fieldMenu = new FieldMenuView { Name = "FieldMenu" }; ui.AddChild(_fieldMenu);
+        _guidance = new FieldGuidanceView { Name = "FieldGuidance" }; ui.AddChild(_guidance);
         // Member/preparation pages cover the root diamond and retain their existing consumers.
         ui.MoveChild(_partyStatus, -1);
         _church = new ChurchServiceView { Name = "ChurchService" }; ui.AddChild(_church);
@@ -833,7 +834,7 @@ public sealed partial class ExplorationSessionView : Control
                 cameraX = WorldViewport.Origin.X, cameraY = WorldViewport.Origin.Y,
                 bounds = Battles.BattleMapViewport.Rectangle(WorldViewport.Bounds),
                 legalScreen = Battles.BattleMapViewport.Rectangle(WorldViewport.Screen) },
-            battleMounted = _battleMounted, fieldMenu = _fieldMenu.Observe(), partyStatus = _partyStatus.Observe(), church = _church.Observe(), shop = _shop.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
+            battleMounted = _battleMounted, fieldMenu = _fieldMenu.Observe(), guidance = _guidance.Observe(), partyStatus = _partyStatus.Observe(), church = _church.Observe(), shop = _shop.Observe(), returnNotice = _returnFeedback.Notice(_session!.Current),
             party = current?.Exploration?.Party.Actors, gold = current?.Exploration?.Party.Gold,
             itemCustody = current?.Exploration?.Party.ItemCustody,
             admittedParty = full && current?.Exploration is { } world ? new

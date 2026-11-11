@@ -18,6 +18,7 @@ public sealed partial class ExplorationSessionView
 
     internal void SuspendPacing()
     {
+        _guidance?.Hide();
         _input?.AllowAcceleration(false);
         _tickTime = 0; _resumeAutomatic = true;
     }

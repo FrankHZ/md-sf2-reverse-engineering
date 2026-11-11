@@ -23,16 +23,21 @@ internal sealed partial class FieldMenuView : Control
     private readonly bool[] _available = new bool[4];
     private int _index;
     private long _generation;
+    private string _objective = "";
+    private bool _readingFocused;
+    internal void SetObjective(string text) { _objective = text; }
+    internal void ProtectSubject(Rect2? subject) { _menu.ProtectedSubject = subject; }
     internal bool Open => _menu.Visible;
     internal string? AssetError { get; private set; }
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
+        _entry.CustomMinimumSize = new(320, 0); _entry.CustomMaximumSize = new(320, -1);
         _shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_shade); AddChild(_menu); AddChild(_entry);
         _menu.InvalidatePointer = _pointer.Cancel; HideMenu(); _entry.Hide();
     }
     internal void Begin() { _generation++; _menu.Show(); _shade.Show(); _entry.Hide(); Suspend(); }
-    internal void HideMenu() { _generation++; _menu.Hide(); _shade.Hide(); Suspend(); }
+    internal void HideMenu() { _generation++; _readingFocused = false; _menu.Hide(); _shade.Hide(); Suspend(); }
     internal void Present(GameInput input, ExplorationVisuals? visuals, bool entry, bool party, bool preparation, bool search,
         Action begin, Action<int> choose, Action close)
     {
@@ -51,12 +56,21 @@ internal sealed partial class FieldMenuView : Control
         if (!Open) return;
         string key = new[] { "member", "magic", "item", "search" }[Math.Min(_index, 3)];
         string reason = _index == 4 ? "" : GameText.Get("field-menu." + key + "-help") + (_available[_index] ? "" : "\n" + GameText.Get("field-menu.unavailable"));
-        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason + "\n" + GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)) + "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕", "prepare.back", _available);
+        if (_objective != "") reason = GameText.Get("guidance.heading") + "\n" + _objective + "\n\n" + reason + "\n" +
+            GameText.Get("guidance.reading", input.CompactHint(GameAction.Right), input.CompactHint(GameAction.Cancel));
+        _menu.Present(input, _index, GameText.Get(_readingFocused ? "guidance.heading" : "field-menu.title"), reason + "\n" + GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)) + "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕", "prepare.back", _available);
     }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _menu.Suspend(); }
     internal void Handle(GameAction action)
     {
         _pointer.Cancel(); if (_requiresRelease || !Open) return;
+        if (_readingFocused)
+        {
+            if (action is GameAction.Cancel or GameAction.Left) _readingFocused = false;
+            else if (action is GameAction.Up or GameAction.Down) _menu.Wheel(action == GameAction.Up ? -112 : 112);
+            return;
+        }
+        if (action == GameAction.Right && _objective != "" && _menu.ReadingOverflow) { _readingFocused = true; return; }
         if (action == GameAction.Cancel) { _close(); return; }
         if (action is GameAction.Left or GameAction.Right) { _menu.Wheel(action == GameAction.Left ? -192 : 192); return; }
         if (action is GameAction.Up or GameAction.Down) _index = (_index + (action == GameAction.Up ? -1 : 1) + 5) % 5;
@@ -78,9 +92,11 @@ internal sealed partial class FieldMenuView : Control
         Rect2 rect = right ? GetGlobalRect() : back ? _menu.BackRect : entry ? _entry.GetGlobalRect() : hit >= 0 ? _menu.RowRect(hit) : default;
         string? clicked = _pointer.Read(button, id, rect, (_generation, Open, _entry.Visible));
         if (_requiresRelease || clicked is null) return;
-        if (clicked == "entry") _begin(); else if (clicked == "back") _close();
+        if (clicked == "entry") _begin(); else if (clicked == "back")
+        { if (_readingFocused) _readingFocused = false; else _close(); }
         else { _index = int.Parse(clicked); if (_available[_index]) { Suspend(); _choose(_index); } }
     }
     internal object Observe() => new { visible = Open && IsVisibleInTree(), index = _index, requiresRelease = _requiresRelease,
+        objective = Open && IsVisibleInTree() ? _objective : "", readingFocused = _readingFocused, readingOverflow = _menu.ReadingOverflow,
         entryVisible = _entry.IsVisibleInTree(), entryRect = BattleMapViewport.Rectangle(_entry.GetGlobalRect()), menu = _menu.Observe() };
 }
