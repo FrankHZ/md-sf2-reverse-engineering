@@ -44,8 +44,11 @@ Pass `-- --inspect` to launch directly on the inspection board.
 **Hover card.** Land effect is right-aligned beside the name. HP and MP share the next row
 and the location stays below the gauges. The private encounter supplies the mover and the
 terrain under the indicated battle-local cell. The shared rule gives Bowie (7,9) and Sarah
-(9,9) 15%, and Gizmo (8,7) 0% in this staging. Empty cells show their coordinates. With no
-terrain or mover data the unit card shows a dash. [Original land effect display and lookup](../../../docs/godot/battle-interaction-baseline.md#what-status-and-terrain-inspection-may-disclose)
+(9,9) 15%, and Gizmo (8,7) 0% in this staging. On empty cells, “Ground effect” uses the
+regular ground mover as a reference. Try the path at (7,8) for 0%, plains at (6,5) for
+15%, and grass at (14,11) for 30%. A blocked cell reads “Ground impassable.” Both empty
+and occupied cells show their coordinates. A dash means terrain or mover data is unavailable.
+Empty-cell hover is a preview addition. [Original land effect display and lookup](../../../docs/godot/battle-interaction-baseline.md#what-status-and-terrain-inspection-may-disclose)
 
 **Mouse camera.** On the F8 free board, dwell for 180ms inside a 32px edge band. Speed rises
 from two to six cells per second toward the edge. Corners share that speed across both axes.

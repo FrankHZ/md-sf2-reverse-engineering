@@ -41,15 +41,16 @@ public partial class DesignPreview
             var card = Panel(new(_stage.BoardCell(_cursor, false).GetCenter().X >= 1248 ? 48 : 1296,
                 238, 560, unit < 0 ? 150 : 250));
             card.Name = "InspectionCard";
-            Text(card, new(16, 10, 252, 56), unit < 0 ? T("空地", "Open ground") : InspectedUnit(unit).Name, 36);
+            Text(card, new(16, 10, 252, 56), unit < 0 ? T("空地", "Empty cell") : InspectedUnit(unit).Name, 36);
+            var (percent, groundBlocked) = _stage.LandEffect(unit, _cursor);
+            string effectLabel = unit < 0 ? T("地面效果", "Ground effect") : T("地形效果", "Land effect");
+            string value = percent is { } effect ? $"{effect}%" : "—";
+            var land = Text(card, new(272, 10, 256, 56),
+                groundBlocked ? T("地面不可通行", "Ground impassable") : $"{effectLabel}  {value}", 28, "cad6e5");
+            land.Name = "LandEffect";
+            land.HorizontalAlignment = HorizontalAlignment.Right;
             if (unit >= 0)
-            {
-                string value = _stage.LandEffect(unit, _cursor) is { } effect ? $"{effect}%" : "—";
-                var land = Text(card, new(272, 10, 256, 56), T("地形效果  ", "Land effect  ") + value, 28, "cad6e5");
-                land.Name = "LandEffect";
-                land.HorizontalAlignment = HorizontalAlignment.Right;
                 Vitals(card, new(16, 66), InspectedUnit(unit));
-            }
             Text(card, new(16, unit < 0 ? 72 : 172, 528, 58), T($"古代之塔   ·   地块 ({_cursor.X}, {_cursor.Y})",
                 $"Ancient Tower   ·   Cell ({_cursor.X}, {_cursor.Y})"), 26, "cad6e5");
             Footer(T("方向键或鼠标选格     棋盘边缘滚动     Enter / A 或左键确认",

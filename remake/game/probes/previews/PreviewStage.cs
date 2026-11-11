@@ -98,11 +98,18 @@ internal sealed partial class PreviewStage : Control
         return _textures[state] = ImageTexture.CreateFromImage(image);
     }
 
-    internal int? LandEffect(int unit, Vector2I cell)
+    internal (int? Percent, bool GroundBlocked) LandEffect(int unit, Vector2I cell)
     {
-        var deployment = _battle?.Deployments.FirstOrDefault(row => row.ProcessingOrder == (unit == 2 ? 128 : unit));
-        if (_battle is null || deployment is null) return null;
-        return BattleTerrainRules.LandEffect(_battle.Terrain[cell.Y * 48 + cell.X], deployment.Definition.Mover);
+        if (_battle is null) return (null, false);
+        var terrain = _battle.Terrain[cell.Y * 48 + cell.X];
+        if (unit < 0)
+        {
+            if (terrain.Surface is TerrainSurface.Impassable or TerrainSurface.HighSky or TerrainSurface.Barrier)
+                return (null, true);
+            return (BattleTerrainRules.LandEffect(terrain, BattleMover.Regular), false);
+        }
+        var deployment = _battle.Deployments.FirstOrDefault(row => row.ProcessingOrder == (unit == 2 ? 128 : unit));
+        return (deployment is null ? null : BattleTerrainRules.LandEffect(terrain, deployment.Definition.Mover), false);
     }
 
     internal Rect2 BoardCell(Vector2I cell, bool overview)
