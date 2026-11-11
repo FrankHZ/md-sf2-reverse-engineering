@@ -7,8 +7,8 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // Product UI geometry uses physical window units, independent of map tiles and source pixels.
 internal sealed partial class BattleMenuLayout : Control
 {
-    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true };
-    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true };
+    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true, DecisionHeader = true };
+    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true, DecisionHeader = true };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
@@ -17,6 +17,7 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
     private readonly Panel _commandsPanel = new() { Name = "CommandsPanel", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly Panel _group = new() { Name = "DecisionGroup", MouseFilter = MouseFilterEnum.Ignore };
     private UI.CompactCommandList _commandList = null!;
     internal readonly UI.DiamondCommandButton[] Commands = [new("Attack", "battle.command.attack", "command-menu"), new("Magic", "battle.command.magic", "command-menu"),
         new("Item", "battle.command.item", "command-menu"), new("Stay", "battle.command.stay", "command-menu")];
@@ -37,7 +38,7 @@ internal sealed partial class BattleMenuLayout : Control
     private bool _commandHint;
     private Rect2 _subject;
     internal Action InvalidatePointer { get; set; } = () => { };
-    internal bool Covers(Vector2 p) => new Control[] { Actor, Target, _context, _commandsPanel, _list, _detail }
+    internal bool Covers(Vector2 p) => new Control[] { _group, Actor, Target, _context, _commandsPanel, _list, _detail }
         .Any(c => c.IsVisibleInTree() && c.GetGlobalRect().HasPoint(p));
 
     internal void AvoidSubject(Rect2 rectangle)
@@ -59,7 +60,13 @@ internal sealed partial class BattleMenuLayout : Control
         var insets = (StyleBoxFlat)Theme.GetStylebox("panel", "PanelContainer").Duplicate();
         insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = 16;
         foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
+        var contentStyle = (StyleBoxFlat)insets.Duplicate();
+        contentStyle.BgColor = Colors.Transparent; contentStyle.ShadowSize = 0;
+        contentStyle.BorderWidthLeft = contentStyle.BorderWidthRight = contentStyle.BorderWidthTop = contentStyle.BorderWidthBottom = 0;
+        _list.AddThemeStyleboxOverride("panel", contentStyle);
+        _commandsPanel.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
         MouseFilter = MouseFilterEnum.Ignore;
+        AddChild(_group);
         AddChild(Actor); AddChild(Target);
         AddChild(_context); _context.AddChild(Context);
         _commandList = new(Commands) { Name = "Commands", InvalidatePointer = () => InvalidatePointer() };
@@ -105,7 +112,8 @@ internal sealed partial class BattleMenuLayout : Control
     {
         Size = size;
         const float margin = 32, inset = 16;
-        float width = Mathf.Min(560, size.X - margin * 2);
+        var header = Target.Visible ? Target : Actor;
+        float width = Mathf.Min(Mathf.Max(560, header.RequestedSize.X), size.X - margin * 2);
         float right = size.X - margin - width;
         // Layout A: live acting vitals head the same right-hand command column.
         // Child offers replace the root rows at the same origin; the board remains independent.
@@ -120,13 +128,22 @@ internal sealed partial class BattleMenuLayout : Control
         _commandsPanel.Position = new(right, rowsTop);
         _commandsPanel.Size = new(width, _commandList.RequestedHeight + inset * 2);
         _list.Position = new(right, rowsTop);
-        _list.Size = new(width, _commandsPanel.Size.Y);
+        _descriptionSize = new(width, 0);
+        SetTextWidths();
+        float descriptionHeight = _detail.GetCombinedMinimumSize().Y;
+        // Short lists need only their actual rows. Longer lists keep the existing scroll
+        // consumer and reserve measured space for the full current reason and mapped footer.
+        float availableRows = size.Y - margin - rowsTop - 12 - descriptionHeight;
+        _list.Size = new(width, Mathf.Max(112, Mathf.Min(availableRows,
+            Mathf.Min(_commandsPanel.Size.Y, _rows.GetCombinedMinimumSize().Y + inset * 2))));
+        _group.Position = new(right, header.Position.Y);
+        float groupBottom = _commandsPanel.Visible ? _commandsPanel.Position.Y + _commandsPanel.Size.Y :
+            _list.Visible ? _list.Position.Y + _list.Size.Y : header.Position.Y + header.Size.Y;
+        _group.Size = new(width, groupBottom - _group.Position.Y);
         float detailTop = _commandsPanel.Visible ? _commandsPanel.Position.Y + _commandsPanel.Size.Y + 12 :
             _list.Visible ? _list.Position.Y + _list.Size.Y + 12 :
             Target.Visible ? Target.Position.Y + Target.Size.Y + 12 : rowsTop;
-        _descriptionSize = new(width, 0);
-        SetTextWidths();
-        _descriptionSize = new(width, _detail.GetCombinedMinimumSize().Y);
+        _descriptionSize = new(width, descriptionHeight);
         _detail.Position = new(right, detailTop); _detail.Size = _descriptionSize;
         SetTextWidths();
     }
@@ -239,6 +256,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal object Observe() => new
     {
+        decisionGroup = BattleMapViewport.Rectangle(_group.GetGlobalRect()),
         commandList = _commandList.Observe(), commandPanel = BattleMapViewport.Rectangle(_commandsPanel.GetGlobalRect()),
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),

@@ -10,17 +10,29 @@ namespace Sf2.Remake.GodotAdapter.UI;
 internal sealed partial class BattleStatusCard : PanelContainer
 {
     internal bool Compact { get; init; }
+    internal bool DecisionHeader { get; init; }
     internal static readonly Vector2 CardSize = new(500, 192);
     internal Vector2 RequestedSize { get; private set; } = CardSize;
     private readonly Label _role = Text("Role", 18), _name = Text("CharacterName", 26);
     private readonly Label _land = Text("LandEffect", 18);
-    private readonly BattleVitalGauge _hp = new("HP"), _mp = new("MP");
+    private BattleVitalGauge _hp = null!, _mp = null!;
+    private BattleDecisionVitals _decision = null!;
     private ActorRef? _actor;
     private float _compactHeight = 148;
+    private float _decisionHeight = 164, _nameWidth = CardSize.X;
 
     public override void _Ready()
     {
         Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
+        if (DecisionHeader)
+        {
+            var style = (StyleBoxFlat)GetThemeStylebox("panel").Duplicate();
+            // The decision presenter owns the one outer frame around header and command rows.
+            style.BgColor = Colors.Transparent; style.ShadowSize = 0;
+            style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 0;
+            style.ContentMarginLeft = style.ContentMarginRight = style.ContentMarginTop = style.ContentMarginBottom = 16;
+            AddThemeStyleboxOverride("panel", style);
+        }
         var column = new VBoxContainer(); column.AddThemeConstantOverride("separation", 2);
         AddChild(column); column.AddChild(_role); column.AddChild(_name); _role.Visible = !Compact;
         _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -28,7 +40,8 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _name.MaxLinesVisible = 2;
         _name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
         column.AddChild(_land); _land.Hide();
-        column.AddChild(_hp); column.AddChild(_mp);
+        if (DecisionHeader) { _decision = new(); column.AddChild(_decision); }
+        else { _hp = new("HP"); _mp = new("MP"); column.AddChild(_hp); column.AddChild(_mp); }
         // A hidden wrapped label initially measures at width 1. Reset the requested
         // frame when native sorting publishes the real minimum (also on actor changes).
         MinimumSizeChanged += () => Size = RequestedSize;
@@ -52,8 +65,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         _role.Text = role + (hp == 0 ? GameText.Get("battle.defeated") : low ? GameText.Get("battle.low-hp") : "");
         _role.Modulate = low ? StoryTheme.Selected : Colors.White;
         Size = RequestedSize;
-        _hp.Present(hp, maxHp);
-        _mp.Present(mp, maxMp);
+        PresentVitals(hp, maxHp, mp, maxMp);
     }
 
     internal void Present(Sf2.Remake.Application.Runtime.Battles.BattleInspectionUnit unit, string name)
@@ -64,7 +76,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
             unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
             GameText.Get("battle.inspect.enemy")) + " · " + DisplayNames.InspectionStatus(unit.Status);
         _role.Modulate = Colors.White; Size = RequestedSize;
-        _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
+        PresentVitals(unit.Hp, unit.MaxHp, unit.Mp, unit.MaxMp);
     }
 
     internal void PresentActing(BattleActingStatus? status)
@@ -83,7 +95,18 @@ internal sealed partial class BattleStatusCard : PanelContainer
             ((unit.Status & 0x300) != 0 ? " · " + GameText.Get("battle.status.silence", (unit.Status & 0x300) >> 8) : "") +
             (low ? GameText.Get("battle.low-hp") : "");
         _role.Modulate = low ? StoryTheme.Selected : Colors.White; Size = RequestedSize;
-        _hp.Present(unit.Hp, unit.MaxHp); _mp.Present(unit.Mp, unit.MaxMp);
+        PresentVitals(unit.Hp, unit.MaxHp, unit.Mp, unit.MaxMp);
+    }
+
+    private void PresentVitals(int? hp, int? maxHp, int? mp, int? maxMp)
+    {
+        if (DecisionHeader)
+        {
+            _decision.Present(hp, maxHp, mp, maxMp);
+            RequestedSize = new(Mathf.Max(_nameWidth, _decision.GetCombinedMinimumSize().X + 32), Height);
+            Size = RequestedSize;
+        }
+        else { _hp.Present(hp, maxHp); _mp.Present(mp, maxMp); }
     }
 
     private void PresentName(string name)
@@ -111,10 +134,12 @@ internal sealed partial class BattleStatusCard : PanelContainer
         while (shaped.GetLineCount() > 2 && shaped.Width < maximumNameWidth)
             shaped.Width = Mathf.Min(shaped.Width + 16, maximumNameWidth);
         _compactHeight = Mathf.Max(148, shaped.GetSize().Y + 100);
+        _decisionHeight = Mathf.Max(164, shaped.GetSize().Y + 122);
+        _nameWidth = shaped.Width + (DecisionHeader ? 32 : 28);
         RequestedSize = new(shaped.Width + 28, Height);
         _name.AddThemeFontSizeOverride("font_size", fontSize);
     }
-    private float Height => Compact ? _compactHeight : CardSize.Y + (_land.Visible ? 26 : 0);
+    private float Height => DecisionHeader ? _decisionHeight : Compact ? _compactHeight : CardSize.Y + (_land.Visible ? 26 : 0);
 
     internal object Observe() => new
     {
@@ -124,7 +149,8 @@ internal sealed partial class BattleStatusCard : PanelContainer
         nameRect = BattleMapViewport.Rectangle(_name.GetGlobalRect()),
         nameLines = _name.GetLineCount(), nameFontSize = _name.GetThemeFontSize("font_size"),
         nameVisibleLines = _name.GetVisibleLineCount(),
-        hp = _hp.Observe(), mp = _mp.Observe(),
+        decisionHeader = DecisionHeader,
+        hp = DecisionHeader ? _decision.ObserveHp() : _hp.Observe(), mp = DecisionHeader ? _decision.ObserveMp() : _mp.Observe(),
     };
 
     private static Label Text(string name, int size)
@@ -153,10 +179,12 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
     internal void Present(int? current, int? maximum)
     {
         _current = current; _maximum = maximum;
-        _value.Text = maximum == 0 ? "—" : $"{current?.ToString() ?? GameText.Get("party.value-unavailable")}/{maximum?.ToString() ?? GameText.Get("party.value-unavailable")}";
+        _value.Text = Value(current, maximum);
         _image.Fraction = current is null || maximum is null or 0 ? 0 : Mathf.Clamp((float)current.Value / maximum.Value, 0, 1);
         _image.QueueRedraw();
     }
+    internal static string Value(int? current, int? maximum) => maximum == 0 ? "—" :
+        $"{current?.ToString() ?? GameText.Get("party.value-unavailable")}/{maximum?.ToString() ?? GameText.Get("party.value-unavailable")}";
     internal object Observe() => new { label = _label.Text, current = _current, maximum = _maximum,
         text = _value.Text, image = _image.Observe(), valueRect = BattleMapViewport.Rectangle(_value.GetGlobalRect()) };
 }

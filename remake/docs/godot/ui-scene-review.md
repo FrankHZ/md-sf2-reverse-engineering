@@ -376,13 +376,17 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
 [Campaign route](../application/pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) ·
 [Save access by phase](host-ui.md#access-through-the-finite-demo)
 
-- **Fix first — a target click commits the action.** In Settings → Controls help → Battle,
-  the English and Chinese targeting page groups hovering and clicking as selection. In Battle01,
-  choose an eligible Attack and hover its target to see the card. A full left-click on that unit
-  immediately starts the attack. Change the two `host.help-text-29` translations to say “Hover to
-  preview. Click a legal target to execute.” The existing target and commit controls already implement
-  this distinction. [English](../../game/localization/en.po) · [Chinese](../../game/localization/zh_CN.po) ·
-  [BoardTarget](../../game/src/Battles/BattleCommandMenu.cs) · [Observed attack](../../game/probes/engine_demo_battle_ui_observation.gd)
+- **Aligned — target preview versus execution (#1686).** The actual English and Chinese F10
+  targeting help now distinguishes hover preview from a complete legal-target click, which executes
+  immediately without another Confirm. An invalid click cannot submit an earlier target; Back remains
+  free. The existing target/input consumer is unchanged. The
+  [narrow production observer](../../game/probes/engine_battle_vitals_observation.gd) checks actual
+  help and real mouse/pad/Cancel input. Cases `help`, `battle` and `wide` select the ordinary field,
+  controlled private Battle01 or a prelaunch authored variant; use the
+  [existing production launch/environment recipe](battle-interaction-baseline.md#direct-production-reproduction)
+  with that script, `SF2_VITALS_CASE`, a fresh `SF2_VIEWPORT_OUTPUT`, matching input settings and
+  `SF2_COMPACT_START` for private/field starts. [English](../../game/localization/en.po) ·
+  [Chinese](../../game/localization/zh_CN.po) · [BoardTarget](../../game/src/Battles/BattleCommandMenu.cs)
 - **Pad discoverability.** At Battle01 Movement or the root command list, the footer shows the
   first mapped keyboard key, including for the auxiliary actions. Pad actions work, but a player
   looking for the corresponding pad button must consult Help before battle. The existing hint
@@ -393,14 +397,24 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   free-inspection board. Click-to-walk was outside the accepted movement scope. It would require
   a new product decision. [Preview controls](../../game/probes/previews/README.md#f4-action-playback) ·
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
-- **Visual alignment — F4 decision card.** At Battle01, confirm a stop and compare the acting card
-  with the reviewed F4 layout A at 1080p. The design puts 36px values above side-by-side HP and MP
-  gauges in the command panel. The product places a separate status card above the list and
-  stacks HP and MP, with 22px values beside each gauge.
-  A player comparing a spell’s cost with the caster’s MP therefore sees smaller numbers. Apply the
-  reviewed gauge layout to the acting and target headers, allowing their height to grow for long names.
+- **Aligned — F4 decision vitals (#1686).** Actual acting/target headers opt into 36px HP/MP
+  readings above side-by-side 232×28 gauge images. Header and commands/child list share one outer
+  decision frame in layout A; the footer follows in the same measured right column.
+  Full-width values grow the group horizontally; two-line names
+  reserve their own height. Short lists use their actual rows, and longer lists retain scrolling with
+  space reserved for the measured reason/footer. Existing values and the no-MP dash/empty track stay
+  authoritative; F5/F8/full/close-up card consumers do not opt into this decision-only layout.
+  The same narrow observer checks actual private Battle01 and an admitted authored copy of
+  `attack-spells.json`: rename only actor identifiers and their start/placement references to valid
+  64-character IDs, set caster/center max HP30000 and max MP255, with start HP30000/23456 and MP255.
+  It asserts those actual names/values, geometry at 1080p/1440p/wide aspect, real Magic/target/host
+  combinations and unchanged close-up layout. English/Chinese, keyboard/remapped/pad and mouse are
+  bounded native checks, not a new whole-campaign or human visual acceptance claim. Retained local
+  runs and completed failures use an independent `issue1686-vitals` namespace; earlier accepted
+  #1693 results remain valid within their named boundary. No screenshot or player save is used.
   [Reviewed layout](../../game/probes/previews/DesignPreview.cs) ·
-  [Decision cards](../../game/src/Battles/BattleMenuLayout.cs) · [Gauge layout](../../game/src/UI/BattleStatusCard.cs)
+  [Decision cards](../../game/src/Battles/BattleMenuLayout.cs) ·
+  [Decision vitals](../../game/src/UI/BattleDecisionVitals.cs) · [Gauge layout](../../game/src/UI/BattleStatusCard.cs)
 - **Artwork — private F4/F8 single-cell cursor.** The complete private publication binds the
   reviewed 32×32 four-corner sprite to actual targeting and inspection, centered at nearest4×
   on a96px cell. Old private packages and public authored content retain their fallback. Native
