@@ -5,15 +5,14 @@ remake's design system. The [scene review](ui-scene-review.md) applies it to the
 The [presentation agreement](presentation.md) records what runs today.
 
 **High rigor.** Shared controls and scene layouts affect the whole player journey. The user
-accepted the Godot review at its 1920×1080 design size. This document fixes the visual design
-for independent review. The production presenters retain their existing behavior until migration.
+accepted the Godot review at its 1920×1080 design size. The ordinary pre-voyage game uses the reviewed scenes. Each gameplay or host caller still owns input, transactions and return.
 
 Use compact right-hand vertical lists for four-command menus in the field, Church, shop and
 battle. Keep each admitted original icon beside its localized name, visible before focus.
 Child lists replace the parent in the same column. In battle, layout A joins the acting unit's
 status to its command list. Layout B remains a comparison in the preview. The
-[scene coverage table](ui-scene-review.md#preview-coverage) identifies the reviewed examples
-and the distinct states still requiring production checks.
+[scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its production
+consumer and the limits of its evidence.
 
 ## Components
 
@@ -33,39 +32,37 @@ prices and transaction state.
 
 **Confirmed — accepted implementation/source structure:**
 [StoryTheme](../../game/src/UI/StoryTheme.cs) supplies blue/gold reading panels, 30px body,
-24px hints, selected `ffe19a` and unavailable `8e9bab`; its entry buttons currently have 8px
-corners while reading panels are square. The [display-layer agreement](presentation.md#display-layer-boundaries-1517)
-separates world, battle UI, field UI and host UI. The
-[diamond experiment](presentation.md#modern-ui-experiment) preserves cardinal input and original
-24px command rasters at nearest 4×. Church currently puts its diamond inside its service panel;
-the [Church agreement](presentation.md#church-and-shared-save-agreement-1519) owns its transaction.
-These are code/contract claims, not a fresh native or aesthetic pass.
+24px hints, selected `ffe19a` and unavailable `8e9bab`. Entry and host actions use the square
+journey theme. Field, Church, shop and battle use labeled right-hand lists with nearest 3×
+command art where mounted. Up/Down scans rows. The [Church agreement](ui-scene-review.md#10-production-church-and-battle-command-lists)
+and [field and shop owner](field-and-shop.md#current-composition) identify the actual consumers.
+The [display contract](display-composition-contract.md) owns the world and UI layers.
 
 **Confirmed — original structural evidence:** the linked
 [common-menu input contract](../../../docs/research/presentation/common-menus.md#confirmed-input-contracts)
 and [battle action contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md)
 own cardinal selection and source command meaning. The field mapping is documented with its pinned
 source in [the exploration agreement](presentation.md#exploration-gameplay-diamond-agreement-1588).
-This proposal does not infer original timing, opacity, cursor animation or natural reach from them.
+The vertical lists are a remake choice. Original timing and natural reach require their own evidence.
 
 **Inferred:** a consistent frame language, nearby command explanation and less persistent HUD
-competition should make these screens easier to scan. Production fit at other supported sizes and with long localized content remains **Unknown**. The numerical layout values below describe remake design.
+competition should make these screens easier to scan. The scene owners record which English/zh-CN, long-text and
+window-size combinations were observed. Physical display fit and human readability remain
+**Unknown**. Layout values below describe the accepted design.
 
 In scope: existing entry, field, party/preparation, service, host and battle presentation, including
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
-Out of scope: product code in this slice; new UI framework, global layer registry, new art/font
-pipeline, gameplay rules, navigation or pause authority, arbitrary UI zoom, below-minimum gameplay,
-remote services, save-anywhere, new input devices, hint redesign, and action-order prediction.
-[The modernization proposal](modernization-design.md) remains a separate product proposal; its
-remote-service and host Overview suggestions are not silently adopted here.
+The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
+Remote services, a host Overview and predicted turn order remain outside the accepted design.
+[Modernization proposal](modernization-design.md)
 
 ## Surfaces and hierarchy
 
 Use the existing licensed bundled font and current English/zh-CN display admission. Preserve
 canonical/custom names and fallback notices under the
 [localization owner](../application/localization-design.md). No font substitution, Chinese naming
-or IME admission follows from this style proposal.
+or IME admission follows from these layouts.
 
 | Role | Design baseline at native 1080p | Use and limit |
 | --- | --- | --- |
@@ -111,12 +108,12 @@ Normal                 Focused available       Focused unavailable
 The example illustrates hierarchy, not an assertion about current inventory, learned spells or
 source costs. Real values and availability always come from the existing offer/query. Inspecting
 a disabled choice is useful; confirming it must not commit an older valid choice. Host menus that
-currently skip unavailable rows keep doing so and show their reasons in the row. This proposal
-unifies the appearance, not the differing navigation contracts.
+currently skip unavailable rows keep doing so and show their reasons in the row. Each menu keeps its own navigation rules.
 
 Move focus along the visible collection's axis. Focus updates the marker, icon and detail together.
-Directions move the inspection cursor freely and cycle eligible combatants during action targeting. On supported pointer surfaces,
-the icon and its label form one hit target. Back to a list restores its selected offer or slot.
+Battle movement uses mapped directions and Confirm. Directions move the inspection cursor freely
+and cycle eligible combatants during action targeting. On pointer-enabled controls, the icon and
+its label form one hit target. Back to a list restores its selected offer or slot.
 Use the installed `GameInput` mappings for keyboard/pad hints and the existing complete
 press/release pointer gesture. A stationary pointer does not steal directional focus. Closing,
 relayout, hiding, loss of native focus and modal handoff cancel incomplete pointer gestures and
@@ -141,15 +138,14 @@ owns the coordinated end of the portrait and text window.
    from committing an action; unread text cannot cause accidental confirmation.
 3. Preserve intentional source Search line boundaries and admitted translation/fallback notes.
    Do not collapse all newlines as a layout shortcut. [#1608](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1608)
-   owns that behavior correction.
+   records the implemented Search correction.
 4. Never solve overflow by shrinking 30px body or 24px hints, clipping an unavailable reason,
    truncating a price/HP number, or hiding the Back control. Existing bounded status-name ellipsis
    is the documented exception, not a new general truncation policy.
 
 Keep existing hint content in a measured footer, including multiple lines where necessary.
-[#1544](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1544) remains deferred: this
-proposal neither removes existing hints nor adds first-use detection, device switching or a new
-help system. A self-explanatory command can stand on its name.
+First-use cues and shorter contextual hints remain deferred under
+[#1544](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1544).
 
 ## Layout that preserves the world
 
@@ -180,9 +176,11 @@ the inspected subject clear at each supported viewport. Function-key tabs belong
 | Free inspection | Keep the status card clear of the hovered cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
 | Action playback / outcome | The board command panel retires. Close-ups use the original ally/enemy window positions. Ordered reward and return messages use the reading frame. |
 
-During product migration, measure the whole group against the host exclusion, the projected
-subject and the footer, including long reasons and wide values. Move or grow the panel as a
-group when needed and preserve focus across a resize. Scroll or page overflow inside its owner.
+In production, row placement follows the measured height of the acting card. Its HP and MP
+values currently use a different size and arrangement from design A. See the
+[decision-card comparison](ui-scene-review.md#9-remaining-differences-in-play). Measure the whole
+group against the host exclusion, the projected subject and the footer for long reasons and wide
+values. Move or grow the panel as a group when needed and preserve focus across a resize. Scroll or page overflow inside its owner.
 
 Entry uses its established Witch art and right-column reservation instead of this battle grid.
 Field dialogue keeps its stable top/bottom speaker avoidance. Church and Shop position their services beside the visible provider.
@@ -190,7 +188,7 @@ Party and Settings use working panels. The [scene review](ui-scene-review.md) ap
 
 ## Motion, composition and modal ownership
 
-For an available focused command, alternate its admitted frames every 250ms while focus remains. Keep the label, hit area and outline steady. Motion off holds the selected frame. Unavailable commands and spell/item identity icons remain still. Any focus
+For an available focused command, alternate its admitted frames every 250ms while focus remains. Keep the label, hit area and outline steady. Reduced Flash holds the selected frame. Unavailable commands and spell/item identity icons remain still. Any focus
 movement stays inside the item, clear of the name, neighboring items and hit bounds.
 HP/MP follow committed state immediately; a UI flourish cannot postpone a scene acknowledgement.
 Existing title/story/effect clocks retain their owners. Use direct panel transitions by default;
@@ -198,11 +196,9 @@ do not introduce a decorative fade that masks a lifecycle or input bug.
 
 World terrain/actors, local weapon composition and UI overlays are different responsibilities.
 Keep the existing world / `BattleUi` / `FieldUi` / `HostUi` roles and scene-owned visibility.
-[#1621](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1621) audits their detailed
-contract; no proposed Z constant here overrides it or creates a general layer registry.
-[#1620](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1620) owns weapon-frame
-front/back, offset and flip investigation. Moving a dialogue above the world cannot correct a
-weapon passing through a body.
+The [display contract](display-composition-contract.md) owns layer ordering.
+[Weapon-frame composition](battle-scenes.md#weapon-frame-composition-1620) owns front/back,
+offset and flip within the combatant.
 
 At most one gameplay page accepts input. An allowed host Menu covers it, owns its own pause and
 input, and returns to the same selection/reading state. Subpages hide the parent host controls.
@@ -210,15 +206,10 @@ Window recovery hides those covered host views, owns recovery actions and restor
 page before gameplay can resume. A veil is only visual; it never supplies pause/input protection.
 Stopped-scene feedback remains readable above world fades and does not invent a retry.
 
-## Design completion boundary
+## Production and human review
 
-The handoff covers the F1–F10 scene examples, component rules, selected layout A and the
-[production verification combinations](ui-scene-review.md#9-combination-review-and-implementation-boundaries).
-Main-gate can review the independent design and preview PRs against the same accepted base.
-The production rollout retains its own input, geometry, localization and resize acceptance.
-
-Implementation is a later explicit dispatch after main-gate review and resolution of material
-visual choices. Its acceptance must read actual input, node geometry, state projection and errors
-at the named combinations, then obtain human visual acceptance under
-[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456). A design PR or passing
-geometry check alone does not establish that the user likes the finished result.
+The [playable scene review](ui-scene-review.md#scenes-in-the-playable-demo) connects F1–F10
+to their deployed controls. The reviewed layouts establish the design reference. The production
+owners record actual inputs, geometry and returns. For ordinary-game readability, physical
+devices and desktop focus, use the [short play route](ui-scene-review.md#short-play-route)
+and [human review](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
