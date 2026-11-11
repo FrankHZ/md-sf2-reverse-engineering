@@ -1,10 +1,8 @@
 # Godot Host and Presentation
 
 The [shared UI design language](ui-design-language.md) and
-[player-path scene review](ui-scene-review.md) own #1616's proposed cross-scene visual direction,
-freestanding diamonds, layout/state combinations and bounded implementation dependencies.
-They await independent design and human visual review; they do not change the implemented
-agreements below or authorize product implementation, new battle capabilities or hint redesign.
+[player-path scene review](ui-scene-review.md) own #1616's design decision to replace directional
+diamonds with labeled commands using the admitted original art. The scene review records the user-approved Godot layouts and their preview coverage. The agreements below describe the controls and behavior in the current game.
 
 The implemented bounded [game localization design](../application/localization-design.md) owns English/zh-CN
 catalogs, safe settings refresh, name/IME and font boundaries. Translated
@@ -2732,7 +2730,7 @@ Up Use, Left Give, Right Equip, Down Drop, then Confirm; mapped Cancel/right-cli
 the same member caller. Child Back restores the selected operation and exact item/return slot.
 Only this new operation page hides the underlying Member layer, both veils and the list-page panel.
 The four icons are freestanding over the visible world; a separate adjacent explanation/Back frame
-leaves32px of world after the288px diamond, following the [design language](ui-design-language.md).
+leaves32px of world after the288px diamond in the deployed layout.
 Existing item/transaction lists retain their separate current layouts.
 The existing general Prepare list and battle auxiliary key entries remain working modern consumers;
 no unavailable fifth operation is drawn as an original command.

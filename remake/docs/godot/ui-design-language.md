@@ -1,59 +1,33 @@
 # A Shared Visual Language
 
-Design proposal for [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616),
-under [#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438).
-Read the [scene review](ui-scene-review.md) alongside this page: it shows what these rules mean
-from the Witch through a complete battle decision and return.
+[Issue #1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616) uses this page as the
+remake's design system. The [scene review](ui-scene-review.md) applies it to the player journey.
+The [presentation agreement](presentation.md) records what runs today.
 
-**High rigor — design scope control.** Repeated local fixes have left adjacent controls with
-different visual rules. The outcome is a coherent, player-reviewable recommendation before any
-product implementation. This page owns the proposed language and its choices; the scene review
-owns its application, gaps and bounded implementation order. Existing
-[presentation agreements](presentation.md), [battle scenes](battle-scenes.md) and
-[capability status](../capability-status.md) remain the authorities for implemented behavior.
-Approval of this document is not approval of finished visuals or authorization to change code.
+**High rigor.** Shared controls and scene layouts affect the whole player journey. The user
+accepted the Godot review at its 1920×1080 design size. This document fixes the visual design
+for independent review. The production presenters retain their existing behavior until migration.
 
-Recommend **original icon art over a visible world, with quiet blue reading surfaces and one gold
-focus language**. The diamond is a freestanding group of four icons. Its selected name and reason
-sit in a separate adjacent panel; no blue panel encloses the diamond. Dialogue remains a reading
-surface, not a tray for gameplay buttons. Entry, services and battle should look related without
-using identical coordinates or making every choice a diamond.
+Use compact right-hand vertical lists for four-command menus in the field, Church, shop and
+battle. Keep each admitted original icon beside its localized name, visible before focus.
+Child lists replace the parent in the same column. In battle, layout A joins the acting unit's
+status to its command list. Layout B remains a comparison in the preview. The
+[scene coverage table](ui-scene-review.md#preview-coverage) identifies the reviewed examples
+and the distinct states still requiring production checks.
 
-## The picture to review
+## Components
 
-```text
-                                      [ Menu ]  host access, separate from play
-  [current person / current resources]
-
-                   WORLD / CHARACTER ART
-            keep the person or target being considered visible
-
-           [up]
-    [left]      [right]    +------------------------------------+
-          [down]          | Selected command                    |
-                          | Current cost / consequence / reason |
-                          +------------------------------------+
-       no enclosing blue background      separate reading frame
-```
-
-The sketch is a composition, not source art or a screenshot. Icons retain their own original
-square raster backgrounds, if present; “outside the box” means outside the **common enclosing
-panel**, not removing original pixels. A transparent grouping Control is appropriate. A large blue
-rectangle behind both groups, even with a separator or different Z, fails this design.
-
-Four visual decisions deserve the user's review of the paired scene sketches:
-
-| Choice | Recommendation and visible consequence | Alternative and cost |
+| Component | Contents and states | When to use it |
 | --- | --- | --- |
-| Window shape | Straight 2px gold reading-panel edges and the same square geometry for ordinary buttons; idle button edges remain muted, with gold reserved for focus. Focus also uses an outline/marker. This joins entry choices to their adjacent dialogue. | Retain the existing 8px entry-button corners while keeping square dialogue. Less change, but retains the reported mismatch. Do not mix the alternatives per scene. |
-| Diamond association | Place the selected-name/detail panel beside the independent diamond, separated by 24–32px of visible world. It is obvious which explanation belongs to the current icon. | Keep the battle detail at the far right edge. More open center, but a longer eye movement and weaker association, especially on wide displays. |
-| Service backdrop | Keep the priest/shop context visible under a quiet neutral veil; propose black at 35% for service selection, with opaque reading panels. No veil on ordinary exploration/battle decisions. | Retain the current strong Church shade. It isolates a transaction more strongly but makes the service resemble a disconnected system dialog. |
-| Battle information density | Round/gold form one small top-left strip; cards appear only for the active decision or scene pair. No permanent large ledger or action-order strip. | Retain the large round/gold context frame. Easier isolated scanning, but consumes board space and competes with Menu/status. |
+| Command item | Admitted original icon, persistent localized name, focus marker. Align an amount, level, MP cost or slot when it distinguishes offers. Unavailable items keep their name and status. | A choice in a list or bar. Entry and host actions can use text alone. |
+| Choice list or command bar | One ordered set of items. Up/Down moves focus in a vertical list, Left/Right in a horizontal bar. Confirm selects the focused offer. Retain the caller's initial choice. | Right-hand lists support commands, submenus and long labels. Horizontal choices suit an attached dialogue question. |
+| Contextual detail | Show a cost, consequence or actual refusal reason when the item leaves a question. A self-explanatory command needs only its label. | Beside the current collection. Allow for a long reason without displacing focus. |
+| Dialogue frame | Body, supplied portrait, choices only in a real choice phase, footer for mapped hints. | Greeting, story, Search and battle messages. Preserve each reader's reveal/page/acknowledge behavior. |
+| Confirmation prompt | Identify the person, item or slot, exact price or consequence, and existing confirm/decline actions. Retain the caller's safe default. | Replace the previous group during a quote, overwrite or other existing confirmation step. |
+| Status card | Stable identity, HP/MP gauges and numeric values. Show the actual acting, targeted or inspected unit. | Keep a card while its person matters to the decision or presentation. |
 
-These are recommendations awaiting visual acceptance, not unresolved routine engineering choices.
-The freestanding diamond, original art direction, existing input semantics, 1080p baseline and
-96px world scale are already constraints, not options. Review these four decisions together on
-entry, exploration dialogue, Church and battle before adapting sibling screens.
+These roles use existing presenters. The owning session or host supplies offers, availability,
+prices and transaction state.
 
 ## Scope, evidence and boundaries
 
@@ -75,14 +49,10 @@ source in [the exploration agreement](presentation.md#exploration-gameplay-diamo
 This proposal does not infer original timing, opacity, cursor animation or natural reach from them.
 
 **Inferred:** a consistent frame language, nearby command explanation and less persistent HUD
-competition should make these screens easier to scan. Human readability and final visual balance
-remain **Unknown** until review. All numerical layout recommendations below are modern design
-values, not original-game measurements or already observed new geometry.
+competition should make these screens easier to scan. Production fit at other supported sizes and with long localized content remains **Unknown**. The numerical layout values below describe remake design.
 
 In scope: existing entry, field, party/preparation, service, host and battle presentation, including
-their supported languages, windows, reading and return states. The plan reserves explicit original
-battle-viewing entry points pending [#1622](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1622).
-It does not admit later campaign content or missing services merely to fill a design diagram.
+their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 Out of scope: product code in this slice; new UI framework, global layer registry, new art/font
 pipeline, gameplay rules, navigation or pause authority, arbitrary UI zoom, below-minimum gameplay,
@@ -97,7 +67,7 @@ canonical/custom names and fallback notices under the
 [localization owner](../application/localization-design.md). No font substitution, Chinese naming
 or IME admission follows from this style proposal.
 
-| Role | Proposed treatment at native 1080p | Use and limit |
+| Role | Design baseline at native 1080p | Use and limit |
 | --- | --- | --- |
 | Scene/section heading | 32px, ordinary light text; 40px only for a sparse entry heading | One heading per panel. Gold is primarily selection, not every heading. Preserve original title artwork rather than typesetting a replacement logo. |
 | Dialogue, menu choice, transaction facts | 30px `f4f5fc` | Readable full text and explicit amounts. Keep choice rows at least 64px tall; wrap and increase height. |
@@ -115,12 +85,21 @@ viewport edges. A larger portrait or service panel can use 24–32px internal pa
 small spacing vocabulary, not a demand to replace every layout constant with a token system.
 Use alignment and space to group content before adding another border.
 
-No new per-icon caption or frame is placed around original diamond art. Public authored content
-without admitted art keeps the existing measured text-only fallback in the same cardinal positions.
-Fallback labels may wrap inside their existing control, but cannot invent source-like assets.
-Private original pixels stay private; these documents contain only authored wireframes.
+In compact command rows, render 24×24 source art at nearest 3× (72×72px) and 16×24 identity
+icons at 48×72px. Keep each icon's aspect ratio and both admitted frames. In the right column,
+use 528×80px rows, 8px gaps and 16px panel insets. Spell levels and item slots have visible
+labels. The public schematic uses text when art is unavailable. Private art stays local.
+The [asset inventory](../content/presentation-assets.md#ordinary-menu-publication-and-coverage-1666)
+owns resource identity.
 
 ## Focus, action and return
+
+**Keep item slots still.** Within the same inventory view, selectable, focused, unavailable
+and read-only versions of a slot share the row bounds and the same positions for icon, slot
+number/name and trailing status. Reserve these columns for empty slots and text-only fallback
+too. Use color, an outline or the selected image for feedback. A marker needs its own reserved
+space. Confirming a transfer may change which item occupies a slot. Moving focus or changing
+which pack accepts input must leave the slot geometry intact.
 
 ```text
 Normal                 Focused available       Focused unavailable
@@ -135,6 +114,9 @@ a disabled choice is useful; confirming it must not commit an older valid choice
 currently skip unavailable rows keep doing so and show their reasons in the row. This proposal
 unifies the appearance, not the differing navigation contracts.
 
+Move focus along the visible collection's axis. Focus updates the marker, icon and detail together.
+Directions move the inspection cursor freely and cycle eligible combatants during action targeting. On supported pointer surfaces,
+the icon and its label form one hit target. Back to a list restores its selected offer or slot.
 Use the installed `GameInput` mappings for keyboard/pad hints and the existing complete
 press/release pointer gesture. A stationary pointer does not steal directional focus. Closing,
 relayout, hiding, loss of native focus and modal handoff cancel incomplete pointer gestures and
@@ -149,9 +131,8 @@ host Quit each retain their own semantics. The scene review names these differen
 ## Reading without shrinking
 
 Measure the full shaped string, portrait, choices and hints before placing the reading surface.
-Keep current consumer-specific reading/reveal/acknowledgement ownership. The design does not add
-click-to-skip or extra confirmation, and does not settle
-[#1613](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1613)'s closing-lifecycle defect.
+Keep current consumer-specific reading/reveal/acknowledgement ownership. The [dialogue exit agreement](presentation.md#coordinated-dialogue-exit-1613)
+owns the coordinated end of the portrait and text window.
 
 1. Wrap at the allocated width; grow the panel within its declared region. A long option becomes
    a taller row with its marker aligned to the first line. Cost/count columns remain readable.
@@ -168,8 +149,7 @@ click-to-skip or extra confirmation, and does not settle
 Keep existing hint content in a measured footer, including multiple lines where necessary.
 [#1544](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1544) remains deferred: this
 proposal neither removes existing hints nor adds first-use detection, device switching or a new
-help system. A compact diamond currently showing only its selected name need not acquire a
-paragraph of new generic instructions.
+help system. A self-explanatory command can stand on its name.
 
 ## Layout that preserves the world
 
@@ -180,46 +160,38 @@ Use actual viewport bounds, fixed readable panel widths and edge/center anchors.
 paragraph across the full ultrawide screen. Entry/Settings/Help retain their existing scaled
 smaller-window policy; this does not admit 720p gameplay.
 
-The following is the **recommended battle decision composition**, in `(x,y,width,height)` native
-pixels at 1920×1080. Dimensions are initial budgets, then measured against the actual text.
+Choose the overall composition by what the player needs to see during each step.
 
-| Region | Starting budget | Growth / collision rule |
+| Player task | Subject to protect | Active components |
 | --- | --- | --- |
-| Host Menu | Existing `(1740,12,160,56)` | Reserve `(1724,0,196,92)` including a guard. No counter/card may use this area. If the measured Menu grows, its actual bounds plus 16px define the exclusion. |
-| Round and gold | `(32,32,600,48)` at 24px | One quiet strip, no separate large boxes. Grow width to 800px, then wrap to two lines; never abbreviate real values. Its measured bottom +16 sets the card top, at least 96px. |
-| Acting / selected-target cards | `(32,96,500,192)` / `(1388,96,500,192)` | Retain existing bounded growth to 800px inward and measured height. At maximum widths their inner edges are 832/1088: 256px remains between them. Both stay below the host exclusion. No target card in movement/root-command mode. |
-| Command diamond | `(32,824,288,224)` | Existing 96px icons/cardinal steps; freestanding. Bottom edge is 32px above the viewport. No icon resizing to fit more text. |
-| Selected command detail | `(352,824,640,224)` | Separate sibling, 32px after the diamond. Prefer measured short name/cost/reason; grow upward with the paired group. A long existing footer uses more height, not smaller type. |
-| Spell/item list and detail | Left list width 560px, 24px gap, adjacent detail width 720px; bottom 32px | List replaces the diamond. Initial list height up to 448px; rows scroll, while description/actions have their own measured region. Cards and host reservation remain. |
-| Story/action message | Existing 1440×280 or portrait-bearing 304px baseline | Centered reading surface near bottom, subject-aware top alternative; command/list panels are absent in this phase. Long text grows/pages under its current reading owner. |
+| Meet someone, then choose | Witch artwork keeps its full rectangle | Right-column greeting gives way to actions. |
+| Read while watching the world | Speaker or searched object | Stable top/bottom reading frame with optional portrait and choices. |
+| Compare services and goods | Priest or merchant | Side list with labeled actions. A quote replaces the list. |
+| Decide on a battle action | Acting unit, candidate cell or target | Layout A puts the acting card above the right-hand list. The list yields to the target card and board during targeting. |
 
-These regions do not all appear at once. Scene phase controls visibility. The list/detail group's
-1304px width and diamond/detail group's 960px width leave useful exposed board at 1080p; they do
-not reduce the map viewport. Round/gold yield during close-ups and long reading states where the
-scene pair and message matter more. The same information returns from live state after reading.
+Use the following battle geometry at the 1920×1080 design size. Keep the host Menu and
+the inspected subject clear at each supported viewport. Function-key tabs belong to the preview.
 
-For movement/target decisions, use the existing projected subject and layout owner to test the
-**whole decision group** against the current actor/preview/target plus a 16px guard. Prefer lower
-left; mirror the group to lower right when needed, without changing icon order. If both collide,
-try the upper free band below the cards. Lock the chosen placement for that page/selection; do not
-make individual panels chase one another each frame. Recompute on a real target/page/viewport
-change, cancel pointer gestures before moving hit regions, and preserve focus/reading position.
-No group may collide with host access, cards, another visible reading panel or the selected subject.
-If measured content cannot fit these candidates, that is a layout failure to resolve in the owning
-consumer before acceptance; do not silently cover the target, shrink text or pan/zoom the world to
-make room. Long detail should first use its existing reading/scroll mechanism.
+| Phase | Components and placement |
+| --- | --- |
+| Movement | Keep round information quiet at the upper left. Draw legal stops below the units. Confirming a stop opens commands. |
+| Command and spell/item list | Layout A uses a 560px-wide right panel with the first command row at (1312,312). The acting unit's identity and HP/MP head the panel. Use 36px values above two 232×28px gauges. Align child rows to the same origin and size the panel to its contents. |
+| Choose a target | Keep reach on the board. The right card shows the selected recipient and their vitals. Put cycle, Confirm and Back in the footer. Return to the previous command or spell level. |
+| Free inspection | Keep the status card clear of the hovered cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
+| Action playback / outcome | The board command panel retires. Close-ups use the original ally/enemy window positions. Ordered reward and return messages use the reading frame. |
+
+During product migration, measure the whole group against the host exclusion, the projected
+subject and the footer, including long reasons and wide values. Move or grow the panel as a
+group when needed and preserve focus across a resize. Scroll or page overflow inside its owner.
 
 Entry uses its established Witch art and right-column reservation instead of this battle grid.
-Field dialogue keeps its stable top/bottom speaker avoidance. Church uses a centered pair;
-Party/Settings are reading/work panels. The [scene review](ui-scene-review.md) shows these cases.
-Live-resize anchor repair remains [#1614](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1614),
-an optional P3; this proposal does not claim that every current consumer already relocates correctly.
+Field dialogue keeps its stable top/bottom speaker avoidance. Church and Shop position their services beside the visible provider.
+Party and Settings use working panels. The [scene review](ui-scene-review.md) applies these rules.
 
 ## Motion, composition and modal ownership
 
-Reuse the [existing diamond emphasis](presentation.md#diamond-focus-emphasis): selected source
-frame plus the bounded 4→2→1→0px rise/settle over 180ms. Reduced-flash uses a stable selected image.
-No idle pulse, bouncing unavailable text, new screen shake or animated HUD counting is proposed.
+For an available focused command, alternate its admitted frames every 250ms while focus remains. Keep the label, hit area and outline steady. Motion off holds the selected frame. Unavailable commands and spell/item identity icons remain still. Any focus
+movement stays inside the item, clear of the name, neighboring items and hit bounds.
 HP/MP follow committed state immediately; a UI flourish cannot postpone a scene acknowledgement.
 Existing title/story/effect clocks retain their owners. Use direct panel transitions by default;
 do not introduce a decorative fade that masks a lifecycle or input bug.
@@ -240,12 +212,10 @@ Stopped-scene feedback remains readable above world fades and does not invent a 
 
 ## Design completion boundary
 
-The design is ready for independent review when all scene rows have a normal view, a selectable
-state, an unavailable/error treatment, long-content behavior and an explicit return/overlap rule;
-the four representative sketches obey the same language; and future implementation has bounded
-owners and preserved Unknowns. Direct document, relative-link/anchor, geometry-budget, scope and
-private-boundary checks are sufficient for this design slice, followed by a clean committed
-verification plan and actual CI readback. No SDK, Godot, ROM, screenshot or full-suite run is needed.
+The handoff covers the F1–F10 scene examples, component rules, selected layout A and the
+[production verification combinations](ui-scene-review.md#9-combination-review-and-implementation-boundaries).
+Main-gate can review the independent design and preview PRs against the same accepted base.
+The production rollout retains its own input, geometry, localization and resize acceptance.
 
 Implementation is a later explicit dispatch after main-gate review and resolution of material
 visual choices. Its acceptance must read actual input, node geometry, state projection and errors
