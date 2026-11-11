@@ -27,7 +27,8 @@ internal sealed partial class DiamondCommandButton : Control
     private readonly string _captionKey, _resourcePrefix;
     internal string? CaptionOverride { get; set; }
     internal string Caption => GameText.Get(CaptionOverride ?? _captionKey);
-    internal void RefreshCaption() { if (_label.Text != Caption) _label.Text = Caption; _label.Visible = _normal is null || CaptionOverride is not null; QueueRedraw(); }
+    internal bool IconOnly { get; set; }
+    internal void RefreshCaption() { if (_label.Text != Caption) _label.Text = Caption; _label.Visible = !IconOnly && (_normal is null || CaptionOverride is not null); QueueRedraw(); }
     internal bool Selected { get; private set; }
     internal bool Available { get; set; }
     private readonly Label _label;
@@ -35,14 +36,16 @@ internal sealed partial class DiamondCommandButton : Control
     private int _pixelScale = 1;
     private string? _drawnResource;
     private bool _drawnExtraFrame;
-    private double _focusRemaining;
+    private double _focusRemaining, _frameTime;
+    private bool _reducedFlash;
     private int _drawnOffsetY;
     private int FocusOffsetY => _focusRemaining > 0.12 ? -4 : _focusRemaining > 0.06 ? -2 : _focusRemaining > 0 ? -1 : 0;
 
     internal void SetSelection(bool selected, bool reducedFlash)
     {
         // Only a new focus starts the short modern emphasis; refresh/idle never restarts it.
-        if (selected != Selected) _focusRemaining = selected && !reducedFlash ? 0.18 : 0;
+        if (selected != Selected) { _frameTime = 0; _focusRemaining = selected && !reducedFlash && !IconOnly ? 0.18 : 0; }
+        _reducedFlash = reducedFlash;
         if (reducedFlash) _focusRemaining = 0;
         Selected = selected;
         QueueRedraw();
@@ -50,12 +53,19 @@ internal sealed partial class DiamondCommandButton : Control
 
     internal void AdvanceFocus(double delta)
     {
+        if (IconOnly)
+        {
+            _frameTime = Selected && !_reducedFlash && IsVisibleInTree() && GetWindow().HasFocus()
+                ? (_frameTime + delta) % 0.5 : 0;
+            QueueRedraw();
+            return;
+        }
         if (_focusRemaining <= 0) return;
         _focusRemaining = Math.Max(0, _focusRemaining - delta);
         QueueRedraw();
     }
 
-    internal void StopFocusEmphasis() { _focusRemaining = 0; QueueRedraw(); }
+    internal void StopFocusEmphasis() { _frameTime = _focusRemaining = 0; QueueRedraw(); }
     internal DiamondCommandButton(string identity, string captionKey, string resourcePrefix)
     {
         Identity = identity; Name = identity; _captionKey = captionKey; _resourcePrefix = resourcePrefix;
@@ -75,7 +85,7 @@ internal sealed partial class DiamondCommandButton : Control
     {
         _normal?.Dispose(); _selected?.Dispose();
         _normal = normal; _selected = selected; _drawnResource = null;
-        _label.Visible = normal is null || CaptionOverride is not null; QueueRedraw();
+        _label.Visible = !IconOnly && (normal is null || CaptionOverride is not null); QueueRedraw();
     }
     internal void Arrange()
     {
@@ -89,21 +99,24 @@ internal sealed partial class DiamondCommandButton : Control
             width = _label.GetGlobalRect().Size.X, height = _label.GetGlobalRect().Size.Y },
         captionMinimumWidth = _label.GetMinimumSize().X, captionMinimumHeight = _label.GetMinimumSize().Y,
         filter = TextureFilter.ToString(), extraFrame = _drawnExtraFrame, labelVisible = _label.Visible,
+        frameTimeMs = _frameTime * 1000, reducedFlash = _reducedFlash,
         focusRemainingMs = _focusRemaining * 1000, drawnOffsetY = _drawnOffsetY };
     public override void _Draw()
     {
         _drawnOffsetY = FocusOffsetY;
         var offset = new Vector2(0, _drawnOffsetY);
         _label.Position = offset;
-        var texture = CaptionOverride is not null ? null : Selected ? _selected : _normal;
-        _drawnExtraFrame = texture is null;
+        bool selectedFrame = Selected && (!IconOnly || _reducedFlash || _frameTime < 0.25);
+        var texture = CaptionOverride is not null ? null : selectedFrame ? _selected : _normal;
+        _drawnExtraFrame = texture is null && !IconOnly;
+        _drawnResource = null;
         if (texture is not null)
         {
             float side = 24 * _pixelScale;
             DrawTextureRect(texture, new Rect2(((Size - new Vector2(side, side)) / 2).Round() + offset, new(side, side)), false);
-            _drawnResource = $"{_resourcePrefix}.{Identity.ToLowerInvariant()}.{(Selected ? "selected" : "normal")}";
+            _drawnResource = $"{_resourcePrefix}.{Identity.ToLowerInvariant()}.{(selectedFrame ? "selected" : "normal")}";
         }
-        else
+        else if (!IconOnly)
         {
             var rect = new Rect2(Vector2.One + offset, Size - Vector2.One * 2);
             DrawRect(rect, new Color("002492"));

@@ -143,8 +143,8 @@ internal sealed partial class BattleCommandMenu : Control
         {
             int next = action switch
             {
-                GameAction.Up or GameAction.Attack => 0, GameAction.Left or GameAction.Spell => 1,
-                GameAction.Right or GameAction.Item => 2, GameAction.Down or GameAction.Stay => 3, _ => -1,
+                GameAction.Up => (_command + 3) % 4, GameAction.Down => (_command + 1) % 4,
+                GameAction.Attack => 0, GameAction.Spell => 1, GameAction.Item => 2, GameAction.Stay => 3, _ => -1,
             };
             if (next >= 0) _command = next;
             if (action is GameAction.Confirm or GameAction.Attack or GameAction.Spell or GameAction.Item or GameAction.Stay) Open();
@@ -228,13 +228,14 @@ internal sealed partial class BattleCommandMenu : Control
             _layout.Commands[i].CaptionOverride = i == 3 && _choices.Search is not null ? "battle.command.search" : null;
             _layout.Commands[i].RefreshCaption();
             _layout.Commands[i].SetSelection(Visible && !moving && _page == Page.Main && i == _command, _input.Settings.ReducedFlash);
-            _layout.Commands[i].Available = _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
+            _layout.Commands[i].Available = i == 3 && _choices.Search is not null ||
+                _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
         }
         bool list = !moving && _page is Page.Magic or Page.Items;
         var options = list ? Options() : [];
         if (list) _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
         _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list, options.Select(OptionIcon).ToArray());
-        _layout.Diamond.Visible &= selection is not null && !moving && _page == Page.Main;
+        _layout.ShowCommands(selection is not null && !moving && _page == Page.Main);
         _layout.Heading.Text = moving ? GameText.Get("battle.position") : _page switch
         {
             Page.Magic => GameText.Get("battle.magic"), Page.Items => GameText.Get("battle.items"), Page.Target => GameText.Get("battle.choose-target"),
@@ -245,7 +246,7 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.Help.Text = moving ? GameText.Get("battle.move-help", directions, confirm) :
             _page == Page.Target ? GameText.Get("battle.target-help", KeyHint(GameAction.Target), confirm, cancel) :
             (list ? GameText.Get("battle.choice-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") :
-                _page == Page.Main ? GameText.Get("battle.command-help", directions) : "") +
+                _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") : "") +
                 GameText.Get("battle.confirm-help", confirm, cancel);
         if (!moving && _page == Page.Main)
             _layout.Help.Text += GameText.Get("battle.extra-help", KeyHint(GameAction.Equipment), KeyHint(GameAction.Give), KeyHint(GameAction.Discard));
@@ -263,7 +264,7 @@ internal sealed partial class BattleCommandMenu : Control
         else
         {
             var offers = Options();
-            description = offers.Length == 0 ? (_command == 1 ? GameText.Get("battle.no-magic") : GameText.Get("battle.no-items")) :
+            description = offers.Length == 0 ? GameText.Get(_command == 1 ? "battle.no-magic" : _command == 2 ? "battle.no-items" : "battle.no-target") :
                 !offers.Any(option => option.Enabled) && offers[0].Reason is { } reason ? Unavailable(reason) : "";
         }
         if (_choices.Failure is { } queryFailure) description = Unavailable(queryFailure);

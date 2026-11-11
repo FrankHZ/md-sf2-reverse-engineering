@@ -12,10 +12,10 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class ChurchServiceView : Control
 {
     private readonly Panel _panel = new();
-    private readonly Label _title = Text("Title", 32), _hint = Text("Hint", 24), _selection = Text("SelectedService", 28);
-    private readonly Control _diamond = new() { Name = "ServiceDiamond", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly Label _title = Text("Title", 32), _hint = Text("Hint", 24);
     private readonly DiamondCommandButton[] _commands = [new("Raise", "church.raise", "church-menu"),
         new("Cure", "church.cure", "church-menu"), new("Promote", "church.icon-promote", "church-menu"), new("Save", "church.icon-save", "church-menu")];
+    private CompactCommandList _commandsList = null!;
     private bool IsMenu => _wait?.Phase == ChurchPhase.Menu;
     private readonly List<Label> _rows = [];
     private readonly List<(string Label, ChurchCommand? Command)> _options = [];
@@ -34,13 +34,11 @@ internal sealed partial class ChurchServiceView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Stop;
-        var shade = new ColorRect { Color = new(0, 0, 0, 0.8f), MouseFilter = MouseFilterEnum.Ignore };
+        var shade = new ColorRect { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore };
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade); AddChild(_panel);
-        _panel.Position = new(424, 160); _panel.Size = new(1072, 824);
-        _panel.AddChild(_title); _panel.AddChild(_selection); _panel.AddChild(_diamond);
-        foreach (var command in _commands) _diamond.AddChild(command);
+        _commandsList = new(_commands) { Name = "ServiceCommands", InvalidatePointer = _pointer.Cancel };
+        _panel.AddChild(_title); _panel.AddChild(_commandsList);
         _panel.ItemRectChanged += _pointer.Cancel;
-        _diamond.ItemRectChanged += _pointer.Cancel;
         _title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _panel.AddChild(_hint); _hint.Position = new(32, 612); _hint.Size = new(1008, 192);
@@ -92,14 +90,15 @@ internal sealed partial class ChurchServiceView : Control
                 _title.Text = GameText.Get("church.menu", session.Current.Exploration!.Party.Gold?.ToString() ?? "?");
                 _options.AddRange([(GameText.Get("church.raise"), new ChooseChurch(wait.Token, ChurchAction.Raise)),
                     (GameText.Get("church.cure"), new ChooseChurch(wait.Token, ChurchAction.Cure)), (GameText.Get("church.promote"), null),
-                    (GameText.Get("church.save"), new LeaveChurch(wait.Token, true))]);
+                    (GameText.Get("church.save"), new LeaveChurch(wait.Token, true)),
+                    (GameText.Get("church.leave"), new LeaveChurch(wait.Token))]);
             }
             while (_rows.Count < Math.Max(1, _options.Count)) { var row = Text("Choice" + _rows.Count, 28); _rows.Add(row); _panel.AddChild(row); }
             for (int i = 0; i < _rows.Count; i++)
             { _rows[i].Visible = IsMenu ? i == 0 : i < _options.Count; }
         }
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
-        _diamond.Visible = _selection.Visible = IsMenu;
+        _commandsList.Visible = IsMenu;
         if (IsMenu)
         {
             for (int i = 0; i < _commands.Length; i++)
@@ -107,21 +106,18 @@ internal sealed partial class ChurchServiceView : Control
                 _commands[i].RefreshCaption(); _commands[i].Available = _options[i].Command is not null;
                 _commands[i].SetSelection(i == _index, input.Settings.ReducedFlash);
             }
-            _selection.Text = _options[_index].Label;
-            _selection.AddThemeColorOverride("font_color", _options[_index].Command is null ? StoryTheme.Unavailable : StoryTheme.Selected);
-            _rows[0].AddThemeColorOverride("font_color", Colors.White);
-            _rows[0].Text = input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("church.leave");
+            _commandsList.Present(_options.Take(4).Select(option => option.Label).ToArray());
+            _rows[0].AddThemeColorOverride("font_color", _index == 4 ? StoryTheme.Selected : Colors.White);
+            _rows[0].Text = (_index == 4 ? "› " : "   ") + GameText.Get("church.leave");
         }
         else for (int i = 0; i < _options.Count; i++)
         {
             _rows[i].Text = (i == _index ? "> " : "   ") + _options[i].Label;
             _rows[i].AddThemeColorOverride("font_color", i == _index ? StoryTheme.Selected : Colors.White);
         }
-        _hint.Text = (_error is null ? "" : _error + "\n") + (IsMenu
-            ? GameText.Get("church.diamond-hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Left),
-                input.CompactHint(GameAction.Right), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel))
-            : GameText.Get("church.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down),
-                input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)));
+        string? reason = _error ?? (IsMenu && _index == 2 ? GameText.Get("church.promotion") : null);
+        _hint.Text = (reason is null ? "" : reason + "\n") + GameText.Get("church.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down),
+                input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         if (_wait?.Phase == ChurchPhase.Menu && _options[_index].Command is LeaveChurch { Save: true })
             _hint.Text += "\n" + GameText.Get("church.save-hint");
         if (GameText.Language == "zh-CN")
@@ -136,28 +132,26 @@ internal sealed partial class ChurchServiceView : Control
     private int _serviceIndex;
     private void Arrange()
     {
-        float width = Math.Min(1072, Size.X - 64), inner = width - 64;
-        _title.Position = new(32, 24); _title.Size = new(inner, 0);
+        const float inset = 16;
+        float width = Math.Min(560, Size.X - 64), inner = width - inset * 2;
+        _title.Position = new(inset, inset); _title.Size = new(inner, 0);
         float top = _title.Position.Y + _title.GetMinimumSize().Y + 24;
         if (IsMenu)
         {
-            _diamond.Position = new(32, top); DiamondMenuGeometry.Arrange(_diamond, _commands);
-            _selection.Position = new(384, top); _selection.Size = new(width - 416, 0);
-            _hint.Position = new(384, top + _selection.GetMinimumSize().Y + 24);
-            _hint.Size = new(width - 416, 0);
-            _rows[0].Position = new(32, top + DiamondMenuGeometry.Size.Y + 24);
-            _rows[0].Size = new(304, 64);
+            _commandsList.Position = new(inset, top); _commandsList.Arrange(inner);
+            _rows[0].Position = new(inset, top + _commandsList.RequestedHeight + 8);
+            _rows[0].Size = new(inner, 64);
+            top = _rows[0].Position.Y + _rows[0].Size.Y;
         }
         else
         {
             for (int i = 0; i < _options.Count; i++)
-            { _rows[i].Position = new(32, top); _rows[i].Size = new(inner, 0); top += Math.Max(64, _rows[i].GetMinimumSize().Y) + 12; }
-            _hint.Position = new(32, top + 12); _hint.Size = new(inner, 0);
+            { _rows[i].Position = new(inset, top); _rows[i].Size = new(inner, 0); top += Math.Max(64, _rows[i].GetMinimumSize().Y) + 12; }
         }
-        float bottom = _hint.Position.Y + _hint.GetMinimumSize().Y;
-        if (IsMenu) bottom = Math.Max(bottom, _rows[0].Position.Y + _rows[0].Size.Y);
-        _panel.Size = new(width, bottom + 32);
-        _panel.Position = ((Size - _panel.Size) / 2).Round();
+        _hint.Position = new(inset, top + 12); _hint.Size = new(inner, 0);
+        _panel.Size = new(width, _hint.Position.Y + _hint.GetMinimumSize().Y + inset);
+        // Focus/refusal can grow downward; the root service hit regions stay at their origin.
+        _panel.Position = new(Size.X - 32 - width, 112);
     }
 
     public override void _Process(double delta)
@@ -191,9 +185,7 @@ internal sealed partial class ChurchServiceView : Control
             Choose(_wait.Phase == ChurchPhase.Result ? new ContinueChurch(_wait.Token) : _wait.Offer is { } offer
                 ? new AnswerChurch(_wait.Token, offer, false) : new LeaveChurch(_wait.Token)); return;
         }
-        if (IsMenu && action is GameAction.Up or GameAction.Left or GameAction.Right or GameAction.Down)
-            Focus(action switch { GameAction.Up => 0, GameAction.Left => 1, GameAction.Right => 2, _ => 3 });
-        else if (action is GameAction.Up or GameAction.Down) Focus((_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count);
+        if (action is GameAction.Up or GameAction.Down) Focus((_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count);
         else if (action == GameAction.Confirm) Choose(_options[_index].Command);
         Present(_session, _input, _submit);
     }
@@ -201,19 +193,19 @@ internal sealed partial class ChurchServiceView : Control
     {
         if (_wait is null) return;
         Vector2 position = ((InputEventMouse)input).Position;
-        int hit = IsMenu ? Array.FindIndex(_commands, button => button.GetGlobalRect().HasPoint(position)) :
+        int hit = IsMenu ? _commandsList.Hit(position).Index :
             _rows.FindIndex(row => row.Visible && row.GetGlobalRect().HasPoint(position));
         bool back = IsMenu && _rows[0].GetGlobalRect().HasPoint(position);
         if (input is InputEventMouseMotion motion)
         {
-            if (_pointer.Moved(motion) && hit >= 0 && !_requiresRelease) { Focus(hit); Present(_session, _input, _submit); }
+            if (_pointer.Moved(motion) && (hit >= 0 || back) && !_requiresRelease) { Focus(back ? 4 : hit); Present(_session, _input, _submit); }
             return;
         }
         if (input is not InputEventMouseButton button) return;
         back |= button.ButtonIndex == MouseButton.Right;
         string? id = back ? "back" : hit < 0 ? null : hit.ToString();
         Rect2 rect = button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : back ? _rows[0].GetGlobalRect() :
-            hit < 0 ? default : IsMenu ? _commands[hit].GetGlobalRect() : _rows[hit].GetGlobalRect();
+            hit < 0 ? default : IsMenu ? _commandsList.Hit(position).Rect : _rows[hit].GetGlobalRect();
         string? clicked = _pointer.Read(button, id, rect, (_wait.Token, _revision, IsMenu));
         if (!_requiresRelease && clicked is not null)
         {
@@ -231,7 +223,7 @@ internal sealed partial class ChurchServiceView : Control
     private static string Treatment(ChurchEffect effect) => GameText.Get("church." + EffectKey(effect));
     internal object Observe() => new { visible = IsVisibleInTree(), wait = _wait, index = _index, revision = _revision,
         title = _title.Text, hint = _hint.Text, error = _error, page = IsMenu ? "services" : _wait?.Phase == ChurchPhase.Offer ? "offer" : "result",
-        selection = _selection.Text, selectionRect = BattleMapViewport.Rectangle(_selection.GetGlobalRect()), selectionMinimumHeight = _selection.GetMinimumSize().Y,
+        commandList = _commandsList.Observe(),
         commands = _commands.Select(button => new { id = button.Identity, label = button.Caption, selected = button.Selected, enabled = button.Available,
             rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }),
         panelRect = BattleMapViewport.Rectangle(_panel.GetGlobalRect()), titleRect = BattleMapViewport.Rectangle(_title.GetGlobalRect()), titleMinimumHeight = _title.GetMinimumSize().Y,

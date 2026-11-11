@@ -46,12 +46,13 @@ internal sealed class IdentityIcons : IDisposable
 
 internal sealed partial class IdentityIcon : Control
 {
+    private readonly int _pixelScale;
     private ImageTexture? _texture;
     private string? _identity, _resource, _drawn, _error;
     private readonly Label _missing = new() { Text = "!", MouseFilter = MouseFilterEnum.Ignore };
     public override void _Ready() { AddChild(_missing); _missing.AddThemeColorOverride("font_color", Colors.Red); _missing.AddThemeFontSizeOverride("font_size", 40); }
-    internal IdentityIcon()
-    { MouseFilter = MouseFilterEnum.Ignore; TextureFilter = TextureFilterEnum.Nearest; CustomMinimumSize = new(64, 96); }
+    internal IdentityIcon(int pixelScale = 4)
+    { _pixelScale = pixelScale; MouseFilter = MouseFilterEnum.Ignore; TextureFilter = TextureFilterEnum.Nearest; CustomMinimumSize = new(16 * pixelScale, 24 * pixelScale); }
     internal void Present(IdentityIcons owner, string? identity, bool selected)
     {
         _identity = identity; _texture = owner.Get(identity, selected); _error = owner.Error(identity);
@@ -63,7 +64,7 @@ internal sealed partial class IdentityIcon : Control
     {
         _drawn = null;
         if (_texture is null) return;
-        DrawTextureRect(_texture, new Rect2(Vector2.Zero, new(64, 96)), false); _drawn = _resource;
+        DrawTextureRect(_texture, new Rect2(Vector2.Zero, new(16 * _pixelScale, 24 * _pixelScale)), false); _drawn = _resource;
     }
     internal string? PixelDigest()
     {
@@ -73,5 +74,5 @@ internal sealed partial class IdentityIcon : Control
     }
     internal object Observe() => new { identity = _identity, resource = _resource, drawn = _drawn, visible = IsVisibleInTree(),
         error = _error, texture = _texture?.GetInstanceId(), width = _texture?.GetWidth(), height = _texture?.GetHeight(),
-        scale = 4, filter = TextureFilter.ToString(), rect = Battles.BattleMapViewport.Rectangle(GetGlobalRect()) };
+        scale = _pixelScale, filter = TextureFilter.ToString(), rect = Battles.BattleMapViewport.Rectangle(GetGlobalRect()) };
 }
