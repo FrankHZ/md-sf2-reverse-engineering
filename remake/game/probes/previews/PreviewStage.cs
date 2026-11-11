@@ -2,6 +2,7 @@ using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Entry;
 using Sf2.Remake.GodotAdapter.Exploration;
 using Sf2.Remake.GodotAdapter.Maps;
@@ -16,6 +17,8 @@ internal sealed partial class PreviewStage : Control
     private EntryPresentationAssets? _entry;
     private ExplorationDefinition? _world;
     internal BattleSceneDefinition? SceneArt { get; private set; }
+    private BattleDefinition? _battle;
+    internal PreviewInspectionCamera Camera { get; } = new();
     private int _scene, _target = -1;
     private Vector2I? _cursor;
     private readonly Sprite2D _cellCursor = new() { Name = "OriginalCellCursor", Centered = false, Visible = false };
@@ -46,6 +49,8 @@ internal sealed partial class PreviewStage : Control
         if (result is ExplorationReadAccepted accepted)
         {
             _world = accepted.Definition.Exploration;
+            _battle = accepted.Definition.Encounters.GetValueOrDefault("battle-1");
+            if (_battle != null) Camera.Reset(new(_battle.Width, _battle.Height));
             var battle = accepted.Definition.ScenesFor("battle-1");
             SceneArt = battle;
             string cursorFile = ProjectSettings.GlobalizePath("res://../../local/design-preview/cell-cursor.png");
@@ -93,11 +98,18 @@ internal sealed partial class PreviewStage : Control
         return _textures[state] = ImageTexture.CreateFromImage(image);
     }
 
-    internal static Rect2 BoardCell(Vector2I cell, bool overview)
+    internal int? LandEffect(int unit, Vector2I cell)
     {
-        Vector2 origin = overview ? new(110, 186) : Vector2.Zero;
-        int side = overview ? 56 : 96;
-        return new(origin + (Vector2)cell * side, new Vector2(side, side));
+        var deployment = _battle?.Deployments.FirstOrDefault(row => row.ProcessingOrder == (unit == 2 ? 128 : unit));
+        if (_battle is null || deployment is null) return null;
+        return BattleTerrainRules.LandEffect(_battle.Terrain[cell.Y * 48 + cell.X], deployment.Definition.Mover);
+    }
+
+    internal Rect2 BoardCell(Vector2I cell, bool overview)
+    {
+        if (overview) return Camera.OverviewCell(cell);
+        var origin = _scene == DesignPreview.InspectScene ? Camera.Origin : PreviewInspectionCamera.Opening;
+        return new(origin + (Vector2)cell * PreviewInspectionCamera.Tile, new(96, 96));
     }
 
     private void DrawCellCursor(Vector2I cell)
@@ -106,7 +118,7 @@ internal sealed partial class PreviewStage : Control
         if (_cellCursor.Texture is not null)
         {
             // 24 source pixels per board cell. Center the private sprite on the review grid.
-            float scale = _overview ? 2 : 4;
+            float scale = _overview ? Mathf.Max(1, Mathf.Floor(rect.Size.X / 24)) : 4;
             _cellCursor.Scale = Vector2.One * scale;
             _cellCursor.Position = rect.GetCenter() - Vector2.One * (16 * scale);
             _cellCursor.Show();
@@ -176,13 +188,16 @@ internal sealed partial class PreviewStage : Control
         Vector2I origin = _scene switch { 1 or DesignPreview.FieldScene => new(33, 3), 2 => new(25, 6), DesignPreview.ShopScene => new(30, 19), _ => new(-2, 4) };
         var visual = _world?.Visuals?.Maps.GetValueOrDefault(id);
         var layout = _world?.Maps.GetValueOrDefault(id)?.Layout;
-        if (_overview) DrawRect(new(Vector2.Zero, Size), new Color("101c2e"));
-        for (int y = 0; y < 12; y++)
-            for (int x = 0; x < 20; x++)
+        if (battle) DrawRect(new(Vector2.Zero, Size), new Color("111827"));
+        var dimensions = battle ? Camera.MapSize : new Vector2I(20, 12);
+        var source = _battle?.SourceMapRegion?.Origin;
+        if (battle) origin = source is null ? Vector2I.Zero : new(source.X, source.Y);
+        for (int y = 0; y < dimensions.Y; y++)
+            for (int x = 0; x < dimensions.X; x++)
             {
-                Rect2 cell = BoardCell(new(x, y), _overview);
-                if (battle && (x < 2 || x >= 18)) DrawRect(cell, new Color("111827"));
-                else if (layout is not null && visual is not null)
+                Rect2 cell = battle ? BoardCell(new(x, y), _overview) : new(x * 96, y * 96, 96, 96);
+                if (!cell.Intersects(new Rect2(Vector2.Zero, Size))) continue;
+                if (layout is not null && visual is not null)
                     DrawTextureRect(_blocks.Block(visual, layout[x + origin.X, y + origin.Y] & 1023), cell, false);
                 else DrawRect(cell, (x + y) % 2 == 0 ? new Color("293e42") : new Color("30464a"));
             }

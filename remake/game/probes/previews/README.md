@@ -32,7 +32,7 @@ state or real player data. The prepared F4/F5 examples retain their named cast.
 F7 and F8 reuse the right-hand command column with the original field, item-operation and
 battlefield-option icons when available. F7 Give and confirmed Drop act on the same numbered
 slots as F5 and F6. Use and Equip show the limitations of these sample loadouts. F8 Map
-shows the staged board area and the three units. Arrow keys or the D-pad navigate the cursor.
+shows the full Battle 01 area and the three staged units. Arrow keys or the D-pad navigate the cursor.
 Moving the mouse over a board cell also selects it. Left-click a unit for details or empty
 ground for options. Hover and click a unit marker on Map to locate it on the board.
 From an empty cell choose Map, select Sarah and confirm to locate her, then confirm to inspect.
@@ -40,6 +40,22 @@ F8 focuses one combatant on its detail sheet. Its attributes, spells and four in
 use the F5 layout. Closing returns to the same cell and refreshes the short status. Gizmo
 uses his own attributes and empty loadout with the preview encounter's staged HP.
 Pass `-- --inspect` to launch directly on the inspection board.
+
+**Hover card.** Land effect is right-aligned beside the name. HP and MP share the next row
+and the location stays below the gauges. The private encounter supplies the mover and the
+terrain under the indicated battle-local cell. The shared rule gives Bowie (7,9) and Sarah
+(9,9) 15%, and Gizmo (8,7) 0% in this staging. Empty cells show their coordinates. With no
+terrain or mover data the unit card shows a dash. [Original land effect display and lookup](../../../docs/godot/battle-interaction-baseline.md#what-status-and-terrain-inspection-may-disclose)
+
+**Mouse camera.** On the F8 free board, dwell for 180ms inside a 32px edge band. Speed rises
+from two to six cells per second toward the edge. Corners share that speed across both axes.
+The clear outer 8px above the tabs and below the footer also accept edge scrolling. All sizes
+use the 1920×1080 review canvas. The camera clamps to the encounter area and centers any axis
+that already fits. Battle 01 is 16×20 cells, so only vertical scrolling is needed here.
+The cursor and hit testing follow the cell under the pointer as the board moves. Leaving
+the band or window, clicking, changing input, losing focus or opening an overlay stops the
+pan. Fresh pointer movement re-arms it. Keyboard navigation and overview selection bring the
+chosen cell into view. These camera timings are preview design choices.
 
 The US `BattlefieldMenu` tests A on a living combatant to open the member screen. C on a
 different combatant opens mini status and land effect. C on the acting combatant returns to

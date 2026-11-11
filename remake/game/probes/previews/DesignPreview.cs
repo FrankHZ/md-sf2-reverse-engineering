@@ -53,6 +53,8 @@ public partial class DesignPreview : Control
         if (OS.GetCmdlineUserArgs().Contains("--field")) _scene = FieldScene;
         if (OS.GetCmdlineUserArgs().Contains("--inspect")) _scene = InspectScene;
         GetWindow().FocusExited += StopIconAnimation;
+        GetWindow().FocusExited += StopEdgePan;
+        GetWindow().MouseExited += StopEdgePan;
         GetWindow().FocusExited += _boardPointer.Suspend;
         GetWindow().FocusEntered += _boardPointer.ReleaseIfNeutral;
         GetWindow().FocusEntered += Refresh;
@@ -115,7 +117,8 @@ public partial class DesignPreview : Control
         _journey = JourneyPage.Closed;
         _field = FieldPage.Commands;
         _inspection = InspectPage.Cursor;
-        _cursor = new(9, 4);
+        _cursor = new(7, 8);
+        _stage.Camera.Reset(_stage.Camera.MapSize);
         _reading = 0;
         _scene = scene;
         if (scene == 3) (_sarahHp, _sarahMp, _bowieHp, _enemyHp) = (18, 8, 16, 12);
@@ -294,6 +297,7 @@ public partial class DesignPreview : Control
 
     public override void _Process(double delta)
     {
+        AdvanceEdgePan(delta);
         if (_playback.Visible && _journey == JourneyPage.Closed && !_playSuspended && !_playback.Finished)
             UpdatePlayback(delta * (1 + _rate * 0.5));
         if (_animated is not { Key: { } key } row) return;
@@ -636,6 +640,9 @@ public partial class DesignPreview : Control
 
     public override void _Input(InputEvent input)
     {
+        if (input is InputEventMouseButton or InputEventKey or InputEventJoypadButton ||
+            input is InputEventJoypadMotion axis && Mathf.Abs(axis.AxisValue) > 0.5f)
+            StopEdgePan();
         if (input is InputEventKey { Pressed: true } or InputEventJoypadButton { Pressed: true }) _boardPointer.Cancel();
         if (input is InputEventKey { Pressed: true, Echo: false, Keycode: >= Key.F1 and <= Key.F10 } shortcut)
         { SelectTab((int)shortcut.Keycode - (int)Key.F1); GetViewport().SetInputAsHandled(); return; }

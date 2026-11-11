@@ -9,10 +9,14 @@ public partial class DesignPreview
 {
     private enum InspectPage { Cursor, Options, Map, Unit, Speed }
     private InspectPage _inspection;
-    private Vector2I _cursor = new(9, 4);
-    internal static readonly Vector2I[] UnitCells = [new(9,5), new(11,5), new(10,3)];
+    private Vector2I _cursor = new(7, 8);
+    internal static readonly Vector2I[] UnitCells = [new(7,9), new(9,9), new(8,7)];
     private int _mapFocus, _rate, _draftRate, _outcome, _reading;
     private readonly MenuPointer _boardPointer = new();
+    private Vector2 _edgeMouse, _edgeSpeed;
+    private double _edgeDelay;
+    private bool FreeInspection => _scene == InspectScene && _inspection == InspectPage.Cursor &&
+        _journey == JourneyPage.Closed && !_showMembers;
 
     private UnitSummary InspectedUnit(int i) => i switch { 0 => Bowie, 1 => Sarah, _ => Gizmo };
     private string Rate(int i) => i switch { 1 => "1.5×", 2 => "2×", _ => "1×" };
@@ -34,13 +38,22 @@ public partial class DesignPreview
         }
         if (_inspection == InspectPage.Cursor)
         {
-            var card = Panel(new(_cursor.X >= 13 ? 48 : 1296, 238, 560, unit < 0 ? 150 : 250));
+            var card = Panel(new(_stage.BoardCell(_cursor, false).GetCenter().X >= 1248 ? 48 : 1296,
+                238, 560, unit < 0 ? 150 : 250));
             card.Name = "InspectionCard";
-            Text(card, new(16, 10, 528, 56), unit < 0 ? T("空地", "Open ground") : InspectedUnit(unit).Name, 36);
-            if (unit >= 0) Vitals(card, new(16, 66), InspectedUnit(unit));
-            Text(card, new(16, unit < 0 ? 72 : 172, 528, 58), T($"古代之塔   ·   地块 ({_cursor.X-2}, {_cursor.Y})",
-                $"Ancient Tower   ·   Cell ({_cursor.X-2}, {_cursor.Y})"), 26, "cad6e5");
-            Footer(T("方向键或鼠标选择地块     Enter / A 或左键确认", "Directions or mouse select a cell     Enter / A or click to confirm"));
+            Text(card, new(16, 10, 252, 56), unit < 0 ? T("空地", "Open ground") : InspectedUnit(unit).Name, 36);
+            if (unit >= 0)
+            {
+                string value = _stage.LandEffect(unit, _cursor) is { } effect ? $"{effect}%" : "—";
+                var land = Text(card, new(272, 10, 256, 56), T("地形效果  ", "Land effect  ") + value, 28, "cad6e5");
+                land.Name = "LandEffect";
+                land.HorizontalAlignment = HorizontalAlignment.Right;
+                Vitals(card, new(16, 66), InspectedUnit(unit));
+            }
+            Text(card, new(16, unit < 0 ? 72 : 172, 528, 58), T($"古代之塔   ·   地块 ({_cursor.X}, {_cursor.Y})",
+                $"Ancient Tower   ·   Cell ({_cursor.X}, {_cursor.Y})"), 26, "cad6e5");
+            Footer(T("方向键或鼠标选格     棋盘边缘滚动     Enter / A 或左键确认",
+                "Directions or mouse select     Hover at board edge to pan     Enter / A or click to confirm"));
             Utility(new(1530, 1003, 316, 48), unit < 0 ? T("战场选项", "Battlefield options") : T("单位详情", "Unit details"), AdvanceInspection);
             return;
         }
@@ -78,7 +91,9 @@ public partial class DesignPreview
                 else if (_focus == 2) { _draftRate = _rate; InspectAt(InspectPage.Speed); }
                 else { _priorFocus = _focus; _fromMenu = false; Journey(JourneyPage.Quit, 2); }
                 break;
-            case InspectPage.Map: _mapFocus = _focus; _cursor = UnitCells[_mapFocus]; InspectAt(InspectPage.Cursor); break;
+            case InspectPage.Map:
+                _mapFocus = _focus; _cursor = UnitCells[_mapFocus];
+                _stage.Camera.Reveal(_cursor); InspectAt(InspectPage.Cursor); break;
             case InspectPage.Speed:
                 if (_focus == 0) { _draftRate = (_draftRate + 1) % 3; Render(); }
                 else { if (_focus == 1) _rate = _draftRate; BackInspection(); }
@@ -136,7 +151,8 @@ public partial class DesignPreview
         Vector2I delta = input.IsActionPressed("ui_left") ? Vector2I.Left : input.IsActionPressed("ui_right") ? Vector2I.Right :
             input.IsActionPressed("ui_up") ? Vector2I.Up : input.IsActionPressed("ui_down") ? Vector2I.Down : Vector2I.Zero;
         if (delta == Vector2I.Zero) return false;
-        _cursor = (_cursor + delta).Clamp(new Vector2I(2, 1), new Vector2I(17, 9));
+        _cursor = (_cursor + delta).Clamp(Vector2I.Zero, _stage.Camera.MapSize - Vector2I.One);
+        _stage.Camera.Reveal(_cursor);
         Render(); return true;
     }
 
@@ -150,19 +166,29 @@ public partial class DesignPreview
             return false;
         }
         bool overview = inspecting && _inspection == InspectPage.Map;
-        var origin = PreviewStage.BoardCell(Vector2I.Zero, overview);
+        var origin = _stage.BoardCell(Vector2I.Zero, overview);
         Vector2 local = GetGlobalTransformWithCanvas().AffineInverse() * mouse.Position;
         var cell = (Vector2I)((local - origin.Position) / origin.Size).Floor();
-        var rect = GetGlobalTransformWithCanvas() * PreviewStage.BoardCell(cell, overview);
+        var rect = GetGlobalTransformWithCanvas() * _stage.BoardCell(cell, overview);
         int unit = Array.IndexOf(UnitCells, cell);
         bool allowed = targeting ? unit >= 0 && (_targetParent == Page.Root ? unit == 2 : unit < 2) :
-            overview ? unit >= 0 : cell.X is >= 2 and <= 17 && cell.Y is >= 1 and <= 9;
+            overview ? unit >= 0 : PreviewInspectionCamera.View.HasPoint(local) && new Rect2I(Vector2I.Zero, _stage.Camera.MapSize).HasPoint(cell);
         // The inspection card moves away from the hovered cell. Other HUD regions own their input.
-        if (allowed && _surface.GetChildren().OfType<Control>().Any(control => control.Visible &&
-                control.Name != "InspectionCard" && control.GetRect().HasPoint(local))) allowed = false;
+        bool overHud = _surface.GetChildren().OfType<Control>().Any(control => control.Visible &&
+            control.Name != "InspectionCard" && control.GetRect().HasPoint(local));
+        if (overHud) allowed = false;
 
         if (mouse is InputEventMouseMotion motion)
         {
+            if (FreeInspection && motion.Relative != Vector2.Zero)
+            {
+                // The tabs and footer occupy the top/bottom chrome. The outer eight pixels
+                // are clear of their buttons and can also be reached by pushing to the window edge.
+                bool outerRim = local.Y < 8 || local.Y >= Size.Y - 8;
+                bool panSurface = new Rect2(Vector2.Zero, Size).HasPoint(local) &&
+                    (outerRim || PreviewInspectionCamera.View.HasPoint(local) && !overHud);
+                TrackEdge(local, panSurface && motion.ButtonMask == 0);
+            }
             if (!allowed) _boardPointer.Cancel();
             _boardPointer.Moved(motion);
             if (motion.Relative == Vector2.Zero || !allowed) return false;
@@ -179,5 +205,42 @@ public partial class DesignPreview
             _boardPointer.Read(button, allowed ? cell.ToString() : null, rect, _surface) is not null)
             Activate();
         return allowed;
+    }
+
+    private void StopEdgePan()
+    {
+        _edgeSpeed = Vector2.Zero;
+        _edgeDelay = 0;
+    }
+
+    private void TrackEdge(Vector2 position, bool allowed)
+    {
+        var view = PreviewInspectionCamera.View;
+        if (!allowed || _playSuspended) { StopEdgePan(); return; }
+        static float Axis(float p, float lo, float hi) =>
+            Mathf.Clamp((p - hi + 32) / 32, 0, 1) - Mathf.Clamp((lo + 32 - p) / 32, 0, 1);
+        var strength = new Vector2(Axis(position.X, view.Position.X, view.End.X), Axis(position.Y, view.Position.Y, view.End.Y));
+        if (_stage.Camera.MapSize.X * 96 <= view.Size.X) strength.X = 0;
+        if (_stage.Camera.MapSize.Y * 96 <= view.Size.Y) strength.Y = 0;
+        if (strength == Vector2.Zero) { StopEdgePan(); return; }
+        if (strength.Sign() != _edgeSpeed.Sign()) _edgeDelay = 0.18;
+        _edgeMouse = position.Clamp(view.Position, view.End - Vector2.One);
+        _edgeSpeed = strength.Normalized() * Mathf.Lerp(192, 576, Mathf.Max(Mathf.Abs(strength.X), Mathf.Abs(strength.Y)));
+    }
+
+    private void AdvanceEdgePan(double delta)
+    {
+        if (_edgeSpeed == Vector2.Zero) return;
+        if (!FreeInspection || _playSuspended) { StopEdgePan(); return; }
+        double travel = Math.Max(0, delta - _edgeDelay);
+        _edgeDelay = Math.Max(0, _edgeDelay - delta);
+        if (!_stage.Camera.Pan(_edgeSpeed, travel)) return;
+        var cell = (Vector2I)((_edgeMouse - _stage.Camera.Origin) / 96).Floor();
+        if (cell != _cursor && new Rect2I(Vector2I.Zero, _stage.Camera.MapSize).HasPoint(cell))
+        {
+            _cursor = cell;
+            Render();
+        }
+        else _stage.QueueRedraw();
     }
 }
