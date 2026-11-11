@@ -1689,7 +1689,7 @@ msgid "host.help-text-28"
 msgstr "Open Item list from the command menu"
 
 msgid "host.help-text-29"
-msgstr "Lists use Up/Down and Confirm. Directions or Target cycle only legal targets; hover or click a legal unit to select it. Empty, defeated, wrong-side or out-of-range cells cannot confirm an earlier target. Cancel from Movement opens free inspection after undo. AI and rounds advance automatically."
+msgstr "Lists use Up/Down and Confirm. Directions or Target cycle only legal targets. Hover a legal target to preview it; a complete click on that target executes the action immediately. Empty, defeated, wrong-side or out-of-range clicks cannot submit the earlier target. Cancel returns without committing. Cancel from Movement opens free inspection after undo. AI and rounds advance automatically."
 
 msgid "host.help-text-30"
 msgstr "Next target"
