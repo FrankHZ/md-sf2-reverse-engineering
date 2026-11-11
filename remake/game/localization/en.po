@@ -1863,3 +1863,36 @@ msgstr "Graphics could not be prepared. Previous graphics and preferences are re
 
 msgid "host.setting-description-5"
 msgstr "Apply switches this game immediately and saves the choice for the next launch."
+
+msgid "guidance.heading"
+msgstr "Current objective"
+
+msgid "guidance.visit-hawel"
+msgstr "Visit Hawel with {0}."
+
+msgid "guidance.hawel-outside-yeel"
+msgstr "Hawel’s house · outside Yeel"
+
+msgid "guidance.next-north"
+msgstr "Next: North exit"
+
+msgid "guidance.north-exit"
+msgstr "North exit"
+
+msgid "guidance.house-entrance"
+msgstr "House entrance"
+
+msgid "guidance.known-house"
+msgstr "Next: Hawel’s house entrance"
+
+msgid "guidance.route-unavailable"
+msgstr "Route not available"
+
+msgid "guidance.reading"
+msgstr "{0}: Read · {1}: Commands"
+
+msgid "ui.settings.guidance"
+msgstr "Modern guidance: {0}"
+
+msgid "host.setting-description-10"
+msgstr "Shows the current objective in the field menu and known destinations in the world. Apply changes both together."

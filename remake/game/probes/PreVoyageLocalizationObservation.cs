@@ -87,12 +87,21 @@ public sealed partial class GameRoot
         var map = new MapId(start.GetProperty("map").GetString()!);
         var palette = admitted.Definition.Exploration!.Maps[map].BasePalette!;
         var position = start.GetProperty("position");
+        var names = new Dictionary<string, string>();
+        if (start.TryGetProperty("names", out var declaredNames))
+            foreach (var row in declaredNames.EnumerateObject())
+            {
+                string? value = row.Value.GetString();
+                if (string.IsNullOrEmpty(value) || NewGameName.Error(value) is not null || !admitted.Definition.Encounters.Values
+                    .SelectMany(e => e.Deployments).Any(d => d.Faction == BattleFaction.Ally && d.Actor.Value == row.Name)) return "observation-name";
+                names.Add(row.Name, value);
+            }
         var controlled = new ExplorationStartInput(map, new(start.GetProperty("player").GetString()!),
             new(position.GetProperty("x").GetInt32(), position.GetProperty("y").GetInt32()),
             start.GetProperty("facing").GetByte(), start.GetProperty("speed").GetUInt16(), flags, party,
             start.TryGetProperty("program", out var program) ? new(program.GetProperty("program").GetString()!, 0) : null,
             display: new(3, palette, palette, FullFadeVisibility.BaseRestored), textSettings: old.TextSettings,
-            stepCounter: 0, egressMap: old.Map);
+            stepCounter: 0, egressMap: old.Map) { Names = names };
         BeginSource(new LocalizationObservationSource(new ExplorationReadAccepted(admitted.Definition, controlled)));
         return _session is null ? "observation-mount-failed" : "started";
     }

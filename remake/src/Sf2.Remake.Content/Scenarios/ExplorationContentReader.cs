@@ -162,6 +162,7 @@ internal static class ExplorationContentReader
             world.TryGetProperty("textFont", out var font) ? ReadFont(font) : null)
         { GameplayRevision = world.TryGetProperty("gameplayRevision", out _) ? Number(world, "gameplayRevision", 1, int.MaxValue) : 1 };
         Link(definition);
+        if (!authored) definition.Guidance = PrivateFieldGuidance.Bind(definition);
         ObjectOptional(start, "exploration-start", ["map", "player", "position", "facing", "speed", "flags"],
             "textSettings", "display", "mapPalettes", "program", "entityPhases");
         var selectedMap = new MapId(Id(start, "map"));

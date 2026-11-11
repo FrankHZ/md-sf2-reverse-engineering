@@ -13,6 +13,7 @@ internal sealed class InputSettings
     public bool ReducedFlash { get; set; }
     public string Language { get; set; } = "en";
     public string GraphicsMode { get; set; } = "original";
+    public bool ModernGuidance { get; set; } = true;
     public string TextMode { get; set; } = "instant";
     public double CharactersPerSecond { get; set; } = 40;
     public bool SuppressBattleHitCoinMessages { get; set; }
@@ -57,6 +58,7 @@ internal sealed class InputSettings
         {
             FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
             Language = Language, GraphicsMode = GraphicsMode, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
+            ModernGuidance = ModernGuidance,
             SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
         draft.Bindings = Bindings;
@@ -68,6 +70,7 @@ internal sealed class InputSettings
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
         GraphicsMode = candidate.GraphicsMode;
+        ModernGuidance = candidate.ModernGuidance;
         Bindings = candidate.Bindings;
         SuppressBattleHitCoinMessages = candidate.SuppressBattleHitCoinMessages;
     }

@@ -56,6 +56,7 @@ public sealed class GameSession
     }
     public bool CanSearch => FieldSearch.Available(Current);
     public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current);
+    public FieldGuidance? QueryFieldGuidance() => FieldGuidanceQuery.Query(Definition, Current);
     public PartyDetails? QueryPartyDetails() => PartyDetailsQuery.Query(Definition, Current);
     public FieldActionChoices QueryFieldActions(ActorRef actor) => FieldInventory.Query(Definition, Current, actor);
     public BattleChoicesSnapshot QueryBattleChoices() =>

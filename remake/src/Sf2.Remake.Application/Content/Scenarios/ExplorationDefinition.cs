@@ -178,6 +178,7 @@ public sealed class ExplorationDefinition
         Programs = new ReadOnlyDictionary<string, StoryProgram>(programs.ToDictionary(program => program.Id, StringComparer.Ordinal));
     }
     internal int GameplayRevision { get; init; } = 1;
+    public IReadOnlyList<FieldGuidanceRule> Guidance { get; internal set; } = [];
     public ExplorationTextFont? TextFont { get; }
     public IReadOnlyDictionary<int, string> Texts { get; }
     public IReadOnlyDictionary<int, IReadOnlyList<ExplorationTextToken>> TextTokens { get; }

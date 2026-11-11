@@ -11,6 +11,7 @@ public sealed partial class ExplorationSessionView
     internal void PublishGraphics() { if (_session is not null) _partyStatus.Present(_session, _input); }
 
     private FieldMenuView _fieldMenu = null!;
+    private FieldGuidanceView _guidance = null!;
     private bool _fieldMenuActive;
     private bool CanOpenFieldMenu => _session?.Current.CanWaitAtInput == true && !_battleMounted && !_partyStatus.Open &&
         !_handedOff && !_battleHandoffPending && !MenuEntryPending && PresentationFailure is null;
@@ -41,6 +42,14 @@ public sealed partial class ExplorationSessionView
     }
     private void PresentFieldMenu()
     {
+        var guidance = _input.Settings.ModernGuidance ? _session!.QueryFieldGuidance() : null;
+        _fieldMenu.SetObjective(guidance is null ? "" : FieldGuidanceView.Objective(_session!, guidance));
+        var player = _session!.Current.Exploration?.PlayerEntity;
+        _fieldMenu.ProtectSubject(player is null ? null : new Godot.Rect2(
+            (new Godot.Vector2(player.Motion.X, player.Motion.Y) / 16 - WorldViewport.Origin) * 4, new(96, 96)).Grow(24));
+        _guidance.Present(guidance, WorldViewport, _session!.Current.Exploration,
+            !_fieldMenuActive && !_partyStatus.Open && !_battleMounted && !MenuEntryPending &&
+            !_handedOff && !_battleHandoffPending && PresentationFailure is null && CanProcess());
         if (_fieldMenuActive && (_session!.Current.CanWaitAtInput != true || PresentationFailure is not null))
         { _fieldMenuActive = false; _fieldMenu.HideMenu(); _partyStatus.Hide(); _resumeAutomatic = true; }
         if (_fieldMenuActive && !_partyStatus.Open && !_fieldMenu.Open) _fieldMenu.Begin();

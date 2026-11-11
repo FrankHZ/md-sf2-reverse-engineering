@@ -1863,3 +1863,36 @@ msgstr "无法准备画面资源。已保留先前画面和偏好。"
 
 msgid "host.setting-description-5"
 msgstr "应用后在本局立即切换，并保存供下次启动使用。"
+
+msgid "guidance.heading"
+msgstr "当前目标"
+
+msgid "guidance.visit-hawel"
+msgstr "和 {0} 一起拜访 Hawel。"
+
+msgid "guidance.hawel-outside-yeel"
+msgstr "Hawel 的家 · Yeel 村外"
+
+msgid "guidance.next-north"
+msgstr "下一步：北侧出口"
+
+msgid "guidance.north-exit"
+msgstr "北侧出口"
+
+msgid "guidance.house-entrance"
+msgstr "房屋入口"
+
+msgid "guidance.known-house"
+msgstr "下一步：Hawel 家入口"
+
+msgid "guidance.route-unavailable"
+msgstr "暂无可用路线"
+
+msgid "guidance.reading"
+msgstr "{0}：阅读 · {1}：返回指令"
+
+msgid "ui.settings.guidance"
+msgstr "现代引导：{0}"
+
+msgid "host.setting-description-10"
+msgstr "在探索玩法菜单中显示当前目标，并在地图上显示已知目的地。应用后同时生效。"
