@@ -30,6 +30,23 @@ internal sealed partial class BattleCommandMenu : Control
     // TargetChoice and CommitReady share this navigation page; choosing a different
     // target must not create a new mode or restart the directional repeat clock.
     internal string NavigationPage => _page.ToString();
+    internal BattleActionChoice? PreviewAction => !Visible || _current?.Selection?.Stage == BattleSelectionStage.Movement ? null :
+        _page == Page.Target ? SelectedAction() : _page == Page.Main && _command == 0 ? Options().FirstOrDefault() :
+        _page is Page.Magic or Page.Items ? Options().ElementAtOrDefault(_row) : null;
+    internal bool Targeting => Visible && _page == Page.Target;
+    internal bool Covers(Vector2 p) => _layout.Covers(p);
+    internal bool BoardTarget(ActorRef? actor, bool commit)
+    {
+        if (!Targeting) return false;
+        var target = SelectedAction()?.Targets.FirstOrDefault(t => t.Actor == actor && t.Enabled);
+        TargetCandidate = target?.Actor;
+        if (target is not null)
+        {
+            PickTarget(target);
+            if (commit && _current?.Selection?.Target == target.Actor) Submit(new Confirm());
+        }
+        Refresh(); return true;
+    }
 
     public override void _Ready()
     {
@@ -162,12 +179,12 @@ internal sealed partial class BattleCommandMenu : Control
         {
             var option = SelectedAction();
             if (option is null) return true;
-            var targets = option.Targets;
+            var targets = option.Targets.Where(target => target.Enabled).ToArray();
             if (action is GameAction.Target or GameAction.Up or GameAction.Down or GameAction.Left or GameAction.Right)
             {
                 int index = targets.ToList().FindIndex(target => target.Actor == (TargetCandidate ?? selection.Target));
                 int delta = action is GameAction.Up or GameAction.Left ? -1 : 1;
-                if (targets.Count > 0) PickTarget(targets[(index + delta + targets.Count) % targets.Count]);
+                if (targets.Length > 0) PickTarget(targets[(index + delta + targets.Length) % targets.Length]);
             }
             else if (action == GameAction.Confirm && targets.Any(target => target.Actor == TargetCandidate && target.Enabled)
                 && _current.Selection?.Target == TargetCandidate) Submit(new Confirm());

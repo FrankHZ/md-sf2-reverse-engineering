@@ -11,8 +11,11 @@ internal sealed partial class BattleMovementRangeView : Node2D
     private BattleMovementRange? _range;
     private BattleMovementRange? _drawn;
     private int _draws;
-    private static readonly Color Fill = new(0.12f, 0.65f, 0.95f, 0.20f);
-    private static readonly Color Edge = new(0.22f, 0.78f, 1f, 0.55f);
+    internal bool Steady { get; set; }
+    private double _pulse;
+    private float Alpha => Steady ? 0.605f : 0.605f + 0.075f * MathF.Sin((float)(_pulse * Math.Tau / 1.2));
+    public override void _Process(double delta)
+    { if (IsVisibleInTree() && !Steady) { _pulse += delta; QueueRedraw(); } }
     internal void Present(BattleMovementRange? range)
     {
         _range = range;
@@ -25,18 +28,13 @@ internal sealed partial class BattleMovementRangeView : Node2D
         _draws++;
         _drawn = _range;
         foreach (var tile in _range.Destinations)
-        {
-            var rect = new Rect2(new Vector2(tile.X, tile.Y) * WorldViewportLayout.CellSize + Vector2.One,
-                Vector2.One * (WorldViewportLayout.CellSize - 2));
-            DrawRect(rect, Fill);
-            DrawRect(rect, Edge, false, 2);
-        }
+            BattleActionRangeView.Tile(this, tile, new("78e9f3"), Alpha);
     }
     internal object Observe() => new
     {
         visible = IsVisibleInTree(), actor = _range?.Actor.Value, origin = _range?.Origin,
         destinations = _range?.Destinations, drawnDestinations = _drawn?.Destinations, z = ZIndex, draws = _draws,
-        cellSize = WorldViewportLayout.CellSize, fillAlpha = Fill.A, edgeAlpha = Edge.A,
+        cellSize = WorldViewportLayout.CellSize, fillAlpha = Alpha, edgeAlpha = 0.9f, steady = Steady,
         globalOrigin = BattleMapViewport.Rectangle(new Rect2(ToGlobal(Vector2.Zero), Vector2.Zero)),
     };
 }

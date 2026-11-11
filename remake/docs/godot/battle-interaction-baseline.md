@@ -2,7 +2,12 @@
 
 ## Decision and scope
 
-**Standard rigor; [#1642](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1642).**
+**High rigor for the production UI migration (#1686).** Decision, inspection, commit and return
+share input and presentation boundaries; a wrong gesture can spend resources or acknowledge a
+different phase. The agreed outcome is the accepted F4/F8/F9 behavior in the pre-voyage demo,
+using existing gameplay, transaction and continuation owners. Acceptance combines actual input,
+state, geometry and errors; a preview or passing build alone is insufficient. No new campaign,
+rule, asset acquisition, persistence format or inspection platform is in scope.
 This is the maintained battle feature entry: original capability or accepted modernization → remake
 decision → player operation and return → Domain/Application/Content/Godot consumer → ordinary
 connected admission → acceptance and remaining work. Cross-layer input, visibility, provisional
@@ -25,9 +30,9 @@ This document owns functional traceability and the accepted inspection boundary 
 retain their implementation and observation ownership. The overview proposal's modern menu placement,
 disclosure rules and accessibility treatment remain useful; the map capability itself is original.
 The tracked [shared visual language](ui-design-language.md) and [scene review](ui-scene-review.md#8-battle-one-complete-decision-then-its-consequences)
-are [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616)'s **Proposed** design,
-not deployed UI or user visual approval. Main-gate serializes shared
-documentation and product ownership.
+are the accepted [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616) design.
+The [production coverage below](#production-f4f8f9-contract) records deployed behavior separately
+from original fidelity and human visual approval. Main-gate serializes shared ownership.
 
 The trace covers battle entry → observation → movement → action/item → target/confirmation →
 presentation/settlement → next actor or victory/defeat/retreat → Save/Continue. Acceptance here is a
@@ -60,6 +65,67 @@ real consumer and Content guard, connected reach, acceptance limits and residual
 provenance and existing anchors. Link evidence instead of copying reports or adding another complete
 checklist. Linked follow-up Issues identify uncovered scope; a filed ticket is neither implementation
 authorization nor evidence that the feature is complete.
+
+## Production F4/F8/F9 contract
+
+The production presenters consume the accepted #1683/#1684 layout and #1685 compact-list API.
+They do not instantiate preview heroes, maps, prices or staged results. The following is **Confirmed
+bounded remake behavior** through `engine_demo_battle_ui_observation.gd`; original source claims
+retain the separate provenance below. The [scene owner](battle-scenes.md#production-playback-and-result-layout)
+owns playback and result placement.
+
+| Accepted scene / behavior | Production consumer and actual coverage |
+| --- | --- |
+| F4 Movement and layout A | Existing weighted movement/undo and steady actor brackets remain. Cyan legal-stop tiles and gold action reach use a dark outer edge, bright inner rim and 1.2s pulse (53–68% fill); Reduced Flash holds 60.5%. Compact acting HP/MP head the right column. Real command/child offers retain aligned origins, mapped hints and explicit unavailable reasons. English/Chinese, remapped/pad input and 1080p/1440p geometry are observed. Class/level/status remain in full details rather than the compact decision header. |
+| F4 real reach and effect cursor | `BattleCommandMenu.PreviewAction` supplies the highlighted admitted offer to `BattleActionRangeView`. Minimum/maximum reach comes from the current physical/spell/item offer at the provisional stop. Effect radius comes from that spell's content; AURA4 marks actual living placed allies. Radius zero remains one cell. This is drawing geometry, never a second action/target authority. BLAZE2 and AURA4 exercise changed multi-target content through the actual production session. |
+| F4 target selection and cancellation | Up/Left selects previous and Down/Right/Target next, wrapping only enabled live targets. Board hover and a complete stable press/release select through that same offer. Empty/wrong-side/out-of-range/defeated cells clear UI focus; both pointer and keyboard Confirm require that current enabled candidate. They cannot confirm the older session target. Relayout/camera movement cancels an incomplete gesture. Back returns to the exact spell/item row or command without payment or RNG. |
+| F4 auxiliary pages | Existing Equip/Give/Drop use their dedicated reading/confirmation caller and advertised shortcuts. One auxiliary page replaces commands; real item identities and source transactions remain authoritative. Battle01 cancellation observes resource/seed equality. Existing [connected transaction admission](../content/profiles-and-trust.md#connected-battle-give-admission), Search and actual transaction evidence retain their own scopes; this migration grants no additional transaction or mouse capability. |
+| F8 hover and details | Pointer or directional focus shows the same disclosed live unit, mover-qualified land effect, equal-width HP/MP gauges and location. Empty ground explicitly evaluates a regular ground unit and labels impassability. A/Confirm or a complete unit click opens shared read-only details. Back restores the inspected cell for every unit, including the actor. This accepted modernization supersedes the earlier current-actor direct-return/mini-status UI policy; the original S2 distinction below remains evidence. |
+| F8 free camera | Exposed 32px edge band, 180ms dwell and depth-scaled 2–6 cells/s; diagonal speed is bounded. The clear top/bottom outer rim also works. Small axes center, bounds clamp, and hit testing follows the actual moving board. Interior motion, buttons, mapped navigation, modal entry, pointer exit and focus loss retire the gesture; return needs fresh motion. Inspection camera state is disposable and cannot alter battle state. |
+| F8 options and Map | Original Member/Map/Speed/Quit art accompanies the shared labeled vertical rows. Whole-row pointer gestures and Up/Down navigate. Details restore the roster row; Map Back restores Options and a map-unit click locates that disclosed unit at the cursor without acting. Existing Speed draft and Quit/save callers retain their eligibility and release barriers. Connected Battle02 verifies member return, nonzero-region Map, Speed/Quit Back and real EGRESS return. Explicit eligible Quit may publish legitimate music metadata; gameplay/resources/RNG remain unchanged. |
+| F9 actual results and return | Production damage, death, reward/growth and outcome readers consume real session continuations. The authored victory/defeat packages enter from their actual field interaction and return to usable field movement. Source Battle02 EGRESS enters through its real field/before/load/start path, cancels freely, pays once and returns usable Map3. These are actual gameplay results, distinct from the preview's staged outcomes. |
+
+Movement continues to use its advertised directional input. Inspection and target selection add board
+pointer gestures; they do not synthesize click-to-walk gameplay commands. Source Battles01–07 share
+these presenters; their [campaign admission and prior route evidence](../application/pre-voyage-campaign.md)
+remain authoritative. This slice does not replay the campaign or certify every natural species/action
+combination. Human foreground composition, physical devices/DPI and original pixels/timing remain
+**Unknown**. Some native exits retain ObjectDB leak warnings; consumer success is not clean-shutdown
+acceptance. No player saves or screenshots are involved.
+
+### Direct production reproduction
+
+Reuse the selected ordinary private world/scenes and locked tool environment from the
+[asset owner](../content/presentation-assets.md#final-publication-and-ordinary-selection). Load the
+owning checkout's ignored configuration in the same launching process. After
+`uv run sf2 verify adapter`, build Debug with the selected `DOTNET_BIN` and protected shared CLI home:
+`& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore`.
+Use a fresh ignored output directory, worktree-local APPDATA/LOCALAPPDATA/TEMP, and a unique
+`SF2_SAVE_NAMESPACE` under the explicit external validation `SF2_SAVE_ROOT`.
+
+| `SF2_DEMO_BATTLE_CASE` | Initial selection, before host startup |
+| --- | --- |
+| `battle` | `SF2_COMPACT_START` points to UTF-8 JSON: `{"start":{"battle":"battle-1","actors":[{"actor":"ally-0","hp":6,"position":{"x":8,"y":14}},{"actor":"ally-1","position":{"x":9,"y":14}},{"actor":"ally-2","hp":0},{"actor":"enemy-0","hp":1,"position":{"x":8,"y":13}}]}}`. This is an explicit consumer start, not natural reach or a connected outcome fixture. Subsequent movement, attack, HEAL and inspection use actual input only. |
+| `retreat` | Copy the tracked `remake/reference/inputs/engine-battle02-egress-start.json` to fresh ignored input, add `start.partyInput = "remake/reference/inputs/battle02-outcome-party.json"`, and select that copy through `SF2_COMPACT_START`. No post-start mutation. This enters actual Battle02, preserves a real joined roster and permits its actual return. |
+| `area` / `aura` | Pass `--authored-package` with `remake/content/authored/attack-spells.json` / `aura-healing.json`. The observer selects the real list's BLAZE2 / AURA4, cancels once, then consumes all actual reactions, payment and next control. Long-name stress uses a prelaunch authored copy with renamed identifiers and all their references; no private assets are changed. |
+| `victory` / `defeat` | Pass `--authored-package` with `remake/content/authored/progression-outcome-victory.json` / `progression-outcome-defeat.json`. Real initial interaction enters the battle; ordinary attack/Stay produces its outcome, reading and field return. These public authored outcomes do not replace private source outcome evidence. |
+
+Set `SF2_VIEWPORT_OUTPUT` to a fresh absolute JSON destination and `SF2_INSPECTION_ROUTE` to
+`keyboard`, `pad`, or `remapped` with an actual matching input-settings file. Run the existing
+`GODOT_BIN` in a hidden bounded child with arguments:
+
+```text
+--headless --path <checkout>/remake/game --audio-driver Dummy --max-fps 120
+--resolution 1920x1080 --script res://probes/engine_demo_battle_ui_observation.gd
+-- --input-settings <settings.json> [--authored-package <package.json>]
+```
+
+Each case has a 50s observer / 55s owned-process deadline and writes a compact final report, not a
+frame stream. Read `passed`, `failures`, `unavailable`, geometry and native stdout/stderr together;
+a script/startup error is a failure even when no assertion was reached. Preserve earlier outputs.
+Current owned-run recipes/results and completed failures are retained under ignored `local/issue1686`;
+the Issue/PR freezes the exact candidate and actual CI. No aggregate/research/emulator suite is needed
+for this presentation-only change. Independent main-gate review remains required.
 
 ## Evidence and reproduction boundary
 
@@ -165,9 +231,9 @@ source fidelity, functional access and human acceptance are deliberately distinc
 | --- | --- | --- | --- |
 | Enter battle, then know whose turn it is. S1 and the [battle loop](../../../docs/research/battle/battle-loop.md#top-level-battle-control) focus/settle the actor, display mini status/land effect and build movement; sleep/stun/AI restrict control. | Finish actual before/load/start and scripted work before player input. Show actor HP/MP, legal stops and round/gold; no added deployment screen. | C's connected encounter/entry/return programs → A `BattleAdvancer`/`GameSession` → G `GameRoot`/`BattleSessionView`/acting card. D owns player/automatic control. **Connected Battles01–07**, not the later campaign. | [Campaign agreement](../application/pre-voyage-campaign.md), [status-card agreement](presentation.md#battle-status-card-agreement) and [movement observation](../verification/host.md#battle-movement-range-observation) bound engineering acceptance. The [ordinary acting-card owner](presentation.md#ordinary-acting-card-information-1655) records #1655: live class/level and actor-qualified land effect now share disclosure with inspection and follow actual player/undo delivery. Human visual approval remains #1456. |
 | Look independently of movement. S1–S3 enter free-cursor `BattlefieldMenu` after Movement B undo. | B completes real undo/delivery → cursor at origin; B from cursor returns to the same actor’s post-undo Movement. Action-menu Cancel still returns to Movement first. No preview-preserving shortcut. | A `QueryBattleInspection` admits the settled player boundary; G `BattleSessionView.Inspection` waits for actual return delivery, then `BattleInspectionView` owns disposable focus and `BattleMapViewport` temporarily frames its cursor. **Connected Battles01–07** use this common consumer. | [Inspection implementation/observation](presentation.md#battle-inspection-and-on-demand-map-1633) covers moved/no-move entry, pure browsing and same-origin return on connected Battle01 and an authored appearance case. Nonzero-region geometry is separately bounded to existing controlled Battle02. This is not full-campaign or human visual acceptance. |
-| Inspect any living disclosed ally/enemy, including outside action range. S2–S5 provide short/full sheets with caller-specific returns. | A full sheet on the current actor closes to Movement; C there returns directly. Other units’ sheets close to the free cursor. Read live public attributes/status/loadout. | A `BattleInspectionQuery` reads current actors and admitted names; shared `BattleVisibility` filters ordinary board disclosure. G reuses `PartyDetailsPanel` scalar widgets and `BattleStatusCard`. `QueryPartyDetails` remains field-only. | [Disclosure boundary](#what-status-and-terrain-inspection-may-disclose) and [bounded native evidence](presentation.md#battle-inspection-and-on-demand-map-1633) cover ally/enemy cards, full sheets, caller returns and an off-camera enemy. Private stat values ≥100 remain unavailable; enemy LV/EXP/class are N/A. Unsupported status details remain explicit. |
-| Understand land effect. S6 uses the inspected/moving actor’s mover and terrain; displayed setting ×15 gives 0/15/30. | Short status names the inspected actor and location alongside the setting. The ordinary acting card shows its own actor and last delivered tile through movement/undo. Empty ground opens options. The setting is not a damage-reduction percentage. | D `BattleTerrainRules.LandEffect` shares mover/protection semantics with `Sf2PhysicalAction.LandMultiplier`; A `QueryBattleInspection`/`QueryBattleActingStatus` share `BattleUnitProjection`; G displays actor-qualified terrain beside short status and on the ordinary acting card. C semantic terrain supplies the actual tile. | Engine behavior checks cover Regular/Heavy, Flying/Heavy and Hovering/Light. Native checks bind the shown land effect to the inspected live unit. The [#1655 owner](presentation.md#ordinary-acting-card-information-1655) adds Regular/Flying/Hovering engine checks, native terrain crossing/undo, actor handoff and inspection return, including Chinese/remapped controls. Original sub-tile cadence and human visual approval remain Unknown. |
-| Open empty-ground options. S2 dispatches Map, Member, Quit and Speed. | Inspection options return to cursor. Map, Member, Speed and Quit are offered here; host Menu stays separate. | G `BattleInspectionView` opens Options from A/C on empty ground, Map/Member from the selected A/C choice, and returns through the real parents. The existing host Menu can pause/return without publishing music metadata during inspection; its Save offer assesses the live audio observation without publication, while explicit Save retains strict actual capture. | #1633 covers Map/options/cursor. The [Member owner](presentation.md#battle-member-roster-and-read-only-details-1645) covers the roster extension; [Speed #1650](presentation.md#battle-speed-and-selective-messages-1650) is delivered through this exact safe caller; [Quit #1651](presentation.md#battle-options-quit-1651) now consumes the existing two-slot Save/SaveQuit flow with its own Options/cursor return and shared pause/release barriers. **Resource/presentation:** [#1669](presentation.md#shop-and-options-art-acceptance-1669) consumes the original Up Member / Left Map / Right Speed / Down Quit normal/selected set, with a freestanding diamond and independent explanation/Back. Actual ordinary Continue, source draw identities, Chinese/remapped cardinal inputs, each real parent and overlay isolation are bounded observations; no battle/save/RNG rule changes. Shop details remain in the [resource owner](../content/presentation-assets.md#shop-and-battlefield-menu-resources-1669). **Human experience:** Unknown. |
+| Inspect any living disclosed ally/enemy, including outside action range. S2–S5 provide short/full sheets with caller-specific returns. | Pointer/directional focus shows short status. A/Confirm or a complete unit click opens full details for any disclosed unit; Back restores that cursor, including the acting unit. Cursor Cancel returns to Movement. This is the accepted modern caller policy; original S2 returns remain documented below. | A `BattleInspectionQuery` reads current actors and admitted names; shared `BattleVisibility` filters ordinary board disclosure. G reuses `PartyDetailsPanel` scalar widgets and the dedicated `BattleInspectionCard`. `QueryPartyDetails` remains field-only. | [Disclosure boundary](#what-status-and-terrain-inspection-may-disclose) and [bounded native evidence](presentation.md#battle-inspection-and-on-demand-map-1633) cover ally/enemy cards, full sheets, caller returns and an off-camera enemy. Private stat values ≥100 remain unavailable; enemy LV/EXP/class are N/A. Unsupported status details remain explicit. |
+| Understand land effect. S6 uses the inspected/moving actor’s mover and terrain; displayed setting ×15 gives 0/15/30. | Hover status names the inspected actor and location alongside the setting. Empty ground names the regular-ground evaluation and impassability. Compact decision cards retain HP/MP; full details retain class/level/status. Confirm on empty ground opens options. The setting is not a damage-reduction percentage. | D `BattleTerrainRules.LandEffect` shares mover/protection semantics with `Sf2PhysicalAction.LandMultiplier`; A `QueryBattleInspection`/`QueryBattleActingStatus` share `BattleUnitProjection`; G displays actor-qualified terrain beside short status and on the ordinary acting card. C semantic terrain supplies the actual tile. | Engine behavior checks cover Regular/Heavy, Flying/Heavy and Hovering/Light. Native checks bind the shown land effect to the inspected live unit. The [#1655 owner](presentation.md#ordinary-acting-card-information-1655) adds Regular/Flying/Hovering engine checks, native terrain crossing/undo, actor handoff and inspection return, including Chinese/remapped controls. Original sub-tile cadence and human visual approval remain Unknown. |
+| Open empty-ground options. S2 dispatches Map, Member, Quit and Speed. | Inspection options return to cursor. Map, Member, Speed and Quit are offered here; host Menu stays separate. | G `BattleInspectionView` opens Options from A/C on empty ground, Map/Member from the selected A/C choice, and returns through the real parents. The existing host Menu can pause/return without publishing music metadata during inspection; its Save offer assesses the live audio observation without publication, while explicit Save retains strict actual capture. | #1633 covers Map/options/cursor. The [Member owner](presentation.md#battle-member-roster-and-read-only-details-1645) covers the roster extension; [Speed #1650](presentation.md#battle-speed-and-selective-messages-1650) is delivered through this exact safe caller; [Quit #1651](presentation.md#battle-options-quit-1651) now consumes the existing two-slot Save/SaveQuit flow with its own Options/cursor return and shared pause/release barriers. **Resource/presentation:** the original Member/Map/Speed/Quit normal/selected art identified by [#1669](presentation.md#shop-and-options-art-acceptance-1669) now accompanies the accepted vertical labeled list. Up/Down and full-row pointer gestures select; caller, eligibility and return remain unchanged. [Production observations](#production-f4f8f9-contract) cover the new composition. Shop details remain in the [resource owner](../content/presentation-assets.md#shop-and-battlefield-menu-resources-1669). **Human experience:** Unknown. |
 | See the whole admitted battlefield. S7 draws the area and entity indicators, then returns to options. | On-demand Map → empty-ground menu → cursor; disclosed units/camera rectangle at unchanged ordinary board scale. No click-to-act or permanent minimap. | C `SourceMapRegion` bounds the area; A `QueryBattleInspection` supplies only known living placed units. G `BattleOverviewView` draws admitted semantic terrain classes/outline, ally circles/enemy diamonds, active-unit ring and clipped camera rectangle, plus a navigable known-unit list. | [Native evidence](presentation.md#battle-inspection-and-on-demand-map-1633) checks actual Map parents/list, camera purity, small-board centering and nonzero source-region offset. Original minimap pixel/category fidelity and human visual approval remain Unknown. |
 | Browse battle Member roster. S2 copies `UpdateForce`'s joined-and-active list (including defeated/unplaced members), then S5 full sheet → same list → options. Reserve is separate. | Preserve list caller identity and selected row, even for the current actor; read retained live scalars without initializing missing members. | A `QueryBattleMembers` shares settled-origin eligibility and `BattleUnitProjection.Details` with inspection. G `BattleInspectionView`/`BattleMemberListView` reuse `PartyDetailsPanel`, mapped input and the same stale lifecycle. Field `QueryPartyDetails` remains field-only. **Connected Battles01–07 admission.** | [#1645 owner and bounded acceptance](presentation.md#battle-member-roster-and-read-only-details-1645): engine dead/unplaced/empty/unavailable and active/reserve checks; actual controlled-connected Battle01 current/other details, selection/multilevel Back, purity, replacement and Chinese/remapped projection. Natural original reach, later encounters and human visual acceptance remain Unknown. **Resource/presentation:** shared PartyDetailsPanel item/spell rows borrow semantic source textures, retain live slots/equipped text and independent scrolling; [#1668 acceptance](presentation.md#member-inventory-art-acceptance-1668) separates ordinary access, actual art and controlled variants. **Human experience:** Unknown. |
 
@@ -247,7 +313,7 @@ implements that distinction without changing logical timing or required messages
 | Spells/items | S5 reads spell slots and held items, with equipped annotation; enemy sheets use the same relevant readers. | Reuse admitted names, runtime loadout, spell and equipment mechanisms. Inspection displays them without opening Prepare, equipping, giving, dropping or spending MP. Unknown names are not permission to expose raw private diagnostics. |
 | Portrait/records/gold | S5 omits enemy kills/defeats; portrait absence skips the portrait/gold branch. | Reuse admitted field detail widgets where suitable, but do not fabricate enemy records or require missing private portrait art to browse combat stats. |
 | Land effect | S6 obtains the inspected/moving combatant's move type and terrain, displays setting ×15 percent (0/15/30). S2 opens land effect with another unit's short card; S3 updates its movement-time input. | Semantic terrain exists in `BattleDefinition.Terrain`; inspection short status and the ordinary acting card read actor-qualified land effect. The acting query uses the last completed movement/undo segment tile, then the settled preview destination. `BattleTerrainRules.LandEffect` and `Sf2PhysicalAction.LandMultiplier` share protection/mover semantics (Flying gets no protection); `BattleTerrainRules` owns movement cost separately. Both public queries reuse these semantics, never infer percentage from tile artwork or treat it as the damage-reduction percentage. |
-| Empty-tile terrain | S2's empty-ground branch opens options; it does not open a land-effect window for every arbitrary cursor tile. | Showing a tile's terrain name is a proposed modern addition. A prospective land-effect value must name the evaluated actor/mover and location; it cannot be advertised as an actor-independent property. |
+| Empty-tile terrain | S2's empty-ground branch opens options; it does not open a land-effect window for every arbitrary cursor tile. | The accepted modern hover shows Ground effect for a regular ground unit, Ground impassable for Barrier/HighSky/Impassable, and coordinates. Occupied cells use the inspected unit's actual mover-qualified query. This is not an actor-independent damage percentage. |
 | Hidden/future information | S2's unit cursor tests living placed combatants; S7's indicator code consumes entity positions and mapsprite categories. Neither is evidence for showing future AI plans or reserve spawns. | Raw `Actors`, `Deployments`, `TurnOrder`, diagnostic roster, activation and AI memory are not a public inspection API. Apply the [existing disclosure boundary](modernization-design.md#read-only-battle-overview) before producing any list or marker. |
 
 S5 also checks `UNKNOWN_STAT_VALUE_THRESHOLD` before writing HP/MP and ATT/DEF/AGI/MOV numbers.
@@ -263,7 +329,7 @@ free control, saves chosen tile coordinates, then idles/hides the cursor and cle
 S1 re-enters actor control on return. This proves a separate inspection subject, not the original
 scroll easing, precise edge clamps or cadence. Those remain **Unknown**.
 
-## Minimum implementation contract proposed for review
+## Inspection contract and original return distinctions
 
 The heading is retained as a stable link from the original proposal. This is now the accepted
 functional contract implemented by #1633. The [detailed current owner](presentation.md#battle-inspection-and-on-demand-map-1633)
@@ -314,13 +380,14 @@ Inspect shortcut or permanent entry that preserves a tentative move:
 | A/C on another living unit | A opens the full sheet; C opens mini status and land effect. On dismissal S2 loops to `BattlefieldMenu` for the same cursor context. S5's full screen waits for A/B/C; this caller's return destination differs from inspecting the current actor. |
 | Empty-ground menu / Map / Member | Menu Cancel returns to the cursor. Map returns to the empty-ground menu. Member's selected full sheet returns to its member list, even when it displays the current actor; leaving that list returns to the empty-ground menu. Preserve caller identity rather than using the direct-cursor active-unit rule for every full sheet. |
 
+**Current modern override:** #1683/#1686 use one detail child for A/Confirm/pointer, and Back restores the inspected cursor even for the acting unit. The table above retains the original S2 distinction as evidence, not the current UI return rule.
+
 **Deferred intentional modernization:** a separate non-destructive Inspect entry could preserve a
 Movement preview, or later an ActionChoice/TargetChoice parent, selected item/spell and target.
-A uniform modern Back that always returns full details to the free cursor would also differ from
-the source's current-actor A/C behavior. Neither alternative is required by the selected first scope.
+The preview-preserving entry remains outside this scope.
 Default B/Cancel entry is fixed above; map the mode-local A/C functions and release barriers through
 the existing input authority with #1615, and let #1616 place contextual hints rather than another
-permanent Inspect control. Do not change source-like return destinations implicitly for UI uniformity.
+permanent Inspect control. The accepted explicit override above owns modern details return; original evidence is unchanged.
 
 The first slice includes the cursor → empty-ground Map entry → options → cursor route. Member's
 caller-specific return is implemented by [#1645](presentation.md#battle-member-roster-and-read-only-details-1645)
@@ -331,7 +398,8 @@ an explicit real availability reason where the chosen layout retains an unavaila
 
 `BattleMapViewport.Present/Frame` currently chooses focus from movement, target candidate, preview
 or story; `_Process` reapplies it. Add a temporary inspection subject at that owner so ordinary
-Frame cannot immediately replace the cursor. Reuse `WorldViewportLayout.Focus/Clamp` and the
+Frame cannot immediately replace the cursor. #1686 also retains disposable edge-pan framing until
+fresh keyboard navigation resumes cursor reveal. Reuse `WorldViewportLayout.Focus/Clamp` and the
 battle's admitted `SourceMapRegion` offset. Keep 96px cells, clipping and legal area boundaries;
 do not pan into neighboring packed rooms, storage, hidden entities or an entire source-world map.
 Returning removes only the override and resumes the same actor at the post-undo origin. The modern
@@ -343,8 +411,8 @@ clipped camera rectangle, with shapes/labels and a navigable known-unit list. Th
 no retained tentative destination to display. It reads the camera without moving it; Back returns
 to the empty-ground menu, whose own Back returns to the inspection cursor. No map
 click can move a unit or commit a target. Free battlefield cursor and overview are complementary;
-one is not acceptance for the other. A permanent minimap, click-to-center, threat overlays and
-undisclosed objectives remain outside this first scope.
+one is not acceptance for the other. A permanent minimap, threat overlays and undisclosed objectives remain outside this scope.
+The accepted modern Map pointer locates a disclosed unit at the free cursor without acting.
 
 ### Smallest useful acceptance after implementation
 
@@ -376,9 +444,9 @@ physical OS focus behavior and human visual acceptance that it does not establis
 | Original access: #1633 | Implemented public live query + Movement B undo/delivery → cursor + caller-specific details + Map. [Detailed owner and observation limits](presentation.md#battle-inspection-and-on-demand-map-1633). Member, Speed and [Quit](presentation.md#battle-options-quit-1651) have their separate delivered owners; host save remains available through its existing owner. |
 | Delivered finite capabilities | Member is delivered under [#1645](presentation.md#battle-member-roster-and-read-only-details-1645); connected Equip has the [finite #1646 boundary](../capability-status.md#connected-battle-equipment-agreement), Give the [finite #1647 boundary](../capability-status.md#connected-battle-give-and-exchange), and Drop the [finite #1648 boundary](../capability-status.md#connected-battle-discard-and-deals). #1649 Search now has the [finite authored/controlled boundary](../capability-status.md#battle-search-capability); #1650 Speed/message access is [delivered](presentation.md#battle-speed-and-selective-messages-1650); #1651 empty-ground Quit is [connected](presentation.md#battle-options-quit-1651) to the existing save flow. The player-flow rows retain A/C/G responsibility and existing authored evidence. Inspection/options consumers are supplied by #1633; Quit consumes the existing save boundary. #1369/#438 own dispatch, not this trace. |
 | Delivered recovery: #1618 | A/B/C are implemented through #1639/#1640/#1641. Use the [current save contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c), not the obsolete field-only assumption. #1633 does not reopen persistence; #1651's Options Quit entry consumes its eligibility, real parent returns and shared failure/publication rules. |
-| Visual composition: #1616 | The [design system](ui-design-language.md) specifies persistent command names beside original icons. The [scene proposal](ui-scene-review.md) records the selected right-hand command/status panel, its aligned child lists and board targeting. The current diamond observations above remain the implementation baseline. |
+| Visual composition: #1616 | The [design system](ui-design-language.md) specifies persistent command names beside original icons. The [accepted scene review](ui-scene-review.md) and [current production contract](#production-f4f8f9-contract) own right-hand compact vitals, aligned command/child lists, real range/target feedback and inspection. Historical diamond observations retain only their named resource/input evidence. |
 | Independent correction: #1620 | [Located and corrected](battle-scenes.md#weapon-frame-composition-1620): source layer1 is behind the body, layer2 in front. Actual knight attack/hit and adjacent sword item gesture preserve frame/flip/offset, action return and UI canvas order. The finite layer2 content variation verifies the front path only; it is not original natural-source evidence. Exact user-image frame, later weapons, original timing/pixels and human visual approval remain **Unknown**. |
-| Modernization: #1619 and deferred candidates | [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) implements held 1.5× pacing across exploration/battle at the [bounded presentation/acceptance boundary](presentation.md#held-battle-acceleration-1619-bc); original rules and fresh confirmation remain unchanged. Separate preview-preserving Inspect, ActionChoice/TargetChoice inspection, uniform Back replacing current-actor returns, action-order bar, permanent minimap and tactical threat/intent remain **Deferred**. No action-order implementation Issue is filed; disclosure/product selection precedes a bounded consumer. No predictive simulation is authorized here. |
+| Modernization: #1619 and deferred candidates | [#1619](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1619) implements held 1.5× pacing across exploration/battle at the [bounded presentation/acceptance boundary](presentation.md#held-battle-acceleration-1619-bc); original rules and fresh confirmation remain unchanged. Separate preview-preserving Inspect, ActionChoice/TargetChoice inspection, action-order bar, permanent minimap and tactical threat/intent remain **Deferred**. No action-order implementation Issue is filed; disclosure/product selection precedes a bounded consumer. No predictive simulation is authorized here. |
 
 An action-order bar must distinguish the already constructed current-round queue, an explicitly
 qualified prediction and unknown future changes. `EngineBattleState.TurnOrder` exposes the retained

@@ -77,7 +77,7 @@ public sealed partial class BattleSessionView
         if (_inspection.Active)
         {
             if (!_inspection.Refresh(_session)) { InspectionBarrier(); Present(); }
-            else ServiceNavigation();
+            else { ServiceNavigation(); _inspection.AdvancePointer(delta); }
             _map.AdvanceCamera(delta);
             return;
         }

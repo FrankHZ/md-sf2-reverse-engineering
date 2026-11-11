@@ -44,7 +44,7 @@ public sealed partial class BattleSessionView : Control
     internal string? StartupError => _startupFailure?.Code;
     private bool _started;
     private bool _inputSuspended;
-    private void SuspendInput() { _inputSuspended = true; SuspendPacing(); ClearNavigation(); _menu?.SuspendPointer(); _inspection?.SuspendPointer(); }
+    private void SuspendInput() { _inputSuspended = true; _boardPointer.Suspend(); SuspendPacing(); ClearNavigation(); _menu?.SuspendPointer(); _inspection?.SuspendPointer(); }
     private void ResumeInput() { _inputSuspended = false; SuspendPacing(); }
     private string _title = "";
     private string _status = "";
@@ -79,6 +79,7 @@ public sealed partial class BattleSessionView : Control
     internal SessionAudio? Audio { get; set; }
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
+    private readonly MenuPointer _boardPointer = new();
     internal Action<SessionResult>? LeaveBattle { get; set; }
     internal Action<SessionResult>? ObserveResult { get; set; }
     internal Action<int>? PlayUiSound { get; set; }
@@ -252,11 +253,31 @@ public sealed partial class BattleSessionView : Control
             _session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
             _session?.Current.HasBattleControl != true || _session.Current.BattleMovement is not null)
         { _menu.SuspendPointer(); return; }
+        if (_menu.Targeting && input is InputEventMouse mouse && !_menu.Covers(mouse.Position) &&
+            _map.TryCell(mouse.Position, out var cell))
+        {
+            var actor = _session.Current.Battle.Actors.FirstOrDefault(a => a.Hp > 0 && a.Initialized &&
+                (a.Actor == _session.Current.Selection?.Actor ? _session.Current.Selection.Preview.Destination : a.Position) == cell);
+            if (input is InputEventMouseMotion motion && _boardPointer.Moved(motion))
+                _menu.BoardTarget(actor?.Actor, false);
+            if (input is InputEventMouseButton button)
+            {
+                if (button.ButtonIndex == MouseButton.Right) { _boardPointer.Cancel(); HandleAction(GameAction.Cancel); return; }
+                // An invalid ground click clears UI focus before either Confirm path can act.
+                if (button.Pressed) _menu.BoardTarget(actor?.Actor, false);
+                var boundary = (_session.Current.SessionId, _session.Current.Revision, _session.Current.Selection?.Actor);
+                if (_boardPointer.Read(button, actor?.Actor.Value, _map.CellRect(cell), boundary) is not null)
+                    _menu.BoardTarget(actor?.Actor, true);
+            }
+            Present(); return;
+        }
+        _boardPointer.Cancel();
         if (_menu.HandlePointer(input)) Present();
     }
 
     private void HandleActionCore(GameAction action)
     {
+        _boardPointer.Cancel();
         _menu.SuspendPointer(keyboard: true);
         if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) return;
         if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
@@ -465,6 +486,7 @@ public sealed partial class BattleSessionView : Control
         _transactionIcon.Position = new(24, 24); _returnIcon.Position = new(120, 24);
         _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help);
         _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
+        _map.PreviewAction(_menu.PreviewAction, _session.Current, _menu.TargetCandidate, _input.Settings.ReducedFlash);
         // Map children have their own Z priorities; a later sibling's black backdrop
         // cannot occlude them. Full close-ups own rendering, while field notices/deaths keep the map.
         _map.Visible = _session.Current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };
