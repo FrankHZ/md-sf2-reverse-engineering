@@ -28,27 +28,21 @@ internal sealed partial class SaveSlotView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        Theme = StoryTheme.CreateEntry(journey: OverEntry);
+        Theme = StoryTheme.CreateEntry(journey: true);
         var panel = _panel = new PanelContainer { Name = "SlotWindow" };
         if (OverEntry) { panel.Position = EntryLayout.Window.Position; panel.Size = EntryLayout.Window.Size; AddChild(panel); }
         else
         {
             var shade = new ColorRect { Name = "GameShade", Color = new("051225b8"), MouseFilter = MouseFilterEnum.Stop };
             shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
-            var center = new CenterContainer(); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(center);
-            center.AddChild(panel);
+            AddChild(panel);
         }
         _column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _column.AddThemeConstantOverride("separation", OverEntry ? 24 : 12);
-        VBoxContainer? layout = null;
-        if (OverEntry)
-        {
-            layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", 24); panel.AddChild(layout);
-            _reading = new ScrollContainer { Name = "SlotReading", SizeFlagsVertical = SizeFlags.ExpandFill,
-                HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-            layout.AddChild(_reading); _reading.AddChild(_column);
-        }
-        else panel.AddChild(_column);
+        var layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", OverEntry ? 24 : 12); panel.AddChild(layout);
+        _reading = new ScrollContainer { Name = "SlotReading", SizeFlagsVertical = SizeFlags.ExpandFill,
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        layout.AddChild(_reading); _reading.AddChild(_column);
         _title = new Label { Name = "SlotTitle", HorizontalAlignment = HorizontalAlignment.Center, Visible = !OverEntry };
         _title.AddThemeFontSizeOverride("font_size", 34); _column.AddChild(_title);
         _message = new Label { Name = "SlotMessage", HorizontalAlignment = HorizontalAlignment.Center,
@@ -57,7 +51,7 @@ internal sealed partial class SaveSlotView : Control
         _hint = new Label { Name = "SlotHint", HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
-        (layout ?? _column).AddChild(_hint);
+        layout.AddChild(_hint);
         _detail = new Label { Name = "SlotDetail", HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart, Visible = false };
         _detail.AddThemeFontSizeOverride("font_size", 20);
@@ -70,7 +64,11 @@ internal sealed partial class SaveSlotView : Control
 
     private void ArrangeWindow()
     {
-        if (!OverEntry) _panel.CustomMinimumSize = new(Math.Min(1040, Math.Max(1, Size.X - 64)), 0);
+        if (!OverEntry)
+        {
+            _panel.Size = new(Math.Min(1040, Math.Max(1, Size.X - 64)), Math.Min(920, Math.Max(1, Size.Y - 64)));
+            _panel.Position = (Size - _panel.Size) / 2;
+        }
     }
 
     internal void ShowDetail(string detail) { _detail.Text = detail; _detail.Show(); }
@@ -95,6 +93,7 @@ internal sealed partial class SaveSlotView : Control
         _message.AddThemeColorOverride("font_color", state.Contains("error") || state.Contains("uncertain")
             ? new Color("ffc4ad") : Colors.White);
         _hint.Text = Input is null ? "" : GameText.Get("entry.choose-hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
+        if (Input is not null) _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
         foreach (var button in _buttons) { _column.RemoveChild(button); button.QueueFree(); }
         _buttons.Clear(); _actions.Clear(); _selected = 0;
         foreach (var (label, action) in choices)
@@ -104,9 +103,8 @@ internal sealed partial class SaveSlotView : Control
             button.Pressed += () => { if (_loading) { _loadingBack?.Invoke(); return; } Select(index); action(); };
             button.MouseEntered += () => Select(index);
             button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.Hint(GameAction.Confirm), Input.Hint(GameAction.Cancel));
-            _column.AddChild(button); if (OverEntry) StoryTheme.EntryChoice(button); _buttons.Add(button); _actions.Add(action);
+            _column.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button); _actions.Add(action);
         }
-        if (!OverEntry) _column.MoveChild(_hint, _column.GetChildCount() - 1);
         _column.MoveChild(_detail, _column.GetChildCount() - 1);
         _column.MoveChild(_coverage, _column.GetChildCount() - 1);
         Select(0);
@@ -117,11 +115,13 @@ internal sealed partial class SaveSlotView : Control
         if (_loading) { if (action == GameAction.Cancel) _loadingBack?.Invoke(); return; }
         if (_buttons.Count == 0) return;
         if (action == GameAction.Cancel) Cancel?.Invoke();
+        else if (action is GameAction.Left or GameAction.Right && _reading is not null)
+            _reading.ScrollVertical += action == GameAction.Left ? -112 : 112;
         else if (action == GameAction.Up) Select((_selected + _buttons.Count - 1) % _buttons.Count);
         else if (action == GameAction.Down) Select((_selected + 1) % _buttons.Count);
         else if (action == GameAction.Confirm && _actions.Count > 0) _actions[_selected]();
     }
-    private void Select(int index)
+    internal void Select(int index)
     {
         _selected = index;
         for (int i = 0; i < _buttons.Count; i++)

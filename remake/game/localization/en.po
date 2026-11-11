@@ -1583,3 +1583,212 @@ msgstr "Hold for exploration and battle at 1.5x; release returns to 1x. NPCs and
 
 msgid "controls.acceleration.hold"
 msgstr "Hold: temporary 1.5x gameplay"
+
+# Host menu, preferences, controls help and window recovery.
+
+msgid "host.menu-reading"
+msgstr "{0}/{1}: Read above/below"
+
+msgid "host.settings-reading"
+msgstr "On a footer action: {0}/{1} scroll the reading area."
+
+msgid "host.help-text-0"
+msgstr "Exploration"
+
+msgid "host.help-text-1"
+msgstr "At settled field input, hold a direction to walk. Story and movement waits own input until ready."
+
+msgid "host.help-text-2"
+msgstr "Walk north"
+
+msgid "host.help-text-3"
+msgstr "Walk east"
+
+msgid "host.help-text-4"
+msgstr "Directions also select menu rows or choices when those controls are open."
+
+msgid "host.help-text-5"
+msgstr "Walk south"
+
+msgid "host.help-text-6"
+msgstr "Walk west"
+
+msgid "host.help-text-7"
+msgstr "Exploration / Battle"
+
+msgid "host.help-text-8"
+msgstr "Only currently available interactions are offered. Waiting advances field time while held."
+
+msgid "host.help-text-9"
+msgstr "Talk to the faced NPC; otherwise Search when offered"
+
+msgid "host.help-text-10"
+msgstr "Hold: wait at field input"
+
+msgid "host.help-text-11"
+msgstr "Open Party Status"
+
+msgid "host.help-text-12"
+msgstr "Cancel opens the gameplay menu at settled field input: Up/Down select Member, Magic, Item or Search. Party Status remains a shortcut. Menu separately pauses exploration or battle for Settings, Save and Quit."
+
+msgid "host.help-text-13"
+msgstr "Open / close system Menu"
+
+msgid "host.help-text-14"
+msgstr "Settled field: gameplay menu / Back"
+
+msgid "host.help-text-15"
+msgstr "Open Save"
+
+msgid "host.help-text-16"
+msgstr "Dialogue / choices"
+
+msgid "host.help-text-17"
+msgstr "Read all display pages before continuing. In Yes/No choices, Cancel means No. Church menus use Up/Down, Confirm and Cancel to choose or decline."
+
+msgid "host.help-text-18"
+msgstr "Reveal text, read more, then continue / confirm choice"
+
+msgid "host.help-text-19"
+msgstr "No / Back; close a search result; skip an eligible battle introduction"
+
+msgid "host.help-text-20"
+msgstr "Select previous choice (Up also selects previous)"
+
+msgid "host.help-text-21"
+msgstr "During a battle message, Confirm reveals or continues. Wait is offered only where the current message allows it. A busy story cannot open Settings."
+
+msgid "host.help-text-22"
+msgstr "Select next choice (Down also selects next)"
+
+msgid "host.help-text-23"
+msgstr "Hold: wait at an eligible healing message"
+
+msgid "host.help-text-24"
+msgstr "Battle"
+
+msgid "host.help-text-25"
+msgstr "During player command selection: directions move the provisional actor; in the command menu, Up/Down select Attack/Magic/Item/Stay. Availability and refusal reasons come from the current battle."
+
+msgid "host.help-text-26"
+msgstr "Open physical attack from the command menu"
+
+msgid "host.help-text-27"
+msgstr "Open Magic list from the command menu"
+
+msgid "host.help-text-28"
+msgstr "Open Item list from the command menu"
+
+msgid "host.help-text-29"
+msgstr "Lists use Up/Down and Confirm. Targets use directions or Target; disabled targets can be inspected but cannot be committed. AI and rounds advance automatically."
+
+msgid "host.help-text-30"
+msgstr "Next target"
+
+msgid "host.help-text-31"
+msgstr "Open Stay confirmation"
+
+msgid "host.help-text-32"
+msgstr "Choose / confirm current legal action or target"
+
+msgid "host.help-text-33"
+msgstr "Supplementary actions are available from the command menu when legal. Follow current item, recipient, equipment and confirmation rows; Cancel returns without committing a provisional choice."
+
+msgid "host.help-text-34"
+msgstr "Open equipment choices"
+
+msgid "host.help-text-35"
+msgstr "Open Give choices"
+
+msgid "host.help-text-36"
+msgstr "Open Drop choices"
+
+msgid "host.help-text-37"
+msgstr "Menus"
+
+msgid "host.help-text-38"
+msgstr "Up/Down select rows; Confirm chooses; Cancel goes Back. In battle, Back unwinds provisional choices. In Party Status, directions browse, Target changes the pane, Up/Down scroll details, Confirm opens Prepare and Equipment also closes."
+
+msgid "host.help-text-39"
+msgstr "Choose / change"
+
+msgid "host.help-text-40"
+msgstr "Back / close"
+
+msgid "host.help-text-41"
+msgstr "Party Status: change pane"
+
+msgid "host.help-text-42"
+msgstr "Title: Confirm or Equipment starts the Witch greeting; Equipment skips it. Settings edits stay in a draft until Apply. Control help Back keeps that draft and focus. Mouse: deliberate row clicks; battle target Previous/Next and Back/right click. No click-to-walk."
+
+msgid "host.help-text-43"
+msgstr "Title start / skip Witch greeting"
+
+msgid "host.help-text-44"
+msgstr "Menus · name entry"
+
+msgid "host.help-text-45"
+msgstr "NAME ENTRY IS KEYBOARD ONLY. Type up to 7 supported letters, digits or punctuation. Backspace/Delete edit; Enter uses the name; Escape returns. Empty keeps Bowie. Gameplay bindings and their swap do not replace these editor keys. Other supported menus retain keyboard/pad controls."
+
+msgid "host.help-title"
+msgstr "Controls · {0} · {1}/{2}"
+
+msgid "host.help-hint"
+msgstr "{0} / {1}: Page  •  {2}: Next\n{3} / {4}: Scroll  •  {5}: Back to Settings"
+
+msgid "host.help-previous"
+msgstr "Previous"
+
+msgid "host.help-next"
+msgstr "Next"
+
+msgid "host.setting-description-0"
+msgstr "Reveal dialogue instantly or gradually."
+
+msgid "host.setting-description-1"
+msgstr "Characters revealed each second in gradual mode."
+
+msgid "host.setting-description-2"
+msgstr "Swap the existing Confirm and Cancel bindings; help shows the applied mapping."
+
+msgid "host.setting-description-3"
+msgstr "Reduce flashing presentation without changing gameplay."
+
+msgid "host.setting-description-4"
+msgstr "Change the interface language at this safe boundary after Apply."
+
+msgid "host.window-title"
+msgstr "Window size"
+
+msgid "host.window-restore"
+msgstr "Restore 1080p window"
+
+msgid "host.window-fullscreen"
+msgstr "Use fullscreen"
+
+msgid "host.window-message"
+msgstr "Gameplay needs a window at least 1920 × 1080. Current: {0} × {1}.\nYour progress and open menus are kept.\n{2}{3}"
+
+msgid "host.window-default"
+msgstr "Enlarge the window or choose a mode below. Nothing is saved automatically."
+
+msgid "host.window-no-window"
+msgstr "\nWindow unavailable: a 1080p client and its borders do not fit this desktop."
+
+msgid "host.window-no-fullscreen"
+msgstr "\nFullscreen unavailable: this screen is smaller than the gameplay minimum."
+
+msgid "host.window-hint"
+msgstr "{0}/{1}: Choose • {2}: Select • {3}: Quit…\n{4}/{5}: Read above/below"
+
+msgid "host.window-refused-fit"
+msgstr "A 1080p window and its borders cannot fit the current desktop. Try fullscreen."
+
+msgid "host.window-refused-restore"
+msgstr "The requested client or its actual borders could not fit. The previous window mode was restored; choose fullscreen or Quit."
+
+msgid "host.window-refused-screen"
+msgstr "This screen cannot provide the minimum gameplay client. Choose another screen or Quit."
+
+msgid "host.window-refused-fullscreen"
+msgstr "Fullscreen did not provide the minimum gameplay client. Your journey remains paused."

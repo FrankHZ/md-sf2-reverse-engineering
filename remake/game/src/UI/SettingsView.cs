@@ -27,33 +27,48 @@ internal sealed partial class SettingsView : Control
     public override void _Ready()
     {
         AutoTranslateMode = AutoTranslateModeEnum.Disabled;
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry();
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         _draft = Input.Settings.Draft();
         var shade = new ColorRect { Name = "SettingsShade", Color = new("051225b8") };
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
         _panel = new PanelContainer { Name = "SettingsWindow" }; AddChild(_panel);
-        _scroll = new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-        _panel.AddChild(_scroll);
+        var layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", 12); _panel.AddChild(layout);
+        layout.AddChild(new Label { Text = GameText.Get(BattleOnly ? "battle.speed.title" : "ui.settings.title"), HorizontalAlignment = HorizontalAlignment.Center });
+        _scroll = new ScrollContainer { Name = "SettingsReading", SizeFlagsVertical = SizeFlags.ExpandFill,
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        layout.AddChild(_scroll);
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         column.AddThemeConstantOverride("separation", 12); _scroll.AddChild(column);
-        column.AddChild(new Label { Text = GameText.Get(BattleOnly ? "battle.speed.title" : "ui.settings.title"), HorizontalAlignment = HorizontalAlignment.Center });
-        _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart, Text = Notice ?? "Changes take effect only after Apply." };
+        _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         column.AddChild(_message);
+        var actions = new HBoxContainer { Name = "SettingsActions" }; actions.AddThemeConstantOverride("separation", 12);
         for (int i = 0; i < (BattleOnly ? 2 : 9); i++)
         {
-            var button = new Button { Name = "Setting" + i, CustomMinimumSize = new(0, 58),
+            var button = new Button { Name = "Setting" + i, CustomMinimumSize = new(0, 64), SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore,
                 AutowrapMode = TextServer.AutowrapMode.WordSmart, Disabled = ReadOnly && !BattleOnly && i < 7 };
-            column.AddChild(button); _buttons.Add(button);
+            StoryTheme.EntryChoice(button);
+            if (!BattleOnly && i >= 6) actions.AddChild(button); else column.AddChild(button);
+            _buttons.Add(button);
+            if (!BattleOnly && i < 5)
+            {
+                var description = new Label { Name = "SettingDescription" + i, Text = GameText.Get("host.setting-description-" + i),
+                    AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = MouseFilterEnum.Ignore };
+                description.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(description);
+            }
         }
+        layout.AddChild(actions); actions.Visible = !BattleOnly;
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(_hint);
+        _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); layout.AddChild(_hint);
         _selected = ReadOnly && !BattleOnly ? 7 : 0;
         Resized += Arrange; Arrange(); Refresh();
+        GetWindow().SizeChanged += SuspendPointer;
     }
+    public override void _ExitTree() => GetWindow().SizeChanged -= SuspendPointer;
 
     private void Arrange()
     {
+        SuspendPointer();
         _panel.Size = new(Math.Min(960, Math.Max(1, Size.X - 64)), Math.Min(920, Math.Max(1, Size.Y - 64)));
         _panel.Position = (Size - _panel.Size) / 2;
     }
@@ -82,10 +97,12 @@ internal sealed partial class SettingsView : Control
         {
             int step = action == GameAction.Up ? -1 : 1;
             do { _selected = (_selected + step + _buttons.Count) % _buttons.Count; } while (_buttons[_selected].Disabled);
-            Refresh(); _scroll.EnsureControlVisible(_buttons[_selected]);
+            Refresh(); if (_selected < 6) _scroll.EnsureControlVisible(_buttons[_selected]);
         }
         else if (action == GameAction.Confirm) Activate(1);
         else if (action is GameAction.Left or GameAction.Right && _selected < 5) Activate(action == GameAction.Left ? -1 : 1);
+        else if (action is GameAction.Left or GameAction.Right)
+            _scroll.ScrollVertical += action == GameAction.Left ? -112 : 112;
     }
 
     internal void HandlePointer(InputEvent input)
@@ -93,7 +110,8 @@ internal sealed partial class SettingsView : Control
         if (_help is not null) { _help.HandlePointer(input); return; }
         if (!GetWindow().HasFocus()) { _pointer.Suspend(); return; }
         int hit = _buttons.FindIndex(button => button.IsVisibleInTree() && !button.Disabled &&
-            _scroll.GetGlobalRect().Intersection(button.GetGlobalRect()).HasPoint(((InputEventMouse)input).Position));
+            (button.GetParent()?.Name == "SettingsActions" ? button.GetGlobalRect() :
+                _scroll.GetGlobalRect().Intersection(button.GetGlobalRect())).HasPoint(((InputEventMouse)input).Position));
         if (input is InputEventMouseMotion motion && _pointer.Moved(motion) && hit >= 0)
         { _selected = hit; Refresh(); }
         if (input is InputEventMouseButton button)
@@ -179,6 +197,7 @@ internal sealed partial class SettingsView : Control
         for (int i = 0; i < labels.Length; i++) { _buttons[i].Text = labels[i]; StoryTheme.Select(_buttons[i], i == _selected); }
         _message.Text = _status != "" ? _status : Notice ?? GameText.Get("ui.settings.notice") + "\n" + GameText.Coverage;
         _hint.Text = GameText.Get("ui.settings.hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
+        _hint.Text += "\n" + GameText.Get("host.settings-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
     }
 
     public string ReadSettingsObservationJson() => System.Text.Json.JsonSerializer.Serialize(new

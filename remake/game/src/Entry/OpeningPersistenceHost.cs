@@ -18,6 +18,7 @@ public sealed partial class GameRoot
     private bool _restoring;
     private bool _saveNeedsInspection;
     private bool _battleSaveCaller;
+    private int _saveSelection;
     private sealed record HostSaveOffer(Guid SessionId, long Revision, string Destination, string? Error);
 
     private HostSaveOffer SaveOffer(bool previewMusic = false)
@@ -69,6 +70,7 @@ public sealed partial class GameRoot
     private void OpenSavePanel(bool overEntry = false)
     {
         if (_slots is not null) return;
+        _saveSelection = 0;
         if (_entry is not null && !overEntry) _entry.Hide();
         _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
         if (overEntry) _entry?.Setup(true);
@@ -154,6 +156,7 @@ public sealed partial class GameRoot
             _slots!.ShowChoices("save-slots", GameText.Get(_session.Current.Active is ActiveBattle ? "save.battle-offer" : "save.offer", offer.Destination),
                 (Label(1, slots.First, _session.Definition), () => ConfirmSave(1, store, offer)),
                 (Label(2, slots.Second, _session.Definition), () => ConfirmSave(2, store, offer)), (GameText.Get("entry.cancel"), CloseSavePanel));
+            _slots.Select(_saveSelection);
         }
         catch (ArgumentException error) { SaveError(error.Message); }
         catch (OperationCanceledException) { }
@@ -204,6 +207,7 @@ public sealed partial class GameRoot
 
     private void ConfirmSave(int slot, LocalSaveStore store, HostSaveOffer offer)
     {
+        _saveSelection = slot - 1;
         var existing = store.Read(slot);
         _slots!.Cancel = BackToSave;
         _slots.ShowChoices("confirm-save", existing.Primary is not null ? GameText.Get("save.overwrite", slot)
