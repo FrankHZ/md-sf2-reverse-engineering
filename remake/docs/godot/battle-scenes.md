@@ -49,46 +49,100 @@ cause, physical-device/window/DPI coverage and final foreground appearance remai
 
 ## Original target and inspection cursor publication
 
-**Confirmed read-only inventory:** private asset Git
-`293c9460818f4768905be809e83488d77f698fba` is clean and contains
-`hud.tactical-selection-cursor`, a modern SVG-derived **58×58** logical cursor with linear-filtered
-2×/4× buckets. It is not the accepted original 32×32 four-corner sprite. The selected ordinary
-Battle01 scene and world-referenced Battles02–07 scene raster dictionaries contain no cursor binding;
-the producer/publication owners below likewise publish none. The preview prepares its original
-sprite independently; that preview path is not an ordinary input and is not read by production.
+**Confirmed bounded remake, #1694:** the ordinary Battle01 scene and world-referenced
+Battles02–07 can publish `battle-cursor.single-cell` through the existing named-raster dictionary.
+`BattleInspectionCursor` renders that same admitted original image for F8 inspection and F4's
+selected physical, HEAL or item recipient. Production never reads a preview file. The separate
+private library's modern `hud.tactical-selection-cursor` remains a distinct SVG-derived asset;
+this preparation does not promote or change that repository.
 
-Reproduce the inventory read-only after the registered environment selection: inspect
-`json.load(open(os.environ['SF2_PRIVATE_BATTLE_SCENE_CONTENT'], encoding='utf-8-sig'))['rasters']`,
-then the selected world's `encounters[].battleScenes` relative scene dictionaries. In the separate
-asset repository inspect the named Git object, `manifests/presentation-assets-v1.json` entry
-`hud.tactical-selection-cursor`, and its tracked master/runtime entries. Do not infer qualified
-original artwork from a filename or silently replace the accepted preview material with this SVG.
+**Standard scope:** one optional presentation resource, unchanged gameplay/content/save identities,
+existing publication and ordinary input selection. No new acquisition, asset platform, mouse walking
+or larger original-radius artwork. `BattleSelectionView` retains the modern acting-unit cue;
+`BattleActionRangeView` retains actual reach and affected cells, including multi-target effects.
+The single-cell image denotes only the current center/recipient.
 
-The smallest independent content slice can reuse the source/ROM preparation already described in
-[`previews/README.md`](../../game/probes/previews/README.md#single-cell-cursor) and its
-[`prepare_cursor.py`](../../game/probes/previews/prepare_cursor.py): verified baseline ROM,
-compressed range `0x23658..0x23757`, 2048 decoded bytes, first column-major 4×4-tile sprite and base
-palette at `0x309E`. No new original runtime acquisition or general extraction platform is needed.
-Publish a named original single-cell raster through the maintained
-`src/sf2tool/remake_battle_scene_content.py` preparation and existing
-`src/sf2tool/remake_command_menu.py` all-scenes publication path, with the separate private asset
-manifest/provenance reviewed at its own Git boundary. `BattleSceneDefinition.Rasters` already
-carries named rasters; change schema/admission only if the actual binding requires it.
+### Source and publication
 
-Then bind that admitted resource to `BattleInspectionCursor` and the target/effect-center rendering
-in `BattleMapViewport`, retaining the modern `BattleSelectionView` acting-unit cue. A 32-source-pixel
-cursor at the existing 4× source scale occupies 128×128 physical pixels, centered on a 96×96 cell
-(16px overhang each side), with nearest sampling and existing world/UI clipping. Public authored
-content retains an explicit authored fallback. Validate private inspection, physical/HEAL/item
-target, hover, invalid/canceled target, map edges, normal/reduced rendering and existing area effects;
-do not claim larger original radius arrangements from the single-cell sprite alone.
+The shared `single_cell_cursor` decoder in
+[`remake_battle_scene_content.py`](../../../src/sf2tool/remake_battle_scene_content.py) verifies the
+US ROM SHA256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+Pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`battlefunctions_0.asm:DmaCursorTiles/sprite_Cursor/tiles_Cursor` and
+`displayinit.asm:palette_Base` own the source selectors. The compressed range
+`0x23658..0x23757` consumes1941 bits and expands to2048 bytes. The first column-major4×4-tile
+sprite and base palette at `0x309E..0x30BD` yield32×32 RGBA8, with a transparent center and
+four painted corner regions. Its4096 decoded bytes have SHA256
+`3F2F8EE6F6FDD1B9889FE8595666D407B58CD1D3FF7E0E33FCDD01C192EF5090` and reproduce the
+[accepted private preview](../../game/probes/previews/README.md#single-cell-cursor) PNG exactly.
+This is a source/pixel identity claim, not a new original-runtime observation.
 
-The preparation is bounded: one 256-byte compressed input span, 2048 decoded bytes, 4096-byte RGBA
-master, at most 16/64KiB raw 2×/4× derivatives, plus small manifest entries. Reuse the existing
-publication's O(world-size) copy and its resource budget rather than creating another world/export
-pipeline. This asset/publication change is deliberately left to main-gate's bounded content Issue.
-Until admitted and observed, F4/F8 original cursor appearance is an explicit gap, not a passed visual
-match; gameplay selection and area legality remain independently implemented.
+The normal scene producer includes the cursor in its existing candidate manifest/source spans,
+master and nearest2×/4× derivatives, and selects the32px RGBA raster for runtime. For an existing
+complete world/scene publication, use the existing
+[`remake_command_menu`](../../../src/sf2tool/remake_command_menu.py) command with `--target-cursor`:
+
+```powershell
+# Load the registered inputs/tools in this same process; use absolute selections and a fresh ignored output.
+uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream --listing $listing --rom-assets --world $world --scene $scene --menu all --target-cursor --out-dir $output
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
+& $env:GODOT_BIN --path remake/game
+```
+
+Keep the caller's full static/entry/world selections and explicit external save namespace. No
+controlled start, preview scene or probe argument belongs in ordinary play. The
+[complete publication owner](../content/presentation-assets.md#final-publication-and-ordinary-selection)
+explains additive menu options. All seven selected scenes receive identical cursor bytes;
+`provenance.json.targetCursor` records ROM/source/range/palette/layout/pixel identity.
+An existing conflicting cursor namespace rejects before output creation. Runtime admits whole
+absence for old packages, or exactly one32×32 `battle-cursor.single-cell`; wrong names/shapes reject
+with `scene-target-cursor`. Public authored and old private packages retain their existing cyan
+inspection frame/cross and four-edge target outline. Declared invalid artwork cannot claim fallback
+success. No save format or gameplay revision changes.
+
+### Placement and bounded acceptance
+
+Nearest4× drawing occupies128×128px centered on a96×96px cell, overhanging16px per side.
+The cursor borrows no hit area; existing board/world clipping and actual UI input ownership apply.
+Invalid or canceled targeting clears it. Inspection hides decision ranges; Back restores Movement.
+Playback retires targeting. A host/detail cover preserves the underlying cursor and session rather
+than letting covered pointer input retarget a unit.
+
+[`engine_battle_cursor_observation.gd`](../../game/probes/engine_battle_cursor_observation.gd)
+reuses the production root, current input bindings and existing controlled-admission observer.
+After a protected adapter/Debug build, set `SF2_COMPACT_START` to an ignored prelaunch input,
+`SF2_CURSOR_ORIGINAL=1`, `SF2_CURSOR_SHA256` to the decoded identity above,
+`SF2_VIEWPORT_OUTPUT` to a fresh report and `SF2_INSPECTION_ROUTE=keyboard` or `pad`:
+
+```powershell
+& $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 --resolution 1920x1080 --script res://probes/engine_battle_cursor_observation.gd -- --input-settings $settings
+```
+
+The private controlled Battle01 start places ally0 at(8,14), HP6; ally1 at(9,14); ally2 HP0;
+enemy0 at(8,13), HP1. Other values come from ordinary full-world admission. The observer uses real
+input for physical, Medical Herb and HEAL selection, target cycling, invalid clicks, Back,
+1080p/1440p resize, both map edges, details/host cover and subsequent actual attack/turn delivery.
+Normal keyboard and Reduced Flash/pad pass. Old full private selection passes with
+`SF2_CURSOR_ORIGINAL=0`; public `attack-spells.json` with `SF2_DEMO_BATTLE_CASE=public` and no
+controlled start checks its target/inspection fallback. `area` and `aura` run the existing actual
+BLAZE2/AURA4 consumers, preserving affected cells, ordered results and one cost.
+Direct ordinary content admission checks all seven scenes, old absence and name/shape refusals.
+Ordinary title Continue restores an isolated copy of a prior-package battle save at its exact
+queued actor without changing either saved payload.
+
+Measured publication is148,965,375 bytes, longest selected path120 characters in the owning checkout,
+prepared in about2s. World data, other scene values and26 unchanged dependencies compare equal to
+the prior complete pack. Work remains O(input plus declared dependencies), one world copy,
+assumed peak<3GiB and scratch<1GiB. The decoder adds only256 compressed bytes,2048 decoded bytes,
+4096 RGBA bytes and small receipts; no second large input pipeline or language copies are created.
+Replan if the selected package exceeds these bounds. Old packages and all validation failures stay local.
+
+**Unknown:** final foreground/human aesthetic approval, broader device/DPI combinations, natural
+original reach/timing, and larger original-radius arrangements. These observations do not replay
+the full campaign. The retained early observer failure selected the unavailable sword row instead
+of Herb; selecting the actual admitted Herb row fixes the driver, without a product-rule change.
+Some early/ordinary-Continue exits report existing ObjectDB leaks; their cause remains Unknown.
 
 ### Which combatants need a scene
 

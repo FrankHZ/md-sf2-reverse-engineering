@@ -401,9 +401,12 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   reviewed gauge layout to the acting and target headers, allowing their height to grow for long names.
   [Reviewed layout](../../game/probes/previews/DesignPreview.cs) ·
   [Decision cards](../../game/src/Battles/BattleMenuLayout.cs) · [Gauge layout](../../game/src/UI/BattleStatusCard.cs)
-- **Artwork — private F4/F8 cursor pending.** Targeting and inspection work with the fallback.
-  The ordinary private pack still lacks the reviewed 32×32 four-corner sprite. The acting-unit
-  brackets and area effects serve different purposes. [Publication owner](battle-scenes.md#original-target-and-inspection-cursor-publication) ·
+- **Artwork — private F4/F8 single-cell cursor.** The complete private publication binds the
+  reviewed 32×32 four-corner sprite to actual targeting and inspection, centered at nearest4×
+  on a96px cell. Old private packages and public authored content retain their fallback. Native
+  input/pixel/geometry checks cover the bounded consumer; foreground human appearance remains
+  **Unknown**. Acting-unit brackets and area effects retain their separate meanings.
+  [Publication owner](battle-scenes.md#original-target-and-inspection-cursor-publication) ·
   [#1694](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1694)
 - **Human review.** Physical pad use, release after switching desktop focus, fullscreen/DPI fit
   and reading comfort in the ordinary game remain **Unknown**. The most useful checks are whether

@@ -138,7 +138,7 @@ are explicit absolute input/output selections; output must be a fresh ignored di
 checkout. The pinned source and retained H1 listing may be read-only.
 
 ```powershell
-uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream --listing $listing --rom-assets --world $world --scene $scene --menu all --identity-icons --item-menu --shop-battlefield --out-dir $output
+uv run python -m sf2tool.remake_command_menu --rom $rom --upstream $upstream --listing $listing --rom-assets --world $world --scene $scene --menu all --identity-icons --item-menu --shop-battlefield --target-cursor --out-dir $output
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
 & $env:GODOT_BIN --path remake/game
@@ -515,6 +515,11 @@ and shared two-slot Quit policies; original suspend semantics do not redefine th
 The command in [ordinary menu publication](#ordinary-menu-publication-and-coverage-1666) is the
 complete preparation command. `--identity-icons --item-menu --shop-battlefield` adds the admitted
 identity catalog, Item operations, shop services and battlefield options to `--menu all`.
+`--target-cursor` additionally mounts the accepted original32×32 single-cell resource in all seven
+scenes. The [cursor owner](../godot/battle-scenes.md#original-target-and-inspection-cursor-publication)
+records its source/pixel identity, optional-old-package admission, exact F4/F8 placement and native
+acceptance. The normal battle-scene producer includes the same resource in its existing candidate
+manifest and provenance; neither producer changes the separate private asset library's modern SVG.
 When reusing an already complete identity/Item publication, omit `--identity-icons` to preserve
 those existing bytes. Inputs are read-only; choose a fresh ignored `$output`. No output is canonical
 until explicitly selected. The base campaign `$freshWorld` supplies gameplay data; it is not the
@@ -537,15 +542,20 @@ $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
 ```
 
-The ignored local convenience selector `local/issue1669/select-content.ps1` selects the already
-generated final pack using paths relative to its own script. Dot-source it from the owning checkout;
+The owning checkout's ignored current-content selector selects the already generated complete pack
+using paths relative to its own script. Dot-source it from that checkout;
 it sets only these two environment selections and does not launch a game or configure player saves.
 Its availability and exact local reproduction belong in the slice handoff. The CLI recipe above
 remains the durable way to regenerate the pack.
 
-This bounded publication is148,931,904 bytes, with114,290,841 bytes in its world. Added raw pixels
-are147,456 bytes across one world plus seven scenes; all other world/scene values and26 dependencies
-compare unchanged to the selected input. Work is O(input plus declared dependencies); retain the
-existing assumed<3GiB peak-process/1GiB scratch budget, not an independently measured peak.
-Two bounded negative worlds and small scene variants share these dependencies; no language copies,
-full-route collection or new asset platform. Replan if content/dependency growth breaks these bounds.
+For an already complete menu/identity/Item/Shop pack, only `--menu all --target-cursor` is needed;
+the existing menus are compared/preserved and the remaining families are carried through unchanged.
+Select both outputs before ordinary title/New Game/Continue. This publication keeps the prior
+world/gameplay/save identities and every declared dependency. Retain the previous output and use
+a fresh explicit ignored destination; never edit its only copy or a player's save namespace.
+
+The [cursor publication budget](../godot/battle-scenes.md#placement-and-bounded-acceptance) records the
+current complete pack size and unchanged-world/dependency checks. Work is O(input plus declared
+dependencies), one world copy; retain the assumed<3GiB peak-process/1GiB scratch budget, not an
+independently measured peak. Small negative scene variants reuse the world/dependencies; no language
+copies, full-route collection or new asset platform. Replan if growth breaks these bounds.
