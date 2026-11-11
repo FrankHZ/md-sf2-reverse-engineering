@@ -11,11 +11,23 @@ internal sealed partial class PreviewStage
     private readonly MultiMeshInstance2D _rangeTiles = new()
     {
         Name = "RangeTiles", ShowBehindParent = true,
+        Texture = CreateRangeTile(),
         Multimesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
             Mesh = new QuadMesh { Size = new Vector2(92, 92) } }
     };
     private bool _firstEnemyVisible, _secondEnemyVisible, _steady;
     private double _pulse;
+    private const float SteadyOpacity = 0.89f, PulseAmplitude = 0.11f;
+
+    private static ImageTexture CreateRangeTile()
+    {
+        // Each texel covers 2×2 logical pixels in the 92px quad.
+        using var tile = Image.CreateEmpty(46, 46, false, Image.Format.Rgba8);
+        tile.Fill(new Color("18202b"));
+        tile.FillRect(new Rect2I(1, 1, 44, 44), Colors.White);
+        tile.FillRect(new Rect2I(3, 3, 40, 40), new Color(Colors.White, 0.68f));
+        return ImageTexture.CreateFromImage(tile);
+    }
 
     internal bool RangeTileVisible(Vector2I cell) =>
         _battle?.Terrain[cell.Y * 48 + cell.X].Surface != TerrainSurface.Barrier;
@@ -60,7 +72,7 @@ internal sealed partial class PreviewStage
         _rangeTiles.Position = Camera.Origin;
         for (int i = 0; i < marks.Count; i++)
             mesh.SetInstanceTransform2D(i, new Transform2D(0, ((Vector2)marks[i] + Vector2.One * 0.5f) * PreviewInspectionCamera.Tile));
-        _rangeTiles.Modulate = new Color(new Color(movement ? "7bdbe1" : "f4cf80"), 0.28f);
+        _rangeTiles.Modulate = new Color(new Color(movement ? "78e9f3" : "ffda7a"), SteadyOpacity);
         QueueRedraw();
     }
 
@@ -68,6 +80,6 @@ internal sealed partial class PreviewStage
     {
         if (!_rangeTiles.IsVisibleInTree() || _steady) return;
         _pulse = (_pulse + delta) % 1.2;
-        _rangeTiles.Modulate = new Color(_rangeTiles.Modulate, 0.28f + 0.10f * Mathf.Cos((float)(_pulse * Math.Tau / 1.2)));
+        _rangeTiles.Modulate = new Color(_rangeTiles.Modulate, SteadyOpacity + PulseAmplitude * Mathf.Cos((float)(_pulse * Math.Tau / 1.2)));
     }
 }

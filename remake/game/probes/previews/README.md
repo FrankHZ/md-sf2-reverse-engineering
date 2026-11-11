@@ -92,8 +92,9 @@ With zero candidates the range remains visible with a no-target message and a Ba
 Try (8,10) as the stop: both enemies are out of reach and only HEAL 2 can reach Bowie.
 
 The US source builds weighted movement and action rings and applies the same pulsating
-map-block routine. The preview uses tinted cells and its own pulse period; Motion off
-keeps the cells steady. Spell reach centers on the caster; the effect cursor centers on
+map-block routine. The original switches tile palette attributes and starts a palette pulse.
+F4 uses a cyan or gold fill with a bright rim and dark outer edge. The fill pulses from
+53% to 68% opacity over 1.2 seconds. Motion off holds it at 61%. Spell reach centers on the caster; the effect cursor centers on
 the chosen recipient. [Range grids](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm)
 and [palette and target selection](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm#L499-L651).
 
