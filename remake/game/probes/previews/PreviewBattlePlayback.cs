@@ -15,6 +15,8 @@ internal sealed partial class PreviewBattlePlayback(PreviewStage assets) : Contr
     private double _time, _poseEnd;
     private bool _heal, _self, _english, _steady;
     private int _startHp, _startMp, _cost;
+    private string _enemyLetter = "";
+    private string EnemyName => Word("基兹莫", "Gizmo") + " " + _enemyLetter;
     private double Impact => _poseEnd + (_heal ? 1.5 : 0);
     private double End => Impact + (_heal && !_self ? 1.8 : 1.1);
     internal bool Finished => _time >= End;
@@ -38,8 +40,9 @@ internal sealed partial class PreviewBattlePlayback(PreviewStage assets) : Contr
         Hide();
     }
 
-    internal void Begin(bool heal, bool self, int hp, int mp, int cost)
+    internal void Begin(bool heal, bool self, int hp, int mp, int cost, string enemyLetter)
     {
+        _enemyLetter = enemyLetter;
         _heal = heal; _self = self; _startHp = hp; _startMp = mp; _cost = cost; _time = 0;
         var art = assets.SceneArt;
         _caster = art?.Allies.GetValueOrDefault(BattleClassRule.UnpromotedPriest);
@@ -59,7 +62,7 @@ internal sealed partial class PreviewBattlePlayback(PreviewStage assets) : Contr
             onBowie || (_heal && _self) ? hp : sarahHp, 24, onBowie ? bowieMp : mp, onBowie ? 0 : 12,
             left: onBowie, lower: false);
         _enemy.Visible = !_heal;
-        if (!_heal) _enemy.Display(Word("基兹莫", "Gizmo"), hp, 24, 0, 0, left: true, lower: true);
+        if (!_heal) _enemy.Display(EnemyName, hp, 24, 0, 0, left: true, lower: true);
         if (HasArt) PresentArt();
         QueueRedraw();
     }
@@ -73,7 +76,7 @@ internal sealed partial class PreviewBattlePlayback(PreviewStage assets) : Contr
             if (_time < Impact)
                 return _heal ? Word($"莎拉施放回复，消耗 {_cost} MP。", $"Sarah casts HEAL for {_cost} MP.")
                     : Word("莎拉挥动木杖！", "Sarah strikes with her wooden rod!");
-            if (!_heal) return Word($"基兹莫受到 {_startHp - FinalHp} 点伤害。", $"Gizmo takes {_startHp - FinalHp} damage.");
+            if (!_heal) return Word($"{EnemyName}受到 {_startHp - FinalHp} 点伤害。", $"{EnemyName} takes {_startHp - FinalHp} damage.");
             string name = _self ? Word("莎拉", "Sarah") : Word("鲍伊", "Bowie");
             return Word($"{name}恢复了 {FinalHp - _startHp} HP。", $"{name} recovers {FinalHp - _startHp} HP.");
         }

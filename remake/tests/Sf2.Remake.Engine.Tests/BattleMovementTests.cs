@@ -95,6 +95,20 @@ public sealed class BattleMovementTests
     }
 
     [Fact]
+    public void TerrainReachIncludesTraversableAlliesAndExcludesEnemiesAndUnaffordableSteps()
+    {
+        var blocked = new BattleTerrain(TerrainSurface.Barrier, TerrainProtection.None);
+        var plain = new BattleTerrain(TerrainSurface.Open, TerrainProtection.Light);
+        var terrain = Enumerable.Repeat(blocked, 48 * 48).ToArray();
+        for (int x = 1; x <= 6; x++) terrain[48 + x] = plain;
+        terrain[48 + 3] = new(TerrainSurface.Deep, TerrainProtection.Heavy);
+        terrain[2 * 48 + 1] = plain;
+        var reached = BattleTerrainRules.ReachableCells(terrain, new(1, 1), BattleMover.Healer, 3, [new(1, 2)]);
+        // An ally at (2,1) can be crossed. The forest beyond spends the last four cost units.
+        Assert.Equal(new MapPosition[] { new(1, 1), new(2, 1), new(3, 1) }, reached);
+    }
+
+    [Fact]
     public void WeightedPreviewAccountsForForestCostsAndActorBudget()
     {
         var admitted = Admitted();

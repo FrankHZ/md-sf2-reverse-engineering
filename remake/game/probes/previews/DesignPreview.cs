@@ -7,7 +7,7 @@ namespace Sf2.Remake.GodotAdapter.Previews;
 
 public partial class DesignPreview : Control
 {
-    private enum Page { Root, Question, Reply, Quote, Result, Spells, Items, Target, Stay, Playback }
+    private enum Page { Root, Question, Reply, Quote, Result, Spells, Items, Target, Stay, Playback, Move }
     private readonly PreviewStage _stage = new() { Name = "Artwork", Size = new(1920, 1080) };
     private readonly List<Choice> _choices = [];
     private Control _surface = null!;
@@ -121,7 +121,11 @@ public partial class DesignPreview : Control
         _stage.Camera.Reset(_stage.Camera.MapSize);
         _reading = 0;
         _scene = scene;
-        if (scene == 3) (_sarahHp, _sarahMp, _bowieHp, _enemyHp) = (18, 8, 16, 12);
+        if (scene == 3)
+        {
+            (_sarahHp, _sarahMp, _bowieHp, _enemyHp, _secondEnemyHp) = (18, 8, 16, 12, 12);
+            _moveOrigin = _battleCells[1] = new(8, 9);
+        }
         _page = Page.Root;
         _focus = _rootFocus = _offer = _target = 0;
         Render();
@@ -160,8 +164,10 @@ public partial class DesignPreview : Control
         _dialogue = null;
         _editor = null;
         bool inspecting = _scene == InspectScene && !_showMembers && _journey == JourneyPage.Closed;
-        _stage.ShowScene(_scene, _scene == 3 && _page == Page.Target ? _target : -1,
-            inspecting && _inspection is InspectPage.Cursor or InspectPage.Unit ? _cursor : null,
+        bool board = _scene == 3 && !_showMembers && _journey == JourneyPage.Closed;
+        ProjectBattleRange();
+        _stage.ShowScene(_scene, board && _page == Page.Target ? _target : -1,
+            board && _page == Page.Move ? _moveCursor : inspecting && _inspection is InspectPage.Cursor or InspectPage.Unit ? _cursor : null,
             inspecting && _inspection == InspectPage.Map, _facingSign);
         _playback.Visible = !_showMembers && _scene == 3 && _page == Page.Playback;
         _stage.Visible = !_playback.Visible;
@@ -246,6 +252,7 @@ public partial class DesignPreview : Control
     private void Refresh()
     {
         StopIconAnimation();
+        if (_scene == 3 && _page is Page.Root or Page.Spells or Page.Items) ProjectBattleRange();
         if (_scene == InspectScene && _inspection == InspectPage.Map && !_showMembers && _journey == JourneyPage.Closed)
             _stage.ShowScene(_scene, -1, UnitCells[_focus], true, false);
         if (_scene == ShopScene && !_showMembers && _journey == JourneyPage.Closed) RefreshShopPack();
@@ -396,8 +403,8 @@ public partial class DesignPreview : Control
             strip.AddChild(hint);
             hint.Pressed += activate;
         }
-        if (canCycle) Hint(T("← →  切换目标", "← →  Switch target"), CycleTarget);
-        Hint(T("Enter / A  确认", "Enter / A  Confirm"), Activate);
+        if (canCycle) Hint(T("方向键  切换目标", "D-pad  Switch target"), () => CycleTarget(1));
+        if (_targets.Count != 0) Hint(T("Enter / A  确认", "Enter / A  Confirm"), Activate);
         Hint(T("Esc / B  取消", "Esc / B  Cancel"), Back);
     }
 
@@ -480,14 +487,19 @@ public partial class DesignPreview : Control
         var round = Panel(new(32, 96, 164, 50), true);
         Text(round, new(16, 0, 134, 50), T("回合 3", "Round 3"), 24);
         if (_bottomLayout && _page != Page.Target) BottomStatus();
-        if (_page == Page.Root)
+        if (_page == Page.Move)
+        {
+            Footer(T("移动范围     方向键或鼠标选格     Enter / A 或左键确定落脚点",
+                "Movement     Directions or mouse select a cell     Enter / A or click to choose a stop"));
+        }
+        else if (_page == Page.Root)
         {
             SidePage(T("战斗", "Battle"), 4);
             string[] ids = ["attack", "magic", "item", "stay"];
             for (int i = 0; i < ids.Length; i++)
-                Item(CommandRow(i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i], i != 0 || _enemyHp > 0);
-            if (_enemyHp == 0) Text(_surface, new(1312, 696, 528, 84), T("敌人已倒下。F4 重置示例。", "Enemy defeated. F4 resets the sample."), 24);
-            Footer(T("↑ ↓ 选择指令     Enter 确认", "↑ ↓ Select command     Enter Confirm"));
+                Item(CommandRow(i), GameText.Get("battle.command." + ids[i]), "command-menu." + ids[i]);
+            Footer(T("↑ ↓ 选择指令     Enter 确认     Esc / B 重新移动", "↑ ↓ Select command     Enter Confirm     Esc / B Reposition"));
+            Utility(new(1540, 1003, 300, 48), T("重新移动", "Reposition"), BeginMovement);
         }
         else if (_page is Page.Spells or Page.Items)
         {
@@ -507,8 +519,12 @@ public partial class DesignPreview : Control
         else if (_page == Page.Target)
         {
             bool attack = _targetParent == Page.Root;
-            var candidate = attack ? Gizmo
-                : _target == 0 ? Bowie : Sarah;
+            if (_target < 0)
+            {
+                TargetFooter(T("范围内没有可选目标", "No target in range"), false);
+                return;
+            }
+            var candidate = BattleUnit(_target);
             if (_bottomLayout) BottomStatus(candidate);
             else
             {
@@ -518,7 +534,7 @@ public partial class DesignPreview : Control
             }
             string action = attack ? GameText.Get("battle.command.attack") : _targetParent == Page.Items ?
                 T("药草", "Medical Herb") : $"{T("回复", "HEAL")}   Lv. {_offer + 1}     {(_offer == 0 ? 3 : 5)} MP";
-            TargetFooter(action + "   →   " + candidate.Name + T("     左键点选目标", "     Click a target"), !attack);
+            TargetFooter(action + "   →   " + candidate.Name + T("     左键点选目标", "     Click a target"), _targets.Count > 1);
         }
         else if (_page == Page.Stay)
         {
@@ -564,6 +580,9 @@ public partial class DesignPreview : Control
         }
         switch (_page)
         {
+            case Page.Move:
+                if (_stops.Contains(_moveCursor)) { _battleCells[1] = _moveCursor; Show(Page.Root); }
+                break;
             case Page.Root:
                 _rootFocus = _focus;
                 if (_focus == 0) Target();
@@ -579,10 +598,12 @@ public partial class DesignPreview : Control
                 if (_focus == 1) Back(); else Show(Page.Result);
                 break;
             case Page.Target:
+                if (!_targets.Contains(_target)) return;
+                _moveOrigin = _battleCells[1];
                 if (_targetParent == Page.Items) { Show(Page.Result); break; }
                 bool heal = _targetParent == Page.Spells;
-                int hp = heal ? (_target == 0 ? _bowieHp : _sarahHp) : _enemyHp;
-                _playback.Begin(heal, heal && _target == 1, hp, _sarahMp, heal ? (_offer == 0 ? 3 : 5) : 0);
+                _playback.Begin(heal, heal && _target == 1, BattleUnit(_target).Hp, _sarahMp,
+                    heal ? (_offer == 0 ? 3 : 5) : 0, _target == 3 ? "B" : "A");
                 Show(Page.Playback);
                 break;
             case Page.Playback:
@@ -592,29 +613,16 @@ public partial class DesignPreview : Control
         }
     }
 
-    private void Target()
-    {
-        _targetParent = _page;
-        _target = _page == Page.Root ? 2 : 0;
-        Show(Page.Target);
-    }
-
     private void UpdatePlayback(double delta)
     {
         _playback.Advance(delta, _english, _steadyIcons, _sarahHp, Bowie.Mp);
         _sarahMp = _playback.ShownMp;
-        if (_targetParent == Page.Root) _enemyHp = _playback.ShownHp;
+        if (_targetParent == Page.Root && _target == 3) _secondEnemyHp = _playback.ShownHp;
+        else if (_targetParent == Page.Root) _enemyHp = _playback.ShownHp;
         else if (_target == 0) _bowieHp = _playback.ShownHp;
         else _sarahHp = _playback.ShownHp;
         _playMessage.Text = _playback.Message;
         _playReturn.Visible = _playback.Finished;
-    }
-
-    private void CycleTarget()
-    {
-        if (_targetParent == Page.Root) return;
-        _target = 1 - _target;
-        Render();
     }
 
     private void Back()
@@ -624,6 +632,8 @@ public partial class DesignPreview : Control
         if (_scene == InspectScene) { BackInspection(); return; }
         if (_scene == OutcomeScene) { _reading = 0; _focus = _outcome; Render(); return; }
         if (_page == Page.Playback) { if (_playback.Finished) Show(Page.Root, _rootFocus); return; }
+        if (_scene == 3 && _page == Page.Root) { BeginMovement(); return; }
+        if (_scene == 3 && _page == Page.Move) { _stage.Camera.Reveal(_moveOrigin); Show(Page.Root); return; }
         if (_scene == ShopScene) { BackShop(); return; }
         if (_scene == 1 && _page == Page.Question) { _result = "no"; Show(Page.Reply); }
         else if (_scene == 3 && _page == Page.Target)
@@ -684,18 +694,14 @@ public partial class DesignPreview : Control
         else if (input.IsActionPressed("ui_accept") || input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true }) Activate();
         else
         {
-            bool sideways = _journey == JourneyPage.Closed && _page is (Page.Question or Page.Target);
+            bool sideways = _journey == JourneyPage.Closed && _page == Page.Question;
             int direction = input.IsActionPressed(sideways ? "ui_left" : "ui_up") ? -1 :
                 input.IsActionPressed(sideways ? "ui_right" : "ui_down") ? 1 : 0;
             if (direction == 0) return;
-            if (sideways && _page == Page.Target) CycleTarget();
-            else
-            {
-                int count = sideways && _page == Page.Question ? 2 : _choices.Count;
-                if (count == 0) return;
-                _focus = (_focus + count + direction) % count;
-                Refresh();
-            }
+            int count = sideways ? 2 : _choices.Count;
+            if (count == 0) return;
+            _focus = (_focus + count + direction) % count;
+            Refresh();
         }
         GetViewport().SetInputAsHandled();
     }

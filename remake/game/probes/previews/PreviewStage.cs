@@ -30,6 +30,9 @@ internal sealed partial class PreviewStage : Control
 
     internal void LoadSelection()
     {
+        AddChild(_ground);
+        _ground.Draw += DrawBoardGround;
+        AddChild(_rangeTiles);
         AddChild(_cellCursor);
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
@@ -78,7 +81,7 @@ internal sealed partial class PreviewStage : Control
         _target = target;
         _cursor = cursor; _overview = overview; _facingSign = facingSign;
         _cellCursor.Visible = false;
-        QueueRedraw();
+        RedrawBoard();
     }
 
     internal Texture2D? Icon(string key, bool selected)
@@ -115,7 +118,7 @@ internal sealed partial class PreviewStage : Control
     internal Rect2 BoardCell(Vector2I cell, bool overview)
     {
         if (overview) return Camera.OverviewCell(cell);
-        var origin = _scene == DesignPreview.InspectScene ? Camera.Origin : PreviewInspectionCamera.Opening;
+        var origin = _scene is 3 or DesignPreview.InspectScene ? Camera.Origin : PreviewInspectionCamera.Opening;
         return new(origin + (Vector2)cell * PreviewInspectionCamera.Tile, new(96, 96));
     }
 
@@ -191,23 +194,6 @@ internal sealed partial class PreviewStage : Control
         }
         bool battle = _scene is 3 or DesignPreview.InspectScene or DesignPreview.OutcomeScene;
         bool shop = _scene == DesignPreview.ShopScene;
-        MapId id = new(battle ? "map-57" : shop ? "map-16" : "map-3");
-        Vector2I origin = _scene switch { 1 or DesignPreview.FieldScene => new(33, 3), 2 => new(25, 6), DesignPreview.ShopScene => new(30, 19), _ => new(-2, 4) };
-        var visual = _world?.Visuals?.Maps.GetValueOrDefault(id);
-        var layout = _world?.Maps.GetValueOrDefault(id)?.Layout;
-        if (battle) DrawRect(new(Vector2.Zero, Size), new Color("111827"));
-        var dimensions = battle ? Camera.MapSize : new Vector2I(20, 12);
-        var source = _battle?.SourceMapRegion?.Origin;
-        if (battle) origin = source is null ? Vector2I.Zero : new(source.X, source.Y);
-        for (int y = 0; y < dimensions.Y; y++)
-            for (int x = 0; x < dimensions.X; x++)
-            {
-                Rect2 cell = battle ? BoardCell(new(x, y), _overview) : new(x * 96, y * 96, 96, 96);
-                if (!cell.Intersects(new Rect2(Vector2.Zero, Size))) continue;
-                if (layout is not null && visual is not null)
-                    DrawTextureRect(_blocks.Block(visual, layout[x + origin.X, y + origin.Y] & 1023), cell, false);
-                else DrawRect(cell, (x + y) % 2 == 0 ? new Color("293e42") : new Color("30464a"));
-            }
         if (_overview)
         {
             for (int i = 0; i < DesignPreview.UnitCells.Length; i++)
@@ -219,11 +205,13 @@ internal sealed partial class PreviewStage : Control
         }
         else if (battle)
         {
-            Character(0, BoardCell(DesignPreview.UnitCells[0], false).Position, 1);
-            Character(_allySprite, BoardCell(DesignPreview.UnitCells[1], false).Position, 1);
-            Character(_opponentSprite, BoardCell(DesignPreview.UnitCells[2], false).Position, 0);
+            var actors = _scene == 3 ? _actors : DesignPreview.UnitCells;
+            Character(0, BoardCell(actors[0], false).Position, 1);
+            Character(_allySprite, BoardCell(actors[1], false).Position, 1);
+            if (_scene != 3 || _firstEnemyVisible) Character(_opponentSprite, BoardCell(actors[2], false).Position, 0);
+            if (_scene == 3 && _secondEnemyVisible) Character(_opponentSprite, BoardCell(actors[3], false).Position, 0);
             if (_cursor is { } cursor) DrawCellCursor(cursor);
-            else if (_target >= 0) DrawCellCursor(DesignPreview.UnitCells[_target]);
+            else if (_target >= 0) DrawCellCursor(actors[_target]);
         }
         else if (_scene == DesignPreview.FieldScene)
         {
@@ -240,6 +228,36 @@ internal sealed partial class PreviewStage : Control
             Character(shop ? 193 : _scene == 2 ? 192 : 1, speaker, 0);
             Character(0, speaker + new Vector2(0, shop ? 192 : 96), 2);
         }
+    }
+
+    private void DrawBoardGround()
+    {
+        if (_scene == 0) return;
+        bool battle = _scene is 3 or DesignPreview.InspectScene or DesignPreview.OutcomeScene;
+        bool shop = _scene == DesignPreview.ShopScene;
+        MapId id = new(battle ? "map-57" : shop ? "map-16" : "map-3");
+        Vector2I origin = _scene switch { 1 or DesignPreview.FieldScene => new(33, 3), 2 => new(25, 6), DesignPreview.ShopScene => new(30, 19), _ => new(-2, 4) };
+        var visual = _world?.Visuals?.Maps.GetValueOrDefault(id);
+        var layout = _world?.Maps.GetValueOrDefault(id)?.Layout;
+        if (battle) _ground.DrawRect(new(Vector2.Zero, Size), new Color("111827"));
+        var dimensions = battle ? Camera.MapSize : new Vector2I(20, 12);
+        var source = _battle?.SourceMapRegion?.Origin;
+        if (battle) origin = source is null ? Vector2I.Zero : new(source.X, source.Y);
+        for (int y = 0; y < dimensions.Y; y++)
+            for (int x = 0; x < dimensions.X; x++)
+            {
+                Rect2 cell = battle ? BoardCell(new(x, y), _overview) : new(x * 96, y * 96, 96, 96);
+                if (!cell.Intersects(new Rect2(Vector2.Zero, Size))) continue;
+                if (layout is not null && visual is not null)
+                    _ground.DrawTextureRect(_blocks.Block(visual, layout[x + origin.X, y + origin.Y] & 1023), cell, false);
+                else _ground.DrawRect(cell, (x + y) % 2 == 0 ? new Color("293e42") : new Color("30464a"));
+            }
+    }
+
+    internal void RedrawBoard()
+    {
+        _ground.QueueRedraw();
+        QueueRedraw();
     }
 
     public override void _ExitTree()

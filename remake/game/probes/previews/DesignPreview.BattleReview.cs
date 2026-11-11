@@ -148,10 +148,12 @@ public partial class DesignPreview
         if (_journey != JourneyPage.Closed || _showMembers) return false;
         if (_scene == FieldScene && _field == FieldPage.Walking && (input.IsActionPressed("ui_left") || input.IsActionPressed("ui_right")))
         { _facingSign = !_facingSign; Render(); return true; }
-        if (_scene != InspectScene || _inspection != InspectPage.Cursor) return false;
         Vector2I delta = input.IsActionPressed("ui_left") ? Vector2I.Left : input.IsActionPressed("ui_right") ? Vector2I.Right :
             input.IsActionPressed("ui_up") ? Vector2I.Up : input.IsActionPressed("ui_down") ? Vector2I.Down : Vector2I.Zero;
         if (delta == Vector2I.Zero) return false;
+        if (_scene == 3 && _page == Page.Target) { CycleTarget(delta.X + delta.Y); return true; }
+        if (_scene == 3 && _page == Page.Move) { MoveCursor(_moveCursor + delta); return true; }
+        if (_scene != InspectScene || _inspection != InspectPage.Cursor) return false;
         _cursor = (_cursor + delta).Clamp(Vector2I.Zero, _stage.Camera.MapSize - Vector2I.One);
         _stage.Camera.Reveal(_cursor);
         Render(); return true;
@@ -160,8 +162,9 @@ public partial class DesignPreview
     private bool BoardPointerInput(InputEventMouse mouse)
     {
         bool targeting = _scene == 3 && _page == Page.Target;
+        bool moving = _scene == 3 && _page == Page.Move;
         bool inspecting = _scene == InspectScene && _inspection is InspectPage.Cursor or InspectPage.Map;
-        if (_showMembers || _journey != JourneyPage.Closed || !(targeting || inspecting))
+        if (_showMembers || _journey != JourneyPage.Closed || !(targeting || inspecting || moving))
         {
             if (mouse is InputEventMouseButton { Pressed: false }) _boardPointer.ReleaseIfNeutral();
             return false;
@@ -171,8 +174,9 @@ public partial class DesignPreview
         Vector2 local = GetGlobalTransformWithCanvas().AffineInverse() * mouse.Position;
         var cell = (Vector2I)((local - origin.Position) / origin.Size).Floor();
         var rect = GetGlobalTransformWithCanvas() * _stage.BoardCell(cell, overview);
-        int unit = Array.IndexOf(UnitCells, cell);
-        bool allowed = targeting ? unit >= 0 && (_targetParent == Page.Root ? unit == 2 : unit < 2) :
+        int unit = Array.IndexOf(targeting ? _battleCells : UnitCells, cell);
+        bool allowed = targeting ? _targets.Contains(unit) && PreviewInspectionCamera.View.HasPoint(local) :
+            moving ? _stops.Contains(cell) && PreviewInspectionCamera.View.HasPoint(local) :
             overview ? unit >= 0 : PreviewInspectionCamera.View.HasPoint(local) && new Rect2I(Vector2I.Zero, _stage.Camera.MapSize).HasPoint(cell);
         // The inspection card moves away from the hovered cell. Other HUD regions own their input.
         bool overHud = _surface.GetChildren().OfType<Control>().Any(control => control.Visible &&
@@ -199,6 +203,7 @@ public partial class DesignPreview
         if (allowed && (mouse is InputEventMouseMotion || mouse is InputEventMouseButton { Pressed: true }))
         {
             if (targeting && _target != unit) { _target = unit; Render(); }
+            else if (moving) MoveCursor(cell, reveal: false);
             else if (overview && _focus != unit) { _focus = unit; Refresh(); }
             else if (inspecting && !overview && _cursor != cell) { _cursor = cell; Render(); }
         }
@@ -242,6 +247,6 @@ public partial class DesignPreview
             _cursor = cell;
             Render();
         }
-        else _stage.QueueRedraw();
+        else _stage.RedrawBoard();
     }
 }

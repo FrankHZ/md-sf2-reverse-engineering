@@ -76,6 +76,27 @@ receipt path. Launch with `-- --field` to start directly at the exploration comm
 
 ### F4 action playback
 
+F4 opens at Sarah's action menu. In this staged turn Sarah is at (8,9), Bowie at (7,9),
+Gizmo A at (9,9), and Gizmo B at (8,8). From the command menu use **Reposition** or Esc/B
+for the cyan movement range. The private map uses Sarah's move budget, terrain costs and
+living enemies as blockers. Allies can be crossed and occupied cells cannot be stops.
+The schematic uses an open board. Choose a stop by click or directions and Enter/A.
+Back from commands restores the turn origin for another movement choice.
+
+Focus Attack, a HEAL level or the herb to see the gold reach from Sarah's selected stop.
+The rod reaches four cardinal neighbors, HEAL 1 and the herb reach 0–1 cells, and HEAL 2
+reaches 0–2. All are single-target actions. Reach persists while selecting the recipient.
+Only living enemies qualify for the rod, and living allies (including Sarah) for healing.
+Up/Left chooses the previous eligible unit and Down/Right the next, wrapping at both ends.
+With zero candidates the range remains visible with a no-target message and a Back hint.
+Try (8,10) as the stop: both enemies are out of reach and only HEAL 2 can reach Bowie.
+
+The US source builds weighted movement and action rings and applies the same pulsating
+map-block routine. The preview uses tinted cells and its own pulse period; Motion off
+keeps the cells steady. Spell reach centers on the caster; the effect cursor centers on
+the chosen recipient. [Range grids](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm)
+and [palette and target selection](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm#L499-L651).
+
 On the board, hover a legal target to move its cursor and update the status card. Left-click
 the unit to confirm or right-click to return to the offer. A click on an empty tile or an
 ineligible unit cannot commit the last selected target. Leaving the pressed tile cancels the
