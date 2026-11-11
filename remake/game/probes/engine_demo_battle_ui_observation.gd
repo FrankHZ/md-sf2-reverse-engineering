@@ -353,6 +353,91 @@ func area_case() -> bool:
         else: await process_frame
     return expect(false,"Multi-target action reaches next control")
 
+func control_rect(control: Control) -> Dictionary:
+    var r := control.get_global_rect()
+    return {"x":r.position.x,"y":r.position.y,"width":r.size.x,"height":r.size.y}
+
+func occlusion_case() -> bool:
+    await act("cancel")
+    if not await inspect_page("Cursor"): return false
+    var initial := signature(state())
+    var cursor: Dictionary = state().inspection.cursor.duplicate()
+    var h: Dictionary = state().inspection.hover
+    var covered := Vector2(h.rect.x+32,h.rect.y+32)
+    await move_mouse(covered); await mouse(covered,true); await mouse(covered,false)
+    if not expect(state().inspection.page == "Cursor" and state().inspection.cursor == cursor,"Hover-card motion/press/release never select underlying ground"): return false
+    var exposed := cell_point(cursor.X,cursor.Y+1)
+    await move_mouse(exposed); await mouse(exposed,true)
+    await move_mouse(covered); await mouse(covered,false)
+    if not expect(state().inspection.page == "Cursor","Board press and covered release cancel the gesture"): return false
+    await mouse(covered,true); await move_mouse(exposed); await mouse(exposed,false)
+    if not expect(state().inspection.page == "Cursor","Covered press and exposed release cannot open a ground menu"): return false
+    await move_mouse(Vector2(700,2)); await create_timer(0.25).timeout
+    if not expect(state().inspection.edge.speed.y < 0,"Exposed edge arms scrolling before occlusion"): return false
+    h = state().inspection.hover
+    covered = Vector2(h.rect.x+32,h.rect.y+32)
+    await move_mouse(covered)
+    var camera: float = board().cameraY
+    await create_timer(0.22).timeout
+    if not expect(state().inspection.edge.speed.y == 0 and board().cameraY == camera,"Hover card retires edge scrolling without moving its underlying cell"): return false
+    # Root's real host entry owns its hit region, including motion that never reaches battle input.
+    await move_mouse(Vector2(1800,2)); await create_timer(0.22).timeout
+    var menu_entry := host.find_child("SystemMenuEntry",true,false) as Control
+    await move_mouse(menu_entry.get_global_rect().get_center())
+    if not expect(state().inspection.edge.speed.y == 0,"Host entry occlusion retires edge scrolling"): return false
+    await click(control_rect(menu_entry)); await frames(3)
+    if not expect(host.find_child("SystemMenuView",true,false) != null,"Actual host menu covers battle"): return false
+    await mouse(Vector2(100,300),true); await mouse(Vector2(100,300),false)
+    if not expect(signature(state()) == initial and state().inspection.page == "Cursor","Host cover consumes press/release without battle mutation"): return false
+    var settings_row := host.find_child("SystemSettings",true,false) as Button
+    if not expect(settings_row.disabled,"Battle keeps the existing host Settings restriction"): return false
+    await click(control_rect(settings_row))
+    if not expect(host.find_child("SettingsView",true,false) == null and signature(state()) == initial,"Unavailable host control cannot act on the covered board"): return false
+    await act("cancel")
+    if not expect(state().inspection.page == "Cursor" and signature(state()) == initial,"Host Back restores unchanged inspection"): return false
+    # A gesture started on the board cannot complete after a host modal takes ownership.
+    cursor = state().inspection.cursor
+    exposed = cell_point(cursor.X,cursor.Y)
+    await move_mouse(exposed); await mouse(exposed,true); await act("menu")
+    await mouse(exposed,false); await act("cancel")
+    if not expect(state().inspection.page == "Cursor" and signature(state()) == initial,"Host takeover cancels the pending board gesture"): return false
+    samples.append({"label":"occlusion-completed","inspection":state().inspection})
+    return true
+
+func help_case() -> bool:
+    var initial := state()
+    await act("menu")
+    var settings_row := host.find_child("SystemSettings",true,false) as Button
+    if not expect(settings_row != null and not settings_row.disabled,"Settled field permits actual F10 Settings"): return false
+    for i in range(6):
+        if settings_row.theme_type_variation == "EntrySelectedButton": break
+        await act("down")
+    await act("confirm")
+    var settings := host.find_child("SettingsView",true,false)
+    if not expect(settings != null,"Actual host Settings opens at its supported caller"): return false
+    for i in range(10):
+        if JSON.parse_string(settings.call("ReadSettingsObservationJson")).selected == 8: break
+        await act("down")
+    await act("confirm")
+    var help := host.find_child("ControlsHelpView",true,false)
+    if not expect(help != null,"Actual F10 controls help opens"): return false
+    var found := false
+    var locale: String = JSON.parse_string(settings.call("ReadSettingsObservationJson")).locale
+    var read: Dictionary = JSON.parse_string(help.call("ReadControlsHelpObservationJson"))
+    for i in range(read.count):
+        read = JSON.parse_string(help.call("ReadControlsHelpObservationJson"))
+        if ("只循环合法目标" in read.body if locale == "zh-CN" else "only legal targets" in read.body):
+            found = true; samples.append({"label":"actual-battle-help","help":read})
+        if not expect(not "disabled targets can be inspected" in read.body and not "可查看不可选目标" in read.body,"Help agrees with legal-only cycling"): return false
+        await act("right")
+    if not expect(found,"Selected language F10 help includes current battle target contract"): return false
+    await mouse(Vector2(100,300),true); await mouse(Vector2(100,300),false)
+    await act("cancel"); await act("cancel"); await act("cancel")
+    var after := state()
+    samples.append({"label":"help-return","before":initial,"after":after})
+    return expect(after.canWaitAtInput and after.map == initial.map and after.party == initial.party and after.gold == initial.gold,
+        "Help/settings/menu Back restores unchanged field caller")
+
 func run() -> void:
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()
@@ -360,12 +445,17 @@ func run() -> void:
     if InputMap.action_get_events("sf2_confirm").is_empty():
         samples.append({"label":"startup-refusal","text":host.find_children("*","Label",true,false).map(func(n):return n.text)})
         expect(false,"Selected package must pass ordinary startup/input admission"); return
+    var catalog: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson")).localization
+    for key in ["battle.inspect.ground-effect","battle.inspect.ground-impassable","battle.inspect.land-percent","battle.inspect.cursor-help","host.help-text-29"]:
+        var translation: Dictionary = catalog.rows[key]
+        if not expect(translation.EffectiveLocale == catalog.language and translation.Reason == null,"Battle catalog row uses selected language: "+key): return
     bind_events()
     for action in ["spell","item","stay","equipment","give","discard"]:
         events[action] = InputMap.action_get_events("sf2_"+action).filter(func(e):return e is InputEventKey)[0]
     if demo_case not in ["area","aura","victory","defeat"]:
         var admitted = host.call("StartPreVoyageLocalizationObservation",OS.get_environment("SF2_COMPACT_START"))
         if not expect(admitted == "started","Actual admitted full-world controlled start: "+str(admitted)): return
+    if demo_case == "help": finish(await help_case()); return
     if demo_case in ["victory","defeat"]:
         samples.append({"label":"field-before-interact","state":state()})
         await act("confirm")
@@ -374,4 +464,4 @@ func run() -> void:
         return
     await wait_for(func(_s):return board().settled,"initial camera settles")
     samples.append({"label":"initial","state":state(),"board":board()})
-    finish(await area_case() if demo_case in ["area","aura"] else await return_case() if demo_case in ["retreat","victory","defeat"] else await decision_case())
+    finish(await occlusion_case() if demo_case == "occlusion" else await area_case() if demo_case in ["area","aura"] else await return_case() if demo_case in ["retreat","victory","defeat"] else await decision_case())

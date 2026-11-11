@@ -1098,6 +1098,8 @@ original-game timing/natural reach remain separate.
 
 ## Battle status-card agreement
 
+**Current production composition:** #1686 uses compact decision/playback HP/MP cards; class/level/status remain in full details and terrain in hover inspection. The older full-card geometry/acting-card drivers in this section describe their retained [pre-migration implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/tree/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes). Current input/geometry reproduction is the [F4/F8/F9 production observer](battle-interaction-baseline.md#direct-production-reproduction); disclosure and original evidence below retain their scope.
+
 **Standard rigor; [#1397](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1397).**
 E1 is a bounded presentation change spanning command, target and action-scene consumers of the
 same authoritative session. `BattleStatusCard` supplies one readable name, labeled HP/MP image
@@ -1935,6 +1937,8 @@ adds no physical-focus acceptance or production change.
 
 ### Battle movement range agreement
 
+**Current reproduction:** #1686 changes range opacity/rims and adds real action/effect range. The B8 geometry/alpha assertions below and `engine_movement_range_observation.gd` are historical at [the retained implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_movement_range_observation.gd). Use the [current production observer](battle-interaction-baseline.md#direct-production-reproduction) for movement/undo, range, target and lifecycle UI. Original movement legality, clocks and source evidence are unchanged.
+
 Standard rigor applies to B8 / [#1395](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1395):
 a bounded read-only engine query and battlefield projection. The outcome is visible legal stopping
 tiles during player movement selection, retaining the accepted 1920×1080 world and 96px cells.
@@ -2035,7 +2039,9 @@ Map57 admission establish this consumer boundary, not natural original reach or 
 
 ### Battle inspection and on-demand Map (#1633)
 
-**Standard rigor:** the accepted [minimum contract](battle-interaction-baseline.md#minimum-implementation-contract-proposed-for-review)
+**Current UI override and reproduction:** #1686 adds hover cards, pointer blocking, edge scrolling and labeled vertical Options; A/Confirm opens details and Back restores any inspected cell. The mini-status/current-actor direct-return/cardinal Options and no-pointer-Map UI below describe the retained [#1633 driver at its old implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_inspection_observation.gd), not a current runnable acceptance recipe. Use [production F8 reproduction](battle-interaction-baseline.md#direct-production-reproduction). The query, disclosure, real undo, stale-session and original S2 contracts remain valid.
+
+**Standard rigor:** the accepted [minimum contract](battle-interaction-baseline.md#inspection-contract-and-original-return-distinctions)
 owns scope and caller returns. This implementation connects original-style free inspection to the
 common battle host, including admitted connected Battles01–07. It does not admit a later encounter,
 Speed, empty-ground Quit, a preview-preserving shortcut, action
@@ -2153,6 +2159,8 @@ list-specific return is covered by the separate [#1645 acceptance](#battle-membe
 
 
 ### Battle Member roster and read-only details (#1645)
+
+**Current reproduction:** the retained member driver assumes pre-#1686 cardinal Options and full-card UI. Its [historical script](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_member_observation.gd) remains evidence for that named boundary. Use the [current production F8 observer](battle-interaction-baseline.md#direct-production-reproduction), case `retreat`, for connected joined-member detail/row return. Membership/disclosure and source caller rules remain unchanged.
 
 **Standard rigor:** this bounded multi-layer extension completes Options → Member → selected full
 sheet → same selected roster row → same Options choice → cursor → the same actor's settled Movement.
@@ -2298,6 +2306,8 @@ original natural timing and #1456 subjective acceptance remain Unknown.
 The shared 1080p world viewport is defined above; the earlier 640-by-360 proposal is not a runtime constant.
 
 ### Battle directional hold and mode isolation (#1615)
+
+**Current navigation:** #1686 uses Up/Down vertical command/Options lists and cycles only legal targets. Its [production observer](battle-interaction-baseline.md#direct-production-reproduction) replaces the old cardinal/disabled-target menu route in [`engine_battle_navigation_observation.gd` at this pin](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_navigation_observation.gd). The held-direction clock, release barriers and source movement rules below remain binding.
 
 **Standard rigor:** battle movement and existing directional selection need a consistent held-input
 boundary across provisional movement, menu pages, target candidates and actor changes. The finite

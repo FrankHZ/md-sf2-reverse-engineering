@@ -47,6 +47,49 @@ item/loadout and species combinations retain their prior campaign/resource evide
 no new original-effect art or timing is inferred. Some exits still report ObjectDB leaks. Their
 cause, physical-device/window/DPI coverage and final foreground appearance remain **Unknown**.
 
+## Original target and inspection cursor publication
+
+**Confirmed read-only inventory:** private asset Git
+`293c9460818f4768905be809e83488d77f698fba` is clean and contains
+`hud.tactical-selection-cursor`, a modern SVG-derived **58×58** logical cursor with linear-filtered
+2×/4× buckets. It is not the accepted original 32×32 four-corner sprite. The selected ordinary
+Battle01 scene and world-referenced Battles02–07 scene raster dictionaries contain no cursor binding;
+the producer/publication owners below likewise publish none. The preview prepares its original
+sprite independently; that preview path is not an ordinary input and is not read by production.
+
+Reproduce the inventory read-only after the registered environment selection: inspect
+`json.load(open(os.environ['SF2_PRIVATE_BATTLE_SCENE_CONTENT'], encoding='utf-8-sig'))['rasters']`,
+then the selected world's `encounters[].battleScenes` relative scene dictionaries. In the separate
+asset repository inspect the named Git object, `manifests/presentation-assets-v1.json` entry
+`hud.tactical-selection-cursor`, and its tracked master/runtime entries. Do not infer qualified
+original artwork from a filename or silently replace the accepted preview material with this SVG.
+
+The smallest independent content slice can reuse the source/ROM preparation already described in
+[`previews/README.md`](../../game/probes/previews/README.md#single-cell-cursor) and its
+[`prepare_cursor.py`](../../game/probes/previews/prepare_cursor.py): verified baseline ROM,
+compressed range `0x23658..0x23757`, 2048 decoded bytes, first column-major 4×4-tile sprite and base
+palette at `0x309E`. No new original runtime acquisition or general extraction platform is needed.
+Publish a named original single-cell raster through the maintained
+`src/sf2tool/remake_battle_scene_content.py` preparation and existing
+`src/sf2tool/remake_command_menu.py` all-scenes publication path, with the separate private asset
+manifest/provenance reviewed at its own Git boundary. `BattleSceneDefinition.Rasters` already
+carries named rasters; change schema/admission only if the actual binding requires it.
+
+Then bind that admitted resource to `BattleInspectionCursor` and the target/effect-center rendering
+in `BattleMapViewport`, retaining the modern `BattleSelectionView` acting-unit cue. A 32-source-pixel
+cursor at the existing 4× source scale occupies 128×128 physical pixels, centered on a 96×96 cell
+(16px overhang each side), with nearest sampling and existing world/UI clipping. Public authored
+content retains an explicit authored fallback. Validate private inspection, physical/HEAL/item
+target, hover, invalid/canceled target, map edges, normal/reduced rendering and existing area effects;
+do not claim larger original radius arrangements from the single-cell sprite alone.
+
+The preparation is bounded: one 256-byte compressed input span, 2048 decoded bytes, 4096-byte RGBA
+master, at most 16/64KiB raw 2×/4× derivatives, plus small manifest entries. Reuse the existing
+publication's O(world-size) copy and its resource budget rather than creating another world/export
+pipeline. This asset/publication change is deliberately left to main-gate's bounded content Issue.
+Until admitted and observed, F4/F8 original cursor appearance is an explicit gap, not a passed visual
+match; gameplay selection and area legality remain independently implemented.
+
 ### Which combatants need a scene
 
 Read each row with the previous row's **party**, subject to real membership, HP, equipment and

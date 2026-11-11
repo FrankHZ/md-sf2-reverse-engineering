@@ -21,19 +21,24 @@ internal sealed partial class BattleInspectionView
         if (marker is null)
         {
             bool blocked = tile.Surface is TerrainSurface.Barrier or TerrainSurface.HighSky or TerrainSurface.Impassable;
-            // These two accepted labels are local to the battle-only presentation.
-            bool chinese = GameText.Language == "zh-CN";
-            land = blocked ? (chinese ? "地面不可通行" : "Ground impassable") :
-                (chinese ? "地面效果 " : "Ground effect ") + BattleTerrainRules.LandEffect(tile, BattleMover.Regular) + "%";
+            land = blocked ? GameText.Get("battle.inspect.ground-impassable") :
+                GameText.Get("battle.inspect.ground-effect", LandValue(BattleTerrainRules.LandEffect(tile, BattleMover.Regular)));
         }
-        else land = (query?.Land?.Percent.ToString() ?? "—") + "%";
+        else land = LandValue(query?.Land?.Percent);
         _hover.Present(query?.Unit, marker is null ? GameText.Get("battle.inspect.empty") : UnitName(marker), land, _cursor);
         var cell = _map.CellRect(_cursor);
         _hover.Position = new(cell.GetCenter().X >= GetViewportRect().Size.X - 650 ? 32 : GetViewportRect().Size.X - 592, 238);
     }
+    private static string LandValue(int? percent) => percent is { } value ? GameText.Get("battle.inspect.land-percent", value) : "—";
+    private bool CursorUiCovers(Vector2 position) => _hint.GetGlobalRect().HasPoint(position) ||
+        _hover.IsVisibleInTree() && _hover.GetGlobalRect().HasPoint(position);
+    private bool HostPointerCovered => GetViewport().GuiGetHoveredControl() is { } control &&
+        control.IsVisibleInTree() && !IsAncestorOf(control);
     private bool BoardPointer(InputEvent input)
     {
         if (input is not InputEventMouse mouse) return false;
+        if (_page == "Cursor" && (CursorUiCovers(mouse.Position) || HostPointerCovered))
+        { _pointer.Cancel(); StopEdge(); return true; }
         if (_page is "Full" or "MemberFull" or "Members" or "Map")
         {
             if (_page == "Map" && input is InputEventMouseMotion motion && _pointer.Moved(motion))
@@ -55,7 +60,7 @@ internal sealed partial class BattleInspectionView
             return false;
         }
         if (_page != "Cursor") return false;
-        bool allowed = _map.TryCell(mouse.Position, out var cell) && !_hint.GetGlobalRect().HasPoint(mouse.Position);
+        bool allowed = _map.TryCell(mouse.Position, out var cell);
         if (input is InputEventMouseMotion move)
         {
             if (!_pointer.Moved(move)) return true;
@@ -92,7 +97,7 @@ internal sealed partial class BattleInspectionView
     internal void AdvancePointer(double delta)
     {
         if (_edgeSpeed == Vector2.Zero) return;
-        if (!Active || _page != "Cursor" || !IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() ||
+        if (!Active || _page != "Cursor" || !IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || HostPointerCovered ||
             Godot.Input.IsMouseButtonPressed(MouseButton.Left) || Godot.Input.IsMouseButtonPressed(MouseButton.Right)) { StopEdge(); return; }
         double travel = Math.Max(0, delta - _edgeDelay); _edgeDelay = Math.Max(0, _edgeDelay - delta);
         if (travel <= 0 || !_map.PanInspection(_edgeSpeed, travel)) return;

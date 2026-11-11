@@ -229,8 +229,7 @@ internal sealed partial class BattleInspectionView : Control
         {
             var at = _snapshot.Units.FirstOrDefault(u => u.Position == _cursor);
             message = GameText.Get("battle.inspect.cursor", _cursor.X, _cursor.Y, at is null ? GameText.Get("battle.inspect.empty") : UnitName(at)) +
-                "\n" + (GameText.Language == "zh-CN" ? $"方向键或鼠标选格 · {a}/{c}：详情或战场选项 · {b}：返回移动" :
-                    $"Directions or mouse: select · {a}/{c}: details or battlefield options · {b}: return to movement");
+                "\n" + GameText.Get("battle.inspect.cursor-help", a, c, b);
         }
         if (_page == "Options") _options.Present(_input, _optionIndex, "", message, available: _optionsError is null ? null : [false, false, false, false]);
         _hint.Text = message; _hint.Position = new(24, size.Y - 120); _hint.Size = new(size.X - 48, 112);

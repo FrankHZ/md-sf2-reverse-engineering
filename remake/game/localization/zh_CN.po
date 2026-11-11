@@ -1440,13 +1440,22 @@ msgid "battle.inspect.cursor"
 msgstr "查看 ·（{0},{1}）· {2}"
 
 msgid "battle.inspect.cursor-help"
-msgstr "{0}：完整资料/选项 · {1}：简要状态/选项 · {2}：返回行动单位"
+msgstr "方向键或鼠标选格 · {0}/{1}：详情或战场选项 · {2}：返回移动"
 
 msgid "battle.inspect.entry-help"
 msgstr "{0}：撤销移动后查看战场；菜单返回上一级"
 
 msgid "battle.inspect.empty"
 msgstr "空地"
+
+msgid "battle.inspect.ground-effect"
+msgstr "地面效果 {0}"
+
+msgid "battle.inspect.ground-impassable"
+msgstr "地面不可通行"
+
+msgid "battle.inspect.land-percent"
+msgstr "{0}%"
 
 msgid "battle.inspect.legend"
 msgstr "地图 · 圆形：我方 · 菱形：敌方 · 白环：行动单位 · 方框：视野"
@@ -1680,7 +1689,7 @@ msgid "host.help-text-28"
 msgstr "从指令菜单打开物品列表"
 
 msgid "host.help-text-29"
-msgstr "列表使用上 / 下和确认键。用方向键或切换目标键选择目标；可查看不可选目标，但不能提交行动。敌方行动和回合自动推进。"
+msgstr "列表使用上 / 下和确认键。方向键或切换目标键只循环合法目标；悬停或点按合法单位可选定。空地、阵亡、同异阵营不符或射程外地块不能确认先前目标。在移动阶段返回，完成撤销后可自由查看战场。敌方行动和回合自动推进。"
 
 msgid "host.help-text-30"
 msgstr "下一个目标"

@@ -1440,13 +1440,22 @@ msgid "battle.inspect.cursor"
 msgstr "Inspect · ({0},{1}) · {2}"
 
 msgid "battle.inspect.cursor-help"
-msgstr "{0}: full details / options · {1}: short status / options · {2}: return to actor"
+msgstr "Directions or mouse: select · {0}/{1}: details or battlefield options · {2}: return to movement"
 
 msgid "battle.inspect.entry-help"
 msgstr "{0}: undo movement, then inspect; menu Back returns one level"
 
 msgid "battle.inspect.empty"
 msgstr "Empty ground"
+
+msgid "battle.inspect.ground-effect"
+msgstr "Ground effect {0}"
+
+msgid "battle.inspect.ground-impassable"
+msgstr "Ground impassable"
+
+msgid "battle.inspect.land-percent"
+msgstr "{0}%"
 
 msgid "battle.inspect.legend"
 msgstr "Map · circles: allies · diamonds: enemies · white ring: acting unit · rectangle: camera"
@@ -1680,7 +1689,7 @@ msgid "host.help-text-28"
 msgstr "Open Item list from the command menu"
 
 msgid "host.help-text-29"
-msgstr "Lists use Up/Down and Confirm. Targets use directions or Target; disabled targets can be inspected but cannot be committed. AI and rounds advance automatically."
+msgstr "Lists use Up/Down and Confirm. Directions or Target cycle only legal targets; hover or click a legal unit to select it. Empty, defeated, wrong-side or out-of-range cells cannot confirm an earlier target. Cancel from Movement opens free inspection after undo. AI and rounds advance automatically."
 
 msgid "host.help-text-30"
 msgstr "Next target"

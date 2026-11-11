@@ -1848,6 +1848,8 @@ the exact frame in the user's private image, later weapons and human visual appr
 
 ## Battle Speed and message observation
 
+**Current caller:** #1686 replaces cardinal battlefield Options with Up/Down labeled rows. The [old Speed driver](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_speed_observation.gd) below is retained evidence at that pin; use the [current production observer](godot/battle-interaction-baseline.md#direct-production-reproduction), case `retreat`, for real Options/Speed/Back. Text/message suppression semantics and original evidence below remain binding.
+
 The finite actual-host [probe](../game/probes/engine_battle_speed_observation.gd) extends the existing
 inspection input driver. Launch the existing project with `--authored-package` selecting tracked
 `remake/content/authored/stone-court.json`, the probe as `--script`, and no `--input-settings` override.
