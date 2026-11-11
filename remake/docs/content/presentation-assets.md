@@ -37,6 +37,8 @@ derivation identity explicit when preparing material; ordinary runtime resource 
 be checked at the actual prepared-world/scene consumer. [Presentation policy](../godot/presentation.md#presentation-policy-and-current-layout)
 records the current layout and deferred product UI boundary.
 
+The [HD art pilot](hd-art-pilot.md) compares one authored reference at inventory size and proposes a first switchable field item.
+
 ## Local Asset Repository
 
 `md-sf2-remake-assets` is the actual local-only product-art and audio repository. It is a sibling of
