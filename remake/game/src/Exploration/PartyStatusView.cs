@@ -11,13 +11,13 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 // Disposable member selection/focus only; original member-screen summary + aligned details.
 internal sealed partial class PartyStatusView : Control
 {
-    private readonly PartyDetailsPanel _details = new() { Name = "MemberDetails" };
+    private readonly PartyDetailsPanel _details = new() { Name = "MemberDetails", FieldLayout = true };
     private readonly Control _memberLayer = new() { Name = "MemberLayer" };
     private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", 22), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
     private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", 32);
     private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30);
-    private readonly Panel _portraitFrame = new(), _recordFrame = new(), _goldFrame = new(), _selectorFrame = new(), _rosterFrame = new();
+    private readonly Panel _recordFrame = new(), _goldFrame = new(), _rosterFrame = new();
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
     private readonly ScrollContainer _roster = new() { Name = "Roster", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
@@ -37,7 +37,7 @@ internal sealed partial class PartyStatusView : Control
     private ImageTexture? _portraitTexture;
     private int? _portraitId;
     private int _index, _count;
-    private bool _requiresRelease, _selectorOpen;
+    private bool _requiresRelease;
     internal bool Open => Visible;
 
     public override void _Ready()
@@ -46,7 +46,7 @@ internal sealed partial class PartyStatusView : Control
         var shade = new ColorRect { Color = new(0, 0, 0, 0.7f), MouseFilter = MouseFilterEnum.Ignore };
         _memberLayer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_memberLayer);
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); _memberLayer.AddChild(shade);
-        foreach (var node in new Control[] { _portraitFrame, _recordFrame, _goldFrame, _selectorFrame, _details,
+        foreach (var node in new Control[] { _recordFrame, _goldFrame, _details,
             _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) _memberLayer.AddChild(node);
         _roster.AddChild(_rows);
         _memberLayer.AddChild(_prepare); AddChild(_actions);
@@ -72,7 +72,7 @@ internal sealed partial class PartyStatusView : Control
             { _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Member identity icon decoding failed."); }
         }
         _details.ConfigureIcons(_icons, session.Definition);
-        _session = session; _input = input; _index = 0; _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0; _selectorOpen = false;
+        _session = session; _input = input; _index = 0; _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0;
         _requiresRelease = true; _pointer.Suspend(); _roster.ScrollVertical = 0; _details.ResetReading();
         _actions.Hide();
         Show(); Present(session, input);
@@ -81,7 +81,7 @@ internal sealed partial class PartyStatusView : Control
     internal void Present(GameSession session, GameInput input)
     {
         if (!Open) return;
-        _memberLayer.Visible = !(_actions.Open && _actions.ItemOperations);
+        _memberLayer.Visible = !_actions.Open;
         if (_actions.Open) { _actions.Present(); return; }
         _session = session; _input = input; _pointer.ReleaseIfNeutral();
         if (!input.GameplayHeld) _requiresRelease = false;
@@ -100,14 +100,14 @@ internal sealed partial class PartyStatusView : Control
             _labels[i].Visible = i < _count;
             if (i >= _count) continue;
             var row = party.Members[i];
-            _labels[i].Text = (i == _index ? "▶ " : "   ") + MemberName(row, session) +
+            _labels[i].Text = (i == _index && _details.FocusPane == 0 ? "› " : "   ") + MemberName(row, session) +
                 (row.Carried.Absent ? " · " + GameText.Get("party.absent") : row.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
-            if (i == _index) _labels[i].AddThemeColorOverride("font_color", StoryTheme.Selected);
+            if (i == _index && _details.FocusPane == 0) _labels[i].AddThemeColorOverride("font_color", StoryTheme.Selected);
             else _labels[i].RemoveThemeColorOverride("font_color");
         }
         var member = _count == 0 ? null : party.Members[_index];
         string name = member is null ? GameText.Get("party.unavailable") : MemberName(member, session);
-        _selector.Text = $"{(_details.FocusPane == 0 ? "▶ " : "")}{(_count == 0 ? 0 : _index + 1)} / {_count}    {name}   ▼";
+        _selector.Text = GameText.Get("party.member") + $"   {(_count == 0 ? 0 : _index + 1)} / {_count}";
         _details.Present(member, name);
         _killsValue.Text = member?.Carried.Kills?.ToString() ?? GameText.Get("party.value-unavailable");
         _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? GameText.Get("party.value-unavailable");
@@ -159,33 +159,32 @@ internal sealed partial class PartyStatusView : Control
 
     private void Arrange()
     {
-        _selectorFrame.Position = new(168, 36); _selectorFrame.Size = new(1416, 80);
-        _previous.Position = new(188, 54); _previous.Size = new(56, 48);
-        _next.Position = new(1512, 54); _next.Size = new(56, 48);
-        _selector.Position = new(256, 42); _selector.Size = new(1232, 72);
-        if (_details.FocusPane == 0) _selector.AddThemeColorOverride("font_color", StoryTheme.Selected);
-        else _selector.RemoveThemeColorOverride("font_color");
-        _close.Position = new(1616, 56); _close.Size = new(136, 48);
-        _portraitFrame.Position = new(168, 144); _portraitFrame.Size = new(336, 352);
-        _portrait.Position = new(240, 192); _portrait.Size = new(192, 256);
-        _portraitNote.Position = new(192, 280); _portraitNote.Size = new(288, 80);
-        _recordFrame.Position = new(168, 520); _recordFrame.Size = new(336, 224);
-        _kills.Position = new(192, 562); _kills.Size = new(128, 52);
-        _killsValue.Position = new(328, 562); _killsValue.Size = new(152, 52);
-        _defeats.Position = new(192, 646); _defeats.Size = new(128, 52);
-        _defeatsValue.Position = new(328, 646); _defeatsValue.Size = new(152, 52);
-        _goldFrame.Position = new(168, 768); _goldFrame.Size = new(336, 192);
-        _gold.Position = new(192, 808); _gold.Size = new(288, 108);
-        _details.Position = new(528, 144); _details.Size = new(1224, 816); _details.Arrange();
-        _hint.Position = new(168, 968); _hint.Size = new(1584, 100);
-        _prepare.Position = new(1456, 908); _prepare.Size = new(260, 48);
-        _rosterFrame.Visible = _roster.Visible = _selectorOpen;
-        _rosterFrame.Position = new(256, 124); _rosterFrame.Size = new(1232, 680);
-        _roster.Position = new(276, 144); _roster.Size = new(1192, 640);
+        float left = (Size.X - 1712) / 2, top = Math.Max(112, (Size.Y - 856) / 2);
+        _selector.Position = new(left, top - 64); _selector.Size = new(304, 48);
+        _selector.HorizontalAlignment = HorizontalAlignment.Left;
+        _previous.Position = new(left + 16, top + 664); _previous.Size = new(64, 48);
+        _next.Position = new(left + 224, top + 664); _next.Size = new(64, 48);
+        _rosterFrame.Show(); _roster.Show();
+        _rosterFrame.Position = new(left, top); _rosterFrame.Size = new(304, 720);
+        _roster.Position = new(left + 16, top + 16); _roster.Size = new(272, 624);
+        _details.Position = new(left + 328, top); _details.Size = new(1384, 720); _details.Arrange();
+        _portrait.Position = new(left + 360, top + 24); _portrait.Size = new(144, 192);
+        _portraitNote.Position = new(left + 352, top + 40); _portraitNote.Size = new(160, 160);
+        _recordFrame.Position = new(left, top + 744); _recordFrame.Size = new(640, 72);
+        _kills.Position = new(left + 16, top + 756); _kills.Size = new(128, 48);
+        _killsValue.Position = new(left + 144, top + 756); _killsValue.Size = new(136, 48);
+        _defeats.Position = new(left + 328, top + 756); _defeats.Size = new(128, 48);
+        _defeatsValue.Position = new(left + 456, top + 756); _defeatsValue.Size = new(160, 48);
+        _goldFrame.Position = new(left + 664, top + 744); _goldFrame.Size = new(400, 72);
+        _gold.Position = new(left + 680, top + 752); _gold.Size = new(368, 56);
+        _prepare.Position = new(left + 1120, top + 752); _prepare.Size = new(264, 64);
+        _close.Position = new(left + 1432, top + 752); _close.Size = new(264, 64);
+        _hint.Position = new(left, top + 832); _hint.Size = new(1712, 0);
+        _prepare.RemoveThemeColorOverride("font_color"); _close.RemoveThemeColorOverride("font_color");
     }
 
     private void Select(int index)
-    { if (_count == 0) return; _index = (index + _count) % _count; _details.ResetReading(); if (_selectorOpen) _roster.EnsureControlVisible(_labels[_index]); }
+    { if (_count == 0) return; _index = (index + _count) % _count; _details.ResetReading(); _roster.EnsureControlVisible(_labels[_index]); }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _actions.Suspend(); }
     private void Prepare()
     {
@@ -199,7 +198,7 @@ internal sealed partial class PartyStatusView : Control
         _pointer.Cancel(); if (_requiresRelease) return;
         if (action is GameAction.Cancel or GameAction.Equipment) { Hide(); return; }
         if (action == GameAction.Confirm) { Prepare(); return; }
-        if (action == GameAction.Target) { _details.FocusPane = (_details.FocusPane + 1) % 3; _selectorOpen = false; }
+        if (action == GameAction.Target) { _details.FocusPane = (_details.FocusPane + 1) % 3; }
         int step = action is GameAction.Left or GameAction.Up ? -1 : action is GameAction.Right or GameAction.Down ? 1 : 0;
         if (_details.FocusPane != 0 && action is GameAction.Up or GameAction.Down) _details.ScrollFocused(step * 112);
         else if (step != 0) Select(_index + step);
@@ -217,8 +216,8 @@ internal sealed partial class PartyStatusView : Control
         {
             int step = button.ButtonIndex == MouseButton.WheelUp ? -112 : 112;
             if (button.Pressed && !_requiresRelease)
-            { if (_selectorOpen && _roster.GetGlobalRect().HasPoint(button.Position)) _roster.ScrollVertical += step;
-              else if (!_selectorOpen) _details.Wheel(button.Position, step); }
+            { if (_roster.GetGlobalRect().HasPoint(button.Position)) _roster.ScrollVertical += step;
+              else _details.Wheel(button.Position, step); }
             _pointer.Cancel(); return;
         }
         string? id = null; Rect2 rect = default;
@@ -227,22 +226,22 @@ internal sealed partial class PartyStatusView : Control
         {
             foreach (var (key, control) in new[] { ("close", _close), ("previous", _previous), ("next", _next), ("selector", _selector), ("prepare", _prepare) })
                 if (control.GetGlobalRect().HasPoint(button.Position)) { id = key; rect = control.GetGlobalRect(); break; }
-            if (_selectorOpen && _roster.GetGlobalRect().HasPoint(button.Position))
+            if (_roster.GetGlobalRect().HasPoint(button.Position))
                 for (int i = 0; i < _count; i++)
                     if (_labels[i].GetGlobalRect().HasPoint(button.Position)) { id = i.ToString(); rect = _labels[i].GetGlobalRect(); break; }
         }
-        string? clicked = _pointer.Read(button, id, rect, (_index, _selectorOpen, _roster.ScrollVertical));
+        string? clicked = _pointer.Read(button, id, rect, (_index, _details.FocusPane, _roster.ScrollVertical));
         if (_requiresRelease || clicked is null) return;
         if (clicked == "close") { Hide(); return; }
         if (clicked == "prepare") { Prepare(); return; }
-        if (clicked == "selector") { _selectorOpen = !_selectorOpen; _details.FocusPane = 0; }
+        if (clicked == "selector") { _details.FocusPane = 0; }
         else if (clicked is "previous" or "next") Select(_index + (clicked == "previous" ? -1 : 1));
-        else { Select(int.Parse(clicked)); _selectorOpen = false; _details.FocusPane = 0; }
+        else { Select(int.Parse(clicked)); _details.FocusPane = 0; }
         Present(_session!, _input!);
     }
 
     internal object Observe() => new { visible = IsVisibleInTree(), index = _index, count = _count, requiresRelease = _requiresRelease,
-        header = _selector.Text, hint = _hint.Text, failure = _assetFailure, memberLayerVisible = _memberLayer.IsVisibleInTree(), selectorOpen = _selectorOpen, focusPane = _details.FocusPane,
+        header = _selector.Text, hint = _hint.Text, hintRect = Rect(_hint), hintMinimumHeight = _hint.GetMinimumSize().Y, failure = _assetFailure, memberLayerVisible = _memberLayer.IsVisibleInTree(), selectorOpen = _roster.IsVisibleInTree(), focusPane = _details.FocusPane,
         preparation = _actions.Observe(), prepareRect = Rect(_prepare),
         card = _details.Card(), layout = _details.Observe(), portraitId = _portraitId, portraitVisible = _portrait.IsVisibleInTree(),
         portraitRect = Rect(_portrait), recordRect = Rect(_recordFrame), goldRect = Rect(_goldFrame), kills = _killsValue.Text, defeats = _defeatsValue.Text, gold = _gold.Text,
