@@ -1,5 +1,9 @@
 # Pre-voyage Chinese admission plan
 
+The current selector extends the 806-message pre-voyage scope with IDs 2261–2263 for the
+[plank and first deck exchange](map14-plank-deck.md). The default catalog has 809 messages.
+Use `--scope pre-voyage` to reproduce the 806-message selection below.
+
 ## Decision and acceptance boundary
 
 **Accepted design from [Issue1505](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1505).**
@@ -255,7 +259,7 @@ identity, checks source/control/parameter topology, then writes a fresh private 
 and name keys for a reviewable diff. The maintained selector is
 `src/sf2tool/remake_localization.py`, reusing existing JSON/source/token helpers; do not modify the
 frozen PowerShell compatibility surface or introduce a runtime manifest. Its selection arguments include
-`--world <selected-world> --corpus <source.jsonl> --names <names.zh-CN.jsonl> --output <fresh-directory>`.
+`--scope pre-voyage --world <selected-world> --corpus <source.jsonl> --names <names.zh-CN.jsonl> --output <fresh-directory>`.
 Entry derivation additionally takes the admitted entry profile for its existing six aliases.
 Inputs are read-only; output must be ignored and outside the corpus authority. The delivered module entry and required explicit input paths are documented in the
 [verification owner](../development-and-verification.md#pre-voyage-chinese-consumer-observation).

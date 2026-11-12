@@ -2,9 +2,10 @@
 
 ## Pre-voyage Chinese consumer observation
 
-The [finite admission agreement](application/pre-voyage-chinese-admission.md) owns the exact806 world
-IDs, six entry aliases,51 names, unchanged source-token grammar and campaign frontier. This is display
-integration over accepted source/translation authority; no new original capture, full route, font
+The [finite admission agreement](application/pre-voyage-chinese-admission.md) owns the 806 pre-voyage world
+IDs, six entry aliases and 51 names. The [first deck exchange](application/map14-plank-deck.md)
+adds three world messages to the default current selection. Use `--scope pre-voyage` for the prior catalog.
+This is display integration over accepted source/translation authority; no new original capture, full route, font
 sweep or research aggregate is required. Keep sole corpora and historical209/six-alias catalogs read-only.
 
 From the owning checkout, with explicit source/corpus/entry/previous-catalog paths selected locally:
@@ -13,7 +14,7 @@ From the owning checkout, with explicit source/corpus/entry/previous-catalog pat
 . ./local/private-inputs.ps1
 uv run python -m sf2tool.remake_localization --world $world --corpus $corpus --names $names `
   --entry $entry --upstream $pinnedSource --previous-world $previousWorld `
-  --previous-entry $previousEntry --output local/pre-voyage-catalog
+  --previous-entry $previousEntry --output local/current-catalog
 ```
 
 The selector resolves relative paths from its checkout, including when invoked from `remake/`.

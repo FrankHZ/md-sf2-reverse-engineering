@@ -1,4 +1,4 @@
-"""Derive the accepted finite pre-voyage display catalogs; never edit corpus inputs.
+"""Derive the selected private campaign display catalogs; never edit corpus inputs.
 
 Paths are relative to this checkout, independent of the caller's working directory.
 The ignored output directory must be fresh. Selection authority is the tracked
@@ -18,7 +18,7 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import REPO_ROOT
 from sf2tool.source_text import read_upstream_text
 
-_RANGES = (
+_PRE_VOYAGE_RANGES = (
     (363, 363),
     (403, 405),
     (408, 410),
@@ -42,7 +42,7 @@ _RANGES = (
     (4035, 4059),
     (4065, 4073),
 )
-WORLD_IDS = tuple(i for start, end in _RANGES for i in range(start, end + 1))
+_RANGES = (*_PRE_VOYAGE_RANGES, (2261, 2263))
 NAME_IDS = {
     "name.ally": (0, 1, 2, 3, 4, 5, 6, 25, 28),
     "name.class": (0, 1, 2, 3, 4, 10, 11),
@@ -178,7 +178,9 @@ def derive(args: argparse.Namespace) -> dict:
     package = world["package"]
     del world
     selected = []
-    for i in WORLD_IDS:
+    ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
+    world_ids = sorted(i for start, end in ranges for i in range(start, end + 1))
+    for i in world_ids:
         row = rows[i]
         source, target = row["source"], row["translation"]
         _require(row["namespace"] == "world.text" and isinstance(target, str), f"invalid row {i}")
@@ -214,7 +216,7 @@ def derive(args: argparse.Namespace) -> dict:
         "historical world identity mismatch",
     )
     old = {r["id"]: r["text"] for r in previous["texts"]}
-    _require(len(old) == 209 and set(old) <= set(WORLD_IDS), "historical subset mismatch")
+    _require(len(old) == 209 and set(old) <= set(world_ids), "historical subset mismatch")
     changed = sorted(i for i in old if old[i] != rows[i]["translation"])
     _require(tuple(changed) == _CALIBRATED, "unexpected historical translation change")
     review = [
@@ -291,7 +293,7 @@ def derive(args: argparse.Namespace) -> dict:
     }
     _require(
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
-        and len(selected) == 806
+        and len(selected) == (806 if args.scope == "pre-voyage" else 809)
         and len(selected_names) == 51,
         "candidate budget/selection mismatch",
     )
@@ -326,6 +328,7 @@ def main() -> None:
         "output",
     ):
         parser.add_argument("--" + key, required=True, type=_path)
+    parser.add_argument("--scope", choices=("current", "pre-voyage"), default="current")
     args = parser.parse_args()
     try:
         result = derive(args)

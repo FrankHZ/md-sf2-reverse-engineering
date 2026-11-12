@@ -96,9 +96,10 @@ integration and parent-campaign closure remain with main-gate.
 The finite `battle07-return` recipe supports a real Save/Quit/fresh-process Continue at Map58,
 preserving progress and rebuilding the declared safe anchor/followers. Older worlds retain their
 own compatible slots; revision4 still initializes seven members and no migration is added.
-Plank choice/Battle08, new-town construction, later F530/Map14 setups and arbitrary field saves are
-Unsupported. The raw Map44 default-zone displacement and later Map14 waits1200/600 remain explicit
-frontiers. Original natural traversal/timing and human-play acceptance remain Unknown.
+The [damaged-ship continuation](application/map14-plank-deck.md) reaches the first deck reply after
+ordinary plank No, cancel and Yes. The later deck sequence, Battle08, town building, later F530/Map14
+setups and arbitrary field saves remain outside this capability. The raw Map44 default-zone displacement
+remains an explicit frontier. Original natural traversal/timing and human-play acceptance remain Unknown.
 
 ## Finite Galam shop and purchased-supply closure
 
