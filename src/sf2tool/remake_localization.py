@@ -54,6 +54,12 @@ _RANGES = (
     (1347, 1348),
     (3613, 3623),
     (3627, 3638),
+    (1397, 1409),
+    (1420, 1486),
+    (1562, 1589),
+    (1593, 1689),
+    (2483, 2494),
+    (3147, 3196),
 )
 NAME_IDS = {
     "name.ally": (0, 1, 2, 3, 4, 5, 6, 25, 28),
@@ -205,11 +211,13 @@ def derive(args: argparse.Namespace) -> dict:
     selected_names = []
     name_ids = dict(NAME_IDS)
     if args.scope == "current":
-        name_ids["name.ally"] = tuple(sorted((*name_ids["name.ally"], 7, 8)))
-        name_ids["name.class"] = tuple(sorted((*name_ids["name.class"], 8, 9)))
-        name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], 19, 46, 87)))
+        name_ids["name.ally"] = tuple(sorted((*name_ids["name.ally"], 7, 8, 9, 10)))
+        name_ids["name.class"] = tuple(sorted((*name_ids["name.class"], 7, 8, 9)))
+        name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], 19, 35, 46, 87, 88)))
         name_ids["name.spell"] = tuple(sorted((*name_ids["name.spell"], 12)))
-        name_ids["name.enemy"] = tuple(sorted((*name_ids["name.enemy"], 4, 5, 6, 41, 57, 68)))
+        name_ids["name.enemy"] = tuple(
+            sorted((*name_ids["name.enemy"], 4, 5, 6, 7, 8, 41, 42, 57, 58, 68, 69, 77, 78))
+        )
     for space, indices in sorted(name_ids.items()):
         for i in indices:
             row = names[space, i]
@@ -312,8 +320,8 @@ def derive(args: argparse.Namespace) -> dict:
     }
     _require(
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
-        and len(selected) == (806 if args.scope == "pre-voyage" else 1010)
-        and len(selected_names) == (51 if args.scope == "pre-voyage" else 65),
+        and len(selected) == (806 if args.scope == "pre-voyage" else 1277)
+        and len(selected_names) == (51 if args.scope == "pre-voyage" else 77),
         "candidate budget/selection mismatch",
     )
     _require(

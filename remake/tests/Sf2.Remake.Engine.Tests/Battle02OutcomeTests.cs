@@ -257,6 +257,15 @@ public sealed class Battle02OutcomeTests
         Assert.Equal(10368, followed.AY.Position); Assert.True(followed.Scrolling);
         Assert.Throws<BattleRuleException>(() => ExplorationViewRunner.Validate(view.Area with { Layer = 253 }));
         Assert.Throws<BattleRuleException>(() => ExplorationViewRunner.Validate(view.Area with { AutoscrollAX = 128 }));
+        var aperture = view with { Area = view.Area with { Layer = 255, BackgroundX = 28, BackgroundY = 33,
+            AutoscrollBX = 128, AutoscrollBY = 128 } };
+        var aligned = ExplorationViewRunner.AlignBackground(world, aperture);
+        Assert.Equal((28 + 9 - 31) * 384 + view.AX.Position, aligned.BX.Position);
+        Assert.Equal((33 + 9 - 32) * 384 + view.AY.Position, aligned.BY.Position);
+        world = world.WithEntity(world.PlayerEntity with { Motion = EntityMotionState.At(new(32, 32), 3, 32) });
+        var next = ExplorationViewRunner.Tick(world, aligned, new(2, 0, 0));
+        Assert.Equal((28 + 9 - 32) * 384 + next.AX.Position, next.BX.Destination);
+        Assert.Equal(16, next.BX.Speed);
     }
 
     [Fact]

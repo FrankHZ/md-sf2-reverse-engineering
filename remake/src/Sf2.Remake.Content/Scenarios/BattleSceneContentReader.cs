@@ -80,10 +80,10 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 8, "scene-class", "battleScenes.actors", true);
+                Require(sprite is >= 0 and <= 9, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
-                    7 => BattleClassRule.UnpromotedPhoenix, _ => BattleClassRule.UnpromotedRanger };
+                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, _ => BattleClassRule.UnpromotedWolfman };
                 Require(palette == 0 && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
                 allies.TryAdd(kind, visual);
             }
@@ -98,6 +98,8 @@ internal static class BattleSceneContentReader
                     { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
                         "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
+                        "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
+                        "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "MASTER_MAGE" => (36, 1),
                         "VAMPIRE_BAT" => (23, 2), "DARK_DWARF" => (5, 2),
                         "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
                         _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,

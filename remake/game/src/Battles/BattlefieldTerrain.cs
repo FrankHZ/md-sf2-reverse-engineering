@@ -16,17 +16,19 @@ internal sealed partial class BattlefieldTerrain : Node2D
     private MapBlockTextures _textures = null!;
     private Vector2I _offset;
     private int _width, _height, _cellSize;
-    private bool _high, _overlay;
+    private bool _high, _overlay, _followsTarget;
+    internal Vector2 CameraShift { get; set; }
+    private MapPosition _target = new(0, 0);
     private int _draws;
     private long _drawSequence;
     private object? _first;
 
     internal void Configure(ExplorationMapDefinition map, ExplorationMapVisual visual, BattleMapRegion region,
-        MapBlockTextures textures, int width, int height, int cellSize, Vector2I offset, bool overlay, bool high)
+        MapBlockTextures textures, int width, int height, int cellSize, Vector2I offset, bool overlay, bool high, bool followsTarget)
     {
         _map = map; _visual = visual; _region = region; _textures = textures;
         _width = width; _height = height; _cellSize = cellSize;
-        _offset = offset; _overlay = overlay; _high = high;
+        _offset = offset; _overlay = overlay; _high = high; _followsTarget = followsTarget;
         Name = (overlay ? "Foreground" : "Background") + (high ? "High" : "Low");
         ZIndex = high ? 2 : 0;
         TextureFilter = TextureFilterEnum.Nearest;
@@ -35,12 +37,28 @@ internal sealed partial class BattlefieldTerrain : Node2D
         for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++)
             {
-                int sx = region.Origin.X + x + offset.X, sy = region.Origin.Y + y + offset.Y;
+                var (sx, sy) = SourceCell(x, y);
                 if (sx is < 0 or >= 64 || sy is < 0 or >= 64) continue;
                 int block = map.Layout[sx, sy] & 0x3FF;
                 if (!overlay || block != 0) textures.Block(visual, block);
             }
         QueueRedraw();
+    }
+
+    internal void Follow(MapPosition target)
+    {
+        if (!_followsTarget || target == _target) return;
+        _target = target;
+        QueueRedraw();
+    }
+
+    private (int X, int Y) SourceCell(int x, int y)
+    {
+        // Target-following planes store their aperture around secondary cell (9,9).
+        // Extend its opaque edge over the larger presentation viewport.
+        if (_followsTarget) return (_offset.X + Math.Clamp(9 + x - _target.X, 0, 18),
+            _offset.Y + Math.Clamp(9 + y - _target.Y, 0, 18));
+        return (_region.Origin.X + x + _offset.X, _region.Origin.Y + y + _offset.Y);
     }
 
     public override void _Draw()
@@ -50,7 +68,7 @@ internal sealed partial class BattlefieldTerrain : Node2D
         for (int y = 0; y < _height; y++)
             for (int x = 0; x < _width; x++)
             {
-                int sourceX = _region.Origin.X + x + _offset.X, sourceY = _region.Origin.Y + y + _offset.Y;
+                var (sourceX, sourceY) = SourceCell(x, y);
                 if (sourceX is < 0 or >= 64 || sourceY is < 0 or >= 64) continue;
                 int block = _map.Layout[sourceX, sourceY] & 0x3FF;
                 if (_overlay && block == 0) continue;
@@ -73,7 +91,7 @@ internal sealed partial class BattlefieldTerrain : Node2D
     {
         name = Name.ToString(), map = _map.Map.Value, origin = _region.Origin,
         width = _width, height = _height, offsetX = _offset.X, offsetY = _offset.Y,
-        overlay = _overlay, highPriority = _high, z = ZIndex, draws = _draws, drawSequence = _drawSequence, first = _first,
+        positionX = Position.X, positionY = Position.Y, target = _followsTarget ? _target : null, overlay = _overlay, highPriority = _high, z = ZIndex, draws = _draws, drawSequence = _drawSequence, first = _first,
         visualMap = _visual.Map.Value, atlasWidth = _visual.Atlas.Width, atlasHeight = _visual.Atlas.Height,
         atlasScale = _visual.Scale, blocks = _visual.Blocks.Count,
     };

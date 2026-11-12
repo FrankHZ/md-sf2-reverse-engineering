@@ -3,7 +3,7 @@
 import re
 
 from sf2tool.h2.battle_global_data import _tokens
-from sf2tool.remake_exploration_actions import action_stream
+from sf2tool.remake_exploration_actions import action_stream, walking_actions
 from sf2tool.remake_exploration_search import compile_search
 
 
@@ -34,7 +34,7 @@ def compile_maps(
         # sub_44D0E copies eas_Walking's 32-byte prefix, then emits move/waitDest/
         # wait10 for each nonnegative orientation and jumps to the first move.
         compiler.sources.add("disasm/code/common/scripting/entity/entityfunctions_2.asm")
-        walking = compiler.walking(0, 0, 0)
+        walking = walking_actions(compiler, 0, 0, 0)
         actions = walking[: next(i for i, row in enumerate(walking) if row["op"] == "random-walk")]
         loop = len(actions)
         for row in rows(folder, "s1_entities", symbol):
@@ -218,12 +218,13 @@ def compile_maps(
                 args = _tokens(source_row["operandText"])
                 entity["sprite"] = source_record["mapSprite"]
                 entity["actions"] = (
-                    compiler.walking(
+                    walking_actions(
+                        compiler,
                         **{
                             "x": source_record["walking"]["originX"],
                             "y": source_record["walking"]["originY"],
                             "radius": source_record["walking"]["range"],
-                        }
+                        },
                     )
                     if source_record["kind"] == "walking"
                     else sequenced(folder, args[4])
@@ -258,6 +259,9 @@ def compile_maps(
                             "actions": action_stream(compiler, "eas_Init"),
                         }
                     )
+                    continue
+                if [row["opcode"] for row in table] == ["rts"]:
+                    # Some maps point directly to the empty handler.
                     continue
                 for source_row in table:
                     args = _tokens(source_row["operandText"])

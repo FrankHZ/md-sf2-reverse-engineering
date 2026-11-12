@@ -13,7 +13,7 @@ public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell, SupportSpell }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
-public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger }
+public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman }
 public enum BattleControl { Player, Automatic }
 public enum BattleFaction { Ally, Enemy }
 
@@ -25,6 +25,7 @@ public sealed class PhysicalCriticalRule
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
     public static PhysicalCriticalRule OneIn32WithFrequentDoubleAndCounter { get; } = new(32, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
+    public static PhysicalCriticalRule Monk { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule Cleric { get; } = new(32, 1, counterChanceDenominator: 16);
     public ushort CounterChanceDenominator { get; }

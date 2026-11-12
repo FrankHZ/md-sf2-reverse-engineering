@@ -90,7 +90,7 @@ public sealed record PositionFlashWait(WaitToken Token, EntityRef Entity, bool O
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
 public abstract record FieldEventContext(bool Returning);
-public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false) : FieldEventContext(Returning);
+public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false, byte InteractionFacing = 0) : FieldEventContext(Returning);
 public sealed record ZoneEventContext(bool Returning = false) : FieldEventContext(Returning);
 public sealed record ZoneArrivalWait(WaitToken Token) : ProgramWait(Token);
 public abstract record TextWindow;
@@ -295,7 +295,7 @@ public sealed class ExplorationState
         // Safe remake representation of a repeated source hide after FF removal.
         // Only a retained, already hidden physical record proves this lifecycle state.
         // Never resolve an arbitrary absent/removed identity to the player or a reused slot.
-        if (removeAliases && Population is not null && AllEntities.Any(row => row.Entity == reference &&
+        if (Population is not null && AllEntities.Any(row => row.Entity == reference &&
             !row.Visible && row.Motion.X == 0x7000 && row.Motion.Y == 0x7000 &&
             row.Motion.XDestination == 0x7000 && row.Motion.YDestination == 0x7000 &&
             row.Actions is null && !Aliases.Values.Contains(row.Slot))) return this;

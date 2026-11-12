@@ -25,6 +25,8 @@ ITEMS = (
     "ANTIDOTE",
     "ANGEL_WING",
     "SHORT_AXE",
+    "MIDDLE_AXE",
+    "IRON_ROD",
     "WOODEN_STICK",
     "SHORT_SWORD",
     "WOODEN_SWORD",

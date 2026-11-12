@@ -64,11 +64,11 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         // GetAiCommandset reads the dedicated combatant byte; the activation filler nibble
         // happens to match it in Battle01 but is zero in Battle02.
         int commandset = source.AiCommandset;
-        if (commandset is not (2 or 6 or 7 or 8 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
+        if (commandset is not (0 or 2 or 6 or 7 or 8 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
         // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
         // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
         // Neither path draws RNG. Admitted ATT-only weapons have no AI use action;
-        // other items/enabled bits and spells outside the finite BLAZE1/HEAL1 family remain Unsupported.
+        // The packed book must agree with the admitted spell actions.
         if (!BattleEquipment.OrdinaryAiLoadout(actor.Definition, actor.SourceLoadout, allowHerb: true, allowEarlySpells: true))
             throw new BattleRuleException("source-action-categories", "actor.loadout", true);
         var targets = current.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != actor.Faction)
@@ -98,18 +98,12 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         if (commandset == 7) effects.Add(new("ai-command-move-order1", actorRef, After: -1));
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
+        if (commandset == 0 && (Healing() ?? Support()) is { } treatment) return treatment;
         if (EnemySpellDecision.Attack(prepared, actorRef, physical, actions) is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
-        if (EnemySpellDecision.Heal(prepared, actorRef, actions) is { } heal)
-            return heal with { Effects = Array.AsReadOnly<BattleEffect>([
-                .. effects, new("ai-command-heal1", actorRef, After: 0), .. heal.Effects]) };
-        effects.Add(new("ai-command-heal1", actorRef, After: -1));
-        if (EnemySupportDecision.Resolve(prepared, actorRef, actions) is { } support)
-            return support with { Effects = Array.AsReadOnly<BattleEffect>([
-                .. effects, new("ai-command-support", actorRef, After: 0), .. support.Effects]) };
-        effects.Add(new("ai-command-support", actorRef, After: -1));
+        if (commandset != 0 && (Healing() ?? Support()) is { } fallback) return fallback;
         if (commandset == 8 || targets.Length == 0)
             return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
         var costs = Costs();
@@ -122,6 +116,14 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         effects.Add(new("ai-command-move1", actorRef, After: 0));
         BattleMovement.RequireStop(prepared, actorRef, pursuit.Destination, legal);
         return new(prepared, effects.AsReadOnly(), pursuit.Destination, BattleMovement.Route(actor.Position, pursuit.MoveString));
+
+        BattleAutomaticAction? Healing() => Attempt("ai-command-heal1", EnemySpellDecision.Heal(prepared, actorRef, actions));
+        BattleAutomaticAction? Support() => Attempt("ai-command-support", EnemySupportDecision.Resolve(prepared, actorRef, actions));
+        BattleAutomaticAction? Attempt(string kind, BattleAutomaticAction? action)
+        {
+            effects.Add(new(kind, actorRef, After: action is null ? -1 : 0));
+            return action is null ? null : action with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. action.Effects]) };
+        }
 
         sbyte[] Costs() => current.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         uint Image(ushort seed) => ((uint)seed << 16) | (current.ThinkingSeed & 65535);

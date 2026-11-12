@@ -217,7 +217,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 ActiveCue = wait.Cue.Kind.ToString();
                 if (wait.Cue.Kind == PresentationCueKind.FlashWhite)
                 {
-                    if (wait.Cue.Resource != "white-four-pulses" || wait.Cue.DurationTicks is not (> 0 and <= 240))
+                    if (wait.Cue.Resource is not ("white-four-pulses" or "white-pulses") || wait.Cue.DurationTicks is not (> 0 and <= 240))
                         throw new InvalidOperationException("flash-pulse-binding");
                     _flashRestore = _white.Color;
                     _flashPulse = -1;
@@ -297,9 +297,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     // pulses in one cue; palettes and black modulation remain authoritative.
                     double pulseDuration = wait.Cue.DurationTicks!.Value / 60.0;
                     complete = _cueAge >= pulseDuration;
-                    int pulse = Math.Min(3, (int)(_cueAge / pulseDuration * 4));
+                    int count = wait.Cue.Resource == "white-four-pulses" ? 4 : wait.Cue.DurationTicks.Value / 8;
+                    int pulse = Math.Min(count - 1, (int)(_cueAge / pulseDuration * count));
                     if (pulse != _flashPulse) { _flashPulse = pulse; FlashPulses++; }
-                    bool on = !complete && (_cueAge / pulseDuration * 8) % 2 < 1;
+                    bool on = !complete && (_cueAge / pulseDuration * count * 2) % 2 < 1;
                     _white.Color = new Color(1, 1, 1, on && !_reducedFlash ? 1 : 0);
                     if (complete) { _white.Color = _flashRestore; _flashPulse = -1; FlashRestorations++; }
                     break;

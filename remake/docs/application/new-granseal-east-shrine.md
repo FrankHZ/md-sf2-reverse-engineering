@@ -1,6 +1,6 @@
 # New Granseal, Ribble and the eastern cave approach
 
-The ordinary private campaign advances the [Battle08 founding party](battle08-new-granseal.md) through two battles to the road to the Dark Caves. The East Shrine interior is playable from its own entrance. The field map retains the original land and warp conditions. Battle11 begins the next slice.
+The ordinary private campaign advances the [Battle08 founding party](battle08-new-granseal.md) through two battles to the road to the Dark Caves. The East Shrine interior is playable from its own entrance. The field map retains the original land and warp conditions. The [Dark Caves, Polca and Bedoe route](dark-caves-bedoe.md) continues from the ordinary Battle10 return.
 
 ## Play
 

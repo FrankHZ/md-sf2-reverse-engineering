@@ -8,7 +8,7 @@ from typing import Any
 
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
-from sf2tool.remake_exploration_actions import action_stream, compile_action, finish_in_idle
+from sf2tool.remake_exploration_actions import action_stream, inline_actions, walking_actions
 from sf2tool.remake_exploration_joins import join_selector, join_service
 from sf2tool.remake_exploration_scene import portrait_operations, scene_operation, sound_operation
 from sf2tool.remake_exploration_services import church_service, shop_service
@@ -83,40 +83,6 @@ class OriginalPrograms:
                     "path": relative.removeprefix("disasm/"),
                     "operations": self.source_operations(relative, symbol),
                 }
-
-    def walking(self, x: int, y: int, radius: int) -> list[dict[str, Any]]:
-        path = "disasm/data/scripting/entity/eas_main.asm"
-        self.sources.add(path)
-        text = (self.upstream / path).read_text(encoding="utf-8")
-        block = re.search(
-            r"^eas_Walking:(.*?ac_branch\s*\n\s*dc\.w[^\n]+)", text, re.MULTILINE | re.DOTALL
-        )
-        if block is None:
-            raise ValueError("source walking template")
-        result, labels = [], {}
-        branch = False
-        for index, line in enumerate(block.group(1).splitlines()):
-            if match := re.match(r"^(\w+):\s*(.*)", line):
-                labels[match[1]] = len(result)
-                line = match[2]
-            for statement in _statements(line):
-                op, _, operands = statement.partition(" ")
-                if op == "ac_randomWalk":
-                    result.append({"op": "random-walk", "x": x, "y": y, "radius": radius})
-                elif op == "ac_waitDest":
-                    continue  # RandomWalkEntity owns the movement wait.
-                elif op == "ac_branch":
-                    branch = True
-                elif op == "dc.w" and branch:
-                    target = re.match(r"\((\w+)-\w+\)", operands.strip())
-                    if target is None or target[1] not in labels:
-                        raise ValueError("source walking branch")
-                    result.append({"op": "jump", "instruction": labels[target[1]]})
-                else:
-                    result.extend(
-                        compile_action(self, op, _tokens(operands), f"{path}:eas_Walking[{index}]")
-                    )
-        return result
 
     def initial_ally_sprites(self) -> list[dict[str, Any]]:
         classes_path = "disasm/data/stats/allies/allystartdefs.asm"
@@ -251,7 +217,7 @@ class OriginalPrograms:
                     "visible": True,
                     "obstruction": False,
                     "actions": (
-                        self.walking(*map(self.number, values[4:]))
+                        walking_actions(self, *map(self.number, values[4:]))
                         if row["opcode"] == "entityRandomWalk"
                         else action_stream(self, values[4])
                     ),
@@ -326,6 +292,24 @@ class OriginalPrograms:
                         "target": _location(self.compile(branch["operandText"])),
                     }
                 )
+            elif (
+                op == "cmpi.b"
+                and len(args) == 2
+                and args[0].startswith("#")
+                and args[1] == "((EVENT_RELATIVE_POSITION-$1000000)).w"
+                and index < len(rows)
+                and rows[index]["opcode"] in ("beq.s", "bne.s")
+            ):
+                branch = rows[index]
+                index += 1
+                result.append(
+                    {
+                        "op": "branch-interaction-facing",
+                        "facing": self.number(args[0][1:]),
+                        "whenEqual": branch["opcode"] == "beq.s",
+                        "target": _location(self.compile(branch["operandText"])),
+                    }
+                )
             elif op in ("bra.s", "bra.w"):
                 result.append({"op": "jump", "target": _location(self.compile(args[0]))})
             elif (
@@ -350,6 +334,17 @@ class OriginalPrograms:
                         "target": _location(self.compile(branch["operandText"])),
                     }
                 )
+            elif (
+                op == "lea"
+                and len(args) == 2
+                and args[1] == "a0"
+                and (target := re.fullmatch(r"(\w+)\(pc\)", args[0]))
+                and index < len(rows)
+                and rows[index]["opcode"] == "jsr"
+                and rows[index]["operandText"] == "ExecuteMapScript"
+            ):
+                result.append({"op": "call", "target": _location(self.compile(target[1]))})
+                index += 1
             elif op == "script":
                 result.append(
                     {
@@ -388,10 +383,14 @@ class OriginalPrograms:
                 registers["shop"] = self.number(args[0][1:])
             elif op == "jsr" and args == ["j_ShopMenu"] and "shop" in registers:
                 result.append(shop_service(self, registers.pop("shop")))
-            elif op == "jsr" and args == ["j_ChurchMenu"]:
+            elif op in ("jsr", "jmp") and args == ["j_ChurchMenu"]:
                 result.append(church_service(self))
+                if op == "jmp":
+                    result.append({"op": "end"})
             elif op == "jsr" and args == ["j_YesNoPrompt"]:
                 # The direct prompt returns d0, unlike csc06 which writes F89.
+                if rows[index]["opcode"] == "tst.w" and rows[index]["operandText"] == "d0":
+                    index += 1
                 if rows[index]["opcode"] in ("bne.s", "bne.w"):
                     result.append(
                         {
@@ -468,8 +467,43 @@ class OriginalPrograms:
                         "map": "map-" + args[0].removeprefix("ms_map").removesuffix("_Entities"),
                     }
                 )
-            elif op == "joinForceAI" and self.number(args[1]) != 0:
-                result.append({"op": "join-ai-party", "member": self.number(args[0])})
+            elif op == "joinForceAI":
+                result.append(
+                    {
+                        "op": "join-ai-party" if self.number(args[1]) else "join-player-party",
+                        "member": self.number(args[0]),
+                    }
+                )
+            elif op == "reloadEntities" and (
+                variant := re.fullmatch(r"ms_map(\d+)_flag(\d+)_Entities", args[0])
+            ):
+                result.append(
+                    {
+                        "op": "reload-setup-entities",
+                        "map": f"map-{int(variant[1])}",
+                        "setup": f"ms-map{int(variant[1])}-flag{int(variant[2])}",
+                    }
+                )
+            elif op == "flashScreenWhite":
+                ticks = ((self.number(args[0]) >> 3) + 1) * 8
+                result.append(
+                    {
+                        "op": "present",
+                        "kind": "FlashWhite",
+                        "resource": "white-pulses",
+                        "entity": None,
+                        "position": None,
+                        "durationTicks": ticks,
+                    }
+                )
+            elif op == "executeSubroutine" and args == ["csub_458E"]:
+                self.sources.update(
+                    (
+                        "disasm/code/common/scripting/map/bbcs_11_function.asm",
+                        "disasm/code/gameflow/exploration/exploration.asm",
+                    )
+                )
+                result.append({"op": "align-background-to-view-target"})
             elif op == "faceEntity":
                 result.append(
                     {
@@ -519,7 +553,9 @@ class OriginalPrograms:
                         "entity": self.entity(str(registers["d0"])),
                         "wait": False,
                         "installation": "Preserve",
-                        "actions": self.walking(registers["d1"], registers["d2"], registers["d3"]),
+                        "actions": walking_actions(
+                            self, registers["d1"], registers["d2"], registers["d3"]
+                        ),
                     }
                 )
             elif op == "jsr" and args == ["MoveEntityOutOfMap"]:
@@ -901,46 +937,8 @@ class OriginalPrograms:
                 "customActscript",
                 "customActscriptWait",
             ):
-                actions = []
-                entered_idle = False
-                while index < len(rows) and rows[index]["opcode"] not in ("endActions", "ac_end"):
-                    action = rows[index]
-                    if entered_idle:
-                        # Consume inline bytes through the delimiter, without making code
-                        # after an unconditional idle jump executable.
-                        index += 1
-                        continue
-                    if action["opcode"] == "ac_jump" and _tokens(action["operandText"]) == [
-                        "eas_Idle"
-                    ]:
-                        finish_in_idle(actions)
-                        entered_idle = True
-                        index += 1
-                        continue
-                    actions.extend(
-                        compile_action(
-                            self,
-                            action["opcode"],
-                            _tokens(action["operandText"]),
-                            f"{relative}:{symbol}[{action['index']}]",
-                        )
-                    )
-                    index += 1
-                if index == len(rows):
-                    raise ValueError("unterminated entity action: " + symbol)
-                index += 1
-                sequence = op.startswith("entityActions")
-                if sequence and not entered_idle:
-                    finish_in_idle(actions)
-                result.append(
-                    {
-                        "op": "motion",
-                        "entity": self.entity(args[0]),
-                        "wait": op.endswith("Wait"),
-                        "installation": "SlotTimerClearCollision" if sequence else "SlotTimer",
-                        "actions": actions,
-                    }
-                )
+                index, motion = inline_actions(self, rows, index, op, args, relative, symbol)
+                result.append(motion)
             elif op in ("setActscript", "setActscriptWait"):
                 actions = action_stream(self, args[1])
                 result.append(

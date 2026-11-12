@@ -71,7 +71,8 @@ internal static class MapEventDispatcher
         var story = current.Story.Copy(entry.Program);
         if (entry.EntityFlags is { } flags)
             story = story.Copy(story.Cursor, (flags & 1) != 0 ? new EntityEventFacingWait(new(current.ObservationSequence + 1)) : null,
-                entityEvent: new(entity, ProgramRunner.Entity(current, entity).Motion.Facing, flags));
+                entityEvent: new(entity, ProgramRunner.Entity(current, entity).Motion.Facing, flags,
+                    InteractionFacing: (byte)(current.Exploration!.PlayerEntity.Motion.Facing & 3)));
         current = ProgramRunner.Commit(current, current.Active, story, observations, "interaction-started", entity.Value);
         if (story.TextSettings is null || story.EntityEvent is null) return current;
         // The source portrait opens before the facing wait and before entity suppression.

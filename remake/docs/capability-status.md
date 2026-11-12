@@ -97,8 +97,9 @@ The finite `battle07-return` recipe supports a real Save/Quit/fresh-process Cont
 preserving progress and rebuilding the declared safe anchor/followers. Older worlds retain their
 own compatible slots; revision4 still initializes seven members and no migration is added.
 The [damaged-ship continuation](application/battle08-new-granseal.md) admits the deck choices,
-Battle08, the F458 ship re-entry and the founding sequence. The year-later castle scene, later
-F530/Map14 setups and arbitrary field saves remain outside this capability. The raw Map44 default-zone displacement
+Battle08, the F458 ship re-entry and the founding sequence. The [year-later route](application/new-granseal-east-shrine.md) continues to the cave approach.
+[Dark Caves, Polca and Bedoe](application/dark-caves-bedoe.md) covers the next two battles,
+the shrine audience and the return to Polca. Later F530/Map14 setups and arbitrary field saves remain outside this capability. The raw Map44 default-zone displacement
 remains an explicit frontier. Original natural traversal/timing and human-play acceptance remain Unknown.
 
 ## Finite Galam shop and purchased-supply closure

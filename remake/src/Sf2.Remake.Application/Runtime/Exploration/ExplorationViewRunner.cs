@@ -37,9 +37,12 @@ internal static class ExplorationViewRunner
             254 or 255 => area.ForegroundX == 0 && area.ForegroundY == 0 && area.ParallaxAX == 256 && area.ParallaxAY == 256,
             _ => false,
         };
-        if (!main || area.ParallaxAX is not (128 or 256) || area.ParallaxAY is not (128 or 256) ||
+        bool mainFollowsItself = area.Layer == 0
+            ? (byte)area.AutoscrollBX == 128 || (byte)area.AutoscrollBY == 128
+            : (byte)area.AutoscrollAX == 128 || (byte)area.AutoscrollAY == 128;
+        if (!main || mainFollowsItself || area.ParallaxAX is not (128 or 256) || area.ParallaxAY is not (128 or 256) ||
             area.ParallaxBX is not (128 or 256) || area.ParallaxBY is not (128 or 256) ||
-            new[] { area.AutoscrollAX, area.AutoscrollAY, area.AutoscrollBX, area.AutoscrollBY }.Any(value => value is < -127 or > 255 || (byte)value == 128))
+            new[] { area.AutoscrollAX, area.AutoscrollAY, area.AutoscrollBX, area.AutoscrollBY }.Any(value => value is < -128 or > 255))
             throw new BattleRuleException("field-view-profile", "map.view", true);
     }
 
@@ -123,7 +126,19 @@ internal static class ExplorationViewRunner
             };
         }
         bool hide = view.AX.Active || view.AY.Active;
-        return view with { AX = Advance(view.AX, view.Area.AutoscrollAX), AY = Advance(view.AY, view.Area.AutoscrollAY), BX = Advance(view.BX, view.Area.AutoscrollBX), BY = Advance(view.BY, view.Area.AutoscrollBY), HideWindows = hide };
+        view = view with { AX = Advance(view.AX, view.Area.AutoscrollAX), AY = Advance(view.AY, view.Area.AutoscrollAY),
+            BX = Advance(view.BX, view.Area.AutoscrollBX), BY = Advance(view.BY, view.Area.AutoscrollBY), HideWindows = hide };
+        var areaScroll = view.Area;
+        if ((byte)areaScroll.AutoscrollAX == 128 || (byte)areaScroll.AutoscrollAY == 128 ||
+            (byte)areaScroll.AutoscrollBX == 128 || (byte)areaScroll.AutoscrollBY == 128)
+        {
+            var (x, y) = TargetPlanePosition(world, view);
+            LogicalViewAxis Schedule(LogicalViewAxis axis, int mode, int destination, int speed) =>
+                (byte)mode == 128 ? axis with { Destination = destination, Speed = speed } : axis;
+            view = view with { AX = Schedule(view.AX, areaScroll.AutoscrollAX, x, 16), AY = Schedule(view.AY, areaScroll.AutoscrollAY, y, 8),
+                BX = Schedule(view.BX, areaScroll.AutoscrollBX, x, 16), BY = Schedule(view.BY, areaScroll.AutoscrollBY, y, 16) };
+        }
+        return view;
     }
 
     private static LogicalView Speeds(LogicalView view, int speed) => view with
@@ -149,6 +164,29 @@ internal static class ExplorationViewRunner
         return view with { Area = area };
     }
 
+    internal static LogicalView AlignBackground(ExplorationState world, LogicalView view)
+    {
+        var (x, y) = TargetPlanePosition(world, view);
+        return view with { BX = view.BX with { Position = x, Destination = view.BX.Active ? x : null },
+            BY = view.BY with { Position = y, Destination = view.BY.Active ? y : null } };
+    }
+
+    private static (int X, int Y) TargetPlanePosition(ExplorationState world, LogicalView view)
+    {
+        bool mainOnB = view.Area.Layer == 0;
+        int x = mainOnB ? view.AX.Position : view.BX.Position;
+        int y = mainOnB ? view.AY.Position : view.BY.Position;
+        if (view.TargetSlot is { } slot)
+        {
+            var target = world.AllEntities.Single(entity => entity.Slot == slot).Motion;
+            x = (mainOnB ? view.Area.ForegroundX : view.Area.BackgroundX) * 384 + 3456
+                - target.X + (mainOnB ? view.BX.Position : view.AX.Position);
+            y = (mainOnB ? view.Area.ForegroundY : view.Area.BackgroundY) * 384 + 3456
+                - target.Y + (mainOnB ? view.BY.Position : view.AY.Position);
+        }
+        return (x, y);
+    }
+
     internal static LogicalView Position(LogicalView view, SetPlanePosition command)
     {
         if (command.Value is < 0 or >= 24576) throw new BattleRuleException("plane-position", "program.view");
@@ -164,7 +202,7 @@ internal static class ExplorationViewRunner
         // VInt_UpdateScrollingData consumes the prior destination before scheduling the
         // next signed-byte step. Continuous scrolling wraps over the 64-cell plane.
         var moved = Scroll(axis);
-        if (auto == 0) return moved;
+        if (auto == 0 || (byte)auto == 128) return moved;
         int value = unchecked((sbyte)auto);
         int position = (moved.Position % 24576 + 24576) % 24576;
         return moved with { Position = position, Destination = position + value, Speed = Math.Abs(value) };

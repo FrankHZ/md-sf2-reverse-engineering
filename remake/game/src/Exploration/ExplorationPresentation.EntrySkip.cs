@@ -28,7 +28,7 @@ internal sealed partial class ExplorationPresentation
                 break;
             case PresentationCueKind.CameraWait: _camera = target; break;
             case PresentationCueKind.FlashWhite:
-                if (wait.Cue.Resource != "white-four-pulses" || wait.Cue.DurationTicks is not (> 0 and <= 240))
+                if (wait.Cue.Resource is not ("white-four-pulses" or "white-pulses") || wait.Cue.DurationTicks is not (> 0 and <= 240))
                     throw new InvalidOperationException("flash-pulse-binding");
                 if (_cue == wait.Token) _white.Color = _flashRestore;
                 _flashPulse = -1;

@@ -162,12 +162,12 @@ internal sealed partial class BattleMapViewport : Control
         var area = map.Traversal.SelectActiveArea(region.Origin)
             ?? throw new InvalidOperationException("battlefield-map-area-unavailable");
         var offset = map.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
-        // The connected maps have fixed 1:1 planes. Other plane motion requires
-        // an explicit consumer rather than silently flattening it into this board.
         var view = map.ViewAreas.ElementAtOrDefault(area.OneBasedRecordOrdinal - 1);
+        bool followsTarget = view is { Layer: not 0, AutoscrollBX: 128, AutoscrollBY: 128 };
         if (view is not null && (view.ParallaxAX != 256 || view.ParallaxAY != 256 ||
-            view.ParallaxBX != 256 || view.ParallaxBY != 256 || view.AutoscrollAX != 0 ||
-            view.AutoscrollAY != 0 || view.AutoscrollBX != 0 || view.AutoscrollBY != 0))
+            view.ParallaxBX is not (128 or 256) || view.ParallaxBY is not (128 or 256) ||
+            (view.Layer == 0 || followsTarget) && (view.ParallaxBX != 256 || view.ParallaxBY != 256) || view.AutoscrollAX != 0 ||
+            view.AutoscrollAY != 0 || !followsTarget && (view.AutoscrollBX != 0 || view.AutoscrollBY != 0)))
             throw new InvalidOperationException("battlefield-map-plane-motion-unsupported");
         // Main plane coordinates are selected by the source area. Overlay offsets
         // address the other packed plane relative to it, not battle cell zero.
@@ -181,8 +181,10 @@ internal sealed partial class BattleMapViewport : Control
         void Add(Vector2I shift, bool overlay, bool high)
         {
             var layer = new BattlefieldTerrain();
-            try { layer.Configure(map, visual, region, _mapTextures, definition.Width, definition.Height, CellSize, shift, overlay, high); }
+            try { layer.Configure(map, visual, region, _mapTextures, definition.Width, definition.Height, CellSize, shift, overlay, high, followsTarget && !overlay); }
             catch { layer.Free(); throw; }
+            if (!overlay && view is not null)
+                layer.CameraShift = new(1f - view.ParallaxBX / 256f, 1f - view.ParallaxBY / 256f);
             _board.AddChild(layer); _terrain.Add(layer);
         }
     }
@@ -378,6 +380,8 @@ internal sealed partial class BattleMapViewport : Control
         var positions = _inspectionFocus is { } inspecting ? new[] { inspecting } : _focus;
         var focus = positions.Count == 0 ? _mapSize / (2 * WorldViewportLayout.PixelScale)
             : new Vector2(positions[^1].X + 0.5f, positions[^1].Y + 0.5f) * 24;
+        if (positions.Count > 0)
+            foreach (var layer in _terrain) layer.Follow(positions[^1]);
         if (_inspectionFocus is not null && _inspectionPan is { } pan)
             focus = pan - offset + Size / (2 * WorldViewportLayout.PixelScale) - new Vector2(0, 24);
         WorldViewport.Focus(_map, new(offset, _mapSize / WorldViewportLayout.PixelScale), offset + focus, Size,
@@ -389,6 +393,8 @@ internal sealed partial class BattleMapViewport : Control
     {
         _board.Scale = Vector2.One;
         _board.Position = (offset - WorldViewport.Origin) * WorldViewportLayout.PixelScale;
+        foreach (var layer in _terrain)
+            layer.Position = WorldViewport.Origin * layer.CameraShift * WorldViewportLayout.PixelScale;
         if (_focus.Count > 0)
             SubjectChanged?.Invoke(new(_board.Position + new Vector2(_focus[^1].X, _focus[^1].Y) * CellSize,
                 Vector2.One * CellSize));

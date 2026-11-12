@@ -546,6 +546,8 @@ public sealed partial class BattleSessionView : Control
     private object ObservationFacts(bool full)
     {
         var current = _session?.Current;
+        if (_startupFailure is { } failure)
+            return new { failure = failure.Code, failureKind = failure.Kind.ToString(), revision = current?.Revision };
         var choices = _session?.QueryBattleChoices();
         if (current?.Active is ActiveExploration)
             return new

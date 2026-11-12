@@ -43,7 +43,7 @@ public static class DisplayCatalogReader
                     pin.GetProperty("romSha256").GetString() != romSha256) throw new ArgumentException();
             }
             var texts = root.GetProperty("texts");
-            if (texts.ValueKind != JsonValueKind.Array || texts.GetArrayLength() > (targetNamespace == "world.text" ? 1024 : 256)) throw new ArgumentException();
+            if (texts.ValueKind != JsonValueKind.Array || texts.GetArrayLength() > (targetNamespace == "world.text" ? originals.Count : 256)) throw new ArgumentException();
             var seen = new HashSet<(string, int)>();
             var rows = new Dictionary<int, DisplayCatalog.Row>(); var rejected = new Dictionary<int, string>();
             var diagnostics = new List<DisplayDiagnostic>();

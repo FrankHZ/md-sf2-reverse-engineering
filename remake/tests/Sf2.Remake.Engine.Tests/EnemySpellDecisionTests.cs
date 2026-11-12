@@ -114,6 +114,29 @@ public sealed class EnemySpellDecisionTests
         Assert.Single(chosen.Effects, e => e.Kind == "rng-ai-attack-category");
     }
 
+    [Theory]
+    [InlineData(4, false)]
+    [InlineData(5, true)]
+    public void HealerOneWithHealTwoChecksBookCostBeforeCastingHealOne(int mp, bool canHeal)
+    {
+        var battle = Battle(d =>
+        {
+            var healTwo = d["spells"]![1]!.DeepClone();
+            healTwo["level"] = 2; healTwo["mpCost"] = 5; healTwo["maximumRange"] = 2;
+            d["spells"]!.AsArray().Add(healTwo);
+            d["actors"]![2]!["spells"]!.AsArray().Add(JsonNode.Parse("""{"id":"heal","level":2}"""));
+            d["encounters"]![0]!["placements"]![2]!["initialization"]!["commandset"] = 0;
+            d["start"]!["actors"]![2]!["mp"] = mp;
+        });
+        var decision = Decide(battle, Cleric);
+        Assert.Equal(canHeal, decision.ChosenAction == new BattleActionRef(BattleActionKind.Healing, new("heal", 1)));
+        if (canHeal)
+        {
+            Assert.Equal(Wounded, decision.Target);
+            Assert.DoesNotContain(decision.Effects, e => e.Kind == "ai-command-attack1");
+        }
+    }
+
     [Fact]
     public void HealCommandTwoChoosesHealOneBeforeOrderAttackOrPursuitWithoutDecisionRng()
     {

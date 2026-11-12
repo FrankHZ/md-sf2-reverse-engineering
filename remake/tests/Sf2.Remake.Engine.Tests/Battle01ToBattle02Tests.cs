@@ -211,7 +211,25 @@ public sealed class Battle01ToBattle02Tests
         Assert.Single(before.Actors, actor => actor.Actor == new ActorRef("hero"));
     }
 
-    private static (ScenarioDefinition, SessionSnapshot) JoinMessage(int member, byte classId, string? className)
+    [Theory]
+    [InlineData(null, 0x24, 0x24)]
+    [InlineData(false, 0x24, 0x20)]
+    [InlineData(true, 0x20, 0x24)]
+    public void RejoiningRetainsPartyResourcesWhileApplyingTheRequestedControl(bool? control, int oldWord, int expectedWord)
+    {
+        var (definition, initial) = JoinMessage(0, 0, "SDMN", control);
+        var start = definition.EncounterStarts.Values.Single().Actors.Single(a => a.Actor.Value == "hero");
+        var carried = start with { Hp = 3, Exp = 71, ActivationWord = (ushort)oldWord };
+        var field = initial.Exploration!;
+        var party = field.Party.WithResources([carried], field.Party.Gold);
+        initial = new(initial.SessionId, initial.Revision, initial.ObservationSequence,
+            new ActiveExploration(field.WithParty(party)), initial.Story, initial.StopReason);
+        var result = ProgramRunner.Run(definition, initial, []);
+        Assert.Null(result.Failure);
+        Assert.Equal(carried with { ActivationWord = (ushort)expectedWord }, Assert.Single(result.Snapshot.Exploration!.Party.Actors));
+    }
+
+    private static (ScenarioDefinition, SessionSnapshot) JoinMessage(int member, byte classId, string? className, bool? control = null)
     {
         var field = ExplorationTextWaitTests.StartFieldText("{NAME} the {CLASS}", name: "Mara", configure: document =>
             document["world"]!["programs"]![0]!["instructions"] = System.Text.Json.Nodes.JsonNode.Parse(
@@ -224,7 +242,7 @@ public sealed class Battle01ToBattle02Tests
             original.Terrain, deployments, [], initialization: original.Initialization);
         var worldDefinition = field.Definition.Exploration!;
         var programs = worldDefinition.Programs.Values.Append(new("join-message",
-            [new JoinPartyMember(member), new ShowText(TextDisplayMode.Single, null, WaitForAcknowledgement: false,
+            [new JoinPartyMember(member, control), new ShowText(TextDisplayMode.Single, null, WaitForAcknowledgement: false,
                 ExplicitWindows: true, NameMember: member, TextId: 100), new WaitForTextInput(), new CloseText(),
                 new WriteFlag(402, true), new WriteFlag(66, false), new EndProgram()]));
         var exploration = new ExplorationDefinition(worldDefinition.Maps.Values, programs, worldDefinition.Texts,

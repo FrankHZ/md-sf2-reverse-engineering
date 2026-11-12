@@ -2175,3 +2175,12 @@ msgstr "East Shrine"
 
 msgid "save.destination.parmecia-battle-return"
 msgstr "Eastern Parmecia, battle return"
+
+msgid "save.destination.dark-caves"
+msgstr "Dark Caves, battle return"
+
+msgid "save.destination.mount-volcano"
+msgstr "Mount Volcano, battle return"
+
+msgid "save.destination.polca-return"
+msgstr "Polca, eastern approach"

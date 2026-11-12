@@ -80,7 +80,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
                     2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
                     3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
-                    8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
+                    7 => BattleClassRule.UnpromotedWolfman, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
                     10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
                     _ => throw Unsupported("source-class", "actors.class"),
                 };
@@ -174,6 +174,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 new(encounter.Area.X, encounter.Area.Y)),
             retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : [],
             retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : [],
+            leaderCleanup: encounter.Scene.EnemyLeaderPresent ? new(new("ally-0"),
+                deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder)) : null,
             itemDrops: encounter.Battle.Id == 10 ? new(10,
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
                 [new(10, 129, 19, 4)], [new(19, definitions.Items[19].DisplayName, true)]) : null,

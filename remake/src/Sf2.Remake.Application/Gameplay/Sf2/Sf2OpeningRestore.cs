@@ -23,18 +23,20 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             if (!saved.SetEquals(deployments.Keys)) throw new BattleRuleException("save-roster", "save.allies");
             return [];
         }
-        // Field recipe 1 of the pre-voyage package initialized exactly Bowie through Kiwi.
-        if (expected.RecipeRevision != 2 || data.Compatibility != (expected with { RecipeRevision = 1 }))
+        int prior = data.Compatibility.RecipeRevision;
+        int savedCount = prior switch { 1 => 7, 2 => 9, _ => 0 };
+        int currentCount = expected.RecipeRevision switch { 2 => 9, 3 => 10, _ => 0 };
+        if (savedCount == 0 || savedCount >= currentCount || data.Compatibility != (expected with { RecipeRevision = prior }))
             throw new BattleRuleException("save-incompatible", "save.compatibility");
         var rows = deployments.Values.OrderBy(row => row.Initialization?.AllyPartyMember).ToArray();
         var layout = definition.Exploration!.PartyFlags;
-        if (definition.PrivateDefinitions is null || layout is null || rows.Length != 9 ||
-            !rows.Select(row => row.Initialization?.AllyPartyMember).SequenceEqual(Enumerable.Range(0, 9).Select(id => (int?)id)) ||
-            !saved.SetEquals(rows.Take(7).Select(row => row.Actor)))
+        if (definition.PrivateDefinitions is null || layout is null || rows.Length != currentCount ||
+            !rows.Select(row => row.Initialization?.AllyPartyMember).SequenceEqual(Enumerable.Range(0, currentCount).Select(id => (int?)id)) ||
+            !saved.SetEquals(rows.Take(savedCount).Select(row => row.Actor)))
             throw new BattleRuleException("save-roster", "save.allies");
         var added = new List<BattleActorStartInput>();
         uint initializationSeed = data.MainSeed;
-        foreach (var row in rows.Skip(7))
+        foreach (var row in rows.Skip(savedCount))
         {
             var member = (byte)row.Initialization!.AllyPartyMember!.Value;
             if (data.Flags.Contains(layout.JoinedStart + member) || data.Flags.Contains(layout.ActiveStart + member) ||
@@ -82,6 +84,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
         if (data.Recipe is "new-granseal-castle" or "ribble-welcome" or "east-shrine" or "parmecia-battle-return" &&
             data.EgressMap is "map-6" or "map-8") return;
+        if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" && data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
             !(data.Recipe == "battle07-return" && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
@@ -136,6 +139,12 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (anchor?.Map == map && (map.Value == "map-69" && flags.Contains(509) ||
             map.Value == "map-70" && flags.Contains(510)))
             return new("parmecia-battle-return", anchor, "Eastern Parmecia, battle return");
+        if (anchor?.Map == map && map.Value == "map-48" && flags.Contains(511))
+            return new("dark-caves", anchor, "Dark Caves, battle return");
+        if (anchor?.Map == map && map.Value == "map-52" && flags.Contains(512))
+            return new("mount-volcano", anchor, "Mount Volcano, battle return");
+        if (map.Value == "map-13" && flags.Contains(799) && flags.Contains(710) && !flags.Contains(715))
+            return new("polca-return", new(map, new(30, 6), 2), "Polca, eastern approach");
         Fail(); return null!;
     }
 
