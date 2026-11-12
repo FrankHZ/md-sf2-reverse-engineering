@@ -31,6 +31,8 @@ public sealed record Confirm : SessionCommand;
 public sealed record Cancel : SessionCommand;
 // Return from a provisional battle action without undoing the movement preview.
 public sealed record ReturnToBattleActions : SessionCommand;
+// Explicit operator action. Ordinary battle commands never request a debug outcome.
+public sealed record DebugWinBattle : SessionCommand;
 // One deliberate gameplay opportunity at an eligible settled field-input boundary.
 public sealed record WaitAtInput : SessionCommand;
 // One nonaccepting poll. W1 also polls on acceptance; the plain input-first helper does not.
@@ -109,6 +111,8 @@ public sealed class SessionSnapshot
     public SessionMode Mode => Active is ActiveBattle ? SessionMode.Battle : SessionMode.Exploration;
     public BattleOutcomeKind? BattleResult => (Active as ActiveBattle)?.Outcome;
     public bool HasBattleControl => Story.DefeatedScene is not { CompletedWorld: null } && BattleResult is null && Mode == SessionMode.Battle && Story.Cursor is null && Story.Wait is null && BattleScene is null && BattleMovement is null && BattleRetreat is null && BattleRound is null && BattleGive is null && BattleDiscard is null && BattleSearch is null;
+    public bool CanDebugWinBattle => HasBattleControl && StopReason == SessionStopReason.PlayerInput &&
+        Selection?.Stage == BattleSelectionStage.Movement;
     public BattleSearchState? BattleSearch => (Active as ActiveBattle)?.Search;
     public BattleDiscardState? BattleDiscard => (Active as ActiveBattle)?.Discard;
     public BattleGiveState? BattleGive => (Active as ActiveBattle)?.Give;

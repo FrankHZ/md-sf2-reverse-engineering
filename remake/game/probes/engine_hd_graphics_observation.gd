@@ -169,7 +169,7 @@ func run() -> void:
         samples.append({"label":"prepare-failure", "settings":settings()}); finish(); return
     await title_settings()
     geometry("SettingsWindow")
-    check("Medical Herb" in settings().message or "药草" in settings().message, "readable HD coverage in settings")
+    check("installed artwork" in settings().message or "安装了高清素材" in settings().message, "readable HD coverage in settings")
     if case_name == "override":
         check(settings().readOnly and applied().GraphicsMode == "hd", "read-only launch override selects HD")
         for i in range(8): check((find("Setting" + str(i)) as Button).disabled, "override disables editing/apply")

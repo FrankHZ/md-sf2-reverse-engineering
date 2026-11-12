@@ -9,7 +9,7 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 // stages its actors. CompletedWorld retains that scene's projection through field
 // death and the following after-program; combat resources remain in the battle.
 internal sealed record DefeatedProgramState(EngineBattleState Battle, ActorRef Actor,
-    MapPosition? Destination, BattleDeathBatch Deaths, ExplorationState? CompletedWorld = null);
+    MapPosition? Destination, BattleDeathBatch Deaths, ExplorationState? CompletedWorld = null, bool DebugVictory = false);
 
 internal static class BattleDefeatedProgram
 {
@@ -116,9 +116,13 @@ internal static class BattleDefeatedProgram
         var pending = current.Story.DefeatedScene!;
         var world = current.Exploration!;
         var battle = pending.Battle.With(mainSeed: world.Party.MainSeed, thinkingSeed: world.Party.ThinkingSeed);
+        if (pending.DebugVictory)
+            battle = battle.With(actors: battle.Actors.Select(actor => actor.IsAlly ? actor : actor.With(clearPosition: true)));
         current = ProgramRunner.Commit(current, new ActiveBattle(battle, null),
             current.Story.Copy(null, continuation: ProgramContinuation.FieldInput,
                 defeatedScene: pending with { Battle = battle, CompletedWorld = world }), observations, "enemy-defeated-program-finished");
+        if (pending.DebugVictory)
+            return BattleOutcome.Begin(definition, ProgramRunner.Result(current, observations), rules);
         var committed = BattleActionCommitter.Publish(current, battle, pending.Actor, pending.Destination, [], observations,
             rules, defeatedHookHandled: true, sceneEnded: true, deaths: pending.Deaths);
         var result = BattleAdvancer.Advance(committed, observations, rules);

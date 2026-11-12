@@ -101,6 +101,8 @@ internal static partial class GameText
         ["ui.settings.guidance"] = 1,
         ["ui.settings.debug"] = 1,
         ["host.setting-description-11"] = 0,
+        ["ui.settings.auto-victory"] = 1,
+        ["host.setting-description-12"] = 0,
         ["host.setting-description-10"] = 0,
         ["input.keyboard-only"] = 1, ["input.button"] = 1,
         ["input.face"] = 0, ["input.dpad"] = 0,

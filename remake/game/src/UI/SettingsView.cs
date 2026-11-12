@@ -44,7 +44,7 @@ internal sealed partial class SettingsView : Control
         _diagnostics = new Label { Name = "SettingsDiagnostics", Visible = false, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         column.AddChild(_diagnostics);
         var actions = new HBoxContainer { Name = "SettingsActions" }; actions.AddThemeConstantOverride("separation", 12);
-        for (int i = 0; i < (BattleOnly ? 2 : 12); i++)
+        for (int i = 0; i < (BattleOnly ? 2 : 13); i++)
         {
             var button = new Button { Name = "Setting" + i, CustomMinimumSize = new(0, 64), SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore,
@@ -61,7 +61,7 @@ internal sealed partial class SettingsView : Control
         }
         if (!BattleOnly)
         {
-            foreach (int i in new[] { 10, 11 })
+            foreach (int i in new[] { 10, 11, 12 })
             {
                 column.MoveChild(_buttons[i], _buttons[6].GetIndex());
                 column.MoveChild(column.GetNode("SettingDescription" + i), _buttons[i].GetIndex() + 1);
@@ -107,7 +107,7 @@ internal sealed partial class SettingsView : Control
         {
             int step = action == GameAction.Up ? -1 : 1;
             // General rows precede the fixed actions; graphics and host action identities stay stable.
-            int[] order = [0, 1, 2, 3, 4, 5, 10, 11, 6, 7, 8, 9];
+            int[] order = [0, 1, 2, 3, 4, 5, 10, 11, 12, 6, 7, 8, 9];
             do { _selected = order[(Array.IndexOf(order, _selected) + step + order.Length) % order.Length]; } while (_buttons[_selected].Disabled);
             Refresh(); if (_selected < 7 || _selected >= 10) _scroll.EnsureControlVisible(_buttons[_selected]);
         }
@@ -154,6 +154,7 @@ internal sealed partial class SettingsView : Control
             case 5: _draft.GraphicsMode = _draft.GraphicsMode == "original" ? "hd" : "original"; break;
             case 10: _draft.ModernGuidance = !_draft.ModernGuidance; break;
             case 11: _draft.ShowDebugDiagnostics = !_draft.ShowDebugDiagnostics; break;
+            case 12: _draft.DebugAutoVictory = !_draft.DebugAutoVictory; break;
             case 6: _draft = Input.Settings.Draft(defaults: true); _reset = true; _status = GameText.Get("ui.settings.staged"); break;
             case 7:
                 _status = Apply(_draft, _reset) ?? "";
@@ -213,7 +214,8 @@ internal sealed partial class SettingsView : Control
             GameText.Get("ui.settings.defaults"), GameText.Get("ui.settings.apply"),
             GameText.Get(ReadOnly ? "ui.settings.close" : "ui.settings.cancel"), GameText.Get("ui.settings.help"),
             GameText.Get("ui.settings.guidance", GameText.Get(_draft.ModernGuidance ? "ui.settings.on" : "ui.settings.off")),
-            GameText.Get("ui.settings.debug", GameText.Get(_draft.ShowDebugDiagnostics ? "ui.settings.on" : "ui.settings.off"))];
+            GameText.Get("ui.settings.debug", GameText.Get(_draft.ShowDebugDiagnostics ? "ui.settings.on" : "ui.settings.off")),
+            GameText.Get("ui.settings.auto-victory", GameText.Get(_draft.DebugAutoVictory ? "ui.settings.on" : "ui.settings.off"))];
         for (int i = 0; i < labels.Length; i++) { _buttons[i].Text = labels[i]; StoryTheme.Select(_buttons[i], i == _selected); }
         _message.Text = _status != "" ? _status : Notice ?? GameText.Get("ui.settings.notice");
         if (GameText.Language != "en") _message.Text += "\n" + GameText.Get("ui.settings.partial");
