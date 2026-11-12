@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
@@ -10,6 +11,38 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class CastleSceneLifecycleTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CurrentMapReloadUsesTheWorkingLayoutIncludingAScriptedReset(bool reset)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            var map = document["world"]!["maps"]![0]!;
+            map["layout"]![0]![0] = 12;
+            map["basePalette"] = JsonNode.Parse("""{"color2":2,"color3":4}""");
+            document["start"]!["display"] = JsonNode.Parse(
+                """{"period":3,"base":{"color2":2,"color3":4},"current":{"color2":2,"color3":4},"visibility":"base-restored"}""");
+            var operations = JsonNode.Parse("""
+                [{"op":"copy-layout","copy":{"source":{"x":0,"y":0},"destination":{"x":4,"y":2},"width":1,"height":1}},
+                 {"op":"wait-ticks","ticks":1},{"op":"reload-scene-map","camera":{"x":2,"y":1}},{"op":"wait-ticks","ticks":10},{"op":"end"}]
+                """)!.AsArray();
+            if (reset) operations.Insert(1, JsonNode.Parse("""{"op":"reset-scene-map"}"""));
+            document["world"]!["programs"]![0]!["instructions"] = operations;
+        });
+        var beforeReload = session.Current.Exploration!;
+        Assert.Equal(beforeReload.PlayerEntity.Slot, session.Current.Story.LogicalView!.TargetSlot);
+        Assert.Equal(reset ? 0 : 12, beforeReload.Layout[4, 2]);
+        EngineTestContent.Accept(session, new AdvanceSimulation(Assert.IsType<TickWait>(session.Current.Story.Wait).Token));
+        var world = session.Current.Exploration!;
+        Assert.IsType<TickWait>(session.Current.Story.Wait);
+        Assert.Equal(12, world.Definition.Layout[0, 0]);
+        Assert.Equal(reset ? 0 : 12, world.Layout[4, 2]);
+        Assert.Equal(reset, world.Layout.BlankBlockZero);
+        Assert.Null(session.Current.Story.LogicalView!.TargetSlot);
+        Assert.Equal(2 * 384, session.Current.Story.LogicalView.BX.Position);
+    }
+
     [Theory]
     [InlineData(6, 37, false)]
     [InlineData(23, 37, true)]

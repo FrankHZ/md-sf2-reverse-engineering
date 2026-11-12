@@ -198,10 +198,16 @@ internal static class MapEventDispatcher
 
     internal static ExplorationState RoofOnLoad(ExplorationState world)
     {
-        if (world.Definition.LayoutEvents is not { } events) return world;
+        if (world.Definition.LayoutEvents is null) return world;
         var area = world.Definition.Traversal.SelectActiveArea(world.PlayerEntity.Position)!;
         var offset = world.Definition.OverlayOffsets[area.OneBasedRecordOrdinal - 1];
-        int x = world.PlayerEntity.Motion.X + offset.X * 384, y = world.PlayerEntity.Motion.Y + offset.Y * 384;
+        return RoofOnLoad(world, world.PlayerEntity, offset);
+    }
+
+    internal static ExplorationState RoofOnLoad(ExplorationState world, ExplorationEntity target, MapOverlayOffset offset)
+    {
+        if (world.Definition.LayoutEvents is not { } events) return world;
+        int x = target.Motion.X + offset.X * 384, y = target.Motion.Y + offset.Y * 384;
         for (int index = 0; index < events.Roofs.Records.Count; index++)
         {
             var mutation = events.Roofs.Records[index].Mutation;

@@ -244,11 +244,17 @@ internal static class MapTransfer
             throw new BattleRuleException("scene-reload-context", "story.windows", true);
         if (world.Definition.BasePalette != story.Display!.Base)
             throw new BattleRuleException("scene-reload-palette", "story.display", true);
-        // csc36/csc46 rebuild the current layout, without reallocating entities or invoking map init.
-        var next = world.WithLayout(FieldSearch.RestoreChests(world.Definition.Layout, world.Definition.Search, story.Flags), MapBlockCopyLifecycleState.Inactive);
-        return (next, story.Copy(story.Cursor,
-            logicalView: ExplorationViewRunner.LoadScene(next, reload.Camera, story.LogicalView!),
-            logicalText: new(), clearCameraEntity: true, clearCameraTarget: true));
+        // Negative LoadMap retains working blocks, layout and roof state. Only csc36
+        // first clears the layout and rewrites block zero. Only csc46 detaches the camera.
+        var next = reload.ResetLayout ? world.WithLayout(WorkingMapLayout.ResetScene()) : world;
+        var view = ExplorationViewRunner.LoadScene(next, reload.Camera, story.LogicalView!);
+        if (reload.ResetLayout) view = view with { TargetSlot = story.LogicalView!.TargetSlot };
+        var target = view.TargetSlot is { } slot
+            ? next.AllEntities.FirstOrDefault(entity => entity.Slot == slot) ?? throw new BattleRuleException("field-view-target", "story.view", true)
+            : next.PlayerEntity;
+        next = MapEventDispatcher.RoofOnLoad(next, target, new(view.Area.ForegroundX, view.Area.ForegroundY));
+        return (next, story.Copy(story.Cursor, logicalView: view, logicalText: new(),
+            clearCameraEntity: !reload.ResetLayout, clearCameraTarget: !reload.ResetLayout));
     }
 
     internal static StoryState BindScene(SessionSnapshot current, ExplorationState next, LoadSceneMap load)

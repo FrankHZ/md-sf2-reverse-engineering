@@ -408,7 +408,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
             // The clamped modern camera can differ from an explicit source view;
             // using its screen rectangle exposes packed rooms beyond this area.
             _screen = _viewport.ScreenAt(actorOrigin);
-            _owner.DrawRect(_screen, new Color(0.03f, 0.04f, 0.06f));
+            var backdrop = world.Layout.BlankBlockZero ? Colors.Black : new Color(0.03f, 0.04f, 0.06f);
+            _owner.DrawRect(_screen, backdrop);
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
             {
@@ -549,12 +550,11 @@ internal sealed partial class ExplorationPresentation : IDisposable
             }
             // Mask actor/effect fragments outside the legal room before drawing UI.
             // Plane draws are individually clipped; this also covers transformed effects.
-            var exterior = new Color(0.03f, 0.04f, 0.06f);
             foreach (var border in new[] { new Rect2(0, 0, viewport.X, _screen.Position.Y),
                 new Rect2(0, _screen.End.Y, viewport.X, viewport.Y - _screen.End.Y),
                 new Rect2(0, _screen.Position.Y, _screen.Position.X, _screen.Size.Y),
                 new Rect2(_screen.End.X, _screen.Position.Y, viewport.X - _screen.End.X, _screen.Size.Y) })
-                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, exterior);
+                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, backdrop);
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
             PortraitResourceProjection = null;
             object? portraitUse = null;
@@ -700,7 +700,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 int sourceX = x + offset.X, sourceY = y + offset.Y;
                 if (sourceX is < 0 or > 63 || sourceY is < 0 or > 63) continue;
                 int block = world.Layout[sourceX, sourceY] & 0x3FF;
-                if (overlay && block == 0) continue;
+                if (block == 0 && (overlay || world.Layout.BlankBlockZero)) continue;
                 var rectangle = new Rect2((new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
                 if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
                 var texture = Block(visual, block);
