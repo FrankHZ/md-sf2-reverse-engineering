@@ -124,6 +124,8 @@ internal static partial class GameText
         ["guidance.route-unavailable"] = "Route not available",
         ["guidance.reading"] = "{0}: Read · {1}: Commands",
         ["ui.settings.guidance"] = "Modern guidance: {0}",
+        ["ui.settings.debug"] = "Debug diagnostics: {0}",
+        ["host.setting-description-11"] = "Shows text loading status and catalog counts in Settings. Off by default. Apply saves the choice; errors remain visible either way.",
         ["host.setting-description-10"] = "Shows the current objective in the field menu and known destinations in the world. Apply changes both together.",
         ["ui.settings.text"] = "Text: {0}",
         ["ui.settings.instant"] = "Instant",
@@ -160,7 +162,7 @@ internal static partial class GameText
     internal static bool Ready => _current is not null;
     internal static string Language => _current?.Language ?? "en";
     internal static string? StartupError { get; private set; }
-    internal static string Coverage => Language == "en" ? "" : string.Join("\n", new[] {
+    internal static string Coverage => string.Join("\n", new[] {
         _overlay is null ? Get(_overlayError is null ? "ui.settings.world-unbound" : "ui.settings.overlay") : Get("ui.settings.catalog", _overlay.MessageCount, _overlay.NameCount),
         Get(_entryError is not null ? "ui.settings.entry-unavailable" : _entryAdmission is null ? "ui.settings.entry-unbound" : "ui.settings.entry-loaded"),
         Get("ui.settings.partial") });
