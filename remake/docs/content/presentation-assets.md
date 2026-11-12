@@ -5,6 +5,8 @@ prepared private worlds/scene documents; it does not reopen a ROM or reconstruct
 asset catalog. [Profiles and trust](profiles-and-trust.md) owns runtime admission and redistribution.
 [Godot](../godot/presentation.md) owns disposable rendering, not source provenance.
 
+The [demo asset inventory](asset-inventory.md) identifies the installed resources and their original/HD variants, with a detailed local table and the Map3 review route.
+
 ## Public localization pilot assets
 
 The game bundles one unmodified OFL 1.1 Noto Sans CJK SC Regular font and its

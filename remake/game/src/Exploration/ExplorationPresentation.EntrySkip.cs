@@ -17,12 +17,12 @@ internal sealed partial class ExplorationPresentation
             case PresentationCueKind.Gesture:
                 if (wait.Cue.Resource is not ("nod" or "shiver" or "shake-head") || wait.Cue.Entity is null)
                     throw new InvalidOperationException("gesture-binding");
-                _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], wait.Cue.Resource == "nod");
+                _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], wait.Cue.Resource == "nod", current.Exploration.Map);
                 break;
             case PresentationCueKind.EntityEffect:
                 if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "flash-white") || wait.Cue.Entity is null)
                     throw new InvalidOperationException("effect-binding");
-                _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false);
+                _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false, current.Exploration.Map);
                 if (wait.Cue.Resource is "slide-in" or "slide-out")
                     SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, wait.Cue.Resource == "slide-out");
                 break;

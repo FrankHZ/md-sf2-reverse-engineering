@@ -37,6 +37,7 @@ internal sealed partial class PartyStatusView : Control
     private PartyDetails? _shown;
     private ImageTexture? _portraitTexture;
     private int? _portraitId;
+    private bool _portraitHd;
     private int _index, _count;
     private bool _requiresRelease;
     internal bool Open => Visible;
@@ -153,11 +154,14 @@ internal sealed partial class PartyStatusView : Control
         int? sprite = appearance is null ? null : appearance.JoinedFlag is { } joined && !session.Current.Story.Flags.Contains(joined)
             ? appearance.UnjoinedSprite : appearance.Sprite;
         int? portrait = sprite is { } id ? visuals?.Sprites.GetValueOrDefault(id)?.Portrait : null;
-        if (portrait != _portraitId)
+        bool hd = _input?.Settings.GraphicsMode == "hd" && session.Current.Exploration is { } field &&
+            visuals?.Maps.GetValueOrDefault(field.Map)?.HdBlocks is not null && portrait is { } selected &&
+            visuals.Portraits.GetValueOrDefault(selected)?.HdRaster is not null;
+        if (portrait != _portraitId || hd != _portraitHd)
         {
-            _portrait.Texture = null; _portraitTexture?.Dispose(); _portraitTexture = null; _portraitId = portrait;
+            _portrait.Texture = null; _portraitTexture?.Dispose(); _portraitTexture = null; _portraitId = portrait; _portraitHd = hd;
             if (portrait is { } value && visuals?.Portraits.TryGetValue(value, out var visual) == true)
-                _portrait.Texture = _portraitTexture = ExplorationRasterImages.Portrait(visual);
+                _portrait.Texture = _portraitTexture = ExplorationRasterImages.Portrait(visual, hd: hd);
         }
         _portrait.Visible = _portraitTexture is not null;
         _portraitNote.Visible = !_portrait.Visible; _portraitNote.Text = GameText.Get("party.portrait-unavailable");
