@@ -26,7 +26,7 @@ func snap(label: String) -> void:
     var s := state()
     samples.append({"label":label, "map":s.get("map"), "flags":s.get("flags"), "wait":s.get("wait"),
         "player":[player(s).get("x"),player(s).get("y")], "guidance":guidance(), "failure":s.get("failure"),
-        "menuObjective":s.get("fieldMenu", {}).get("objective"), "locale":applied().Language, "window":window(),
+        "rootMenuVisible":s.get("fieldMenu", {}).get("visible"), "locale":applied().Language, "window":window(),
         "focused":s.get("focused"), "fieldVisible":(find("ExplorationSessionView") as Control).is_visible_in_tree(), "rootSize":str(root.size)})
     print(label, " ", s.get("map"), " ", guidance().get("objectiveKey"))
 
@@ -41,9 +41,8 @@ func expect(goal: String, label: String) -> void:
 func read_goal(expected: bool) -> void:
     await key(KEY_ESCAPE)
     var s := state()
-    check(s.fieldMenu.visible and not guidance().get("visible", false), "root menu owns goal; field aid hidden")
-    check(not s.fieldMenu.objective.is_empty() == expected and not "Message unavailable" in s.fieldMenu.objective,
-        "ordinary menu renders current goal with correct optional-name arity")
+    check(s.fieldMenu.visible and guidance().get("visible", false) == expected, "root menu retains the independent goal")
+    check(not "Message unavailable" in guidance().text, "ordinary objective has correct optional-name arity")
     var revision: int = s.revision
     await frames(6)
     check(state().revision == revision and state().flags == s.flags and state().party == s.party,

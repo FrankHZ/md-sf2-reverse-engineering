@@ -17,7 +17,10 @@ automatic travel, path solver, new save location or additional story/knowledge r
 The [visual language](ui-design-language.md), F7 field controls and existing Modern guidance setting
 remain in force. The [design proposal](modernization-design.md#optional-objective-and-destination-guidance-1578)
 records the original choices; the coverage below supersedes its pilot-only withholding boundaries
-where the expanded story has already disclosed a task.
+where the expanded story has already disclosed a task. [#1710](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1710)
+supersedes the pilot's split menu/world presentation: one independent objective panel remains visible
+across ordinary exploration and root gameplay-menu toggles. Its scope is adapter layout/input only;
+story disclosure, queries, precision, settings and locale catalogs retain their existing owners.
 
 ## Ownership and disclosure
 
@@ -111,15 +114,25 @@ promise. Coarse school, royal room, prison and portal advice has no invented exa
 
 Modern guidance / 现代引导 remains one default-On general preference, including old format1 files
 missing it. Existing Draft/Apply/Back, atomic write/conflict/failure retention, defaults and read-only
-overrides control both surfaces. Explicit Off survives New Game, Continue and restart. Gameplay saves
+overrides control the panel and entrance aid. Explicit Off survives New Game, Continue and restart. Gameplay saves
 contain no guidance. #1703 GraphicsMode and all existing settings/input behavior are unchanged.
 
-The root Member/Magic/Item/Search menu shows Current objective with known destination/action in its
-30px bounded reading region. Names, initial command focus, Search reasons, Back and overflow reading
-ownership remain. Party/Prepare hides the root and returns to its command. The passive 24px field
-label and at most one hollow named visible entrance ignore pointer input. Host, dialogue, Search,
-services, battle and window recovery hide them; the world remains at96px cells. Wider windows retain
-capped widths. Only the current owner receives input; no click moves an actor or camera.
+Ordinary exploration and the root Member/Magic/Item/Search menu share the same passive objective
+panel, containing the current goal, known destination and next action. Opening/closing/reopening the
+root menu keeps the panel instance and current text; command help contains only its command, reasons
+and input hints. The objective takes no keyboard, controller or pointer focus. Names, initial command
+focus, Search reasons and Back remain. Party/Prepare hides the root and objective; Back restores the
+same command and requeries the objective. There is no separate objective-reading focus or Back step.
+
+At supported1920×1080 and larger windows, the panel measures its longest unwrapped localized line,
+uses at most448px of reading width plus32px horizontal padding, and grows vertically for natural
+word/CJK wrapping. Its body stays30px, including custom companion names. Short copy shrinks below
+the480px cap. Preferred placement is the top-left safe edge, then bottom-left/right corners as needed
+to avoid the player (24px clearance) and actual root command bounds (24px clearance). The panel stays
+inside safe edges, with no camera/world zoom change. At most one hollow named visible entrance
+remains a menu-closed world aid; root menus hide that marker. Host, dialogue, Search results,
+services, battle and window recovery hide all guidance. Off hides the panel in both root-menu states.
+The world remains at96px cells; no objective click moves an actor or camera.
 
 English/zh-CN use existing catalogs and optional companion display-name projection. Copy without a
 companion has zero name operands. Proper names retain the pilot’s canonical UI spellings; no new
@@ -163,13 +176,33 @@ preference/menu/layout consumer. Its `town` case retains the disclosed Hawel tas
 present, withholding the guide name/entrance until the actual F72 caller; without F610 there is no
 invented commission. Use F610/F502 in the ordinary pre-invitation checkpoint to observe that change.
 Its `house` and F612 `revisit` cases now retain the disclosed Ancient Shrine goal, with the old
-guide/house marker removed. Existing Off/Cancel/write-refusal, reading/Party focus, locale/name,
+guide/house marker removed. Existing Off/Cancel/write-refusal, command/Party focus, locale/name,
 controller/remapped confirm, resize/recovery and save/Continue/read-only cases remain applicable.
+The old root-menu objective and overflow-reading assertions are replaced by same-panel continuity,
+no duplicated command help, passive command focus and Party return checks. The `compact` case uses
+an admitted pre-session checkpoint to check short or long actual localized copy at1920×1080 and
+2560×1440, repeated root open/close/reopen, full wrapping/padding, Off/On and below-minimum recovery.
+Run it with both English and zh-CN, including a short opening goal and a longer disclosed goal;
+it uses the same existing `issue1705-*` isolation guard and no source/catalog mutation.
+
+**Confirmed:** bounded #1710 headless native English/zh-CN runs retain one panel/text
+through repeated root open/close/reopen and Party return, preserve command input and paused gameplay
+state, hide for host/Off/recovery, and restore on return. Short opening copy measures345px in English
+and242px in Chinese; longer English and Chinese copy (including the seven-character custom guide
+name) wraps to four lines at480×209px. The reached right-edge town checkpoint also moves commands
+left and the objective right without covering the player. The affected invitation, house-scene and
+F612 revisit observers pass. These are actual input/state/geometry observations, not foreground,
+physical-device or human visual acceptance. Retained early runs include a cross-pause RNG comparison
+failure: free-field ambient steps resume after root Back. The corrected observer compares the full
+save payload and seeds while the menu is still paused; it does not discard RNG fields.
+
 Run affected `town`, `house` and `revisit` cases through fresh disposable `issue1705-*` namespaces
 and fresh explicit output; the namespace is only this observer's existing isolation guard. Do not
 replay the three campaign cases merely because this complementary observer changes. Older pilot
 reports retain their original narrower expectations and do not establish current whole-campaign
-acceptance. The local handoff routes both observers and their fresh launch entries.
+acceptance. Their menu-hides-world/goal-in-command-help observations are superseded by #1710's
+explicit human feedback; they are not current acceptance assertions. The local handoff routes both
+observers and their fresh launch entries.
 
 Reuse the approximately149MB installed local world read-only. No asset copy, seven-battle rebuild,
 new tool, route platform or campaign admission is planned. Finite table expansion is below1000

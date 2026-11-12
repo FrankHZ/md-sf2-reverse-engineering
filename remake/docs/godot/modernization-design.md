@@ -386,26 +386,27 @@ remains subject to its current host entry restrictions; guidance cannot open it 
 
 ### Display precision, layout and return
 
-If this guidance is adopted, the menu adds a labeled **Current objective / 当前目标** reading
-section. All field command names remain visible. Preserve Search's unavailable reason, costs and
-required hints. Keep the initial command focus. The objective is passive. On overflow give its
-reading area explicit focus; Back restores the same gameplay command. Only its current owner
-receives directional input. Close the objective with the menu.
+The [current implementation owner](objective-guidance.md#ui-language-and-persistence) follows
+#1710's human feedback, which supersedes the original menu-only objective/closed-menu destination
+split and separate overflow-reading focus. Ordinary exploration and the root gameplay menu retain
+one independent passive panel with the same goal, known destination and next action. Command help
+contains only command information. All field command names, Search's unavailable reason, costs and
+required hints remain visible. Keep the initial command focus and ordinary Back behavior.
 
-At 1920×1080, allow a bounded reading region inside the existing safe edge. Measure it alongside
-the reviewed field command layout and move the group together if it covers the player. Keep the
-host Menu, person, full command names, reasons and footer clear. Final placement depends on
-the visual pilot. Use 30px body/24px secondary text, wrap full names and grow/scroll within safe bounds before any
-font reduction. Larger supported windows retain capped reading width and 96px world; below-minimum
+At 1920×1080, measure the localized panel within the existing safe edge: short copy shrinks, long
+copy wraps at a448px reading width/480px panel cap and grows vertically at30px body. Avoid the player
+and actual root command bounds with24px clearance; keep the host Menu, full command names, reasons
+and footer clear. Larger supported windows retain capped reading width and96px world; below-minimum
 windows use existing recovery and hide guidance. No world zoom or new responsive layout system.
 
 | Surface | Minimum useful precision and interaction |
 | --- | --- |
-| Overworld, menu closed | One short quiet destination/next-step label near a safe edge; at most one hollow labelled marker for a justified visible current-map anchor. For an off-camera anchor use “Next: North exit” or another authored direction label; no screen-edge compass arrow through walls or undisclosed terrain. No constant objective paragraph, minimap, route line, distance countdown or camera retargeting. |
+| Overworld, menu closed | The same compact goal/destination/action panel as the root gameplay menu; at most one hollow labelled marker for a justified visible current-map anchor. For an off-camera anchor use “Next: North exit” or another authored direction label; no screen-edge compass arrow through walls or undisclosed terrain, minimap, route line, distance countdown or camera retargeting. |
 | Town, menu closed | Prefer the relevant exit or named building before an exact doorway. A known, currently visible person may use the live entity anchor, never a stored NPC coordinate; absent/hidden/script-owned people get no marker. The pilot uses the exit, not a new Kazin quest marker. No secret room, unopened interior or undisclosed item/reward marker. |
 | Local blockage, closed door or unsupported leg | Distinguish known destination from “Route not available” or a justified “Entrance unavailable.” Remove a claimed next-step marker when its binding/approach fails. Existing collision/warp legality remains authoritative; an anchor is orientation, not a shortest-path or guaranteed-reach claim. No full search is added to prove access. |
 | Unknown location / uncovered objective | “Location not known” only when that knowledge distinction is actually supplied; otherwise omit destination and use the coverage fallback. Never expose internal map IDs, flag names or “Unknown” as unexplained player jargon. Off hides fallback text as well. |
-| Gameplay menu, Party, Search result, dialogue, service, host modal, battle | Hide world labels/markers while another reading/input owner is open. Only the root gameplay menu displays its objective section. Close Party to the same field command; Search retains its actual result/return; host Back/Resume retains its original caller. Requery on field return; release/neutral guards prevent movement or confirmation from the closing gesture. |
+| Root gameplay menu | Keep the same independent objective panel, once, clear of commands/player; hide entrance labels/markers. Directional input stays with commands. Closing the root keeps the panel visible. |
+| Party, Search result, dialogue, service, host modal, battle | Hide the objective and world labels/markers while another reading/input owner is open. Close Party to the same field command and restore the objective; Search retains its actual result/return; host Back/Resume retains its original caller. Requery on field return; release/neutral guards prevent movement or confirmation from the closing gesture. |
 
 Markers use a hollow shape plus a localized label, not color alone, and never look like gold
 selection, a quest reward or a clickable movement destination. They ignore pointer input and do not
