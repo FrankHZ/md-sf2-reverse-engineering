@@ -130,11 +130,14 @@ public sealed class ExplorationMapDefinition
     public IReadOnlyList<ExplorationViewArea> ViewAreas { get; }
     public IReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition> Setups { get; }
 
+    internal MapSetupId? SelectedSetup(IReadOnlyList<int> flags) => Setup is null ? null :
+        MapSetupSelector.Select(Setup, Setup.DefaultSetup,
+            flag => flags.Contains(int.Parse(flag.Value, System.Globalization.CultureInfo.InvariantCulture)));
+
     internal ExplorationMapDefinition SelectSetup(IReadOnlyList<int> flags)
     {
         if (Setup is null) return this;
-        var selected = MapSetupSelector.Select(Setup, Setup.DefaultSetup,
-            flag => flags.Contains(int.Parse(flag.Value, System.Globalization.CultureInfo.InvariantCulture)));
+        var selected = SelectedSetup(flags)!;
         if (selected == Setup.DefaultSetup) return this;
         if (!Setups.TryGetValue(selected, out var content))
             throw new BattleRuleException("map-setup", selected.Value, true);
