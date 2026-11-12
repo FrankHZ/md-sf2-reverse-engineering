@@ -21,7 +21,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         spell.RequireSupported(enemy: !actor.IsAlly);
         if (actor.Hp == 0 || (actor.IsAlly ? actor.Control != BattleControl.Player :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
-                key is not { Value: "blaze" or "freeze", Level: 1 }))
+                key is not ({ Value: "blaze" or "freeze", Level: 1 } or { Value: "blaze", Level: 2 })))
             throw new BattleRuleException("attack-spell-caster", "actor", true);
         if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("attack-spell-status", "actor.status", true);

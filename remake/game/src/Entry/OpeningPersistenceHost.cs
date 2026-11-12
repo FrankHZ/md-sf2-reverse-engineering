@@ -191,6 +191,10 @@ public sealed partial class GameRoot
         "map3-opening" => GameText.Get("save.destination.map3-opening"),
         "map3-joined" => GameText.Get("save.destination.map3-joined"),
         "battle01-return" => GameText.Get("save.destination.battle01-return"),
+        "new-granseal-castle" => GameText.Get("save.destination.new-granseal-castle"),
+        "ribble-welcome" => GameText.Get("save.destination.ribble-welcome"),
+        "east-shrine" => GameText.Get("save.destination.east-shrine"),
+        "parmecia-battle-return" => GameText.Get("save.destination.parmecia-battle-return"),
         "battle07-return" => GameText.Get("save.destination.battle07-return"),
         _ => GameText.Get("save.destination.unavailable"),
     };

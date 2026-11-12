@@ -84,7 +84,7 @@ public sealed class PartyRecoveryContextTests
         // Reordered, smaller live party with a dead member, depleted MP and nondefault accounting.
         var actors = admitted.Actors.Where(a => a.Actor.Value != "scout-a").Reverse().Select(a => a with
         {
-            Status = 0, Hp = a.Actor.Value == "guard-a" ? (ushort)0 : (ushort)1,
+            Status = 0x3C2, Hp = a.Actor.Value == "guard-a" ? (ushort)0 : (ushort)1,
             Mp = 0, Exp = 31, Kills = 9, Defeats = 4,
         });
         var party = Context(admitted, actors);
@@ -98,17 +98,17 @@ public sealed class PartyRecoveryContextTests
             var actor = encounter.Deployments.Single(d => d.Actor == before.Actor).Definition;
             Assert.Equal(recovers ? actor.MaxHp : before.Hp, after.Hp);
             Assert.Equal(recovers ? actor.MaxMp : before.Mp, after.Mp);
-            Assert.Equal(before, after with { Hp = before.Hp, Mp = before.Mp });
+            Assert.Equal(recovers ? (ushort)2 : before.Status, after.Status);
+            Assert.Equal(before, after with { Hp = before.Hp, Mp = before.Mp, Status = before.Status });
         }
     }
 
-    [Theory]
-    [InlineData(2)] [InlineData(0x300)] [InlineData(4)]
-    public void UnsupportedRecoveryStatusKeepsTheWholePartyAndProgramCursor(int status)
+    [Fact]
+    public void UnsupportedRecoveryStatusKeepsTheWholePartyAndProgramCursor()
     {
         var session = Start("shop-supplies"); var current = session.Current; var world = current.Exploration!;
         var party = Context(world.Party, world.Party.Actors.Select(a => a with
-            { Status = a.Actor.Value == "guard-a" ? (ushort)status : (ushort)0 }));
+            { Status = a.Actor.Value == "guard-a" ? (ushort)4 : (ushort)0 }));
         var programs = session.Definition.Exploration!;
         var program = new StoryProgram("reset-only", [new ResetPartyBattleStats(), new EndProgram()]);
         var exploration = new ExplorationDefinition(programs.Maps.Values, programs.Programs.Values.Append(program), programs.Texts);

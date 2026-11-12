@@ -35,10 +35,14 @@ public sealed record SaveCapture(OpeningSaveData? Data, string? Error);
 
 internal interface IOpeningRestorePolicy
 {
+    int FieldRecipeRevision { get; }
+    IReadOnlyList<BattleActorStartInput> RestoreRoster(ScenarioDefinition definition, OpeningSaveData data,
+        SaveCompatibility expected, IReadOnlyDictionary<ActorRef, BattleDeploymentDefinition> deployments,
+        IReadOnlySet<ActorRef> saved);
     SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start);
     ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party);
     void ValidateRegisters(OpeningSaveData data);
-    bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity);
+    bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity, IReadOnlyList<int> flags);
     SaveLocation Select(ScenarioDefinition definition, MapId map, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);
     ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
         IReadOnlyList<int> flags, out IReadOnlyList<int> enteredFlags);

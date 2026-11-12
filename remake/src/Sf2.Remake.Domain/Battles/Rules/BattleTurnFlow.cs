@@ -68,7 +68,7 @@ internal static class BattleTurnFlow
         }
         if (definition.Poison)
         {
-            Require(start.NewBattle is null && start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
+            Require(start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
             Require(start.DeathCredit!.Ally is not { } first || definition.Deployments.Any(d => d.Actor == first && d.Faction == BattleFaction.Ally),
                 "death-first-ally-context", "start.firstAlly", true);
             Require(start.Actors.All(a => SilenceRules.Supported(a.Status)), "poison-status", "start.actors.status", true);
@@ -89,7 +89,7 @@ internal static class BattleTurnFlow
             {
                 BattleEquipment.ValidateLoadout(actor, loadout);
                 bool playerEquipment = deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
-                    !deployment.SourceAllyControl && Sf2ClassRules.SourceClass(actor.ClassRule) is not null;
+                    Sf2ClassRules.SourceClass(actor.ClassRule) is not null;
                 bool fixedEnemyEquipment = deployment.Faction == BattleFaction.Enemy && !actor.Equipment.AllowChanges;
                 Require((playerEquipment || fixedEnemyEquipment) && (SilenceRules.Supported(input.Status, definition.Poison) ||
                         !actor.Equipment.AllowChanges && start.NewBattle is not null) && actor.Physical is not null,

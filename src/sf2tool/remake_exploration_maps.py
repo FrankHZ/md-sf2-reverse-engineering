@@ -108,7 +108,26 @@ def compile_maps(
                 "requiredFlag": None,
                 "requiredValue": True,
             }
+            scroll = warp["scrollMode"]
+            retained_axis = "y" if scroll in (16, 18) else "x"
+            edge_axis = "x" if retained_axis == "y" else "y"
             if (
+                destination in selection["maps"]
+                and scroll in (16, 17, 18, 19)
+                and warp["destination"][retained_axis] == 255
+                and 0 <= warp["destination"][edge_axis] < 64
+            ):
+                events.append(
+                    {
+                        "kind": "warp",
+                        **common,
+                        "map": f"map-{destination}",
+                        "position": {**warp["destination"], retained_axis: None},
+                        "facing": warp["facing"],
+                        "loadMode": "scroll",
+                    }
+                )
+            elif (
                 destination in selection["maps"]
                 and not warp["retainsCoordinates"]
                 and warp["scrollMode"] == 0
@@ -182,9 +201,11 @@ def compile_maps(
                     for entry in resources["entityLists"].values()
                     if entry["address"] == address
                 ]
-                if len(continuations) != 1:
-                    raise ValueError("unresolved entity-list continuation")
-                tail = rows(folder, "s1_entities", continuations[0]["id"])
+                if len(continuations) == 1:
+                    tail_symbol = continuations[0]["id"]
+                else:
+                    tail_symbol = f"byte_{address:X}"
+                tail = rows(folder, "s1_entities", tail_symbol)
                 if not tail:
                     raise ValueError("empty entity-list continuation")
                 source_rows.extend(tail)

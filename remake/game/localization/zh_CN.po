@@ -2160,3 +2160,18 @@ msgstr "调试：战斗自动获胜 · {0}"
 
 msgid "host.setting-description-12"
 msgstr "进入战斗后的首个可操作回合自动获胜。战后剧情和返回照常进行，跳过的战斗行动不会获得奖励。"
+
+msgid "battle.scene.poison-inflicted"
+msgstr "{0}中毒了。"
+
+msgid "save.destination.new-granseal-castle"
+msgstr "新格兰希尔城堡"
+
+msgid "save.destination.ribble-welcome"
+msgstr "里布尔村，欢迎仪式后"
+
+msgid "save.destination.east-shrine"
+msgstr "东神殿"
+
+msgid "save.destination.parmecia-battle-return"
+msgstr "帕尔梅西亚东部，战斗结束处"

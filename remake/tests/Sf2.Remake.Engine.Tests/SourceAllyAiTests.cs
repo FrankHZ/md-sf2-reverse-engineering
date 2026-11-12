@@ -75,7 +75,7 @@ public sealed class SourceAllyAiTests
     {
         var b = Initial(); b = b.With(actors: b.Actors.Select(a =>
             a.Actor == Ally ? a.With(status: category == "muddle" ? (ushort)0x20 : (ushort)0,
-                sourceLoadout: new(category == "item" ? [0, 127, 127, 127] : [127, 127, 127, 127],
+                sourceLoadout: new(category == "item" ? [4, 127, 127, 127] : [127, 127, 127, 127],
                     category == "spell" ? [1, 63, 63, 63] : [63, 63, 63, 63])) :
             a.Actor == Sentry && category == "neutral" ? a.With(activationWord: 8) : a));
         var before = b.ThinkingSeed;

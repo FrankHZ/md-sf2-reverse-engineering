@@ -94,9 +94,9 @@ internal static class OutcomeReturnRules
             var deployment = encounter.Deployments.FirstOrDefault(row => row.Actor == a.Actor) ??
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == a.Actor);
-            bool canClearSleep = healing && deployment.Faction == BattleFaction.Ally &&
+            bool canClearTemporaryStatus = healing && deployment.Faction == BattleFaction.Ally &&
                 (all || a.Hp > 0 || deployment.Initialization?.AllyPartyMember is 7 or 28);
-            Require(b.Status == a.Status || (canClearSleep && (a.Status & ~0xC0) == 0 && b.Status == 0));
+            Require(b.Status == a.Status || (canClearTemporaryStatus && b.Status == (a.Status & ~(0xC0 | 0x0300))));
             Require(b with { Hp = a.Hp, Mp = a.Mp, Status = a.Status } == a);
             Require(deployment.Faction == BattleFaction.Ally || b == a);
             Require(b.Hp <= (a.Progress?.MaxHp ?? deployment.Definition.MaxHp) &&

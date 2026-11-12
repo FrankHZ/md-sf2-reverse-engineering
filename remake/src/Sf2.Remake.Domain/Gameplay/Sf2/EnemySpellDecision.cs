@@ -11,13 +11,16 @@ internal static class EnemySpellDecision
         IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null)
     {
         var actor = battle.GetActor(actorRef);
-        var key = actor.Spells.FirstOrDefault(spell => spell is { Value: "blaze" or "freeze", Level: 1 });
+        var known = actor.Spells.FirstOrDefault(spell => spell.Value is "blaze" or "freeze");
+        if (known != default && !battle.Definition.AttackSpells.ContainsKey(known))
+            throw new BattleRuleException("spell-effect", "spell", true);
+        var key = actor.Spells.Where(spell => spell.Value == known.Value)
+            .OrderByDescending(spell => spell.Level)
+            .FirstOrDefault(spell => battle.Definition.AttackSpells.TryGetValue(spell, out var entry) && entry.MpCost <= actor.Mp);
         if (key == default)
             return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid);
-        if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
-            throw new BattleRuleException("spell-effect", "spell", true);
+        var spell = battle.Definition.AttackSpells[key];
         spell.RequireSupported(enemy: true);
-        if (actor.Mp < spell.MpCost) return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid);
         var rule = actions.Single(r => r.Kind == BattleActionKind.AttackSpell);
         var action = new BattleActionRef(BattleActionKind.AttackSpell, key);
         var targets = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();
@@ -34,8 +37,12 @@ internal static class EnemySpellDecision
         {
             var candidate = candidates[i];
             int cost = grid.CostAt(candidate.Position!)!.Value;
-            byte priority = PhysicalTargetRules.Score(actor, candidate.Target, (byte)cost,
-                Sf2AttackSpellAction.PotentialDamage(actor, candidate.Target, spell), ref thinking, effects);
+            int total = 0;
+            foreach (var affected in battle.Actors.Where(unit => targets.Contains(unit.Actor) &&
+                    BattleRange.Contains(candidate.Target.Position!, unit.Position!, 0, spell.Radius)).OrderBy(unit => unit.ProcessingOrder))
+                total += PhysicalTargetRules.Score(actor, affected, (byte)cost,
+                    Sf2AttackSpellAction.PotentialDamage(actor, affected, spell), ref thinking, effects);
+            byte priority = unchecked((byte)total);
             priorities[i] = new((byte)cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));
             effects.Add(new("ai-spell-candidate", actorRef, cost, priority, Target: candidate.Target.Actor));
         }
@@ -91,7 +98,7 @@ internal static class EnemySpellDecision
     }
 
     private static int Priority(BattleActorState target) => target.Deployment.Initialization?.AiCommandset is 13 or 14 ? 13 :
-        target.Definition.Mover switch { BattleMover.Healer => 12, BattleMover.Mage => 11, BattleMover.StealthArcher => 10, BattleMover.Archer => 8,
+        target.Definition.Mover switch { BattleMover.Healer => 12, BattleMover.Mage => 11, BattleMover.CentaurArcher => 9, BattleMover.StealthArcher => 10, BattleMover.Archer => 8,
             BattleMover.Hovering => 7, BattleMover.Flying => 6, BattleMover.Stealth => 4,
             BattleMover.Centaur => 3, BattleMover.Regular => 2, _ => 0 };
 }

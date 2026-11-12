@@ -27,7 +27,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle not in (2, 3, 4, 5, 6, 7, 8):
+    if battle not in (2, 3, 4, 5, 6, 7, 8, 9, 10):
         raise ValueError("unsupported overworld encounter selection")
     root = repo_path("").resolve()
     output = output.resolve()
@@ -75,6 +75,8 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             6: [6, 9, 1, 0],
             7: [7, 10, 4, 1],
             8: [13, 11, 4, 1],
+            9: [12, 11, 2, 0],
+            10: [12, 12, 3, 1],
         }[battle]
     ):
         raise ValueError("selected spriteset header drift")
@@ -148,6 +150,8 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         6: "TO_GRANSEAL",
         7: "VERSUS_DARK_SMOKES",
         8: "NORTH_CLIFF",
+        9: "TO_RIBBLE",
+        10: "TO_THE_EAST",
     }[battle]
     identity = dict(id=battle, code=code)
 
@@ -482,7 +486,7 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(2, 3, 4, 5, 6, 7, 8), default=2)
+    parser.add_argument("--battle", type=int, choices=(2, 3, 4, 5, 6, 7, 8, 9, 10), default=2)
     args = parser.parse_args()
     print(
         json.dumps(

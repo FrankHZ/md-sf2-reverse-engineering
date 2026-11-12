@@ -56,7 +56,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         {
             bool ally = row.Kind == EncounterEntityKind.Ally;
             Require(row.Behavior.SpawnExpression == "STARTING", "spawn-expression", "placements.spawn", true);
-            Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP",
+            Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP",
                 "placement-item-refresh", "placements.item", true);
             byte commandset = row.AiCommandsetExpression switch
             {
@@ -80,6 +80,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
                     2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
                     3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
+                    8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
                     10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
                     _ => throw Unsupported("source-class", "actors.class"),
                 };
@@ -116,13 +117,18 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 {
                     // InitializeEnemyItems -> AddItem masks with $807F. Source $6000 stores0.
                     int empty = System.Array.FindIndex(items, word => (word & 127) == 127);
-                    if (empty >= 0) items[empty] = 0;
+                    if (empty >= 0)
+                    {
+                        string code = row.ItemExpression.Split('|')[0];
+                        items[empty] = definitions.Items.Values.Single(value => value.Code == code).Id;
+                    }
                 }
                 var spells = enemy.Spells.Select(spell => spell.Spell == "NOTHING" ? (byte)63 :
                     (byte)(definitions.Spells.Values.Single(value => value.Code == spell.Spell && value.Level == spell.Level).BaseId | ((spell.Level - 1) << 6))).ToArray();
                 definition = new(actor, BattleClassRule.Ordinary, enemy.Level, enemy.MaxHp, enemy.MaxMp, enemy.BaseAttack,
                     enemy.BaseDefense, (byte)(enemy.BaseAgility & 127), (enemy.BaseAgility & 128) != 0, enemy.BaseMovement,
-                    enemy.Spells.Where(spell => spell.Spell != "NOTHING").Select(spell => new SpellRef(spell.Spell.ToLowerInvariant(), spell.Level)),
+                    enemy.Spells.Where(spell => spell.Spell != "NOTHING").SelectMany(spell => Enumerable.Range(1, spell.Level)
+                        .Select(level => new SpellRef(spell.Spell.ToLowerInvariant(), (byte)level))),
                     physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
                         leader: false, gold: definitions.EnemyGold[enemy.Id].Gold),
                     mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells),
@@ -135,8 +141,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
                 AllyPartyMember: ally ? order : null);
             deployments.Add(new(definition, ally ? BattleFaction.Ally : BattleFaction.Enemy, order,
-                ally ? BattleControl.Player : BattleControl.Automatic, ally ? null : new BattleStrategyRef("source-orders"),
-                new(row.Position.X, row.Position.Y), initialization));
+                ally ? BattleControl.Player : BattleControl.Automatic, ally ? order == 7 ? new BattleStrategyRef("source-ally-physical") : null : new BattleStrategyRef("source-orders"),
+                new(row.Position.X, row.Position.Y), initialization, SourceAllyControl: ally && order == 7));
             actorInputs.Add(actorInput);
         }
         Require(usedAllies.SetEquals(party.Keys), "unused-party-actor", "allies");
@@ -168,7 +174,10 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 new(encounter.Area.X, encounter.Area.Y)),
             retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : [],
             retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : [],
-            attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
+            itemDrops: encounter.Battle.Id == 10 ? new(10,
+                deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
+                [new(10, 129, 19, 4)], [new(19, definitions.Items[19].DisplayName, true)]) : null,
+            poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
         // Product content is assembled before its ordinary before-battle program has run.
         // The actual battle entry still validates the routed policy through BattleTurnFlow.
@@ -196,7 +205,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     {
         "REGULAR" => BattleMover.Regular, "HEALER" => BattleMover.Healer,
         "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,
-        "STEALTH_ARCHER" => BattleMover.StealthArcher,
+        "CENTAUR_ARCHER" => BattleMover.CentaurArcher, "STEALTH_ARCHER" => BattleMover.StealthArcher,
         "FLYING" => BattleMover.Flying, "ARCHER" => BattleMover.Archer, "MAGE" => BattleMover.Mage,
         _ => throw Unsupported("source-mover", "actor.movementType"),
     };

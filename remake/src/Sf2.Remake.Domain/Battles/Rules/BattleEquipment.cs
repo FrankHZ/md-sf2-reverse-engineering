@@ -82,16 +82,17 @@ public static class BattleEquipment
     {
         if (loadout is null) return false;
         if (!allowEarlySpells && (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0)) return false;
-        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not { Value: "heal" or "blaze" or "freeze" or "dispel", Level: 1 }) ||
-            loadout.Spells.Any(spell => spell is not (0 or 6 or 11 or 12 or 63)))) return false;
+        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not ({ Value: "heal" or "blaze" or "freeze" or "dispel", Level: 1 } or { Value: "blaze", Level: 2 })) ||
+            loadout.Spells.Any(spell => spell is not (0 or 6 or 11 or 12 or 63 or 75)))) return false;
         // Authored semantic books use an empty packed book. A nonempty source book
         // must agree with its decoded definitions; orphan packed spells cannot disappear.
         if (allowEarlySpells && loadout.Spells.Any(spell => spell != 63) &&
-            !definition.Spells.Select(spell => spell.Value switch { "heal" => 0, "dispel" => 6, "freeze" => 12, _ => 11 }).ToHashSet()
+            !definition.Spells.GroupBy(spell => spell.Value).Select(book =>
+                ((book.Max(spell => spell.Level) - 1) << 6) | (book.Key switch { "heal" => 0, "dispel" => 6, "freeze" => 12, _ => 11 })).ToHashSet()
                 .SetEquals(loadout.Spells.Where(spell => spell != 63).Select(spell => (int)spell))) return false;
         if (definition.Equipment is not null) ValidateLoadout(definition, loadout);
         return loadout.Items.All(word => word == 127 || allowHerb && word == 0 ||
-            (word & ~255) == 0 && definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true);
+            word == 19 || (word & ~255) == 0 && definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true);
     }
 
     internal static void RequireActor(BattleActorState actor)

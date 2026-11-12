@@ -173,7 +173,7 @@ def prepare(
         folder = upstream / f"disasm/data/maps/entries/map{selected:02d}/mapsetups"
         for path in sorted(folder.glob("*.asm")):
             if path.name.startswith(
-                ("s2_entityevents", "s3_zoneevents", "s6_initfunction", "scripts")
+                ("s2_entityevents", "s3_zoneevents", "s6_initfunction", "scripts", "pointertable")
             ):
                 compiler.register_file(path.relative_to(upstream).as_posix())
     for source in selection["additionalProgramSources"]:
@@ -264,10 +264,7 @@ def prepare(
         for program in compiler.programs.values():
             for instruction in program["instructions"]:
                 resource = instruction.get("resource")
-                if (
-                    instruction["op"] != "present"
-                    or instruction["kind"] != "Sound"
-                ):
+                if instruction["op"] != "present" or instruction["kind"] != "Sound":
                     continue
                 if resource not in compiler.equates:
                     continue

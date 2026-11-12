@@ -1,7 +1,7 @@
 # East Shrine Return through Battle11 Cave Admission
 
 The cave encounter can follow Battle10's direct overworld return or an optional East Shrine visit.
-The selected connections lead west from Map70, north from Map69 and into the Dark Caves from Map72.
+The selected static connections lead west from Map70, north from Map69 and into the Dark Caves from Map72. The [remake walking observation](../../../../../remake/docs/application/new-granseal-east-shrine.md) takes the natural Battle10 return north through Map71 and west to Map72. The earliest ordinary access to the shrine bank remains Unknown.
 If the cave request admits Battle11 and its intro has not played, Peter describes the passage,
 reacts to a voice and meets the hobgoblin who welcomes and threatens the visitors. Battle preparation
 then replaces this scene's cast with the actual combatants.

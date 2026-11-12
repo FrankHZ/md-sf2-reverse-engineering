@@ -2,8 +2,7 @@
 
 The ordinary private campaign continues from the [damaged-ship deck](map14-plank-deck.md)
 through the battle at North Cliff and the founding of the town. The acceptance point is the
-transfer into the castle at Map7 (11,10) Up. Its year-later initialization belongs to
-[#1736](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1736). The campaign retains
+transfer into the castle at Map7 (11,10) Up. The [year-later continuation](new-granseal-east-shrine.md) takes over at this transfer. The campaign retains
 High rigor because battle outcomes and map initialization share persistent party state.
 
 ## Play and reproduce
@@ -30,7 +29,7 @@ slot copy and the normal Godot main scene. Graphics Settings still selects Origi
 4. On first victory advance the Map72 aftermath (2468–2482). Its queued Map73 return takes
    effect after the battle caller clears F408 and sets F508. Read the building sequence
    (2288–2291). After the final confirmation the force reset runs, the init caller sets F705,
-   and its pending warp transfers the party to Map7 (11,10) Up. The default Map7 setup is the
+   and its pending warp transfers the party to Map7 (11,10) Up. In the Battle08-only publication the default Map7 setup is the
    explicit Unsupported boundary, before year-later dialogue, F707 or castle control. There
    is no admitted field-save recipe at that point.
 

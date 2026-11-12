@@ -46,6 +46,7 @@ public static class BattleTerrainRules
         if (mover == BattleMover.Flying && Enum.IsDefined(terrain.Surface)) return 2;
         if (terrain.Surface == TerrainSurface.HighSky) return -1;
         if (mover == BattleMover.Hovering && Enum.IsDefined(terrain.Surface)) return 2;
+        if (mover == BattleMover.CentaurArcher) mover = BattleMover.Centaur;
         if (mover == BattleMover.StealthArcher) mover = BattleMover.Stealth;
         return terrain.Surface switch
         {

@@ -10,7 +10,8 @@ internal static class PhysicalTargetRules
     internal static PhysicalPriorityTable Table(BattleMover mover) => mover switch
     {
         BattleMover.Flying or BattleMover.Hovering => PhysicalPriorityTable.Flying,
-        BattleMover.Archer or BattleMover.StealthArcher => PhysicalPriorityTable.Archer, BattleMover.Mage => PhysicalPriorityTable.Mage,
+        BattleMover.Archer or BattleMover.CentaurArcher => PhysicalPriorityTable.Archer,
+        BattleMover.StealthArcher or BattleMover.Mage => PhysicalPriorityTable.Mage,
         _ => PhysicalPriorityTable.Regular,
     };
 
@@ -77,6 +78,8 @@ internal static class PhysicalTargetRules
         3 => table == PhysicalPriorityTable.Mage ? 21 : table == PhysicalPriorityTable.Archer ? 5 : 2,
         4 => table == PhysicalPriorityTable.Mage ? 24 : table == PhysicalPriorityTable.Archer ? 8 : 5,
         5 => table == PhysicalPriorityTable.Flying ? 27 : 15,
+        8 => table == PhysicalPriorityTable.Mage ? 14 : table == PhysicalPriorityTable.Flying ? 28 : 16,
+        9 => table == PhysicalPriorityTable.Mage ? 27 : table == PhysicalPriorityTable.Flying ? 21 : table == PhysicalPriorityTable.Archer ? 1 : 9,
         10 => table == PhysicalPriorityTable.Flying ? 25 : table == PhysicalPriorityTable.Mage ? 19 : 13,
         11 => table == PhysicalPriorityTable.Flying ? 18 : table == PhysicalPriorityTable.Mage ? 2 : 30,
         _ => throw new BattleRuleException("ai-target-class", "target.classRule", true),

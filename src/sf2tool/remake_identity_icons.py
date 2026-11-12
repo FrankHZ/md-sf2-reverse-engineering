@@ -33,6 +33,8 @@ ITEMS = (
     "WOODEN_ROD",
     "SHORT_ROD",
     "BRONZE_ROD",
+    "POWER_RING",
+    "WOODEN_ARROW",
     "IRON_ARROW",
     "SHORT_KNIFE",
     "MITHRIL",

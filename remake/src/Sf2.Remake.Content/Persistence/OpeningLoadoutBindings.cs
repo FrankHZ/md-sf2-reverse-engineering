@@ -40,11 +40,12 @@ internal static class OpeningLoadoutBindings
         var egress = PrivateFieldEgress.Bind(admitted.Exploration);
         var preparation = PrivateFieldPreparation.Read(source, openingMaps, egress.Capability);
         var encounters = admitted.Encounters.Values.Select(encounter => PrivateFieldPreparation.Discard(PrivateFieldPreparation.Give(
-            PrivateFieldPreparation.Equipment(encounter, source, allowBattleChanges: true), preparation), preparation));
+            PrivateFieldPreparation.Equipment(encounter, source, allowBattleChanges: true), preparation), preparation)).ToArray();
         return new(admitted.Package, encounters, source, egress.World, admitted.BattleScenes, admitted.EncounterStarts.Values,
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
-            Persistence = new Sf2OpeningRestore(),
+            Persistence = new Sf2OpeningRestore(encounters.Any(encounter => encounter.Deployments.Any(row =>
+                row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == 8)) ? 2 : 1),
             DefeatFallback = (new("map-0"), openingMap),
             FieldPreparation = preparation,
         };
