@@ -1896,3 +1896,255 @@ msgstr "Modern guidance: {0}"
 
 msgid "host.setting-description-10"
 msgstr "Shows the current objective in the field menu and known destinations in the world. Apply changes both together."
+
+msgid "guidance.start-day"
+msgstr "Start your day."
+
+msgid "guidance.home"
+msgstr "Home"
+
+msgid "guidance.leave-home"
+msgstr "Next: Leave the house."
+
+msgid "guidance.mother"
+msgstr "Next: Speak with your mother near home."
+
+msgid "guidance.attend-school"
+msgstr "Go to school."
+
+msgid "guidance.school"
+msgstr "School"
+
+msgid "guidance.school-courtyard"
+msgstr "Next: Join your classmates at school."
+
+msgid "guidance.teacher"
+msgstr "Next: Speak with your teacher downstairs."
+
+msgid "guidance.join-lesson"
+msgstr "Join the lesson."
+
+msgid "guidance.return-class"
+msgstr "Next: Return to the classroom for the lesson."
+
+msgid "guidance.visit-castle"
+msgstr "Visit Granseal Castle."
+
+msgid "guidance.granseal-castle"
+msgstr "Granseal Castle"
+
+msgid "guidance.castle-north"
+msgstr "Next: Take the town’s north exit to the castle."
+
+msgid "guidance.royal-quarters"
+msgstr "The King’s room"
+
+msgid "guidance.return-castle"
+msgstr "Next: Return to Granseal Castle."
+
+msgid "guidance.join-astral"
+msgstr "Join Astral in the castle hall."
+
+msgid "guidance.castle-hall"
+msgstr "Castle hall"
+
+msgid "guidance.astral-hall"
+msgstr "Next: Speak with Astral in the hall."
+
+msgid "guidance.return-hall"
+msgstr "Next: Return through the castle to the main hall."
+
+msgid "guidance.follow-astral"
+msgstr "Follow Astral to the tower."
+
+msgid "guidance.ancient-tower"
+msgstr "Ancient Tower"
+
+msgid "guidance.west-stairs"
+msgstr "Next: Use the stairs on the west side of the castle."
+
+msgid "guidance.west-tower-stairs"
+msgstr "Next: Continue through the western tower stairs."
+
+msgid "guidance.tower-guard"
+msgstr "Next: Speak with the guard on the tower route."
+
+msgid "guidance.enter-tower"
+msgstr "Enter the Ancient Tower."
+
+msgid "guidance.north-tower-exit"
+msgstr "Next: Take the northern exit toward the tower."
+
+msgid "guidance.tower-passage"
+msgstr "Next: Follow the passage to the tower entrance."
+
+msgid "guidance.tower-inner"
+msgstr "Next: Continue into the tower."
+
+msgid "guidance.return-king"
+msgstr "Return to see the King."
+
+msgid "guidance.king-room"
+msgstr "Next: Go through the royal quarters to the King’s room."
+
+msgid "guidance.reverse-tower"
+msgstr "Next: Retrace the tower passages toward the castle."
+
+msgid "guidance.hear-commission"
+msgstr "Speak with the royal party."
+
+msgid "guidance.royal-party"
+msgstr "Next: Approach the royal party in the hall."
+
+msgid "guidance.fetch-hawel"
+msgstr "Find Hawel near Yeel."
+
+msgid "guidance.find-hawel"
+msgstr "Find Hawel near Yeel."
+
+msgid "guidance.yeel-area"
+msgstr "Yeel and its surroundings"
+
+msgid "guidance.west-town-exit"
+msgstr "Next: Leave Granseal by the western exit."
+
+msgid "guidance.leave-castle"
+msgstr "Next: Leave the castle through town for the countryside."
+
+msgid "guidance.toward-yeel"
+msgstr "Next: Travel toward Yeel outside Granseal."
+
+msgid "guidance.ask-hawel"
+msgstr "Next: Ask the villagers about Hawel."
+
+msgid "guidance.visit-yeel"
+msgstr "Next: Visit Yeel to ask for directions."
+
+msgid "guidance.return-yeel"
+msgstr "Next: Return toward Yeel and Hawel’s house."
+
+msgid "guidance.ancient-shrine-goal"
+msgstr "Go to the Ancient Shrine."
+
+msgid "guidance.ancient-shrine"
+msgstr "Ancient Shrine"
+
+msgid "guidance.leave-house"
+msgstr "Next: Leave Hawel’s house to continue your journey."
+
+msgid "guidance.south-house"
+msgstr "Next: Continue south from Hawel’s house."
+
+msgid "guidance.return-countryside"
+msgstr "Next: Return to the countryside outside Hawel’s house."
+
+msgid "guidance.escape-galam"
+msgstr "Find a way out of Galam."
+
+msgid "guidance.galam-exit"
+msgstr "Galam Castle exit"
+
+msgid "guidance.west-castle-exit"
+msgstr "Next: Head toward the western castle exit."
+
+msgid "guidance.return-galam-exit"
+msgstr "Next: Return to the castle grounds and look for a way out."
+
+msgid "guidance.leave-cells"
+msgstr "Find a way out of the cells."
+
+msgid "guidance.prison-cells"
+msgstr "Prison cells"
+
+msgid "guidance.other-prisoners"
+msgstr "Next: Approach the other prisoners."
+
+msgid "guidance.prison-stairs"
+msgstr "Prison stairs"
+
+msgid "guidance.approach-stairs"
+msgstr "Next: Head toward the stairs outside the cells."
+
+msgid "guidance.opened-shortcut"
+msgstr "Known shortcut"
+
+msgid "guidance.use-shortcut"
+msgstr "Next: Find the shortcut near the cells."
+
+msgid "guidance.castle-kitchen"
+msgstr "Castle kitchen"
+
+msgid "guidance.tunnel-kitchen"
+msgstr "Next: Follow the tunnel to the kitchen."
+
+msgid "guidance.leave-kitchen"
+msgstr "Next: Leave the kitchen for the castle grounds."
+
+msgid "guidance.castle-interior-exit"
+msgstr "Next: Find the door back to the castle grounds."
+
+msgid "guidance.return-granseal"
+msgstr "Return to Granseal."
+
+msgid "guidance.granseal"
+msgstr "Granseal"
+
+msgid "guidance.south-galam-gate"
+msgstr "Next: Leave Galam through the southern gate."
+
+msgid "guidance.south-drawbridge"
+msgstr "Next: Cross the drawbridge and take the south exit."
+
+msgid "guidance.toward-granseal"
+msgstr "Next: Head for Granseal’s entrance."
+
+msgid "guidance.return-granseal-route"
+msgstr "Next: Make your way back toward Granseal."
+
+msgid "guidance.check-castle"
+msgstr "Find out what happened at Granseal Castle."
+
+msgid "guidance.castle-people"
+msgstr "Next: Speak with the people in the castle hall."
+
+msgid "guidance.rescue-at-tower"
+msgstr "Go to the Ancient Tower."
+
+msgid "guidance.tower-portals"
+msgstr "Next: Continue through the tower’s connected passages."
+
+msgid "guidance.tower-deep"
+msgstr "Next: Continue toward the inner tower."
+
+msgid "guidance.return-from-tower"
+msgstr "Leave the tower with the royal party."
+
+msgid "guidance.castle-exit"
+msgstr "Castle exit"
+
+msgid "guidance.cross-castle"
+msgstr "Next: Cross the castle on the way back to town."
+
+msgid "guidance.escape-earthquake"
+msgstr "Get everyone to safety."
+
+msgid "guidance.castle-south"
+msgstr "Next: Leave the castle through the southern exit."
+
+msgid "guidance.reach-docks"
+msgstr "Reach the docks."
+
+msgid "guidance.granseal-docks"
+msgstr "Granseal docks"
+
+msgid "guidance.east-safe-exit"
+msgstr "Next: Use the town’s safer eastern exit."
+
+msgid "guidance.east-exit"
+msgstr "East exit"
+
+msgid "guidance.board-ship"
+msgstr "Depart by ship."
+
+msgid "guidance.dock-man"
+msgstr "Next: Speak with the man beside the ship."
