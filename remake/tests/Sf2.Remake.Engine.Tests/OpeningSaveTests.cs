@@ -69,8 +69,10 @@ public sealed class OpeningSaveTests
         Assert.Equal(timed.Exploration!.Party.MainSeed, enriched.Snapshot.Exploration!.Party.MainSeed);
     }
 
-    [Fact]
-    public void AmbientDefaultWalkingCanResetButStoryInstalledWorkCannotBeSaved()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AmbientDefaultWalkingCanResetButStoryInstalledWorkCannotBeSaved(bool sourceWait)
     {
         var (definition, data) = OpeningRestoreTests.Fixture();
         var current = Assert.IsType<SessionStarted>(GameSession.Restore(definition, data, RuleCompositions.Sf2())).Session.Current;
@@ -82,11 +84,15 @@ public sealed class OpeningSaveTests
             new ActiveExploration(world.WithEntity(resumed)), current.Story, current.StopReason);
         Assert.True(OpeningSave.Query(definition, ambient, RuleCompositions.Sf2()).Allowed);
         var wander = new EntityActionProgram([new FaceEntity(1), new RandomWalkEntity(new(40, 8), 2),
-            new WaitEntityTicks(10), new JumpEntityAction(1)]);
+            sourceWait ? new WaitEntityTimer(10) : new WaitEntityTicks(10), new JumpEntityAction(1)]);
         SessionSnapshot At(int cursor) => new(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(world.WithEntity(npc with { Actions = wander, ActionCursor = cursor })), current.Story, current.StopReason);
         Assert.Equal("save-story-motion", OpeningSave.Query(definition, At(0), RuleCompositions.Sf2()).Error);
-        Assert.True(OpeningSave.Query(definition, At(2), RuleCompositions.Sf2()).Allowed);
+        var walking = At(2);
+        var capture = OpeningSave.Capture(definition, walking, RuleCompositions.Sf2(), walking.SessionId, walking.Revision);
+        Assert.Null(capture.Error);
+        var continued = Assert.IsType<SessionStarted>(GameSession.Restore(definition, capture.Data!, RuleCompositions.Sf2())).Session;
+        Assert.True(continued.Current.CanWaitAtInput);
         var commanded = npc with { Actions = new([new WaitEntityTicks(20), new IdleEntityAction()]) };
         var busy = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(world.WithEntity(commanded)), current.Story, current.StopReason);

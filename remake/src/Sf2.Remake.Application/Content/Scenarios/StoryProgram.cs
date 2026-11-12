@@ -90,7 +90,14 @@ public sealed record MoveEntityAbsolute(MapPosition Position, bool FieldInput = 
 public sealed record PositionEntity(MapPosition Position) : EntityAction;
 public sealed record RandomWalkEntity(MapPosition Origin, int Radius) : EntityAction;
 public sealed record FaceEntity(byte Facing) : EntityAction;
-public sealed record WaitEntityTicks(byte Ticks) : EntityAction;
+public record WaitEntityTicks(byte Ticks) : EntityAction
+{
+    internal virtual bool IsPending(byte timer) => timer < Ticks;
+}
+public sealed record WaitEntityTimer(byte Ticks) : WaitEntityTicks(Ticks)
+{
+    internal override bool IsPending(byte timer) => unchecked((sbyte)timer) < unchecked((sbyte)Ticks);
+}
 public sealed record StopEntityActions : EntityAction;
 public sealed record IdleEntityAction : EntityAction;
 public sealed record SetEntitySpeed(ushort X, ushort Y) : EntityAction;

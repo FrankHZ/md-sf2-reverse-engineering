@@ -47,7 +47,7 @@ def compile_maps(
             if direction not in range(4):
                 raise ValueError("unsupported movement sequence direction")
             x, y = [(1, 0), (0, -1), (-1, 0), (0, 1)][direction]
-            actions.extend([{"op": "move", "x": x, "y": y}, {"op": "wait", "ticks": 10}])
+            actions.extend([{"op": "move", "x": x, "y": y}, {"op": "wait-timer", "operand": 10}])
         raise ValueError("unterminated movement sequence")
 
     resources = {

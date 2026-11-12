@@ -685,6 +685,9 @@ internal static class ExplorationContentReader
                 case "position": Object(action, opcode, "op", "position"); actions.Add(new PositionEntity(Position(action.GetProperty("position")))); break;
                 case "face": Object(action, opcode, "op", "facing"); actions.Add(new FaceEntity((byte)Number(action, "facing", 0, 7))); break;
                 case "wait": Object(action, opcode, "op", "ticks"); actions.Add(new WaitEntityTicks((byte)Number(action, "ticks", 0, 255))); break;
+                case "wait-timer":
+                    Object(action, opcode, "op", "operand");
+                    actions.Add(new WaitEntityTimer(unchecked((byte)Number(action, "operand", 0, 65535)))); break;
                 case "speed": Object(action, opcode, "op", "x", "y"); actions.Add(new SetEntitySpeed((ushort)Number(action, "x", 0, 384), (ushort)Number(action, "y", 0, 384))); break;
                 case "animation-counter": Object(action, opcode, "op", "counter"); actions.Add(new SetEntityAnimationCounter((byte)Number(action, "counter", 0, 255))); break;
                 case "acceleration": Object(action, opcode, "op", "x", "y"); actions.Add(new SetEntityAcceleration((byte)Number(action, "x", 0, 255), (byte)Number(action, "y", 0, 255))); break;

@@ -135,8 +135,8 @@ internal static class EntityActionRunner
                         yield = true; break;
                     case FaceEntity face: motion = motion with { Facing = face.Facing, WaitTimer = 0 }; break;
                     case WaitEntityTicks wait:
-                        if (motion.WaitTimer < wait.Ticks)
-                        { motion = motion with { WaitTimer = (byte)(motion.WaitTimer + 1) }; next--; yield = true; }
+                        if (wait.IsPending(motion.WaitTimer))
+                        { motion = motion with { WaitTimer = unchecked((byte)(motion.WaitTimer + 1)) }; next--; yield = true; }
                         else motion = motion with { WaitTimer = 0 };
                         break;
                     case SetEntitySpeed speed: motion = motion with { XSpeed = speed.X, YSpeed = speed.Y, WaitTimer = 0 }; break;
