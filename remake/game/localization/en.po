@@ -1406,6 +1406,12 @@ msgstr "Unavailable at the current field boundary."
 msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}: Choose\n{4}: Select   {5}: Back"
 
+msgid "ui.settings.debug"
+msgstr "Debug diagnostics: {0}"
+
+msgid "host.setting-description-11"
+msgstr "Shows text loading status and catalog counts in Settings. Off by default. Apply saves the choice; errors remain visible either way."
+
 msgid "ui.settings.catalog"
 msgstr "World Chinese loaded: {0} dialogue rows / {1} display names."
 
