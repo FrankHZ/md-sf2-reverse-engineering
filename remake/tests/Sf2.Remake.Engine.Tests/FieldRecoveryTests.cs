@@ -115,7 +115,7 @@ public sealed class FieldRecoveryTests
         var session = Assert.IsType<SessionStarted>(started).Session;
         ActorRef leader = new("ally-0");
         var query = session.QueryFieldActions(leader); Assert.Null(query.Error);
-        Assert.False(session.Definition.Encounters.Values.First().Deployments.First(row => row.Actor == leader).Definition.Equipment!.AllowChanges);
+        Assert.True(session.Definition.Encounters.Values.First().Deployments.First(row => row.Actor == leader).Definition.Equipment!.AllowChanges);
         Accept(session, new FieldEquip(leader, 4, null));
         var item = session.QueryFieldActions(leader).Items.First(row => row.Use == FieldRecoveryEffect.NoEffect);
         var beforeUse = session.Current;

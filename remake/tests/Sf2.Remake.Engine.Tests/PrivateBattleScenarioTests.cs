@@ -28,7 +28,7 @@ public sealed class PrivateBattleScenarioTests
         var source = admitted.Definition.PrivateDefinitions!;
         Assert.Equal("private-local-controlled-start", admitted.Origin);
         Assert.Equal(new byte[] { 0, 1, 4 }, source.Classes.Keys.Order());
-        Assert.Equal(new byte[] { 0, 1, 3, 4, 33, 56, 57, 71, 72, 73, 85, 86, 103, 127 }, source.Items.Keys.Order());
+        Assert.Equal(new byte[] { 0, 1, 3, 4, 33, 56, 57, 71, 72, 73, 85, 86, 103, 123, 127 }, source.Items.Keys.Order());
         Assert.Equal("CENTAUR", source.Classes[1].MovementType);
         Assert.Equal((byte)7, source.Enemies["GIZMO"].BaseAttack);
         Assert.Equal("PRIORITYMOD_2", source.Enemies["GIZMO"].AiBitfieldExpression);

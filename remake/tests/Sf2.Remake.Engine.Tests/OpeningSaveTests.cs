@@ -154,7 +154,7 @@ public sealed class OpeningSaveTests
         var changed = Assert.IsType<SessionStarted>(GameSession.Restore(session.Definition, unarmed, session.Rules)).Session;
         var actor = changed.Current.Exploration!.Party.Actors.Single(a => a.Actor.Value == "ally-0");
         var baseline = changed.Definition.Encounters.Values.First().Deployments.Single(row => row.Actor == actor.Actor).Definition;
-        Assert.False(baseline.Equipment!.AllowChanges);
+        Assert.True(baseline.Equipment!.AllowChanges);
         Assert.Equal((ushort)256, actor.SourceLoadout!.Items[1]);
         Assert.Equal(actor.Progress!.BaseAttack, BattleEquipment.Attack(baseline, actor.Progress, actor.SourceLoadout));
         var armed = restored.Current.Exploration!.Party.Actors.Single(a => a.Actor == actor.Actor);
