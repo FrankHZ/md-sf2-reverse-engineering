@@ -131,10 +131,10 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 | 原始决策与后续修订 | [Decisions 索引（英文）](./README.md#decisions) |
 | 文档与 agent instruction 审计 | [审计记录（英文）](./operations/documentation-agent-audit.md) |
 
-当前状态/内容驱动引擎运行通用 authored（项目自编）包及有边界的私有本地内容。
-已接受的连续 Map3 → Battle01 胜利与可用返回之外，已有 Battle02 胜败、返回与再次入战，以及选定的
-Yeel 指引、Kazin 跟随和 Battle03 可操作战斗；这不包括 Battle03 结果、Hawel 招募或后续全战役。
-完整服务、存读档、全游戏保真和原版素材公开分发仍不在这些切片的范围内。
+普通私有开局可经 Battle01–07、地震撤离和港口选择，抵达损坏船只 Map14 的首次自由行动。
+最近的后段探索存点在战后的 Map58 塔楼；试玩可从兼容存档继续到船上。
+具体操作见[短试玩路线（英文）](../remake/docs/godot/ui-scene-review.md#short-play-route)。
+[渡海后首片准入审计（中文）](../remake/docs/evidence/pre-voyage-readiness.zh-CN.md)说明木板选择、甲板对白和 Battle08 各自还需要哪些实现与验收。
 
 当前呈现已有连续探索/情境 Talk、1920×1080 共享世界和 96px 格子、蓝金剧情对话框、可达移动格、
 HP/MP 图片状态卡、战斗消息、返回反馈与只读队伍状态页。各项呈现的限定验收和现代化偏离见
