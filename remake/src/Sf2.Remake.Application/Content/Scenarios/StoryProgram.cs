@@ -6,7 +6,7 @@ public readonly record struct EntityRef(string Value);
 public readonly record struct ProgramLocation(string Program, int Instruction);
 public enum TextDisplayMode { Continued, Single }
 public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad, SoundWait, PreviousMusic, SoundCut }
-public enum MapLoadMode { Rebuild, Preserve }
+public enum MapLoadMode { Rebuild, Preserve, ScrollHorizontal, ScrollVertical }
 
 public abstract record StoryInstruction;
 public abstract record SourceStoryInstruction : StoryInstruction;
@@ -68,7 +68,11 @@ public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Act
     EntityScriptInstallation Installation = EntityScriptInstallation.Preserve,
     Runtime.Exploration.EntityWaitCompletion? Completion = null) : StoryInstruction;
 public sealed record WaitForEntity(EntityRef Entity, bool ScriptIdle = false) : StoryInstruction;
-public sealed record JoinPartyMember(int Member) : StoryInstruction;
+public sealed record RequestCurrentMap : StoryInstruction;
+public sealed record RestoreCachedRoof : StoryInstruction;
+public sealed record ReloadDefaultEntities(MapId Map) : StoryInstruction;
+public sealed record FaceOtherEntity(EntityRef Entity, EntityRef Target) : StoryInstruction;
+public sealed record JoinPartyMember(int Member, bool AiControlled = false) : StoryInstruction;
 public abstract record OutcomePartyInstruction(int Member) : StoryInstruction;
 public sealed record ClearOutcomePartyAi(int Member) : OutcomePartyInstruction(Member);
 public sealed record LeaveOutcomeBattleParty(int Member) : OutcomePartyInstruction(Member);

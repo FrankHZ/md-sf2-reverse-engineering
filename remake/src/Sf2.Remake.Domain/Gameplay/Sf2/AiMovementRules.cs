@@ -30,8 +30,10 @@ internal static class AiMovementRules
         var order = Enumerable.Range(0, targets.Count).OrderBy(index => costs[index]).ToArray();
         if (targets.Count > 1 && (costs[^1] & 128) != 0)
         {
-            var ranks = order.Select(index => PhysicalTargetRules.ClassRank(
-                Sf2ClassRules.SourceClass(targets[index].Definition.ClassRule), table)).ToArray();
+            // GetClass reads combatant byte 10, also ENEMYDEF_OFFSET_SPELLPOWER.
+            // All admitted source enemies have SPELLPOWER_REGULAR (0).
+            var ranks = order.Select(index => PhysicalTargetRules.ClassRank(targets[index].IsAlly ?
+                Sf2ClassRules.SourceClass(targets[index].Definition.ClassRule) : (byte)0, table)).ToArray();
             // One forward adjacent pass, with both source predicates; not a class sort.
             for (int i = 0; i < order.Length - 1; i++)
                 if (Math.Abs(ranks[i] - ranks[i + 1]) <= 1 &&

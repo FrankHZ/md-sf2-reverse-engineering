@@ -24,9 +24,9 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             actor.Control != BattleControl.Automatic || !SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0 ||
             battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
-        // Finite unarmed, no-item, no-spell commandset. Unsupported categories cannot
+        // An ordinary unequipped herb or ring without an AI-use bit supplies no command. Other categories cannot
         // silently fall through as failed HEAL/item/attack commands.
-        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(i => i != 127) ||
+        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(i => i is not (127 or 19 or 0)) ||
             loadout.Spells.Any(s => s != 63) || actor.Spells.Count != 0 ||
             actor.Definition.Physical is not { MinimumRange: 1, MaximumRange: 1 })
             throw new BattleRuleException("source-ally-action-categories", "actor.loadout", true);
@@ -82,10 +82,9 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
         effects.Add(new("ai-command-support", actorRef, After: -1)); // explicit ally early return
         var costsMap = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
-        // MOVE1's final d0 is a cost, not the actor ID. Reuse only the admitted complete
-        // 0..127 cost domain that bypasses its class pass; unreachable/128 stays Unsupported.
-        var pursuit = AiMovementRules.Pursue(costsMap, grid, actor.Position, targets.Select(a => a.Position!).ToArray(),
-            Occupied, battle.Definition.Width, battle.Definition.Height);
+        var scores = WeightedMovement.Build(costsMap, actor.Position.Y * 48 + actor.Position.X, 128);
+        var pursuit = AiMovementRules.PursueOrdered(costsMap, scores, grid, actor.Position, targets,
+            PhysicalTargetRules.Table(actor.Definition.Mover), Occupied, battle.Definition.Width, battle.Definition.Height);
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost,
             Target: targets[pursuit.TargetIndex].Actor));
         effects.Add(new("ai-command-move1", actorRef, After: 0));

@@ -112,8 +112,10 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         effects.Add(new("ai-command-support", actorRef, After: -1));
         if (commandset == 8 || targets.Length == 0)
             return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
-        var pursuit = AiMovementRules.Pursue(Costs(), legal, actor.Position, targets.Select(unit => unit.Position!).ToArray(),
-            Occupied, current.Definition.Width, current.Definition.Height);
+        var costs = Costs();
+        var scores = WeightedMovement.Build(costs, actor.Position.Y * 48 + actor.Position.X, 128);
+        var pursuit = AiMovementRules.PursueOrdered(costs, scores, legal, actor.Position, targets,
+            PhysicalTargetRules.Table(actor.Definition.Mover), Occupied, current.Definition.Width, current.Definition.Height);
         var targetRef = targets[pursuit.TargetIndex].Actor;
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost, Target: targetRef));
         effects.Add(new(pursuit.Destination == actor.Position ? "ai-move-stay" : "ai-move", actorRef, Target: targetRef));

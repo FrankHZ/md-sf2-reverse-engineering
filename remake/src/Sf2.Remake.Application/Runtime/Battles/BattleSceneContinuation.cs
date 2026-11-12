@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -454,7 +454,13 @@ internal static class BattleSceneContinuation
                 { index++; next = BattleScenePhase.TargetExit; break; }
                 if (scene.Spell is not null) { next = BattleScenePhase.MakeIdle; break; }
                 if (scene.Reaction.InflictedSleep is not null) { next = BattleScenePhase.SleepMessage; break; }
+                if (scene.Reaction.InflictedPoison is not null) { next = BattleScenePhase.PoisonMessage; break; }
                 if (scene.Reaction.InflictedSilence is not null) { next = BattleScenePhase.SilenceMessage; break; }
+                goto case BattleScenePhase.SleepMessage;
+            case BattleScenePhase.PoisonMessage:
+                ushort poisonBefore = battle.GetActor(scene.Target!.Value).Status;
+                battle = scene.Action.ApplyPoison(battle, scene.Reaction);
+                observations.Add(new(++sequence, revision, "poison-inflicted", scene.Target, poisonBefore, battle.GetActor(scene.Target!.Value).Status));
                 goto case BattleScenePhase.SleepMessage;
             case BattleScenePhase.SilenceMessage:
                 ushort silenceBefore = battle.GetActor(scene.Target!.Value).Status;

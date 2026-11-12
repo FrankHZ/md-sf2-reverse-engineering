@@ -160,12 +160,13 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC0) != 0,
                 ineffective: !counter && ineffective, doubleRange: profile.Critical.DoubleChanceDenominator,
                 counterRange: defender.Definition.Physical!.Critical.CounterChanceDenominator,
-                silenceCritical: profile.Critical.InflictsSilence);
+                silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
                 hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,
                 strike.Dodged || strike.Ineffective ? null : status,
                 strike.SleepInflicted ? (ushort)(status | 0xC0) : null,
+                InflictedPoison: strike.PoisonInflicted ? (ushort)(status | 2) : null,
                 InflictedSilence: strike.SilenceInflicted && SilenceRules.HasSpells(defender) ? (ushort)(status | SilenceRules.Mask) : null));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
@@ -213,6 +214,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             battle = action.ApplyReaction(battle, reaction);
             battle = action.ApplySleep(battle, reaction);
             battle = action.ApplySilence(battle, reaction);
+            battle = action.ApplyPoison(battle, reaction);
             deaths = deaths.Append(before, battle.GetActor(reaction.Target));
         }
         var reward = action.ApplyReward(battle, progression);

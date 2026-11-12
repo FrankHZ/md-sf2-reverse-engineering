@@ -216,13 +216,24 @@ class OriginalPrograms:
 
     def scene_entities(self, relative: str, symbol: str) -> dict[str, Any]:
         rows = self.source_operations(relative, symbol)
-        if rows[0]["opcode"] != "mainEntity" or rows[-1]["opcode"] != "cscEntitiesEnd":
+        if len(rows) == 1 and rows[0]["opcode"] == "mainEntity":
+            storage = "disasm/data/maps/mapsetupsstorage.asm"
+            self.sources.add(storage)
+            includes = re.findall(r'include\s+"([^"]+)"', (self.upstream / storage).read_text())
+            paths = ["disasm/" + path.replace(chr(92), "/") for path in includes]
+            tail = paths[paths.index(relative) + 1]
+            first = re.search(r"^(\w+):", (self.upstream / tail).read_text(), re.MULTILINE)
+            rows.extend(self.source_operations(tail, first[1]))
+        if rows[0]["opcode"] != "mainEntity" or rows[-1]["opcode"] not in (
+            "cscEntitiesEnd",
+            "msEntitiesEnd",
+        ):
             raise ValueError("source cutscene entity table boundary")
         x, y, facing = map(self.number, _tokens(rows[0]["operandText"]))
         entities = []
         non_ally = 128
         for row in rows[1:-1]:
-            if row["opcode"] != "entity":
+            if row["opcode"] not in ("entity", "entityRandomWalk"):
                 raise ValueError("source cutscene entity record")
             values = _tokens(row["operandText"])
             ex, ey, ef, sprite = map(self.number, values[:4])
@@ -239,7 +250,11 @@ class OriginalPrograms:
                     "speed": self.entity_speed,
                     "visible": True,
                     "obstruction": False,
-                    "actions": action_stream(self, values[4]),
+                    "actions": (
+                        self.walking(*map(self.number, values[4:]))
+                        if row["opcode"] == "entityRandomWalk"
+                        else action_stream(self, values[4])
+                    ),
                 }
             )
         return {
@@ -444,7 +459,31 @@ class OriginalPrograms:
                         "onRequest": _location("source-random-battle-presentation"),
                     }
                 )
-            elif op == "executeSubroutine":
+            elif op == "executeSubroutine" and args == ["j_csub_40F2"]:
+                result.append({"op": "restore-cached-roof"})
+            elif op == "reloadEntities" and re.fullmatch(r"ms_map\d+_Entities", args[0]):
+                result.append(
+                    {
+                        "op": "reload-default-entities",
+                        "map": "map-" + args[0].removeprefix("ms_map").removesuffix("_Entities"),
+                    }
+                )
+            elif op == "joinForceAI" and self.number(args[1]) != 0:
+                result.append({"op": "join-ai-party", "member": self.number(args[0])})
+            elif op == "faceEntity":
+                result.append(
+                    {
+                        "op": "face-entity",
+                        "entity": self.entity(args[0]),
+                        "target": self.entity(args[1]),
+                    }
+                )
+            elif op == "move.l" and args == [
+                "#MAP_EVENT_RELOADMAP",
+                "((MAP_EVENT_TYPE-$1000000)).w",
+            ]:
+                result.append({"op": "request-current-map"})
+            elif op == "executeSubroutine" and args[0] in self.raw:
                 result.append({"op": "call", "target": _location(self.compile(args[0]))})
             elif op == "jsr" and args in (["j_GetMaxHp"], ["j_GetMaxMp"]):
                 setter = "j_SetCurrentHp" if args == ["j_GetMaxHp"] else "j_SetCurrentMp"
@@ -732,23 +771,26 @@ class OriginalPrograms:
                         else self.entity(args[0]),
                     }
                 )
-            elif op == "loadMapFadeIn" and (
+            elif op in ("loadMapFadeIn", "mapLoad") and (
                 self.scene_maps is None or self.number(args[0]) in self.scene_maps
             ):
                 # csc37 starts out-to-black and falls through csc48. The source's later fadeInB
                 # is a separate operation; loading a scene does not execute map init/population.
                 # csc48 detaches before its first enabled fade wait. With the finite blocking
                 # helper, express that service boundary explicitly before entering the fade.
-                result.extend(
-                    [
-                        {"op": "camera-entity", "entity": None},
+                result.append({"op": "camera-entity", "entity": None})
+                if op == "loadMapFadeIn":
+                    result.append(
                         {
                             "op": "present",
                             "kind": "FadeOut",
                             "resource": "black",
                             "entity": None,
                             "position": None,
-                        },
+                        }
+                    )
+                result.extend(
+                    [
                         {
                             "op": "scene-map",
                             "map": "map-" + str(self.number(args[0])),
@@ -759,7 +801,10 @@ class OriginalPrograms:
                     ]
                 )
             elif op == "loadMapEntities":
-                result.append(self.scene_entities(relative, args[0]))
+                table_path = (
+                    "disasm/" + self.raw[args[0]]["path"] if args[0] in self.raw else relative
+                )
+                result.append(self.scene_entities(table_path, args[0]))
             elif op in ("mapFadeOutToWhite", "mapFadeInFromWhite"):
                 result.append(
                     {

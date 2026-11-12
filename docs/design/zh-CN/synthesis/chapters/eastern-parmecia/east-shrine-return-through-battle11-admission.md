@@ -2,7 +2,7 @@
 
 > 本文是[规范英文原文](../../../../synthesis/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)的中文镜像；英文始终为审阅基线，翻译遵循[术语表（英文）](../../../../glossary.md) R1–R7。已译指南与合同使用中文导航；未译相邻指南标明英文，研究与源码仍由英文所有者提供。译文不产生新观察或扩大原版/重制边界。
 
-洞窟遭遇可接续 Battle10 直接大地图返回，也可接续可选 East Shrine 访问。选定连接从 Map70 向西、从 Map69 向北，再从 Map72 进入 Dark Caves。若洞窟请求使 Battle11 准入且其介绍尚未播放，Peter 会描述通道、回应声音，并遇见欢迎又威胁访客的 hobgoblin。战斗准备随后以实际战斗员替换此场景角色阵容。
+洞窟遭遇可接续 Battle10 直接大地图返回，也可接续可选 East Shrine 访问。选定的静态连接从 Map70 向西、从 Map69 向北，再从 Map72 进入 Dark Caves。[重制版步行观察（英文）](../../../../../../remake/docs/application/new-granseal-east-shrine.md)从 Battle10 自然胜利落点向北经 Map71，再向西到 Map72。原版最早何时能抵达神殿所在河岸仍为未知。若洞窟请求使 Battle11 准入且其介绍尚未播放，Peter 会描述通道、回应声音，并遇见欢迎又威胁访客的 hobgoblin。战斗准备随后以实际战斗员替换此场景角色阵容。
 
 **已确认静态内容与控制流：**已接受的[研究所有者（英文）](../../../../../research/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)支持下文连接、准入与开场。**推断：**它们构成从 Battle10/可选神殿前沿走向洞窟遭遇的候选内容序列。**未知：**自然穿行、提供的行动者/故事/出战队伍状态、已完成服务和可见黑暗。这既不是强制神殿路线，也不是观察到的可玩入场或重制就绪主张。
 

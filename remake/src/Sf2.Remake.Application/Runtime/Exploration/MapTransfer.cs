@@ -13,6 +13,11 @@ internal static class MapTransfer
     {
         var preview = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(MapEventDispatcher.Roof(candidate)), current.Story, current.StopReason);
+        if (warp.LoadMode is MapLoadMode.ScrollHorizontal or MapLoadMode.ScrollVertical)
+        {
+            _ = Scroll(definition, preview, warp, []);
+            return;
+        }
         var admitted = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
             warp.LoadMode, current.Story, [], rules, sourcePlacement);
         if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null) return;
@@ -91,6 +96,8 @@ internal static class MapTransfer
     internal static SessionSnapshot BeginWarp(ScenarioDefinition definition, SessionSnapshot current,
         ExplorationEvent warp, List<SessionObservation> observations, SessionRules rules, bool sourcePlacement = false)
     {
+        if (warp.LoadMode is MapLoadMode.ScrollHorizontal or MapLoadMode.ScrollVertical)
+            return Scroll(definition, current, warp, observations);
         if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules) is not null)
             return Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
                 warp.LoadMode, current.Story, observations, rules, sourcePlacement);
@@ -100,6 +107,30 @@ internal static class MapTransfer
             new ActiveExploration(world.WithEntity(world.PlayerEntity with { Actions = null, ActionCursor = 0, WaitingForMotion = false })),
             story, current.StopReason);
         return BeginFade(current, story, PresentationCueKind.FadeOut, FullFadePurpose.WarpOut, null, observations);
+    }
+
+    private static SessionSnapshot Scroll(ScenarioDefinition definition, SessionSnapshot current, ExplorationEvent warp,
+        List<SessionObservation> observations)
+    {
+        var world = current.Exploration!;
+        CaravanRuntime.RequireOrdinaryMapOperation(world);
+        var target = definition.Exploration!.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
+        var player = world.PlayerEntity;
+        var horizontal = warp.LoadMode == MapLoadMode.ScrollHorizontal;
+        var position = new MapPosition(horizontal ? warp.Destination!.X : player.Position.X,
+            horizontal ? player.Position.Y : warp.Destination!.Y);
+        if (!target.Traversal.IsWithinActiveArea(position))
+            throw new BattleRuleException("scroll-position", "event.position");
+        // ProcessMapEventType1_Warp keeps the physical slots and writes only the
+        // nonnegative coordinates of the idle leader. The field loop resumes directly.
+        var next = new ExplorationState(target, target.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
+            world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities);
+        short x = (short)(position.X * 384), y = (short)(position.Y * 384);
+        next = next.WithEntity(player with { Actions = null, ActionCursor = 0, WaitingForMotion = false,
+            Motion = player.Motion with { X = x, XDestination = x, Y = y, YDestination = y,
+                XVelocity = 0, YVelocity = 0, XTravel = 0, YTravel = 0 } });
+        var story = current.Story.Copy(null, logicalView: ExplorationViewRunner.Initialize(next));
+        return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-scrolled", target.Map.Value);
     }
 
     internal static SessionSnapshot BeginFade(SessionSnapshot current, StoryState story, PresentationCueKind kind,
@@ -262,8 +293,8 @@ internal static class MapTransfer
         CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
         ExplorationTextRunner.ValidateContext(current);
         var story = current.Story;
-        if (story.TextWindow is not ClosedTextWindow || story.PortraitWindow is not ClosedPortraitWindow ||
-            story.LogicalText is not { Open: false } || story.Wait is not null)
+        if (story.PortraitWindow is not ClosedPortraitWindow || story.Wait is not null || story.Typewriting ||
+            (story.TextWindow is OpenTextWindow) != (story.LogicalText is { Open: true }))
             throw new BattleRuleException("scene-load-windows", "story.windows", true);
         ValidateDisplay(story.Display);
         // The source replaces PALETTE_1_BASE without copying it into current CRAM.
@@ -274,7 +305,7 @@ internal static class MapTransfer
         if (next.Definition.BasePalette is not { Valid: true } palette)
             throw new BattleRuleException("scene-load-palette-binding", "map.basePalette", true);
         return story.Copy(story.Cursor, logicalView: ExplorationViewRunner.LoadScene(next, load.Camera, story.LogicalView!),
-            logicalText: new(),
+            logicalText: new(), textWindow: new ClosedTextWindow(),
             display: story.Display with { Base = palette }, clearCameraEntity: true, clearCameraTarget: true);
     }
 

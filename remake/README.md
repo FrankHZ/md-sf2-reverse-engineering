@@ -7,7 +7,7 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 One common `GameSession` runs configurable authored battle/exploration packages and the connected
-private opening world through Battles01–08 and the [New Granseal handoff](docs/application/battle08-new-granseal.md).
+private opening world through Battles01–10 and the [eastern Parmecia handoff](docs/application/new-granseal-east-shrine.md).
 Content admits reusable immutable
 definitions and separate controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
 Application owns program execution, waits, automatic turns, staged effects and return. Godot submits
@@ -31,9 +31,11 @@ source/provenance and the retired reference implementation without turning them 
 The private ordinary opening carries the party through Battles01–07, the Galam escape,
 optional Kiwi recruitment, tower aftermath, earthquake town and docks departure. Map73's first-arrival
 init reaches usable Map14 control. The [deck, Battle08 and founding route](docs/application/battle08-new-granseal.md)
-continues to the New Granseal castle entry. The current world keeps gameplay revision4 and seven generated members. Earlier
+continues to the New Granseal castle entry. [Peter, Ribble and eastern Parmecia](docs/application/new-granseal-east-shrine.md)
+covers two more battles, the cave approach and the separate shrine entrance. Field recipe 2 on gameplay
+revision 4 initializes nine members and restores the previous seven-member field recipe. Earlier
 revision1–3 worlds retain their own compatible slots. Explicit Save/Continue supports the existing
-opening recipes plus the completed Battle07 Map58 safe point, preserving actual progress. The
+opening recipes plus the Battle07 Map58 safe point, year-later castle, Ribble, eastern overworld battle returns and the conditional East Shrine visit. The
 [battle persistence boundary](docs/application/battle-save-and-continue.md) also supports explicit
 system-menu Save/return or Save and Quit at settled player Movement in Battles01–07, then ordinary
 title Continue in a fresh process at that actor's saved turn.

@@ -4,7 +4,8 @@
 
 The [finite admission agreement](application/pre-voyage-chinese-admission.md) owns the 806 pre-voyage world
 IDs, six entry aliases and 51 names. The [Battle08 continuation](application/battle08-new-granseal.md)
-extends the current selection through the founding sequence. Use `--scope pre-voyage` for the prior catalog.
+covers the founding sequence. The [eastern Parmecia continuation](application/new-granseal-east-shrine.md)
+extends the current selection to 1,010 world messages and 65 names. Use `--scope pre-voyage` for the prior catalog.
 This is display integration over accepted source/translation authority; no new original capture, full route, font
 sweep or research aggregate is required. Keep sole corpora and historical209/six-alias catalogs read-only.
 

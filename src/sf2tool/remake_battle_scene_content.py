@@ -122,7 +122,7 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (1, 2, 3, 4, 5, 6, 7, 8):
+    if battle not in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -275,7 +275,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                 ("enemy", 23, 0, None),
             ]
         )
-    if battle in (5, 6, 7, 8):
+    if battle in (5, 6, 7, 8, 9, 10):
         actor_selections = [
             ("ally", 0, 0, 71),
             ("ally", 0, 0, 57),
@@ -289,16 +289,22 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             ("ally", 4, 0, 86),
             ("ally", 5, 0, 103),
         ]
-        if battle == 8:
+        if battle >= 8:
             actor_selections.extend(("enemy", sprite, 0, None) for sprite in (32, 37, 4, 0))
             actor_selections.append(("ally", 6, 0, None))
         else:
             actor_selections.extend(("enemy", sprite, 0, None) for sprite in (2, 3, 31, 36))
+        if battle >= 9:
+            actor_selections.extend([("ally", 7, 0, None), ("enemy", 23, 2, None)])
+        if battle == 10:
+            actor_selections.extend([("ally", 8, 0, 45), ("enemy", 5, 2, None)])
         if battle in (6, 7):
             actor_selections.append(("enemy", 40, 0, None))
     if battle == 7:
         actor_selections.extend([("ally", 6, 0, None), ("enemy", 22, 0, None)])
     for side, index, pal_index, weapon_item in actor_selections:
+        graphic = read(0x1F9E2 + (weapon_item - 26) * 2, 2) if weapon_item is not None else None
+        draw_weapon = graphic is not None and graphic[0] != 255
         base = pointer(sprites[side + "BattlespriteTableAddress"] + index * 4)
         pal_offset = base + 4 + word(base + 4)
         pal = palette(pal_offset + pal_index * 32)
@@ -342,7 +348,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                         ticks=raw[1],
                         x=signed(raw[2]),
                         y=signed(raw[3]),
-                        weapon=weapon(raw[4:]) if weapon_item is not None else None,
+                        weapon=weapon(raw[4:]) if draw_weapon else None,
                     )
                 )
             sequences[purpose] = dict(
@@ -352,7 +358,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                 terminate=data[3],
                 # GetWeaponspriteAndPalette returns -1 for an unarmed ally;
                 # battlesceneengine_0 skips its weapon animation operands.
-                idleWeapon=weapon(data[4:8]) if weapon_item is not None else None,
+                idleWeapon=weapon(data[4:8]) if draw_weapon else None,
                 frames=rows,
             )
         if side == "ally":
@@ -369,9 +375,9 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             # resolves that through the same species index as the ordinary attack.
             sequences["cast"] = dict(sequences["attack"])
         weapon_frames = []
-        if weapon_item is not None:
+        if draw_weapon:
             # table_WeaponGraphics at 0x1F9E2, source getweaponspriteandpalette.asm.
-            wid, pid = read(0x1F9E2 + (weapon_item - 26) * 2, 2)
+            wid, pid = graphic
             weapon_pal = list(pal)
             weapon_pal[14:16] = [
                 md_palette_color(word(weapons["weaponPaletteAddress"] + pid * 4 + i * 2))
@@ -431,7 +437,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
         )
         backdrop[index] = dict(background=background_asset, ground=ground_asset)
-    if battle in (2, 3, 4, 5, 6, 7, 8):
+    if battle in (2, 3, 4, 5, 6, 7, 8, 9, 10):
         terrain_scenes = [
             dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
         ]
@@ -493,7 +499,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         293,
         393,
     }
-    if battle in (3, 4, 5, 6, 7, 8):
+    if battle in (3, 4, 5, 6, 7, 8, 9, 10):
         text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
@@ -541,7 +547,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             texts=texts,
             memberNames=names,
             healing=healing,
-            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4, 5, 6, 7, 8) else {}),
+            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4, 5, 6, 7, 8, 9, 10) else {}),
         ),
     )
     report = dict(
@@ -603,6 +609,8 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-6",
             "battle-7",
             "battle-8",
+            "battle-9",
+            "battle-10",
         )
         or "fieldDeath" in scene
     ):
@@ -622,6 +630,8 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-6": 6,
                 "battle-7": 7,
                 "battle-8": 13,
+                "battle-9": 12,
+                "battle-10": 12,
             }[scene["encounter"]]
         ]
     ]
@@ -639,8 +649,13 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             species.append("DARK_CLERIC")
     if scene["encounter"] == "battle-7":
         species.append("DARK_SMOKE")
-    if scene["encounter"] == "battle-8":
+    if scene["encounter"] in ("battle-8", "battle-9", "battle-10"):
         species = ["HUNTER_GOBLIN", "WITCH", "GOBLIN", "GREEN_OOZE"]
+    if scene["encounter"] in ("battle-9", "battle-10"):
+        species.append("VAMPIRE_BAT")
+    if scene["encounter"] == "battle-10":
+        species.remove("GREEN_OOZE")
+        species.append("DARK_DWARF")
     enemy_sprites = [
         dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
         for code in species
@@ -705,7 +720,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8), default=1)
+    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

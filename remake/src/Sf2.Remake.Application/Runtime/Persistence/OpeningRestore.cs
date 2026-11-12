@@ -9,7 +9,7 @@ internal static class OpeningRestore
 {
     internal static SessionResult Build(ScenarioDefinition definition, OpeningSaveData data, SessionRules rules)
     {
-        Require(data.Compatibility == OpeningSave.Compatibility(definition, rules), "save-incompatible");
+        var expected = OpeningSave.FieldCompatibility(definition, rules);
         definition.Persistence!.ValidateRegisters(data);
         Require(data.Allies is { Count: > 0 and <= 30 } && data.Flags is { Count: <= 65536 } &&
             data.ActiveAllies is { Count: > 0 and <= 12 } && data.OnceFlags is { Count: <= 30 } && data.Deals is { Count: <= 127 }, "save-shape");
@@ -28,8 +28,10 @@ internal static class OpeningRestore
             .Where(row => row.Faction == BattleFaction.Ally).GroupBy(row => row.Actor).ToDictionary(group => group.Key, group => group.First());
         Require(data.Names is { Count: <= 30 } && data.Names.All(pair => deployments.ContainsKey(new(pair.Key)) &&
             pair.Value is { Length: > 0 } && NewGameName.Error(pair.Value) is null), "save-name");
-        Require(deployments.Keys.Select(actor => actor.Value).ToHashSet().SetEquals(data.Allies.Select(actor => actor.Actor)), "save-roster");
-        var actors = data.Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].Definition)).ToArray();
+        var savedActors = data.Allies.Select(actor => new ActorRef(actor.Actor)).ToHashSet();
+        Require(savedActors.IsSubsetOf(deployments.Keys), "save-roster");
+        var actors = data.Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].Definition)).ToList();
+        actors.AddRange(definition.Persistence.RestoreRoster(definition, data, expected, deployments, savedActors));
         var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("save-membership-unavailable", "save.party");
         var lists = MapPartyMembership.Rebuild(data.Flags, layout);
         var members = deployments.Values.Where(row => row.Initialization?.AllyPartyMember is not null)

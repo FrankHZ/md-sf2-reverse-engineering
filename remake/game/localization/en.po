@@ -2160,3 +2160,18 @@ msgstr "Debug: auto-win battles: {0}"
 
 msgid "host.setting-description-12"
 msgstr "Automatically wins at the first available battle turn. Story scenes and field return play normally. Skipped actions give no combat rewards."
+
+msgid "battle.scene.poison-inflicted"
+msgstr "{0} is poisoned."
+
+msgid "save.destination.new-granseal-castle"
+msgstr "New Granseal Castle"
+
+msgid "save.destination.ribble-welcome"
+msgstr "Ribble, after the welcome"
+
+msgid "save.destination.east-shrine"
+msgstr "East Shrine"
+
+msgid "save.destination.parmecia-battle-return"
+msgstr "Eastern Parmecia, battle return"

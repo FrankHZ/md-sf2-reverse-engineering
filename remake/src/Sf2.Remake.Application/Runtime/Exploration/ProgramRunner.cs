@@ -166,6 +166,12 @@ internal static class ProgramRunner
                             actors: current.Battle.Actors.Select(a => a.Actor == facingActor.Actor ? a.With(facing: facing.Facing) : a)) }; break;
                     case SetEgressMap egress:
                         story = story.Copy(story.Cursor, egressMap: egress.Map); break;
+                    case RequestCurrentMap:
+                        story = story.Copy(story.Cursor, battleRequest: true); break;
+                    case RestoreCachedRoof:
+                        var roofWorld = current.Exploration!;
+                        var roof = MapBlockCopyLifecycleReducer.Restore(roofWorld.Layout, roofWorld.RoofState, new(false, false));
+                        active = new ActiveExploration(roofWorld.WithLayout(roof.Layout, roof.LifecycleState)); break;
                     case SourceRandomBattle random:
                         current = SourceRandomBattleRunner.Check(current, random, cursor, observations);
                         continue;
@@ -224,7 +230,7 @@ internal static class ProgramRunner
                     case JoinPartyMember join:
                         var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("party-flag-layout", "world.partyFlags", true);
                         var joined = MapPartyMembership.Join(current.Story.Flags, layout, join.Member);
-                        active = JoinResources(definition, current, join.Member);
+                        active = JoinResources(definition, current, join);
                         story = story.Copy(story.Cursor, flags: joined.Flags, partyLists: joined.Lists); break;
                     case AddExplorationFollower added:
                         var followerWorld = current.Exploration!;
@@ -274,6 +280,13 @@ internal static class ProgramRunner
                         story = story.TextSettings is not null ? MapTransfer.BindScene(current, scene, load).Copy(story.Cursor) :
                             story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true);
                         active = new ActiveExploration(scene); break;
+                    case ReloadDefaultEntities reloadList:
+                        var live = current.Exploration!;
+                        var list = definition.Exploration!.Maps[reloadList.Map];
+                        var main = live.PlayerEntity;
+                        active = new ActiveExploration(SceneEntities.Reload(live,
+                            new(list.Population!, main.Position, main.Motion.Facing, list.Entities), story.Flags, token.Value));
+                        story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case LoadSetupEntities setupEntities:
                         var sourceMap = definition.Exploration!.Maps[current.Exploration!.Map].SelectSetup(story.Flags);
                         var population = sourceMap.Population ?? throw new BattleRuleException("missing-map-population", "program.entities", true);
@@ -443,6 +456,15 @@ internal static class ProgramRunner
                         active = new ActiveExploration(current.Exploration!.WithEntity(changedSprite));
                         story = current.Story.Copy(cursor, new EntitySpriteWait(token, changedSprite.Slot, changedSprite.SpriteRequest));
                         break;
+                    case FaceOtherEntity turn:
+                        var subject = Entity(current, turn.Entity);
+                        var toward = Entity(current, turn.Target).Motion;
+                        int dx = toward.XDestination - subject.Motion.XDestination, dy = toward.YDestination - subject.Motion.YDestination;
+                        byte direction = (byte)(Math.Abs(dy) >= Math.Abs(dx) ? dy < 0 ? 1 : 3 : dx < 0 ? 2 : 0);
+                        subject = subject with { Motion = subject.Motion with { Facing = direction },
+                            SpriteRequest = checked(subject.SpriteRequest + 1), WaitingForSprite = true };
+                        active = new ActiveExploration(current.Exploration!.WithEntity(subject));
+                        story = current.Story.Copy(cursor, new EntitySpriteWait(token, subject.Slot, subject.SpriteRequest)); break;
                     case SetEntityFacing facing:
                         var faced = Entity(current, facing.Entity);
                         faced = faced with { Motion = faced.Motion with { Facing = facing.Facing } };
@@ -602,22 +624,35 @@ internal static class ProgramRunner
     private static ActiveExploration EditEntity(SessionSnapshot current, EntityRef entity, Func<ExplorationEntity, ExplorationEntity> edit) =>
         new(current.Exploration!.WithEntity(edit(Entity(current, entity))));
 
-    private static ActiveSessionState JoinResources(ScenarioDefinition definition, SessionSnapshot current, int member)
+    private static ActiveSessionState JoinResources(ScenarioDefinition definition, SessionSnapshot current, JoinPartyMember join)
     {
+        int member = join.Member;
         if (definition.EncounterStarts.Count == 0) return current.Active;
         var world = current.Exploration!;
         var actors = definition.Encounters.Values.SelectMany(battle => battle.Deployments)
             .Where(actor => actor.Faction == BattleFaction.Ally && actor.Initialization?.AllyPartyMember == member)
             .Select(actor => actor.Actor).Distinct().ToArray();
         if (actors.Length != 1) throw new BattleRuleException("join-member-binding", "program.member", true);
-        if (world.Party.Actors.Any(actor => actor.Actor == actors[0])) return current.Active;
-        var initial = definition.EncounterStarts.Values.SelectMany(start => start.Actors)
-            .Where(actor => actor.Actor == actors[0]).ToArray();
-        if (initial.Length != 1) throw new BattleRuleException("join-member-start", "program.member", true);
-        // A newly introduced member receives its admitted resources once at joining.
-        // Repeated joins preserve the live inventory/progress; seeds and gold are not starts.
-        return new ActiveExploration(world.WithParty(world.Party.WithResources(
-            world.Party.Actors.Append(initial[0]), world.Party.Gold)));
+        var party = world.Party;
+        var resources = party.Actors.ToList();
+        int index = resources.FindIndex(actor => actor.Actor == actors[0]);
+        if (index >= 0 && (!join.AiControlled || (resources[index].ActivationWord & 4) == 4))
+            return current.Active;
+        if (index < 0)
+        {
+            var initial = definition.EncounterStarts.Values.SelectMany(start => start.Actors)
+                .FirstOrDefault(actor => actor.Actor == actors[0])
+                ?? throw new BattleRuleException("join-member-start", "program.member", true);
+            index = resources.Count;
+            resources.Add(initial);
+        }
+        if (join.AiControlled)
+        {
+            var actor = resources[index];
+            ushort word = actor.ActivationWord ?? throw new BattleRuleException("missing-activation-word", "party.activation", true);
+            resources[index] = actor with { ActivationWord = (ushort)(word | 4) };
+        }
+        return new ActiveExploration(world.WithParty(party.WithResources(resources, party.Gold)));
     }
 
     internal static SessionSnapshot Commit(SessionSnapshot current, ActiveSessionState active, StoryState story,

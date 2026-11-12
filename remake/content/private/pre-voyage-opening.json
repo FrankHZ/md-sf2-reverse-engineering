@@ -21,7 +21,13 @@
     73,
     14,
     72,
-    7
+    7,
+    6,
+    69,
+    8,
+    70,
+    62,
+    71
   ],
   "battles": [
     1,
@@ -31,7 +37,9 @@
     5,
     6,
     7,
-    8
+    8,
+    9,
+    10
   ],
   "growthClasses": [
     {
@@ -61,6 +69,14 @@
     {
       "member": 6,
       "class": "TORT"
+    },
+    {
+      "member": 7,
+      "class": "PHNK"
+    },
+    {
+      "member": 8,
+      "class": "RNGR"
     }
   ],
   "outcomeEgressMap": {
@@ -71,10 +87,12 @@
     "5": 16,
     "6": 16,
     "7": 16,
-    "8": 14
+    "8": 14,
+    "9": 6,
+    "10": 8
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through Battle08 and the Map73 founding scene to the New Granseal castle entry, before the year-later story.",
+  "controlledBoundary": "Ordinary opening through the Battle10 return and the northern walking route toward the Cave of Darkness. East Shrine has a separate conditional entrance.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -143,6 +161,14 @@
     {
       "symbol": "cs_4AAB6",
       "path": "data/battles/entries/battle08/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "eas_4536C",
+      "path": "code/common/scripting/map/vehiclefunctions.asm"
+    },
+    {
+      "symbol": "eas_452BA",
+      "path": "code/common/scripting/map/vehiclefunctions.asm"
     }
   ],
   "programs": [
@@ -178,7 +204,14 @@
     4,
     44,
     73,
-    14
+    14,
+    7,
+    6,
+    72,
+    69,
+    8,
+    70,
+    62
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -208,6 +241,12 @@
       "wavSha256": "47371285E3790A00038F6FD6FB32340C7664C8F5580D418071DE076279EE365C",
       "loopBegin": 279805,
       "loopEnd": 1172490
+    },
+    "MUSIC_SHRINE": {
+      "timerB": 189,
+      "wavSha256": "A15A73AF45721AC5588EE6C8EB4EEF884F667A2AD34B690C2E06DE88EEAAA858",
+      "loopBegin": 294181,
+      "loopEnd": 2679801
     }
   },
   "presentationAtlases": {
@@ -258,6 +297,19 @@
     ],
     "14": [
       458
+    ],
+    "6": [
+      701,
+      702
+    ],
+    "7": [
+      701
+    ],
+    "8": [
+      708
+    ],
+    "62": [
+      77
     ]
   },
   "outcomeBattles": [
@@ -268,7 +320,9 @@
     5,
     6,
     7,
-    8
+    8,
+    9,
+    10
   ],
   "searchMaps": [
     3,
@@ -358,7 +412,8 @@
     "SFX_FALLING_TIMER_CB",
     "SFX_BIG_DOOR_RUMBLE_TIMER_CC",
     "SFX_WARP_TIMER_CC",
-    "SFX_INTRO_LIGHTNING_TIMER_C2"
+    "SFX_INTRO_LIGHTNING_TIMER_C2",
+    "MUSIC_SHRINE"
   ],
   "paidRetreatBattles": [
     2,
@@ -367,16 +422,14 @@
     5,
     6,
     7,
-    8
+    8,
+    9,
+    10
   ],
   "completedOnDefeat": [
     4
   ],
   "positionAfterLeaderDeath": [
     5
-  ],
-  "populationMaps": [
-    72,
-    7
   ]
 }

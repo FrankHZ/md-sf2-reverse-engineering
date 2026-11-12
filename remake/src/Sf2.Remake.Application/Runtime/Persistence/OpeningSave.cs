@@ -16,6 +16,9 @@ internal static class OpeningSave
             source.Repository, source.Commit, source.RomSha256);
     }
 
+    internal static SaveCompatibility FieldCompatibility(ScenarioDefinition definition, SessionRules rules) =>
+        Compatibility(definition, rules) with { RecipeRevision = definition.Persistence!.FieldRecipeRevision };
+
     internal static SaveAvailability Query(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules)
     {
         try
@@ -59,7 +62,7 @@ internal static class OpeningSave
                 throw new BattleRuleException("save-entity-unsettled", "save.boundary");
             // Completed story scripts and autonomous ambient wandering can be discarded.
             if (entity.Actions is not null && !entity.IsScriptIdle &&
-                definition.Persistence?.CanDiscardEntityProgram(world, entity) != true)
+                definition.Persistence?.CanDiscardEntityProgram(world, entity, story.Flags) != true)
                 throw new BattleRuleException("save-story-motion", "save.boundary");
         }
     }
@@ -119,7 +122,7 @@ internal static class OpeningSave
             throw new BattleRuleException("save-progress-unknown", "save.party");
         var music = Music(definition, current);
         var anchor = location.Anchor;
-        return new(Compatibility(definition, rules), location.Recipe, anchor.Map.Value, anchor.Position.X, anchor.Position.Y,
+        return new(FieldCompatibility(definition, rules), location.Recipe, anchor.Map.Value, anchor.Position.X, anchor.Position.Y,
             anchor.Facing, party.Encounter, Array.AsReadOnly(actors), Array.AsReadOnly(party.ActiveAllies.Select(actor => actor.Value).ToArray()),
             party.MainSeed, party.ThinkingSeed, party.Gold.Value, Array.AsReadOnly(party.ItemCustody.OnceFlags.ToArray()),
             Array.AsReadOnly(party.ItemCustody.Deals.Select(pair => new SavedDeal(pair.Key, pair.Value)).ToArray()),

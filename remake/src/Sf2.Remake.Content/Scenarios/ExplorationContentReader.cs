@@ -474,11 +474,28 @@ internal static class ExplorationContentReader
         Require(kind == "warp", "event-kind", "event.kind", true);
         ObjectOptional(row, "event", "loadMode", "kind", "x", "y", "map", "position", "facing", "marker", "requiredFlag", "requiredValue");
         string mode = row.TryGetProperty("loadMode", out _) ? Text(row, "loadMode") : "rebuild";
-        Require(mode is "rebuild" or "preserve", "map-load-mode", "event.loadMode");
+        MapPosition position;
+        MapLoadMode loadMode;
+        var target = row.GetProperty("position");
+        if (mode == "scroll")
+        {
+            Object(target, "position", "x", "y");
+            var x = NullableNumber(target, "x", 63);
+            var y = NullableNumber(target, "y", 63);
+            Require(x.HasValue != y.HasValue, "scroll-retained-axis", "event.position");
+            loadMode = x.HasValue ? MapLoadMode.ScrollHorizontal : MapLoadMode.ScrollVertical;
+            position = new(x ?? 0, y ?? 0);
+        }
+        else
+        {
+            Require(mode is "rebuild" or "preserve", "map-load-mode", "event.loadMode");
+            loadMode = mode == "preserve" ? MapLoadMode.Preserve : MapLoadMode.Rebuild;
+            position = Position(target);
+        }
         return new(ExplorationEventKind.Warp, NullableNumber(row, "x", 63), NullableNumber(row, "y", 63), null, null,
-            new MapId(Id(row, "map")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 3),
+            new MapId(Id(row, "map")), position, (byte)Number(row, "facing", 0, 3),
             (ushort?)NullableNumber(row, "marker", 0x3C00), NullableNumber(row, "requiredFlag", 65535), Boolean(row, "requiredValue"),
-            LoadMode: mode == "preserve" ? MapLoadMode.Preserve : MapLoadMode.Rebuild);
+            LoadMode: loadMode);
     }
 
     internal static StoryInstruction ReadInstruction(JsonElement row) => ReadInstruction(row, null);
@@ -629,7 +646,12 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "member"); return new ClearOutcomePartyAi(Number(row, "member", 0, 29));
             case "leave-outcome-battle-party":
                 Object(row, opcode, "op", "member"); return new LeaveOutcomeBattleParty(Number(row, "member", 0, 29));
-            case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255));
+            case "request-current-map": Object(row, opcode, "op"); return new RequestCurrentMap();
+            case "restore-cached-roof": Object(row, opcode, "op"); return new RestoreCachedRoof();
+            case "reload-default-entities": Object(row, opcode, "op", "map"); return new ReloadDefaultEntities(new(Id(row, "map")));
+            case "face-entity": Object(row, opcode, "op", "entity", "target"); return new FaceOtherEntity(new(Id(row, "entity")), new(Id(row, "target")));
+            case "join-ai-party":
+            case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255), opcode == "join-ai-party");
             case "follow":
                 Object(row, opcode, "op", "entity", "leader", "x", "y");
                 return new FollowEntity(new(Id(row, "entity")), new(Id(row, "leader")), Number(row, "x", -127, 127), Number(row, "y", -127, 127));

@@ -15,7 +15,7 @@ public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort P
         if (!selected || Power is 0 or > 255 || MinimumRange < 1 || MaximumRange < MinimumRange ||
             MaximumRange > 2 || Radius > 1)
             throw new BattleRuleException("attack-spell-definition", "spells", true);
-        if (enemy && Radius != 0)
+        if (enemy && Radius != 0 && Spell is not { Value: "blaze", Level: 2 })
             throw new BattleRuleException("enemy-spell-radius", "spells.radius", true);
     }
 }

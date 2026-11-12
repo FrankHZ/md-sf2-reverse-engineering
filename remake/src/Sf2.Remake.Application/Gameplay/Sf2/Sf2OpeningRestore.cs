@@ -3,13 +3,48 @@ using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Gameplay.Sf2;
 
 // Finite opening savepoint recipes. No ordinary on-load program is executed here.
-internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
+internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningRestorePolicy
 {
     private const string InitialRecipe = "new-game";
+
+    public int FieldRecipeRevision { get; } = fieldRecipeRevision;
+
+    public IReadOnlyList<BattleActorStartInput> RestoreRoster(ScenarioDefinition definition, OpeningSaveData data,
+        SaveCompatibility expected, IReadOnlyDictionary<ActorRef, BattleDeploymentDefinition> deployments,
+        IReadOnlySet<ActorRef> saved)
+    {
+        if (data.Compatibility == expected)
+        {
+            if (!saved.SetEquals(deployments.Keys)) throw new BattleRuleException("save-roster", "save.allies");
+            return [];
+        }
+        // Field recipe 1 of the pre-voyage package initialized exactly Bowie through Kiwi.
+        if (expected.RecipeRevision != 2 || data.Compatibility != (expected with { RecipeRevision = 1 }))
+            throw new BattleRuleException("save-incompatible", "save.compatibility");
+        var rows = deployments.Values.OrderBy(row => row.Initialization?.AllyPartyMember).ToArray();
+        var layout = definition.Exploration!.PartyFlags;
+        if (definition.PrivateDefinitions is null || layout is null || rows.Length != 9 ||
+            !rows.Select(row => row.Initialization?.AllyPartyMember).SequenceEqual(Enumerable.Range(0, 9).Select(id => (int?)id)) ||
+            !saved.SetEquals(rows.Take(7).Select(row => row.Actor)))
+            throw new BattleRuleException("save-roster", "save.allies");
+        var added = new List<BattleActorStartInput>();
+        uint initializationSeed = data.MainSeed;
+        foreach (var row in rows.Skip(7))
+        {
+            var member = (byte)row.Initialization!.AllyPartyMember!.Value;
+            if (data.Flags.Contains(layout.JoinedStart + member) || data.Flags.Contains(layout.ActiveStart + member) ||
+                data.ActiveAllies.Contains(row.Actor.Value) || data.Names.ContainsKey(row.Actor.Value))
+                throw new BattleRuleException("save-roster", "save.allies");
+            added.Add(OpeningPartyInitialization.Initialize(row,
+                definition.PrivateDefinitions.Allies[member].StartingLevel, ref initializationSeed));
+        }
+        return added;
+    }
 
     public SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start)
     {
@@ -45,16 +80,22 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
     public void ValidateRegisters(OpeningSaveData data)
     {
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
+        if (data.Recipe is "new-granseal-castle" or "ribble-welcome" or "east-shrine" or "parmecia-battle-return" &&
+            data.EgressMap is "map-6" or "map-8") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
             !(data.Recipe == "battle07-return" && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
-    public bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity)
+    public bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity, IReadOnlyList<int> flags)
     {
         var actions = entity.Actions!.Actions;
-        if (world.Definition.Entities.Any(row => row.Actions is { } ambient && actions.SequenceEqual(ambient.Actions)))
-            return true;
+        // A story can replace the population before setting the flag that selects it on reentry.
+        bool Matches(ExplorationEntityDefinition row) => row.Actions is { } ambient && actions.SequenceEqual(ambient.Actions);
+        if (world.Definition.Entities.Any(Matches)) return true;
+        var selected = world.Definition.SelectedSetup(flags);
+        if (selected is not null && world.Definition.Setups.TryGetValue(selected, out var setup) &&
+            setup.Entities.Any(Matches)) return true;
         // The completed Map3 messenger installs wandering with a new origin. Only its
         // already-entered closed random-walk/wait/back-jump cycle can reset. Pending
         // setup and scripted movement cannot be discarded at a savepoint.
@@ -86,6 +127,15 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
         if (map.Value == "map-58" && flags.Contains(507) && flags.Contains(74) && flags.Contains(640) &&
             !flags.Contains(407) && !flags.Contains(999) && anchor is { Map.Value: "map-58", Facing: 3 })
             return new("battle07-return", anchor, "Ancient Tower, earthquake aftermath");
+        if (map.Value == "map-7" && flags.Contains(707) && !flags.Contains(701))
+            return new("new-granseal-castle", new(map, new(11, 7), 1), "New Granseal Castle");
+        if (map.Value == "map-8" && flags.Contains(708))
+            return new("ribble-welcome", new(map, new(14, 13), 1), "Ribble, after the welcome");
+        if (map.Value == "map-62" && flags.Contains(510) && flags.Contains(729) && flags.Contains(77))
+            return new("east-shrine", new(map, new(6, 18), 1), "East Shrine");
+        if (anchor?.Map == map && (map.Value == "map-69" && flags.Contains(509) ||
+            map.Value == "map-70" && flags.Contains(510)))
+            return new("parmecia-battle-return", anchor, "Eastern Parmecia, battle return");
         Fail(); return null!;
     }
 
@@ -116,6 +166,7 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
                         Facing = 1, XSpeed = 32, YSpeed = 32 } });
             if (flags.Contains(603)) Hide("entity-142", false);
         }
+        if (anchor.Map.Value == "map-8" && flags.Contains(8)) Hide("entity-8", true);
         // Allocation starts followers at the leader. This is the same legal overlap as a map reload;
         // their ordinary following service establishes spacing on the next deliberate input.
         if (world.AllEntities.Any(entity => entity.Visible && entity.Slot != world.PlayerEntity.Slot &&

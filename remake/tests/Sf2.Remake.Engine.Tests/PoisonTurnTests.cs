@@ -13,6 +13,22 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class PoisonTurnTests
 {
+    [Fact]
+    public void PoisonStrikeUsesTheCriticalDrawWithoutBonusAndRequiresASurvivor()
+    {
+        // A sleeping target skips the dodge draw. On this forced critical the
+        // ordinary spread draws and damage are identical to the zero-bonus control.
+        var poison = PhysicalStrikeRules.Resolve(12, 4, 20, 256, 0, 32, 1, 0,
+            sleepingDefender: true, poisonCritical: true);
+        var control = PhysicalStrikeRules.Resolve(12, 4, 20, 256, 0, 32, 1, 0, sleepingDefender: true);
+        Assert.True(poison.PoisonInflicted);
+        Assert.False(poison.Critical);
+        Assert.Equal(control.Damage, poison.Damage);
+        Assert.Equal(control.Seed, poison.Seed);
+        Assert.False(PhysicalStrikeRules.Resolve(12, 4, 1, 256, 0, 32, 1, 0,
+            sleepingDefender: true, poisonCritical: true).PoisonInflicted);
+    }
+
     private static readonly ActorRef Hero = new("champion"), Friend = new("receiver"), Enemy = new("reserve");
 
     [Theory]

@@ -47,7 +47,7 @@ internal static class BattleInitializationRules
                 _ = EnemyAttack(deployment.Definition.Attack, policy.Difficulty);
                 // Ordinary weapons have only the admitted ATT contribution. Other equipped
                 // effects remain unsupported; placement Herb keeps its existing inert semantics.
-                Require(deployment.Definition.SourceLoadout!.Items.All(word => word is 0 or 127 ||
+                Require(deployment.Definition.SourceLoadout!.Items.All(word => word is 0 or 19 or 127 ||
                     (word & ~255) == 0 && deployment.Definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true),
                     "enemy-equipment-refresh", "actors.loadout", true);
             }
