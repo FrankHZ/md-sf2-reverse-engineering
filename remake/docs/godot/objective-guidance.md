@@ -156,8 +156,20 @@ Load the owning checkout’s ignored environment and select its accepted ordinar
 `0,1,2,3,4,32,33,34,35,36,501,502,503,504,611,612,650,660`.
 `voyage` reads a copied ordinary `battle07-return` slot; it does not edit the payload or replay
 outcomes/healing. Existing held Shift acceleration may shorten automatic scenes; actual input and
-completion still belong to the production game. The older pilot observer/reports remain retained
-and are not reinterpreted as whole-campaign acceptance.
+completion still belong to the production game.
+
+`res://probes/engine_objective_guidance_observation.gd` remains the current complementary
+preference/menu/layout consumer. Its `town` case retains the disclosed Hawel task when F610 is
+present, withholding the guide name/entrance until the actual F72 caller; without F610 there is no
+invented commission. Use F610/F502 in the ordinary pre-invitation checkpoint to observe that change.
+Its `house` and F612 `revisit` cases now retain the disclosed Ancient Shrine goal, with the old
+guide/house marker removed. Existing Off/Cancel/write-refusal, reading/Party focus, locale/name,
+controller/remapped confirm, resize/recovery and save/Continue/read-only cases remain applicable.
+Run affected `town`, `house` and `revisit` cases through fresh disposable `issue1705-*` namespaces
+and fresh explicit output; the namespace is only this observer's existing isolation guard. Do not
+replay the three campaign cases merely because this complementary observer changes. Older pilot
+reports retain their original narrower expectations and do not establish current whole-campaign
+acceptance. The local handoff routes both observers and their fresh launch entries.
 
 Reuse the approximately149MB installed local world read-only. No asset copy, seven-battle rebuild,
 new tool, route platform or campaign admission is planned. Finite table expansion is below1000

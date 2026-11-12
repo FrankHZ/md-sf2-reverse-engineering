@@ -1,5 +1,6 @@
 extends "res://probes/host_ui_observation.gd"
 
+# Current preference/layout and Yeel/house consumer; campaign traversal has its own observer.
 # Finite actual host inputs. Checkpoint input is admitted before a session exists.
 # Samples retain only the changed state/UI, never map payloads or per-frame dumps.
 var preference_path: String
@@ -117,6 +118,7 @@ func menu_check(expected: bool) -> void:
     await key(KEY_ESCAPE)
     check(state().fieldMenu.visible and not guidance().get("visible", false), "root gameplay menu owns objective")
     check(not state().fieldMenu.objective.is_empty() == expected, "objective follows shared preference and coverage")
+    check(not "Message unavailable" in state().fieldMenu.objective, "objective has valid localized operands")
     var frozen := state()
     capture("gameplay-menu")
     if expected:
@@ -143,8 +145,13 @@ func menu_check(expected: bool) -> void:
     check(progress() == before, "query/menu/Party/Back do not alter save progress")
 
 func town_flow() -> void:
-    check(not guidance().visible, "before invitation no spoilers")
-    await menu_check(false)
+    var knows_hawel: bool = 610.0 in state().flags
+    check(guidance().get("objectiveKey") == ("guidance.find-hawel" if knows_hawel else null) and
+        guidance().visible == knows_hawel, "before invitation retain only the disclosed Hawel task")
+    check(not guidance().get("markerVisible", false) and not "Kazin" in str(guidance().get("text", "")) and
+        not "WWWWWWW" in str(guidance().get("text", "")),
+        "before guide disclosure no companion name or invitation entrance marker")
+    await menu_check(knows_hawel)
     await key(KEY_ENTER)
     for i in range(400):
         if state().get("canWaitForText", false): break
@@ -153,7 +160,8 @@ func town_flow() -> void:
     await key(KEY_ESCAPE)
     check(state().flags == flags and not 72.0 in state().flags and not guidance().visible, "Cancel cannot complete guide dialogue")
     await settle("kazin-invitation")
-    check(72.0 in state().flags and guidance().visible, "real caller enables shared guidance")
+    check(72.0 in state().flags and guidance().visible and guidance().get("objectiveKey") == "guidance.visit-hawel",
+        "real caller changes the disclosed goal to visiting Hawel with the guide")
     var declared: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_HOST_UI_START"))).start.get("names", {})
     if declared.has("ally-4"):
         await key(KEY_ESCAPE)
@@ -223,8 +231,11 @@ func house_flow() -> void:
     await edge(KEY_SHIFT, true)
     var s := await navigate(Vector2i(6,5), "house-entry", "map-43")
     await edge(KEY_SHIFT, false)
-    check(s.map == "map-43" and 4.0 in s.flags and 612.0 in s.flags and not 72.0 in s.flags and not guidance().visible, "actual house scene completes and removes pilot")
-    capture("house-completed"); await menu_check(false)
+    check(s.map == "map-43" and 4.0 in s.flags and 612.0 in s.flags and not 72.0 in s.flags and
+        guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal" and
+        guidance().get("routeKey") == "guidance.leave-house" and not guidance().markerVisible,
+        "actual house scene replaces the guide/entrance with the disclosed Ancient Shrine goal")
+    capture("house-completed"); await menu_check(true)
 
 func run() -> void:
     if output.is_empty() or not OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1705-"):
@@ -288,11 +299,14 @@ func run() -> void:
         check(FileAccess.get_file_as_string(preference_path) == bytes, "read-only guidance override never publishes preferences")
     elif case_name == "revisit":
         check(state().map == "map-43" and 4.0 in state().flags and 612.0 in state().flags and not 72.0 in state().flags, "admitted completed F612 house revisit")
-        check(not guidance().visible, "revisit has no destination")
-        await menu_check(false)
+        check(guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal" and
+            guidance().get("routeKey") == "guidance.leave-house" and not guidance().markerVisible,
+            "F612 revisit retains the Ancient Shrine goal without the old guide/entrance")
+        await menu_check(true)
         var flags: Array = state().flags
         await key(KEY_UP); await settle("revisit-move")
-        check(state().flags == flags and not guidance().visible, "revisit movement never replays scene or resurrects guidance")
+        check(state().flags == flags and guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal" and
+            not guidance().markerVisible, "revisit movement retains current goal without replaying the scene or restoring the old marker")
         capture("revisit")
     elif case_name == "save":
         await key(KEY_F10); await key(KEY_DOWN); await key(KEY_ENTER)
