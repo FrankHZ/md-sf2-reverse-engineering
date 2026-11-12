@@ -72,6 +72,7 @@ with tradeoffs. Design readings are Inferred; they do not establish author inten
 - [Gameplay Overview and System Boundaries](./design/synthesis/gameplay-overview.md)
 - [Tactical Battle Loop and State Handoffs](./design/synthesis/themes/tactical-battle-loop.md)
 - [Battle Design Analysis: Battle01, Taros and Chessboard](./design/synthesis/analyses/battle-design-analysis-pilot.md) — English pilot; Chinese pending
+- [Pre-voyage battle models, Battle01–07](./design/synthesis/analyses/pre-voyage-battle-model-coverage.md) — encounter-level evidence, remaining tactical questions and a worked Jaha/Huge Rat exchange.
 - [Progression and Economy](./design/synthesis/themes/progression-and-economy.md)
 - [Story Progression](./design/synthesis/themes/story-progression.md)
 - [Map Design Principles: Exploration, Interaction and World Continuity](./design/synthesis/themes/map-design-principles.md)

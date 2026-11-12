@@ -641,6 +641,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/synthesis/analyses/pre-voyage-battle-model-coverage.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/synthesis/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md",
