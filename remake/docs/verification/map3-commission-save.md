@@ -35,6 +35,30 @@ The application host observation exposes availability, detached progress and bou
 the slot view supplies actual panel states. Store terminal reports, stdout/stderr, process identity,
 exit status, source-copy provenance and failed attempts in the ignored Issue handoff.
 
+The controlled pre-exorcism start is the following project-authored consumer input, not a captured
+original-game checkpoint. Save it under the owning worktree's ignored `local/`:
+
+```json
+{"start":{"map":"map-20","player":"entity-0","position":{"x":25,"y":50},"facing":1,"speed":32,"flags":[0,1,2,32,33,34,66,80,501,600,601,602,603,604,605,606,607,608]}}
+```
+
+After loading the existing host environment and selecting a fresh external save namespace, launch
+from the repository root. Supply the actual local input/output paths; do not reuse an old report:
+
+```powershell
+$env:SF2_HOST_UI_CASE = 'route'
+$env:SF2_HOST_UI_START = (Resolve-Path -LiteralPath 'local/issue1711/route-start.json').Path
+$env:SF2_HOST_UI_OUTPUT = Join-Path (Resolve-Path -LiteralPath 'local/issue1711').Path 'route-native.json'
+& $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 `
+  --resolution 1920x1080 --script res://probes/engine_map3_commission_save_observation.gd
+```
+
+Repeat the launch in a new process with case `continue` or `church` and a fresh output file, retaining
+the same save namespace. For the before-fix `baseline` case, change the controlled start to Map3
+`(32,13)`, Up, and append F609/F610; build the accepted pre-fix source. Keep that binary's exact Git
+identity separate from the fixed binary. The `legacy` case needs an unedited copied default-Map3
+slot1 from before this change, compatible with the selected world.
+
 Affected engine behavior can be checked directly with the existing protected SDK launch:
 
 ```powershell
