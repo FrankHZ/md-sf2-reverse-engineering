@@ -20,6 +20,7 @@ from sf2tool.texture_extract import (
 # Current admitted party equipment, carry/Use and spell capabilities. These are source
 # IDs, not row positions or translated labels. Additional gameplay admission owns expansion.
 ITEMS = (
+    "MIDDLE_SWORD",
     "MEDICAL_HERB",
     "HEALING_SEED",
     "ANTIDOTE",

@@ -89,6 +89,10 @@
     {
       "member": 9,
       "class": "WFMN"
+    },
+    {
+      "member": 10,
+      "class": "BDMN"
     }
   ],
   "outcomeEgressMap": {
@@ -103,10 +107,11 @@
     "9": 6,
     "10": 8,
     "11": 8,
-    "12": 13
+    "12": 13,
+    "13": 10
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Eastern Parmecia through the Dark Caves, Mount Volcano, Bedoe and the return to Polca for Battle13 admission.",
+  "controlledBoundary": "Polca Village through Battle13, the mayor, departure and the first water step.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -195,6 +200,10 @@
     {
       "symbol": "edcs_battle12",
       "path": "data/battles/entries/battle12/cs_battleend.asm"
+    },
+    {
+      "symbol": "abcs_battle13",
+      "path": "data/battles/entries/battle13/cs_afterbattle.asm"
     }
   ],
   "programs": [
@@ -349,7 +358,8 @@
     ],
     "13": [
       710,
-      799
+      799,
+      513
     ],
     "10": [
       722
@@ -370,7 +380,8 @@
     9,
     10,
     11,
-    12
+    12,
+    13
   ],
   "searchMaps": [
     3,
@@ -482,7 +493,8 @@
     9,
     10,
     11,
-    12
+    12,
+    13
   ],
   "completedOnDefeat": [
     4

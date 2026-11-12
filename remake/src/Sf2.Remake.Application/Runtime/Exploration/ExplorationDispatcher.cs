@@ -349,6 +349,16 @@ internal static class ExplorationDispatcher
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                            if (field.VehicleEvent == 5)
+                                return ProgramRunner.Failure(current, observations, new BattleRuleException("raft-landing", "map.layout", true));
+                            if (field.VehicleEvent == 3)
+                            {
+                                bool aligned = RaftRuntime.Aligned(tickResult.World);
+                                current = ProgramRunner.Commit(current, active,
+                                    aligned ? story.Copy(new(RaftRuntime.Boarding, 0)) : story,
+                                    observations, aligned ? "raft-boarding-started" : "raft-boarding-missed");
+                                return ProgramRunner.Run(definition, current, observations, rules);
+                            }
                             if (field.VehicleEvent is 2 or 4)
                             {
                                 current = ProgramRunner.Commit(current, active,

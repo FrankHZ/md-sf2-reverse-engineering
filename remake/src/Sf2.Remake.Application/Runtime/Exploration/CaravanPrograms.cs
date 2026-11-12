@@ -35,13 +35,13 @@ internal static class CaravanPrograms
             new StartEntityMotion(caravan.FollowerA, new([new MoveToPhysicalFacing(0, 1),
                 new WaitEntityDestination(), new IdleEntityAction()]), true, Completion: EntityWaitCompletion.ScriptIdle),
             new StartEntityMotion(player, shrink(1), true, Completion: EntityWaitCompletion.ScriptIdle),
-            new ParkCaravanEntity(caravan.FollowerA),
+            new MoveVehicleOffMap(caravan.FollowerA),
             new StartEntityMotion(player, new([new SetActionSprite(62), new ChangeEntityFlags(true, 8, 0),
                 new RefreshEntitySprite("caravan-appearance"), new IdleEntityAction()]), true,
                 Completion: EntityWaitCompletion.ScriptIdle),
             new WaitForView(),
-            new ApplyCaravanFollowers(shrink(0)), new WaitForCaravanFollowers(),
-            new CommitCaravanMode(FieldTravelMode.Caravan), new EndProgram()]);
+            new ApplyVehicleFollowerActions(shrink(0)), new WaitForVehicleFollowers(),
+            new SetFieldTravelMode(FieldTravelMode.Caravan), new EndProgram()]);
         EntityActionProgram grow(bool follower) => new([
             .. follower ? new EntityAction[] { new ClonePhysicalPosition(1), new RefreshEntitySprite("caravan-clone") } : [],
             new MoveOwnFacing(1), new ChangeEntityFlags(true, 8, 8), new EntitySound(89),
@@ -55,7 +55,7 @@ internal static class CaravanPrograms
                 new IdleEntityAction()]), true, Completion: EntityWaitCompletion.ScriptIdle),
             new RestoreCaravanPlayer(),
             new StartEntityMotion(player, grow(false), true, Completion: EntityWaitCompletion.ScriptIdle),
-            new WaitForView(), new ApplyCaravanFollowers(grow(true)), new WaitForCaravanFollowers(),
-            new InstallCaravanFollowers(), new CommitCaravanMode(FieldTravelMode.Walking), new EndProgram()]);
+            new WaitForView(), new ApplyVehicleFollowerActions(grow(true)), new WaitForVehicleFollowers(),
+            new InstallCaravanFollowers(), new SetFieldTravelMode(FieldTravelMode.Walking), new EndProgram()]);
     }
 }

@@ -344,6 +344,7 @@ internal static class MapTransfer
             flags = enteredFlags.Order().ToArray();
             // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
             next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags, sourcePlacement);
+            next = RaftRuntime.Declare(next, flags, continuation.Raft);
         }
         var story = continuation.Copy(continuation.Cursor,
             flags: flags,

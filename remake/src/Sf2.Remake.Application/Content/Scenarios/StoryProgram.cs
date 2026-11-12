@@ -8,6 +8,8 @@ public enum TextDisplayMode { Continued, Single }
 public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad, SoundWait, PreviousMusic, SoundCut }
 public enum MapLoadMode { Rebuild, Preserve, ScrollHorizontal, ScrollVertical }
 
+public sealed record RaftBerth(MapId Map, MapPosition Position);
+public sealed record ParkRaft(RaftBerth Berth) : StoryInstruction;
 public abstract record StoryInstruction;
 public abstract record SourceStoryInstruction : StoryInstruction;
 public sealed record ConvertBattleActor(int EnemySlot, int AllySlot) : StoryInstruction;
@@ -41,6 +43,7 @@ public sealed record SetPlanePosition(int Axis, int Value) : StoryInstruction;
 public sealed record SetCameraSpeed(ushort Speed) : StoryInstruction;
 public sealed record AddExplorationFollower(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntityFacing(EntityRef Entity, byte Facing, bool RefreshSprite = false) : StoryInstruction;
+public sealed record RemoveEntityShadow(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntitySprite(EntityRef Entity, int Sprite, bool Ally = false) : StoryInstruction;
 public sealed record SetEntityDestination(EntityRef Entity, MapPosition Position, bool Wait) : StoryInstruction;
 public sealed record CopyMapLayout(WorkingMapBlockCopy Copy) : StoryInstruction;

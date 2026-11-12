@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
@@ -161,6 +162,8 @@ internal static class ExplorationContentReader
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
         if (!authored) PrivateCastleSceneContent.Bind(maps, programs);
+        if (programs.Any(program => program.Instructions.Any(op => op is ParkRaft)))
+            programs.Add(RaftRuntime.Program(new(Id(start, "player"))));
         CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
             world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation, worldDirectory) : null,
@@ -349,7 +352,7 @@ internal static class ExplorationContentReader
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
     {
         ObjectOptional(row, "outcome", ["after", "joinMember", "defeated", "defeat", "return", "victoryFacing", "egress"],
-            "battleOrigin", "paidRetreat", "completedDefeatMap", "deathPositions", "defeatedScene");
+            "battleOrigin", "paidRetreat", "completedDefeatMap", "deathPositions", "defeatedScene", "fixedEgress");
         IReadOnlyDictionary<int, MapPosition>? positions = null;
         if (row.TryGetProperty("deathPositions", out var positionRows))
         {
@@ -372,7 +375,8 @@ internal static class ExplorationContentReader
             row.TryGetProperty("battleOrigin", out var origin) ? Position(origin) : null,
             row.TryGetProperty("paidRetreat", out _) && Boolean(row, "paidRetreat"),
             row.TryGetProperty("completedDefeatMap", out _) ? new MapId(Id(row, "completedDefeatMap")) : null,
-            positions, row.TryGetProperty("defeatedScene", out _) && Boolean(row, "defeatedScene"));
+            positions, row.TryGetProperty("defeatedScene", out _) && Boolean(row, "defeatedScene"),
+            row.TryGetProperty("fixedEgress", out _) && Boolean(row, "fixedEgress"));
         ProgramLocation Required(string name)
         {
             var value = Location(row.GetProperty(name));
@@ -599,6 +603,12 @@ internal static class ExplorationContentReader
             case "entity-animation":
                 Object(row, opcode, "op", "entity", "counter");
                 return new SetMapEntityAnimation(new(Id(row, "entity")), (byte)Number(row, "counter", 0, 255));
+            case "remove-shadow":
+                Object(row, opcode, "op", "entity");
+                return new RemoveEntityShadow(new(Id(row, "entity")));
+            case "park-raft":
+                Object(row, opcode, "op", "map", "position");
+                return new ParkRaft(new(new(Id(row, "map")), Position(row.GetProperty("position"))));
             case "new-entity":
                 Object(row, opcode, "op", "entity", "position", "facing", "sprite", "actions");
                 return new AddMapEntity(new(Id(row, "entity")), Position(row.GetProperty("position")),
@@ -806,11 +816,16 @@ internal static class ExplorationContentReader
                     case SetEgressMap egress: Require(definition.Maps.ContainsKey(egress.Map), "missing-map", "program.egressMap"); break;
                     case TransferToMap transfer: Require(definition.Maps.ContainsKey(transfer.Map), "missing-map", "program.map"); break;
                     case QueueMapWarp warp: Require(definition.Maps.ContainsKey(warp.Map), "missing-map", "program.map"); break;
+                    case ParkRaft park:
+                        Require(definition.Maps.ContainsKey(park.Berth.Map) && (definition.Visuals is null || definition.Visuals.Sprites.ContainsKey(61)),
+                            "raft-berth-binding", "program.raft"); break;
                     case LoadSceneMap load: Require(definition.Maps.ContainsKey(load.Map), "missing-map", "program.map"); break;
                     case SetEntitySprite { Ally: false } sprite when definition.Visuals is { } visuals:
                         Require(visuals.Sprites.ContainsKey(sprite.Sprite), "missing-sprite-visual", "program.sprite"); break;
                     case AddMapEntity add when definition.Visuals is { } visuals:
-                        Require(visuals.Sprites.ContainsKey(add.Sprite), "missing-sprite-visual", "program.sprite"); break;
+                        Require(add.Sprite == 255 && add.Entity.Value.StartsWith("entity-", StringComparison.Ordinal) &&
+                            int.TryParse(add.Entity.Value.AsSpan("entity-".Length), out int member) && member is >= 0 and < 30
+                            ? visuals.Sprites.ContainsKey(190) : visuals.Sprites.ContainsKey(add.Sprite), "missing-sprite-visual", "program.sprite"); break;
                     case LoadSceneEntities load when definition.Visuals is { } visuals:
                         var sprites = load.Entities.Where(entity => entity.Sprite >= load.Population.AllyCount).Select(entity => entity.Sprite)
                             .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite }))

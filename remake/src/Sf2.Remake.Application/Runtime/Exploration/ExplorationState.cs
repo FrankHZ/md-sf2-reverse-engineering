@@ -123,8 +123,9 @@ public sealed class StoryState
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
         bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, FieldReturnAnchor? saveAnchor = null,
-        IReadOnlyDictionary<string, string>? names = null, Battles.DefeatedProgramState? defeatedScene = null)
+        IReadOnlyDictionary<string, string>? names = null, Battles.DefeatedProgramState? defeatedScene = null, RaftBerth? raft = null)
     {
+        Raft = raft;
         DefeatedScene = defeatedScene;
         SaveAnchor = saveAnchor;
         Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>((names ?? new Dictionary<string, string>()).ToDictionary(pair => pair.Key, pair => pair.Value));
@@ -189,6 +190,7 @@ public sealed class StoryState
     // VInt_UpdateWindows retains this across empty-window passes and map initialization.
     public bool WindowFixPending { get; }
     public MusicProgress? Music { get; }
+    public RaftBerth? Raft { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
         ProgramContinuation? continuation = null, ExplorationBattleRoute? enteringBattle = null,
@@ -201,7 +203,7 @@ public sealed class StoryState
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
         short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false, FieldReturnAnchor? saveAnchor = null,
-        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null) =>
+        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null, RaftBerth? raft = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -212,13 +214,13 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene, raft ?? Raft);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
     EntityActionProgram? Actions = null, int ActionCursor = 0, bool WaitingForMotion = false,
     int Slot = -1, int? Sprite = null, EntityFollower? Follower = null,
-    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false, ushort RenderSize = 24)
+    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false, ushort RenderSize = 24, long? ShadowRemovedAt = null)
 {
     public MapPosition Position => new(Motion.X / 384, Motion.Y / 384);
     public bool IsScriptIdle => Actions is { } program && ActionCursor >= 0 &&

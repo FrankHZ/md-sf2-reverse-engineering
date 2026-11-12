@@ -143,8 +143,8 @@ internal static class ProgramRunner
                     case OpenChurch church when current.Exploration is not null:
                         story = story.Copy(story.Cursor, new ChurchWait(token, church.Definition));
                         break;
-                    case CaravanInstruction caravan:
-                        (active, story) = CaravanRuntime.Execute(definition, current, caravan, story, token);
+                    case VehicleInstruction vehicle:
+                        (active, story) = CaravanRuntime.Execute(definition, current, vehicle, story, token);
                         break;
                     case ConvertBattleActor convert:
                         current = BattleStoryOperations.Convert(current, convert, observations);
@@ -165,6 +165,8 @@ internal static class ProgramRunner
                         active = ((ActiveBattle)current.Active) with { Battle = current.Battle.With(
                             visuals: current.Battle.Visuals!.Face(facingActor.Actor, facing.Facing),
                             actors: current.Battle.Actors.Select(a => a.Actor == facingActor.Actor ? a.With(facing: facing.Facing) : a)) }; break;
+                    case ParkRaft park:
+                        story = story.Copy(story.Cursor, raft: park.Berth); break;
                     case SetEgressMap egress:
                         story = story.Copy(story.Cursor, egressMap: egress.Map); break;
                     case RequestCurrentMap:
@@ -455,6 +457,13 @@ internal static class ProgramRunner
                                 music = music with { EndStep = null, ActualDone = false, PreviousEligible = false };
                         }
                         story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore), music: music); break;
+                    case RemoveEntityShadow remove:
+                        var posed = Entity(current, remove.Entity);
+                        long update = checked(posed.SpriteRequest + 1);
+                        active = new ActiveExploration(current.Exploration!.WithEntity(posed with {
+                            SpriteRequest = update, WaitingForSprite = true, ShadowRemovedAt = update }));
+                        story = current.Story.Copy(cursor, new EntitySpriteWait(token, posed.Slot, update));
+                        break;
                     case SetEntitySprite sprite:
                         var changedSprite = Entity(current, sprite.Entity);
                         int spriteId = sprite.Ally ? SceneEntities.ResolveAllySprite(current.Exploration!.Population
@@ -495,7 +504,7 @@ internal static class ProgramRunner
                     case SetMapQuake quake:
                         active = new ActiveExploration(current.Exploration!.WithQuake(quake.Amount)); break;
                     case AddMapEntity add:
-                        active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value));
+                        active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value, story.Flags));
                         break;
                     case RestoreMemberResource restoreResource:
                         var party = current.Exploration!.Party;

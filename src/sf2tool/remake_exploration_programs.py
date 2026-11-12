@@ -10,7 +10,12 @@ from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.remake_exploration_actions import action_stream, inline_actions, walking_actions
 from sf2tool.remake_exploration_joins import join_selector, join_service
-from sf2tool.remake_exploration_scene import portrait_operations, scene_operation, sound_operation
+from sf2tool.remake_exploration_scene import (
+    portrait_operations,
+    raft_placement,
+    scene_operation,
+    sound_operation,
+)
 from sf2tool.remake_exploration_services import church_service, shop_service
 from sf2tool.remake_exploration_view import counted_view_loop, view_operation
 
@@ -662,7 +667,14 @@ class OriginalPrograms:
                         "counter": 0 if op == "startEntity" else 255,
                     }
                 )
-            elif op == "newEntity" and 128 <= self.number(args[0]) < 160:
+            elif op == "move.b" and args[1:] == ["((RAFT_MAP-$1000000)).w"]:
+                result.append(raft_placement(self, args, rows[index : index + 2]))
+                index += 2
+            elif op == "newEntity" and (
+                128 <= self.number(args[0]) < 160
+                or self.number(args[0]) < 30
+                and args[4] == "NOTHING_BYTE"
+            ):
                 self.sources.add("disasm/code/common/scripting/entity/entityfunctions_1.asm")
                 result.append(
                     {
@@ -885,6 +897,8 @@ class OriginalPrograms:
                         "position": None,
                     }
                 )
+            elif op == "removeShadow":
+                result.append({"op": "remove-shadow", "entity": self.entity(args[0])})
             elif op == "closeTxt":
                 result.extend([{"op": "close-portrait"}, {"op": "close-text"}])
             elif op == "clsTxt":

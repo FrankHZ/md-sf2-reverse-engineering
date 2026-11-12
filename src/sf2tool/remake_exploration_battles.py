@@ -393,6 +393,8 @@ def compile_routes(compiler, selection, upstream):
                     "facing": facing,
                 },
             }
+        if battle_id == compiler.equates["BATTLE_POLCA_VILLAGE"] and "outcome" in route:
+            route["outcome"]["fixedEgress"] = True
         if battle_id in selection.get("positionAfterLeaderDeath", []):
             path = "disasm/data/battles/global/afterbattlepositions.asm"
             compiler.sources.add(path)

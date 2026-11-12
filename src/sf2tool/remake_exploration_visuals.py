@@ -213,6 +213,8 @@ def prepare_visuals(
     map_definitions = {"map-" + str(row["id"]): row for row in canonical["maps"]}
     map_visuals = []
     sprites = {0}
+    if any(i["op"] == "park-raft" for p in compiler.programs.values() for i in p["instructions"]):
+        sprites.add(compiler.equates["MAPSPRITE_RAFT"])
     # PlayMapMusic's explicit original field-to-battle substitutions.
     music_replacements = {
         compiler.equates[name]: compiler.equates[target]
@@ -288,7 +290,10 @@ def prepare_visuals(
                 if action.get("op") == "sprite"
             )
             if instruction["op"] in ("sprite", "new-entity"):
-                sprites.add(instruction["sprite"])
+                if instruction["op"] == "new-entity" and instruction["sprite"] == 255:
+                    sprites.add(compiler.equates["MAPSPRITE_BLUE_FLAME"])
+                else:
+                    sprites.add(instruction["sprite"])
             if instruction["op"] == "scene-entities":
                 population = instruction["population"]
                 sprites.update(

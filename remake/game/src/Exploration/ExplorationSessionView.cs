@@ -863,6 +863,7 @@ public sealed partial class ExplorationSessionView : Control
                     }),
                 }),
             } : null,
+            playerType = (int?)current?.Exploration?.TravelMode, raftBerth = current?.Story.Raft,
             travelMode = current?.Exploration?.TravelMode.ToString(), currentEntities = current?.Exploration?.CurrentEntities,
             authoredDraws = _authoredDraws.Values,
             map = current?.Exploration?.Map.Value, stop = current?.StopReason.ToString(),

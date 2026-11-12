@@ -29,7 +29,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
-    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd), ImageTexture> _sprites = [];
+    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd, bool Shadowless), ImageTexture> _sprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _blankSprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth, bool Hd), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
@@ -792,12 +792,14 @@ internal sealed partial class ExplorationPresentation : IDisposable
         int half = entity.Motion.AnimationCounter >= 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
         int orientation = entity.Motion.FlagsB & 3;
         int size = entity.RenderSize;
-        bool hd = Painted(map) && visual.HdDirections is not null;
-        var key = (sprite, direction, half, nod, headShift, orientation, size, hd);
+        bool shadowless = entity.ShadowRemovedAt == entity.SpriteRequest;
+        bool hd = !shadowless && Painted(map) && visual.HdDirections is not null;
+        var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
         using var sheet = ExplorationRasterImages.Open((hd ? visual.HdDirections! : visual.Directions)[direction]);
         int density = sheet.GetHeight() / 24;
         using var image = sheet.GetRegion(new(half * 24 * density, 0, 24 * density, 24 * density));
+        if (shadowless) ExplorationStoryEffects.RemoveShadow(image);
         ExplorationStoryEffects.Transform(image, orientation, size);
         ExplorationStoryEffects.ShiftHead(image, headShift);
         if (nod)

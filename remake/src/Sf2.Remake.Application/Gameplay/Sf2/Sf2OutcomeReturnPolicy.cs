@@ -51,7 +51,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
     private static FieldReturnAnchor EgressDestination(ScenarioDefinition definition, StoryState story,
         ExplorationOutcomeRoute route, BattleOutcomeKind kind)
     {
-        var live = story.EgressMap ?? route.EgressMap;
+        var live = route.FixedEgress ? route.EgressMap : story.EgressMap ?? route.EgressMap;
         var destination = FindEgress(definition, live, route);
         if (destination is null && kind == BattleOutcomeKind.Defeat &&
             definition.DefeatFallback is { } fallback && live == fallback.Register)

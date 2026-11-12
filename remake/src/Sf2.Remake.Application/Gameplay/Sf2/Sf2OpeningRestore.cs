@@ -24,8 +24,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return [];
         }
         int prior = data.Compatibility.RecipeRevision;
-        int savedCount = prior switch { 1 => 7, 2 => 9, _ => 0 };
-        int currentCount = expected.RecipeRevision switch { 2 => 9, 3 => 10, _ => 0 };
+        int savedCount = prior switch { 1 => 7, 2 => 9, 3 => 10, _ => 0 };
+        int currentCount = expected.RecipeRevision switch { 2 => 9, 3 => 10, 4 => 11, _ => 0 };
         if (savedCount == 0 || savedCount >= currentCount || data.Compatibility != (expected with { RecipeRevision = prior }))
             throw new BattleRuleException("save-incompatible", "save.compatibility");
         var rows = deployments.Values.OrderBy(row => row.Initialization?.AllyPartyMember).ToArray();
@@ -84,7 +84,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
         if (data.Recipe is "new-granseal-castle" or "ribble-welcome" or "east-shrine" or "parmecia-battle-return" &&
             data.EgressMap is "map-6" or "map-8") return;
-        if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" && data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
+        if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" && data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
             !(data.Recipe == "battle07-return" && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
@@ -111,8 +111,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         return false;
     }
 
-    public SaveLocation Select(ScenarioDefinition definition, MapId map, IReadOnlyList<int> flags, FieldReturnAnchor? anchor)
+    public SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags, FieldReturnAnchor? anchor)
     {
+        var map = player.Map;
         if (!definition.Exploration!.Maps.TryGetValue(map, out var content)) Fail();
         if (map.Value == "map-3")
         {
@@ -145,6 +146,11 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("mount-volcano", anchor, "Mount Volcano, battle return");
         if (map.Value == "map-13" && flags.Contains(799) && flags.Contains(710) && !flags.Contains(715))
             return new("polca-return", new(map, new(30, 6), 2), "Polca, eastern approach");
+        if (map.Value == "map-13" && flags.Contains(513) && !flags.Contains(716) && anchor?.Map == map)
+            return new("polca-victory", anchor, "Polca, battle return");
+        if (map.Value == "map-72" && flags.Contains(64) && flags.Contains(10) &&
+            player.Position == new MapPosition(43, 47))
+            return new("polca-raft", player, "Polca, raft landing");
         Fail(); return null!;
     }
 
