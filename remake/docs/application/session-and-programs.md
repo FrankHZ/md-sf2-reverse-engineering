@@ -1107,6 +1107,22 @@ default and native MakeEntityWalk), `SlotTimer` (custom/named cutscene scripts),
 slot as the wait timer; only the last also clears flagsA bits5/6. Existing source aliases
 determine the slot at runtime. No timer value is baked into compiled content.
 
+Source entity waits use `wait-timer` with the encoded operand word (0–65535).
+`ac_wait` supplies the word directly. The `csc2D` sequence decoder sign-extends the
+duration byte in `eaWait` and the facing commands before emitting the same action.
+`esc00_wait` compares the low byte of the word and the actor's existing byte timer
+as signed values. A smaller timer increments modulo 256 and leaves the cursor on
+the wait for the next actor service. Otherwise the actor clears the timer and runs
+the next action in the current service. For example, from timer 5, operand 1200
+(low byte −80) continues immediately and operand 600 (88) yields 83 times.
+An asynchronous installation lets the parent script continue before either action runs.
+
+The reader retains the unsigned byte comparison for existing package `wait`/`ticks`
+rows, including authored content. Historical `native-call` rows lack the discarded
+operand and keep their attributed stop until the source is recompiled. Both wait
+forms retain the low byte used to bind controlled walking phases and identify the
+ambient random-walk loop at save time. See the [bounded source and engine checks](../evidence/pre-voyage-readiness.zh-CN.md#复核入口).
+
 A true source jump-to-idle compiles to `jump` plus terminal `idle`; entityActions gets its
 implicit source idle tail. Inline bytes after an unconditional idle jump are consumed through
 the delimiter without becoming executable. Plain authored Stop/exhaustion or Unsupported
@@ -1121,8 +1137,8 @@ The [idle/caller source owner](../../../docs/research/chapters/grans-opening/map
 records the Zone6 leading-wait consumer and the boundaries. Ordinary player control still
 supersedes its old action/follower continuation and establishes controlled motion settings after
 movement at the next existing service. Follower installation clears Actions; source phase
-startup still binds real walking wait cursors. General high-bit source wait fidelity and the
-unimplemented waitIdle/native producers remain outside this bounded correction.
+startup still binds real walking wait cursors. The unimplemented waitIdle/native
+producers remain outside this boundary.
 
 Source `MainLoop` selects an unlocked, uncompleted battle before `ExplorationLoop` initializes its map.
 The before-battle program retains the previous field scene until its own load/entity calls.

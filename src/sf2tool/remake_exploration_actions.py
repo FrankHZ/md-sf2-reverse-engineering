@@ -116,21 +116,21 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
     if op.startswith("move") and op[4:] in directions:
         x, y = directions[op[4:]]
         return [{"op": "move", "x": x * self.number(args[0]), "y": y * self.number(args[0])}]
-    if op.startswith("face") and op[4:] in directions:
-        facing = [
-            "Right",
-            "Up",
-            "Left",
-            "Down",
-            "UpRight",
-            "UpLeft",
-            "DownLeft",
-            "DownRight",
-        ].index(op[4:])
-        return [{"op": "face", "facing": facing}, {"op": "wait", "ticks": self.number(args[0])}]
-    if op == "eaWait" or op == "ac_wait":
-        ticks = self.number(args[0])
-        return [{"op": "wait", "ticks": ticks}] if 0 <= ticks <= 255 else [self.native(op, source)]
+    face = op.startswith("face") and op[4:] in directions
+    if face or op in ("eaWait", "ac_wait"):
+        operand = self.number(args[0])
+        if op == "ac_wait":
+            if not -32768 <= operand <= 65535:
+                return [self.native(op, source)]
+        else:
+            if not -128 <= operand <= 255:
+                return [self.native(op, source)]
+            # csc2D sign-extends the encoded byte before writing the esc00 operand word.
+            operand = (operand & 0x7F) - (operand & 0x80)
+        wait = {"op": "wait-timer", "operand": operand & 0xFFFF}
+        if face:
+            return [{"op": "face", "facing": list(directions).index(op[4:])}, wait]
+        return [wait]
     if op == "ac_motion":
         return [{"op": "animation-counter", "counter": 1 if self.number(args[0]) else 255}]
     if op == "ac_moveRel":

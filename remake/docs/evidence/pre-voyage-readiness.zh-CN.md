@@ -9,7 +9,7 @@
 | 优先级与时点 | 证据与影响 | 责任与验收 |
 | --- | --- | --- |
 | 启动前 · 确定交接和停止点 | **Confirmed**：前一里程碑已独立验收到 Map14 (40,8) 朝左，F700 已写，F703/F408/F508 未写，无脚本等待；普通向下到 (40,9)。合法的后段存档在 Map58，本版本没有 Map14 自由存档。**Inferred**：这个起点足以继续开发。 | 主门在新票写明从已有 Map58 兼容存档的独立副本经普通离港接入，控制起步样例只用于定位。沿用跨章节进度的 High 交接约定，局部动作按 Standard。验收比较进入/退出状态、一次拒绝及再次同意、甲板演员与对白输入。无需先增设船上存档。[独立验收 #1563](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1563) |
-| 随首片 · **确定的实现阻塞** | 甲板初始化给演员 129 安装异步脚本，两条 `ac_wait` 的原始操作数在导入时变成不支持的指令。通过文件读取不代表能跨过首个演员服务。 | 动作编译和执行的所有者按下节验证源操作数、起始计时器和下一条指令。同意路径必须在实际普通输入下继续，拒绝路径不能被该脚本拖住。 |
+| 随首片 · 演员等待已接入 | #1733 已在独立场景读入并执行演员 129 的两条 `ac_wait`。原版自然时序仍为 **Unknown**。 | #1732 验收普通输入下的同意、拒绝、重试和甲板对白交接。 |
 | 若首片扩大到 Battle08 · **确定的内容阻塞** | 普通包没有 Map72；战斗内容登记表只有 1–7。仅加一行选择会超出登记数，亦缺 Battle08 的身份校验。 | 划入该终点时，内容 owner 补地图、战斗/地形/场景来源、携带队伍和剧情接线。验收 Map14 写 F408、队伍及资源随请求到 Map72、Battle08 入场且首次合法输入可用；保留可选 Kiwi 的两种队伍状态。若只交付甲板对白，就不需要这批输入。[原版入场条件](../../../docs/design/synthesis/chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md) |
 | 随对应切片 · **风险尚未证实** | 发布记录中选用的高清世界约 121 MB（十进制），读取上限 134,217,728 字节，按该报告估算余量约 13 MB。下一段实际新增量 **Unknown**。中文对白选择也止于海上首次交还控制。 | 内容/本地化 owner 在新终点先量实际世界字节、所需文本 ID 和资源依赖，按所选中英文路径读到首段对白；超限才调整方案。已有画风可回落，高清全量重绘不构成前置。[素材清单](../content/asset-inventory.md) · [中文准入范围](../application/pre-voyage-chinese-admission.md) |
 | 可延期 · 生命周期与体验 | #1716 有中文 Continue 的终态报告之后一次退出访问冲突；首次未单独保留原生退出码，同一输入复跑 13 项通过且退出 0。原因、正常玩家退出是否受影响均 **Unknown**。#1456 仍需玩家评价具体路线的可读性、手感与设备表现。 | #1716 用独立副本区分退出码、终态报告、普通退出和观察器路径；若新证据显示进行中崩溃、进度丢失或阻断交接，再提高优先级。#1456 接回人工决定。两项均没有证据推翻上述 Map14 起点。[#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716) · [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) |
@@ -19,8 +19,8 @@
 **木板搬运的第一处硬边界。** 原版默认区域事件在 (45,5) 调用 `cs_58E5C`，返回后写 F257；该位不阻止再次触发。Yes 请求显式 Map14 (13,11) 朝下，区别于保留现场的楼梯传送和先前 Map73 脚本内加载 Map14。F458/F703 均清时，入场初始化运行 `cs_58FA4`。第一批指令淡入，安装 `customActscript 129`，接着是商人的第一段对白。把文字表抄进新世界、或只验证首次自由移动，都测不到这个交接。[研究与可复核的事件表](../../../docs/research/chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md)
 
 - **Confirmed，原版静态。** `customActscript` 展开为 `csc14 actor,0`，不等待演员空闲。`ac_wait` 写入操作码字 0 和一个操作数字；`eaWait` 则是另一种宏编码。`csc14_setEntityActscriptManual` 先解析角色、用返回的 d0 低字节初始化演员计时器，再安装脚本。`esc00_wait` 读取操作数字，却用 `cmp.b` 和有符号 `ble` 比较低字节。操作数低字节 ≤ 当前计时器（均按有符号字节）即清计时器并执行下一条，否则递增计时器并让出本次服务。[宏定义](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/sf2cutscenemacros.asm) · [安装](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/map/mapscriptengine_1.asm) · [执行](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityscriptengine_2.asm)
-- **Confirmed，重制实现。** 在实际编译函数上以十进制字面量单独输入 40、255，得到 `wait`；输入 256、600、1200，均得到 `native-call(ac_wait)`。读取器把后者保留为 `UnsupportedEntityAction`，运行到它时报告 `entity-action`。该回退只带 symbol/source，动作数值未进入可执行等待。已接纳的普通 `WaitEntityTicks(byte)` 用无符号小于比较。只取低字节也会把 0xB0 当成 176。生产编译器为该异步安装选 `SlotTimer`、`wait=false`，执行器以实际物理槽初始化计时器；角色号 129 不能直接当作初值。[编译动作](../../../src/sf2tool/remake_exploration_actions.py) · [编译安装](../../../src/sf2tool/remake_exploration_programs.py) · [读取](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) · [安装](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) · [执行](../../src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs)
-- **验收判据。** 以初值 0 作对照，1200 = 0x04B0，低字节为 −80，立即继续；600 = 0x0258，低字节为 88，递增 88 次后才继续。以计时器初值 5 为第二个对照，600 应递增 83 次。实际接入时验证实际槽、动作游标、清零、相邻移动和父脚本是否继续。在真实场景里，两条等待之间还有移动及目的地等待；原版自然时序和各演员何时完成仍为 **Unknown**。不把操作数当作帧数，不靠延长通用计时器或删掉背景演员过关。[Map14 原始调用](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map14/mapsetups/scripts_2.asm)
+- **Confirmed，重制实现。** `ac_wait` 的操作数字进入 `wait-timer`；`eaWait` 和转向宏的持续字节经 `csc2D` 符号扩展后进入同一条指令。例如 `ac_wait 255` 的操作数字是 `0x00FF`，`eaWait 255` 是 `0xFFFF`，两者都按 −1 比较。旧包和 authored 的 `wait`/`ticks` 继续用无符号字节；审计基线将 256、600、1200 写成缺少操作数的 `native-call(ac_wait)`，旧产物仍在该位置停下，重新编译即可恢复操作数。[编译动作](../../../src/sf2tool/remake_exploration_actions.py) · [读取](../../src/Sf2.Remake.Content/Scenarios/ExplorationContentReader.cs) · [执行](../../src/Sf2.Remake.Application/Runtime/Exploration/EntityActionRunner.cs)
+- **Confirmed，受控执行。** 从固定 `cs_58FA4` 编译出的 `customActscript 129` 保留 `SlotTimer` 和 `wait=false`。独立布局将演员解析到物理槽 1；父脚本先写旗标，首次演员服务越过 1200（低字节 −80）并向右移动。经过向下移动和目的地等待，600（低字节 88）从 0 递增 88 次，下一次服务清零并向上移动七格。独立行为用例将 600 的初值改为 5，只需递增 83 次。旧包与重编的 `eas_Walking` 均可绑定受控游标 0/9；在已有普通私有世界及仅重新编译 Map3 各 setup 的 14 条行走脚本的副本上，新游戏、捕获和恢复均通过。原版自然时序、普通木板分支和对白交接仍待各自验收。[Map14 原始调用](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map14/mapsetups/scripts_2.asm) · [行为用例](../../tests/Sf2.Remake.Engine.Tests/ExplorationSessionTests.EntityWait.cs) · [存档用例](../../tests/Sf2.Remake.Engine.Tests/OpeningSaveTests.cs)
 
 | 从玩家操作追到实际所有者 | 核到的边界与变化例 |
 | --- | --- |
@@ -78,15 +78,34 @@ gh pr view 1563 --json headRefOid,mergeCommit,comments,statusCheckRollup
 gh pr view 1729 --json files,mergeCommit,body
 ```
 
-动作边界可用已配置的 worktree Python 在根目录复核。此小样只调用原编译函数的数值分支，以空符号表处理十进制字面量；它没有构造场景或重放游戏。
+在本工作树根目录加载 `local/private-inputs.ps1`，将 `$upstream` 设为已核对的固定 SF2DISASM 检出目录。以下命令编译实际源脚本，把其中一条演员安装放入独立的 `harbor-arrival` 包，再通过生产读取器启动到父脚本返回。只在内存中替换测试演员的绑定。
 
 ```powershell
-@'
-from sf2tool.remake_exploration_actions import compile_action
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN test remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~SourceEntityWaitUses|FullyQualifiedName~AsynchronousEntityWait|FullyQualifiedName~AmbientDefaultWalking'
+$motion = @'
+import json, sys
+from pathlib import Path
 from sf2tool.remake_exploration_programs import OriginalPrograms
-reader = object.__new__(OriginalPrograms)
-reader.equates = {}
-for ticks in (40, 255, 256, 600, 1200):
-    print(ticks, compile_action(reader, "ac_wait", [str(ticks)], "audit"))
-'@ | & ./.venv/Scripts/python.exe -B -X utf8 -
+p = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, Path(sys.argv[1]))
+p.register_file("disasm/data/maps/entries/map14/mapsetups/scripts_2.asm")
+p.compile("cs_58FA4")
+print(json.dumps(next(row for row in p.programs["cs_58FA4"]["instructions"]
+                      if row["op"] == "motion" and row["entity"] == "entity-129")))
+'@ | & ./.venv/Scripts/python.exe -B -X utf8 - $upstream | ConvertFrom-Json -AsHashtable
+$doc = Get-Content -Raw remake/content/authored/harbor-arrival.json | ConvertFrom-Json -AsHashtable
+$motion.entity = 'ferryman'
+$doc.world.programs[0].instructions = @($motion, @{op='end'})
+$doc.start.program = @{program='invitation'; instruction=0}
+foreach ($name in 'Domain','Application','Content') {
+    Add-Type -Path (Resolve-Path "remake/src/Sf2.Remake.$name/bin/Release/net8.0/Sf2.Remake.$name.dll")
+}
+$bytes = [Text.Encoding]::UTF8.GetBytes(($doc | ConvertTo-Json -Depth 64 -Compress))
+$reader = [Sf2.Remake.Content.Scenarios.AuthoredScenarioPackageReader]::FromDocumentBytes($bytes)
+$session = [Sf2.Remake.Application.Runtime.GameSession]::Start($reader).Session
+$actor = $session.Current.Exploration.AllEntities | Where-Object { $_.Entity.Value -eq 'ferryman' }
+$actor.Actions.Actions | Where-Object { $_.GetType().Name -eq 'WaitEntityTimer' } | Select-Object Ticks
 ```
+
+读回的两个低字节依次为 176 和 88。上面的行为用例分别检验有符号比较、清零后同次服务继续、父脚本异步推进和旧包语义。
