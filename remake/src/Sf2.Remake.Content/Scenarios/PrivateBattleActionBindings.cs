@@ -77,6 +77,7 @@ internal static class PrivateBattleActionBindings
             "CRITICAL125_1IN16|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.Thief,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Cleric,
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.OneIn32WithFrequentDoubleAndCounter,
+            "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Monk,
             "CRITICAL_SILENCE|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Silence,
             "CRITICAL_POISON|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Poison,
             "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Sleep,

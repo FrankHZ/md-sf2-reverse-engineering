@@ -11,7 +11,7 @@ internal static class EnemySpellDecision
         IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null)
     {
         var actor = battle.GetActor(actorRef);
-        var known = actor.Spells.FirstOrDefault(spell => spell.Value is "blaze" or "freeze");
+        var known = actor.Spells.FirstOrDefault(spell => spell.Value is "blaze" or "freeze" or "blast");
         if (known != default && !battle.Definition.AttackSpells.ContainsKey(known))
             throw new BattleRuleException("spell-effect", "spell", true);
         var key = actor.Spells.Where(spell => spell.Value == known.Value)
@@ -76,7 +76,12 @@ internal static class EnemySpellDecision
         if (!actor.Spells.Contains(key)) return null;
         if (!battle.Definition.Spells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
         if (spell.CuresPoison) throw new BattleRuleException("enemy-poison-cure", "spell", true);
-        if (actor.Mp < 3 || actor.Mp < spell.MpCost) return null;
+        // DetermineHealingSpellLevel selects HEAL1 for a HEAL2 book, but
+        // uses the unmasked original entry to check the MP needed to cast.
+        var book = actor.Spells.Contains(new SpellRef("heal", 2)) ? new SpellRef("heal", 2) : key;
+        if (!battle.Definition.Spells.TryGetValue(book, out var affordability))
+            throw new BattleRuleException("spell-effect", "spell", true);
+        if (actor.Mp < 3 || actor.Mp < affordability.MpCost) return null;
         var rule = actions.Single(r => r.Kind == BattleActionKind.Healing);
         var action = new BattleActionRef(BattleActionKind.Healing, key);
         var allowed = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();

@@ -282,6 +282,11 @@ def prepare_visuals(
             )
     for program in compiler.programs.values():
         for instruction in program["instructions"]:
+            sprites.update(
+                action["sprite"]
+                for action in instruction.get("actions", [])
+                if action.get("op") == "sprite"
+            )
             if instruction["op"] in ("sprite", "new-entity"):
                 sprites.add(instruction["sprite"])
             if instruction["op"] == "scene-entities":

@@ -14,6 +14,7 @@ public sealed record ConvertBattleActor(int EnemySlot, int AllySlot) : StoryInst
 public sealed record JoinBattleForceAi(int AllySlot, ushort Value) : StoryInstruction;
 public sealed record EndProgram(bool SourceMapScript = false) : StoryInstruction;
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
+public sealed record BranchInteractionFacing(byte Facing, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;
 public sealed record BranchEntityCoordinates(EntityRef Entity, short X, short Y, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities = false) : StoryInstruction;
@@ -35,6 +36,7 @@ public sealed record WaitForView : StoryInstruction;
 public sealed record ChooseYesNo(int? ResultFlag, ProgramLocation? NoTarget = null) : StoryInstruction;
 public sealed record NamePartyMember(int Member) : StoryInstruction;
 public sealed record SetPlaneAutoscroll(int Axis, int Value, bool Relative = false) : StoryInstruction;
+public sealed record AlignBackgroundToViewTarget : StoryInstruction;
 public sealed record SetPlanePosition(int Axis, int Value) : StoryInstruction;
 public sealed record SetCameraSpeed(ushort Speed) : StoryInstruction;
 public sealed record AddExplorationFollower(EntityRef Entity) : StoryInstruction;
@@ -70,9 +72,9 @@ public sealed record StartEntityMotion(EntityRef Entity, EntityActionProgram Act
 public sealed record WaitForEntity(EntityRef Entity, bool ScriptIdle = false) : StoryInstruction;
 public sealed record RequestCurrentMap : StoryInstruction;
 public sealed record RestoreCachedRoof : StoryInstruction;
-public sealed record ReloadDefaultEntities(MapId Map) : StoryInstruction;
+public sealed record ReloadDefaultEntities(MapId Map, MapSetupId? Setup = null) : StoryInstruction;
 public sealed record FaceOtherEntity(EntityRef Entity, EntityRef Target) : StoryInstruction;
-public sealed record JoinPartyMember(int Member, bool AiControlled = false) : StoryInstruction;
+public sealed record JoinPartyMember(int Member, bool? AiControlled = null) : StoryInstruction;
 public abstract record OutcomePartyInstruction(int Member) : StoryInstruction;
 public sealed record ClearOutcomePartyAi(int Member) : OutcomePartyInstruction(Member);
 public sealed record LeaveOutcomeBattleParty(int Member) : OutcomePartyInstruction(Member);

@@ -2175,3 +2175,12 @@ msgstr "东神殿"
 
 msgid "save.destination.parmecia-battle-return"
 msgstr "帕尔梅西亚东部，战斗结束处"
+
+msgid "save.destination.dark-caves"
+msgstr "暗黑洞窟，战斗结束处"
+
+msgid "save.destination.mount-volcano"
+msgstr "火山，战斗结束处"
+
+msgid "save.destination.polca-return"
+msgstr "波尔卡，东侧入口"

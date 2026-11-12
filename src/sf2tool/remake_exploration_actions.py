@@ -20,7 +20,7 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         match = re.search(r"^byte_45074:[ \t]*ac_randomWalk ([^\r\n;]+)", text, re.MULTILINE)
         if match is None:
             raise ValueError("source walking action operands")
-        result = self.walking(*map(self.number, _tokens(match[1])))
+        result = walking_actions(self, *map(self.number, _tokens(match[1])))
         self.actions[symbol] = result
         return result
     path = "disasm/data/scripting/entity/eas_actions.asm"
@@ -189,6 +189,8 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
                 ].index(op),
             }
         ]
+    if op == "ac_setSprite":
+        return [{"op": "sprite", "sprite": self.number(args[0])}]
     if op == "ac_setSize":
         return [{"op": "sprite-size", "size": self.number(args[0])}]
     if op == "ac_setPos":
@@ -213,3 +215,77 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
     if op == "ac_setFacing":
         return [{"op": "face", "facing": self.number(args[0])}]
     return [self.native(op, source)]
+
+
+def inline_actions(self, rows, index, op, args, relative, symbol):
+    actions = []
+    entered_idle = False
+    while index < len(rows) and rows[index]["opcode"] not in ("endActions", "ac_end"):
+        action = rows[index]
+        if entered_idle:
+            # Consume inline bytes through the delimiter, without making code
+            # after an unconditional idle jump executable.
+            index += 1
+            continue
+        if action["opcode"] == "ac_jump" and _tokens(action["operandText"]) == ["eas_Idle"]:
+            finish_in_idle(actions)
+            entered_idle = True
+            index += 1
+            continue
+        actions.extend(
+            compile_action(
+                self,
+                action["opcode"],
+                _tokens(action["operandText"]),
+                f"{relative}:{symbol}[{action['index']}]",
+            )
+        )
+        index += 1
+    if index == len(rows):
+        raise ValueError("unterminated entity action: " + symbol)
+    index += 1
+    sequence = op.startswith("entityActions")
+    if sequence and not entered_idle:
+        finish_in_idle(actions)
+    return index, {
+        "op": "motion",
+        "entity": self.entity(args[0]),
+        "wait": op.endswith("Wait"),
+        "installation": "SlotTimerClearCollision" if sequence else "SlotTimer",
+        "actions": actions,
+    }
+
+
+def walking_actions(self, x: int, y: int, radius: int) -> list[dict[str, Any]]:
+    path = "disasm/data/scripting/entity/eas_main.asm"
+    self.sources.add(path)
+    text = (self.upstream / path).read_text(encoding="utf-8")
+    block = re.search(
+        r"^eas_Walking:(.*?ac_branch\s*\n\s*dc\.w[^\n]+)", text, re.MULTILINE | re.DOTALL
+    )
+    if block is None:
+        raise ValueError("source walking template")
+    result, labels = [], {}
+    branch = False
+    for index, line in enumerate(block.group(1).splitlines()):
+        if match := re.match(r"^(\w+):\s*(.*)", line):
+            labels[match[1]] = len(result)
+            line = match[2]
+        for statement in _statements(line):
+            op, _, operands = statement.partition(" ")
+            if op == "ac_randomWalk":
+                result.append({"op": "random-walk", "x": x, "y": y, "radius": radius})
+            elif op == "ac_waitDest":
+                continue  # RandomWalkEntity owns the movement wait.
+            elif op == "ac_branch":
+                branch = True
+            elif op == "dc.w" and branch:
+                target = re.match(r"\((\w+)-\w+\)", operands.strip())
+                if target is None or target[1] not in labels:
+                    raise ValueError("source walking branch")
+                result.append({"op": "jump", "instruction": labels[target[1]]})
+            else:
+                result.extend(
+                    compile_action(self, op, _tokens(operands), f"{path}:eas_Walking[{index}]")
+                )
+    return result

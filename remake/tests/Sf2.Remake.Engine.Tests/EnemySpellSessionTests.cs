@@ -115,7 +115,7 @@ public sealed class EnemySpellSessionTests
     }
 
     [Fact]
-    public void EnemyCastFailureRetainsAllOriginalResourcesAndRejectsUnsupportedSpellFamilies()
+    public void EnemyCastFailureRetainsAllOriginalResourcesAndBlastUsesTheSharedAttackAction()
     {
         var before = Battle(); var actor = before.GetActor(Mage);
         var poor = before.With(actors: before.Actors.Select(a => a.Actor == Mage ? a.With(mp: 1) : a));
@@ -123,12 +123,12 @@ public sealed class EnemySpellSessionTests
             poor, Mage, new(4, 2), new(BattleActionKind.AttackSpell, new("blaze", 1)), Scout, new Sf2BattleProgressionRule())).Code);
         Assert.Equal(1, poor.GetActor(Mage).Mp); Assert.Equal(actor.Position, poor.GetActor(Mage).Position);
         Assert.Equal(60, poor.GetActor(Scout).Hp); Assert.Equal(before.MainSeed, poor.MainSeed);
-        var malformed = Battle(d =>
+        var wind = Battle(d =>
         {
             d["spells"]![0]!["id"] = "blast"; d["spells"]![0]!["effect"]!["element"] = "wind";
             d["actors"]![1]!["spells"]![0]!["id"] = "blast";
         });
-        Assert.Equal("source-action-categories", Assert.Throws<BattleRuleException>(() => Decide(malformed, Mage)).Code);
+        Assert.Equal(new BattleActionRef(BattleActionKind.AttackSpell, new("blast", 1)), Decide(wind, Mage).ChosenAction);
     }
 
     [Fact]

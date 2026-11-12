@@ -7,7 +7,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class BattleEntry
 {
     internal static ExplorationBattleRoute? First(ScenarioDefinition definition, StoryState story,
-        ExplorationMapDefinition map, SessionRules rules) => map.Battles.FirstOrDefault(route => Selects(definition, story, route, rules));
+        ExplorationMapDefinition map, SessionRules rules, MapPosition? position = null) =>
+        map.Battles.FirstOrDefault(route => route.MatchesPosition(position) && Selects(definition, story, route, rules));
     internal static bool Selects(ScenarioDefinition definition, StoryState story, ExplorationBattleRoute? route,
         SessionRules rules) => route is not null &&
         (route.UnlockedFlag is null || story.Flags.Contains(route.UnlockedFlag.Value)) &&
@@ -28,6 +29,7 @@ internal static class BattleEntry
         {
             foreach (var route in current.Exploration?.Definition.Battles ?? [])
             {
+                if (!route.MatchesPosition(current.Exploration!.PlayerEntity.Position)) continue;
                 if (route.UnlockedFlag is { } unlocked && !story.Flags.Contains(unlocked)) continue;
                 if (route.CompletedFlag is { } completed && story.Flags.Contains(completed))
                 {

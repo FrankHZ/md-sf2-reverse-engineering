@@ -205,7 +205,7 @@ internal static class ExplorationContentReader
         foreach (var route in maps.SelectMany(map => map.Battles).Where(route => route.Outcome is not null))
         {
             Require(authored ? provenance is null && battle.Definition.PrivateDefinitions is null :
-                battle.Definition.PrivateDefinitions is { Encounter.Scene.EnemyLeaderPresent: false },
+                battle.Definition.PrivateDefinitions is not null,
                 "outcome-source", "map.battle.outcome", true);
             Require(route.Outcome!.DefeatedScene || definition.Programs[route.Outcome.DefeatedProgram.Program].Instructions.All(instruction => instruction is EndProgram or ReturnProgram),
                 "defeated-program", "map.battle.outcome.defeated", true);
@@ -245,7 +245,7 @@ internal static class ExplorationContentReader
             Require(battle.Start.Actors.Any(a => a.Actor == bindings[0] && a.ActivationWord is not null),
                 "outcome-party-start", "battle.start.actors");
         }
-        Require(encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
+        Require(!authored || encounters.All(encounter => encounter.LeaderCleanup is null || encounter.Outcome is not null),
             "leader-cleanup-outcome", "encounter.leaderCleanup", true);
         if (!authored && battle.Definition.PrivateDefinitions is { } iconDefinitions)
             IdentityIconReader.Bindings(definition.Visuals?.IdentityIcons, iconDefinitions);
@@ -335,13 +335,15 @@ internal static class ExplorationContentReader
 
     private static ExplorationBattleRoute ReadBattleRoute(JsonElement route, ScenarioReadAccepted battle, MapId map)
     {
-        ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"], "load", "outcome");
+        ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"], "load", "outcome", "triggerX", "triggerY");
         string encounter = Id(route, "encounter");
         Require(battle.Definition.Encounters.ContainsKey(encounter), "missing-encounter", "map.battle");
         return new(encounter, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
             NullableNumber(route, "introFlag", 65535), Location(route.GetProperty("before")), Location(route.GetProperty("start")),
             route.TryGetProperty("load", out var load) ? Location(load) : null,
-            route.TryGetProperty("outcome", out var outcome) ? ReadOutcome(outcome, map) : null);
+            route.TryGetProperty("outcome", out var outcome) ? ReadOutcome(outcome, map) : null,
+            route.TryGetProperty("triggerX", out _) ? Number(route, "triggerX", 0, 63) : null,
+            route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null);
     }
 
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
@@ -535,6 +537,9 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "flag", "whenSet", "target");
                 return new BranchFlag(Number(row, "flag", 0, 65535), Boolean(row, "whenSet"), RequiredLocation(row.GetProperty("target")));
             case "set-flag": Object(row, opcode, "op", "flag", "value"); return new WriteFlag(Number(row, "flag", 0, 65535), Boolean(row, "value"));
+            case "branch-interaction-facing":
+                Object(row, opcode, "op", "facing", "whenEqual", "target");
+                return new BranchInteractionFacing((byte)Number(row, "facing", 0, 3), Boolean(row, "whenEqual"), RequiredLocation(row.GetProperty("target")));
             case "branch-coordinates":
                 Object(row, opcode, "op", "entity", "x", "y", "whenEqual", "target");
                 return new BranchEntityCoordinates(new(Id(row, "entity")), (short)Number(row, "x", short.MinValue, short.MaxValue),
@@ -569,6 +574,7 @@ internal static class ExplorationContentReader
             case "plane-autoscroll":
                 Object(row, opcode, "op", "axis", "value", "relative");
                 return new SetPlaneAutoscroll(Number(row,"axis",0,3), Number(row,"value",-127,255), Boolean(row,"relative"));
+            case "align-background-to-view-target": Object(row, opcode, "op"); return new AlignBackgroundToViewTarget();
             case "plane-position":
                 Object(row, opcode, "op", "axis", "value");
                 return new SetPlanePosition(Number(row,"axis",0,3), Number(row,"value",0,24575));
@@ -650,8 +656,12 @@ internal static class ExplorationContentReader
             case "restore-cached-roof": Object(row, opcode, "op"); return new RestoreCachedRoof();
             case "reload-default-entities": Object(row, opcode, "op", "map"); return new ReloadDefaultEntities(new(Id(row, "map")));
             case "face-entity": Object(row, opcode, "op", "entity", "target"); return new FaceOtherEntity(new(Id(row, "entity")), new(Id(row, "target")));
+            case "reload-setup-entities":
+                Object(row, opcode, "op", "map", "setup");
+                return new ReloadDefaultEntities(new(Id(row, "map")), new MapSetupId(Id(row, "setup")));
+            case "join-player-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 29), false);
             case "join-ai-party":
-            case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255), opcode == "join-ai-party");
+            case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255), opcode == "join-ai-party" ? true : null);
             case "follow":
                 Object(row, opcode, "op", "entity", "leader", "x", "y");
                 return new FollowEntity(new(Id(row, "entity")), new(Id(row, "leader")), Number(row, "x", -127, 127), Number(row, "y", -127, 127));
@@ -720,6 +730,7 @@ internal static class ExplorationContentReader
                 case "follow-physical": Object(action, opcode, "op", "slot", "x", "y"); actions.Add(new FollowPhysical(Number(action,"slot",0,62), Number(action,"x",-128,127), Number(action,"y",-128,127))); break;
                 case "wait-destination": Object(action, opcode, "op"); actions.Add(new WaitEntityDestination()); break;
                 case "sound": Object(action, opcode, "op", "command"); actions.Add(new EntitySound(Number(action,"command",0,255))); break;
+                case "sprite": Object(action, opcode, "op", "sprite"); actions.Add(new SetActionSprite(Number(action, "sprite", 0, 255))); break;
                 case "sprite-size": Object(action, opcode, "op", "size"); actions.Add(new SetGlobalSpriteSize((ushort)Number(action, "size", 0, 65535))); break;
                 case "refresh-sprite": Object(action, opcode, "op", "source"); actions.Add(new RefreshEntitySprite(Text(action, "source"))); break;
                 case "jump": Object(action, opcode, "op", "instruction"); actions.Add(new JumpEntityAction(Number(action, "instruction", 0, 4096))); break;
@@ -787,6 +798,7 @@ internal static class ExplorationContentReader
                 {
                     case JumpProgram jump: Target(jump.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
+                    case BranchInteractionFacing branch: Target(branch.Target); break;
                     case ChooseYesNo choice: Target(choice.NoTarget); break;
                     case BranchEntityCoordinates branch: Target(branch.Target); break;
                     case CallProgram call: Target(call.Target); break;

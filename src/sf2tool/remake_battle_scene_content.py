@@ -122,7 +122,7 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
+    if battle not in range(1, 14):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -275,7 +275,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                 ("enemy", 23, 0, None),
             ]
         )
-    if battle in (5, 6, 7, 8, 9, 10):
+    if battle in range(5, 14):
         actor_selections = [
             ("ally", 0, 0, 71),
             ("ally", 0, 0, 57),
@@ -296,8 +296,22 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             actor_selections.extend(("enemy", sprite, 0, None) for sprite in (2, 3, 31, 36))
         if battle >= 9:
             actor_selections.extend([("ally", 7, 0, None), ("enemy", 23, 2, None)])
-        if battle == 10:
+        if battle >= 10:
             actor_selections.extend([("ally", 8, 0, 45), ("enemy", 5, 2, None)])
+        if battle >= 11:
+            # Enemy sprite/palette are paired in table_EnemyBattlesprites.
+            actor_selections = [row for row in actor_selections if row[0] == "ally"]
+            source = (
+                upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm"
+            ).read_text(encoding="utf-8")
+            species = set(re.findall(r"enemyCombatant\s+(\w+)", source))
+            enums = (upstream / "disasm/sf2enums.asm").read_text(encoding="utf-8")
+            for code in sorted(species):
+                enemy = int(re.search(rf"^ENEMY_{code}:\s+equ (\d+)", enums, re.MULTILINE)[1])
+                sprite, palette_index = read(0x1F914 + enemy * 2, 2)
+                actor_selections.append(("enemy", sprite, palette_index, None))
+            if battle == 13:
+                actor_selections.append(("ally", 9, 0, None))
         if battle in (6, 7):
             actor_selections.append(("enemy", 40, 0, None))
     if battle == 7:
@@ -314,7 +328,9 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             data = decode(offset + word(offset), 4608 if side == "ally" else 6144)
             frames.append(
                 raster(
-                    f"{side}{index}/frame{frame}",
+                    f"{side}{index}"
+                    + (f"-palette{pal_index}" if battle >= 11 else "")
+                    + f"/frame{frame}",
                     data,
                     pal,
                     96 if side == "ally" else 128,
@@ -414,7 +430,8 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     layout = [(value & 0x1800) | ((value & 2047) - 928) for value in layout]
     terrain_scenes = []
     backdrop = {}
-    indices = [9] if battle == 1 else sorted(set(read(0x19E5E, 16)))
+    fixed = read(0x1FA8A + battle, 1)[0] if battle >= 11 else 9 if battle == 1 else None
+    indices = [fixed] if fixed is not None else sorted(set(read(0x19E5E, 16)))
     for index in indices:
         ground = pointer(weapons["groundTableAddress"] + index * 4)
         ground_palette = list(base_palette)
@@ -441,7 +458,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         terrain_scenes = [
             dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
         ]
-    background_asset, ground_asset = backdrop[9 if battle == 1 else 0].values()
+    background_asset, ground_asset = backdrop[fixed if fixed is not None else 0].values()
 
     # LoadSpellTileset: section-14 pointer, HEALING=6, length and three CRAM
     # replacements precede compressed tiles. Preserve all operands as ROM spans.
@@ -499,7 +516,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         293,
         393,
     }
-    if battle in (3, 4, 5, 6, 7, 8, 9, 10):
+    if battle in range(3, 14):
         text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
@@ -611,6 +628,9 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-8",
             "battle-9",
             "battle-10",
+            "battle-11",
+            "battle-12",
+            "battle-13",
         )
         or "fieldDeath" in scene
     ):
@@ -632,6 +652,9 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-8": 13,
                 "battle-9": 12,
                 "battle-10": 12,
+                "battle-11": 12,
+                "battle-12": 12,
+                "battle-13": 12,
             }[scene["encounter"]]
         ]
     ]
@@ -656,6 +679,12 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     if scene["encounter"] == "battle-10":
         species.remove("GREEN_OOZE")
         species.append("DARK_DWARF")
+    if scene["encounter"] in ("battle-11", "battle-12", "battle-13"):
+        battle = int(scene["encounter"].split("-")[1])
+        source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
+            encoding="utf-8"
+        )
+        species = sorted(set(re.findall(r"enemyCombatant\s+(\w+)", source)))
     enemy_sprites = [
         dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
         for code in species
@@ -720,7 +749,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 14), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

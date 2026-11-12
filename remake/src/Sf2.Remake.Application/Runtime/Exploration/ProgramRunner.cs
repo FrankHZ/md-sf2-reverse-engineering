@@ -66,7 +66,8 @@ internal static class ProgramRunner
                     {
                         current = Commit(current, current.Active, current.Story.Copy(null,
                             continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true, clearDefeatedScene: true,
-                            saveAnchor: new(current.Exploration!.Map, current.Exploration.PlayerEntity.Position, 3)), observations, "battle-returned");
+                            saveAnchor: new(current.Exploration!.Map, current.Exploration.PlayerEntity.Position,
+                                current.Exploration.PlayerEntity.Motion.Facing)), observations, "battle-returned");
                         // Destination init may have queued a second warp during the outcome return.
                         if (current.Story.ScriptWarp is not null) continue;
                     }
@@ -214,6 +215,10 @@ internal static class ProgramRunner
                     case BranchFlag branch when current.Story.Flags.Contains(branch.Flag) == branch.WhenSet:
                         story = story.Copy(branch.Target); break;
                     case BranchFlag: break;
+                    case BranchInteractionFacing branch:
+                        var interaction = current.Story.EntityEvent ?? throw new BattleRuleException("entity-event-context", "program.facing");
+                        if ((interaction.InteractionFacing == branch.Facing) == branch.WhenEqual) story = story.Copy(branch.Target);
+                        break;
                     case BranchEntityCoordinates branch:
                         var coordinates = Entity(current, branch.Entity).Motion;
                         if ((coordinates.X == branch.X && coordinates.Y == branch.Y) == branch.WhenEqual)
@@ -245,6 +250,9 @@ internal static class ProgramRunner
                     case SetPlaneAutoscroll scroll:
                         story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Autoscroll(
                             story.LogicalView ?? throw new BattleRuleException("field-view-context", "program.view", true), scroll)); break;
+                    case AlignBackgroundToViewTarget:
+                        story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.AlignBackground(current.Exploration!,
+                            story.LogicalView ?? throw new BattleRuleException("field-view-context", "program.view", true))); break;
                     case SetPlanePosition plane:
                         story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Position(
                             story.LogicalView ?? throw new BattleRuleException("field-view-context", "program.view", true), plane)); break;
@@ -285,7 +293,7 @@ internal static class ProgramRunner
                         var list = definition.Exploration!.Maps[reloadList.Map];
                         var main = live.PlayerEntity;
                         active = new ActiveExploration(SceneEntities.Reload(live,
-                            new(list.Population!, main.Position, main.Motion.Facing, list.Entities), story.Flags, token.Value));
+                            new(list.Population!, main.Position, main.Motion.Facing, reloadList.Setup is null ? list.Entities : list.Setups[reloadList.Setup].Entities), story.Flags, token.Value));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case LoadSetupEntities setupEntities:
                         var sourceMap = definition.Exploration!.Maps[current.Exploration!.Map].SelectSetup(story.Flags);
@@ -636,7 +644,8 @@ internal static class ProgramRunner
         var party = world.Party;
         var resources = party.Actors.ToList();
         int index = resources.FindIndex(actor => actor.Actor == actors[0]);
-        if (index >= 0 && (!join.AiControlled || (resources[index].ActivationWord & 4) == 4))
+        if (index >= 0 && (join.AiControlled is null || resources[index].ActivationWord is { } activation &&
+            ((activation & 4) != 0) == join.AiControlled))
             return current.Active;
         if (index < 0)
         {
@@ -646,11 +655,11 @@ internal static class ProgramRunner
             index = resources.Count;
             resources.Add(initial);
         }
-        if (join.AiControlled)
+        if (join.AiControlled is { } enable)
         {
             var actor = resources[index];
             ushort word = actor.ActivationWord ?? throw new BattleRuleException("missing-activation-word", "party.activation", true);
-            resources[index] = actor with { ActivationWord = (ushort)(word | 4) };
+            resources[index] = actor with { ActivationWord = (ushort)(enable ? word | 4 : word & ~4) };
         }
         return new ActiveExploration(world.WithParty(party.WithResources(resources, party.Gold)));
     }

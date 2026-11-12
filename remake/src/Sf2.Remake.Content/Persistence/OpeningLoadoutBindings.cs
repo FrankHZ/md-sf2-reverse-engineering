@@ -44,8 +44,9 @@ internal static class OpeningLoadoutBindings
         return new(admitted.Package, encounters, source, egress.World, admitted.BattleScenes, admitted.EncounterStarts.Values,
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
-            Persistence = new Sf2OpeningRestore(encounters.Any(encounter => encounter.Deployments.Any(row =>
-                row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == 8)) ? 2 : 1),
+            Persistence = new Sf2OpeningRestore(encounters.SelectMany(encounter => encounter.Deployments)
+                .Where(row => row.Faction == BattleFaction.Ally).Max(row => row.Initialization?.AllyPartyMember) switch
+                { 9 => 3, 8 => 2, _ => 1 }),
             DefeatFallback = (new("map-0"), openingMap),
             FieldPreparation = preparation,
         };

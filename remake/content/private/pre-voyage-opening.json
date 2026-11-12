@@ -27,7 +27,12 @@
     8,
     70,
     62,
-    71
+    71,
+    48,
+    13,
+    52,
+    10,
+    11
   ],
   "battles": [
     1,
@@ -39,7 +44,10 @@
     7,
     8,
     9,
-    10
+    10,
+    11,
+    12,
+    13
   ],
   "growthClasses": [
     {
@@ -77,6 +85,10 @@
     {
       "member": 8,
       "class": "RNGR"
+    },
+    {
+      "member": 9,
+      "class": "WFMN"
     }
   ],
   "outcomeEgressMap": {
@@ -89,10 +101,12 @@
     "7": 16,
     "8": 14,
     "9": 6,
-    "10": 8
+    "10": 8,
+    "11": 8,
+    "12": 13
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through the Battle10 return and the northern walking route toward the Cave of Darkness. East Shrine has a separate conditional entrance.",
+  "controlledBoundary": "Eastern Parmecia through the Dark Caves, Mount Volcano, Bedoe and the return to Polca for Battle13 admission.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -169,6 +183,18 @@
     {
       "symbol": "eas_452BA",
       "path": "code/common/scripting/map/vehiclefunctions.asm"
+    },
+    {
+      "symbol": "bbcs_11",
+      "path": "data/battles/entries/battle11/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "abcs_battle12",
+      "path": "data/battles/entries/battle12/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "edcs_battle12",
+      "path": "data/battles/entries/battle12/cs_battleend.asm"
     }
   ],
   "programs": [
@@ -211,7 +237,11 @@
     69,
     8,
     70,
-    62
+    62,
+    13,
+    52,
+    10,
+    11
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -247,6 +277,12 @@
       "wavSha256": "A15A73AF45721AC5588EE6C8EB4EEF884F667A2AD34B690C2E06DE88EEAAA858",
       "loopBegin": 294181,
       "loopEnd": 2679801
+    },
+    "MUSIC_BATTLE_THEME_3": {
+      "timerB": 192,
+      "wavSha256": "A2F814D48CC247C6F92AE6230D5C0171C3DCDAC343384526FCEADD0611A1E7AC",
+      "loopBegin": 272467,
+      "loopEnd": 3670285
     }
   },
   "presentationAtlases": {
@@ -310,6 +346,16 @@
     ],
     "62": [
       77
+    ],
+    "13": [
+      710,
+      799
+    ],
+    "10": [
+      722
+    ],
+    "52": [
+      512
     ]
   },
   "outcomeBattles": [
@@ -322,7 +368,9 @@
     7,
     8,
     9,
-    10
+    10,
+    11,
+    12
   ],
   "searchMaps": [
     3,
@@ -413,7 +461,15 @@
     "SFX_BIG_DOOR_RUMBLE_TIMER_CC",
     "SFX_WARP_TIMER_CC",
     "SFX_INTRO_LIGHTNING_TIMER_C2",
-    "MUSIC_SHRINE"
+    "MUSIC_SHRINE",
+    "MUSIC_BATTLE_THEME_3",
+    "SFX_BIG_DOOR_RUMBLE_TIMER_CB",
+    "SFX_MENU_SWITCH_TIMER_C0",
+    "SFX_VALIDATION_TIMER_C0",
+    "SFX_DIALOG_BLEEP_5_TIMER_C0",
+    "SFX_DIALOG_BLEEP_6_TIMER_C0",
+    "SFX_WARP_TIMER_C0",
+    "SFX_DIALOG_BLEEP_7_TIMER_D2"
   ],
   "paidRetreatBattles": [
     2,
@@ -424,7 +480,9 @@
     7,
     8,
     9,
-    10
+    10,
+    11,
+    12
   ],
   "completedOnDefeat": [
     4

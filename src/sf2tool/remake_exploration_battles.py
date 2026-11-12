@@ -27,7 +27,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle not in (2, 3, 4, 5, 6, 7, 8, 9, 10):
+    if battle not in range(2, 14):
         raise ValueError("unsupported overworld encounter selection")
     root = repo_path("").resolve()
     output = output.resolve()
@@ -77,6 +77,9 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             8: [13, 11, 4, 1],
             9: [12, 11, 2, 0],
             10: [12, 12, 3, 1],
+            11: [12, 10, 4, 1],
+            12: [12, 12, 4, 1],
+            13: [12, 16, 3, 1],
         }[battle]
     ):
         raise ValueError("selected spriteset header drift")
@@ -152,6 +155,9 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         8: "NORTH_CLIFF",
         9: "TO_RIBBLE",
         10: "TO_THE_EAST",
+        11: "CAVE_OF_DARKNESS",
+        12: "MOUNT_VOLCANO",
+        13: "POLCA_VILLAGE",
     }[battle]
     identity = dict(id=battle, code=code)
 
@@ -315,8 +321,6 @@ def compile_routes(compiler, selection, upstream):
         map_id, origin_x, origin_y, _, _, trigger_x, trigger_y = map(
             compiler.number, _tokens(coordinates[battle_id])
         )
-        if (trigger_x, trigger_y) != (255, 255):
-            raise ValueError("coordinate-triggered battle selection is not admitted")
         hooks = []
         for hook in ("beforebattle", "battlestart"):
             path = "disasm/data/battles/cutscenes/" + hook + "cutscenes.asm"
@@ -325,6 +329,8 @@ def compile_routes(compiler, selection, upstream):
             symbol = re.search(r"[A-Za-z_]\w*", expressions[battle_id]).group(0)
             hooks.append(_location(compiler.compile(symbol)))
         route = {
+            **({"triggerX": trigger_x} if trigger_x != 255 else {}),
+            **({"triggerY": trigger_y} if trigger_y != 255 else {}),
             "encounter": "battle-" + str(battle_id),
             "unlockedFlag": 400 + battle_id,
             "completedFlag": 500 + battle_id,
@@ -373,6 +379,7 @@ def compile_routes(compiler, selection, upstream):
                 egress_map = egress_map[str(battle_id)]
             egress, ex, ey, facing = next(row for row in savepoints if row[0] == egress_map)
             route["outcome"] = {
+                **({"defeatedScene": True} if outcome_hooks[0]["program"] != "ms-empty" else {}),
                 "after": outcome_hooks[1],
                 "defeated": outcome_hooks[0],
                 "joinMember": compiler.number(joins[battle_id]),
@@ -486,7 +493,7 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(2, 3, 4, 5, 6, 7, 8, 9, 10), default=2)
+    parser.add_argument("--battle", type=int, choices=range(2, 14), default=2)
     args = parser.parse_args()
     print(
         json.dumps(
