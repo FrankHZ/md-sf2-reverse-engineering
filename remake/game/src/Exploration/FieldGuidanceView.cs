@@ -16,7 +16,9 @@ internal sealed partial class FieldGuidanceView : Control
     private FieldGuidance? _guidance;
     private Vector2? _marker;
     internal static string Objective(GameSession session, FieldGuidance guidance) =>
-        GameText.Get(guidance.ObjectiveKey, DisplayNames.Member(session.Definition, session.Current.Story, guidance.Companion)) +
+        (guidance.Companion is { } companion
+            ? GameText.Get(guidance.ObjectiveKey, DisplayNames.Member(session.Definition, session.Current.Story, companion))
+            : GameText.Get(guidance.ObjectiveKey)) +
         "\n" + GameText.Get(guidance.DestinationKey) + "\n" + GameText.Get(guidance.RouteKey);
 
     public override void _Ready()
@@ -61,6 +63,7 @@ internal sealed partial class FieldGuidanceView : Control
     }
 
     internal object Observe() => new { visible = IsVisibleInTree(), sessionId = _guidance?.SessionId,
+        objectiveKey = _guidance?.ObjectiveKey, destinationKey = _guidance?.DestinationKey, routeKey = _guidance?.RouteKey,
         revision = _guidance?.Revision, map = _guidance?.Map.Value, text = _label.Text,
         rect = FieldServiceMenu.Rect(_panel), markerVisible = IsVisibleInTree() && _marker is not null,
         marker = _marker is { } p ? new { x = p.X, y = p.Y } : null,

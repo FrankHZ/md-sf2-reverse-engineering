@@ -269,8 +269,10 @@ main story remains a scheduling decision, not authorization to start all three r
 ## Optional objective and destination guidance (#1578)
 
 First-stage design for [#1578](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1578).
-The authorized [#1705 implementation owner](objective-guidance.md) records the finite A→B→C consumer,
-current technical boundary and replay; human acceptance remains separate under #1578/#1456.
+The [current implementation owner](objective-guidance.md) records the merged #1705 pilot and the
+user-authorized opening-through-boarding expansion under #1578, including coverage, precision and
+replay. The pilot-only matrix below is superseded there when the story has already disclosed the
+expanded goal; human acceptance remains separate under #1578/#1456.
 **Standard rigor:** one optional aid spans content disclosure, state queries, preferences and field
 presentation. The outcome is a reviewable recommendation and bounded implementation contract;
 no guidance is implemented or runtime-accepted by this document. Recommend **Modern guidance: On**

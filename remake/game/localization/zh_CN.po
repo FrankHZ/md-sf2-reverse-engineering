@@ -1896,3 +1896,255 @@ msgstr "现代引导：{0}"
 
 msgid "host.setting-description-10"
 msgstr "在探索玩法菜单中显示当前目标，并在地图上显示已知目的地。应用后同时生效。"
+
+msgid "guidance.start-day"
+msgstr "开始新的一天。"
+
+msgid "guidance.home"
+msgstr "家"
+
+msgid "guidance.leave-home"
+msgstr "下一步：出门。"
+
+msgid "guidance.mother"
+msgstr "下一步：在家附近与母亲说话。"
+
+msgid "guidance.attend-school"
+msgstr "去学校。"
+
+msgid "guidance.school"
+msgstr "学校"
+
+msgid "guidance.school-courtyard"
+msgstr "下一步：去学校与同学会合。"
+
+msgid "guidance.teacher"
+msgstr "下一步：与楼下的老师说话。"
+
+msgid "guidance.join-lesson"
+msgstr "去上课。"
+
+msgid "guidance.return-class"
+msgstr "下一步：回到教室上课。"
+
+msgid "guidance.visit-castle"
+msgstr "前往 Granseal 城堡。"
+
+msgid "guidance.granseal-castle"
+msgstr "Granseal 城堡"
+
+msgid "guidance.castle-north"
+msgstr "下一步：从城镇北侧出口前往城堡。"
+
+msgid "guidance.royal-quarters"
+msgstr "国王所在的房间"
+
+msgid "guidance.return-castle"
+msgstr "下一步：返回 Granseal 城堡。"
+
+msgid "guidance.join-astral"
+msgstr "去城堡大厅与 Astral 会合。"
+
+msgid "guidance.castle-hall"
+msgstr "城堡大厅"
+
+msgid "guidance.astral-hall"
+msgstr "下一步：与大厅里的 Astral 说话。"
+
+msgid "guidance.return-hall"
+msgstr "下一步：穿过城堡，返回大厅。"
+
+msgid "guidance.follow-astral"
+msgstr "跟随 Astral 前往古代之塔。"
+
+msgid "guidance.ancient-tower"
+msgstr "古代之塔"
+
+msgid "guidance.west-stairs"
+msgstr "下一步：走城堡西侧的楼梯。"
+
+msgid "guidance.west-tower-stairs"
+msgstr "下一步：沿西侧塔楼的楼梯前进。"
+
+msgid "guidance.tower-guard"
+msgstr "下一步：与通往古代之塔路上的守卫说话。"
+
+msgid "guidance.enter-tower"
+msgstr "进入古代之塔。"
+
+msgid "guidance.north-tower-exit"
+msgstr "下一步：从北侧出口前往古代之塔。"
+
+msgid "guidance.tower-passage"
+msgstr "下一步：沿通道走到古代之塔入口。"
+
+msgid "guidance.tower-inner"
+msgstr "下一步：继续深入古代之塔。"
+
+msgid "guidance.return-king"
+msgstr "返回国王那里。"
+
+msgid "guidance.king-room"
+msgstr "下一步：穿过王室区域，前往国王所在的房间。"
+
+msgid "guidance.reverse-tower"
+msgstr "下一步：沿古代之塔通道原路返回城堡。"
+
+msgid "guidance.hear-commission"
+msgstr "与国王一行交谈。"
+
+msgid "guidance.royal-party"
+msgstr "下一步：前往大厅，与国王一行会合。"
+
+msgid "guidance.fetch-hawel"
+msgstr "去 Yeel 附近寻找 Hawel。"
+
+msgid "guidance.find-hawel"
+msgstr "去 Yeel 附近寻找 Hawel。"
+
+msgid "guidance.yeel-area"
+msgstr "Yeel 及周边地区"
+
+msgid "guidance.west-town-exit"
+msgstr "下一步：从 Granseal 西侧出口离开。"
+
+msgid "guidance.leave-castle"
+msgstr "下一步：离开城堡，穿过城镇前往郊外。"
+
+msgid "guidance.toward-yeel"
+msgstr "下一步：到 Granseal 郊外，继续前往 Yeel。"
+
+msgid "guidance.ask-hawel"
+msgstr "下一步：向村民打听 Hawel。"
+
+msgid "guidance.visit-yeel"
+msgstr "下一步：进入 Yeel，打听去路。"
+
+msgid "guidance.return-yeel"
+msgstr "下一步：返回 Yeel 和 Hawel 家附近。"
+
+msgid "guidance.ancient-shrine-goal"
+msgstr "前往古代神殿。"
+
+msgid "guidance.ancient-shrine"
+msgstr "古代神殿"
+
+msgid "guidance.leave-house"
+msgstr "下一步：离开 Hawel 的家，继续赶路。"
+
+msgid "guidance.south-house"
+msgstr "下一步：从 Hawel 的家向南前进。"
+
+msgid "guidance.return-countryside"
+msgstr "下一步：返回 Hawel 家外的郊野。"
+
+msgid "guidance.escape-galam"
+msgstr "设法离开 Galam。"
+
+msgid "guidance.galam-exit"
+msgstr "Galam 城堡出口"
+
+msgid "guidance.west-castle-exit"
+msgstr "下一步：前往城堡西侧出口。"
+
+msgid "guidance.return-galam-exit"
+msgstr "下一步：返回城堡庭院，寻找出口。"
+
+msgid "guidance.leave-cells"
+msgstr "设法离开牢房。"
+
+msgid "guidance.prison-cells"
+msgstr "牢房"
+
+msgid "guidance.other-prisoners"
+msgstr "下一步：走近其他囚犯。"
+
+msgid "guidance.prison-stairs"
+msgstr "监狱楼梯"
+
+msgid "guidance.approach-stairs"
+msgstr "下一步：前往牢房外的楼梯。"
+
+msgid "guidance.opened-shortcut"
+msgstr "已知捷径"
+
+msgid "guidance.use-shortcut"
+msgstr "下一步：到牢房附近寻找捷径。"
+
+msgid "guidance.castle-kitchen"
+msgstr "城堡厨房"
+
+msgid "guidance.tunnel-kitchen"
+msgstr "下一步：沿地道前往厨房。"
+
+msgid "guidance.leave-kitchen"
+msgstr "下一步：离开厨房，前往城堡庭院。"
+
+msgid "guidance.castle-interior-exit"
+msgstr "下一步：寻找返回城堡庭院的门。"
+
+msgid "guidance.return-granseal"
+msgstr "返回 Granseal。"
+
+msgid "guidance.granseal"
+msgstr "Granseal"
+
+msgid "guidance.south-galam-gate"
+msgstr "下一步：从 Galam 南门离开。"
+
+msgid "guidance.south-drawbridge"
+msgstr "下一步：通过吊桥，从南侧出口离开。"
+
+msgid "guidance.toward-granseal"
+msgstr "下一步：前往 Granseal 的入口。"
+
+msgid "guidance.return-granseal-route"
+msgstr "下一步：沿路返回 Granseal。"
+
+msgid "guidance.check-castle"
+msgstr "去 Granseal 城堡查明情况。"
+
+msgid "guidance.castle-people"
+msgstr "下一步：与城堡大厅里的人交谈。"
+
+msgid "guidance.rescue-at-tower"
+msgstr "前往古代之塔。"
+
+msgid "guidance.tower-portals"
+msgstr "下一步：沿古代之塔内相连的通道前进。"
+
+msgid "guidance.tower-deep"
+msgstr "下一步：继续走向古代之塔深处。"
+
+msgid "guidance.return-from-tower"
+msgstr "与国王一行离开古代之塔。"
+
+msgid "guidance.castle-exit"
+msgstr "城堡出口"
+
+msgid "guidance.cross-castle"
+msgstr "下一步：穿过城堡，返回城镇。"
+
+msgid "guidance.escape-earthquake"
+msgstr "带大家前往安全的地方。"
+
+msgid "guidance.castle-south"
+msgstr "下一步：从城堡南侧出口离开。"
+
+msgid "guidance.reach-docks"
+msgstr "赶到码头。"
+
+msgid "guidance.granseal-docks"
+msgstr "Granseal 码头"
+
+msgid "guidance.east-safe-exit"
+msgstr "下一步：走城镇东侧较安全的出口。"
+
+msgid "guidance.east-exit"
+msgstr "东侧出口"
+
+msgid "guidance.board-ship"
+msgstr "乘船离开。"
+
+msgid "guidance.dock-man"
+msgstr "下一步：与船边的人交谈。"
