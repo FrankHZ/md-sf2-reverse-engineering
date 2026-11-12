@@ -624,14 +624,14 @@ class OriginalPrograms:
                         "facing": self.number(args[2]),
                     }
                 )
-            elif op in ("resetMap", "reloadMap"):
+            elif op == "resetMap":
+                result.extend([{"op": "reset-scene-map"}, {"op": "wait-ticks", "ticks": 1}])
+            elif op == "reloadMap":
                 result.extend(
                     [
                         {
                             "op": "reload-scene-map",
-                            "camera": {"x": self.number(args[0]), "y": self.number(args[1])}
-                            if op == "reloadMap"
-                            else {"x": 0, "y": 0},
+                            "camera": {"x": self.number(args[0]), "y": self.number(args[1])},
                         },
                         {"op": "wait-ticks", "ticks": 1},
                     ]

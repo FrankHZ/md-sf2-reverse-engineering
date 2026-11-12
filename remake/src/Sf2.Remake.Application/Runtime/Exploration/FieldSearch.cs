@@ -109,6 +109,6 @@ internal static class FieldSearch
     private static WorkingMapLayout SetChest(WorkingMapLayout layout, MapPosition position, ushort word)
     {
         var words = layout.Words.ToArray(); words[position.Y * 64 + position.X] = word;
-        return new(words);
+        return layout.WithWords(words);
     }
 }

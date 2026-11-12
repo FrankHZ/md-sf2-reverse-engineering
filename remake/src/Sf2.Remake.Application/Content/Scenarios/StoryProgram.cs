@@ -48,7 +48,7 @@ public sealed record AddMapEntity(EntityRef Entity, MapPosition Position, byte F
     EntityActionProgram Actions) : StoryInstruction;
 public sealed record RestoreMemberResource(int Member, bool Hp) : StoryInstruction;
 public sealed record SetMapQuake(byte Amount) : StoryInstruction;
-public sealed record ReloadSceneMap(MapPosition Camera) : StoryInstruction;
+public sealed record ReloadSceneMap(MapPosition Camera, bool ResetLayout = false) : StoryInstruction;
 public sealed record MoveEntityNextToPlayer(EntityRef Entity, byte Direction) : StoryInstruction;
 public sealed record WaitForEntityMotion(EntityRef Entity) : StoryInstruction;
 public sealed record ApplyMapLayoutEvent(MapPosition Position, bool Roof) : StoryInstruction;

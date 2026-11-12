@@ -48,7 +48,17 @@ internal static class ExplorationContentReader
             Require(instructions.Length is >= 1 and <= 65536, "program-length", "program.instructions");
             Require(instructions[^1] is EndProgram or ReturnProgram or JumpProgram or UnsupportedInstruction,
                 "unresolved-program-fallthrough", "program.instructions");
-            programs.Add(new(id, instructions, row.TryGetProperty("source", out _) ? Text(row, "source") : null,
+            string? source = row.TryGetProperty("source", out _) ? Text(row, "source") : null;
+            // Earlier pre-voyage exports encoded both source commands as reloads.
+            // In these pinned bodies the first map reload is csc36, subsequent ones are csc46.
+            if (!authored && source is ("disasm/data/maps/entries/map20/mapsetups/scripts_1.asm:cs_53C42" or
+                "disasm/data/maps/entries/map17/mapsetups/s6_initfunction.asm:cs_5249E"))
+            {
+                int first = System.Array.FindIndex(instructions, instruction => instruction is ReloadSceneMap);
+                if (first >= 0 && instructions[first] is ReloadSceneMap { ResetLayout: false, Camera: { X: 0, Y: 0 } } legacy)
+                    instructions[first] = legacy with { ResetLayout = true };
+            }
+            programs.Add(new(id, instructions, source,
                 !row.TryGetProperty("entitiesRunning", out _) || Boolean(row, "entitiesRunning")));
         }
         Require(start.ValueKind == JsonValueKind.Object, "object-required", "exploration-start");
@@ -574,6 +584,7 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "member", "hp");
                 return new RestoreMemberResource(Number(row, "member", 0, 29), Boolean(row, "hp"));
             case "quake": Object(row, opcode, "op", "amount"); return new SetMapQuake((byte)Number(row, "amount", 0, 255));
+            case "reset-scene-map": Object(row, opcode, "op"); return new ReloadSceneMap(new(0, 0), ResetLayout: true);
             case "reload-scene-map": Object(row, opcode, "op", "camera"); return new ReloadSceneMap(Position(row.GetProperty("camera")));
             case "move-next-to-player":
                 Object(row, opcode, "op", "entity", "direction");

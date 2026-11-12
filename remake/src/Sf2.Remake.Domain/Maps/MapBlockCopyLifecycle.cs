@@ -76,7 +76,7 @@ public abstract class MapBlockRegionMutation
         {
             ushort[] words = [.. layout.Words];
             MapBlockRegionBounds.Write(words, DestinationX, DestinationY, Width, Height, []);
-            return new WorkingMapLayout(words);
+            return layout.WithWords(words);
         }
     }
 }
@@ -241,7 +241,7 @@ public static class MapBlockCopyLifecycleReducer
             activeState.Height,
             activeState.SavedWords);
         return Changed(
-            new WorkingMapLayout(words),
+            layout.WithWords(words),
             MapBlockCopyLifecycleState.Inactive,
             updateState);
     }

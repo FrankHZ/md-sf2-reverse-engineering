@@ -70,6 +70,13 @@ public sealed class WorkingMapLayout
 
     public IReadOnlyList<ushort> Words => _readOnlyWords;
 
+    // ResetCurrentMap replaces the nine tile words of block zero as well as the layout.
+    public bool BlankBlockZero { get; private init; }
+
+    public static WorkingMapLayout ResetScene() => new(new ushort[WordCount]) { BlankBlockZero = true };
+
+    public WorkingMapLayout WithWords(IEnumerable<ushort> words) => new(words) { BlankBlockZero = BlankBlockZero };
+
     public ushort this[int x, int y]
     {
         get
@@ -117,7 +124,7 @@ public sealed class WorkingMapLayout
             destinationRowStart += ColumnCount;
         }
 
-        return new WorkingMapLayout(result);
+        return new WorkingMapLayout(result) { BlankBlockZero = BlankBlockZero };
     }
 
     private static ushort[] CopyAndValidate(IEnumerable<ushort> words)
