@@ -12,12 +12,26 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class ExplorationPresentation : IDisposable
 {
     private readonly Control _owner;
+    private bool _paintPrepared;
+    internal void PreparePaintedRasters()
+    {
+        if (_paintPrepared || _visuals is null) return;
+        foreach (var raster in _visuals.Maps.Values.SelectMany(map => map.HdBlocks ?? [])
+            .Concat(_visuals.Sprites.Values.SelectMany(sprite => sprite.HdDirections ?? []))
+            .Concat(_visuals.Portraits.Values.Select(portrait => portrait.HdRaster).OfType<ExplorationRaster>()))
+        {
+            using var decoded = ExplorationRasterImages.Open(raster);
+        }
+        _paintPrepared = true;
+    }
+    private bool Painted(MapId map) => _settings.GraphicsMode == "hd" &&
+        _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null;
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
-    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size), ImageTexture> _sprites = [];
+    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd), ImageTexture> _sprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _blankSprites = [];
-    private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth), ImageTexture> _portraits = [];
+    private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth, bool Hd), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
     private readonly ObservationCapture? _capture;
@@ -156,7 +170,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 foreach (var entity in world.AllEntities.Where(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest &&
                     (_visuals is not null || world.Definition.Caravan is null)))
                 {
-                    _ = Sprite(entity, false);
+                    _ = Sprite(entity, false, world.Map);
                     _blankSprites.RemoveWhere(key => key.Map == world.Map && key.Slot == entity.Slot);
                     _spriteMounts++;
                     completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
@@ -170,7 +184,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 var actor = current.Exploration!.Entities[nod.Entity];
                 // Mount the existing transformed/normal resources. Rendering never decides
                 // source service progress, and no per-frame acknowledgement is needed.
-                _ = Sprite(actor, true); _ = Sprite(actor, false);
+                _ = Sprite(actor, true, current.Exploration.Map); _ = Sprite(actor, false, current.Exploration.Map);
                 if ((nod.LogicalDone || skipping) && !nod.ActualDone && !nod.DeliverySkipped && CompletedCueToken != nod.Token.Value)
                 {
                     completions.Add(skipping ? new CompleteSkippedEntryPresentation(nod.Token, PresentationCueKind.Gesture) :
@@ -234,7 +248,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     if (wait.Cue.Resource is not ("nod" or "shiver" or "shake-head") || wait.Cue.Entity is null) throw new InvalidOperationException("gesture-binding");
                     _gesture = wait.Cue.Entity;
                     _shivering = wait.Cue.Resource == "shiver";
-                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], wait.Cue.Resource == "nod");
+                    _ = Sprite(current.Exploration!.Entities[_gesture.Value], wait.Cue.Resource == "nod", current.Exploration.Map);
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.EntityEffect)
                 {
@@ -242,7 +256,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     if (wait.Cue.Resource is "slide-in" or "slide-out" or "flash-white") _storyEffect = wait.Cue.Entity;
                     else _mosaic = wait.Cue.Entity;
                     _mosaicOut = wait.Cue.Resource == "mosaic-out";
-                    _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false);
+                    _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false, current.Exploration.Map);
                     if (wait.Cue.Resource == "slide-in") SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, false);
                     _cueAge = -delta;
                 }
@@ -445,7 +459,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 bool gesture = sourceNod is not null ? sourceNod.Entity == entity.Entity : _gesture == entity.Entity;
                 bool lowered = gesture && (sourceNod?.Lowered ?? _nodding);
                 int headShift = gesture && _cueResource == "shake-head" ? ExplorationStoryEffects.HeadShift(_cueAge) : 0;
-                var texture = Sprite(entity, lowered, headShift);
+                var texture = Sprite(entity, lowered, world.Map, headShift);
                 // VInt_UpdateSprites places SAT Y at +112 (screen bias 128).
                 // UpdateVdpPlane places the map row at counter Y - 8, so the
                 // 24px sprite starts eight source pixels above its movement cell.
@@ -469,7 +483,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                         facing = entity.Motion.Facing, animationCounter = entity.Motion.AnimationCounter,
                         elapsed = sourceNod.Elapsed, lowered, visible,
-                        texture = texture.GetInstanceId().ToString(), normalTexture = Sprite(entity, false).GetInstanceId().ToString(),
+                        texture = texture.GetInstanceId().ToString(), normalTexture = Sprite(entity, false, world.Map).GetInstanceId().ToString(),
                         width = texture.GetWidth(), height = texture.GetHeight() };
                 if (!visible) continue;
                 drawnActors?.Add((entity, texture, lowered));
@@ -485,7 +499,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         {
                             _owner.DrawTextureRectRegion(texture,
                                 new(destination.Position + new Vector2(mirror ? 24 - x - block : x, y) * _scale,
-                                    Vector2.One * block * _scale), new(x, y, 1, 1));
+                                    Vector2.One * block * _scale), ExplorationRasterImages.TextureRegion(new(x, y, 1, 1), texture));
                             if (inkRuns.Any(run => run.HasPoint(new(x, y)))) sampledInk.Add(new(x, y, block, block));
                         }
                     inkRuns = sampledInk;
@@ -576,10 +590,11 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     tiles[change.Y * 8 + change.X] = change.AlternateY * 8 + change.AlternateX;
                 foreach (var change in work?.MouthOpen == true ? visualPortrait.Mouth! : [])
                     tiles[change.Y * 8 + change.X] = change.AlternateY * 8 + change.AlternateX;
-                var key = (portrait, (flags & 0x40) != 0, work?.EyesClosed == true, work?.MouthOpen == true);
+                var key = (portrait, (flags & 0x40) != 0, work?.EyesClosed == true, work?.MouthOpen == true,
+                    Painted(world.Map) && visualPortrait.HdRaster is not null);
                 if (!_portraits.TryGetValue(key, out var texture))
                 {
-                    _portraits[key] = texture = ExplorationRasterImages.Portrait(visualPortrait, tiles, key.Item2);
+                    _portraits[key] = texture = ExplorationRasterImages.Portrait(visualPortrait, tiles, key.Item2, key.Item5);
                     _resourceSelectors[texture] = new
                     { kind = "portrait", portrait, mirror = key.Item2, eyes = key.Item3, mouth = key.Item4, tiles };
                 }
@@ -723,7 +738,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         if (expected?.Add((block, tile, word)) == true)
                             required!.Add(new(world.Map.Value, block, tile, word, sourceX, sourceY));
                         _owner.DrawTextureRectRegion(texture, covered,
-                            new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale));
+                            ExplorationRasterImages.TextureRegion(new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale), texture));
                         if (_layoutRegion is { } requested && requested.HasPoint(new(sourceX, sourceY)))
                         {
                             if (_layoutUses!.Count >= LayoutUseLimit) _layoutOverflow = true;
@@ -763,12 +778,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
     private ImageTexture Block(ExplorationMapVisual visual, int block)
     {
-        var texture = _mapTextures.Block(visual, block);
-        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block });
+        var texture = _mapTextures.Block(visual, block, Painted(visual.Map));
+        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block, pixels = texture.GetWidth() });
         return texture;
     }
 
-    private ImageTexture Sprite(ExplorationEntity entity, bool nod, int headShift = 0)
+    private ImageTexture Sprite(ExplorationEntity entity, bool nod, MapId map, int headShift = 0)
     {
         if (_visuals is null || entity.Sprite is not { } sprite || !_visuals.Sprites.TryGetValue(sprite, out var visual))
             throw new InvalidOperationException("entity-sprite-binding");
@@ -776,28 +791,30 @@ internal sealed partial class ExplorationPresentation : IDisposable
         int half = entity.Motion.AnimationCounter >= 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
         int orientation = entity.Motion.FlagsB & 3;
         int size = entity.RenderSize;
-        var key = (sprite, direction, half, nod, headShift, orientation, size);
+        bool hd = Painted(map) && visual.HdDirections is not null;
+        var key = (sprite, direction, half, nod, headShift, orientation, size, hd);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
-        using var sheet = ExplorationRasterImages.Open(visual.Directions[direction]);
-        using var image = sheet.GetRegion(new(half * 24, 0, 24, 24));
+        using var sheet = ExplorationRasterImages.Open((hd ? visual.HdDirections! : visual.Directions)[direction]);
+        int density = sheet.GetHeight() / 24;
+        using var image = sheet.GetRegion(new(half * 24 * density, 0, 24 * density, 24 * density));
         ExplorationStoryEffects.Transform(image, orientation, size);
         ExplorationStoryEffects.ShiftHead(image, headShift);
         if (nod)
         {
             // sub_45D70 moves the central head band down one pixel and clears the top tile row.
-            for (int y = 11; y >= 0; y--)
-                for (int x = 7; x <= 16; x++) image.SetPixel(x, y + 1, image.GetPixel(x, y));
-            for (int x = 0; x < 24; x++) image.SetPixel(x, 0, Colors.Transparent);
+            using var head = image.GetRegion(new(7 * density, 0, 10 * density, 12 * density));
+            image.BlitRect(head, new(0, 0, head.GetWidth(), head.GetHeight()), new(7 * density, density));
+            image.FillRect(new(0, 0, 24 * density, density), Colors.Transparent);
         }
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
-        _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod, orientation, size };
+        _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod, orientation, size, pixels = image.GetWidth() };
         List<Rect2> ink = [];
         for (int y = 0; y < 24; y++)
             for (int x = 0; x < 24;)
             {
-                if (image.GetPixel(x, y).A == 0) { x++; continue; }
+                if (image.GetPixel(x * density + density / 2, y * density + density / 2).A == 0) { x++; continue; }
                 int start = x++;
-                while (x < 24 && image.GetPixel(x, y).A != 0) x++;
+                while (x < 24 && image.GetPixel(x * density + density / 2, y * density + density / 2).A != 0) x++;
                 ink.Add(new(start, y, x - start, 1));
             }
         _spriteInk[texture] = ink;

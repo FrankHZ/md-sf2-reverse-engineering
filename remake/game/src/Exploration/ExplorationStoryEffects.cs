@@ -11,11 +11,13 @@ internal static class ExplorationStoryEffects
         if (size is < 0 or > 24) throw new InvalidOperationException("entity-sprite-size");
         if (size < 24)
         {
-            using var small = image.GetRegion(new(0, 0, 24, 24));
+            int density = image.GetWidth() / 24;
+            using var small = image.GetRegion(new(0, 0, image.GetWidth(), image.GetHeight()));
             int extent = Math.Max(1, size);
-            small.Resize(extent, extent, Image.Interpolation.Nearest);
+            small.Resize(extent * density, extent * density, Image.Interpolation.Nearest);
             image.Fill(Colors.Transparent);
-            image.BlitRect(small, new(0, 0, extent, extent), new((24 - extent) / 2, (24 - extent) / 2));
+            image.BlitRect(small, new(0, 0, extent * density, extent * density),
+                new((24 - extent) / 2 * density, (24 - extent) / 2 * density));
         }
         if (orientation == 1) image.Rotate90(ClockDirection.Counterclockwise);
         else if (orientation == 3) image.Rotate90(ClockDirection.Clockwise);
@@ -27,11 +29,10 @@ internal static class ExplorationStoryEffects
 
     internal static void ShiftHead(Image image, int shift)
     {
-        for (int y = 0; y < 12; y++)
-            if (shift < 0)
-                for (int x = 8; x <= 15; x++) image.SetPixel(x - 1, y, image.GetPixel(x, y));
-            else if (shift > 0)
-                for (int x = 15; x >= 8; x--) image.SetPixel(x + 1, y, image.GetPixel(x, y));
+        if (shift == 0) return;
+        int density = image.GetWidth() / 24;
+        using var band = image.GetRegion(new(8 * density, 0, 8 * density, 12 * density));
+        image.BlitRect(band, new(0, 0, band.GetWidth(), band.GetHeight()), new((8 + shift) * density, 0));
     }
 
     internal static IReadOnlyList<Rect2> Draw(Control owner, ImageTexture texture, Rect2 bounds,
@@ -58,7 +59,7 @@ internal static class ExplorationStoryEffects
         var shown = ink.Select(run => run.Intersection(new(0, 0, 24, 24 - offset)))
             .Where(run => run.HasArea()).Select(run => new Rect2(run.Position + new Vector2(0, offset), run.Size)).ToArray();
         var destination = new Rect2(bounds.Position + new Vector2(0, offset) * scale, new Vector2(mirror ? -24 : 24, 24 - offset) * scale);
-        owner.DrawTextureRectRegion(texture, destination, new(0, 0, 24, 24 - offset));
+        owner.DrawTextureRectRegion(texture, destination, ExplorationRasterImages.TextureRegion(new(0, 0, 24, 24 - offset), texture));
         return shown;
     }
 }

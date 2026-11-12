@@ -34,11 +34,13 @@ public sealed record ExplorationTextSettings(byte MessageSpeed, byte MouthContro
 public sealed record ExplorationTextFont(IReadOnlyList<byte> AsciiToSymbol, IReadOnlyList<byte> Advances);
 public sealed record ExplorationMapMusic(int Field, int Battle);
 public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
-    IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music);
-public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech);
+    IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music,
+    IReadOnlyList<ExplorationRaster>? HdBlocks = null);
+public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech,
+    IReadOnlyList<ExplorationRaster>? HdDirections = null);
 public sealed record PortraitTileChange(byte X, byte Y, byte AlternateX, byte AlternateY);
 public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster,
-    IReadOnlyList<PortraitTileChange>? Eyes = null, IReadOnlyList<PortraitTileChange>? Mouth = null);
+    IReadOnlyList<PortraitTileChange>? Eyes = null, IReadOnlyList<PortraitTileChange>? Mouth = null, ExplorationRaster? HdRaster = null);
 public sealed class ExplorationAudio
 {
     private readonly byte[] _pcm;

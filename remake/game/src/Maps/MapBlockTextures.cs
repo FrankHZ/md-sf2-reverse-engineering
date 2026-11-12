@@ -8,14 +8,21 @@ namespace Sf2.Remake.GodotAdapter.Maps;
 internal sealed class MapBlockTextures : IDisposable
 {
     private readonly Dictionary<MapId, Image> _atlases = [];
-    private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
+    private readonly Dictionary<(MapId Map, int Block, bool Hd), ImageTexture> _blocks = [];
 
     internal int Count => _blocks.Count;
 
-    internal ImageTexture Block(ExplorationMapVisual visual, int block)
+    internal ImageTexture Block(ExplorationMapVisual visual, int block, bool hd = false)
     {
-        if (_blocks.TryGetValue((visual.Map, block), out var texture)) return texture;
+        var key = (visual.Map, block, Hd: hd && visual.HdBlocks is not null);
+        if (_blocks.TryGetValue(key, out var texture)) return texture;
         if (block < 0 || block >= visual.Blocks.Count) throw new InvalidOperationException("map-block-binding");
+        if (key.Hd)
+        {
+            using var painted = Exploration.ExplorationRasterImages.Open(visual.HdBlocks![block]);
+            _blocks.Add(key, texture = ImageTexture.CreateFromImage(painted));
+            return texture;
+        }
         if (!_atlases.TryGetValue(visual.Map, out var atlas))
         {
             atlas = visual.Atlas.Format == "rgba8"
@@ -40,7 +47,7 @@ internal sealed class MapBlockTextures : IDisposable
                         atlas.GetPixel((index % 16 * 8 + sx) * visual.Scale, (index / 16 * 8 + sy) * visual.Scale));
                 }
         }
-        _blocks.Add((visual.Map, block), texture = ImageTexture.CreateFromImage(image));
+        _blocks.Add(key, texture = ImageTexture.CreateFromImage(image));
         return texture;
     }
 

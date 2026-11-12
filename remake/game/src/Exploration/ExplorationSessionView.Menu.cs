@@ -7,8 +7,18 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 public sealed partial class ExplorationSessionView
 {
     // Prepare both texture sets before preference publication; toggles retain borrowed handles.
-    internal void PrepareGraphics() { if (_session is not null) _partyStatus.PrepareGraphics(_session); }
-    internal void PublishGraphics() { if (_session is not null) _partyStatus.Present(_session, _input); }
+    internal void PrepareGraphics(string mode)
+    {
+        if (_session is null) return;
+        _partyStatus.PrepareGraphics(_session);
+        if (mode == "hd") _presentation?.PreparePaintedRasters();
+    }
+    internal void PublishGraphics()
+    {
+        if (_session is null) return;
+        _partyStatus.Present(_session, _input);
+        QueueRedraw();
+    }
 
     private FieldMenuView _fieldMenu = null!;
     private FieldGuidanceView _guidance = null!;
