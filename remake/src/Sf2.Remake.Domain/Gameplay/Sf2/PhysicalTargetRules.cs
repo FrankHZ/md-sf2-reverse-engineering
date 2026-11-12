@@ -10,7 +10,7 @@ internal static class PhysicalTargetRules
     internal static PhysicalPriorityTable Table(BattleMover mover) => mover switch
     {
         BattleMover.Flying or BattleMover.Hovering => PhysicalPriorityTable.Flying,
-        BattleMover.Archer => PhysicalPriorityTable.Archer, BattleMover.Mage => PhysicalPriorityTable.Mage,
+        BattleMover.Archer or BattleMover.StealthArcher => PhysicalPriorityTable.Archer, BattleMover.Mage => PhysicalPriorityTable.Mage,
         _ => PhysicalPriorityTable.Regular,
     };
 

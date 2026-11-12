@@ -63,9 +63,13 @@ internal static class ProgramRunner
                         continue;
                     }
                     if (current.Story.Continuation == ProgramContinuation.OutcomeMapLoaded)
+                    {
                         current = Commit(current, current.Active, current.Story.Copy(null,
                             continuation: ProgramContinuation.FieldInput, clearEnteringBattle: true, clearDefeatedScene: true,
                             saveAnchor: new(current.Exploration!.Map, current.Exploration.PlayerEntity.Position, 3)), observations, "battle-returned");
+                        // Destination init may have queued a second warp during the outcome return.
+                        if (current.Story.ScriptWarp is not null) continue;
+                    }
                     if (current.Story.Continuation is ProgramContinuation.MapLoaded or ProgramContinuation.BeforeBattleFinished or ProgramContinuation.BattleLoadFinished)
                     {
                         current = MapTransfer.Continue(definition, current, observations, rules);

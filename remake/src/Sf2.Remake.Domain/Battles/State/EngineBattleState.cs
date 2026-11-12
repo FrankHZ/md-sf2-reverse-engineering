@@ -24,6 +24,7 @@ public sealed class PhysicalCriticalRule
     { InflictsSilence = inflictsSilence; CounterChanceDenominator = counterChanceDenominator; DoubleChanceDenominator = doubleChanceDenominator; ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
+    public static PhysicalCriticalRule OneIn32WithFrequentDoubleAndCounter { get; } = new(32, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule Cleric { get; } = new(32, 1, counterChanceDenominator: 16);
     public ushort CounterChanceDenominator { get; }

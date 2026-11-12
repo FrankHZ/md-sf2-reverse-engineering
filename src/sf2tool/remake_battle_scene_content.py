@@ -122,7 +122,7 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (1, 2, 3, 4, 5, 6, 7):
+    if battle not in (1, 2, 3, 4, 5, 6, 7, 8):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -275,7 +275,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                 ("enemy", 23, 0, None),
             ]
         )
-    if battle in (5, 6, 7):
+    if battle in (5, 6, 7, 8):
         actor_selections = [
             ("ally", 0, 0, 71),
             ("ally", 0, 0, 57),
@@ -288,11 +288,12 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             ("ally", 4, 0, 85),
             ("ally", 4, 0, 86),
             ("ally", 5, 0, 103),
-            ("enemy", 2, 0, None),
-            ("enemy", 3, 0, None),
-            ("enemy", 31, 0, None),
-            ("enemy", 36, 0, None),
         ]
+        if battle == 8:
+            actor_selections.extend(("enemy", sprite, 0, None) for sprite in (32, 37, 4, 0))
+            actor_selections.append(("ally", 6, 0, None))
+        else:
+            actor_selections.extend(("enemy", sprite, 0, None) for sprite in (2, 3, 31, 36))
         if battle in (6, 7):
             actor_selections.append(("enemy", 40, 0, None))
     if battle == 7:
@@ -430,7 +431,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
         )
         backdrop[index] = dict(background=background_asset, ground=ground_asset)
-    if battle in (2, 3, 4, 5, 6, 7):
+    if battle in (2, 3, 4, 5, 6, 7, 8):
         terrain_scenes = [
             dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
         ]
@@ -492,7 +493,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         293,
         393,
     }
-    if battle in (3, 4, 5, 6, 7):
+    if battle in (3, 4, 5, 6, 7, 8):
         text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
@@ -540,7 +541,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             texts=texts,
             memberNames=names,
             healing=healing,
-            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4, 5, 6, 7) else {}),
+            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4, 5, 6, 7, 8) else {}),
         ),
     )
     report = dict(
@@ -593,7 +594,16 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     if (
         scene["version"] != 1
         or scene["encounter"]
-        not in ("battle-1", "battle-2", "battle-3", "battle-4", "battle-5", "battle-6", "battle-7")
+        not in (
+            "battle-1",
+            "battle-2",
+            "battle-3",
+            "battle-4",
+            "battle-5",
+            "battle-6",
+            "battle-7",
+            "battle-8",
+        )
         or "fieldDeath" in scene
     ):
         raise ValueError("selected scene field boundary")
@@ -611,6 +621,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-5": 6,
                 "battle-6": 6,
                 "battle-7": 7,
+                "battle-8": 13,
             }[scene["encounter"]]
         ]
     ]
@@ -628,6 +639,8 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             species.append("DARK_CLERIC")
     if scene["encounter"] == "battle-7":
         species.append("DARK_SMOKE")
+    if scene["encounter"] == "battle-8":
+        species = ["HUNTER_GOBLIN", "WITCH", "GOBLIN", "GREEN_OOZE"]
     enemy_sprites = [
         dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
         for code in species
@@ -692,7 +705,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=1)
+    parser.add_argument("--battle", type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

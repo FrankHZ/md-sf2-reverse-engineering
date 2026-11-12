@@ -32,11 +32,13 @@ ITEMS = (
     "BRONZE_LANCE",
     "WOODEN_ROD",
     "SHORT_ROD",
+    "BRONZE_ROD",
+    "IRON_ARROW",
     "SHORT_KNIFE",
     "MITHRIL",
     "NOTHING",
 )
-SPELLS = ("HEAL", "DETOX", "DISPEL", "EGRESS", "BLAZE", "BLAST")
+SPELLS = ("HEAL", "DETOX", "DISPEL", "EGRESS", "BLAZE", "FREEZE", "BLAST")
 
 
 def identity_assets(rom: Path, upstream: Path, listing: Path | None, rom_assets: bool):

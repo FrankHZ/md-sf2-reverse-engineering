@@ -16,6 +16,25 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleOutcomeProgramTests
 {
     [Fact]
+    public void OutcomeReturnConsumesTheDestinationInitWarpBeforeFieldInput()
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+            document["world"]!["maps"]![0]!["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}"""));
+        var field = session.Current.Exploration!;
+        var destination = new OrdinaryWarp(field.Map, new(2, 3), 1, MapLoadMode.Rebuild);
+        var story = session.Current.Story.Copy(null, continuation: ProgramContinuation.OutcomeMapLoaded,
+            scriptWarp: destination, display: new(3, field.Definition.BasePalette!, field.Definition.BasePalette!, FullFadeVisibility.BaseRestored));
+        var result = ProgramRunner.Run(session.Definition, session.Current.WithStory(story), []);
+
+        Assert.Null(result.Failure);
+        Assert.False(result.Snapshot.CanWaitAtInput);
+        Assert.Null(result.Snapshot.Story.ScriptWarp);
+        Assert.Equal(destination.Map, result.Snapshot.Story.Warp!.Map);
+        Assert.Equal(destination.Position, result.Snapshot.Story.Warp.Position);
+        Assert.IsType<FullFadeWait>(result.Snapshot.Story.Wait);
+    }
+
+    [Fact]
     public void AiSeedSurvivesLastActionAndOutcomeWithoutRestoringHistoricalTextByte()
     {
         var decision = SourceEnemyAi.Resolve(SourceEnemyAiTests.State(thinking: 0x80ABCDEF), new("varied-source-enemy"));

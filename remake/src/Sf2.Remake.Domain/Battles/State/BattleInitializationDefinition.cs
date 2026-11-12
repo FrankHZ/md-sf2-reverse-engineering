@@ -2,7 +2,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying, Archer, Mage }
+public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying, Archer, Mage, StealthArcher }
 public enum BattleRegionProgram { None, Required, Authored }
 public enum BattleStartOrigin { Controlled, NewGame }
 public sealed record BattleRegionProgramRow(byte Region, int PlayedFlag, string Program);

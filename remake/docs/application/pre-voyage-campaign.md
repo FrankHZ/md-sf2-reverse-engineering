@@ -6,7 +6,8 @@ Cross-chapter acceptance is **High** because encounter selection, field reload, 
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
 The [Map14 plank and first deck exchange](map14-plank-deck.md) continues from Stage D with the same
-party, ordinary Map58 Continue, and a recompiled private content selection.
+party, ordinary Map58 Continue, and a recompiled private content selection. The
+[Battle08 and New Granseal handoff](battle08-new-granseal.md) continues this route.
 
 ## Castle bedroom cast after Astral leaves
 
@@ -242,9 +243,8 @@ injected. The accepted earlier New Game/entry evidence remains the provenance of
 
 At first Map14 control, the actual adapter reports a bound camera, visible textured player at
 (480,600) in the 1920×1080 viewport, scale4, and1821 background tile draws. Engine, presentation
-and audio errors are null. No screenshots or frame dumps are used. Stop here: the plank choice,
-Battle08, new-town construction, later Map14 init and arbitrary later savepoints are not accepted.
-The selected Map14 private data does not imply those behaviors are implemented.
+and audio errors are null. Stage D ends at this control. The subsequent plank and Battle08 routes have their own
+acceptance boundaries linked above.
 
 The final local report selection is limited to the continuation/save handoffs, final departure
 observations and each failure boundary; private data and captures stay local. First/repeat quake,
@@ -504,7 +504,7 @@ separate slot for a seven-member New Game. Five-member revision-2 and six-member
 likewise retain their existing worlds; missing members or prior growth draws are not inferred. The established [compatibility rule](opening-session-lifecycle.md#format-compatibility-and-local-storage)
 checks the selected revision before restoring progress.
 
-For each new battle 5 through 7, prepare the immutable board and scene inputs with the existing
+For each battle 5 through 8, prepare the immutable board and scene inputs with the existing
 source/ROM consumers. Use separate fresh ignored directories for each output:
 
 ```powershell
@@ -524,9 +524,9 @@ from the selected image.
 
 Reuse the [Battle02 input recipe](../verification/field-programs.md#prepare-the-selected-inputs)
 and [Battle03 materials](../verification/field-programs.md#yeel-guide-through-battle03). Under one
-fresh ignored output directory, place the six additional encounter exports and their field-death scenes
+fresh ignored output directory, place the additional encounter exports and their field-death scenes
 in separate subdirectories. Place one copy of the shared trusted static, enemy and gold inputs there.
-In the encounter list, supply one row per additional battle, ordered 02 through 07. Each row has
+In the encounter list, supply one row per additional battle, ordered 02 through 08. Each row has
 `placement`, `scene`, `terrain`, `static`, `enemies`, `gold` and `battleScenes` paths relative to the
 world's parent. Product rows omit the diagnostic party checkpoint. Keep the root Battle01 inputs
 and the preceding immutable exports read-only.

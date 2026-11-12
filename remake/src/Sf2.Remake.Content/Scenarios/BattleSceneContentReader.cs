@@ -97,6 +97,7 @@ internal static class BattleSceneContentReader
                     { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
                         "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
+                        "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
                         _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
                             "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
                     if ((sprite, palette) == selected)

@@ -6,20 +6,28 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class PrivateAttackSpellBindings
 {
-    // Pinned spellelements.asm: BLAZE=FIRE(bits6-7), BLAST=WIND(bits0-1).
+    // Pinned spellelements.asm supplies the resistance shift for each attack spell.
     // Only these source spell records enter the implemented damage consumer.
     internal static IEnumerable<AttackSpellDefinition> Spells(PrivateBattleDefinitions definitions)
     {
-        foreach (var source in definitions.Spells.Values.Where(s => s.Code == "BLAZE" && s.Level <= 2 || s.Code == "BLAST" && s.Level == 1))
+        foreach (var source in definitions.Spells.Values)
         {
-            bool blaze = source.Code == "BLAZE", area = blaze && source.Level == 2;
-            Require(source.BaseId == (blaze ? 11 : 14) && source.Level >= 1 &&
-                source.MpCost == (area ? 6 : 2) && source.Power == (area ? 10 : 6) &&
-                source.MinimumRange == 1 && source.MaximumRange == (blaze ? 2 : 1) && source.Radius == (area ? 1 : 0) &&
+            (int Id, int Mp, int Power, int Range, int Radius, AttackSpellElement Element)? expected =
+                (source.Code, source.Level) switch
+                {
+                    ("BLAZE", 1) => (11, 2, 6, 2, 0, AttackSpellElement.Fire),
+                    ("BLAZE", 2) => (11, 6, 10, 2, 1, AttackSpellElement.Fire),
+                    ("FREEZE", 1) => (12, 3, 10, 2, 0, AttackSpellElement.Ice),
+                    ("BLAST", 1) => (14, 2, 6, 1, 0, AttackSpellElement.Wind),
+                    _ => null
+                };
+            if (expected is not { } row) continue;
+            Require(source.BaseId == row.Id && source.MpCost == row.Mp && source.Power == row.Power &&
+                source.MinimumRange == 1 && source.MaximumRange == row.Range && source.Radius == row.Radius &&
                 source.PropertiesExpression == "TYPE_ATTACK|AFFECTEDBYSILENCE",
                 "source-attack-spell", "spells", true);
             yield return new(source.Spell, source.MpCost, source.Power, source.MinimumRange, source.MaximumRange,
-                source.Radius, blaze ? AttackSpellElement.Fire : AttackSpellElement.Wind);
+                source.Radius, row.Element);
         }
     }
 

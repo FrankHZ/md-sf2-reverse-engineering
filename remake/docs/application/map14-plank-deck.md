@@ -4,7 +4,7 @@
 [Map58 save and departure](pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control).
 The [campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1734) uses High rigor
 for carried party state. This Standard content slice ends at the ordinary confirmation for message
-2263. The next slice owns the remaining deck sequence, Map72 and Battle08.
+2263. The [Battle08 continuation](battle08-new-granseal.md) starts at this confirmation.
 
 ## Play and review
 
@@ -86,7 +86,7 @@ The source compiler emits actor 129's asynchronous waits with operands 1200 and 
 [#1740](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1740) owns the signed-low-byte
 execution. No Map14-specific rule was added to the engine.
 
-Derive the default current Chinese catalog against the finished world with the
+To reproduce the #1732 package at its accepted revision, derive its Chinese catalog against the finished world with the
 [ordinary selector](../development-and-verification.md#pre-voyage-chinese-consumer-observation).
 It includes 2261–2263 (809 world messages, 51 names, 111,915 bytes). The 1,042-byte entry catalog
 keeps its six aliases. `--scope pre-voyage` reproduces the earlier 806-message catalog and
