@@ -641,6 +641,15 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/synthesis/analyses/battle02-first-contact.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/analyses/battle02-first-contact.md",
+      "sourceSha256": "aecbdd448822c26bd32745b626923b7ffb32597456851bb7252f22e28a6e2947",
+      "mirrorSha256": "ae09d4fdc9e538b538d2007380c3972a9b01d1616859a9c961a4909ca926e1f6",
+      "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
+      "translatedDate": "2026-11-12"
+    },
+    {
       "source": "docs/design/synthesis/analyses/pre-voyage-battle-model-coverage.md",
       "status": "pending"
     },

@@ -71,6 +71,8 @@
 
 [渡海前七场战斗的数值分析覆盖（英文）](./design/synthesis/analyses/pre-voyage-battle-model-coverage.md)逐场列出地形、敌方配置、我方入场条件和仍待验证的战术判断。七场都有编成和胜败证据，Battle01 已有轻量设计分析；七场尚缺把我方装备、位置与行动顺序连起来的完整对局分析。以 Battle02 为例，在指定条件下 Jaha 对 Huge Rat 的普通命中造成 6 点伤害，反向命中造成 5 点。仅改变 Jaha 防守时的地形效果，同样的两次来袭就能从击倒变为剩 1 HP。可对照[中文物理战斗结算合同](./design/zh-CN/contracts/battle/combat-resolution.md)和[Jaha 加入与 Battle02 准入](./design/zh-CN/synthesis/chapters/grans-opening/battle01-return-through-battle02.md)。
 
+[Battle02 首次接敌数值分析（中文）](./design/zh-CN/synthesis/analyses/battle02-first-contact.md)将这一纸面比较落到合法格点：Rat 在 `(10,13)` 时，Jaha 走到平原 `(11,13)` 或道路 `(10,12)` 的输出相同，但两次普通来袭后前者剩 1 HP，后者倒下。页面核对 Sarah 的支援格、治疗射程与跨回合行动窗口，并明确自然 AI 路线、目标和其他敌人的限制；[英文规范原文](./design/synthesis/analyses/battle02-first-contact.md)保留相同条件。
+
 也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/themes/story-progression.md#完整示例taros-与-caravan)
 → 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
 四篇详细中文指南及 Ribble、Hassan/Rohde、可选 Rick 的相邻入口均可从该章节找到。
@@ -100,10 +102,10 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 
 ## 翻译状态与持续同步
 
-[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。先前已接受语料保留完整译文及原审阅基线；新分析页待译。当前版本锚和漂移状态以现有命令复现。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
+[路线图（中文）](./design/zh-CN/documentation-roadmap.md)完整说明当前范围与[持续同步协议](./design/zh-CN/documentation-roadmap.md#有边界的翻译修复协议)；[英文规范协议](./design/documentation-roadmap.md#bounded-translation-repair-agreement)是审阅基线。先前已接受语料保留完整译文及原审阅基线；战斗分析试点与七场覆盖审计仍待译，Battle02 单场分析已有中文镜像。当前版本锚和漂移状态以现有命令复现。内容与导航变更须经独立语义及读者路线验收；main-gate 负责集成与 Epic 完成判断。
 
 现有已译来源与镜像均匹配注册锚点，未发现实际来源漂移；当前状态以既有命令复现。
-新增战斗分析页仍待译。未来来源变化仍须逐项语义复核，不能只刷新 hash 或日期；元数据同步也不代替中文阅读路线验收。
+上述两篇英文分析仍待译。未来来源变化仍须逐项语义复核，不能只刷新 hash 或日期；元数据同步也不代替中文阅读路线验收。
 
 [翻译索引](../manifests/zh-translation-index.json)记录逐文档状态与审阅版本锚。使用 `uv run --locked sf2 zh-meta list` 查看记录、`uv run --locked sf2 zh-meta test` 复现全局检查。元数据 PASS 只证明检查器覆盖的同步、链接、结构与 fixture 约束，不能替代全文语义与读者路线验收。
 

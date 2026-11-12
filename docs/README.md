@@ -73,6 +73,7 @@ with tradeoffs. Design readings are Inferred; they do not establish author inten
 - [Tactical Battle Loop and State Handoffs](./design/synthesis/themes/tactical-battle-loop.md)
 - [Battle Design Analysis: Battle01, Taros and Chessboard](./design/synthesis/analyses/battle-design-analysis-pilot.md) — English pilot; Chinese pending
 - [Pre-voyage battle models, Battle01–07](./design/synthesis/analyses/pre-voyage-battle-model-coverage.md) — encounter-level evidence, remaining tactical questions and a worked Jaha/Huge Rat exchange.
+- [Battle02 first contact](./design/synthesis/analyses/battle02-first-contact.md) · [中文](./design/zh-CN/synthesis/analyses/battle02-first-contact.md) — legal plains/path positions, Jaha/Rat damage and Sarah's healing window under explicit turn assumptions.
 - [Progression and Economy](./design/synthesis/themes/progression-and-economy.md)
 - [Story Progression](./design/synthesis/themes/story-progression.md)
 - [Map Design Principles: Exploration, Interaction and World Continuity](./design/synthesis/themes/map-design-principles.md)
