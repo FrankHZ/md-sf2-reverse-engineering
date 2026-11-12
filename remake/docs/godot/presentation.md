@@ -653,6 +653,32 @@ ordinary New Game route for a settled field comparison, then active dialogue/Chu
 Do not change user saves or canonical inputs to construct these disposable cases. Exact local receipts,
 retained failed observations and CI/head identities belong to the Issue/PR handoff.
 
+### Optional Settings diagnostics (#1709)
+
+The Standard preferences agreement also covers **Debug diagnostics**, default Off for new and
+older formatVersion1 files. Its draft, Apply, Cancel, Defaults and read-only override use the same
+transaction and storage. Defaults stages Off; Apply persists it. The row follows Modern guidance
+without changing existing action identities. Graphics, guidance, bindings, help and progress remain
+independent.
+
+Off hides world/entry text loading status and dialogue/name counts from Settings. On exposes them
+in either UI language after Apply. Ordinary instructions, partial-Chinese and graphics capability
+information, and actionable startup/preferences/save failures remain visible in both states.
+Coverage, catalog counts, errors and diagnostic observation interfaces remain available regardless
+of this presentation preference; English coverage now also reports the loaded Chinese catalogs.
+
+Reproduce with `res://probes/engine_settings_diagnostics_observation.gd`, existing selected private
+entry/world/catalog inputs and an owned ignored controlled field start. Set explicit
+`SF2_HOST_UI_OUTPUT`, `SF2_HOST_UI_START` and a fresh `issue1709-*` save namespace outside checkouts.
+Use old formatVersion1 preferences without `showDebugDiagnostics`, then run `SF2_HOST_UI_CASE`
+`transaction`, `restore`, `off` in separate headless processes in that disposable namespace;
+repeat in English and Chinese. `override` uses an explicit read-only On file. The observer uses
+mapped input and actual projections, including storage refusal, paused progress/RNG and help.
+Each run is bounded to55 seconds/<2 MiB with finite samples; no screenshots, focus requests,
+new helper tests, export or original-game fidelity claim. Build the adapter and inspect the clean
+committed verification plan. Exact receipts and completed failures belong to the Issue/PR handoff;
+human visual approval remains Unknown.
+
 ## Minimal contextual hints (#1544)
 
 **High rigor, bounded implementation under the shared UI agreement.** Both input families remain

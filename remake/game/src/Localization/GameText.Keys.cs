@@ -99,6 +99,8 @@ internal static partial class GameText
         ["guidance.route-unavailable"] = 0,
         ["guidance.reading"] = 2,
         ["ui.settings.guidance"] = 1,
+        ["ui.settings.debug"] = 1,
+        ["host.setting-description-11"] = 0,
         ["host.setting-description-10"] = 0,
         ["input.keyboard-only"] = 1, ["input.button"] = 1,
         ["input.face"] = 0, ["input.dpad"] = 0,

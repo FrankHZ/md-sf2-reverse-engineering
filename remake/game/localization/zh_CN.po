@@ -1406,6 +1406,12 @@ msgstr "当前探索状态下不可用。"
 msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}：选择\n{4}：确认   {5}：返回"
 
+msgid "ui.settings.debug"
+msgstr "Debug 诊断：{0}"
+
+msgid "host.setting-description-11"
+msgstr "在设置中显示文本加载状态与条数，默认关闭。应用后保存；无论开关状态如何，错误提示始终保留。"
+
 msgid "ui.settings.catalog"
 msgstr "世界中文文本已加载：{0} 条对白 / {1} 个显示名称。"
 
