@@ -28,7 +28,7 @@ func visibility(expected: bool) -> void:
     check(not s.message.contains(s.coverage.split("\n")[0]), "ordinary message excludes loading statistics")
     check(not "Message unavailable" in str(s.labels), "localized settings operands")
     check(("诊断" in s.labels[11]) == (s.locale == "zh-CN"), "bilingual discoverable Debug row")
-    check("Herb" in s.message or "药草" in s.message, "graphics capability remains visible")
+    check("installed artwork" in s.message or "安装了高清素材" in s.message, "graphics capability remains visible")
     geometry("SettingsWindow")
 
 func capture(label: String) -> void:

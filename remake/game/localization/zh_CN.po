@@ -1862,7 +1862,7 @@ msgid "ui.settings.graphics-hd"
 msgstr "高清"
 
 msgid "ui.settings.graphics-coverage"
-msgstr "高清覆盖：已安装的探索背包与准备菜单药草图标。其余画面使用原版；公开配置沿用文字图标。"
+msgstr "安装了高清素材的场景和物品会使用高清画面，其余使用原版。"
 
 msgid "ui.settings.graphics-error"
 msgstr "无法准备画面资源。已保留先前画面和偏好。"
@@ -2154,3 +2154,9 @@ msgstr "乘船离开。"
 
 msgid "guidance.dock-man"
 msgstr "下一步：与船边的人交谈。"
+
+msgid "ui.settings.auto-victory"
+msgstr "调试：战斗自动获胜 · {0}"
+
+msgid "host.setting-description-12"
+msgstr "进入战斗后的首个可操作回合自动获胜。战后剧情和返回照常进行，跳过的战斗行动不会获得奖励。"

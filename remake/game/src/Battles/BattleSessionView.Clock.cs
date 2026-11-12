@@ -81,6 +81,11 @@ public sealed partial class BattleSessionView
             _map.AdvanceCamera(delta);
             return;
         }
+        if (_input.Settings.DebugAutoVictory && _session!.Current.CanDebugWinBattle)
+        {
+            Send(new DebugWinBattle());
+            return;
+        }
         var navigationOwner = PacingBoundary();
         ServiceNavigation();
         if (navigationOwner != PacingBoundary()) delta = 0;

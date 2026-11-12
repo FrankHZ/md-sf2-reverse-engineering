@@ -679,6 +679,26 @@ new helper tests, export or original-game fidelity claim. Build the adapter and 
 committed verification plan. Exact receipts and completed failures belong to the Issue/PR handoff;
 human visual approval remains Unknown.
 
+### Debug auto-win battles (#1720)
+
+In title or field Settings, turn on **Debug: auto-win battles** (简体中文 **调试：战斗自动获胜**)
+and Apply. It defaults Off, including older preferences. The Debug diagnostics display is independent.
+Each battle plays its entry/mandatory presentation and ends at the first available player movement
+turn. The campaign uses the encounter's ordinary victory program, recruitment, flags and field return.
+An encounter with a first-time enemy-defeated scene plays that script before its after-battle program.
+Held combat resources pass to the ordinary outcome policy. Skipped actions grant no kill credit,
+drops, gold or experience. Normal story acknowledgements still need player input. In standalone
+battle practice the terminal result is Victory. Turning the setting off restores ordinary play.
+
+For native replay use the selected pre-voyage world, a disposable `issue1720-*` namespace,
+old version-1 preferences and `res://probes/engine_debug_victory_observation.gd`. Set
+`SF2_HOST_UI_OUTPUT` to a fresh ignored report and `SF2_HOST_UI_START` to a worktree-local copy
+of `remake/reference/inputs/battle02-outcome-start.json` with `start.partyInput` set to
+`remake/reference/inputs/battle02-outcome-party.json`. Run `SF2_HOST_UI_CASE` Off (`off`, English)
+and On (`on`, Chinese) separately. The observer uses ordinary Settings input, checks the live
+Battle02 turn or completion and compares four members’ earned resources at usable Map66 return.
+`DebugBattleVictoryTests` covers interrupted commands, terminal practice and staged defeated dialogue.
+
 ## Minimal contextual hints (#1544)
 
 **High rigor, bounded implementation under the shared UI agreement.** Both input families remain

@@ -1862,7 +1862,7 @@ msgid "ui.settings.graphics-hd"
 msgstr "HD"
 
 msgid "ui.settings.graphics-coverage"
-msgstr "HD coverage: Medical Herb in field inventory and preparation, when installed. Other art uses Original; public profiles keep text icons."
+msgstr "HD uses installed artwork for supported scenes and items. Other artwork uses Original."
 
 msgid "ui.settings.graphics-error"
 msgstr "Graphics could not be prepared. Previous graphics and preferences are retained."
@@ -2154,3 +2154,9 @@ msgstr "Depart by ship."
 
 msgid "guidance.dock-man"
 msgstr "Next: Speak with the man beside the ship."
+
+msgid "ui.settings.auto-victory"
+msgstr "Debug: auto-win battles: {0}"
+
+msgid "host.setting-description-12"
+msgstr "Automatically wins at the first available battle turn. Story scenes and field return play normally. Skipped actions give no combat rewards."
