@@ -15,9 +15,10 @@ internal sealed partial class PartyStatusView : Control
     private readonly Control _memberLayer = new() { Name = "MemberLayer" };
     private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", 22), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
-    private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", 32);
+    private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", StoryTheme.HintSize);
     private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30);
-    private readonly Panel _recordFrame = new(), _goldFrame = new(), _rosterFrame = new();
+    private readonly Panel _recordFrame = new(), _rosterFrame = new();
+    private readonly PanelContainer _goldFrame = new() { Name = "GoldFrame" };
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
     private readonly ScrollContainer _roster = new() { Name = "Roster", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
@@ -47,7 +48,8 @@ internal sealed partial class PartyStatusView : Control
         _memberLayer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_memberLayer);
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); _memberLayer.AddChild(shade);
         foreach (var node in new Control[] { _recordFrame, _goldFrame, _details,
-            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _gold, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) _memberLayer.AddChild(node);
+            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) _memberLayer.AddChild(node);
+        _goldFrame.AddChild(_gold);
         _roster.AddChild(_rows);
         _memberLayer.AddChild(_prepare); AddChild(_actions);
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -174,15 +176,18 @@ internal sealed partial class PartyStatusView : Control
         _details.Position = new(left + 328, top); _details.Size = new(1384, 720); _details.Arrange();
         _portrait.Position = new(left + 360, top + 24); _portrait.Size = new(144, 192);
         _portraitNote.Position = new(left + 352, top + 40); _portraitNote.Size = new(160, 160);
-        _recordFrame.Position = new(left, top + 744); _recordFrame.Size = new(640, 72);
-        _kills.Position = new(left + 16, top + 756); _kills.Size = new(128, 48);
-        _killsValue.Position = new(left + 144, top + 756); _killsValue.Size = new(136, 48);
-        _defeats.Position = new(left + 328, top + 756); _defeats.Size = new(128, 48);
-        _defeatsValue.Position = new(left + 456, top + 756); _defeatsValue.Size = new(160, 48);
-        _goldFrame.Position = new(left + 664, top + 744); _goldFrame.Size = new(400, 72);
-        _gold.Position = new(left + 680, top + 752); _gold.Size = new(368, 56);
-        _prepare.Position = new(left + 1120, top + 752); _prepare.Size = new(264, 64);
-        _close.Position = new(left + 1432, top + 752); _close.Size = new(264, 64);
+        // Center the footer in the space between the sheet and the control hint.
+        float summaryCenter = top + 776;
+        float summaryHeight = Math.Max(72, _goldFrame.GetCombinedMinimumSize().Y);
+        float summaryTop = summaryCenter - summaryHeight / 2;
+        _recordFrame.Position = new(left, summaryTop); _recordFrame.Size = new(640, summaryHeight);
+        _goldFrame.Position = new(left + 664, summaryTop); _goldFrame.Size = new(400, summaryHeight);
+        _kills.Position = new(left + 16, summaryCenter - 24); _kills.Size = new(128, 48);
+        _killsValue.Position = new(left + 144, summaryCenter - 24); _killsValue.Size = new(136, 48);
+        _defeats.Position = new(left + 328, summaryCenter - 24); _defeats.Size = new(128, 48);
+        _defeatsValue.Position = new(left + 456, summaryCenter - 24); _defeatsValue.Size = new(160, 48);
+        _prepare.Position = new(left + 1120, summaryCenter - 32); _prepare.Size = new(264, 64);
+        _close.Position = new(left + 1432, summaryCenter - 32); _close.Size = new(264, 64);
         _hint.Position = new(left, top + 832); _hint.Size = new(1712, 0);
         _prepare.RemoveThemeColorOverride("font_color"); _close.RemoveThemeColorOverride("font_color");
     }
