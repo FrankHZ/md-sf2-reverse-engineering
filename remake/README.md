@@ -7,7 +7,8 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 One common `GameSession` runs configurable authored battle/exploration packages and the connected
-private opening world through Battles01–07 and first damaged-ship control. Content admits reusable immutable
+private opening world through Battles01–07, the damaged-ship plank choice and the first deck exchange.
+Content admits reusable immutable
 definitions and separate controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
 Application owns program execution, waits, automatic turns, staged effects and return. Godot submits
 semantic input and presents current state. Production has no Reference or verification dependency.
