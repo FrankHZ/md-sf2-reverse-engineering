@@ -96,9 +96,9 @@ integration and parent-campaign closure remain with main-gate.
 The finite `battle07-return` recipe supports a real Save/Quit/fresh-process Continue at Map58,
 preserving progress and rebuilding the declared safe anchor/followers. Older worlds retain their
 own compatible slots; revision4 still initializes seven members and no migration is added.
-The [damaged-ship continuation](application/map14-plank-deck.md) reaches the first deck reply after
-ordinary plank No, cancel and Yes. The later deck sequence, Battle08, town building, later F530/Map14
-setups and arbitrary field saves remain outside this capability. The raw Map44 default-zone displacement
+The [damaged-ship continuation](application/battle08-new-granseal.md) admits the deck choices,
+Battle08, the F458 ship re-entry and the founding sequence. The year-later castle scene, later
+F530/Map14 setups and arbitrary field saves remain outside this capability. The raw Map44 default-zone displacement
 remains an explicit frontier. Original natural traversal/timing and human-play acceptance remain Unknown.
 
 ## Finite Galam shop and purchased-supply closure

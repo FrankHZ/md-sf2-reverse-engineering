@@ -153,9 +153,10 @@ public sealed class StoryState
     public ProgramContinuation Continuation { get; }
     public ExplorationBattleRoute? EnteringBattle { get; }
     internal FieldPlayerBinding? FieldPlayer { get; }
-    // The retained outcome route still owns return bookkeeping, not battlefield music.
+    // Before-scene dispatch retains the field map until the scene loads its map.
+    // Battlefield music begins with battle load; the outcome retains only return bookkeeping.
     public bool SelectsBattleMusic => EnteringBattle is not null && Continuation is not
-        (ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded);
+        (ProgramContinuation.BeforeBattleFinished or ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished or ProgramContinuation.OutcomeMapLoaded);
     public FieldReturnAnchor? ReturnAnchor { get; }
     public FieldReturnAnchor? OutcomeReturn { get; }
     public FieldReturnAnchor? SaveAnchor { get; }

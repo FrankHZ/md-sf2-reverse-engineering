@@ -42,7 +42,7 @@ _PRE_VOYAGE_RANGES = (
     (4035, 4059),
     (4065, 4073),
 )
-_RANGES = (*_PRE_VOYAGE_RANGES, (2261, 2263))
+_RANGES = (*_PRE_VOYAGE_RANGES, (2261, 2291), (2461, 2482), (3204, 3206))
 NAME_IDS = {
     "name.ally": (0, 1, 2, 3, 4, 5, 6, 25, 28),
     "name.class": (0, 1, 2, 3, 4, 10, 11),
@@ -191,7 +191,12 @@ def derive(args: argparse.Namespace) -> dict:
         _require(len(target.encode("utf-16-le")) // 2 <= 8192, f"message too long {i}")
         selected.append({"namespace": "world.text", "id": i, "text": target})
     selected_names = []
-    for space, indices in sorted(NAME_IDS.items()):
+    name_ids = dict(NAME_IDS)
+    if args.scope == "current":
+        name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], 46, 87)))
+        name_ids["name.spell"] = tuple(sorted((*name_ids["name.spell"], 12)))
+        name_ids["name.enemy"] = tuple(sorted((*name_ids["name.enemy"], 4, 5, 57, 68)))
+    for space, indices in sorted(name_ids.items()):
         for i in indices:
             row = names[space, i]
             target = row["translation"]
@@ -293,8 +298,8 @@ def derive(args: argparse.Namespace) -> dict:
     }
     _require(
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
-        and len(selected) == (806 if args.scope == "pre-voyage" else 809)
-        and len(selected_names) == 51,
+        and len(selected) == (806 if args.scope == "pre-voyage" else 862)
+        and len(selected_names) == (51 if args.scope == "pre-voyage" else 58),
         "candidate budget/selection mismatch",
     )
     _require(

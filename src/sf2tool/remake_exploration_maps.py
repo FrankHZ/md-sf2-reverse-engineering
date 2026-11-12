@@ -165,7 +165,8 @@ def compile_maps(
             compiler.population() if route is None and "outcomeEgressMap" in selection else None
         )
         layout_events = None
-        if selected in selection.get("eventMaps", []) and setup is not None:
+        full_setup = selected in selection.get("eventMaps", [])
+        if setup is not None and (full_setup or selected in selection.get("populationMaps", [])):
             folder = f"disasm/data/maps/entries/map{selected:02d}/mapsetups/"
             source_rows = rows(folder, "s1_entities", setup["references"]["entities"])
             # An unterminated label can fall through into a shared entity list.
@@ -209,6 +210,7 @@ def compile_maps(
                     else action_stream(compiler, args[4])
                 )
             population = compiler.population()
+        if full_setup and setup is not None:
             for key, filename, macro, default in (
                 ("entityEvents", "s2_entityevents.asm", "msEntityEvent", "msDefaultEntityEvent"),
                 ("zoneEvents", "s3_zoneevents.asm", "msZoneEvent", "msDefaultZoneEvent"),
@@ -238,7 +240,10 @@ def compile_maps(
                     continue
                 for source_row in table:
                     args = _tokens(source_row["operandText"])
-                    if source_row["opcode"] not in (macro, default):
+                    explicit_default = (
+                        key == "entityEvents" and source_row["opcode"] == "msDftEntityEvent"
+                    )
+                    if source_row["opcode"] not in (macro, default) and not explicit_default:
                         raise ValueError(
                             "unsupported event table row: "
                             f"{folder}{filename}[{source_row['index']}]"
@@ -259,6 +264,8 @@ def compile_maps(
                                 else None,
                                 "entityFlags": compiler.number(args[1])
                                 if source_row["opcode"] == macro
+                                else compiler.number(args[0])
+                                if explicit_default
                                 else 0,
                             }
                         )

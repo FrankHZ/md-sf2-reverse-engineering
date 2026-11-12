@@ -11,8 +11,8 @@ internal static class EnemySpellDecision
         IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null)
     {
         var actor = battle.GetActor(actorRef);
-        var key = new SpellRef("blaze", 1);
-        if (!actor.Spells.Contains(key))
+        var key = actor.Spells.FirstOrDefault(spell => spell is { Value: "blaze" or "freeze", Level: 1 });
+        if (key == default)
             return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid);
         if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
@@ -91,7 +91,7 @@ internal static class EnemySpellDecision
     }
 
     private static int Priority(BattleActorState target) => target.Deployment.Initialization?.AiCommandset is 13 or 14 ? 13 :
-        target.Definition.Mover switch { BattleMover.Healer => 12, BattleMover.Mage => 11, BattleMover.Archer => 8,
+        target.Definition.Mover switch { BattleMover.Healer => 12, BattleMover.Mage => 11, BattleMover.StealthArcher => 10, BattleMover.Archer => 8,
             BattleMover.Hovering => 7, BattleMover.Flying => 6, BattleMover.Stealth => 4,
             BattleMover.Centaur => 3, BattleMover.Regular => 2, _ => 0 };
 }

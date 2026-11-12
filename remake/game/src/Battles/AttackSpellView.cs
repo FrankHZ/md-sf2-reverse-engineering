@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-// Functional modern fire/wind delivery. Authoritative cards and messages are shared;
+// Functional modern attack-spell delivery. Authoritative cards and messages are shared;
 // this view only draws the selected effect and completes its own presentation wait.
 internal sealed partial class AttackSpellView : Node2D
 {
@@ -32,6 +32,9 @@ internal sealed partial class AttackSpellView : Node2D
             if (fire)
                 DrawColoredPolygon([position + new Vector2(0, -radius), position + new Vector2(radius / 2, radius / 2),
                     position + new Vector2(-radius / 2, radius / 2)], color);
+            else if (spell.Element == AttackSpellElement.Ice)
+                DrawColoredPolygon([position + new Vector2(0, -radius), position + new Vector2(radius / 2, 0),
+                    position + new Vector2(0, radius), position + new Vector2(-radius / 2, 0)], new Color("b6dfff"));
             else
                 for (int ring = 0; ring < 3; ring++)
                     DrawArc(position, radius + ring * 3, -2.8f, 0.5f, 24, color, 2);

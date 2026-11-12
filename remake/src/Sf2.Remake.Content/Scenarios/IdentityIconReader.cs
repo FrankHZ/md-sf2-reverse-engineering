@@ -26,7 +26,7 @@ internal static class IdentityIconReader
         var identities = definitions.Items.Values.Where(item => item.ItemTypeExpression != "WEAPON" ||
                 definitions.Classes.Values.Any(allowed => item.EquipFlags.Contains(allowed.Code)))
             .Select(item => $"identity-icon.item.{item.Id}")
-            .Concat(definitions.Spells.Values.Where(spell => spell.Code is "HEAL" or "DETOX" or "EGRESS" or "BLAZE" or "BLAST" or "DISPEL")
+            .Concat(definitions.Spells.Values.Where(spell => spell.Code is "HEAL" or "DETOX" or "EGRESS" or "BLAZE" or "BLAST" or "FREEZE" or "DISPEL")
                 .Select(spell => $"identity-icon.spell.{spell.BaseId}"))
             .Append("identity-icon.other.128");
         foreach (string identity in identities.Distinct())

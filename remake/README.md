@@ -7,7 +7,7 @@ Original research, runtime implementation, and reference verification have separ
 ## Current Status
 
 One common `GameSession` runs configurable authored battle/exploration packages and the connected
-private opening world through Battles01–07, the damaged-ship plank choice and the first deck exchange.
+private opening world through Battles01–08 and the [New Granseal handoff](docs/application/battle08-new-granseal.md).
 Content admits reusable immutable
 definitions and separate controlled starts. Domain supplies deterministic movement, admitted actions, progression and rules;
 Application owns program execution, waits, automatic turns, staged effects and return. Godot submits
@@ -30,9 +30,8 @@ source/provenance and the retired reference implementation without turning them 
 
 The private ordinary opening carries the party through Battles01–07, the Galam escape,
 optional Kiwi recruitment, tower aftermath, earthquake town and docks departure. Map73's first-arrival
-init reaches usable Map14 control. The [plank and deck continuation](docs/application/map14-plank-deck.md)
-includes refusals, re-entry and the first above-deck exchange. It gives the playable pack selection and direct next input.
-The current eighteen-map world keeps gameplay revision4 and seven generated members. Earlier
+init reaches usable Map14 control. The [deck, Battle08 and founding route](docs/application/battle08-new-granseal.md)
+continues to the New Granseal castle entry. The current world keeps gameplay revision4 and seven generated members. Earlier
 revision1–3 worlds retain their own compatible slots. Explicit Save/Continue supports the existing
 opening recipes plus the completed Battle07 Map58 safe point, preserving actual progress. The
 [battle persistence boundary](docs/application/battle-save-and-continue.md) also supports explicit

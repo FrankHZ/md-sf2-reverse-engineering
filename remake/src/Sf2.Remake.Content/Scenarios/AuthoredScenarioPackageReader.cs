@@ -141,7 +141,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 Object(effect, "spell.effect", "kind", "power", "radius", "element");
                 var element = Text(effect, "element") switch
                 {
-                    "fire" => AttackSpellElement.Fire, "wind" => AttackSpellElement.Wind,
+                    "ice" => AttackSpellElement.Ice, "fire" => AttackSpellElement.Fire, "wind" => AttackSpellElement.Wind,
                     _ => throw new BattleRuleException("attack-spell-element", "spell.effect.element", true),
                 };
                 var attack = new AttackSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
@@ -256,7 +256,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 mover = Text(physicalInput, "movementType") switch
                 {
                     "regular" => BattleMover.Regular, "healer" => BattleMover.Healer, "centaur" => BattleMover.Centaur,
-                    "archer" => BattleMover.Archer, "mage" => BattleMover.Mage, "hovering" => BattleMover.Hovering,
+                    "archer" => BattleMover.Archer, "stealth-archer" => BattleMover.StealthArcher, "mage" => BattleMover.Mage, "hovering" => BattleMover.Hovering,
                     _ => throw new BattleRuleException("physical-movement-type", "actors.physical.movementType", true),
                 };
                 Require(Text(physicalInput, "special") == "none", "physical-special-rule", "actors.physical.special", true);

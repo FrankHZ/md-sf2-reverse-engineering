@@ -26,6 +26,25 @@ public sealed class EnemySpellDecisionTests
     }
 
     [Fact]
+    public void EnemySelectsKnownFreezeAndUsesIceResistance()
+    {
+        var battle = Battle(d =>
+        {
+            var spell = d["spells"]![0]!;
+            spell["id"] = "freeze";
+            spell["mpCost"] = 3;
+            spell["effect"]!["element"] = "ice";
+            spell["effect"]!["power"] = 10;
+            d["actors"]![1]!["spells"]![0]!["id"] = "freeze";
+            d["actors"]![0]!["resistance"] = 2 << 4;
+        });
+        var action = Decide(battle, Mage);
+        var key = new SpellRef("freeze", 1);
+        Assert.Equal(new BattleActionRef(BattleActionKind.AttackSpell, key), action.ChosenAction);
+        Assert.Equal(5, Sf2AttackSpellAction.PotentialDamage(battle.GetActor(Mage), battle.GetActor(Scout), battle.Definition.AttackSpells[key]));
+    }
+
+    [Fact]
     public void SentryMovesToBlazeRangeAndOnlyStagesSourceDecisionRng()
     {
         var before = Battle(); var chosen = Decide(before, Mage);

@@ -19,7 +19,9 @@
     4,
     44,
     73,
-    14
+    14,
+    72,
+    7
   ],
   "battles": [
     1,
@@ -28,7 +30,8 @@
     4,
     5,
     6,
-    7
+    7,
+    8
   ],
   "growthClasses": [
     {
@@ -67,10 +70,11 @@
     "4": 43,
     "5": 16,
     "6": 16,
-    "7": 16
+    "7": 16,
+    "8": 14
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through Battle01-07, earthquake evacuation, departure and the damaged-ship plank choice through the first above-deck exchange; before Battle08.",
+  "controlledBoundary": "Ordinary opening through Battle08 and the Map73 founding scene to the New Granseal castle entry, before the year-later story.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -123,6 +127,22 @@
     {
       "symbol": "abcs_battle07",
       "path": "data/battles/entries/battle07/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "bbcs_08",
+      "path": "data/battles/entries/battle08/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "abcs_battle08",
+      "path": "data/battles/entries/battle08/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "cs_4A994",
+      "path": "data/battles/entries/battle08/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "cs_4AAB6",
+      "path": "data/battles/entries/battle08/cs_afterbattle.asm"
     }
   ],
   "programs": [
@@ -235,6 +255,9 @@
       609,
       506,
       507
+    ],
+    "14": [
+      458
     ]
   },
   "outcomeBattles": [
@@ -244,7 +267,8 @@
     4,
     5,
     6,
-    7
+    7,
+    8
   ],
   "searchMaps": [
     3,
@@ -342,12 +366,17 @@
     4,
     5,
     6,
-    7
+    7,
+    8
   ],
   "completedOnDefeat": [
     4
   ],
   "positionAfterLeaderDeath": [
     5
+  ],
+  "populationMaps": [
+    72,
+    7
   ]
 }

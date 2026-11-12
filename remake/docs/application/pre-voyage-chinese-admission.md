@@ -1,7 +1,7 @@
 # Pre-voyage Chinese admission plan
 
-The current selector extends the 806-message pre-voyage scope with IDs 2261–2263 for the
-[plank and first deck exchange](map14-plank-deck.md). The default catalog has 809 messages.
+The current selector extends the 806-message pre-voyage scope with the deck, Battle08 and founding dialogue for the
+[New Granseal handoff](battle08-new-granseal.md). The current catalog has 862 messages and 58 names.
 Use `--scope pre-voyage` to reproduce the 806-message selection below.
 
 ## Decision and acceptance boundary

@@ -2,8 +2,8 @@
 
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior; reference routes are external comparisons. The common session
-runs authored packages and the connected private opening through Battles01–07 and the first
-[Map14 deck exchange](application/map14-plank-deck.md). The [campaign agreement](application/pre-voyage-campaign.md) owns that finite boundary;
+runs authored packages and the connected private opening through Battles01–08 and the
+[New Granseal handoff](application/battle08-new-granseal.md). The [campaign agreement](application/pre-voyage-campaign.md) owns that finite boundary;
 the [post-campaign audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)
 owns the continuation recommendation and remaining composition risks.
 
