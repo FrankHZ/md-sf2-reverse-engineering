@@ -22,14 +22,40 @@ The painted master is `masters/map3-materials/surfaces.png` in the local asset r
 
 ## Rebuild and review
 
-Select the accepted world, opening battle scene, entry pack and material master as explicit read-only inputs. Publish into a fresh private output. This is an offline Pillow dependency only.
+For the optional Map3 HD package, first prepare or reuse the
+[complete ordinary menu/identity/Item/Shop world and matching opening battle scene](presentation-assets.md#final-publication-and-ordinary-selection).
+Menu publication alone does not generate the painted Map3 bank. Select that world, its scene,
+the existing entry pack and the material master above as explicit read-only inputs. Set
+`$materialMaster` to that master file and `$output` to a fresh ignored private output directory;
+the publisher refuses an existing output or a world already containing painted Map3 blocks.
+If a matching HD pack is already prepared, reuse its two outputs and skip regeneration.
+To rebuild, after loading the configuration below, set `SF2_PRIVATE_EXPLORATION_CONTENT` and
+`SF2_PRIVATE_BATTLE_SCENE_CONTENT` to the complete menu pack without the painted bank.
+Run from the repository root. This is an offline Pillow dependency only.
 
 ```powershell
 . ./local/private-inputs.ps1
+# Confirm/select the non-HD menu world and its matching scene before rebuilding.
 uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_map3_hd --world $env:SF2_PRIVATE_EXPLORATION_CONTENT --scene $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT --entry $env:SF2_PRIVATE_ENTRY_CONTENT --master $materialMaster --out $output
+# Select both outputs in this same launch process:
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
 ```
 
-The final pack retains the original content IDs and gameplay revision. Select its `world.json` and `scene.json` for ordinary launch. The existing settings transaction prepares the installed HD content before enabling the choice. Original is selectable independently. A world with no optional bank retains its original graphics. The local `review/` folder contains all three map plates, two interior comparisons, a street detail, a character comparison and the two CSV files. The map plates compose source areas and the static roof copy; a moving actor or an opened roof must be reviewed in the game. These private images belong on the reviewer's machine.
+The final pack retains the original content IDs and gameplay revision. Keep the existing entry,
+battle/static inputs, display catalogs, save root/namespace and settings selections. Use the
+[ordinary launch](../../README.md#run-locally) in the same configured process; New Game or Continue
+then reads the matching `world.json` and `scene.json` above. Existing compatible slots retain their
+compatibility rules; do not copy or rewrite a player's save to select artwork.
+
+In Settings, choose **Graphics: HD** and apply. The settings transaction prepares the installed HD
+content before publishing the change. On Map3, the outdoor and two interior areas use 96×96 blocks
+in place of 24×24; actors and portraits gain density while logical geometry and panel size stay the
+same. Choose **Graphics: Original** and apply to switch back. Other maps keep their installed art;
+a world without the optional bank retains Original even when HD is selected. This makes package
+selection distinct from the graphics preference. Human art-direction approval remains separate.
+
+The local `review/` folder contains all three map plates, two interior comparisons, a street detail, a character comparison and the two CSV files. The map plates compose source areas and the static roof copy; a moving actor or an opened roof must be reviewed in the game. These private images belong on the reviewer's machine.
 
 The selected HD world is about 121 MB (decimal), below the unchanged 128 MiB input limit. One release adds roughly 6.5 MB to the herb world. Preparation is bounded by the admitted cells, actor poses and portraits, and makes one set of complete field plates; it does not collect gameplay frames. Derived assets and slots remain private.
 

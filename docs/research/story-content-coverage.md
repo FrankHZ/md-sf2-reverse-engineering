@@ -76,7 +76,7 @@ These observations start at controlled R1 and validate compatible saved parents;
 they are not a natural New/load flow or uninterrupted execution. Earlier
 [opening](./chapters/grans-opening/map3-battle01-natural-route.md) and [seeded R2d bridge](./chapters/grans-opening/map3-battle01-admission.md)
 keep their own narrower projections. R2d's seeded actor1 and the [frozen replay
-failures](./original-reference-replay-capability.md#current-lineage-hard-stop)
+failures](./methods/original-reference-replay-capability.md#current-lineage-hard-stop)
 do not downgrade the later accepted natural admission/winning observations.
 
 The [capability document](../../remake/docs/capability-status.md#current-engineering-frontier)

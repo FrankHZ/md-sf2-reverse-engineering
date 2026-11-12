@@ -75,6 +75,10 @@ repository root, after the [locked environment setup](./docs/development-and-ver
 These are alternative launches; reuse the owned running instance during development. Private play
 requires prepared local inputs; select the
 [complete product-art world and opening scene together](docs/content/presentation-assets.md#final-publication-and-ordinary-selection).
+For the optional painted Map3 package, follow the
+[Map3 HD preparation, matching world/scene selection and Graphics setting](docs/content/asset-inventory.md#rebuild-and-review).
+Menu publication alone does not generate that artwork. HD covers Map3's outdoor/interior blocks,
+field actors and portraits; other maps retain their installed artwork. Original remains selectable.
 The ordinary launch opens the title; New Game needs the six
 private battle/static selections, prepared world and optional battle scene content described by the
 [New Game input owner](docs/content/profiles-and-trust.md#opening-new-game-admission). Missing content
