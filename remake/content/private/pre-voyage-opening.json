@@ -70,7 +70,7 @@
     "7": 16
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Ordinary opening through Battle01-07, earthquake evacuation, departure and the first stable damaged-ship control; before Battle08.",
+  "controlledBoundary": "Ordinary opening through Battle01-07, earthquake evacuation, departure and the damaged-ship plank choice through the first above-deck exchange; before Battle08.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",

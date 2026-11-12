@@ -5,6 +5,9 @@ handoffs required by [the campaign issue](https://github.com/FrankHZ/md-sf2-reve
 Cross-chapter acceptance is **High** because encounter selection, field reload, recruitment and
 saved progress share party state. A local rule or content change uses **Standard** scope.
 
+The [Map14 plank and first deck exchange](map14-plank-deck.md) continues from Stage D with the same
+party, ordinary Map58 Continue, and a recompiled private content selection.
+
 ## Castle bedroom cast after Astral leaves
 
 **Standard rigor; bounded content correction:** after the first King's-bedroom scene completes
@@ -197,8 +200,8 @@ The caller and its remaining flag write survive that load; Map14's later ordinar
 scroll, source plane-position writes and wait behavior. Counted native loops lower their source d7
 count into typed operations. Scripted plane origins drive the corresponding drawn layers and the
 main-plane actor origin; autoscroll register changes do not select a different music area.
-The two later Map14 action waits of 1200/600 remain explicit Unsupported operations; they are
-outside the first-arrival control boundary. No duration truncation or new later-chapter claim is made.
+The Stage D pack retains unsupported rows for two later Map14 waits. The [deck pack](map14-plank-deck.md)
+recompiles their 1200/600 operands for the current actor interpreter.
 
 Use the existing finite original-driver audio recipe with music6 for timer204, music8 for203 and
 music1 for194. Each 1400-frame capture uses the verified ROM and registered installation, dispatches

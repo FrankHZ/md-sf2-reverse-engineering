@@ -131,10 +131,11 @@ Sword 持有、装备和伤害规则保持各自边界；静态连接、实际�
 | 原始决策与后续修订 | [Decisions 索引（英文）](./README.md#decisions) |
 | 文档与 agent instruction 审计 | [审计记录（英文）](./operations/documentation-agent-audit.md) |
 
-普通私有开局可经 Battle01–07、地震撤离和港口选择，抵达损坏船只 Map14 的首次自由行动。
-最近的后段探索存点在战后的 Map58 塔楼；试玩可从兼容存档继续到船上。
-具体操作见[短试玩路线（英文）](../remake/docs/godot/ui-scene-review.md#short-play-route)。
-[渡海后首片准入审计（中文）](../remake/docs/evidence/pre-voyage-readiness.zh-CN.md)说明木板选择、甲板对白和 Battle08 各自还需要哪些实现与验收。
+普通私有开局可经 Battle01–07、地震撤离和港口选择，抵达受损船只 Map14。最近的后段探索存点在
+Battle07 战后的 Map58 塔楼。从兼容存档选择「继续」即可沿原路线离港，在船上 (45,5) 触发木板选择。
+拒绝或取消后可以走开再回来；同意后会登上甲板，可用确认键从商人的第一句推进到接板人的回应。
+中英文试玩包、启动方法和按键路线见[木板选择与甲板首段对白（英文）](../remake/docs/application/map14-plank-deck.md#play-and-review)。
+塔楼至离港的前段操作见[短试玩路线（英文）](../remake/docs/godot/ui-scene-review.md#short-play-route)。后续甲板剧情与 Battle08 由下一切片接续，所需输入见[渡海后首片准入审计（中文）](../remake/docs/evidence/pre-voyage-readiness.zh-CN.md)。
 
 当前呈现已有连续探索/情境 Talk、1920×1080 共享世界和 96px 格子、蓝金剧情对话框、可达移动格、
 HP/MP 图片状态卡、战斗消息、返回反馈与只读队伍状态页。各项呈现的限定验收和现代化偏离见
