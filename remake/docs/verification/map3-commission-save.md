@@ -48,9 +48,24 @@ from the repository root. Supply the actual local input/output paths; do not reu
 ```powershell
 $env:SF2_HOST_UI_CASE = 'route'
 $env:SF2_HOST_UI_START = (Resolve-Path -LiteralPath 'local/issue1711/route-start.json').Path
-$env:SF2_HOST_UI_OUTPUT = Join-Path (Resolve-Path -LiteralPath 'local/issue1711').Path 'route-native.json'
-& $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 `
-  --resolution 1920x1080 --script res://probes/engine_map3_commission_save_observation.gd
+$run = (New-Item -ItemType Directory -Path "local/issue1711/$([guid]::NewGuid())").FullName
+$env:SF2_HOST_UI_OUTPUT = Join-Path $run 'native.json'
+$env:APPDATA = (New-Item -ItemType Directory -Path "$run/appdata").FullName
+$env:LOCALAPPDATA = (New-Item -ItemType Directory -Path "$run/localappdata").FullName
+$env:TEMP = (New-Item -ItemType Directory -Path "$run/temp").FullName
+$env:TMP = $env:TEMP
+$native = $env:GODOT_BIN -replace '_console\.exe$', '.exe'
+$argsForGame = @('--headless', '--verbose', '--path', (Resolve-Path remake/game).Path,
+    '--audio-driver', 'Dummy', '--max-fps', '120', '--resolution', '1920x1080',
+    '--script', 'res://probes/engine_map3_commission_save_observation.gd')
+$p = Start-Process -FilePath $native -ArgumentList ($argsForGame | ForEach-Object { '"' + $_ + '"' }) `
+    -WindowStyle Hidden -RedirectStandardOutput "$run/stdout.log" -RedirectStandardError "$run/stderr.log" -PassThru
+$null = $p.Handle
+$timedOut = !$p.WaitForExit(190000)
+if ($timedOut) { $p.Kill(); $p.WaitForExit() }
+@{ pid = $p.Id; nativeExit = $p.ExitCode; timedOut = $timedOut } | ConvertTo-Json |
+    Set-Content -LiteralPath "$run/process.json"
+if ($timedOut -or $p.ExitCode -ne 0) { throw "See the native process result in $run" }
 ```
 
 Repeat the launch in a new process with case `continue` or `church` and a fresh output file, retaining
@@ -72,3 +87,44 @@ The private family test must select the admitted world and six battle/static inp
 use authored changed states and reject an unknown overriding setup. Follow the owner's recovery
 authoring rule when story/content changes alter persistent effects, population or initialization;
 the witness is not an all-maps comparator or a per-dialogue test requirement.
+
+## Chinese Continue shutdown (#1716)
+
+**Confirmed:** The first Chinese `continue` run on `182ea66832db5b98daaf8c9a39bcfb33c2557432`
+wrote a passing 13-check report. At 2026-11-12 08:31:02 UTC, Windows Application events 1026
+(.NET Runtime) and 1000 (Application Error) recorded termination of the native Godot process.
+The matching local minidump for PID 18416 records a read at address zero, exception `0xC0000005`
+in `coreclr.dll` at offset `0x356d4f`. ClrMD with the installed .NET 10.0.8 DAC identifies thread
+15168 as the finalizer thread. Its managed frames, from caller to callee, are `GC.RunFinalizers`,
+`GodotObject.Finalize`, `GodotObject.Dispose(Boolean)` and `godotsharp_internal_object_get_associated_gchandle`.
+The concrete wrapper type and allocating owner remain **Unknown**. The first wrapper omitted the native
+exit code. Its same-build rerun passed 13 checks and returned 0. [Incident #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+The bounded comparison reused the original Debug assemblies and imported resources, Godot
+`4.7.2.stable.mono.official.ed1daf0bf`, Dummy audio, a read-only Chinese settings override and the
+disposable #1711 commission slot held open for shared reads only. Each row started the native
+executable directly with its own logs, temporary files and application data.
+
+| Exit path | Observed boundary | Native exit | Verbose ObjectDB output |
+| --- | --- | ---: | --- |
+| Headless ordinary title, no script | Engine frame limit (`--quit-after 120`) | 0 | None |
+| Headless `continue` probe | 13 checks through Jaha, then probe `SceneTree.quit()` | 0 | One WAV/playback pair |
+| Same probe and route, system menu Quit | Wait for Resume, select Quit, observe Cancel first, select 退出 and confirm through host input. 17 checks | 0 | One WAV/playback pair |
+| Ordinary title, no script, isolated Windows desktop | Native window received `WM_CLOSE` | 0 | One WAV/playback pair |
+| Ordinary Witch Continue, no script, isolated Windows desktop | Field movement input, then `WM_CLOSE`. An external read-only snapshot found Map3 and `confirm-quit` with selection 1 before Enter | 0 | One WAV/playback pair |
+
+For the windowed control, start ordinary Main on a separate, non-displayed desktop. Deliver input
+only to the window owned by that PID. After the terminating key-down, wait on the **process handle**.
+A first driver attempted key-up after the window disappeared and forced termination with code 124.
+A first system-menu observer sent Up before the menu settled and exited 1. Both failures remain in
+the local investigation. The native receipts, stdout, stderr and snapshot are under ignored
+`local/issue1716/`. Keep the incident dump private.
+
+The crash did not recur in these comparisons. Verbose output identifies each warning pair as
+`AudioStreamWAV` and `AudioStreamPlaybackWAV`, each with reference count 1.
+[Audio lifetime observation](host.md#audio-resource-lifetime-observation)
+
+**Unknown:** Whether either leaked object participated in the original fault, and whether ordinary
+player exits can trigger it. Keep #1716 open. A fresh finalizer fault or unexpected native exit on
+ordinary Quit warrants collecting its build, path through the UI, process status, logs and matching
+local dump. A crash during play or lost progress changes the severity.
