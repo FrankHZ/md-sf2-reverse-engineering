@@ -13,7 +13,7 @@ internal static class SceneEntities
             ? appearance.UnjoinedSprite!.Value : appearance.Sprite;
     }
 
-    internal static ExplorationState Add(ExplorationState world, AddMapEntity add, long request)
+    internal static ExplorationState Add(ExplorationState world, AddMapEntity add, long request, IReadOnlyList<int>? flags = null)
     {
         // InitializeNewEntity scans the first 63 signed alias bytes, then allocates max+1.
         if (world.Population is null || !world.Aliases.ContainsKey(add.Entity))
@@ -21,9 +21,14 @@ internal static class SceneEntities
         int slot = world.Aliases.Where(pair => pair.Key != new EntityRef("entity-159"))
             .Select(pair => pair.Value).DefaultIfEmpty(0).Max() + 1;
         if (slot >= 49) throw new BattleRuleException("source-entity-capacity", "program.entity", true);
+        int sprite = add.Sprite;
+        if (sprite == 255 && add.Entity.Value.StartsWith("entity-", StringComparison.Ordinal) &&
+            int.TryParse(add.Entity.Value.AsSpan("entity-".Length), out int member) && member < 30)
+            sprite = world.Party.Actors.FirstOrDefault(row => row.Actor.Value == $"ally-{member}")?.Hp == 0
+                ? 190 : ResolveAllySprite(world.Population, flags ?? [], member, member);
         var entity = new ExplorationEntity(add.Entity, EntityMotionState.At(add.Position, add.Facing, 0) with
             { FlagsA = 0xE0, AnimationCounter = (byte)(slot + 1), WaitTimer = (byte)slot },
-            true, add.Actions, Slot: slot, Sprite: add.Sprite,
+            true, add.Actions, Slot: slot, Sprite: sprite,
             SpriteRequest: request, WaitingForSprite: true);
         var aliases = world.Aliases.ToDictionary(pair => pair.Key, pair => pair.Value);
         aliases[add.Entity] = slot;

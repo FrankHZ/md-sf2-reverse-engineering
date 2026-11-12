@@ -7,15 +7,15 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public sealed record CaravanPlayerAppearance(ActorRef Actor, BattleClassRule Class, int Sprite, int DefeatedSprite);
 public sealed record CaravanDefinition(EntityRef FollowerA, IReadOnlyList<int> CurrentEntities,
     bool Overworld, CaravanPlayerAppearance PlayerAppearance, short InitialStepCounter = 0);
-public enum FieldTravelMode { Walking, Caravan }
+public enum FieldTravelMode { Walking = 0, Caravan = 1, Raft = 2 }
 
-internal abstract record CaravanInstruction : StoryInstruction;
-internal sealed record ApplyCaravanFollowers(EntityActionProgram Actions) : CaravanInstruction;
-internal sealed record ParkCaravanEntity(EntityRef Entity) : CaravanInstruction;
-internal sealed record WaitForCaravanFollowers : CaravanInstruction;
-internal sealed record RestoreCaravanPlayer : CaravanInstruction;
-internal sealed record InstallCaravanFollowers : CaravanInstruction;
-internal sealed record CommitCaravanMode(FieldTravelMode Mode) : CaravanInstruction;
+internal abstract record VehicleInstruction : StoryInstruction;
+internal sealed record ApplyVehicleFollowerActions(EntityActionProgram Actions) : VehicleInstruction;
+internal sealed record MoveVehicleOffMap(EntityRef Entity) : VehicleInstruction;
+internal sealed record WaitForVehicleFollowers : VehicleInstruction;
+internal sealed record RestoreCaravanPlayer : VehicleInstruction;
+internal sealed record InstallCaravanFollowers : VehicleInstruction;
+internal sealed record SetFieldTravelMode(FieldTravelMode Mode) : VehicleInstruction;
 
 public sealed record FollowPhysical(int Slot, int X, int Y) : EntityAction;
 public sealed record MoveOwnFacing(int Distance) : EntityAction;

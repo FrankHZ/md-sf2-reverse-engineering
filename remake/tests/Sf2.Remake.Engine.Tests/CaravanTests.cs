@@ -145,7 +145,7 @@ public sealed class CaravanTests
         Assert.DoesNotContain(90, session.Current.Story.Flags);
         Assert.Single(observations, row => row.Kind == "caravan-boarding-requested");
         Assert.Single(observations, row => row.Kind == "caravan-landing-requested");
-        Assert.Equal(2, observations.Count(row => row.Detail == nameof(CommitCaravanMode)));
+        Assert.Equal(2, observations.Count(row => row.Detail == nameof(SetFieldTravelMode)));
         MoveAndSettle(ExplorationDirection.South);
         MoveAndSettle(ExplorationDirection.North);
         Assert.Contains(90, session.Current.Story.Flags);

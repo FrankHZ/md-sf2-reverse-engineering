@@ -1,5 +1,22 @@
 """Lower source cutscene layout, actor-position and sound commands."""
 
+from sf2tool.h2.battle_global_data import _tokens
+
+
+def raft_placement(compiler, args, tail):
+    if [row["opcode"] for row in tail] != ["move.b", "move.b"]:
+        raise ValueError("incomplete raft placement")
+    x, y = [_tokens(row["operandText"]) for row in tail]
+    if (x[1], y[1]) != ("((RAFT_X-$1000000)).w", "((RAFT_Y-$1000000)).w") or not all(
+        operand.startswith("#") for operand in (args[0], x[0], y[0])
+    ):
+        raise ValueError("unbound raft placement operands")
+    return {
+        "op": "park-raft",
+        "map": f"map-{compiler.number(args[0][1:])}",
+        "position": {"x": compiler.number(x[0][1:]), "y": compiler.number(y[0][1:])},
+    }
+
 
 def scene_operation(compiler, op, args):
     if op == "setSprite":

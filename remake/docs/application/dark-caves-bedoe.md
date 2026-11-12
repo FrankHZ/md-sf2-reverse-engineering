@@ -1,6 +1,6 @@
 # Dark Caves, Polca and Bedoe
 
-The ordinary campaign starts with the [Battle10 field return](new-granseal-east-shrine.md). This slice owns Battles11 and 12, Bedoe and the first playable turn of Battle13. High rigor applies because encounter selection, script returns, party control and save compatibility share one campaign state. Acceptance requires ordinary Continue, movement, interactions and combat, then a replayable field save before the return confrontation. Battle13 combat, the raft and later recruitment belong to the next chapter.
+The ordinary campaign starts with the [Battle10 field return](new-granseal-east-shrine.md). This slice owns Battles11 and 12, Bedoe and the first playable turn of Battle13. High rigor applies because encounter selection, script returns, party control and save compatibility share one campaign state. Acceptance requires ordinary Continue, movement, interactions and combat, then a replayable field save before the return confrontation. Continue with [Battle13 and the first raft crossing](polca-first-raft.md) for combat, the mayor, Oddler and Luke.
 
 ## Play in the prepared checkout
 

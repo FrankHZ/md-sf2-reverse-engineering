@@ -25,7 +25,10 @@ internal static class OpeningSave
         {
             _ = Compatibility(definition, rules);
             RequireStable(definition, current);
-            var location = definition.Persistence!.Select(definition, current.Exploration!.Map, current.Story.Flags, current.Story.SaveAnchor);
+            var world = current.Exploration!;
+            var player = world.PlayerEntity;
+            var location = definition.Persistence!.Select(definition, new(world.Map, player.Position, player.Motion.Facing),
+                current.Story.Flags, current.Story.SaveAnchor);
             var data = CaptureValues(definition, current, rules, location);
             // Validate the detached progress and the recipe's landing before offering a slot.
             _ = OpeningRestore.Build(definition, data, rules);
@@ -129,7 +132,8 @@ internal static class OpeningSave
             Array.AsReadOnly(story.Flags.ToArray()), story.StepCounter.Value, story.EgressMap.Value, story.TextCursor,
             story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
             party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
-            { Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
+            { Raft = story.Raft is { } berth ? new(berth.Map.Value, berth.Position.X, berth.Position.Y) : null,
+                Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 
     private static SavedMusic Music(ScenarioDefinition definition, SessionSnapshot current)

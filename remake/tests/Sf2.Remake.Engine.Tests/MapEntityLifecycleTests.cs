@@ -42,6 +42,28 @@ public sealed class MapEntityLifecycleTests
         Assert.Equal(world.CurrentEntities, extended.CurrentEntities);
     }
 
+    [Theory]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, true)]
+    public void WaterRequestAndPhysicalRaftAlignmentHaveSeparateConditions(bool unlocked, bool adjacent, bool boards)
+    {
+        var world = StartPopulation(false).Current.Exploration!;
+        var origin = world.PlayerEntity.Position;
+        var water = new MapPosition(origin.X, origin.Y + 1);
+        ushort[] words = new ushort[WorkingMapLayout.WordCount];
+        words[water.Y * WorkingMapLayout.ColumnCount + water.X] = 0xFC01;
+        world = world.WithLayout(new(words));
+        int[] flags = unlocked ? [64] : [];
+        world = RaftRuntime.Declare(world, flags, new(world.Map, adjacent ? water : new(water.X + 1, water.Y)));
+        var (next, movement) = MapEventDispatcher.Move(world, ExplorationDirection.South, flags);
+        Assert.False(movement.Moved);
+        Assert.Equal(unlocked ? (int?)3 : null, movement.VehicleEvent);
+        Assert.Equal(boards, RaftRuntime.Aligned(next));
+        Assert.Equal(world.Party, next.Party);
+        Assert.Equal(origin, next.PlayerEntity.Position);
+    }
+
     [Fact]
     public void IdleWaitDoesNotCompleteForAStationaryScriptThatStillOwnsWork()
     {

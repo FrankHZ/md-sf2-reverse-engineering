@@ -24,6 +24,20 @@ internal static class ExplorationStoryEffects
         else if (orientation == 2) image.FlipY();
     }
 
+    // sub_45A8C clears color 2 in the outer bottom tiles and complete $2222
+    // words in the middle bottom tile. Opaque black is source palette index 2.
+    internal static void RemoveShadow(Image image)
+    {
+        for (int y = 16; y < 24; y++)
+            for (int x = 0; x < 24; x += 4)
+            {
+                if (x is >= 8 and < 16 && !Enumerable.Range(x, 4).All(i => image.GetPixel(i, y) == Colors.Black))
+                    continue;
+                for (int i = x; i < x + 4; i++)
+                    if (image.GetPixel(i, y) == Colors.Black) image.SetPixel(i, y, Colors.Transparent);
+            }
+    }
+
     internal static int HeadShift(double age) => ((int)(age * 60) % 6) switch
         { 0 or 1 => -1, 3 or 4 => 1, _ => 0 };
 

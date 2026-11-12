@@ -80,7 +80,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
                     2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
                     3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
-                    7 => BattleClassRule.UnpromotedWolfman, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
+                    6 => BattleClassRule.UnpromotedBirdman, 7 => BattleClassRule.UnpromotedWolfman, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
                     10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
                     _ => throw Unsupported("source-class", "actors.class"),
                 };

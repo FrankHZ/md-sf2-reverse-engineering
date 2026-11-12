@@ -9,13 +9,14 @@ public sealed record PhysicalEntityWait(WaitToken Token, int Slot) : ProgramWait
 internal static class CaravanRuntime
 {
     internal static (ActiveSessionState Active, StoryState Story) Execute(ScenarioDefinition definition, SessionSnapshot current,
-        CaravanInstruction instruction, StoryState next, WaitToken token)
+        VehicleInstruction instruction, StoryState next, WaitToken token)
     {
         var world = current.Exploration ?? throw new BattleRuleException("caravan-field", "program", true);
-        _ = world.Definition.Caravan ?? throw new BattleRuleException("caravan-admission", "map", true);
+        if (instruction is RestoreCaravanPlayer or InstallCaravanFollowers && world.Definition.Caravan is null)
+            throw new BattleRuleException("caravan-admission", "map", true);
         switch (instruction)
         {
-            case ParkCaravanEntity park:
+            case MoveVehicleOffMap park:
                 var parked = ProgramRunner.Entity(current, park.Entity);
                 world = world.WithEntity(parked with { Motion = parked.Motion with
                     { X = 0x6000, Y = 0x6000, XDestination = 0x6000, YDestination = 0x6000, Facing = 3 },
@@ -40,7 +41,7 @@ internal static class CaravanRuntime
             case InstallCaravanFollowers:
                 world = InstallFollowers(world, current.Story.Flags);
                 break;
-            case ApplyCaravanFollowers followers:
+            case ApplyVehicleFollowerActions followers:
                 // External admission establishes valid slots; reached recheck precedes any writes.
                 foreach (int slot in world.CurrentEntities.Skip(1)) _ = Physical(world, slot);
                 foreach (int slot in world.CurrentEntities.Skip(1))
@@ -50,12 +51,12 @@ internal static class CaravanRuntime
                         WaitingForMotion = false, Follower = null });
                 }
                 break;
-            case WaitForCaravanFollowers:
+            case WaitForVehicleFollowers:
                 if (world.CurrentEntities.Count > 1)
                     next = current.Story.Copy(current.Story.Cursor,
                         new PhysicalEntityWait(token, world.CurrentEntities[^1]));
                 break;
-            case CommitCaravanMode mode:
+            case SetFieldTravelMode mode:
                 world = world.WithTravelMode(mode.Mode);
                 break;
             default: throw new BattleRuleException("caravan-operation", "program", true);
@@ -88,12 +89,14 @@ internal static class CaravanRuntime
 
     internal static (ExplorationState World, FieldMoveOutcome Outcome) Move(ExplorationState world, ExplorationDirection direction)
     {
-        if (world.Definition.Caravan is null) throw new BattleRuleException("caravan-admission", "map", true);
+        bool raft = world.TravelMode == FieldTravelMode.Raft;
+        if (!raft && world.Definition.Caravan is null) throw new BattleRuleException("caravan-admission", "map", true);
         var player = world.PlayerEntity;
         int currentMarker = world.Layout[player.Position.X, player.Position.Y] & 0x3C00;
-        if (currentMarker is 0x800 or 0xC00) throw new BattleRuleException("caravan-copy-marker", "map.layout", true);
+        if (currentMarker is 0x800 or 0xC00) throw new BattleRuleException(raft ? "raft-copy-marker" : "caravan-copy-marker", "map.layout", true);
         // This admission has one loaded area; scripted placement does not reselect it.
-        var area = world.Definition.Traversal.ActiveAreas[0];
+        var area = raft ? world.Definition.Traversal.SelectActiveArea(player.Position)?.Area : world.Definition.Traversal.ActiveAreas[0];
+        if (area is null) return (world, new(false, false, null));
         var candidate = CaravanTraversal.Candidate(player.Motion, area, direction, false);
         if (candidate is null) return (world, new(false, false, null));
         if ((player.Motion.FlagsA & 0x20) != 0 && CaravanTraversal.Obstructed(candidate.X * 384, candidate.Y * 384,
@@ -102,8 +105,11 @@ internal static class CaravanRuntime
         ushort word = world.Layout[candidate.X, candidate.Y];
         int marker = word & 0x3C00;
         if (marker is 0x400 or 0x800 or 0xC00 or 0x1000)
-            throw new BattleRuleException("caravan-unsupported-marker", "map.layout", true);
-        if (marker != 0x3800) return (world, new(false, false, null, word < 0xC000 ? 4 : null));
+            throw new BattleRuleException(raft ? "raft-unsupported-marker" : "caravan-unsupported-marker", "map.layout", true);
+        if (marker != (raft ? 0x3C00 : 0x3800))
+        {
+            return (world, new(false, false, null, word < 0xC000 ? (raft ? 5 : 4) : null));
+        }
         var motion = EntityMotion.Start(player.Motion, (short)(candidate.X * 384), (short)(candidate.Y * 384), [])!;
         return (world.WithEntity(player with { Motion = motion, Actions = new([new StopEntityActions()]),
             ActionCursor = 0, WaitingForMotion = true }), new(true, false, null));

@@ -15,7 +15,7 @@ internal static class MapEventDispatcher
         { ExplorationDirection.East => 0, ExplorationDirection.North => 1, ExplorationDirection.West => 2, _ => 3 };
         world = world.WithEntity(player with { Motion = player.Motion with { Facing = facing } });
         player = world.PlayerEntity;
-        if (world.TravelMode == FieldTravelMode.Caravan) return CaravanRuntime.Move(world, direction);
+        if (world.TravelMode is FieldTravelMode.Caravan or FieldTravelMode.Raft) return CaravanRuntime.Move(world, direction);
         if (world.Definition.Caravan is not null && CaravanTraversal.Candidate(player.Motion,
             world.Definition.Traversal.ActiveAreas[0], direction, true) is null)
             return (world, new(false, false, null));
@@ -29,6 +29,9 @@ internal static class MapEventDispatcher
         if (world.Definition.Caravan is not null && candidate is not null &&
             (world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x3800 && flags.Contains(65))
             return (world, new(false, false, null, 2));
+        if (world.Population is not null && candidate is not null && flags.Contains(64) &&
+            world.Definition.Traversal.IsWithinActiveArea(candidate) && (world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x3C00)
+            return (world, new(false, false, null, 3));
         bool opened = false;
         ExplorationEvent? reached = null;
         if (candidate is not null && (world.Definition.Caravan is not null || world.Definition.Traversal.IsWithinActiveArea(candidate)))

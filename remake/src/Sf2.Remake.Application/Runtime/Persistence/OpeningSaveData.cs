@@ -24,8 +24,11 @@ public sealed record OpeningSaveData(SaveCompatibility Compatibility, string Rec
     byte FadePeriod, SavedMusic Music, byte Difficulty, bool AllyAutoBattle, bool OpponentControl)
 {
     // Optional on disk for compatible pre-naming version1 saves; all new writes include it.
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public SavedRaft? Raft { get; init; }
     public IReadOnlyDictionary<string, string> Names { get; init; } = new Dictionary<string, string>();
 }
+public sealed record SavedRaft(string Map, int X, int Y);
 public sealed record SaveLocation(string Recipe, FieldReturnAnchor Anchor, string Description);
 public sealed record SaveAvailability(Guid SessionId, long Revision, SaveLocation? Location, string? Error)
 {
@@ -43,7 +46,7 @@ internal interface IOpeningRestorePolicy
     ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party);
     void ValidateRegisters(OpeningSaveData data);
     bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity, IReadOnlyList<int> flags);
-    SaveLocation Select(ScenarioDefinition definition, MapId map, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);
+    SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);
     ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
         IReadOnlyList<int> flags, out IReadOnlyList<int> enteredFlags);
 }

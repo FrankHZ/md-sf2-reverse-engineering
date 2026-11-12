@@ -2184,3 +2184,9 @@ msgstr "火山，战斗结束处"
 
 msgid "save.destination.polca-return"
 msgstr "波尔卡，东侧入口"
+
+msgid "save.destination.polca-raft"
+msgstr "波尔卡村外，木筏停靠处"
+
+msgid "save.destination.polca-victory"
+msgstr "波尔卡，战斗结束后"

@@ -53,9 +53,18 @@ internal static class OpeningRestore
             _ = rules.Bind(definition.Encounters.Values, actors);
             return ExplorationDispatcher.Start(definition, initial, rules);
         }
-        var location = definition.Persistence!.Select(definition, anchor.Map, data.Flags, anchor);
+        var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor);
         Require(location.Recipe == data.Recipe && location.Anchor == anchor, "save-recipe");
+        RaftBerth? raft = null;
+        if (data.Raft is { } berth)
+        {
+            Require(berth.X is >= 0 and < 64 && berth.Y is >= 0 and < 64 &&
+                definition.Exploration.Maps.ContainsKey(new(berth.Map)), "save-raft-berth");
+            raft = new(new(berth.Map), new(berth.X, berth.Y));
+        }
+        Require(data.Recipe != "polca-raft" || raft is not null, "save-raft-berth");
         var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, out var flags);
+        world = RaftRuntime.Declare(world, flags, raft);
         Require(world.Definition.BasePalette is { Valid: true }, "save-palette-resource");
         int area = world.Definition.Traversal.SelectActiveArea(anchor.Position)!.OneBasedRecordOrdinal - 1;
         var music = new MusicProgress(1, data.Music.Cue, Array.AsReadOnly(data.Music.Previous.ToArray()), anchor.Map, area,
@@ -63,7 +72,7 @@ internal static class OpeningRestore
         var palette = world.Definition.BasePalette!;
         var story = new StoryState(flags, textCursor: data.TextCursor, partyLists: MapPartyMembership.Rebuild(flags, layout),
             display: new(data.FadePeriod, palette, palette, FullFadeVisibility.BaseRestored), textSettings: data.TextSettings,
-            stepCounter: data.StepCounter, egressMap: new(data.EgressMap), music: music, saveAnchor: anchor, names: data.Names);
+            stepCounter: data.StepCounter, egressMap: new(data.EgressMap), music: music, saveAnchor: anchor, names: data.Names, raft: raft);
         story = ExplorationTextRunner.Initialize(world, story);
         _ = rules.Bind(definition.Encounters.Values, actors);
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story, SessionStopReason.PlayerInput);

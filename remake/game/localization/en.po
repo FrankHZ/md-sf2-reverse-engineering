@@ -2184,3 +2184,9 @@ msgstr "Mount Volcano, battle return"
 
 msgid "save.destination.polca-return"
 msgstr "Polca, eastern approach"
+
+msgid "save.destination.polca-raft"
+msgstr "Polca, raft landing"
+
+msgid "save.destination.polca-victory"
+msgstr "Polca, after the battle"

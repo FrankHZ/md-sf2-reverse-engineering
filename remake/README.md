@@ -32,8 +32,8 @@ The private ordinary opening carries the party through Battles01–07, the Galam
 optional Kiwi recruitment, tower aftermath, earthquake town and docks departure. Map73's first-arrival
 init reaches usable Map14 control. The [deck, Battle08 and founding route](docs/application/battle08-new-granseal.md)
 continues to the New Granseal castle entry. [Peter, Ribble and eastern Parmecia](docs/application/new-granseal-east-shrine.md)
-covers two more battles, the cave approach and the separate shrine entrance. The [Dark Caves, Polca and Bedoe route](docs/application/dark-caves-bedoe.md) continues through Battles11–12 to the return confrontation. Field recipe 3 on gameplay
-revision 4 initializes ten members and restores the seven- and nine-member field recipes. Earlier
+covers two more battles, the cave approach and the separate shrine entrance. The [Dark Caves, Polca and Bedoe route](docs/application/dark-caves-bedoe.md) continues through Battles11–12 to the return confrontation. The [Battle13 and first raft route](docs/application/polca-first-raft.md) continues to Polca’s river landing. Field recipe 4 on gameplay
+revision 4 admits eleven members and restores seven-, nine- and ten-member field saves. Earlier
 revision1–3 worlds retain their own compatible slots. Explicit Save/Continue supports the existing
 opening recipes plus the Battle07 Map58 safe point, year-later castle, Ribble, eastern overworld battle returns and the conditional East Shrine visit. The
 [battle persistence boundary](docs/application/battle-save-and-continue.md) also supports explicit
