@@ -450,6 +450,26 @@ savepoints do not execute on-load; the explicit initial recipe reconstructs the 
 Encounter-excluded retained allies survive field/battle/field transitions;
 completed joins update the existing party membership projection before field control returns.
 
+Map3's default and F609 commission setup share the existing `map3-joined` church anchor `(32,13)`,
+Up, after F603. Selection uses the same `ExplorationMapDefinition.SelectedSetup` path as ordinary
+map allocation. Reconstruction selects that setup before entry-flag/layout/population work. Default
+Sarah/messenger initialization belongs only to the default setup; F609 instead retires Jaha after
+F3. It keeps the F609 NPC at entity142. No on-load dialogue, healing, join or reward is replayed.
+F506, F543 and unclassified setup families remain unsupported. No save-format, recipe revision or
+gameplay revision change is needed: existing default-setup records keep their meaning.
+
+**Recovery authoring rule:** when changing a setup selector, entry flag, population/follower rule,
+discardable entity program or on-load initialization, classify its recovery family and run one small
+capture → restore → continued-play case for each distinct reconstruction behavior. Equivalent dialogue
+branches can share that case. Add a case when persistent effects or reconstruction differ; individual
+dialogue lines do not need separate save tests. `Map3SaveSetupTests` exercises actual admitted setup
+families, Jaha before/after joining, selected ambient versus unfinished story work, progress roundtrip
+and explicit refusals. It requires new selector families to be classified. It cannot automatically prove
+that a new on-load side effect is reproduced: that change still needs an affected behavior assertion and,
+when the slot/restart consumer is affected, the [bounded host observation](../verification/map3-commission-save.md).
+`QuerySave` still validates the detached restore before offering a slot; passing admission alone does
+not prove semantic equivalence to ordinary initialization. Keep that distinction in review.
+
 The SF2 recipe admits map-default ambient programs and an already-entered closed
 random-walk/wait/back-jump cycle on Map3. The completed messenger installs such a loop at a new
 origin, so object identity or equality to the initial map script cannot establish safety. Pending

@@ -72,8 +72,9 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
         if (!definition.Exploration!.Maps.TryGetValue(map, out var content)) Fail();
         if (map.Value == "map-3")
         {
-            if (content!.Setup is { } setup && MapSetupSelector.Select(setup, setup.DefaultSetup,
-                    flag => flags.Contains(int.Parse(flag.Value, System.Globalization.CultureInfo.InvariantCulture))) != setup.DefaultSetup)
+            var selected = content!.SelectedSetup(flags);
+            if (selected != content.Setup?.DefaultSetup &&
+                !(selected?.Value == "ms-map3-flag609" && flags.Contains(603)))
                 Fail();
             return flags.Contains(603)
                 ? new("map3-joined", new(map, new(32, 13), 1), "Granseal, outside the church")
@@ -92,13 +93,20 @@ internal sealed class Sf2OpeningRestore : IOpeningRestorePolicy
         IReadOnlyList<int> flags, out IReadOnlyList<int> enteredFlags)
     {
         var anchor = location.Anchor;
-        var map = definition.Exploration!.Maps[anchor.Map];
+        var source = definition.Exploration!.Maps[anchor.Map];
+        var selected = source.SelectedSetup(flags);
+        var map = source.SelectSetup(flags);
         var entered = flags.ToHashSet();
         foreach (var write in map.EntryFlags)
             if (write.Value) entered.Add(write.Flag); else entered.Remove(write.Flag);
         enteredFlags = Array.AsReadOnly(entered.Order().ToArray());
         var world = MapTransfer.Build(map, new("entity-0"), anchor.Position, anchor.Facing, 32, party, flags, enteredFlags);
-        if (anchor.Map.Value == "map-3")
+        if (anchor.Map.Value == "map-3" && selected?.Value == "ms-map3-flag609")
+        {
+            // ms_map3_flag609 init retires Jaha only after his actual join.
+            if (flags.Contains(3)) Hide("entity-3", true);
+        }
+        else if (anchor.Map.Value == "map-3")
         {
             // ms_map3 init: joined Sarah retires entity142; otherwise F602 moves Sarah.
             if (flags.Contains(1)) Hide("entity-142", true);
