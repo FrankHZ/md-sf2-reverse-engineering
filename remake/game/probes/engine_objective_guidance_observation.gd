@@ -20,12 +20,12 @@ func capture(label: String) -> void:
     for command in menu.get("menu", {}).get("commands", []): command.erase("art")
     for row in menu.get("menu", {}).get("list", {}).get("rows", []): row.erase("art")
     if not menu.get("visible", false):
-        menu = {"visible":false, "index":menu.get("index"), "objective":menu.get("objective")}
+        menu = {"visible":false, "index":menu.get("index")}
     var text: Variant = s.get("fieldText")
     if text is Dictionary:
         text = {"phase":text.Phase, "index":text.Index, "end":text.End, "projection":text.Projection, "token":text.Token}
     samples.append({"label":label, "map":s.get("map"), "flags":s.get("flags"), "player":player(s),
-        "wait":s.get("wait"), "failure":s.get("failure"), "guidance":guidance(), "fieldMenu":menu,
+        "wait":s.get("wait"), "failure":s.get("failure"), "guidance":guidance(), "fieldMenu":menu, "worldGeometry":s.get("worldGeometry"),
         "text":text, "textId":s.get("textId"), "canWaitForText":s.get("canWaitForText"),
         "dialoguePanel":s.get("dialoguePanel"), "help":s.get("help"), "musicWait":s.get("musicWait"),
         "settings":settings(), "applied":applied()})
@@ -114,35 +114,50 @@ func navigate(goal: Vector2i, label: String, expected_map: String = "") -> Dicti
     check(false, label + ": movement bound"); return s
 
 func menu_check(expected: bool) -> void:
-    var before: Variant = progress()
+    var aid := guidance().duplicate(true)
     await key(KEY_ESCAPE)
-    check(state().fieldMenu.visible and not guidance().get("visible", false), "root gameplay menu owns objective")
-    check(not state().fieldMenu.objective.is_empty() == expected, "objective follows shared preference and coverage")
-    check(not "Message unavailable" in state().fieldMenu.objective, "objective has valid localized operands")
+    # Compare at the same paused menu boundary; free-field ambient ticks may consume RNG after Back.
+    var before: Variant = progress()
+    check(state().fieldMenu.visible and guidance().get("visible", false) == expected, "root menu retains the independent objective or Off/coverage hiding")
+    check(guidance().panelId == aid.panelId and guidance().text == aid.text and guidance().objectiveKey == aid.objectiveKey,
+        "opening root menu retains the same panel and complete current objective")
+    check(not "Message unavailable" in guidance().text, "objective has valid localized operands")
     var frozen := state()
     capture("gameplay-menu")
     if expected:
         var layout: Dictionary = state().fieldMenu.menu
         check(layout.rect.x >= 32 and layout.rect.y >= 32 and layout.rect.x + layout.rect.width <= root.size.x - 32 and
-            layout.rect.y + layout.rect.height <= root.size.y - 32, "complete command and objective group stays in safe bounds")
-        var reason := find("FieldMenu").find_child("Reason", true, false) as Label
-        check(reason.get_theme_font_size("font_size") == 30, "objective reading keeps30px body")
+            layout.rect.y + layout.rect.height <= root.size.y - 32, "complete command group stays in safe bounds")
+        var r: Dictionary = guidance().rect
+        check(not Rect2(r.x,r.y,r.width,r.height).intersects(Rect2(layout.rect.x,layout.rect.y,layout.rect.width,layout.rect.height)),
+            "independent objective avoids actual command bounds")
+        check_player_clear()
+        check(not guidance().text in layout.reason and not guidance().markerVisible, "command help has no duplicate objective or world marker")
+        check(guidance().fontSize == 30 and find("FieldGuidance").find_children("ObjectivePanel", "Panel", true, false).size() == 1,
+            "exactly one passive objective panel keeps30px body")
         var initial_index: int = state().fieldMenu.index
-        if state().fieldMenu.readingOverflow:
-            await key(KEY_RIGHT); var frozen_index: int = state().fieldMenu.index
-            await key(KEY_DOWN)
-            check(state().fieldMenu.readingFocused and state().fieldMenu.index == frozen_index, "overflow reading owns direction")
-            await key(KEY_ESCAPE)
-            check(state().fieldMenu.visible and not state().fieldMenu.readingFocused and state().fieldMenu.index == initial_index, "reading Back restores same command")
+        await key(KEY_RIGHT); await key(KEY_DOWN)
+        check(state().fieldMenu.index == (initial_index + 1) % 5, "passive objective never takes command direction focus")
+        await key(KEY_UP)
         if initial_index == 0:
             await key(KEY_K if applied().Bindings.has("confirm") else KEY_ENTER)
             check(state().partyStatus.visible and not state().fieldMenu.visible and not guidance().get("visible", false), "Member covers both aids")
             await key(KEY_ESCAPE)
-            check(state().fieldMenu.visible and state().fieldMenu.index == initial_index, "Party Back retains command")
+            check(state().fieldMenu.visible and state().fieldMenu.index == initial_index and guidance().visible == expected,
+                "Party Back retains command and restores the same objective")
     check(state().revision == frozen.revision and state().flags == frozen.flags and state().party == frozen.party and
         state().mainSeed == frozen.mainSeed and state().thinkingSeed == frozen.thinkingSeed, "reading/Party input preserves live revision, story, party and RNG")
+    var after: Variant = progress()
+    if after != before: samples.append({"label":"menu-progress-difference", "before":before, "after":after})
+    check(after == before, "query/menu/Party/Back do not alter save progress")
     await key(KEY_ESCAPE)
-    check(progress() == before, "query/menu/Party/Back do not alter save progress")
+    check(not state().fieldMenu.visible and guidance().visible == expected and guidance().panelId == aid.panelId and guidance().text == aid.text,
+        "closing root menu retains the same independent objective")
+
+func check_player_clear() -> void:
+    var s := state(); var p := player(s); var g: Dictionary = s.worldGeometry; var r: Dictionary = guidance().rect
+    var actor := Rect2((Vector2(p.x,p.y) / 16 - Vector2(g.cameraX,g.cameraY)) * 4,Vector2(96,96)).grow(24)
+    check(not Rect2(r.x,r.y,r.width,r.height).intersects(actor), "objective avoids actual projected player with24px clearance")
 
 func town_flow() -> void:
     var knows_hawel: bool = 610.0 in state().flags
@@ -165,7 +180,7 @@ func town_flow() -> void:
     var declared: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_HOST_UI_START"))).start.get("names", {})
     if declared.has("ally-4"):
         await key(KEY_ESCAPE)
-        check(declared["ally-4"] in state().fieldMenu.objective, "admitted seven-character custom companion name is preserved")
+        check(declared["ally-4"] in guidance().text, "admitted seven-character custom companion name is preserved")
         await key(KEY_ESCAPE)
     capture("after-invitation")
     await menu_check(true)
@@ -214,7 +229,7 @@ func town_flow() -> void:
     check(state().fieldMenu.visible, "mapped controller Cancel opens gameplay menu")
     var focused: int = state().fieldMenu.index
     await pad(JOY_BUTTON_DPAD_DOWN)
-    check(state().fieldMenu.index == (focused + 1) % 5 and not guidance().visible, "controller directions belong only to current menu")
+    check(state().fieldMenu.index == (focused + 1) % 5 and guidance().visible, "controller directions belong only to current menu while objective remains")
     await pad(JOY_BUTTON_B)
     await navigate(Vector2i(7,1), "visible-north-approach")
     await frames(8)
@@ -223,6 +238,32 @@ func town_flow() -> void:
     var s := await navigate(Vector2i(7,0), "yeel-north-exit", "map-66")
     check(s.map == "map-66" and guidance().visible and not guidance().markerVisible and ("Route not available" in guidance().text or "暂无可用路线" in guidance().text), "real transfer drops old town anchor; incomplete leg has no bearing")
     capture("overworld-incomplete")
+
+func compact_flow() -> void:
+    for size_ in [Vector2i(1920,1080), Vector2i(2560,1440)]:
+        root.size = size_; await frames(6)
+        var aid := guidance()
+        check(aid.visible and aid.mouseFilter == "Ignore" and aid.fontSize == 30, "supported compact objective is readable and passive")
+        var label := find("FieldGuidance").find_child("Destination", true, false) as Label
+        var natural_width := 0.0
+        for line in label.text.split("\n"):
+            natural_width = maxf(natural_width, label.get_theme_font("font").get_string_size(line,HORIZONTAL_ALIGNMENT_LEFT,-1,30).x)
+        check(absf(aid.rect.width - (minf(448,natural_width) + 32)) < 2, "short copy shrinks to measured text; long copy caps at480px")
+        check(aid.lines > label.text.split("\n").size() if natural_width > 449 else aid.lines == label.text.split("\n").size(),
+            "long copy wraps naturally without reducing font or dropping objective/destination/action")
+        var r: Dictionary = aid.rect
+        check(Rect2(Vector2(32,32),Vector2(size_) - Vector2(64,64)).encloses(Rect2(r.x,r.y,r.width,r.height)), "full wrapped panel stays within safe edges")
+        var text_rect: Dictionary = aid.textRect
+        check(r.height >= text_rect.height + 24 and r.width >= text_rect.width + 32, "panel contains every wrapped line with padding")
+        check_player_clear()
+        await menu_check(true); await menu_check(true)
+        capture("compact-" + str(size_))
+    root.size = Vector2i(1280,720); await frames(5)
+    check(window().recovery != null and not guidance().visible, "below-minimum recovery hides compact objective")
+    root.size = Vector2i(1920,1080); await frames(5)
+    await set_guidance(false); await menu_check(false)
+    check(not guidance().visible, "Off hides independent objective with root closed")
+    await set_guidance(true); await menu_check(true)
 
 func house_flow() -> void:
     check(72.0 in state().flags and 503.0 in state().flags and guidance().visible, "retained post-battle checkpoint has current objective")
@@ -289,7 +330,8 @@ func run() -> void:
     check(result == "started", "ordinary selected content admits initial checkpoint: " + result)
     if result != "started": finish(); return
     await settle("initial")
-    if case_name == "town": await town_flow()
+    if case_name == "compact": await compact_flow()
+    elif case_name == "town": await town_flow()
     elif case_name == "house": await house_flow()
     elif case_name == "override":
         var bytes := FileAccess.get_file_as_string(preference_path)
