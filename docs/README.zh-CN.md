@@ -69,6 +69,8 @@
 设计重点、总体布置、敌人角色/激活、明确的我方准备假设及简单应对与取舍。设计解读保留 **推断**，不证明作者意图或难度；
 该页中文镜像为 `pending`，待英文源稳定后另行限定翻译范围，不能把现有章节指南当作它的译文。
 
+[渡海前七场战斗的数值分析覆盖（英文）](./design/synthesis/analyses/pre-voyage-battle-model-coverage.md)逐场列出地形、敌方配置、我方入场条件和仍待验证的战术判断。七场都有编成和胜败证据，Battle01 已有轻量设计分析；七场尚缺把我方装备、位置与行动顺序连起来的完整对局分析。以 Battle02 为例，在指定条件下 Jaha 对 Huge Rat 的普通命中造成 6 点伤害，反向命中造成 5 点。仅改变 Jaha 防守时的地形效果，同样的两次来袭就能从击倒变为剩 1 HP。可对照[中文物理战斗结算合同](./design/zh-CN/contracts/battle/combat-resolution.md)和[Jaha 加入与 Battle02 准入](./design/zh-CN/synthesis/chapters/grans-opening/battle01-return-through-battle02.md)。
+
 也可沿总览 → [Taros/Caravan 完整示例（中文）](./design/zh-CN/synthesis/themes/story-progression.md#完整示例taros-与-caravan)
 → 物品容量/拒绝、剑的持有与装备、遭遇准入/结果、获取与登乘的各自证据，查看跨系统依赖。
 四篇详细中文指南及 Ribble、Hassan/Rohde、可选 Rick 的相邻入口均可从该章节找到。
