@@ -51,6 +51,40 @@ public sealed class OpeningRestoreTests
     }
 
     [Theory]
+    [InlineData(true, "map-72", 48, true)]
+    [InlineData(false, "map-72", 48, false)]
+    [InlineData(true, "map-72", 49, false)]
+    [InlineData(true, "map-3", 48, false)]
+    [InlineData(true, null, 0, false)]
+    public void PolcaLandingRequiresBoardableWaterAndThePhysicalBerth(bool water, string? parkedMap, int y, bool boardable)
+    {
+        var (basis, data) = Fixture();
+        var rules = RuleCompositions.Sf2();
+        var party = Assert.IsType<SessionStarted>(GameSession.Restore(basis, data, rules)).Session.Current.Exploration!.Party;
+        var template = basis.Exploration!.Maps[new("map-57")];
+        var words = new ushort[WorkingMapLayout.WordCount];
+        if (water) words[48 * WorkingMapLayout.ColumnCount + 43] = 0xFC01;
+        var map = new ExplorationMapDefinition(new("map-72"), new(words), template.Traversal, [], [],
+            population: template.Population, basePalette: template.BasePalette, viewAreas: template.ViewAreas);
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values,
+            exploration: new(basis.Exploration.Maps.Values.Append(map), []));
+        var policy = basis.Persistence!;
+        var anchor = new FieldReturnAnchor(map.Map, new(43, 47), 1);
+        int[] flags = [0, 32, 64, 10];
+        var location = policy.Select(definition, anchor, flags, null);
+        RaftBerth? berth = parkedMap is null ? null : new(new(parkedMap), new(43, y));
+        ExplorationState Restore() => policy.Rebuild(definition, location, party, flags, berth, out _);
+
+        if (boardable)
+        {
+            var world = Restore();
+            Assert.Equal(anchor.Facing, world.PlayerEntity.Motion.Facing);
+            Assert.Equal(berth!.Position, Assert.Single(world.AllEntities, e => e.Slot == 31).Position);
+        }
+        else Assert.Equal("save-raft-berth", Assert.Throws<BattleRuleException>(Restore).Code);
+    }
+
+    [Theory]
     [InlineData(false, false)] [InlineData(true, false)] [InlineData(true, true)]
     public void RestoreRebuildsEachRecipeWithoutOnloadGrowthHealingOrReward(bool joined, bool victory)
     {

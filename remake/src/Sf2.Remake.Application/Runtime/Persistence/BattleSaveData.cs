@@ -12,7 +12,7 @@ public sealed record SavedBattleStory(IReadOnlyList<int> Flags, IReadOnlyDiction
     short StepCounter, string EgressMap, int TextCursor, ExplorationTextSettings TextSettings,
     ExplorationDisplay Display, LogicalTextWindow LogicalText, LogicalView LogicalView,
     EntityRef? Speaker, bool? EntityServices, bool WindowFixPending, FieldReturnAnchor? SaveAnchor,
-    SavedBattleMusic Music, SavedBattlePlayer Player);
+    SavedBattleMusic Music, SavedBattlePlayer Player, SavedRaft? Raft = null);
 public sealed record BattleSaveData(SaveCompatibility Compatibility, int BattleRecipeRevision,
     SavedBattleRoute Route, BattleContinuationData Battle, SavedBattleStory Story);
 public sealed record BattleSaveLocation(string Encounter, int Round, string Actor);

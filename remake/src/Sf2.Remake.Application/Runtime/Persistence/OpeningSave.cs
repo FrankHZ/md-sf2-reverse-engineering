@@ -132,7 +132,7 @@ internal static class OpeningSave
             Array.AsReadOnly(story.Flags.ToArray()), story.StepCounter.Value, story.EgressMap.Value, story.TextCursor,
             story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
             party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
-            { Raft = story.Raft is { } berth ? new(berth.Map.Value, berth.Position.X, berth.Position.Y) : null,
+            { Raft = SavedRaft.Capture(story.Raft),
                 Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 

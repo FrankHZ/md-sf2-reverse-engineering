@@ -5,6 +5,7 @@ using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
+using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -48,9 +49,10 @@ public sealed class BattleSaveReturnTests
     }
 
     [Theory]
+    [InlineData(BattleOutcomeKind.Victory, false, true)]
     [InlineData(BattleOutcomeKind.Victory, false)] [InlineData(BattleOutcomeKind.Defeat, false)] [InlineData(BattleOutcomeKind.Retreat, false)]
     [InlineData(BattleOutcomeKind.Victory, true)] [InlineData(BattleOutcomeKind.Defeat, true)] [InlineData(BattleOutcomeKind.Retreat, true)]
-    public void LegalEndingRetainsReturnRegistersPartyAndReusableFieldSave(BattleOutcomeKind kind, bool authoredPlayer)
+    public void LegalEndingRetainsReturnRegistersPartyAndReusableFieldSave(BattleOutcomeKind kind, bool authoredPlayer, bool parked = false)
     {
         var (basis, original) = BattleSaveFixture.Create();
         var encounter = original.Battle.Definition.WithOutcome(original.Battle.Definition.Outcome!, retreatItems: [new(115, "Angel Wing")]);
@@ -75,14 +77,32 @@ public sealed class BattleSaveReturnTests
         var b = original.Battle;
         var battle = new EngineBattleState(encounter, actors, b.MainSeed, b.ThinkingSeed, b.Round, b.Queue, b.Cursor, b.Gold,
             b.StartPolicy, b.Regions, itemCustody: b.ItemCustody, deathCredit: b.DeathCredit);
-        var live = BattleSaveFixture.At(battle, original.Story.Copy(null, fieldPlayer: original.Story.FieldPlayer! with
+        var story = original.Story;
+        RaftBerth? berth = null;
+        if (kind == BattleOutcomeKind.Victory)
+        {
+            if (parked) berth = new(new("map-57"), new(12, 15));
+            story = story.Copy(null, flags: story.Flags.Append(64), raft: berth);
+        }
+        var live = BattleSaveFixture.At(battle, story.Copy(null, fieldPlayer: story.FieldPlayer! with
             { Player = new(authoredPlayer ? "authored-player" : "entity-0"),
-                RetainedAllies = original.Story.FieldPlayer.RetainedAllies!.Select(a => a with { Absent = false }).ToArray() }));
+                RetainedAllies = story.FieldPlayer.RetainedAllies!.Select(a => a with { Absent = false }).ToArray() }));
         var saved = BattleSaveFixture.Capture(definition, live);
-        var restored = Assert.IsType<SessionStarted>(GameSession.RestoreBattle(definition, saved, RuleCompositions.Sf2())).Session;
+        var bytes = OpeningSaveJson.WriteRecord(new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved));
+        var record = OpeningSaveJson.ReadRecord(bytes, 1);
+        var restored = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, record, RuleCompositions.Sf2())).Session;
         var control = End(definition, live, kind);
         var resumed = End(definition, restored.Current, kind);
         Assert.True(control.CanWaitAtInput); Assert.True(resumed.CanWaitAtInput);
+        Assert.Equal(berth, resumed.Story.Raft);
+        if (kind == BattleOutcomeKind.Victory)
+        {
+            Assert.Contains(64, resumed.Story.Flags);
+            var returned = resumed.Exploration!;
+            var raft = returned.AllEntities.SingleOrDefault(e => e.Slot == 31);
+            Assert.Equal(berth?.Position, raft?.Position);
+            if (berth is not null) Assert.Equal(berth.Map, returned.Map);
+        }
         Assert.Equal(control.Exploration!.Map, resumed.Exploration!.Map);
         Assert.Equal(control.Exploration.Player, resumed.Exploration.Player);
         Assert.Equal(control.Exploration.PlayerEntity.Motion, resumed.Exploration.PlayerEntity.Motion);
@@ -111,6 +131,7 @@ public sealed class BattleSaveReturnTests
         var field = OpeningSave.Capture(definition, resumed, RuleCompositions.Sf2(), resumed.SessionId, resumed.Revision);
         Assert.Null(field.Error);
         var again = Assert.IsType<SessionStarted>(GameSession.Restore(definition, field.Data!, RuleCompositions.Sf2())).Session;
+        Assert.Equal(berth, again.Current.Story.Raft);
         Assert.Equal(actual.Gold, again.Current.Exploration!.Party.Gold);
         Assert.Equal(actual.Actors.First().Kills, again.Current.Exploration.Party.Actors.First().Kills);
         Assert.Null(EngineTestContent.Send(again, new WaitAtInput()).Failure);
