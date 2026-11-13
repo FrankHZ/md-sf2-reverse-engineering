@@ -1248,15 +1248,16 @@ ObjectDB warning; this slice neither audits audio lifetime nor claims that warni
 
 The [M2f consumer agreement](../application/localization-design.md#implemented-m2f-story-controls-and-return-notices-boundary)
 extends the existing GameText/PO/font through ExplorationDialogueView hints, BattleStoryView hints,
-StoryChoiceRow labels and FieldReturnFeedback notices. The shared panel measures the hint including
-its Chinese English-fallback line; body, hint and attached choices remain disjoint at 1080p.
+StoryChoiceRow labels and FieldReturnFeedback notices. Body, hint and attached choices remain
+disjoint at 1080p, including the optional text diagnostics described in the
+[player-facing copy review](ui-scene-review.md#player-facing-copy).
 Both old triangle markers lack bundled coverage; `>` is used for selected Yes/No and Continue.
 Stable Yes/No nodes, booleans and source-owned selection retain input authority. Reveal, ReadMore,
 complete pointer release and fresh confirmation still precede choice delivery.
 
 The exploration body/window/range and retained FieldTextWait projection are unchanged. Battle-story
-Definition.Texts remains English, with a visible `unmigrated-consumer` fallback notice only while a
-DialogueWait body is shown in Chinese. Camera/tick delivery and close remain unchanged. Typed actual
+Definition.Texts remains English, with a `unmigrated-consumer` notice only when Debug diagnostics is on
+and a DialogueWait body is shown in Chinese. Camera/tick delivery and close remain unchanged. Typed actual
 Victory/Defeat/retreat events plus CanWaitAtInput select complete pending/ready notices; Begin/Dismiss
 and first-input dismissal retain their existing lifetime, without a new outcome or reward authority.
 The [native recipe](../verification/host.md#localized-story-controls-choices-and-return-notices)

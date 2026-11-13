@@ -900,9 +900,9 @@ semantic operation. Catalog fallback retains the whole English row and its key/r
 
 - ExplorationDialogueView changes only RefreshHint. Its FieldTextWait/Search projection, open-window
   identity, source ranges, retained question, visible characters and reading reset remain unchanged.
-  In Chinese, an actually visible untranslated window keeps the existing English fallback reason.
-  BattleStoryView likewise marks visible DialogueWait bodies `unmigrated-consumer`; camera-only waits
-  get no body fallback notice. Definition.Texts, camera completion, wait tokens and acknowledgements
+  The English fallback body remains readable in Chinese mode. An untranslated field window or
+  battle-story DialogueWait shows its diagnostic reason only with Debug diagnostics enabled;
+  camera-only waits get no body fallback notice. See the [scene copy review](../godot/ui-scene-review.md#player-facing-copy). Definition.Texts, camera completion, wait tokens and acknowledgements
   are unchanged. Chinese controls do not imply translated dialogue or a Chinese opening route.
 - StoryChoiceRow translates Text only. Node IDs Yes/No, boolean selection, authored focus and source
   Work/phase remain authoritative. The bundled face lacks the old triangle glyphs; supported `>`
