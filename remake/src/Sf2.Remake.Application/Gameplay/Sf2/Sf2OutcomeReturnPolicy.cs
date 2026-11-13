@@ -87,6 +87,10 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
     }
     protected virtual uint DefeatGold(uint current) => current / 2;
 
+    public virtual bool CanRecover(BattleDeploymentDefinition deployment, BattleActorStartInput actor, bool all) =>
+        deployment.Faction == BattleFaction.Ally &&
+        (all || actor.Hp > 0 || deployment.Initialization?.AllyPartyMember is 7 or 28);
+
     public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all)
     {
         var encounter = definition.Encounters[party.Encounter];
@@ -95,7 +99,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
             var deployment = encounter.Deployments.FirstOrDefault(row => row.Actor == input.Actor) ??
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
-            if (deployment.Faction != BattleFaction.Ally || (!all && input.Hp == 0 && deployment.Initialization?.AllyPartyMember is not (7 or 28))) return input;
+            if (!CanRecover(deployment, input, all)) return input;
             if ((input.Status & ~(0xC0 | 0x0300 | 2)) != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
             // HealLivingAndImmortalAllies and ResetAlliesStats preserve lasting poison.
             return input with { Status = (ushort)(input.Status & 2), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,

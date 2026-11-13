@@ -103,6 +103,36 @@ public sealed class PartyRecoveryContextTests
         }
     }
 
+    [Theory]
+    [InlineData(1)] [InlineData(23)]
+    public void SelectedPolicyRecoversTheSameDeadActorWithDifferentMembership(int member)
+    {
+        var session = Start("shop-supplies"); var admitted = session.Current.Exploration!.Party;
+        var original = session.Definition.Encounters.Values.Single();
+        var encounter = original.WithDeployments(original.Deployments.Select(row => row.Actor.Value == "guard-a"
+            ? row with { Initialization = new(null, 0, 0, 0, 0, AllyPartyMember: member) } : row));
+        var definition = new ScenarioDefinition("selected-recovery", [encounter]);
+        var party = Context(admitted, admitted.Actors.Select(a => a with { Hp = 0, Mp = 0, Status = 0x3C2 }));
+        var source = OutcomeReturnRules.Heal(new Sf2OutcomeReturnPolicy(), definition, party, false);
+        Assert.Equal(party.Actors, source.Actors); // Neither identity is source-immortal.
+        var selected = OutcomeReturnRules.Heal(new SelectedMemberRecovery(member), definition, party, false);
+        SameContext(party, selected);
+        foreach (var before in party.Actors)
+        {
+            var after = selected.Actors.Single(a => a.Actor == before.Actor);
+            var actor = encounter.Deployments.Single(d => d.Actor == before.Actor).Definition;
+            Assert.Equal(before.Actor.Value == "guard-a"
+                ? before with { Hp = actor.MaxHp, Mp = actor.MaxMp, Status = 2 } : before, after);
+        }
+    }
+
+    private sealed class SelectedMemberRecovery(int member) : Sf2OutcomeReturnPolicy
+    {
+        public override string Identity => "selected-member-recovery";
+        public override bool CanRecover(BattleDeploymentDefinition deployment, BattleActorStartInput actor, bool all) =>
+            deployment.Faction == BattleFaction.Ally && deployment.Initialization?.AllyPartyMember == member;
+    }
+
     [Fact]
     public void UnsupportedRecoveryStatusKeepsTheWholePartyAndProgramCursor()
     {
@@ -176,12 +206,16 @@ public sealed class PartyRecoveryContextTests
 
     [Theory]
     [InlineData("flags")] [InlineData("visuals")] [InlineData("retained")] [InlineData("credit")]
+    [InlineData("gold")] [InlineData("main-seed")] [InlineData("thinking-seed")] [InlineData("custody")]
+    [InlineData("accounting")] [InlineData("poison")] [InlineData("ineligible-hp")] [InlineData("ineligible-mp")]
+    [InlineData("over-max-hp")] [InlineData("over-max-mp")]
     public void SelectedRecoveryPolicyCannotPublishUnownedContextChanges(string field)
     {
         var session = Start("shop-supplies"); var current = session.Current; var world = current.Exploration!;
-        var party = Context(world.Party, world.Party.Actors.Select(a => a with { Status = 0 }));
+        var party = Context(world.Party, world.Party.Actors.Select(a => a with
+            { Status = 2, Hp = field.StartsWith("ineligible-") ? (ushort)0 : a.Hp }));
         var exploration = session.Definition.Exploration!;
-        var program = new StoryProgram("reset-policy", [new ResetPartyBattleStats(), new EndProgram()]);
+        var program = new StoryProgram("reset-policy", [new ResetPartyBattleStats(LivingOnly: true), new EndProgram()]);
         var definition = new ScenarioDefinition("policy", session.Definition.Encounters.Values,
             exploration: new ExplorationDefinition(exploration.Maps.Values, exploration.Programs.Values.Append(program), exploration.Texts));
         var rules = new SessionRules("bad-recovery", session.Rules.Healing,
@@ -199,6 +233,8 @@ public sealed class PartyRecoveryContextTests
     {
         private readonly Sf2OutcomeReturnPolicy _source = new();
         public string Identity => "context-changing-recovery";
+        public bool CanRecover(BattleDeploymentDefinition deployment, BattleActorStartInput actor, bool all) =>
+            _source.CanRecover(deployment, actor, all);
         public OutcomeStart Start(ScenarioDefinition definition, EngineBattleState battle, StoryState story,
             BattleOutcomeKind kind, BattleStartInput party) => _source.Start(definition, battle, story, kind, party);
         public OutcomeFinish Finish(ScenarioDefinition definition, StoryState story, BattleStartInput party) =>
@@ -206,8 +242,19 @@ public sealed class PartyRecoveryContextTests
         public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all)
         {
             var healed = _source.Heal(definition, party, all);
-            return new(healed.Encounter, healed.Actors, healed.MainSeed, healed.ThinkingSeed, healed.Gold,
-                healed.NewBattle, healed.ActiveAllies, healed.ItemCustody,
+            var actors = healed.Actors.Select((a, index) => index != 0 ? a : field switch
+            {
+                "accounting" => a with { Kills = 999 },
+                "poison" => a with { Status = 0 },
+                "ineligible-hp" => a with { Hp = 1 },
+                "ineligible-mp" => a with { Mp = 1 },
+                "over-max-hp" => a with { Hp = 65535 },
+                "over-max-mp" => a with { Mp = 255 },
+                _ => a,
+            });
+            return new(healed.Encounter, actors, field == "main-seed" ? 0 : healed.MainSeed,
+                field == "thinking-seed" ? 0 : healed.ThinkingSeed, field == "gold" ? 0 : healed.Gold,
+                healed.NewBattle, healed.ActiveAllies, field == "custody" ? null : healed.ItemCustody,
                 field == "flags" ? [] : healed.StoryFlags, field == "visuals" ? null : healed.Visuals,
                 field == "retained" ? [] : healed.RetainedSourceSlots, field == "credit" ? null : healed.DeathCredit);
         }

@@ -445,6 +445,10 @@ ATT-only ordinary enemy gear is immutable loadout metadata, not a player equipme
 Normal initialization applies the existing source base-ATT adjustment, then the selected weapon
 contribution once (clamp200). Player equip/unequip stays free and refreshes the live base once;
 carried slot words, gold, growth and both RNG channels retain their existing transaction boundaries.
+`BattleEquipmentDefinition.InertItems` binds additional bare carried identities. Initialization and
+ordinary AI share that item admission; it grants no ATT/range contribution, equip choice or Use action.
+The private content binding selects only the already admitted Power Ring (19), after placement
+`AddItem` clears its equipped bit. Equipped/broken ring words and unbound identities still reject.
 Unknown usable items, broken/cursed gear and unsupported effects still reject; the
 [finite enemy BLAZE1/HEAL1 extension](#finite-early-enemy-spell-decisions) owns the admitted spell decisions.
 
@@ -1044,6 +1048,32 @@ policy selects programs/anchors, living/immortal recovery, completed-flag skip, 
 and defeat gold. `BattleOutcome` and `ProgramRunner` still publish and execute the existing stages.
 One validated finish decision precedes join/flag publications; no later policy call can discard that
 partially published tail. No new continuation state or generic effect interpreter is introduced.
+
+**Standard rigor agreement — carried items and return recovery:** the bounded outcome removes
+duplicated item/member admission from common battle rules. Existing immutable equipment content owns
+inert carry permission; `IOutcomeReturnPolicy.CanRecover` owns return-recovery eligibility and must
+give the same answer for the same deployment, input actor and `all` request. The SF2 policy retains
+living/all-member recovery and its source-immortal members 7/28; its `Heal` uses the same predicate.
+Common return validation independently limits changes to eligible allies' bounded HP/MP and removal
+of temporary sleep/silence bits. Poison, actor identity, inventory, growth/accounting, activation,
+gold outside its existing defeat stage, RNG and retained context remain protected. Ineligible allies
+and enemies cannot change during recovery. This introduces no new SF2 resurrection rule or item
+effect and does not change save compatibility, target scoring or battle-entry revival semantics.
+
+Acceptance is executable in
+[`EnemyCarriedItemTests`](../../tests/Sf2.Remake.Engine.Tests/EnemyCarriedItemTests.cs) and
+[`PartyRecoveryContextTests`](../../tests/Sf2.Remake.Engine.Tests/PartyRecoveryContextTests.cs): varied
+authored encounters vary item identity and weapon possession, initialize through the common session,
+carry/drop once without gaining effects, and reject unbound/flagged words. The private-input case
+uses authenticated source definitions with controlled Power Ring placements on armed/unarmed enemies;
+it does not claim those placements naturally occur in those encounters. Recovery covers source
+living/all/immortal behavior, the same action with selected members 1/23, and atomic refusal of
+unowned resource/context changes at the program cursor. After the
+[protected environment setup](../development-and-verification.md#locked-net-workflow), run
+`uv run sf2 verify engine` and `uv run sf2 verify adapter`. For focused correction runs, select these
+test classes with the .NET `--filter` option; load registered private inputs and set
+`SF2_REQUIRE_PRIVATE_TESTS=1` to require the source-binding case. Natural-route, native presentation
+and original timing evidence remain with their existing owners.
 
 `AuthoredProgressionOutcome()` demonstrates fixed7 eligible awards with no award draws and a
 saturating10-gold defeat cost. It preserves source growth and ordinary return machinery. The two
