@@ -98,6 +98,7 @@ public sealed partial class GameRoot
     private void RefreshWindowSupport()
     {
         if (_updatingWindow || _input is null) return;
+        _windowRecovery?.Suspend();
         ApplyWindowCanvas();
         if (!WindowClientAllowed)
         {

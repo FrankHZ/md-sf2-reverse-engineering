@@ -91,7 +91,14 @@ func field_pages() -> void:
     root.size = Vector2i(1600,899)
     await frames(5)
     check(window().recovery != null, "one pixel below height retains recovery")
-    root.size = size_before
+    if size_before == Vector2i(1600,900) and not find("Recovery0").disabled:
+        root.size = Vector2i(1280,720)
+        await frames(5)
+        await hit(find("Recovery0"))
+        check(root.size == size_before, "Restore button returns a 1600x900 client")
+        root.position = Vector2i(-20000,-20000)
+    else:
+        root.size = size_before
     await frames(8)
     canvas("restored settings", false)
     geometry("SettingsWindow")
