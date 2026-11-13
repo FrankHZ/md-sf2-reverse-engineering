@@ -7,15 +7,13 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 public sealed partial class BattleSessionView
 {
-    // Same 120 ms adapter policy as field retry. Successful battle steps still
-    // await their real movement consumer; missed deadlines never create a batch.
+    // Menus and inspection use a repeat deadline. Player preview repeats on arrival.
     private const ulong NavigationRepeatMicros = 120000;
     private object? _navigationBoundary;
     private GameAction? _navigationDirection;
     private ulong _nextNavigation;
     private bool _navigationRejected;
-    private ulong NavigationNow => !_inspection.Active && _session?.Current.Selection?.Stage == BattleSelectionStage.Movement
-        ? (ulong)_movementNavigationMicros : Time.GetTicksUsec();
+    private bool NavigatingPreview => !_inspection.Active && _session?.Current.Selection?.Stage == BattleSelectionStage.Movement;
 
     private object? NavigationBoundary()
     {
@@ -61,17 +59,22 @@ public sealed partial class BattleSessionView
         if (!repeating)
         {
             _navigationBoundary = boundary; _navigationDirection = action;
-            _nextNavigation = NavigationNow + NavigationRepeatMicros;
+            if (!NavigatingPreview) _nextNavigation = Time.GetTicksUsec() + NavigationRepeatMicros;
         }
     }
 
-    private void ServiceNavigation()
+    private void ServiceNavigation(bool playerStepFinished = false)
     {
         if (_navigationDirection is not { } direction) return;
         if (!Equals(_navigationBoundary, NavigationBoundary()) || _input.MovementDirection != direction)
         { ClearNavigation(); return; }
-        if (_session!.Current.BattleMovement is not null || NavigationNow < _nextNavigation) return;
-        _nextNavigation = NavigationNow + NavigationRepeatMicros;
+        if (NavigatingPreview != playerStepFinished || _session!.Current.BattleMovement is not null) return;
+        if (!playerStepFinished)
+        {
+            ulong now = Time.GetTicksUsec();
+            if (now < _nextNavigation) return;
+            _nextNavigation = now + NavigationRepeatMicros;
+        }
         HandleAction(direction, repeating: true);
     }
 }
