@@ -3,7 +3,7 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public enum FieldRecoveryEffect { NoEffect, CurePoison, Egress }
+public enum FieldRecoveryEffect { NoEffect, CurePoison, Egress, MapEvent }
 public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, FieldRecoveryEffect Effect);
 
 // Field caller policies are admitted separately from battle recovery and its EXP/RNG rolls.
@@ -35,10 +35,9 @@ internal static class FieldRecovery
         }
         else throw new BattleRuleException("field-recovery-command", "command");
         effective = false;
-        if (effect == FieldRecoveryEffect.NoEffect)
+        if (effect is FieldRecoveryEffect.NoEffect or FieldRecoveryEffect.MapEvent)
         {
-            // mainactions byte_21348 / non-usable item map-event fallthrough: no payment.
-            // This bounded family has no item map event. Do not consume ordinary recovery items.
+            // A map event owns any removal, after its scene. An unmatched use is free.
             if (targetRef is not null) throw new BattleRuleException("field-no-effect-target", "target");
             return party;
         }

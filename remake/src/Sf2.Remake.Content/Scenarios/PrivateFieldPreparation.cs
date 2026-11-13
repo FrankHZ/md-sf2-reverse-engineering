@@ -58,13 +58,16 @@ internal static class PrivateFieldPreparation
                 map.Setups.Values.Select(setup => setup.Search).Append(map.Search))
             .OfType<FieldSearchDefinition>().SelectMany(search => search.Chests.Concat(search.OtherItems))
             .Where(row => row.ItemWord.HasValue).Select(row => (byte)(row.ItemWord!.Value & 127)).ToHashSet();
+        var eventItems = (world?.Maps.Values ?? []).SelectMany(map =>
+                map.Events.Concat(map.Setups.Values.SelectMany(setup => setup.Events)))
+            .Where(row => row.Kind == ExplorationEventKind.UseItem).Select(row => row.Item!.Value).Distinct().ToArray();
         var wingNoEffectMaps = wingMaps ?? [];
         return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
                 item.ItemTypeExpression == "CONSUMABLE" || item.Code == "MITHRIL" ||
-                (item.Id != 127 && pickupIds.Contains(item.Id))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
+                (item.Id != 127 && (pickupIds.Contains(item.Id) || eventItems.Contains(item.Id)))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
-                FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 } ||
+                FieldItems(source).Concat(eventItems.Select(id => KeyValuePair.Create(id, FieldRecoveryEffect.MapEvent))), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 } ||
                     egress is not null && spell is { Code: "EGRESS", Level: 1 })
                     .Select(spell => new FieldSpellChoice(spell.Spell, spell.DisplayName, spell.MpCost,
                         spell.Code switch { "DETOX" => FieldRecoveryEffect.CurePoison, "EGRESS" => FieldRecoveryEffect.Egress, _ => FieldRecoveryEffect.NoEffect })),
