@@ -47,7 +47,8 @@ confirmation starts on Cancel. Returning from confirmation restores the chosen s
 slot2; Back from slots restores the originating system Save row. Successful Save and return closes
 the host to gameplay. Quit uses the existing clean/dirty warning and starts on Cancel. Corrupt
 primary data remains an explicit failure with a separately offered backup, never an empty slot or
-automatic fallback. Publication uncertainty still requires inspection rather than a blind retry.
+automatic fallback. See the [1080p reading and recovery check](#slot-recovery-and-overwrite-at-1080p).
+Publication uncertainty still requires inspection rather than a blind retry.
 
 Recovery hides the entry, slots, name, settings/help and system Menu it covers. The existing host
 pauses gameplay and audio. Restoring a supported client shows the retained page and selection;
@@ -81,6 +82,52 @@ Battle07 `battle07-return` Map58 anchor, according to current content/persistenc
 First Map14 control is inside the [campaign demo frontier](../application/pre-voyage-campaign.md),
 not an added field-save recipe. Inspection remains read-only; explicit Save alone consumes the
 existing live music/capture path. Gameplay/progress never stores preferences.
+
+## Slot recovery and overwrite at 1080p
+
+**Confirmed.** In the Witch's **Continue** column, the backup prompt identifies the slot, name,
+destination and UTC time. The primary failure detail follows at 24px, then any translation fallback
+notice at 24px. The reading region starts at its first line. Cancel and Recover Backup sit below
+it, followed by the mapped footer. Left/Right scroll the explanation while Up/Down selects an
+action. The field Menu's **Save** uses the same order for an error or overwrite. The overwrite
+consequence stays at 30px and names the slot and what becomes its backup.
+
+| Production input path | Observed result at 1920×1080 |
+| --- | --- |
+| Continue → corrupt slot 1 with valid backup | The Chinese backup offer occupied four lines. The primary detail showed `save-malformed`. Cancel returned to the Witch menu with both files byte-identical. Reopening and explicitly choosing Recover repaired the primary from the backup, preserved the backup bytes and attached its full saved field progress. |
+| Continue → corrupt or missing primary, valid backup, long Chinese detail | The detail retained the actual primary failure. The deliberately extended 24px text wrapped to 12 lines. The bundled font supplied every glyph. Scrolling the 612×631 reading region reached the final translation notice and returned to the first line. Both 612×76 buttons stayed fully visible above the footer. |
+| Continue → empty slot or corrupt slot without backup | An empty slot showed `save-slot-empty`. The invalid slot showed `save-malformed`. Each offered Back and returned to the Witch. The invalid primary remained intact. |
+| Restored Ribble field → Menu → Save | Attempting to publish over the invalid slot displayed `save-primary-invalid-use-recovery`. Back restored the Save row. The occupied valid slot displayed its overwrite consequence and all three actions. Cancel returned to that slot, Back restored Save, then Back returned to walking. A fresh Down input moved the leader one tile. |
+
+Run the [slot reading observation](../../game/probes/save_recovery_reading_observation.gd)
+with the existing Debug adapter, matched product content, default bindings and instant zh-CN text.
+Prepare the source in a disposable validation namespace by saving twice to slot 1 on the settled
+Ribble field. This produces a current-recipe primary and backup through the actual Save host.
+Use a **new** `issue1769-*` namespace beneath the configured external validation root for each case.
+Copy the validation preferences and `sf2-opening/slot1.bak` there. For `corrupt`, also copy the
+primary and replace only that copy with the single UTF-8 byte `{`, leaving slot 2 empty.
+For `corrupt-stress`, prepare the same damaged primary and put that byte in `slot2.json` with
+no slot 2 backup. For `missing-stress`, omit the slot 1 primary and use the same invalid slot 2.
+Both stress cases extend `save.details` and remove `slot.matching` from the in-memory Chinese
+translation, exercising the actual fallback notice. The `corrupt` case uses the shipped catalog.
+Set the case, namespace, isolated app data/TEMP and a fresh ignored output path before
+each headless launch.
+
+```powershell
+$env:SF2_HOST_UI_CASE = $case  # corrupt, corrupt-stress or missing-stress
+$env:SF2_SAVE_NAMESPACE = $freshValidationNamespace
+$env:SF2_HOST_UI_OUTPUT = Join-Path $runRoot 'native.json'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+    --path remake/game --script res://probes/save_recovery_reading_observation.gd `
+    --log-file (Join-Path $runRoot 'godot.log')
+```
+
+The native JSON records shaped label bounds, line counts, action rectangles and outcomes.
+The direct byte comparison includes the untouched second slot. The original 20px projection put
+the primary detail after the actions. An early full-progress comparison used an older recipe-2
+Ribble record that recaptures at revision 4 with two additional allies. The current-recipe fixture
+keeps the complete comparison. The headless runs retain the known two-instance ObjectDB exit
+warning. Physical display/DPI reading comfort remains **Unknown**.
 
 ## Reproduction and finite evidence
 

@@ -15,6 +15,7 @@ internal sealed partial class SaveSlotView : Control
     private Label _coverage = null!;
     private PanelContainer _panel = null!;
     private VBoxContainer _column = null!;
+    private VBoxContainer _confirmationActions = null!;
     private ScrollContainer? _reading;
     private readonly List<Button> _buttons = [];
     private readonly List<Action> _actions = [];
@@ -43,6 +44,9 @@ internal sealed partial class SaveSlotView : Control
         _reading = new ScrollContainer { Name = "SlotReading", SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         layout.AddChild(_reading); _reading.AddChild(_column);
+        _confirmationActions = new VBoxContainer { Visible = false };
+        _confirmationActions.AddThemeConstantOverride("separation", OverEntry ? 24 : 12);
+        layout.AddChild(_confirmationActions);
         _title = new Label { Name = "SlotTitle", HorizontalAlignment = HorizontalAlignment.Center, Visible = !OverEntry };
         _title.AddThemeFontSizeOverride("font_size", 34); _column.AddChild(_title);
         _message = new Label { Name = "SlotMessage", HorizontalAlignment = HorizontalAlignment.Center,
@@ -54,11 +58,11 @@ internal sealed partial class SaveSlotView : Control
         layout.AddChild(_hint);
         _detail = new Label { Name = "SlotDetail", HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart, Visible = false };
-        _detail.AddThemeFontSizeOverride("font_size", 20);
+        _detail.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
         _detail.AddThemeColorOverride("font_color", new Color("a7b9cf")); _column.AddChild(_detail);
         _coverage = new Label { Name = "SlotCoverage", HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        _coverage.AddThemeFontSizeOverride("font_size", 20); _column.AddChild(_coverage);
+        _coverage.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); _column.AddChild(_coverage);
         Resized += ArrangeWindow; ArrangeWindow();
     }
 
@@ -101,8 +105,11 @@ internal sealed partial class SaveSlotView : Control
         _message.AddThemeColorOverride("font_color", state.Contains("error") || state.Contains("uncertain")
             ? new Color("ffc4ad") : Colors.White);
         RefreshInputHints();
-        foreach (var button in _buttons) { _column.RemoveChild(button); button.QueueFree(); }
+        foreach (var button in _buttons) { button.GetParent().RemoveChild(button); button.QueueFree(); }
         _buttons.Clear(); _actions.Clear(); _selected = 0;
+        _confirmationActions.Visible = state is "error" or "recover-backup" or "confirm-save";
+        var actions = _confirmationActions.Visible ? _confirmationActions : _column;
+        if (_confirmationActions.Visible && _reading is not null) _reading.ScrollVertical = 0;
         foreach (var (label, action) in choices)
         {
             int index = _buttons.Count;
@@ -111,7 +118,7 @@ internal sealed partial class SaveSlotView : Control
             button.GuiInput += input => { if (Input?.KeyboardMouseHints == true &&
                 input is InputEventMouseMotion { Device: >= 0 } motion && motion.Relative.Length() >= 4) Select(index); };
             button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
-            _column.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button); _actions.Add(action);
+            actions.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button); _actions.Add(action);
         }
         _column.MoveChild(_detail, _column.GetChildCount() - 1);
         _column.MoveChild(_coverage, _column.GetChildCount() - 1);
@@ -134,9 +141,12 @@ internal sealed partial class SaveSlotView : Control
         _selected = index;
         for (int i = 0; i < _buttons.Count; i++)
             StoryTheme.Select(_buttons[i], i == index);
-        if (_reading is not null)
-            Callable.From(() => { if (index < _buttons.Count && _buttons[index].IsVisibleInTree())
-                _reading.EnsureControlVisible(_buttons[index]); }).CallDeferred();
+        if (_reading is not null && !_confirmationActions.Visible)
+            Callable.From(() =>
+            {
+                if (index < _buttons.Count && _reading.IsAncestorOf(_buttons[index]) && _buttons[index].IsVisibleInTree())
+                    _reading.EnsureControlVisible(_buttons[index]);
+            }).CallDeferred();
     }
     public string ReadSaveObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { state = State, message = _message.Text, selected = _selected, choices = _buttons.Select(button => button.Text).ToArray() });
