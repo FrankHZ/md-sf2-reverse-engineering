@@ -775,7 +775,7 @@ and a complete legal-target click executes immediately. Existing invalid-target,
 single-action rules are unchanged. No first-use persistence or automatic tutorial is introduced.
 
 Long text wraps and uses the owning reader/scroll mechanism, with existing30px body/24px hints and
-1920×1080 gameplay minimum. The cue may grow to retain a necessary reason or consequence. Help remains
+1920×1080 logical design baseline. The cue may grow to retain a necessary reason or consequence. Help remains
 available through existing Witch menu or settled-field Settings, with full localized English/Chinese
 prose. Story/battle Menu does not make Settings/Help newly available. Screenshots are prohibited.
 
@@ -1734,11 +1734,10 @@ variants change only a small ignored authored input; private inputs and observat
 ## Presentation Policy and Current Layout
 
 The common design baseline is 1920×1080 (16:9). One map cell and ordinary 24×24 sprite
-frame occupy 96×96 output pixels: both consumers use nearest sampling at four output pixels
-per source pixel. The world fills the viewport (480×270 source pixels); UI overlays never resize
-or zoom it. The [minimum-window policy](#window-support-and-recovery-1455) also admits larger native
-clients, including 4K fullscreen at that fixed scale; sub-1080p gameplay and free zoom remain outside
-the bounded world-layout work. The shared visual/story treatment above supplies the current finite Theme consumers.
+frame occupy 96×96 logical pixels with nearest sampling. At 1080p the viewport covers 480×270
+source pixels. Larger native clients reveal more world. At 1600×900 the shared canvas scales to
+five-sixths, including world cells, panels, text and pointers. UI overlays keep the same map extent.
+See the [window policy](#window-support-and-recovery-1455). The shared visual/story treatment above supplies the current finite Theme consumers.
 
 ### Unified world viewport agreement
 
@@ -1884,16 +1883,17 @@ preserve the exact design and receipts without declaring them current functional
 
 ### Window support and recovery (#1455)
 
-**Standard rigor; selected implementation under [#1455](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1455).**
-Gameplay requires actual native client width ≥1920 and height ≥1080. Larger windows, maximize and
-native fullscreen including 4K remain admitted at 96px cells/ordinary frames and 4× nearest sampling.
-The world extent expands through the existing layout; UI never shrinks the world. Entry retains its
-logical 1080p CanvasItems canvas; gameplay views retain Disabled scaling/native coordinates.
-Existing High save/recovery guarantees and the four Settings preferences remain unchanged.
+**Standard rigor.** The host admits gameplay at a physical client width of at least 1600 and height
+of at least 900. Window borders and the desktop work area affect placement. The project canvas
+is 1920×1080 logical pixels. Entry always fits it uniformly inside the client, with centered bars
+where needed. Gameplay fits the same canvas when either client dimension falls below the design
+size. When both dimensions meet the design size, gameplay uses native coordinates and reveals more
+world as the window grows. Godot converts client pointer positions to logical coordinates before
+GUI and gameplay hit testing. [Representative clients and input](ui-scene-review.md#desktop-clients)
 
 | Boundary | Current behavior / acceptance limit |
 | --- | --- |
-| Native gameplay client at least 1920×1080 | Admitted, including larger aspect ratios/windows and native 4K fullscreen. Bounded 1080p field/menus/battle/return, 2560×1440 edge placement and 4K field/battle-menu observations do not certify every screen/state/device. |
+| Supported clients | At 1600×900, each 96-unit cell occupies 80 physical pixels. At 1920×1080, 1920×1200 and 2560×1440 it occupies 96. Native 4K fullscreen uses the same native layout. |
 | Either gameplay client dimension below minimum | Suspend processing/audio and show the responsive recovery shell. Restore window, Use fullscreen and Quit are the finite actions; mode requests must satisfy actual client readback before gameplay resumes. 720p gameplay is not supported. |
 | Entry/slot/name forms at smaller native sizes | Keep the existing logical canvas and pending form. Final New Game publication, Continue mount and explicit backup recovery recheck native admission before writing/replacing progress. Controlled diagnostic starts wait behind recovery rather than mounting below minimum. |
 | Placement and mode selection | Work area/decorations choose a fitting centered window or qualifying native fullscreen only at startup/explicit Restore. A valid-sized window dragged partly offscreen/across screens never pauses or recenters. No position polling, display-mode changes or persistent display preference. |
@@ -1902,8 +1902,8 @@ Existing High save/recovery guarantees and the four Settings preferences remain 
 [WindowSupportHost](../../game/src/Entry/WindowSupportHost.cs) owns native client admission and the
 finite resume decision alongside [GameRoot](../../game/src/GameRoot.cs). At startup an already
 valid window is centered when its outer dimensions fit; prefer qualifying ordinary fullscreen when
-a baseline decorated window cannot fit, including an OS-clamped startup client. Otherwise choose a
-fitting baseline window when needed. If neither fits, retain a smaller entry shell instead of forcing
+a minimum-sized decorated window cannot fit, including an OS-clamped startup client. Otherwise choose a
+fitting 1600×900 window when needed. If neither fits, retain a smaller entry shell instead of forcing
 an oversized default window. On desktops that can fit a baseline window, smaller entry launches can retain their size until
 gameplay is requested.
 
@@ -1944,12 +1944,6 @@ their existing fixed hint rectangles. Full bindings remain in Controls help. Act
 never establishes 720p support. The finite visual migration under
 [#1453](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1453) is integrated; it does not
 establish full-game visual completion.
-
-The chosen minimum policy reuses native expansion and existing overlay anchors. Exactly 1080p-only
-would add equality/resize restrictions and reject usable 4K fullscreen without a correctness need.
-UI-only adaptation below 1080p would instead require separate Party/Church/dialogue/battle/host reflow,
-font/card/portrait choices and exactly one inverse pointer transform. Root CanvasItems scaling would
-also change world pixels. That wider scope remains deferred; no new Settings row or UI-scale promise.
 
 Use the [finite host recipe/results](../verification/host.md#window-boundary-design-observation-1455):
 adapter build, clean committed dependency plan, direct source/docs/private-boundary checks and actual

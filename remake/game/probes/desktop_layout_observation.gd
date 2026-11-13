@@ -104,6 +104,8 @@ func field_pages() -> void:
     await frames(8)
     check(not window().allowed and window().recovery != null, "one pixel below width enters recovery")
     geometry("WindowRecoveryPanel")
+    var message := find("RecoveryMessage") as Label
+    check("1600 × 900" in message.text and "1599 × 900" in message.text, "recovery explains required and actual client")
     await key(KEY_ESCAPE)
     check(find("WindowQuitView") != null, "recovery Quit reachable")
     await key(KEY_ESCAPE)

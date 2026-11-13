@@ -57,8 +57,9 @@ changes, including proportional changes that leave logical geometry unchanged. E
 also explicitly cancels a settings/help gesture. Existing release barriers prevent the closing
 Confirm from moving, acknowledging text or choosing the next gameplay action.
 
-These layouts cap reading width and retain 30px body/24px hints. Gameplay still requires a client
-of at least 1920×1080. A smaller client enters recovery; it does not scale gameplay down.
+These layouts cap reading width and retain 30-unit body text and 24-unit hints on the design
+canvas. At the 1600×900 desktop floor these project to 25 and 20 physical pixels. Below either
+minimum dimension, gameplay enters [window recovery](presentation.md#window-support-and-recovery-1455).
 
 ## Access through the finite demo
 

@@ -152,12 +152,13 @@ and [mapped input hints](presentation.md#minimal-contextual-hints-1544).
 
 ## Layout that preserves the world
 
-Gameplay remains native coordinates at width ≥1920 and height ≥1080, with 96px world cells and
+The [desktop window policy](presentation.md#window-support-and-recovery-1455) fits the 1920×1080
+design canvas into supported smaller clients down to 1600×900. Gameplay uses native coordinates
+when width ≥1920 and height ≥1080, with 96px world cells and
 ordinary sprites at nearest 4×. Larger supported native windows, including 2560×1440, 3840×2160
 and wider aspect ratios, reveal more world; fonts and icons do not automatically double at 4K.
 Use actual viewport bounds, fixed readable panel widths and edge/center anchors. Do not stretch a
-paragraph across the full ultrawide screen. Entry/Settings/Help retain their existing scaled
-smaller-window policy; this does not admit 720p gameplay.
+paragraph across the full ultrawide screen. Entry always fits its 16:9 canvas. Settings and Help inherit the active caller’s canvas.
 
 Choose the overall composition by what the player needs to see during each step.
 
