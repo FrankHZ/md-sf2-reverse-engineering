@@ -26,7 +26,8 @@ internal static class MapEventDispatcher
         if ((world.Population is not null || world.Definition.Caravan is not null) && (player.Motion.FlagsA & 0x20) != 0 && candidate is not null &&
             EntityMotion.FieldObstructed(candidate.X * 384, candidate.Y * 384, others.Select(entity => entity.Motion)))
             return (world, new(false, false, null));
-        if (world.Definition.Caravan is not null && candidate is not null &&
+        if ((world.Definition.Caravan is not null || CaravanRuntime.HasOverworldPopulation(world.Population)) && candidate is not null &&
+            (world.Definition.Caravan is not null || world.Definition.Traversal.IsWithinActiveArea(candidate)) &&
             (world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x3800 && flags.Contains(65))
             return (world, new(false, false, null, 2));
         if (world.Population is not null && candidate is not null && flags.Contains(64) &&

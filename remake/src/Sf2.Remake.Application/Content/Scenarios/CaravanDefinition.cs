@@ -10,9 +10,9 @@ public sealed record CaravanDefinition(EntityRef FollowerA, IReadOnlyList<int> C
 public enum FieldTravelMode { Walking = 0, Caravan = 1, Raft = 2 }
 
 internal abstract record VehicleInstruction : StoryInstruction;
-internal sealed record ApplyVehicleFollowerActions(EntityActionProgram Actions) : VehicleInstruction;
+internal sealed record ApplyVehicleFollowerActions(EntityActionProgram Actions, bool SkipCaravan = false) : VehicleInstruction;
 internal sealed record MoveVehicleOffMap(EntityRef Entity) : VehicleInstruction;
-internal sealed record WaitForVehicleFollowers : VehicleInstruction;
+internal sealed record WaitForVehicleFollowers(bool SkipCaravan = false) : VehicleInstruction;
 internal sealed record RestoreCaravanPlayer : VehicleInstruction;
 internal sealed record InstallCaravanFollowers : VehicleInstruction;
 internal sealed record SetFieldTravelMode(FieldTravelMode Mode) : VehicleInstruction;

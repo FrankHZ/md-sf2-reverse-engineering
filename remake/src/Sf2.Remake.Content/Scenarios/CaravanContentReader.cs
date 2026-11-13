@@ -42,7 +42,12 @@ internal static class CaravanContentReader
         EntityRef player, bool authored)
     {
         var selected = maps.Where(map => map.Caravan is not null).ToArray();
-        if (selected.Length == 0) return;
+        if (selected.Length == 0)
+        {
+            if (!authored && maps.Any(map => CaravanRuntime.HasOverworldPopulation(map.Population)))
+                programs.AddRange(CaravanPrograms.Create(new("entity-30"), player));
+            return;
+        }
         Require(authored && maps.Count == 1 && selected.Length == 1, "caravan-standalone-world", "world.maps", true);
         var map = selected[0];
         Require(map.Population is null && map.Setup is null && map.Setups.Count == 0 && map.Battles.Count == 0 &&
@@ -72,6 +77,6 @@ internal static class CaravanContentReader
                     _ => true,
                 }, "caravan-program-capability", "program.instructions", true);
         }
-        programs.AddRange(CaravanPrograms.Create(map.Caravan!, player));
+        programs.AddRange(CaravanPrograms.Create(map.Caravan!.FollowerA, player));
     }
 }

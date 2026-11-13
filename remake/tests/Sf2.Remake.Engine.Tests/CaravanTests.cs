@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using System.Text.Json.Nodes;
 using Xunit;
@@ -48,6 +49,42 @@ public sealed class CaravanTests
         Assert.Subset(seenSizes, new HashSet<ushort> { 12, 14, 16, 18, 20, 22 });
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void OverworldAllocationAndRidingUseIndependentCaravanAndRaftFlags(bool acquired, bool hasRaft)
+    {
+        var flags = new List<int> { 67 };
+        if (acquired) flags.Add(65);
+        if (hasRaft) flags.Add(64);
+        var berth = new RaftBerth(new("river"), new(3, 4));
+        var words = new ushort[4096];
+        words[3 * 64 + 4] = 0xF800;
+        words[4 * 64 + 3] = 0xFC00;
+        var population = new ExplorationPopulation(30, 128, 0, [new(65, 30, 62), new(67, 7, 18)]);
+        var map = new ExplorationMapDefinition(berth.Map, new(words), new([new(0, 0, 10, 10)]),
+            [], [], population: population);
+        var walking = MapTransfer.Build(map, new("entity-0"), new(3, 3), 0, 32, Admitted().Start, flags);
+        walking = RaftRuntime.Declare(walking, flags, berth);
+        Assert.Equal(FieldTravelMode.Walking, walking.TravelMode);
+        Assert.Equal(acquired ? 2 : 1, walking.Aliases[new("entity-7")]);
+        Assert.Equal(acquired ? 1 : 0, walking.Aliases[new("entity-30")]);
+        Assert.Equal(hasRaft, walking.AllEntities.Any(actor => actor.Slot == 31 && actor.Position == berth.Position));
+        Assert.Equal(acquired ? 2 : (int?)null, MapEventDispatcher.Move(walking, ExplorationDirection.East, flags).Outcome.VehicleEvent);
+        Assert.Equal(hasRaft ? 3 : (int?)null, MapEventDispatcher.Move(walking, ExplorationDirection.South, flags).Outcome.VehicleEvent);
+        if (acquired)
+        {
+            Assert.Equal(new EntityFollower(0, -24, -24, false), walking.Entities[new("entity-7")].Follower);
+            var (_, road) = MapEventDispatcher.Move(walking.WithTravelMode(FieldTravelMode.Caravan), ExplorationDirection.East, flags);
+            Assert.True(road.Moved);
+            var (_, water) = MapEventDispatcher.Move(walking.WithTravelMode(FieldTravelMode.Caravan), ExplorationDirection.South, flags);
+            Assert.False(water.Moved);
+            Assert.Null(water.VehicleEvent);
+        }
+    }
+
     [Fact]
     public void MissingLogicalMappingRetainsEarlierIdleWriteAndCannotCommitMode()
     {
@@ -58,6 +95,31 @@ public sealed class CaravanTests
         Assert.True(session.Current.Exploration!.PlayerEntity.IsScriptIdle);
         Assert.Equal(FieldTravelMode.Walking, session.Current.Exploration.TravelMode);
         Assert.Equal(new MapPosition(2, 2), session.Current.Exploration.PlayerEntity.Position);
+    }
+
+    [Theory]
+    [InlineData(3, 4, 0, true)]
+    [InlineData(7, 2, 2, true)]
+    [InlineData(7, 2, 2, false)]
+    public void SouthwestFieldSaveKeepsTheWalkingPositionAfterAcquisition(int x, int y, byte facing, bool acquired)
+    {
+        var (basis, data) = OpeningRestoreTests.Fixture();
+        var map = new ExplorationMapDefinition(new("map-68"), new(new ushort[4096]), new([new(0, 0, 9, 9)]),
+            [], [], population: new(30, 128, 0, [new(65, 30, 62)]));
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
+        var player = new FieldReturnAnchor(map.Map, new(x, y), facing);
+        var oldAnchor = new FieldReturnAnchor(map.Map, new(1, 1), 3);
+        var policy = basis.Persistence!;
+        if (!acquired)
+        {
+            Assert.Equal("save-location-unavailable",
+                Assert.Throws<BattleRuleException>(() => policy.Select(definition, player, [], oldAnchor)).Code);
+            return;
+        }
+        var location = policy.Select(definition, player, [65], oldAnchor);
+        Assert.Equal("southwest-parmecia", location.Recipe);
+        Assert.Equal(player, location.Anchor);
+        policy.ValidateRegisters(data with { Recipe = location.Recipe, EgressMap = "map-6" });
     }
 
     [Fact]
@@ -349,7 +411,7 @@ public sealed class CaravanTests
             stall ? (ushort)0 : (ushort)32, Sprite: 62) };
         actors.AddRange(Enumerable.Range(0, followers).Select(i => new ExplorationEntityDefinition(new("friend-" + i), new(2, 2), 0, firstFollowerStalls && i == 0 ? (ushort)0 : (ushort)32, Sprite: 10 + i)));
         var map = new ExplorationMapDefinition(new("field"), new(words), new([new(0, 0, 10, 10)]), actors, [], caravan: caravan);
-        var exploration = new ExplorationDefinition([map], CaravanPrograms.Create(caravan, player));
+        var exploration = new ExplorationDefinition([map], CaravanPrograms.Create(caravan.FollowerA, player));
         var definition = new ScenarioDefinition("caravan-pilot", battle.Definition.Encounters.Values, exploration: exploration);
         return Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, player, new(x, y), facing, 32, [65], battle.Start))).Session;

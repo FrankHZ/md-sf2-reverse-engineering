@@ -62,6 +62,20 @@ def compile_maps(
         if switch["opcode"] == "flagSwitchedMap":
             original, flag, replacement = map(compiler.number, _tokens(switch["operandText"]))
             switches[original] = (flag, replacement)
+    overworld = {
+        compiler.number(row["operandText"])
+        for row in compiler.source_operations(
+            "disasm/data/maps/global/overworldmaps.asm", "table_OverworldMaps"
+        )
+        if row["opcode"] == "dc.b"
+    }
+    caravan_rows = []
+    for row in compiler.source_operations(
+        "disasm/data/scripting/entity/followers.asm", "table_OverworldFollowers"
+    ):
+        if row["opcode"] == "follower":
+            flag, character, sprite, _ = map(compiler.number, _tokens(row["operandText"]))
+            caravan_rows.append({"flag": flag, "character": character, "sprite": sprite})
     maps = []
     for selected in only_maps or selection["maps"]:
         row = map_rows[selected]
@@ -236,6 +250,8 @@ def compile_maps(
                     else action_stream(compiler, args[4])
                 )
             population = compiler.population()
+        if population is not None and selected in overworld:
+            population["followers"] = caravan_rows + population["followers"]
         if full_setup and setup is not None:
             if selected in selection.get("itemEventMaps", []):
                 events.extend(item_events(compiler, folder, setup, resources))

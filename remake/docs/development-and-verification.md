@@ -1079,7 +1079,7 @@ and logs/reports in a fresh ignored
 $project = (Resolve-Path -LiteralPath 'remake/game').Path
 $package = (Resolve-Path -LiteralPath 'remake/content/authored/caravan-travel.json').Path
 $env:SF2_EXPLORATION_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
-& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1280x720 --path $project `
+& $env:GODOT_BIN --headless --fixed-fps 60 --resolution 1920x1080 --path $project `
   --script res://probes/engine_caravan_observation.gd -- --authored-package $package
 ```
 

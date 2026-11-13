@@ -51,6 +51,7 @@ internal static class SceneEntities
         if (allocation.Slots.Count > 49) throw new BattleRuleException("source-entity-capacity", "scene.entities", true);
         EntityRef Reference(int character) => new("entity-" + character.ToString(System.Globalization.CultureInfo.InvariantCulture));
         if (player != Reference(0)) throw new BattleRuleException("population-player", "start.player");
+        bool caravan = CaravanRuntime.HasOverworldPopulation(population) && flags.Contains(65);
         var slots = allocation.Slots.Select(slot =>
         {
             var source = slot.SourceRecord is { } index ? records[index] : null;
@@ -59,7 +60,9 @@ internal static class SceneEntities
                     { FlagsA = 0xE0, AnimationCounter = (byte)(slot.Slot + 1), WaitTimer = (byte)slot.Slot },
                 source?.Visible ?? true, source?.Actions, Slot: slot.Slot, Sprite: AllySprite(slot.Character, slot.Sprite),
                 SharedSpriteSlot: slot.Sprite is 254 or 255 ? 32 : null);
-            return slot.FollowerOrder is { } order ? FollowerMotion.Install(entity, order, -24, 0) : entity;
+            if (slot.FollowerOrder is not { } order) return entity;
+            return caravan ? CaravanRuntime.InstallPopulationFollower(entity, order, true)
+                : FollowerMotion.Install(entity, order, -24, 0);
         });
         // Only fresh allocation initializes zero entries. Copies retain removed-reference tombstones.
         var aliases = Enumerable.Range(0, 64).ToDictionary(index => Reference(index < 32 ? index : index + 96), _ => 0);

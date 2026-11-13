@@ -116,7 +116,7 @@ internal static class MapTransfer
         List<SessionObservation> observations)
     {
         var world = current.Exploration!;
-        if (world.TravelMode != FieldTravelMode.Raft) CaravanRuntime.RequireOrdinaryMapOperation(world);
+        if (world.Definition.Caravan is not null) CaravanRuntime.RequireOrdinaryMapOperation(world);
         var target = definition.Exploration!.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
         var player = world.PlayerEntity;
         var horizontal = warp.LoadMode == MapLoadMode.ScrollHorizontal;
@@ -130,7 +130,7 @@ internal static class MapTransfer
         var next = new ExplorationState(target, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
             world.Aliases, population: world.Population, quake: world.Quake, travelMode: world.TravelMode, currentEntities: world.CurrentEntities);
         next = FollowerMotion.Arrive(next, position, player.Motion.Facing);
-        if (world.TravelMode == FieldTravelMode.Walking && current.Story.Flags.Contains(64))
+        if (world.TravelMode != FieldTravelMode.Raft && current.Story.Flags.Contains(64))
             next = RaftRuntime.OnScroll(next, current.Story.Flags, current.Story.Raft);
         var story = current.Story.Copy(null, logicalView: ExplorationViewRunner.Initialize(next));
         return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-scrolled", target.Map.Value);

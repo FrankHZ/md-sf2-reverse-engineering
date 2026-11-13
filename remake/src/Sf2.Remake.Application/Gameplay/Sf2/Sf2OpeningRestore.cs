@@ -71,7 +71,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
-        if (data.Recipe is "ancient-hall" or "taros-shrine" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
@@ -131,6 +131,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-12" && flags.Contains(518) && flags.Contains(725) && flags.Contains(65) &&
             content!.Traversal.SelectActiveArea(player.Position) is not null)
             return new("taros-shrine", player, "Taros Shrine, after the Caravan");
+        if (map.Value == "map-68" && flags.Contains(65) && CaravanRuntime.HasOverworldPopulation(content!.SelectSetup(flags).Population) &&
+            content.Traversal.IsWithinActiveArea(player.Position))
+            return new("southwest-parmecia", player, "Southwest Parmecia");
         if (anchor?.Map == map && (map.Value == "map-69" && flags.Contains(509) ||
             map.Value == "map-70" && flags.Contains(510)))
             return new("parmecia-battle-return", anchor, "Eastern Parmecia, battle return");
@@ -190,6 +193,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             if (world.PlayerEntity.Motion.X == 0x7000)
                 throw new BattleRuleException("save-anchor-unusable", "save.anchor");
         }
+        if (location.Recipe == "southwest-parmecia" && (world.Layout[anchor.Position.X, anchor.Position.Y] & 0x3C00) is not (0 or 0x1400))
+            throw new BattleRuleException("save-anchor-unusable", "save.anchor");
         if (location.Recipe == "taros-shrine")
             world = world.MoveOffMap(new("entity-128"));
         // Allocation starts followers at the leader. This is the same legal overlap as a map reload;
