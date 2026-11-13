@@ -24,8 +24,6 @@ public sealed class PrivateExplorationReader : IScenarioSource
     {
         try
         {
-            var party = partySource?.Read();
-            if (party is ScenarioReadRejected rejected) return rejected;
             // The measured seven-map/expanded-audio input is about 127.44 million bytes.
             // Reject oversized files before allocating their full contents, and recheck after read.
             Require(new FileInfo(path).Length <= 128 * 1024 * 1024, "document-size", "world");
@@ -34,17 +32,21 @@ public sealed class PrivateExplorationReader : IScenarioSource
             using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 32 });
             var root = document.RootElement;
             ObjectOptional(root, "private-world", "encounters", ["formatVersion", "profile", "package", "provenance", "world"]);
+            var world = root.GetProperty("world");
+            int version = Number(root, "formatVersion", 1, 2);
+            byte[] fieldItems = version == 2 ? PrivateBattleContentReader.FieldItems(world).Distinct().ToArray() : [];
+            var party = partySource is PrivateBattleScenarioReader controlledParty ? controlledParty.Read(fieldItems) : partySource?.Read();
+            if (party is ScenarioReadRejected rejected) return rejected;
             if (newGame is not null)
             {
-                Require(root.GetProperty("world").TryGetProperty("growth", out var growth), "initial-growth-required", "world.growth");
-                newGame.SelectOpening(growth);
+                Require(world.TryGetProperty("growth", out var growth), "initial-growth-required", "world.growth");
+                newGame.SelectOpening(growth, fieldItems);
                 party = newGame.Read();
             }
             Require(party is ScenarioReadAccepted { Definition.PrivateDefinitions: not null }, "private-party-required", "party");
             var admitted = (ScenarioReadAccepted)party!;
             if (root.TryGetProperty("encounters", out var encounters))
-                admitted = PrivateWorldEncounterReader.Read(encounters, path, admitted, newGame);
-            _ = Number(root, "formatVersion", 1, 1);
+                admitted = PrivateWorldEncounterReader.Read(encounters, path, admitted, newGame, fieldItems);
             Require(Text(root, "profile") == "private-local-controlled-start", "profile", "profile");
             var provenance = root.GetProperty("provenance");
             Object(provenance, "provenance", "repository", "commit", "romSha256", "sources", "controlledBoundary");

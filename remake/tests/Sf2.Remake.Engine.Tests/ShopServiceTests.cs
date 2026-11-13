@@ -60,6 +60,22 @@ public sealed class ShopServiceTests
         Assert.True(session.Current.CanWaitAtInput); Assert.Contains(999, session.Current.Story.Flags);
     }
 
+    [Fact]
+    public void BoughtWeaponOccupiesAFreeSlotUntilEquippedFromTheField()
+    {
+        var session = Session(100, [0, 127, 127, 127]);
+        Buy(session, 50, Buyer);
+        Pay(session);
+        Continue(session);
+        Accept(session, new BackShop(Wait(session).Token));
+        Assert.Equal(new ushort[] { 0, 50, 127, 127 }, Owner(session).SourceLoadout!.Items);
+        var choice = Assert.Single(session.QueryFieldActions(Buyer).Equipment, row => row.Slot == 1);
+        Assert.False(choice.Equipped);
+        Accept(session, new FieldEquip(Buyer, choice.Slot, 50));
+        Assert.Equal(new ushort[] { 0, 178, 127, 127 }, Owner(session).SourceLoadout!.Items);
+        Assert.Equal(60u, session.Current.Exploration!.Party.Gold);
+    }
+
     [Theory]
     [InlineData(10, false, ShopResult.InsufficientGold)]
     [InlineData(100, true, ShopResult.Full)]

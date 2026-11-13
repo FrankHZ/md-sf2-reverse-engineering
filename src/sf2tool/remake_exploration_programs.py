@@ -386,8 +386,10 @@ class OriginalPrograms:
                 and args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w"
             ):
                 registers["shop"] = self.number(args[0][1:])
-            elif op == "jsr" and args == ["j_ShopMenu"] and "shop" in registers:
+            elif op in ("jsr", "jmp") and args == ["j_ShopMenu"] and "shop" in registers:
                 result.append(shop_service(self, registers.pop("shop")))
+                if op == "jmp":
+                    result.append({"op": "end"})
             elif op in ("jsr", "jmp") and args == ["j_ChurchMenu"]:
                 result.append(church_service(self))
                 if op == "jmp":

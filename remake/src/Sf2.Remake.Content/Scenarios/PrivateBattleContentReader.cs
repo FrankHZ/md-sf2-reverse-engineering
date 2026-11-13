@@ -19,9 +19,11 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
     private IReadOnlyList<SourceAllyDefinition> _allies = [];
     private IReadOnlyList<PrivateAllyStart> _baselines = [];
     private IReadOnlyList<byte> _growthSpells = [];
+    private IReadOnlyList<byte> _fieldItems = [];
 
-    internal void SelectOpening(JsonElement growth)
+    internal void SelectOpening(JsonElement growth, IReadOnlyList<byte> fieldItems)
     {
+        _fieldItems = fieldItems;
         _allies = PrivateBattleDefinitionReader.OpeningAllies(staticPath, growth);
         _growthSpells = growth.EnumerateArray().SelectMany(row => BattleGrowthReader.ReadDefinition(row, 0).Spells)
             .Select(spell => spell.PackedSpell).Distinct().ToArray();
@@ -43,6 +45,28 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
 
     internal ScenarioReadAccepted Read() => Read(placementPath, scenePath, terrainPath, staticPath, enemyPath, goldPath, scenesPath);
 
+    // Select source identities before opening/restore builds the immutable party and battle catalogs.
+    internal static IEnumerable<byte> FieldItems(JsonElement world)
+    {
+        foreach (var program in Array(world, "programs"))
+            foreach (var instruction in Array(program, "instructions"))
+                if (Text(instruction, "op") == "shop")
+                    foreach (var value in Array(instruction, "stock"))
+                    {
+                        Require(value.ValueKind == JsonValueKind.Number && value.TryGetByte(out byte id) && id < 127, "shop-stock", "shop.stock");
+                        yield return value.GetByte();
+                    }
+        foreach (var map in Array(world, "maps"))
+        {
+            var configurations = map.TryGetProperty("setups", out _) ? Array(map, "setups").Prepend(map) : [map];
+            foreach (var setup in configurations)
+                if (setup.TryGetProperty("search", out var search) && search.ValueKind != JsonValueKind.Null)
+                    foreach (var placement in Array(search, "chests").Concat(Array(search, "otherItems")))
+                        if (placement.GetProperty("itemWord").ValueKind != JsonValueKind.Null)
+                            yield return (byte)(Number(placement, "itemWord", 0, 511) & 127);
+        }
+    }
+
     internal ScenarioReadAccepted Read(string placement, string scene, string terrain, string core, string enemies, string gold, string? scenes)
     {
         foreach (string path in new[] { placement, scene, terrain, core, enemies, gold })
@@ -57,7 +81,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         var policy = new NewBattleStartPolicy("opening-new-game", "source-initialization", "", 0, false, true, true, false, false, null)
             { Origin = BattleStartOrigin.NewGame };
         var start = new PrivateBattleStart(encounter.Battle.Id, mainSeed, thinkingSeed, 0, policy, selected);
-        var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells);
+        var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells, _fieldItems);
         // Movement is immutable class content; attack gets the admitted equipment contribution once.
         var baselines = selected.Select(ally => ally with
         {

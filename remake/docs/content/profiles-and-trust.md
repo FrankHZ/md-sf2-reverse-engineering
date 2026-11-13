@@ -1,11 +1,69 @@
 # Runtime Profiles and Trust
 
+## Ordinary campaign shops
+
+At a shop counter, face the merchant and press Confirm. Choose Buy, an item and a recipient.
+Confirm the quote to debit the displayed price and fill the first free pack slot. Back at the
+quote returns to the recipient. Back at the service list leaves the shop. To equip a purchase,
+open the field menu and choose Item → member → Equip → slot → Confirm.
+
+**Confirmed** for the private remake through the first raft crossing. The following inventory
+covers every published map and setup in `pre-voyage-opening.json`. The two stock columns are
+zero-based indexes in the pinned US source. An entry in the table establishes the compiled
+Talk binding. The last column identifies the narrower runtime observations.
+
+| Map and configuration | Weapon | Item | Merchant entry and evidence |
+| --- | ---: | ---: | --- |
+| 3 Granseal, F609 or F506 | 0 | 15 | F609 entities 131/153, F506 entities 138/142. Both configurations bind the same two bodies from `s2_entityevents_609.asm`. Ordinary F609 Continue and both purchases observed. F506 is static. Default has neither entry. |
+| 16 Galam, F663 | 1 | 16 | Entities 135/144. Default has neither entry. Controlled F663 Talk, Buy/Sell and return are covered by the Galam recipe below. |
+| 6 New Granseal, default/F701/F702 tables | 2 or 8 | 17 or 23 | Entity 133 (weapon) and 128 (item) use `Map6_EntityEvent5/0`. Before F702 both give dialogue. With F702, facing north (relative position 1) opens the stock, other sides give dialogue. F802 selects 8/23 in place of 2/17. Static, including the later Creed branch outside this campaign. |
+| 8 Ribble, F708 | 3 | 18 | Entities 134/140 use `Map8_2C4_EntityEvent6/13` via `s2_entityevents_518.asm`. Both tail-jump to the service. Event13 writes 3 then 18 before jumping. Both observed after ordinary Continue. Default has neither entry. |
+| 13 Polca, default/F710/F799/F513 | 4 | 19 | Entities 131/132 bind `Map13_EntityEvent4/5`. F799 moves them to (18,14)/(18,16). Other published layouts place them at (4,7)/(8,7). Static. |
+| 10 Bedoe, default/F722 | 5 | 20 | Entity 137 opens weapons, entity 130 supplies, through `Map10_EntityEvent9/2`. Both tables are static. |
+
+**Confirmed** static negative inventory. The following 25 maps have no ordinary shop entry in
+their published event tables. Parentheses list additional published setup flags. All include
+their default map content.
+
+- 4, 5, 7 (701), 11, 14 (458), 17 (505), 18, 19 (501/609/506/507), 20 (501/609/506), 21 (501/609/506).
+- 40 (506), 43 (612), 44 (609/506/507), 48, 52 (512), 57, 58, 60, 62 (77), 66, 69, 70, 71, 72, 73.
+
+Cross-check `disasm/data/maps/mapsetups.asm`, the corresponding `entries/mapNN/mapsetups/pointertable*.asm`
+and `s2_entityevents*.asm`, `disasm/sf2enums.asm` and `disasm/data/stats/items/shopinventories.asm`
+at SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`. Check the published map's `events`
+and each `setups[].events` and follow each merchant program's flag/facing branches through to
+its `shop.stock`. Among these 31 source folders, the remaining shop calls are Map5 F530,
+Yeel Underground (29), and Map16 F530, late Galam (14/29). Their tables are outside the
+publication. Other towns beyond these maps require their own chapter admission.
+
+**Confirmed** ordinary input on disposable copies of real slots with the Chinese host. From
+Map3 F609 at (32,13), face north at (7,20) and (8,20). Browse and Back, cancel a quote,
+then confirm Short Spear (120) and Medical Herb (10) for Chester. Gold goes 360 → 240 → 230.
+His original equipped wooden stick stays in slot 1, the spear fills slot 3, the herb slot 4.
+Leave and move to (8,21). Field Equip on slot 3 changes the pack words to `[56,0,200,0]`.
+From the Ribble F708 field save, face north at (5,13) and (4,13). The two shops charged
+140 for Short Sword and 300 for Healing Drop, reducing 3693 gold to 3253. Leave and move to (4,14).
+
+Private world format 2 selects the shop stock and chest/ground item identities of the
+actual program and setup tables before loading the pinned item records. Format 1 retains
+its prior item and icon requirements for existing private packages. Gameplay and save revisions
+are independent. Rebuild the world with `sf2tool.remake_exploration_content` and its existing
+selection. Publish the field and battle icon pairs with `sf2tool.remake_command_menu --menu all
+--identity-icons --item-menu --shop-battlefield --target-cursor` and the usual private world,
+scene, ROM and listing inputs. A previously prepared base icon set can be extended when the
+source pixels match. [Preparation recipe](presentation-assets.md#shop-and-battlefield-menu-resources-1669).
+
+The stock rows establish price, order and ownership. Use actions still require implemented
+effects. Repair, Deals and rare/broken sales retain their existing service boundaries. Field
+equipment uses source class/effect rules. Battle animations require the equipped class/item
+visual in the encounter's own scene package. **Unknown** for natural original merchant visits,
+unobserved remake counter approaches and combat presentation of every purchased weapon.
+
 ## Finite Galam shop admission
 
 `galam-shop-programs.json` selects Map16 plus its F663 variant and the two real caller symbols.
-The maintained source compiler recognizes the immediate `CURRENT_SHOP_INDEX` assignment followed by
-`j_ShopMenu`, and lowers only Galam stock1/16. It derives the lists from pinned
-`data/stats/items/shopinventories.asm`; other stock indices retain explicit native frontiers. Content
+The source compiler resolves the immediate `CURRENT_SHOP_INDEX` assignment at a returning or
+tail call to `j_ShopMenu` and derives stock from pinned `data/stats/items/shopinventories.asm`. Content
 admits the stock IDs against source item prices/types/names, independently of possession, and does
 not accept authored price overrides in a private shop instruction. The finite early11 stock records
 and their use-spell definitions are retained before session creation, so a first purchase is usable
@@ -32,7 +90,7 @@ unknown, rare/unsellable stock and malformed records reject before publication.
 
 **Implemented/admitted:** finite engine transactions, private F663 source callers and purchased
 supplies; actual English/Chinese consumer observations have separate source versus authored scope.
-**Unsupported:** full Map16, default/late-shop invention, complete Battle03–07 chapter, Deals/Repair,
+**Unsupported:** full Map16, its late shop setup, Deals/Repair,
 new save recipes and source new-battle poison lifecycle. **Unknown:** natural original shop/use reach
 and complete runtime timing. [Usage/verification](../development-and-verification.md#galam-shop-and-supply-observation)
 uses existing inputs and no original capture; private assets remain ignored and undistributable.

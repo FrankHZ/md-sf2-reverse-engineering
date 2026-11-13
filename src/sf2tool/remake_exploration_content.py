@@ -339,7 +339,7 @@ def prepare(
             raise ValueError("selected pinned source has local changes: " + relative)
         sources.append({"path": relative, "sha256": hashlib.sha256(raw).hexdigest().upper()})
     result = {
-        "formatVersion": 1,
+        "formatVersion": 2,
         "profile": "private-local-controlled-start",
         "package": selection["package"],
         "provenance": {
