@@ -10,6 +10,7 @@ from sf2tool import remake_exploration_services as services
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.remake_exploration_actions import action_stream, inline_actions, walking_actions
+from sf2tool.remake_exploration_items import inventory_operation
 from sf2tool.remake_exploration_joins import join_selector, join_service
 from sf2tool.remake_exploration_scene import (
     portrait_operations,
@@ -217,7 +218,10 @@ class OriginalPrograms:
             op, args = row["opcode"], _tokens(row["operandText"])
             source = f"{relative}:{symbol}[{row['index']}]"
             index += 1
-            if lowered_view := view_operation(self, op, args):
+            if found := inventory_operation(self, relative, op, args, registers, rows, index):
+                operation, index = found
+                result.append(operation)
+            elif lowered_view := view_operation(self, op, args):
                 result.append(lowered_view)
             elif op == "flashScreenWhite" and 24 <= self.number(args[0]) < 32:
                 result.append(

@@ -2,6 +2,7 @@
 
 The current selector includes later campaign dialogue, Search and the ordinary service greetings.
 The [western shrine road](hassan-taros-road.md) includes Battle16 lines 2513–2519, the Hassan cast, the six Battle17 species and shrine lines 3197–3203. With the [East Shrine and Ancient Hall](east-shrine-panel.md) the combined catalog has 1,486 world messages and 129 names (204,201 UTF-8 bytes). It includes the gate and hall lines 3642–3648 and 2503–2512 and shares the Golem, Gargoyle and Arrow Launcher names between the two encounters. The current runtime admits 129 name rows, bounded to 128 UTF-16 units each. Church 110 preserves both W2 controls and Shop 158 preserves its terminal D3.
+The [Ribble sword chapter](ribble-sword-rohde.md) reuses the admitted Panel and Sword item names, Rohde’s ally name and Hassan text 1371 and 1382–1396. Menu prompts use the selected item name; the quest requires no additional catalog rows.
 [Service entry and bilingual reading](opening-session-lifecycle.md#church-and-shop-entry-greetings).
 Use `--scope pre-voyage` to reproduce the 806-message selection below.
 

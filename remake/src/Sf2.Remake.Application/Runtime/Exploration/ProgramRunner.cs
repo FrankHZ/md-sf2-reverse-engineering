@@ -222,6 +222,17 @@ internal static class ProgramRunner
                     case BranchFlag branch when current.Story.Flags.Contains(branch.Flag) == branch.WhenSet:
                         story = story.Copy(branch.Target); break;
                     case BranchFlag: break;
+                    case BranchHasItem branch:
+                        if (FieldItemEvents.Find(definition, current, branch.Item) is not null) story = story.Copy(branch.Target);
+                        break;
+                    case RemovePartyItem remove:
+                        active = FieldItemEvents.Remove(definition, current, remove.Item);
+                        break;
+                    case FaceInteraction face:
+                        var talk = current.Story.EntityEvent ?? throw new BattleRuleException("entity-event-context", "program.facing");
+                        active = EditEntity(current, face.Entity, entity => entity with
+                            { Motion = entity.Motion with { Facing = (byte)((talk.InteractionFacing + 2) & 3) } });
+                        break;
                     case BranchInteractionFacing branch:
                         var interaction = current.Story.EntityEvent ?? throw new BattleRuleException("entity-event-context", "program.facing");
                         if ((interaction.InteractionFacing == branch.Facing) == branch.WhenEqual) story = story.Copy(branch.Target);

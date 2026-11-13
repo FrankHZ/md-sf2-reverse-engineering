@@ -126,7 +126,7 @@
     "17": 9
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, and the western road through Battle17 to the Taros Shrine warning.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine warning.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -440,6 +440,7 @@
     16,
     17
   ],
+  "itemEventMaps": [8, 9],
   "searchMaps": [
     3,
     19,

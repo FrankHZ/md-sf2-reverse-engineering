@@ -92,6 +92,7 @@ public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Toke
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
 public abstract record FieldEventContext(bool Returning);
 public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false, byte InteractionFacing = 0) : FieldEventContext(Returning);
+public sealed record ItemEventContext(bool Returning = false) : FieldEventContext(Returning);
 public sealed record ZoneEventContext(bool Returning = false) : FieldEventContext(Returning);
 public sealed record ZoneArrivalWait(WaitToken Token, WaitToken? FieldMoveToken = null) : ProgramWait(Token);
 public abstract record TextWindow;

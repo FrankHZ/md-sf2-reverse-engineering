@@ -176,6 +176,8 @@ internal sealed partial class FieldActionView : Control
             if (item.Use is null) { Message(() => GameText.Get("prepare.use-unsupported")); return; }
             if (item.Use == FieldRecoveryEffect.NoEffect)
                 Confirm(new FieldUseItem(_member, item.Slot, item.Word), () => GameText.Get("prepare.confirm-no-effect-item", DisplayNames.ItemWord(item.Word, item.Name)));
+            else if (item.Use == FieldRecoveryEffect.MapEvent)
+                Confirm(new FieldUseItem(_member, item.Slot, item.Word), () => GameText.Get("prepare.use") + " · " + DisplayNames.ItemWord(item.Word, item.Name));
             else Targets("use-target", () => GameText.Get("prepare.use-target"), true, target => Confirm(new FieldUseItem(_member, item.Slot, item.Word, target),
                 () => GameText.Get("prepare.confirm-use", DisplayNames.ItemWord(item.Word, item.Name))));
         }, item => item.Use is not null);

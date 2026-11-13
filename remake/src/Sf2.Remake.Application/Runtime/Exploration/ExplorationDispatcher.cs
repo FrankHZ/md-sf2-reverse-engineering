@@ -282,12 +282,14 @@ internal static class ExplorationDispatcher
                         }
                         if (current.Story.Wait is ZoneArrivalWait)
                         {
-                            current = Service(definition, current, observations, "zone-return-service");
+                            string caller = current.Story.EventCaller is ItemEventContext ? "item-event" : "zone";
+                            current = Service(definition, current, observations, caller + "-return-service");
                             var motion = current.Exploration!.PlayerEntity.Motion;
                             if (motion.X == motion.XDestination && motion.Y == motion.YDestination)
                             {
                                 current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
-                                    clearEventCaller: true), observations, "zone-finished");
+                                    clearEventCaller: true, entityServices: current.Story.EventCaller is ItemEventContext ? true : null),
+                                    observations, caller + "-finished");
                                 return ProgramRunner.Run(definition, current, observations, rules);
                             }
                             continue;

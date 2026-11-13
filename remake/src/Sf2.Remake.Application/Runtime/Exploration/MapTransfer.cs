@@ -41,6 +41,7 @@ internal static class MapTransfer
                         break;
                     case CallProgram call: Check(call.Target); break;
                     case JumpProgram jump: Check(jump.Target); break;
+                    case BranchHasItem branch: Check(branch.Target); break;
                     case BranchFlag branch: Check(branch.Target); break;
                     case BranchInteractionFacing branch: Check(branch.Target); break;
                     case BranchEntityCoordinates branch: Check(branch.Target); break;
