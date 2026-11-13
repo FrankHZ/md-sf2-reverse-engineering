@@ -1,11 +1,13 @@
 # Remake Implementation Architecture
 
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
-implemented rules determine behavior; reference routes are external comparisons. The common session
-runs authored packages and the connected private opening through Battles01–08 and the
-[New Granseal handoff](application/battle08-new-granseal.md). The [campaign agreement](application/pre-voyage-campaign.md) owns that finite boundary;
-the [post-campaign audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)
-owns the continuation recommendation and remaining composition risks.
+implemented rules determine behavior. Reference routes support external comparisons. The common
+session runs authored packages and the connected private campaign through Battle13. After returning
+to Polca, the party receives the raft, recruits Luke, boards and takes its first step on water.
+The [Polca chapter](application/polca-first-raft.md) documents that playable boundary.
+The [Battle08–13 and raft audit](evidence/polca-raft-engine-save-audit.zh-CN.md) identifies current
+engine-boundary and save-compatibility risks. The [earlier engine and script audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)
+covers the opening campaign through arrival on the damaged ship.
 
 The adopted boundaries are [ADR 0011](../../docs/decisions/0011-phase4-remake-runtime-architecture.md),
 [ADR 0017](../../docs/decisions/0017-heavy-boundaries-light-internals.md) and

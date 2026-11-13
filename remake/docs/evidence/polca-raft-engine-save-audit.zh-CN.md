@@ -1,6 +1,6 @@
 # Battle08–13、波尔卡木筏与存档兼容审计
 
-审计对象为 [#1734](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1734) 合入后的 `52f6a2c3`，实现增量可用 `git diff 8ca3a914..52f6a2c3` 复核。**优先处理旧战斗档的升级交接**。同一份普通 Battle01 存档能在七人配置恢复，在十一人配置被拒。六战至首格水行的既有普通输入验收仍成立。本次读了留存的主场景投影，并在独立进程运行该版本的 Content、Application 和 Domain。未启动 Godot 或重打六战。
+审计对象为 [#1734](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1734) 合入后的 `52f6a2c3`，实现增量可用 `git diff 8ca3a914..52f6a2c3` 复核。六战与赠筏的剧情顺序由内容路由和脚本驱动，但通用场景档恢复器直接判断章节存点名 `polca-raft`，通用规则还保留两处较低风险的 SF2 耦合（本轮新增的 Power Ring 物品号 19，以及返场治疗原有的永生成员号 7/28）。**优先处理旧战斗档的升级交接**。同一份普通 Battle01 存档能在七人配置恢复，在十一人配置被拒。六战至首格水行的既有普通输入验收仍成立。本次读了留存的主场景投影，并在独立进程运行该版本的 Content、Application 和 Domain。未启动 Godot 或重打六战。
 
 ## 按影响排序
 
