@@ -104,6 +104,12 @@ remains an explicit frontier. Original natural traversal/timing and human-play a
 
 ## Finite Galam shop and purchased-supply closure
 
+The [campaign shop inventory](content/profiles-and-trust.md#ordinary-campaign-shops) covers the
+31-map private world. Ordinary Continue, purchase, cancellation, caller return and continued
+movement are confirmed in Granseal F609 and Ribble F708. Chester can equip the newly bought
+Short Spear from the field menu. New Granseal's facing/flag branches, Polca and Bedoe have
+source-bound stock with static entrance coverage.
+
 **Implemented bounded capability, Standard with existing transactional/persistence High:** ordinary
 Buy/Sell, member/actual-slot selection, exact prices, atomic gold/loadout changes, full/poor/cancel/
 unsellable/stale handling, equipped-sale refresh and caller return. Private F663 Map16 entity135/144
@@ -299,9 +305,9 @@ real caller returns to settled field control. Native ordinary battle defeat → 
 fresh-process Continue retains the recovery/payment without reinitialization or repayment.
 [Policy/limits](application/opening-session-lifecycle.md#implemented-opening-church),
 [caller inventory](content/opening-branch-inventory.md#opening-service-callers) and
-[observation](verification/host.md#opening-church-services) own these claims. No opening shop is
-admitted in those opening five maps: their scoped Shop callers use excluded F609.
-The separate [Galam F663 subset](#finite-galam-shop-and-purchased-supply-closure) now implements Buy/Sell. Repair, Promotion,
+[observation](verification/host.md#opening-church-services) own these claims. The initial
+Granseal setup has no merchant entry. The [later campaign shops](content/profiles-and-trust.md#ordinary-campaign-shops)
+include both merchants in its F609 revisit. Repair, Promotion,
 curse removal and original service presentation/exhausted-sprite parity remain outside this subset.
 
 ## Ordinary host lifecycle agreement

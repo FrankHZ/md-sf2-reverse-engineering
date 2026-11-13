@@ -302,17 +302,21 @@ def prepare_church(
         from sf2tool.remake_battle_scene_content import single_cell_cursor
 
         cursor = single_cell_cursor(rom.read_bytes())
-    if identity_icons:
-        from sf2tool.remake_identity_icons import identity_assets
-
-        icons = identity_assets(rom, upstream, listing, rom_assets)
     document = json.loads(world.read_text(encoding="utf-8-sig"))
     world_document = document.get("world", document)
+    if identity_icons:
+        from sf2tool.remake_identity_icons import (
+            field_item_ids,
+            identity_assets,
+            mount_identity_icons,
+        )
+
+        icons = identity_assets(
+            rom, upstream, listing, rom_assets, field_items=field_item_ids(world_document)
+        )
     if icons:
         presentation = world_document["presentation"]
-        if "identityIcons" in presentation and presentation["identityIcons"] != icons[0]:
-            raise ValueError("input world owns conflicting identity icons")
-        presentation["identityIcons"] = icons[0]
+        mount_identity_icons(presentation.setdefault("identityIcons", {}), icons)
     for name in menus:
         if name not in ("command", "battlefield"):
             presentation = world_document["presentation"]
@@ -342,11 +346,7 @@ def prepare_church(
             if shop_battlefield:
                 mount(battle_scene["rasters"], assets["battlefield"][0], "battlefield-menu.")
             if icons:
-                mount(
-                    battle_scene["rasters"],
-                    {key.removeprefix("identity-icon."): value for key, value in icons[0].items()},
-                    "identity-icon.",
-                )
+                mount_identity_icons(battle_scene["rasters"], icons)
     if dependencies.intersection({"world.json", "provenance.json", "scene.json"}):
         raise ValueError("world dependency collides with publication output")
     out_dir.mkdir(parents=True, exist_ok=False)

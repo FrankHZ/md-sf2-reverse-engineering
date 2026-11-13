@@ -46,7 +46,30 @@ ITEMS = (
 SPELLS = ("HEAL", "DETOX", "DISPEL", "EGRESS", "BLAZE", "FREEZE", "BLAST")
 
 
-def identity_assets(rom: Path, upstream: Path, listing: Path | None, rom_assets: bool):
+def field_item_ids(world: dict) -> set[int]:
+    """Icons for the inventory the selected world can offer or award."""
+    ids = {
+        item
+        for program in world.get("programs", [])
+        for instruction in program["instructions"]
+        if instruction["op"] == "shop"
+        for item in instruction["stock"]
+    }
+    for field in world["maps"]:
+        for setup in (field, *field.get("setups", [])):
+            search = setup.get("search")
+            if search:
+                ids.update(
+                    row["itemWord"] & 127
+                    for row in (*search["chests"], *search["otherItems"])
+                    if row["itemWord"] is not None
+                )
+    return ids
+
+
+def identity_assets(
+    rom: Path, upstream: Path, listing: Path | None, rom_assets: bool, *, field_items=()
+):
     source, commit, identity = _verified_source(
         rom, upstream, owner="identity-icons", listing_path=listing
     )
@@ -93,7 +116,12 @@ def identity_assets(rom: Path, upstream: Path, listing: Path | None, rom_assets:
     mask = payload("data/graphics/tech/iconhighlighttiles.bin", "tiles_IconHighlight", 192)
     resources, receipts = {}, []
     enums = read_upstream_text(source.disasm / "sf2enums.asm")
-    item_ids = [_equ(enums, "ITEM_" + code) for code in ITEMS]
+    field_items = set(field_items)
+    if not all(type(item) is int and 0 <= item <= 127 for item in field_items):
+        raise ValueError("invalid field item icon identity")
+    base_items = [_equ(enums, "ITEM_" + code) for code in ITEMS]
+    additions = sorted(field_items.difference(base_items))
+    item_ids = base_items + additions
     spell_ids = [_equ(enums, "SPELL_" + code) for code in SPELLS]
     selections = [("item", i, i) for i in item_ids]
     selections += [("spell", i, i + 130) for i in spell_ids] + [("other", 128, 128)]
@@ -135,5 +163,25 @@ def identity_assets(rom: Path, upstream: Path, listing: Path | None, rom_assets:
         highlightAddress=source.addresses["tiles_IconHighlight"],
         layout="2x3 row-major tiles per magicmenulayout.asm MENUTILE1..6",
         highlight="source bitwise AND tiles_IconHighlight",
+        fieldItemAdditions=additions,
         resources=receipts,
     )
+
+
+def mount_identity_icons(rasters: dict, icons: tuple[dict, dict]) -> None:
+    """Extend a complete, matching base catalog with the selected world's icon pairs."""
+    resources, provenance = icons
+    existing = {k: v for k, v in rasters.items() if k.startswith("identity-icon.")}
+    if existing:
+        base_keys = {
+            row["resource"]
+            for row in provenance["resources"]
+            if row["storageIndex"] not in provenance["fieldItemAdditions"]
+        }
+        if not base_keys.issubset(existing) or any(
+            resources.get(key) != value or key.rsplit(".", 1)[0] + suffix not in existing
+            for key, value in existing.items()
+            for suffix in (".normal", ".selected")
+        ):
+            raise ValueError("input owns incomplete or conflicting identity icons")
+    rasters.update(resources)

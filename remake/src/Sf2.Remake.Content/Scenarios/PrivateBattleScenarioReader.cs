@@ -12,7 +12,9 @@ namespace Sf2.Remake.Content.Scenarios;
 public sealed class PrivateBattleScenarioReader(string placementPath, string scenePath, string terrainPath,
     string staticPath, string enemyPath, string goldPath, string controlledStartPath, string? battleSceneContentPath = null) : IScenarioSource
 {
-    public ScenarioReadResult Read()
+    public ScenarioReadResult Read() => Read([]);
+
+    internal ScenarioReadResult Read(IReadOnlyList<byte> fieldItems)
     {
         try
         {
@@ -23,7 +25,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 return new ScenarioReadRejected(new(SessionFailureKind.ContentError, "private-encounter", failed.Diagnostic.Field, failed.Diagnostic.Message));
             var encounter = ((BattleEncounterReadAccepted)result).Definition;
             var start = ControlledBattleStartReader.Read(controlledStartPath);
-            var definitions = PrivateBattleDefinitionReader.Read(staticPath, enemyPath, goldPath, encounter, start);
+            var definitions = PrivateBattleDefinitionReader.Read(staticPath, enemyPath, goldPath, encounter, start, fieldItems: fieldItems);
             var accepted = Assemble(definitions, start);
             if (battleSceneContentPath is null) return accepted;
             var scenes = BattleSceneContentReader.Read(battleSceneContentPath, definitions);

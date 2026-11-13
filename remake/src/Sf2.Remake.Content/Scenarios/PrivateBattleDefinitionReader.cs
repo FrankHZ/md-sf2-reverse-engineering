@@ -13,7 +13,7 @@ internal static class PrivateBattleDefinitionReader
 
     internal static PrivateBattleDefinitions Read(string staticPath, string enemyPath, string goldPath,
         BattleEncounterDefinition encounter, PrivateBattleStart start, IReadOnlyList<SourceAllyDefinition>? initialAllies = null,
-        IReadOnlyList<byte>? growthSpells = null)
+        IReadOnlyList<byte>? growthSpells = null, IReadOnlyList<byte>? fieldItems = null)
     {
         var coreBytes = PrivateBattleEncounterReader.ReadInput(staticPath, StaticDigest, "static-data", maximumLength: 1048576);
         var enemyBytes = PrivateBattleEncounterReader.ReadInput(enemyPath, EnemyDigest, "enemy-data", maximumLength: 1048576);
@@ -21,12 +21,12 @@ internal static class PrivateBattleDefinitionReader
         using var enemy = JsonDocument.Parse(enemyBytes, new JsonDocumentOptions { MaxDepth = 32 });
         using var gold = JsonDocument.Parse(PrivateBattleEncounterReader.ReadInput(goldPath,
             "16607CA1AE0477BC22FE81BEA044B7711D8C1EA3A31F4A0064C0288C026AD3DF", "enemy-gold", maximumLength: 16384));
-        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start, initialAllies, growthSpells);
+        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start, initialAllies, growthSpells, fieldItems);
     }
 
     internal static PrivateBattleDefinitions Decode(JsonElement core, JsonElement enemy, JsonElement gold,
         BattleEncounterDefinition encounter, PrivateBattleStart start, IReadOnlyList<SourceAllyDefinition>? initialAllies = null,
-        IReadOnlyList<byte>? growthSpells = null)
+        IReadOnlyList<byte>? growthSpells = null, IReadOnlyList<byte>? fieldItems = null)
     {
         Object(core, "static-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "allies", "classes", "items", "spellNames", "spellDefinitions");
         Object(enemy, "enemy-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "promotions", "enemies");
@@ -51,6 +51,9 @@ internal static class PrivateBattleDefinitionReader
                 for (byte level = 1; level <= (packed >> 6) + 1; level++) spellKeys.Add(((byte)(packed & 63), level));
         foreach (var row in enemies.SelectMany(row => row.Spells)) AddSpell(row.Spell, row.Level);
         foreach (var row in items) AddSpell(row.UseSpell, row.UseSpellLevel);
+        // Buying or finding an item supplies its source terms, without selecting its Use spell.
+        if (fieldItems is not null)
+            items = items.Concat(fieldItems.Where(id => !itemIds.Contains(id)).Select(id => Item(FindId(core, "items", id)))).ToArray();
         var spells = spellKeys.OrderBy(key => key.Id).ThenBy(key => key.Level).Select(key =>
         {
             string code = Text(FindId(core, "spellNames", key.Id), "code");

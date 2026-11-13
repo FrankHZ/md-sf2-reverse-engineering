@@ -9,7 +9,7 @@ namespace Sf2.Remake.Content.Scenarios;
 internal static class PrivateWorldEncounterReader
 {
     internal static ScenarioReadAccepted Read(JsonElement selections, string worldPath, ScenarioReadAccepted first,
-        PrivateBattleContentReader? newGame = null)
+        PrivateBattleContentReader? newGame, IReadOnlyList<byte> fieldItems)
     {
         Require(selections.ValueKind == JsonValueKind.Array, "array-required", "encounters");
         // Product rows must resolve to distinct, authenticated encounters; the root occupies one slot.
@@ -33,7 +33,7 @@ internal static class PrivateWorldEncounterReader
             string? scenes = row.GetProperty("battleScenes").ValueKind == JsonValueKind.Null ? null : Input("battleScenes");
             var result = newGame is null
                 ? new PrivateBattleScenarioReader(Input("placement"), Input("scene"), Input("terrain"),
-                    Input("static"), Input("enemies"), Input("gold"), Input("start"), scenes).Read()
+                    Input("static"), Input("enemies"), Input("gold"), Input("start"), scenes).Read(fieldItems)
                 : newGame.Read(Input("placement"), Input("scene"), Input("terrain"), Input("static"), Input("enemies"), Input("gold"), scenes);
             if (result is ScenarioReadRejected rejected) throw new AdmissionIssue(rejected.Failure);
             admitted.Add((ScenarioReadAccepted)result);
