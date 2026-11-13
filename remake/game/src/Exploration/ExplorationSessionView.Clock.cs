@@ -72,6 +72,11 @@ public sealed partial class ExplorationSessionView
         else if (_menuSteps >= 120) FinishMenuEntry("save-entry-budget");
     }
 
+    // A directly returned zone still owns its arrival service. Only the walking clock
+    // treats it as a step; interaction and save admission keep their session predicates.
+    private static bool UsesWalkingClock(SessionSnapshot current) => current.HasOrdinaryFieldTime ||
+        current.Story.Wait is ZoneArrivalWait { FieldMoveToken: not null };
+
     private void AdvanceOrdinaryTime(double delta)
     {
         try { ServiceOrdinaryTime(delta); }
@@ -97,7 +102,7 @@ public sealed partial class ExplorationSessionView
         for (int i = 0; i < due; i++)
         {
             var before = _session!.Current;
-            if (!before.HasOrdinaryFieldTime || PresentationFailure is not null || !CanProcess() || _handedOff || _battleHandoffPending)
+            if (!UsesWalkingClock(before) || PresentationFailure is not null || !CanProcess() || _handedOff || _battleHandoffPending)
             { _tickTime = 0; return; }
             if (!MenuEntryPending && before.CanWaitAtInput &&
                 _movementHold.Repeat(_input, before, Time.GetTicksUsec()) is { } direction)
@@ -107,7 +112,7 @@ public sealed partial class ExplorationSessionView
             var afterAction = _session.Current;
             if (PresentationFailure is not null || _handedOff || _battleHandoffPending || !CanProcess() ||
                 afterAction.SessionId != before.SessionId ||
-                afterAction.Exploration?.Definition != before.Exploration?.Definition || !afterAction.HasOrdinaryFieldTime)
+                afterAction.Exploration?.Definition != before.Exploration?.Definition || !UsesWalkingClock(afterAction))
             { _tickTime = 0; return; }
             bool settling = MenuEntryPending;
             var result = Send(afterAction.CanWaitAtInput ? new WaitAtInput() :
@@ -116,7 +121,7 @@ public sealed partial class ExplorationSessionView
             CheckMenuEntry();
             if (result.Failure is not null || _session.Current.SessionId != before.SessionId ||
                 _session.Current.Exploration?.Definition != before.Exploration?.Definition ||
-                !_session.Current.HasOrdinaryFieldTime || !CanProcess() || _handedOff || _battleHandoffPending)
+                !UsesWalkingClock(_session.Current) || !CanProcess() || _handedOff || _battleHandoffPending)
             { _tickTime = 0; return; }
             // A completed step may hand straight to the next held direction. Read live input
             // only after Observe has rejected story/transfer ownership; retain no queued Move.

@@ -384,7 +384,8 @@ internal static class ExplorationDispatcher
                             if (field.Event is { Kind: ExplorationEventKind.SourceZone } zone)
                             {
                                 current = MapEventDispatcher.EnterZone(current, zone, entityUpdates, observations);
-                                return ProgramRunner.Run(definition, current, observations, rules);
+                                return ProgramRunner.Run(definition, current, observations, rules,
+                                    fieldMoveToken: field.Moved ? fieldMove.Token : null);
                             }
                             if (!field.Moved) return ProgramRunner.Run(definition, current, observations, rules);
                             continue;

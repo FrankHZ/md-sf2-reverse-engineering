@@ -155,13 +155,51 @@ The latest newly pressed direction wins, including near the end of an owned step
 falls back to another still-held direction. Keyboard aliases, D-pad and mapped stick deflections use the same semantics. OS keyboard
 echo cannot select or repeat a choice. Existing button/axis release/neutral admission remains.
 
-`ExplorationMovementHold` retains only the token of its own ordinary field Move. That movement wait
-must not cancel a continuous walk. A real program, event continuation, map/battle handoff, interaction,
+`ExplorationMovementHold` retains only the token of its own ordinary field Move. The wait for that motion, including arrival after a direct zone return,
+preserves the hold. A story effect or wait, map/battle handoff, interaction,
 error, focus loss, hide, pause or detach clears the pending hold. A submitted step may finish after
 release or resume, but cannot cause a later Move. Return needs a fresh non-echo direction event;
 pad buttons/axes need their existing release/neutral edge. Keyboard recovery does not require a
 release that may have happened outside the window. All field automatic delivery now pauses while
 unfocused/hidden/paused, and resume discards timing debt.
+
+### Held movement through a source zone
+
+**Standard rigor.** [#1776](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1776) covers
+the input handoff from a legal field step through a zone that immediately returns.
+A zone still runs its initialization, executes its program and waits for physical arrival. If the
+executed path consists only of synchronous control flow, the arrival wait carries the producing
+Move's token alongside its own service token. A blocked step, story effect or intervening wait
+cannot carry that ownership. The adapter services the arrival on its walking clock and checks live
+direction again only when field input returns. Interaction and save retain their existing admission.
+
+**Confirmed** in pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/maps/entries/map03/mapsetups/s3_zoneevents_609.asm`. The x=2 wildcard entry
+`Map3_261_ZoneEvent1` checks Jaha's join flag. The joined branch returns directly. The other branch
+calls `cs_516A8`, sets F402 and clears F66. The coordinates and flags are scenario data.
+
+**Confirmed** through mapped keyboard input at fixed 60 Hz in the production Godot host, using
+ordinary Continue and two unedited copies of Map3 F609 slot 2. The following are remake observations.
+
+| Input | Observed handoff and next operation |
+| --- | --- |
+| Joined, hold Down once at (2,27) | On baseline `12852dea`, one Move reached (2,28). At frame +95 the key was still held with no direction. With the fix, the first zone finish and the second Move request shared a process frame. Releasing during the second arrival settled at (2,29) with two requests after 95 more frames. |
+| From (2,29), press Up, then press Left and release Up during arrival | The next request turned Left on completion of the step to (2,28). Release settled at (1,28), with no further step over 95 frames. |
+| Unjoined, hold Left from (3,29) and confirm recruitment dialogue | The field relinquished the direction when the story took control. Return at (2,29) had Jaha joined, F402 set and F66 clear. Holding Left for 95 more frames produced zero further requests. After release, a fresh Right reached (3,29). |
+| Joined, hold Left out of the west gate from (1,27) | Battle02 took control on Map66. Its movement preview stayed at (13,13) for 95 frames with the old key held. After release, fresh Right moved the preview to (14,13). |
+
+For independent review, build the Debug adapter in the owned worktree with its protected SDK
+environment. From the worktree root run `./local/issue1776/run.ps1 joined <fresh-name>`, then repeat
+with `unjoined` and `transfer`. The launcher uses local seed copies, a fresh external disposable
+save namespace for each run and the existing private content. The headless observer records mapped
+edges, live state and step boundaries in ignored output. The first baseline launch could not open
+Continue with a checkout-local save root. The corrected baseline and all three changed routes
+completed. Godot reported ObjectDB warnings at teardown on some launches. No session failure was
+observed on the completed routes.
+
+The engine theory `ZoneArrivalCarriesTheMoveOnlyForADirectReturn` also exercises a changed flag
+branch, an immediate write, a yielded timer and a map-blocked marker. Other maps and physical
+device feel remain outside this keyboard observation.
 
 ### Successful-step continuity (#1585)
 

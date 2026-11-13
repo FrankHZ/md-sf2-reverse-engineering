@@ -21,7 +21,7 @@ internal static class ProgramRunner
         IReadOnlyList<ProgramControlRead>? prefixReads = null) => Run(definition, current, observations, Gameplay.RuleCompositions.Sf2(), prefixReads);
 
     internal static SessionResult Run(ScenarioDefinition definition, SessionSnapshot current, List<SessionObservation> observations,
-        SessionRules rules, IReadOnlyList<ProgramControlRead>? prefixReads = null)
+        SessionRules rules, IReadOnlyList<ProgramControlRead>? prefixReads = null, WaitToken? fieldMoveToken = null)
     {
         List<ProgramControlRead> reads = prefixReads?.ToList() ?? [];
         SessionResult Finish(SessionResult result) => result with { ProgramControlReads = reads.AsReadOnly() };
@@ -82,7 +82,7 @@ internal static class ProgramRunner
                         current = current.WithStory(current.Story.Copy(null, continuation: ProgramContinuation.FieldInput));
                         return Finish(BattleAdvancer.Advance(current, observations, rules));
                     }
-                    current = MapEventDispatcher.Finish(current, observations);
+                    current = MapEventDispatcher.Finish(current, observations, fieldMoveToken);
                     if (current.Story.Wait is not null) continue;
                     if (current.Story.Display is { } display &&
                         (display.Visibility != FullFadeVisibility.BaseRestored || display.Current != display.Base))
@@ -129,6 +129,11 @@ internal static class ProgramRunner
                     WaitProgramTicks or ConvertBattleActor or JoinBattleForceAi or SetEntityFacing { Facing: < 4 } or SetCameraEntity or SetCameraTarget or
                     PresentCue { Kind: PresentationCueKind.CameraWait, FullBlack: null, Entity: null, Position: null, Resource: null, DurationTicks: null }))
                     throw new BattleRuleException("battle-program-instruction", "program." + instruction.GetType().Name, true);
+                // Only synchronous, effect-free dispatch may return arrival to the producing Move.
+                // A yielded wait resumes in a new Run, without the move token.
+                if (instruction is not (BranchFlag or BranchEntityCoordinates or JumpProgram or
+                    CallProgram { ActivateEntities: false } or ReturnProgram or EndProgram { SourceMapScript: false }))
+                    fieldMoveToken = null;
                 var callersBefore = current.Story.Callers;
                 if (instruction is UnsupportedInstruction unsupported)
                     throw new BattleRuleException("program-opcode", unsupported.Source + ":" + unsupported.Opcode, true);

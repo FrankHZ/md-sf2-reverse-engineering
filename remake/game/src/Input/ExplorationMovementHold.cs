@@ -10,9 +10,13 @@ internal sealed class ExplorationMovementHold
     private ulong _retryAt;
     private WaitToken? _motion;
     internal void Clear(GameInput input) { _armed = false; _retryAt = 0; _motion = null; input.DisarmMovement(); }
-    internal bool CanContinue(SessionSnapshot current) => current.CanWaitAtInput ||
-        _motion is not null && current.Story.Wait is EntityWait { AfterMotion: null } wait &&
-        wait.Token == _motion && wait.Entity == current.Exploration?.Player && current.Story.Cursor is null;
+    private bool OwnsMotion(SessionSnapshot current) => _motion is not null && current.Story.Cursor is null && current.Story.Wait switch
+    {
+        EntityWait { AfterMotion: null } wait => wait.Token == _motion && wait.Entity == current.Exploration?.Player,
+        ZoneArrivalWait arrival => arrival.FieldMoveToken == _motion,
+        _ => false,
+    };
+    internal bool CanContinue(SessionSnapshot current) => current.CanWaitAtInput || OwnsMotion(current);
     internal void Pressed(ulong now)
     {
         _armed = true;
@@ -35,12 +39,15 @@ internal sealed class ExplorationMovementHold
             _motion = started.Token;
             _retryAt = 0; // Successful motion owns its cadence; no independent repeat deadline.
         }
-        bool ownMotion = _motion is not null && after.Story.Wait is EntityWait { AfterMotion: null } motion &&
-            motion.Token == _motion && motion.Entity == after.Exploration?.Player;
-        if (result.Failure is not null || before.Exploration?.Definition != after.Exploration?.Definition ||
-            after.Story.Cursor is not null || after.Story.Callers.Count != 0 || after.Story.EventCaller is not null ||
+        bool ownMotion = OwnsMotion(after);
+        bool directZoneReturn = ownMotion && after.Story.Wait is ZoneArrivalWait;
+        if (result.Failure is not null || before.SessionId != after.SessionId ||
+            before.Exploration?.Definition != after.Exploration?.Definition ||
+            after.Story.Cursor is not null || after.Story.Callers.Count != 0 ||
+            after.Story.EventCaller is not null && !directZoneReturn ||
             after.Story.EnteringBattle is not null || (!after.CanWaitAtInput && !ownMotion) ||
-            result.Observations.Any(row => row.Kind is "program-instruction" or "map-transferred" or "map-input-program"))
+            result.Observations.Any(row => row.Kind is "map-transferred" or "map-input-program" ||
+                row.Kind == "program-instruction" && !directZoneReturn))
             Clear(input);
         else if (after.CanWaitAtInput) _motion = null;
     }
