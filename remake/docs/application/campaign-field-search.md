@@ -22,7 +22,7 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 
 ## Map and setup inventory
 
-**Confirmed (static).** The 31-map publication used for the report supplied Search on seven defaults and their compiled variants. All defaults and selected variants below have a null input program. A null input program alone does not grant control during a script. Each row lists every **compiled** flag variant alongside its default. Placements are source receipt flags, including optional and later-area entries. Counts in parentheses are text-only descriptions per setup; a dash denotes no placement. A compiled row alone gives no route to the item. [Selection](../../content/private/pre-voyage-opening.json) · [Original field menu Search entry](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm).
+**Confirmed (static).** The current campaign supplies Search on 30 of its 31 map defaults and their compiled variants. All defaults and selected variants below have a null input program. A null input program alone does not grant control during a script. Each row lists every **compiled** flag variant alongside its default. Placements are source receipt flags, including optional and later-area entries. Counts in parentheses are ordinary text rows per setup; a dash denotes no placement. A compiled row alone gives no route to the item. [Selection](../../content/private/pre-voyage-opening.json) · [Original field menu Search entry](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm).
 
 | Map | Additional setup flags | Source placements (descriptions) | Campaign Search / entry evidence |
 | --- | --- | --- | --- |
@@ -46,9 +46,9 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 | 14 | 458 | 139,140 (0) | Added. Default below-deck and F458 above-deck input observed; both item coordinates lack a marker. |
 | 72 | — | — (0) | Added. Eastern crossing and approach to the Polca raft. |
 | 7 | 701 | 142,143 (2) | Added. Year-later castle and audience. |
-| 6 | 701, 702 | 210,211,141,209 (callbacks) | Withheld. New Granseal is reached; its selected handlers need conditional code. |
+| 6 | 701, 702 | 210,211,141,209 (9) | New Granseal. Default/F701 shop notice, F701 well answers and F702 empty doorway and bookcase observed. [Town details](#new-granseal-and-ribble). |
 | 69 | — | — (0) | Added. Battle09 return and Ribble approach. |
-| 8 | 708 | 144,145 (callbacks) | Withheld. Ribble is reached; signs, objects and the tree have conditional handlers. |
+| 8 | 708 | 144,145 (4) | Ribble. Both setups exercised at the well, shop, door and tree. F708 diary and Mithril pickup/repeat observed. [Town details](#new-granseal-and-ribble). |
 | 70 | — | 188 (0) | Added. Battle10 field return and cave route. |
 | 62 | 77 | 150 (0) | Deferred. The shrine entrance on the other bank was tested from supplied coordinates. Natural access before the raft remains Unknown. |
 | 71 | — | — (0) | Added. Overworld passage between 70 and 72. |
@@ -58,12 +58,36 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 | 10 | 722 | 149 (9) | Added. Bedoe stairs and audience. |
 | 11 | — | — (1) | Added. Volcanon Shrine. |
 
-Route evidence outside the named Search observations is for entering the chapter or map. Separate rooms, endgame sections, unopened doors and every individual item are not implied by the entrance. See the [Grans stages](pre-voyage-campaign.md), [eastern travel and conditional shrine](new-granseal-east-shrine.md), [caves through Bedoe](dark-caves-bedoe.md) and [Polca departure](polca-first-raft.md). The remaining callback work is bounded at [#1759](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1759). Map6's description dispatch includes the F702 sign and yes/no interaction; Map8 has multiple F708 and scripted description rows. Flattening either table to text would change gameplay.
+Route evidence outside the named Search observations is for entering the chapter or map. Separate rooms, endgame sections, unopened doors and every individual item are not implied by the entrance. See the [Grans stages](pre-voyage-campaign.md), [eastern travel and conditional shrine](new-granseal-east-shrine.md), [caves through Bedoe](dark-caves-bedoe.md) and [Polca departure](polca-first-raft.md).
+
+## New Granseal and Ribble
+
+**Confirmed (static).** The USA retail tables select the following coordinates and text IDs. Search checks the working tile's item marker first, then the first matching description. A callback runs with current story flags. After it returns, the dispatcher closes its windows. The town callbacks read flags, display text, request the well choice, sounds and sleeps. Item grants and receipt flags belong to the separate placement tables. [Original dispatcher](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/map/mapsetupsfunctions_1.asm) · [New Granseal default/F701](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map06/mapsetups/s4_descriptions.asm) · [F702 table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map06/mapsetups/s4_descriptions_702.asm) · [Both Ribble setups](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map08/mapsetups/s4_descriptions.asm).
+
+| Setup | Ordinary text rows (faced tile → description ID) | Callback rows (faced tile → behavior) |
+| --- | --- | --- |
+| Map6 default/F701 | Books at (5–6,7) → 4084–85, (4–6,14) → 4086–88, (19,6) → 4089 and (20,17) → 4093. Signs at (17,13) → 4090 and (29,7) → 4092. | (16,13) reads F702, giving 4091 when clear or Bowie's 424 then 434 when set. (21,24) offers the well. |
+| Map6 F702 | Same nine rows. | Only the well remains. The released shop doorway has no description at (16,13). |
+| Map8 default/F708 | Shop sign (5,15) → 1361, quiet well (27,15) → 1362, papers (6,25) → 1353 and (26,12) → 1356. | Shop (6–7,15) and doors (7,25), (25,12), (22,24) read F708. When clear they give 1350 and 1351/1352 respectively. When set both give 424/434. Diary (24,8) displays 1357–1360 in order. Tree (15–16,18) gives 1354 before F731 or 424/434 afterwards. |
+
+**Confirmed (remake, ordinary input in English and Chinese).** All five selected setups were reached from carried Continue slots using walking, interaction and the field menu. The save copies kept their original coordinates, terrain, inventory and story flags.
+
+| Route | Input and result |
+| --- | --- |
+| Map7 castle → Map6 default | Face Up from (16,14) to read the lunch notice (4091). The adjacent ITEMS sign at (17,13) gives 425/4090. |
+| Peter introduction → re-enter Map6 F701 from the castle | The lunch notice still reads 4091. Face Down from (21,23) toward the well. Confirm brings up 4094. Cancel returns control. Explicit Search then Right and Confirm selects No with the same return. Yes requests falling sound 88, waits 50 ticks, then requests splash 100 and displays 4095, “A lot of water.” / “水很多。” Both locales displayed the choice labels. All three paths close the window and preserve the party, gold and flags. Subsequent walking leads back to the audience. |
+| Castle audience → Map6 F702 | Face Up from (16,14). Explicit Search gives ordinary empty 423/412. Enter the library through (8,11) and face Up from (5,8) to read 427/4084, GREAT VOYAGE /《伟大的航行》. |
+| Battle09 return → Map8 default | Enter Ribble at (44,7) on Map69. From (27,16) the quiet well gives 428/1362. From (15,19) the tree gives 1354. Face Up from (6,16) or (7,26) for the shop notice or both locked-door lines. |
+| Continue in Ribble after the mayor, F708 | The same shop and door give 424/434. The quiet well and hollow tree still give the earlier responses. Enter through (25,12), then face Up from (24,9) for all four diary lines. Face Up from (20,15) and Search to receive Mithril at (20,14), set F145 and obtain the empty response on repeat. |
+
+**Confirmed (static only).** The well's F802 Yes branch waits a second 50 ticks before the splash and dry-well line 4096. No/cancel jumps over both sounds and both possible results. The F702-set arm inside the older lunch callback is distinct from the ordinary F702-table result. The F731-set tree response, remaining book/sign/paper tiles and alternate coordinates of shared callbacks are source and compiled-content checks. The Bright Honey (F144), Healing Seed (F141) and chests (F210 Angel Wing, F211 Healing Drop) have selected placements. The Antidote barrel at (7,15), F209, also has the matching terrain marker. The F702 walking probe entered its house at (3,20) but did not reach the tile beside the barrel. **Unknown:** natural access to the later F802 and F731 outcomes within the current campaign, and original runtime timing.
 
 ## Reproduce
 
-In the prepared review checkout, start `./local/issue1757/play.ps1 Docks` and choose Continue, slot 1. Walk east from the F609 church, leave Granseal at (50,24) and use the two docks approaches above. `Voyage` starts at the tower return in slot 1. `Shops` starts at the F609 church with spending money in slot 2 for the [two shop counters](../content/profiles-and-trust.md#ordinary-campaign-shops). Each start seeds its own namespace once. All three use the same Chinese v2 publication.
+For the towns in the prepared review checkout, run `./local/issue1759/play.ps1 town en` (Continue slot 2), `./local/issue1759/play.ps1 arrival en` (post-Battle09, slot 1) or `./local/issue1759/play.ps1 ribble zh-CN` (after the mayor, slot 1). Either language works at each entry. Add `-Observe -Run review` to replay the ordinary input checks in a separate namespace.
 
-Build the selected opening world using the [campaign producer](pre-voyage-campaign.md#preparing-the-ordinary-selection) and publish its finite inventory art and [current Chinese catalog](../development-and-verification.md#pre-voyage-chinese-consumer-observation). The catalog includes the actual compiled shop stock, nonempty Search rewards and text pairs across defaults and variants. Field receipt identity enables carry and Give. Equipment, item Use, promotion and other services retain their own capability checks.
+For the docks, start `./local/issue1757/play.ps1 Docks` and choose Continue, slot 1. Walk east from the F609 church, leave Granseal at (50,24) and use the two docks approaches above. `Voyage` starts at the tower return in slot 1. `Shops` starts at the F609 church with spending money in slot 2 for the [two shop counters](../content/profiles-and-trust.md#ordinary-campaign-shops). Each start seeds its own namespace once. All three use the same Chinese v2 publication.
+
+Build the selected opening world using the [campaign producer](pre-voyage-campaign.md#preparing-the-ordinary-selection) and publish its finite inventory art and [current Chinese catalog](../development-and-verification.md#pre-voyage-chinese-consumer-observation). The catalog includes the actual compiled shop stock, nonempty Search rewards and the text from descriptions and callback branches across defaults and variants. Field receipt identity enables carry and Give. Equipment, item Use, promotion and other services retain their own capability checks.
 
 For the ledger, join each selected map's canonical `chestItemTable`, `otherItemTable`, layout and `setupRoute` to its default and selected `areaDescriptions`. Inspect the compiled world's `search`, `input`, `setup` and `setups`; verify each placement against the faced marker and active area. Run the engine's `FieldSearchTests` and, with the prepared private world selected as `SF2_PRIVATE_TOWER_SEARCH_WORLD`, `TowerFieldSearchTests`. No per-frame trace or original runtime run is required for the static inventory.

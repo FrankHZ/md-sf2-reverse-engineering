@@ -138,13 +138,26 @@ def _topology(source: str, target: str) -> bool:
 
 
 def _search_text_ids(world: dict) -> set[int]:
-    return {
-        text
-        for row in world["maps"]
-        for setup in (row, *row.get("setups", []))
-        for description in setup.get("search", {}).get("descriptions", [])
-        for text in description["texts"]
-    }
+    texts, pending = set(), set()
+    for row in world["maps"]:
+        for setup in (row, *row.get("setups", [])):
+            for description in setup.get("search", {}).get("descriptions", []):
+                if "texts" in description:
+                    texts.update(description["texts"])
+                else:
+                    pending.add(description["program"]["program"])
+    programs = {row["id"]: row for row in world["programs"]}
+    visited = set()
+    while pending:
+        program = pending.pop()
+        visited.add(program)
+        for op in programs[program]["instructions"]:
+            if op["op"] in ("text-cursor", "show-text") and "text" in op:
+                texts.add(op["text"])
+            for key in ("target", "noTarget"):
+                if isinstance(target := op.get(key), dict) and target["program"] not in visited:
+                    pending.add(target["program"])
+    return texts
 
 
 def _entry(value: str) -> str:
