@@ -87,8 +87,6 @@ public sealed partial class BattleSessionView : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
-        // This common battle UI responds to the actual window; legacy reference composition keeps its policy.
-        GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
         _map = new BattleMapViewport { Name = "MapViewport", WorldViewport = WorldViewport };
         _map.SubjectChanged = rectangle =>
         { _hudSubject = rectangle; _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle); };

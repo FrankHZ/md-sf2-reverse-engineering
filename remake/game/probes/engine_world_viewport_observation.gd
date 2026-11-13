@@ -65,7 +65,7 @@ func resize_world() -> void:
     root.position = Vector2i(-20000, -20000)
     await frames(90)
     var initial := sample("resize-initial")
-    var sizes := [Vector2i(2560,1440), Vector2i(2560,1080), Vector2i(1920,1080)]
+    var sizes := [Vector2i(1600,900), Vector2i(1920,1200), Vector2i(2560,1440), Vector2i(2560,1080), Vector2i(1920,1080)]
     for size in sizes:
         var before := state()
         root.size = size
@@ -73,7 +73,9 @@ func resize_world() -> void:
         sample("resize-first-" + str(size))
         await frames(90)
         var after := sample("resize-settled-" + str(size))
-        if not check(root.size == size and after.viewport.width == size.x and after.viewport.height == size.y, "Actual native client and viewport resize"): return
+        var canvas := Vector2(1920,1080) if size == Vector2i(1600,900) else Vector2(size)
+        if not check(root.size == size and Vector2(after.viewport.width,after.viewport.height) == canvas, "Physical client and logical viewport resize"): return
+        if not check((root.get_stretch_transform() * canvas).distance_to(Vector2(size)) < 1, "Logical canvas projects to actual client"): return
         if not check(after.failure == null and after.sessionId == initial.sessionId and after.entities[0].x == initial.entities[0].x and after.entities[0].y == initial.entities[0].y, "Resize retains session/player position without adapter errors"): return
         if not check(after.worldGeometry.cellSize == 96 and after.worldGeometry.pixelScale == 4, "Resize retains source scale"): return
         var draw: Dictionary = after.authoredDraws[0]
@@ -82,8 +84,8 @@ func resize_world() -> void:
         if not check(draw.Visible and Vector2(draw.X,draw.Y).distance_to(projected) <= 0.01, "Actual authored draw follows resized camera"): return
         var bounds: Dictionary = before.worldGeometry.bounds
         var old_center := Vector2(before.worldGeometry.cameraX, before.worldGeometry.cameraY) + Vector2(before.viewport.width, before.viewport.height) / 8
-        var desired := old_center - Vector2(size) / 8
-        var extent := Vector2(size) / 4
+        var desired := old_center - canvas / 8
+        var extent := canvas / 4
         var expected := Vector2(
             bounds.x + (bounds.width - extent.x) / 2 if bounds.width <= extent.x else clampf(desired.x, bounds.x, bounds.x + bounds.width - extent.x),
             bounds.y + (bounds.height - extent.y) / 2 if bounds.height <= extent.y else clampf(desired.y, bounds.y, bounds.y + bounds.height - extent.y))

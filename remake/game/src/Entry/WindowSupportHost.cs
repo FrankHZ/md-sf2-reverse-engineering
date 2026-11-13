@@ -7,7 +7,7 @@ namespace Sf2.Remake.GodotAdapter;
 
 public sealed partial class GameRoot
 {
-    private static readonly Vector2I MinimumClient = new(1920, 1080);
+    private static readonly Vector2I MinimumClient = new(1600, 900);
     private WindowRecoveryView? _windowRecovery;
     private SaveSlotView? _windowQuit;
     private Action? _windowStartup;
@@ -84,9 +84,21 @@ public sealed partial class GameRoot
         }
         _windowRecovery.Present(GetWindow().Size, WindowCanFit, FullscreenCanFit, null);
     }
+    // Entry is composed on the project canvas. Gameplay uses that same canvas below design
+    // size; at design size and above it keeps the native world extent and 96-pixel cells.
+    // Godot applies the inverse stretch to input before dispatch to Control and _Input.
+    private void ApplyWindowCanvas()
+    {
+        var window = GetWindow();
+        var design = window.ContentScaleSize;
+        var mode = _entry is not null || _session is null || window.Size.X < design.X || window.Size.Y < design.Y
+            ? Window.ContentScaleModeEnum.CanvasItems : Window.ContentScaleModeEnum.Disabled;
+        if (window.ContentScaleMode != mode) window.ContentScaleMode = mode;
+    }
     private void RefreshWindowSupport()
     {
         if (_updatingWindow || _input is null) return;
+        ApplyWindowCanvas();
         if (!WindowClientAllowed)
         {
             if (_session is not null || _windowRecovery is not null) ShowWindowRecovery();
@@ -142,6 +154,7 @@ public sealed partial class GameRoot
     // These existing finite host modals share one resume decision, not a separate pause service.
     private void ApplyHostPause()
     {
+        ApplyWindowCanvas();
         bool covered = _windowRecovery is not null || _windowQuit is not null;
         if (_entry is not null) _entry.ProcessMode = covered || _settings is not null || _slots is not null
             ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
