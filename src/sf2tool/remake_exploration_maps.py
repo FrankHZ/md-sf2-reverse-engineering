@@ -4,6 +4,7 @@ import re
 
 from sf2tool.h2.battle_global_data import _tokens
 from sf2tool.remake_exploration_actions import action_stream, walking_actions
+from sf2tool.remake_exploration_items import item_events
 from sf2tool.remake_exploration_search import compile_search
 
 
@@ -236,6 +237,8 @@ def compile_maps(
                 )
             population = compiler.population()
         if full_setup and setup is not None:
+            if selected in selection.get("itemEventMaps", []):
+                events.extend(item_events(compiler, folder, setup, resources))
             for key, filename, macro, default in (
                 ("entityEvents", "s2_entityevents.asm", "msEntityEvent", "msDefaultEntityEvent"),
                 ("zoneEvents", "s3_zoneevents.asm", "msZoneEvent", "msDefaultZoneEvent"),

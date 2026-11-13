@@ -105,7 +105,8 @@ internal static class MapEventDispatcher
     internal static SessionSnapshot Finish(SessionSnapshot current, List<SessionObservation> observations,
         WaitToken? fieldMoveToken = null)
     {
-        if (current.Story.EventCaller is ZoneEventContext zone) return FinishZone(current, zone, observations, fieldMoveToken);
+        if (current.Story.EventCaller is ZoneEventContext or ItemEventContext)
+            return FinishMapAction(current, current.Story.EventCaller, observations, fieldMoveToken);
         if (current.Story.EntityEvent is not { } context) return current;
         var world = current.Exploration!;
         if (!context.Returning && (context.Flags & 2) != 0 && world.Entities.TryGetValue(context.Entity, out var entity))
@@ -145,13 +146,14 @@ internal static class MapEventDispatcher
             eventCaller: new ZoneEventContext(), entityServices: entityServices), observations, "zone-entered");
     }
 
-    private static SessionSnapshot FinishZone(SessionSnapshot current, ZoneEventContext context,
+    private static SessionSnapshot FinishMapAction(SessionSnapshot current, FieldEventContext context,
         List<SessionObservation> observations, WaitToken? fieldMoveToken)
     {
+        string caller = context is ItemEventContext ? "item-event" : "zone";
         if (!context.Returning)
         {
             current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
-                eventCaller: context with { Returning = true }), observations, "zone-returning");
+                eventCaller: context with { Returning = true }), observations, caller + "-returning");
             if (current.Story.TextSettings is not null)
             {
                 current = ExplorationPortraitRunner.Close(current, observations, true);
@@ -164,13 +166,13 @@ internal static class MapEventDispatcher
             return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
                 new TextCloseWait(new(current.ObservationSequence + 1), CallerReturn: true),
                 logicalText: ExplorationTextRunner.Close(window)),
-                observations, "zone-closing");
+                observations, caller + "-closing");
         }
-        // loc_47576 always WaitForVInt before checking physical arrival, including
-        // an empty/skipped handler or a map-blocked marker whose player never moved.
+        // Both the map-item wrapper and loc_47576 wait a VInt and physical arrival.
+        // A zone marker can be blocked or skipped without any movement.
         return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
             new ZoneArrivalWait(new(current.ObservationSequence + 1), fieldMoveToken), textWindow: new ClosedTextWindow()),
-            observations, "zone-arrival-wait");
+            observations, caller + "-arrival-wait");
     }
 
     internal static ExplorationState OpenDoor(ExplorationState world, MapPosition candidate)

@@ -481,6 +481,14 @@ internal static class ExplorationContentReader
     private static ExplorationEvent ReadEvent(JsonElement row)
     {
         string kind = Text(row, "kind");
+        if (kind == "use-item")
+        {
+            Object(row, "event", "kind", "item", "x", "y", "facing", "requiredFlag", "requiredValue", "program");
+            return new(ExplorationEventKind.UseItem, Number(row, "x", 0, 63), Number(row, "y", 0, 63), null,
+                RequiredLocation(row.GetProperty("program")), RequiredFlag: NullableNumber(row, "requiredFlag", 65535),
+                RequiredFlagValue: Boolean(row, "requiredValue"), Item: (byte)Number(row, "item", 0, 126),
+                ItemFacing: (byte?)NullableNumber(row, "facing", 3));
+        }
         if (kind == "interact")
         {
             ObjectOptional(row, "event", ["kind", "entity", "program", "requiredFlag", "requiredValue"], "entityFlags", "unavailable");
@@ -560,6 +568,15 @@ internal static class ExplorationContentReader
                 ObjectOptional(row, opcode, "activateEntities", ["op", "target"]);
                 return new CallProgram(RequiredLocation(row.GetProperty("target")),
                     row.TryGetProperty("activateEntities", out _) && Boolean(row, "activateEntities"));
+            case "branch-has-item":
+                Object(row, opcode, "op", "item", "target");
+                return new BranchHasItem((byte)Number(row, "item", 0, 126), RequiredLocation(row.GetProperty("target")));
+            case "remove-party-item":
+                Object(row, opcode, "op", "item");
+                return new RemovePartyItem((byte)Number(row, "item", 0, 126));
+            case "face-interaction":
+                Object(row, opcode, "op", "entity");
+                return new FaceInteraction(new(Id(row, "entity")));
             case "branch-flag":
                 Object(row, opcode, "op", "flag", "whenSet", "target");
                 return new BranchFlag(Number(row, "flag", 0, 65535), Boolean(row, "whenSet"), RequiredLocation(row.GetProperty("target")));
@@ -852,6 +869,7 @@ internal static class ExplorationContentReader
                 switch (instruction)
                 {
                     case JumpProgram jump: Target(jump.Target); break;
+                    case BranchHasItem branch: Target(branch.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
                     case BranchInteractionFacing branch: Target(branch.Target); break;
                     case ChooseYesNo choice: Target(choice.NoTarget); break;

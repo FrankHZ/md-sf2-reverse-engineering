@@ -18,6 +18,9 @@ public sealed record JoinBattleForceAi(int AllySlot, ushort Value) : StoryInstru
 public sealed record EndProgram(bool SourceMapScript = false) : StoryInstruction;
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record BranchInteractionFacing(byte Facing, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
+public sealed record BranchHasItem(byte Item, ProgramLocation Target) : StoryInstruction;
+public sealed record RemovePartyItem(byte Item) : StoryInstruction;
+public sealed record FaceInteraction(EntityRef Entity) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;
 public sealed record BranchEntityCoordinates(EntityRef Entity, short X, short Y, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities = false) : StoryInstruction;

@@ -26,7 +26,8 @@ internal static class FieldCommands
                 FieldItemEvents.Match(current, (byte)(use.ExpectedWord & 127)) is { } entry)
             {
                 List<SessionObservation> observations = [];
-                var story = current.Story.Copy(entry.Program, continuation: ProgramContinuation.FieldInput);
+                var story = current.Story.Copy(entry.Program, continuation: ProgramContinuation.FieldInput,
+                    eventCaller: new ItemEventContext(), entityServices: false);
                 current = ProgramRunner.Commit(current, current.Active, story, observations, "field-item-event", use.Member.Value);
                 return ProgramRunner.Run(definition, current, observations, rules ?? Gameplay.RuleCompositions.Sf2());
             }
