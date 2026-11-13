@@ -49,13 +49,19 @@ internal static class PrivateFieldPreparation
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
                 item.MinimumRange, item.MaximumRange)).ToArray();
     }
-    internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, IEnumerable<string>? wingMaps = null,
+    internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, ExplorationDefinition? world = null, IEnumerable<string>? wingMaps = null,
         FieldEgressDefinition? egress = null)
     {
         var weapons = Weapons(source);
+        // A selected reward needs a carry identity even when its equipment or Use effect is unsupported.
+        var pickupIds = (world?.Maps.Values ?? []).SelectMany(map =>
+                map.Setups.Values.Select(setup => setup.Search).Append(map.Search))
+            .OfType<FieldSearchDefinition>().SelectMany(search => search.Chests.Concat(search.OtherItems))
+            .Where(row => row.ItemWord.HasValue).Select(row => (byte)(row.ItemWord!.Value & 127)).ToHashSet();
         var wingNoEffectMaps = wingMaps ?? [];
         return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
-                item.ItemTypeExpression == "CONSUMABLE" || item.Code == "MITHRIL").Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
+                item.ItemTypeExpression == "CONSUMABLE" || item.Code == "MITHRIL" ||
+                (item.Id != 127 && pickupIds.Contains(item.Id))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
                 FieldItems(source), source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 } ||

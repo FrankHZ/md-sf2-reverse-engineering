@@ -38,7 +38,7 @@ internal static class OpeningLoadoutBindings
             angelWing.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
             "source-field-angel-wing", "field.items");
         var egress = PrivateFieldEgress.Bind(admitted.Exploration);
-        var preparation = PrivateFieldPreparation.Read(source, openingMaps, egress.Capability);
+        var preparation = PrivateFieldPreparation.Read(source, admitted.Exploration, openingMaps, egress.Capability);
         var encounters = admitted.Encounters.Values.Select(encounter => PrivateFieldPreparation.Discard(PrivateFieldPreparation.Give(
             PrivateFieldPreparation.Equipment(encounter, source, allowBattleChanges: true), preparation), preparation)).ToArray();
         return new(admitted.Package, encounters, source, egress.World, admitted.BattleScenes, admitted.EncounterStarts.Values,

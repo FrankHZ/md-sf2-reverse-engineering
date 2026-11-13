@@ -2,6 +2,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using System.Text.Json.Nodes;
@@ -17,7 +18,8 @@ public sealed class FieldSearchTests
     private static GameSession Session(ushort marker = 0x1800, ushort? item = 0, uint? gold = null,
         ushort[]? leader = null, ushort[]? second = null, int[]? flags = null,
         FieldAreaDescription[]? descriptions = null, bool placement = true, ExplorationEvent[]? events = null,
-        FieldPreparationDefinition? preparation = null, bool admitted = true, ProgramLocation? input = null)
+        FieldPreparationDefinition? preparation = null, bool admitted = true, ProgramLocation? input = null,
+        PrivateBattleDefinitions? fieldItems = null)
     {
         var source = FieldInventoryTests.Session().Definition;
         var battle = source.Encounters.Values.Single();
@@ -30,6 +32,7 @@ public sealed class FieldSearchTests
             search: admitted ? search : null, inputProgram: input);
         int[] ids = [403, 404, 405, 408, 409, 410, 412, 423, 425, 427, 900];
         var world = new ExplorationDefinition([map], [], ids.Select(id => new KeyValuePair<int, string>(id, "authored text " + id)));
+        if (fieldItems is not null) preparation = PrivateFieldPreparation.Read(fieldItems, world);
         var definition = new ScenarioDefinition("search-test", [battle], exploration: world) { FieldPreparation = preparation ?? source.FieldPreparation };
         var party = actors.Select((actor, index) => new BattleActorStartInput(actor.Actor, index == 0 ? (ushort)10 : (ushort)0,
             0, null, null, null, 0, null, Initialized: true, SourceLoadout: new(index == 0 ? leader ?? [127, 127, 127, 127] : second ?? [127, 127, 127, 127], [63, 63, 63, 63])));
@@ -70,6 +73,28 @@ public sealed class FieldSearchTests
         Close(session); var after = session.Current.Exploration.Party;
         Assert.Equal(FieldSearchKind.Empty, Search(session).Kind);
         Assert.Same(after, session.Current.Exploration.Party);
+    }
+
+    [Fact]
+    public void SelectedPickupGrantsCarryAndGiveWithoutAdmittingAnUnrelatedItemOrUseEffect()
+    {
+        var basis = ConnectedBattleGiveTests.Source();
+        var ring = new SourceItemDefinition(21, "QUICK_RING", "Quick Ring", "", "ALL", [], 0, 0, 0,
+            "RING|RARE|BREAKABLE", "NOTHING", "NOTHING", 1, []);
+        var source = new PrivateBattleDefinitions(basis.Encounter, [], basis.Classes.Values,
+            basis.Items.Values.Append(ring), [], [], []);
+        var session = Session(marker: 0x2C00, item: ring.Id, fieldItems: source);
+        var reward = Search(session);
+        Assert.Equal(FieldSearchKind.Item, reward.Kind);
+        Assert.Equal("Quick Ring", reward.ItemName);
+        Close(session);
+        var giver = reward.Recipient!.Value;
+        var carried = Assert.Single(session.QueryFieldActions(giver).Items);
+        Assert.Null(carried.Use);
+        Assert.DoesNotContain((byte)90, session.Definition.FieldPreparation!.Items.Keys);
+        Assert.Null(Send(session, new FieldGive(giver, carried.Slot, carried.Word, FieldInventoryTests.Recipient)).Failure);
+        Assert.Equal(ring.Id, Assert.Single(session.QueryFieldActions(FieldInventoryTests.Recipient).Items).Word);
+        Assert.Equal(FieldSearchKind.Empty, Search(session).Kind);
     }
 
     [Fact]
