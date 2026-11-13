@@ -4,7 +4,7 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal sealed record PhysicalRoll(string Purpose, ushort Range, uint Before, uint After, ushort Result);
 internal sealed record PhysicalStrike(bool Dodged, bool Critical, int Damage, ushort Hp,
-    uint Seed, bool DoubleRolled, bool CounterRolled, IReadOnlyList<PhysicalRoll> Rolls, bool SleepInflicted = false, bool Ineffective = false, bool SilenceInflicted = false, bool PoisonInflicted = false);
+    uint Seed, bool DoubleRolled, bool CounterRolled, IReadOnlyList<PhysicalRoll> Rolls, bool SleepInflicted = false, bool Ineffective = false, bool SilenceInflicted = false, bool PoisonInflicted = false, bool StunInflicted = false);
 
 // Scalar construction only. Callers validate follow-up eligibility and settle the entire action
 // before publishing. Rolled flags describe this strike's draws, not the action's sticky toggles.
@@ -21,26 +21,30 @@ internal static class PhysicalStrikeRules
         return result;
     }
 
-    internal static int LandDamage(int attack, int defense, int multiplier) =>
-        Math.Max(1, attack - defense) * multiplier >> 8;
+    internal static int LandDamage(int attack, int defense, int multiplier, bool archerBonus = false)
+    {
+        int damage = Math.Max(1, attack - defense) * multiplier >> 8;
+        return archerBonus ? damage + (damage >> 2) : damage;
+    }
 
     internal static PhysicalStrike Resolve(int attack, int defense, ushort hp, int multiplier,
         uint seed, ushort dodgeRange, ushort criticalRange, int criticalShift, bool counter = false,
         bool sleepCritical = false, bool sleepingDefender = false, bool ineffective = false, ushort doubleRange = 32,
-        ushort counterRange = 32, bool silenceCritical = false, bool poisonCritical = false)
+        ushort counterRange = 32, bool silenceCritical = false, bool poisonCritical = false, bool stunCritical = false, bool archerBonus = false)
     {
         var rolls = new List<PhysicalRoll>();
         bool dodged = !sleepingDefender && Roll(ref seed, rolls, "dodge", dodgeRange) == 0, critical = false;
-        bool sleep = false, silence = false, poison = false;
+        bool sleep = false, silence = false, poison = false, stun = false;
         int damage = 0;
         if (!dodged)
         {
-            damage = LandDamage(attack, defense, multiplier);
+            damage = LandDamage(attack, defense, multiplier, archerBonus);
             bool success = Roll(ref seed, rolls, "critical", criticalRange) == 0;
             sleep = success && sleepCritical;
             silence = success && silenceCritical;
             poison = success && poisonCritical;
-            critical = success && !sleepCritical && !silenceCritical && !poisonCritical;
+            stun = success && stunCritical;
+            critical = success && !sleep && !silence && !poison && !stun;
             if (critical && criticalShift > 0) damage += damage >> criticalShift;
             if (!ineffective)
             {
@@ -55,6 +59,6 @@ internal static class PhysicalStrikeRules
         ushort remaining = (ushort)Math.Max(0, hp - damage);
         bool twice = remaining > 0 && Roll(ref seed, rolls, "double", doubleRange) == 0;
         bool response = remaining > 0 && Roll(ref seed, rolls, "counter", counterRange) == 0;
-        return new(dodged, critical, damage, remaining, seed, twice, response, rolls.AsReadOnly(), sleep && remaining > 0, !dodged && ineffective, silence && remaining > 0, poison && remaining > 0);
+        return new(dodged, critical, damage, remaining, seed, twice, response, rolls.AsReadOnly(), sleep && remaining > 0, !dodged && ineffective, silence && remaining > 0, poison && remaining > 0, stun && remaining > 0);
     }
 }

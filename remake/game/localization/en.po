@@ -2313,3 +2313,9 @@ msgstr "System menu"
 
 msgid "settings.accelerate"
 msgstr "Accelerate (hold)"
+
+msgid "battle.scene.stunned"
+msgstr "{0} is stunned."
+
+msgid "battle.scene.stun-cleared"
+msgstr "{0} is no longer stunned."

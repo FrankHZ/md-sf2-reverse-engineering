@@ -256,7 +256,8 @@ internal sealed partial class BattleSceneView : Control
             _completed = true;
             return new Acknowledge(state.Token);
         }
-        if (state.IsAfterTurnNotice || state.Phase is BattleScenePhase.SleepMessage or BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage)
+        if (state.IsAfterTurnNotice || state.Phase is BattleScenePhase.SleepMessage or BattleScenePhase.SilenceMessage
+            or BattleScenePhase.PoisonMessage or BattleScenePhase.StunMessage)
         {
             // Modern finite delivery of the source's no-input status notices. Actual
             // completion releases the status command; reveal/input speed adds no RNG.
@@ -471,7 +472,7 @@ internal sealed partial class BattleSceneView : Control
             Error = GameText.Ready ? "display-operands" : "localization-resources";
             return "Message unavailable (" + Error + ").";
         }
-        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase is BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage)
+        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase is BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage or BattleScenePhase.StunMessage or BattleScenePhase.StunTurnMessage)
         {
             var spell = state.SilencedSpell ?? state.SupportSpell?.Spell;
             if (spell is { } key && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
@@ -592,6 +593,8 @@ internal sealed partial class BattleSceneView : Control
             BattleScenePhase.RewardMessage => LocalizedMessage("battle.scene.exp", Name(state.RewardActor), state.RewardAmount),
             BattleScenePhase.GoldMessage => LocalizedMessage("battle.scene.gold", state.GoldAmount),
             BattleScenePhase.SilencedCastMessage => LocalizedMessage("battle.scene.silenced-cast", ActorName(state.Actor)),
+            BattleScenePhase.StunMessage => LocalizedMessage("battle.scene.stunned", Target()),
+            BattleScenePhase.StunTurnMessage => LocalizedMessage(state.StunCleared ? "battle.scene.stun-cleared" : "battle.scene.stunned", Target()),
             BattleScenePhase.PoisonMessage => LocalizedMessage("battle.scene.poison-inflicted", Target()),
             BattleScenePhase.SilenceMessage => LocalizedMessage("battle.scene.silence", Target()),
             BattleScenePhase.SilenceTurnMessage => LocalizedMessage("battle.scene.silence-expired", ActorName(state.Actor)),

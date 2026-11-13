@@ -5,12 +5,28 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 // Pending source command operands, not another actor/turn state authority.
+internal sealed record StunTurnNotice(ActorRef Actor, ushort Before, ushort After);
 internal sealed record SleepTurnNotice(ActorRef Actor, ushort Before, ushort After, int Text);
 internal sealed record SilenceTurnNotice(ActorRef Actor, ushort Before, ushort After);
 
 internal static class BattleAfterTurnContinuation
 {
     internal static SessionSnapshot Begin(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
+    {
+        var unit = current.Battle.GetActor(actor);
+        if ((unit.Status & 1) == 0) return CheckSleep(current, actor, observations);
+        var draw = BattleRandom.NextMain(current.Battle.MainSeed, 2);
+        bool cleared = draw.Value == 0;
+        var notice = new StunTurnNotice(actor, unit.Status, cleared ? (ushort)(unit.Status & ~1) : unit.Status);
+        long sequence = current.ObservationSequence, revision = current.Revision + 1;
+        observations.Add(new(++sequence, revision, "rng-stun-recovery", actor, draw.Before, draw.After,
+            RandomRange: draw.Range, RandomValue: draw.Value));
+        var scene = new BattleSceneState(null, BattleScenePhase.StunTurnMessage, 0, new(sequence), stunTurn: notice);
+        return new(current.SessionId, revision, sequence, new ActiveBattle(current.Battle.With(mainSeed: draw.After), null, scene),
+            current.Story, SessionStopReason.PresentationWait);
+    }
+
+    private static SessionSnapshot CheckSleep(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
     {
         if ((current.Battle.GetActor(actor).Status & 0xC0) == 0) return AfterSleep(current, actor, observations);
         var proposal = SleepTurnRules.Prepare(current.Battle.GetActor(actor), current.Battle.MainSeed)
@@ -31,6 +47,19 @@ internal static class BattleAfterTurnContinuation
         var scene = current.BattleScene!;
         if (command is not CompletePresentation completion || completion.Wait != scene.Token || completion.Kind != scene.CompletionKind)
             return BattleCommandDispatcher.Reject(current, "battle-scene-wait", "command");
+        if (scene.StunTurn is { } stun)
+        {
+            var unit = current.Battle.GetActor(stun.Actor);
+            if (unit.Hp == 0 || unit.Status != stun.Before)
+                return BattleCommandDispatcher.Reject(current, "stun-turn-context", "actor.status");
+            long nextSequence = current.ObservationSequence;
+            var updatedBattle = current.Battle.With(actors: current.Battle.Actors.Select(a =>
+                a.Actor == stun.Actor ? a.With(status: stun.After, facing: 3) : a));
+            List<SessionObservation> changes = [new(++nextSequence, current.Revision + 1, "stun-status", stun.Actor, stun.Before, stun.After)];
+            var updated = new SessionSnapshot(current.SessionId, current.Revision + 1, nextSequence,
+                new ActiveBattle(updatedBattle, null), current.Story, SessionStopReason.SimulationWait);
+            return BattleAdvancer.Advance(CheckSleep(updated, stun.Actor, changes), changes, rules);
+        }
         if (scene.SilenceTurn is { } silence)
         {
             var silenced = current.Battle.GetActor(silence.Actor);

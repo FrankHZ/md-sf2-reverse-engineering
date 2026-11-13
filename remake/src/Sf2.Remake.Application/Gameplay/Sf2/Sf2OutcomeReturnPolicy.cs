@@ -114,9 +114,9 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
             if (!CanRecover(deployment, input, all)) return input;
-            if ((input.Status & ~(0xC0 | 0x0300 | 2)) != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
-            // HealLivingAndImmortalAllies and ResetAlliesStats preserve lasting poison.
-            return input with { Status = (ushort)(input.Status & 2), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
+            if ((input.Status & ~(0xC0 | 0x0300 | 3)) != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
+            // HealLivingAndImmortalAllies and ResetAlliesStats preserve stun and poison.
+            return input with { Status = (ushort)(input.Status & 3), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
                 Mp = input.Progress?.MaxMp ?? deployment.Definition.MaxMp };
         }).ToArray();
         return party.WithResources(actors, party.Gold);

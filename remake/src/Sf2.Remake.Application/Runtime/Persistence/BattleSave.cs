@@ -62,7 +62,7 @@ internal static class BattleSave
         var battle = current.Battle;
         if (BattleTurnFlow.AtRoundEnd(battle) || current.Selection is null) Fail("actor-unavailable");
         var actor = BattleTurnFlow.QueuedActor(battle);
-        if (actor.Hp == 0 || actor.Position is null || actor.Control != BattleControl.Player || (actor.Status & 0xC0) != 0 ||
+        if (actor.Hp == 0 || actor.Position is null || actor.Control != BattleControl.Player || (actor.Status & 0xC1) != 0 ||
             current.Selection!.Actor != actor.Actor || BattleOutcomeSelection.Check(rules.Outcome, battle) is not null)
             Fail("actor-unavailable");
         var selection = current.Selection!;

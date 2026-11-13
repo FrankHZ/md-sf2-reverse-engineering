@@ -802,7 +802,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     }
 
     private static int AnimationHalf(ExplorationEntity entity) =>
-        (sbyte)entity.Motion.AnimationCounter >= (entity.Sprite == 254 ? 16 : 15) ? 1 : 0;
+        (sbyte)entity.Motion.AnimationCounter >= (entity.Sprite is 254 or 255 ? 16 : 15) ? 1 : 0;
 
     private ImageTexture Sprite(ExplorationEntity entity, bool nod, MapId map, int headShift = 0)
     {

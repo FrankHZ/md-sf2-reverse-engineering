@@ -2313,3 +2313,9 @@ msgstr "系统菜单"
 
 msgid "settings.accelerate"
 msgstr "加速（按住）"
+
+msgid "battle.scene.stunned"
+msgstr "{0}麻痹了。"
+
+msgid "battle.scene.stun-cleared"
+msgstr "{0}的麻痹解除了。"

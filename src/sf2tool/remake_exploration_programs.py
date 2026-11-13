@@ -528,7 +528,11 @@ class OriginalPrograms:
                 )
             elif op == "jsr" and args == ["MoveEntityOutOfMap"]:
                 if relative.endswith(
-                    ("map09/mapsetups/s6_initfunction.asm", "map13/mapsetups/s6_initfunction.asm")
+                    (
+                        "map09/mapsetups/s6_initfunction.asm",
+                        "map12/mapsetups/s6_initfunction.asm",
+                        "map13/mapsetups/s6_initfunction.asm",
+                    )
                 ):
                     result.append(
                         {"op": "move-off-map", "entity": self.entity(str(registers["d0"]))}

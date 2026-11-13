@@ -20,7 +20,7 @@ from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
 )
 
-SUPPORTED_ENCOUNTERS = (*range(2, 15), 16)
+SUPPORTED_ENCOUNTERS = (*range(2, 15), 16, 17)
 
 
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
@@ -84,6 +84,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             13: [12, 16, 3, 1],
             14: [12, 15, 3, 0],
             16: [12, 11, 0, 0],
+            17: [12, 14, 2, 0],
         }[battle]
     ):
         raise ValueError("selected spriteset header drift")
@@ -164,6 +165,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         13: "POLCA_VILLAGE",
         14: "SOUTHEAST_DESERT",
         16: "VERSUS_KRAKEN",
+        17: "TO_TAROS_SHRINE",
     }[battle]
     identity = dict(id=battle, code=code)
 
@@ -415,6 +417,7 @@ def compile_routes(compiler, selection, upstream):
         if "outcome" in route and battle_id in (
             compiler.equates["BATTLE_POLCA_VILLAGE"],
             compiler.equates["BATTLE_VERSUS_KRAKEN"],
+            compiler.equates["BATTLE_TO_TAROS_SHRINE"],
         ):
             route["outcome"]["fixedEgress"] = True
         if battle_id in selection.get("positionAfterLeaderDeath", []):

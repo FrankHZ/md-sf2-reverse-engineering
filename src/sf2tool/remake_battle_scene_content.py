@@ -85,8 +85,7 @@ def sprite_layout(columns: int, rows: int) -> list[int]:
 TARGET_CURSOR_RESOURCE = "battle-cursor.single-cell"
 
 
-def kraken_frames(decode, palette, read):
-    base = 0x261A6
+def special_battle_sprite_frames(decode, palette, read, base):
     tiles = decode(base + 32, 2304)
     for frame, address in enumerate((0x2786C, 0x2784C)):
         layout = [0] * 36
@@ -175,7 +174,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (*range(1, 15), 16):
+    if battle not in (*range(1, 15), 16, 17):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -457,7 +456,9 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     if battle == 16:
         # LoadSpecialSprite selects palette 4, then 72 tiles at VRAM AF00.
         # UpdateSpecialSprite builds each pose from four column-major 3x3 sprites.
-        for frame, tiles, colors, layout in kraken_frames(decode, palette, read):
+        for frame, tiles, colors, layout in special_battle_sprite_frames(
+            decode, palette, read, 0x261A6
+        ):
             raster(f"field-kraken-head/frame{frame}", tiles, colors, 48, 48, layout)
     backgrounds = table("battle-background-decode")
     layout = [int.from_bytes(read(0x1FAEA + i * 2, 2), "big") for i in range(384)]
@@ -669,6 +670,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-13",
             "battle-14",
             "battle-16",
+            "battle-17",
         )
         or "fieldDeath" in scene
     ):
@@ -695,6 +697,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-13": 12,
                 "battle-14": 12,
                 "battle-16": 12,
+                "battle-17": 12,
             }[scene["encounter"]]
         ]
     ]
@@ -719,7 +722,14 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     if scene["encounter"] == "battle-10":
         species.remove("GREEN_OOZE")
         species.append("DARK_DWARF")
-    if scene["encounter"] in ("battle-11", "battle-12", "battle-13", "battle-14", "battle-16"):
+    if scene["encounter"] in (
+        "battle-11",
+        "battle-12",
+        "battle-13",
+        "battle-14",
+        "battle-16",
+        "battle-17",
+    ):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
             encoding="utf-8"
@@ -789,7 +799,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(*range(1, 15), 16), default=1)
+    parser.add_argument("--battle", type=int, choices=(*range(1, 15), 16, 17), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

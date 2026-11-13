@@ -220,6 +220,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,
         "CENTAUR_ARCHER" => BattleMover.CentaurArcher, "STEALTH_ARCHER" => BattleMover.StealthArcher,
         "FLYING" => BattleMover.Flying, "ARCHER" => BattleMover.Archer, "MAGE" => BattleMover.Mage, "AQUATIC" => BattleMover.Aquatic,
+        "BRASS_GUNNER" => BattleMover.BrassGunner,
         _ => throw Unsupported("source-mover", "actor.movementType"),
     };
     private static AdmissionIssue Unsupported(string code, string field) =>

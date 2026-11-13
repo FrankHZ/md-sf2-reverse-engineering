@@ -70,11 +70,11 @@ internal static class BattleAdvancer
                     observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                     continue;
                 }
-                if ((actor.Status & 0xC0) != 0)
+                if ((actor.Status & 0xC1) != 0)
                 {
                     var skipped = new SessionSnapshot(current.SessionId, revision, sequence,
                         new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
-                    observations.Add(new(++sequence, revision, "sleeping-action-skipped", actor.Actor));
+                    observations.Add(new(++sequence, revision, (actor.Status & 0xC0) != 0 ? "sleeping-action-skipped" : "stunned-action-skipped", actor.Actor));
                     skipped = new(current.SessionId, revision, sequence, skipped.Active, current.Story, skipped.StopReason);
                     var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
                     return new(pending, observations.AsReadOnly(), pending.StopReason);

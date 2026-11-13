@@ -58,7 +58,7 @@ internal static class SceneEntities
                 EntityMotionState.At(source?.Position ?? position, source?.Facing ?? facing, source?.Speed ?? speed) with
                     { FlagsA = 0xE0, AnimationCounter = (byte)(slot.Slot + 1), WaitTimer = (byte)slot.Slot },
                 source?.Visible ?? true, source?.Actions, Slot: slot.Slot, Sprite: AllySprite(slot.Character, slot.Sprite),
-                SharedSpriteSlot: slot.Sprite == 254 ? 32 : null);
+                SharedSpriteSlot: slot.Sprite is 254 or 255 ? 32 : null);
             return slot.FollowerOrder is { } order ? FollowerMotion.Install(entity, order, -24, 0) : entity;
         });
         // Only fresh allocation initializes zero entries. Copies retain removed-reference tombstones.

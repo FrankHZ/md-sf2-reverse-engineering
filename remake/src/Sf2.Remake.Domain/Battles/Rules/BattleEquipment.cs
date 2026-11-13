@@ -109,7 +109,7 @@ public static class BattleEquipment
             throw new BattleRuleException("equipment-unavailable", "actor.equipment", true);
         ValidateLoadout(actor.Definition, actor.SourceLoadout);
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null ||
-            !SilenceRules.Supported(actor.Status) || (actor.Status & 0xC0) != 0 || actor.Definition.Physical is null)
+            !SilenceRules.Supported(actor.Status) || (actor.Status & 0xC1) != 0 || actor.Definition.Physical is null)
             throw new BattleRuleException("equipment-actor", "actor", true);
         if (actor.Attack != Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, actor.SourceLoadout)))
             throw new BattleRuleException("equipment-stats", "actor.attack");

@@ -86,6 +86,7 @@ internal static class PrivateBattleActionBindings
             "CRITICAL150_1IN4|DOUBLE_1IN8|COUNTER_1IN8" => PhysicalCriticalRule.OneIn4WithFrequentDoubleAndCounter,
             "CRITICAL_SILENCE|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Silence,
             "CRITICAL_POISON|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Poison,
+            "CRITICAL_STUN|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Stun,
             "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Sleep,
             _ => throw new BattleRuleException("source-prowess", "actor.prowess", true),
         };
