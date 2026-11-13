@@ -102,9 +102,10 @@ internal static class MapEventDispatcher
             { Motion = entity.Motion with { Facing = (byte)((world.PlayerEntity.Motion.Facing + 2) & 3) } }));
     }
 
-    internal static SessionSnapshot Finish(SessionSnapshot current, List<SessionObservation> observations)
+    internal static SessionSnapshot Finish(SessionSnapshot current, List<SessionObservation> observations,
+        WaitToken? fieldMoveToken = null)
     {
-        if (current.Story.EventCaller is ZoneEventContext zone) return FinishZone(current, zone, observations);
+        if (current.Story.EventCaller is ZoneEventContext zone) return FinishZone(current, zone, observations, fieldMoveToken);
         if (current.Story.EntityEvent is not { } context) return current;
         var world = current.Exploration!;
         if (!context.Returning && (context.Flags & 2) != 0 && world.Entities.TryGetValue(context.Entity, out var entity))
@@ -145,7 +146,7 @@ internal static class MapEventDispatcher
     }
 
     private static SessionSnapshot FinishZone(SessionSnapshot current, ZoneEventContext context,
-        List<SessionObservation> observations)
+        List<SessionObservation> observations, WaitToken? fieldMoveToken)
     {
         if (!context.Returning)
         {
@@ -168,7 +169,7 @@ internal static class MapEventDispatcher
         // loc_47576 always WaitForVInt before checking physical arrival, including
         // an empty/skipped handler or a map-blocked marker whose player never moved.
         return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null,
-            new ZoneArrivalWait(new(current.ObservationSequence + 1)), textWindow: new ClosedTextWindow()),
+            new ZoneArrivalWait(new(current.ObservationSequence + 1), fieldMoveToken), textWindow: new ClosedTextWindow()),
             observations, "zone-arrival-wait");
     }
 

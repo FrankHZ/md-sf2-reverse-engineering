@@ -291,7 +291,7 @@ public sealed partial class ExplorationSessionView : Control
         }
         CheckMenuEntry();
         if (!CanProcess()) return;
-        if (_session.Current.HasOrdinaryFieldTime)
+        if (UsesWalkingClock(_session.Current))
         { AdvanceOrdinaryTime(gameplayDelta); return; }
         if (_session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || _session.Current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true })
         {
@@ -483,14 +483,14 @@ public sealed partial class ExplorationSessionView : Control
         _ = GameplayDelta(0);
         if (command is LeaveChurch { Save: true } && submitted.Failure is null) _churchSaveRequested = true;
         _movementHold.Observe(_input, current, _result, command);
-        bool ordinaryTransition = current.HasOrdinaryFieldTime != _session.Current.HasOrdinaryFieldTime;
-        if (ordinaryTransition || !current.HasOrdinaryFieldTime && current.Story.Wait?.Token != _session.Current.Story.Wait?.Token)
+        bool ordinaryTransition = UsesWalkingClock(current) != UsesWalkingClock(_session.Current);
+        if (ordinaryTransition || !UsesWalkingClock(current) && current.Story.Wait?.Token != _session.Current.Story.Wait?.Token)
         {
             _tickTime = 0;
             if (ordinaryTransition) _resumeAutomatic = true;
         }
         if (!CanSubmitWait || current.Story.Wait?.Token != _session.Current.Story.Wait?.Token || _result.Failure is not null) CancelFieldWait();
-        else if (!current.HasOrdinaryFieldTime) _tickTime = 0;
+        else if (!UsesWalkingClock(current)) _tickTime = 0;
         PublishResult("submit");
         bool skipping = current.Story.EntrySkip is not null || command is SkipBattleEntry;
         _audio?.Observe(_result, skipping);
