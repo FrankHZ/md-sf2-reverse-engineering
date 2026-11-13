@@ -19,6 +19,7 @@ internal sealed partial class PartyStatusView : Control
     private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30);
     private readonly Panel _recordFrame = new(), _rosterFrame = new();
     private readonly PanelContainer _goldFrame = new() { Name = "GoldFrame" };
+    private readonly PanelContainer _footer = new() { Name = "PartyFooter", MouseFilter = MouseFilterEnum.Ignore };
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
     private readonly ScrollContainer _roster = new() { Name = "Roster", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
@@ -49,10 +50,22 @@ internal sealed partial class PartyStatusView : Control
         _memberLayer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_memberLayer);
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); _memberLayer.AddChild(shade);
         foreach (var node in new Control[] { _recordFrame, _goldFrame, _details,
-            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _selector, _hint, _close, _previous, _next, _rosterFrame, _roster }) _memberLayer.AddChild(node);
+            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _selector, _previous, _next, _rosterFrame, _roster, _footer }) _memberLayer.AddChild(node);
         _goldFrame.AddChild(_gold);
         _roster.AddChild(_rows);
-        _memberLayer.AddChild(_prepare); AddChild(_actions);
+        var footerRow = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        footerRow.AddThemeConstantOverride("separation", 24);
+        _footer.AddChild(footerRow);
+        _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _hint.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        footerRow.AddChild(_hint);
+        foreach (var action in new[] { _prepare, _close })
+        {
+            action.CustomMinimumSize = new(144, 64);
+            action.HorizontalAlignment = HorizontalAlignment.Right;
+            footerRow.AddChild(action);
+        }
+        AddChild(_actions);
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _selector.HorizontalAlignment = _portraitNote.HorizontalAlignment = _gold.HorizontalAlignment = HorizontalAlignment.Center;
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -123,7 +136,6 @@ internal sealed partial class PartyStatusView : Control
         _gold.Text = GameText.Get("party.gold", party.Gold?.ToString() ?? GameText.Get("party.value-unavailable"));
         PresentPortrait(session, member);
         string focus = GameText.Get(_details.FocusPane switch { 1 => "party.magic", 2 => "party.items", _ => "party.member" });
-        _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _hint.Text = GameText.Get("party.hint", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Up),
             input.CompactHint(GameAction.Down), focus, input.CompactHint(GameAction.Target),
             input.CompactHint(GameAction.Cancel), input.CompactHint(GameAction.Equipment));
@@ -168,30 +180,28 @@ internal sealed partial class PartyStatusView : Control
     private void Arrange()
     {
         float left = (Size.X - 1712) / 2, top = Math.Max(112, (Size.Y - 856) / 2);
+        _footer.Size = new(1712, _footer.GetCombinedMinimumSize().Y);
+        _footer.Position = new(left, Size.Y - StoryTheme.GameplayInset - _footer.Size.Y);
+        float summaryHeight = Math.Max(72, _goldFrame.GetCombinedMinimumSize().Y);
+        float summaryCenter = Math.Min(top + 776, _footer.Position.Y - 12 - summaryHeight / 2);
+        float summaryTop = summaryCenter - summaryHeight / 2;
+        float sheetHeight = Math.Min(720, summaryTop - 8 - top);
         _selector.Position = new(left, top - 64); _selector.Size = new(304, 48);
         _selector.HorizontalAlignment = HorizontalAlignment.Left;
-        _previous.Position = new(left + 16, top + 664); _previous.Size = new(64, 48);
-        _next.Position = new(left + 224, top + 664); _next.Size = new(64, 48);
+        _previous.Position = new(left + 16, top + sheetHeight - 56); _previous.Size = new(64, 48);
+        _next.Position = new(left + 224, top + sheetHeight - 56); _next.Size = new(64, 48);
         _rosterFrame.Show(); _roster.Show();
-        _rosterFrame.Position = new(left, top); _rosterFrame.Size = new(304, 720);
-        _roster.Position = new(left + 16, top + 16); _roster.Size = new(272, 624);
-        _details.Position = new(left + 328, top); _details.Size = new(1384, 720); _details.Arrange();
+        _rosterFrame.Position = new(left, top); _rosterFrame.Size = new(304, sheetHeight);
+        _roster.Position = new(left + 16, top + 16); _roster.Size = new(272, sheetHeight - 96);
+        _details.Position = new(left + 328, top); _details.Size = new(1384, sheetHeight); _details.Arrange();
         _portrait.Position = new(left + 360, top + 24); _portrait.Size = new(144, 192);
         _portraitNote.Position = new(left + 352, top + 40); _portraitNote.Size = new(160, 160);
-        // Center the footer in the space between the sheet and the control hint.
-        float summaryCenter = top + 776;
-        float summaryHeight = Math.Max(72, _goldFrame.GetCombinedMinimumSize().Y);
-        float summaryTop = summaryCenter - summaryHeight / 2;
         _recordFrame.Position = new(left, summaryTop); _recordFrame.Size = new(640, summaryHeight);
         _goldFrame.Position = new(left + 664, summaryTop); _goldFrame.Size = new(400, summaryHeight);
         _kills.Position = new(left + 16, summaryCenter - 24); _kills.Size = new(128, 48);
         _killsValue.Position = new(left + 144, summaryCenter - 24); _killsValue.Size = new(136, 48);
         _defeats.Position = new(left + 328, summaryCenter - 24); _defeats.Size = new(128, 48);
         _defeatsValue.Position = new(left + 456, summaryCenter - 24); _defeatsValue.Size = new(160, 48);
-        _prepare.Position = new(left + 1120, summaryCenter - 32); _prepare.Size = new(264, 64);
-        _close.Position = new(left + 1432, summaryCenter - 32); _close.Size = new(264, 64);
-        _hint.Position = new(left, top + 832); _hint.Size = new(1712, 0);
-        _prepare.RemoveThemeColorOverride("font_color"); _close.RemoveThemeColorOverride("font_color");
     }
 
     private void Select(int index)
