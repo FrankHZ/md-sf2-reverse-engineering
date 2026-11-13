@@ -15,7 +15,7 @@
 
 - Evidence labels/provenance changed: <!-- no, or summarize Confirmed/Inferred/Unknown changes -->
 - Fixture/schema/design-contract impact:
-<!-- Player-facing remake changes: link the affected feature row and detailed owner from the Issue. Identify changed chapter/setup coverage, ordinary-input evidence and remaining gaps. -->
+<!-- Player-facing remake changes: link the affected feature row and detailed owner from the Issue. Identify changed chapter/setup coverage and remaining gaps. For a new reachable state or control handoff, name the next player operation, its observed result or return, and any missing evidence. -->
 - Remaining questions or deliberate non-goals:
 
 ## Validation
