@@ -197,6 +197,7 @@ public sealed partial class GameRoot
         "mount-volcano" => GameText.Get("save.destination.mount-volcano"),
         "polca-raft" => GameText.Get("save.destination.polca-raft"),
         "polca-victory" => GameText.Get("save.destination.polca-victory"),
+        "hassan" => GameText.Get("save.destination.hassan"),
         "polca-return" => GameText.Get("save.destination.polca-return"),
         "east-shrine" => GameText.Get("save.destination.east-shrine"),
         "parmecia-battle-return" => GameText.Get("save.destination.parmecia-battle-return"),
