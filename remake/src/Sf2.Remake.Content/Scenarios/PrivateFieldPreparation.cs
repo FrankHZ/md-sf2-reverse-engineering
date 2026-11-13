@@ -40,7 +40,7 @@ internal static class PrivateFieldPreparation
     }
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)
     {
-        return source.Items.Values.Where(item => item.ItemTypeExpression == "WEAPON" &&
+        return source.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" || item is { Code: "ACHILLES_SWORD", ItemTypeExpression: "WEAPON|RARE" }) &&
             (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect =>
                 effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName,
@@ -64,7 +64,7 @@ internal static class PrivateFieldPreparation
         var itemEffects = FieldItems(source).Concat(eventItems.Select(id => KeyValuePair.Create(id, FieldRecoveryEffect.MapEvent)));
         var wingNoEffectMaps = wingMaps ?? [];
         return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
-                item.ItemTypeExpression == "CONSUMABLE" || item.Code == "MITHRIL" ||
+                item.ItemTypeExpression == "CONSUMABLE" || item.Code is "MITHRIL" or "TAROS_SWORD" ||
                 (item.Id != 127 && (pickupIds.Contains(item.Id) || eventItems.Contains(item.Id)))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),

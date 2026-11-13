@@ -511,7 +511,11 @@ public sealed partial class ObservationCapture : Node
         if (value is bool flag) return flag;
         if (value is Enum) return Convert.ToInt64(value);
         if (value is byte or sbyte or short or ushort or int or uint or long) return Convert.ToInt64(value);
-        if (value is ulong number) return checked((long)number);
+        if (value is ulong number)
+        {
+            if (number <= long.MaxValue) return (long)number;
+            return number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
         if (value is float or double or decimal) return Convert.ToDouble(value);
         if (value is IDictionary dictionary)
         {

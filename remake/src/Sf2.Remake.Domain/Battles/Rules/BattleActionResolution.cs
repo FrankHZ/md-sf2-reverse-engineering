@@ -515,7 +515,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             actor.Actor == reaction.Target ? actor.With(status: status) : actor));
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
-        current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
+        AttackItemSlot.HasValue ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
             ? actor.With(mp: checked((byte)(actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)))) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)

@@ -149,8 +149,8 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
         carried.update(read(cursor + 1, count))
         cursor += 1 + count
 
-    if battle >= 18:
-        carried.add(61)  # Achilles Sword can be equipped for the shrine battle.
+    if battle >= 9:
+        carried.add(61)  # Achilles Sword can be carried back into Parmecia encounters.
     members = []
     for member, first_battle in enumerate(joins):
         if battle < first_battle:
