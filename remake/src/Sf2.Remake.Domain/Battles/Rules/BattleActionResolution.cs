@@ -435,21 +435,25 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             (before.GetActor(actor).IsAlly ? Reward is { Actor: var recipient } && recipient == actor : Reward is null));
         var inventory = before;
         int cursor = 0;
+        var taros = before.Definition.TarosEffectiveness;
+        bool ineffective = taros?.IsTaros(targets[0]) == true;
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i]; var reaction = Reactions[i];
+            bool blocked = ineffective && taros!.IsTaros(target);
             Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "attack-spell" &&
-                reaction.Kind == BattleReactionKind.Damage && reaction.HpBefore == target.Hp && reaction.Amount >= 1 &&
+                reaction.Kind == (blocked ? BattleReactionKind.Ineffective : BattleReactionKind.Damage) &&
+                reaction.HpBefore == target.Hp && (blocked ? reaction.Amount == 0 && !reaction.Critical : reaction.Amount >= 1) &&
                 reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
             if (reaction.HpAfter == 0 && target.IsAlly && target.Defeats is null)
                 throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
-            // Three source damage draws precede each target's ordinary drop helper.
-            var draws = ConstructionEffects.Skip(cursor).Take(3).ToArray();
-            Require(draws.Length == 3 && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
+            int drawCount = blocked ? 1 : 3;
+            var draws = ConstructionEffects.Skip(cursor).Take(drawCount).ToArray();
+            Require(draws.Length == drawCount && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
                 draws.Skip(1).All(e => e.Kind == "rng-spell-variance") && draws.All(e => e.Actor == actor && e.Target == target.Actor));
-            cursor += 3;
-            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[2].After!.Value)),
+            cursor += drawCount;
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[^1].After!.Value)),
                 actor, target.Actor, reaction.HpAfter == 0);
             Require(reaction.Receipt == dropped.Receipt && ConstructionEffects.Skip(cursor).Take(dropped.Effects.Count).SequenceEqual(dropped.Effects));
             cursor += dropped.Effects.Count; inventory = dropped.Battle;

@@ -82,12 +82,22 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         List<BattleEffect> effects = [];
         List<BattleReaction> reactions = [];
         uint? gold = battle.Gold;
+        // DetermineIneffectiveAttack reads the first sorted target once. InflictDamage
+        // consults that toggle only for targets with the Taros enemy definition.
+        var taros = battle.Definition.TarosEffectiveness;
+        bool ineffective = taros?.IsTaros(targets[0]) == true;
         foreach (var target in targets)
         {
             int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
             int quarter = power / 4;
             int damage = PotentialDamage(actor, target, spell);
             bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;
+            if (ineffective && taros!.IsTaros(target))
+            {
+                reactions.Add(new(actorRef, target.Actor, "attack-spell", BattleReactionKind.Ineffective,
+                    target.Hp, target.Hp, target.Mp, target.Mp, false, 0, target.Status));
+                continue;
+            }
             if (critical) damage += quarter;
             ushort range = checked((ushort)(damage / 8 + 1));
             damage = Math.Max(1, damage - Roll(range, "spell-variance", target.Actor) - Roll(range, "spell-variance", target.Actor));

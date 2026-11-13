@@ -118,7 +118,8 @@ internal static class BattleTurnFlow
             if (deployment.Initialization?.SpawnMode is 2 or 3 &&
                 (start.NewBattle is not null || input.Initialized == false)) continue;
             var tile = definition.Terrain[position.Y * 48 + position.X];
-            Require(BattleTerrainRules.MovementCost(tile, actor.Mover) > 0, "blocked-placement", "start.actors.positionOverride");
+            bool stationaryEnemy = deployment.Faction == BattleFaction.Enemy && actor.Move == 0 && position == deployment.Position;
+            Require(stationaryEnemy || BattleTerrainRules.MovementCost(tile, actor.Mover) > 0, "blocked-placement", "start.actors.positionOverride");
             if (input.Hp == 0 && !(start.NewBattle is not null && (deployment.Faction == BattleFaction.Enemy ||
                 deployment.Initialization?.AllyPartyMember is 7 or 28)))
             {

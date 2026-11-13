@@ -798,6 +798,8 @@ internal static class ExplorationContentReader
                     Object(action, opcode, "op", "field", "mask", "value");
                     string field = Text(action, "field"); Require(field is "a" or "b", "entity-flag-field", "program.actions");
                     actions.Add(new ChangeEntityFlags(field == "b", (byte)Number(action, "mask", 0, 255), (byte)Number(action, "value", 0, 255))); break;
+                case "clone-physical-position": Object(action, opcode, "op", "slot"); actions.Add(new ClonePhysicalPosition(Number(action, "slot", 0, 62))); break;
+                case "move-own-facing": Object(action, opcode, "op", "distance"); actions.Add(new MoveOwnFacing(Number(action, "distance", -128, 127))); break;
                 case "follow-physical": Object(action, opcode, "op", "slot", "x", "y"); actions.Add(new FollowPhysical(Number(action,"slot",0,62), Number(action,"x",-128,127), Number(action,"y",-128,127))); break;
                 case "wait-destination": Object(action, opcode, "op"); actions.Add(new WaitEntityDestination()); break;
                 case "sound": Object(action, opcode, "op", "command"); actions.Add(new EntitySound(Number(action,"command",0,255))); break;
