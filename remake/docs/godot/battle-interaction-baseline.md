@@ -49,6 +49,8 @@ with the [presentation asset owner](../content/presentation-assets.md#ordinary-m
 
 ### Reading and maintenance
 
+For optional interactions in towns and during chapter travel, follow the [campaign feature trace](../capability-status.md#campaign-feature-trace). It covers field purchases, equipment after shopping, descriptions and pickups across the selected map setups.
+
 Start with the [player-flow matrix](#one-player-decision-from-entry-through-return), use the
 [layer responsibility map](#responsibility-and-admission-route) to locate consumers, and follow
 [sequencing and gaps](#sequencing-and-remaining-uncertainty) for the remaining scope. The provenance

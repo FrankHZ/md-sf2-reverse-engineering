@@ -15,6 +15,7 @@
 
 - Evidence labels/provenance changed: <!-- no, or summarize Confirmed/Inferred/Unknown changes -->
 - Fixture/schema/design-contract impact:
+<!-- Player-facing remake changes: link the affected feature row and detailed owner from the Issue. Identify changed chapter/setup coverage, ordinary-input evidence and remaining gaps. -->
 - Remaining questions or deliberate non-goals:
 
 ## Validation
