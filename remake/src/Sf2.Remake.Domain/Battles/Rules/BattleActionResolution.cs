@@ -7,7 +7,7 @@ internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resourc
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
-    BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null);
+    BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null, ushort? InflictedStun = null);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
     MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false, BattleActionRef? ChosenAction = null)
@@ -285,13 +285,16 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 (reaction.Kind == BattleReactionKind.Damage || reaction.Amount == 0 && !reaction.Critical));
             Require(reaction.Kind != BattleReactionKind.Ineffective || !reversed && ineffective);
             Require(reversed || !ineffective || reaction.Kind != BattleReactionKind.Damage);
-            Require(!reversed || (target.Status & 0xC0) == 0 &&
+            Require(!reversed || (target.Status & 0xC1) == 0 &&
                 !(before.Definition.TarosEffectiveness?.IsTaros(actor) ?? false));
             Require(reaction.StatusWrite is null || reaction.Kind == BattleReactionKind.Damage && reaction.StatusWrite == status);
             Require(reaction.InflictedSleep is null || profile.Critical.InflictsSleep && reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Ineffective &&
                 reaction.HpAfter > 0 && !reaction.Critical &&
                 (reaction.Kind == BattleReactionKind.Ineffective ? reaction.StatusWrite is null : reaction.StatusWrite == status) &&
                 reaction.InflictedSleep == (ushort)(status | 0xC0));
+            Require(reaction.InflictedStun is null || profile.Critical.InflictsStun &&
+                reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Ineffective && reaction.HpAfter > 0 &&
+                !reaction.Critical && reaction.InflictedStun == (ushort)(status | 1));
             Require(reaction.InflictedPoison is null || before.Definition.Poison && profile.Critical.InflictsPoison &&
                 reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Ineffective && reaction.HpAfter > 0 &&
                 !reaction.Critical && reaction.InflictedPoison == (ushort)(status | 2));
@@ -366,7 +369,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
             reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp && reaction.Amount == reaction.HpAfter - target.Hp &&
             reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
-            reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null));
+            reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null));
         ValidateReward(before, actorRef);
         ValidateRandom(before, effect => effect.Kind == "item-consumed"
             ? effect == new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)
@@ -395,7 +398,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
                 reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
                 reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
-                reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null);
+                reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
         Require(actor.Mp >= spell.MpCost);
         Require(Reward is null || Reward.Actor == actorRef && Reward.Amount > 0);
@@ -438,7 +441,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "attack-spell" &&
                 reaction.Kind == BattleReactionKind.Damage && reaction.HpBefore == target.Hp && reaction.Amount >= 1 &&
                 reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
-                reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null);
+                reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
             if (reaction.HpAfter == 0 && target.IsAlly && target.Defeats is null)
                 throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
             // Three source damage draws precede each target's ordinary drop helper.
@@ -477,7 +480,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 reaction.HpBefore == target.Hp && reaction.HpAfter == target.Hp && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && !reaction.Critical && reaction.Amount == 0 &&
                 reaction.StatusWrite == (success ? (ushort?)(target.Status | SilenceRules.Mask) : null) &&
-                reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null);
+                reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
         Require(ConstructionEffects.Skip(targets.Count).All(e => e.Actor == actor && e.Target is null &&
             e.Kind is "rng-exp-plus" or "rng-exp-minus"));
@@ -491,6 +494,10 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>
         reaction.InflictedSleep is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
+            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
+
+    internal EngineBattleState ApplyStun(EngineBattleState current, BattleReaction reaction) =>
+        reaction.InflictedStun is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
             actor.Actor == reaction.Target ? actor.With(status: status) : actor));
 
     internal EngineBattleState ApplyPoison(EngineBattleState current, BattleReaction reaction) =>

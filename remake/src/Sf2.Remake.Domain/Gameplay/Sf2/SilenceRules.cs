@@ -12,7 +12,7 @@ internal static class SilenceRules
     internal const ushort Mask = 0x0300;
     internal static bool Present(ushort status) => (status & Mask) != 0;
     internal static bool Supported(ushort status, bool poison = true) =>
-        (status & ~(Mask | 0xC0 | (poison ? 2 : 0))) == 0;
+        (status & ~(Mask | 0xC0 | 1 | (poison ? 2 : 0))) == 0;
     internal static bool HasSpells(BattleActorState actor) => actor.SourceLoadout is { } packed &&
         packed.Spells.Any(s => (s & 63) != 63) || actor.Spells.Count != 0;
 

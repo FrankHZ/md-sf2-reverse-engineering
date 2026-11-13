@@ -52,9 +52,9 @@ public static class BattleTerrainRules
         return terrain.Surface switch
         {
             TerrainSurface.Open => 2,
-            TerrainSurface.Brush => mover == BattleMover.Stealth ? (sbyte)2 : (sbyte)3,
+            TerrainSurface.Brush => mover is BattleMover.Stealth or BattleMover.BrassGunner ? (sbyte)2 : (sbyte)3,
             TerrainSurface.Rough => mover == BattleMover.Stealth ? (sbyte)2 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
-            TerrainSurface.Deep => mover == BattleMover.Stealth ? (sbyte)2 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)4,
+            TerrainSurface.Deep => mover switch { BattleMover.Stealth => 2, BattleMover.BrassGunner => 3, BattleMover.Centaur => 5, _ => 4 },
             TerrainSurface.Desert => mover == BattleMover.Stealth ? (sbyte)4 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
             TerrainSurface.Impassable or TerrainSurface.Water => -1,
             TerrainSurface.HighSky => -1,

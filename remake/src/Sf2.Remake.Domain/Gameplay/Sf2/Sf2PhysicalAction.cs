@@ -39,8 +39,13 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         if (defender.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
         return PhysicalStrikeRules.LandDamage(battle.GetActor(actor).Attack, defender.Defense,
-            LandMultiplier(battle.Definition.Terrain[defender.Position!.Y * 48 + defender.Position.X], defender.Definition.Mover));
+            LandMultiplier(battle.Definition.Terrain[defender.Position!.Y * 48 + defender.Position.X], defender.Definition.Mover),
+            ArcherBonus(battle.GetActor(actor).Definition.Mover, defender.Definition.Mover));
     }
+
+    internal static bool ArcherBonus(BattleMover attacker, BattleMover defender) =>
+        defender is (BattleMover.Flying or BattleMover.Hovering) &&
+        attacker is BattleMover.Archer or BattleMover.CentaurArcher or BattleMover.StealthArcher or BattleMover.BrassGunner;
 
     internal static int LandMultiplier(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
@@ -102,7 +107,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             counterRequested |= second.CounterRolled;
         }
         var counterRange = BattleEquipment.Physical(target)!;
-        bool counterPerformed = targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC0) == 0 &&
+        bool counterPerformed = targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC1) == 0 &&
             !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
@@ -154,18 +159,21 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             // Ground protection is separate from movement cost, including the
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = LandMultiplier(terrain, defender.Definition.Mover);
+            bool archerBonus = ArcherBonus(attacker.Definition.Mover, defender.Definition.Mover);
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
-                hp, multiplier, seed, defender.Definition.Mover is BattleMover.Hovering or BattleMover.Flying ? (ushort)8 : (ushort)32,
+                hp, multiplier, seed, !archerBonus && defender.Definition.Mover is (BattleMover.Hovering or BattleMover.Flying) ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
-                profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC0) != 0,
+                profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC1) != 0,
                 ineffective: !counter && ineffective, doubleRange: profile.Critical.DoubleChanceDenominator,
                 counterRange: defender.Definition.Physical!.Critical.CounterChanceDenominator,
-                silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison);
+                silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,
+                stunCritical: profile.Critical.InflictsStun, archerBonus: archerBonus);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
                 hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,
                 strike.Dodged || strike.Ineffective ? null : status,
                 strike.SleepInflicted ? (ushort)(status | 0xC0) : null,
+                InflictedStun: strike.StunInflicted ? (ushort)(status | 1) : null,
                 InflictedPoison: strike.PoisonInflicted ? (ushort)(status | 2) : null,
                 InflictedSilence: strike.SilenceInflicted && SilenceRules.HasSpells(defender) ? (ushort)(status | SilenceRules.Mask) : null));
             seed = strike.Seed;
@@ -215,6 +223,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             battle = action.ApplySleep(battle, reaction);
             battle = action.ApplySilence(battle, reaction);
             battle = action.ApplyPoison(battle, reaction);
+            battle = action.ApplyStun(battle, reaction);
             deaths = deaths.Append(before, battle.GetActor(reaction.Target));
         }
         var reward = action.ApplyReward(battle, progression);

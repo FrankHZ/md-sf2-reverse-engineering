@@ -25,7 +25,7 @@ public static class BattleGive
             !battle.Definition.Contains(actor.Position) || ((actor.ActivationWord ?? 0) & 8) != 0 ||
             giver && actor.Control != BattleControl.Player)
             throw new BattleRuleException("give-actor", "actor");
-        if (!Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0)
+        if (!Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC1) != 0)
             throw new BattleRuleException("give-status", "actor.status", true);
         if (actor.SourceLoadout is not { Items.Count: 4 } loadout)
             throw new BattleRuleException("give-loadout", "actor.sourceLoadout", true);

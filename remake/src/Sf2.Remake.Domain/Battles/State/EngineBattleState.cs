@@ -20,8 +20,8 @@ public enum BattleFaction { Ally, Enemy }
 public sealed class PhysicalCriticalRule
 {
     private PhysicalCriticalRule(ushort chanceDenominator, int damageBonusShift, bool inflictsSleep = false,
-        ushort doubleChanceDenominator = 32, ushort counterChanceDenominator = 32, bool inflictsSilence = false, bool inflictsPoison = false)
-    { InflictsPoison = inflictsPoison; InflictsSilence = inflictsSilence; CounterChanceDenominator = counterChanceDenominator; DoubleChanceDenominator = doubleChanceDenominator; ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
+        ushort doubleChanceDenominator = 32, ushort counterChanceDenominator = 32, bool inflictsSilence = false, bool inflictsPoison = false, bool inflictsStun = false)
+    { InflictsStun = inflictsStun; InflictsPoison = inflictsPoison; InflictsSilence = inflictsSilence; CounterChanceDenominator = counterChanceDenominator; DoubleChanceDenominator = doubleChanceDenominator; ChanceDenominator = chanceDenominator; DamageBonusShift = damageBonusShift; InflictsSleep = inflictsSleep; }
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
     public static PhysicalCriticalRule OneIn32WithFrequentDoubleAndCounter { get; } = new(32, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
@@ -35,6 +35,8 @@ public sealed class PhysicalCriticalRule
     public static PhysicalCriticalRule Sleep { get; } = new(4, 0, true);
     public static PhysicalCriticalRule Silence { get; } = new(4, 0, doubleChanceDenominator: 16, counterChanceDenominator: 16, inflictsSilence: true);
     public static PhysicalCriticalRule Poison { get; } = new(4, 0, inflictsPoison: true);
+    public static PhysicalCriticalRule Stun { get; } = new(4, 0, inflictsStun: true);
+    public bool InflictsStun { get; }
     public bool InflictsPoison { get; }
     public bool InflictsSilence { get; }
     public bool InflictsSleep { get; }

@@ -697,6 +697,8 @@ internal static partial class GameText
         ["battle.scene.defense-growth"] = 2,
         ["battle.scene.agility-growth"] = 2,
         ["battle.scene.spell-growth"] = 3,
+        ["battle.scene.stunned"] = 1,
+        ["battle.scene.stun-cleared"] = 1,
         ["battle.scene.poison-inflicted"] = 1,
         ["save.destination.new-granseal-castle"] = 0,
         ["save.destination.ribble-welcome"] = 0,
