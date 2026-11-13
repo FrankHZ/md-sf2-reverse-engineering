@@ -13,7 +13,7 @@ namespace Sf2.Remake.Engine.Tests;
 
 internal static class BattleSaveFixture
 {
-    internal static (ScenarioDefinition Definition, SessionSnapshot Current) Create(uint main = 0x1234ABCD, uint thinking = 0x80ABCDEF)
+    internal static (ScenarioDefinition Definition, SessionSnapshot Current) Create(uint main = 0x1234ABCD, uint thinking = 0x80ABCDEF, string encounterId = "battle01")
     {
         var (basis, fieldData) = OpeningRestoreTests.Fixture(true);
         var field = Assert.IsType<SessionStarted>(GameSession.Restore(basis, fieldData, RuleCompositions.Sf2())).Session.Current;
@@ -29,12 +29,12 @@ internal static class BattleSaveFixture
         var dormant = enemy with { Definition = new(new("hidden"), BattleClassRule.Ordinary, 1, 10, 0, 4, 2, 3, false, 2, [],
             new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0), sourceLoadout: enemyDefinition.SourceLoadout),
             ProcessingOrder = 129, Position = new(9, 9), Initialization = new(0x2000, 2, 7, 15, 0x60, 6, 255, 255) };
-        var encounter = new BattleDefinition("battle01", new("battle-map"), 20, 20,
+        var encounter = new BattleDefinition(encounterId, new("battle-map"), 20, 20,
             Enumerable.Repeat(new BattleTerrain(TerrainSurface.Open, TerrainProtection.None), 2304), [ally, enemy, dormant], [],
             new(false), new([new(6, [new(17, 17), new(19, 17), new(19, 19)]), new(7, [new(17, 17), new(19, 17), new(19, 19)])], BattleRegionProgram.None, [ally.Position], sourceCombatants: new Dictionary<int, ActorRef> { [0] = ally.Actor, [128] = enemy.Actor, [129] = dormant.Actor }, enemyCount: 2), new(ally.Actor, enemy.Actor));
         var outcome = new ExplorationOutcomeRoute(new("after", 0), 1, new("empty", 0), new("empty", 0),
             new("return", 0), new("map-57"), 3, new("map-3"), new(32, 13), 1);
-        var route = new ExplorationBattleRoute("battle01", 401, 501, 451, null, null, Outcome: outcome);
+        var route = new ExplorationBattleRoute(encounterId, 401, 501, 451, null, null, Outcome: outcome);
         var maps = basis.Exploration!.Maps.Values.Select(m => new ExplorationMapDefinition(m.Map, m.Layout, m.Traversal,
             m.Entities, [], battles: m.Map.Value == "map-57" ? [route] : [], population: m.Population,
             basePalette: m.BasePalette, viewAreas: m.ViewAreas)).ToArray();
@@ -42,7 +42,7 @@ internal static class BattleSaveFixture
             new("after", [new WriteFlag(777, true), new EndProgram()]), new("return", [new ReturnBattleMap(), new EndProgram()])],
             provenance: basis.Exploration.Provenance, partyFlags: basis.Exploration.PartyFlags, visuals: basis.Exploration.Visuals);
         var definition = new ScenarioDefinition("battle-save-test", [encounter, basis.Encounters["opening"]], exploration: world,
-            encounterStarts: [new("battle01", [], 0, 0, 0)]) { Persistence = new Sf2OpeningRestore() };
+            encounterStarts: [new(encounterId, [], 0, 0, 0)]) { Persistence = new Sf2OpeningRestore() };
         var carried = field.Exploration!.Party.Actors[0];
         var actors = new BattleActorState[] {
             new(ally, 7, 2, 38, new(4, 5), 4, 2, attack: 14, progress: carried.Progress, sourceLoadout: carried.SourceLoadout, activationWord: 0),

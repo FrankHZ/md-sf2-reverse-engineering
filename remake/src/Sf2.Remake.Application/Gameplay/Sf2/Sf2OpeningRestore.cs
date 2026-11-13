@@ -3,7 +3,6 @@ using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
-using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Gameplay.Sf2;
 
@@ -24,29 +23,15 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return [];
         }
         int prior = data.Compatibility.RecipeRevision;
-        int savedCount = prior switch { 1 => 7, 2 => 9, 3 => 10, _ => 0 };
-        int currentCount = expected.RecipeRevision switch { 2 => 9, 3 => 10, 4 => 11, _ => 0 };
-        if (savedCount == 0 || savedCount >= currentCount || data.Compatibility != (expected with { RecipeRevision = prior }))
+        if (prior >= expected.RecipeRevision || data.Compatibility != (expected with { RecipeRevision = prior }))
             throw new BattleRuleException("save-incompatible", "save.compatibility");
-        var rows = deployments.Values.OrderBy(row => row.Initialization?.AllyPartyMember).ToArray();
-        var layout = definition.Exploration!.PartyFlags;
-        if (definition.PrivateDefinitions is null || layout is null || rows.Length != currentCount ||
-            !rows.Select(row => row.Initialization?.AllyPartyMember).SequenceEqual(Enumerable.Range(0, currentCount).Select(id => (int?)id)) ||
-            !saved.SetEquals(rows.Take(savedCount).Select(row => row.Actor)))
-            throw new BattleRuleException("save-roster", "save.allies");
-        var added = new List<BattleActorStartInput>();
-        uint initializationSeed = data.MainSeed;
-        foreach (var row in rows.Skip(savedCount))
-        {
-            var member = (byte)row.Initialization!.AllyPartyMember!.Value;
-            if (data.Flags.Contains(layout.JoinedStart + member) || data.Flags.Contains(layout.ActiveStart + member) ||
-                data.ActiveAllies.Contains(row.Actor.Value) || data.Names.ContainsKey(row.Actor.Value))
-                throw new BattleRuleException("save-roster", "save.allies");
-            added.Add(OpeningPartyInitialization.Initialize(row,
-                definition.PrivateDefinitions.Allies[member].StartingLevel, ref initializationSeed));
-        }
-        return added;
+        return Sf2HistoricalRoster.Missing(definition, prior, expected, deployments, saved, data.Flags,
+            data.ActiveAllies.Concat(data.Names.Keys), data.MainSeed, "save-roster");
     }
+
+    public SavedBattleStory UpgradeBattleRoster(ScenarioDefinition definition, BattleSaveData data,
+        EngineBattleState battle, SaveCompatibility expected) =>
+        Sf2HistoricalRoster.UpgradeBattle(definition, data, battle, expected);
 
     public SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start)
     {

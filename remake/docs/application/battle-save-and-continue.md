@@ -94,6 +94,54 @@ Entering a region script invalidates music history. `BattleSaveRegionTests` subm
 next round without replaying the region. Unknown history still rejects. Finite music/interpreter
 continuation, later campaign content and arbitrary saves remain outside admission.
 
+## Continuing across historical opening rosters
+
+Gameplay revision 4 of the private SF2 opening has four known roster revisions. Field v1
+and newly captured battle v2 records carry the roster revision in `Compatibility.RecipeRevision`.
+The battle continuation itself still uses `BattleRecipeRevision = 1`.
+
+| Roster revision | Complete member IDs | Last encounter in that package |
+| --- | --- | --- |
+| 1 | 0–6 | Battle08 |
+| 2 | 0–8 | Battle10 |
+| 3 | 0–9 | Battle13 |
+| 4 | 0–10 | Battle13 |
+
+Historical v2 writers stamped all four rosters as revision 1. For those records, Continue
+recognizes the exact union of deployed and retained IDs and checks the encounter against the
+historical package. A valid checksum, matching provenance, rules and gameplay identity are
+still required. A record with a hole, unknown shape, or a missing member claimed by a joined
+flag, active flag or custom name fails. Field saves also check their explicit active list.
+An old v2 record with an exact historical prefix can be indistinguishable
+from a later legacy record whose entire unclaimed suffix was removed and checksum recomputed.
+New captures bind the actual roster revision and reject that truncation.
+
+Continue appends missing members to the field party or to the battle's retained party. Each
+expansion (7→9, 9→10 and 10→11) runs the ordinary starting growth of just its new members
+using a fresh copy of the saved main seed. This reproduces the historical one-step upgrades.
+Existing members retain all progress. Both gameplay RNG words and the live battle queue carry
+through the restore.
+
+**Confirmed** with the real Battle01 and Map58 slots identified in the
+[historical audit](../evidence/polca-raft-engine-save-audit.zh-CN.md#存读档实测及最小复核).
+In the same v2 slot, the seven- and eleven-member worlds resumed ally 2 in round 1 at cursor 0.
+Confirm, Stay and Confirm through `GameSession.Submit`, followed by the pending presentations
+and automatic turns, both reached ally 0 at cursor 3. The full queue, actors, inventory, gold
+(60), original four retained records and story matched before and after. Main RNG stayed
+804498381 and thinking RNG advanced from 305397760 to 20185088 in both worlds. The four new
+records stayed off the battlefield. For Map58, restoring and recapturing through each world in
+the table gave the same final encoded record as a single 7→11 upgrade, including all eleven
+members, 2,806 gold and RNG words 1507850002 and 1508940441. The current Battle13 return
+and pre-boarding field slots also round-tripped byte for byte.
+
+To reproduce, use the audit's sample and world selections with `OpeningRestoreReader.Read`,
+`OpeningSaveJson.ReadRecord` and `SaveRecordRestore.Restore`, the title Continue reader path.
+Keep slot, sequence and timestamp fixed when comparing recaptures. Use the engine test filter
+`FullyQualifiedName~HistoricalSaveRosterTests|FullyQualifiedName~BattleSave` for public behavior
+checks. The private comparison exercises the command and persistence entry points in a separate
+.NET process. The native title UI and disk replacement observations belong to the
+[battle save verification owner](../verification/battle-save.md).
+
 ## Implemented versioned codec and shared storage (B)
 
 **Confirmed in the remake; [#1637](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1637).**
@@ -364,7 +412,7 @@ recipe revision, separate from v1 field recipe interpretation. The configured so
 trusted content and rules; a save cannot select an executable, file, private root or alternate rule.
 Use the existing revision mechanisms, not a new manifest or content hashes for change detection.
 Adding the battle format alone must not change v1's `SaveCompatibility` values. A genuine shared
-gameplay/content change still follows explicit compatibility rejection; this design adds no migration.
+gameplay/content change still follows explicit compatibility rejection outside the [four admitted opening rosters](#continuing-across-historical-opening-rosters).
 Do not set original suspend flag88 to route through `BattleEntry`: that entry currently rejects it,
 and executing it would initialize a new battle rather than restore this one.
 

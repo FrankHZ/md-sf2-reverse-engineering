@@ -8,10 +8,15 @@ internal static class BattleRestore
 {
     internal static SessionResult Build(ScenarioDefinition definition, BattleSaveData data, SessionRules rules)
     {
-        Require(data.Compatibility == OpeningSave.Compatibility(definition, rules), "incompatible");
+        var expected = OpeningSave.FieldCompatibility(definition, rules);
+        int revision = data.Compatibility.RecipeRevision;
+        Require(revision >= 1 && revision <= expected.RecipeRevision &&
+            data.Compatibility == (expected with { RecipeRevision = revision }), "incompatible");
         Require(data.BattleRecipeRevision == 1, "recipe-version");
         Require(definition.Encounters.TryGetValue(data.Battle.Encounter, out var encounter), "encounter");
         var battle = BattleContinuationRestore.Build(encounter!, data.Battle);
+        if (revision < expected.RecipeRevision)
+            data = data with { Story = definition.Persistence!.UpgradeBattleRoster(definition, data, battle, expected) };
         var story = BattleSaveStory.Build(definition, data, battle);
         BattleSaveStory.RequireMembership(definition, story, battle);
         _ = rules.Bind([encounter!]);

@@ -43,7 +43,7 @@ internal static class BattleSave
 
     private static BattleSaveData CaptureValues(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules)
     {
-        var compatibility = OpeningSave.Compatibility(definition, rules);
+        var compatibility = OpeningSave.FieldCompatibility(definition, rules);
         RequireStable(current, rules);
         if (current.Battle.StartPolicy is not { Origin: BattleStartOrigin.NewGame, BeforeBattleRouted: true,
             AlreadyRefreshedAllies: true, RosterOnly: true, SkipIntro: false }) Fail("profile-unavailable");
