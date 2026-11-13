@@ -11,6 +11,12 @@ The chapter starts at the [Hassan Continue](kraken-hassan.md) with eleven joined
 3. Walk Right 11, Up 3, Right 3, Up 2, Right 2, Up 2, Right 5, Up 1 and Right 13. Enter Map70 at (1,47).
 4. Walk Right 14 to (15,47). The next Right requests Battle14 at (16,47) with F414/F510/F516 held and F514 clear. The Hassan package stops there with `battle-entry-unavailable`. [Desert encounter dependency](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1809)
 
+## The ordinary post-desert return
+
+**Confirmed** with the untouched field save from the [accepted desert encounter](desert-battle.md). Title Continue placed the eleven-member party on Map70 (16,52) facing Down with 11,983 gold. Walking 39 steps reached Map62 (6,18). Two conversations with the moving old man set F728, F77 and F729. The system menu saved in the East Shrine. A fresh Continue restored the same roster, HP, inventory, gold, names, item custody, Egress register and raft berth.
+
+From this saved anchor, Down exits to Map70 (43,41). The return crossed to Map69, boarded the parked raft at (28,55), landed south of the shrine and reached Map61 in 131 inputs. The observed crossing did not roll another Battle14. The desert's completed-battle repeat remains available. Walking to (5,9) opened the gate, set F415 and F730, and copied the warp word 0x1004 to (5,6). Three Up inputs from the gate requested Battle15. The field-only package returned the ordinary unavailable-encounter receipt at (5,7). The synchronous result identifies `battle-15`.
+
 ## Shrine content and engine boundaries
 
 | Location | Confirmed in the prepared private field package |
@@ -26,7 +32,7 @@ The Map61 opening and Battle15 departure use the source follow command. It check
 
 The Battle15 formation holds twelve ally positions and sixteen enemy rows. Enemy 143 is a hidden Golem at (2,8), with both trigger regions absent. Ordinary round population keeps it off the board with zero maximum HP. The chest tile has impassable terrain. Fresh initialization leaves its inventory empty until a successful reset supplies its Power Water. The F151 battle trap, its immediate attack and the associated enemy drop are separate from the F152 Panel in field exploration. The Battle15 battle-search action has no private binding on this base. [Original encounter and outcome](../../../docs/research/chapters/southern-travel-creed/battle15-shrine-approach-and-outcomes.md) · [Original Panel custody](../../../docs/research/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)
 
-**Unknown** for the end-to-end remake route until Battle14 and Battle15 enter the active campaign: the actual arrival at Map62 from this save, Battle15 entry and victory with that party, retreat or defeat and re-entry, and post-Panel Save/Continue. The separate field runs supply their own starting maps and flags.
+**Unknown** for the end-to-end remake route: Battle15 deployment and victory with this party, retreat or defeat and re-entry, and post-Panel Save/Continue. The separate before/after field runs supply their own starting maps and flags.
 
 ## Reproduction
 
@@ -35,6 +41,8 @@ In the prepared checkout, use a new sample name for each command. The field chec
 ```powershell
 ./local/issue1804/run.ps1 en review
 ./local/issue1804/run.ps1 zh-CN review
+./local/issue1804/campaign.ps1 elder review en -Package shrine14 -Catalog shrine-cat03
+./local/issue1804/campaign.ps1 gate review en -Package shrine14 -Catalog shrine-cat03
 ./local/issue1804/direct.ps1 elder review en
 ./local/issue1804/direct.ps1 exterior review zh-CN
 ./local/issue1804/direct.ps1 before review zh-CN
