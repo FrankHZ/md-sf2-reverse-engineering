@@ -10,14 +10,13 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 public sealed partial class SessionEntryView : Control
 {
     internal Action? NewGame, Cancel, Continue, Quit, Settings;
-    internal bool CanOpenSettings => _page < 0 && !_setup && !_activated && Revealed;
+    internal bool CanOpenSettings => _page == -2 && !_setup && !_activated && Revealed;
     internal bool Replacement { get; init; }
     private EntryPresentationAssets? _assets;
     private EntryBackdrop _backdrop = null!;
     private StoryDialoguePanel _dialogue = null!;
     private Button _start = null!;
     private Button _read = null!;
-    private Button _settingsAccess = null!;
     private Label _hint = null!;
     private ScrollContainer _actionScroll = null!;
     private readonly List<Button> _buttons = [];
@@ -66,14 +65,12 @@ public sealed partial class SessionEntryView : Control
         _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 160), Text = GameText.Get("entry.normal"),
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hint);
-        _settingsAccess = new Button { Name = "TitleSettings", Text = "Settings / Controls", Position = new(1320, 900), Size = new(536, 72), FocusMode = FocusModeEnum.None };
-        _settingsAccess.Pressed += () => { if (CanOpenSettings) Settings?.Invoke(); }; AddChild(_settingsAccess);
         string[] names = Replacement ? ["NewGame", "Cancel", "Settings"] : ["NewGame", "Continue", "Quit", "Settings"];
         string[] keys = Replacement ? ["entry.new", "entry.cancel", "ui.settings.entry"] : ["entry.new", "entry.continue", "entry.quit", "ui.settings.entry"];
         for (int index = 0; index < names.Length; index++)
         {
             int selected = index;
-            var button = new Button { Name = names[index], Text = index == names.Length - 1 ? GameText.Get(keys[index], "") : GameText.Get(keys[index]),
+            var button = new Button { Name = names[index], Text = GameText.Get(keys[index]),
                 AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 76), FocusMode = FocusModeEnum.None, Visible = false };
             button.Pressed += () => Activate(selected);
             button.GuiInput += input => { if (_page == -2 && _input?.KeyboardMouseHints == true &&
@@ -96,11 +93,9 @@ public sealed partial class SessionEntryView : Control
     internal void RefreshInputHints()
     {
         if (_input is not { } input) return; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
-        _settingsAccess.Text = GameText.Get("ui.settings.entry", input.CompactHint(GameAction.Cancel));
         for (int i = 0; i < _buttons.Count - 1; i++)
             _buttons[i].Text = GameText.Get(i == 0 ? "entry.new" : Replacement ? "entry.cancel" : i == 1 ? "entry.continue" : "entry.quit");
-        if (_buttons.Count > 0) _buttons[^1].Text = GameText.Get("ui.settings.entry", input.CompactHint(GameAction.Cancel));
-        _settingsAccess.AddThemeFontSizeOverride("font_size", 24);
+        if (_buttons.Count > 0) _buttons[^1].Text = GameText.Get("ui.settings.entry");
         _start.Text = GameText.Get("entry.start", input.CompactHint(GameAction.Confirm));
         _start.TooltipText = input.CompactHint(GameAction.Confirm) + " / " + input.CompactHint(GameAction.Equipment);
         foreach (var button in _buttons)
@@ -145,8 +140,7 @@ public sealed partial class SessionEntryView : Control
         if (_latched || _activated) return;
         if (_page == -1)
         {
-            if (action == GameAction.Cancel && CanOpenSettings) Settings?.Invoke();
-            else if (action is GameAction.Confirm or GameAction.Equipment) Advance();
+            if (action is GameAction.Confirm or GameAction.Equipment) Advance();
             return;
         }
         if (_page >= 0)
@@ -214,7 +208,6 @@ public sealed partial class SessionEntryView : Control
     {
         if (_setup) { _hint.Hide(); _read.Hide(); return; }
         _hint.Visible = _page != -1;
-        _settingsAccess.Visible = _page == -1 && !_setup;
         _read.Visible = _page >= 0 || _page == -2 && _dialogue.MoreBelow;
         foreach (var button in _buttons) button.Visible = _page == -2 && !_read.Visible;
         _actionScroll.Visible = _page != -1;

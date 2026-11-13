@@ -147,7 +147,7 @@ internal static partial class GameText
         ["ui.settings.staged"] = "Defaults staged. Apply saves them; Cancel keeps current settings.",
         ["ui.settings.notice"] = "Choose Apply to save your changes.",
         ["ui.settings.hint"] = "{0}: Choose/change   •   {1}: Cancel/close",
-        ["ui.settings.entry"] = "Settings / Controls · {0}",
+        ["ui.settings.entry"] = "Settings / Controls",
         ["ui.settings.readonly"] = "This launch uses read-only preferences. Relaunch without --input-settings to save changes.",
         ["ui.settings.storage"] = "Preferences were not changed. Recovery details above remain in English.",
         ["ui.settings.invalid"] = "Preferences could not be validated. Current settings are retained.",

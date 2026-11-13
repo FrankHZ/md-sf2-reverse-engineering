@@ -139,7 +139,7 @@ msgstr "{0}: Choose/change   •   {1}: Cancel/close"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.entry"
-msgstr "Settings / Controls · {0}"
+msgstr "Settings / Controls"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.readonly"

@@ -290,11 +290,11 @@ func run() -> void:
     check(root.has_focus(), "native window input owner")
     if case_name == "continue":
         check(not applied().ModernGuidance, "restart reads explicit Off")
-        await key(KEY_ESCAPE); await select_setting(6); await key(KEY_ENTER)
+        await open_witch_settings(); await select_setting(6); await key(KEY_ENTER)
         check(settings().draft.ModernGuidance and not applied().ModernGuidance, "Restore defaults stages On only")
         await key(KEY_ESCAPE)
         check(not applied().ModernGuidance, "Cancel defaults preserves explicit Off")
-        await key(KEY_ENTER); await key(KEY_E); await key(KEY_DOWN); await key(KEY_ENTER)
+        await key(KEY_DOWN); await key(KEY_DOWN); await key(KEY_ENTER)
         if await wait_slots("continue-slots"): await key(KEY_ENTER)
         for i in range(1800):
             if find("ExplorationSessionView") != null: break
@@ -323,7 +323,7 @@ func run() -> void:
             "New Game retains old slot and preference bytes")
         capture("new-game-off"); finish(); return
     if case_name == "override":
-        await key(KEY_ESCAPE)
+        await open_witch_settings()
         check(settings().readOnly and not applied().ModernGuidance and (find("Setting10") as Button).disabled, "read-only override disables guidance editing")
         await key(KEY_ESCAPE)
     var result: String = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_HOST_UI_START"))

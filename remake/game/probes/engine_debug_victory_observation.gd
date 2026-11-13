@@ -33,8 +33,8 @@ func run() -> void:
     root.size = Vector2i(1920, 1080)
     node_added.connect(watch)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames(5)
-    await key(KEY_ESCAPE)
-    if find("SettingsView") == null: check(false, "title settings"); finish(); return
+    await open_witch_settings()
+    if find("SettingsView") == null: finish(); return
     check("installed artwork" in settings().message or "安装了高清素材" in settings().message, "coverage describes installed variants")
     var on := case_name == "on"
     check(not settings().applied.DebugAutoVictory, "old preference defaults Off")
@@ -44,7 +44,7 @@ func run() -> void:
     check(settings().draft.DebugAutoVictory and not settings().applied.DebugAutoVictory, "draft is isolated")
     await key(KEY_ESCAPE)
     if on:
-        await key(KEY_ESCAPE)
+        await open_witch_settings()
         check(not settings().draft.DebugAutoVictory, "cancel discards toggle")
         await select_setting(12); await key(KEY_RIGHT); await select_setting(7); await key(KEY_ENTER)
     var applied: Dictionary = observation(host, "ReadSettingsHostObservationJson").applied

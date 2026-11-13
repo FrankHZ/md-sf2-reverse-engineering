@@ -59,6 +59,25 @@ func selected_menu() -> String:
         if button != null and button.theme_type_variation == "EntrySelectedButton": return name_
     return ""
 
+func open_witch_settings() -> void:
+    var entry := find("SessionEntryView")
+    if observation(entry, "ReadEntryObservationJson").get("stage") == "title":
+        await key(KEY_ENTER)
+        await key(KEY_E)
+    var menu := observation(entry, "ReadEntryObservationJson")
+    if menu.get("stage") != "menu":
+        check(false, "Witch menu reachable")
+        return
+    if menu.visibleCharacters >= 0 and menu.visibleCharacters < menu.totalCharacters:
+        await key(KEY_ENTER)
+    var choice := entry.find_child("Settings", true, false) as Button
+    for i in range(menu.buttons.size()):
+        if choice.theme_type_variation == "EntrySelectedButton": break
+        await key(KEY_UP)
+    check(choice.is_visible_in_tree() and choice.theme_type_variation == "EntrySelectedButton", "Witch Settings choice visible and selected")
+    await key(KEY_ENTER)
+    check(find("SettingsView") != null, "Witch Settings opens")
+
 func sample(label: String) -> void:
     var row := {"label": label, "window": window(), "settings": settings(), "slots": slots(), "menu": selected_menu()}
     var s := state()
@@ -335,9 +354,16 @@ func run() -> void:
             catalog.add_message("slot.record", str(catalog.get_message("slot.record")) + "\n" + "Long complete slot description · 完整的长存档说明。".repeat(30))
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames()
     if case_name == "title":
+        var entry := find("SessionEntryView")
+        var visible_buttons := entry.find_children("*", "Button", true, false).filter(func(b): return b.is_visible_in_tree())
+        check(visible_buttons == [find("Start")], "Start is the only visible title action")
         await key(KEY_ESCAPE)
-        check(find("SettingsView") != null, "ordinary title Settings entry")
-        if find("SettingsView") != null: await settings_flow()
+        check(observation(entry, "ReadEntryObservationJson").get("stage") == "title" and find("SettingsView") == null, "Cancel leaves the title in place")
+        await open_witch_settings()
+        if find("SettingsView") != null:
+            await settings_flow()
+            var choice := entry.find_child("Settings", true, false) as Button
+            check(observation(entry, "ReadEntryObservationJson").get("stage") == "menu" and choice.is_visible_in_tree() and choice.theme_type_variation == "EntrySelectedButton", "Back restores the Witch Settings choice")
     elif case_name in ["continue", "backup", "battle-continue"]:
         await key(KEY_ENTER); await key(KEY_E)
         var entry := observation(find("SessionEntryView"), "ReadEntryObservationJson")

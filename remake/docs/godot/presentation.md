@@ -182,7 +182,7 @@ engineering acceptance; final raster, physical device access and human aesthetic
 | --- | --- |
 | Resume Game (initial selection) | Always safe; closes Menu and resumes only when no other host modal covers play. |
 | Journey / Save | Field uses `QuerySave`; admitted battle uses `QueryBattleSave` at settled player Movement/origin. Unsupported profiles, busy states and nonzero previews show their real reason without cancellation or queued save. The field shortcut and Church caller remain. Save confirmation Back returns slots; slots Back returns Menu. [Battle contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c). |
-| Journey / Settings | Existing `CanOpenSettings`: title/Witch or settled exploration outside other menus. No battle/story access is added. Settings/help retain draft, Apply and Back ownership; closing Settings returns Menu. |
+| Journey / Settings | Existing `CanOpenSettings`: Witch menu or settled exploration outside other menus. No battle/story access is added. Settings/help retain draft, Apply and Back ownership; closing Settings returns Menu. |
 | Session / New Game | Existing settled-field `CanWaitAtInput` and Party exclusion, followed by the existing replacement entry with Cancel selected, slot/name and final explicit Start/save confirmation. Cancel unwinds those existing pages to Menu. |
 | Session / Quit | Existing clean/dirty confirmation, Cancel initially selected; Cancel returns Menu. Window recovery retains its own Quit confirmation and returns to recovery first. |
 
@@ -198,7 +198,7 @@ Menu mouse gesture before restoring the same panel.
 
 `GameAction.Menu` is integrated in existing `GameInput`/version1 `bindings`, held-state guards,
 actual hints and the existing Controls Help. Defaults are F10 and right stick right (`RightX+`).
-At settled field input Cancel opens the [gameplay diamond](#exploration-gameplay-diamond-agreement-1588); title Cancel still opens Settings. Battle Cancel
+At settled field input Cancel opens the [gameplay diamond](#exploration-gameplay-diamond-agreement-1588); Cancel leaves the title unchanged. Battle Cancel
 continues to unwind gameplay, Start remains Equipment and Back remains Item. Within Menu, mapped
 Menu toggles Resume; Confirm/Cancel use the existing swap. Subpages keep their own Cancel semantics.
 
@@ -587,8 +587,8 @@ this observation; it is not natural original timing, physical pad hardware or hu
 **Standard rigor; [#1451](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1451).**
 Deliver the four existing `InputSettings` preferences: instant/adjustable text, 1–240 characters
 per second, standard/swapped Confirm/Cancel and reduced flash. Existing blue/gold controls expose
-Settings and control help directly on the title and Witch menu. At settled exploration input,
-The mapped Menu action opens the [system Menu](#system-menu-agreement-1518), then Settings; field Cancel opens the gameplay diamond. Settings remains
+Settings and control help on the Witch menu. The title shows only Start. At settled exploration input,
+the mapped Menu action opens the [system Menu](#system-menu-agreement-1518), then Settings; field Cancel opens the gameplay diamond. Settings remains
 unavailable during active text, choices, Church, party menus, movement and battle decisions. The host pauses the existing
 view/audio while the modal is open; no gameplay command, session replacement, revision, RNG or game
 save write belongs to this operation. The separate [battle Speed caller](#battle-speed-and-selective-messages-1650) permits only its two preferences at settled inspection Options.
@@ -644,7 +644,7 @@ a verbose focused repeat did not reproduce them. No memory-lifetime or all-devic
 
 To reproduce the product boundary, load the existing private-input/entry selections and configure a
 fresh persistent namespace outside the checkout, launch the existing Godot project without an input
-override, and open Settings using mapped Cancel at the title. Edit all four values, choose Defaults,
+override, and open Settings from the Witch action menu. Edit all four values, choose Defaults,
 then Cancel; reopen and Apply the changes. Hold the old Confirm through Apply, release, and use the
 new mapping. Relaunch in the same namespace to check persistence; use a disposable malformed file,
 unreadable path or blocked writer lock for the explicit refusal/recovery cases. A separate launch
@@ -681,7 +681,7 @@ human visual approval remains Unknown.
 
 ### Debug auto-win battles (#1720)
 
-In title or field Settings, turn on **Debug: auto-win battles** (简体中文 **调试：战斗自动获胜**)
+In Witch or field Settings, turn on **Debug: auto-win battles** (简体中文 **调试：战斗自动获胜**)
 and Apply. It defaults Off, including older preferences. The Debug diagnostics display is independent.
 Each battle plays its entry/mandatory presentation and ends at the first available player movement
 turn. The campaign uses the encounter's ordinary victory program, recruitment, flags and field return.
@@ -778,7 +778,7 @@ single-action rules are unchanged. No first-use persistence or automatic tutoria
 
 Long text wraps and uses the owning reader/scroll mechanism, with existing30px body/24px hints and
 1920×1080 gameplay minimum. The cue may grow to retain a necessary reason or consequence. Help remains
-available through existing title/Witch or settled-field Settings, with full localized English/Chinese
+available through existing Witch menu or settled-field Settings, with full localized English/Chinese
 prose. Story/battle Menu does not make Settings/Help newly available. Screenshots are prohibited.
 
 ### Finite implementation and acceptance boundary
@@ -831,7 +831,7 @@ owners; this input-display change does not repeat or widen those claims.
 ## Grouped controls help and remapping boundary
 
 **Standard rigor; [#1452](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1452).**
-The outcome is complete keyboard/pad reading of installed controls through the existing title/Witch
+The outcome is complete keyboard/pad reading of installed controls through the existing Witch menu
 and settled-field Settings entry. A separate help view owns only reading position and pointer gestures.
 Settings retains its draft, Defaults flag, message, selected Control help row and scroll position;
 Back returns there without Apply, storage access or a gameplay command. Help pages cover exploration,
@@ -878,7 +878,7 @@ a whole and refuses Apply before reset. Exact commands, retained failures and CI
 Issue/PR handoff. These observations do not establish physical controller or human visual approval.
 
 Reproduce after the existing entry/private-input setup: use a fresh disposable persistent namespace,
-open Settings at title/Witch or settled field, stage a preference/swap/defaults change and select
+open Settings at Witch menu or settled field, stage a preference/swap/defaults change and select
 Control help. Read every page via Left/Right or Confirm and Up/Down, then Back to the same draft/row.
 Repeat with pad navigation and visible pointer controls, native 720p field and installed swapped/custom
 bindings; pending swaps must never change the binding text. Compare session/progress/slot bytes across
