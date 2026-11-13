@@ -2193,3 +2193,132 @@ msgstr "波尔卡村外，木筏停靠处"
 
 msgid "save.destination.polca-victory"
 msgstr "波尔卡，战斗结束后"
+
+msgid "settings.display"
+msgstr "显示与文本"
+
+msgid "settings.assist"
+msgstr "游戏辅助"
+
+msgid "settings.input"
+msgstr "操作与改键"
+
+msgid "settings.debug"
+msgstr "调试与技术信息"
+
+msgid "settings.edit"
+msgstr "逐动作改键"
+
+msgid "settings.reset"
+msgstr "恢复默认键位"
+
+msgid "settings.keyboard"
+msgstr "键盘"
+
+msgid "settings.pad"
+msgstr "手柄"
+
+msgid "settings.add"
+msgstr "添加绑定"
+
+msgid "settings.replace"
+msgstr "替换"
+
+msgid "settings.remove"
+msgstr "移除"
+
+msgid "settings.escape"
+msgstr "绑定 Escape"
+
+msgid "settings.pad-back"
+msgstr "绑定手柄 Back"
+
+msgid "settings.listen-key"
+msgstr "请按下新键。按 Escape 取消。"
+
+msgid "settings.listen-pad"
+msgstr "请按下按钮或推动摇杆。按 Back 取消。"
+
+msgid "settings.accept"
+msgstr "保留此更改"
+
+msgid "settings.review"
+msgstr "首选绑定：{0}"
+
+msgid "settings.installed"
+msgstr "使用中：{0}"
+
+msgid "settings.pending"
+msgstr "草稿：{0}"
+
+msgid "settings.effective"
+msgstr "{0} → {1}"
+
+msgid "settings.none"
+msgstr "无"
+
+msgid "settings.required"
+msgstr "{0}：请补上缺少的键盘或手柄绑定。"
+
+msgid "settings.duplicate"
+msgstr "{0} 已绑定到「{1}」。请先替换或移除该项。"
+
+msgid "settings.limit"
+msgstr "这个动作已有 32 项绑定。"
+
+msgid "settings.unsupported"
+msgstr "无法将 {0} 绑定到「{1}」。"
+
+msgid "settings.fallback"
+msgstr "菜单备用绑定：{0}"
+
+msgid "settings.up"
+msgstr "上"
+
+msgid "settings.right"
+msgstr "右"
+
+msgid "settings.down"
+msgstr "下"
+
+msgid "settings.left"
+msgstr "左"
+
+msgid "settings.confirm"
+msgstr "确认"
+
+msgid "settings.cancel"
+msgstr "取消／返回"
+
+msgid "settings.attack"
+msgstr "攻击"
+
+msgid "settings.spell"
+msgstr "魔法"
+
+msgid "settings.target"
+msgstr "目标"
+
+msgid "settings.stay"
+msgstr "待机"
+
+msgid "settings.item"
+msgstr "道具"
+
+msgid "settings.wait"
+msgstr "等待（按住）"
+
+msgid "settings.equipment"
+msgstr "装备"
+
+msgid "settings.give"
+msgstr "交给"
+
+msgid "settings.discard"
+msgstr "丢弃"
+
+msgid "settings.menu"
+msgstr "系统菜单"
+
+msgid "settings.accelerate"
+msgstr "加速（按住）"
