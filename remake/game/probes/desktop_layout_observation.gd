@@ -87,6 +87,16 @@ func field_pages() -> void:
         check(false, "pointer opens field Settings")
         return
     geometry("SettingsWindow")
+    var apply := find("Setting_apply") as Button
+    var back := find("Setting_back") as Button
+    check(settings().page == "Root" and not apply.disabled and
+        not apply.get_global_rect().intersects(back.get_global_rect()),
+        "root exposes separate Apply and Back")
+    await hit(find("Setting_assist"))
+    check(settings().page == "Assist", "pointer opens Assist category")
+    var initial: Dictionary = settings().draft
+    await hit(find("Setting_flash"))
+    check(settings().draft != initial and settings().focus == "flash", "scaled value row changes only the draft")
     var size_before := root.size
     var before := settings()
     var frozen := state()
@@ -112,9 +122,13 @@ func field_pages() -> void:
     canvas("restored settings", false)
     geometry("SettingsWindow")
     check(state().sessionId == frozen.sessionId and state().revision == frozen.revision and
-        settings().selected == before.selected and settings().draft == before.draft,
+        settings().page == before.page and settings().focus == before.focus and settings().draft == before.draft,
         "recovery returns to same Settings selection, draft and paused session")
-    await key(KEY_ESCAPE)
+    await hit(find("Setting_back"))
+    check(settings().page == "Root" and settings().focus == "assist" and settings().draft == before.draft,
+        "category Back preserves draft and restores Assist focus")
+    await hit(find("Setting_back"))
+    check(observation(host, "ReadSettingsHostObservationJson").applied == initial, "closing discards the edit")
     check(selected_menu() == "Settings", "Settings returns to its Menu row")
     await hit(find("SystemSave"))
     if await wait_slots("save-slots"):
