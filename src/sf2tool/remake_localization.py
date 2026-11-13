@@ -283,7 +283,6 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (11,)
     if taros:
         name_ids["name.enemy"] += (88,)
-        name_ids["name.spell"] += (13,)
     extra_items = field_items.difference(name_ids["name.item"])
     name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
@@ -390,17 +389,12 @@ def derive(args: argparse.Namespace) -> dict:
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
         and len(selected)
         == (806 if args.scope == "pre-voyage" else 1362 + len(field_texts - base_texts))
-        and len(selected_names) <= 133
+        and len(selected_names) <= 131
         and len(selected_names)
         == (
             51
             if args.scope == "pre-voyage"
-            else 79
-            + 6 * hassan
-            + 3 * (shrine or shrine_battle)
-            + shrine
-            + 2 * taros
-            + len(extra_items)
+            else 79 + 6 * hassan + 3 * (shrine or shrine_battle) + shrine + taros + len(extra_items)
         ),
         "candidate budget/selection mismatch",
     )
