@@ -181,17 +181,27 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             initialization: new(regions, BattleRegionProgram.None,
                 encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y)),
                 encounter.AiPoints.Select(point => new MapPosition(point.X, point.Y)),
-                deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor), encounter.EnemyCount),
+                deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor), encounter.EnemyCount,
+                // GetMoveOrderPosition reads the first two bytes of spriteset19 after the empty point table.
+                pointAfterTable: encounter.Battle.Id == 18 ? new(12, 15) : null),
             healingItems: PrivateBattleActionBindings.HealingItems(definitions),
             sourceMapRegion: new(new("map-" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
                 new(encounter.Area.X, encounter.Area.Y)),
             retreatSpells: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatSpells(definitions) : [],
             retreatItems: encounter.Battle.Id == 2 ? PrivateBattleActionBindings.RetreatItems(definitions) : [],
+            tarosEffectiveness: encounter.Battle.Id == 18 ? new(new("ally-0"),
+                encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Enemy)
+                    .Select((row, index) => (Actor: new ActorRef("enemy-" + index.ToString(CultureInfo.InvariantCulture)), definitions.Enemies[row.IdentityExpression].Id))
+                    .ToDictionary(pair => pair.Actor, pair => pair.Id),
+                definitions.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("WEAPON")).Select(item => item.Id)) : null,
             leaderCleanup: encounter.Scene.EnemyLeaderPresent ? new(new("ally-0"),
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder)) : null,
             itemDrops: encounter.Battle.Id == 10 ? new(10,
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
-                [new(10, 129, 19, 4)], [new(19, definitions.Items[19].DisplayName, true)]) : null,
+                [new(10, 129, 19, 4)], [new(19, definitions.Items[19].DisplayName, true)]) :
+                encounter.Battle.Id == 18 ? new(18,
+                    deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
+                    [new(18, 128, 110, 24)], [new(110, definitions.Items[110].DisplayName, true)]) : null,
             poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy,
             deathCredit: battle.Poison ? new BattleDeathCredit(null) : null);

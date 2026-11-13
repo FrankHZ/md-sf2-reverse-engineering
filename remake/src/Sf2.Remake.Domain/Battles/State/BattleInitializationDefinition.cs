@@ -43,10 +43,11 @@ public sealed class BattleInitializationDefinition
     internal BattleInitializationDefinition(IEnumerable<BattleActivationRegion> regions, BattleRegionProgram regionProgram,
         IEnumerable<MapPosition>? allyFormation = null, IEnumerable<MapPosition>? aiPoints = null,
         IReadOnlyDictionary<int, ActorRef>? sourceCombatants = null, int? enemyCount = null,
-        IEnumerable<BattleRegionProgramRow>? regionPrograms = null)
+        IEnumerable<BattleRegionProgramRow>? regionPrograms = null, MapPosition? pointAfterTable = null)
     { EnemyCount = enemyCount; Regions = Array.AsReadOnly(regions.ToArray()); RegionProgram = regionProgram;
         RegionPrograms = Array.AsReadOnly((regionPrograms ?? []).ToArray());
         AllyFormation = allyFormation is null ? null : Array.AsReadOnly(allyFormation.ToArray());
+        PointAfterTable = pointAfterTable;
         AiPoints = Array.AsReadOnly((aiPoints ?? []).ToArray());
         SourceCombatants = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ActorRef>(
             (sourceCombatants ?? new Dictionary<int, ActorRef>()).ToDictionary(row => row.Key, row => row.Value)); }
@@ -56,6 +57,9 @@ public sealed class BattleInitializationDefinition
     public IReadOnlyList<BattleRegionProgramRow> RegionPrograms { get; }
     public IReadOnlyList<MapPosition>? AllyFormation { get; }
     public IReadOnlyList<MapPosition> AiPoints { get; }
+    private MapPosition? PointAfterTable { get; }
+    internal MapPosition? ReadMoveOrderPoint(int index) => index < AiPoints.Count ? AiPoints[index] :
+        index == AiPoints.Count ? PointAfterTable : null;
     public IReadOnlyDictionary<int, ActorRef> SourceCombatants { get; }
 }
 

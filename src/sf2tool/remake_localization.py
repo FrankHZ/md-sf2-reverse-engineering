@@ -233,6 +233,10 @@ def derive(args: argparse.Namespace) -> dict:
     )
     if shrine:
         field_texts.update(range(3197, 3204))
+    taros = shrine and any(row["id"] == "abcs-battle18" for row in world["world"]["programs"])
+    if taros:
+        field_texts.update(range(2520, 2543))
+        field_items.update((61, 110))
     eastern_shrine = args.scope == "current" and any(
         row["id"] == "map-61" for row in world["world"]["maps"]
     )
@@ -277,6 +281,9 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (9, 43, 60)
     if shrine:
         name_ids["name.enemy"] += (11,)
+    if taros:
+        name_ids["name.enemy"] += (88,)
+        name_ids["name.spell"] += (13,)
     extra_items = field_items.difference(name_ids["name.item"])
     name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
@@ -383,12 +390,12 @@ def derive(args: argparse.Namespace) -> dict:
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
         and len(selected)
         == (806 if args.scope == "pre-voyage" else 1362 + len(field_texts - base_texts))
-        and len(selected_names) <= 129
+        and len(selected_names) <= 133
         and len(selected_names)
         == (
             51
             if args.scope == "pre-voyage"
-            else 79 + 6 * hassan + 3 * (shrine or shrine_battle) + shrine + len(extra_items)
+            else 79 + 6 * hassan + 3 * (shrine or shrine_battle) + shrine + 2 * taros + len(extra_items)
         ),
         "candidate budget/selection mismatch",
     )

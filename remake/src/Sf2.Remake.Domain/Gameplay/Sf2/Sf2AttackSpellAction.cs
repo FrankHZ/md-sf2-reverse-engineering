@@ -14,14 +14,15 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
     public BattleActionAdmission RequireAction(EngineBattleState battle, ActorRef actorRef, BattleActionRef action)
     {
         var actor = battle.GetActor(actorRef);
-        if (action.Kind != Kind || action.ItemSlot is not null || action.Spell is not { } key || !actor.Spells.Contains(key))
+        bool sword = TarosEffectiveness.IsSwordUse(actor, action);
+        if (action.Kind != Kind || action.Spell is not { } key || !sword && (action.ItemSlot is not null || !actor.Spells.Contains(key)))
             throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.AttackSpells.TryGetValue(key, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
         spell.RequireSupported(enemy: !actor.IsAlly);
         if (actor.Hp == 0 || (actor.IsAlly ? actor.Control != BattleControl.Player :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
-                key is not ({ Value: "blaze" or "freeze" or "blast" or "aqua", Level: 1 } or { Value: "blaze", Level: 2 })))
+                !sword && key is not ({ Value: "blaze" or "freeze" or "blast" or "aqua", Level: 1 } or { Value: "blaze", Level: 2 })))
             throw new BattleRuleException("attack-spell-caster", "actor", true);
         if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("attack-spell-status", "actor.status", true);
@@ -30,7 +31,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         if (battle.Definition.Rewards is null)
             throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
         if (actor.IsAlly && actor.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-        if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
+        if (!sword && actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return new(spell.MinimumRange, spell.MaximumRange, AttackSpell: spell);
     }
 
@@ -125,7 +126,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         var prepared = inventory.With(mainSeed: award.Seed, gold: gold,
             actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), actor.IsAlly ? new(actorRef, award.Amount) : null,
-            effects.AsReadOnly(), [], AttackSpell: spell);
+            effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: action.ItemSlot);
 
         int Roll(ushort range, string purpose, ActorRef target)
         {

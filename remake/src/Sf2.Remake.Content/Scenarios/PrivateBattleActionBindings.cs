@@ -58,7 +58,7 @@ internal static class PrivateBattleActionBindings
 
     internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
     {
-        var weapons = definitions.Items.Values.Where(item => item.ItemTypeExpression == "WEAPON" && item.UseSpell == "NOTHING" &&
+        var weapons = definitions.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" && item.UseSpell == "NOTHING" || item is { Id: 110, Code: "TAROS_SWORD", ItemTypeExpression: "WEAPON|RARE|BREAKABLE", UseSpell: "BOLT", UseSpellLevel: 2 }) &&
             (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect => effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName, 0,
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
@@ -81,6 +81,7 @@ internal static class PrivateBattleActionBindings
             "CRITICAL125_1IN16|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.Thief,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Cleric,
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.OneIn32WithFrequentDoubleAndCounter,
+            "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN8" => PhysicalCriticalRule.Taros,
             "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Monk,
             "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn8WithHalfBonus,
             "CRITICAL150_1IN4|DOUBLE_1IN8|COUNTER_1IN8" => PhysicalCriticalRule.OneIn4WithFrequentDoubleAndCounter,
@@ -95,7 +96,7 @@ internal static class PrivateBattleActionBindings
         byte minimum = 1, maximum = unarmedMaximum; // Unarmed source attack range.
         foreach (var item in equipped)
         {
-            Require(item.ItemTypeExpression == "WEAPON" && item.EquipEffects.All(effect =>
+            Require(item.ItemTypeExpression.Split('|').Contains("WEAPON") && item.EquipEffects.All(effect =>
                 effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }),
                 "source-equipment-effects", "actor.items", true);
             Require((item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2),

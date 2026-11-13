@@ -32,6 +32,9 @@ internal sealed partial class AttackSpellView : Node2D
             if (fire)
                 DrawColoredPolygon([position + new Vector2(0, -radius), position + new Vector2(radius / 2, radius / 2),
                     position + new Vector2(-radius / 2, radius / 2)], color);
+            else if (spell.Element == AttackSpellElement.Lightning)
+                DrawPolyline([position + new Vector2(4, -2 * radius), position + new Vector2(-5, -2),
+                    position + new Vector2(4, -2), position + new Vector2(-4, radius)], new Color("ffe484"), 2);
             else if (spell.Spell.Value == "aqua")
                 for (int bubble = 0; bubble < 5; bubble++)
                 {

@@ -18,6 +18,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
         var actor = before.GetActor(actorRef);
         Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser) ||
+            ChosenAction is { } sword && TarosEffectiveness.IsSwordUse(actor, sword) && Target is not null && !QueueOnly ||
             ChosenAction is { Kind: BattleActionKind.AttackSpell or BattleActionKind.Healing or BattleActionKind.SupportSpell, Spell: not null, ItemSlot: null } &&
                 Target is not null && !QueueOnly);
         if (ChosenAction?.Kind == BattleActionKind.PrismLaser)
@@ -48,7 +49,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                     candidate.ActivationWord == old.ActivationWord && candidate.PrimaryOrder == old.PrimaryOrder &&
                     candidate.SecondaryOrder == old.SecondaryOrder);
             else if (candidate.LastTarget != old.LastTarget)
-                Require(Target is not null && candidate.LastTarget == Target);
+                Require(Target is not null && candidate.LastTarget == (ChosenAction?.ItemSlot is not null ? actorRef : Target));
             if (old.Actor == actorRef && (candidate.PrimaryOrder != old.PrimaryOrder || candidate.SecondaryOrder != old.SecondaryOrder))
             {
                 Require(old.PrimaryOrder is not null and not 255 && (old.PrimaryOrder.Value & 64) == 0 &&
@@ -115,7 +116,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
@@ -152,7 +153,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 ValidateHealing(before, actor, destination, definition, patient);
                 break;
             case BattleActionKind.AttackSpell when action.Spell is { } attackKey && target is { } center &&
-                admission.AttackSpell is { } attack && attackKey == attack.Spell && action.ItemSlot is null:
+                admission.AttackSpell is { } attack && attackKey == attack.Spell && action.ItemSlot == AttackItemSlot &&
+                (AttackItemSlot is null || TarosEffectiveness.IsSwordUse(before.GetActor(actor), action)):
                 ValidateAttackSpell(before, actor, destination, attack, center);
                 break;
             case BattleActionKind.SupportSpell when action.Spell is { } supportKey && target is { } supportCenter &&

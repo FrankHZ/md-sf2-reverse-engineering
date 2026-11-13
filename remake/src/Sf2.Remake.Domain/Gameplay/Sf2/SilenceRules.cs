@@ -21,7 +21,7 @@ internal static class SilenceRules
     internal static byte? Cost(BattleActionRef action, BattleActionAdmission admission) => action.Kind switch
     {
         BattleActionKind.Healing => admission.Spell?.MpCost,
-        BattleActionKind.AttackSpell when action.Spell?.Value != "aqua" => admission.AttackSpell?.MpCost,
+        BattleActionKind.AttackSpell when action.ItemSlot is null && action.Spell?.Value != "aqua" => admission.AttackSpell?.MpCost,
         BattleActionKind.SupportSpell => admission.SupportSpell?.MpCost,
         _ => null,
     };

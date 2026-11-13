@@ -149,6 +149,8 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
         carried.update(read(cursor + 1, count))
         cursor += 1 + count
 
+    if battle >= 18:
+        carried.add(61)  # Achilles Sword can be equipped for the shrine battle.
     members = []
     for member, first_battle in enumerate(joins):
         if battle < first_battle:
@@ -174,7 +176,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in range(1, 18):
+    if battle not in range(1, 19):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -672,6 +674,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-15",
             "battle-16",
             "battle-17",
+            "battle-18",
         )
         or "fieldDeath" in scene
     ):
@@ -700,6 +703,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-15": 12,
                 "battle-16": 12,
                 "battle-17": 12,
+                "battle-18": 12,
             }[scene["encounter"]]
         ]
     ]
@@ -732,6 +736,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
         "battle-15",
         "battle-16",
         "battle-17",
+        "battle-18",
     ):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
@@ -802,7 +807,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(1, 18), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 19), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

@@ -147,10 +147,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
     {
         if (Primary == 255) return null;
         if ((Primary & 64) == 0) { var followed = Follow(Primary); return followed.Hp == 0 ? null : followed.Position; }
-        var points = _battle.Definition.Initialization!.AiPoints;
-        int index = Primary & 15;
-        if (index >= points.Count) throw Missing("source-ai-point");
-        return points[index];
+        return _battle.Definition.Initialization!.ReadMoveOrderPoint(Primary & 15) ?? throw Missing("source-ai-point");
     }
     private BattleActorState Follow(byte index)
     {
