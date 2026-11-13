@@ -2179,6 +2179,12 @@ msgstr "Mount Volcano, battle return"
 msgid "save.destination.polca-return"
 msgstr "Polca, eastern approach"
 
+msgid "save.destination.taros-shrine"
+msgstr "Taros Shrine"
+
+msgid "save.destination.southwest-parmecia"
+msgstr "Southwest Parmecia"
+
 msgid "save.destination.polca-raft"
 msgstr "Polca, raft landing"
 

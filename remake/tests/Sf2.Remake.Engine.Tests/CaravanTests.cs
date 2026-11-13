@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using System.Text.Json.Nodes;
 using Xunit;
@@ -94,6 +95,31 @@ public sealed class CaravanTests
         Assert.True(session.Current.Exploration!.PlayerEntity.IsScriptIdle);
         Assert.Equal(FieldTravelMode.Walking, session.Current.Exploration.TravelMode);
         Assert.Equal(new MapPosition(2, 2), session.Current.Exploration.PlayerEntity.Position);
+    }
+
+    [Theory]
+    [InlineData(3, 4, 0, true)]
+    [InlineData(7, 2, 2, true)]
+    [InlineData(7, 2, 2, false)]
+    public void SouthwestFieldSaveKeepsTheWalkingPositionAfterAcquisition(int x, int y, byte facing, bool acquired)
+    {
+        var (basis, data) = OpeningRestoreTests.Fixture();
+        var map = new ExplorationMapDefinition(new("map-68"), new(new ushort[4096]), new([new(0, 0, 9, 9)]),
+            [], [], population: new(30, 128, 0, [new(65, 30, 62)]));
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
+        var player = new FieldReturnAnchor(map.Map, new(x, y), facing);
+        var oldAnchor = new FieldReturnAnchor(map.Map, new(1, 1), 3);
+        var policy = basis.Persistence!;
+        if (!acquired)
+        {
+            Assert.Equal("save-location-unavailable",
+                Assert.Throws<BattleRuleException>(() => policy.Select(definition, player, [], oldAnchor)).Code);
+            return;
+        }
+        var location = policy.Select(definition, player, [65], oldAnchor);
+        Assert.Equal("southwest-parmecia", location.Recipe);
+        Assert.Equal(player, location.Anchor);
+        policy.ValidateRegisters(data with { Recipe = location.Recipe, EgressMap = "map-6" });
     }
 
     [Fact]

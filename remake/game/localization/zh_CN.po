@@ -2179,6 +2179,12 @@ msgstr "火山，战斗结束处"
 msgid "save.destination.polca-return"
 msgstr "波尔卡，东侧入口"
 
+msgid "save.destination.taros-shrine"
+msgstr "塔罗斯神殿"
+
+msgid "save.destination.southwest-parmecia"
+msgstr "帕尔梅西亚西南部"
+
 msgid "save.destination.polca-raft"
 msgstr "波尔卡村外，木筏停靠处"
 
