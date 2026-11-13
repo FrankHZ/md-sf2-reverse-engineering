@@ -65,6 +65,15 @@ func field_pages() -> void:
         footer.get_global_rect().encloses(close.get_global_rect()) and
         hint.get_global_rect().end.x <= prepare.get_global_rect().position.x and
         prepare.get_global_rect().end.x <= close.get_global_rect().position.x, "party footer actions fit to right of hint")
+    for label in [hint, prepare, close]:
+        var text_label := label as Label
+        var bounds := Rect2(Vector2.ZERO,text_label.size).grow(1)
+        var glyphs := Rect2()
+        for index in text_label.text.length():
+            var glyph := text_label.get_character_bounds(index)
+            if glyph.has_area(): glyphs = glyphs.merge(glyph) if glyphs.has_area() else glyph
+        check(glyphs.has_area() and bounds.encloses(glyphs), str(label.name) + " shaped glyphs fit")
+    check(hint.get_theme_font_size("font_size") == 24, "party hint retains design type size")
     await hit(close)
     check(not state().partyStatus.visible, "scaled party Close hit")
     if state().fieldMenu.visible: await key(KEY_ESCAPE)
@@ -126,6 +135,10 @@ func battle_pages() -> void:
     for part in [menu.layout.description, menu.layout.actor, menu.layout.targetCard.rect]:
         var bounds := Rect2(part.x, part.y, part.width, part.height)
         check(root.get_visible_rect().grow(1).encloses(bounds), "battle HUD inside canvas")
+    for label in menu.layout.descriptionLabels:
+        var bounds := Rect2(label.rect.x,label.rect.y,label.rect.width,label.rect.height)
+        var parent: Dictionary = menu.layout.description
+        check(Rect2(parent.x,parent.y,parent.width,parent.height).grow(1).encloses(bounds), "battle command label fits panel")
     await key(KEY_ESCAPE)
     await key(KEY_ESCAPE)
     var inspection: Dictionary = state().inspection
@@ -165,8 +178,10 @@ func shop_pages() -> void:
     for i in 850:
         var s := state()
         if s.shop.visible: break
-        if s.dialoguePanel.visible and not story_seen:
+        if s.dialoguePanel.visible and s.wait == "FieldTextWait" and not story_seen:
             story_seen = true
+            samples.append({"text":s.textId, "wait":s.wait, "fontSize":s.dialoguePanel.fontSize, "body":s.dialoguePanel.body})
+            check(s.textId == 158 and s.dialoguePanel.fontSize == 30, "merchant greeting retains body type size")
             var p: Dictionary = s.dialoguePanel.panel
             check(root.get_visible_rect().encloses(Rect2(p.x,p.y,p.width,p.height)), "story text inside canvas")
         if s.canWaitForText: await key(KEY_ENTER)
