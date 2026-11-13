@@ -39,6 +39,20 @@ internal static class RaftRuntime
             world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities);
     }
 
+    internal static ExplorationState OnScroll(ExplorationState world, IReadOnlyList<int> flags, RaftBerth? berth)
+    {
+        // DeclareRaftEntity clears selector 63 and parks the old physical slot off-map when leaving.
+        if (world.AllEntities.FirstOrDefault(entity => entity.Slot == Slot && entity.Entity == FollowerD) is { } raft)
+        {
+            var aliases = world.Aliases.ToDictionary();
+            if (world.Population is not null) aliases[FollowerD] = 0; else aliases.Remove(FollowerD);
+            var entities = world.AllEntities.Where(entity => entity != raft);
+            world = new(world.Definition, world.Layout, world.Player, entities, world.Party, world.SpriteSize,
+                aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities);
+        }
+        return Declare(world, flags, berth);
+    }
+
     private static EntityMotionState OffMap(EntityMotionState motion) => motion with
         { X = 0x6000, Y = 0x6000, XDestination = 0x6000, YDestination = 0x6000 };
 

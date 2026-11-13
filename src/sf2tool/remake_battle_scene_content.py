@@ -138,7 +138,7 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
 
 def campaign_ally_visuals(battle, read, ally_table, stats_table):
     # First deployment of each unpromoted member, including optional Kiwi and May.
-    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13, 16)
+    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13, 14)
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
     cursor = stats_table["list_ShopInventories"]
@@ -175,7 +175,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (*range(1, 14), 16):
+    if battle not in (*range(1, 15), 16):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -465,6 +465,8 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     terrain_scenes = []
     backdrop = {}
     fixed = read(0x1FA8A + battle, 1)[0] if battle >= 11 else 9 if battle == 1 else None
+    if fixed == 255:  # OVERWORLD selects the backdrop by terrain.
+        fixed = None
     indices = [fixed] if fixed is not None else sorted(set(read(0x19E5E, 16)))
     for index in indices:
         ground = pointer(weapons["groundTableAddress"] + index * 4)
@@ -488,7 +490,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
         )
         backdrop[index] = dict(background=background_asset, ground=ground_asset)
-    if battle in (2, 3, 4, 5, 6, 7, 8, 9, 10):
+    if fixed is None:
         terrain_scenes = [
             dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
         ]
@@ -598,7 +600,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
             texts=texts,
             memberNames=names,
             healing=healing,
-            **({"terrainScenes": terrain_scenes} if battle in (2, 3, 4, 5, 6, 7, 8, 9, 10) else {}),
+            **({"terrainScenes": terrain_scenes} if fixed is None else {}),
         ),
     )
     report = dict(
@@ -665,6 +667,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-11",
             "battle-12",
             "battle-13",
+            "battle-14",
             "battle-16",
         )
         or "fieldDeath" in scene
@@ -690,6 +693,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-11": 12,
                 "battle-12": 12,
                 "battle-13": 12,
+                "battle-14": 12,
                 "battle-16": 12,
             }[scene["encounter"]]
         ]
@@ -715,7 +719,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     if scene["encounter"] == "battle-10":
         species.remove("GREEN_OOZE")
         species.append("DARK_DWARF")
-    if scene["encounter"] in ("battle-11", "battle-12", "battle-13", "battle-16"):
+    if scene["encounter"] in ("battle-11", "battle-12", "battle-13", "battle-14", "battle-16"):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
             encoding="utf-8"
@@ -785,7 +789,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(*range(1, 14), 16), default=1)
+    parser.add_argument("--battle", type=int, choices=(*range(1, 15), 16), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

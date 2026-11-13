@@ -361,7 +361,10 @@ internal static class ExplorationContentReader
             route.TryGetProperty("load", out var load) ? Location(load) : null,
             route.TryGetProperty("outcome", out var outcome) ? ReadOutcome(outcome, map) : null,
             route.TryGetProperty("triggerX", out _) ? Number(route, "triggerX", 0, 63) : null,
-            route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null);
+            route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null,
+            // DetermineBattleUpgrade: the first positive quotient for Battle14 is (24 - 14) / 10.
+            // The private reader currently admits only unpromoted classes and the base formation.
+            RepeatUpgradeLevel: battle.Definition.PrivateDefinitions is not null && encounter == "battle-14" ? (byte)24 : null);
     }
 
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)

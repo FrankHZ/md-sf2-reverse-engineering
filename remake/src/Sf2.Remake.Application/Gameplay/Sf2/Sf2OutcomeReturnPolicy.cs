@@ -23,9 +23,12 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
             if (story.Flags.Contains(64))
             {
                 // GetSavepointForMap consults the raft reset table using the selected town.
-                if (egress.Map != new MapId("map-13"))
-                    throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
-                resetRaft = new(new("map-72"), new(43, 48));
+                resetRaft = egress.Map.Value switch
+                {
+                    "map-9" => new(new("map-69"), new(28, 55)),
+                    "map-13" or "map-10" => new(new("map-72"), new(43, 48)),
+                    _ => new(new("map-69"), new(42, 15)),
+                };
             }
         }
         if (kind == BattleOutcomeKind.Retreat)

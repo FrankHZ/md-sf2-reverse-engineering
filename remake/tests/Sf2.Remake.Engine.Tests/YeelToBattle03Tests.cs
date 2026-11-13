@@ -12,6 +12,20 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class YeelToBattle03Tests
 {
     [Theory]
+    [InlineData(23, true, false)]
+    [InlineData(24, true, true)]
+    [InlineData(24, false, false)]
+    public void OnlyCompletedEncountersAtTheUpgradeThresholdRequireSubstitutedEnemies(byte level, bool completed, bool stops)
+    {
+        var (definition, current) = Field(completed ? [403, 503] : [403], level: level);
+        var world = current.Exploration!;
+        var route = world.Definition.Battles[1] with { RepeatUpgradeLevel = 24 };
+        var result = ProgramRunner.Run(definition, BattleEntry.Select(current, current.Story, route, []), []);
+        if (stops) Assert.Equal("repeat-enemy-upgrade", result.Failure?.Code);
+        else { Assert.Null(result.Failure); Assert.Equal(20, result.Snapshot.Battle.GetActor(new("enemy")).Hp); }
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -280,13 +294,13 @@ public sealed class YeelToBattle03Tests
             SourceStoryInstruction instruction, ProgramLocation location) => throw new InvalidOperationException();
     }
 
-    private static BattleActorDefinition Unit(string id, bool ally, ushort item = 127) => new(new(id),
-        ally ? BattleClassRule.UnpromotedSwordsman : BattleClassRule.Ordinary, 1, 20, 0, 10, 4, 5, false, 4, [],
+    private static BattleActorDefinition Unit(string id, bool ally, ushort item = 127, byte level = 1) => new(new(id),
+        ally ? BattleClassRule.UnpromotedSwordsman : BattleClassRule.Ordinary, level, 20, 0, 10, 4, 5, false, 4, [],
         physical: new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, ally, 0), sourceLoadout: new([item, 127, 127, 127], [63, 63, 63, 63]));
 
-    private static (BattleDefinition, BattleStartInput) Battle(string id)
+    private static (BattleDefinition, BattleStartInput) Battle(string id, byte level = 1)
     {
-        var hero = new BattleDeploymentDefinition(Unit("hero", true), BattleFaction.Ally, 0, BattleControl.Player, null,
+        var hero = new BattleDeploymentDefinition(Unit("hero", true, level: level), BattleFaction.Ally, 0, BattleControl.Player, null,
             new(12, 12), new(null, 0, 15, 15, 0, 0, 255, 255, AllyPartyMember: 0));
         var enemy = new BattleDeploymentDefinition(Unit("enemy", false), BattleFaction.Enemy, 128, BattleControl.Automatic,
             new("source-orders"), new(3, 3), new(0x2000, 0, 15, 15, 0, 6, 255, 255));
@@ -298,9 +312,9 @@ public sealed class YeelToBattle03Tests
             new("controlled", "engine behavior", "No original runtime claim", 0, true, true, true, false, false, 0)));
     }
 
-    private static (ScenarioDefinition, SessionSnapshot) Field(int[]? flags = null, uint seed = 0x12340000)
+    private static (ScenarioDefinition, SessionSnapshot) Field(int[]? flags = null, uint seed = 0x12340000, byte level = 1)
     {
-        var (second, party) = Battle("battle-2"); var (third, thirdStart) = Battle("battle-3");
+        var (second, party) = Battle("battle-2"); var (third, thirdStart) = Battle("battle-3", level);
         party = new(party.Encounter, party.Actors.Where(actor => actor.Actor.Value == "hero"), seed, party.ThinkingSeed, party.Gold, party.NewBattle);
         var layout = new WorkingMapLayout(new ushort[4096]);
         var map = new ExplorationMapDefinition(new("field"), layout, new([new(0, 0, 63, 63)]), [], [],

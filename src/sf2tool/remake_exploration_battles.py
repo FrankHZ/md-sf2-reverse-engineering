@@ -20,7 +20,7 @@ from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
 )
 
-SUPPORTED_ENCOUNTERS = (*range(2, 14), 16)
+SUPPORTED_ENCOUNTERS = (*range(2, 15), 16)
 
 
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
@@ -82,6 +82,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             11: [12, 10, 4, 1],
             12: [12, 12, 4, 1],
             13: [12, 16, 3, 1],
+            14: [12, 15, 3, 0],
             16: [12, 11, 0, 0],
         }[battle]
     ):
@@ -161,6 +162,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         11: "CAVE_OF_DARKNESS",
         12: "MOUNT_VOLCANO",
         13: "POLCA_VILLAGE",
+        14: "SOUTHEAST_DESERT",
         16: "VERSUS_KRAKEN",
     }[battle]
     identity = dict(id=battle, code=code)
