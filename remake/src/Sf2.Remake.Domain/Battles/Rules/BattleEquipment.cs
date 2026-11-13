@@ -8,11 +8,15 @@ public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint Class
 
 public sealed class BattleEquipmentDefinition
 {
-    internal BattleEquipmentDefinition(byte baseAttack, IEnumerable<BattleWeaponDefinition> weapons, bool allowChanges = true)
-    { BaseAttack = baseAttack; AllowChanges = allowChanges; Weapons = new ReadOnlyDictionary<byte, BattleWeaponDefinition>(weapons.ToDictionary(w => w.ItemId)); }
+    internal BattleEquipmentDefinition(byte baseAttack, IEnumerable<BattleWeaponDefinition> weapons, bool allowChanges = true,
+        IEnumerable<byte>? inertItems = null)
+    { BaseAttack = baseAttack; AllowChanges = allowChanges; Weapons = new ReadOnlyDictionary<byte, BattleWeaponDefinition>(weapons.ToDictionary(w => w.ItemId));
+        InertItems = Array.AsReadOnly((inertItems ?? []).Distinct().ToArray()); }
     public byte BaseAttack { get; }
     public bool AllowChanges { get; }
     public IReadOnlyDictionary<byte, BattleWeaponDefinition> Weapons { get; }
+    // Bare carried identities only; this grants no equipped effect, Use action or menu choice.
+    public IReadOnlyList<byte> InertItems { get; }
 }
 
 public sealed record BattleEquipmentChoice(int Slot, string Label, bool Equipped, byte Attack,
@@ -91,9 +95,13 @@ public static class BattleEquipment
                 ((book.Max(spell => spell.Level) - 1) << 6) | (book.Key switch { "heal" => 0, "dispel" => 6, "freeze" => 12, "blast" => 14, _ => 11 })).ToHashSet()
                 .SetEquals(loadout.Spells.Where(spell => spell != 63).Select(spell => (int)spell))) return false;
         if (definition.Equipment is not null) ValidateLoadout(definition, loadout);
-        return loadout.Items.All(word => word == 127 || allowHerb && word == 0 ||
-            word == 19 || (word & ~255) == 0 && definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true);
+        return loadout.Items.All(word => OrdinaryItem(definition, word, allowHerb));
     }
+
+    internal static bool OrdinaryItem(BattleActorDefinition definition, ushort word, bool allowHerb) =>
+        word == 127 || allowHerb && word == 0 ||
+        word < 127 && definition.Equipment?.InertItems.Contains((byte)word) == true ||
+        (word & ~255) == 0 && definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) == true;
 
     internal static void RequireActor(BattleActorState actor)
     {

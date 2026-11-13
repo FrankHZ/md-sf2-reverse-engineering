@@ -161,6 +161,8 @@ public sealed class JaroVictoryProgramTests
     {
         private readonly IOutcomeReturnPolicy _source = RuleCompositions.SourceOutcomeReturn();
         public string Identity => "transient-outcome";
+        public bool CanRecover(BattleDeploymentDefinition deployment, BattleActorStartInput actor, bool all) =>
+            _source.CanRecover(deployment, actor, all);
         internal bool Fail = true;
         public OutcomeStart Start(ScenarioDefinition definition, EngineBattleState battle, StoryState story, BattleOutcomeKind kind, BattleStartInput party) =>
             _source.Start(definition, battle, story, kind, party);

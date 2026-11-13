@@ -377,6 +377,8 @@ public sealed class ProgressionPolicyTests
     {
         private readonly Sf2OutcomeReturnPolicy _source = new();
         public string Identity => "controlled-return";
+        public bool CanRecover(BattleDeploymentDefinition deployment, BattleActorStartInput actor, bool all) =>
+            _source.CanRecover(deployment, actor, all);
         internal string? Fault { get; set; }
         public OutcomeStart Start(ScenarioDefinition definition, EngineBattleState battle, StoryState story, BattleOutcomeKind kind, BattleStartInput party)
         {
