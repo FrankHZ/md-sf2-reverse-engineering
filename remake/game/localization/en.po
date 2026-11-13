@@ -206,7 +206,7 @@ msgid "church.save"
 msgstr "Record adventure… (Save)"
 
 msgid "church.save-hint"
-msgstr "Uses the same two slots as Menu → Save. Saving remains limited to save points.\nClose saving to resume exploring; talk to the priest again for services."
+msgstr "Opens your save slots. Closing them returns you to the field."
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.leave"
@@ -254,7 +254,7 @@ msgstr "Curse removal is unavailable here."
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.promotion"
-msgstr "Promotion is unavailable here. Choose another service or Leave."
+msgstr "Promotion is unavailable here."
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.failure"
@@ -262,7 +262,7 @@ msgstr "Could not complete ({0}, {1}): {2}"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.hint"
-msgstr "{0} / {1}: Choose   {2}: Select\n{3}: Decline / Back   Mouse: select a row"
+msgstr "{0}/{1}: Choose · {2}: Confirm · {3}: Back"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "search.item"
@@ -365,12 +365,6 @@ msgstr "Entry unavailable."
 msgid "entry.assets"
 msgstr "Title / Witch content is unavailable. Select a prepared private entry package with SF2_PRIVATE_ENTRY_CONTENT, then relaunch."
 
-msgid "entry.new-hint"
-msgstr "New Game  •  Normal difficulty"
-
-msgid "entry.journey-hint"
-msgstr "Choose your journey  •  Normal difficulty"
-
 msgid "entry.retry-help"
 msgstr "Check the prepared private opening content selections and try New Game again."
 
@@ -379,9 +373,6 @@ msgstr "Correct the startup options or input settings, then relaunch."
 
 msgid "name.title"
 msgstr "What is your name?"
-
-msgid "name.empty"
-msgstr "Empty keeps the default name"
 
 msgid "name.member-title"
 msgstr "Name {0}"
@@ -474,10 +465,10 @@ msgid "save.quit-clean"
 msgstr "Quit to desktop? Your last save is safe."
 
 msgid "new.slots"
-msgstr "Choose a slot for your new journey. Nothing is written until final confirmation.\nNormal difficulty"
+msgstr "Choose a slot. Your save won’t change until you confirm."
 
 msgid "new.uncertain"
-msgstr "The write may already have completed. Your current session is still paused.\nProgress files have been retained. Inspect Continue before deciding whether to start another journey."
+msgstr "The new save may already exist. Check Continue before starting again. Your current session is still paused."
 
 msgid "save.error.location"
 msgstr "Save after returning to a supported location: opening Granseal or the settled first battle return."
@@ -527,9 +518,6 @@ msgstr "{0}: Continue   •   {1}: Skip greeting"
 msgid "entry.fail"
 msgstr "Cannot start: {0} ({1}).\n{2}"
 
-msgid "entry.fallback"
-msgstr "Entry dialogue uses English ({0}). Image lettering is unchanged."
-
 msgid "save.details"
 msgstr "Details: {0}"
 
@@ -561,13 +549,13 @@ msgid "slot.tooltip"
 msgstr "{0} • Back: {1}"
 
 msgid "new.confirm"
-msgstr "Begin a new journey as {0}?\nSlot {1} • Normal difficulty\nIf occupied, this replaces that slot; its previous valid save becomes the backup.\nThe initial save returns to the beginning of the opening. Current unsaved progress will be discarded only after saving succeeds."
+msgstr "Start as {0} in Slot {1}? Normal difficulty.\nYour first save resumes at the opening. If you overwrite a valid save, it becomes the backup. Unsaved progress is lost only after the new save succeeds."
 
 msgid "new.start"
 msgstr "Start and save to Slot {0}"
 
 msgid "new.error"
-msgstr "New Game unavailable: {0}.\nNo new session was mounted. Existing progress files were retained.\nCorrect the input or storage problem, then retry; Cancel returns to the Witch."
+msgstr "New Game failed: {0}. Your saves are safe. Check the game files or save folder, then retry. Cancel returns to the Witch."
 
 msgid "party.prepare"
 msgstr "Prepare…"
@@ -771,7 +759,7 @@ msgid "prepare.failure"
 msgstr "{0}\nDetails ({1} · {2}): {3}"
 
 msgid "prepare.hint"
-msgstr "{0} / {1}: Choose   {2}: Select   {3}: Back\nMouse: select a row"
+msgstr "{0}/{1}: Choose · {2}: Confirm · {3}: Back"
 
 msgid "prepare.recovery.settle"
 msgstr "Preparation needs settled field control. Nothing was changed. Close and wait for field input before trying again."
@@ -978,10 +966,10 @@ msgid "battle.give-target"
 msgstr "Give {0}: choose an adjacent teammate\n{1} / {2}\n> {3}"
 
 msgid "battle.give-confirm"
-msgstr "Give {0} to {1}?\nConfirm transfers and ends this action; Cancel returns."
+msgstr "Give {0} to {1}? Giving ends this action."
 
 msgid "battle.exchange-confirm"
-msgstr "Give {0} to {1} for {2}?\nConfirm transfers and ends this action; Cancel returns."
+msgstr "Trade {0} for {1}’s {2}? Trading ends this action."
 
 msgid "battle.give-title"
 msgstr "Choose an item to give:"
@@ -1005,7 +993,7 @@ msgid "battle.discard-result"
 msgstr "{0} discarded {1}."
 
 msgid "battle.discard-confirm"
-msgstr "Discard {0}?\nConfirm discards; Cancel keeps it. Your action and movement preview remain available."
+msgstr "Discard {0}? You can still move or choose another action."
 
 msgid "battle.discard-title"
 msgstr "Choose an item to discard:"
@@ -1392,19 +1380,19 @@ msgid "field-menu.search"
 msgstr "Search"
 
 msgid "field-menu.member-help"
-msgstr "Member status and preparation. Choose a member, then inspect or prepare their equipment, items and magic."
+msgstr "Check a party member’s stats and equipment."
 
 msgid "field-menu.magic-help"
-msgstr "Choose a member, then a spell. Field effects and MP costs follow the existing preparation rules."
+msgstr "Choose who will cast the spell."
 
 msgid "field-menu.item-help"
-msgstr "Choose a member, then Use, Give, Equip or Drop. Every change has its own confirmation."
+msgstr "Use, give, equip or drop an item."
 
 msgid "field-menu.search-help"
-msgstr "Search the faced location, using the same field Search operation as contextual Confirm."
+msgstr "Search the spot in front of you."
 
 msgid "field-menu.unavailable"
-msgstr "Unavailable at the current field boundary."
+msgstr "Unavailable here."
 
 msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}: Choose\n{4}: Select   {5}: Back"
@@ -1779,7 +1767,7 @@ msgid "host.window-title"
 msgstr "Window size"
 
 msgid "host.window-restore"
-msgstr "Restore 1080p window"
+msgstr "Restore window size"
 
 msgid "host.window-fullscreen"
 msgstr "Use fullscreen"
@@ -1791,7 +1779,7 @@ msgid "host.window-default"
 msgstr "Enlarge the window or choose a mode below. Nothing is saved automatically."
 
 msgid "host.window-no-window"
-msgstr "\nWindow unavailable: a 1080p client and its borders do not fit this desktop."
+msgstr "\nWindowed mode won’t fit on this desktop."
 
 msgid "host.window-no-fullscreen"
 msgstr "\nFullscreen unavailable: this screen is smaller than the gameplay minimum."
@@ -1800,7 +1788,7 @@ msgid "host.window-hint"
 msgstr "{0}/{1}: Choose • {2}: Select • {3}: Quit…\n{4}/{5}: Read above/below"
 
 msgid "host.window-refused-fit"
-msgstr "A 1080p window and its borders cannot fit the current desktop. Try fullscreen."
+msgstr "The window won’t fit on this desktop. Try fullscreen."
 
 msgid "host.window-refused-restore"
 msgstr "The requested client or its actual borders could not fit. The previous window mode was restored; choose fullscreen or Quit."

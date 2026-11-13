@@ -68,7 +68,7 @@ internal sealed partial class ShopServiceView : Control
         _index = Math.Clamp(_index, 0, Math.Max(0, _options.Count - 1));
         _page.Visible = !IsMenu; _services.Visible = IsMenu;
         string reason = _assetError is not null ? GameText.Get("shop.closed") :
-            _error ?? (IsMenu && _index is 2 or 3 ? GameText.Get("shop.unavailable") : "");
+            _error ?? "";
         _hint = GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         _hint += "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕";
         if (IsMenu) _services.Present(input, _index, _title, reason, _hint,

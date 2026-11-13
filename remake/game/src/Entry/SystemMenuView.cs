@@ -33,6 +33,7 @@ internal sealed partial class SystemMenuView : Control
         _scroll = new ScrollContainer { Name = "SystemMenuReading", SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         column.AddChild(_scroll);
+        _scroll.GetVScrollBar().VisibilityChanged += RefreshInputHints;
         var rows = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         rows.AddThemeConstantOverride("separation", 8); _scroll.AddChild(rows);
         string[] names = ["Resume", "Save", "Settings", "NewGame", "Quit"];
@@ -87,7 +88,7 @@ internal sealed partial class SystemMenuView : Control
     {
         _hint.Text = GameText.Get("system.hint", Input.CompactHint(GameAction.Menu),
             Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
-        _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
+        if (_scroll.GetVScrollBar().Visible) _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
         if (!Input.MenuPadAvailable) _hint.Text += "\n" + GameText.Get("system.no-pad");
     }
     private void Select(int index)

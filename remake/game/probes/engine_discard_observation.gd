@@ -135,7 +135,7 @@ func run() -> void:
     await key(KEY_R)
     await suspended("item-choice")
     await key(KEY_ENTER)
-    check(board().stage == "DiscardCommitReady" and str(board().discardMenu).contains("Your action and movement preview remain available"), "confirmation states free continuation")
+    check(board().stage == "DiscardCommitReady" and str(board().discardMenu).contains("still move or choose another action"), "confirmation states free continuation")
     await key(KEY_ESCAPE)
     same_action(before, "confirmation no")
     check(board().inventories == before.inventories and board().custody == before.custody, "cancel keeps both stores")

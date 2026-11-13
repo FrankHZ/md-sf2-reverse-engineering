@@ -44,6 +44,7 @@ internal sealed partial class SaveSlotView : Control
         _reading = new ScrollContainer { Name = "SlotReading", SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         layout.AddChild(_reading); _reading.AddChild(_column);
+        _reading.GetVScrollBar().VisibilityChanged += RefreshInputHints;
         _confirmationActions = new VBoxContainer { Visible = false };
         _confirmationActions.AddThemeConstantOverride("separation", OverEntry ? 24 : 12);
         layout.AddChild(_confirmationActions);
@@ -80,7 +81,7 @@ internal sealed partial class SaveSlotView : Control
         foreach (var button in _buttons)
             button.TooltipText = Input is null ? "" : GameText.Get("slot.tooltip", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
         _hint.Text = Input is null ? "" : GameText.Get("entry.choose-hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
-        if (Input is not null) _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
+        if (Input is not null && _reading?.GetVScrollBar().Visible == true) _hint.Text += "\n" + GameText.Get("host.menu-reading", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right));
     }
 
     internal void ShowDetail(string detail) { _detail.Text = detail; _detail.Show(); }

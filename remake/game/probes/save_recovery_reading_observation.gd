@@ -43,7 +43,7 @@ func inspect_page(page: String) -> void:
     var hint_rect := hint.get_global_rect()
     check(root.size == Vector2i(1920,1080) and panel.encloses(hint_rect) and
         viewport.end.y <= hint_rect.position.y, page + " fixed footer in 1080p")
-    check(hint_rect.encloses(label_bounds(hint)) and "向下阅读" in hint.text, page + " full mapped footer")
+    check(hint_rect.encloses(label_bounds(hint)) and ("向下阅读" in hint.text) == reading.get_v_scroll_bar().visible, page + " full mapped footer; scroll cue only on overflow")
     check_glyphs(hint, hint.text)
     var rows := []
     var previous_end := -INF

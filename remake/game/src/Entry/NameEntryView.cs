@@ -27,7 +27,7 @@ internal sealed partial class NameEntryView : Control
         var title = new Label { Text = MemberName is null ? GameText.Get("name.title") : GameText.Get("name.member-title", MemberName),
             AutowrapMode = TextServer.AutowrapMode.WordSmart, HorizontalAlignment = HorizontalAlignment.Center };
         title.AddThemeFontSizeOverride("font_size", 32); column.AddChild(title);
-        _edit = new LineEdit { Name = "NameInput", Text = Draft, PlaceholderText = GameText.Get("name.empty"), CustomMinimumSize = new(500, 64),
+        _edit = new LineEdit { Name = "NameInput", Text = Draft, CustomMinimumSize = new(500, 64),
             Alignment = HorizontalAlignment.Center, ContextMenuEnabled = false, KeepEditingOnTextSubmit = true };
         column.AddChild(_edit);
         _edit.TextChanged += _ => Validate();

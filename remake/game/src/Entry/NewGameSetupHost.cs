@@ -107,8 +107,7 @@ public sealed partial class GameRoot
                 {
                     ClearPreparedNewGame();
                     _slots!.Cancel = CancelNewGame;
-                    _slots.ShowChoices("new-game-publication-uncertain", "The write may already have completed. Your current session is still paused.\n" +
-                        "Progress files have been retained. Inspect Continue before deciding whether to start another journey.",
+                    _slots.ShowChoices("new-game-publication-uncertain", GameText.Get("new.uncertain"),
                         (GameText.Get("entry.inspect"), () => { CancelNewGame(); ShowContinue(); }), (GameText.Get("entry.cancel"), CancelNewGame));
                 }
                 else NewGameError(written.Error!);
