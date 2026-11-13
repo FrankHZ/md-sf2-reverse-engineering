@@ -1,7 +1,7 @@
 # Pre-voyage Chinese admission plan
 
 The current selector includes later campaign dialogue, Search and the ordinary service greetings.
-The [western shrine road](hassan-taros-road.md) selects 1,469 world messages and 126 names, including Battle16 lines 2513–2519, the Hassan cast, the six Battle17 species and shrine lines 3197–3203. Church 110 preserves both W2 controls and Shop 158 preserves its terminal D3.
+The [western shrine road](hassan-taros-road.md) includes Battle16 lines 2513–2519, the Hassan cast, the six Battle17 species and shrine lines 3197–3203. With the [East Shrine and Ancient Hall](east-shrine-panel.md) the combined catalog has 1,486 world messages and 129 names (204,201 UTF-8 bytes). It includes the gate and hall lines 3642–3648 and 2503–2512 and shares the Golem, Gargoyle and Arrow Launcher names between the two encounters. The current runtime admits 129 name rows, bounded to 128 UTF-16 units each. Church 110 preserves both W2 controls and Shop 158 preserves its terminal D3.
 [Service entry and bilingual reading](opening-session-lifecycle.md#church-and-shop-entry-greetings).
 Use `--scope pre-voyage` to reproduce the 806-message selection below.
 
@@ -14,7 +14,7 @@ the accepted sole message/name corpora. The bounded candidate is **806 world mes
 Raise the world message ceiling to **1,024**, retain **256 KiB per file / 8,192 UTF-16 units per
 message**, and admit at most **128 optional name rows / 128 UTF-16 units per name**. No new native
 text token, chapter loader, cache, database or localization framework is needed for this candidate.
-The runtime reader now implements these bounds; entry retains its existing 256-row ceiling.
+The pre-voyage bounds described here apply to that historical selection. The current field reader validates message IDs against the admitted world and uses the name limit above. Entry retains its 256-row ceiling.
 
 **Implemented identity prerequisite ([Issue1601](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1601)):**
 field display bindings capture optional `ClassId` alongside the member/actor and canonical class

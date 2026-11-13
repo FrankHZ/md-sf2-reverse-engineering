@@ -233,6 +233,17 @@ def derive(args: argparse.Namespace) -> dict:
     )
     if shrine:
         field_texts.update(range(3197, 3204))
+    eastern_shrine = args.scope == "current" and any(
+        row["id"] == "map-61" for row in world["world"]["maps"]
+    )
+    if eastern_shrine:
+        field_texts.update(range(3642, 3649))
+        field_texts.update(range(2503, 2513))
+    shrine_battle = eastern_shrine and any(
+        route.get("encounter") == "battle-15" and not route.get("unavailable")
+        for row in world["world"]["maps"]
+        if (route := row.get("battle"))
+    )
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -262,8 +273,10 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (10, 59, 87)
         name_ids["name.spell"] += (40,)
         name_ids["name.ally"] += (11, 12)
+    if shrine or shrine_battle:
+        name_ids["name.enemy"] += (9, 43, 60)
     if shrine:
-        name_ids["name.enemy"] += (9, 11, 43, 60)
+        name_ids["name.enemy"] += (11,)
     extra_items = field_items.difference(name_ids["name.item"])
     name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
@@ -370,8 +383,13 @@ def derive(args: argparse.Namespace) -> dict:
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
         and len(selected)
         == (806 if args.scope == "pre-voyage" else 1362 + len(field_texts - base_texts))
+        and len(selected_names) <= 129
         and len(selected_names)
-        == (51 if args.scope == "pre-voyage" else 79 + 6 * hassan + 4 * shrine + len(extra_items)),
+        == (
+            51
+            if args.scope == "pre-voyage"
+            else 79 + 6 * hassan + 3 * (shrine or shrine_battle) + shrine + len(extra_items)
+        ),
         "candidate budget/selection mismatch",
     )
     _require(

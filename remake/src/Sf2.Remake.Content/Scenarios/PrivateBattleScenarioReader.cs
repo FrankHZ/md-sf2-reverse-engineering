@@ -57,8 +57,14 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         foreach (var row in encounter.Placements)
         {
             bool ally = row.Kind == EncounterEntityKind.Ally;
-            Require(row.Behavior.SpawnExpression == "STARTING", "spawn-expression", "placements.spawn", true);
-            Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP",
+            byte spawnMode = row.Behavior.SpawnExpression switch
+            {
+                "STARTING" => 0,
+                "HIDDEN" when !ally => 2,
+                _ => throw Unsupported("spawn-expression", "placements.spawn"),
+            };
+            Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP" ||
+                !ally && row.ItemExpression == "POWER_WATER",
                 "placement-item-refresh", "placements.item", true);
             byte commandset = row.AiCommandsetExpression switch
             {
@@ -140,7 +146,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     resistance: PrivateAttackSpellBindings.Resistance(enemy.ResistanceExpression));
                 actorInput = new(actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null);
             }
-            var initialization = new BattleDeploymentInitialization(enemyAi, 0, row.Behavior.PrimaryRegion,
+            var initialization = new BattleDeploymentInitialization(enemyAi, spawnMode, row.Behavior.PrimaryRegion,
                 row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
                 Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
                 AllyPartyMember: ally ? order : null,
@@ -175,7 +181,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             initialization: new(regions, BattleRegionProgram.None,
                 encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally).Select(row => new MapPosition(row.Position.X, row.Position.Y)),
                 encounter.AiPoints.Select(point => new MapPosition(point.X, point.Y)),
-                deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor)),
+                deployments.ToDictionary(row => row.ProcessingOrder, row => row.Actor), encounter.EnemyCount),
             healingItems: PrivateBattleActionBindings.HealingItems(definitions),
             sourceMapRegion: new(new("map-" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
                 new(encounter.Area.X, encounter.Area.Y)),

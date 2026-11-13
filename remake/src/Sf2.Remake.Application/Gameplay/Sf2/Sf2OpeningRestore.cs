@@ -71,6 +71,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
+        if (data.Recipe == "ancient-hall" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
@@ -140,6 +142,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-72" && flags.Contains(64) && flags.Contains(10) &&
             player.Position == new MapPosition(43, 47))
             return new("polca-raft", player, "Polca, raft landing");
+        if (map.Value == "map-50" && flags.Contains(515) && flags.Contains(732) &&
+            content!.Traversal.SelectActiveArea(new(27, 11))?.Area.Contains(player.Position) == true)
+            return new("ancient-hall", new(map, new(27, 11), 1), "Ancient Hall, shrine entrance");
         if (map.Value == "map-9")
             return new("hassan", new(map, new(8, 9), 1), "Hassan");
         Fail(); return null!;

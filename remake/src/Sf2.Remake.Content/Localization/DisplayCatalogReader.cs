@@ -68,7 +68,7 @@ public static class DisplayCatalogReader
             if (hasNames)
             {
                 var entries = root.GetProperty("names");
-                if (entries.ValueKind != JsonValueKind.Array || entries.GetArrayLength() > 128) throw new ArgumentException();
+                if (entries.ValueKind != JsonValueKind.Array || entries.GetArrayLength() > 129) throw new ArgumentException();
                 foreach (var entry in entries.EnumerateArray())
                 {
                     Shape(entry, ["namespace", "index", "text"]);

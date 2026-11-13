@@ -36,7 +36,9 @@
     49,
     9,
     68,
-    12
+    12,
+    61,
+    50
   ],
   "battles": [
     1,
@@ -53,6 +55,7 @@
     12,
     13,
     14,
+    15,
     16,
     17
   ],
@@ -118,11 +121,12 @@
     "12": 13,
     "13": 10,
     "14": 9,
+    "15": 9,
     "16": 13,
     "17": 9
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter and the western road through Battle17 to the Taros Shrine warning.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, and the western road through Battle17 to the Taros Shrine warning.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -231,6 +235,14 @@
     {
       "symbol": "csub_4B1D0",
       "path": "data/battles/entries/battle16/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "bbcs_15",
+      "path": "data/battles/entries/battle15/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "abcs_battle15",
+      "path": "data/battles/entries/battle15/cs_afterbattle.asm"
     }
   ],
   "programs": [
@@ -246,7 +258,9 @@
     "cs_53104",
     "cs_53996",
     "cs_52F0C",
-    "cs_52F40"
+    "cs_52F40",
+    "bbcs_15",
+    "abcs_battle15"
   ],
   "eventMaps": [
     3,
@@ -281,7 +295,9 @@
     49,
     9,
     68,
-    12
+    12,
+    61,
+    50
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -400,6 +416,9 @@
     ],
     "52": [
       512
+    ],
+    "61": [
+      729
     ]
   },
   "outcomeBattles": [
@@ -417,6 +436,7 @@
     12,
     13,
     14,
+    15,
     16,
     17
   ],
@@ -450,7 +470,9 @@
     13,
     52,
     10,
-    11
+    11,
+    61,
+    50
   ],
   "basePalettes": true,
   "audioCues": [
@@ -558,6 +580,7 @@
     12,
     13,
     14,
+    15,
     16,
     17
   ],

@@ -180,11 +180,13 @@ internal sealed partial class SessionAudio : IDisposable
                 if (bindings.Length != 1 || !_maps.TryGetValue(bindings[0].Map, out var visual))
                     throw new InvalidOperationException("battle-music-map-binding");
                 var map = bindings[0].Map;
-                // A before-script may retain another field map. Its audio context is not
-                // the next encounter's map/area. A new multi-area binding needs an explicit
-                // area owner; the admitted second encounter has one source area.
+                // Skipping the introduction can leave the audio context on the previous field map.
+                var region = battle.Battle.Definition.SourceMapRegion;
                 int area = _context is { } previous && previous.Map == map ? previous.Area :
-                    visual.Music.Count == 1 ? 0 : throw new InvalidOperationException("battle-music-area-binding");
+                    visual.Music.Count == 1 ? 0 :
+                    region?.Map == map && bindings[0].Traversal.SelectActiveArea(region.Origin) is { } selected
+                        ? selected.OneBasedRecordOrdinal - 1 : throw new InvalidOperationException("battle-music-area-binding");
+                if (area < 0 || area >= visual.Music.Count) throw new InvalidOperationException("battle-music-area-binding");
                 var context = (map, area, true);
                 if (_context == context) return;
                 Play(visual.Music[area].Battle);
