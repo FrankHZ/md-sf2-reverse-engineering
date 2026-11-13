@@ -2193,3 +2193,132 @@ msgstr "Polca, raft landing"
 
 msgid "save.destination.polca-victory"
 msgstr "Polca, after the battle"
+
+msgid "settings.display"
+msgstr "Display & text"
+
+msgid "settings.assist"
+msgstr "Gameplay aids"
+
+msgid "settings.input"
+msgstr "Controls"
+
+msgid "settings.debug"
+msgstr "Debug & diagnostics"
+
+msgid "settings.edit"
+msgstr "Change controls"
+
+msgid "settings.reset"
+msgstr "Reset bindings"
+
+msgid "settings.keyboard"
+msgstr "Keyboard"
+
+msgid "settings.pad"
+msgstr "Controller"
+
+msgid "settings.add"
+msgstr "Add binding"
+
+msgid "settings.replace"
+msgstr "Replace"
+
+msgid "settings.remove"
+msgstr "Remove"
+
+msgid "settings.escape"
+msgstr "Assign Escape"
+
+msgid "settings.pad-back"
+msgstr "Assign controller Back"
+
+msgid "settings.listen-key"
+msgstr "Press a key. Escape cancels."
+
+msgid "settings.listen-pad"
+msgstr "Press a button or tilt a stick. Back cancels."
+
+msgid "settings.accept"
+msgstr "Use this change"
+
+msgid "settings.review"
+msgstr "First binding: {0}"
+
+msgid "settings.installed"
+msgstr "In use: {0}"
+
+msgid "settings.pending"
+msgstr "Draft: {0}"
+
+msgid "settings.effective"
+msgstr "{0} → {1}"
+
+msgid "settings.none"
+msgstr "None"
+
+msgid "settings.required"
+msgstr "{0}: add the missing keyboard or controller binding."
+
+msgid "settings.duplicate"
+msgstr "{0} is already assigned to {1}. Replace or remove it there first."
+
+msgid "settings.limit"
+msgstr "This action already has 32 bindings."
+
+msgid "settings.unsupported"
+msgstr "Cannot bind {0} to {1}."
+
+msgid "settings.fallback"
+msgstr "Menu fallback: {0}"
+
+msgid "settings.up"
+msgstr "Up"
+
+msgid "settings.right"
+msgstr "Right"
+
+msgid "settings.down"
+msgstr "Down"
+
+msgid "settings.left"
+msgstr "Left"
+
+msgid "settings.confirm"
+msgstr "Confirm"
+
+msgid "settings.cancel"
+msgstr "Cancel / Back"
+
+msgid "settings.attack"
+msgstr "Attack"
+
+msgid "settings.spell"
+msgstr "Magic"
+
+msgid "settings.target"
+msgstr "Target"
+
+msgid "settings.stay"
+msgstr "Stay"
+
+msgid "settings.item"
+msgstr "Item"
+
+msgid "settings.wait"
+msgstr "Wait (hold)"
+
+msgid "settings.equipment"
+msgstr "Equipment"
+
+msgid "settings.give"
+msgstr "Give"
+
+msgid "settings.discard"
+msgstr "Drop"
+
+msgid "settings.menu"
+msgstr "System menu"
+
+msgid "settings.accelerate"
+msgstr "Accelerate (hold)"

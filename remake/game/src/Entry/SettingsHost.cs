@@ -21,7 +21,7 @@ public sealed partial class GameRoot
     private void HandleSettingsAction(GameAction action, InputEvent input)
     {
         _settingsActivation = input;
-        try { _settings?.Handle(action); }
+        try { _settings?.Handle(action, input); }
         finally { _settingsActivation = null; }
     }
 
@@ -35,7 +35,7 @@ public sealed partial class GameRoot
         {
             (InputEventKey old, InputEventKey current) => old.Keycode == current.Keycode && !current.Pressed,
             (InputEventJoypadButton old, InputEventJoypadButton current) => old.Device == current.Device && old.ButtonIndex == current.ButtonIndex && !current.Pressed,
-            (InputEventJoypadMotion old, InputEventJoypadMotion current) => old.Device == current.Device && old.Axis == current.Axis && Math.Abs(current.AxisValue) < 0.5f,
+            (InputEventJoypadMotion old, InputEventJoypadMotion current) => old.Device == current.Device && old.Axis == current.Axis && Math.Abs(current.AxisValue) < 0.35f,
             _ => false,
         };
         if (released) { _settingsRelease = null; DisarmInput(); }
@@ -49,7 +49,7 @@ public sealed partial class GameRoot
         _systemMenu?.SuspendPointer();
         if (_settings is null && _settingsRelease is null) return;
         _settingsRelease = null; _releaseBarrier = false;
-        _input?.ReleaseSettingsHold(); _settings?.SuspendPointer();
+        _input?.ReleaseSettingsHold(); _settings?.AbortCapture(); _settings?.SuspendPointer();
     }
 
     private void SettingsNotification(int what)

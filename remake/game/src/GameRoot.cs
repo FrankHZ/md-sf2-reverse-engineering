@@ -48,6 +48,12 @@ public sealed partial class GameRoot : Node
             GetViewport().SetInputAsHandled(); return;
         }
         if (RouteWindowInput(input)) return;
+        if (_settings is not null && !GetWindow().HasFocus()) { GetViewport().SetInputAsHandled(); return; }
+        if (_settings?.CaptureInput(input) == true)
+        {
+            _input?.Resolve(input); _input?.DisarmMovement(); _input?.DisarmWait();
+            GetViewport().SetInputAsHandled(); return;
+        }
         if (_settings is not null && input is InputEventMouse)
         { _settings.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
         if (_systemMenu?.Visible == true && input is InputEventMouse)
@@ -169,9 +175,9 @@ public sealed partial class GameRoot : Node
     }
 
     private void PacingDeviceChanged(long device, bool connected)
-    { _input?.HintDeviceChanged((int)device, connected); if (!connected) { _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); } }
+    { _input?.HintDeviceChanged((int)device, connected); if (!connected) { _settings?.AbortCapture((int)device); _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); } }
 
-    private void PacingFocusReturned() { _input?.HintFocus(true, GetViewport().GetMousePosition()); _input?.ReconcileAccelerationNeutral(); }
+    private void PacingFocusReturned() { _settings?.SeedCaptureControls(); _input?.HintFocus(true, GetViewport().GetMousePosition()); _input?.ReconcileAccelerationNeutral(); }
 
     private void ReleaseSession()
     {

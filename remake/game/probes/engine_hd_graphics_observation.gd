@@ -9,12 +9,6 @@ func applied() -> Dictionary: return observation(host, "ReadSettingsHostObservat
 func progress() -> Variant: return observation(host, "ReadPersistenceObservationJson").progress
 func saved_preferences() -> String: return FileAccess.get_file_as_string(preference_path)
 
-func select_setting(index: int) -> void:
-    for i in range(12):
-        if settings().selected == index: return
-        await key(KEY_DOWN)
-    check(false, "setting focus " + str(index))
-
 func field_settings() -> void:
     await key(KEY_F10)
     for i in range(5):
@@ -24,17 +18,17 @@ func field_settings() -> void:
     check(find("SettingsView") != null, "ordinary settled field Settings")
 
 func return_field() -> void:
-    if find("SettingsView") != null: await key(KEY_ESCAPE)
+    if find("SettingsView") != null: await cancel_settings()
     if find("SystemMenuView") != null: await key(KEY_ESCAPE)
 
 func set_mode(mode: String) -> void:
-    await select_setting(5)
+    await select_setting("graphics")
     if settings().draft.GraphicsMode != mode: await key(KEY_RIGHT)
     check(settings().draft.GraphicsMode == mode, "graphics draft " + mode)
 
 func apply_mode(mode: String) -> void:
     var before: Variant = progress()
-    await set_mode(mode); await select_setting(7); await key(KEY_ENTER)
+    await set_mode(mode); await select_setting("apply"); await key(KEY_ENTER)
     check(find("SettingsView") == null and applied().GraphicsMode == mode, "Apply publishes " + mode)
     check(progress() == before, "Apply preserves complete save projection")
     check(JSON.parse_string(saved_preferences()).graphicsMode == mode, "real preferences persist " + mode)
@@ -158,30 +152,31 @@ func run() -> void:
         var before_bytes := saved_preferences()
         var before: Variant = progress()
         var revision: int = state().revision
-        await field_settings(); await set_mode("hd"); await select_setting(7); await key(KEY_ENTER)
+        await field_settings(); await set_mode("hd"); await select_setting("apply"); await key(KEY_ENTER)
         check(find("SettingsView") != null and applied().GraphicsMode == "original" and saved_preferences() == before_bytes and progress() == before and state().revision == revision,
             "native decode refusal preserves prior graphics, preference bytes and progress")
         check("prepared" in settings().message or "准备" in settings().message, "Apply explains resource preparation failure")
         samples.append({"label":"prepare-failure", "settings":settings()}); finish(); return
     await open_witch_settings()
     geometry("SettingsWindow")
-    check("installed artwork" in settings().message or "安装了高清素材" in settings().message, "readable HD coverage in settings")
+    if case_name != "override": await select_setting("graphics")
+    if case_name != "override": check("installed artwork" in settings().message or "安装了高清素材" in settings().message, "readable HD coverage in settings")
     if case_name == "override":
         check(settings().readOnly and applied().GraphicsMode == "hd", "read-only launch override selects HD")
-        for i in range(8): check((find("Setting" + str(i)) as Button).disabled, "override disables editing/apply")
+        check((find("Setting_apply") as Button).disabled, "override disables Apply")
         await key(KEY_ESCAPE); check(not FileAccess.file_exists(preference_path), "override creates no ordinary preference")
         finish(); return
     if case_name == "defaults":
-        await select_setting(6); await key(KEY_ENTER)
+        await select_setting("defaults"); await key(KEY_ENTER)
         check(settings().draft.GraphicsMode == "original" and applied().GraphicsMode == "hd", "Restore defaults stages Original only")
-        await key(KEY_ESCAPE); await open_witch_settings()
+        await cancel_settings(); await open_witch_settings()
         check(applied().GraphicsMode == "hd", "Cancel defaults preserves HD")
-        await select_setting(6); await key(KEY_ENTER); await select_setting(7); await key(KEY_ENTER)
+        await select_setting("defaults"); await key(KEY_ENTER); await select_setting("apply"); await key(KEY_ENTER)
         check(applied().GraphicsMode == "original" and JSON.parse_string(saved_preferences()).graphicsMode == "original", "Apply defaults persists Original")
         finish(); return
     check(applied().GraphicsMode == "original", "old version-1 preferences default Original")
     var initial_bytes := saved_preferences()
-    await set_mode("hd"); await key(KEY_ESCAPE)
+    await set_mode("hd"); await cancel_settings()
     check(applied().GraphicsMode == "original" and saved_preferences() == initial_bytes, "Witch Cancel keeps graphics and exact old preferences")
     if case_name == "title":
         await open_witch_settings(); await apply_mode("hd")
@@ -202,7 +197,7 @@ func run() -> void:
         await field_settings(); var before: Variant = progress()
         var lock_path := namespace_root.path_join("sf2-preferences/input.lock")
         check(DirAccess.make_dir_absolute(lock_path) == OK, "disposable storage fault creates real lock-path refusal")
-        await set_mode("hd"); await select_setting(7); await key(KEY_ENTER)
+        await set_mode("hd"); await select_setting("apply"); await key(KEY_ENTER)
         check(find("SettingsView") != null and applied().GraphicsMode == "original" and progress() == before and saved_preferences() == initial_bytes,
             "real write failure preserves graphics, preferences and progress")
         samples.append({"label":"write-failure", "settings":settings()})
@@ -215,7 +210,7 @@ func run() -> void:
     equal_geometry(original, hd)
     var reopened := await inventory("hd-reopened", "hd", "hd")
     equal_geometry(hd, reopened)
-    await field_settings(); await set_mode("original"); await key(KEY_ESCAPE); await return_field()
+    await field_settings(); await set_mode("original"); await cancel_settings(); await return_field()
     var cancelled := await inventory("hd-after-cancel", "hd", "hd")
     check(cancelled == hd, "Cancel retains mounted HD textures and exact pixels")
     await field_settings(); await apply_mode("original")
@@ -224,7 +219,7 @@ func run() -> void:
     check(original == reverted, "Original return reuses exact textures and decoded pixels")
     await save_slot()
     var save_bytes := FileAccess.get_file_as_string(slot_path)
-    await field_settings(); await set_mode("hd"); await key(KEY_ESCAPE); await return_field()
+    await field_settings(); await set_mode("hd"); await cancel_settings(); await return_field()
     check(applied().GraphicsMode == "original", "field Cancel retains Original")
     await field_settings(); await apply_mode("hd")
     check(FileAccess.get_file_as_string(slot_path) == save_bytes, "graphics Apply never writes gameplay slot")

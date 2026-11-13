@@ -30,12 +30,6 @@ func capture(label: String) -> void:
         "dialoguePanel":s.get("dialoguePanel"), "help":s.get("help"), "musicWait":s.get("musicWait"),
         "settings":settings(), "applied":applied()})
 
-func select_setting(index: int) -> void:
-    for i in range(15):
-        if settings().selected == index: return
-        await key(KEY_DOWN)
-    check(false, "setting focus " + str(index))
-
 func field_settings() -> void:
     await key(KEY_F10)
     check(not guidance().get("visible", false), "host Menu immediately hides world guidance")
@@ -46,14 +40,14 @@ func field_settings() -> void:
     check(find("SettingsView") != null, "ordinary field Settings")
 
 func return_field() -> void:
-    if find("SettingsView") != null: await key(KEY_ESCAPE)
+    if find("SettingsView") != null: await cancel_settings()
     if find("SystemMenuView") != null: await key(KEY_ESCAPE)
     await frames(4)
 
 func set_guidance(on: bool, apply_: bool = true) -> void:
-    await field_settings(); await select_setting(10)
+    await field_settings(); await select_setting("guidance")
     if settings().draft.ModernGuidance != on: await key(KEY_RIGHT)
-    if apply_: await select_setting(7); await key(KEY_ENTER)
+    if apply_: await select_setting("apply"); await key(KEY_ENTER)
     else: await key(KEY_ESCAPE)
     await return_field()
 
@@ -196,12 +190,12 @@ func town_flow() -> void:
     check(player(state()).y != at.y, "Off retains ordinary movement")
     await set_guidance(true)
     check(guidance().visible, "On republishes live destination")
-    await field_settings(); await select_setting(10); await key(KEY_RIGHT)
+    await field_settings(); await select_setting("guidance"); await key(KEY_RIGHT)
     var lock_path := preference_path.get_base_dir().path_join("input.lock")
     check(DirAccess.rename_absolute(lock_path, lock_path + ".retained") == OK, "retain prior owned lock file")
     check(DirAccess.make_dir_absolute(lock_path) == OK, "owned actual write refusal")
     var previous := FileAccess.get_file_as_string(preference_path)
-    await select_setting(7); await key(KEY_ENTER)
+    await select_setting("apply"); await key(KEY_ENTER)
     check(find("SettingsView") != null and applied().ModernGuidance and FileAccess.get_file_as_string(preference_path) == previous, "failed Apply retains both aids' applied preference and bytes")
     capture("write-refused"); check(DirAccess.remove_absolute(lock_path) == OK, "remove owned empty fault directory")
     check(DirAccess.rename_absolute(lock_path + ".retained", lock_path) == OK, "restore prior owned lock file")
@@ -221,7 +215,7 @@ func town_flow() -> void:
     check(window().recovery != null and not guidance().get("visible", false), "small-window recovery hides guidance")
     root.size = Vector2i(1920,1080); await frames(5)
     check(guidance().visible, "recovery requeries destination")
-    await field_settings(); await select_setting(4); await key(KEY_RIGHT); await select_setting(7); await key(KEY_ENTER); await return_field()
+    await field_settings(); await select_setting("language"); await key(KEY_RIGHT); await select_setting("apply"); await key(KEY_ENTER); await return_field()
     check(("村外" in guidance().text) == (applied().Language == "zh-CN"), "live locale switch refreshes destination width and copy")
     await menu_check(true)
     check(applied().GraphicsMode == "hd", "guidance and language preserve #1703 HD choice")
@@ -290,9 +284,9 @@ func run() -> void:
     check(root.has_focus(), "native window input owner")
     if case_name == "continue":
         check(not applied().ModernGuidance, "restart reads explicit Off")
-        await open_witch_settings(); await select_setting(6); await key(KEY_ENTER)
+        await open_witch_settings(); await select_setting("defaults"); await key(KEY_ENTER)
         check(settings().draft.ModernGuidance and not applied().ModernGuidance, "Restore defaults stages On only")
-        await key(KEY_ESCAPE)
+        await cancel_settings()
         check(not applied().ModernGuidance, "Cancel defaults preserves explicit Off")
         await key(KEY_DOWN); await key(KEY_DOWN); await key(KEY_ENTER)
         if await wait_slots("continue-slots"): await key(KEY_ENTER)
@@ -324,8 +318,9 @@ func run() -> void:
         capture("new-game-off"); finish(); return
     if case_name == "override":
         await open_witch_settings()
-        check(settings().readOnly and not applied().ModernGuidance and (find("Setting10") as Button).disabled, "read-only override disables guidance editing")
-        await key(KEY_ESCAPE)
+        await select_setting("assist"); await key(KEY_ENTER)
+        check(settings().readOnly and not applied().ModernGuidance and (find("Setting_guidance") as Button).disabled, "read-only override disables guidance editing")
+        await cancel_settings()
     var result: String = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_HOST_UI_START"))
     check(result == "started", "ordinary selected content admits initial checkpoint: " + result)
     if result != "started": finish(); return

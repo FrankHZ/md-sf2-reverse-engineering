@@ -83,9 +83,7 @@ func switch_language(cancel_key: int) -> void:
     if settings().is_empty():
         check(false, "settled field Settings opens"); return
     var previous: String = settings().locale
-    for i in range(13):
-        if settings().selected == 9: break
-        await key(KEY_DOWN)
+    await select_setting("help")
     await key(KEY_ENTER)
     var help := find("ControlsHelpView")
     if help == null:
@@ -96,12 +94,8 @@ func switch_language(cancel_key: int) -> void:
         ("键盘" in page.body if previous == "zh-CN" else "keyboard" in page.body.to_lower()) and
         not ("七" in page.body or "7" in page.body), "name Help gives a short keyboard instruction")
     await key(cancel_key)
-    for index in [4, 7]:
-        for i in range(13):
-            if settings().selected == index: break
-            await key(KEY_DOWN)
-        check(settings().selected == index, "language and Apply reachable")
-        await key(KEY_ENTER)
+    for id in ["language", "apply"]:
+        await select_setting(id); await key(KEY_ENTER)
     check(find("SettingsView") == null and selected_menu() == "Settings", "Apply restores host selection")
     await key(cancel_key)
     var changed: String = observation(host, "ReadSettingsHostObservationJson").applied.Language

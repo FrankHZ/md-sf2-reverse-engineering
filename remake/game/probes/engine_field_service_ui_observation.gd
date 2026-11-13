@@ -10,7 +10,8 @@ func state(label: String = "") -> Dictionary:
 
 func key(code: Key, pressed: bool) -> void:
     if OS.get_environment("SF2_FIELD_UI_REMAP") == "1":
-        code = {KEY_ENTER:KEY_F5,KEY_ESCAPE:KEY_F6}.get(code,code)
+        var action: String = {KEY_ENTER:"confirm",KEY_ESCAPE:"cancel",KEY_DOWN:"down"}.get(code,"")
+        if not action.is_empty(): code = InputMap.action_get_events("sf2_" + action).filter(func(e):return e is InputEventKey)[0].keycode
     var e := InputEventKey.new()
     e.keycode = code; e.pressed = pressed; Input.parse_input_event(e)
     await frames(2)
@@ -201,6 +202,14 @@ func shop_flow() -> void:
     await press(confirm_key); phase(4,"Buy quote")
     check("→" in state().shop.title, "quote shows before/after gold")
     var quoted := state()
+    var keyboard_hint: String = quoted.shop.hint
+    await pad(JOY_BUTTON_GUIDE)
+    var current := state()
+    check(current.shop.hint != keyboard_hint and current.shop.wait == quoted.shop.wait and
+        current.shop.index == quoted.shop.index and signature(current) == signature(quoted), "inert pad changes only offer hints")
+    var motion := InputEventMouseMotion.new(); motion.position = Vector2(80,80); motion.relative = Vector2(16,0)
+    Input.parse_input_event(motion); await frames(4)
+    check(state().shop.hint == keyboard_hint and state().shop.wait == quoted.shop.wait, "mouse restores quote cues without submitting")
     await press(back_key); phase(2,"quote Back")
     check(state().shop.index == 1 and signature(state()) == signature(quoted), "recipient Back preserves selection and resources")
     await press(confirm_key)
@@ -285,7 +294,8 @@ func help_flow() -> void:
     if settings_button == null: return
     var r: Rect2 = settings_button.get_global_rect()
     await click({"x":r.position.x,"y":r.position.y,"width":r.size.x,"height":r.size.y})
-    var help_button := host.find_child("Setting9",true,false) as Control
+    check(await preload("res://probes/settings_navigation.gd").setting(host.find_child("SettingsView",true,false),"help"),"Reach Controls help")
+    var help_button := host.find_child("Setting_help",true,false) as Control
     check(help_button != null,"Settings exposes Help")
     if help_button == null:return
     r=help_button.get_global_rect()
@@ -301,7 +311,7 @@ func help_flow() -> void:
             check(("上 / 下" in page.body if chinese else "Up/Down" in page.body),"help describes vertical field selection")
             if i in [1,10]:check(("左 / 右" in page.body if chinese else "Left/Right" in page.body),"help describes horizontal reading")
         await press(KEY_RIGHT)
-    await press(back_key);await press(back_key);await press(back_key)
+    await press(back_key);await press(back_key);await press(back_key);await press(back_key)
     check(state().canWaitAtInput and not state().fieldMenu.visible,"Help Back restores usable field")
 
 func run() -> void:
