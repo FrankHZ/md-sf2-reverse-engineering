@@ -102,12 +102,15 @@ internal static class BattleEntry
     internal static SessionSnapshot Select(SessionSnapshot current, StoryState story, ExplorationBattleRoute route,
         List<SessionObservation> observations)
     {
+        if (route.Unavailable) throw new BattleRuleException("battle-entry-unavailable", route.Encounter, true);
         if (route.CompletedFlag is { } completed && story.Flags.Contains(completed) && route.UnlockedFlag is { } unlocked)
             story = story.Copy(story.Cursor, flags: ProgramRunner.Flags(story, unlocked, false));
         if (current.Exploration!.Party.NewBattle is not null && story.Flags.Contains(88))
             throw new BattleRuleException("suspended-battle-entry", "entry.flags", true);
         bool introSeen = route.IntroFlag is { } intro && story.Flags.Contains(intro);
-        return ProgramRunner.Commit(current, current.Active,
+        var active = current.Exploration.TravelMode == FieldTravelMode.Raft
+            ? new ActiveExploration(current.Exploration.WithTravelMode(FieldTravelMode.Walking)) : current.Active;
+        return ProgramRunner.Commit(current, active,
             story.Copy(introSeen ? null : route.BeforeProgram, continuation: ProgramContinuation.BeforeBattleFinished,
                 flags: current.Exploration.Party.NewBattle is null ? story.Flags : ProgramRunner.Flags(story, 399, true),
                 enteringBattle: route), observations, "battle-selected", route.Encounter);

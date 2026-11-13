@@ -15,7 +15,7 @@ internal static class MapEventDispatcher
         { ExplorationDirection.East => 0, ExplorationDirection.North => 1, ExplorationDirection.West => 2, _ => 3 };
         world = world.WithEntity(player with { Motion = player.Motion with { Facing = facing } });
         player = world.PlayerEntity;
-        if (world.TravelMode is FieldTravelMode.Caravan or FieldTravelMode.Raft) return CaravanRuntime.Move(world, direction);
+        if (world.TravelMode is FieldTravelMode.Caravan or FieldTravelMode.Raft) return CaravanRuntime.Move(world, direction, flags);
         if (world.Definition.Caravan is not null && CaravanTraversal.Candidate(player.Motion,
             world.Definition.Traversal.ActiveAreas[0], direction, true) is null)
             return (world, new(false, false, null));
@@ -63,7 +63,7 @@ internal static class MapEventDispatcher
         return (world, new(motion is not null, opened, reached));
     }
 
-    private static bool Matches(ExplorationEvent entry, MapPosition position, ushort word, IReadOnlyList<int> flags) =>
+    internal static bool Matches(ExplorationEvent entry, MapPosition position, ushort word, IReadOnlyList<int> flags) =>
         (entry.X is null || entry.X == position.X) && (entry.Y is null || entry.Y == position.Y) &&
         (entry.RequiredMarker is null || (word & 0x3C00) == entry.RequiredMarker) &&
         (entry.RequiredFlag is null || flags.Contains(entry.RequiredFlag.Value) == entry.RequiredFlagValue);

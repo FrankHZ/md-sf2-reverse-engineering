@@ -115,7 +115,7 @@ internal static class MapTransfer
         List<SessionObservation> observations)
     {
         var world = current.Exploration!;
-        CaravanRuntime.RequireOrdinaryMapOperation(world);
+        if (world.TravelMode != FieldTravelMode.Raft) CaravanRuntime.RequireOrdinaryMapOperation(world);
         var target = definition.Exploration!.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
         var player = world.PlayerEntity;
         var horizontal = warp.LoadMode == MapLoadMode.ScrollHorizontal;
@@ -125,14 +125,23 @@ internal static class MapTransfer
             throw new BattleRuleException("scroll-position", "event.position");
         // ProcessMapEventType1_Warp keeps the physical slots and writes only the
         // nonnegative coordinates of the idle leader. The field loop resumes directly.
-        var next = new ExplorationState(target, target.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
-            world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities);
+        var layout = LoadLayout(target, current.Story.Flags);
+        var next = new ExplorationState(target, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
+            world.Aliases, population: world.Population, quake: world.Quake, travelMode: world.TravelMode, currentEntities: world.CurrentEntities);
         short x = (short)(position.X * 384), y = (short)(position.Y * 384);
         next = next.WithEntity(player with { Actions = null, ActionCursor = 0, WaitingForMotion = false,
             Motion = player.Motion with { X = x, XDestination = x, Y = y, YDestination = y,
                 XVelocity = 0, YVelocity = 0, XTravel = 0, YTravel = 0 } });
         var story = current.Story.Copy(null, logicalView: ExplorationViewRunner.Initialize(next));
         return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-scrolled", target.Map.Value);
+    }
+
+    private static WorkingMapLayout LoadLayout(ExplorationMapDefinition map, IReadOnlyList<int> flags)
+    {
+        var layout = map.Layout;
+        foreach (var copy in map.LayoutEvents?.Flags ?? [])
+            if (flags.Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
+        return FieldSearch.RestoreChests(layout, map.Search, flags);
     }
 
     internal static SessionSnapshot BeginFade(SessionSnapshot current, StoryState story, PresentationCueKind kind,
@@ -235,10 +244,7 @@ internal static class MapTransfer
         byte facing, ushort speed, BattleStartInput party, IReadOnlyList<int> flags, IReadOnlyList<int>? layoutFlags = null, bool sourcePlacement = false)
     {
         map = map.SelectSetup(flags);
-        var layout = map.Layout;
-        foreach (var copy in map.LayoutEvents?.Flags ?? [])
-            if ((layoutFlags ?? flags).Contains(copy.Flag)) layout = layout.ApplyBlockCopy(copy.Copy);
-        layout = FieldSearch.RestoreChests(layout, map.Search, flags);
+        var layout = LoadLayout(map, layoutFlags ?? flags);
         if (!map.Traversal.IsWithinActiveArea(position) || (!sourcePlacement && OriginalMapTraversal.IsBlocked(layout, position)))
             throw new BattleRuleException("map-entry-position", "map.position");
         if (map.Population is { } population)
@@ -316,7 +322,8 @@ internal static class MapTransfer
         bool sourcePlacement = false, bool checkBattle = true)
     {
         var world = current.Exploration ?? throw new BattleRuleException("map-transfer-mode", "map", true);
-        CaravanRuntime.RequireOrdinaryMapOperation(world);
+        bool riding = world.TravelMode == FieldTravelMode.Raft && mode == MapLoadMode.Rebuild;
+        if (!riding) CaravanRuntime.RequireOrdinaryMapOperation(world);
         if (!definition.Exploration!.Maps.TryGetValue(map, out var target))
             throw new BattleRuleException("missing-map", "map");
         target = target.SelectSetup(current.Story.Flags);
@@ -343,7 +350,15 @@ internal static class MapTransfer
                 if (write.Value) enteredFlags.Add(write.Flag); else enteredFlags.Remove(write.Flag);
             flags = enteredFlags.Order().ToArray();
             // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
-            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, world.Party, current.Story.Flags, flags, sourcePlacement);
+            var party = riding ? OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, world.Party, all: false) : world.Party;
+            next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, party, current.Story.Flags, flags,
+                sourcePlacement || riding);
+            if (riding)
+            {
+                next = next.WithTravelMode(FieldTravelMode.Raft);
+                if (continuation.StepCounter is { } steps)
+                    continuation = continuation.Copy(continuation.Cursor, stepCounter: (short)Math.Max(0, steps - 20000));
+            }
             next = RaftRuntime.Declare(next, flags, continuation.Raft);
         }
         var story = continuation.Copy(continuation.Cursor,

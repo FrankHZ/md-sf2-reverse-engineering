@@ -12,7 +12,7 @@ internal static class CaravanRuntime
         VehicleInstruction instruction, StoryState next, WaitToken token)
     {
         var world = current.Exploration ?? throw new BattleRuleException("caravan-field", "program", true);
-        if (instruction is RestoreCaravanPlayer or InstallCaravanFollowers && world.Definition.Caravan is null)
+        if (instruction is RestoreCaravanPlayer && world.Definition.Caravan is null)
             throw new BattleRuleException("caravan-admission", "map", true);
         switch (instruction)
         {
@@ -68,8 +68,12 @@ internal static class CaravanRuntime
     private static readonly int[] NormalFollowerFlags = [66, 67, 72, 73, 74, 66, 68, 75, 69, 70, 74, 71, 74, 76, 77, 82, 83, 83, 84];
     internal static ExplorationState InstallFollowers(ExplorationState world, IReadOnlyList<int> flags)
     {
-        bool overworld = world.Definition.Caravan!.Overworld && flags.Contains(65);
-        int count = NormalFollowerFlags.Count(flags.Contains) + (overworld ? 1 : 0);
+        // The source overworld Caravan follower table needs a bound Caravan population.
+        if (flags.Contains(65) && world.Definition.Caravan is null)
+            throw new BattleRuleException("caravan-follower-population", "map.population", true);
+        bool overworld = world.Definition.Caravan?.Overworld == true && flags.Contains(65);
+        int count = (world.Population is { } population ? population.Followers.Count(row => flags.Contains(row.Flag))
+            : NormalFollowerFlags.Count(flags.Contains)) + (overworld ? 1 : 0);
         if (count > 5) throw new BattleRuleException("caravan-follower-action-table", "flags", true);
         for (int index = 0; index < count; index++) _ = Physical(world, index + 1);
         for (int index = 0; index < count; index++)
@@ -87,7 +91,8 @@ internal static class CaravanRuntime
             throw new BattleRuleException("caravan-map-replacement", "map", true);
     }
 
-    internal static (ExplorationState World, FieldMoveOutcome Outcome) Move(ExplorationState world, ExplorationDirection direction)
+    internal static (ExplorationState World, FieldMoveOutcome Outcome) Move(ExplorationState world,
+        ExplorationDirection direction, IReadOnlyList<int> flags)
     {
         bool raft = world.TravelMode == FieldTravelMode.Raft;
         if (!raft && world.Definition.Caravan is null) throw new BattleRuleException("caravan-admission", "map", true);
@@ -104,15 +109,18 @@ internal static class CaravanRuntime
             return (world, new(false, false, null));
         ushort word = world.Layout[candidate.X, candidate.Y];
         int marker = word & 0x3C00;
-        if (marker is 0x400 or 0x800 or 0xC00 or 0x1000)
+        bool warpTile = raft && marker == 0x1000;
+        if (!warpTile && marker is (0x400 or 0x800 or 0xC00 or 0x1000))
             throw new BattleRuleException(raft ? "raft-unsupported-marker" : "caravan-unsupported-marker", "map.layout", true);
-        if (marker != (raft ? 0x3C00 : 0x3800))
+        if (!warpTile && marker != (raft ? 0x3C00 : 0x3800))
         {
             return (world, new(false, false, null, word < 0xC000 ? (raft ? 5 : 4) : null));
         }
+        var warp = warpTile ? world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Warp &&
+            MapEventDispatcher.Matches(entry, candidate, word, flags)) : null;
         var motion = EntityMotion.Start(player.Motion, (short)(candidate.X * 384), (short)(candidate.Y * 384), [])!;
         return (world.WithEntity(player with { Motion = motion, Actions = new([new StopEntityActions()]),
-            ActionCursor = 0, WaitingForMotion = true }), new(true, false, null));
+            ActionCursor = 0, WaitingForMotion = true }), new(true, false, warp));
     }
 
     internal static ExplorationEntity Physical(ExplorationState world, int slot) =>

@@ -358,7 +358,13 @@ internal static class ExplorationDispatcher
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
                             if (field.VehicleEvent == 5)
-                                return ProgramRunner.Failure(current, observations, new BattleRuleException("raft-landing", "map.layout", true));
+                            {
+                                var motion = tickResult.World.PlayerEntity.Motion;
+                                var berth = new RaftBerth(tickResult.World.Map, new(motion.XDestination / 384, motion.YDestination / 384));
+                                current = ProgramRunner.Commit(current, active, story.Copy(new(RaftRuntime.Landing, 0), raft: berth),
+                                    observations, "raft-landing-started");
+                                return ProgramRunner.Run(definition, current, observations, rules);
+                            }
                             if (field.VehicleEvent == 3)
                             {
                                 bool aligned = RaftRuntime.Aligned(tickResult.World);
@@ -483,6 +489,14 @@ internal static class ExplorationDispatcher
         {
             if (warp.Unavailable is { } unavailable)
                 return FieldSearch.Feedback(current, new(FieldSearchKind.Unavailable, [], Message: unavailable), prior: observations);
+            if (warp.LoadMode == MapLoadMode.Rebuild && warp.DestinationMap is { } target &&
+                definition.Exploration!.Maps[target].Battles.Any(candidate => candidate.Unavailable) &&
+                BattleEntry.First(definition, current.Story, definition.Exploration.Maps[target], rules, warp.Destination)
+                    is { Unavailable: true } route)
+            {
+                current = ProgramRunner.Commit(current, current.Active, current.Story, observations, "battle-entry-unavailable", route.Encounter);
+                return FieldSearch.Feedback(current, new(FieldSearchKind.Unavailable, []), prior: observations);
+            }
             if (warp.Program is null) MapTransfer.Validate(definition, current, preview.World, warp, rules);
         }
         else if (!preview.Outcome.Moved && !preview.Outcome.DoorOpened && preview.Outcome.VehicleEvent is null && preview.Outcome.Event?.Kind != ExplorationEventKind.SourceZone)
