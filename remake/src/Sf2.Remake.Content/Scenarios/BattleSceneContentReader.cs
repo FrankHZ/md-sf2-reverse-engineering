@@ -100,7 +100,7 @@ internal static class BattleSceneContentReader
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
                         "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
                         "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
-                        "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "GOLEM" => (7, 0), "MASTER_MAGE" => (36, 1),
+                        "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "TAROS" => (45, 0), "GOLEM" => (7, 0), "MASTER_MAGE" => (36, 1),
                         "SOULSOWER" => (9, 0), "GARGOYLE" => (24, 0), "ARROW_LAUNCHER" => (34, 0),
                         "VAMPIRE_BAT" => (23, 2), "DARK_DWARF" => (5, 2),
                         "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
@@ -143,7 +143,7 @@ internal static class BattleSceneContentReader
         FieldDeathVisual? fieldDeath = null;
         if (root.TryGetProperty("fieldDeath", out var field))
         {
-            Object(field, "fieldDeath", "allies", "enemies", "exitFrames");
+            ObjectOptional(field, "fieldDeath", ["allies", "enemies", "exitFrames"], "neutral");
             var allySprites = new Dictionary<int, int>();
             foreach (var row in Array(field, "allies"))
             {
@@ -158,7 +158,8 @@ internal static class BattleSceneContentReader
             {
                 Object(row, "fieldEnemy", "code", "sprite");
                 string code = Text(row, "code");
-                int sprite = Number(row, "sprite", 0, code == "KRAKEN_HEAD" ? 254 : 236);
+                int sprite = Number(row, "sprite", 0, code switch { "TAROS" => 255, "KRAKEN_HEAD" => 254, _ => 236 });
+                if (code == "TAROS") Require(sprite == 255, "field-taros-pose", "fieldDeath.enemies");
                 if (code == "KRAKEN_HEAD")
                     Require(sprite == 254 && Enumerable.Range(0, 2).All(frame =>
                         rasters.TryGetValue("field-kraken-head/frame" + frame, out var pose) && pose.Width == 96 && pose.Height == 96),
@@ -175,8 +176,15 @@ internal static class BattleSceneContentReader
             var frames = Strings(field, "exitFrames");
             Require(frames.Length == 3 && frames.All(key => rasters.TryGetValue(key, out var raster) &&
                 raster.Width == 48 && raster.Height == 24), "field-exit-resource", "fieldDeath.exitFrames");
+            NeutralBattleSprite? neutral = null;
+            if (field.TryGetProperty("neutral", out var neutralRow))
+            {
+                Object(neutralRow, "neutral", "sprite", "x", "y", "facing", "completedFlag");
+                neutral = new(Number(neutralRow, "sprite", 0, 255), Number(neutralRow, "x", 0, 63), Number(neutralRow, "y", 0, 63),
+                    Number(neutralRow, "facing", 0, 3), Number(neutralRow, "completedFlag", 0, 1023));
+            }
             fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
-                System.Array.AsReadOnly(frames));
+                System.Array.AsReadOnly(frames), neutral);
         }
         BattleSceneTerrainVisual[]? terrainScenes = null;
         if (root.TryGetProperty("terrainScenes", out _))

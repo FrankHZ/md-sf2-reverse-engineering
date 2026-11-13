@@ -21,6 +21,8 @@ from sf2tool.texture_extract import (
 # IDs, not row positions or translated labels. Additional gameplay admission owns expansion.
 ITEMS = (
     "MIDDLE_SWORD",
+    "ACHILLES_SWORD",
+    "TAROS_SWORD",
     "MEDICAL_HERB",
     "HEALING_SEED",
     "ANTIDOTE",

@@ -49,7 +49,10 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         finish_in_idle(result)
         self.actions[symbol] = result
         return result
-    if symbol in self.raw:
+    vehicle_action = symbol in ("eas_452BA", "eas_4536C")
+    if vehicle_action:
+        path = "disasm/code/common/scripting/map/vehiclefunctions.asm"
+    elif symbol in self.raw:
         path = "disasm/" + self.raw[symbol]["path"]
     if symbol.startswith("eas_Follower"):
         path = "disasm/data/scripting/entity/eas_main.asm"
@@ -94,6 +97,12 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         result.extend(compile_action(self, op, args, source))
         if op in ("ac_end", "ac_jump"):
             break
+    if vehicle_action:
+        if not re.search(
+            r"^(word_\w+):\s+ac_branch\s+dc.w \(eas_Idle-\1\) & \$FFFF", body[1], re.MULTILINE
+        ):
+            raise ValueError("vehicle action idle continuation drift")
+        finish_in_idle(result)
     return result
 
 
@@ -193,6 +202,10 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
         return [{"op": "sprite", "sprite": self.number(args[0])}]
     if op == "ac_setSize":
         return [{"op": "sprite-size", "size": self.number(args[0])}]
+    if op == "ac_clonePos":
+        return [{"op": "clone-physical-position", "slot": self.number(args[0])}]
+    if op == "ac_moveFacRelPos" and self.number(args[0]) == 0:
+        return [{"op": "move-own-facing", "distance": self.number(args[1])}]
     if op == "ac_setPos":
         return [
             {"op": "position", "position": {"x": self.number(args[0]), "y": self.number(args[1])}}

@@ -245,6 +245,7 @@ public sealed class BattleSceneState
     public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? SilenceTurn?.Actor ?? ReactionTarget;
     public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" : Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
+    public bool UsesAttackItem => _action?.AttackItemSlot is not null;
     public HealingItemDefinition? Item => _action?.Item;
     public BattleItemReceipt? ItemReceipt => !HasReaction ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;
@@ -401,7 +402,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.Initialize: next = BattleScenePhase.ActionMessage; break;
             case BattleScenePhase.ActionMessage:
                 observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.ReactionTarget));
-                if (scene.Spell is not null || scene.AttackSpell is not null || scene.SupportSpell is not null || scene.IsSilencedCast)
+                if (scene.Spell is not null || scene.AttackSpell is not null && !scene.UsesAttackItem || scene.SupportSpell is not null || scene.IsSilencedCast)
                 {
                     var caster = battle.GetActor(scene.Actor);
                     battle = scene.Action.ApplySpellCost(battle);

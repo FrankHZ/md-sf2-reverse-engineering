@@ -96,6 +96,7 @@ internal static class BattleChoices
     {
         bool valid = action.Kind switch
         {
+            BattleActionKind.AttackSpell when action.ItemSlot.HasValue => Sf2.Remake.Domain.Gameplay.Sf2.TarosEffectiveness.IsSwordUse(battle.GetActor(actor), action),
             BattleActionKind.Healing or BattleActionKind.Retreat or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell => action.ItemSlot is null && action.Spell is { } spell &&
                 battle.GetActor(actor).Spells.Contains(spell),
             BattleActionKind.Item => action.Spell is null && action.ItemSlot is { } slot && slot >= 0 &&

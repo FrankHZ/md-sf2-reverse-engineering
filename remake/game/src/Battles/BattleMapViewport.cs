@@ -25,9 +25,12 @@ internal sealed partial class BattleMapViewport : Control
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
     // UpdateSpecialSprite alternates 16 and 15 animation counts, one per two VInts.
     private const int KrakenHeadSprite = 254;
-    private Sprite2D? _krakenHead;
-    private double _krakenPoseTime;
-    private int KrakenPose => _krakenPoseTime * 30 >= 16 ? 1 : 0;
+    private const int TarosSprite = 255;
+    private static bool SpecialSprite(int id) => id is KrakenHeadSprite or TarosSprite;
+    private Sprite2D? _specialSprite;
+    private Sprite2D? _neutral;
+    private double _specialPoseTime;
+    private int SpecialPose => _specialPoseTime * 30 >= 16 ? 1 : 0;
     private BattleMovementState? _movement;
     private BattleVisualState? _battleVisuals;
     private ActorRef PhysicalActor(ActorRef actor) => _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor, out int slot) &&
@@ -99,7 +102,8 @@ internal sealed partial class BattleMapViewport : Control
     {
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
-        _krakenHead = null; _krakenPoseTime = 0;
+        _neutral = null;
+        _specialSprite = null; _specialPoseTime = 0;
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
         _builds++;
@@ -136,6 +140,14 @@ internal sealed partial class BattleMapViewport : Control
         _targetCursor = new BattleInspectionCursor { Name = "TargetCursor", Size = Vector2.One * CellSize, ZIndex = 3, Visible = false };
         _targetCursor.Configure(_sceneContent?.Rasters);
         _board.AddChild(_targetCursor);
+        if (_sceneContent?.FieldDeath?.Neutral is { } neutral && _visuals is not null)
+        {
+            int direction = neutral.Facing switch { 1 => 0, 3 => 2, _ => 1 };
+            _neutral = new Sprite2D { Name = "NeutralMapSprite", Texture = Texture(neutral.Sprite, direction),
+                Position = new((neutral.X + 0.5f) * CellSize, (neutral.Y + 0.5f) * CellSize),
+                TextureFilter = TextureFilterEnum.Nearest, FlipH = neutral.Facing == 0, Visible = false, ZIndex = 1 };
+            _board.AddChild(_neutral);
+        }
         foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
@@ -153,7 +165,7 @@ internal sealed partial class BattleMapViewport : Control
                 var image = new Sprite2D { Name = "MapSprite_" + actor.Actor.Value, TextureFilter = TextureFilterEnum.Nearest,
                     Scale = Vector2.One * (CellSize / 24f), ZIndex = 1 };
                 _board.AddChild(image); _sprites.Add(actor.Actor, image);
-                if (sprite == KrakenHeadSprite) _krakenHead = image;
+                if (SpecialSprite(sprite)) _specialSprite = image;
             }
         }
     }
@@ -234,6 +246,8 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
+        if (_neutral is not null && _sceneContent?.FieldDeath?.Neutral is { } neutral)
+            _neutral.Visible = !current.Story.Flags.Contains(neutral.CompletedFlag);
         foreach (var chest in _chests)
         {
             bool opened = current.Story.Flags.Contains(chest.Key);
@@ -283,10 +297,10 @@ internal sealed partial class BattleMapViewport : Control
                 int id = actor.DeathEffect ? 63 : _spriteIds[physical];
                 int facing = shownFacing ?? (int)sprite.GetMeta("facing", 3);
                 int direction = facing switch { 1 => 0, 3 => 2, _ => 1 };
-                int frame = id == KrakenHeadSprite ? KrakenPose : 0;
+                int frame = SpecialSprite(id) ? SpecialPose : 0;
                 sprite.Texture = Texture(id, direction, frame);
-                sprite.FlipH = id != KrakenHeadSprite && facing == 0;
-                sprite.Offset = id == KrakenHeadSprite ? new Vector2(0, -24) : Vector2.Zero;
+                sprite.FlipH = !SpecialSprite(id) && facing == 0;
+                sprite.Offset = SpecialSprite(id) ? new Vector2(0, -24) : Vector2.Zero;
                 sprite.Modulate = Colors.White;
                 sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", facing); sprite.SetMeta("walkingFrame", frame);
             }
@@ -348,9 +362,9 @@ internal sealed partial class BattleMapViewport : Control
             int direction = movement.Facing switch { 1 => 0, 3 => 2, _ => 1 };
             int frame = _movementProgress is > 0 and < 1 ? (int)(_movementProgress * 4) % 2 : 0;
             sprite.Position = position + Vector2.One * (CellSize / 2f);
-            if (_spriteIds[physical] == KrakenHeadSprite) frame = KrakenPose;
+            if (SpecialSprite(_spriteIds[physical])) frame = SpecialPose;
             sprite.Texture = Texture(_spriteIds[physical], direction, frame);
-            sprite.FlipH = _spriteIds[physical] != KrakenHeadSprite && movement.Facing == 0;
+            sprite.FlipH = !SpecialSprite(_spriteIds[physical]) && movement.Facing == 0;
             sprite.SetMeta("facing", movement.Facing); sprite.SetMeta("walkingFrame", frame);
         }
     }
@@ -364,7 +378,7 @@ internal sealed partial class BattleMapViewport : Control
 
     private ImageTexture Texture(int sprite, int direction, int walkingFrame = 0)
     {
-        if (sprite == KrakenHeadSprite) direction = 0; // Both special poses are direction-independent.
+        if (SpecialSprite(sprite)) direction = 0; // Both special poses are direction-independent.
         var key = (sprite, direction, walkingFrame);
         if (_textures.TryGetValue(key, out var texture)) return texture;
         var raster = sprite == KrakenHeadSprite ? _sceneContent!.Rasters["field-kraken-head/frame" + walkingFrame]
@@ -382,7 +396,8 @@ internal sealed partial class BattleMapViewport : Control
         }
         else
         {
-            using var frame = sheet.GetRegion(new Rect2I(walkingFrame * 24, 0, 24, 24));
+            int size = sprite == TarosSprite ? 48 : 24;
+            using var frame = sheet.GetRegion(new Rect2I(walkingFrame * size, 0, size, size));
             texture = ImageTexture.CreateFromImage(frame);
         }
         _textures[key] = texture;
@@ -425,11 +440,11 @@ internal sealed partial class BattleMapViewport : Control
     internal void AdvanceCamera(double delta)
     {
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || _mapSize == Vector2.Zero) return;
-        if (_krakenHead is { Visible: true } head && (int)head.GetMeta("mapsprite", -1) == KrakenHeadSprite)
+        if (_specialSprite is { Visible: true } head && SpecialSprite((int)head.GetMeta("mapsprite", -1)))
         {
-            _krakenPoseTime = (_krakenPoseTime + delta) % (31.0 / 30);
-            head.Texture = Texture(KrakenHeadSprite, 0, KrakenPose);
-            head.SetMeta("walkingFrame", KrakenPose);
+            _specialPoseTime = (_specialPoseTime + delta) % (31.0 / 30);
+            head.Texture = Texture((int)head.GetMeta("mapsprite"), 0, SpecialPose);
+            head.SetMeta("walkingFrame", SpecialPose);
         }
         Frame();
         WorldViewport.Advance(delta);

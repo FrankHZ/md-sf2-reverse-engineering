@@ -22,6 +22,30 @@ public sealed class AttackSpellTests
             new(BattleActionKind.AttackSpell, new(id, rank)), Center, new Sf2BattleProgressionRule());
 
     [Theory]
+    [InlineData("center", 0, true)]
+    [InlineData("wing", 1, true)]
+    [InlineData("center", 1, false)]
+    public void TarosSpellDamageUsesTheFirstSortedTarget(string guardian, int radius, bool blocked)
+    {
+        var battle = Battle(d =>
+        {
+            d["spells"]![1]!["effect"]!["radius"] = radius;
+            d["encounters"]![0]!["tarosEffectiveness"] = new JsonObject
+            {
+                ["bowie"] = Caster.Value, ["weaponItems"] = new JsonArray(61),
+                ["enemyDefinitions"] = new JsonArray(new JsonObject { ["actor"] = guardian, ["definition"] = 88 })
+            };
+        });
+        var action = Prepare(battle);
+        var hit = Assert.Single(action.Reactions, r => r.Target.Value == guardian);
+        Assert.Equal(blocked ? BattleReactionKind.Ineffective : BattleReactionKind.Damage, hit.Kind);
+        Assert.Equal(blocked, hit.HpBefore == hit.HpAfter);
+        Assert.Single(action.ConstructionEffects, e => e.Kind == "rng-spell-critical" && e.Target == hit.Target);
+        Assert.Equal(blocked ? 0 : 2, action.ConstructionEffects.Count(e => e.Kind == "rng-spell-variance" && e.Target == hit.Target));
+        Assert.All(action.Reactions.Where(r => r.Target != hit.Target), r => Assert.True(r.HpAfter < r.HpBefore));
+    }
+
+    [Theory]
     [InlineData(0, false, 0x12340000u, 10, false)]
     [InlineData(64, false, 0x12340000u, 8, false)]
     [InlineData(128, false, 0x12340000u, 5, false)]

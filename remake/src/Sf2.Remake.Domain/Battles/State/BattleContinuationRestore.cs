@@ -62,7 +62,7 @@ internal static class BattleContinuationRestore
             Require(saved.AiMemory == 0 || (saved.AiMemory & 15) is 3 or 4 && saved.AiMemory >> 4 < 4, "ai-memory");
             foreach (byte? order in new[] { saved.PrimaryOrder, saved.SecondaryOrder })
                 Require(order == 255 || order is { } value && battle.Initialization is { } init &&
-                    ((value & 64) != 0 ? (value & 15) < init.AiPoints.Count : init.SourceCombatants.ContainsKey(value)), "ai-order");
+                    ((value & 64) != 0 ? init.ReadMoveOrderPoint(value & 15) is not null : init.SourceCombatants.ContainsKey(value)), "ai-order");
         }
         // Constructor fallback is harmless only if absence was also absent in the immutable definition.
         Require(saved.PrimaryOrder is not null || deployment.Initialization?.PrimaryOrder is null, "orders");

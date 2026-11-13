@@ -482,6 +482,8 @@ internal sealed partial class BattleSceneView : Control
         }
         if (state.AttackSpell is { } attack)
         {
+            if (state.UsesAttackItem && state.Phase == BattleScenePhase.ActionMessage)
+                return LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(110, "Taros Sword"));
             if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
                 return LocalizedMessage("battle.spell.action", ActorName(state.Actor), DisplayNames.Spell(attack.Spell), attack.Spell.Level);
             if (SemanticMessage(state) is { } spellMessage) return spellMessage;

@@ -18,6 +18,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
         var actor = before.GetActor(actorRef);
         Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser) ||
+            ChosenAction is { } sword && TarosEffectiveness.IsSwordUse(actor, sword) && Target is not null && !QueueOnly ||
             ChosenAction is { Kind: BattleActionKind.AttackSpell or BattleActionKind.Healing or BattleActionKind.SupportSpell, Spell: not null, ItemSlot: null } &&
                 Target is not null && !QueueOnly);
         if (ChosenAction?.Kind == BattleActionKind.PrismLaser)
@@ -48,7 +49,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                     candidate.ActivationWord == old.ActivationWord && candidate.PrimaryOrder == old.PrimaryOrder &&
                     candidate.SecondaryOrder == old.SecondaryOrder);
             else if (candidate.LastTarget != old.LastTarget)
-                Require(Target is not null && candidate.LastTarget == Target);
+                Require(Target is not null && candidate.LastTarget == (ChosenAction?.ItemSlot is not null ? actorRef : Target));
             if (old.Actor == actorRef && (candidate.PrimaryOrder != old.PrimaryOrder || candidate.SecondaryOrder != old.SecondaryOrder))
             {
                 Require(old.PrimaryOrder is not null and not 255 && (old.PrimaryOrder.Value & 64) == 0 &&
@@ -115,7 +116,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
@@ -152,7 +153,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 ValidateHealing(before, actor, destination, definition, patient);
                 break;
             case BattleActionKind.AttackSpell when action.Spell is { } attackKey && target is { } center &&
-                admission.AttackSpell is { } attack && attackKey == attack.Spell && action.ItemSlot is null:
+                admission.AttackSpell is { } attack && attackKey == attack.Spell && action.ItemSlot == AttackItemSlot &&
+                (AttackItemSlot is null || TarosEffectiveness.IsSwordUse(before.GetActor(actor), action)):
                 ValidateAttackSpell(before, actor, destination, attack, center);
                 break;
             case BattleActionKind.SupportSpell when action.Spell is { } supportKey && target is { } supportCenter &&
@@ -435,21 +437,25 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             (before.GetActor(actor).IsAlly ? Reward is { Actor: var recipient } && recipient == actor : Reward is null));
         var inventory = before;
         int cursor = 0;
+        var taros = before.Definition.TarosEffectiveness;
+        bool ineffective = taros?.IsTaros(targets[0]) == true;
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i]; var reaction = Reactions[i];
+            bool blocked = ineffective && taros!.IsTaros(target);
             Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "attack-spell" &&
-                reaction.Kind == BattleReactionKind.Damage && reaction.HpBefore == target.Hp && reaction.Amount >= 1 &&
+                reaction.Kind == (blocked ? BattleReactionKind.Ineffective : BattleReactionKind.Damage) &&
+                reaction.HpBefore == target.Hp && (blocked ? reaction.Amount == 0 && !reaction.Critical : reaction.Amount >= 1) &&
                 reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
             if (reaction.HpAfter == 0 && target.IsAlly && target.Defeats is null)
                 throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
-            // Three source damage draws precede each target's ordinary drop helper.
-            var draws = ConstructionEffects.Skip(cursor).Take(3).ToArray();
-            Require(draws.Length == 3 && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
+            int drawCount = blocked ? 1 : 3;
+            var draws = ConstructionEffects.Skip(cursor).Take(drawCount).ToArray();
+            Require(draws.Length == drawCount && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
                 draws.Skip(1).All(e => e.Kind == "rng-spell-variance") && draws.All(e => e.Actor == actor && e.Target == target.Actor));
-            cursor += 3;
-            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[2].After!.Value)),
+            cursor += drawCount;
+            var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[^1].After!.Value)),
                 actor, target.Actor, reaction.HpAfter == 0);
             Require(reaction.Receipt == dropped.Receipt && ConstructionEffects.Skip(cursor).Take(dropped.Effects.Count).SequenceEqual(dropped.Effects));
             cursor += dropped.Effects.Count; inventory = dropped.Battle;
@@ -509,7 +515,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             actor.Actor == reaction.Target ? actor.With(status: status) : actor));
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
-        current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
+        AttackItemSlot.HasValue ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
             ? actor.With(mp: checked((byte)(actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)))) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)

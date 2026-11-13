@@ -45,6 +45,32 @@ public sealed class EnemySpellDecisionTests
     }
 
     [Fact]
+    public void EnemySwordUsesActualSlotAtZeroMpAndRetainsTheWeapon()
+    {
+        var before = Battle();
+        var source = before.Definition;
+        var bolt = new AttackSpellDefinition(new("bolt", 2), 15, 16, 1, 3, 2, AttackSpellElement.Lightning);
+        var definition = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height, source.Terrain,
+            source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
+            attackSpells: source.AttackSpells.Values.Append(bolt));
+        var origin = before.GetActor(Scout).Position!;
+        var actors = before.Actors.Select(unit => unit.Actor == Mage ? unit.With(mp: 0, position: new(origin.X + 3, origin.Y),
+            sourceLoadout: new([127, 238, 127, 127], [63, 63, 63, 63])) : unit);
+        var battle = new EngineBattleState(definition, actors, before.MainSeed, before.ThinkingSeed, before.Round,
+            before.Queue, before.Cursor, before.Gold, before.StartPolicy, before.Regions);
+        var rules = RuleCompositions.Sf2();
+        var sword = new BattleActionRef(BattleActionKind.AttackSpell, bolt.Spell, 1);
+        var actor = battle.GetActor(Mage);
+        var prepared = BattleActionRules.Prepare(new Sf2AttackSpellAction(), battle, Mage, actor.Position!,
+            sword, Scout, rules.Progression);
+        Assert.Equal(1, prepared.AttackItemSlot);
+        Assert.Equal(0, prepared.Prepared.GetActor(Mage).Mp);
+        Assert.Equal(238, prepared.Prepared.GetActor(Mage).SourceLoadout!.Items[1]);
+        Assert.Contains(prepared.Reactions, hit => hit.Target == Scout && hit.HpAfter < hit.HpBefore);
+        Assert.Throws<BattleRuleException>(() => rules.Action(sword).RequireAction(battle, Mage, sword with { ItemSlot = 0 }));
+    }
+
+    [Fact]
     public void SentryMovesToBlazeRangeAndOnlyStagesSourceDecisionRng()
     {
         var before = Battle(); var chosen = Decide(before, Mage);

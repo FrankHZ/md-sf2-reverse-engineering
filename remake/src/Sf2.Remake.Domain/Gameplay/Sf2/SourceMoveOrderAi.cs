@@ -47,7 +47,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         Restrict(mode);
         var targets = _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != Actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
-        if (targets.Length == 0)
+        if (targets.Length == 0 || Actor.Definition.Move == 0)
         {
             _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: -1));
             _effects.Add(new("ai-stay", actorRef));
@@ -79,7 +79,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
     {
         BattleAutomaticAction? result = null;
         var target = Target();
-        if (target is not null && (!follow || _blocked[Offset(Actor.Position!)]))
+        if (Actor.Definition.Move != 0 && target is not null && (!follow || _blocked[Offset(Actor.Position!)]))
         {
             // The point command first checks the current/adjacent tile in the allied-occupancy grid.
             var nearby = follow ? null : AiMovementRules.AttackPosition(Grid(allies: true), Actor.Position!, 0, Occupied) ??
@@ -147,10 +147,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
     {
         if (Primary == 255) return null;
         if ((Primary & 64) == 0) { var followed = Follow(Primary); return followed.Hp == 0 ? null : followed.Position; }
-        var points = _battle.Definition.Initialization!.AiPoints;
-        int index = Primary & 15;
-        if (index >= points.Count) throw Missing("source-ai-point");
-        return points[index];
+        return _battle.Definition.Initialization!.ReadMoveOrderPoint(Primary & 15) ?? throw Missing("source-ai-point");
     }
     private BattleActorState Follow(byte index)
     {

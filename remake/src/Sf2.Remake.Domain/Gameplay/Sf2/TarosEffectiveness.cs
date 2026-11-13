@@ -22,6 +22,18 @@ public sealed class TarosEffectiveness
     internal bool IsTaros(BattleActorState actor) => actor.Faction == BattleFaction.Enemy &&
         EnemyDefinitions.TryGetValue(actor.Actor, out byte definition) && definition == 88;
 
+    internal static readonly SpellRef SwordSpell = new("bolt", 2);
+    internal static int? SwordSlot(BattleActorState actor)
+    {
+        if (!actor.IsAlly && actor.SourceLoadout is { } loadout)
+            for (int slot = 0; slot < loadout.Items.Count; slot++)
+                if ((loadout.Items[slot] & 127) == 110 && (loadout.Items[slot] & (128 | 0x2000)) != 0) return slot;
+        return null;
+    }
+
+    internal static bool IsSwordUse(BattleActorState actor, BattleActionRef action) =>
+        action is { Kind: BattleActionKind.AttackSpell, ItemSlot: int slot } && action.Spell == SwordSpell && SwordSlot(actor) == slot;
+
     internal bool PrepareInitial(BattleActorState actor, BattleActorState target)
     {
         if (!IsTaros(target)) return false;

@@ -17,12 +17,16 @@ internal static class EnemySpellDecision
         var key = actor.Spells.Where(spell => spell.Value == known.Value)
             .OrderByDescending(spell => spell.Level)
             .FirstOrDefault(spell => battle.Definition.AttackSpells.TryGetValue(spell, out var entry) && entry.MpCost <= actor.Mp);
+        int? swordSlot = TarosEffectiveness.SwordSlot(actor);
+        if (swordSlot.HasValue && battle.Definition.AttackSpells.ContainsKey(TarosEffectiveness.SwordSpell))
+            key = TarosEffectiveness.SwordSpell;
+        else swordSlot = null;
         if (key == default)
             return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid);
         var spell = battle.Definition.AttackSpells[key];
         spell.RequireSupported(enemy: true);
         var rule = actions.Single(r => r.Kind == BattleActionKind.AttackSpell);
-        var action = new BattleActionRef(BattleActionKind.AttackSpell, key);
+        var action = new BattleActionRef(BattleActionKind.AttackSpell, key, swordSlot);
         var targets = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();
         var grid = selectedGrid ?? BattleMovement.Grid(battle, actorRef);
         var candidates = battle.Actors.Where(a => targets.Contains(a.Actor)).OrderBy(a => a.ProcessingOrder)
@@ -56,14 +60,14 @@ internal static class EnemySpellDecision
             var category = BattleRandom.NextMain(battle.MainSeed, 6);
             effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, 6, category.Value));
             prepared = prepared.With(mainSeed: category.After);
-            if (attack is not null && category.Value is not (2 or 4))
+            if (attack is not null && !(swordSlot.HasValue ? category.Value is 3 or 5 : category.Value is 2 or 4))
                 return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
         }
         // determinebattleaction.asm @loc_34 overrides the mover table for CAST_SPELL.
-        var selection = PhysicalTargetRules.Select(priorities, PhysicalPriorityTable.Mage)
+        var selection = PhysicalTargetRules.Select(priorities, swordSlot.HasValue ? PhysicalTargetRules.Table(actor.Definition.Mover) : PhysicalPriorityTable.Mage)
             ?? throw new BattleRuleException("ai-target-selection", "ai.spells", true);
         var chosen = candidates[selection.Index];
-        prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: chosen.Target.Actor) : a));
+        prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: swordSlot.HasValue ? actorRef : chosen.Target.Actor) : a));
         effects.Add(new("ai-spell-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: chosen.Target.Actor));
         return new(prepared, effects.AsReadOnly(), chosen.Position!, BattleMovement.Route(actor.Position!,
             BattleMovement.MoveString(grid, actor.Position!, chosen.Position!, battle.Definition.Width, battle.Definition.Height)),
