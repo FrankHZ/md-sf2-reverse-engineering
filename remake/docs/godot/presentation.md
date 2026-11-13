@@ -208,9 +208,7 @@ LeftY+,LeftY− order. When all axes are assigned, implicit Menu remains keyboar
 and visibly explains that pad access requires editing bindings. No Guide fallback or claim that a
 host delivers a system-reserved pad button is made. An explicit `menu` binding follows ordinary
 keyboard+pad and duplicate validation. Effective defaults do not rewrite old preferences; Settings
-Apply/Defaults retain the binding dictionary. The existing Settings UI edits preferences and displays
-help, **not** binding capture: Menu remapping uses the existing JSON configuration mechanism, and
-capture UI remains deferred with the other actions.
+retains implicit Menu on unrelated edits. Controls → Change controls edits Menu as an explicit row.
 
 The owned implementation is GameRoot, the existing persistence/settings/window-support partials,
 one `Entry/SystemMenuView`, GameInput/ControlsHelp and the two existing locale catalogs/argument
@@ -593,8 +591,9 @@ unavailable during active text, choices, Church, party menus, movement and battl
 view/audio while the modal is open; no gameplay command, session replacement, revision, RNG or game
 save write belongs to this operation. The separate [battle Speed caller](#battle-speed-and-selective-messages-1650) permits only its two preferences at settled inspection Options.
 
-The view owns a disposable draft. Cancel closes without publication or writes; Defaults changes
-the product draft preferences, preserving custom bindings. Apply validates the entire candidate,
+One draft spans Display & text, Gameplay aids, Controls and Debug & diagnostics. Back restores
+the source row; top-level Back closes without writing. Gameplay aids → Restore defaults resets
+preferences while retaining staged bindings. Controls → Reset bindings clears only overrides. Apply validates the entire candidate,
 including device bindings, writes it, then updates the existing settings and input objects in place.
 All mounted consumers retain those objects. Reduced flash and reveal policy apply to subsequent
 presentation at this safe boundary. Hint refresh and a held-input release barrier prevent the old
@@ -627,8 +626,7 @@ reduced-flash consumers. Use `uv run sf2 verify adapter`, a committed dependency
 windowed state/input/geometry/error reads. No new engine behavior or helper tests, full suite,
 screenshots, per-frame acquisition or platform. Keep new local evidence under `local/issue1451`,
 reuse existing tools/media/caches, budget 100 MiB and serial native runs of at most 45 seconds.
-Reassess before broader acquisition or cross-engine changes. Volume/resolution/remapping remain
-future presentation/input work; human visual acceptance and original timing/media remain Unknown.
+Reassess before broader acquisition or cross-engine changes. Volume is outside these settings; human visual acceptance and original timing/media remain Unknown.
 
 Bounded implementation observations cover keyboard/pad/mouse entry and help, draft/Defaults/Cancel,
 held keyboard/pad remapping, fresh-process loading, preserved custom bindings, explicit corrupt-file
@@ -886,13 +884,14 @@ field help. For capacity, use 31 unique nonconflicting keys plus one pad event o
 add one key in a separate disposable namespace. The latter must show recovery/defaults, retain its
 file and refuse ordinary Apply. Do not modify canonical inputs or user preferences for these cases.
 
-### Deferred per-action remapping design
+<a id="deferred-per-action-remapping-design"></a>
+### Change controls
 
-Players can read and use their installed mappings in both device families. Editing a binding inside
-Settings is pending. The [Change controls design](input-remapping.md) covers the 17 production actions,
-including held Accelerate, format 1 compatibility, editing and applying a draft, and acceptance in
-Help, the field, shops and battle. The [E2 feature row](../evidence/opening-ui-gaps.md#e2-settings)
-tracks the player-facing change.
+Witch Settings or settled field Menu → Settings → Controls → Change controls edits any of the
+17 base actions. Choose an action and device, replace/add/remove an alternative, review it,
+then return to the top level to Apply or discard the visit. Installed controls operate the
+editor until Apply succeeds. [Format and reproduction](input-remapping.md) and the
+[E2 feature row](../evidence/opening-ui-gaps.md#e2-settings) own the current boundaries.
 
 ## Menu pointer agreement
 

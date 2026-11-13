@@ -62,13 +62,9 @@ func change_mode(mode: String) -> void:
     var settings_view := find("SettingsView")
     check(settings_view != null, "ordinary exploration settings")
     if settings_view == null: return
-    for i in range(20):
-        if settings().selected == 5: break
-        await key(KEY_DOWN)
+    await select_setting("graphics")
     if settings().draft.GraphicsMode != mode: await key(KEY_RIGHT)
-    for i in range(20):
-        if settings().selected == 7: break
-        await key(KEY_DOWN)
+    await select_setting("apply")
     var paused: Variant = observation(host, "ReadPersistenceObservationJson").progress
     await key(KEY_ENTER)
     check(find("SettingsView") == null, "Apply accepted")

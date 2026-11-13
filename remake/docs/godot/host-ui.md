@@ -30,14 +30,13 @@ by directional selection. The bounded command/reason region scrolls; title and m
 remain outside it. Pointer hit testing intersects the reading viewport, including after scrolling.
 Left/Right and the mouse wheel read long reasons without activating unavailable commands.
 
-Settings uses a 960px capped panel. Each preference has its current value and a wrapped description.
-Defaults remains in the reading area; Apply, Back/Close and Help stay in a fixed footer outside it.
-Keyboard/pad selection and deliberate pointer activation use the same draft. Help retains all 13
-existing control pages, admitted bindings, paging and scrolling, now with English/zh-CN prose.
-Its field/battle instructions describe the accepted Up/Down command lists. Back retains the settings
-draft and Help row. The existing two-row battle Speed caller still edits only its own preferences.
-With a footer action selected, Left/Right scrolls the settings reading area; on a preference row
-the existing Left/Right value editing keeps precedence.
+Settings opens a 960px capped panel with four categories: Display & text, Gameplay aids,
+Controls, and Debug & diagnostics. Apply and Back/Close are the only top-level actions.
+Enter a category to edit values; Back restores its launching row and scroll. Left/Right changes
+a value or scrolls the reading area. Technical statistics appear only on the Debug page when
+enabled. Controls → Change controls and Controls → Help share the Settings draft. Help reads
+installed bindings; only Apply publishes edits. See [changing controls](input-remapping.md)
+for capture, review, reset and refusal behavior. Battle Speed remains a separate two-row caller.
 
 The shared slots use the same square theme for both Witch entry and gameplay callers. Gameplay
 Save/Quit has a 1040px capped panel and bounded reading, with its hint outside the scrolling region.

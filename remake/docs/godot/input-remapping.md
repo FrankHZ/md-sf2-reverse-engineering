@@ -1,6 +1,11 @@
 # Change controls in Settings
 
-**Design for [#1766](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1766).** From the Witch action menu → Settings or settled field → Menu → Settings, a player can choose an action, change its keyboard or controller bindings, try the installed result after Apply, and find the same controls on the next launch. The editor is pending implementation. The [E2 feature row](../evidence/opening-ui-gaps.md#e2-settings) tracks delivery. Standard rigor applies because capture, persistence and multiple live views share one input map.
+**Implemented for [#1774](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1774).**
+Open Settings at the Witch menu or from a settled field's system Menu. Display & text, Gameplay
+aids, Controls and Debug & diagnostics share a draft. Controls → Change controls edits keyboard
+and controller alternatives; installed navigation remains active until top-level Apply. Back
+returns to the source row, and Back at the top discards the visit. The [E2 feature row](../evidence/opening-ui-gaps.md#e2-settings)
+tracks the player outcome. Standard rigor applies because capture, storage and live views share one input map.
 
 ## Current production boundary
 
@@ -10,7 +15,7 @@
 | --- | --- |
 | [GameInput.Prepare, Apply and Resolve](../../game/src/Input/GameInput.cs) | Format 1 has **17** actions. Directional actions are Up, Right, Down and Left. Confirm and Cancel form the swappable pair. Attack, Spell, Target, Stay, Item, Wait, Equipment, Give, Discard, Menu and Accelerate complete the set. Sparse, lowercase `bindings` entries override whole default rows. Prepare expands them and swaps the base pair once. Apply publishes to the existing settings object, releases old Godot actions, installs the prepared events and signals hint consumers. |
 | [Movement and action edges](../../game/src/Input/GameInput.cs) and [acceleration](../../game/src/Input/GameInput.Acceleration.cs) | Direction holds drive movement/navigation where admitted. Confirm/Cancel and shortcuts use fresh edges. Wait has its own held/release gate. Accelerate is a separate hold, default Shift (either location), optional pad, 1.5× during eligible exploration and battle simulation and 1× on last release. It never submits a choice. Shift normalization applies only while Shift is bound to Accelerate. Wait and Accelerate are excluded from the general `GameplayHeld` guard. |
-| [InputSettings.Draft](../../game/src/Input/InputSettings.cs) and [SettingsView](../../game/src/UI/SettingsView.cs) | Today drafts safely share the unedited bindings dictionary. Restore defaults loads model defaults for text mode/rate, swap, reduced flash, language, graphics, modern guidance, both debug flags and battle hit/coin suppression, preserving custom bindings. Battle Speed edits its own two preferences. General Settings offers Help, Apply and Cancel but has no capture control. |
+| [InputSettings.Draft](../../game/src/Input/InputSettings.cs) and [SettingsView](../../game/src/UI/SettingsView.cs) | Drafts own a copy of their sparse bindings and arrays. Restore defaults loads model defaults for text mode/rate, swap, reduced flash, language, graphics, modern guidance, both debug flags and battle hit/coin suppression, preserving custom bindings. Battle Speed edits its own two preferences. General Settings offers grouped categories, installed Help, [capture and review](../../game/src/UI/SettingsView.Bindings.cs), Apply and Cancel. |
 | [SettingsHost](../../game/src/Entry/SettingsHost.cs) and [SettingsStore](../../game/src/Input/SettingsStore.cs) | The host prepares input, language and applicable field graphics before writing. Ordinary settings use `<SF2_SAVE_ROOT>/<SF2_SAVE_NAMESPACE>/sf2-preferences/input.json`. The store takes an exclusive lock, compares loaded bytes, flushes a same-directory temporary and atomically moves/replaces the file. Explicit `--input-settings` selects a read-only whole file. Invalid overrides fail startup. Missing ordinary preferences use defaults without creating a file on read. |
 | [Hint projection](../../game/src/Input/GameInput.Hints.cs) and [grouped Help](../../game/src/UI/ControlsHelpView.cs) | Both device families can operate at once. CompactHint selects the first installed alternative in the active family (pad buttons precede axes), or explicitly names the keyboard fallback. Help lists every installed alternative after the swap and preserves its page and scroll on hint refresh. Mouse shares keyboard hints and existing pointer gestures. Its clicks, wheel and motion have no entries in the bindings schema. Name editing retains its own keyboard controls. |
 
@@ -51,4 +56,46 @@ Keep operation hints at the existing fixed **24px** native role in English and �
 3. **Verify refusal and return in ordinary hosts.** Use disposable storage for invalid-file recovery, locked/unwritable storage and an external edit since load. Compare bytes, live behavior and draft status before/after refused Apply. Confirm both ordinary file and override stay untouched during a read-only launch. Check session identity, revision, RNG, progress and slot bytes across field Settings, Help, cancel and Apply. Stage held Wait/direction/Accelerate inputs on the covered field and verify fresh-edge return. No gameplay save or battle Settings expansion is required.
 4. **Follow the installed map to its consumers.** Repeat the [field/merchant production route](ui-scene-review.md#reproduce-the-field-controls) with actual editor Apply and ordinary inputs at the Ribble counter. Check the controlled Galam shop phases and a controlled Battle01 decision/target/Back. In battle, hold the replacement Accelerate during eligible simulation, then reach a reading boundary and verify 1× and a fresh acknowledgement. In Help, field, shop and battle, switch keyboard → pad → mouse with an otherwise inert input and verify labels/geometry and retained state, then operate the displayed binding. Cover EN/zh-CN, long labels at native 1080p and the existing 720p Settings reader. Check fixed font size, wrapping, control bounds and live errors. A controlled start establishes the named seam. Physical-device legends and human readability remain **Unknown** pending [player review](../verification/host.md#later-physical-focus-human-checklist-1456).
 
-This design requires direct source, document, link and scope checks. The implementation follow-up owns adapter build and finite Godot state/input/geometry observations with existing observers, a disposable namespace and the [current verification scope](../development-and-verification.md#scope). Update E2 when those actions work from the player interface. The implementation boundary is the existing Godot input/settings adapter, localized editor and its hint consumers. Game rules, save format, new device families and OS mappings stay outside that slice.
+## Reproduce the installed controls
+
+Build the Debug adapter after loading the [registered environment](../../../docs/operations/local-private-inputs.md).
+Use an intact title set, compatible private world/scene/catalogs, and a fresh external
+`issue1774-*` namespace with a copy of Ribble F708 in slot 1. Keep logs and reports in a fresh
+ignored directory. Controls are injected events on a running Godot host; a focus signal or
+synthetic pad disconnect cannot certify physical hardware.
+
+```powershell
+$env:SF2_HOST_UI_CASE = 'pilot'
+$env:SF2_HOST_UI_OUTPUT = Join-Path $freshRun 'result.json'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+  --path remake/game --script res://probes/settings_remap_observation.gd --log-file (Join-Path $freshRun 'godot.log')
+```
+
+Start with instant text, standard controls and no binding overrides. Repeat with `restart`
+in a fresh process on the same namespace. The [pilot](../../game/probes/settings_remap_observation.gd)
+checks staged Q against installed Shift in Help; Witch Cancel retains preference bytes. From
+Ribble, Apply preserves session/revision/progress, advertises Q at 24px, changes its hold to
+1.5× and restores 1× on release. Shift no longer accelerates, including after relaunch.
+
+Use [the editor observer](../../game/probes/settings_binding_edges_observation.gd) with the same
+command and different script/case. Each case starts in a separate disposable namespace unless
+it verifies a restart.
+
+| Case | Initial condition and observed boundary |
+| --- | --- |
+| `all`, `edges`, then `swap-restart` | Standard defaults for the first two; restart on the `edges` namespace. Edit all 17 action rows; replace/add/remove alternatives, reject conflicts/invalid Shift, repair a missing family, exercise both Defaults operations. Held capture and signed-axis chatter cannot confirm review. Focus loss, disconnect, pointer Cancel and physical Escape/Back discard the proposal. Custom base Confirm/Cancel and staged swap operate after Apply and restart. |
+| `32`, `compat` | Give Accelerate 31 unique function keys (F1–F31); the 32nd installs, the 33rd is refused. Separately give it Shift/F10/F9/F8/F7 and RightY−/RightX−/RightX+ with no explicit Menu. An unrelated edit preserves the keyboard-only implicit Menu. |
+| `override`, `recovery`, `locked`, `external` | Supply a separate read-only startup override; malformed ordinary bytes; a disposable input.lock held exclusively; or allow the observer to edit the disposable file after load. Compare bytes and installed/draft state. Reset bindings cannot authorize recovery; explicit preference Defaults + Apply retains a byte-identical invalid backup. |
+| `consumer` | The editor installs Accelerate Q and RightY−, Confirm F5, Cancel F6 and Down J. Help family changes preserve page/scroll. Reuse these ordinary preferences for the consumer runs below. |
+| `reader` | At Witch Settings, resize to 1280×720 with an elongated draft label. Inspect the fixed actions, 24px hint, wrapping, Back and Help. Gameplay minimum size belongs to the window owner. |
+
+Use the edited consumer namespace for [ordinary Ribble Continue and counter](../../game/probes/settings_counter_observation.gd),
+the [controlled Galam shop](../../game/probes/engine_field_service_ui_observation.gd) (`SF2_FIELD_MENU_CASE=shop`,
+`SF2_FIELD_UI_REMAP=1`, merchant approach as `SF2_INSPECTION_START`), and the
+[Battle01 approach](../../game/probes/engine_compact_commands_observation.gd) (`SF2_COMPACT_CASE=battle`,
+`SF2_COMPACT_START`). The latter two use their existing output variables `SF2_FIELD_MENU_OUTPUT`
+and `SF2_VIEWPORT_OUTPUT`. At the quote and battle command list, inert pad/mouse changes refresh
+the cue without spending an item, moving selection or drawing RNG. Use [the battle hold observer](../../game/probes/settings_battle_hold_observation.gd)
+with `-- --authored-package <absolute stone-court.json>` to follow edited Q through provisional
+movement and a real attack message: reading stays at 1× until fresh mapped Confirm acknowledges it.
+These observations establish adapter behavior, not natural campaign reach or human readability.

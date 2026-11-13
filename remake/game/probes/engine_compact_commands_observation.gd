@@ -179,6 +179,15 @@ func battle_case() -> bool:
                 and s.menu.layout.actor.y+s.menu.layout.actor.height <= s.menu.layout.commandPanel.y,
                 "Acting vitals head command column; refusal/help fit"): return false
     var baseline := resources(opened)
+    var guide := InputEventJoypadButton.new(); guide.device = 3; guide.button_index = JOY_BUTTON_GUIDE
+    for pressed in [true,false]:
+        guide.pressed = pressed; Input.parse_input_event(guide); await frames(3)
+    var pad_state := state()
+    if not expect(pad_state.menu.layout.help != opened.menu.layout.help and pad_state.menu.command == opened.menu.command
+            and resources(pad_state) == baseline and pad_state.actor == opened.actor,"inert controller changes battle cues only"): return false
+    var motion := InputEventMouseMotion.new(); motion.position = Vector2(80,80); motion.relative = Vector2(15,0)
+    Input.parse_input_event(motion); await frames(3)
+    if not expect(state().menu.layout.help == opened.menu.layout.help and resources(state()) == baseline,"mouse restores current keyboard cues"): return false
     var first: Dictionary = state().menu.layout.commandList.rows[0].rect
     await mouse(Vector2(first.x+200,first.y+40),true)
     root.size = Vector2i(2560,1440); await frames(4)

@@ -90,12 +90,10 @@ func _run_entry() -> void:
             if not await tap(KEY_J): return
         if not await tap(KEY_ENTER): return
         if not require(host.find_child("SettingsView",true,false) != null,"safe entry Settings opened"): return
-        for i in range(4):
-            if not await tap(KEY_J): return
-        if not await tap(KEY_ENTER): return
-        if not await tap(KEY_J): return
-        if not await tap(KEY_J): return
-        if not await tap(KEY_ENTER): return
+        var view := host.find_child("SettingsView",true,false)
+        for id in ["language", "apply"]:
+            if not require(await preload("res://probes/settings_navigation.gd").setting(view,id), "setting " + id): return
+            if not await tap(KEY_ENTER): return
         if not require(host.find_child("SettingsView",true,false) == null,"locale Apply closes settings"): return
         var changed := entry_state()
         if not require(changed.displayLocale == "zh-CN" and changed.stage == "menu" and changed.textureIds == menu.textureIds,

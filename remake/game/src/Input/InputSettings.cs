@@ -64,7 +64,8 @@ internal sealed class InputSettings
             ShowDebugDiagnostics = ShowDebugDiagnostics, DebugAutoVictory = DebugAutoVictory,
             SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
-        draft.Bindings = Bindings;
+        draft.Bindings = Bindings.ToDictionary(pair => pair.Key, pair =>
+            new ActionBinding([.. pair.Value.Keys], [.. pair.Value.Buttons], [.. pair.Value.Axes]));
         return draft;
     }
 

@@ -21,12 +21,6 @@ func watch(node: Node) -> void:
                     sequences[event.Sequence] = true
                     receipts.append([event.Kind, event.Detail]))
 
-func select_setting(index: int) -> void:
-    for i in range(settings().labels.size()):
-        if settings().selected == index: return
-        await key(KEY_DOWN)
-    check(false, "setting reachable " + str(index))
-
 func run() -> void:
     if not OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1720-") or output.is_empty():
         push_error("Use fresh issue1720-* preferences and an explicit output"); quit(2); return
@@ -35,18 +29,19 @@ func run() -> void:
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames(5)
     await open_witch_settings()
     if find("SettingsView") == null: finish(); return
+    await select_setting("graphics")
     check("installed artwork" in settings().message or "安装了高清素材" in settings().message, "coverage describes installed variants")
     var on := case_name == "on"
     check(not settings().applied.DebugAutoVictory, "old preference defaults Off")
-    await select_setting(12)
-    check("自动获胜" in settings().labels[12] or "auto-win" in settings().labels[12], "bilingual label")
+    await select_setting("victory")
+    check("自动获胜" in (find("Setting_victory") as Button).text or "auto-win" in (find("Setting_victory") as Button).text, "bilingual label")
     await key(KEY_ENTER)
     check(settings().draft.DebugAutoVictory and not settings().applied.DebugAutoVictory, "draft is isolated")
-    await key(KEY_ESCAPE)
+    await cancel_settings()
     if on:
         await open_witch_settings()
         check(not settings().draft.DebugAutoVictory, "cancel discards toggle")
-        await select_setting(12); await key(KEY_RIGHT); await select_setting(7); await key(KEY_ENTER)
+        await select_setting("victory"); await key(KEY_RIGHT); await select_setting("apply"); await key(KEY_ENTER)
     var applied: Dictionary = observation(host, "ReadSettingsHostObservationJson").applied
     check(applied.DebugAutoVictory == on and not applied.ShowDebugDiagnostics, "independent applied setting")
     var admitted: String = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_HOST_UI_START"))

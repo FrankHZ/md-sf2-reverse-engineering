@@ -37,7 +37,11 @@ internal sealed partial class GameInput
     internal static Dictionary<GameAction, List<InputEvent>> Prepare(InputSettings settings)
     {
         InputSettings.Validate(settings);
-        Dictionary<GameAction, List<InputEvent>> prepared = [];
+        return PrepareRows(settings, BaseRows(settings));
+    }
+
+    internal static Dictionary<string, ActionBinding> BaseRows(InputSettings settings)
+    {
         Dictionary<string, ActionBinding> bindings = new(StringComparer.Ordinal)
         {
             ["up"] = new(["Up", "W"], ["DpadUp"], ["LeftY-"]),
@@ -74,12 +78,21 @@ internal sealed partial class GameInput
                 .FirstOrDefault(value => !usedAxes.Contains(value));
             bindings["menu"] = new([key], [], axis is null ? [] : [axis]);
         }
+        return bindings;
+    }
+
+    internal static bool MissingFamily(string name, ActionBinding row, bool explicitlyBound) =>
+        row.Keys.Length == 0 || row.Buttons.Length + row.Axes.Length == 0 &&
+            name != "accelerate" && (name != "menu" || explicitlyBound);
+
+    private static Dictionary<GameAction, List<InputEvent>> PrepareRows(InputSettings settings, Dictionary<string, ActionBinding> bindings)
+    {
+        Dictionary<GameAction, List<InputEvent>> prepared = [];
         HashSet<string> identities = [];
         foreach (var (name, binding) in bindings)
         {
             if (binding is null || binding.Keys is null || binding.Buttons is null || binding.Axes is null ||
-                binding.Keys.Length == 0 || binding.Buttons.Length + binding.Axes.Length == 0 &&
-                    name != "accelerate" && (name != "menu" || settings.Bindings.ContainsKey("menu")))
+                MissingFamily(name, binding, settings.Bindings.ContainsKey(name)))
                 throw new ArgumentException($"{name} requires keys, buttons and axes arrays, with keyboard and gamepad access.");
             List<InputEvent> events = [];
             foreach (string key in binding.Keys)
@@ -92,29 +105,13 @@ internal sealed partial class GameInput
             }
             foreach (string button in binding.Buttons)
             {
-                JoyButton code = button switch
-                {
-                    "South" => JoyButton.A, "East" => JoyButton.B, "West" => JoyButton.X, "North" => JoyButton.Y,
-                    "DpadUp" => JoyButton.DpadUp, "DpadRight" => JoyButton.DpadRight,
-                    "DpadDown" => JoyButton.DpadDown, "DpadLeft" => JoyButton.DpadLeft,
-                    "LeftShoulder" => JoyButton.LeftShoulder, "RightShoulder" => JoyButton.RightShoulder,
-                    "Back" => JoyButton.Back, "Start" => JoyButton.Start,
-                    "LeftStick" => JoyButton.LeftStick, "RightStick" => JoyButton.RightStick,
-                    _ => throw new ArgumentException($"Unknown button for {name}: {button}."),
-                };
+                JoyButton code = ButtonCode(button) ?? throw new ArgumentException($"Unknown button for {name}: {button}.");
                 Unique("button:" + button);
                 events.Add(new InputEventJoypadButton { ButtonIndex = code, Device = -1 });
             }
             foreach (string axis in binding.Axes)
             {
-                (JoyAxis code, float value) = axis switch
-                {
-                    "LeftX-" => (JoyAxis.LeftX, -1), "LeftX+" => (JoyAxis.LeftX, 1),
-                    "LeftY-" => (JoyAxis.LeftY, -1), "LeftY+" => (JoyAxis.LeftY, 1),
-                    "RightX-" => (JoyAxis.RightX, -1), "RightX+" => (JoyAxis.RightX, 1),
-                    "RightY-" => (JoyAxis.RightY, -1), "RightY+" => (JoyAxis.RightY, 1),
-                    _ => throw new ArgumentException($"Unknown axis for {name}: {axis}."),
-                };
+                (JoyAxis code, float value) = AxisCode(axis) ?? throw new ArgumentException($"Unknown axis for {name}: {axis}.");
                 Unique("axis:" + axis);
                 events.Add(new InputEventJoypadMotion { Axis = code, AxisValue = value, Device = -1 });
             }
@@ -132,6 +129,26 @@ internal sealed partial class GameInput
             if (!identities.Add(identity)) throw new ArgumentException($"Duplicate binding: {identity}.");
         }
     }
+
+    internal static JoyButton? ButtonCode(string button) => button switch
+    {
+        "South" => JoyButton.A, "East" => JoyButton.B, "West" => JoyButton.X, "North" => JoyButton.Y,
+        "DpadUp" => JoyButton.DpadUp, "DpadRight" => JoyButton.DpadRight,
+        "DpadDown" => JoyButton.DpadDown, "DpadLeft" => JoyButton.DpadLeft,
+        "LeftShoulder" => JoyButton.LeftShoulder, "RightShoulder" => JoyButton.RightShoulder,
+        "Back" => JoyButton.Back, "Start" => JoyButton.Start,
+        "LeftStick" => JoyButton.LeftStick, "RightStick" => JoyButton.RightStick,
+        _ => null,
+    };
+
+    internal static (JoyAxis Axis, float Sign)? AxisCode(string axis) => axis switch
+    {
+        "LeftX-" => (JoyAxis.LeftX, -1), "LeftX+" => (JoyAxis.LeftX, 1),
+        "LeftY-" => (JoyAxis.LeftY, -1), "LeftY+" => (JoyAxis.LeftY, 1),
+        "RightX-" => (JoyAxis.RightX, -1), "RightX+" => (JoyAxis.RightX, 1),
+        "RightY-" => (JoyAxis.RightY, -1), "RightY+" => (JoyAxis.RightY, 1),
+        _ => null,
+    };
 
     internal void Apply(InputSettings candidate, Dictionary<GameAction, List<InputEvent>> prepared)
     {

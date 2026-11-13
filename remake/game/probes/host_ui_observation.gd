@@ -148,17 +148,25 @@ func recover(panel_name: String) -> void:
     check(slots() == p and selected_menu() == menu, "slot/page/menu selection retained through recovery")
     geometry(panel_name); sample("recovered-" + panel_name)
 
+func select_setting(id: String) -> void:
+    check(await preload("res://probes/settings_navigation.gd").setting(find("SettingsView"), id), "reachable setting: " + id)
+
+func cancel_settings() -> void:
+    if settings().get("page") != "Root": await preload("res://probes/settings_navigation.gd").tap(self, "cancel")
+    await preload("res://probes/settings_navigation.gd").tap(self, "cancel")
+
 func settings_flow() -> void:
     geometry("SettingsWindow")
     var initial := settings()
     var read_only: bool = initial.readOnly
     if read_only:
-        for i in range(8): check((find("Setting" + str(i)) as Button).disabled, "override prevents edit/apply " + str(i))
+        check((find("Setting_apply") as Button).disabled, "override prevents Apply")
     if not read_only:
-        await key(KEY_ENTER)
+        await select_setting("text"); await key(KEY_ENTER)
         check(settings().draft != initial.draft, "setting edit remains a draft")
     # Help is a child, with the same draft and focus on Back.
-    var help_button := find("Setting9") as Control
+    await select_setting("help")
+    var help_button := find("Setting_help") as Control
     await mouse(help_button, true); await mouse(help_button, false)
     check(settings().help, "pointer enters full controls help")
     geometry("HelpWindow")
@@ -172,10 +180,11 @@ func settings_flow() -> void:
             check(not "host.help" in page.body and (not settings().locale == "zh-CN" or "操作帮助" in page.title), "help uses selected catalog " + str(i))
             await key(KEY_DOWN); await key(KEY_RIGHT)
         await key(KEY_ESCAPE)
-    check(not settings().help and settings().selected == 9, "help Back restores settings row")
+    check(not settings().help and settings().focus == "help", "help Back restores settings row")
     if find("SystemMenuView") != null: await recover("SettingsWindow")
     # Orphan pointer release after relayout cannot apply or close settings.
-    var cancel := find("Setting8") as Control
+    await key(KEY_ESCAPE)
+    var cancel := find("Setting_back") as Control
     await mouse(cancel, true)
     root.size = Vector2i(2560, 1440); await frames()
     root.size = Vector2i(1920, 1080); await frames()
@@ -195,10 +204,10 @@ func apply_flow() -> void:
     var initial := settings()
     check(not initial.is_empty(), "reopen Settings at original row")
     if initial.is_empty(): return
-    await key(KEY_ENTER)
+    await select_setting("text"); await key(KEY_ENTER)
     var draft: Dictionary = settings().draft
-    for i in range(7): await key(KEY_DOWN)
-    check(settings().selected == 7, "fixed Apply receives keyboard focus")
+    await select_setting("apply")
+    check(settings().focus == "apply", "fixed Apply receives keyboard focus")
     await edge(KEY_ENTER, true); await frames(12)
     check(find("SettingsView") == null and selected_menu() == "Settings", "held Apply returns once to originating Menu")
     var applied: Dictionary = observation(host, "ReadSettingsHostObservationJson").applied

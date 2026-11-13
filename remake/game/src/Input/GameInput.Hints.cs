@@ -105,10 +105,15 @@ internal sealed partial class GameInput
     {
         InputEventKey key => OS.GetKeycodeString(key.Keycode),
         InputEventJoypadButton button => DescribeButton(button.ButtonIndex),
-        InputEventJoypadMotion axis => GameText.Get(axis.Axis is JoyAxis.LeftX or JoyAxis.LeftY ? "input.left-stick" : "input.right-stick") + " " +
-            (axis.Axis is JoyAxis.LeftX or JoyAxis.RightX ? axis.AxisValue < 0 ? "←" : "→" : axis.AxisValue < 0 ? "↑" : "↓"),
+        InputEventJoypadMotion axis => DescribeAxis(axis.Axis, axis.AxisValue),
         _ => "",
     };
+    private static string DescribeAxis(JoyAxis axis, float sign) => GameText.Get(axis is JoyAxis.LeftX or JoyAxis.LeftY ? "input.left-stick" : "input.right-stick") + " " +
+            (axis is JoyAxis.LeftX or JoyAxis.RightX ? sign < 0 ? "←" : "→" : sign < 0 ? "↑" : "↓");
+    internal string DescribeBinding(string code, bool key) => key ? OS.GetKeycodeString(Enum.Parse<Key>(code)) :
+        ButtonCode(code) is { } button ? DescribeButton(button) :
+        AxisCode(code) is { } axis ? DescribeAxis(axis.Axis, axis.Sign) : code;
+
     private string DescribeButton(JoyButton button)
     {
         int face = Array.IndexOf(new[] { JoyButton.A, JoyButton.B, JoyButton.X, JoyButton.Y }, button);

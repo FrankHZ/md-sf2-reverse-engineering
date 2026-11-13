@@ -63,8 +63,22 @@ func field_done(label: String) -> void:
         else: await process_frame
         if Time.get_ticks_msec() - started > 35000: break
     check(false, "field deadline " + label)
+func settings_view() -> Node: return host.find_child("SettingsView", true, false)
+func open_settings() -> void:
+    await press(KEY_F10)
+    var button := host.find_child("SystemSettings", true, false) as Button
+    for i in 6:
+        if button != null and button.theme_type_variation == "EntrySelectedButton": break
+        await press(KEY_DOWN)
+    await press(KEY_ENTER)
+func focus_setting(id: String) -> void:
+    check(await preload("res://probes/settings_navigation.gd").setting(settings_view(), id), "reachable setting " + id)
+func done_settings() -> void:
+    for i in 4:
+        if settings_view() == null and host.find_child("SystemMenuView",true,false) == null: return
+        await press(KEY_ESCAPE)
 func settings_state() -> Dictionary:
-    var panel := host.get_node("SettingsView")
+    var panel := settings_view()
     return JSON.parse_string(panel.call("ReadSettingsObservationJson"))
 func _run() -> void:
     var english := load("res://localization/en.po") as Translation
@@ -109,22 +123,21 @@ func _run() -> void:
         finish(); return
     await field_done("english")
     var initial := sample("before-settings")
-    await press(KEY_ESCAPE)
-    check(host.get_node_or_null("SettingsView") != null, "safe field settings opens")
-    if host.get_node_or_null("SettingsView") == null: finish(); return
+    await open_settings()
+    check(settings_view() != null, "safe field settings opens")
+    if settings_view() == null: finish(); return
     samples.append({"label":"settings-en", "settings":settings_state()})
     if case_name in ["required-ui", "required-font"]:
-        check(settings_state().labels[6] == "Apply" and settings_state().labels[7] == "Cancel", "compiled recovery has distinct English controls")
-        for i in range(6): await press(KEY_DOWN)
-        await press(KEY_ENTER)
-        check(host.get_node_or_null("SettingsView") != null and "localization-resources" in settings_state().message, "required resource failure refuses Apply before publish")
+        check((host.find_child("Setting_apply",true,false) as Button).text == "Apply" and (host.find_child("Setting_back",true,false) as Button).text == "Cancel", "compiled recovery has distinct English controls")
+        await focus_setting("apply"); await press(KEY_ENTER)
+        check(settings_view() != null and "localization-resources" in settings_state().message, "required resource failure refuses Apply before publish")
         samples.append({"label":"required-refused", "settings":settings_state(), "host":JSON.parse_string(host.call("ReadSettingsHostObservationJson"))})
         english.add_message("ui.settings.apply", english_apply)
         font.take_over_path("res://fonts/localization/NotoSansCJKsc-Regular.otf")
         await press(KEY_ESCAPE)
         finish(); return
     if case_name == "read-only":
-        check(settings_state().readOnly and settings_state().selected == 8, "launch override read-only skips editable rows")
+        check(settings_state().readOnly and (host.find_child("Setting_apply",true,false) as Button).disabled, "launch override read-only skips editable rows")
         await press(KEY_LEFT); await press(KEY_ESCAPE)
         check(JSON.parse_string(host.call("ReadSettingsHostObservationJson")).applied.Language == "en", "read-only launch preserves locale")
         finish(); return
@@ -133,38 +146,37 @@ func _run() -> void:
         DirAccess.make_dir_recursive_absolute(path.get_base_dir())
         var file := FileAccess.open(path, FileAccess.WRITE)
         file.store_string("external owner sentinel"); file.close()
-        for i in range(4): await press(KEY_DOWN)
-        await press(KEY_ENTER); await press(KEY_DOWN); await press(KEY_DOWN); await press(KEY_ENTER)
+        await focus_setting("language"); await press(KEY_ENTER); await focus_setting("apply"); await press(KEY_ENTER)
         samples.append({"label":"write-refused", "settings":settings_state(), "host":JSON.parse_string(host.call("ReadSettingsHostObservationJson"))})
         check(settings_state().applied.Language == "en" and "changed outside" in settings_state().message and "relaunch" in settings_state().message, "external write retains live locale and specific recovery instructions")
         check(FileAccess.get_file_as_string(path) == "external owner sentinel", "external preference bytes preserved")
         await press(KEY_ESCAPE); finish(); return
-    for i in range(4): await press(KEY_DOWN)
-    await press(KEY_ENTER)
+    await focus_setting("language"); await press(KEY_ENTER)
     check(settings_state().draft.Language == "zh-CN" and settings_state().applied.Language == "en", "locale only edits draft")
-    await press(KEY_ESCAPE)
+    await done_settings()
     check(JSON.parse_string(host.call("ReadSettingsHostObservationJson")).applied.Language == "en", "Cancel retains English")
-    await press(KEY_ESCAPE)
-    for i in range(4): await press(KEY_DOWN)
-    await press(KEY_ENTER)
-    await press(KEY_DOWN); await press(KEY_DOWN); await press(KEY_ENTER)
+    await open_settings(); await focus_setting("language"); await press(KEY_ENTER)
+    await focus_setting("apply"); await press(KEY_ENTER)
     var applied: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson"))
     samples.append({"label":"settings-applied", "host":applied})
-    check(host.get_node_or_null("SettingsView") == null and applied.applied.Language == "zh-CN", "Apply publishes selected locale")
+    check(settings_view() == null and applied.applied.Language == "zh-CN", "Apply publishes selected locale")
     var unchanged := sample("after-settings")
     check(initial.sessionId == unchanged.sessionId and initial.revision == unchanged.revision and initial.randomSeedCopy == unchanged.randomSeedCopy, "settings does not submit gameplay or change identity")
-    await press(KEY_ESCAPE)
+    await done_settings(); await open_settings(); await focus_setting("language")
     samples.append({"label":"settings-zh", "settings":settings_state()})
     if case_name == "ui-fallback":
-        check(settings_state().labels[1].begins_with("Text speed:") and settings_state().labels[3].begins_with("Reduced flash:"), "invalid and missing Chinese UI rows fall back wholly to English")
+        check((host.find_child("Setting_speed",true,false) as Button).text.begins_with("Text speed:"),"invalid Chinese UI row falls back to English")
+        await focus_setting("flash")
+        check((host.find_child("Setting_flash",true,false) as Button).text.begins_with("Reduced flash:"),"missing Chinese UI row falls back to English")
+        await focus_setting("language")
         check(applied.localization.rows["ui.settings.speed"].Reason == "invalid-translation" and applied.localization.rows["ui.settings.flash"].Reason == "missing-translation", "exact UI fallback reason and locale retained")
         check(applied.localization.rows["ui.settings.speed"].EffectiveLocale == "en", "bad UI parameter does not become Chinese success")
     check("语言" in str(settings_state().labels), "mounted settings labels use Chinese")
-    var body := host.get_node("SettingsView").find_child("SettingsMessage", true, false) as Label
+    var body := settings_view().find_child("SettingsMessage", true, false) as Label
     var mounted_font := body.get_theme_font("font")
     check(mounted_font.has_char(0x4e2d) and mounted_font.has_char(0x6587), "bundled actual font has required Chinese glyphs")
     samples.append({"label":"font", "family":mounted_font.get_font_name(), "size":body.get_theme_font_size("font_size"), "glyph":mounted_font.has_char(0x4e2d), "rect":str(body.get_global_rect())})
-    await press(KEY_ESCAPE)
+    await done_settings()
     await press(KEY_ENTER)
     await field_done("chinese")
     check(samples.any(func(row): return row.label == "chinese:span" and row.state.displayLocale == "zh-CN" and "请稍候" in row.state.dialogue), "real FieldTextWait translated projection")

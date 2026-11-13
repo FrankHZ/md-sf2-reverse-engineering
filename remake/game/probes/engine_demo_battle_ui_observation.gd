@@ -415,9 +415,7 @@ func help_case() -> bool:
     await act("confirm")
     var settings := host.find_child("SettingsView",true,false)
     if not expect(settings != null,"Actual host Settings opens at its supported caller"): return false
-    for i in range(10):
-        if JSON.parse_string(settings.call("ReadSettingsObservationJson")).selected == 9: break
-        await act("down")
+    if not expect(await preload("res://probes/settings_navigation.gd").setting(settings,"help"), "Controls → Help reachable"): return false
     await act("confirm")
     var help := host.find_child("ControlsHelpView",true,false)
     if not expect(help != null,"Actual F10 controls help opens"): return false
@@ -432,7 +430,7 @@ func help_case() -> bool:
         await act("right")
     if not expect(found,"Selected language F10 help includes current battle target contract"): return false
     await mouse(Vector2(100,300),true); await mouse(Vector2(100,300),false)
-    await act("cancel"); await act("cancel"); await act("cancel")
+    for i in 4: await act("cancel")
     var after := state()
     samples.append({"label":"help-return","before":initial,"after":after})
     return expect(after.canWaitAtInput and after.map == initial.map and after.party == initial.party and after.gold == initial.gold,
