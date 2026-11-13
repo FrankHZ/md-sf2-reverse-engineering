@@ -253,7 +253,7 @@ source fidelity, functional access and human acceptance are deliberately distinc
 
 | Player need / original basis | Remake decision and operation / return | Responsible consumers and ordinary admission | Acceptance boundary / remaining work |
 | --- | --- | --- | --- |
-| Move or stay at origin, then reconsider. S2/S3 accept a legal stop and undo provisional movement on action-menu Cancel; Movement B then enters inspection. | Weighted legal range includes the committed origin. Confirm at origin opens actions; Stay is an explicit action confirmation. Cancel restores origin/range through actual return delivery. | D `BattleMovement`/terrain own paths/stops; A dispatcher keeps actor position separate from `Selection.Preview`, and `BattleMovementContinuation` delivers preview/undo. G range/map/menu consume them. **Connected**, including no-move turns. | [Movement agreement](presentation.md#battle-movement-range-agreement) and [actual delivery](../verification/battles.md#battlefield-movement-consumer). Inspection transition remains #1633. Directional hold now uses the [battle navigation agreement](presentation.md#battle-directional-hold-and-mode-isolation-1615); the [selection/preview agreement](presentation.md#battle-selection-and-preview-feedback-1617) replaces gold tint/path underlines with a steady separate actor cue; original pixels and timing remain Unknown. |
+| Move or stay at origin, then reconsider. S2/S3 accept a legal stop and undo provisional movement on action-menu Cancel; Movement B then enters inspection. | Weighted legal range includes the committed origin. Confirm at origin opens actions; Stay is an explicit action confirmation. Cancel restores origin/range through actual return delivery. | D `BattleMovement`/terrain own paths/stops; A dispatcher keeps actor position separate from `Selection.Preview`, and `BattleMovementContinuation` delivers preview/undo. G range/map/menu consume them. **Connected**, including no-move turns. | [Movement agreement](presentation.md#battle-movement-range-agreement) and [actual delivery](../verification/battles.md#battlefield-movement-consumer). Inspection transition remains #1633. The [held preview observation](#held-preview-step-handoff) checks same-frame landing and next start, release, late turn and menu return; the [selection/preview agreement](presentation.md#battle-selection-and-preview-feedback-1617) replaces gold tint/path underlines with a steady separate actor cue; original pixels and timing remain Unknown. |
 | Choose Attack, Magic, Item or Search/Stay. S2 derives initial Attack/Stay focus from targets and substitutes Search for a faced chest. | Fresh Main focuses Attack only for an enabled physical target, otherwise Down. Down is Search for a registered chest at preview + delivered facing, otherwise Stay. Search confirmation cancels free; full/occupied result returns to the same menu; item/gold/empty result ends through Stay after actual feedback. | D `BattleSearch`/shared inventory → A `BattleSearchContinuation`/typed choices and receipt flags → C per-encounter `BattleSearchReader` → G contextual menu, result and open marker. **Connected basic actions; Search is explicitly authored/controlled.** | [Initial focus](presentation.md#initial-battle-command-focus-1644), [Search contract](../application/session-and-programs.md#battle-search-and-chest-return), [admission/source inventory](../content/profiles-and-trust.md#battle-search-admission), [native input](../development-and-verification.md#battle-search-observation). Battles01–07 provide no in-region chest candidate; original natural access remains Unknown. Traps/later maps and private source-noun translation are not claimed. **Resource/presentation:** #1666 confirms ordinary Continue consumes complete Attack/Magic/Item/Stay normal/selected rasters; absent private art previously fell back to text. Contextual authored Search remains text, not a restored original index4 image. **Human experience:** Unknown. |
 | Choose spell/level or item, target and commit; back out safely. S2 checks MP/range and restores spell/item/action parent on cancellation. | Modern finite lists retain actual spell level/cost, item slot, target and unavailable reason. Target Back restores its list/main; Main Cancel undoes movement. Complete selection and explicit Confirm are required to commit. | D selected action rules own effects/payment/RNG; A `BattleChoices`/dispatcher validate the live offer, target and revision. C supports only admitted definitions. G `Handle/Select/PickTarget`/`ReturnToBattleActions` own pages. **Connected bounded actions.** | [Localized command/target boundary](presentation.md#localized-battle-command-and-equipment-display), [native commands](../verification/host.md#localized-battle-commands-targets-and-status). Off-range attempted candidates cannot commit and are not a free-inspection feature. Unsupported effects stay explicit; no universal spell/item claim. **Resource/presentation:** ordinary Continue consumes semantic spell/item normal/AND-selected icons with localized level/cost/slot text and unavailable reasons; [#1667 acceptance](presentation.md#identity-art-acceptance-1667) separates ordinary entry from controlled multi-level/duplicate coverage. Target Back retains the chosen list row. **Human experience:** Unknown. |
 | Give/exchange held items. S2 selects a slot/adjacent recipient, exchanges a full pack and consumes the turn as Stay. | ActionChoice advertised G/installed mapping → actual slot → adjacent recipient → required full-pack return slot → confirmation/result → ordinary Stay/next-turn suffix. Cancel backs up before commit. | D `BattleGive`/A selection and continuation → existing localized G `BattleGiveView`. C `OpeningLoadoutBindings` explicitly binds field carry identities after live equipment for product New Game/Continue. `BattleGiveReader` keeps its standalone guard. **Connected Battles01–07 finite supported catalog.** | [Capability/evidence](../capability-status.md#connected-battle-give-and-exchange), [admission](../content/profiles-and-trust.md#connected-battle-give-admission), [native input](../development-and-verification.md#connected-battle-give-observation). #1647 covers ordinary/equipped full exchange, no-target/illegal/cancel/stale refusal, current ATT/range, exactly-once Stay, v2 record restore and field custody. Chinese/remapped connected Battle01 observes templates plus selected member/item names. Rings/curses/broken/unsupported states reject; Drop and later campaigns remain separate. **Resource/presentation:** the existing HUD draws semantic given/returned item icons beside localized slot/recipient text; [#1668 acceptance](presentation.md#member-inventory-art-acceptance-1668) covers ordinary Continue and controlled-connected full-pack exchange. No separate source recipient art is invented. **Human experience:** Unknown. |
@@ -283,10 +283,10 @@ Save and Quit still requires verified publication. This adds no C admission, for
 The [native owner](../verification/battle-save.md#options-quit-caller-1651) retains bounded evidence and
 exit-warning/physical-device Unknowns; A/B/C remain the persistence and restart evidence.
 
-The battle direction route reuses `GameInput.Resolve` for fresh mapped edges and held direction;
-`BattleSessionView.Navigation` now repeats eligible directional navigation at the existing 120 ms
-adapter cadence, waiting for actual player movement delivery. **Confirmed bounded adapter behavior:**
-release, turn, rejection, actor/page changes, focus handlers and host pause clear the hold.
+The battle direction route reuses `GameInput.Resolve` for fresh mapped edges and held direction.
+Menu and inspection directions repeat at 120 ms. Player preview repeats on
+[delivery of its current step](#held-preview-step-handoff). A new direction replaces the pending one.
+Release, rejection, actor/page changes, focus handlers and host pause disarm the old direction.
 Confirm/Cancel and shortcuts remain edge-only. The [current agreement and finite native observation](presentation.md#battle-directional-hold-and-mode-isolation-1615)
 own [#1615](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1615)'s engineering acceptance;
 physical OS focus, original timing and human experience remain unclaimed. The field clock is unchanged.
@@ -314,6 +314,47 @@ The manual describes retaining level/EXP/special-item messages when ordinary hit
 This does not authorize suppressing all rewards, status or progression acknowledgements in the
 remake. The accepted [finite mapping and completion contract](battle-scenes.md#selective-hitcoin-message-delivery-1650)
 implements that distinction without changing logical timing or required messages.
+
+## Held preview step handoff
+
+The [reported 60 Hz sample](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456#issuecomment-6845722809)
+finished a step on frame 14 and started the next on 15, then repeated that gap on 28/29.
+The old 120 ms repeat deadline ran during interpolation. Once it had elapsed, polling before movement
+delivery still deferred the next step by one process frame.
+
+**Confirmed** in the production adapter with the authored `garden-watch.json` battle. A mapped keyboard
+Right press moves the preview from (2,2) through (3,2) and (4,2) to (5,2). Relative to that press,
+the first two `battle-movement-finished` / `battle-movement-segment-started` frame pairs at fixed
+60 Hz were **13/13 and 26/26** at 1×, **9/9 and 18/18** with Shift held at 1.5×. The new map segment
+starts at zero progress at the preceding destination. Releasing during the third step allows its
+completion and leaves the same actor in Movement with both RNG seeds intact. Each run produced
+three moves and three completions.
+
+At normal speed a late Down during Left takes effect on landing. Releasing Down while Left stays
+pressed stops the chain. Holding Right to the weighted boundary gives one `movement-range` refusal
+at (5,2), then fresh Left works. In-flight Confirm disarms the hold. Fresh Confirm after arrival opens
+actions and Cancel returns the preview to origin. Opening the host menu mid-step pauses delivery.
+Cancel while Right remains held preserves the menu's release barrier. After neutral and fresh Cancel,
+the interrupted step completes once. Fresh Left moves the same actor back to origin.
+
+Reproduce with the [locked SDK setup](../development-and-verification.md#locked-net-workflow), a Debug
+adapter build and a fresh ignored run directory. Isolate `APPDATA`, `LOCALAPPDATA` and `SF2_SAVE_ROOT`
+in that directory. From the checkout root run the selected Godot in a hidden child with a 45 s limit.
+The [navigation observer](../../game/probes/engine_battle_navigation_observation.gd) records movement
+boundaries and selected states. Require exit 0, `passed: true` and clean native/script logs.
+
+```powershell
+$env:SF2_BATTLE_NAVIGATION_OUTPUT = Join-Path $runDirectory 'native.json'
+$env:SF2_BATTLE_NAVIGATION_ROUTE = 'keyboard'
+$env:SF2_BATTLE_NAVIGATION_AUX = 'handoff'
+& $env:GODOT_BIN --headless --audio-driver Dummy --fixed-fps 60 --resolution 1920x1080 `
+  --path remake/game --log-file (Join-Path $runDirectory 'godot.log') `
+  --script res://probes/engine_battle_navigation_observation.gd -- `
+  --authored-package (Resolve-Path remake/content/authored/garden-watch.json)
+```
+
+**Unknown:** original hardware timing and human assessment of the revised cadence. Connected battles
+use the same preview consumer by code inspection. This run exercised the authored host.
 
 ## What status and terrain inspection may disclose
 

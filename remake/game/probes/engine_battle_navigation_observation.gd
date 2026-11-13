@@ -9,6 +9,8 @@ var samples: Array = []
 var events: Dictionary = {}
 var submissions := 0
 var route := OS.get_environment("SF2_BATTLE_NAVIGATION_ROUTE")
+var steps: Array[Dictionary] = []
+var shift_pressed := false
 
 func _initialize() -> void:
     create_timer(35).timeout.connect(func(): push_error("Battle navigation observation timed out"); quit(2))
@@ -46,6 +48,11 @@ func send(action: String, pressed: bool) -> void:
         e.axis_value = events[action].axis_value if pressed else 0.0
     else:
         e.pressed = pressed
+    if e is InputEventKey:
+        if e.keycode == KEY_SHIFT:
+            shift_pressed = pressed
+            e.location = KEY_LOCATION_LEFT
+        e.shift_pressed = shift_pressed
     Input.parse_input_event(e)
     await process_frame
     await process_frame
@@ -85,7 +92,7 @@ func restart() -> void:
         var result: Dictionary = JSON.parse_string(json)
         if result.boundary == "submit": submissions += 1)
     events.clear()
-    for action in ["up", "right", "down", "left", "confirm", "cancel", "menu", "equipment", "give", "discard"]:
+    for action in ["up", "right", "down", "left", "confirm", "cancel", "menu", "accelerate", "equipment", "give", "discard"]:
         var mapped := InputMap.action_get_events("sf2_" + action)
         for e in mapped:
             if route == "pad" and e is InputEventJoypadButton or route == "axis" and e is InputEventJoypadMotion:
@@ -100,7 +107,28 @@ func restart() -> void:
 func same_position(a: Dictionary, b: Dictionary) -> bool:
     return a.previewX == b.previewX and a.previewY == b.previewY
 
-func movement_checks() -> void:
+func track_steps(json: String) -> void:
+    var result: Dictionary = JSON.parse_string(json)
+    for event in result.observations:
+        if event.Detail == "Player" and event.Kind in ["battle-movement-segment-started", "battle-movement-finished"]:
+            steps.append({"kind": event.Kind, "frame": Engine.get_process_frames(), "from": event.From, "to": event.To})
+
+func await_steps(count: int) -> void:
+    for i in 90:
+        if steps.size() >= count: return
+        await process_frame
+    check(false, "Expected %d movement boundaries, received %d" % [count, steps.size()])
+
+func check_handoff(index: int) -> void:
+    if steps.size() <= index + 1:
+        check(false, "Missing landing/start pair")
+        return
+    var landing := steps[index]
+    var start := steps[index + 1]
+    check(landing.kind == "battle-movement-finished" and start.kind == "battle-movement-segment-started"
+        and landing.to == start.from and landing.frame == start.frame, "Next preview starts on the landing frame")
+
+func movement_checks(accelerated := false) -> void:
     await restart()
     var initial := state("movement-initial")
     if events.right is InputEventKey and events.right.keycode != KEY_RIGHT:
@@ -114,43 +142,99 @@ func movement_checks() -> void:
         removed.pressed = false
         Input.parse_input_event(removed)
         check(same_position(initial, state()), "Removed default direction cannot bypass installed remapping")
+    steps.clear()
+    view.connect("SessionResultObserved", track_steps)
+    if accelerated: await send("accelerate", true)
+    check(state().pacing.input.rate == (1.5 if accelerated else 1.0), "Selected movement rate is active")
     await send("right", true)
-    var first := await settle()
-    await wait_ms(330)
+    await await_steps(5)
+    check_handoff(1)
+    check_handoff(3)
+    var next = state().movement
+    check(next != null and not steps.is_empty() and next.from == steps.back().from and next.to == steps.back().to
+        and next.progress == 0, "Map projects the new segment at its own starting cell")
     await send("right", false)
     var moved := await settle()
+    if accelerated: await send("accelerate", false)
+    samples.append({"accelerated": accelerated, "rightHold": steps.duplicate()})
     state("movement-repeated-released")
-    check(moved.previewX > first.previewX, "Held direction repeats through real movement deliveries")
+    check(steps.size() == 6 and submissions == 6 and moved.previewX == initial.previewX + 3
+        and moved.previewY == initial.previewY and moved.stage == "Movement" and moved.actor == initial.actor,
+        "One hold and mid-step release produce exactly three player steps and three completions")
     check(moved.mainSeed == initial.mainSeed and moved.thinkingSeed == initial.thinkingSeed,
         "Provisional held movement preserves both RNG seeds")
-    await wait_ms(240)
-    check(same_position(moved, state()), "Release stops future movement")
+    for i in 20: await process_frame
+    check(submissions == 6, "Release stops future movement")
+    if accelerated: return
     await restart()
+    steps.clear()
+    view.connect("SessionResultObserved", track_steps)
     await send("left", true)
-    await settle()
+    for i in 7: await process_frame
+    var crossing = state().movement
+    check(crossing != null and crossing.progress > 0.5, "Turn late in the current step")
     await send("down", true)
-    var turn_deadline := Time.get_ticks_msec() + 900
-    while state().previewY == initial.previewY and Time.get_ticks_msec() < turn_deadline:
-        await process_frame
+    await await_steps(3)
+    check_handoff(1)
     await send("down", false)
     var turned := await settle()
     state("turned-newest-direction-released")
-    await wait_ms(240)
+    for i in 20: await process_frame
     check(same_position(turned, state()), "Releasing newest direction does not resume an older held direction")
-    check(turned.previewY > initial.previewY, "Fresh turn selects the new direction")
+    check(turned.previewX == initial.previewX - 1 and turned.previewY == initial.previewY + 1
+        and submissions == 4, "Turn during the first delivery replaces the next direction exactly once")
     check(turned.failure == null, "Turn/release isolation is observed before any range rejection")
     await send("left", false)
     await restart()
     await send("right", true)
-    await wait_ms(1700)
+    await settle()
     var edge := state("range-rejected")
-    check(edge.failure != null, "Range edge reaches the actual rejection")
-    await wait_ms(300)
+    check(edge.failure == "movement-range" and edge.previewX > initial.previewX and edge.stage == "Movement",
+        "Range edge preserves the final legal preview and reports the actual rejection")
+    for i in 20: await process_frame
     check(submissions == edge.submissions, "Rejected hold stops rather than repeatedly submitting failures")
     await send("right", false)
     await tap("left")
+    var recovered := await settle()
+    check(recovered.failure == null and recovered.previewX == edge.previewX - 1
+        and recovered.previewY == edge.previewY, "Fresh Left recovers one cell after range rejection")
+
+func movement_menu() -> void:
+    await restart()
+    var origin := state()
+    await send("right", true)
+    await send("confirm", true)
+    var arrived := await settle()
+    check(arrived.stage == "Movement" and arrived.previewX == origin.previewX + 1 and submissions == 2,
+        "In-flight Confirm disarms the direction and cannot open or commit on landing")
+    await send("right", false)
+    await send("confirm", false)
+    await tap("confirm")
+    check(state().stage == "ActionChoice", "Fresh Confirm opens actions at the delivered cell")
+    await tap("cancel")
     await settle()
-    check(state().failure == null, "Fresh direction recovers after range rejection")
+    check(same_position(origin, state()) and state().stage == "Movement", "Action-menu Cancel returns to origin")
+    await send("right", true)
+    await tap("menu")
+    var paused: Dictionary = JSON.parse_string(host.call("ReadWindowSupportObservationJson"))
+    check(paused.battlePaused == "Disabled", "Host menu owns input during the step")
+    var before := submissions
+    for i in 20: await process_frame
+    check(submissions == before, "No movement or commit behind the host menu")
+    await tap("cancel")
+    check(view.process_mode == Node.PROCESS_MODE_DISABLED, "Held gameplay input keeps the menu release barrier")
+    await send("right", false)
+    await tap("cancel")
+    var resumed := await settle()
+    for i in 20: await process_frame
+    check(not host.find_child("SystemMenuView", true, false) and submissions == before + 1
+        and resumed.stage == "Movement" and resumed.previewX == origin.previewX + 1 and resumed.actor == origin.actor,
+        "Dismissing the menu only completes the interrupted step")
+    await tap("left")
+    await settle()
+    var returned := state("fresh-left-after-menu")
+    check(same_position(origin, returned) and returned.failure == null and returned.actor == origin.actor
+        and returned.stage == "Movement", "Fresh Left moves the same actor back to origin after resume")
 
 func menu_checks() -> void:
     await restart()
@@ -281,7 +365,11 @@ func auxiliary_checks(kind: String) -> void:
 func run() -> void:
     root.size = Vector2i(1920, 1080)
     var auxiliary := OS.get_environment("SF2_BATTLE_NAVIGATION_AUX")
-    if auxiliary.is_empty():
+    if auxiliary == "handoff":
+        await movement_checks()
+        await movement_checks(true)
+        await movement_menu()
+    elif auxiliary.is_empty():
         await movement_checks()
         await menu_checks()
         await lifecycle_checks()
@@ -289,7 +377,7 @@ func run() -> void:
         await auxiliary_checks(auxiliary)
     root.remove_child(host)
     host.queue_free()
-    await wait_ms(150)
+    await create_timer(0.15).timeout
     var file := FileAccess.open(OS.get_environment("SF2_BATTLE_NAVIGATION_OUTPUT"), FileAccess.WRITE)
     file.store_string(JSON.stringify({"passed": failures.is_empty(), "failures": failures,
         "route": route, "samples": samples, "focusBoundary": "window signals; physical OS focus remains unclaimed"}, "  "))

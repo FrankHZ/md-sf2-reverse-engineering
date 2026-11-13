@@ -9,7 +9,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 public sealed partial class BattleSessionView
 {
     private const double PacingStep = 1.0 / 60;
-    private double _pacingDebt, _movementNavigationMicros;
+    private double _pacingDebt;
     private long _pacingGeneration, _pacingSteps;
     private readonly record struct PacingOwner(Guid Session, WaitToken? Movement, WaitToken? Scene,
         WaitToken? Retreat, WaitToken? Round, WaitToken? Story, ActorRef? Actor, BattleSelectionStage? Stage, bool Reading);
@@ -108,8 +108,12 @@ public sealed partial class BattleSessionView
             var boundary = PacingBoundary();
             if (!PacingReady || ReadingBoundary) { _pacingDebt = 0; break; }
             _pacingSteps++; serviced++;
-            _movementNavigationMicros += PacingStep * 1_000_000;
-            if (ConsumePacing() is { } command) Send(command);
+            if (ConsumePacing() is { } command)
+            {
+                bool playerStep = _session.Current.BattleMovement?.Purpose == BattleMovementPurpose.Player;
+                Send(command);
+                if (playerStep) ServiceNavigation(playerStepFinished: true);
+            }
             if (!PacingReady) { _pacingDebt = 0; break; }
             _map.AdvanceCamera(PacingStep);
             if (boundary != PacingBoundary()) { _pacingDebt = 0; break; }

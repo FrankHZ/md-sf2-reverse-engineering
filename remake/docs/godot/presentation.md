@@ -2340,12 +2340,12 @@ scope is adapter navigation; engine legality, action costs, RNG, field speed, Sh
 inspection retain their existing owners.
 
 `GameInput` remains the single mapped keyboard/button/signed-axis edge and held-direction authority.
-There was no separate battle/menu repeat loop to preserve. `BattleSessionView.Navigation` uses the
-existing 120 ms adapter repeat policy: one fresh direction acts immediately, then at most one eligible
-navigation per deadline, without catch-up. Player movement awaits its actual
-`BattleMapViewport.ConsumeMovement` delivery before another Move. Turning during that delivery can
-replace the pending direction; it cannot interrupt or duplicate the current step. Exploration's
-successful-step cadence and rejected-attempt backoff are unchanged.
+For menus and inspection, `BattleSessionView.Navigation` applies a fresh direction immediately, then
+repeats at most once per 120 ms deadline. For provisional movement, `BattleMapViewport.ConsumeMovement`
+delivers the current step. The battle view then submits the still-held direction on that frame.
+Turning during delivery replaces the direction used at arrival. The
+[held preview observation](battle-interaction-baseline.md#held-preview-step-handoff) covers that handoff.
+Exploration's successful-step cadence and rejected-attempt backoff retain their field owner.
 
 Directions repeat in Movement, the cardinal command menu, spell/item lists, offered targets and
 existing admitted Equipment/Give/Drop selectors. TargetChoice and CommitReady share their target
@@ -2355,7 +2355,7 @@ and cannot commit a previously accepted target. The engine still validates each 
 selection against live state.
 
 Release of the active direction stops future repeats and does not resume an older held direction.
-A fresh turn restarts the deadline. Any non-direction action or pointer input disarms the hold;
+A fresh turn in timed navigation restarts the deadline. Any non-direction action or pointer input disarms the hold;
 rejection, session/actor/stage/page changes, hide/pause and focus handlers also clear it. Host modal
 return keeps the existing release barrier. Only a new mapped input edge can resume navigation.
 Confirm, Cancel, Tab/Target and shortcuts remain edge-only, including keyboard Echo and repeated pad
