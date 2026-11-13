@@ -84,8 +84,13 @@ internal static class BattleInitializationRules
         var actors = before.Actors.Select(actor =>
         {
             if (!actor.IsAlly && actor.Deployment.Initialization!.SpawnMode >= 2)
+            {
+                // Fresh hidden slots skip InitializeEnemyStats, including its inventory copy.
+                var carried = start.Actors.Single(input => input.Actor == actor.Actor).SourceLoadout;
                 return actor.With(hp: 0, initialized: false, clearPosition: true,
+                    sourceLoadout: carried ?? new([127, 127, 127, 127], [63, 63, 63, 63]),
                     activationWord: (ushort)(actor.Deployment.Initialization.SpawnMode << 8));
+            }
             bool heal = !actor.IsAlly || actor.Hp > 0 || actor.Deployment.Initialization?.AllyPartyMember is 7 or 28;
             bool placed = !actor.IsAlly || (heal && (start.ActiveAllies is null || start.ActiveAllies.Contains(actor.Actor)));
             return new BattleActorState(actor.Deployment,

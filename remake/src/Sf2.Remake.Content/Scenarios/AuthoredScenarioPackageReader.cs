@@ -357,13 +357,15 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 }
                 Require(faction != BattleFaction.Ally || actor.Level >= 1, "numeric-range", "actors.level");
                 var position = new MapPosition(Number(placement, "x", 0, terrain.Width - 1), Number(placement, "y", 0, terrain.Height - 1));
-                var tile = terrain.Cells[position.Y * 48 + position.X];
-                Require(BattleTerrainRules.MovementCost(tile) > 0, "blocked-placement", "placements");
+                var initialization = AuthoredBattleInitializationReader.Placement(placement);
+                if (initialization?.SpawnMode is not (2 or 3))
+                    Require(BattleTerrainRules.MovementCost(terrain.Cells[position.Y * 48 + position.X]) > 0,
+                        "blocked-placement", "placements");
                 Require(!placements.Any(a => a.Actor == actorRef), "duplicate-placement", "placements.actor");
                 Require(!placements.Any(a => a.ProcessingOrder == order), "duplicate-processing-order", "placements.processingOrder");
                 bool sourceControl = placement.TryGetProperty("controlPolicy", out _);
                 if (sourceControl) Require(Text(placement, "controlPolicy") == "source-ally-activation", "control-policy", "placements.controlPolicy", true);
-                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position, AuthoredBattleInitializationReader.Placement(placement), sourceControl);
+                var deployment = new BattleDeploymentDefinition(actor, faction, order, control, aiStrategy, position, initialization, sourceControl);
                 BattleTurnFlow.ValidateDeployment(deployment);
                 placements.Add(deployment);
             }
