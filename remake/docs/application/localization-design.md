@@ -30,8 +30,8 @@ Chinese templates and selected member/item names through ordinary mapped input. 
 Discard has its own [finite product binding](../capability-status.md#connected-battle-discard-and-deals)
 and English/Chinese remapped input observation, including selected source member/item names, free
 return and committed removal after outer Cancel. Static translation and finite admission do not implement later chapters. ROM patching, voice/TTS, other
-languages, a translation platform and UI redesign remain non-goals. Preserve the 1080p minimum,
-96px world cells, source grouping, input/reward authority and private-content boundary.
+languages, a translation platform and UI redesign remain non-goals. Preserve the [desktop window policy](../godot/presentation.md#window-support-and-recovery-1455),
+96-unit logical world cells, source grouping, input/reward authority and private-content boundary.
 
 ## Current full-text Chinese corpus
 

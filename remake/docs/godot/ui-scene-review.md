@@ -57,6 +57,37 @@ to match the read-only input settings. Run the script with these `SF2_COPY_CASE`
 Human reading comfort, physical controller testing and a cross-resolution scene matrix are outside
 this copy observation. It exercises ordinary cancellation, not a storage-fault injection.
 
+### Desktop clients
+
+**Confirmed.** The [window policy](presentation.md#window-support-and-recovery-1455) uses the
+actual client in physical pixels. These measurements come from running Windows game windows.
+
+| Client | Title, Witch and entry slots | Gameplay canvas | One world cell |
+| --- | --- | --- | --- |
+| 1600×900 | 1920×1080 scaled to 5/6 | 1920×1080 scaled to 5/6 | 80 physical pixels |
+| 1920×1080 | 1920×1080 | 1920×1080 | 96 physical pixels |
+| 1920×1200 | 1920×1080, centered with 60px above and below | 1920×1200 | 96 physical pixels |
+| 2560×1440 | 1920×1080 scaled to 4/3 | 2560×1440 | 96 physical pixels |
+
+| Production page | Bounded input and return at each size |
+| --- | --- |
+| Title → Witch → Continue | Click Start and Continue in window pixels. Select the occupied first slot with Confirm. The Map3 field and saved player battle turn each mount through the ordinary host. |
+| Field and Party | Open Member from the field menu. Its [footer](field-and-shop.md) contains Prepare and Close to the right of the hint. Clicking Close restores field navigation. |
+| Dialogue and shop | Start at the controlled Map3 merchant approach. Face the counter, speak, read its greeting, click Buy, back out of stock and leave. |
+| Battle and inspection | Open the action menu and measure the cards. Back out to inspection, hover a second unit by its projected map cell, click for details and return to that cell. At 1600×900, logical (1008,936) landed at client (840,780) in the observed Battle01. |
+| Menu, settings, slots and recovery | Click the top-right Menu, Settings, Assist and its flash setting. Cross the width and height thresholds independently. Cancel recovery Quit and restore the supported size. The paused session revision, edited draft and subpage focus survive. Click Back twice to discard the edit and return to Menu. Back from the Save list returns to Save. |
+
+To reproduce, build the actual Debug adapter and use the selected private entry/world/battle
+packages and a disposable populated first slot. Set `SF2_HOST_UI_CASE` to `field`, `battle` or
+`shop` and `SF2_HOST_UI_OUTPUT` to a fresh ignored report. For shop, set `SF2_HOST_UI_START` to a
+worktree-local controlled start at Map3 (7,20), entity-0, speed32, flags 0/1/2/32/33/34/609.
+Launch the configured Godot with `--path remake/game --resolution 1600x900 --max-fps 120
+--audio-driver Dummy --script res://probes/desktop_layout_observation.gd` and repeat at the other
+three sizes. The [camera resize recipe](display-composition-contract.md) checks actual player draw, camera origin
+and cell size through live resizing at the center, edges, in a small room and during story framing.
+Some exits emitted the existing ObjectDB warnings. **Unknown:** physical monitor/DPI combinations
+and human reading comfort remain with the [play review](../evidence/opening-loop-acceptance.md).
+
 ### Production controls audit
 
 **Confirmed.** These observations used the production host, registered campaign packages, scoped test slots and native input events. The two player reports reproduced on base `886cdcdb`. At 1920×1080 the field frame covered x=240–1680. The separate 320px label ended at x=1888 and its Chinese glyphs at x=1777. Testing the label against the screen alone passed. The gameplay Menu button resolved 8px corners in five states. Its actual hover popup independently resolved 3px corners and 30px text.
@@ -120,7 +151,7 @@ The [observer](../../game/probes/field_chrome_observation.gd) checks the rendere
 
 ### Short play route
 
-Use the ordinary demo with a fresh play slot and a gameplay window of at least 1920×1080.
+Use the ordinary demo with a fresh play slot and a gameplay client of at least 1600×900.
 [Launch and Continue instructions](../evidence/opening-loop-acceptance.md#current-human-play-preparation-1456)
 
 1. At the Witch, open Settings → Controls help to see your bindings. Choose New Game in an empty

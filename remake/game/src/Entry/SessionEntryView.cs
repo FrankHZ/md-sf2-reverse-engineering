@@ -28,16 +28,11 @@ public sealed partial class SessionEntryView : Control
     private DisplayResult? _entryDisplay;
     private SessionFailure? _failure;
     private bool _canRetry;
-    private Window.ContentScaleModeEnum _previousScaleMode;
     private bool Revealed => _dialogue.Body.VisibleCharacters < 0 || _dialogue.Body.VisibleCharacters >= _dialogue.Body.GetTotalCharacterCount();
     private string Stage => _page == -1 ? "title" : _page >= 0 ? "dialogue" : "menu";
 
     public override void _Ready()
     {
-        // Gameplay views use native window coordinates. Entry alone uses the project's
-        // authored 1080p canvas, including when opened over an already mounted session.
-        _previousScaleMode = GetWindow().ContentScaleMode;
-        GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.CanvasItems;
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         try
         {
@@ -120,7 +115,6 @@ public sealed partial class SessionEntryView : Control
     internal void PauseAudio(bool paused) => _assets?.Audio?.SetPaused(paused);
     public override void _ExitTree()
     {
-        GetWindow().ContentScaleMode = _previousScaleMode;
         _backdrop.Assets = null; _assets?.Dispose(); _assets = null;
     }
     public override void _Process(double delta)

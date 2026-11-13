@@ -45,7 +45,7 @@ Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
 ```
 
 Use ordinary title/Witch/New Game rather than a probe or controlled-start argument. Gameplay needs
-an actual client at least 1920×1080; use the existing Restore/fullscreen recovery when needed.
+a [supported desktop client](../godot/ui-scene-review.md#desktop-clients). Use Restore or fullscreen from recovery when needed.
 A 1080p desktop's decorations/work area and mixed-DPI behavior still need the
 [physical/display review](../verification/host.md#later-physical-focus-human-checklist-1456).
 No launch, SDK/build, export, private-world copy, save conversion or new runtime observation is

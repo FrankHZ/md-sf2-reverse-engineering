@@ -1773,7 +1773,7 @@ msgid "host.window-fullscreen"
 msgstr "使用全屏"
 
 msgid "host.window-message"
-msgstr "游戏需要至少 1920 × 1080 的窗口。当前：{0} × {1}。\n进度与已打开的菜单均已保留。\n{2}{3}"
+msgstr "游戏需要至少 1600 × 900 的窗口。当前：{0} × {1}。\n进度与已打开的菜单均已保留。\n{2}{3}"
 
 msgid "host.window-default"
 msgstr "请放大窗口，或选择以下显示模式。不会自动存档。"

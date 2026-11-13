@@ -332,7 +332,8 @@ Appearance #1463 stays deferred.
 
 **Implemented, bounded; X1/X3/E5/D5 retain human limits.** The
 [window policy](../godot/presentation.md#window-support-and-recovery-1455) admits actual native clients
-at least 1920×1080, including larger windows and 4K fullscreen at 96px/4×. Below either minimum, a
+from 1600×900. The [desktop matrix](../godot/ui-scene-review.md#desktop-clients) gives the logical
+and physical sizes. Below either minimum, a
 reachable recovery shell pauses the retained journey/modal and offers Restore/fullscreen/Quit.
 Work area/decorations affect startup/explicit Restore only; valid-sized edge/cross-screen movement
 does not pause or recenter. This is engineering scope, not all-resolution/device/experience approval.

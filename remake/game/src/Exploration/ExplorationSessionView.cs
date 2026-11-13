@@ -101,7 +101,6 @@ public sealed partial class ExplorationSessionView : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Ignore;
-        GetWindow().ContentScaleMode = Window.ContentScaleModeEnum.Disabled;
         var ui = UI.PresentationCanvas.Mount(this, "FieldUi", UI.PresentationCanvas.Field);
         _dialogueView = new ExplorationDialogueView { Name = "StoryDialogue" };
         _dialogueView.Panel.Choices.InvalidatePointer = _choicePointer.Cancel;

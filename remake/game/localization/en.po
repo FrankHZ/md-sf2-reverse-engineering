@@ -1773,7 +1773,7 @@ msgid "host.window-fullscreen"
 msgstr "Use fullscreen"
 
 msgid "host.window-message"
-msgstr "Gameplay needs a window at least 1920 × 1080. Current: {0} × {1}.\nYour progress and open menus are kept.\n{2}{3}"
+msgstr "Gameplay needs a window at least 1600 × 900. Current: {0} × {1}.\nYour progress and open menus are kept.\n{2}{3}"
 
 msgid "host.window-default"
 msgstr "Enlarge the window or choose a mode below. Nothing is saved automatically."

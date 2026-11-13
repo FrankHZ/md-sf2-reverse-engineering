@@ -228,7 +228,6 @@ public sealed partial class GameRoot : Node
         {
             // Build the actual battle resources while the previous session is still owned.
             // Attach only projects this already restored player boundary; it never advances it.
-            var previousScale = GetWindow().ContentScaleMode;
             preparedBattle = new BattleSessionView { Name = "PreparedBattle", ProcessMode = ProcessModeEnum.Disabled,
                 WorldViewport = new(), Audio = candidateAudio };
             AddChild(preparedBattle); preparedBattle.ConfigureInput(_input!);
@@ -240,7 +239,6 @@ public sealed partial class GameRoot : Node
             catch (Exception error) when (error is InvalidOperationException or ArgumentException)
             {
                 RemoveChild(preparedBattle); preparedBattle.Free(); candidateAudio?.Dispose();
-                GetWindow().ContentScaleMode = previousScale;
                 SaveError(error.Message); return;
             }
         }
