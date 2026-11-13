@@ -69,7 +69,8 @@ or IME admission follows from these layouts.
 | Scene/section heading | 32px, ordinary light text; 40px only for a sparse entry heading | One heading per panel. Gold is primarily selection, not every heading. Preserve original title artwork rather than typesetting a replacement logo. |
 | Dialogue, menu choice, transaction facts | 30px `f4f5fc` | Readable full text and explicit amounts. Keep choice rows at least 64px tall; wrap and increase height. |
 | Status identity | Existing card 26px baseline and bounded 22px exceptional-name fallback | Retain its existing measured two-line/widening policy. Do not propagate the exceptional 22px fallback to body or menu text. |
-| Hints, quiet counters, metadata | 24px; preserve a consumer's larger accepted role where needed | Secondary information only. Price, a refusal reason or an irreversible choice is not demoted to tiny metadata. |
+| Operation hints and binding tooltips | Fixed 24px in the native gameplay canvas | Wrap or allocate reading space as text, device or phase changes. Menu choices, transaction details and status values keep their own roles. |
+| Quiet counters and metadata | 24px baseline | Keep price, a refusal reason and irreversible consequences at readable body size. |
 | Reading panel | Existing `08275bf5` near-opaque blue, 2px `ffe19a` edge, restrained existing shadow | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
 | Action surface | Existing dark blue family (`102c50` normal, `204c76` hover, `354c64` pressed) | Same square edge family; avoid extra gold boxes around every idle row. Native buttons retain focus/pressed distinctions. |
 | Selected and available | `ffe19a`, plus `›`/`▸`, outline or original selected raster | Exactly one current choice per input owner. Pointer hover is not command submission. |

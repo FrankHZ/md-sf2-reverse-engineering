@@ -116,7 +116,7 @@ public sealed partial class ExplorationSessionView : Control
             return result;
         };
         ui.AddChild(_partyStatus);
-        _fieldMenu = new FieldMenuView { Name = "FieldMenu" }; ui.AddChild(_fieldMenu);
+        _fieldMenu = new FieldMenuView { Name = "FieldMenu", Entry = _dialogueView.MenuEntry }; ui.AddChild(_fieldMenu);
         _guidance = new FieldGuidanceView { Name = "FieldGuidance" }; ui.AddChild(_guidance);
         // Member/preparation pages cover the root diamond and retain their existing consumers.
         ui.MoveChild(_partyStatus, -1);
@@ -246,7 +246,7 @@ public sealed partial class ExplorationSessionView : Control
             _dialogue.VisibleCharacters = (int)_revealed;
             SpeakRevealedCharacters(before, _dialogue.VisibleCharacters);
         }
-        _dialogueView.RefreshHint(_session, _input, _battleMounted, TextRevealed);
+        _dialogueView.RefreshHint(_session, _input, _battleMounted, TextRevealed, CanAccelerate);
         if (_session.Current.Exploration is { Definition.Caravan: not null } authored &&
             _session.Definition.Exploration!.Visuals is null)
             foreach (var entity in authored.AllEntities.Where(actor => actor.WaitingForSprite && actor.SpriteReady != actor.SpriteRequest))
@@ -538,7 +538,7 @@ public sealed partial class ExplorationSessionView : Control
         if (PresentationFailure is not null) _partyStatus.Hide();
         _partyStatus.Present(_session, _input);
         PresentFieldMenu();
-        _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed);
+        _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed, CanAccelerate);
         _failureLabel.GetParent<Control>().Visible = PresentationFailure is not null;
         _failureLabel.Text = PresentationFailure is { } failure
             ? $"The scene has stopped.\n{failure.Message} ({failure.Code})" : "";

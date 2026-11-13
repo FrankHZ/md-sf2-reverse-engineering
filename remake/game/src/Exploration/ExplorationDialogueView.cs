@@ -15,7 +15,9 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class ExplorationDialogueView : Control
 {
     internal StoryDialoguePanel Panel { get; } = new() { Name = "DialoguePanel", JourneyChoices = true };
-    private ContextHint _context = new() { Name = "ContextHint" };
+    internal Label MenuEntry { get; } = FieldServiceMenu.Label("FieldMenuEntry", StoryTheme.HintSize);
+    private ContextHint _context = null!;
+    internal void HideContextHint() => _context.Hide();
     internal Label ActiveHint => Panel.Visible ? Panel.Hint : _context.Text;
     private Label _dialogue => Panel.Body;
     private TextWindow? _textWindow;
@@ -29,10 +31,12 @@ internal sealed partial class ExplorationDialogueView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
+        MenuEntry.CustomMinimumSize = new(320, 0);
+        _context = new ContextHint { Name = "ContextHint", ActionHint = MenuEntry };
         AddChild(Panel); AddChild(_context);
         _dialogue.AutoTranslateMode = AutoTranslateModeEnum.Disabled;
     }
-    internal void Present(GameSession session, GameInput input, WorldViewportLayout viewport, bool battleMounted, bool revealed)
+    internal void Present(GameSession session, GameInput input, WorldViewportLayout viewport, bool battleMounted, bool revealed, bool canAccelerate)
     {
         var current = session.Current;
         string previousText = _dialogue.Text;
@@ -143,9 +147,9 @@ internal sealed partial class ExplorationDialogueView : Control
         bool openWindow = current.Story.TextWindow is OpenTextWindow || current.Story.PortraitWindow is OpenPortraitWindow ||
             current.Story.Wait is DialogueWait or ChoiceWait or FieldSearchWait;
         Panel.Present(openWindow && current.Story.LogicalView?.HideWindows != true, portrait, (flags & 0x80) != 0, subject, "", openWindow);
-        RefreshHint(session, input, battleMounted, revealed);
+        RefreshHint(session, input, battleMounted, revealed, canAccelerate);
     }
-    internal void RefreshHint(GameSession session, GameInput input, bool battleMounted, bool revealed)
+    internal void RefreshHint(GameSession session, GameInput input, bool battleMounted, bool revealed, bool canAccelerate)
     {
         // Present may have just installed a new span after its caller sampled the old reader.
         revealed = _dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount();
@@ -169,17 +173,17 @@ internal sealed partial class ExplorationDialogueView : Control
         if (current.Story.Wait is ChoiceWait { Work: null } && !revealed) hint = GameText.Get("field.reveal", input.CompactHint(GameAction.Confirm));
         if (BattleEntrySkip.Eligible(current)) hint += current.Story.EntrySkip is null
             ? "    " + GameText.Get("story.skip", input.CompactHint(GameAction.Cancel)) : "    " + GameText.Get("story.skipping");
-        if (!Panel.Visible && ReturnNotice.Length > 0) hint = ReturnNotice + "\n" + hint;
-        if (current.Story.Wait is FieldSearchWait && GameText.Language == "zh-CN")
+        if (!Panel.Visible && current.CanWaitAtInput && canAccelerate)
         {
-            hint += "\n" + GameText.Get("localization.names");
-            if (FallbackReason is { } reason) hint += " " + GameText.Get("localization.fallback", reason);
+            string speed = GameText.Get("field.accelerate", input.CompactHint(GameAction.Accelerate));
+            hint = hint.Length == 0 ? speed : hint.TrimEnd() + "    " + speed;
         }
-        else if (Panel.Visible && GameText.Language == "zh-CN" && FallbackReason is { } bodyReason)
+        if (!Panel.Visible && ReturnNotice.Length > 0) hint = ReturnNotice + "\n" + hint;
+        if ((Panel.Visible || current.Story.Wait is FieldSearchWait) && GameText.Language == "zh-CN" && FallbackReason is { } bodyReason)
             hint += "\n" + GameText.Get("localization.fallback", bodyReason);
         _context.Text.Text = hint;
         _context.Arrange(GetViewportRect().Size);
-        _context.Visible = !Panel.Visible && (!battleMounted || BattleEntrySkip.Eligible(current));
+        if (Panel.Visible || battleMounted && !BattleEntrySkip.Eligible(current)) _context.Hide();
         Panel.SetHint(hint);
     }
 }

@@ -13,7 +13,7 @@ internal sealed partial class FieldMenuView : Control
     private readonly FieldServiceMenu _menu = new("field-menu", ("Member", "field-menu.member"),
         ("Magic", "field-menu.magic"), ("Item", "field-menu.item"), ("Search", "field-menu.search"));
     private readonly ColorRect _shade = new() { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore };
-    private readonly Label _entry = FieldServiceMenu.Label("FieldMenuEntry", 24);
+    internal required Label Entry { get; init; }
     private readonly MenuPointer _pointer = new();
     private GameInput _input = null!;
     private Action<int> _choose = null!;
@@ -30,11 +30,11 @@ internal sealed partial class FieldMenuView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
-        _entry.CustomMinimumSize = new(320, 0); _entry.CustomMaximumSize = new(320, -1);
-        _shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_shade); AddChild(_menu); AddChild(_entry);
-        _menu.InvalidatePointer = _pointer.Cancel; HideMenu(); _entry.Hide();
+        _shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_shade); AddChild(_menu);
+        Resized += _pointer.Cancel;
+        _menu.InvalidatePointer = _pointer.Cancel; HideMenu(); Entry.Hide();
     }
-    internal void Begin() { _generation++; _menu.Show(); _shade.Show(); _entry.Hide(); Suspend(); }
+    internal void Begin() { _generation++; _menu.Show(); _shade.Show(); Entry.Hide(); Suspend(); }
     internal void HideMenu() { _generation++; _menu.Hide(); _shade.Hide(); Suspend(); }
     internal void Present(GameInput input, ExplorationVisuals? visuals, bool entry, bool party, bool preparation, bool search,
         Action begin, Action<int> choose, Action close)
@@ -46,15 +46,14 @@ internal sealed partial class FieldMenuView : Control
             try { _menu.Configure(visuals?.FieldMenu); }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException) { AssetError = error.Message; }
         }
-        _entry.Visible = entry && !Open && AssetError is null;
-        _entry.Text = input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("field-menu.title");
-        _entry.Size = _entry.GetMinimumSize(); _entry.Position = new(Size.X - _entry.Size.X - 32, Size.Y - _entry.Size.Y - 32);
+        Entry.Visible = entry && !Open && AssetError is null;
+        Entry.Text = input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("field-menu.title");
         _pointer.ReleaseIfNeutral(); if (!input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < 4; i++) _available[i] = i == 3 ? search : i == 0 ? party : preparation;
         if (!Open) return;
         string key = new[] { "member", "magic", "item", "search" }[Math.Min(_index, 3)];
         string reason = _index == 4 ? "" : GameText.Get("field-menu." + key + "-help") + (_available[_index] ? "" : "\n" + GameText.Get("field-menu.unavailable"));
-        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason + "\n" + GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)) + "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕", "prepare.back", _available);
+        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason, GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)) + "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕", "prepare.back", _available);
     }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _menu.Suspend(); }
     internal void Handle(GameAction action)
@@ -70,7 +69,7 @@ internal sealed partial class FieldMenuView : Control
     {
         if (input is not InputEventMouse mouse) return;
         int hit = Open ? _menu.Hit(mouse.Position) : -1;
-        bool back = Open && _menu.BackHit(mouse.Position), entry = _entry.Visible && _entry.GetGlobalRect().HasPoint(mouse.Position);
+        bool back = Open && _menu.BackHit(mouse.Position), entry = Entry.IsVisibleInTree() && Entry.GetGlobalRect().HasPoint(mouse.Position);
         if (input is InputEventMouseMotion motion)
         { if (_pointer.Moved(motion) && !_requiresRelease && (hit >= 0 || back)) _index = back ? 4 : hit; return; }
         if (input is not InputEventMouseButton button) return;
@@ -78,13 +77,13 @@ internal sealed partial class FieldMenuView : Control
         { _menu.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
         bool right = Open && button.ButtonIndex == MouseButton.Right;
         string? id = back || right ? "back" : entry ? "entry" : hit >= 0 ? hit.ToString() : null;
-        Rect2 rect = right ? GetGlobalRect() : back ? _menu.BackRect : entry ? _entry.GetGlobalRect() : hit >= 0 ? _menu.RowRect(hit) : default;
-        string? clicked = _pointer.Read(button, id, rect, (_generation, Open, _entry.Visible));
+        Rect2 rect = right ? GetGlobalRect() : back ? _menu.BackRect : entry ? Entry.GetGlobalRect() : hit >= 0 ? _menu.RowRect(hit) : default;
+        string? clicked = _pointer.Read(button, id, rect, (_generation, Open, Entry.Visible));
         if (_requiresRelease || clicked is null) return;
         if (clicked == "entry") _begin(); else if (clicked == "back") _close();
         else { _index = int.Parse(clicked); if (_available[_index]) { Suspend(); _choose(_index); } }
     }
     internal object Observe() => new { visible = Open && IsVisibleInTree(), index = _index, requiresRelease = _requiresRelease,
         readingOverflow = _menu.ReadingOverflow,
-        entryVisible = _entry.IsVisibleInTree(), entryRect = BattleMapViewport.Rectangle(_entry.GetGlobalRect()), menu = _menu.Observe() };
+        entryVisible = Entry.IsVisibleInTree(), entryRect = BattleMapViewport.Rectangle(Entry.GetGlobalRect()), menu = _menu.Observe() };
 }

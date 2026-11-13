@@ -145,7 +145,7 @@ internal static partial class GameText
         ["ui.settings.close"] = "Close",
         ["ui.settings.help"] = "Control help (English)",
         ["ui.settings.staged"] = "Defaults staged. Apply saves them; Cancel keeps current settings.",
-        ["ui.settings.notice"] = "Changes take effect only after Apply. Text speed is used in Gradual mode. Chinese display keeps the existing seven-character ASCII naming rule. Other screens remain partly English.",
+        ["ui.settings.notice"] = "Choose Apply to save your changes.",
         ["ui.settings.hint"] = "{0}: Choose/change   •   {1}: Cancel/close",
         ["ui.settings.entry"] = "Settings / Controls · {0}",
         ["ui.settings.readonly"] = "This launch uses read-only preferences. Relaunch without --input-settings to save changes.",

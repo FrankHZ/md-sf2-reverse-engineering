@@ -239,9 +239,8 @@ internal sealed partial class FieldActionView : Control
         _operations.Visible = ItemOperations; _page.Visible = !ItemOperations;
         string hint = GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down), _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
         hint += "\n" + _input.CompactHint(GameAction.Left) + "/" + _input.CompactHint(GameAction.Right) + " · ↕";
-        if (GameText.Language == "zh-CN") hint += "\n" + GameText.Get("localization.names");
         string fallback = GameText.Fallback("prepare.", true); if (fallback.Length > 0) hint += "\n" + fallback;
-        if (ItemOperations) _operations.Present(_input, _index, _titleText(), hint, "prepare.back");
+        if (ItemOperations) _operations.Present(_input, _index, _titleText(), "", hint, "prepare.back");
         else
         {
             string? Icon(int i) => _stage switch

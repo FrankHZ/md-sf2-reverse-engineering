@@ -38,6 +38,19 @@ Original pixels are not included in the public repository.
 
 ## Reading, input and return
 
+The field footer owns one horizontal row with a flexible reading label, a 24px gap and a 320px
+right-aligned Adventure target inside the panel insets. With ordinary field input available,
+the reading label combines the current Talk/Search action with the installed hold-to-accelerate
+binding. A pad without an assigned acceleration input names the keyboard fallback. The field menu
+uses the actual child's rectangle for the full click gesture. Resize cancels an incomplete press.
+
+Operation hints use 24px in the shop root, stock, recipient, sell-slot, quote and result pages.
+Previously the root wrote the keys into its 30px reason label. The field, item and shop root lists
+now give prose and controls separate wrapping labels in the existing scroll area. Repair/Deals
+refusal remains visible; names, funds and prices remain transaction information. Shop footer copy
+contains the actions available to the player. Item artwork and name resolution keep their existing
+display rules. [Production measurements](ui-scene-review.md#production-controls-audit)
+
 `FieldChoicePanel` measures the full heading/quote and rows inside a native scroll region; hints and
 Back remain outside it. `FieldPackPanel` scrolls its own complete pack when needed. A command refusal
 scrolls below the fixed command/Back rows. Existing English/Chinese text and fallback notices remain.

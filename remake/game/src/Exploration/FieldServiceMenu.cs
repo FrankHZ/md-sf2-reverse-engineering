@@ -15,6 +15,8 @@ internal sealed partial class FieldServiceMenu : Panel
     private readonly string[] _keys;
     private readonly string _owner;
     private readonly Label _title = Label("Title", 32), _back = Label("Back", 30), _reason = Label("Reason", 30);
+    private readonly Label _hint = Label("Hint", StoryTheme.HintSize);
+    private readonly VBoxContainer _notes = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly ScrollContainer _reading = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private CompactCommandList _list = null!;
     internal Action InvalidatePointer { get; set; } = () => { };
@@ -26,20 +28,24 @@ internal sealed partial class FieldServiceMenu : Panel
         Theme = StoryTheme.Create();
         MouseFilter = MouseFilterEnum.Ignore;
         _list = new(_icons) { InvalidatePointer = () => InvalidatePointer() };
-        AddChild(_title); AddChild(_list); AddChild(_back); AddChild(_reading); _reading.AddChild(_reason);
-        _reason.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        AddChild(_title); AddChild(_list); AddChild(_back); AddChild(_reading); _reading.AddChild(_notes);
+        _notes.AddThemeConstantOverride("separation", 12);
+        _notes.AddChild(_reason); _notes.AddChild(_hint);
         ItemRectChanged += () => InvalidatePointer();
     }
     internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters) => MenuRasterTextures.Configure(_icons, rasters, "", _owner);
-    internal void Present(GameInput input, int index, string title, string reason, string backKey, IReadOnlyList<bool>? available = null)
+    internal void Present(GameInput input, int index, string title, string reason, string hint, string backKey, IReadOnlyList<bool>? available = null)
     {
         _title.Text = title; _back.Text = (index == 4 ? "› " : "   ") + input.CompactHint(GameAction.Cancel) + " · " + GameText.Get(backKey);
         _back.AddThemeColorOverride("font_color", index == 4 ? StoryTheme.Selected : Colors.White);
         for (int i = 0; i < _icons.Length; i++)
         { _icons[i].Available = available is null || available[i]; _icons[i].RefreshCaption(); _icons[i].SetSelection(i == index, input.Settings.ReducedFlash); }
-        string reading = reason;
-        if (_reason.Text != reading) _reading.ScrollVertical = 0;
-        _reason.Text = reading; _list.Present(_keys.Select(key => GameText.Get(key)).ToArray()); Arrange();
+        if (_reason.Text != reason || _hint.Text != hint) _reading.ScrollVertical = 0;
+        _reason.Text = reason;
+        _reason.Visible = reason.Length > 0;
+        _hint.Text = hint;
+        _list.Present(_keys.Select(key => GameText.Get(key)).ToArray());
+        Arrange();
     }
     private void Arrange()
     {
@@ -48,8 +54,8 @@ internal sealed partial class FieldServiceMenu : Panel
         _list.Position = new(16, 40 + _title.GetMinimumSize().Y); _list.Arrange(inner);
         _back.Position = new(16, _list.Position.Y + _list.RequestedHeight + 8); _back.Size = new(inner, 64);
         float top = _back.Position.Y + 80;
-        _reason.CustomMinimumSize = new(inner - 16, 0); _reason.CustomMaximumSize = new(inner - 16, -1);
-        float height = Math.Min(_reason.GetMinimumSize().Y, Math.Max(64, GetViewportRect().Size.Y - 144 - top - 16));
+        _notes.CustomMinimumSize = new(inner - 16, 0); _notes.CustomMaximumSize = new(inner - 16, -1);
+        float height = Math.Min(_notes.GetCombinedMinimumSize().Y, Math.Max(64, GetViewportRect().Size.Y - 144 - top - 16));
         _reading.Position = new(16, top); _reading.Size = new(inner, height);
         Size = new(width, top + height + 16); Position = new(GetViewportRect().Size.X - 32 - width, 112);
         if (ProtectedSubject is { } subject && GetRect().Intersects(subject)) Position = new(32, 112);
@@ -59,12 +65,12 @@ internal sealed partial class FieldServiceMenu : Panel
     internal Rect2 BackRect => _back.GetGlobalRect();
     internal bool BackHit(Vector2 p) => BackRect.HasPoint(p);
     internal void Wheel(int step) { _reading.ScrollVertical += step; InvalidatePointer(); }
-    internal bool ReadingOverflow => _reason.GetMinimumSize().Y > _reading.Size.Y + 1;
+    internal bool ReadingOverflow => _notes.GetCombinedMinimumSize().Y > _reading.Size.Y + 1;
     internal void Suspend() { foreach (var icon in _icons) icon.StopFocusEmphasis(); }
     public override void _Process(double delta) { if (IsVisibleInTree()) { Arrange(); foreach (var icon in _icons) icon.AdvanceFocus(delta); } }
     internal object Observe() => new { visible = IsVisibleInTree(), rect = Rect(this), title = _title.Text, list = _list.Observe(),
         titleRect = Rect(_title), backRect = BattleMapViewport.Rectangle(BackRect),
-        reason = _reason.Text, readingRect = Rect(_reading), readingHeight = _reason.GetMinimumSize().Y, scroll = _reading.ScrollVertical,
+        reason = _reason.Text, hint = _hint.Text, readingRect = Rect(_reading), readingHeight = _notes.GetCombinedMinimumSize().Y, scroll = _reading.ScrollVertical,
         commands = _icons.Select((icon, i) => new { id = icon.Identity, selected = icon.Selected, enabled = icon.Available, rect = BattleMapViewport.Rectangle(RowRect(i)), art = icon.ObserveArt() }) };
     internal static object Rect(Control c) => BattleMapViewport.Rectangle(c.GetGlobalRect());
     internal static Label Label(string name, int size)
@@ -76,7 +82,7 @@ internal sealed partial class FieldChoicePanel : Panel
 {
     private readonly ScrollContainer _scroll = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private readonly VBoxContainer _body = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-    private readonly Label _title = FieldServiceMenu.Label("Title", 32), _hint = FieldServiceMenu.Label("Hint", 24), _back = FieldServiceMenu.Label("Back", 30);
+    private readonly Label _title = FieldServiceMenu.Label("Title", 32), _hint = FieldServiceMenu.Label("Hint", StoryTheme.HintSize), _back = FieldServiceMenu.Label("Back", 30);
     private readonly List<(Control Row, Label Text, Label Marker, IdentityIcon Icon)> _rows = [];
     internal Action InvalidatePointer { get; set; } = () => { };
     private int _focus = -1;

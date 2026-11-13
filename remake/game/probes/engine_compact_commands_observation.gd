@@ -137,6 +137,10 @@ func church_case() -> bool:
     if not await church_ready(): return false
     await frames(4)
     var persistence: Dictionary = JSON.parse_string(host.call("ReadPersistenceObservationJson"))
+    var deadline := Time.get_ticks_msec() + 5000
+    while persistence.panel == "entry-loading" and Time.get_ticks_msec() < deadline:
+        await process_frame
+        persistence = JSON.parse_string(host.call("ReadPersistenceObservationJson"))
     samples.append({"label":"church-record-host", "persistence":persistence})
     if not expect(persistence.panel in ["save-slots","error"] and state().wait != "ChurchWait",
             "Church completes caller before shared Save host"): return false

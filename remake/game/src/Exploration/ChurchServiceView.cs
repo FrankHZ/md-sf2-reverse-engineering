@@ -122,7 +122,6 @@ internal sealed partial class ChurchServiceView : Control
             _hint.Text += "\n" + GameText.Get("church.save-hint");
         if (GameText.Language == "zh-CN")
         {
-            _hint.Text += "\n" + GameText.Get("localization.names");
             string fallback = GameText.Fallback("church.");
             if (fallback.Length > 0) _hint.Text += "\n" + fallback;
         }
