@@ -67,13 +67,13 @@ internal sealed partial class ShopServiceView : Control
         _pointer.ReleaseIfNeutral(); if (!input.GameplayHeld) _release = false;
         _index = Math.Clamp(_index, 0, Math.Max(0, _options.Count - 1));
         _page.Visible = !IsMenu; _services.Visible = IsMenu;
-        _hint = (_assetError is null ? "" : _assetError + "\n") + (_error is null ? "" : _error + "\n") +
-            GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
+        string reason = _assetError is not null ? GameText.Get("shop.closed") :
+            _error ?? (IsMenu && _index is 2 or 3 ? GameText.Get("shop.unavailable") : "");
+        _hint = GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         _hint += "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕";
-        if (GameText.Language == "zh-CN") _hint += "\n" + GameText.Get("localization.names");
-        if (IsMenu) _services.Present(input, _index, _title, _hint + "\n" + (_index is 2 or 3 ? GameText.Get("shop.unavailable") : ""),
+        if (IsMenu) _services.Present(input, _index, _title, reason, _hint,
             "shop.leave", [_assetError is null, _assetError is null, false, false]);
-        else _page.Present(_title, _hint, input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("shop.back"),
+        else _page.Present(reason.Length == 0 ? _title : _title + "\n" + reason, _hint, input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("shop.back"),
             _options.Select((option, i) => (option.Text, _identities[i], option.Command is not null)).ToArray(), _icons, _index);
         var members = session.QueryPartyDetails()!.Members;
         ActorRef? actor = wait.Offer?.Member ?? wait.Member;
@@ -153,7 +153,7 @@ internal sealed partial class ShopServiceView : Control
         if (command is null) { _release = true; _pointer.Suspend(); _error = GameText.Get("shop.unavailable"); Present(_session, _input, _submit); return; }
         _focuses[_wait!.Phase] = _index; _release = true; _pointer.Suspend();
         var result = _submit(command, _revision);
-        if (result.Failure is { } failure) _error = GameText.Get("church.failure", failure.Code, failure.Field, failure.Message);
+        if (result.Failure is not null) _error = GameText.Get("shop.failed");
         Present(_session, _input, _submit);
     }
     internal void Handle(GameAction action)

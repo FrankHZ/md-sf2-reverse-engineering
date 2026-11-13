@@ -18,10 +18,13 @@ internal static class StoryTheme
     internal const int BodySize = 30, HintSize = 24;
     internal static readonly Color Selected = new("ffe19a");
     internal static readonly Color Unavailable = new("8e9bab");
-    // Entry and Save/Quit opt in; other story and gameplay menus keep their accepted treatment.
+    // Journey rows reserve marker space. Standalone actions share the square states.
     internal static Theme CreateEntry(bool journey = false)
     {
         var theme = Create();
+        theme.SetStylebox("panel", "TooltipPanel", theme.GetStylebox("panel", "PanelContainer"));
+        theme.SetFontSize("font_size", "TooltipLabel", HintSize);
+        theme.SetColor("font_color", "TooltipLabel", theme.GetColor("font_color", "Label"));
         theme.SetStylebox("normal", "Button", Box("102c50", "607d9f"));
         theme.SetStylebox("hover", "Button", Box("204c76", "d4c5a0"));
         theme.SetStylebox("pressed", "Button", Box("354c64", "ffe19a"));
@@ -41,16 +44,8 @@ internal static class StoryTheme
         theme.SetColor("font_placeholder_color", "LineEdit", new("a7b9cf"));
         if (journey)
         {
-            // Production F1 opts in; shared Save/Quit and other scenes retain their treatment.
-            foreach (string type in new[] { "Button", "EntrySelectedButton", "LineEdit" })
-                foreach (string state in new[] { "normal", "hover", "pressed", "disabled", "focus" })
-                    if (theme.HasStylebox(state, type) && theme.GetStylebox(state, type) is StyleBoxFlat box)
-                    {
-                        box.CornerRadiusTopLeft = box.CornerRadiusTopRight = 0;
-                        box.CornerRadiusBottomLeft = box.CornerRadiusBottomRight = 0;
-                    }
-            theme.SetStylebox("normal", "Button", Box("102c50", "536c87", radius: 0, borderWidth: 1));
-            theme.SetStylebox("normal", "EntrySelectedButton", Box("273d56", "ffe19a", radius: 0, borderWidth: 3));
+            theme.SetStylebox("normal", "Button", Box("102c50", "536c87", borderWidth: 1));
+            theme.SetStylebox("normal", "EntrySelectedButton", Box("273d56", "ffe19a", borderWidth: 3));
             foreach (string type in new[] { "Button", "EntrySelectedButton" })
                 foreach (string state in new[] { "normal", "hover", "pressed", "disabled" })
                     if (theme.HasStylebox(state, type) && theme.GetStylebox(state, type) is StyleBoxFlat box)
@@ -75,18 +70,16 @@ internal static class StoryTheme
         marker.AddThemeColorOverride("font_color", Selected);
     }
     private static StyleBoxFlat Box(string background, string border, float horizontal = 12, float vertical = 10,
-        int radius = 8, int borderWidth = 2) => new()
+        int borderWidth = 2) => new()
     {
         BgColor = new(background), BorderColor = new(border),
         BorderWidthLeft = borderWidth, BorderWidthTop = borderWidth, BorderWidthRight = borderWidth, BorderWidthBottom = borderWidth,
-        CornerRadiusTopLeft = radius, CornerRadiusTopRight = radius, CornerRadiusBottomLeft = radius, CornerRadiusBottomRight = radius,
         ContentMarginLeft = horizontal, ContentMarginRight = horizontal, ContentMarginTop = vertical, ContentMarginBottom = vertical,
     };
     private static StyleBoxFlat Focus() => new()
     {
         BgColor = Colors.Transparent, BorderColor = Selected,
         BorderWidthLeft = 3, BorderWidthTop = 3, BorderWidthRight = 3, BorderWidthBottom = 3,
-        CornerRadiusTopLeft = 8, CornerRadiusTopRight = 8, CornerRadiusBottomLeft = 8, CornerRadiusBottomRight = 8,
     };
     internal static Theme Create()
     {

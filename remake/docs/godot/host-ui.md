@@ -17,6 +17,12 @@ Battle, field/Party and shop presenters keep their separate owners.
 
 ## Implemented composition and return
 
+The standalone gameplay Menu keeps compact symmetric padding. It shares the square normal, hover,
+pressed, disabled and focus style boxes with the entry family. Journey rows separately reserve
+space for their focus marker. Native binding tooltips use the square reading panel and 24px type,
+including the popup created on hover over Menu. The field footer retires on host cover.
+[Production observation](ui-scene-review.md#production-controls-audit)
+
 The centered Menu uses the existing square entry theme, an 800px capped width, at least 64px
 command rows, quiet Journey/Session headings and a gold outline plus marker on the selected row.
 Resume starts selected on each new opening. Unavailable commands retain reasons and are skipped

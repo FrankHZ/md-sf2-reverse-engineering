@@ -13,7 +13,7 @@ internal sealed partial class PartyStatusView : Control
 {
     private readonly PartyDetailsPanel _details = new() { Name = "MemberDetails", FieldLayout = true };
     private readonly Control _memberLayer = new() { Name = "MemberLayer" };
-    private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", 22), _close = Text("Close", 26);
+    private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", StoryTheme.HintSize), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
     private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", StoryTheme.HintSize);
     private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30);
@@ -124,11 +124,9 @@ internal sealed partial class PartyStatusView : Control
         PresentPortrait(session, member);
         string focus = GameText.Get(_details.FocusPane switch { 1 => "party.magic", 2 => "party.items", _ => "party.member" });
         _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _hint.CustomMaximumSize = new(1584, -1);
         _hint.Text = GameText.Get("party.hint", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Up),
             input.CompactHint(GameAction.Down), focus, input.CompactHint(GameAction.Target),
             input.CompactHint(GameAction.Cancel), input.CompactHint(GameAction.Equipment));
-        if (GameText.Language == "zh-CN") _hint.Text += "\n" + GameText.Get("localization.names");
         string fallback = GameText.Fallback("party.", true);
         if (fallback.Length > 0) _hint.Text += " · " + fallback;
         if (_assetFailure is { } failure) _hint.Text += "\n" + GameText.Get("prepare.failure",

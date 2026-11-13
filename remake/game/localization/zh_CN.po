@@ -131,7 +131,7 @@ msgstr "已暂存默认值。应用后保存；取消则保留当前设置。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.notice"
-msgstr "应用后更改才会生效。文字速度仅用于逐字显示。中文显示仍使用原有的七字符 ASCII 命名规则。其他界面目前仍有英文。"
+msgstr "选择「应用」保存更改。"
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.hint"
@@ -297,12 +297,12 @@ msgid "field.controls"
 msgstr "{0}{1}：队伍状态"
 
 #. Church/Search display only; positional arguments are retained semantic values.
-msgid "localization.names"
-msgstr "姓名与物品名未翻译时保留英文；自定义姓名保持原样。"
-
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "localization.fallback"
 msgstr "英文回退（{0}）。"
+
+msgid "field.accelerate"
+msgstr "按住 {0} 加速"
 
 msgid "field.talk"
 msgstr "{0}：交谈    "
@@ -389,9 +389,6 @@ msgstr "为 {0} 命名"
 msgid "name.confirm-hint"
 msgstr "Enter：使用此名"
 
-msgid "name.help"
-msgstr "仅支持键盘输入，最多 7 个字符\n字母 A–Z / a–z、数字 0–9\n以及 , . - ! ? # ' 和空格\nBackspace/Delete：删除字符\n留空使用默认名字，不支持中文命名"
-
 msgid "name.use"
 msgstr "使用此名"
 
@@ -402,7 +399,7 @@ msgid "name.too-long"
 msgstr "名字过长，最多可输入 7 个字符。"
 
 msgid "name.character"
-msgstr "不支持此字符。请使用上方列出的字母、数字或标点。"
+msgstr "请用英文字母、数字、空格或以下标点：, . - ! ? # '。"
 
 msgid "name.default"
 msgstr "将使用默认名字。"
@@ -1340,12 +1337,18 @@ msgid "shop.result.unsupporteditem"
 msgstr "此物品所需的交易服务尚未开放。"
 
 #. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.failed"
+msgstr "交易未能完成。"
+
+msgid "shop.closed"
+msgstr "商店暂不可用，可以离开。"
+
 msgid "shop.unavailable"
-msgstr "当前前期普通库存不提供修理或特价品服务。"
+msgstr "本店不提供这项服务。"
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "shop.hint"
-msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回。购买后可离店，在队伍菜单中装备。"
+msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回"
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "battle.scene.poison-cured"
@@ -1743,7 +1746,7 @@ msgid "host.help-text-44"
 msgstr "菜单 · 输入姓名"
 
 msgid "host.help-text-45"
-msgstr "姓名仅支持键盘输入，最多七个受支持的字母、数字或标点。退格 / Delete 编辑，Enter 使用姓名，Escape 返回。留空保留默认姓名。游戏按键映射及确认 / 返回互换不会替换这些编辑键。其它支持的菜单保留键盘 / 手柄操作。"
+msgstr "用键盘输入名字，按 Enter 确认。"
 
 msgid "host.help-title"
 msgstr "操作帮助 · {0} · {1}/{2}"

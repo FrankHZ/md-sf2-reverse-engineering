@@ -28,10 +28,10 @@ flags retain their existing owners. F3–F10, gameplay rules, content admission 
 remain outside this slice.
 
 F1 opts into square blue action surfaces, a reserved focus marker column, gold selection and the
-existing editor focus outline. Only `SessionEntryView`, `NameEntryView` and `SaveSlotView.OverEntry`
-select this treatment. Shared gameplay Save/Quit callers keep the prior theme. Entry actions wrap
+existing editor focus outline. Host and slot rows share the square journey action treatment. The standalone gameplay Menu
+uses compact padding and the same square style family. Entry actions wrap
 and scroll inside the right column; reading a long greeting owns the action area until its pages
-are read. Name/help/error content and slot/message/detail content have internal scrolling, with
+are read. Name prompt and validation text and slot/message/detail content have internal scrolling, with
 mapped hints and the name actions outside that scrolling region. The name editor retains its
 horizontal Back/Use actions, actual alphabet, draft and fixed Enter/Escape semantics.
 
@@ -58,7 +58,7 @@ Cancel; it is not a simulated successful write or an operating-system disk-failu
 
 A display-only Chinese entry stress variant reads 1,450 characters through the existing pages.
 A separate pre-admission UI translation variant wraps a long New Game action, an occupied slot
-description and name help; the real slot/name scroll containers retain their fixed hints/actions.
+description and name prompt; the real slot/name scroll containers retain their fixed hints/actions.
 It changes only in-memory display resources, never the tracked catalogs or save data.
 The actual Map3 source approach reaches text531's question with its supplied portrait. English
 1920×1080 covers directional selection and Cancel=No; Chinese 2560×1440 covers a 1,341-character
@@ -1636,7 +1636,7 @@ language. Chinese missing/invalid rows retain exact fallback metadata and comple
 Settings recovery details are currently English with a localized explanation.
 
 The [M2b entry/save boundary](../application/localization-design.md#implemented-m2b-entry-and-save-boundary)
-adds title/Witch controls, New Game/restricted-name help, slots, Save/Quit/Continue and recovery.
+adds title/Witch controls, New Game/name validation, slots, Save/Quit/Continue and recovery.
 Actual entry IDs 216–221 use their admitted profile/source through optional
 `SF2_ENTRY_DISPLAY_CATALOG`; no private translation ships with the UI. Entry source fallback and
 UI-key fallback remain independently visible/diagnosable. Long menu/error text consumes ReadMore
@@ -2500,7 +2500,7 @@ At the existing1920×1080 canvas, reserve the Witch's entire4× art rectangle (1
 Use the separate right region (1216,64,640,952) for ordinary choices, slots and confirmations;
 no full-screen shade covers the art. Greeting text reuses the story reading/pagination component
 with entry-only bounds. Naming now uses a focused physical-keyboard `LineEdit` in the same right
-window (#1446), with seven-character validation, visible admitted alphabet/default/error help and
+window (#1446), with seven-character validation, the current default and immediate length/character feedback and
 retained draft/Back semantics. The controller alphabet grid and its key-theme variants are removed.
 The existing entry editor-focus style and mouse Back/Use name buttons remain.
 
@@ -2509,7 +2509,7 @@ the currently available actions (for example `Enter: Choose • Escape: Back`, o
 full alternatives remain in existing binding help/tooltips. It
 reads the installed mapping after Confirm/Cancel swap. No device detection or duplicated key table.
 Errors retain their diagnostic and safe retry/back actions; long slot labels wrap within the window.
-The name editor always identifies fixed Enter/Escape editing semantics and keyboard-only input;
+The name editor shows the available fixed Enter/Escape actions;
 window focus recovery or the next key restores text focus without changing the draft. All naming
 key events bypass mapped game actions; pad events update existing release bookkeeping but are
 consumed before either GUI navigation or the hidden slot/entry menu. Leaving naming still uses the

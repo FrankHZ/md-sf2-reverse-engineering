@@ -32,12 +32,6 @@ internal sealed partial class NameEntryView : Control
         column.AddChild(_edit);
         _edit.TextChanged += _ => Validate();
         _edit.TextSubmitted += _ => Finish();
-        var help = new Label { Name = "NameHelp", Text = GameText.Get("name.help"),
-            AutowrapMode = TextServer.AutowrapMode.WordSmart, HorizontalAlignment = HorizontalAlignment.Center };
-        help.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); column.AddChild(help);
-        string fallback = string.Join("\n", new[] { GameText.Fallback("name.", includeKey: true),
-            GameText.Fallback("entry.back", includeKey: true) }.Where(text => text != ""));
-        if (fallback != "") help.Text += "\n" + fallback;
         _error = new Label { Name = "NameError", AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new(0, 68), HorizontalAlignment = HorizontalAlignment.Center }; column.AddChild(_error);
         var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         actions.AddThemeConstantOverride("separation", 12); layout.AddChild(actions);

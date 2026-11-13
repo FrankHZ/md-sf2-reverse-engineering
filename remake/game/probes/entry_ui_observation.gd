@@ -97,7 +97,7 @@ func _run() -> void:
         var catalog := load("res://localization/zh_CN.po") as Translation
         catalog.add_message("entry.new", "开始一段新的冒险旅程，长项仍然完整显示。".repeat(5))
         catalog.add_message("slot.record", "槽位 {0} · {1} · {2} · {3}\n"+"这是一段用于检查完整阅读与滚动边界的长槽位说明。".repeat(20))
-        catalog.add_message("name.help", "仅支持键盘输入，最多七个字符。保留草稿，按回车确认，按返回键返回。".repeat(30))
+        catalog.add_message("name.title", "这支队伍的主角叫什么名字？".repeat(120))
     host=load("res://Main.tscn").instantiate(); root.add_child(host)
     await frames()
     if OS.get_environment("SF2_ENTRY_UI_CHOICE") != "":
@@ -148,14 +148,16 @@ func _run() -> void:
     if OS.get_environment("SF2_ENTRY_UI_LABELS") == "1":
         var reading := host.find_child("NameReading",true,false) as ScrollContainer
         var hint := host.find_child("NameHint",true,false) as Control
-        check(reading.get_v_scroll_bar().max_value > reading.size.y and contained(hint.get_global_rect(),Rect2(1216,64,640,952)),"long name help scrolls above fixed actions and hints")
+        check(reading.get_v_scroll_bar().max_value > reading.size.y and contained(hint.get_global_rect(),Rect2(1216,64,640,952)),"long name prompt scrolls above fixed actions and hints")
+    check(host.find_child("NameHelp", true, false) == null, "ordinary naming omits the permanent limits notice")
     await type_name("ABCDEFGH")
     var editor := host.find_child("NameEntryView",true,false)
     check(not JSON.parse_string(editor.call("ReadNameObservationJson")).valid,"eight characters rejected")
     await press(KEY_ENTER)
     check(host.find_child("NameEntryView",true,false) != null,"invalid Enter retains name draft")
     await type_name("鲍伊")
-    check(not JSON.parse_string(editor.call("ReadNameObservationJson")).valid,"unsupported alphabet rejected")
+    var invalid: Dictionary = JSON.parse_string(editor.call("ReadNameObservationJson"))
+    check(not invalid.valid and not invalid.error.is_empty(),"unsupported alphabet gets immediate feedback")
     await type_name("Ada")
     check(JSON.parse_string(editor.call("ReadNameObservationJson")).valid,"admitted name accepted")
     await press(KEY_ESCAPE)

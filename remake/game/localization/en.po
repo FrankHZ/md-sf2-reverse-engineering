@@ -131,7 +131,7 @@ msgstr "Defaults staged. Apply saves them; Cancel keeps current settings."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.notice"
-msgstr "Changes take effect only after Apply. Text speed is used in Gradual mode. Chinese display keeps the existing seven-character ASCII naming rule. Other screens remain partly English."
+msgstr "Choose Apply to save your changes."
 
 #. Settings display; actions use stable indexes.
 msgid "ui.settings.hint"
@@ -297,12 +297,12 @@ msgid "field.controls"
 msgstr "{0}{1}: Party Status"
 
 #. Church/Search display only; positional arguments are retained semantic values.
-msgid "localization.names"
-msgstr "Untranslated names and items use English; custom names stay literal."
-
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "localization.fallback"
 msgstr "English fallback ({0})."
+
+msgid "field.accelerate"
+msgstr "Hold {0} to speed up"
 
 msgid "field.talk"
 msgstr "{0}: Talk    "
@@ -389,9 +389,6 @@ msgstr "Name {0}"
 msgid "name.confirm-hint"
 msgstr "Enter: Use name"
 
-msgid "name.help"
-msgstr "Keyboard only • Up to 7 characters\nLetters A–Z / a–z, digits 0–9\n, . - ! ? # ' and space\nBackspace/Delete: Remove characters\nEmpty keeps the default name"
-
 msgid "name.use"
 msgstr "Use name"
 
@@ -402,7 +399,7 @@ msgid "name.too-long"
 msgstr "Name is too long. Use at most 7 characters."
 
 msgid "name.character"
-msgstr "Unsupported character. Use the letters, digits or punctuation listed above."
+msgstr "Use English letters, digits, spaces or one of , . - ! ? # '."
 
 msgid "name.default"
 msgstr "The default name will be used."
@@ -1340,12 +1337,18 @@ msgid "shop.result.unsupporteditem"
 msgstr "This item needs a service that is unavailable here."
 
 #. Finite shop/supply consumer; semantic arguments retained.
+msgid "shop.failed"
+msgstr "The transaction could not be completed."
+
+msgid "shop.closed"
+msgstr "The shop is unavailable. You can still leave."
+
 msgid "shop.unavailable"
-msgstr "Repair and Deals are unavailable for this ordinary early stock."
+msgstr "This shop does not offer this service."
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "shop.hint"
-msgstr "{0}/{1}: select · {2}: confirm · {3}: back. Purchases stay unequipped; use Party Equip after leaving."
+msgstr "{0}/{1}: select · {2}: confirm · {3}: back"
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "battle.scene.poison-cured"
@@ -1743,7 +1746,7 @@ msgid "host.help-text-44"
 msgstr "Menus · name entry"
 
 msgid "host.help-text-45"
-msgstr "NAME ENTRY IS KEYBOARD ONLY. Type up to 7 supported letters, digits or punctuation. Backspace/Delete edit; Enter uses the name; Escape returns. Empty keeps Bowie. Gameplay bindings and their swap do not replace these editor keys. Other supported menus retain keyboard/pad controls."
+msgstr "Type a name with the keyboard. Enter accepts it."
 
 msgid "host.help-title"
 msgstr "Controls · {0} · {1}/{2}"

@@ -161,7 +161,21 @@ func shop_focus(index: int) -> void:
         if int(state().shop.index) == index: break
         await press(KEY_DOWN)
 
+func shop_hint(label: String) -> void:
+    var shop := host.find_child("ShopService", true, false)
+    var visible := shop.find_children("Hint", "Label", true, false).filter(func(c): return c.is_visible_in_tree())
+    check(visible.size() == 1, label + " has one visible input hint")
+    if visible.size() != 1: return
+    var hint := visible[0] as Label
+    check(hint.get_theme_font_size("font_size") == 24 and hint.text == state().shop.hint,
+        label + " active mapped keys use the fixed hint size")
+    check((not "未翻译" in hint.text) and (not "untranslated" in hint.text.to_lower()),
+        label + " controls contain no translation notice")
+    samples.append({"label":label + "-hint", "text":hint.text, "size":hint.get_theme_font_size("font_size"),
+        "lines":hint.get_line_count(), "rect":str(hint.get_global_rect())})
+
 func phase(value: int, label: String) -> void:
+    shop_hint(label)
     check(int(state().shop.wait.Phase) == value, label)
     if value != 0: choices(state().shop.page, label)
 
@@ -177,6 +191,7 @@ func shop_flow() -> void:
     await shop_focus(2); await press(confirm_key)
     check(int(state().shop.wait.Phase) == 0 and signature(state()) == signature(baseline), "Repair preserves real unavailable boundary")
     commands(state().shop.services, "shop refusal")
+    shop_hint("Repair refusal")
     await click(state().shop.services.commands[0].rect); phase(1,"pointer Buy stock")
     await click(state().shop.page.rows[1].rect); phase(2,"pointer stock recipient")
     check(state().shop.pack.visible and state().shop.pack.rows.size() == 4, "focused recipient's four slots shown")
@@ -191,6 +206,7 @@ func shop_flow() -> void:
     await press(confirm_key)
     await key(confirm_key,true); await frames(15)
     var paid := state("bought")
+    shop_hint("Buy result")
     check(int(paid.shop.wait.Phase) == 5, "Buy produces actual result")
     var offer: Dictionary = quoted.shop.wait.Offer
     if int(paid.shop.wait.Result) == 0:
@@ -211,6 +227,7 @@ func shop_flow() -> void:
     check(signature(state()) == signature(sale),"sale cancellation pays/removes nothing")
     await press(confirm_key); phase(3,"return to retained sale slot"); await press(confirm_key); await press(confirm_key)
     var sold := state("sold")
+    shop_hint("Sell result")
     check(int(sold.shop.wait.Phase) == 5 and int(sold.shop.wait.Result) == 1 and sold.gold == sale.gold+sale_offer.Price and sold.party != sale.party,"real sale removes exact slot and pays exact price")
     await press(confirm_key); phase(0,"sale acknowledgement")
     # Buy repeatedly through ordinary confirmations until the recipient's real pack refuses.
@@ -246,7 +263,11 @@ func shop_flow() -> void:
         var party: Dictionary = state().partyStatus
         check(party.layout.items.entries.size() == 4,"complete-world fixed pack")
         for row in party.layout.items.entries:
-            if row.icon.visible: check(row.icon.scale == 3 and row.icon.width == 16 and row.icon.height == 24,"complete-world identity art")
+            if row.icon.visible:
+                var hd: bool = row.icon.variant == "hd"
+                check(row.icon.scale == 3 and row.icon.variant in ["original", "hd"]
+                    and row.icon.width == (64 if hd else 16) and row.icon.height == (96 if hd else 24)
+                    and row.icon.rect.width == 48 and row.icon.rect.height == 72, "complete-world identity art")
         await press(confirm_key)
         commands(preparation().operations,"complete-world item commands")
         await press(confirm_key); choices(preparation().page,"complete-world Use slots")

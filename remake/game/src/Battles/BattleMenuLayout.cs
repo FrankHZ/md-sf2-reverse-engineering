@@ -12,7 +12,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
-    internal readonly Label Help = Text("Help", 28);
+    internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);

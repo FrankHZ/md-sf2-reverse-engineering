@@ -2374,9 +2374,9 @@ with the menu page/selection/audio retained. A long original resource-error expl
 the same reading/reset boundary. Resource-error and actual failed-start menus must refresh their
 localized explanation while retaining the original asset error or failure/code/field/retry values.
 
-With a valid short entry overlay, erase Chinese `entry.new` and `name.help`, and give `save.offer`
-an invalid parameter before startup. The actual entry, naming and Save screens must show complete
-English fallback and the corresponding key/reason, even though entry source text is Chinese.
+With a valid short entry overlay, erase Chinese `entry.new` and give `save.offer` an invalid
+parameter before startup. Entry and Save show their complete English fallback and reason. In the
+name editor, enter an invalid character to see the validation message; a valid draft clears it.
 Inspect loaded glyphs, control/panel viewport bounds, allocated text height and native errors.
 Scrollable dialogue content may extend beyond its clipped reading viewport; its viewport and footer
 must fit. No source-control acknowledgement, session command, seed or write implements reading.
