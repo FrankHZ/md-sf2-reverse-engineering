@@ -20,7 +20,7 @@ internal sealed partial class BattleInspectionView
         string land;
         if (marker is null)
         {
-            bool blocked = tile.Surface is TerrainSurface.Barrier or TerrainSurface.HighSky or TerrainSurface.Impassable;
+            bool blocked = tile.Surface is TerrainSurface.Barrier or TerrainSurface.HighSky or TerrainSurface.Impassable or TerrainSurface.Water;
             land = blocked ? GameText.Get("battle.inspect.ground-impassable") :
                 GameText.Get("battle.inspect.ground-effect", LandValue(BattleTerrainRules.LandEffect(tile, BattleMover.Regular)));
         }

@@ -92,7 +92,8 @@ public sealed class PrivateExplorationReader : IScenarioSource
             if (result.Definition.Exploration!.Visuals is { } visuals)
                 foreach (var scene in result.Definition.EncounterScenes.Values)
                     if (scene.FieldDeath is { } field)
-                        Require(field.AllySprites.Values.Concat(field.EnemySprites.Values).All(visuals.Sprites.ContainsKey),
+                        Require(field.AllySprites.Values.All(visuals.Sprites.ContainsKey) &&
+                            field.EnemySprites.Values.All(sprite => sprite == 254 || visuals.Sprites.ContainsKey(sprite)),
                             "field-actor-resource-unavailable", "world.presentation.sprites");
             return newGame is null ? result : initializeParty ? newGame.Initialize(result) : newGame.Definitions(result);
         }

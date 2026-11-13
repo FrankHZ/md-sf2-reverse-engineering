@@ -42,6 +42,7 @@ public static class BattleTerrainRules
     internal static sbyte MovementCost(BattleTerrain terrain, BattleMover mover = BattleMover.Regular)
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
+        if (mover == BattleMover.Aquatic) return terrain.Surface == TerrainSurface.Water ? (sbyte)2 : (sbyte)-1;
         if (terrain.Surface == TerrainSurface.Barrier) return -1;
         if (mover == BattleMover.Flying && Enum.IsDefined(terrain.Surface)) return 2;
         if (terrain.Surface == TerrainSurface.HighSky) return -1;
@@ -55,7 +56,7 @@ public static class BattleTerrainRules
             TerrainSurface.Rough => mover == BattleMover.Stealth ? (sbyte)2 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
             TerrainSurface.Deep => mover == BattleMover.Stealth ? (sbyte)2 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)4,
             TerrainSurface.Desert => mover == BattleMover.Stealth ? (sbyte)4 : mover == BattleMover.Centaur ? (sbyte)5 : (sbyte)3,
-            TerrainSurface.Impassable => -1,
+            TerrainSurface.Impassable or TerrainSurface.Water => -1,
             TerrainSurface.HighSky => -1,
             _ => throw new BattleRuleException("terrain-surface", "terrain.surface", true),
         };

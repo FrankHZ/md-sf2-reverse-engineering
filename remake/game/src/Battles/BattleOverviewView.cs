@@ -90,7 +90,7 @@ internal sealed partial class BattleOverviewView : Panel
     {
         TerrainSurface.Open => "#568a69", TerrainSurface.Brush => "#2b6c48", TerrainSurface.Rough => "#a78c6b",
         TerrainSurface.Deep => "#507fac", TerrainSurface.Desert => "#d2b371", TerrainSurface.Impassable => "#7e7a91",
-        TerrainSurface.HighSky => "#a1cbdf", TerrainSurface.Barrier => "#404756", _ => throw new InvalidOperationException(),
+        TerrainSurface.Water => "#376b9a", TerrainSurface.HighSky => "#a1cbdf", TerrainSurface.Barrier => "#404756", _ => throw new InvalidOperationException(),
     });
     internal int Hit(Vector2 screen)
     {

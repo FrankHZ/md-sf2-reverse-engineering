@@ -11,7 +11,7 @@ internal static class EnemySpellDecision
         IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null)
     {
         var actor = battle.GetActor(actorRef);
-        var known = actor.Spells.FirstOrDefault(spell => spell.Value is "blaze" or "freeze" or "blast");
+        var known = actor.Spells.FirstOrDefault(spell => spell.Value is "blaze" or "freeze" or "blast" or "aqua");
         if (known != default && !battle.Definition.AttackSpells.ContainsKey(known))
             throw new BattleRuleException("spell-effect", "spell", true);
         var key = actor.Spells.Where(spell => spell.Value == known.Value)
@@ -51,11 +51,14 @@ internal static class EnemySpellDecision
         // later selects physical. Category selection uses MAIN, not thinking RNG.
         var attack = EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, selectedGrid);
         if (attack is not null) { effects.AddRange(attack.Effects); prepared = attack.Battle; }
-        var category = BattleRandom.NextMain(battle.MainSeed, 6);
-        effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, 6, category.Value));
-        prepared = prepared.With(mainSeed: category.After);
-        if (attack is not null && category.Value is not (2 or 4))
-            return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
+        if (key.Value != "aqua")
+        {
+            var category = BattleRandom.NextMain(battle.MainSeed, 6);
+            effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, 6, category.Value));
+            prepared = prepared.With(mainSeed: category.After);
+            if (attack is not null && category.Value is not (2 or 4))
+                return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
+        }
         // determinebattleaction.asm @loc_34 overrides the mover table for CAST_SPELL.
         var selection = PhysicalTargetRules.Select(priorities, PhysicalPriorityTable.Mage)
             ?? throw new BattleRuleException("ai-target-selection", "ai.spells", true);

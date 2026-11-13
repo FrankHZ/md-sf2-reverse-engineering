@@ -23,6 +23,11 @@ internal sealed partial class BattleMapViewport : Control
     private readonly Dictionary<ActorRef, int> _spriteIds = [];
     private readonly Dictionary<(int Sprite, int Direction, int Frame), ImageTexture> _textures = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
+    // UpdateSpecialSprite alternates 16 and 15 animation counts, one per two VInts.
+    private const int KrakenHeadSprite = 254;
+    private Sprite2D? _krakenHead;
+    private double _krakenPoseTime;
+    private int KrakenPose => _krakenPoseTime * 30 >= 16 ? 1 : 0;
     private BattleMovementState? _movement;
     private BattleVisualState? _battleVisuals;
     private ActorRef PhysicalActor(ActorRef actor) => _battleVisuals is not null && _battleVisuals.Aliases.TryGetValue(actor, out int slot) &&
@@ -94,6 +99,7 @@ internal sealed partial class BattleMapViewport : Control
     {
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
+        _krakenHead = null; _krakenPoseTime = 0;
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
         _builds++;
@@ -142,11 +148,12 @@ internal sealed partial class BattleMapViewport : Control
                 int sprite = actor.Faction == BattleFaction.Ally
                     ? field.AllySprites[actor.Initialization?.AllyPartyMember ?? actor.ProcessingOrder]
                     : field.EnemySprites[actor.Actor];
-                if (!_visuals.Sprites.ContainsKey(sprite)) throw new InvalidOperationException("field-actor-resource-unavailable");
+                if (sprite != KrakenHeadSprite && !_visuals.Sprites.ContainsKey(sprite)) throw new InvalidOperationException("field-actor-resource-unavailable");
                 _spriteIds.Add(actor.Actor, sprite);
                 var image = new Sprite2D { Name = "MapSprite_" + actor.Actor.Value, TextureFilter = TextureFilterEnum.Nearest,
                     Scale = Vector2.One * (CellSize / 24f), ZIndex = 1 };
                 _board.AddChild(image); _sprites.Add(actor.Actor, image);
+                if (sprite == KrakenHeadSprite) _krakenHead = image;
             }
         }
     }
@@ -276,10 +283,12 @@ internal sealed partial class BattleMapViewport : Control
                 int id = actor.DeathEffect ? 63 : _spriteIds[physical];
                 int facing = shownFacing ?? (int)sprite.GetMeta("facing", 3);
                 int direction = facing switch { 1 => 0, 3 => 2, _ => 1 };
-                sprite.Texture = Texture(id, direction);
-                sprite.FlipH = facing == 0;
+                int frame = id == KrakenHeadSprite ? KrakenPose : 0;
+                sprite.Texture = Texture(id, direction, frame);
+                sprite.FlipH = id != KrakenHeadSprite && facing == 0;
+                sprite.Offset = id == KrakenHeadSprite ? new Vector2(0, -24) : Vector2.Zero;
                 sprite.Modulate = Colors.White;
-                sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", facing); sprite.SetMeta("walkingFrame", 0);
+                sprite.SetMeta("mapsprite", id); sprite.SetMeta("facing", facing); sprite.SetMeta("walkingFrame", frame);
             }
         }
         // A dead converted ally can still be the source camera/text subject. Preserve
@@ -339,8 +348,9 @@ internal sealed partial class BattleMapViewport : Control
             int direction = movement.Facing switch { 1 => 0, 3 => 2, _ => 1 };
             int frame = _movementProgress is > 0 and < 1 ? (int)(_movementProgress * 4) % 2 : 0;
             sprite.Position = position + Vector2.One * (CellSize / 2f);
+            if (_spriteIds[physical] == KrakenHeadSprite) frame = KrakenPose;
             sprite.Texture = Texture(_spriteIds[physical], direction, frame);
-            sprite.FlipH = movement.Facing == 0;
+            sprite.FlipH = _spriteIds[physical] != KrakenHeadSprite && movement.Facing == 0;
             sprite.SetMeta("facing", movement.Facing); sprite.SetMeta("walkingFrame", frame);
         }
     }
@@ -354,19 +364,30 @@ internal sealed partial class BattleMapViewport : Control
 
     private ImageTexture Texture(int sprite, int direction, int walkingFrame = 0)
     {
+        if (sprite == KrakenHeadSprite) direction = 0; // Both special poses are direction-independent.
         var key = (sprite, direction, walkingFrame);
         if (_textures.TryGetValue(key, out var texture)) return texture;
-        var raster = sprite == 63 ? _sceneContent!.Rasters[_sceneContent.FieldDeath!.ExitFrames[direction]]
+        var raster = sprite == KrakenHeadSprite ? _sceneContent!.Rasters["field-kraken-head/frame" + walkingFrame]
+            : sprite == 63 ? _sceneContent!.Rasters[_sceneContent.FieldDeath!.ExitFrames[direction]]
             : _visuals!.Sprites[sprite].Directions[direction];
         using var sheet = raster.Format == "rgba8"
             ? Image.CreateFromData(raster.Width, raster.Height, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
         if (raster.Format == "png" && sheet.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok)
             throw new InvalidOperationException("field-sprite-image");
         // Death and idle poses use frame0; movement consumes both admitted halves.
-        using var frame = sheet.GetRegion(new Rect2I(walkingFrame * 24, 0, 24, 24));
-        _textures[key] = texture = ImageTexture.CreateFromImage(frame);
+        if (sprite == KrakenHeadSprite)
+        {
+            sheet.Resize(48, 48, Image.Interpolation.Nearest);
+            texture = ImageTexture.CreateFromImage(sheet);
+        }
+        else
+        {
+            using var frame = sheet.GetRegion(new Rect2I(walkingFrame * 24, 0, 24, 24));
+            texture = ImageTexture.CreateFromImage(frame);
+        }
+        _textures[key] = texture;
         _resourceSelectors[texture] = new { sprite, direction, frame = walkingFrame,
-            raster = sprite == 63 ? _sceneContent!.FieldDeath!.ExitFrames[direction] : null };
+            raster = sprite == KrakenHeadSprite ? "field-kraken-head/frame" + walkingFrame : sprite == 63 ? _sceneContent!.FieldDeath!.ExitFrames[direction] : null };
         return texture;
     }
 
@@ -404,6 +425,12 @@ internal sealed partial class BattleMapViewport : Control
     internal void AdvanceCamera(double delta)
     {
         if (!IsVisibleInTree() || !GetWindow().HasFocus() || _mapSize == Vector2.Zero) return;
+        if (_krakenHead is { Visible: true } head && (int)head.GetMeta("mapsprite", -1) == KrakenHeadSprite)
+        {
+            _krakenPoseTime = (_krakenPoseTime + delta) % (31.0 / 30);
+            head.Texture = Texture(KrakenHeadSprite, 0, KrakenPose);
+            head.SetMeta("walkingFrame", KrakenPose);
+        }
         Frame();
         WorldViewport.Advance(delta);
         ApplyCamera(_region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24);

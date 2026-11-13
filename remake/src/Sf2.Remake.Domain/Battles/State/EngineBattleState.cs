@@ -25,6 +25,8 @@ public sealed class PhysicalCriticalRule
     public static PhysicalCriticalRule OneIn32WithHalfBonus { get; } = new(32, 1);
     public static PhysicalCriticalRule OneIn16WithQuarterBonus { get; } = new(16, 2);
     public static PhysicalCriticalRule OneIn32WithFrequentDoubleAndCounter { get; } = new(32, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
+    public static PhysicalCriticalRule OneIn8WithHalfBonus { get; } = new(8, 1);
+    public static PhysicalCriticalRule OneIn4WithFrequentDoubleAndCounter { get; } = new(4, 1, doubleChanceDenominator: 8, counterChanceDenominator: 8);
     public static PhysicalCriticalRule Monk { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule Cleric { get; } = new(32, 1, counterChanceDenominator: 16);
@@ -42,7 +44,7 @@ public sealed class PhysicalCriticalRule
 }
 
 public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold,
-    byte MinimumRange = 1, byte MaximumRange = 1);
+    byte MinimumRange = 1, byte MaximumRange = 1, bool CannotCounter = false);
 public sealed record BattleRewardDefinition(bool HalvedExperience);
 public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedGateEnemy,
     IReadOnlyDictionary<int, MapPosition>? DeathPositions = null);

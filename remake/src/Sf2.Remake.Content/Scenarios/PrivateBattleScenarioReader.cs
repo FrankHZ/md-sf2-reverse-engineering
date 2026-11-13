@@ -63,7 +63,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             byte commandset = row.AiCommandsetExpression switch
             {
                 "HEALER1" => 0, "HEALER3" => 2, "ATTACKER1" => 6, "ATTACKER2" => 7,
-                "SENTRY" => 8, "ATTACKER3" => 9, "LEADER" => 14,
+                "SENTRY" => 8, "ATTACKER3" => 9, "LEADER" => 14, "SWARM" => 15,
                 _ => throw Unsupported("source-commandset", "placements.aiCommandset"),
             };
             ActorRef actor; BattleActorDefinition definition; BattleActorStartInput actorInput; int order;
@@ -132,7 +132,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                     enemy.Spells.Where(spell => spell.Spell != "NOTHING").SelectMany(spell => Enumerable.Range(1, spell.Level)
                         .Select(level => new SpellRef(spell.Spell.ToLowerInvariant(), (byte)level))),
                     physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
-                        leader: false, gold: definitions.EnemyGold[enemy.Id].Gold),
+                        leader: false, gold: definitions.EnemyGold[enemy.Id].Gold,
+                        unarmedMaximum: enemy.Code switch { "KRAKEN_ARM" => 2, "KRAKEN_HEAD" => 3, _ => 1 },
+                        cannotCounter: enemy.Code == "KRAKEN_HEAD"),
                     mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells),
                     equipment: PrivateBattleActionBindings.EnemyEquipment(definitions, enemy.BaseAttack, items),
                     resistance: PrivateAttackSpellBindings.Resistance(enemy.ResistanceExpression));
@@ -141,7 +143,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             var initialization = new BattleDeploymentInitialization(enemyAi, 0, row.Behavior.PrimaryRegion,
                 row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
                 Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
-                AllyPartyMember: ally ? order : null);
+                AllyPartyMember: ally ? order : null,
+                SwarmThreshold: commandset == 15 && encounter.Battle.Id == 16 ? KrakenThresholds[order - 128] : null,
+                KrakenPursuit: !ally && row.IdentityExpression is ("KRAKEN_HEAD" or "KRAKEN_ARM" or "KRAKEN_LEG"));
             deployments.Add(new(definition, ally ? BattleFaction.Ally : BattleFaction.Enemy, order,
                 ally ? BattleControl.Player : BattleControl.Automatic, ally ? order == 7 ? new BattleStrategyRef("source-ally-physical") : null : new BattleStrategyRef("source-orders"),
                 new(row.Position.X, row.Position.Y), initialization, SourceAllyControl: ally && order == 7));
@@ -150,7 +154,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         Require(usedAllies.SetEquals(party.Keys), "unused-party-actor", "allies");
         var terrain = encounter.Terrain.Select(value => value switch
         {
-            0 or 8 => new BattleTerrain(TerrainSurface.Impassable, TerrainProtection.None),
+            8 => new BattleTerrain(TerrainSurface.Water, TerrainProtection.None),
+            0 => new BattleTerrain(TerrainSurface.Impassable, TerrainProtection.None),
             1 => new(TerrainSurface.Open, TerrainProtection.Light), 2 => new(TerrainSurface.Open, TerrainProtection.None),
             3 => new(TerrainSurface.Brush, TerrainProtection.Heavy), 4 => new(TerrainSurface.Deep, TerrainProtection.Heavy),
             5 => new(TerrainSurface.Rough, TerrainProtection.Heavy), 6 => new(TerrainSurface.Desert, TerrainProtection.Heavy),
@@ -182,12 +187,16 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
                 [new(10, 129, 19, 4)], [new(19, definitions.Items[19].DisplayName, true)]) : null,
             poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
-        var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy);
+        var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy,
+            deathCredit: battle.Poison ? new BattleDeathCredit(null) : null);
         // Product content is assembled before its ordinary before-battle program has run.
         // The actual battle entry still validates the routed policy through BattleTurnFlow.
         if (validateStart) BattleTurnFlow.ValidateStart(battle, inputStart);
         return new(new("private-encounter", [battle], definitions), inputStart);
     }
+
+    // table_SwarmAiEnemyCounts0 is indexed by source enemy slot.
+    private static ReadOnlySpan<byte> KrakenThresholds => [5, 4, 2, 2, 3, 0, 0, 4, 1, 3, 0];
 
     // Preserve unresolved source expressions in PrivateDefinitions; null never means NONE.
     private static byte? Order(string expression)
@@ -210,7 +219,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         "REGULAR" => BattleMover.Regular, "HEALER" => BattleMover.Healer,
         "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,
         "CENTAUR_ARCHER" => BattleMover.CentaurArcher, "STEALTH_ARCHER" => BattleMover.StealthArcher,
-        "FLYING" => BattleMover.Flying, "ARCHER" => BattleMover.Archer, "MAGE" => BattleMover.Mage,
+        "FLYING" => BattleMover.Flying, "ARCHER" => BattleMover.Archer, "MAGE" => BattleMover.Mage, "AQUATIC" => BattleMover.Aquatic,
         _ => throw Unsupported("source-mover", "actor.movementType"),
     };
     private static AdmissionIssue Unsupported(string code, string field) =>

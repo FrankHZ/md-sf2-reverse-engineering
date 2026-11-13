@@ -26,7 +26,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         int first = commandset switch { 2 => 4, 14 => 5, 9 => 3, _ => 1 };
         if (MoveOrder(first, mode, follow: first == 3) is { } move) return Complete(move);
         if (commandset == 2 && Support() is { } supportFirst) return Complete(supportFirst);
-        int attack = commandset == 14 ? 2 : commandset is 2 or 9 ? 3 : 1;
+        int attack = commandset == 14 ? 2 : commandset is 2 or 9 or 15 ? 3 : 1;
         if (Attack() is { } action)
         {
             _effects.Add(new("ai-command-attack" + attack, actorRef, After: 0));
@@ -35,13 +35,15 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         _effects.Add(new("ai-command-attack" + attack, actorRef, After: -1));
         if (commandset != 2)
         {
-            int healCommand = commandset == 14 ? 3 : commandset == 9 ? 2 : 1;
+            int healCommand = commandset == 14 ? 3 : commandset is 9 or 15 ? 2 : 1;
             if (Heal() is { } heal) { _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: 0)); return Complete(heal); }
             _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: -1));
             if (Support() is { } support) return Complete(support);
         }
-        if (commandset is 9 or 14 && MoveOrder(commandset == 9 ? 4 : 2, mode, follow: commandset == 14) is { } fallback)
+        if (commandset is 9 or 14 or 15 && MoveOrder(commandset == 9 ? 4 : 2, commandset == 15 ? 2 : mode, follow: commandset != 9) is { } fallback)
             return Complete(fallback);
+        // SWARM starts unrestricted, then MOVE2 requests block-non-movable.
+        if (commandset == 15) mode = 1;
         Restrict(mode);
         var targets = _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != Actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
@@ -55,7 +57,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         // then reapplies the order restriction and opposing occupancy for its actual stop.
         var scores = WeightedMovement.Build(Costs(), Offset(Actor.Position!), 128);
         _blocked = new bool[2304];
-        var approachCosts = Costs();
+        var approachCosts = Actor.Deployment.Initialization?.KrakenPursuit == true ? SourceEnemyAi.KrakenApproachCosts(_battle) : Costs();
         Restrict(mode);
         var pursuit = AiMovementRules.PursueOrdered(approachCosts, scores, Grid(), Actor.Position!, targets,
             PhysicalTargetRules.Table(Actor.Definition.Mover),

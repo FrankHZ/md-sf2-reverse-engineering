@@ -102,7 +102,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             counterRequested |= second.CounterRolled;
         }
         var counterRange = BattleEquipment.Physical(target)!;
-        bool counterPerformed = targetHp > 0 && counterRequested && (target.Status & 0xC0) == 0 &&
+        bool counterPerformed = targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC0) == 0 &&
             !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);

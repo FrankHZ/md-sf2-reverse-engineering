@@ -123,7 +123,7 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
 
 def campaign_ally_visuals(battle, read, ally_table, stats_table):
     # First deployment of each unpromoted member, including optional Kiwi and May.
-    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13)
+    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13, 16)
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
     cursor = stats_table["list_ShopInventories"]
@@ -160,7 +160,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in range(1, 14):
+    if battle not in (*range(1, 14), 16):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -439,6 +439,21 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         )
 
     base_palette = palette(0x198A8)  # palette_BattlesceneBase, battlesceneengine_1.asm.
+    if battle == 16:
+        # LoadSpecialSprite selects palette 4, then 72 tiles at VRAM AF00.
+        # UpdateSpecialSprite builds each pose from four column-major 3x3 sprites.
+        base = 0x261A6
+        tiles = decode(base + 32, 2304)
+        for frame, address in enumerate((0x2786C, 0x2784C)):
+            layout = [0] * 36
+            for piece in range(4):
+                row = read(address + piece * 8, 8)
+                y, x = row[1] - 0x5C, row[7] - 0x74
+                first = (int.from_bytes(row[4:6], "big") & 2047) - 0x578
+                for dx in range(3):
+                    for dy in range(3):
+                        layout[(y // 8 + dy) * 6 + x // 8 + dx] = first + dx * 3 + dy
+            raster(f"field-kraken-head/frame{frame}", tiles, palette(base), 48, 48, layout)
     backgrounds = table("battle-background-decode")
     layout = [int.from_bytes(read(0x1FAEA + i * 2, 2), "big") for i in range(384)]
     layout = [(value & 0x1800) | ((value & 2047) - 928) for value in layout]
@@ -530,7 +545,7 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
         293,
         393,
     }
-    if battle in range(3, 14):
+    if battle >= 3:
         text_ids.update((306, 338, 354))
     texts = {
         str(int(line[:4], 16)): line[5:]
@@ -645,6 +660,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-11",
             "battle-12",
             "battle-13",
+            "battle-16",
         )
         or "fieldDeath" in scene
     ):
@@ -669,6 +685,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-11": 12,
                 "battle-12": 12,
                 "battle-13": 12,
+                "battle-16": 12,
             }[scene["encounter"]]
         ]
     ]
@@ -693,7 +710,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     if scene["encounter"] == "battle-10":
         species.remove("GREEN_OOZE")
         species.append("DARK_DWARF")
-    if scene["encounter"] in ("battle-11", "battle-12", "battle-13"):
+    if scene["encounter"] in ("battle-11", "battle-12", "battle-13", "battle-16"):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
             encoding="utf-8"
@@ -763,7 +780,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(1, 14), default=1)
+    parser.add_argument("--battle", type=int, choices=(*range(1, 14), 16), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

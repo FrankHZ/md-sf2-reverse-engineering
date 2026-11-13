@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal sealed record OutcomeStart(ProgramLocation? Program, FieldReturnAnchor Return,
-    MapPosition ProjectionPosition, BattleStartInput Party);
+    MapPosition ProjectionPosition, BattleStartInput Party, RaftBerth? ResetRaft = null);
 internal sealed record OutcomeFinish(BattleStartInput Recovered, BattleStartInput Returned,
     int? JoinMember, bool ClearUnlocked, bool SetCompleted, ProgramLocation Program);
 
