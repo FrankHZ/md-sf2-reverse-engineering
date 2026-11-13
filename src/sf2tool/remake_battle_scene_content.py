@@ -776,6 +776,27 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             dict(pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed)
         )
     scene["fieldDeath"] = dict(allies=allies, enemies=enemy_sprites, exitFrames=frames)
+    if scene["encounter"] == "battle-18":
+        table = upstream / "disasm/data/battles/global/battleneutralentities.asm"
+        body = table.read_text(encoding="utf-8").split("battle.w VERSUS_TAROS", 1)[1]
+        rows = [
+            line.split(";", 1)[0].split()
+            for line in body.split("dc.w TERMINATOR_WORD", 1)[0].splitlines()
+        ]
+        if [row for row in rows if row] != [
+            ["position", "12,5"],
+            ["facing", "LEFT"],
+            ["mapsprite", "CARAVAN"],
+            ["dc.l", "eas_Motionless"],
+        ]:
+            raise ValueError("unexpected first Taros battle neutral")
+        scene["fieldDeath"]["neutral"] = dict(
+            sprite=compiler.equates["MAPSPRITE_CARAVAN"],
+            x=12,
+            y=5,
+            facing=compiler.equates["LEFT"],
+            completedFlag=518,
+        )
     output.mkdir(parents=True)
     write_json(output / "battle-scenes.json", scene)
     report = dict(

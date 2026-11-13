@@ -395,7 +395,12 @@ def derive(args: argparse.Namespace) -> dict:
         == (
             51
             if args.scope == "pre-voyage"
-            else 79 + 6 * hassan + 3 * (shrine or shrine_battle) + shrine + 2 * taros + len(extra_items)
+            else 79
+            + 6 * hassan
+            + 3 * (shrine or shrine_battle)
+            + shrine
+            + 2 * taros
+            + len(extra_items)
         ),
         "candidate budget/selection mismatch",
     )

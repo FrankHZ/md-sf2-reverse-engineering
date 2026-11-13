@@ -143,7 +143,7 @@ internal static class BattleSceneContentReader
         FieldDeathVisual? fieldDeath = null;
         if (root.TryGetProperty("fieldDeath", out var field))
         {
-            Object(field, "fieldDeath", "allies", "enemies", "exitFrames");
+            ObjectOptional(field, "fieldDeath", ["allies", "enemies", "exitFrames"], "neutral");
             var allySprites = new Dictionary<int, int>();
             foreach (var row in Array(field, "allies"))
             {
@@ -176,8 +176,15 @@ internal static class BattleSceneContentReader
             var frames = Strings(field, "exitFrames");
             Require(frames.Length == 3 && frames.All(key => rasters.TryGetValue(key, out var raster) &&
                 raster.Width == 48 && raster.Height == 24), "field-exit-resource", "fieldDeath.exitFrames");
+            NeutralBattleSprite? neutral = null;
+            if (field.TryGetProperty("neutral", out var neutralRow))
+            {
+                Object(neutralRow, "neutral", "sprite", "x", "y", "facing", "completedFlag");
+                neutral = new(Number(neutralRow, "sprite", 0, 255), Number(neutralRow, "x", 0, 63), Number(neutralRow, "y", 0, 63),
+                    Number(neutralRow, "facing", 0, 3), Number(neutralRow, "completedFlag", 0, 1023));
+            }
             fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
-                System.Array.AsReadOnly(frames));
+                System.Array.AsReadOnly(frames), neutral);
         }
         BattleSceneTerrainVisual[]? terrainScenes = null;
         if (root.TryGetProperty("terrainScenes", out _))

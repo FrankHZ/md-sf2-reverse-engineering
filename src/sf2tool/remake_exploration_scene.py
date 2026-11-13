@@ -156,9 +156,9 @@ def scene_entities(compiler, relative: str, symbol: str) -> dict[str, Any]:
             raise ValueError("source cutscene entity record")
         values = _tokens(row["operandText"])
         ex, ey, ef, sprite = map(compiler.number, values[:4])
-        if (
-            sprite >= compiler.equates["MAPSPRITES_SPECIALS_START"]
-            and sprite not in (compiler.equates["MAPSPRITE_KRAKEN_HEAD"], compiler.equates["MAPSPRITE_TAROS"])
+        if sprite >= compiler.equates["MAPSPRITES_SPECIALS_START"] and sprite not in (
+            compiler.equates["MAPSPRITE_KRAKEN_HEAD"],
+            compiler.equates["MAPSPRITE_TAROS"],
         ):
             raise ValueError("special cutscene entity not admitted")
         identity = sprite if sprite < 30 else non_ally

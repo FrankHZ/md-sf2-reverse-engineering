@@ -98,7 +98,9 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         if op in ("ac_end", "ac_jump"):
             break
     if vehicle_action:
-        if not re.search(r"^(word_\w+):\s+ac_branch\s+dc.w \(eas_Idle-\1\) & \$FFFF", body[1], re.MULTILINE):
+        if not re.search(
+            r"^(word_\w+):\s+ac_branch\s+dc.w \(eas_Idle-\1\) & \$FFFF", body[1], re.MULTILINE
+        ):
             raise ValueError("vehicle action idle continuation drift")
         finish_in_idle(result)
     return result

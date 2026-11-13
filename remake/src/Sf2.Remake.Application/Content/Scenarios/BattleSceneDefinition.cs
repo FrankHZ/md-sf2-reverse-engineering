@@ -10,8 +10,9 @@ public sealed record BattleSceneActorVisual(int Sprite, int Palette, int? Item,
     IReadOnlyList<string> Frames, IReadOnlyList<string> WeaponFrames,
     IReadOnlyDictionary<string, BattleSceneAnimation> Sequences, int IdleTicks = 0);
 public sealed record HealingSceneVisual(IReadOnlyList<string> Bodies, IReadOnlyList<string> Wings, IReadOnlyList<string> Dust);
+public sealed record NeutralBattleSprite(int Sprite, int X, int Y, int Facing, int CompletedFlag);
 public sealed record FieldDeathVisual(IReadOnlyDictionary<int, int> AllySprites,
-    IReadOnlyDictionary<ActorRef, int> EnemySprites, IReadOnlyList<string> ExitFrames);
+    IReadOnlyDictionary<ActorRef, int> EnemySprites, IReadOnlyList<string> ExitFrames, NeutralBattleSprite? Neutral = null);
 public sealed record BattleSceneTerrainVisual(string Background, string Ground);
 public sealed record BattleSceneDefinition(string Encounter, string Background, string Ground,
     IReadOnlyDictionary<string, ExplorationRaster> Rasters,

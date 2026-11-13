@@ -28,6 +28,7 @@ internal sealed partial class BattleMapViewport : Control
     private const int TarosSprite = 255;
     private static bool SpecialSprite(int id) => id is KrakenHeadSprite or TarosSprite;
     private Sprite2D? _specialSprite;
+    private Sprite2D? _neutral;
     private double _specialPoseTime;
     private int SpecialPose => _specialPoseTime * 30 >= 16 ? 1 : 0;
     private BattleMovementState? _movement;
@@ -101,6 +102,7 @@ internal sealed partial class BattleMapViewport : Control
     {
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
+        _neutral = null;
         _specialSprite = null; _specialPoseTime = 0;
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
@@ -138,6 +140,14 @@ internal sealed partial class BattleMapViewport : Control
         _targetCursor = new BattleInspectionCursor { Name = "TargetCursor", Size = Vector2.One * CellSize, ZIndex = 3, Visible = false };
         _targetCursor.Configure(_sceneContent?.Rasters);
         _board.AddChild(_targetCursor);
+        if (_sceneContent?.FieldDeath?.Neutral is { } neutral && _visuals is not null)
+        {
+            int direction = neutral.Facing switch { 1 => 0, 3 => 2, _ => 1 };
+            _neutral = new Sprite2D { Name = "NeutralMapSprite", Texture = Texture(neutral.Sprite, direction),
+                Position = new((neutral.X + 0.5f) * CellSize, (neutral.Y + 0.5f) * CellSize),
+                TextureFilter = TextureFilterEnum.Nearest, FlipH = neutral.Facing == 0, Visible = false, ZIndex = 1 };
+            _board.AddChild(_neutral);
+        }
         foreach (var actor in definition.Deployments)
         {
             var marker = new Label { Name = "Actor_" + actor.Actor.Value, Size = new(CellSize - 8, CellSize - 16),
@@ -236,6 +246,8 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
+        if (_neutral is not null && _sceneContent?.FieldDeath?.Neutral is { } neutral)
+            _neutral.Visible = !current.Story.Flags.Contains(neutral.CompletedFlag);
         foreach (var chest in _chests)
         {
             bool opened = current.Story.Flags.Contains(chest.Key);
