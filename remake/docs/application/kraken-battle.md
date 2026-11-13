@@ -33,7 +33,7 @@ uv run python -m sf2tool.remake_battle_scene_content --battle 16 --rom $rom --up
 uv run python -m sf2tool.remake_battle_scene_content --rom $rom --upstream $upstream --field-death-base local/kraken-scene/battle-scenes.json --output local/kraken-field
 ```
 
-For campaign integration (#1799):
+The [connected Polca-to-Hassan chapter](kraken-hassan.md) consumes these encounter inputs. To reproduce the campaign binding:
 
 1. Extend the existing encounter producer's supported selection and CLI choices with 16. Its source code is `VERSUS_KRAKEN` and its header is `[12, 11, 0, 0]`. Use the existing producer for placement, scene metadata and compressed terrain. The exact outputs match [the registered Battle16 pins](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleEncounterReader.cs).
 2. Append an ordinary private world encounter row. Use the three Battle16 operands, the existing authenticated static/enemy/gold inputs, and the Battle16 scene with the shared command, battlefield and identity icons. Paths are relative to the packaged world. Baselines come from the existing party growth selection. The private controlled party is only an input to the independent comparison.

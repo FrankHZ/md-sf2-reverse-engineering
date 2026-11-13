@@ -704,6 +704,7 @@ internal static partial class GameText
         ["save.destination.mount-volcano"] = 0,
         ["save.destination.polca-raft"] = 0,
         ["save.destination.polca-victory"] = 0,
+        ["save.destination.hassan"] = 0,
         ["save.destination.polca-return"] = 0,
         ["save.destination.east-shrine"] = 0,
         ["save.destination.parmecia-battle-return"] = 0,

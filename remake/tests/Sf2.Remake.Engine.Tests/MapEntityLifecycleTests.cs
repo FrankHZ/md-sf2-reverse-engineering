@@ -9,6 +9,28 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class MapEntityLifecycleTests
 {
+    [Fact]
+    public void SpecialSpriteKeepsItsReservedSlotBetweenOrdinaryActors()
+    {
+        var allocation = MapEntityAllocator.Allocate([200, 254, 201], [new(7, 7)], 30, 128, 0);
+        Assert.Equal(2, allocation.Aliases[128]);
+        Assert.Equal(47, allocation.Aliases[129]);
+        Assert.Equal(3, allocation.Aliases[130]);
+    }
+
+    [Fact]
+    public void CopySpriteSlotRetainsTheTargetsMotionAndLogicalIdentity()
+    {
+        var world = StartPopulation(false, """
+            [{"op":"copy-sprite-slot","source":"entity-1","target":"entity-128"},{"op":"end"}]
+            """).Current.Exploration!;
+        var target = world.Entities[new("entity-128")];
+        Assert.Equal(world.Entities[new("entity-1")].SpriteSlot, target.SpriteSlot);
+        Assert.Equal(new(4, 2), target.Position);
+        Assert.Equal(200, target.Sprite);
+        Assert.NotEqual(target.Slot, target.SpriteSlot);
+    }
+
     [Theory]
     [InlineData(0, 3)] [InlineData(29, 0)] [InlineData(255, 255)]
     public void AcceleratedStationaryAnimationHonorsTheDisabledCounter(int before, int after)

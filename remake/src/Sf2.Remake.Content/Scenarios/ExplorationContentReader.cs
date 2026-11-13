@@ -624,6 +624,14 @@ internal static class ExplorationContentReader
             case "park-raft":
                 Object(row, opcode, "op", "map", "position");
                 return new ParkRaft(new(new(Id(row, "map")), Position(row.GetProperty("position"))));
+            case "travel-mode":
+                Object(row, opcode, "op", "mode");
+                var travelMode = Text(row, "mode");
+                Require(travelMode is "walking" or "raft", "travel-mode", "program.mode");
+                return new SetFieldTravelMode(travelMode == "raft" ? FieldTravelMode.Raft : FieldTravelMode.Walking);
+            case "copy-sprite-slot":
+                Object(row, opcode, "op", "source", "target");
+                return new CopyEntitySpriteSlot(new(Id(row, "source")), new(Id(row, "target")));
             case "new-entity":
                 Object(row, opcode, "op", "entity", "position", "facing", "sprite", "actions");
                 return new AddMapEntity(new(Id(row, "entity")), Position(row.GetProperty("position")),
@@ -649,6 +657,7 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "entity", "position", "facing");
                 return new SetEntityPosition(new(Id(row, "entity")), Position(row.GetProperty("position")), (byte)Number(row, "facing", 0, 7));
             case "hide": Object(row, opcode, "op", "entity", "removeAliases"); return new HideMapEntity(new(Id(row, "entity")), Boolean(row, "removeAliases"));
+            case "move-off-map": Object(row, opcode, "op", "entity"); return new MoveEntityOffMap(new(Id(row, "entity")));
             case "speaker": Object(row, opcode, "op", "entity"); return new SetDialogueSpeaker(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")));
             case "camera-target": Object(row, opcode, "op", "position"); return new SetCameraTarget(Position(row.GetProperty("position")));
             case "camera-entity": Object(row, opcode, "op", "entity"); return new SetCameraEntity(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")));

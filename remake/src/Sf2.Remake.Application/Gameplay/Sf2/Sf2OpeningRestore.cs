@@ -69,7 +69,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
         if (data.Recipe is "new-granseal-castle" or "ribble-welcome" or "east-shrine" or "parmecia-battle-return" &&
             data.EgressMap is "map-6" or "map-8") return;
-        if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" && data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
+        if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
+            data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
+        if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
             !(data.Recipe == "battle07-return" && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
@@ -136,6 +138,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-72" && flags.Contains(64) && flags.Contains(10) &&
             player.Position == new MapPosition(43, 47))
             return new("polca-raft", player, "Polca, raft landing");
+        if (map.Value == "map-9")
+            return new("hassan", new(map, new(8, 9), 1), "Hassan");
         Fail(); return null!;
     }
 
@@ -167,10 +171,19 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             if (flags.Contains(603)) Hide("entity-142", false);
         }
         if (anchor.Map.Value == "map-8" && flags.Contains(8)) Hide("entity-8", true);
+        if (anchor.Map.Value == "map-9")
+        {
+            // Both Hassan setups execute the same init. A zero lookup can resolve to physical 0.
+            if (!flags.Contains(518)) world = world.MoveOffMap(new("entity-137"));
+            if (flags.Contains(65)) world = world.MoveOffMap(new("entity-11"));
+            if (flags.Contains(12)) world = world.MoveOffMap(new("entity-12"));
+            if (world.PlayerEntity.Motion.X == 0x7000)
+                throw new BattleRuleException("save-anchor-unusable", "save.anchor");
+        }
         // Allocation starts followers at the leader. This is the same legal overlap as a map reload;
         // their ordinary following service establishes spacing on the next deliberate input.
         if (world.AllEntities.Any(entity => entity.Visible && entity.Slot != world.PlayerEntity.Slot &&
-                entity.Follower is null && entity.Position == anchor.Position))
+                entity.Follower is null && entity.Motion.X / 384 == anchor.Position.X && entity.Motion.Y / 384 == anchor.Position.Y))
             throw new BattleRuleException("save-anchor-occupied", "save.anchor");
         world = RaftRuntime.Declare(world, enteredFlags, raft);
         if (location.Recipe == "polca-raft")

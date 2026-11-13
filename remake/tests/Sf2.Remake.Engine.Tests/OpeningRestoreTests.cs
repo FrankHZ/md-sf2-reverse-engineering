@@ -85,6 +85,48 @@ public sealed class OpeningRestoreTests
     }
 
     [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(false, false, true)]
+    public void HassanSavepointRebuildsTheSelectedCastWithoutJoiningOrHealing(bool tarosComplete, bool caravan, bool rickJoined)
+    {
+        var (basis, data) = Fixture();
+        var rules = RuleCompositions.Sf2();
+        var party = Assert.IsType<SessionStarted>(GameSession.Restore(basis, data, rules)).Session.Current.Exploration!.Party;
+        var source = basis.Exploration!.Maps[new("map-57")];
+        var entities = new List<ExplorationEntityDefinition> { new(new("entity-11"), new(16, 59), 3, 32, Sprite: 11) };
+        if (tarosComplete) entities.Add(new(new("entity-12"), new(12, 3), 0, 32, Sprite: 12));
+        entities.AddRange(Enumerable.Range(128, 10).Select(id =>
+            new ExplorationEntityDefinition(new($"entity-{id}"), new(16, 3), 3, 32, Sprite: 80)));
+        var town = new ExplorationMapDefinition(new("map-9"), source.Layout, source.Traversal, entities, [],
+            population: source.Population, basePalette: source.BasePalette, viewAreas: source.ViewAreas);
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values,
+            exploration: new(basis.Exploration.Maps.Values.Append(town), []));
+        var flags = new List<int> { 0, 32, 64 };
+        if (tarosComplete) flags.Add(518);
+        if (caravan) flags.Add(65);
+        if (rickJoined) flags.Add(12);
+        var policy = basis.Persistence!;
+        var location = policy.Select(definition, new(town.Map, new(14, 2), 3), flags, null);
+        Assert.Equal(new FieldReturnAnchor(town.Map, new(8, 9), 1), location.Anchor);
+        ExplorationState Resume() => policy.Rebuild(definition, location, party, flags, new(new("map-69"), new(28, 55)), out _);
+        if (rickJoined && !tarosComplete)
+        {
+            Assert.Equal("save-anchor-unusable", Assert.Throws<BattleRuleException>(Resume).Code);
+            return;
+        }
+        var world = Resume();
+        Assert.Equal(location.Anchor.Position, world.PlayerEntity.Position);
+        Assert.Equal(location.Anchor.Facing, world.PlayerEntity.Motion.Facing);
+        Assert.Equal(!tarosComplete, world.Entities[new("entity-137")].Motion.X == 0x7000);
+        Assert.Equal(caravan, world.Entities[new("entity-11")].Motion.X == 0x7000);
+        if (tarosComplete) Assert.Equal(rickJoined, world.Entities[new("entity-12")].Motion.X == 0x7000);
+        Assert.DoesNotContain(world.AllEntities, e => e.Slot == 31);
+        Assert.Same(party, world.Party);
+    }
+
+    [Theory]
     [InlineData(false, false)] [InlineData(true, false)] [InlineData(true, true)]
     public void RestoreRebuildsEachRecipeWithoutOnloadGrowthHealingOrReward(bool joined, bool victory)
     {

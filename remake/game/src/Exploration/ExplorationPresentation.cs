@@ -469,11 +469,13 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 // UpdateVdpPlane places the map row at counter Y - 8, so the
                 // 24px sprite starts eight source pixels above its movement cell.
                 var point = new Vector2(entity.Motion.X / 16f, entity.Motion.Y / 16f - 8);
+                int frameSize = _visuals.Sprites[entity.Sprite!.Value].Directions[0].Height;
+                if (frameSize == 48) point += new Vector2(-12, -20);
                 int shiverOffsetX = sourceNod is null && gesture && _shivering ? ((int)(_cueAge * 60 / 5) % 2 == 0 ? 1 : -1) : 0;
                 point.X += shiverOffsetX;
                 double mosaicAge = _mosaicOut ? 0.5 - _cueAge : _cueAge;
                 int? mosaicBlock = _mosaic == entity.Entity ? (mosaicAge < 0.1 ? 8 : mosaicAge < 0.2 ? 6 : mosaicAge < 0.3 ? 4 : mosaicAge < 0.4 ? 2 : 1) : null;
-                var destination = new Rect2((point - actorOrigin) * _scale, new Vector2(24, 24) * _scale);
+                var destination = new Rect2((point - actorOrigin) * _scale, Vector2.One * frameSize * _scale);
                 bool visible = _screen.Intersects(destination);
                 actors?.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
                     facing = entity.Motion.Facing, layer = entity.Motion.Layer, spritePriority = entity.Priority, highPriority, pass = actorPass,
@@ -493,7 +495,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 if (!visible) continue;
                 drawnActors?.Add((entity, texture, lowered));
                 var bounds = destination;
-                bool mirror = entity.Motion.Facing is 0 or 4 or 7;
+                bool mirror = frameSize == 24 && entity.Motion.Facing is 0 or 4 or 7;
                 IReadOnlyList<Rect2> inkRuns = _spriteInk[texture];
                 if (_mosaic == entity.Entity)
                 {
@@ -511,7 +513,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     MosaicDraws++;
                     if (_mosaicOut) MosaicOutDraws++;
                 }
-                else if (_storyEffect == entity.Entity)
+                else if (_storyEffect is { } effect && world.TryResolveEntity(effect, out var effectActor) && effectActor.SpriteSlot == entity.SpriteSlot)
                     inkRuns = ExplorationStoryEffects.Draw(_owner, texture, destination, inkRuns, mirror, _scale, _cueResource!, _cueAge, _reducedFlash);
                 else
                 {
@@ -686,7 +688,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         {
             if (!capture.IsAccepting()) return;
             var expected = new { sprite = entity.Sprite, direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 },
-                half = entity.Motion.AnimationCounter >= 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0, nod = lowered };
+                half = AnimationHalf(entity), nod = lowered };
             string key = $"entity:{entity.Slot}:{entity.Entity.Value}:{expected.sprite}:{expected.direction}:{expected.half}:{lowered}";
             if (capture.NewRequirement(key)) capture.RecordFrozenFacts("resourceRequirements", new
                 { identity, kind = "entity", subject = entity.Entity.Value, slot = entity.Slot, expected });
@@ -799,12 +801,16 @@ internal sealed partial class ExplorationPresentation : IDisposable
         return texture;
     }
 
+    private static int AnimationHalf(ExplorationEntity entity) =>
+        (sbyte)entity.Motion.AnimationCounter >= (entity.Sprite == 254 ? 16 : 15) ? 1 : 0;
+
     private ImageTexture Sprite(ExplorationEntity entity, bool nod, MapId map, int headShift = 0)
     {
         if (_visuals is null || entity.Sprite is not { } sprite || !_visuals.Sprites.TryGetValue(sprite, out var visual))
             throw new InvalidOperationException("entity-sprite-binding");
         int direction = entity.Motion.Facing switch { 1 => 0, 3 => 2, _ => 1 };
-        int half = entity.Motion.AnimationCounter >= 15 && entity.Motion.AnimationCounter < 128 ? 1 : 0;
+        int frameSize = visual.Directions[0].Height;
+        int half = AnimationHalf(entity);
         int orientation = entity.Motion.FlagsB & 3;
         int size = entity.RenderSize;
         bool shadowless = entity.ShadowRemovedAt == entity.SpriteRequest;
@@ -812,8 +818,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
         var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
         using var sheet = ExplorationRasterImages.Open((hd ? visual.HdDirections! : visual.Directions)[direction]);
-        int density = sheet.GetHeight() / 24;
-        using var image = sheet.GetRegion(new(half * 24 * density, 0, 24 * density, 24 * density));
+        int density = sheet.GetHeight() / frameSize;
+        using var image = sheet.GetRegion(new(half * sheet.GetHeight(), 0, sheet.GetHeight(), sheet.GetHeight()));
         if (shadowless) ExplorationStoryEffects.RemoveShadow(image);
         ExplorationStoryEffects.Transform(image, orientation, size);
         ExplorationStoryEffects.ShiftHead(image, headShift);
@@ -827,12 +833,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
         _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod, orientation, size, pixels = image.GetWidth() };
         List<Rect2> ink = [];
-        for (int y = 0; y < 24; y++)
-            for (int x = 0; x < 24;)
+        for (int y = 0; y < frameSize; y++)
+            for (int x = 0; x < frameSize;)
             {
                 if (image.GetPixel(x * density + density / 2, y * density + density / 2).A == 0) { x++; continue; }
                 int start = x++;
-                while (x < 24 && image.GetPixel(x * density + density / 2, y * density + density / 2).A != 0) x++;
+                while (x < frameSize && image.GetPixel(x * density + density / 2, y * density + density / 2).A != 0) x++;
                 ink.Add(new(start, y, x - start, 1));
             }
         _spriteInk[texture] = ink;

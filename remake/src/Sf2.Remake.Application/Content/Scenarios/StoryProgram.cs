@@ -53,6 +53,7 @@ public sealed record AddMapEntity(EntityRef Entity, MapPosition Position, byte F
     EntityActionProgram Actions) : StoryInstruction;
 public sealed record RestoreMemberResource(int Member, bool Hp) : StoryInstruction;
 public sealed record SetMapQuake(byte Amount) : StoryInstruction;
+public sealed record CopyEntitySpriteSlot(EntityRef Source, EntityRef Target) : StoryInstruction;
 public sealed record ReloadSceneMap(MapPosition Camera, bool ResetLayout = false) : StoryInstruction;
 public sealed record MoveEntityNextToPlayer(EntityRef Entity, byte Direction) : StoryInstruction;
 public sealed record WaitForEntityMotion(EntityRef Entity) : StoryInstruction;
@@ -61,6 +62,7 @@ public sealed record FlashEntityPosition(EntityRef Entity) : StoryInstruction;
 public sealed record SetEntityPosition(EntityRef Entity, MapPosition Position, byte Facing) : StoryInstruction;
 public sealed record SetEntityVisibility(EntityRef Entity, bool Visible) : StoryInstruction;
 public sealed record HideMapEntity(EntityRef Entity, bool RemoveAliases) : StoryInstruction;
+public sealed record MoveEntityOffMap(EntityRef Entity) : StoryInstruction;
 public sealed record SetDialogueSpeaker(EntityRef? Entity) : StoryInstruction;
 public sealed record SetCameraTarget(MapPosition Position) : StoryInstruction;
 public sealed record SetCameraEntity(EntityRef? Entity) : StoryInstruction;

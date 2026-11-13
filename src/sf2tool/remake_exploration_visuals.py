@@ -22,12 +22,35 @@ from sf2tool.remake_asset_build import (
     _combine_player_halves,
     _render_player_frame,
 )
+from sf2tool.remake_battle_scene_content import compose, kraken_frames
 from sf2tool.texture_extract import (
     decode_md_4bpp_tile,
     md_palette_color,
     palette_index_rgba,
     render_tileset_sheet,
 )
+
+
+def _kraken_sheet(rom):
+    def read(address, size):
+        return rom[address : address + size]
+
+    def palette(address):
+        return [
+            md_palette_color(int.from_bytes(read(address + i * 2, 2), "big") & 0xEEE)
+            for i in range(16)
+        ]
+
+    def decode(address, size):
+        return decode_stack_compressed(rom[address:], expected_output_bytes=size).output
+
+    sheet = bytearray(96 * 48 * 4)
+    for frame, tiles, colors, layout in kraken_frames(decode, palette, read):
+        pixels = bytes(compose(tiles, colors, 48, 48, layout))
+        for y in range(48):
+            dest = (y * 96 + frame * 48) * 4
+            sheet[dest : dest + 192] = pixels[y * 192 : (y + 1) * 192]
+    return sheet
 
 
 def prepare_font(rom_path, upstream):
@@ -356,6 +379,24 @@ def prepare_visuals(
     ]
     sprite_visuals = []
     for sprite in sorted(sprites):
+        if sprite == compiler.equates["MAPSPRITE_KRAKEN_HEAD"]:
+            compiler.sources.update(
+                (
+                    "disasm/code/common/tech/graphics/specialsprites.asm",
+                    "disasm/code/common/tech/graphics/specialspritesanims.asm",
+                    "split/sf2splits.txt",
+                )
+            )
+            sheet = raster(96, 48, _kraken_sheet(rom))
+            sprite_visuals.append(
+                {
+                    "sprite": sprite,
+                    "directions": [sheet] * 3,
+                    "portrait": None,
+                    "speech": compiler.equates["SFX_DIALOG_BLEEP_6"],
+                }
+            )
+            continue
         directions = []
         for direction in range(3):
             entry = PLAYER_POINTER_TABLE_ADDRESS + (sprite * 3 + direction) * 4

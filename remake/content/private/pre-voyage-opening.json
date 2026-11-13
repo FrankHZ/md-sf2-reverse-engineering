@@ -33,7 +33,8 @@
     52,
     10,
     11,
-    49
+    49,
+    9
   ],
   "battles": [
     1,
@@ -48,9 +49,10 @@
     10,
     11,
     12,
-    13
+    13,
+    16
   ],
-  "unavailableBattles": [14, 16, 17],
+  "unavailableBattles": [14, 17],
   "growthClasses": [
     {
       "member": 0,
@@ -110,10 +112,11 @@
     "10": 8,
     "11": 8,
     "12": 13,
-    "13": 10
+    "13": 10,
+    "16": 13
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca Village through Battle13, raft travel to South Parmecia and the Map49 encounter entrance.",
+  "controlledBoundary": "Polca raft travel through South Parmecia, Battle16 and first walking control in Hassan.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -206,6 +209,22 @@
     {
       "symbol": "abcs_battle13",
       "path": "data/battles/entries/battle13/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "bbcs_16",
+      "path": "data/battles/entries/battle16/cs_beforebattle.asm"
+    },
+    {
+      "symbol": "csub_4B1CA",
+      "path": "data/battles/entries/battle16/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "abcs_battle16",
+      "path": "data/battles/entries/battle16/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "csub_4B1D0",
+      "path": "data/battles/entries/battle16/cs_afterbattle.asm"
     }
   ],
   "programs": [
@@ -253,7 +272,8 @@
     52,
     10,
     11,
-    49
+    49,
+    9
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -367,6 +387,9 @@
     "10": [
       722
     ],
+    "9": [
+      518
+    ],
     "52": [
       512
     ]
@@ -384,7 +407,8 @@
     10,
     11,
     12,
-    13
+    13,
+    16
   ],
   "searchMaps": [
     3,
@@ -501,6 +525,7 @@
     "MUSIC_SHRINE",
     "MUSIC_BATTLE_THEME_3",
     "SFX_BIG_DOOR_RUMBLE_TIMER_CB",
+    "SFX_BIG_DOOR_RUMBLE_TIMER_C2",
     "SFX_MENU_SWITCH_TIMER_C0",
     "SFX_VALIDATION_TIMER_C0",
     "SFX_DIALOG_BLEEP_5_TIMER_C0",
@@ -520,7 +545,8 @@
     10,
     11,
     12,
-    13
+    13,
+    16
   ],
   "completedOnDefeat": [
     4

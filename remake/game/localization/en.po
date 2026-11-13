@@ -2182,6 +2182,9 @@ msgstr "Polca, raft landing"
 msgid "save.destination.polca-victory"
 msgstr "Polca, after the battle"
 
+msgid "save.destination.hassan"
+msgstr "Hassan"
+
 msgid "settings.display"
 msgstr "Display & text"
 

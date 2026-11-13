@@ -20,6 +20,8 @@ from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
 )
 
+SUPPORTED_ENCOUNTERS = (*range(2, 14), 16)
+
 
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
     """Reuse the selected encounter transport for admitted overworld slots.
@@ -27,7 +29,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
     Source macros and the pinned split ranges own placement and terrain. No H1
     rebuild or mutation of the canonical source tree is required.
     """
-    if battle not in range(2, 14):
+    if battle not in SUPPORTED_ENCOUNTERS:
         raise ValueError("unsupported overworld encounter selection")
     root = repo_path("").resolve()
     output = output.resolve()
@@ -80,6 +82,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             11: [12, 10, 4, 1],
             12: [12, 12, 4, 1],
             13: [12, 16, 3, 1],
+            16: [12, 11, 0, 0],
         }[battle]
     ):
         raise ValueError("selected spriteset header drift")
@@ -158,6 +161,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         11: "CAVE_OF_DARKNESS",
         12: "MOUNT_VOLCANO",
         13: "POLCA_VILLAGE",
+        16: "VERSUS_KRAKEN",
     }[battle]
     identity = dict(id=battle, code=code)
 
@@ -406,7 +410,10 @@ def compile_routes(compiler, selection, upstream):
                     "facing": facing,
                 },
             }
-        if battle_id == compiler.equates["BATTLE_POLCA_VILLAGE"] and "outcome" in route:
+        if "outcome" in route and battle_id in (
+            compiler.equates["BATTLE_POLCA_VILLAGE"],
+            compiler.equates["BATTLE_VERSUS_KRAKEN"],
+        ):
             route["outcome"]["fixedEgress"] = True
         if battle_id in selection.get("positionAfterLeaderDeath", []):
             path = "disasm/data/battles/global/afterbattlepositions.asm"
@@ -508,7 +515,7 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(2, 14), default=2)
+    parser.add_argument("--battle", type=int, choices=SUPPORTED_ENCOUNTERS, default=2)
     args = parser.parse_args()
     print(
         json.dumps(

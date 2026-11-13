@@ -37,6 +37,7 @@ public static class MapEntityAllocator
             aliases[follower.Character] = slot;
         }
         int nonAlly = nonAllyStart;
+        int nextSlot = slots.Count;
         for (int index = 0; index < sourceSprites.Count; index++)
         {
             int sprite = sourceSprites[index];
@@ -48,7 +49,10 @@ public static class MapEntityAllocator
                 continue;
             }
             int character = ally ? sprite : nonAlly++;
-            int slot = slots.Count;
+            // The special mapsprite uses physical 47 without advancing the ordinary cursor.
+            int slot = sprite == 254 ? 47 : nextSlot++;
+            if (slots.Any(row => row.Slot == slot))
+                throw new Battles.BattleRuleException("overlapping-entity-slots", "scene.entities", true);
             slots.Add(new(slot, character, sprite, index, null));
             aliases[character] = slot;
             sources.Add(new(index, slot, false));
