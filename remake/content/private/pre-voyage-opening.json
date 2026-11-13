@@ -34,7 +34,9 @@
     10,
     11,
     49,
-    9
+    9,
+    68,
+    12
   ],
   "battles": [
     1,
@@ -51,9 +53,10 @@
     12,
     13,
     14,
-    16
+    16,
+    17
   ],
-  "unavailableBattles": [17],
+  "unavailableBattles": [18, 19],
   "growthClasses": [
     {
       "member": 0,
@@ -115,10 +118,11 @@
     "12": 13,
     "13": 10,
     "14": 9,
-    "16": 13
+    "16": 13,
+    "17": 9
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan and the Southeast Desert encounter.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter and the western road through Battle17 to the Taros Shrine warning.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -275,7 +279,9 @@
     10,
     11,
     49,
-    9
+    9,
+    68,
+    12
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -411,7 +417,8 @@
     12,
     13,
     14,
-    16
+    16,
+    17
   ],
   "searchMaps": [
     3,
@@ -534,7 +541,8 @@
     "SFX_DIALOG_BLEEP_5_TIMER_C0",
     "SFX_DIALOG_BLEEP_6_TIMER_C0",
     "SFX_WARP_TIMER_C0",
-    "SFX_DIALOG_BLEEP_7_TIMER_D2"
+    "SFX_DIALOG_BLEEP_7_TIMER_D2",
+    "SFX_TAROS_DIALOG_BLEEP_TIMER_BD"
   ],
   "paidRetreatBattles": [
     2,
@@ -550,7 +558,8 @@
     12,
     13,
     14,
-    16
+    16,
+    17
   ],
   "completedOnDefeat": [
     4

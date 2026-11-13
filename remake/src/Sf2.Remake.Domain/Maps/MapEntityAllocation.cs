@@ -50,7 +50,7 @@ public static class MapEntityAllocator
             }
             int character = ally ? sprite : nonAlly++;
             // The special mapsprite uses physical 47 without advancing the ordinary cursor.
-            int slot = sprite == 254 ? 47 : nextSlot++;
+            int slot = sprite is 254 or 255 ? 47 : nextSlot++;
             if (slots.Any(row => row.Slot == slot))
                 throw new Battles.BattleRuleException("overlapping-entity-slots", "scene.entities", true);
             slots.Add(new(slot, character, sprite, index, null));

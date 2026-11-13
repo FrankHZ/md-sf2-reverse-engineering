@@ -22,7 +22,7 @@ from sf2tool.remake_asset_build import (
     _combine_player_halves,
     _render_player_frame,
 )
-from sf2tool.remake_battle_scene_content import compose, kraken_frames
+from sf2tool.remake_battle_scene_content import compose, special_battle_sprite_frames
 from sf2tool.texture_extract import (
     decode_md_4bpp_tile,
     md_palette_color,
@@ -31,7 +31,7 @@ from sf2tool.texture_extract import (
 )
 
 
-def _kraken_sheet(rom):
+def _special_battle_sprite_sheet(rom, base):
     def read(address, size):
         return rom[address : address + size]
 
@@ -45,7 +45,7 @@ def _kraken_sheet(rom):
         return decode_stack_compressed(rom[address:], expected_output_bytes=size).output
 
     sheet = bytearray(96 * 48 * 4)
-    for frame, tiles, colors, layout in kraken_frames(decode, palette, read):
+    for frame, tiles, colors, layout in special_battle_sprite_frames(decode, palette, read, base):
         pixels = bytes(compose(tiles, colors, 48, 48, layout))
         for y in range(48):
             dest = (y * 96 + frame * 48) * 4
@@ -378,8 +378,13 @@ def prepare_visuals(
         for offset in range(PLAYER_PALETTE_ADDRESS, PLAYER_PALETTE_ADDRESS + 32, 2)
     ]
     sprite_visuals = []
+    special_bases = {
+        compiler.equates["MAPSPRITE_KRAKEN_HEAD"]: 0x261A6,
+        compiler.equates["MAPSPRITE_TAROS"]: 0x25DF6,
+    }
     for sprite in sorted(sprites):
-        if sprite == compiler.equates["MAPSPRITE_KRAKEN_HEAD"]:
+        portrait, speech = dialogue.get(sprite, (None, compiler.equates["SFX_DIALOG_BLEEP_6"]))
+        if sprite in special_bases:
             compiler.sources.update(
                 (
                     "disasm/code/common/tech/graphics/specialsprites.asm",
@@ -387,13 +392,13 @@ def prepare_visuals(
                     "split/sf2splits.txt",
                 )
             )
-            sheet = raster(96, 48, _kraken_sheet(rom))
+            sheet = raster(96, 48, _special_battle_sprite_sheet(rom, special_bases[sprite]))
             sprite_visuals.append(
                 {
                     "sprite": sprite,
                     "directions": [sheet] * 3,
-                    "portrait": None,
-                    "speech": compiler.equates["SFX_DIALOG_BLEEP_6"],
+                    "portrait": portrait,
+                    "speech": speech,
                 }
             )
             continue
@@ -412,7 +417,6 @@ def prepare_visuals(
                     ),
                 )
             )
-        portrait, speech = dialogue.get(sprite, (None, compiler.equates["SFX_DIALOG_BLEEP_6"]))
         sprite_visuals.append(
             {"sprite": sprite, "directions": directions, "portrait": portrait, "speech": speech}
         )

@@ -43,9 +43,9 @@ internal static class ExplorationAssetReader
         foreach (var sprite in Array(row, "sprites"))
         {
             ObjectOptional(sprite, "spriteVisual", ["sprite", "directions", "portrait", "speech"], "hdDirections");
-            int id = Number(sprite, "sprite", 0, 254);
-            Require(id < 240 || id == 254, "sprite-id", "presentation.sprites");
-            int size = id == 254 ? 48 : 24;
+            int id = Number(sprite, "sprite", 0, 255);
+            Require(id < 240 || id is 254 or 255, "sprite-id", "presentation.sprites");
+            int size = id is 254 or 255 ? 48 : 24;
             var directions = Array(sprite, "directions").Select(Raster).ToArray();
             Require(directions.Length == 3 && directions.All(raster => raster.Width == 2 * size && raster.Height == size), "sprite-shape", "presentation.sprites");
             int? portrait = sprite.GetProperty("portrait").ValueKind == JsonValueKind.Null ? null : Number(sprite, "portrait", 0, 55);
