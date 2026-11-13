@@ -144,9 +144,11 @@ owns the coordinated end of the portrait and text window.
    truncating a price/HP number, or hiding the Back control. Existing bounded status-name ellipsis
    is the documented exception, not a new general truncation policy.
 
-Keep existing hint content in a measured footer, including multiple lines where necessary.
-First-use cues and shorter contextual hints remain deferred under
-[#1544](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1544).
+Use the footer for the current action, its cost or its consequence; allow multiple lines when
+needed. Keep unavailable labels visible and explain a refusal when the player tries it. Rows
+that skip disabled focus still need an inline reason. Keep tutorials that teach an unfamiliar
+operation; omit descriptions of the implementation. See the [scene-by-scene examples](ui-scene-review.md#player-facing-copy)
+and [mapped input hints](presentation.md#minimal-contextual-hints-1544).
 
 ## Layout that preserves the world
 
