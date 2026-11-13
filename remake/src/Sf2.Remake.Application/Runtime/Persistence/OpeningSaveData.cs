@@ -42,6 +42,8 @@ internal interface IOpeningRestorePolicy
     IReadOnlyList<BattleActorStartInput> RestoreRoster(ScenarioDefinition definition, OpeningSaveData data,
         SaveCompatibility expected, IReadOnlyDictionary<ActorRef, BattleDeploymentDefinition> deployments,
         IReadOnlySet<ActorRef> saved);
+    SavedBattleStory UpgradeBattleRoster(ScenarioDefinition definition, BattleSaveData data,
+        EngineBattleState battle, SaveCompatibility expected);
     SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start);
     ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party);
     void ValidateRegisters(OpeningSaveData data);
