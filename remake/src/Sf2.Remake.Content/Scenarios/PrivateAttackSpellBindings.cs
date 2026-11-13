@@ -18,13 +18,14 @@ internal static class PrivateAttackSpellBindings
                     ("BLAZE", 1) => (11, 2, 6, 2, 0, AttackSpellElement.Fire),
                     ("BLAZE", 2) => (11, 6, 10, 2, 1, AttackSpellElement.Fire),
                     ("FREEZE", 1) => (12, 3, 10, 2, 0, AttackSpellElement.Ice),
+                    ("AQUA", 1) => (40, 0, 13, 3, 0, AttackSpellElement.Ice),
                     ("BLAST", 1) => (14, 2, 6, 1, 0, AttackSpellElement.Wind),
                     _ => null
                 };
             if (expected is not { } row) continue;
             Require(source.BaseId == row.Id && source.MpCost == row.Mp && source.Power == row.Power &&
                 source.MinimumRange == 1 && source.MaximumRange == row.Range && source.Radius == row.Radius &&
-                source.PropertiesExpression == "TYPE_ATTACK|AFFECTEDBYSILENCE",
+                source.PropertiesExpression == (source.Code == "AQUA" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
                 "source-attack-spell", "spells", true);
             yield return new(source.Spell, source.MpCost, source.Power, source.MinimumRange, source.MaximumRange,
                 source.Radius, row.Element);

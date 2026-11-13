@@ -21,7 +21,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         spell.RequireSupported(enemy: !actor.IsAlly);
         if (actor.Hp == 0 || (actor.IsAlly ? actor.Control != BattleControl.Player :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
-                key is not ({ Value: "blaze" or "freeze" or "blast", Level: 1 } or { Value: "blaze", Level: 2 })))
+                key is not ({ Value: "blaze" or "freeze" or "blast" or "aqua", Level: 1 } or { Value: "blaze", Level: 2 })))
             throw new BattleRuleException("attack-spell-caster", "actor", true);
         if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("attack-spell-status", "actor.status", true);
@@ -87,7 +87,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
             int quarter = power / 4;
             int damage = PotentialDamage(actor, target, spell);
-            bool critical = Roll(32, "spell-critical", target.Actor) == 0;
+            bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;
             if (critical) damage += quarter;
             ushort range = checked((ushort)(damage / 8 + 1));
             damage = Math.Max(1, damage - Roll(range, "spell-variance", target.Actor) - Roll(range, "spell-variance", target.Actor));

@@ -146,7 +146,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 };
                 var attack = new AttackSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
                     (ushort)Number(effect, "power", 1, 255), (byte)Number(spell, "minimumRange", 1, 2),
-                    (byte)Number(spell, "maximumRange", 1, 2), (byte)Number(effect, "radius", 0, 1), element);
+                    (byte)Number(spell, "maximumRange", 1, 3), (byte)Number(effect, "radius", 0, 1), element);
                 attack.RequireSupported();
                 Require(!spells.ContainsKey(key) && !retreats.ContainsKey(key) && attacks.TryAdd(key, attack),
                     "duplicate-spell", "spells.id/level");

@@ -32,6 +32,12 @@ internal sealed partial class AttackSpellView : Node2D
             if (fire)
                 DrawColoredPolygon([position + new Vector2(0, -radius), position + new Vector2(radius / 2, radius / 2),
                     position + new Vector2(-radius / 2, radius / 2)], color);
+            else if (spell.Spell.Value == "aqua")
+                for (int bubble = 0; bubble < 5; bubble++)
+                {
+                    var center = position + Vector2.FromAngle(bubble * Mathf.Tau / 5) * radius;
+                    DrawArc(center, radius / 3, 0, Mathf.Tau, 16, color, 1.5f);
+                }
             else if (spell.Element == AttackSpellElement.Ice)
                 DrawColoredPolygon([position + new Vector2(0, -radius), position + new Vector2(radius / 2, 0),
                     position + new Vector2(0, radius), position + new Vector2(-radius / 2, 0)], new Color("b6dfff"));

@@ -30,6 +30,9 @@ internal static class PhysicalTargetRules
         // draws neither channel. Existing ordinary script3 uses thinking only.
         if (!actor.IsAlly && (actor.ActivationWord >> 12) == 3)
             return (byte)(1 + (remaining == 0 ? 15 : 0) + (unchecked((ushort)(5 * remaining)) <= target.MaxHp ? 1 : 0));
+        if (!actor.IsAlly && (actor.ActivationWord >> 12) == 1)
+            return (byte)(1 + (remaining == 0 ? 15 : 0) + (unchecked((ushort)(3 * remaining)) <= target.Hp ? 1 : 0)
+                + (unchecked((ushort)(5 * remaining)) <= target.MaxHp ? 1 : 0) + (actor.LastTarget == target.Actor ? 2 : 0));
         var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
         uint after = ((uint)draw.After << 16) | (thinking & 65535);
         effects.Add(new("thinking-rng", actor.Actor, thinking, after, 3, draw.Value, target.Actor));

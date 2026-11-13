@@ -21,6 +21,14 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
     public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actor, IPhysicalActionRule physical,
         IReadOnlyList<IBattleActionRule> actions) => Resolve(battle, actor, physical, actions);
 
+    internal static sbyte[] KrakenApproachCosts(EngineBattleState battle) =>
+        battle.Definition.Terrain.Select(tile => (sbyte)(tile.Surface switch
+        {
+            TerrainSurface.Impassable => 15, TerrainSurface.Open or TerrainSurface.Water => 2,
+            TerrainSurface.Brush or TerrainSurface.Rough or TerrainSurface.Desert => 3,
+            TerrainSurface.Deep => 4, _ => -1,
+        })).ToArray();
+
     // Explicit source-default overload for standalone policy comparisons.
     internal static BattleAutomaticAction Resolve(EngineBattleState current, ActorRef actor) =>
         BattleDecisionRules.Decide(new SourceEnemyAi(), current, actor, new Sf2PhysicalAction(), new Sf2BattleProgressionRule());
@@ -38,6 +46,14 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
             throw new BattleRuleException("missing-activation-word", "actor.activation", true);
         if (actor.PrimaryOrder is not { } primary || actor.SecondaryOrder is not { } secondary)
             throw new BattleRuleException("source-ai-orders", "placements.orders", true);
+        if (source.AiCommandset == 15)
+        {
+            int threshold = source.SwarmThreshold ?? throw new BattleRuleException("source-swarm-table", "placements.ai", true);
+            // Battle16's table spans all declared enemy slots. HP alone contributes to its count.
+            int defeated = current.Actors.Count(unit => !unit.IsAlly && unit.Hp == 0);
+            if (actor.Hp == actor.MaxHp && defeated < threshold)
+                return new(current, [new("swarm-wait", actorRef, defeated, threshold)], actor.Position, [actor.Position]);
+        }
         bool unconditional = source.PrimaryRegion == 15 && source.SecondaryRegion == 15;
         var prepared = current.With(regions: new(current.Regions.Flags, 0), actors: current.Actors.Select(
             unit => unit.Actor == actorRef ? unit.With(activationWord: word) : unit));
@@ -64,7 +80,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         // GetAiCommandset reads the dedicated combatant byte; the activation filler nibble
         // happens to match it in Battle01 but is zero in Battle02.
         int commandset = source.AiCommandset;
-        if (commandset is not (0 or 2 or 6 or 7 or 8 or 9 or 14)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
+        if (commandset is not (0 or 2 or 6 or 7 or 8 or 9 or 14 or 15)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
         // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
         // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
         // Neither path draws RNG. Admitted ATT-only weapons have no AI use action;
@@ -90,7 +106,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
                 primary = secondary; secondary = 255;
             }
         }
-        if (commandset is 2 or 9 or 14 || commandset == 7 && (primary != 255 || secondary != 255))
+        if (commandset is 2 or 9 or 14 or 15 || commandset == 7 && (primary != 255 || secondary != 255))
         {
             var ordered = new SourceMoveOrderAi(prepared, actorRef, physical, actions).Resolve(commandset);
             return ordered with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. ordered.Effects]) };
@@ -108,7 +124,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
             return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
         var costs = Costs();
         var scores = WeightedMovement.Build(costs, actor.Position.Y * 48 + actor.Position.X, 128);
-        var pursuit = AiMovementRules.PursueOrdered(costs, scores, legal, actor.Position, targets,
+        var pursuit = AiMovementRules.PursueOrdered(source.KrakenPursuit ? KrakenApproachCosts(current) : costs, scores, legal, actor.Position, targets,
             PhysicalTargetRules.Table(actor.Definition.Mover), Occupied, current.Definition.Width, current.Definition.Height);
         var targetRef = targets[pursuit.TargetIndex].Actor;
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost, Target: targetRef));

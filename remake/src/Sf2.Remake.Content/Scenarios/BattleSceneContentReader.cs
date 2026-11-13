@@ -80,10 +80,10 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 9, "scene-class", "battleScenes.actors", true);
+                Require(sprite is >= 0 and <= 10, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
-                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, _ => BattleClassRule.UnpromotedWolfman };
+                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, _ => BattleClassRule.UnpromotedBirdman };
                 Require(palette == 0 && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
                 allies.TryAdd(kind, visual);
             }
@@ -95,7 +95,8 @@ internal static class BattleSceneContentReader
                 {
                     // Pinned EnemyBattlesprites rows for the admitted species.
                     var selected = placement.IdentityExpression switch
-                    { "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
+                    { "KRAKEN_HEAD" => (44, 0), "KRAKEN_ARM" => (33, 0), "KRAKEN_LEG" => (8, 0),
+                        "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
                         "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
                         "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
@@ -155,7 +156,13 @@ internal static class BattleSceneContentReader
             foreach (var row in Array(field, "enemies"))
             {
                 Object(row, "fieldEnemy", "code", "sprite");
-                Require(species.TryAdd(Text(row, "code"), Number(row, "sprite", 0, 236)), "field-enemy-binding", "fieldDeath.enemies");
+                string code = Text(row, "code");
+                int sprite = Number(row, "sprite", 0, code == "KRAKEN_HEAD" ? 254 : 236);
+                if (code == "KRAKEN_HEAD")
+                    Require(sprite == 254 && Enumerable.Range(0, 2).All(frame =>
+                        rasters.TryGetValue("field-kraken-head/frame" + frame, out var pose) && pose.Width == 96 && pose.Height == 96),
+                        "field-kraken-pose", "fieldDeath.enemies");
+                Require(species.TryAdd(code, sprite), "field-enemy-binding", "fieldDeath.enemies");
             }
             var enemySprites = new Dictionary<ActorRef, int>();
             int ordinal = 0;

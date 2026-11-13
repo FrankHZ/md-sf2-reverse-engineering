@@ -443,7 +443,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
             // Three source damage draws precede each target's ordinary drop helper.
             var draws = ConstructionEffects.Skip(cursor).Take(3).ToArray();
-            Require(draws.Length == 3 && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == 32 &&
+            Require(draws.Length == 3 && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
                 draws.Skip(1).All(e => e.Kind == "rng-spell-variance") && draws.All(e => e.Actor == actor && e.Target == target.Actor));
             cursor += 3;
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[2].After!.Value)),

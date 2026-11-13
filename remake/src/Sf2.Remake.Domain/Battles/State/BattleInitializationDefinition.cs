@@ -2,7 +2,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Domain.Battles;
 
-public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying, Archer, Mage, StealthArcher, CentaurArcher }
+public enum BattleMover { Regular, Healer, Centaur, Hovering, Stealth, Flying, Archer, Mage, StealthArcher, CentaurArcher, Aquatic }
 public enum BattleRegionProgram { None, Required, Authored }
 public enum BattleStartOrigin { Controlled, NewGame }
 public sealed record BattleRegionProgramRow(byte Region, int PlayedFlag, string Program);
@@ -27,7 +27,8 @@ public sealed class BattleSourceLoadout
 
 public sealed record BattleDeploymentInitialization(ushort? EnemyBaseAiWord, byte SpawnMode,
     byte PrimaryRegion, byte SecondaryRegion, byte Filler, byte AiCommandset = 0,
-    byte? PrimaryOrder = null, byte? SecondaryOrder = null, int? AllyPartyMember = null);
+    byte? PrimaryOrder = null, byte? SecondaryOrder = null, int? AllyPartyMember = null,
+    byte? SwarmThreshold = null, bool KrakenPursuit = false);
 
 public sealed class BattleActivationRegion
 {

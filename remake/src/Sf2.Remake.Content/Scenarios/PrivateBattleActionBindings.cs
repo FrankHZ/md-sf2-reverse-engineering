@@ -72,7 +72,7 @@ internal static class PrivateBattleActionBindings
     }
 
     internal static PhysicalActorDefinition Physical(PrivateBattleDefinitions definitions, string prowess,
-        IEnumerable<ushort> items, bool leader, ushort gold)
+        IEnumerable<ushort> items, bool leader, ushort gold, byte unarmedMaximum = 1, bool cannotCounter = false)
     {
         var critical = prowess switch
         {
@@ -82,6 +82,8 @@ internal static class PrivateBattleActionBindings
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Cleric,
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.OneIn32WithFrequentDoubleAndCounter,
             "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Monk,
+            "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn8WithHalfBonus,
+            "CRITICAL150_1IN4|DOUBLE_1IN8|COUNTER_1IN8" => PhysicalCriticalRule.OneIn4WithFrequentDoubleAndCounter,
             "CRITICAL_SILENCE|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Silence,
             "CRITICAL_POISON|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Poison,
             "CRITICAL_SLEEP|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Sleep,
@@ -89,7 +91,7 @@ internal static class PrivateBattleActionBindings
         };
         var equipped = items.Where(word => (word & 128) != 0).Select(word => definitions.Items[(byte)(word & 127)]).ToArray();
         Require(equipped.Length <= 1, "source-equipment", "actor.items", true);
-        byte minimum = 1, maximum = 1; // Unarmed source attack range.
+        byte minimum = 1, maximum = unarmedMaximum; // Unarmed source attack range.
         foreach (var item in equipped)
         {
             Require(item.ItemTypeExpression == "WEAPON" && item.EquipEffects.All(effect =>
@@ -99,6 +101,6 @@ internal static class PrivateBattleActionBindings
                 "source-weapon-range", "actor.items", true);
             minimum = item.MinimumRange; maximum = item.MaximumRange;
         }
-        return new(critical, Promoted: false, leader, gold, minimum, maximum);
+        return new(critical, Promoted: false, leader, gold, minimum, maximum, cannotCounter);
     }
 }

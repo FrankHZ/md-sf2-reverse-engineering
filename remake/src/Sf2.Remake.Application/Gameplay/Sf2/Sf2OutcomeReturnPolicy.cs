@@ -13,14 +13,27 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
     {
         var selected = story.EnteringBattle!;
         var route = selected.Outcome ?? throw new BattleRuleException("outcome-route", "battle.outcome", true);
+        FieldReturnAnchor? egress = null;
+        RaftBerth? resetRaft = null;
+        if (kind != BattleOutcomeKind.Victory)
+        {
+            if (!story.Flags.Contains(399) || story.Flags.Contains(640))
+                throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
+            egress = EgressDestination(definition, story, route, kind);
+            if (story.Flags.Contains(64))
+            {
+                // GetSavepointForMap consults the raft reset table using the selected town.
+                if (egress.Map != new MapId("map-13"))
+                    throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
+                resetRaft = new(new("map-72"), new(43, 48));
+            }
+        }
         if (kind == BattleOutcomeKind.Retreat)
         {
-            if (!story.Flags.Contains(399) || story.Flags.Any(flag => flag is 64 or 640))
-                throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
             var caster = battle.Actors.First(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null);
             var retreatOrigin = route.BattleOrigin ?? new MapPosition(0, 0);
-            return new(route.ReturnProgram, EgressDestination(definition, story, route, kind),
-                new(caster.Position!.X + retreatOrigin.X, caster.Position.Y + retreatOrigin.Y), party);
+            return new(route.ReturnProgram, egress!,
+                new(caster.Position!.X + retreatOrigin.X, caster.Position.Y + retreatOrigin.Y), party, resetRaft);
         }
         var leader = battle.GetActor(battle.Definition.Outcome!.Leader);
         var first = battle.Actors.Where(actor => actor.IsAlly && actor.Hp > 0 && actor.Position is not null)
@@ -35,17 +48,15 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         var origin = route.BattleOrigin ?? new MapPosition(0, 0);
         var position = first?.Position ?? leader.Deployment.Position;
         var projected = new MapPosition(position.X + origin.X, position.Y + origin.Y);
-        if (kind == BattleOutcomeKind.Defeat && (!story.Flags.Contains(399) || story.Flags.Any(flag => flag is 64 or 640)))
-            throw new BattleRuleException("egress-flags", "battle.outcome.egress", true);
         var destination = kind == BattleOutcomeKind.Victory
             ? new FieldReturnAnchor(route.BattleMap, projected, route.BattleOrigin is null ? route.VictoryFacing : first!.Facing)
-            : EgressDestination(definition, story, route, kind);
+            : egress!;
         if (kind == BattleOutcomeKind.Defeat && route.CompletedDefeatMap is { } handoff)
             destination = destination with { Map = handoff };
         bool skip = kind == BattleOutcomeKind.Victory && selected.CompletedFlag is { } flag && story.Flags.Contains(flag);
         return new(kind == BattleOutcomeKind.Victory ? skip ? null : route.AfterProgram : route.DefeatProgram,
             destination, projected,
-            kind == BattleOutcomeKind.Victory ? Heal(definition, party, all: false) : party);
+            kind == BattleOutcomeKind.Victory ? Heal(definition, party, all: false) : party, resetRaft);
     }
 
     private static FieldReturnAnchor EgressDestination(ScenarioDefinition definition, StoryState story,

@@ -40,7 +40,7 @@ internal static class BattleOutcome
                 selected.Party, current.Story.Flags, sourcePlacement: route.BattleOrigin is not null);
             if (kind == BattleOutcomeKind.Victory && current.Story.DefeatedScene?.CompletedWorld is { } prior)
                 world = BattleDefeatedProgram.AfterDeath(prior, battle, selected.Party);
-            var story = current.Story.Copy(selected.Program, callers: [],
+            var story = current.Story.Copy(selected.Program, callers: [], raft: selected.ResetRaft,
                 continuation: kind == BattleOutcomeKind.Victory ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.DefeatProgramFinished,
                 outcomeReturn: selected.Return, clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());
             story = ExplorationTextRunner.Initialize(world, story);
@@ -77,7 +77,7 @@ internal static class BattleOutcome
             var map = definition.Exploration!.Maps[route.Outcome!.BattleMap];
             var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,
                 route.Outcome.VictoryFacing, player.Speed, recovered, current.Story.Flags, sourcePlacement: route.Outcome.BattleOrigin is not null);
-            var story = current.Story.Copy(selected.Program, callers: [],
+            var story = current.Story.Copy(selected.Program, callers: [], raft: selected.ResetRaft,
                 continuation: ProgramContinuation.OutcomeMapLoaded, outcomeReturn: selected.Return,
                 clearCameraEntity: true, clearCameraTarget: true, textWindow: new ClosedTextWindow());
             story = ExplorationTextRunner.Initialize(world, story);
