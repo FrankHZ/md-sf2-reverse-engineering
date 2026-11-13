@@ -33,9 +33,12 @@ public sealed record ExplorationViewArea(int MinX, int MinY, int MaxX, int MaxY,
 public sealed record ExplorationTextSettings(byte MessageSpeed, byte MouthControl, ushort ViewSpeed);
 public sealed record ExplorationTextFont(IReadOnlyList<byte> AsciiToSymbol, IReadOnlyList<byte> Advances);
 public sealed record ExplorationMapMusic(int Field, int Battle);
+// Row-major 3x3 source-plane block IDs. -1 marks the outside of the active area.
+public readonly record struct BlockNeighborhood(int NW, int N, int NE, int W, int Center, int E, int SW, int S, int SE);
 public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
     IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music,
-    IReadOnlyList<ExplorationRaster>? HdBlocks = null);
+    IReadOnlyList<ExplorationRaster>? HdBlocks = null,
+    IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? HdBlockContexts = null);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech,
     IReadOnlyList<ExplorationRaster>? HdDirections = null);
 public sealed record PortraitTileChange(byte X, byte Y, byte AlternateX, byte AlternateY);

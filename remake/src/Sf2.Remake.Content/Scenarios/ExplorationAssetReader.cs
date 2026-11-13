@@ -16,7 +16,7 @@ internal static class ExplorationAssetReader
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
-            ObjectOptional(map, "mapVisual", ["map", "atlas", "scale", "blocks"], "music", "hdBlocks");
+            ObjectOptional(map, "mapVisual", ["map", "atlas", "scale", "blocks"], "music", "hdBlocks", "hdBlockContexts");
             var id = new MapId(Id(map, "map"));
             var blocks = Array(map, "blocks").Select(block =>
             {
@@ -37,7 +37,7 @@ internal static class ExplorationAssetReader
                 return new ExplorationMapMusic(Number(value, "field", 0, 64), Number(value, "battle", 0, 64));
             }).ToArray() : [];
             Require(maps.TryAdd(id, new(id, atlas, scale, System.Array.AsReadOnly(blocks), System.Array.AsReadOnly(music),
-                OptionalFrames(map, "hdBlocks", blocks.Length, 96, 96))), "duplicate-map-visual", "presentation.maps");
+                OptionalFrames(map, "hdBlocks", blocks.Length, 96, 96), BlockContexts(map, blocks.Length))), "duplicate-map-visual", "presentation.maps");
         }
         var sprites = new Dictionary<int, ExplorationSpriteVisual>();
         foreach (var sprite in Array(row, "sprites"))
@@ -112,6 +112,32 @@ internal static class ExplorationAssetReader
             churchMenu,
             fieldMenu, identityIcons,
             itemMenu, shopMenu, IdentityIconReader.ReadHd(row, identityIcons));
+    }
+
+    private static IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? BlockContexts(JsonElement map, int count)
+    {
+        const string field = "hdBlockContexts";
+        if (!map.TryGetProperty(field, out _)) return null;
+        Require(map.TryGetProperty("hdBlocks", out _), "hd-context-without-blocks", field);
+        var contexts = new Dictionary<BlockNeighborhood, ExplorationRaster>();
+        foreach (var row in Array(map, field))
+        {
+            Object(row, field, "raster", "neighbors");
+            var raster = Raster(row.GetProperty("raster"));
+            Require(raster.Width == 96 && raster.Height == 96, "hd-frame-shape", field);
+            var neighbors = Array(row, "neighbors");
+            Require(row.GetProperty("neighbors").GetArrayLength() > 0, "empty-hd-context", field);
+            foreach (var ids in neighbors)
+            {
+                Require(ids.ValueKind == JsonValueKind.Array && ids.GetArrayLength() == 9, "hd-context-shape", field);
+                int[] n = ids.EnumerateArray().Select(id => id.ValueKind == JsonValueKind.Number &&
+                    id.TryGetInt32(out int value) ? value : -2).ToArray();
+                Require(n.All(id => id >= -1 && id < count) && n[4] >= 0, "hd-context-block", field);
+                var key = new BlockNeighborhood(n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8]);
+                Require(contexts.TryAdd(key, raster), "duplicate-hd-context", field);
+            }
+        }
+        return new ReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>(contexts);
     }
 
     private static IReadOnlyList<ExplorationRaster>? OptionalFrames(JsonElement owner, string field, int count, int width, int height)

@@ -8,21 +8,23 @@ namespace Sf2.Remake.GodotAdapter.Maps;
 internal sealed class MapBlockTextures : IDisposable
 {
     private readonly Dictionary<MapId, Image> _atlases = [];
-    private readonly Dictionary<(MapId Map, int Block, bool Hd), ImageTexture> _blocks = [];
+    private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
+    private readonly Dictionary<ExplorationRaster, ImageTexture> _hd = [];
 
-    internal int Count => _blocks.Count;
+    internal int Count => _blocks.Count + _hd.Count;
 
-    internal ImageTexture Block(ExplorationMapVisual visual, int block, bool hd = false)
+    internal ImageTexture Block(ExplorationMapVisual visual, int block, ExplorationRaster? variant = null)
     {
-        var key = (visual.Map, block, Hd: hd && visual.HdBlocks is not null);
-        if (_blocks.TryGetValue(key, out var texture)) return texture;
+        var key = (visual.Map, block);
         if (block < 0 || block >= visual.Blocks.Count) throw new InvalidOperationException("map-block-binding");
-        if (key.Hd)
+        if (variant is not null)
         {
-            using var painted = Exploration.ExplorationRasterImages.Open(visual.HdBlocks![block]);
-            _blocks.Add(key, texture = ImageTexture.CreateFromImage(painted));
-            return texture;
+            if (_hd.TryGetValue(variant, out var prepared)) return prepared;
+            using var pixels = Exploration.ExplorationRasterImages.Open(variant);
+            _hd.Add(variant, prepared = ImageTexture.CreateFromImage(pixels));
+            return prepared;
         }
+        if (_blocks.TryGetValue(key, out var texture)) return texture;
         if (!_atlases.TryGetValue(visual.Map, out var atlas))
         {
             atlas = visual.Atlas.Format == "rgba8"
@@ -55,6 +57,7 @@ internal sealed class MapBlockTextures : IDisposable
     {
         foreach (var texture in _blocks.Values) texture.Dispose();
         foreach (var atlas in _atlases.Values) atlas.Dispose();
-        _blocks.Clear(); _atlases.Clear();
+        foreach (var texture in _hd.Values) texture.Dispose();
+        _hd.Clear(); _blocks.Clear(); _atlases.Clear();
     }
 }

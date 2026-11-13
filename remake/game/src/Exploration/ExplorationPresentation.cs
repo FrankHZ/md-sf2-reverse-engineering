@@ -17,6 +17,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     {
         if (_paintPrepared || _visuals is null) return;
         foreach (var raster in _visuals.Maps.Values.SelectMany(map => map.HdBlocks ?? [])
+            .Concat(_visuals.Maps.Values.SelectMany(map => map.HdBlockContexts?.Values.Distinct() ?? []))
             .Concat(_visuals.Sprites.Values.SelectMany(sprite => sprite.HdDirections ?? []))
             .Concat(_visuals.Portraits.Values.Select(portrait => portrait.HdRaster).OfType<ExplorationRaster>()))
         {
@@ -435,15 +436,18 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 view.Area.ForegroundX != view.Area.BackgroundX || view.Area.ForegroundY != view.Area.BackgroundY ||
                 view.Area.ParallaxAX != view.Area.ParallaxBX || view.Area.ParallaxAY != view.Area.ParallaxBY;
             var offset = view is null ? overlay : new MapOverlayOffset(0, 0);
-            var backgroundDraw = DrawLayer(world, visual, background, new(0, 0), false, view is null ? null : false, 0);
+            var areaCells = new Rect2I((Vector2I)(_viewport.Bounds.Position / 24), (Vector2I)(_viewport.Bounds.Size / 24));
+            var backgroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.BackgroundX ?? 0, view?.Area.BackgroundY ?? 0), areaCells.Size);
+            var foregroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.ForegroundX ?? offset.X, view?.Area.ForegroundY ?? offset.Y), areaCells.Size);
+            var backgroundDraw = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0);
             LayerDraw? foregroundDraw = view is not null && hasForeground
-                ? DrawLayer(world, visual, foreground, offset, true, false, 1) : null;
+                ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, false, 1) : null;
             List<object>? actors = _observeCamera ? [] : null;
             List<(ExplorationEntity Entity, ImageTexture Texture, bool Lowered)>? drawnActors = Streaming ? [] : null;
             List<object>? occlusionDraws = _observeCamera ? [] : null;
-            LayerDraw? backgroundHigh = view is null ? null : DrawLayer(world, visual, background, new(0, 0), false, true, 2);
+            LayerDraw? backgroundHigh = view is null ? null : DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, true, 2);
             LayerDraw? foregroundHigh = view is not null && hasForeground
-                ? DrawLayer(world, visual, foreground, offset, true, true, 3) : null;
+                ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, true, 3) : null;
             int pass = 4;
             var sourceNod = story.Wait as NodWait;
             NodProjection = null;
@@ -524,11 +528,11 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         new Vector2(mirror ? 24 - run.End.X : run.Position.X, run.Position.Y) * _scale,
                         run.Size * _scale)).ToArray();
                     var actor = (entity.Entity, bounds, (IReadOnlyList<Rect2>)ink);
-                    var restoredBackground = DrawLayer(world, visual, background, new(0, 0), false, true, pass++, actor);
+                    var restoredBackground = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, true, pass++, actor);
                     if (restoredBackground is not null) occlusionDraws?.Add(restoredBackground);
                     if (hasForeground)
                     {
-                        var restoredForeground = DrawLayer(world, visual, foreground, offset, true, true, pass++, actor);
+                        var restoredForeground = DrawLayer(world, visual, foregroundBounds, foreground, offset, true, true, pass++, actor);
                         if (restoredForeground is not null) occlusionDraws?.Add(restoredForeground);
                     }
                 }
@@ -541,7 +545,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 }
             }
             // The bound A origin already includes the foreground layout offset.
-            if (view is null && hasForeground) foregroundDraw = DrawLayer(world, visual, foreground, offset, true, null, pass++);
+            if (view is null && hasForeground) foregroundDraw = DrawLayer(world, visual, foregroundBounds, foreground, offset, true, null, pass++);
             if (_observeCamera)
             {
             CameraProjection = new { drawSequence = ++_drawSequence, processFrame = Engine.GetProcessFrames(),
@@ -699,7 +703,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         Flush();
     }
 
-    private LayerDraw? DrawLayer(ExplorationState world, ExplorationMapVisual visual, Vector2 origin, MapOverlayOffset offset,
+    private LayerDraw? DrawLayer(ExplorationState world, ExplorationMapVisual visual, Rect2I bounds, Vector2 origin, MapOverlayOffset offset,
         bool overlay, bool? highPriority, int pass, (EntityRef Entity, Rect2 Bounds, IReadOnlyList<Rect2> Ink)? actor = null)
     {
         int left = (int)Math.Floor(origin.X / 24), top = (int)Math.Floor(origin.Y / 24);
@@ -719,7 +723,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 if (block == 0 && (overlay || world.Layout.BlankBlockZero)) continue;
                 var rectangle = new Rect2((new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
                 if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
-                var texture = Block(visual, block);
+                var texture = Block(visual, block, world.Layout, sourceX, sourceY, bounds);
                 // Reuse the existing block resource; split its nine tile regions by the
                 // retained VDP priority bit instead of lifting an entire plane above actors.
                 int count = highPriority is null ? 1 : 9;
@@ -777,10 +781,21 @@ internal sealed partial class ExplorationPresentation : IDisposable
         internal object Geometry() => new { x, y, offsetX, offsetY, highPriority, pass, subject, draws, first, overlaps };
     }
 
-    private ImageTexture Block(ExplorationMapVisual visual, int block)
+    private ImageTexture Block(ExplorationMapVisual visual, int block, WorkingMapLayout layout, int x, int y, Rect2I bounds)
     {
-        var texture = _mapTextures.Block(visual, block, Painted(visual.Map));
-        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block, pixels = texture.GetWidth() });
+        ExplorationRaster? variant = null;
+        bool contextual = false;
+        if (Painted(visual.Map))
+        {
+            int At(int dx, int dy) => bounds.HasPoint(new(x + dx, y + dy)) &&
+                x + dx is >= 0 and < 64 && y + dy is >= 0 and < 64 ? layout[x + dx, y + dy] & 1023 : -1;
+            if (visual.HdBlockContexts is { } variants)
+                contextual = variants.TryGetValue(new(At(-1,-1), At(0,-1), At(1,-1), At(-1,0), block,
+                    At(1,0), At(-1,1), At(0,1), At(1,1)), out variant);
+            variant ??= visual.HdBlocks![block];
+        }
+        var texture = _mapTextures.Block(visual, block, variant);
+        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block, contextual, pixels = texture.GetWidth() });
         return texture;
     }
 
