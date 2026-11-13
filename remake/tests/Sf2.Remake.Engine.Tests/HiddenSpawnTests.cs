@@ -33,6 +33,39 @@ public sealed class HiddenSpawnTests
         Assert.Equal(0, b.Regions!.Tested); Assert.DoesNotContain(true, b.Regions.Flags);
     }
 
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(15, false)]
+    public void HiddenCarrierWithAnInertItemStillRequiresAnAssignedRegion(byte region, bool appears)
+    {
+        var input = Admitted("hidden-spawns");
+        var original = input.Definition.Encounters[input.Start.Encounter];
+        var row = original.Deployments.Single(d => d.Actor == Hidden);
+        var source = row.Definition;
+        var placement = new BattleActorDefinition(Hidden, source.ClassRule, source.Level, source.MaxHp,
+            source.MaxMp, source.Attack, source.Defense, source.Agility, source.ExtraRoundAction, source.Move,
+            source.Spells, physical: source.Physical, sourceLoadout: new([9, 127, 127, 127], [63, 63, 63, 63]),
+            equipment: new(source.Attack, [], allowChanges: false, inertItems: [9]));
+        var definition = original.WithDeployments(original.Deployments.Select(d => d.Actor == Hidden
+            ? d with { Definition = placement, Initialization = d.Initialization! with { PrimaryRegion = region, SecondaryRegion = 15 } } : d));
+        var before = Held(BattleTurnFlow.Start(definition, input.Start));
+        Assert.Null(before.GetActor(Hidden).Position);
+        var result = BattleSpawnRules.Populate(before);
+        var enemy = result.Battle.GetActor(Hidden);
+        Assert.Equal(appears, result.Appearances.Contains(Hidden));
+        Assert.Equal(appears, enemy.Initialized);
+        if (appears)
+        {
+            Assert.Equal(row.Position, enemy.Position);
+            Assert.Equal(new ushort[] { 9, 127, 127, 127 }, enemy.SourceLoadout!.Items);
+        }
+        else
+        {
+            Assert.Null(enemy.Position);
+            Assert.Equal(0, enemy.MaxHp);
+        }
+    }
+
     [Fact]
     public void ResetListIsSlotOrderedAndSuccessRestoresStatsButRetainsExternalAiMemoryAndActivation()
     {

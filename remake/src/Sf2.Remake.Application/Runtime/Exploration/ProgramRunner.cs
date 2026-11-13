@@ -250,6 +250,12 @@ internal static class ProgramRunner
                         active = new ActiveExploration(followerWorld.WithFollower(FollowerMotion.Install(Entity(current, added.Entity), lastSlot, -24, 0)));
                         break;
                     case FollowEntity follow:
+                        if (follow.AliveGuard is { } guard)
+                        {
+                            var guardedActor = current.Exploration!.Party.Actors.FirstOrDefault(actor => actor.Actor == guard)
+                                ?? throw new BattleRuleException("missing-party-member", "follow.guard", true);
+                            if (guardedActor.Hp == 0) break;
+                        }
                         int leaderSlot = Entity(current, follow.Leader).Slot;
                         active = new ActiveExploration(current.Exploration!.WithFollower(FollowerMotion.Install(Entity(current, follow.Entity), leaderSlot, follow.OffsetX, follow.OffsetY))); break;
                     case SetTextCursor text: story = story.Copy(story.Cursor, textCursor: text.Text); break;
