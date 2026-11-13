@@ -7,6 +7,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // Product UI geometry uses physical window units, independent of map tiles and source pixels.
 internal sealed partial class BattleMenuLayout : Control
 {
+    private const int PanelInset = 16, DescriptionGap = 9;
     internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true, DecisionHeader = true };
     internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true, DecisionHeader = true };
     internal readonly Label Context = Text("Context", 28);
@@ -36,6 +37,7 @@ internal sealed partial class BattleMenuLayout : Control
     private Vector2 _descriptionSize;
     private Vector2 _contextSize;
     private bool _commandHint;
+    private Vector2 _commandFooter; // Natural reading width and height at the command-column width.
     private Rect2 _subject;
     internal Action InvalidatePointer { get; set; } = () => { };
     internal bool Covers(Vector2 p) => new Control[] { _group, Actor, Target, _context, _commandsPanel, _list, _detail }
@@ -58,7 +60,7 @@ internal sealed partial class BattleMenuLayout : Control
     {
         Theme = UI.StoryTheme.Create();
         var insets = (StyleBoxFlat)Theme.GetStylebox("panel", "PanelContainer").Duplicate();
-        insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = 16;
+        insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = PanelInset;
         foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
         var contentStyle = (StyleBoxFlat)insets.Duplicate();
         contentStyle.BgColor = Colors.Transparent; contentStyle.ShadowSize = 0;
@@ -76,7 +78,7 @@ internal sealed partial class BattleMenuLayout : Control
         _scroll.GetVScrollBar().FocusMode = FocusModeEnum.None;
         _rows.AddThemeConstantOverride("separation", 8);
         AddChild(_detail);
-        var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", 9);
+        var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", DescriptionGap);
         _detail.AddChild(column); column.AddChild(Heading); column.AddChild(Detail); column.AddChild(Help);
         column.AddChild(_navigation);
         foreach (var control in new[] { _previous, _next, _confirm, _back })
@@ -111,16 +113,16 @@ internal sealed partial class BattleMenuLayout : Control
     internal void Arrange(Vector2 size)
     {
         Size = size;
-        const float margin = 32, inset = 16;
+        const float margin = UI.StoryTheme.GameplayInset, inset = PanelInset;
         var header = Target.Visible ? Target : Actor;
         float width = Mathf.Min(Mathf.Max(560, header.RequestedSize.X), size.X - margin * 2);
         float right = size.X - margin - width;
         // Layout A: live acting vitals head the same right-hand command column.
         // Child offers replace the root rows at the same origin; the board remains independent.
         Actor.Visible = !Target.Visible;
-        Actor.Position = new(right, 112); Actor.Size = new(Mathf.Max(width, Actor.RequestedSize.X), Actor.RequestedSize.Y);
-        if (Actor.Size.X > width) Actor.Position = new(size.X - margin - Actor.Size.X, 112);
-        Target.Position = new(size.X - margin - Mathf.Max(width, Target.RequestedSize.X), 112);
+        Actor.Position = new(right, UI.StoryTheme.BelowMenu); Actor.Size = new(Mathf.Max(width, Actor.RequestedSize.X), Actor.RequestedSize.Y);
+        if (Actor.Size.X > width) Actor.Position = new(size.X - margin - Actor.Size.X, UI.StoryTheme.BelowMenu);
+        Target.Position = new(size.X - margin - Mathf.Max(width, Target.RequestedSize.X), UI.StoryTheme.BelowMenu);
         Target.Size = new(Mathf.Max(width, Target.RequestedSize.X), Target.RequestedSize.Y);
         _contextSize = new(300, 110); _context.Position = new(margin, 96); _context.Size = _contextSize;
         float rowsTop = Actor.Position.Y + Actor.Size.Y + 8;
@@ -128,7 +130,12 @@ internal sealed partial class BattleMenuLayout : Control
         _commandsPanel.Position = new(right, rowsTop);
         _commandsPanel.Size = new(width, _commandList.RequestedHeight + inset * 2);
         _list.Position = new(right, rowsTop);
-        _descriptionSize = new(width, 0);
+        // Root commands keep fixed hit regions. Let a long refusal use the remaining
+        // reading width below them so its mapped actions still fit at native 1080p.
+        float footerWidth = width;
+        if (_commandsPanel.Visible && rowsTop + _commandsPanel.Size.Y + 12 + _commandFooter.Y > size.Y - margin)
+            footerWidth = Mathf.Max(width, Mathf.Min(_commandFooter.X, Mathf.Min(1440, size.X - margin * 2)));
+        _descriptionSize = new(footerWidth, 0);
         SetTextWidths();
         float descriptionHeight = _detail.GetCombinedMinimumSize().Y;
         // Short lists need only their actual rows. Longer lists keep the existing scroll
@@ -143,8 +150,8 @@ internal sealed partial class BattleMenuLayout : Control
         float detailTop = _commandsPanel.Visible ? _commandsPanel.Position.Y + _commandsPanel.Size.Y + 12 :
             _list.Visible ? _list.Position.Y + _list.Size.Y + 12 :
             Target.Visible ? Target.Position.Y + Target.Size.Y + 12 : rowsTop;
-        _descriptionSize = new(width, descriptionHeight);
-        _detail.Position = new(right, detailTop); _detail.Size = _descriptionSize;
+        _descriptionSize = new(footerWidth, descriptionHeight);
+        _detail.Position = new(size.X - margin - footerWidth, detailTop); _detail.Size = _descriptionSize;
         SetTextWidths();
     }
 
@@ -161,7 +168,27 @@ internal sealed partial class BattleMenuLayout : Control
         _commandHint = compact;
         Detail.Visible = !compact || !string.IsNullOrWhiteSpace(Detail.Text);
         Help.Visible = true;
+        _commandFooter = compact && Detail.Visible ? MeasureCommandFooter() : Vector2.Zero;
         Arrange(Size);
+    }
+
+    private Vector2 MeasureCommandFooter()
+    {
+        // Measure the normal column without resizing any live hit region during a press.
+        float inner = _commandsPanel.Size.X - 2 * PanelInset;
+        float height = 2 * PanelInset + _navigation.GetMinimumSize().Y + 3 * DescriptionGap;
+        float readingWidth = inner;
+        foreach (var label in new[] { Heading, Detail, Help })
+        {
+            using var paragraph = new TextParagraph { Width = inner, BreakFlags = TextServer.LineBreakFlag.Mandatory |
+                TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive };
+            var font = label.GetThemeFont("font");
+            int fontSize = label.GetThemeFontSize("font_size");
+            paragraph.AddString(label.Text, font, fontSize);
+            height += paragraph.GetSize().Y + (paragraph.GetLineCount() - 1) * label.GetThemeConstant("line_spacing");
+            readingWidth = Mathf.Max(readingWidth, label.Text.Split('\n').Max(line => font.GetStringSize(line, fontSize: fontSize).X));
+        }
+        return new(2 * PanelInset + Mathf.Ceil(readingWidth), height);
     }
 
     internal void ShowNavigation(bool visible, bool target, bool commit, bool canConfirm)

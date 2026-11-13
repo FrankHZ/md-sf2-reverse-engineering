@@ -15,6 +15,8 @@ internal static class StoryTheme
             throw new ArgumentException();
         _font = font;
     }
+    internal const int GameplayInset = 32, MenuHeight = 56;
+    internal const int BelowMenu = GameplayInset + MenuHeight + 24;
     internal const int BodySize = 30, HintSize = 24;
     internal static readonly Color Selected = new("ffe19a");
     internal static readonly Color Unavailable = new("8e9bab");
