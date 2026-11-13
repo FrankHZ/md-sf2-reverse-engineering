@@ -108,7 +108,7 @@ public static class DisplayCatalogReader
             actual.Any(name => !names.Contains(name, StringComparer.Ordinal))) throw new ArgumentException();
     }
     private static bool Control(ExplorationTextToken token) => token.Kind is ExplorationTextTokenKind.Wait1 or
-        ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Clear or ExplorationTextTokenKind.Newline;
+        ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3 or ExplorationTextTokenKind.Clear or ExplorationTextTokenKind.Newline;
     private static bool Name(ExplorationTextToken token) => token.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName;
     private static bool Map(IReadOnlyList<ExplorationTextToken> source, IReadOnlyList<ExplorationTextToken> target, out DisplayCatalog.Row? row)
     {

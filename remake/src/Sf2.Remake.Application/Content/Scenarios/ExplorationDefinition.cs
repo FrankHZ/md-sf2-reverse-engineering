@@ -173,7 +173,7 @@ public sealed class ExplorationProvenance
     public string ControlledBoundary { get; }
 }
 
-public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported, Delay1, ClassName, Clear }
+public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported, Delay1, ClassName, Clear, Delay3 }
 public sealed record ExplorationTextToken(ExplorationTextTokenKind Kind, string Value, int? Member = null);
 
 public sealed class ExplorationDefinition

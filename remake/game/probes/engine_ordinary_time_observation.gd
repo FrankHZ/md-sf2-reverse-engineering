@@ -154,8 +154,10 @@ func _run() -> void:
     # This is the genuine church entity event, not a direct service command.
     await _press(KEY_ENTER)
     for i in range(300):
-        if state().wait == "ChurchWait": break
-        await process_frame
+        var reading := state()
+        if reading.wait == "ChurchWait": break
+        if reading.canWaitForText: await _press(KEY_ENTER)
+        else: await process_frame
     var church := sample("church")
     _check(church.wait == "ChurchWait", "genuine Church caller")
     revision = church.revision

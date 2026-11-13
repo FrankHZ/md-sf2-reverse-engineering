@@ -13,7 +13,11 @@ internal static class OpeningLoadoutBindings
     {
         var source = admitted.PrivateDefinitions!;
         ScenarioJson.Require(admitted.Exploration!.Programs.TryGetValue("map3-entityevent13", out var church) &&
-            church.Instructions is [OpenChurch { Definition: { RaisePerLevel: 10, PromotedExtra: 200, RaisedHpCap: 200, PoisonCost: 10, StunCost: 20 } }, EndProgram] &&
+            church.Instructions is [CallProgram { Target: { Instruction: 0 } target }, EndProgram] &&
+            admitted.Exploration.Programs.TryGetValue(target.Program, out var entry) &&
+            entry.Instructions is [OpenPortrait, ShowText { TextId: 110 }, CloseText, ClosePortrait,
+                OpenChurch { Definition: { RaisePerLevel: 10, PromotedExtra: 200, RaisedHpCap: 200, PoisonCost: 10, StunCost: 20 } },
+                ReturnProgram] &&
             admitted.Exploration.Maps[new("map-3")].Events.Any(row => row.Program?.Program == church.Id && row.Unavailable is null),
             "opening-church-required", "world.programs");
         // Product opening content must include the source search/receipt surface before

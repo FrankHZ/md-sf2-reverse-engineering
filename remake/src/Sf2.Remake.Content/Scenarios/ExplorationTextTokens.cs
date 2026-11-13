@@ -13,6 +13,7 @@ public static class ExplorationTextTokens
             else if (value == "{W1}") tokens.Add(new(ExplorationTextTokenKind.Wait1, value));
             else if (value == "{W2}") tokens.Add(new(ExplorationTextTokenKind.Wait2, value));
             else if (value == "{D1}") tokens.Add(new(ExplorationTextTokenKind.Delay1, value));
+            else if (value == "{D3}") tokens.Add(new(ExplorationTextTokenKind.Delay3, value));
             else if (value == "{CLEAR}") tokens.Add(new(ExplorationTextTokenKind.Clear, value));
             else if (value == "{LEADER}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value, 0));
             else if (value == "{NAME}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value));

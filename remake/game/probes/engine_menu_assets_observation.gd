@@ -216,8 +216,10 @@ func church() -> void:
     if cell() != goal: return
     await key(KEY_UP); await settle_field(); await key(KEY_ENTER)
     for i in 300:
-        if state().wait == "ChurchWait": break
-        await process_frame
+        var reading := state()
+        if reading.wait == "ChurchWait": break
+        if reading.canWaitForText: await key(KEY_ENTER)
+        else: await process_frame
     check(state().wait == "ChurchWait", "actual priest opens church")
     if state().wait != "ChurchWait": record("church-entry-failure"); return
     check(not state().fieldMenu.visible and not state().partyStatus.visible, "church excludes field pages")

@@ -45,6 +45,8 @@ _PRE_VOYAGE_RANGES = (
 )
 _RANGES = (
     *_PRE_VOYAGE_RANGES,
+    (110, 110),
+    (158, 158),
     (2261, 2291),
     (2461, 2482),
     (3204, 3206),
@@ -107,9 +109,9 @@ _CALIBRATED = (
 )
 _COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 _ROM = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
-_CONTROL = re.compile(r"\{(?:N|W1|W2|D1|CLEAR)\}")
+_CONTROL = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR)\}")
 _TOKEN = re.compile(r"\{[^{}]+\}")
-_SUPPORTED = re.compile(r"\{(?:N|W1|W2|D1|CLEAR|LEADER|NAME(?:;[0-9]+)?|CLASS)\}")
+_SUPPORTED = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR|LEADER|NAME(?:;[0-9]+)?|CLASS)\}")
 
 
 def _require(ok: bool, message: str) -> None:
@@ -352,7 +354,7 @@ def derive(args: argparse.Namespace) -> dict:
     _require(
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
         and len(selected)
-        == (806 if args.scope == "pre-voyage" else 1360 + len(field_texts - base_texts))
+        == (806 if args.scope == "pre-voyage" else 1362 + len(field_texts - base_texts))
         and len(selected_names) == (51 if args.scope == "pre-voyage" else 79 + len(extra_items)),
         "candidate budget/selection mismatch",
     )

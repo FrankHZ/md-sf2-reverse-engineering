@@ -117,6 +117,14 @@ internal static class ExplorationDispatcher
                         return Reject(current, "stale-or-wrong-wait", "wait");
                     current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, skippedDelivery ? "text-acknowledgement-skipped" : "presentation-acknowledged");
                     break;
+                case InterruptTextDelay interrupt:
+                    if (current.Story.Wait is not FieldTextWait { InterruptibleDelay: true } delay || delay.Token != interrupt.Wait)
+                        return Reject(current, "text-delay-unavailable", "wait");
+                    var resumed = current.Story.Copy(current.Story.Cursor, delay with { Phase = FieldTextPhase.Tokens, Remaining = 0 },
+                        typewriting: delay.SavedTypewriting);
+                    current = ProgramRunner.Commit(current, current.Active, ExplorationTextRunner.Normalize(resumed),
+                        observations, "text-delay-interrupted");
+                    break;
                 case CompleteTextReveal reveal:
                     if (current.Story.Wait is FieldTextWait fieldDelivery)
                     {

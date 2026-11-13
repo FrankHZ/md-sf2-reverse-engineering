@@ -806,7 +806,8 @@ existing Save/Continue boundary. The [caller inventory](../content/opening-branc
 finds no admitted opening shop. Buy/sell, Deals trading, Repair, Promotion, curse removal, Caravan,
 later setups/campaign and original service presentation/timing are excluded.
 
-Content lowers `j_ChurchMenu` to `OpenChurch(ChurchDefinition)` with immutable source operands.
+The private reader binds the Church caller to its greeting followed by `OpenChurch(ChurchDefinition)`
+with immutable source operands.
 `ChurchWait` owns the service menu and ordered immutable offers; its cursor retains the actual caller.
 `GameSession` admits each answer against session/revision and a matching live token/offer. Querying
 or selecting an action cannot change gameplay resources. Decline advances the source-ordered scan;
@@ -856,6 +857,46 @@ levels, caps, promotion, dead/status combinations and content costs are covered;
 not define legality. Positive poison/stun naturally arising in the opening and original service
 input/music/portrait cadence remain **Unknown**. The [composed opening acceptance](../evidence/opening-loop-acceptance.md) joins these consumers;
 main-gate owns independent integration.
+
+### Church and shop entry greetings
+
+**Confirmed** in pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+In `disasm/code/common/menus/church/churchactions_1.asm:ChurchMenu` and
+`disasm/code/common/menus/shop/shopactions.asm:ShopMenu`, the entry opens the current
+speaker's portrait when available, displays 110 or 158, closes text and portrait, then enters the
+service loop. The menu return labels are downstream of this sequence.
+`disasm/data/scripting/text/gamescript.txt` rows 006E and 009E supply two W2 waits and one final
+D3 respectively. In `disasm/code/common/scripting/text/textfunctions_1.asm:symbol_delay3`, DBF
+starts at 119. With neutral input the loop waits 120 VInts. Direction or A/B/C input breaks the
+delay before another wait. Nonzero mouth control bypasses the waits. The saved typewriting state
+is restored on return.
+
+The private reader replaces each native service instruction in place with a call carrying the
+original terms. Its body uses the existing event speaker, text, window and service instructions.
+This preserves incoming instruction addresses, shop inventory selection and the caller's return.
+Authored services keep their supplied program. Legacy controlled starts without field text settings
+keep their direct diagnostic menu. The full field reader owns both W2 spans and
+the D3 clock. Menu presenters require release and a fresh selection. Chinese text comes from the
+private catalog with identical control order. English and Chinese share the session's wait tokens.
+
+**Confirmed** by ordinary slot 2 Continue on Map3 F609, facing north at the priest (32,13) and
+weapon counter (7,20). Each of the four English/Chinese × adjustable/instant runs read the actual
+localized body with portrait, including two separately acknowledged Church spans. Holding the
+Talk edge preserved the first span. Holding the final acknowledgement or D3 interrupt through
+menu entry and releasing it left services open. A fresh selection opened the healthy-party Raise
+result or Buy stock. Back from stock and Continue from the result reopened services directly.
+Leaving and talking again replayed each greeting. Gold stayed 360 and the party's carried state
+matched the starting slot.
+
+For a background replay select the combined private world/scene, ordinary entry assets and current
+derived display catalog. Copy the F609 church slot into slot 2 in a new external save namespace.
+Set that namespace's preference language and text mode, `SF2_HOST_UI_CASE` to their hyphenated
+pair (for example `zh-CN-adjustable`), and `SF2_HOST_UI_OUTPUT` to a fresh JSON path. Run the Debug
+host from the checkout with `--headless --audio-driver Dummy --fixed-fps 60 --path remake/game`
+and `--script res://probes/engine_service_greetings_observation.gd`. The result records the two input boundaries,
+menu return, elapsed simulation ticks and gold. Other towns' greeting bindings follow the admitted
+service calls. This observation covers F609. Other service speeches, original hardware cadence and
+human presentation approval remain outside this observation.
 
 ## Host preferences boundary
 

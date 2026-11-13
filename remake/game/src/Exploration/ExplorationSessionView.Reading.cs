@@ -9,6 +9,13 @@ public sealed partial class ExplorationSessionView
     // One explicit reading intent, never a queue of confirmations or a script skip.
     private (WaitToken Token, int DisplayStart, ulong Frame)? _readingConfirmation;
 
+    private void InterruptDelay(FieldTextWait delay)
+    {
+        // The held or fresh input belongs to this delay, even if another W2 follows in the same span.
+        _readingConfirmation = null;
+        Send(new InterruptTextDelay(delay.Token));
+    }
+
     private void ConfirmReading()
     {
         if (_readingConfirmation is not null) return;
@@ -44,7 +51,7 @@ public sealed partial class ExplorationSessionView
         if (!ReadingHostReady) { _readingConfirmation = null; return true; }
         if (Engine.GetProcessFrames() <= reading.Frame) return true;
         // Reuse real neutral services, preserving RNG/entities/window order. Yield at 600
-        // opportunities; explicit {D1} time remains on the ordinary timed path below.
+        // opportunities; explicit text delays use the ordinary clock and their own input rules.
         for (int work = 0; work < 600 && _session!.Current.Story.Wait is FieldTextWait { LogicalDone: false } field; work++)
         {
             if (field.Phase == FieldTextPhase.TextPause) return false;

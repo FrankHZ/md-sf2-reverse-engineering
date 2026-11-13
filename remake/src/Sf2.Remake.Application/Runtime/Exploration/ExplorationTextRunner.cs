@@ -104,7 +104,7 @@ internal static class ExplorationTextRunner
         for (int sourceToken = 0; sourceToken < tokens.Count; sourceToken++)
         {
             var part = tokens[sourceToken];
-            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Clear)
+            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3 or ExplorationTextTokenKind.Clear)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "", SourceToken: sourceToken)); continue; }
             int? member = part.Member;
             if (part.Kind == ExplorationTextTokenKind.ClassName) member = text.NameMember;
@@ -204,12 +204,12 @@ internal static class ExplorationTextRunner
                     Projection = string.Concat(wait.Units.Skip(following).Take(wait.End - following).Select(part => part.Text)) };
                 break;
             }
-            if (unit.Kind == ExplorationTextTokenKind.Delay1)
+            if (unit.Kind is ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3)
             {
                 wait = wait with { Index = wait.Index + 1 };
                 if (story.TextSettings!.MouthControl != 0) continue;
-                // symbol_delay1 saves the live byte, clears it, then performs DBF21.
-                wait = wait with { Phase = FieldTextPhase.TextPause, Remaining = 22, SavedTypewriting = story.Typewriting };
+                // Both source delays save and clear typewriting. DBF starts at 21 or 119.
+                wait = wait with { Phase = FieldTextPhase.TextPause, Remaining = unit.Kind == ExplorationTextTokenKind.Delay3 ? 120 : 22, SavedTypewriting = story.Typewriting };
                 story = story.Copy(story.Cursor, wait, typewriting: false);
                 break;
             }

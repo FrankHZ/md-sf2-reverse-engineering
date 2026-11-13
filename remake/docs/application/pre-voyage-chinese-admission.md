@@ -1,7 +1,9 @@
 # Pre-voyage Chinese admission plan
 
-The current selector extends the 806-message pre-voyage scope with the deck, Battle08 and founding dialogue for the
-[New Granseal handoff](battle08-new-granseal.md). The current catalog has 862 messages and 58 names.
+The current selector includes later campaign dialogue, Search and the ordinary service greetings.
+For the combined Map3 publication it derives 1,421 world messages and 109 names from the private
+corpora. Church 110 preserves both W2 controls and Shop 158 preserves its terminal D3.
+[Service entry and bilingual reading](opening-session-lifecycle.md#church-and-shop-entry-greetings).
 Use `--scope pre-voyage` to reproduce the 806-message selection below.
 
 ## Decision and acceptance boundary

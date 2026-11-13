@@ -23,6 +23,10 @@ internal sealed partial class GameInput
     // This is held-state admission only, never a conditioned/repeating choice poll.
     internal bool GameplayHeld => _bindings.Keys.Any(action => action is not (GameAction.Wait or GameAction.Accelerate) && Godot.Input.IsActionPressed(MapName(action)));
 
+    internal static bool InterruptsTextDelay(GameAction action) => action is GameAction.Up or GameAction.Down or
+        GameAction.Left or GameAction.Right or GameAction.Confirm or GameAction.Cancel or GameAction.Attack;
+    internal bool TextDelayInputHeld => _bindings.Keys.Any(action => InterruptsTextDelay(action) && Godot.Input.IsActionPressed(MapName(action)));
+
     internal GameInput(InputSettings settings)
     {
         Settings = settings;
