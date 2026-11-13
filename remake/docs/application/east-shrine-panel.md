@@ -15,7 +15,9 @@ The chapter starts at the [Hassan Continue](kraken-hassan.md) with eleven joined
 
 **Confirmed** with the untouched field save from the [accepted desert encounter](desert-battle.md). Title Continue placed the eleven-member party on Map70 (16,52) facing Down with 11,983 gold. Walking 39 steps reached Map62 (6,18). Two conversations with the moving old man set F728, F77 and F729. The system menu saved in the East Shrine. A fresh Continue restored the same roster, HP, inventory, gold, names, item custody, Egress register and raft berth.
 
-From this saved anchor, Down exits to Map70 (43,41). The return crossed to Map69, boarded the parked raft at (28,55), landed south of the shrine and reached Map61 in 131 inputs. The observed crossing did not roll another Battle14. The desert's completed-battle repeat remains available. Walking to (5,9) opened the gate, set F415 and F730, and copied the warp word 0x1004 to (5,6). Three Up inputs from the gate requested Battle15. The field-only package returned the ordinary unavailable-encounter receipt at (5,7). The synchronous result identifies `battle-15`.
+From this saved anchor, Down exits to Map70 (43,41). The return crossed to Map69, boarded the parked raft at (28,55), landed south of the shrine and reached Map61 in 131 inputs. The observed crossing did not roll another Battle14. In a separate run from the same saved anchor, walking back and forth at Map70 (17,47) triggered completed Battle14 on input 64 with F77, F729 and F514 held. Walking to (5,9) opened the gate, set F415 and F730, and copied the warp word 0x1004 to (5,6). Three Up inputs from the gate requested Battle15. The field-only package returned the ordinary unavailable-encounter receipt at (5,7). The synchronous result identifies `battle-15`.
+
+To prepare the same party for the next battle, another branch of the East Shrine save walked back to Hassan and used the ordinary church Raise service. Eight offers cost 1,050 gold. Its town save retains the old man, all eleven living allies, 10,933 gold, the original berth and Egress Map6.
 
 ## Shrine content and engine boundaries
 
