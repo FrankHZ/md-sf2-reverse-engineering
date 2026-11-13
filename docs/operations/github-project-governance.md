@@ -225,6 +225,8 @@ evidence-label rules of `AGENTS.md` applying verbatim to issue bodies and commen
 inputs, absolute private paths, generated artifacts, or redistribution rights; state reproduction
 commands and fixture identity instead of pasted dumps.
 
+For a player-facing remake change, put a link to the affected [campaign feature row](../../remake/docs/capability-status.md#campaign-feature-trace) or battle row and its detailed owner in the Issue. Name the player action, affected chapter/map/setup and expected result or return. A chapter extension includes newly reachable optional interactions even when their engine rule stays the same. During review, compare the published callers or placements with the owner's inventory and distinguish ordinary input from static or controlled evidence. Update the affected row or linked owner in the implementation PR where its claim changes. Link a remaining actionable gap to its existing Issue, or open one for a distinct outcome. Group equivalent variants in the owner; the Project tracks work and dependencies.
+
 ### Task Lifecycle
 
 Main-gate plans, dispatches, independently reviews, integrates and tracks work. Within the user's

@@ -33,7 +33,7 @@ Use the owner that matches the responsibility being changed:
 | Godot entry, semantic input, field projection and UI boundaries | [Presentation](godot/presentation.md) |
 | Audio cue delivery and source limits | [Audio](godot/audio.md) |
 | Battle scene, movement and death presentation | [Battle scenes](godot/battle-scenes.md) |
-| Battle need/decision, player flow, per-layer consumers, connected admission, acceptance and gaps | [Battle feature trace](godot/battle-interaction-baseline.md) |
+| Player action, implementation, chapter coverage and remaining gaps | [Campaign features and optional field interactions](capability-status.md#campaign-feature-trace) · [Battle decisions and return](godot/battle-interaction-baseline.md) |
 | Environment, checks and observation selection | [Development and verification](development-and-verification.md) |
 | Structural review, concrete defects and bounded engineering follow-ups | [Structure and quality review](evidence/structure-and-quality-review.md) |
 | Runtime, SF2 rule and story-content boundaries; focused correction proposals | [Engine and script boundary review](evidence/engine-script-boundary-review.md) |
