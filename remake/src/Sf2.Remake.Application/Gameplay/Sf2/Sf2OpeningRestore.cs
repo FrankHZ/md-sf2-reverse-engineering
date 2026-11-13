@@ -174,16 +174,16 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (anchor.Map.Value == "map-9")
         {
             // Both Hassan setups execute the same init. A zero lookup can resolve to physical 0.
-            if (!flags.Contains(518)) world = world.Hide(new EntityRef("entity-137"), false);
-            if (flags.Contains(65)) world = world.Hide(new EntityRef("entity-11"), false);
-            if (flags.Contains(12)) world = world.Hide(new EntityRef("entity-12"), false);
-            if (!world.PlayerEntity.Visible)
+            if (!flags.Contains(518)) world = world.MoveOffMap(new("entity-137"));
+            if (flags.Contains(65)) world = world.MoveOffMap(new("entity-11"));
+            if (flags.Contains(12)) world = world.MoveOffMap(new("entity-12"));
+            if (world.PlayerEntity.Motion.X == 0x7000)
                 throw new BattleRuleException("save-anchor-unusable", "save.anchor");
         }
         // Allocation starts followers at the leader. This is the same legal overlap as a map reload;
         // their ordinary following service establishes spacing on the next deliberate input.
         if (world.AllEntities.Any(entity => entity.Visible && entity.Slot != world.PlayerEntity.Slot &&
-                entity.Follower is null && entity.Position == anchor.Position))
+                entity.Follower is null && entity.Motion.X / 384 == anchor.Position.X && entity.Motion.Y / 384 == anchor.Position.Y))
             throw new BattleRuleException("save-anchor-occupied", "save.anchor");
         world = RaftRuntime.Declare(world, enteredFlags, raft);
         if (location.Recipe == "polca-raft")

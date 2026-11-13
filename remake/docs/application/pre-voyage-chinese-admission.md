@@ -1,8 +1,7 @@
 # Pre-voyage Chinese admission plan
 
 The current selector includes later campaign dialogue, Search and the ordinary service greetings.
-For the combined Map3 publication it derives 1,421 world messages and 109 names from the private
-corpora. Church 110 preserves both W2 controls and Shop 158 preserves its terminal D3.
+The [Kraken and Hassan chapter](kraken-hassan.md) selects 1,462 world messages and 122 names from the private corpora, including Battle16 lines 2513–2519, the three Kraken enemies, AQUA and the Hassan cast. Church 110 preserves both W2 controls and Shop 158 preserves its terminal D3.
 [Service entry and bilingual reading](opening-session-lifecycle.md#church-and-shop-entry-greetings).
 Use `--scope pre-voyage` to reproduce the 806-message selection below.
 

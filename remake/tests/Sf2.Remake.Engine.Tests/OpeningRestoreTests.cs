@@ -119,9 +119,9 @@ public sealed class OpeningRestoreTests
         var world = Resume();
         Assert.Equal(location.Anchor.Position, world.PlayerEntity.Position);
         Assert.Equal(location.Anchor.Facing, world.PlayerEntity.Motion.Facing);
-        Assert.Equal(tarosComplete, world.Entities[new("entity-137")].Visible);
-        Assert.Equal(!caravan, world.Entities[new("entity-11")].Visible);
-        if (tarosComplete) Assert.Equal(!rickJoined, world.Entities[new("entity-12")].Visible);
+        Assert.Equal(!tarosComplete, world.Entities[new("entity-137")].Motion.X == 0x7000);
+        Assert.Equal(caravan, world.Entities[new("entity-11")].Motion.X == 0x7000);
+        if (tarosComplete) Assert.Equal(rickJoined, world.Entities[new("entity-12")].Motion.X == 0x7000);
         Assert.DoesNotContain(world.AllEntities, e => e.Slot == 31);
         Assert.Same(party, world.Party);
     }

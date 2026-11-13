@@ -508,6 +508,11 @@ internal static class ProgramRunner
                         break;
                     case SetMapQuake quake:
                         active = new ActiveExploration(current.Exploration!.WithQuake(quake.Amount)); break;
+                    case CopyEntitySpriteSlot copySlot:
+                        var sourceSlot = Entity(current, copySlot.Source).SpriteSlot;
+                        var targetActor = Entity(current, copySlot.Target);
+                        active = new ActiveExploration(current.Exploration!.WithEntity(targetActor with { SharedSpriteSlot = sourceSlot }));
+                        break;
                     case AddMapEntity add:
                         active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value, story.Flags));
                         break;
@@ -548,6 +553,8 @@ internal static class ProgramRunner
                         active = EditEntity(current, visible.Entity, entity => entity with { Visible = visible.Visible }); break;
                     case HideMapEntity hide:
                         active = new ActiveExploration(current.Exploration!.Hide(hide.Entity, hide.RemoveAliases)); break;
+                    case MoveEntityOffMap offMap:
+                        active = new ActiveExploration(current.Exploration!.MoveOffMap(offMap.Entity)); break;
                     case ApplyMapLayoutEvent layoutEvent:
                         var field = current.Exploration!;
                         active = new ActiveExploration(layoutEvent.Roof ? MapEventDispatcher.ScriptedRoof(field, layoutEvent.Position)

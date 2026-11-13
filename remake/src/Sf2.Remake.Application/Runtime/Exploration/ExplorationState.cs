@@ -221,8 +221,10 @@ public sealed class StoryState
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,
     EntityActionProgram? Actions = null, int ActionCursor = 0, bool WaitingForMotion = false,
     int Slot = -1, int? Sprite = null, EntityFollower? Follower = null,
-    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false, ushort RenderSize = 24, long? ShadowRemovedAt = null)
+    long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false, ushort RenderSize = 24, long? ShadowRemovedAt = null,
+    int? SharedSpriteSlot = null)
 {
+    public int SpriteSlot => SharedSpriteSlot ?? Slot;
     public MapPosition Position => new(Motion.X / 384, Motion.Y / 384);
     public bool IsScriptIdle => Actions is { } program && ActionCursor >= 0 &&
         ActionCursor < program.Actions.Count && program.Actions[ActionCursor] is IdleEntityAction;
@@ -292,6 +294,12 @@ public sealed class ExplorationState
         new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake, TravelMode, CurrentEntities);
     internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities);
     internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount, TravelMode, CurrentEntities);
+    internal ExplorationState MoveOffMap(EntityRef reference)
+    {
+        if (!TryResolveEntity(reference, out var entity)) throw new BattleRuleException("missing-entity", "program.entity", true);
+        return WithEntity(entity with { Motion = entity.Motion with
+            { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } });
+    }
     internal ExplorationState Hide(EntityRef reference, bool removeAliases)
     {
         if (TryResolveEntity(reference, out var entity)) return Hide(entity, removeAliases);

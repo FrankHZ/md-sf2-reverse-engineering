@@ -85,6 +85,21 @@ def sprite_layout(columns: int, rows: int) -> list[int]:
 TARGET_CURSOR_RESOURCE = "battle-cursor.single-cell"
 
 
+def kraken_frames(decode, palette, read):
+    base = 0x261A6
+    tiles = decode(base + 32, 2304)
+    for frame, address in enumerate((0x2786C, 0x2784C)):
+        layout = [0] * 36
+        for piece in range(4):
+            row = read(address + piece * 8, 8)
+            y, x = row[1] - 0x5C, row[7] - 0x74
+            first = (int.from_bytes(row[4:6], "big") & 2047) - 0x578
+            for dx in range(3):
+                for dy in range(3):
+                    layout[(y // 8 + dy) * 6 + x // 8 + dx] = first + dx * 3 + dy
+        yield frame, tiles, palette(base), layout
+
+
 def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
     """The accepted radius-zero sprite, independent of preview paths or a mutable library."""
     if len(rom) != ACCEPTED_ROM_SIZE or digest(rom) != ACCEPTED_ROM_SHA256:
@@ -442,18 +457,8 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     if battle == 16:
         # LoadSpecialSprite selects palette 4, then 72 tiles at VRAM AF00.
         # UpdateSpecialSprite builds each pose from four column-major 3x3 sprites.
-        base = 0x261A6
-        tiles = decode(base + 32, 2304)
-        for frame, address in enumerate((0x2786C, 0x2784C)):
-            layout = [0] * 36
-            for piece in range(4):
-                row = read(address + piece * 8, 8)
-                y, x = row[1] - 0x5C, row[7] - 0x74
-                first = (int.from_bytes(row[4:6], "big") & 2047) - 0x578
-                for dx in range(3):
-                    for dy in range(3):
-                        layout[(y // 8 + dy) * 6 + x // 8 + dx] = first + dx * 3 + dy
-            raster(f"field-kraken-head/frame{frame}", tiles, palette(base), 48, 48, layout)
+        for frame, tiles, colors, layout in kraken_frames(decode, palette, read):
+            raster(f"field-kraken-head/frame{frame}", tiles, colors, 48, 48, layout)
     backgrounds = table("battle-background-decode")
     layout = [int.from_bytes(read(0x1FAEA + i * 2, 2), "big") for i in range(384)]
     layout = [(value & 0x1800) | ((value & 2047) - 928) for value in layout]

@@ -14,6 +14,7 @@ from sf2tool.remake_exploration_joins import join_selector, join_service
 from sf2tool.remake_exploration_scene import (
     portrait_operations,
     raft_placement,
+    scene_entities,
     scene_operation,
     sound_operation,
 )
@@ -183,57 +184,6 @@ class OriginalPrograms:
             "playerSprite": 0,
             "followers": followers,
             "allySprites": self.initial_ally_sprites(),
-        }
-
-    def scene_entities(self, relative: str, symbol: str) -> dict[str, Any]:
-        rows = self.source_operations(relative, symbol)
-        if len(rows) == 1 and rows[0]["opcode"] == "mainEntity":
-            storage = "disasm/data/maps/mapsetupsstorage.asm"
-            self.sources.add(storage)
-            includes = re.findall(r'include\s+"([^"]+)"', (self.upstream / storage).read_text())
-            paths = ["disasm/" + path.replace(chr(92), "/") for path in includes]
-            tail = paths[paths.index(relative) + 1]
-            first = re.search(r"^(\w+):", (self.upstream / tail).read_text(), re.MULTILINE)
-            rows.extend(self.source_operations(tail, first[1]))
-        if rows[0]["opcode"] != "mainEntity" or rows[-1]["opcode"] not in (
-            "cscEntitiesEnd",
-            "msEntitiesEnd",
-        ):
-            raise ValueError("source cutscene entity table boundary")
-        x, y, facing = map(self.number, _tokens(rows[0]["operandText"]))
-        entities = []
-        non_ally = 128
-        for row in rows[1:-1]:
-            if row["opcode"] not in ("entity", "entityRandomWalk"):
-                raise ValueError("source cutscene entity record")
-            values = _tokens(row["operandText"])
-            ex, ey, ef, sprite = map(self.number, values[:4])
-            if sprite >= self.equates["MAPSPRITES_SPECIALS_START"]:
-                raise ValueError("special cutscene entity not admitted")
-            identity = sprite if sprite < 30 else non_ally
-            non_ally += int(sprite >= 30)
-            entities.append(
-                {
-                    "id": f"entity-{identity}",
-                    "position": {"x": ex & 63, "y": ey & 63},
-                    "facing": ef,
-                    "sprite": sprite,
-                    "speed": self.entity_speed,
-                    "visible": True,
-                    "obstruction": False,
-                    "actions": (
-                        walking_actions(self, *map(self.number, values[4:]))
-                        if row["opcode"] == "entityRandomWalk"
-                        else action_stream(self, values[4])
-                    ),
-                }
-            )
-        return {
-            "op": "scene-entities",
-            "position": {"x": x, "y": y},
-            "facing": facing,
-            "population": self.population(),
-            "entities": entities,
         }
 
     def compile(self, symbol: str) -> str:
@@ -565,7 +515,25 @@ class OriginalPrograms:
                         ),
                     }
                 )
+            elif (
+                op == "jsr" and args == ["ChangeEntityFacing"] and {"d0", "d1"} <= registers.keys()
+            ):
+                result.append(
+                    {
+                        "op": "face",
+                        "entity": self.entity(str(registers["d0"])),
+                        "facing": registers["d1"],
+                        "refreshSprite": True,
+                    }
+                )
             elif op == "jsr" and args == ["MoveEntityOutOfMap"]:
+                if relative.endswith(
+                    ("map09/mapsetups/s6_initfunction.asm", "map13/mapsetups/s6_initfunction.asm")
+                ):
+                    result.append(
+                        {"op": "move-off-map", "entity": self.entity(str(registers["d0"]))}
+                    )
+                    continue
                 result.append(
                     {"op": "retired-map3-entity-scratch"}
                     if relative.endswith("maps/entries/map03/mapsetups/s6_initfunction.asm")
@@ -703,8 +671,12 @@ class OriginalPrograms:
                         {"op": "wait-motion", "entity": "entity-0"},
                     ]
                 )
-            elif op == "setQuake" and 0 <= self.number(args[0]) <= 255:
-                result.append({"op": "quake", "amount": self.number(args[0])})
+            elif (
+                op == "setQuake"
+                or op == "cloneEntity"
+                or (op in ("clr.b", "move.b") and args[-1] == "((PLAYER_TYPE-$1000000)).w")
+            ):
+                result.extend(scene_operation(self, op, args))
             elif op == "loadEntitiesFromMapSetup":
                 result.append(
                     {
@@ -854,7 +826,7 @@ class OriginalPrograms:
                 table_path = (
                     "disasm/" + self.raw[args[0]]["path"] if args[0] in self.raw else relative
                 )
-                result.append(self.scene_entities(table_path, args[0]))
+                result.append(scene_entities(self, table_path, args[0]))
             elif op in ("mapFadeOutToWhite", "mapFadeInFromWhite"):
                 result.append(
                     {
@@ -915,8 +887,6 @@ class OriginalPrograms:
                 result.append({"op": "add-follower", "entity": self.entity(args[0])})
             elif op == "csWait":
                 result.append({"op": "wait-ticks", "ticks": self.number(args[0])})
-            elif op == "setSprite":
-                result.extend(scene_operation(self, op, args))
             elif op == "setFacing":
                 result.append(
                     {
@@ -945,7 +915,15 @@ class OriginalPrograms:
                         "fullBlack": {"period": 6 if op.startswith("slow") else None},
                     }
                 )
-            elif op in ("setPos", "setPosFlash", "roofEvent", "stepEvent", "setDest", "setBlocks"):
+            elif op in (
+                "setSprite",
+                "setPos",
+                "setPosFlash",
+                "roofEvent",
+                "stepEvent",
+                "setDest",
+                "setBlocks",
+            ):
                 result.extend(scene_operation(self, op, args))
             elif op in (
                 "entityActions",
