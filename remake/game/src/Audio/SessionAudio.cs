@@ -412,7 +412,7 @@ internal sealed partial class SessionAudio : IDisposable
     {
         65 or 88 or 109 or 111 => Slots.Ym5,
         66 or 67 or 69 or 70 or 72 or 73 or 74 or 79 or 100 or 102 => Slots.PsgTone3,
-        77 => Slots.Ym4,
+        77 or 112 => Slots.Ym4,
         81 or 82 or 83 or 84 or 116 or 117 or 118 => Slots.Ym6,
         89 or 110 => Slots.PsgNoise,
         92 or 93 or 96 or 113 => Slots.Ym4 | Slots.Ym5,
