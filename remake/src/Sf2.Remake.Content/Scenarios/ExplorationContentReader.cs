@@ -161,7 +161,12 @@ internal static class ExplorationContentReader
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
-        if (!authored) PrivateCastleSceneContent.Bind(maps, programs);
+        if (!authored)
+        {
+            PrivateCastleSceneContent.Bind(maps, programs);
+            // Legacy controlled starts without field text services retain their direct menu.
+            if (start.TryGetProperty("textSettings", out _)) PrivateServicePrograms.Bind(programs, texts);
+        }
         if (programs.Any(program => program.Instructions.Any(op => op is ParkRaft)))
             programs.Add(RaftRuntime.Program(new(Id(start, "player"))));
         CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);

@@ -37,6 +37,8 @@ public sealed record DebugWinBattle : SessionCommand;
 public sealed record WaitAtInput : SessionCommand;
 // One nonaccepting poll. W1 also polls on acceptance; the plain input-first helper does not.
 public sealed record WaitForText(WaitToken Wait) : SessionCommand;
+// A mapped direction or face button breaks the live long delay before its next service.
+public sealed record InterruptTextDelay(WaitToken Wait) : SessionCommand;
 // Actual text delivery, independent of simulation opportunities and input polling.
 public sealed record CompleteTextReveal(WaitToken Wait) : SessionCommand;
 // A live healing-scene token advances one admitted source opportunity. Its cursor

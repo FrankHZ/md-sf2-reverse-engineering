@@ -2,7 +2,10 @@
 
 ## Ordinary campaign shops
 
-At a shop counter, face the merchant and press Confirm. Choose Buy, an item and a recipient.
+At a shop counter, face the merchant and press Confirm. Read greeting 158. Allow its delay to expire
+or interrupt it, then press Confirm again to choose Buy, an item and a recipient. Back from stock
+returns to services. Leaving and talking again repeats the greeting.
+[Source and ordinary F609 observations](../application/opening-session-lifecycle.md#church-and-shop-entry-greetings).
 Confirm the quote to debit the displayed price and fill the first free pack slot. Back at the
 quote returns to the recipient. Back at the service list leaves the shop. To equip a purchase,
 open the field menu and choose Item → member → Equip → slot → Confirm.
@@ -1193,7 +1196,7 @@ The producer lowers `j_ChurchMenu` to a typed `church` instruction. Its positive
 come from pinned `sf2enums.asm`: Raise per-level10, promoted surcharge200, HP cap200, poison10 and
 stun20. The two source Church action files join the existing provenance list. The instruction reader
 validates its exact shape and operand ranges; the product opening binding additionally requires the
-known source caller's typed instruction/end, matching source operands and available mapped event.
+known source caller's call to its bound service program, matching Church operands and available mapped event.
 Old native/unavailable caller content rejects with `opening-church-required` before publication.
 This is Content-specific trust; generic runtime contains no opening map/caller/story identifiers.
 

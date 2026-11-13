@@ -369,7 +369,7 @@ internal static class ProgramRunner
                             eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
                             definition.Exploration.TextTokens.TryGetValue(selectedText, out var tokens) &&
                             tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
-                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1) &&
+                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3) &&
                                 (part.Kind != ExplorationTextTokenKind.MemberName || part.Member < definition.Exploration.MemberNames.Count)))
                         {
                             story = current.Story.Copy(cursor, TextSpan(tokens, token, selectedText, 0),

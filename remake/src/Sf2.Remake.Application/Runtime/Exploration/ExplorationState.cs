@@ -25,6 +25,7 @@ public sealed record FieldTextWait(WaitToken Token, int Text, IReadOnlyList<Fiel
 {
     public int DisplayEnd => End < Units.Count ? Units[End].SourceToken : SourceTokenCount;
     public bool LogicalDone => Phase is FieldTextPhase.Input or FieldTextPhase.End;
+    public bool InterruptibleDelay => Phase == FieldTextPhase.TextPause && Units[Index - 1].Kind == ExplorationTextTokenKind.Delay3;
     public bool Wait2 => End < Units.Count && Units[End].Kind == ExplorationTextTokenKind.Wait2;
 }
 public sealed record ViewWait(WaitToken Token, bool Recheck, bool FinalService = false, bool ScriptReturn = false) : ProgramWait(Token);

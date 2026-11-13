@@ -39,7 +39,7 @@ func run() -> void:
     await walk(Vector2i(7,20), "weapon counter")
     if issue != "": check(false, issue); finish(); return
     await key(KEY_UP); await frames(12); await key(KEY_ENTER)
-    for frame in 240:
+    for frame in 900:
         if state().get("wait") == "ShopWait": break
         await process_frame
     if state().get("wait") != "ShopWait":

@@ -271,6 +271,8 @@ public sealed partial class ExplorationSessionView : Control
             _tickTime = 0;
             return;
         }
+        if (_session.Current.Story.Wait is FieldTextWait { InterruptibleDelay: true } delay && _input.TextDelayInputHeld)
+        { InterruptDelay(delay); return; }
         if (ContinueReadingConfirmation()) return;
         WaitToken? deliveryToken = _session.Current.Story.Wait switch
         {
@@ -412,7 +414,12 @@ public sealed partial class ExplorationSessionView : Control
         }
         else if (current.Story.Wait is FieldTextWait or W1TextWait)
         {
-            if (action == GameAction.Confirm) ConfirmReading();
+            if (current.Story.Wait is FieldTextWait { InterruptibleDelay: true } delay && GameInput.InterruptsTextDelay(action))
+            {
+                if (action == GameAction.Confirm) RevealText();
+                InterruptDelay(delay);
+            }
+            else if (action == GameAction.Confirm) ConfirmReading();
             return;
         }
         else if (current.Story.Wait is FieldSearchWait search)
