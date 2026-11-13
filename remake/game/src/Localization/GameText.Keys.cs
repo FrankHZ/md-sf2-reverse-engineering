@@ -708,6 +708,7 @@ internal static partial class GameText
         ["save.destination.polca-victory"] = 0,
         ["save.destination.hassan"] = 0,
         ["save.destination.polca-return"] = 0,
+        ["save.destination.ancient-hall"] = 0,
         ["save.destination.east-shrine"] = 0,
         ["save.destination.parmecia-battle-return"] = 0,
         ["battle.scene.silence"] = 1,

@@ -63,9 +63,9 @@ internal static class PrivateBattleActionBindings
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName, 0,
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
                 item.MinimumRange, item.MaximumRange)).ToArray();
-        // The selected encounter admits Power Ring as a bare placement item after AddItem.
-        // Its source equip/use effects remain unsupported; carry/drop is the entire binding.
-        var inert = definitions.Items.Values.Where(item => item is { Id: 19, Code: "POWER_RING" })
+        // Bare placement items can be carried without enabling their use or equip effects.
+        var inert = definitions.Items.Values.Where(item => item is
+            { Id: 19, Code: "POWER_RING" } or { Id: 9, Code: "POWER_WATER" })
             .Select(item => item.Id).ToArray();
         if (!items.Any(word => weapons.Any(w => w.ItemId == (word & 127)) || word < 127 && inert.Contains((byte)word))) return null;
         return new(attack, weapons, allowChanges: false, inertItems: inert);

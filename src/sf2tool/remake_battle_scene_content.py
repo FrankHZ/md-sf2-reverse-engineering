@@ -174,7 +174,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
 
 
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in (*range(1, 15), 16, 17):
+    if battle not in range(1, 18):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -669,6 +669,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-12",
             "battle-13",
             "battle-14",
+            "battle-15",
             "battle-16",
             "battle-17",
         )
@@ -696,6 +697,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
                 "battle-12": 12,
                 "battle-13": 12,
                 "battle-14": 12,
+                "battle-15": 12,
                 "battle-16": 12,
                 "battle-17": 12,
             }[scene["encounter"]]
@@ -727,6 +729,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
         "battle-12",
         "battle-13",
         "battle-14",
+        "battle-15",
         "battle-16",
         "battle-17",
     ):
@@ -799,7 +802,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=(*range(1, 15), 16, 17), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 18), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

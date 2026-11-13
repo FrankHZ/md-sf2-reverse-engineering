@@ -33,6 +33,69 @@ public sealed class HiddenSpawnTests
         Assert.Equal(0, b.Regions!.Tested); Assert.DoesNotContain(true, b.Regions.Flags);
     }
 
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(15, false)]
+    public void HiddenCarrierWithAnInertItemStillRequiresAnAssignedRegion(byte region, bool appears)
+    {
+        var input = Admitted("hidden-spawns");
+        var original = input.Definition.Encounters[input.Start.Encounter];
+        var row = original.Deployments.Single(d => d.Actor == Hidden);
+        var source = row.Definition;
+        var placement = new BattleActorDefinition(Hidden, source.ClassRule, source.Level, source.MaxHp,
+            source.MaxMp, source.Attack, source.Defense, source.Agility, source.ExtraRoundAction, source.Move,
+            source.Spells, physical: source.Physical, sourceLoadout: new([9, 127, 127, 127], [63, 63, 63, 63]),
+            equipment: new(source.Attack, [], allowChanges: false, inertItems: [9]));
+        var definition = original.WithDeployments(original.Deployments.Select(d => d.Actor == Hidden
+            ? d with { Definition = placement, Initialization = d.Initialization! with { PrimaryRegion = region, SecondaryRegion = 15 } } : d));
+        var fresh = new BattleStartInput(input.Start.Encounter, input.Start.Actors, 0, 0, 0,
+            new("authored-fresh", "project-tests", "not natural entry", 0, true, true, true, false, false, 0));
+        var before = Held(BattleTurnFlow.Start(definition, fresh));
+        Assert.Null(before.GetActor(Hidden).Position);
+        Assert.All(before.GetActor(Hidden).SourceLoadout!.Items, word => Assert.Equal((ushort)127, word));
+        var result = BattleSpawnRules.Populate(before);
+        var enemy = result.Battle.GetActor(Hidden);
+        Assert.Equal(appears, result.Appearances.Contains(Hidden));
+        Assert.Equal(appears, enemy.Initialized);
+        if (appears)
+        {
+            Assert.Equal(row.Position, enemy.Position);
+            Assert.Equal(new ushort[] { 9, 127, 127, 127 }, enemy.SourceLoadout!.Items);
+        }
+        else
+        {
+            Assert.Null(enemy.Position);
+            Assert.Equal(0, enemy.MaxHp);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ImpassableSpawnCoordinateIsLegalOnlyForAnUndeployedEnemy(bool dormant)
+    {
+        var doc = Document("hidden-spawns");
+        var terrain = doc["terrains"]![0]!;
+        terrain["legend"]!["#"] = System.Text.Json.Nodes.JsonNode.Parse("""{"surface":"impassable","protection":"none"}""");
+        terrain["rows"]![3] = "...#....";
+        if (!dormant)
+        {
+            doc["encounters"]![0]!["placements"]![2]!["initialization"]!["spawnMode"] = 0;
+            doc["start"]!["actors"]![2]!["initialization"]!["initialized"] = true;
+            doc["start"]!["actors"]![2]!["initialization"]!["activationWord"] = 0;
+        }
+        var read = Reader(doc).Read();
+        if (!dormant)
+        {
+            Assert.Equal("blocked-placement", Assert.IsType<ScenarioReadRejected>(read).Failure.Code);
+            return;
+        }
+        var input = Assert.IsType<ScenarioReadAccepted>(read);
+        var battle = BattleTurnFlow.Start(input.Definition.Encounters[input.Start.Encounter], input.Start);
+        Assert.Null(battle.GetActor(Hidden).Position);
+        Assert.Equal(0, battle.GetActor(Hidden).Hp);
+    }
+
     [Fact]
     public void ResetListIsSlotOrderedAndSuccessRestoresStatsButRetainsExternalAiMemoryAndActivation()
     {

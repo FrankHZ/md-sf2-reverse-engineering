@@ -1,3 +1,4 @@
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Content.Scenarios;
@@ -83,7 +84,7 @@ public sealed record JoinPartyMember(int Member, bool? AiControlled = null) : St
 public abstract record OutcomePartyInstruction(int Member) : StoryInstruction;
 public sealed record ClearOutcomePartyAi(int Member) : OutcomePartyInstruction(Member);
 public sealed record LeaveOutcomeBattleParty(int Member) : OutcomePartyInstruction(Member);
-public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY) : StoryInstruction;
+public sealed record FollowEntity(EntityRef Entity, EntityRef Leader, int OffsetX, int OffsetY, ActorRef? AliveGuard = null) : StoryInstruction;
 public sealed record WaitProgramTicks(int Ticks) : StoryInstruction;
 public sealed record PresentCue(PresentationCueKind Kind, string? Resource = null,
     EntityRef? Entity = null, MapPosition? Position = null, FullBlackFade? FullBlack = null, int? DurationTicks = null,

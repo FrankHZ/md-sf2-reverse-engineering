@@ -2161,6 +2161,9 @@ msgstr "新格兰希尔城堡"
 msgid "save.destination.ribble-welcome"
 msgstr "里布尔村，欢迎仪式后"
 
+msgid "save.destination.ancient-hall"
+msgstr "古代大厅，神殿入口"
+
 msgid "save.destination.east-shrine"
 msgstr "东神殿"
 

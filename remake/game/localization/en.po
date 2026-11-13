@@ -2161,6 +2161,9 @@ msgstr "New Granseal Castle"
 msgid "save.destination.ribble-welcome"
 msgstr "Ribble, after the welcome"
 
+msgid "save.destination.ancient-hall"
+msgstr "Ancient Hall, shrine entrance"
+
 msgid "save.destination.east-shrine"
 msgstr "East Shrine"
 

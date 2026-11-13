@@ -18,10 +18,10 @@ internal static class BattleSpawnRules
         {
             if (d.Initialization!.SpawnMode == 0) continue;
             Require(d.Definition.Growth is null && d.Definition.SourceLoadout is { } loadout &&
-                loadout.Items.Count == 4 && loadout.Items.All(w => w is 0 or 127) &&
+                loadout.Items.Count == 4 && loadout.Items.All(word => word is 0 or 127 ||
+                    word < 127 && d.Definition.Equipment?.InertItems.Contains((byte)word) == true) &&
                 loadout.Spells.Count == 4 && loadout.Spells.All(w => w == 63), "spawn-reset-loadout");
             _ = BattleInitializationRules.EnemyAttack(d.Definition.Attack, start.NewBattle?.Difficulty ?? 0);
-
         }
     }
 

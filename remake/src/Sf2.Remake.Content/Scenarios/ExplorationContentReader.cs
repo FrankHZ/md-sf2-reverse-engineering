@@ -706,7 +706,19 @@ internal static class ExplorationContentReader
             case "join-party": Object(row, opcode, "op", "member"); return new JoinPartyMember(Number(row, "member", 0, 255), opcode == "join-ai-party" ? true : null);
             case "follow":
                 Object(row, opcode, "op", "entity", "leader", "x", "y");
-                return new FollowEntity(new(Id(row, "entity")), new(Id(row, "leader")), Number(row, "x", -127, 127), Number(row, "y", -127, 127));
+                var follower = new EntityRef(Id(row, "entity"));
+                ActorRef? guard = null;
+                if (source is not null)
+                {
+                    // csc2C tests the high byte of the follower word before either entity lookup.
+                    ushort operand = 0;
+                    Require(follower.Value.StartsWith("entity-", StringComparison.Ordinal) &&
+                        ushort.TryParse(follower.Value.AsSpan(7), System.Globalization.NumberStyles.None,
+                            System.Globalization.CultureInfo.InvariantCulture, out operand), "source-follow-operand", "follow.entity");
+                    int member = operand >> 8;
+                    if (member < 30) guard = new("ally-" + member.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+                return new FollowEntity(follower, new(Id(row, "leader")), Number(row, "x", -127, 127), Number(row, "y", -127, 127), guard);
             case "wait-entity": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Id(row, "entity")));
             case "wait-ticks": Object(row, opcode, "op", "ticks"); return new WaitProgramTicks(Number(row, "ticks", 0, 65535));
             case "present":
