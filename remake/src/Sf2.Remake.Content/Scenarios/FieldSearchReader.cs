@@ -26,14 +26,20 @@ internal static class FieldSearchReader
             "search-duplicate-receipt", "search.items");
         var descriptions = Array(row, "descriptions").Select(description =>
         {
-            Object(description, "search.description", "position", "menuOnly", "texts");
+            bool hasProgram = description.ValueKind == JsonValueKind.Object && description.TryGetProperty("program", out _);
+            Object(description, "search.description", "position", "menuOnly", hasProgram ? "program" : "texts");
+            var position = ExplorationContentReader.Position(description.GetProperty("position"));
+            bool menuOnly = Boolean(description, "menuOnly");
+            if (hasProgram)
+                return new FieldAreaDescription(position, menuOnly, [],
+                    ExplorationContentReader.RequiredLocation(description.GetProperty("program")));
             var ids = Array(description, "texts").Select(value =>
             {
                 Require(value.TryGetInt32(out int id) && texts.ContainsKey(id), "search-text", "search.description");
                 return value.GetInt32();
             }).ToArray();
             Require(ids.Length == 2, "search-description-shape", "search.description");
-            return new FieldAreaDescription(ExplorationContentReader.Position(description.GetProperty("position")), Boolean(description, "menuOnly"), System.Array.AsReadOnly(ids));
+            return new FieldAreaDescription(position, menuOnly, System.Array.AsReadOnly(ids));
         }).ToArray();
         ushort closed = (ushort)Number(row, "closedChest", 0, 65535), open = (ushort)Number(row, "openChest", 0, 65535);
         Require(closed != open && (closed & 0x3C00) == 0x1800 && (open & 0x3C00) == 0x1800,

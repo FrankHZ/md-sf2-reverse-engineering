@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from sf2tool import remake_exploration_services as services
 from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.remake_exploration_actions import action_stream, inline_actions, walking_actions
@@ -16,7 +17,6 @@ from sf2tool.remake_exploration_scene import (
     scene_operation,
     sound_operation,
 )
-from sf2tool.remake_exploration_services import church_service, shop_service
 from sf2tool.remake_exploration_view import counted_view_loop, view_operation
 
 
@@ -387,11 +387,11 @@ class OriginalPrograms:
             ):
                 registers["shop"] = self.number(args[0][1:])
             elif op in ("jsr", "jmp") and args == ["j_ShopMenu"] and "shop" in registers:
-                result.append(shop_service(self, registers.pop("shop")))
+                result.append(services.shop_service(self, registers.pop("shop")))
                 if op == "jmp":
                     result.append({"op": "end"})
             elif op in ("jsr", "jmp") and args == ["j_ChurchMenu"]:
-                result.append(church_service(self))
+                result.append(services.church_service(self))
                 if op == "jmp":
                     result.append({"op": "end"})
             elif op == "jsr" and args == ["j_YesNoPrompt"]:
@@ -578,19 +578,19 @@ class OriginalPrograms:
                     }
                 )
             elif op == "txt":
-                # Trap5_TextBox: raw DisplayText, no entity lookup or extra acknowledgement.
                 result.extend(
                     [
                         {"op": "text-cursor", "text": self.number(args[0])},
-                        {
-                            "op": "show-text",
-                            "mode": "single",
-                            "speaker": None,
-                            "waitForAcknowledgement": False,
-                            "explicitWindows": True,
-                        },
+                        services.raw_display_text(),
                     ]
                 )
+            elif (
+                Path(relative).name.startswith("s4_descriptions")
+                and (lowered := services.description_service(op, args, registers)) is not None
+            ):
+                result.extend(lowered)
+                if op == "jmp":  # Tail DisplayText returns directly to the description dispatcher.
+                    break
             elif op in ("jump", "jumpIfFlagSet", "jumpIfFlagClear"):
                 target = self.compile(args[-1])
                 result.append(

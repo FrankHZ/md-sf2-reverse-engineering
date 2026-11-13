@@ -5,7 +5,8 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 // Source item flags are field receipts. They are ordinary durable story flags,
 // never BattleItemCustody's drop flags. Layout is reconstructed from these flags.
 public sealed record FieldItemPlacement(MapPosition Position, int Flag, ushort? ItemWord, uint? Gold);
-public sealed record FieldAreaDescription(MapPosition Position, bool MenuOnly, IReadOnlyList<int> Texts);
+public sealed record FieldAreaDescription(MapPosition Position, bool MenuOnly, IReadOnlyList<int> Texts,
+    ProgramLocation? Program = null);
 public sealed class FieldSearchDefinition
 {
     internal FieldSearchDefinition(IEnumerable<FieldItemPlacement> chests, IEnumerable<FieldItemPlacement> otherItems,

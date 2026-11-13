@@ -18,7 +18,7 @@ internal static class FieldSearch
         current.Exploration is { Definition.Search: not null, Definition.InputProgram: null } &&
         current.Story.Warp is null && current.Story.ScriptWarp is null && !current.Story.BattleRequest;
 
-    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, Search command)
+    internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, Search command, SessionRules rules)
     {
         try
         {
@@ -38,6 +38,13 @@ internal static class FieldSearch
             if (prefix is null)
             {
                 var description = search.Descriptions.FirstOrDefault(row => row.Position == position && (!row.MenuOnly || command.FromMenu));
+                if (description?.Program is { } program)
+                {
+                    List<SessionObservation> observations = [];
+                    var started = ProgramRunner.Commit(current, current.Active, current.Story.Copy(program),
+                        observations, "field-search", FieldSearchKind.Description.ToString());
+                    return ProgramRunner.Run(definition, started, observations, rules);
+                }
                 return Feedback(current, new(description is null ? command.FromMenu ? FieldSearchKind.Empty : FieldSearchKind.Unhandled : FieldSearchKind.Description,
                     description?.Texts ?? (command.FromMenu ? [423, 412] : [])));
             }

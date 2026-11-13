@@ -56,7 +56,8 @@ internal static class CaravanContentReader
             "caravan-unsupported-marker", "map.layout", true);
         Require(map.Events.All(row => row.Kind != ExplorationEventKind.Warp), "caravan-map-replacement", "map.events", true);
         bool Reserved(ProgramLocation? target) => target?.Program is CaravanPrograms.Boarding or CaravanPrograms.Landing;
-        Require(!Reserved(map.OnLoad) && !Reserved(map.InputProgram) && map.Events.All(row => !Reserved(row.Program)),
+        Require(!Reserved(map.OnLoad) && !Reserved(map.InputProgram) && map.Events.All(row => !Reserved(row.Program)) &&
+            (map.Search?.Descriptions.All(description => !Reserved(description.Program)) ?? true),
             "caravan-reserved-program", "map.program", true);
         foreach (var program in programs)
         {

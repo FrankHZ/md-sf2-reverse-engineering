@@ -19,7 +19,7 @@ public sealed class FieldSearchTests
         ushort[]? leader = null, ushort[]? second = null, int[]? flags = null,
         FieldAreaDescription[]? descriptions = null, bool placement = true, ExplorationEvent[]? events = null,
         FieldPreparationDefinition? preparation = null, bool admitted = true, ProgramLocation? input = null,
-        PrivateBattleDefinitions? fieldItems = null)
+        PrivateBattleDefinitions? fieldItems = null, StoryProgram[]? programs = null)
     {
         var source = FieldInventoryTests.Session().Definition;
         var battle = source.Encounters.Values.Single();
@@ -31,7 +31,7 @@ public sealed class FieldSearchTests
         var map = new ExplorationMapDefinition(new("sample-field"), new(words), new([new(0, 0, 63, 63)]), [], events ?? [],
             search: admitted ? search : null, inputProgram: input);
         int[] ids = [403, 404, 405, 408, 409, 410, 412, 423, 425, 427, 900];
-        var world = new ExplorationDefinition([map], [], ids.Select(id => new KeyValuePair<int, string>(id, "authored text " + id)));
+        var world = new ExplorationDefinition([map], programs ?? [], ids.Select(id => new KeyValuePair<int, string>(id, "authored text " + id)));
         if (fieldItems is not null) preparation = PrivateFieldPreparation.Read(fieldItems, world);
         var definition = new ScenarioDefinition("search-test", [battle], exploration: world) { FieldPreparation = preparation ?? source.FieldPreparation };
         var party = actors.Select((actor, index) => new BattleActorStartInput(actor.Actor, index == 0 ? (ushort)10 : (ushort)0,
@@ -194,11 +194,35 @@ public sealed class FieldSearchTests
         Assert.False(FieldSearch.Available(before));
         foreach (bool menu in new[] { false, true })
         {
-            var result = FieldSearch.Submit(session.Definition, before, new(menu));
+            var result = FieldSearch.Submit(session.Definition, before, new(menu), session.Rules);
             Assert.Equal("field-search-unavailable", result.Failure!.Code);
             Assert.Same(before, result.Snapshot);
             Assert.Empty(result.Observations);
         }
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, false)]
+    public void FacedProgramOwnsTheChoiceAndReturnsWithOnlyItsSelectedEffects(bool alreadySet, bool answer, bool granted)
+    {
+        ProgramLocation entry = new("inspect", 0);
+        var program = new StoryProgram(entry.Program, [
+            new ChooseYesNo(null, new(entry.Program, 3)),
+            new BranchFlag(101, true, new(entry.Program, 3)),
+            new WriteFlag(102, true),
+            new EndProgram()]);
+        var session = Session(0, flags: alreadySet ? [101] : [],
+            descriptions: [new(Faced, false, [], entry)], programs: [program]);
+        Assert.Null(Send(session, new Search(false)).Failure);
+        var choice = Assert.IsType<ChoiceWait>(session.Current.Story.Wait);
+        Assert.False(session.Current.CanWaitAtInput);
+        Assert.Equal("field-search-unavailable", Send(session, new Search()).Failure!.Code);
+        Assert.Null(Send(session, new ChooseDialogue(choice.Token, answer)).Failure);
+        Assert.Equal(granted, session.Current.Story.Flags.Contains(102));
+        Assert.Equal(alreadySet, session.Current.Story.Flags.Contains(101));
+        Assert.True(session.Current.CanWaitAtInput);
     }
 
     [Fact]

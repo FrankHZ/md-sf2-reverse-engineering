@@ -782,6 +782,7 @@ internal static class ExplorationContentReader
                 Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites");
             }
             Target(map.OnLoad); Target(map.InputProgram);
+            foreach (var description in map.Search?.Descriptions ?? []) Target(description.Program);
             foreach (var route in map.Battles)
             {
                 Target(route.BeforeProgram); Target(route.StartProgram); Target(route.LoadProgram);
@@ -834,7 +835,7 @@ internal static class ExplorationContentReader
                         Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites"); break;
                 }
     }
-    private static ProgramLocation RequiredLocation(JsonElement value) => Location(value) ?? throw new AdmissionIssue(
+    internal static ProgramLocation RequiredLocation(JsonElement value) => Location(value) ?? throw new AdmissionIssue(
         new(Application.Runtime.SessionFailureKind.ContentError, "program-target-required", "program.target", "program target required"));
     private static ProgramLocation? Location(JsonElement value)
     {

@@ -193,7 +193,7 @@ public sealed class GameSession
         }
         if (current.Mode == SessionMode.Exploration && envelope.Command is Search search)
         {
-            var searched = FieldSearch.Submit(Definition, current, search);
+            var searched = FieldSearch.Submit(Definition, current, search, Rules);
             _current = searched.Snapshot;
             return searched;
         }
