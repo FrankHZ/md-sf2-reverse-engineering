@@ -78,7 +78,8 @@ public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityActionProgram? SourceInit = null, string? Unavailable = null);
 public sealed record ExplorationBattleRoute(string Encounter, int? UnlockedFlag, int? CompletedFlag,
     int? IntroFlag, ProgramLocation? BeforeProgram, ProgramLocation? StartProgram, ProgramLocation? LoadProgram = null,
-    ExplorationOutcomeRoute? Outcome = null, int? TriggerX = null, int? TriggerY = null, bool Unavailable = false)
+    ExplorationOutcomeRoute? Outcome = null, int? TriggerX = null, int? TriggerY = null, bool Unavailable = false,
+    byte? RepeatUpgradeLevel = null)
 {
     public bool MatchesPosition(MapPosition? position) =>
         (TriggerX is null || TriggerX == position?.X) && (TriggerY is null || TriggerY == position?.Y);

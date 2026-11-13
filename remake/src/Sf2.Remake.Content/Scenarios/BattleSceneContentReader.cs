@@ -100,7 +100,7 @@ internal static class BattleSceneContentReader
                         "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
                         "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
                         "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
-                        "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "MASTER_MAGE" => (36, 1),
+                        "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "GOLEM" => (7, 0), "MASTER_MAGE" => (36, 1),
                         "VAMPIRE_BAT" => (23, 2), "DARK_DWARF" => (5, 2),
                         "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
                         _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,

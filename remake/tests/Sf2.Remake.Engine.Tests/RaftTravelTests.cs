@@ -87,4 +87,29 @@ public sealed class RaftTravelTests
         Assert.Equal(story.Flags, result.Story.Flags);
         Assert.Null(result.Story.EnteringBattle);
     }
+
+    [Fact]
+    public void WalkingAcrossTheMapEdgeFindsAndLeavesTheParkedRaft()
+    {
+        var battle = EngineTestContent.Admitted();
+        var layout = new WorkingMapLayout(new ushort[4096]);
+        var area = new OriginalMapTraversal([new(0, 0, 63, 63)]);
+        var view = new ExplorationViewArea(0, 0, 63, 63, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0);
+        var shore = new ExplorationMapDefinition(new("shore"), layout, area, [], [], viewAreas: [view]);
+        var river = new ExplorationMapDefinition(new("river"), layout, area, [], [], viewAreas: [view]);
+        var definition = new ScenarioDefinition("raft", battle.Definition.Encounters.Values, exploration: new([shore, river], []));
+        var player = new EntityRef("leader");
+        var field = new ExplorationState(shore, layout, player, [new(player, EntityMotionState.At(new(62, 15), 0, 32), true)], battle.Start);
+        var story = new StoryState([64], stepCounter: 1234, raft: new(river.Map, new(2, 15)));
+        var current = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveExploration(field), story, SessionStopReason.PlayerInput);
+        var scroll = new ExplorationEvent(ExplorationEventKind.Warp, null, null, null, null, river.Map,
+            new(1, 0), LoadMode: MapLoadMode.ScrollHorizontal);
+        var entered = MapTransfer.BeginWarp(definition, current, scroll, [], RuleCompositions.Sf2());
+        Assert.True(RaftRuntime.Aligned(entered.Exploration!));
+        var left = MapTransfer.BeginWarp(definition, entered, scroll with { DestinationMap = shore.Map, Destination = new(62, 0) }, [], RuleCompositions.Sf2());
+        Assert.False(RaftRuntime.Aligned(left.Exploration!));
+        Assert.Equal((short)1234, left.Story.StepCounter);
+        Assert.Equal(story.Raft, left.Story.Raft);
+    }
+
 }

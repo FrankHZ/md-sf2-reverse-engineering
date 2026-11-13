@@ -123,15 +123,14 @@ internal static class MapTransfer
             horizontal ? player.Position.Y : warp.Destination!.Y);
         if (!target.Traversal.IsWithinActiveArea(position))
             throw new BattleRuleException("scroll-position", "event.position");
-        // ProcessMapEventType1_Warp keeps the physical slots and writes only the
-        // nonnegative coordinates of the idle leader. The field loop resumes directly.
+        // ProcessMapEventType1_Warp retains the population. Walking followers arrive
+        // with the leader and DeclareRaftEntity projects the berth on the new map.
         var layout = LoadLayout(target, current.Story.Flags);
         var next = new ExplorationState(target, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
             world.Aliases, population: world.Population, quake: world.Quake, travelMode: world.TravelMode, currentEntities: world.CurrentEntities);
-        short x = (short)(position.X * 384), y = (short)(position.Y * 384);
-        next = next.WithEntity(player with { Actions = null, ActionCursor = 0, WaitingForMotion = false,
-            Motion = player.Motion with { X = x, XDestination = x, Y = y, YDestination = y,
-                XVelocity = 0, YVelocity = 0, XTravel = 0, YTravel = 0 } });
+        next = FollowerMotion.Arrive(next, position, player.Motion.Facing);
+        if (world.TravelMode == FieldTravelMode.Walking && current.Story.Flags.Contains(64))
+            next = RaftRuntime.OnScroll(next, current.Story.Flags, current.Story.Raft);
         var story = current.Story.Copy(null, logicalView: ExplorationViewRunner.Initialize(next));
         return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-scrolled", target.Map.Value);
     }
@@ -354,13 +353,12 @@ internal static class MapTransfer
             next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, party, current.Story.Flags, flags,
                 sourcePlacement || riding);
             if (riding)
-            {
                 next = next.WithTravelMode(FieldTravelMode.Raft);
-                if (continuation.StepCounter is { } steps)
-                    continuation = continuation.Copy(continuation.Cursor, stepCounter: (short)Math.Max(0, steps - 20000));
-            }
             next = RaftRuntime.Declare(next, flags, continuation.Raft);
         }
+        // Entering ExplorationLoop subtracts once. A scroll never enters this path.
+        if (continuation.StepCounter is { } steps)
+            continuation = continuation.Copy(continuation.Cursor, stepCounter: Math.Max((short)0, unchecked((short)(steps - 20000))));
         var story = continuation.Copy(continuation.Cursor,
             flags: flags,
             textWindow: new ClosedTextWindow(),

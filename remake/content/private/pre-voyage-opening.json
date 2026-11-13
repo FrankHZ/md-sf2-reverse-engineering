@@ -50,9 +50,10 @@
     11,
     12,
     13,
+    14,
     16
   ],
-  "unavailableBattles": [14, 17],
+  "unavailableBattles": [17],
   "growthClasses": [
     {
       "member": 0,
@@ -113,10 +114,11 @@
     "11": 8,
     "12": 13,
     "13": 10,
+    "14": 9,
     "16": 13
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia, Battle16 and first walking control in Hassan.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan and the Southeast Desert encounter.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -408,6 +410,7 @@
     11,
     12,
     13,
+    14,
     16
   ],
   "searchMaps": [
@@ -546,6 +549,7 @@
     11,
     12,
     13,
+    14,
     16
   ],
   "completedOnDefeat": [

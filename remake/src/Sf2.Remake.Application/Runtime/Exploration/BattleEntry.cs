@@ -59,6 +59,13 @@ internal static class BattleEntry
         var world = current.Exploration ?? throw new BattleRuleException("entry-mode", "entry");
         if (!definition.Encounters.TryGetValue(selected.Encounter, out var encounter))
             throw new BattleRuleException("missing-encounter", "entry.encounter");
+        if (selected.RepeatUpgradeLevel is { } upgrade && selected.CompletedFlag is { } done && story.Flags.Contains(done))
+        {
+            var leader = encounter.Deployments.Single(row => row.Initialization?.AllyPartyMember == 0);
+            var carried = world.Party.Actors.FirstOrDefault(row => row.Actor == leader.Actor);
+            if ((carried?.Progress?.Level ?? leader.Definition.Level) >= upgrade)
+                throw new BattleRuleException("repeat-enemy-upgrade", "encounter.placements", true);
+        }
         if (world.Party.NewBattle is not null && story.Flags.Contains(88))
             throw new BattleRuleException("suspended-battle-entry", "entry.flags", true);
         MapPartyLists? partyLists = story.PartyLists;

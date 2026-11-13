@@ -163,6 +163,22 @@ public sealed class Battle02OutcomeTests
     }
 
     [Theory]
+    [InlineData("map-9", "map-69", 28, 55)]
+    [InlineData("map-10", "map-72", 43, 48)]
+    [InlineData("map-13", "map-72", 43, 48)]
+    [InlineData("map-6", "map-69", 42, 15)]
+    public void RetreatResetsTheUnlockedRaftForTheSelectedTown(string town, string river, int x, int y)
+    {
+        var (definition, battle, story, party) = Outcome(false);
+        var route = story.EnteringBattle!;
+        var entered = story.Copy(null, enteringBattle: route with { Outcome = route.Outcome! with { EgressMap = new(town) } },
+            egressMap: new(town), flags: story.Flags.Append(64));
+        var result = new Sf2OutcomeReturnPolicy().Start(definition, battle, entered, BattleOutcomeKind.Retreat, party);
+        Assert.Equal(new MapId(town), result.Return.Map);
+        Assert.Equal(new RaftBerth(new(river), new(x, y)), result.ResetRaft);
+    }
+
+    [Theory]
     [InlineData(BattleOutcomeKind.Defeat)]
     [InlineData(BattleOutcomeKind.Retreat)]
     public void FailureReturnsToTheLiveRegisteredSavepoint(BattleOutcomeKind kind)

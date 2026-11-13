@@ -110,12 +110,13 @@ public sealed class PrivateBattleEncounterReader
         var regions = Array(placement, "aiRegions", regionCount).EnumerateArray().Select(region =>
         {
             Properties(region, "aiRegions", "id", "vertexCount", "unknown", "vertices", "trailingBytes");
-            Number(region, "vertexCount", 4, 4, "aiRegions.vertexCount");
-            var vertices = Array(region, "vertices", 4).EnumerateArray().Select(point =>
+            int count = Number(region, "vertexCount", 3, 4, "aiRegions.vertexCount");
+            var vertices = Array(region, "vertices", 4).EnumerateArray().Take(count).Select(point =>
             { Properties(point, "aiRegions.vertices", "x", "y"); return Position(point); }).ToArray();
-            Require(vertices.All(Within) && vertices.Distinct().Count() == 4 &&
-                Cross(vertices[0], vertices[1], vertices[3]) != 0 && Cross(vertices[2], vertices[1], vertices[3]) != 0,
-                "regions", "Regions require four distinct bounded vertices and two nondegenerate triangles.");
+            Require(vertices.All(Within) && vertices.Distinct().Count() == count &&
+                Cross(vertices[0], vertices[1], vertices[^1]) != 0 &&
+                (count == 3 || Cross(vertices[2], vertices[1], vertices[3]) != 0),
+                "regions", "Region vertices must be distinct, bounded and form nondegenerate triangles.");
             var trailing = Array(region, "trailingBytes", 2).EnumerateArray().Select(value => ByteValue(value, "aiRegions.trailingBytes")).ToArray();
             return new EncounterRegion((byte)Number(region, "id", 0, 15, "aiRegions.id"), Byte(region, "unknown"), vertices, trailing[0], trailing[1]);
         }).ToArray();
@@ -230,6 +231,11 @@ public sealed class PrivateBattleEncounterReader
             "C984F95674E5C249CD2A2153DE0B664D1FAE73E72662C999E2023840D5636497",
             "E1D6CE7A043B984A9028297F79EC0EB490E3E8DDAC2714AAE34155BD0C880259",
             13, new(1785478, 1785856, 378), new(1762024, 1762414, 390)),
+        [14] = new("SOUTHEAST_DESERT", "FC2CD6C57217AFAF957E47419B4AF75C5B055519B2D909BEF05CD25EF4A60910",
+            "656A2F5C629253FEF13FDA2AC530E7586087BC9A590E7293021EEB71E1311EE9",
+            "92FDEE833BAFA5D47D68559F2AC40C72630FED0DA4EDF5162DD61372D83669E6",
+            "88ABF624F64B34E3C49F9D6630566420FE1A58145B1C4095DEB41FCB39E50954",
+            14, new(1785856, 1786220, 364), new(1762414, 1762838, 424)),
         [16] = new("VERSUS_KRAKEN", "7CC1580137B60923B348F68BCF1169E6373E434C909BDF357E41C6F515CD0A00",
             "702E05751A0C8BD42866C1AC60569F2BD5CE45D8EFB719B0BE8B2970886FBD4D",
             "1416B853925A9526BA0B3640A0C300A64C04F1034099441913351F91FB55855F",
