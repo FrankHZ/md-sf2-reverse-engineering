@@ -19,7 +19,7 @@ func result_observed(json: String) -> void:
     var result: Dictionary = JSON.parse_string(json)
     for event in result.get("observations", []):
         if int(event.Sequence) <= last_sequence: continue
-        if event.Kind.begins_with("caravan-") or event.Kind in ["zone-entered", "entity-sound"] or event.Detail == "CommitCaravanMode":
+        if event.Kind.begins_with("caravan-") or event.Kind in ["zone-entered", "entity-sound"] or event.Detail == "SetFieldTravelMode":
             events.append(event)
         last_sequence = int(event.Sequence)
 
@@ -76,8 +76,7 @@ func step(key: Key) -> Dictionary:
 
 func _run() -> void:
     # A custom headless SceneTree does not inherit the main scene's window extent.
-    root.size = Vector2i(1280, 720)
-    root.content_scale_size = Vector2i(960, 540)
+    root.size = Vector2i(1920, 1080)
     node_added.connect(observe_node)
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
@@ -126,6 +125,6 @@ func _run() -> void:
         _check(90.0 in state.flags and state.stepCounter == 7 and state.travelMode == "Walking", "later walking reaches ordinary zone")
     _check(suspended and saw_motion and saw_vehicle, "actual suspension, motion and vehicle drawing")
     for size in [12,14,16,18,20,22,24]: _check(sizes.has(str(size)), "drawn size " + str(size))
-    _check(events.filter(func(e): return e.Detail == "CommitCaravanMode").size() == 2, "exactly two mode commits")
+    _check(events.filter(func(e): return e.Detail == "SetFieldTravelMode").size() == 2, "exactly two mode commits")
     samples.append({"events":events,"elapsedMs":Time.get_ticks_msec()-started})
     _finish()
