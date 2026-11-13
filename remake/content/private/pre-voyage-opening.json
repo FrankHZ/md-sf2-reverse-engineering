@@ -32,7 +32,8 @@
     13,
     52,
     10,
-    11
+    11,
+    49
   ],
   "battles": [
     1,
@@ -49,6 +50,7 @@
     12,
     13
   ],
+  "unavailableBattles": [14, 16, 17],
   "growthClasses": [
     {
       "member": 0,
@@ -111,7 +113,7 @@
     "13": 10
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca Village through Battle13, the mayor, departure and the first water step.",
+  "controlledBoundary": "Polca Village through Battle13, raft travel to South Parmecia and the Map49 encounter entrance.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -250,7 +252,8 @@
     13,
     52,
     10,
-    11
+    11,
+    49
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {

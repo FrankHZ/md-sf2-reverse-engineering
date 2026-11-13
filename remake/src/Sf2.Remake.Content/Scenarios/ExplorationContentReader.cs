@@ -168,7 +168,7 @@ internal static class ExplorationContentReader
             if (start.TryGetProperty("textSettings", out _)) PrivateServicePrograms.Bind(programs, texts);
         }
         if (programs.Any(program => program.Instructions.Any(op => op is ParkRaft)))
-            programs.Add(RaftRuntime.Program(new(Id(start, "player"))));
+            programs.AddRange(RaftRuntime.Programs(new(Id(start, "player"))));
         CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,
             world.TryGetProperty("presentation", out var presentation) ? ExplorationAssetReader.Read(presentation, worldDirectory) : null,
@@ -343,6 +343,16 @@ internal static class ExplorationContentReader
 
     private static ExplorationBattleRoute ReadBattleRoute(JsonElement route, ScenarioReadAccepted battle, MapId map)
     {
+        if (route.TryGetProperty("unavailable", out _))
+        {
+            ObjectOptional(route, "unavailable-battle-route", ["encounter", "unavailable", "unlockedFlag", "completedFlag"], "triggerX", "triggerY");
+            string missing = Id(route, "encounter");
+            Require(Boolean(route, "unavailable") && !battle.Definition.Encounters.ContainsKey(missing),
+                "unavailable-encounter", "map.battle");
+            return new(missing, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
+                null, null, null, TriggerX: route.TryGetProperty("triggerX", out _) ? Number(route, "triggerX", 0, 63) : null,
+                TriggerY: route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null, Unavailable: true);
+        }
         ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"], "load", "outcome", "triggerX", "triggerY");
         string encounter = Id(route, "encounter");
         Require(battle.Definition.Encounters.ContainsKey(encounter), "missing-encounter", "map.battle");

@@ -317,10 +317,26 @@ def compile_routes(compiler, selection, upstream):
     coordinates = _arguments(
         (upstream / coordinates_path).read_text(encoding="utf-8"), "battleMapCoordinates"
     )
-    for battle_id in selection["battles"]:
+    playable = selection["battles"]
+    unavailable = selection.get("unavailableBattles", [])
+    ordered = sorted([*playable, *unavailable])
+    if len(set(ordered)) != len(ordered) or any(not 0 <= i < len(coordinates) for i in ordered):
+        raise ValueError("battle routes must select distinct source rows")
+    for battle_id in ordered:
         map_id, origin_x, origin_y, _, _, trigger_x, trigger_y = map(
             compiler.number, _tokens(coordinates[battle_id])
         )
+        route = {
+            **({"triggerX": trigger_x} if trigger_x != 255 else {}),
+            **({"triggerY": trigger_y} if trigger_y != 255 else {}),
+            "encounter": "battle-" + str(battle_id),
+            "unlockedFlag": 400 + battle_id,
+            "completedFlag": 500 + battle_id,
+        }
+        if battle_id in unavailable:
+            route["unavailable"] = True
+            battle_routes.setdefault(map_id, []).append(route)
+            continue
         hooks = []
         for hook in ("beforebattle", "battlestart"):
             path = "disasm/data/battles/cutscenes/" + hook + "cutscenes.asm"
@@ -328,17 +344,14 @@ def compile_routes(compiler, selection, upstream):
             expressions = _arguments((upstream / path).read_text(encoding="utf-8"), "dc.w")
             symbol = re.search(r"[A-Za-z_]\w*", expressions[battle_id]).group(0)
             hooks.append(_location(compiler.compile(symbol)))
-        route = {
-            **({"triggerX": trigger_x} if trigger_x != 255 else {}),
-            **({"triggerY": trigger_y} if trigger_y != 255 else {}),
-            "encounter": "battle-" + str(battle_id),
-            "unlockedFlag": 400 + battle_id,
-            "completedFlag": 500 + battle_id,
-            "introFlag": 450 + battle_id,
-            "before": hooks[0],
-            "start": hooks[1],
-            "load": _location("source-battle-load"),
-        }
+        route.update(
+            {
+                "introFlag": 450 + battle_id,
+                "before": hooks[0],
+                "start": hooks[1],
+                "load": _location("source-battle-load"),
+            }
+        )
         if "outcomeEgressMap" in selection and battle_id in selection.get(
             "outcomeBattles", selection["battles"]
         ):
