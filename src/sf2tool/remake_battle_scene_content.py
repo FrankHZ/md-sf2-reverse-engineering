@@ -121,6 +121,44 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
     )
 
 
+def campaign_ally_visuals(battle, read, ally_table, stats_table):
+    # First deployment of each unpromoted member, including optional Kiwi and May.
+    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13)
+    # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
+    shop_entry = (2, 5, 9, 10, 12, 13)
+    cursor = stats_table["list_ShopInventories"]
+    carried = set()
+    for first_battle in shop_entry:
+        if battle < first_battle:
+            break
+        count = read(cursor, 1)[0]
+        carried.update(read(cursor + 1, count))
+        cursor += 1 + count
+
+    members = []
+    for member, first_battle in enumerate(joins):
+        if battle < first_battle:
+            continue
+        start = read(ally_table["table_AllyStartDefinitions"] + 6 * member, 6)
+        kind, sprite, palette = read(ally_table["table_AllyBattlesprites"] + 9 * member, 3)
+        assert kind == start[0]
+        initial = next((word & 127 for word in start[2:] if word & 128), None)
+        if initial is not None:
+            carried.add(initial)
+        members.append((kind, sprite, palette, initial))
+
+    masks = {
+        item: int.from_bytes(read(stats_table["table_ItemDefinitions"] + 16 * item, 4), "big")
+        for item in sorted(carried)
+    }
+    for kind, sprite, palette, initial in members:
+        # The class default supplies the unarmed body/ordinary sequence; the host hides its weapon.
+        yield ("ally", sprite, palette, initial)
+        for item, mask in masks.items():
+            if item != initial and mask & (1 << kind):
+                yield ("ally", sprite, palette, item)
+
+
 def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
     if battle not in range(1, 14):
         raise ValueError("unsupported battle-scene selection")
@@ -252,70 +290,42 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     animations = table("battle-sprite-animation-static")
     weapons = table("battle-weapon-ground-decode")
     actor_rows = []
-    actor_selections = [
-        ("ally", 0, 0, 71),
-        ("ally", 1, 0, 85),
-        ("ally", 2, 0, 56),
-    ] + (
-        [("enemy", 22, 2, None)]
-        if battle == 1
-        else [("ally", 3, 0, 33), ("enemy", 0, 1, None), ("enemy", 1, 0, None)]
-    )
-    if battle == 3:
-        # Pinned enemybattlesprites.asm: HUGE_BAT uses BAT23/palette0, unarmed.
-        actor_selections.append(("enemy", 23, 0, None))
-    if battle == 4:
-        # Unpromoted MAGE with Wooden Rod. Enemy animation frames include their weapons.
-        actor_selections = [row for row in actor_selections if row[0] == "ally"]
-        actor_selections.extend(
-            [
-                ("ally", 4, 0, 85),
-                ("enemy", 2, 0, None),
-                ("enemy", 31, 0, None),
-                ("enemy", 23, 0, None),
-            ]
+    actor_selections = list(
+        campaign_ally_visuals(
+            battle, read, table("ally-data-static"), table("core-stats-data-static")
         )
-    if battle in range(5, 14):
-        actor_selections = [
-            ("ally", 0, 0, 71),
-            ("ally", 0, 0, 57),
-            ("ally", 1, 0, 85),
-            ("ally", 1, 0, 86),
-            ("ally", 2, 0, 56),
-            ("ally", 2, 0, 72),
-            ("ally", 2, 0, 73),
-            ("ally", 3, 0, 33),
-            ("ally", 4, 0, 85),
-            ("ally", 4, 0, 86),
-            ("ally", 5, 0, 103),
-        ]
-        if battle >= 8:
-            actor_selections.extend(("enemy", sprite, 0, None) for sprite in (32, 37, 4, 0))
-            actor_selections.append(("ally", 6, 0, None))
-        else:
-            actor_selections.extend(("enemy", sprite, 0, None) for sprite in (2, 3, 31, 36))
+    )
+    # Preserve the existing selected enemy resources independently of carried ally weapons.
+    if battle == 1:
+        enemies = [(22, 2)]
+    elif battle in (2, 3):
+        enemies = [(0, 1), (1, 0)] + ([(23, 0)] if battle == 3 else [])
+    elif battle == 4:
+        enemies = [(2, 0), (31, 0), (23, 0)]
+    elif battle <= 7:
+        enemies = [(2, 0), (3, 0), (31, 0), (36, 0)]
+        if battle >= 6:
+            enemies.append((40, 0))
+        if battle == 7:
+            enemies.append((22, 0))
+    elif battle <= 10:
+        enemies = [(32, 0), (37, 0), (4, 0), (0, 0)]
         if battle >= 9:
-            actor_selections.extend([("ally", 7, 0, None), ("enemy", 23, 2, None)])
-        if battle >= 10:
-            actor_selections.extend([("ally", 8, 0, 45), ("enemy", 5, 2, None)])
-        if battle >= 11:
-            # Enemy sprite/palette are paired in table_EnemyBattlesprites.
-            actor_selections = [row for row in actor_selections if row[0] == "ally"]
-            source = (
-                upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm"
-            ).read_text(encoding="utf-8")
-            species = set(re.findall(r"enemyCombatant\s+(\w+)", source))
-            enums = (upstream / "disasm/sf2enums.asm").read_text(encoding="utf-8")
-            for code in sorted(species):
-                enemy = int(re.search(rf"^ENEMY_{code}:\s+equ (\d+)", enums, re.MULTILINE)[1])
-                sprite, palette_index = read(0x1F914 + enemy * 2, 2)
-                actor_selections.append(("enemy", sprite, palette_index, None))
-            if battle == 13:
-                actor_selections.append(("ally", 9, 0, None))
-        if battle in (6, 7):
-            actor_selections.append(("enemy", 40, 0, None))
-    if battle == 7:
-        actor_selections.extend([("ally", 6, 0, None), ("enemy", 22, 0, None)])
+            enemies.append((23, 2))
+        if battle == 10:
+            enemies.append((5, 2))
+    else:
+        enemies = []
+        source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
+            encoding="utf-8"
+        )
+        species = set(re.findall(r"enemyCombatant\s+(\w+)", source))
+        enums = (upstream / "disasm/sf2enums.asm").read_text(encoding="utf-8")
+        for code in sorted(species):
+            enemy = int(re.search(rf"^ENEMY_{code}:\s+equ (\d+)", enums, re.MULTILINE)[1])
+            sprite, palette_index = read(0x1F914 + enemy * 2, 2)
+            enemies.append((sprite, palette_index))
+    actor_selections.extend(("enemy", sprite, palette, None) for sprite, palette in enemies)
     for side, index, pal_index, weapon_item in actor_selections:
         graphic = read(0x1F9E2 + (weapon_item - 26) * 2, 2) if weapon_item is not None else None
         draw_weapon = graphic is not None and graphic[0] != 255
@@ -339,8 +349,12 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
                 )
             )
         sequences = {}
+        # GetAllyAnimation specializes KNTE attacks for graphics SPEAR..JAVELIN.
+        throw_spear = (
+            side == "ally" and index == 2 and graphic is not None and 12 <= graphic[0] <= 13
+        )
         for purpose, animation in (
-            ("attack", 80 if weapon_item == 72 else index),
+            ("attack", 80 if throw_spear else index),
             ("dodge", index + (40 if side == "ally" else 60)),
             ("idle", index),
         ):

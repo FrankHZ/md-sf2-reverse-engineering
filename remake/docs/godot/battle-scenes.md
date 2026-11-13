@@ -47,6 +47,64 @@ item/loadout and species combinations retain their prior campaign/resource evide
 no new original-effect art or timing is inferred. Some exits still report ObjectDB leaks. Their
 cause, physical-device/window/DPI coverage and final foreground appearance remain **Unknown**.
 
+### Equipped weapons from the campaign shops
+
+**Confirmed (ordinary remake input).** From a copied F609 church save, Continue in slot 2, walk
+to (7,20), face north and buy Short Spear for Chester. Gold falls from 360 to 240. Field Item →
+Chester → Equip changes his pack to `[56,0,200,127]`. Walk to (2,27) for Jaha and out through the
+west gate. Battle02 admits the same session with Chester's third slot equipped, ATT 12 and range 1–2.
+The **next consumer** is physical close-up playback on either side of the exchange. With Chester
+attacking, the host draws the knight and `weapon72/frame0` using sequence 80. With Chester
+receiving damage, it draws the same weapon on the defender. In the round-two exchange with
+`enemy-5`, the enemy's HP fell from 9 to 4 and Chester's from 12 to 9. The observer then
+opened the next player's action menu and cancelled back to Movement. The
+[ordinary input observer](../../game/probes/engine_equipped_spear_observation.gd) reads these
+frames, reactions, HP and subsequent input from the running host.
+
+**Confirmed (static package reconciliation).** Start with each joined member's equipped item.
+Carry earlier purchases forward, intersect the six reachable weapon stocks with deployed
+unpromoted classes and their source equip flags, and look up each pair in that encounter's own
+scene. Field Give can transfer earlier weapons to later recruits. The table lists additions to
+the preceding row. Each count includes the body-only row for a naturally unarmed class. Any
+armed member choosing Unarmed retains the class's ordinary sequence with the weapon hidden.
+
+| Battle | Newly reachable class/weapon pairs (source item IDs) | Reachable rows per encounter |
+| --- | --- | ---: |
+| 01 | SDMN 71, PRST 85, KNTE 56 | 3 |
+| 02–03 | Granseal gives SDMN 57 and KNTE 72. Jaha joins with WARR 33. | 6 |
+| 04 | Kazin joins with MAGE 85. | 7 |
+| 05 | Galam gives PRST/MAGE 86 and KNTE 73. Slade is still a follower. | 10 |
+| 06 | Slade joins with THIF 103. | 11 |
+| 07–08 | Optional Kiwi adds unarmed TORT. | 12 |
+| 09 | New Granseal F702 gives SDMN 58, KNTE 74 and WARR 34. Peter adds unarmed PHNK. | 16 |
+| 10–11 | Ribble gives THIF 104. Optional May adds RNGR 45. | 18 |
+| 12 | Polca gives SDMN 59 and PRST/MAGE 87. | 21 |
+| 13 | Bedoe gives KNTE 75, WARR 35, THIF 105 and RNGR 46. Gerhalt adds unarmed WFMN. | 26 |
+
+The 35 omissions in the earlier publication were SDMN 57 and KNTE 72 in each of Battles02–04
+and later shop choices in Battles09–13. Short Spear 72 and Spear 74 both select the KNTE
+throw through `GetAllyAnimation`'s weapon-sprite test. Lance and stick use ordinary KNTE attack 2.
+For arrows 45/46 the weapon graphics table selects no separate overlay. Binding those items
+preserves May's bow body. The F802 Creed stock is outside this chapter. The two published field
+Search weapons (32 and 55) are cursed, promoted-class rewards outside the equip rules above.
+Luke joins after the last battle in this publication.
+
+To reproduce the static comparison, read the six weapon programs in the
+[merchant inventory](../content/profiles-and-trust.md#ordinary-campaign-shops) from the private
+world and its registered item/class records. Follow each `encounters[].battleScenes` path
+(Battle01 uses the separately selected scene), match `actors[].sprite/item`, and resolve its body
+and weapon frames in the same file's `rasters`. The
+[producer](../../../src/sf2tool/remake_battle_scene_content.py) reads the USA retail
+`list_ShopInventories`, `table_ItemDefinitions`, `table_AllyStartDefinitions`,
+`table_AllyBattlesprites` and `table_WeaponGraphics` at the pinned baseline above.
+Run `uv run python -m sf2tool.remake_battle_scene_content --rom <registered-rom> --upstream
+<pinned-checkout> --battle 2 --output local/<new-directory>` in the configured worktree.
+For the integrated publication, one Battle13 donor supplies every needed weapon; select rows
+by the destination chapter and retain its existing class body keys, menu resources, world and audio.
+Battle02 independently reproduced the early bindings. The largest updated scene is 774,230 bytes
+against its 4 MiB limit. The final replay reported four ObjectDB instances at host exit after control returned. **Unknown** for individual unplayed combinations, natural original timing
+and human visual acceptance. The table records content coverage through Battle13.
+
 ## Original target and inspection cursor publication
 
 **Confirmed bounded remake, #1694:** the ordinary Battle01 scene and world-referenced
@@ -156,7 +214,7 @@ The remake column describes accepted code and the named observation only.
 | Battle and evidence | Original party, starting gear and opposing species | Remake consumer, evidence and disposition |
 | --- | --- | --- |
 | 01 · [opening acceptance](../evidence/opening-loop-acceptance.md) | Bowie SDMN (0/0) Wooden Sword 71, Sarah PRST (1/0) Wooden Rod 85, Chester KNTE (2/0) Wooden Stick 56 vs Gizmo (22/2). | Ordinary opening through victory and usable return. Map57 movement/death sprites and the Tower close-up are bound. Player and enemy hits, Chester's live stick, friendly Herb and Sarah's HEAL have bounded private witnesses below. Preserve these combinations. |
-| 02 · [formation](../../../docs/research/chapters/grans-opening/battle02-initialization-and-first-control.md), [outcomes and retry](../verification/field-programs.md#battle02-outcomes-and-retry) | Add joined Jaha WARR (3/0) Short Axe 33. Huge Rat (1/0), Ooze (0/1). | The selected Map66 board and private scene admit all four starting class/weapon pairs. Connected entry and selected outcome, defeat and retreat/retry have their own evidence. Binding a pair does not establish every attack, dodge or counter was played. |
+| 02 · [formation](../../../docs/research/chapters/grans-opening/battle02-initialization-and-first-control.md), [outcomes and retry](../verification/field-programs.md#battle02-outcomes-and-retry) | Add joined Jaha WARR (3/0) Short Axe 33. Huge Rat (1/0), Ooze (0/1). | The selected Map66 board and private scene admit the four starting pairs plus SDMN/Short Sword and KNTE/Short Spear. [Ordinary short-spear playback](#equipped-weapons-from-the-campaign-shops) reaches the next player input. Connected entry and selected outcome, defeat and retreat/retry have their own evidence. Binding a pair does not establish every attack, dodge or counter was played. |
 | 03 · [formation](../../../docs/research/chapters/grans-opening/battle03-initialization-and-first-control.md), [Yeel witness](../verification/field-programs.md#yeel-guide-through-battle03) | Same battle party. Kazin may follow in the field. Huge Rat, Ooze, Huge Bat (23/0) with sleep critical. | Selected Battle02-return start connects Yeel to Battle03 control. The real bat can inflict sleep, skip an entry and release control after waking in the bounded variation. Twelve formation rows are capacity; current connected route/outcome evidence belongs to the campaign agreement. |
 | 04 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle04-initialization-and-first-control.md) | After Hawel add Kazin MAGE (4/0) Wooden Rod 85. Galam Soldier (2/0) Short Axe, Galam Archer (31/0) Wooden Arrow at distance 2, Huge Bat. | Connected campaign content supplies Kazin and the admitted Soldier/Archer/bat bindings. Sharing Sarah's rod never substitutes for Kazin's body or sequences; the campaign owner retains the actual route/resource evidence. The bow user here is an enemy. |
 | 05 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md) | Retain Kazin. Slade follows before his formal post-victory join. Galam Knight (3/0) Short Spear at 1–2, Archer, Soldier, Galam Mage (36/0) Short Rod and BLAZE1. | The campaign admits Knight/Mage and retained Soldier/Archer on this board. Mage's ordinary physical/defensive poses still need binding even though its fire effect renders independently. Slade's scripted positioning in the Knight outcome does not require a pre-join player attack. |
@@ -187,16 +245,12 @@ project authorship or a compatible license.
    Castle background 8, Battle06 uses a different Map66 region and terrain-selected scenery,
    and Battle07 uses Map58 with Tower Interior 9. The original rows are linked above.
 2. **Physical, friendly actions and recipients.** The [scene reader](../../src/Sf2.Remake.Content/Scenarios/BattleSceneContentReader.cs)
-   admits ally sprites 0–3, one visual per class, and four enemy species (Gizmo, Ooze, Huge Rat, Huge Bat)
-   bound to actual placements. The [presenter](../../game/src/Battles/BattleSceneView.cs) selects
-   the displayed ally by class, checks its live equipped item against that visual, and selects the
-   enemy by ActorRef. An unknown class/species rejects admission. A missing displayed actor or
-   mismatching equipped ally stops delivery with `battle-scene-actor-unavailable` or
-   `battle-scene-weapon-unavailable`. Galam stock includes Short Sword, Short Spear, Bronze Lance,
-   Short Axe, Wooden Rod, Short Rod and Short Knife. Bind reachable **compatible** choices including
-   the correct attack/idle/item/weapon frames and unequipped state. Chester's starting stick is
-   range 1. A Short Spear changes both range and attack selection. Enemy equipment controls legality,
-   while the current separate weapon overlay belongs to the ally. Reuse the enemy's selected visual.
+   indexes equipped allies by class and actual item and enemies by their encounter placement.
+   The [presenter](../../game/src/Battles/BattleSceneView.cs) resolves the displayed ally on attack
+   or defence. A missing binding stops delivery with `battle-scene-actor-unavailable`. An equipped
+   visual with a mismatching item stops with `battle-scene-weapon-unavailable`. The
+   [campaign equipment rows](#equipped-weapons-from-the-campaign-shops) cover the starting and
+   purchased weapons through Battle13. Enemy weapons remain part of their selected body visuals.
 3. **Enemy healing.** [HealingSceneCursor.RequireContent](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
    requires healing resources, a cast sequence for the caster and positive idle ticks on caster and
    recipient. The selected private producer supplies admitted caster sequences, including the campaign's
