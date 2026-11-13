@@ -605,8 +605,8 @@ state. Global input admission retains its existing `GameplayHeld` rule without h
 Native focus loss suspends pointer gestures; an orphan release cannot activate a control. Control help reads the admitted bindings.
 
 `--input-settings` is the highest-priority, read-only whole-file override. Settings explains that
-controlled launch, displays its values/help and offers only Close; neither the override nor ordinary
-preferences are written. Otherwise load `<SF2_SAVE_ROOT>/<SF2_SAVE_NAMESPACE>/sf2-preferences/input.json`,
+controlled launch. Players can open Help and close Settings. Both files retain their contents.
+For ordinary preferences load `<SF2_SAVE_ROOT>/<SF2_SAVE_NAMESPACE>/sf2-preferences/input.json`,
 then existing model defaults only when absent or unreadable. The absolute root and 1–64 character
 alphanumeric/underscore/hyphen namespace follow existing persistent-save conventions; the root must
 be outside checkouts and link paths. There is no OS-directory or removable-worktree fallback.
@@ -842,8 +842,8 @@ reasons remain authoritative. Active battle/story settings access is not added.
 Left/Right turn pages; Confirm also advances. Up/Down scroll the current page, including unusually
 long custom bindings. Fixed Previous/Next/Back controls also support deliberate pointer gestures.
 Every binding string comes from `GameInput.Hint`, after the installed Confirm/Cancel swap; pending
-draft edits never masquerade as installed controls. The four existing accessibility preferences
-remain the capability: instant/gradual text, text speed, Confirm/Cancel swap and reduced flash.
+draft edits never masquerade as installed controls. The basic accessibility controls cover
+instant/gradual text, text speed, Confirm/Cancel swap and reduced flash.
 No device service, new persistence, arbitrary scale, screen reader or new device promise is added.
 
 Acceptance uses adapter build, clean committed dependency plan, direct docs/diff checks and finite
@@ -888,44 +888,11 @@ file and refuse ordinary Apply. Do not modify canonical inputs or user preferenc
 
 ### Deferred per-action remapping design
 
-This is an implementable boundary, **not implemented UI**. A separate bounded follow-up may expose
-the existing finite 16 actions: Up, Right, Down, Left, Confirm, Cancel, Attack, Spell, Target, Stay,
-Item, Wait, Equipment, Give, Discard and Menu. Display context labels from this help and installed bindings;
-name editing keeps its explicit LineEdit keyboard contract outside this action inventory.
-
-- Edit one whole candidate draft using existing `InputSettings`/`ActionBinding`. Clone the bindings
-  dictionary and arrays before any edit: current four-field drafts intentionally share that immutable
-  data. Capture only supported `GameInput.Prepare` key/button/signed-axis identities, after the opener
-  is released; modifier-only keys, unknown identities and unsupported axes are refused visibly.
-  At most 32 total key/button/signed-axis events may belong to one action.
-- Keep the existing global unique-identity policy, including within one action. Report both action
-  names and the colliding identity; do not silently steal a binding or infer safe context overlaps.
-  Each explicit action binding requires at least one keyboard binding and one pad button or signed axis;
-  retain #1518's [implicit Menu migration exception](#system-menu-agreement-1518). Removing the
-  last required-device binding leaves an invalid draft with a reason and disabled Apply. Capture has
-  an explicit Cancel control; physical Escape or Pad Back aborts armed capture, independent of the
-  action being edited. Reserved identities remain assignable through explicit named choices instead
-  of capture. After any captured candidate, require release/neutral before a review screen accepts
-  it with the installed Confirm or discards it with installed Cancel. Aborting changes no bindings.
-- Confirm/Cancel swap is a view of the configured base pair: label base and effective bindings, store
-  the existing `confirmCancel` value once and apply the swap once in `Prepare`. Conflict reporting
-  uses base identities; installed help/menus always use effective ones. Use existing logical Godot Keycode names and pad positions; do not infer physical keyboard layout
-  aliases. Active device labels follow the implemented [hint boundary](#mappings-first-use-and-reading-limits);
-  no separate device/layout service is introduced.
-- Validate the complete candidate with `GameInput.Prepare` before installation or writing. Reuse
-  `SettingsStore.Write` atomic publication/error/conflict path, then `GameInput.Apply`; failures leave
-  the previous runtime/file intact. Ordinary preferences persist and explicit launch overrides stay
-  read-only. No partial InputMap installation, second store or game-save fields.
-- Existing Restore defaults continues to reset only four preferences and preserve bindings. A future
-  explicitly named **Reset bindings** stages removal of overrides in the candidate; Apply validates
-  and publishes all settings together. Cancel discards the entire candidate without writes.
-- Reuse the Apply-event release/neutral and focus-loss barriers; drain the key/button/axis used to
-  finish capture before accepting another UI action. Refresh all mounted help/context hints only
-  after successful install. Acceptance must cover conflict/illegal rejection, Cancel, defaults,
-  restart, swap with custom pairs, held capture/apply events and write refusal with unchanged state.
-
-Full capture/rebinding UI is deferred; this agreement adds no scaffolding. Broader device/layout and
-accessibility policy requires its own consumer and acceptance decision, not an automatic continuation.
+Players can read and use their installed mappings in both device families. Editing a binding inside
+Settings is pending. The [Change controls design](input-remapping.md) covers the 17 production actions,
+including held Accelerate, format 1 compatibility, editing and applying a draft, and acceptance in
+Help, the field, shops and battle. The [E2 feature row](../evidence/opening-ui-gaps.md#e2-settings)
+tracks the player-facing change.
 
 ## Menu pointer agreement
 
