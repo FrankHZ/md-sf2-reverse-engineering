@@ -9,18 +9,20 @@ internal static class CaravanPrograms
 {
     internal const string Boarding = "caravan-boarding";
     internal const string Landing = "caravan-landing";
-    internal static EntityActionProgram Follower(int index, bool overworld)
-    {
-        var (leader, x, y, wait) = overworld ? index switch
+    internal static (int Leader, int X, int Y, bool Wait) Formation(int index, bool overworld) =>
+        overworld ? index switch
         { 0 => (0, -24, 0, true), 1 => (0, -24, -24, false), 2 => (0, -24, 24, false),
           3 => (1, -24, 0, true), _ => (4, -24, 0, true) }
             : (Math.Min(index, 3), -24, 0, true);
+    internal static EntityActionProgram Follower(int index, bool overworld)
+    {
+        var (leader, x, y, wait) = Formation(index, overworld);
         return new([new SetEntitySpeed(32, 32), new SetEntityAcceleration(0, 0),
             new ChangeEntityFlags(false, 0xEF, 0x60), new FollowPhysical(leader, x, y),
             .. wait ? new EntityAction[] { new WaitEntityDestination() } : [], new JumpEntityAction(3)]);
     }
 
-    internal static IEnumerable<StoryProgram> Create(CaravanDefinition caravan, EntityRef player)
+    internal static IEnumerable<StoryProgram> Create(EntityRef followerA, EntityRef player)
     {
         EntityActionProgram shrink(int target) => new([
             new MoveToPhysicalFacing(target, 0), new WaitEntityTicks(6),
@@ -32,15 +34,15 @@ internal static class CaravanPrograms
             new RefreshEntitySprite("caravan-clone"), new IdleEntityAction()]);
         yield return new(Boarding, [
             new StartEntityMotion(player, new([new IdleEntityAction()]), false),
-            new StartEntityMotion(caravan.FollowerA, new([new MoveToPhysicalFacing(0, 1),
+            new StartEntityMotion(followerA, new([new MoveToPhysicalFacing(0, 1),
                 new WaitEntityDestination(), new IdleEntityAction()]), true, Completion: EntityWaitCompletion.ScriptIdle),
             new StartEntityMotion(player, shrink(1), true, Completion: EntityWaitCompletion.ScriptIdle),
-            new MoveVehicleOffMap(caravan.FollowerA),
+            new MoveVehicleOffMap(followerA),
             new StartEntityMotion(player, new([new SetActionSprite(62), new ChangeEntityFlags(true, 8, 0),
                 new RefreshEntitySprite("caravan-appearance"), new IdleEntityAction()]), true,
                 Completion: EntityWaitCompletion.ScriptIdle),
             new WaitForView(),
-            new ApplyVehicleFollowerActions(shrink(0)), new WaitForVehicleFollowers(),
+            new ApplyVehicleFollowerActions(shrink(0), SkipCaravan: true), new WaitForVehicleFollowers(SkipCaravan: true),
             new SetFieldTravelMode(FieldTravelMode.Caravan), new EndProgram()]);
         EntityActionProgram grow(bool follower) => new([
             .. follower ? new EntityAction[] { new ClonePhysicalPosition(1), new RefreshEntitySprite("caravan-clone") } : [],
@@ -51,11 +53,11 @@ internal static class CaravanPrograms
             new WaitEntityDestination(), new IdleEntityAction()]);
         yield return new(Landing, [
             new StartEntityMotion(player, new([new IdleEntityAction()]), false),
-            new StartEntityMotion(caravan.FollowerA, new([new ClonePhysicalPosition(0), new RefreshEntitySprite("caravan-park"),
+            new StartEntityMotion(followerA, new([new ClonePhysicalPosition(0), new RefreshEntitySprite("caravan-park"),
                 new IdleEntityAction()]), true, Completion: EntityWaitCompletion.ScriptIdle),
             new RestoreCaravanPlayer(),
             new StartEntityMotion(player, grow(false), true, Completion: EntityWaitCompletion.ScriptIdle),
-            new WaitForView(), new ApplyVehicleFollowerActions(grow(true)), new WaitForVehicleFollowers(),
+            new WaitForView(), new ApplyVehicleFollowerActions(grow(true), SkipCaravan: true), new WaitForVehicleFollowers(SkipCaravan: true),
             new InstallCaravanFollowers(), new SetFieldTravelMode(FieldTravelMode.Walking), new EndProgram()]);
     }
 }

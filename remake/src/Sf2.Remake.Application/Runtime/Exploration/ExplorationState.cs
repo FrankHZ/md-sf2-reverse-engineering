@@ -231,7 +231,7 @@ public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motio
         ActionCursor < program.Actions.Count && program.Actions[ActionCursor] is IdleEntityAction;
     public bool Busy => Motion.IsMoving || (Actions is not null && !IsScriptIdle);
 }
-public sealed record EntityFollower(int LeaderSlot, int OffsetX, int OffsetY);
+public sealed record EntityFollower(int LeaderSlot, int OffsetX, int OffsetY, bool WaitForDestination = true);
 
 public sealed class ExplorationState
 {
