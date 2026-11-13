@@ -18,7 +18,7 @@ func open_settings(field: bool = false) -> void:
             if selected_menu() == "Settings": break
             await key(KEY_DOWN)
         await key(KEY_ENTER)
-    else: await key(KEY_ESCAPE)
+    else: await open_witch_settings()
     check(find("SettingsView") != null, "ordinary Settings caller")
 
 func visibility(expected: bool) -> void:

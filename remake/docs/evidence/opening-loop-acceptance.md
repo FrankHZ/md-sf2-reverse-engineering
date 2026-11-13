@@ -53,7 +53,7 @@ needed for this preparation; availability checks do not establish human acceptan
 
 Play in short segments; a complete uninterrupted replay is unnecessary:
 
-1. At title/Witch, inspect Settings and grouped Controls help, Cancel a draft, then Apply a desired
+1. At the Witch action menu, inspect Settings and grouped Controls help, Cancel a draft, then Apply a desired
    preference. Choose New Game in a disposable slot; use the physical keyboard for the admitted
    name (up to seven characters). Check focus, selected/unavailable distinctions and confirmation wording.
 2. In Map3, walk/talk, read/reveal/advance dialogue and regain control. Open Party → Prepare; inspect

@@ -219,10 +219,13 @@ func boundaries() -> void:
         check(slot_state().get("state")=="new-game-slots","focus loss does not duplicate action")
         root.emit_signal("focus_entered")
         await press(KEY_ESCAPE)
-        # Title Settings retains its explicit music pause.
-        await press(KEY_ESCAPE);await press(KEY_ESCAPE)
+        # Back from the slots selects New Game in the Witch menu.
+        await press(KEY_UP)
+        if entry().visibleCharacters >= 0 and entry().visibleCharacters < entry().totalCharacters:
+            await press(KEY_ENTER)
+        await press(KEY_ENTER)
         snap("settings-paused")
-        check(host.find_child("SettingsView",true,false)!=null,"title Settings opens")
+        check(host.find_child("SettingsView",true,false)!=null,"Witch Settings opens")
         check(entry().audio.musicPaused,"Settings pauses entry music")
         await press(KEY_ESCAPE);snap("settings-closed")
         check(not entry().audio.musicPaused,"Settings close resumes entry music")

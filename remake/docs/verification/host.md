@@ -1482,7 +1482,7 @@ produce `ContentError: invalid-input-settings` before a session is published. A 
 explicit file also fails; it never silently restores defaults.
 An explicit `--input-settings` file is a read-only startup override. Ordinary launches without it use
 the integrated [basic Settings/Apply and preferences persistence](../godot/presentation.md#basic-preferences-agreement),
-including title/Witch and safe settled-field access plus grouped Controls help. Active battle/story
+including Witch menu and safe settled-field access plus grouped Controls help. Active battle/story
 settings access and capture/remapping UI remain excluded; progress saves stay separate.
 
 Adjustable text uses the actual Label's visible-character count. Time reveals characters but never
@@ -2220,7 +2220,7 @@ $env:SF2_DISPLAY_CATALOG = (Resolve-Path -LiteralPath 'remake/content/authored/l
 The real field program shows the captured Traveler name with W1/CLEAR/N/D1/W2, then returns control.
 At settled field input press Escape for Menu, then choose Settings. The fifth row is Language; Confirm changes only
 its draft endonym. Apply (seventh row) stores/publishes it; Cancel retains the old preference. Talk
-repeats the authored dialogue in the selected language. The existing title settings access also
+repeats the authored dialogue in the selected language. The Witch menu Settings entry also
 refreshes. Relaunch the same namespace to reload the preference. For a dynamic battle sample use
 `healing-rule-demo.json` through the same `--authored-package` route: Confirm opens the diamond, H
 opens Magic, Confirm selects its spell/self target and another Confirm commits. Result text uses
@@ -2322,9 +2322,9 @@ results; a process exit alone does not establish a successful observation.
 
 Reproduce the normal route with these actual host actions in each language:
 
-1. Start at title, open Settings, change the language draft then Cancel. Confirm unchanged entry
-   texture identities and audio start receipts. Confirm each ordinary greeting row 216–220 through
-   reveal/ReadMore to menu row 221. Without an overlay, Chinese UI retains the original private
+1. Start at the title and advance through greeting rows 216–220 using reveal/ReadMore. At Witch
+   menu row 221, open Settings, change the language draft, then Cancel. Confirm the same menu,
+   texture identities and audio start receipts. Without an overlay, Chinese UI retains the original private
    English rows with `en` / `overlay-unavailable`, visibly separate from UI labels.
 2. On the settled menu Apply English↔zh-CN. Keep page, selection, source/failure identity, textures
    and audio receipts; do not restart music. New Game → slot → naming must reject eight characters

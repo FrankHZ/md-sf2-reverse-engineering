@@ -540,7 +540,7 @@ internal static partial class GameText
         ["ui.settings.staged"] = 0,
         ["ui.settings.notice"] = 0,
         ["ui.settings.hint"] = 2,
-        ["ui.settings.entry"] = 1,
+        ["ui.settings.entry"] = 0,
         ["ui.settings.readonly"] = 0,
         ["ui.settings.storage"] = 0,
         ["ui.settings.invalid"] = 0,

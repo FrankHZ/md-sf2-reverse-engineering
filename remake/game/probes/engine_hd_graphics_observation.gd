@@ -15,10 +15,6 @@ func select_setting(index: int) -> void:
         await key(KEY_DOWN)
     check(false, "setting focus " + str(index))
 
-func title_settings() -> void:
-    await key(KEY_ESCAPE)
-    check(find("SettingsView") != null, "ordinary title Settings")
-
 func field_settings() -> void:
     await key(KEY_F10)
     for i in range(5):
@@ -167,7 +163,7 @@ func run() -> void:
             "native decode refusal preserves prior graphics, preference bytes and progress")
         check("prepared" in settings().message or "准备" in settings().message, "Apply explains resource preparation failure")
         samples.append({"label":"prepare-failure", "settings":settings()}); finish(); return
-    await title_settings()
+    await open_witch_settings()
     geometry("SettingsWindow")
     check("installed artwork" in settings().message or "安装了高清素材" in settings().message, "readable HD coverage in settings")
     if case_name == "override":
@@ -178,7 +174,7 @@ func run() -> void:
     if case_name == "defaults":
         await select_setting(6); await key(KEY_ENTER)
         check(settings().draft.GraphicsMode == "original" and applied().GraphicsMode == "hd", "Restore defaults stages Original only")
-        await key(KEY_ESCAPE); await title_settings()
+        await key(KEY_ESCAPE); await open_witch_settings()
         check(applied().GraphicsMode == "hd", "Cancel defaults preserves HD")
         await select_setting(6); await key(KEY_ENTER); await select_setting(7); await key(KEY_ENTER)
         check(applied().GraphicsMode == "original" and JSON.parse_string(saved_preferences()).graphicsMode == "original", "Apply defaults persists Original")
@@ -186,12 +182,12 @@ func run() -> void:
     check(applied().GraphicsMode == "original", "old version-1 preferences default Original")
     var initial_bytes := saved_preferences()
     await set_mode("hd"); await key(KEY_ESCAPE)
-    check(applied().GraphicsMode == "original" and saved_preferences() == initial_bytes, "title Cancel keeps graphics and exact old preferences")
+    check(applied().GraphicsMode == "original" and saved_preferences() == initial_bytes, "Witch Cancel keeps graphics and exact old preferences")
     if case_name == "title":
-        await title_settings(); await apply_mode("hd")
+        await open_witch_settings(); await apply_mode("hd")
         check(host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_HOST_UI_START")) == "started",
-            "title choice carries into a newly mounted session")
-        await frames(8); await inventory("title-choice-first-mount", "hd", "hd")
+            "Witch choice carries into a newly mounted session")
+        await frames(8); await inventory("witch-choice-first-mount", "hd", "hd")
         finish(); return
     var result: String = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_HOST_UI_START"))
     check(result == "started", "ordinary selected world admits controlled initial position: " + result)
