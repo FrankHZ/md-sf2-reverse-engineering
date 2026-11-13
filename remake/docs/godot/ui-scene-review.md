@@ -28,10 +28,43 @@ controls, their observed returns and the limits that matter during play.
 | Dialogue and choices | Controlled Map3 approach, ordinary directions and Confirm reached a Chinese source question. Reading, attached choices and hint had disjoint bounds. Left/Right moved the selection and Cancel answered No. The supplied portrait and reading viewport keep their own reserved space. [Source question](presentation.md#production-entry-and-field-dialogue-1606) |
 | Party and items | Member and Item opened from the field list and Back restored the Item row. The status sheet's operation hint now uses 24px. Inventory keeps four positions. Original 16×24 and mounted HD 64×96 identity textures occupy the same 48×72 field slot. The system action is disabled while Party owns input. [Member and item sheets](field-and-shop.md#current-composition) |
 | Shop and Church | Ribble Continue reached two actual counters with Talk, speed and Adventure enclosed. The controlled Galam merchant exposed Buy/Sell, Repair refusal, member, slot, quote, result and Back. The same mapped hint measured 24px throughout. The Church list retained focus on refusal, Record completed the caller, and the shared Save host returned to field. [Shop phases](field-and-shop.md#reading-input-and-return) · [Church caller](#10-production-church-and-battle-command-lists) |
-| Battle | Controlled Battle01 exercised acting vitals, a learned spell, target/Back, Item and Stay. The decision hint uses the 24px role. Static review of `BattleMenuLayout` found deliberate 16px panel insets and a transparent inner command panel beneath the shared outer frame. HP/MP and identity have separate type roles. F8 free inspection and F9 message results retain their earlier named observations. [Battle decisions](battle-interaction-baseline.md#production-f4f8f9-contract) |
-| Host layers and save recovery | Clicking the gameplay Menu reached Resume. Help and language Apply retained their caller. The field footer retired while the modal owned input. Church Record and title Continue exercised the slot UI. Corrupt-primary recovery and desktop focus retain the [previous bounded host evidence](host-ui.md#reproduction-and-finite-evidence). |
+| Battle | At native 1080p the acting and target headers begin at (1328,112). Free inspection places the unit/ground card at (1328,238) in the observed Battle01 position. The overview and right-side close-up card clear the host entry. [Menu clearance and input](#reproduce-gameplay-menu-clearance) |
+| Host layers and save recovery | Menu opens on Resume and Back restores the caller. Field cues retire during host cover. Church Record and title Continue exercise the shared slots. The 24px primary failure and translation notice scroll above fixed Cancel/Recover Backup buttons. [1080p slot recovery and overwrite](host-ui.md#slot-recovery-and-overwrite-at-1080p) |
 
-**Remaining differences.** P2 for readability review: `SaveSlotView.SlotDetail` and `SlotCoverage` use 20px, including failure/recovery details. Check a corrupt disposable primary and backup at native 1080p with long Chinese details before raising them to the 24px metadata role. P3 for spacing: the standalone Menu uses 20px right and 12px top clearance, compared with the usual 32px gameplay inset. Review the top-right host safe region with F4/F8 cards before moving it. Physical controller legends, desktop DPI and reading comfort remain **Unknown** under [human play review](../verification/host.md#later-physical-focus-human-checklist-1456).
+Physical controller legends, desktop DPI and reading comfort remain **Unknown** under [human play review](../verification/host.md#later-physical-focus-human-checklist-1456).
+
+#### Reproduce gameplay Menu clearance
+
+**Confirmed.** At 1920×1080 the square 160×56 Menu hit area spans x=1728–1888 and y=32–88.
+The acting and target headers, the F8 overview and the right-side ally close-up start at y=112,
+leaving 24px below Menu. The left-side close-up keeps its own position. The overview ends at y=948,
+12px above its mapped Back hint. Clicking a marker on the resized map returns to that unit.
+A click 3px inside the Menu corner opens Resume on release. Mapped Back restores the field,
+inspection cell or battle command/target, and the caller accepts its next input.
+
+On the first Battle01 actor, focusing unavailable Magic wraps the complete reason. At 1080p its
+right-aligned footer widens below the fixed 560px command group to 1117px in English with keyboard
+hints and 722px in Chinese with pad hints. Back occupies y=965–1009 in both cases. At 2560×1440
+the reason fits the ordinary 560px column. The Attack row and the chosen target accept full clicks.
+On base `bccb670c`, the Menu intersected both the overview and the ally close-up card, and the
+same Magic reason placed Back below the viewport in both languages.
+
+Build Debug and load the registered world, scenes, catalogs and disposable namespace as in the
+[battle reproduction](battle-interaction-baseline.md#direct-production-reproduction).
+Point `SF2_COMPACT_START` to an ignored copy of
+[`map3-followers-start.json`](../../reference/inputs/map3-followers-start.json) for the field,
+or the linked reproduction’s `battle` JSON for Battle01. Use English keyboard and zh-CN pad
+settings for the battle runs, with `SF2_INSPECTION_ROUTE` set to `keyboard` or `pad`.
+Each run uses its own output and settings. The [observer](../../game/probes/gameplay_menu_clearance.gd)
+reads live hit rectangles, shaped text, selection, pause and return. Some processes reported two
+or six ObjectDB instances at exit; their owner remains **Unknown**.
+
+```powershell
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $freshRun 'menu-clearance.json'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+  --path remake/game --script res://probes/gameplay_menu_clearance.gd `
+  --log-file (Join-Path $freshRun 'godot.log') -- --input-settings $inputSettings
+```
 
 #### Reproduce the field controls
 
@@ -428,7 +461,7 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
 - **Aligned — F4 decision vitals (#1686).** Actual acting/target headers opt into 36px HP/MP
   readings above side-by-side 232×28 gauge images. Header and commands/child list share one outer
-  decision frame in layout A; the footer follows in the same measured right column.
+  decision frame in layout A; the footer shares its right edge and widens for a long reason when vertical space runs out.
   Full-width values grow the group horizontally; two-line names
   reserve their own height. Short lists use their actual rows, and longer lists retain scrolling with
   space reserved for the measured reason/footer. Existing values and the no-MP dash/empty track stay

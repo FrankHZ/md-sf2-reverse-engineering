@@ -263,7 +263,8 @@ public sealed partial class GameRoot : Node
         if (SessionPresentationOwner.IsBattle(started.Result.Snapshot)) EnterBattle(started.Result);
         else { view.Hide(); ShowExploration(started.Result, returning: false); }
         _menuButton = new Button { Name = "SystemMenuEntry", Text = GameText.Get("system.entry"), AnchorLeft = 1, AnchorRight = 1,
-            OffsetLeft = -180, OffsetRight = -20, OffsetTop = 12, OffsetBottom = 68,
+            OffsetLeft = -UI.StoryTheme.GameplayInset - 160, OffsetRight = -UI.StoryTheme.GameplayInset,
+            OffsetTop = UI.StoryTheme.GameplayInset, OffsetBottom = UI.StoryTheme.GameplayInset + UI.StoryTheme.MenuHeight,
             Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
         _menuButton.AddThemeFontSizeOverride("font_size", 24);
         _menuButton.Pressed += ShowSystemMenu; _hostUi.AddChild(_menuButton); RefreshSystemMenuLabels();

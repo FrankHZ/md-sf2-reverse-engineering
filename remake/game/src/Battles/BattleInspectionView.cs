@@ -223,7 +223,8 @@ internal sealed partial class BattleInspectionView : Control
         }
         else if (_page == "Map")
         {
-            _overview.Position = new(24, 24); _overview.Size = size - new Vector2(48, 156);
+            _overview.Position = new(StoryTheme.GameplayInset, StoryTheme.BelowMenu);
+            _overview.Size = new(size.X - 2 * StoryTheme.GameplayInset, size.Y - 132 - _overview.Position.Y);
             _overview.Present(_snapshot, _map.CameraCells, _knownIndex);
             message = GameText.Get("battle.inspect.map-help", up, down, b);
         }

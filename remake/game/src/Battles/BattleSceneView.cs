@@ -451,8 +451,9 @@ internal sealed partial class BattleSceneView : Control
         {
             bool recoveryTarget = (state.Spell is not null || state.Item is not null) && unit.Actor != state.Actor;
             float bottom = _messagePanel.IsVisibleInTree() ? _messagePanel.Position.Y : GetViewportRect().Size.Y - 32;
-            return new(unit.IsAlly && !recoveryTarget ? GetViewportRect().Size.X - 32 - size.X : 32,
-                unit.IsAlly ? 32 : MathF.Max(32, bottom - size.Y - 16));
+            if (unit.IsAlly && !recoveryTarget)
+                return new(GetViewportRect().Size.X - StoryTheme.GameplayInset - size.X, StoryTheme.BelowMenu);
+            return new(StoryTheme.GameplayInset, unit.IsAlly ? StoryTheme.GameplayInset : MathF.Max(32, bottom - size.Y - 16));
         }
         _actorCard.Position = Place(actor, _actorCard.RequestedSize); _actorCard.Size = _actorCard.RequestedSize;
         if (target is not null) _targetCard.Position = Place(target, _targetCard.RequestedSize);
