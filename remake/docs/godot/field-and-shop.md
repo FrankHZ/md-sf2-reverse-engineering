@@ -14,8 +14,10 @@ geometry and errors, followed by independent main-gate review.
   80px minimum rows and reserved markers. Up/Down follows the list; Back has its own row.
   The list retains its initiating selection while a member/preparation page owns input.
 - `PartyStatusView` keeps the member column visible beside the selected sheet. Portrait, identity,
-  vitals, attributes, learned spells and inventory remain grouped. Records, gold, Prepare and Close
-  sit outside the detail scroll regions. The field sheet opts into `PartyDetailsPanel.FieldLayout`;
+  vitals, attributes, learned spells and inventory remain grouped. Records and gold sit between
+  the sheet and its fixed bottom hint panel. Inside that panel the reading hint takes the space on
+  the left; Prepare (Magic or Item at those entries) and Close sit together at the right inset.
+  Each uses its own visible rectangle for press and release. The field sheet opts into `PartyDetailsPanel.FieldLayout`;
   the battle inspection caller retains its existing composition and 4× identity art.
 - Item operations use the same right-hand list. Use / Give / Equip / Drop, item/level lists,
   recipients, exchange slots and confirmation use the existing field consumers. Spell rows include
@@ -127,6 +129,16 @@ as `SF2_INSPECTION_START`, `SF2_FIELD_MENU_CASE=shop`, `SF2_FIELD_UI_ART=1`, and
 The direct observer admits the ordinary production session, talks to the real merchant, verifies
 quotes/cancel/funds/full/actual purchase and sale, then leaves and moves in that same session. The art case also opens the real field/Item owner, checks original command and identity art, inspects Use and returns without spending party resources. Paused menu RNG/flags/time are checked before resuming ordinary field time.
 Controlled initial admission does not prove natural preceding campaign reach.
+
+For the [member footer](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1788),
+use that same private field start, with `"names":{"ally-0":"WWWWWWW"}` inside `start` (seven
+wide letters, the legal name limit). Set `SF2_FIELD_MENU_CASE=party-footer`, select the existing
+English or zh-CN input settings and a fresh `SF2_FIELD_MENU_OUTPUT`, and use
+[`res://probes/party_footer_observation.gd`](../../game/probes/party_footer_observation.gd)
+as the script. At 1920×1080 it checks the whole member sheet, the inset hit rectangles and
+fully visible text, live gold and records, and the actual Member/Magic/Item and direct Party
+return paths. Mouse, keyboard and mapped pad drive the ordinary field UI, including opening
+equipment and backing out without changing the party.
 
 No acquisition or asset/world copy is required. Work is bounded by the selected party, four slots and
 finite shop stock; reports contain only named semantic boundaries. Budget 55 seconds / 2 MiB per
