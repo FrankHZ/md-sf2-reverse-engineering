@@ -227,6 +227,10 @@ commands and fixture identity instead of pasted dumps.
 
 For a player-facing remake change, put a link to the affected [campaign feature row](../../remake/docs/capability-status.md#campaign-feature-trace) or battle row and its detailed owner in the Issue. Name the player action, affected chapter/map/setup and expected result or return. A chapter extension includes newly reachable optional interactions even when their engine rule stays the same. During review, compare the published callers or placements with the owner's inventory and distinguish ordinary input from static or controlled evidence. Update the affected row or linked owner in the implementation PR where its claim changes. Link a remaining actionable gap to its existing Issue, or open one for a distinct outcome. Group equivalent variants in the owner; the Project tracks work and dependencies.
 
+When a newly reachable player state relies on a changed or separately admitted consumer, name its next ordinary use and the visible result or return required for acceptance. For example, after a new weapon can be bought and equipped, check its first use in a supported encounter. Compare the newly reachable class/weapon pairs with the encounter artwork; one live route can exercise a shared implementation. If a missing binding stops ordinary play, fix and verify it or link the blocker and keep that route marked blocked.
+
+Where similar inputs can preserve or transfer player control, check the cases that distinguish those outcomes. For example, an event tile that returns immediately should preserve a held direction; a scene that takes control should consume it. For a timing claim, observe the named transition (such as step completion to the next step) with a short input sequence. Reuse existing evidence for unchanged behavior. Record a newly requested feel or timing target as a product decision and retain the scope of earlier observations.
+
 ### Task Lifecycle
 
 Main-gate plans, dispatches, independently reviews, integrates and tracks work. Within the user's
