@@ -6,6 +6,8 @@ The [campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1734
 for carried party state. This Standard content slice ends at the ordinary confirmation for message
 2263. The [Battle08 continuation](battle08-new-granseal.md) starts at this confirmation.
 
+For optional dock and ship interactions, see [campaign field Search](campaign-field-search.md).
+
 ## Play and review
 
 In the prepared checkout, run `./local/issue1732/play.ps1` (Chinese) or

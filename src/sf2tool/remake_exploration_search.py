@@ -46,10 +46,15 @@ def compile_search(compiler, resources, references, setup, selected):
         }
     )
 
-    def items(key, filename):
+    def items(key):
+        table = resources["itemTables"][references[key]]
+        # Some other-item pointers alias the map's chest table (e.g. Map58).
+        filename = {"chestItems": "7-chest-items", "otherItems": "8-other-items"}[
+            table["sourceKind"]
+        ]
         compiler.sources.add(f"disasm/data/maps/entries/map{selected:02d}/{filename}.asm")
         result = []
-        for row in resources["itemTables"][references[key]]["records"]:
+        for row in table["records"]:
             item = row["item"]
             amount = None if item < 128 else gold[(item - 128) & 127]
             result.append(
@@ -63,8 +68,8 @@ def compile_search(compiler, resources, references, setup, selected):
         return result
 
     return {
-        "chests": items("chestItemTable", "7-chest-items"),
-        "otherItems": items("otherItemTable", "8-other-items"),
+        "chests": items("chestItemTable"),
+        "otherItems": items("otherItemTable"),
         "descriptions": descriptions,
         "closedChest": compiler.equates["MAP_BLOCKINDEX_CLOSED_CHEST"],
         "openChest": compiler.equates["MAP_BLOCKINDEX_OPEN_CHEST"],

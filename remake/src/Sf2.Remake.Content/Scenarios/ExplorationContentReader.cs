@@ -256,7 +256,7 @@ internal static class ExplorationContentReader
         return new(new(package, shops ? encounters.Select(encounter => PrivateFieldPreparation.Equipment(encounter, battle.Definition.PrivateDefinitions!)) : encounters,
                 battle.Definition.PrivateDefinitions, definition, battle.Definition.BattleScenes,
                 battle.Definition.EncounterStarts.Values, battle.Definition.EncounterScenes.Values)
-            { FieldPreparation = authored ? battle.Definition.FieldPreparation : shops ? PrivateFieldPreparation.Read(battle.Definition.PrivateDefinitions!) : null },
+            { FieldPreparation = authored ? battle.Definition.FieldPreparation : shops ? PrivateFieldPreparation.Read(battle.Definition.PrivateDefinitions!, definition) : null },
             new(selectedMap, new(Id(start, "player")), Position(start.GetProperty("position")),
                 (byte)Number(start, "facing", 0, 3), (ushort)Number(start, "speed", 1, 384), flags, battle.Start, entryProgram, entityPhases,
                 start.TryGetProperty("display", out var display) ? ReadDisplay(display) : null,

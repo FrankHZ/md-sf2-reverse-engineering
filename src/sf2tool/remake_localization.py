@@ -16,6 +16,7 @@ from pathlib import Path
 
 from sf2tool.jsonio import load_json
 from sf2tool.paths import REPO_ROOT
+from sf2tool.remake_identity_icons import field_item_ids
 from sf2tool.source_text import read_upstream_text
 
 _PRE_VOYAGE_RANGES = (
@@ -136,6 +137,16 @@ def _topology(source: str, target: str) -> bool:
     )
 
 
+def _search_text_ids(world: dict) -> set[int]:
+    return {
+        text
+        for row in world["maps"]
+        for setup in (row, *row.get("setups", []))
+        for description in setup.get("search", {}).get("descriptions", [])
+        for text in description["texts"]
+    }
+
+
 def _entry(value: str) -> str:
     result = value.removeprefix("{CLEAR}").removesuffix("{W2}").replace("{N}", "\n")
     _require(not re.search(r"[{}]", result), "entry boundary changed")
@@ -194,10 +205,15 @@ def derive(args: argparse.Namespace) -> dict:
         all(rows[i]["source"] == originals[i] == pinned[i] for i in rows), "source text mismatch"
     )
     package = world["package"]
+    field_texts, field_items = set(), set()
+    if args.scope == "current":
+        field_texts = _search_text_ids(world["world"])
+        field_items = field_item_ids(world["world"]) - {127}
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
-    world_ids = sorted(i for start, end in ranges for i in range(start, end + 1))
+    base_texts = {i for start, end in ranges for i in range(start, end + 1)}
+    world_ids = sorted(base_texts | field_texts)
     for i in world_ids:
         row = rows[i]
         source, target = row["source"], row["translation"]
@@ -218,6 +234,8 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] = tuple(
             sorted((*name_ids["name.enemy"], 4, 5, 6, 7, 8, 41, 42, 57, 58, 68, 69, 77, 78))
         )
+    extra_items = field_items.difference(name_ids["name.item"])
+    name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
         for i in indices:
             row = names[space, i]
@@ -320,8 +338,9 @@ def derive(args: argparse.Namespace) -> dict:
     }
     _require(
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
-        and len(selected) == (806 if args.scope == "pre-voyage" else 1360)
-        and len(selected_names) == (51 if args.scope == "pre-voyage" else 79),
+        and len(selected)
+        == (806 if args.scope == "pre-voyage" else 1360 + len(field_texts - base_texts))
+        and len(selected_names) == (51 if args.scope == "pre-voyage" else 79 + len(extra_items)),
         "candidate budget/selection mismatch",
     )
     _require(
