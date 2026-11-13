@@ -55,16 +55,8 @@ internal static class OpeningRestore
         }
         var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor);
         Require(location.Recipe == data.Recipe && location.Anchor == anchor, "save-recipe");
-        RaftBerth? raft = null;
-        if (data.Raft is { } berth)
-        {
-            Require(berth.X is >= 0 and < 64 && berth.Y is >= 0 and < 64 &&
-                definition.Exploration.Maps.ContainsKey(new(berth.Map)), "save-raft-berth");
-            raft = new(new(berth.Map), new(berth.X, berth.Y));
-        }
-        Require(data.Recipe != "polca-raft" || raft is not null, "save-raft-berth");
-        var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, out var flags);
-        world = RaftRuntime.Declare(world, flags, raft);
+        var raft = data.Raft?.Restore(definition.Exploration);
+        var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, raft, out var flags);
         Require(world.Definition.BasePalette is { Valid: true }, "save-palette-resource");
         int area = world.Definition.Traversal.SelectActiveArea(anchor.Position)!.OneBasedRecordOrdinal - 1;
         var music = new MusicProgress(1, data.Music.Cue, Array.AsReadOnly(data.Music.Previous.ToArray()), anchor.Map, area,

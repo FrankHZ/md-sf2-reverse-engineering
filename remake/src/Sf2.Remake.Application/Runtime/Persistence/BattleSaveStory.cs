@@ -52,7 +52,8 @@ internal static class BattleSaveStory
             story.Display! with { }, story.LogicalText! with { }, story.LogicalView! with { }, story.Speaker,
             story.EntityServices, story.WindowFixPending, story.SaveAnchor is null ? null : story.SaveAnchor with { },
             new(music.Map.Value, music.Area, music.Cue, Array.AsReadOnly(music.Previous.ToArray())),
-            new(player.Player.Value, player.Speed, Array.AsReadOnly((player.RetainedAllies ?? []).Select(BattleContinuationValues.Carried).ToArray())));
+            new(player.Player.Value, player.Speed, Array.AsReadOnly((player.RetainedAllies ?? []).Select(BattleContinuationValues.Carried).ToArray())),
+            SavedRaft.Capture(story.Raft));
     }
 
     internal static StoryState Build(ScenarioDefinition definition, BattleSaveData data, EngineBattleState battle)
@@ -119,7 +120,8 @@ internal static class BattleSaveStory
             windowFixPending: value.WindowFixPending,
             music: new(1, music.Cue, Array.AsReadOnly(music.Previous.ToArray()), new(music.Map), music.Area, null, Battle: true),
             stepCounter: value.StepCounter, egressMap: new(value.EgressMap), fieldPlayer: new(new(value.Player.Entity), value.Player.Speed,
-                Array.AsReadOnly(retained.Select(BattleContinuationValues.Carried).ToArray())), saveAnchor: value.SaveAnchor, names: value.Names);
+                Array.AsReadOnly(retained.Select(BattleContinuationValues.Carried).ToArray())), saveAnchor: value.SaveAnchor, names: value.Names,
+            raft: value.Raft?.Restore(world));
     }
 
     private static void RequireReturnPlayer(ExplorationDefinition world, MapId destination, string player)

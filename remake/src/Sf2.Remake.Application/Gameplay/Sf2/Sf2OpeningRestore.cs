@@ -140,7 +140,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     }
 
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
-        IReadOnlyList<int> flags, out IReadOnlyList<int> enteredFlags)
+        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags)
     {
         var anchor = location.Anchor;
         var source = definition.Exploration!.Maps[anchor.Map];
@@ -172,6 +172,13 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (world.AllEntities.Any(entity => entity.Visible && entity.Slot != world.PlayerEntity.Slot &&
                 entity.Follower is null && entity.Position == anchor.Position))
             throw new BattleRuleException("save-anchor-occupied", "save.anchor");
+        world = RaftRuntime.Declare(world, enteredFlags, raft);
+        if (location.Recipe == "polca-raft")
+        {
+            var approach = MapEventDispatcher.Move(world, ExplorationDirection.South, enteredFlags);
+            if (raft?.Map != world.Map || approach.Outcome.VehicleEvent != 3 || !RaftRuntime.Aligned(approach.World))
+                throw new BattleRuleException("save-raft-berth", "save.raft");
+        }
         return world;
 
         void Hide(string id, bool aliases)

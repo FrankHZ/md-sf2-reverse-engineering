@@ -45,7 +45,8 @@ internal static class BattleSaveWire
     internal sealed record Story(IReadOnlyList<int> Flags, IReadOnlyDictionary<string, string> Names, short StepCounter,
         string EgressMap, int TextCursor, ExplorationTextSettings TextSettings, Display Display, Text LogicalText,
         View LogicalView, Presence<string> Speaker, Presence<bool> EntityServices, bool WindowFixPending,
-        Presence<Anchor> SaveAnchor, SavedBattleMusic Music, Player Player);
+        Presence<Anchor> SaveAnchor, SavedBattleMusic Music, Player Player,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SavedRaft? Raft = null);
 
     internal static Record Encode(BattleSaveRecord record) => new(2, record.Slot, record.Sequence, record.SavedAt,
         "battle-player-input", new(record.Data.Compatibility, record.Data.BattleRecipeRevision, record.Data.Route,
@@ -115,7 +116,7 @@ internal static class BattleSaveWire
         new(s.Player.Entity, s.Player.Speed, s.Player.RetainedAllies.Select(a => new Retained(a.Actor.Value, a.Hp, a.Mp,
             Optional(a.Exp), Optional(a.Kills), Optional(a.Defeats), a.Status, Optional(a.PositionOverride, p => p),
             Optional(a.Progress, Encode), Optional(a.SourceLoadout, Encode), Optional(a.ActivationWord), Optional(a.Initialized),
-            a.Absent, a.RetainDeadPosition)).ToArray()));
+            a.Absent, a.RetainDeadPosition)).ToArray()), s.Raft);
     private static SavedBattleStory Decode(Story s) => new(s.Flags, s.Names, s.StepCounter, s.EgressMap, s.TextCursor,
         s.TextSettings, new(s.Display.Period, new(s.Display.Base.Color2, s.Display.Base.Color3),
             new(s.Display.Current.Color2, s.Display.Current.Color3), s.Display.Visibility),
@@ -129,7 +130,7 @@ internal static class BattleSaveWire
         new(s.Player.Entity, s.Player.Speed, s.Player.RetainedAllies.Select(a => new BattleActorStartInput(new(a.Actor), a.Hp, a.Mp,
             Value(a.Exp), Value(a.Kills), Value(a.Defeats), a.Status, Value(a.PositionOverride, p => p),
             Value(a.Progress, Decode), Value(a.SourceLoadout, Decode), Value(a.ActivationWord), Value(a.Initialized),
-            a.Absent, a.RetainDeadPosition)).ToArray()));
+            a.Absent, a.RetainDeadPosition)).ToArray()), s.Raft);
 }
 
 // Every absence is explicit: {"present":false} or {"present":true,"value":...}.

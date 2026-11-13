@@ -2,6 +2,8 @@
 
 审计对象为 [#1734](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1734) 合入后的 `52f6a2c3`，实现增量可用 `git diff 8ca3a914..52f6a2c3` 复核。六战与赠筏的剧情顺序由内容路由和脚本驱动，但通用场景档恢复器直接判断章节存点名 `polca-raft`，通用规则还保留两处较低风险的 SF2 耦合（本轮新增的 Power Ring 物品号 19，以及返场治疗原有的永生成员号 7/28）。**优先处理旧战斗档的升级交接**。同一份普通 Battle01 存档能在七人配置恢复，在十一人配置被拒。六战至首格水行的既有普通输入验收仍成立。本次读了留存的主场景投影，并在独立进程运行该版本的 Content、Application 和 Domain。未启动 Godot 或重打六战。
 
+**审计项去向。** 旧战斗档与场景补员见 [#1749](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1749)（已合入 [#1755](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1755)），鸟人职业优先级见 [#1751](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1751)（已合入 [#1753](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1753)），敌方携带物与返场治疗见 [#1752](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1752)（已合入 [#1754](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1754)）。剩余两项泊位问题由 [#1750](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1750) 处理，见[存点与战斗档合同](../application/polca-first-raft.md#save-and-continue)。
+
 ## 按影响排序
 
 | 优先级、归属 | 触发、影响与复核 | 后续验收 |
