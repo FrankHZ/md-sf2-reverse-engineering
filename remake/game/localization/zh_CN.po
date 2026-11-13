@@ -206,7 +206,7 @@ msgid "church.save"
 msgstr "记录冒险…（存档）"
 
 msgid "church.save-hint"
-msgstr "与菜单→保存使用相同的两个槽位，仍需在可保存地点使用。\n关闭存档界面后继续探索；需要其他服务时，请再次与祭司交谈。"
+msgstr "打开存档列表。关闭后回到地图。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.leave"
@@ -254,7 +254,7 @@ msgstr "此处暂不支持解除诅咒。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.promotion"
-msgstr "此处暂不支持转职。请选择其他服务或离开。"
+msgstr "此处无法转职。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.failure"
@@ -262,7 +262,7 @@ msgstr "未能完成（{0}，{1}）：{2}"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.hint"
-msgstr "{0} / {1}：选择   {2}：确认\n{3}：谢绝 / 返回   鼠标：选择一行"
+msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "search.item"
@@ -365,12 +365,6 @@ msgstr "入口内容不可用。"
 msgid "entry.assets"
 msgstr "标题／女巫内容不可用。请配置 SF2_PRIVATE_ENTRY_CONTENT 私有入口包后重新启动。"
 
-msgid "entry.new-hint"
-msgstr "新游戏  •  普通难度"
-
-msgid "entry.journey-hint"
-msgstr "选择旅程  •  普通难度"
-
 msgid "entry.retry-help"
 msgstr "请检查私有开场内容配置，然后重试新游戏。"
 
@@ -379,9 +373,6 @@ msgstr "请修正启动选项或输入设置后重新启动。"
 
 msgid "name.title"
 msgstr "你叫什么名字？"
-
-msgid "name.empty"
-msgstr "留空使用默认名字"
 
 msgid "name.member-title"
 msgstr "为 {0} 命名"
@@ -474,10 +465,10 @@ msgid "save.quit-clean"
 msgstr "退出到桌面？上次保存的进度已保留。"
 
 msgid "new.slots"
-msgstr "为新旅程选择槽位。最终确认前不会写入存档。\n普通难度"
+msgstr "选择存档位置。确认前不会更改存档。"
 
 msgid "new.uncertain"
-msgstr "写入可能已经完成，当前游戏仍保持暂停。\n进度文件已保留。请先打开读档界面检查存档，再决定是否开始新的旅程。"
+msgstr "新存档可能已经写入。请先到读档界面检查，再决定是否重新开始。当前游戏仍暂停。"
 
 msgid "save.error.location"
 msgstr "请回到支持的地点再保存：开场的Granseal，或首场战斗结束后的返回点。"
@@ -527,9 +518,6 @@ msgstr "{0}：继续  •  {1}：跳过问候"
 msgid "entry.fail"
 msgstr "无法开始：{0}（{1}）。\n{2}"
 
-msgid "entry.fallback"
-msgstr "入口对白使用英文（{0}），图片内文字保持原样。"
-
 msgid "save.details"
 msgstr "详情：{0}"
 
@@ -561,13 +549,13 @@ msgid "slot.tooltip"
 msgstr "{0}  •  返回：{1}"
 
 msgid "new.confirm"
-msgstr "以 {0} 开始新旅程？\n槽位 {1}  •  普通难度\n若已有存档，将覆盖此槽位；原有的有效存档会成为备份。\n初始存档返回开场起点。仅在保存成功后放弃当前未保存进度。"
+msgstr "以{0}开始普通难度的新旅程，保存到槽位 {1}？\n这份存档将从开场继续。被覆盖的有效存档会成为备份；新存档保存成功后，当前未保存的进度才会丢失。"
 
 msgid "new.start"
 msgstr "开始并保存到槽位 {0}"
 
 msgid "new.error"
-msgstr "新游戏不可用：{0}。\n未载入新游戏，原进度文件已保留。\n请修正输入或存储问题后重试；取消可返回女巫菜单。"
+msgstr "无法开始新游戏：{0}。原有存档已保留。请检查游戏文件或存档目录后重试，或取消并返回女巫处。"
 
 msgid "party.prepare"
 msgstr "整备…"
@@ -771,7 +759,7 @@ msgid "prepare.failure"
 msgstr "{0}\n诊断（{1} · {2}）：{3}"
 
 msgid "prepare.hint"
-msgstr "{0} / {1}：选择   {2}：确定   {3}：返回\n鼠标：选择一行"
+msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回"
 
 msgid "prepare.recovery.settle"
 msgstr "整备需要场地控制就绪。未做更改。请关闭菜单，等到可操作场地后重试。"
@@ -978,10 +966,10 @@ msgid "battle.give-target"
 msgstr "交出{0}：选择相邻队友\n{1} / {2}\n> {3}"
 
 msgid "battle.give-confirm"
-msgstr "将{0}交给{1}？\n确认后交接并结束本次行动；取消则返回。"
+msgstr "把{0}交给{1}？交付后本次行动结束。"
 
 msgid "battle.exchange-confirm"
-msgstr "将{0}交给{1}，换取{2}？\n确认后交接并结束本次行动；取消则返回。"
+msgstr "用{0}交换{1}的{2}？交换后本次行动结束。"
 
 msgid "battle.give-title"
 msgstr "选择要交出的物品："
@@ -1005,7 +993,7 @@ msgid "battle.discard-result"
 msgstr "{0}丢弃了{1}。"
 
 msgid "battle.discard-confirm"
-msgstr "丢弃{0}？\n确认则丢弃；取消则保留。仍可继续本次行动和移动预览。"
+msgstr "丢弃{0}？丢弃后仍可行动，也可调整位置。"
 
 msgid "battle.discard-title"
 msgstr "选择要丢弃的物品："
@@ -1392,19 +1380,19 @@ msgid "field-menu.search"
 msgstr "搜索"
 
 msgid "field-menu.member-help"
-msgstr "查看成员状态与整备。选择成员后，可检查装备、道具和魔法。"
+msgstr "查看队员的能力和装备。"
 
 msgid "field-menu.magic-help"
-msgstr "选择施法成员，再选择法术。野外效果和 MP 消耗沿用现有整备规则。"
+msgstr "选择施法的队员。"
 
 msgid "field-menu.item-help"
-msgstr "选择持有道具的成员，再选择使用、给予、装备或丢弃。每次变更均需单独确认。"
+msgstr "使用、装备或丢弃道具，也可交给队友。"
 
 msgid "field-menu.search-help"
-msgstr "调查当前面向的位置，与场景确认快捷操作使用相同的搜索规则。"
+msgstr "调查面前的位置。"
 
 msgid "field-menu.unavailable"
-msgstr "当前探索状态下不可用。"
+msgstr "此处不可用。"
 
 msgid "field-menu.hint"
 msgstr "{0} / {1} / {2} / {3}：选择\n{4}：确认   {5}：返回"
@@ -1779,7 +1767,7 @@ msgid "host.window-title"
 msgstr "窗口大小"
 
 msgid "host.window-restore"
-msgstr "恢复 1080p 窗口"
+msgstr "恢复窗口大小"
 
 msgid "host.window-fullscreen"
 msgstr "使用全屏"
@@ -1791,7 +1779,7 @@ msgid "host.window-default"
 msgstr "请放大窗口，或选择以下显示模式。不会自动存档。"
 
 msgid "host.window-no-window"
-msgstr "\n窗口模式不可用：当前桌面容纳不了 1080p 客户区及边框。"
+msgstr "\n当前桌面放不下所需的窗口。"
 
 msgid "host.window-no-fullscreen"
 msgstr "\n全屏不可用：当前屏幕小于游戏要求的最小尺寸。"
@@ -1800,7 +1788,7 @@ msgid "host.window-hint"
 msgstr "{0}/{1}：选择 · {2}：确认 · {3}：退出…\n{4}/{5}：向上 / 向下阅读"
 
 msgid "host.window-refused-fit"
-msgstr "当前桌面无法容纳 1080p 窗口及边框，请尝试全屏。"
+msgstr "当前桌面放不下所需的窗口，请尝试全屏。"
 
 msgid "host.window-refused-restore"
 msgstr "请求的窗口及实际边框无法容纳，已恢复原显示模式。请选择全屏或退出。"

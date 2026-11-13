@@ -52,8 +52,10 @@ internal sealed partial class FieldMenuView : Control
         for (int i = 0; i < 4; i++) _available[i] = i == 3 ? search : i == 0 ? party : preparation;
         if (!Open) return;
         string key = new[] { "member", "magic", "item", "search" }[Math.Min(_index, 3)];
-        string reason = _index == 4 ? "" : GameText.Get("field-menu." + key + "-help") + (_available[_index] ? "" : "\n" + GameText.Get("field-menu.unavailable"));
-        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason, GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)) + "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕", "prepare.back", _available);
+        string reason = _index == 4 ? "" : GameText.Get(_available[_index] ? "field-menu." + key + "-help" : "field-menu.unavailable");
+        string hint = GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
+        if (_menu.ReadingOverflow) hint += "\n" + GameText.Get("host.menu-reading", input.CompactHint(GameAction.Left), input.CompactHint(GameAction.Right));
+        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason, hint, "prepare.back", _available);
     }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _menu.Suspend(); }
     internal void Handle(GameAction action)

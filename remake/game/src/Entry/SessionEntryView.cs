@@ -62,7 +62,7 @@ public sealed partial class SessionEntryView : Control
             FocusMode = FocusModeEnum.None, Visible = false };
         _read.Pressed += () => { if (_page == -2) ReadMenu(); else Advance(); }; actions.AddChild(_read);
         StoryTheme.EntryChoice(_read); StoryTheme.Select(_read, true);
-        _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 160), Text = GameText.Get("entry.normal"),
+        _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 160),
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hint);
         string[] names = Replacement ? ["NewGame", "Cancel", "Settings"] : ["NewGame", "Continue", "Quit", "Settings"];
@@ -207,24 +207,24 @@ public sealed partial class SessionEntryView : Control
     private void RefreshHint()
     {
         if (_setup) { _hint.Hide(); _read.Hide(); return; }
-        _hint.Visible = _page != -1;
         _read.Visible = _page >= 0 || _page == -2 && _dialogue.MoreBelow;
         foreach (var button in _buttons) button.Visible = _page == -2 && !_read.Visible;
         _actionScroll.Visible = _page != -1;
         _read.Text = !Revealed ? GameText.Get("entry.reveal") : _dialogue.MoreBelow ? GameText.Get("entry.more") : GameText.Get("entry.continue");
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
-        _hint.Text = Replacement ? GameText.Get("entry.new-hint") : GameText.Get("entry.journey-hint");
-        if (GameText.Language != "en" && _entryDisplay?.Reason is { } reason)
+        string info = _page == -2 && !_read.Visible && _selection == 0 && !_buttons[0].Disabled
+            ? GameText.Get("entry.normal") : "";
+        if (_input?.Settings.ShowDebugDiagnostics == true)
         {
-            _hint.Text += "\n" + GameText.Get("entry.fallback", reason);
+            if (GameText.Language != "en" && _entryDisplay?.Reason is { } reason)
+                info = (info + "\n" + GameText.Get("localization.fallback", reason)).TrimStart();
+            string fallback = GameText.Fallback("entry.", includeKey: true);
+            if (fallback.Length > 0) info = (info + "\n" + fallback).TrimStart();
         }
-        string fallback = GameText.Fallback("entry.", includeKey: true);
-        if (fallback != "")
-        {
-            _hint.Text += "\n" + fallback;
-        }
+        _hint.Text = info;
+        _hint.Visible = _page != -1 && _hint.Text.Length > 0;
         _hint.Size = new(EntryLayout.Window.Size.X, 0);
-        float hintHeight = _hint.GetMinimumSize().Y;
+        float hintHeight = _hint.Visible ? _hint.GetMinimumSize().Y : 0;
         _hint.Position = new(EntryLayout.Window.Position.X, EntryLayout.Window.End.Y - hintHeight);
         _actionScroll.Size = new(640, _hint.Position.Y - 24 - _actionScroll.Position.Y);
         if (_input is null) return;

@@ -115,7 +115,7 @@ internal sealed partial class ChurchServiceView : Control
             _rows[i].Text = (i == _index ? "> " : "   ") + _options[i].Label;
             _rows[i].AddThemeColorOverride("font_color", i == _index ? StoryTheme.Selected : Colors.White);
         }
-        string? reason = _error ?? (IsMenu && _index == 2 ? GameText.Get("church.promotion") : null);
+        string? reason = _error;
         _hint.Text = (reason is null ? "" : reason + "\n") + GameText.Get("church.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down),
                 input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         if (_wait?.Phase == ChurchPhase.Menu && _options[_index].Command is LeaveChurch { Save: true })

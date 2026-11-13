@@ -17,6 +17,46 @@ controls, their observed returns and the limits that matter during play.
 | F9 results | Read damage, death, rewards and growth, then wait for the next actor or walk after a field return. | [Playback and results](battle-scenes.md#production-playback-and-result-layout) distinguishes Battle01 combat, connected Battle02 EGRESS and authored victory/defeat. [Campaign handoffs](../application/pre-voyage-campaign.md#session-and-handoffs) cover Galam, the tower and the later return. |
 | F10 Menu, Settings, Save and recovery | Open Help from the Witch menu or settled field. Cancel a slot overwrite or settings draft, restore a covered page after resize, and Continue a saved turn. | [Host access and restore](host-ui.md#access-through-the-finite-demo) lists actual Save predicates. General Settings is unavailable in battle. The tower return on Map58 supports Save; first control on Map14 has no field-save recipe. |
 
+### Player-facing copy
+
+Keep the prompt at the point where it changes a decision. A focusable row can say it is unavailable;
+an attempted action can explain why. Keep the price, item or recipient, turn cost, overwrite and
+recovery path before the player commits. A readable English story row needs the same reading
+controls as a translated row; text diagnostics can be inspected separately.
+
+| Scene | What appears in play |
+| --- | --- |
+| Title / Witch | Start and greeting retain their mapped actions and story. “Choose your journey • Normal difficulty” no longer accompanies every line: only the focused New Game choice shows “Normal difficulty” / “普通难度”. A missing entry translation still displays the English line. |
+| Slots / naming | Choosing a slot does not write it. A blank name shows the actual default once; invalid input shows the limit beside the editor. Final Start names the slot, opening return, backup and loss of unsaved progress after success. Back retains the draft. An uncertain write directs both languages to Continue. |
+| Field / Search | Each Adventure row says what it does. “Field effects and MP costs follow the existing preparation rules” becomes “Choose who will cast the spell.” / “选择施法的队员。” The reading hint appears for overflowing notes. Talk, choice, item/full-pack results and navigation bindings remain. A missing story translation preserves the body and diagnostic reason; only Debug diagnostics adds that reason to the reading cue. |
+| Party / inventory | The selected field row leads to the existing member or preparation screen. Keep the four slot identities, full-pack exchange, equipment changes and resource costs at their own choices. The [member footer](field-and-shop.md#current-composition) owns its actions and layout. |
+| Shop / Church | Repair, Deals and Promotion are marked unavailable in the list; their explanation appears on attempted selection. “Opens your save slots. Closing them returns you to the field.” / “打开存档列表。关闭后回到地图。” replaces the two-slot tutorial on Record. Keep merchant/priest dialogue, quotes, payment and refusal results. |
+| System / recovery | Short System and slot pages omit the scroll instruction; overflowing pages keep it. Host actions that skip disabled rows still show their reasons. Save destinations, uncertain writes, backup recovery and Quit consequences retain their own messages. “Restore window size” names the action; the recovery body still gives the host's required and current dimensions. [Settings](host-ui.md) and the desktop size policy have separate owners. |
+| Battle / results | Give and exchange name the items, recipient and end of the action. Drop asks once and says that movement and another action remain available. Keep targeted-click execution, MP, damage, item, reward and return messages. English battle-story lines in Chinese mode keep the reading cue; Debug diagnostics can add the untranslated-body reason. |
+
+**Confirmed:** [ordinary production input observer](../../game/probes/player_copy_observation.gd)
+at 1920×1080, using English and zh-CN instant text and default keyboard bindings. It reads mounted
+controls and session state. No screenshots, player slots or generated game exports are needed.
+Use the [existing adapter/Debug launch](#direct-reproduction), a fresh external validation namespace
+starting with `issue1789-`, and a fresh ignored path for `SF2_COPY_OUTPUT`. Set `SF2_COPY_LANG`
+to match the read-only input settings. Run the script with these `SF2_COPY_CASE` selections:
+
+- `entry` uses the registered Witch/world inputs. In Chinese, `entry-long` varies the prelaunch
+  slot prompt to exercise scrolling; `entry-fallback` and `entry-debug` use a missing entry catalog
+  with diagnostics Off/On.
+- `field` and `window` use an ignored copy of [the Map3 start](../../reference/inputs/map3-followers-start.json)
+  in `SF2_COPY_START`; `field-fallback` and `field-debug` exercise Search with a missing world
+  catalog and diagnostics Off/On. `church` and `shop` use the [Map3 priest](#direct-reproduction)
+  and [Galam merchant](field-and-shop.md#verification-boundary-and-remaining-gaps) controlled starts.
+  Talk and subsequent choices are ordinary inputs; these starts do not prove travel to the counters.
+- `give` and `discard` use the public `battle-give.json` and `battle-discard.json` packages.
+  For `exchange`, add item 0 to the receiver's three starting items in an ignored authored copy
+  of `battle-give.json`. For `story` and `story-debug`, use `jaro-conversion.json` with Chinese
+  selected and diagnostics Off/On. Two real acknowledgements return control to Movement.
+
+Human reading comfort, physical controller testing and a cross-resolution scene matrix are outside
+this copy observation. It exercises ordinary cancellation, not a storage-fault injection.
+
 ### Production controls audit
 
 **Confirmed.** These observations used the production host, registered campaign packages, scoped test slots and native input events. The two player reports reproduced on base `886cdcdb`. At 1920×1080 the field frame covered x=240–1680. The separate 320px label ended at x=1888 and its Chinese glyphs at x=1777. Testing the label against the screen alone passed. The gameplay Menu button resolved 8px corners in five states. Its actual hover popup independently resolved 3px corners and 30px text.
@@ -190,7 +230,7 @@ sprite or a party-name substitution. Long text uses existing measured expansion/
 | Ordinary speech / reading | Text and portrait belong to one visible reading composition. Preserve the current ordinary Confirm/reveal policy; Cancel cannot skip story. A new segment resets reading as its owner specifies, even if words repeat. |
 | Yes/No or other admitted choice | Show the actual options only in the choice phase, with marker/gold focus. Respect source defaults and source Cancel=No where applicable. Unread text is read before a fresh Confirm can answer. |
 | Search result / unavailable action | Show the actual search description and acquisition/full-pack/no-result feedback in the same family. Search is not Talk. Cancel/right click may dismiss the Search result under its existing contract; an acquired item stays acquired. |
-| Long source lines / translated text | Preserve meaningful Search line breaks, the current portrait column and whole-row fallback notices. Grow/page the body, then keep the choices and footer reserved. A full-pack refusal is not clipped to make room for an item name. |
+| Long source lines / translated text | Preserve meaningful Search line breaks, the current portrait column and complete fallback text. Grow/page the body, then keep the choices and footer reserved. A full-pack refusal is not clipped to make room for an item name. |
 | Closing / next speaker | Close portrait and frame as one visible result when the owning close is due. The [coordinated exit](presentation.md#coordinated-dialogue-exit-1613) keeps the portrait mounted through the existing wait and retires it with the window. |
 | Host cover / return | An allowed Menu covers the reading state without advancing it. Return restores that same phase and page; release barriers prevent an extra advance. A stopped scene displays its real failure over world fades, not an invented Continue. |
 

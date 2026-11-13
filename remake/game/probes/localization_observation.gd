@@ -260,7 +260,7 @@ func services() -> void:
     # The unavailable row remains selectable for its explanation, without a command.
     await click_row(2)
     var promote := church_phase(0, "promote-unavailable")
-    check(promote.revision == menu.revision and ("暂不支持转职" if zh and case_name != "service-fallback" else "Promotion is unavailable") in promote.church.error, "Promote unavailable reason retains gameplay")
+    check(promote.revision == menu.revision and ("无法转职" if zh and case_name != "service-fallback" else "Promotion is unavailable") in promote.church.error, "Promote unavailable reason retains gameplay")
     if case_name == "service-low":
         await click_row(1)
         var offer := church_phase(1, "poison-offer")
@@ -327,7 +327,7 @@ func searches() -> void:
     if case_name in ["search-full", "search-invalid"]:
         check(kind == 4 and not found.flags.any(func(f): return int(f) == 150) and found.searchBlock == 0xD800, "full pack leaves flag/chest untouched")
         check(found.party == initial.party and found.gold == initial.gold, "full pack leaves all resources untouched")
-        if case_name == "search-invalid": check("hands are full" in found.dialogue and found.displayFallback == "invalid-translation" and "英文回退" in found.hint, "invalid result row falls back wholly to English")
+        if case_name == "search-invalid": check("hands are full" in found.dialogue and found.displayFallback == "invalid-translation" and "英文回退" not in found.hint, "invalid result row falls back wholly to English")
         else: check("背包已满" in found.dialogue, "Chinese full-pack template")
     elif case_name == "search-gold":
         check(kind == 3 and found.gold == initial.gold + 25 and found.flags.any(func(f): return int(f) == 150), "gold commits with receipt")
@@ -337,7 +337,7 @@ func searches() -> void:
         check(kind == 2 and found.flags.any(func(f): return int(f) == 150) and found.searchBlock == 0xD801, "item flag/chest commit together")
         check(found.revision == initial.revision + 1 and found.party[0].SourceLoadout.Items[0] == (113 if case_name == "search-field-only" else 0), "single authoritative item revision")
         check(("获得了" if zh else "received") in found.dialogue and ("Practice Token" if case_name == "search-field-only" else "Practice Leaf") in found.dialogue, "localized semantic item template retains untranslated name")
-        if case_name == "search-fallback": check(found.displayFallback == "missing-translation" and "英文回退" in found.hint, "missing source row remains visibly English fallback")
+        if case_name == "search-fallback": check(found.displayFallback == "missing-translation" and "英文回退" not in found.hint, "missing source row retains fallback metadata outside the ordinary hint")
     var body := view.find_child("Dialogue", true, false) as Label
     var font := body.get_theme_font("font")
     check(font.get("allow_system_fallback") == false, "Search uses bundled font")

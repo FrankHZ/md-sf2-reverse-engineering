@@ -179,7 +179,7 @@ internal sealed partial class ExplorationDialogueView : Control
             hint = hint.Length == 0 ? speed : hint.TrimEnd() + "    " + speed;
         }
         if (!Panel.Visible && ReturnNotice.Length > 0) hint = ReturnNotice + "\n" + hint;
-        if ((Panel.Visible || current.Story.Wait is FieldSearchWait) && GameText.Language == "zh-CN" && FallbackReason is { } bodyReason)
+        if (input.Settings.ShowDebugDiagnostics && (Panel.Visible || current.Story.Wait is FieldSearchWait) && GameText.Language == "zh-CN" && FallbackReason is { } bodyReason)
             hint += "\n" + GameText.Get("localization.fallback", bodyReason);
         _context.Text.Text = hint;
         _context.Arrange(GetViewportRect().Size);
