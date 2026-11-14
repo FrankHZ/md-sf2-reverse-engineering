@@ -358,6 +358,17 @@ configuration/save/movie paths; follow the local-input owner for executable-base
 source/build checkouts and Python/NuGet caches owned by one worktree, and preserve old copies and
 completed results until separately authorized cleanup.
 
+When another checkout will consume an input or an accepted package, publish the selected files
+under an operator-owned private data root outside all worktrees. Preserve relative dependencies
+such as catalogs, media and save seeds. Record the accepted revision, selection and reproduction
+command in the handoff. Reuse an existing verified publication when its contents match. Keep live
+saves, build output and diagnostic runs in their owning writable locations.
+
+Update consumers, including launchers and rebuild recipes, to resolve that publication through
+their local configuration. Before retiring the producer, compare the published files with the
+accepted selection and exercise the affected reader or launcher from another checkout with the
+old location unavailable. Preserve required failure evidence and uncommitted work separately.
+
 Select the destination before calling the task-creation tool. For reuse through the app, use an
 existing isolated worktree registered as its own saved project and explicitly select local execution
 there; an app permanent worktree supports this arrangement. Do not select local execution in the
