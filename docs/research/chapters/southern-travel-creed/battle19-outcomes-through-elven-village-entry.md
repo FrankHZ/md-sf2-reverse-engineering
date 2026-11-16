@@ -160,6 +160,8 @@ first turn remain Unknown.
 
 ## End checks and first/repeated outcomes
 
+The [Battle19 formation block](../../rom-block-ledger.md#s13-battle19-spriteset) locates slot 128's source record. The separate leader-presence byte that the defeated hook reads is at `0x047CA1`.
+
 **Confirmed:** BattleLoop calls ExecuteBattleCutscene_Defeated after an individual
 turn, then ProcessKilledCombatants and CountRemainingCombatants. Zero allies
 wins the branch order over zero enemies. If neither ends battle, after-turn
@@ -273,6 +275,8 @@ load/init) instead of fresh setup population or temporary-flag clearing. No
 all-map investigation or natural loss itinerary is implied.
 
 ## Independent Map68 entrance to Map23
+
+The [Map68 layout block](../../rom-block-ledger.md#s08-map68-layout) supplies the warp marker at `(48,30)`. The ROM ledger's [fork query](../../rom-block-ledger.md#map68-and-battle19) locates it in the decoded grid.
 
 **Confirmed:** `data/maps/entries/map68/6-warp-events.asm` row2 matches `(48,30)`
 and supplies no scroll, MAP_ELVEN_VILLAGE23, destination `(22,29)`, RIGHT0.

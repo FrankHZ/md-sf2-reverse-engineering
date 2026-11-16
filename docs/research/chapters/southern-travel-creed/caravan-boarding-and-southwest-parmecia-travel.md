@@ -310,6 +310,8 @@ No battle selection is performed merely by this in-loop mode change.
 
 ## Walking zone callback and Battle19 admission
 
+The [Map68 layout block](../../rom-block-ledger.md#s08-map68-layout) locates the compressed source of the zone and warp markers. The ledger's [fork query](../../rom-block-ledger.md#map68-and-battle19) decodes both cells.
+
 **Confirmed:** walking opcode 2's later masked `$1400` branch writes event 6,
 word parameter 1 = `(XDEST + selected X offset)/384`, and word parameter 3 =
 `(YDEST + selected Y offset)/384`. This happens before its raw-layout blocking
