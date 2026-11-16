@@ -164,6 +164,37 @@ public sealed class EnemySpellDecisionTests
     }
 
     [Fact]
+    public void HighPriestReachesAWoundedAllyUsingTheSelectedHealThreeRange()
+    {
+        var battle = Battle(d =>
+        {
+            var cleric = d["actors"]![2]!;
+            cleric["maxMp"] = 29;
+            d["start"]!["actors"]![2]!["mp"] = 20;
+            d["encounters"]![0]!["placements"]![3]!["x"] = 3;
+            foreach (int level in new[] { 2, 3 })
+            {
+                var spell = d["spells"]![1]!.DeepClone();
+                spell["level"] = level;
+                spell["maximumRange"] = level;
+                spell["mpCost"] = level == 3 ? 10 : 5;
+                spell["effect"]!["adjustedPower"] = level == 3 ? 30 : 15;
+                d["spells"]!.AsArray().Add(spell);
+                cleric["spells"]!.AsArray().Add(new JsonObject { ["id"] = "heal", ["level"] = level });
+            }
+        });
+        var chosen = Decide(battle, Cleric);
+        var spellRef = new SpellRef("heal", 3);
+        Assert.Equal(new BattleActionRef(BattleActionKind.Healing, spellRef), chosen.ChosenAction);
+        Assert.Equal(Wounded, chosen.Target);
+        Assert.Equal(new MapPosition(6, 5), chosen.Destination);
+        var rule = new Sf2HealingRule();
+        var selected = rule.RequireSpell(battle, Cleric, spellRef);
+        Assert.Equal(10, selected.MpCost);
+        Assert.Equal(Wounded, rule.RequireTarget(battle, Cleric, chosen.Destination!, selected, Wounded).Actor);
+    }
+
+    [Fact]
     public void HealCommandTwoChoosesHealOneBeforeOrderAttackOrPursuitWithoutDecisionRng()
     {
         var before = Battle(); var chosen = Decide(before, Cleric);
@@ -253,6 +284,19 @@ public sealed class EnemySpellDecisionTests
         var before = Battle(d => d["start"]!["actors"]![3]!["hp"] = hp);
         Assert.Equal(casts, Decide(before, Cleric).ChosenAction?.Kind == BattleActionKind.Healing);
     }
+
+    [Theory]
+    [InlineData(3, 9, 14, false, null)]
+    [InlineData(3, 10, 14, false, 1)]
+    [InlineData(3, 11, 14, false, 2)]
+    [InlineData(3, 11, 14, true, 1)]
+    [InlineData(3, 3, 15, false, 1)]
+    [InlineData(3, 19, 15, false, 2)]
+    [InlineData(3, 20, 15, false, 3)]
+    [InlineData(2, 29, 20, false, 1)]
+    public void EnemyHealUsesIncomingEntryForMissingHpAndAffordability(
+        byte entryLevel, byte mp, int missingHp, bool self, int? expected)
+        => Assert.Equal(expected, (int?)EnemySpellDecision.HealLevel(entryLevel, mp, missingHp, self));
 
     [Fact]
     public void TinyMissingHpDoesNotCastAndHealerCanHealItselfUsingItsCurrentPosition()

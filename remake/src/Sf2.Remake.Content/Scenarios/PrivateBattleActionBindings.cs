@@ -65,7 +65,7 @@ internal static class PrivateBattleActionBindings
                 item.MinimumRange, item.MaximumRange)).ToArray();
         // Bare placement items can be carried without enabling their use or equip effects.
         var inert = definitions.Items.Values.Where(item => item is
-            { Id: 19, Code: "POWER_RING" } or { Id: 9, Code: "POWER_WATER" })
+            { Id: 19, Code: "POWER_RING" } or { Id: 9, Code: "POWER_WATER" } or { Id: 16, Code: "SHINING_BALL" })
             .Select(item => item.Id).ToArray();
         if (!items.Any(word => weapons.Any(w => w.ItemId == (word & 127)) || word < 127 && inert.Contains((byte)word))) return null;
         return new(attack, weapons, allowChanges: false, inertItems: inert);
@@ -83,6 +83,7 @@ internal static class PrivateBattleActionBindings
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.OneIn32WithFrequentDoubleAndCounter,
             "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN8" => PhysicalCriticalRule.Taros,
             "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Monk,
+            "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Orc,
             "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn8WithHalfBonus,
             "CRITICAL150_1IN4|DOUBLE_1IN8|COUNTER_1IN8" => PhysicalCriticalRule.OneIn4WithFrequentDoubleAndCounter,
             "CRITICAL_SILENCE|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Silence,

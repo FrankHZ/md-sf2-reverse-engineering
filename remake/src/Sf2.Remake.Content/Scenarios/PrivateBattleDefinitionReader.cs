@@ -49,7 +49,8 @@ internal static class PrivateBattleDefinitionReader
         foreach (byte packed in start.Allies.SelectMany(row => row.Spells).Concat(growthSpells ?? []))
             if ((packed & 63) != 63)
                 for (byte level = 1; level <= (packed >> 6) + 1; level++) spellKeys.Add(((byte)(packed & 63), level));
-        foreach (var row in enemies.SelectMany(row => row.Spells)) AddSpell(row.Spell, row.Level);
+        foreach (var row in enemies.SelectMany(row => row.Spells))
+            for (byte level = 1; level <= row.Level; level++) AddSpell(row.Spell, level);
         foreach (var row in items) AddSpell(row.UseSpell, row.UseSpellLevel);
         // Buying or finding an item supplies its source terms, without selecting its Use spell.
         if (fieldItems is not null)

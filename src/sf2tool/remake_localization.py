@@ -248,6 +248,11 @@ def derive(args: argparse.Namespace) -> dict:
         for row in world["world"]["maps"]
         if (route := row.get("battle"))
     )
+    battle19 = args.scope == "current" and any(
+        route.get("encounter") == "battle-19" and not route.get("unavailable")
+        for row in world["world"]["maps"]
+        if (route := row.get("battle"))
+    )
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -283,6 +288,8 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (11,)
     if taros:
         name_ids["name.enemy"] += (88,)
+    if battle19:
+        name_ids["name.enemy"] += (12, 70, 79)
     extra_items = field_items.difference(name_ids["name.item"])
     name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
@@ -389,12 +396,18 @@ def derive(args: argparse.Namespace) -> dict:
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
         and len(selected)
         == (806 if args.scope == "pre-voyage" else 1362 + len(field_texts - base_texts))
-        and len(selected_names) <= 131
+        and len(selected_names) <= 337
         and len(selected_names)
         == (
             51
             if args.scope == "pre-voyage"
-            else 79 + 6 * hassan + 3 * (shrine or shrine_battle) + shrine + taros + len(extra_items)
+            else 79
+            + 6 * hassan
+            + 3 * (shrine or shrine_battle)
+            + shrine
+            + taros
+            + 3 * battle19
+            + len(extra_items)
         ),
         "candidate budget/selection mismatch",
     )

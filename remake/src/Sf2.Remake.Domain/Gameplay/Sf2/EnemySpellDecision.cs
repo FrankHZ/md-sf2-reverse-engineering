@@ -83,22 +83,26 @@ internal static class EnemySpellDecision
         if (!actor.Spells.Contains(key)) return null;
         if (!battle.Definition.Spells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
         if (spell.CuresPoison) throw new BattleRuleException("enemy-poison-cure", "spell", true);
-        // DetermineHealingSpellLevel selects HEAL1 for a HEAL2 book, but
-        // uses the unmasked original entry to check the MP needed to cast.
-        var book = actor.Spells.Contains(new SpellRef("heal", 2)) ? new SpellRef("heal", 2) : key;
-        if (!battle.Definition.Spells.TryGetValue(book, out var affordability))
-            throw new BattleRuleException("spell-effect", "spell", true);
-        if (actor.Mp < 3 || actor.Mp < affordability.MpCost) return null;
+        if (actor.Mp < 3) return null;
+        byte entryLevel = actor.Spells.Where(s => s.Value == "heal").Max(s => s.Level);
         var rule = actions.Single(r => r.Kind == BattleActionKind.Healing);
-        var action = new BattleActionRef(BattleActionKind.Healing, key);
-        var allowed = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();
+        var allowed = BattleActionRules.Invoke(rule, "ai-targets", () =>
+            rule.QueryTargets(battle, actorRef, new BattleActionRef(BattleActionKind.Healing, key))).ToHashSet();
         var grid = selectedGrid ?? BattleMovement.Grid(battle, actorRef);
-        // Source HEAL1 has no RNG. Stable descending mover/critical-commandset
+        // Healing target selection consumes no RNG. Descending mover/critical-commandset
         // priority retains source slot order; unreachable casting positions are skipped.
         foreach (var target in battle.Actors.Where(a => allowed.Contains(a.Actor) && a.Hp > 0 && a.Position is not null &&
             a.Faction == actor.Faction && 3 * a.Hp <= 2 * a.MaxHp && a.MaxHp - a.Hp > 2)
             .OrderByDescending(Priority).ThenBy(a => a.ProcessingOrder))
         {
+            byte? level = HealLevel(entryLevel, actor.Mp, target.MaxHp - target.Hp, target.Actor == actorRef);
+            if (!level.HasValue) continue;
+            // The source overwrites its local spell entry before the station check.
+            entryLevel = level.Value;
+            key = new SpellRef("heal", entryLevel);
+            if (!battle.Definition.Spells.TryGetValue(key, out spell))
+                throw new BattleRuleException("spell-effect", "spell", true);
+            var action = new BattleActionRef(BattleActionKind.Healing, key);
             var position = target.Actor == actorRef ? actor.Position : AiMovementRules.AttackPosition(grid, target.Position!,
                 spell.MinimumRange, spell.MaximumRange, p => battle.Actors.Any(a => a.Hp > 0 && a.Position == p));
             if (position is null) continue;
@@ -107,6 +111,19 @@ internal static class EnemySpellDecision
                     battle.Definition.Width, battle.Definition.Height)), target.Actor, ChosenAction: action);
         }
         return null;
+    }
+
+    // DetermineHealingSpellLevel checks an unmasked packed entry with a five-bit shift.
+    // The rank-2 trial reads HEAL4 (20 MP), then the missing ATLAS3 entry defaults to HEAL1 (3 MP).
+    internal static byte? HealLevel(byte entryLevel, byte mp, int missingHp, bool self)
+    {
+        if (missingHp <= 2 || mp < 3) return null;
+        if (entryLevel == 1) return 1;
+        if (entryLevel == 2) return mp >= 5 ? (byte)1 : null;
+        if (entryLevel != 3) throw new BattleRuleException("enemy-heal-level", "spell.level", true);
+        if (missingHp >= 15 && mp >= 20) return 3;
+        if (missingHp < 15 && mp < 10) return null;
+        return !self && mp >= 11 ? (byte)2 : (byte)1;
     }
 
     private static int Priority(BattleActorState target) => target.Deployment.Initialization?.AiCommandset is 13 or 14 ? 13 :
