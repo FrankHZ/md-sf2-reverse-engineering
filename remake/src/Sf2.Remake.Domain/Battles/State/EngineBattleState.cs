@@ -200,10 +200,10 @@ public sealed class BattleDefinition
     private BattleDefinition(BattleDefinition source, IEnumerable<BattleDeploymentDefinition>? deployments = null,
         BattleOutcomeDefinition? outcome = null, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null, BattleSearchDefinition? search = null) : this(source.Encounter, source.Map, source.Width, source.Height,
+        BattleDiscardDefinition? discard = null, BattleSearchDefinition? search = null, EnemyItemDropDefinition? drops = null) : this(source.Encounter, source.Map, source.Width, source.Height,
         source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
         outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, retreatSpells ?? source.RetreatSpells.Values,
-        retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, source.ItemDrops, source.PrismLaser,
+        retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, drops ?? source.ItemDrops, source.PrismLaser,
         give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search) { }
     internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null) => new(this, outcome: outcome, retreatSpells: retreatSpells, retreatItems: retreatItems);
@@ -234,6 +234,7 @@ public sealed class BattleDefinition
     public BattleGiveDefinition? Give { get; }
     public BattleDiscardDefinition? Discard { get; }
     internal BattleDefinition WithSearch(BattleSearchDefinition search) => new(this, search: search);
+    internal BattleDefinition WithItemDrops(EnemyItemDropDefinition drops) => new(this, drops: drops);
     public BattleSearchDefinition? Search { get; }
     public bool Poison { get; }
     public bool Contains(MapPosition position) => position.X < Width && position.Y < Height;

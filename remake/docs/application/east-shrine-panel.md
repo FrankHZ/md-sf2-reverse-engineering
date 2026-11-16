@@ -40,9 +40,64 @@ In the observed winning battle, the party advanced toward the northern Arrow Lau
 
 The Map61 opening and Battle15 departure use the source follow command. It checks the high byte of the follower operand before resolving either field entity. For the selected Peter and follower operands this checks Bowie's HP. A zero-HP Bowie skips the follow and the script proceeds to its subsequent flag writes. The public engine tests vary HP and entity availability independently.
 
-The Battle15 formation holds twelve ally positions and sixteen enemy rows. Enemy 143 is a hidden Golem at (2,8), with both trigger regions absent. Ordinary round population keeps it off the board with zero maximum HP. The chest tile has impassable terrain. Fresh initialization leaves its inventory empty until a successful reset supplies its Power Water. The F151 battle trap, its immediate attack and the associated enemy drop are separate from the F152 Panel in field exploration. The Battle15 battle-search action has no private binding on this base. [Original encounter and outcome](../../../docs/research/chapters/southern-travel-creed/battle15-shrine-approach-and-outcomes.md) · [Original Panel custody](../../../docs/research/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)
+## Optional battle chest
 
-**Unknown** includes exact original audiovisual timing and the natural battle trap outcome. The accepted chapter ends with a usable hall Continue. The Panel’s subsequent use at the Ribble tree belongs to the next chapter.
+**Confirmed** in the remake. During Battle15, finish movement at (2,9) facing Up. Select Search
+in the battle menu and confirm. Peter opened the chest in round five on the ordinary Hassan route.
+The map changed its chest block from 1 to 2 and set F151. The Golem in enemy slot 143 started
+offscreen with zero maximum HP and empty hands. Search reset it on its deployment tile (2,8)
+with 24 HP and Power Water (item 9). The scene showed the Golem attacking Peter at (2,9);
+his HP went from 24 to 17. After-turn effects use the opener's queue entry.
+
+This entrance is an intentional remake correction. The US battle menu's five-byte indexing of
+seven-byte records cannot match the F151 row from Battle15. The remake uses the admitted Map50
+placement and chest marker. The original trap handler's exact activation word, region checks,
+deployment reset, attacker/target and enemy drop table govern the downstream behavior.
+[USA ROM offsets and original caller](../../../docs/research/chapters/southern-travel-creed/battle15-shrine-approach-and-outcomes.md#chest-triggered-spawn-and-power-water-drop)
+
+**Confirmed** through Save, fresh Continue and ordinary battle actions. May shot the Golem
+from (2,10). In round six Peter attacked from (1,8), killed it and received Power Water.
+The enemy's inventory emptied, Peter's first slot held item 9 and the drop register gained
+bit 29. After saving and continuing again, May searched the open chest. It was empty and
+Peter kept the single item. F152 stayed clear throughout this battle.
+
+| Directed condition on a separate copy of the battle save | Result under ordinary input |
+| --- | --- |
+| Golem still occupies the faced chest | Search reports the occupant and returns to the command menu. |
+| Golem at 1 HP, May has space | May kills it, receives item 9, and bit 29 is set. |
+| Same attack with May's four slots filled | Bit 29 is set, the Golem loses item 9 and Deals stays empty. |
+| Same attack with bit 29 already set | No second receipt or removal. |
+| Arrow Launcher at 1 HP in May's range, Golem alive | Leader defeat clears the enemies without a Golem item receipt. The shrine after-program returns to the field. Search at (14,2) grants the Wooden Panel and sets F152 alongside F151. Chinese Continue then finds the Panel chest empty. |
+
+A changed activation word, an assigned region or an already initialized Golem skips the trap
+predicate. When the enemy slot exceeds the battle's enemy count, reset leaves the enemy offscreen. The
+remake retains the opened receipt and reports the attempted offscreen attack as unsupported. **Unknown** includes original presentation timing and the outcome of
+attempting to play that invalid original scene. The remake uses the ordinary result panel and
+physical scene. The trap-specific original music and spawn choreography are outside this binding.
+
+### Replay the trap
+
+Use the assigned checkout's ignored `local/issue1814` samples. The runner copies a seed into a
+fresh namespace beneath the registered disposable save root. The retained keyboard driver writes each sample’s inputs, battle decisions, native state and effects. Use distinct sample names on each replay.
+
+```powershell
+. ./local/issue1759/env.ps1
+$trap = Join-Path $repo 'local/issue1814'
+$slots = Join-Path $env:SF2_SAVE_ROOT 'issue1814'
+$env:TRAP_TRIAL = ''
+& "$trap/run.ps1" win review-open en -Seed "$trap/priest.json"
+$env:TRAP_TRIAL = 'pursuit'
+& "$trap/run.ps1" trial review-kill en -Seed "$slots/issue1814-campaign-en-review-open/sf2-opening/slot1.json"
+$env:TRAP_TRIAL = 'natural-empty'
+& "$trap/run.ps1" trial review-empty en -Seed "$slots/issue1814-campaign-en-review-kill/sf2-opening/slot1.json"
+```
+
+`seeds.py` derives the directed cases from the retained post-trap save. Use
+`TRAP_TRIAL=kill`, `full`, `marked`, `occupied` or `sweep` with the matching seed and the
+same `trial` command. The ordinary approach required north-facing movement: ending on
+(2,9) facing west offered Stay. Earlier samples also reached Bowie's ordinary defeat.
+The host refused the initial in-checkout save root. Completed native samples retained their
+Godot ObjectDB shutdown warnings.
 
 ## Reproduction
 

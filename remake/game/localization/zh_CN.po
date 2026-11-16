@@ -1550,6 +1550,9 @@ msgstr "{0}打开宝箱，找到了{1}枚金币。"
 msgid "battle.search-empty"
 msgstr "{0}打开宝箱，但里面是空的。"
 
+msgid "battle.search-trap"
+msgstr "{0}打开了宝箱。{1}出现了！"
+
 msgid "battle.search-full"
 msgstr "{0}找到了{1}，但背包已满。宝箱保持关闭。"
 

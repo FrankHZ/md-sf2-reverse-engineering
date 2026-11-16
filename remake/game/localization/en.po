@@ -1550,6 +1550,9 @@ msgstr "{0} opened the chest and found {1} gold coins."
 msgid "battle.search-empty"
 msgstr "{0} opened the chest, but it was empty."
 
+msgid "battle.search-trap"
+msgstr "{0} opened the chest. {1} appeared!"
+
 msgid "battle.search-full"
 msgstr "{0} found {1}, but their hands are full. The chest remains closed."
 

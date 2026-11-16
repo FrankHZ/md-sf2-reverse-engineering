@@ -119,7 +119,7 @@ internal sealed partial class BattleMapViewport : Control
             throw new InvalidOperationException("battlefield-map-region-unavailable");
         if (_region is not null) BuildTerrain(definition, content);
         else BuildAuthoredTerrain(definition);
-        foreach (var chest in definition.Search?.Chests ?? [])
+        foreach (var chest in content.PrivateDefinitions is null ? definition.Search?.Chests ?? [] : [])
         {
             var label = new Label { Name = "Chest_" + chest.Flag, Position = new Vector2(chest.Position.X, chest.Position.Y) * CellSize,
                 Size = Vector2.One * CellSize, HorizontalAlignment = HorizontalAlignment.Center,
@@ -248,6 +248,8 @@ internal sealed partial class BattleMapViewport : Control
     {
         if (_neutral is not null && _sceneContent?.FieldDeath?.Neutral is { } neutral)
             _neutral.Visible = !current.Story.Flags.Contains(neutral.CompletedFlag);
+        if (current.Battle.Definition.Search is not null)
+            foreach (var layer in _terrain) layer.PresentChests(current.Story.Flags);
         foreach (var chest in _chests)
         {
             bool opened = current.Story.Flags.Contains(chest.Key);

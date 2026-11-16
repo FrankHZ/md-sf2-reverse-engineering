@@ -360,6 +360,25 @@ dead currentHP, a held non15 primary/secondary region, and maxHP0. Row143's
 15/15 gives neither trigger, so ordinary fresh round-prefix spawning does
 not reveal it. Initial target-list length is0; stale target bytes are ignored.
 
+**Confirmed** for the USA retail input: the normal battle menu cannot select this trap.
+`battlefunctions_2.asm:@StartBattleMenu` passes the faced local tile to
+`exploration.asm:CheckChestItem → GetChestItem → GetItem`. In battle, `GetItem` multiplies
+the battle number by **5**, then adds the bytes at offsets +1/+2 of that record to the
+candidate X/Y for the chest-table comparison (byte arithmetic). The actual coordinate
+records in `data/battles/global/battlemapcoords.asm` are seven bytes wide. For Battle15 the
+two USA ROM bytes at `0x7A36 + 15*5 + 1` are `FF 30`; the intended origin bytes at
+`0x7A36 + 15*7 + 1` are `00 00`. Searching toward (2,8) therefore compares (1,56).
+The only matching low-byte candidate for chest (2,8) would be (3,216), outside even the
+facing fringe of this 32×24 battlefield. No eligible placement means no Search offer
+there. The following behavior is conditional on reaching the nonempty chest handler.
+
+Reproduce from the repository root with the registered USA input selected:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run python -c "from sf2tool.private_inputs import private_input_path, ROM_INPUT_IDENTITY; r=private_input_path(ROM_INPUT_IDENTITY).read_bytes(); print(r[0x4280:0x428C].hex(), r[0x7A82:0x7A84].hex(), r[0x7AA0:0x7AA2].hex())"
+```
+
 The alternative `battlefunctions/battlefunctions_2.asm:@ExamineContents`
 opens the admitted chest first, requests403, rejects Nothing contents, then
 computes the facing search coordinate and calls `battlefield/checkfortrappedchest.asm`.
@@ -377,7 +396,8 @@ and the local actor becomes143. After the intervening ordinary class/special
 checks, `@WriteBattlesceneScript` waits two VInts and passes that local actor
 to WriteBattlesceneScript. `battleactions/battleactionsengine_1.asm`,
 lines216–220, reconstructs the attack target list as length1 with the low
-byte of ITEM_OR_SPELL: the original opener. Thus an unchanged valid trap
+byte of ITEM_OR_SPELL: the original opener. Back in `battleloop_1.asm`, lines 108–113 reload the queued combatant
+for ProcessAfterTurnEffects. Thus an unchanged valid trap
 initiates **Golem143 → opener** scene generation within the search action,
 rather than merely spawning143 for a later queue. This is actor/target
 dispatch, not proof of a completed hit, damage, death or presentation.
