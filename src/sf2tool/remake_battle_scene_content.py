@@ -135,9 +135,12 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
     )
 
 
-def campaign_ally_visuals(battle, read, ally_table, stats_table):
-    # First deployment of each unpromoted member, including optional Kiwi and May.
-    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13, 14)
+def campaign_members(selection: Path | None = None) -> list[int]:
+    path = selection or repo_path("remake/content/private/pre-voyage-opening.json")
+    return [row["member"] for row in json.loads(path.read_text(encoding="utf-8"))["growthClasses"]]
+
+
+def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_members):
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
     cursor = stats_table["list_ShopInventories"]
@@ -152,9 +155,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
     if battle >= 9:
         carried.add(61)  # Achilles Sword can be carried back into Parmecia encounters.
     members = []
-    for member, first_battle in enumerate(joins):
-        if battle < first_battle:
-            continue
+    for member in selected_members:
         start = read(ally_table["table_AllyStartDefinitions"] + 6 * member, 6)
         kind, sprite, palette = read(ally_table["table_AllyBattlesprites"] + 9 * member, 3)
         assert kind == start[0]
@@ -175,7 +176,9 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
                 yield ("ally", sprite, palette, item)
 
 
-def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
+def build(
+    rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None
+) -> dict:
     if battle not in range(1, 21):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
@@ -308,7 +311,11 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     actor_rows = []
     actor_selections = list(
         campaign_ally_visuals(
-            battle, read, table("ally-data-static"), table("core-stats-data-static")
+            battle,
+            read,
+            table("ally-data-static"),
+            table("core-stats-data-static"),
+            campaign_members(selection),
         )
     )
     # Preserve the existing selected enemy resources independently of carried ally weapons.
@@ -621,7 +628,9 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     return report
 
 
-def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Path) -> dict:
+def add_field_death(
+    rom_path: Path, upstream: Path, output: Path, scene_path: Path, selection: Path | None = None
+) -> dict:
     """Add only field selectors and effect63 to an existing selected scene document."""
     from sf2tool.compression import decode_basic_compressed
     from sf2tool.remake_asset_build import (
@@ -684,32 +693,11 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     compiler = OriginalPrograms(
         {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream
     )
+    members = set(campaign_members(selection))
     allies = [
-        {"character": r["character"], "sprite": r["sprite"]}
-        for r in compiler.initial_ally_sprites()[
-            : {
-                "battle-1": 3,
-                "battle-2": 4,
-                "battle-3": 12,
-                "battle-4": 5,
-                "battle-5": 6,
-                "battle-6": 6,
-                "battle-7": 7,
-                "battle-8": 13,
-                "battle-9": 12,
-                "battle-10": 12,
-                "battle-11": 12,
-                "battle-12": 12,
-                "battle-13": 12,
-                "battle-14": 12,
-                "battle-15": 12,
-                "battle-16": 12,
-                "battle-17": 12,
-                "battle-18": 12,
-                "battle-19": 12,
-                "battle-20": 14,
-            }[scene["encounter"]]
-        ]
+        {"character": row["character"], "sprite": row["sprite"]}
+        for row in compiler.initial_ally_sprites()
+        if row["character"] in members
     ]
     enemy_table = json.loads(
         repo_path("tests/fixtures/h2/enemy-map-sprites-static-v1.json").read_text(encoding="utf-8")
@@ -846,10 +834,13 @@ if __name__ == "__main__":
         type=Path,
         help="Existing selected scene document; add field selectors/effect63 only",
     )
+    parser.add_argument("--campaign-selection", type=Path)
     args = parser.parse_args()
     result = (
-        add_field_death(args.rom, args.upstream, args.output, args.field_death_base)
+        add_field_death(
+            args.rom, args.upstream, args.output, args.field_death_base, args.campaign_selection
+        )
         if args.field_death_base
-        else build(args.rom, args.upstream, args.output, args.battle)
+        else build(args.rom, args.upstream, args.output, args.battle, args.campaign_selection)
     )
     print(json.dumps(result))

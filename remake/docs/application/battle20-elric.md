@@ -1,6 +1,6 @@
 # Rescue Elric at Harpy Pond
 
-**Confirmed** in the private remake. The registered private handoff `handoffs/issue1847` contains `Play-en.cmd`, `Play-zh-CN.cmd` and `HANDOFF.md`. Open either launcher and choose **Continue → Slot 1** to walk around the pond with Elric in the force. The package includes the original bank saves and an ordinary battle save for each party. The private instructions reproduce the battle and cold return with disposable slot copies. [Approach and inherited saves](harpy-pond-approach.md)
+**Confirmed** in the private remake. The registered private handoff `handoffs/issue1847-formation` contains `Play-en.cmd`, `Play-zh-CN.cmd` and `HANDOFF.md`. Open either launcher and choose **Continue → Slot 1** to walk around the pond with Elric in the force. The package includes the original bank saves and an ordinary battle save for each party. The private instructions reproduce the battle and cold return with disposable slot copies. [Approach and inherited saves](harpy-pond-approach.md)
 
 ## From the bank to the battle
 
@@ -21,5 +21,13 @@ Both victories defeated all twelve enemies. Elric was still outside the force wh
 | Cold Continue, step and save | (7,10), Right | (11,12), Right |
 
 Each returned to Bowie’s last battle tile with F420 clear and F470/F520 set. Fresh Map51 populated Bowie, Peter and Oddler. The roster menu showed Elric with his portrait and equipped Steel Arrow. Cold re-save changed only the recorded player position and, in English, facing. The private comparison checks the complete gameplay payload, including inventory, names, membership, RNG, return town, raft and persistent flags.
+
+## Return to Battle19 with Elric
+
+**Confirmed** with ordinary input from the Chinese rescued-party slot. Leave the pond through its south exit, walk east from Map67 into Map68, then return to the Battle19 zone at (47,29). F519 is already set. On this slot the 26th alternating step between (47,29) and (48,29) triggered the repeat. Bowie was level 24, below the original level 29 threshold for upgraded enemies. Higher-level repeats that require enemy substitution remain unsupported. [Original repeat selection and placement](../../../docs/research/chapters/southern-travel-creed/battle19-initialization-and-first-control.md)
+
+The active list contained members 0–10 and 13. Five ordinary allies were dead. Bowie, Sarah, Jaha, Kazin, Peter, Luke and Elric occupied the first seven source positions in that order. Elric stood at (42,13) with 35 HP, his Steel Arrow and a round-one turn. Sarah received the first player Movement input. F10 Save, title-screen Continue in a fresh process and a second Save produced identical gameplay data, including all actors, positions, queue and both RNG words. The private handoff reproduces the route with `Play.ps1 zh-CN <fresh-sample> repeat` and the cold load with `Play.ps1 zh-CN <fresh-sample> cold`.
+
+All twenty selected encounters admit the package’s growth roster. Source ally rows supply ordered positions. When a formation has fewer rows than active members, the excess remain joined and move to reserve. A dead active member uses a place in this capacity check and leaves its coordinate available to the next survivor. The engine test varies capacity around a nonconsecutive living member following a casualty. [Formation behavior test](../../tests/Sf2.Remake.Engine.Tests/YeelToBattle03Tests.cs)
 
 **Unknown** includes natural original-console timing, the original neutral lookup mismatch in presentation and hardware-exact water/animation effects. The full-party reserve and already-completed bypass have source coverage. These two original bank saves exercise first victory. F751 remains clear. Opening the Fairy Cave passage requires a later field interaction. [Subsequent passage](../../../docs/research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)

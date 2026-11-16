@@ -85,14 +85,12 @@ internal static class PrivateBattleDefinitionReader
         _ = Sources(core).ToArray();
         Require(growth.ValueKind == JsonValueKind.Array, "initial-growth-required", "world.growth");
         var members = growth.EnumerateArray().Select(row => Text(row, "actor")).ToHashSet(StringComparer.Ordinal);
-        Require(new[] { "ally-0", "ally-1", "ally-2" }.All(members.Contains) &&
-            members.All(actor => actor is "ally-0" or "ally-1" or "ally-2" or "ally-3" or "ally-4" or "ally-5" or "ally-6" or "ally-7" or "ally-8" or "ally-9" or "ally-10" or "ally-13"),
-            "initial-growth-members", "world.growth");
+        Require(new[] { "ally-0", "ally-1", "ally-2" }.All(members.Contains), "initial-growth-members", "world.growth");
         var result = new List<SourceAllyDefinition>();
-        foreach (byte id in new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13 })
+        foreach (var row in Array(core, "allies"))
         {
-            if (!members.Contains("ally-" + id)) continue;
-            var row = FindId(core, "allies", id);
+            byte id = (byte)Number(row, "id", 0, 255);
+            if (id >= 30 || !members.Contains($"ally-{id}")) continue;
             Object(row, "ally", "id", "code", "displayName", "nameExpression", "startClass", "startLevel", "startItems");
             var sourceClass = Class(FindCode(core, "classes", Text(row, "startClass")));
             Require(growth.EnumerateArray().Count(g => Text(g, "actor") == "ally-" + id && Number(g, "classId", 0, 31) == sourceClass.Id) == 1,
@@ -110,6 +108,7 @@ internal static class PrivateBattleDefinitionReader
             result.Add(new(id, Text(row, "code"), Text(row, "displayName"), sourceClass.Id,
                 (byte)Number(row, "startLevel", 1, 40), System.Array.AsReadOnly(items)));
         }
+        Require(result.Count == members.Count, "initial-growth-members", "world.growth");
         return result.AsReadOnly();
     }
 

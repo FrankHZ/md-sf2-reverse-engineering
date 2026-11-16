@@ -36,7 +36,9 @@ public sealed class BattleSaveProfileTests(ITestOutputHelper output)
             var defaults = definition.EncounterStarts[route.Encounter];
             var actors = encounter.Deployments.Select(d => d.Faction == BattleFaction.Ally
                 ? carried.Actors.Single(a => a.Actor == d.Actor) : defaults.Actors.Single(a => a.Actor == d.Actor)).ToArray();
-            var active = encounter.Deployments.Where(d => d.Faction == BattleFaction.Ally).ToArray();
+            // Supply a full legal lineup to this direct start, as the field entry would.
+            var active = encounter.Deployments.Where(d => d.Faction == BattleFaction.Ally)
+                .Take(encounter.Initialization!.AllyFormation!.Count).ToArray();
             var flags = active.SelectMany(d => new[] { d.Initialization!.AllyPartyMember!.Value, 32 + d.Initialization.AllyPartyMember.Value })
                 .Concat(new[] { 399, route.UnlockedFlag!.Value, route.IntroFlag!.Value }).Distinct().ToArray();
             var start = new BattleStartInput(encounter.Encounter, actors, carried.MainSeed, carried.ThinkingSeed, carried.Gold,

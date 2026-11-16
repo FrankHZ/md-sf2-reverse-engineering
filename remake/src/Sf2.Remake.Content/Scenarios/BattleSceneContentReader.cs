@@ -8,7 +8,7 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class BattleSceneContentReader
 {
-    internal static BattleSceneDefinition Read(string path, PrivateBattleDefinitions definitions)
+    internal static BattleSceneDefinition Read(string path, PrivateBattleDefinitions definitions, IEnumerable<byte>? controlledMembers = null)
     {
         Require(Path.IsPathFullyQualified(path), "scene-content-selection", "battleScenes");
         byte[] bytes;
@@ -80,11 +80,11 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 10, "scene-class", "battleScenes.actors", true);
+                Require(sprite is (>= 0 and <= 10) or 12, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
-                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, _ => BattleClassRule.UnpromotedBirdman };
-                Require(palette == 0 && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
+                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 12 => BattleClassRule.UnpromotedArcher, _ => BattleClassRule.UnpromotedBirdman };
+                Require(palette == (sprite == 12 ? 1 : 0) && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
                 allies.TryAdd(kind, visual);
             }
             else
@@ -152,8 +152,7 @@ internal static class BattleSceneContentReader
                 Require(allySprites.TryAdd(Number(row, "character", 0, 29), Number(row, "sprite", 0, 236)),
                     "field-ally-binding", "fieldDeath.allies");
             }
-            Require(definitions.Encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally)
-                .All(row => int.TryParse(row.IdentityExpression, out int member) && allySprites.ContainsKey(member)), "field-ally-binding", "fieldDeath.allies");
+            Require(allySprites.Count > 0 && (controlledMembers?.All(id => allySprites.ContainsKey(id)) ?? true), "field-ally-binding", "fieldDeath.allies");
             var species = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var row in Array(field, "enemies"))
             {

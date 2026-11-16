@@ -73,6 +73,14 @@ internal static class BattleEntry
         if (world.Party.NewBattle is not null && definition.Exploration!.PartyFlags is { } membership)
         {
             partyLists = MapPartyMembership.Rebuild(story.Flags, membership);
+            if (encounter.Initialization?.AllyFormation is { Count: > 0 } formation && partyLists.Active.Count > formation.Count)
+            {
+                // InitializeAllAlliesBattlePositions removes excess active flags before the round.
+                // Dead members count towards the limit even though they consume no position.
+                var excess = partyLists.Active.Skip(formation.Count).Select(member => membership.ActiveStart + member).ToHashSet();
+                story = story.Copy(story.Cursor, flags: story.Flags.Where(flag => !excess.Contains(flag)));
+                partyLists = MapPartyMembership.Rebuild(story.Flags, membership);
+            }
             var members = encounter.Deployments.Where(row => row.Faction == BattleFaction.Ally).ToDictionary(
                 row => row.Initialization?.AllyPartyMember ?? throw new BattleRuleException("party-member-binding", "entry.party", true), row => row.Actor);
             active = partyLists.Active.Select(member => members.TryGetValue(member, out var actor) ? actor :

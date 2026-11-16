@@ -12,6 +12,39 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class YeelToBattle03Tests
 {
     [Theory]
+    [InlineData(2, false)]
+    [InlineData(3, true)]
+    public void EntryFitsTheActiveQueueToTheFormationAndKeepsExcessMembersJoined(int capacity, bool archerFits)
+    {
+        var (field, current) = Field([0, 5, 13, 32, 37, 45, 402]);
+        var (basis, start) = Battle("battle-2");
+        var leader = basis.Deployments[0];
+        BattleDeploymentDefinition Member(int id) => leader with
+        {
+            Definition = Unit($"ally-{id}", true, leader: false), ProcessingOrder = id,
+            Initialization = leader.Initialization! with { AllyPartyMember = id },
+        };
+        MapPosition[] formation = [new(1, 1), new(2, 1), new(3, 1)];
+        var battle = new BattleDefinition(basis.Encounter, basis.Map, basis.Width, basis.Height, basis.Terrain,
+            [leader, Member(5), Member(13), basis.Deployments[1]], [],
+            initialization: new([], BattleRegionProgram.None, formation.Take(capacity)));
+        var inputs = start.Actors.Concat(new[] { 5, 13 }.Select(id => start.Actors[0] with
+            { Actor = new($"ally-{id}"), Hp = (ushort)(id == 5 ? 0 : 20) }));
+        var party = new BattleStartInput(start.Encounter, inputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.NewBattle);
+        var world = current.Exploration!;
+        var definition = new ScenarioDefinition(field.Package, [battle],
+            exploration: new([world.Definition], [], partyFlags: new(30, 0, 32, 12)), encounterStarts: [party]);
+        current = new(Guid.NewGuid(), 0, 0, new ActiveExploration(world.WithParty(party)), current.Story, SessionStopReason.PlayerInput);
+        var selected = BattleEntry.Select(current, current.Story, world.Definition.Battles[0], []);
+        var snapshot = BattleEntry.Continue(definition, selected, [], RuleCompositions.Sf2());
+        Assert.Equal(new[] { 0, 5, 13 }, snapshot.Story.PartyLists!.Joined);
+        Assert.Equal(archerFits, snapshot.Story.Flags.Contains(45));
+        Assert.Equal(!archerFits, snapshot.Story.PartyLists.Reserve.Contains(13));
+        Assert.Null(snapshot.Battle.GetActor(new("ally-5")).Position);
+        Assert.Equal(archerFits ? formation[1] : null, snapshot.Battle.GetActor(new("ally-13")).Position);
+    }
+
+    [Theory]
     [InlineData(23, true, false)]
     [InlineData(24, true, true)]
     [InlineData(24, false, false)]
@@ -294,9 +327,9 @@ public sealed class YeelToBattle03Tests
             SourceStoryInstruction instruction, ProgramLocation location) => throw new InvalidOperationException();
     }
 
-    private static BattleActorDefinition Unit(string id, bool ally, ushort item = 127, byte level = 1) => new(new(id),
+    private static BattleActorDefinition Unit(string id, bool ally, ushort item = 127, byte level = 1, bool leader = true) => new(new(id),
         ally ? BattleClassRule.UnpromotedSwordsman : BattleClassRule.Ordinary, level, 20, 0, 10, 4, 5, false, 4, [],
-        physical: new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, ally, 0), sourceLoadout: new([item, 127, 127, 127], [63, 63, 63, 63]));
+        physical: new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, ally && leader, 0), sourceLoadout: new([item, 127, 127, 127], [63, 63, 63, 63]));
 
     private static (BattleDefinition, BattleStartInput) Battle(string id, byte level = 1)
     {

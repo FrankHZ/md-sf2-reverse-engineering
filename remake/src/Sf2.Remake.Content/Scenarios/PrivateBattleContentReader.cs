@@ -75,25 +75,19 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         if (result is BattleEncounterReadRejected failed)
             throw new AdmissionIssue(new(Application.Runtime.SessionFailureKind.ContentError, "private-encounter", failed.Diagnostic.Field, failed.Diagnostic.Message));
         var encounter = ((BattleEncounterReadAccepted)result).Definition;
-        var members = encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Ally)
-            .Select(row => byte.Parse(row.IdentityExpression, System.Globalization.CultureInfo.InvariantCulture)).ToHashSet();
-        // The twelve Harpy Pond templates supply positions. The chapter's resource roster
-        // also supplies Elric for the post-battle join, independently of active membership.
-        byte[]? allyMembers = encounter.Battle.Id == 20 ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13] : null;
-        var selected = _baselines.Where(ally => allyMembers?.Contains(ally.Id) ?? members.Contains(ally.Id)).ToArray();
         var policy = new NewBattleStartPolicy("opening-new-game", "source-initialization", "", 0, false, true, true, false, false, null)
             { Origin = BattleStartOrigin.NewGame };
-        var start = new PrivateBattleStart(encounter.Battle.Id, mainSeed, thinkingSeed, 0, policy, selected);
+        var start = new PrivateBattleStart(encounter.Battle.Id, mainSeed, thinkingSeed, 0, policy, _baselines);
         var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells, _fieldItems);
         // Movement is immutable class content; attack gets the admitted equipment contribution once.
-        var baselines = selected.Select(ally => ally with
+        var baselines = _baselines.Select(ally => ally with
         {
             Move = definitions.Classes[ally.ClassId].Movement,
             Attack = (byte)Math.Min(200, ally.Attack + ally.Items.Where(word => (word & 128) != 0)
                 .SelectMany(word => definitions.Items[(byte)(word & 127)].EquipEffects)
                 .Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
         }).ToArray();
-        var accepted = PrivateBattleScenarioReader.Assemble(definitions, start with { Allies = baselines }, validateStart: false, allyMembers: allyMembers);
+        var accepted = PrivateBattleScenarioReader.Assemble(definitions, start with { Allies = baselines }, campaign: true);
         if (scenes is null) return accepted;
         return new(new(accepted.Definition.Package, accepted.Definition.Encounters.Values, definitions,
             battleScenes: BattleSceneContentReader.Read(scenes, definitions)), accepted.Start);
