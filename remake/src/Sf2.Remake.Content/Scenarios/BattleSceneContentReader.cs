@@ -41,7 +41,7 @@ internal static class BattleSceneContentReader
         Require(rasters.ContainsKey(background) && rasters.ContainsKey(ground), "scene-background", "battleScenes.rasters");
         var allies = new Dictionary<BattleClassRule, BattleSceneActorVisual>();
         var equipment = new Dictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>();
-        var enemies = new Dictionary<ActorRef, BattleSceneActorVisual>();
+        var enemyBodies = new Dictionary<(int, int), BattleSceneActorVisual>();
         foreach (var row in Array(root, "actors"))
         {
             Object(row, "sceneActor", "side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences", "idleTicks");
@@ -90,30 +90,17 @@ internal static class BattleSceneContentReader
             else
             {
                 Require(side == "enemy", "scene-enemy-binding", "battleScenes.actors", true);
-                int index = 0;
-                foreach (var placement in definitions.Encounter.Placements.Where(value => value.Kind == EncounterEntityKind.Enemy))
-                {
-                    // Pinned EnemyBattlesprites rows for the admitted species.
-                    var selected = placement.IdentityExpression switch
-                    { "KRAKEN_HEAD" => (44, 0), "KRAKEN_ARM" => (33, 0), "KRAKEN_LEG" => (8, 0),
-                        "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
-                        "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
-                        "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
-                        "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
-                        "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "TAROS" => (45, 0), "GOLEM" => (7, 0), "MASTER_MAGE" => (36, 1),
-                        "HARPY" => (25, 0), "ORC" => (10, 0), "HIGH_PRIEST" => (40, 1), "DARK_MADAM" => (37, 1),
-                        "SOULSOWER" => (9, 0), "GARGOYLE" => (24, 0), "ARROW_LAUNCHER" => (34, 0),
-                        "VAMPIRE_BAT" => (23, 2), "DARK_DWARF" => (5, 2),
-                        "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
-                        _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
-                            "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
-                    if ((sprite, palette) == selected)
-                        Require(enemies.TryAdd(new("enemy-" + index), visual), "scene-enemy-binding", "battleScenes.actors");
-                    index++;
-                }
+                Require(enemyBodies.TryAdd((sprite, palette), visual), "scene-enemy-binding", "battleScenes.actors");
             }
         }
-        Require(enemies.Count == definitions.Encounter.EnemyCount, "scene-enemy-binding", "battleScenes.actors");
+        var speciesBodies = definitions.Enemies.Values.ToDictionary(enemy => enemy.Id, enemy =>
+            enemyBodies.TryGetValue(Body(enemy.Code), out var body) ? body :
+                throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
+                    "scene-enemy-binding", enemy.Code, "Missing selected enemy body.")));
+        var roster = definitions.Encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Enemy)
+            .Select((row, index) => (Actor: new ActorRef("enemy-" + index), Enemy: definitions.Enemies[row.IdentityExpression])).ToArray();
+        var enemies = roster.ToDictionary(row => row.Actor, row => speciesBodies[row.Enemy.Id]);
+        var appearances = new Dictionary<byte, EnemyAppearance>();
         var texts = new Dictionary<int, string>();
         foreach (var value in root.GetProperty("texts").EnumerateObject())
         {
@@ -166,6 +153,11 @@ internal static class BattleSceneContentReader
                         "field-kraken-pose", "fieldDeath.enemies");
                 Require(species.TryAdd(code, sprite), "field-enemy-binding", "fieldDeath.enemies");
             }
+            foreach (var enemy in definitions.Enemies.Values)
+            {
+                Require(species.TryGetValue(enemy.Code, out int sprite), "field-enemy-binding", "fieldDeath.enemies");
+                appearances.Add(enemy.Id, new(enemy.DisplayName, speciesBodies[enemy.Id], sprite));
+            }
             var enemySprites = new Dictionary<ActorRef, int>();
             int ordinal = 0;
             foreach (var placement in definitions.Encounter.Placements.Where(value => value.Kind == EncounterEntityKind.Enemy))
@@ -206,16 +198,26 @@ internal static class BattleSceneContentReader
             new ReadOnlyDictionary<BattleClassRule, BattleSceneActorVisual>(allies), new ReadOnlyDictionary<ActorRef, BattleSceneActorVisual>(enemies),
             new ReadOnlyDictionary<int, string>(texts),
             System.Array.AsReadOnly(names), healing, fieldDeath, terrainScenes is null ? null : System.Array.AsReadOnly(terrainScenes),
-            new ReadOnlyDictionary<ActorRef, string>(definitions.Encounter.Placements
-                .Where(row => row.Kind == EncounterEntityKind.Enemy).Select((row, index) =>
-                    (Actor: new ActorRef("enemy-" + index), Name: definitions.Enemies[row.IdentityExpression].DisplayName))
-                .ToDictionary(row => row.Actor, row => row.Name)),
-            new ReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>(equipment),
-            new ReadOnlyDictionary<ActorRef, byte>(definitions.Encounter.Placements
-                .Where(row => row.Kind == EncounterEntityKind.Enemy).Select((row, index) =>
-                    (Actor: new ActorRef("enemy-" + index), Id: definitions.Enemies[row.IdentityExpression].Id))
-                .ToDictionary(row => row.Actor, row => row.Id)));
+            roster.ToDictionary(row => row.Actor, row => row.Enemy.DisplayName).AsReadOnly(), equipment.AsReadOnly(),
+            roster.ToDictionary(row => row.Actor, row => row.Enemy.Id).AsReadOnly(), appearances.AsReadOnly());
     }
+
+    // Pinned EnemyBattlesprites sprite and palette pairs.
+    private static (int, int) Body(string code) => code switch
+        { "KRAKEN_HEAD" => (44, 0), "KRAKEN_ARM" => (33, 0), "KRAKEN_LEG" => (8, 0),
+            "BUBBLING_OOZE" => (0, 2), "SKELETON" => (11, 0), "WIZARD" => (38, 0),
+            "DARK_BISHOP" => (42, 1), "MASTER_MONK" => (41, 2),
+            "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
+            "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
+            "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
+            "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
+            "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "TAROS" => (45, 0), "GOLEM" => (7, 0), "MASTER_MAGE" => (36, 1),
+            "HARPY" => (25, 0), "ORC" => (10, 0), "HIGH_PRIEST" => (40, 1), "DARK_MADAM" => (37, 1),
+            "SOULSOWER" => (9, 0), "GARGOYLE" => (24, 0), "ARROW_LAUNCHER" => (34, 0),
+            "VAMPIRE_BAT" => (23, 2), "DARK_DWARF" => (5, 2),
+            "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
+            _ => throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.UnsupportedCapability,
+                "scene-enemy-species", "battleScenes.actors", "unadmitted species")) };
 
     private static string[] Strings(JsonElement row, string key) => Array(row, key).Select(value =>
     {

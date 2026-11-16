@@ -45,7 +45,7 @@ internal static class EnemySpellDecision
             foreach (var affected in battle.Actors.Where(unit => targets.Contains(unit.Actor) &&
                     BattleRange.Contains(candidate.Target.Position!, unit.Position!, 0, spell.Radius)).OrderBy(unit => unit.ProcessingOrder))
                 total += PhysicalTargetRules.Score(actor, affected, (byte)cost,
-                    Sf2AttackSpellAction.PotentialDamage(actor, affected, spell), ref thinking, effects);
+                    Sf2AttackSpellAction.PotentialDamage(actor, affected, spell, swordSlot.HasValue), ref thinking, effects);
             byte priority = unchecked((byte)total);
             priorities[i] = new((byte)cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));
             effects.Add(new("ai-spell-candidate", actorRef, cost, priority, Target: candidate.Target.Actor));
@@ -79,27 +79,31 @@ internal static class EnemySpellDecision
     internal static BattleAutomaticAction? Heal(EngineBattleState battle, ActorRef actorRef,
         IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null)
     {
-        var actor = battle.GetActor(actorRef); var key = new SpellRef("heal", 1);
-        if (!actor.Spells.Contains(key)) return null;
+        var actor = battle.GetActor(actorRef);
+        var key = actor.Spells.FirstOrDefault(s => s is { Value: "heal" or "aura", Level: 1 });
+        if (key == default) return null;
         if (!battle.Definition.Spells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
         if (spell.CuresPoison) throw new BattleRuleException("enemy-poison-cure", "spell", true);
-        if (actor.Mp < 3) return null;
-        byte entryLevel = actor.Spells.Where(s => s.Value == "heal").Max(s => s.Level);
+        if (actor.Mp < spell.MpCost) return null;
+        byte entryLevel = actor.Spells.Where(s => s.Value == key.Value).Max(s => s.Level);
         var rule = actions.Single(r => r.Kind == BattleActionKind.Healing);
         var allowed = BattleActionRules.Invoke(rule, "ai-targets", () =>
             rule.QueryTargets(battle, actorRef, new BattleActionRef(BattleActionKind.Healing, key))).ToHashSet();
         var grid = selectedGrid ?? BattleMovement.Grid(battle, actorRef);
         // Healing target selection consumes no RNG. Descending mover/critical-commandset
         // priority retains source slot order; unreachable casting positions are skipped.
-        foreach (var target in battle.Actors.Where(a => allowed.Contains(a.Actor) && a.Hp > 0 && a.Position is not null &&
-            a.Faction == actor.Faction && 3 * a.Hp <= 2 * a.MaxHp && a.MaxHp - a.Hp > 2)
-            .OrderByDescending(Priority).ThenBy(a => a.ProcessingOrder))
+        var patients = battle.Actors.Where(a => allowed.Contains(a.Actor) && a.Position is not null).ToArray();
+        int TargetPriority(BattleActorState center) => !spell.IsAura ? Priority(center) : patients
+            .Where(neighbor => BattleRange.Contains(center.Position!, neighbor.Position!, 0, spell.Radius))
+            .Sum(neighbor => Priority(neighbor) + 4);
+        foreach (var target in patients.Where(a => 3 * a.Hp <= 2 * a.MaxHp && a.MaxHp - a.Hp > 2)
+            .OrderByDescending(TargetPriority).ThenBy(a => a.ProcessingOrder))
         {
             byte? level = HealLevel(entryLevel, actor.Mp, target.MaxHp - target.Hp, target.Actor == actorRef);
             if (!level.HasValue) continue;
             // The source overwrites its local spell entry before the station check.
             entryLevel = level.Value;
-            key = new SpellRef("heal", entryLevel);
+            key = new SpellRef(key.Value, entryLevel);
             if (!battle.Definition.Spells.TryGetValue(key, out spell))
                 throw new BattleRuleException("spell-effect", "spell", true);
             var action = new BattleActionRef(BattleActionKind.Healing, key);
@@ -120,6 +124,14 @@ internal static class EnemySpellDecision
         if (missingHp <= 2 || mp < 3) return null;
         if (entryLevel == 1) return 1;
         if (entryLevel == 2) return mp >= 5 ? (byte)1 : null;
+        if (entryLevel == 4)
+        {
+            // The bad shift probes byte keys $20 (ATLAS1), $00 (HEAL1),
+            // $E0 (absent -> HEAL1) and $C0 (HEAL4), in descending rank.
+            if (missingHp > 28 && mp >= 14) return 4;
+            if (missingHp >= 15) return 3;
+            return mp < 20 ? null : self ? (byte)1 : (byte)2;
+        }
         if (entryLevel != 3) throw new BattleRuleException("enemy-heal-level", "spell.level", true);
         if (missingHp >= 15 && mp >= 20) return 3;
         if (missingHp < 15 && mp < 10) return null;

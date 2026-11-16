@@ -20,7 +20,7 @@ internal static class PrivateWorldEncounterReader
         {
             string[] required = ["placement", "scene", "terrain", "static", "enemies", "gold", "battleScenes"];
             if (newGame is null) Object(row, "encounter-inputs", [.. required, "start"]);
-            else ObjectOptional(row, "encounter-inputs", required, "start");
+            else ObjectOptional(row, "encounter-inputs", required, "start", "repeatEnemies");
             string Input(string key)
             {
                 string relative = Text(row, key);
@@ -34,7 +34,12 @@ internal static class PrivateWorldEncounterReader
             var result = newGame is null
                 ? new PrivateBattleScenarioReader(Input("placement"), Input("scene"), Input("terrain"),
                     Input("static"), Input("enemies"), Input("gold"), Input("start"), scenePath).Read(fieldItems)
-                : newGame.Read(Input("placement"), Input("scene"), Input("terrain"), Input("static"), Input("enemies"), Input("gold"), scenePath);
+                : newGame.Read(Input("placement"), Input("scene"), Input("terrain"), Input("static"), Input("enemies"), Input("gold"), scenePath,
+                    row.TryGetProperty("repeatEnemies", out _) ? Array(row, "repeatEnemies").Select(id =>
+                    {
+                        Require(id.ValueKind == JsonValueKind.Number && id.TryGetByte(out _), "enemy-id", "encounters.repeatEnemies");
+                        return id.GetByte();
+                    }).ToArray() : []);
             if (result is ScenarioReadRejected rejected) throw new AdmissionIssue(rejected.Failure);
             admitted.Add((ScenarioReadAccepted)result);
         }

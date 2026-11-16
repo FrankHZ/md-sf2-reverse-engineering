@@ -28,6 +28,10 @@ internal static class IdentityIconReader
             .Select(item => $"identity-icon.item.{item.Id}")
             .Concat(definitions.Spells.Values.Where(spell => spell.Code is "HEAL" or "DETOX" or "EGRESS" or "BLAZE" or "BLAST" or "FREEZE" or "DISPEL")
                 .Select(spell => $"identity-icon.spell.{spell.BaseId}"))
+            .Concat(definitions.Enemies.Values.SelectMany(enemy => enemy.Items)
+                .Where(slot => slot.Item == "BRASS_KNUCKLES").Select(_ => "identity-icon.item.28"))
+            .Concat(definitions.Enemies.Values.SelectMany(enemy => enemy.Spells)
+                .Where(slot => slot.Spell == "AURA").Select(_ => "identity-icon.spell.1"))
             .Append("identity-icon.other.128");
         foreach (string identity in identities.Distinct())
             Require(rasters.ContainsKey(identity + ".normal") && rasters.ContainsKey(identity + ".selected"),

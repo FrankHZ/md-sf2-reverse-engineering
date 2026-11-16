@@ -109,7 +109,7 @@ internal sealed partial class BattleMapViewport : Control
         ReleaseTextures();
         _builds++;
         _visuals = content.Exploration?.Visuals;
-        _sceneContent = content.ScenesFor(definition.Encounter);
+        _sceneContent = content.ScenesFor(definition);
         _map = definition.SourceMapRegion?.Map ?? definition.Map;
         _storyCamera = false;
         _board.ClipContents = true;

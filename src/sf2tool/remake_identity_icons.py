@@ -77,7 +77,13 @@ def field_item_ids(world: dict) -> set[int]:
 
 
 def identity_assets(
-    rom: Path, upstream: Path, listing: Path | None, rom_assets: bool, *, field_items=()
+    rom: Path,
+    upstream: Path,
+    listing: Path | None,
+    rom_assets: bool,
+    *,
+    field_items=(),
+    repeat_enemies=(),
 ):
     source, commit, identity = _verified_source(
         rom, upstream, owner="identity-icons", listing_path=listing
@@ -128,10 +134,14 @@ def identity_assets(
     field_items = set(field_items)
     if not all(type(item) is int and 0 <= item <= 127 for item in field_items):
         raise ValueError("invalid field item icon identity")
+    if 82 in repeat_enemies:
+        field_items.add(_equ(enums, "ITEM_BRASS_KNUCKLES"))
     base_items = [_equ(enums, "ITEM_" + code) for code in ITEMS]
     additions = sorted(field_items.difference(base_items))
     item_ids = base_items + additions
     spell_ids = [_equ(enums, "SPELL_" + code) for code in SPELLS]
+    extra_spells = [_equ(enums, "SPELL_AURA")] if 81 in repeat_enemies else []
+    spell_ids.extend(extra_spells)
     selections = [("item", i, i) for i in item_ids]
     selections += [("spell", i, i + 130) for i in spell_ids] + [("other", 128, 128)]
     for family, semantic_id, storage in selections:
@@ -173,6 +183,7 @@ def identity_assets(
         layout="2x3 row-major tiles per magicmenulayout.asm MENUTILE1..6",
         highlight="source bitwise AND tiles_IconHighlight",
         fieldItemAdditions=additions,
+        extraSpellStorage=[130 + i for i in extra_spells],
         resources=receipts,
     )
 
@@ -185,7 +196,8 @@ def mount_identity_icons(rasters: dict, icons: tuple[dict, dict]) -> None:
         base_keys = {
             row["resource"]
             for row in provenance["resources"]
-            if row["storageIndex"] not in provenance["fieldItemAdditions"]
+            if row["storageIndex"]
+            not in provenance["fieldItemAdditions"] + provenance.get("extraSpellStorage", [])
         }
         if not base_keys.issubset(existing) or any(
             resources.get(key) != value or key.rsplit(".", 1)[0] + suffix not in existing

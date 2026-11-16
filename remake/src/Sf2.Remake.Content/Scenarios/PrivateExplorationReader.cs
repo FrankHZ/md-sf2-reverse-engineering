@@ -94,6 +94,7 @@ public sealed class PrivateExplorationReader : IScenarioSource
                     if (scene.FieldDeath is { } field)
                         Require((newGame is null || admitted.Definition.PrivateDefinitions.Allies.Keys.All(id => field.AllySprites.ContainsKey(id))) &&
                             field.AllySprites.Values.All(visuals.Sprites.ContainsKey) &&
+                            (scene.Species?.Values.All(value => value.MapSprite == 254 || visuals.Sprites.ContainsKey(value.MapSprite)) ?? true) &&
                             field.EnemySprites.Values.All(sprite => sprite == 254 || visuals.Sprites.ContainsKey(sprite)) &&
                             (field.Neutral is null || visuals.Sprites.ContainsKey(field.Neutral.Sprite)),
                             "field-actor-resource-unavailable", "world.presentation.sprites");

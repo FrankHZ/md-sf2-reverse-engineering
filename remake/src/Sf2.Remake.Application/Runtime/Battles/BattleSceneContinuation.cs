@@ -56,11 +56,11 @@ public sealed record HealingSceneCursor
     private static bool TryVisual(BattleActorState actor, BattleSceneDefinition content, out BattleSceneActorVisual visual) =>
         actor.IsAlly ? content.TryAllyVisual(actor, out visual!) : content.Enemies.TryGetValue(actor.Actor, out visual!);
 
-    internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content, StoryState? story = null)
+    internal static HealingSceneCursor Create(BattleActionResolution action, BattleSceneDefinition? content, StoryState? story = null, int index = 0)
     {
-        RequireContent(action.Prepared, action.Actor, action.Reactions[0].Target, content, false);
+        RequireContent(action.Prepared, action.Actor, action.Reactions[index].Target, content, false);
         var actor = action.Prepared.GetActor(action.Actor);
-        var target = action.Prepared.GetActor(action.Reactions[0].Target);
+        var target = action.Prepared.GetActor(action.Reactions[index].Target);
         // Authored packages have an intentionally small authored gesture; private
         // scenes require their admitted original sequence rather than this fallback.
         var cast = new BattleSceneAnimation(0, 2, 255, false, null,
@@ -79,13 +79,13 @@ public sealed record HealingSceneCursor
             actionText = content.Texts[274]; recoveryText = content.Texts[298];
         }
         return new() { Cast = cast, CasterIdleTicks = casterIdle, TargetIdleTicks = targetIdle,
-            Display = new(action.Actor, target.Actor, action.Spell!.Spell, action.Reactions[0].Amount,
+            Display = new(action.Actor, target.Actor, action.Spell!.Spell, action.Reactions[index].Amount,
                 story is null ? CharacterNames.ReadableIdentity(actor.Actor) : CharacterNames.Battle(story, actor, content),
                 story is null ? CharacterNames.ReadableIdentity(target.Actor) : CharacterNames.Battle(story, target, content),
                 content is null ? null : 274, content is null ? null : 298),
             ActionText = actionText.Replace("{NAME}", ActorName(actor)).Replace("{SPELL}", action.Spell!.Spell.Value.ToUpperInvariant())
                 .Replace("{#}", action.Spell.Spell.Level.ToString()).Replace("{N}", "\n"),
-            RecoveryText = recoveryText.Replace("{NAME}", ActorName(target)).Replace("{#}", action.Reactions[0].Amount.ToString()).Replace("{N}", "\n") };
+            RecoveryText = recoveryText.Replace("{NAME}", ActorName(target)).Replace("{#}", action.Reactions[index].Amount.ToString()).Replace("{N}", "\n") };
     }
 
     internal HealingSceneCursor Enter(BattleScenePhase phase)
@@ -321,7 +321,7 @@ internal static class BattleSceneContinuation
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
-            healing: action.Silenced is not null || action.Spell is null || action.Spell.IsAura || action.Spell.CuresPoison ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
+            healing: action.Silenced is not null || action.Spell is null || (action.Spell.IsAura && action.Prepared.GetActor(action.Actor).IsAlly) || action.Spell.CuresPoison ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
         return Result(current, action.Prepared.With(deathCredit: new(action.Laser is null ? action.FirstAlly : null)), scene, revision, sequence, observations);
     }
 
@@ -539,7 +539,13 @@ internal static class BattleSceneContinuation
             default: throw new InvalidOperationException("Unknown battle scene phase.");
         }
         observations.Add(new(++sequence, revision, "scene-step-started", (scene.Laser is not null || !scene.HasReaction ? scene.Action.Actor : scene.Action.Reactions[index].Actor), Detail: next.ToString()));
-        var healing = scene.Healing?.Enter(next);
+        var healing = scene.Healing;
+        if (healing is not null && index != scene.ReactionIndex && scene.IsAura)
+        {
+            var recipient = HealingSceneCursor.Create(scene.Action, null, current.Story, index);
+            healing = healing with { Display = recipient.Display, RecoveryText = recipient.RecoveryText };
+        }
+        healing = healing?.Enter(next);
         if (healing is not null)
         {
             List<BattleEffect> effects = [];

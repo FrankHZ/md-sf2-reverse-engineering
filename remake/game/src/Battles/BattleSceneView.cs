@@ -69,7 +69,7 @@ internal sealed partial class BattleSceneView : Control
         _overlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _overlay.AddChild(_actorCard); _overlay.AddChild(_targetCard);
         _overlay.AddChild(_messagePanel); _message = _messagePanel.Body; _message.AutoTranslateMode = AutoTranslateModeEnum.Disabled; _messagePanel.Choices.Hide();
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 3; i++)
         {
             _fairyBodies.Add(Sprite("FairyBody" + i, Vector2.Zero));
             _fairyWings.Add(Sprite("FairyWings" + i, Vector2.Zero));
@@ -120,7 +120,7 @@ internal sealed partial class BattleSceneView : Control
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 return;
             }
-            if (state.IsAura)
+            if (state.IsAura && state.Healing is null)
             {
                 if (Content is not null) throw new InvalidOperationException("aura-private-presentation-unsupported");
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
@@ -280,7 +280,7 @@ internal sealed partial class BattleSceneView : Control
             _completed = true;
             return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        if (state.IsAura)
+        if (state.IsAura && state.Healing is null)
         {
             if (!_aura.Advance(_elapsed)) return null;
             _completed = true;
@@ -675,7 +675,7 @@ internal sealed partial class BattleSceneView : Control
     }
     internal object Observe() => new
     {
-        aura = _state?.IsAura == true ? _aura.Observe() : null,
+        aura = _state is { IsAura: true, Healing: null } ? _aura.Observe() : null,
         suspended = _suspended,
         laser = _state?.Laser is not null ? _laser.Observe() : null,
         attackSpell = _state?.AttackSpell is not null ? _attackSpell.Observe() : null,
@@ -689,7 +689,7 @@ internal sealed partial class BattleSceneView : Control
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind, supportSpell = _state?.SupportSpell, silencedSpell = _state?.SilencedSpell,
         reactionAmount = _state?.Amount,
         item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = _state?.AttackSpell is not null ? (int?)null : _state?.IsAura == true ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        spellAnimationSelector = _state?.AttackSpell is not null ? (int?)null : _state is { IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

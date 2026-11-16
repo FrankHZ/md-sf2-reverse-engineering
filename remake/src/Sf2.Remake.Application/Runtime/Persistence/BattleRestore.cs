@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using static Sf2.Remake.Domain.Battles.BattleContinuationRestore;
 
 namespace Sf2.Remake.Application.Runtime.Persistence;
@@ -12,8 +13,15 @@ internal static class BattleRestore
         int revision = data.Compatibility.RecipeRevision;
         Require(revision >= 1 && revision <= expected.RecipeRevision &&
             data.Compatibility == (expected with { RecipeRevision = revision }), "incompatible");
-        Require(data.BattleRecipeRevision == 1, "recipe-version");
+        Require(data.BattleRecipeRevision == (data.EnemyDefinitions is null ? 1 : 2), "recipe-version");
         Require(definition.Encounters.TryGetValue(data.Battle.Encounter, out var encounter), "encounter");
+        if (data.EnemyDefinitions is { } ids)
+        {
+            var route = BattleSaveStory.Route(definition, data);
+            Require(route.RepeatUpgradeLevel.HasValue && route.CompletedFlag is { } flag && data.Story.Flags.Contains(flag) &&
+                encounter!.Deployments.Where(row => row.Faction == BattleFaction.Enemy).All(row => row.Replacements is not null), "repeat-enemy-encounter");
+            encounter = RepeatEnemySelection.Bind(encounter!, ids);
+        }
         if (definition.PrivateDefinitions is not null)
         {
             // Historical encounters stored part of the party in the field-player binding.

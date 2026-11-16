@@ -550,8 +550,8 @@ Resolution sorts at most 30 ally/32 enemy bindings: O(N log N) time, O(N) state/
 or media acquisition is needed; each native witness stays below 180 seconds/5 MiB. Maximum HP in an AURA
 encounter is 1–32767, avoiding source signed delta/addition overflow. Existing valid states retain
 unique in-map living occupancy. The player ally priest must have status 0. Promoted classes,
-enemy healers, status-family expansion, private AURA imports and original fairy/media/timing parity
-are outside admission. Natural original casting and opportunity timing remain **Unknown**.
+status-family expansion and original fairy/media/timing parity are outside this authored profile.
+The [Battle19 repeat](application/battle19-repeat.md) admits private enemy AURA1 on the selected Dark Bishop. Natural original casting and opportunity timing remain **Unknown**.
 The twelve #1047 comparison Unknowns and
 [predecessor failure handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1357#issuecomment-6451208918)
 remain unchanged.

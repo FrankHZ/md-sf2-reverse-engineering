@@ -12,7 +12,8 @@ namespace Sf2.Remake.Content.Persistence;
 internal static class BattleSaveWire
 {
     internal sealed record Record(int FormatVersion, int Slot, long Sequence, DateTimeOffset SavedAt, string Kind, Data Data);
-    internal sealed record Data(SaveCompatibility Compatibility, int BattleRecipeRevision, SavedBattleRoute Route, Battle Battle, Story Story);
+    internal sealed record Data(SaveCompatibility Compatibility, int BattleRecipeRevision, SavedBattleRoute Route, Battle Battle, Story Story,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<byte>? EnemyDefinitions = null);
     internal sealed record Battle(string Encounter, IReadOnlyList<Actor> Actors, uint MainSeed, uint ThinkingSeed,
         int Round, IReadOnlyList<Turn> Queue, int Cursor, uint Gold, Options Options,
         Presence<SavedBattleRegions> Regions, Presence<Credit> DeathCredit, Custody Custody, Presence<Visuals> Visuals);
@@ -50,7 +51,7 @@ internal static class BattleSaveWire
 
     internal static Record Encode(BattleSaveRecord record) => new(2, record.Slot, record.Sequence, record.SavedAt,
         "battle-player-input", new(record.Data.Compatibility, record.Data.BattleRecipeRevision, record.Data.Route,
-            Encode(record.Data.Battle), Encode(record.Data.Story)));
+            Encode(record.Data.Battle), Encode(record.Data.Story), record.Data.EnemyDefinitions));
     internal static BattleSaveRecord Decode(Record record)
     {
         if (record.Kind != "battle-player-input") throw new SaveFormatException("save-kind");
@@ -59,7 +60,7 @@ internal static class BattleSaveWire
         _ = new MapId(record.Data.Route.Map);
         _ = new MapId(record.Data.Story.EgressMap);
         return new(record.Slot, record.Sequence, record.SavedAt, new(record.Data.Compatibility, record.Data.BattleRecipeRevision,
-            record.Data.Route, Decode(record.Data.Battle), Decode(record.Data.Story)));
+            record.Data.Route, Decode(record.Data.Battle), Decode(record.Data.Story), record.Data.EnemyDefinitions));
     }
 
     private static Presence<T> Optional<T>(T? value) where T : struct => value.HasValue ? new(value.Value) : default;

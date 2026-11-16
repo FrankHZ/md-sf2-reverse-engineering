@@ -5,6 +5,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
@@ -67,64 +68,17 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         int enemyOrder = 128;
         foreach (var row in encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Enemy))
         {
-            byte spawnMode = row.Behavior.SpawnExpression switch
-            {
-                "STARTING" => 0,
-                "HIDDEN" => 2,
-                _ => throw Unsupported("spawn-expression", "placements.spawn"),
-            };
-            Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP" ||
-                row.ItemExpression is ("POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP"),
-                "placement-item-refresh", "placements.item", true);
-            byte commandset = row.AiCommandsetExpression switch
-            {
-                "HEALER1" => 0, "HEALER3" => 2, "ATTACKER1" => 6, "ATTACKER2" => 7,
-                "SENTRY" => 8, "ATTACKER3" => 9, "LEADER" => 14, "SWARM" => 15,
-                _ => throw Unsupported("source-commandset", "placements.aiCommandset"),
-            };
-            int order = enemyOrder++; var actor = new ActorRef("enemy-" + (order - 128).ToString(CultureInfo.InvariantCulture));
+            int order = enemyOrder++;
             var enemy = definitions.Enemies[row.IdentityExpression];
-            Require(enemy.InitialStatusExpression == "NONE" && enemy.SpellPower == "REGULAR",
-                "enemy-derived-state", "enemy.initialStatus/spellPower", true);
-            var match = Regex.Match(enemy.AiBitfieldExpression, "^PRIORITYMOD_([0-9]+)(\\|BIT4)?(\\|BIT5)?$", RegexOptions.CultureInvariant);
-            Require(match.Success && byte.TryParse(match.Groups[1].Value, out byte _) && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) <= 15,
-                "source-ai-word", "enemy.aiBitfield", true);
-            ushort enemyAi = (ushort)((int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) << 12) |
-                (match.Groups[2].Success ? 16 : 0) | (match.Groups[3].Success ? 32 : 0));
-            var items = enemy.Items.Select(item => (ushort)(definitions.Items.Values.Single(value => value.Code == item.Item).Id | (item.Equipped ? 128 : 0))).ToArray();
-            if (row.ItemExpression != "NOTHING")
+            var deployment = Enemy(definitions, row, order, enemy);
+            if (campaign && encounter.Battle.Id == 19)
             {
-                // InitializeEnemyItems -> AddItem masks with $807F. Source $6000 stores0.
-                int empty = System.Array.FindIndex(items, word => (word & 127) == 127);
-                if (empty >= 0)
-                {
-                    string code = row.ItemExpression.Split('|')[0];
-                    items[empty] = definitions.Items.Values.Single(value => value.Code == code).Id;
-                }
+                var replacements = definitions.Enemies.Values.Where(other => other.Id > enemy.Id &&
+                    RepeatEnemySelection.Admits(deployment.Definition.Mover, other.Id)).ToDictionary(other => other.Id, other => Enemy(definitions, row, order, other));
+                deployment = deployment with { Replacements = replacements.AsReadOnly() };
             }
-            var spells = enemy.Spells.Select(spell => spell.Spell == "NOTHING" ? (byte)63 :
-                (byte)(definitions.Spells.Values.Single(value => value.Code == spell.Spell && value.Level == spell.Level).BaseId | ((spell.Level - 1) << 6))).ToArray();
-            var definition = new BattleActorDefinition(actor, BattleClassRule.Ordinary, enemy.Level, enemy.MaxHp, enemy.MaxMp, enemy.BaseAttack,
-                enemy.BaseDefense, (byte)(enemy.BaseAgility & 127), (enemy.BaseAgility & 128) != 0, enemy.BaseMovement,
-                enemy.Spells.Where(spell => spell.Spell != "NOTHING").SelectMany(spell => Enumerable.Range(1, spell.Level)
-                    .Select(level => new SpellRef(spell.Spell.ToLowerInvariant(), (byte)level))),
-                physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
-                    leader: false, gold: definitions.EnemyGold[enemy.Id].Gold,
-                    unarmedMaximum: enemy.Code switch { "KRAKEN_ARM" => 2, "KRAKEN_HEAD" => 3, _ => 1 },
-                    cannotCounter: enemy.Code == "KRAKEN_HEAD"),
-                mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells),
-                equipment: PrivateBattleActionBindings.EnemyEquipment(definitions, enemy.BaseAttack, items),
-                resistance: PrivateAttackSpellBindings.Resistance(enemy.ResistanceExpression));
-            var actorInput = new BattleActorStartInput(actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null);
-            var initialization = new BattleDeploymentInitialization(enemyAi, spawnMode, row.Behavior.PrimaryRegion,
-                row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
-                Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
-                SwarmThreshold: commandset == 15 ? SwarmThreshold(encounter.Battle.Id, order - 128) : null,
-                KrakenPursuit: row.IdentityExpression is ("KRAKEN_HEAD" or "KRAKEN_ARM" or "KRAKEN_LEG"));
-            deployments.Add(new(definition, BattleFaction.Enemy, order,
-                BattleControl.Automatic, new BattleStrategyRef("source-orders"),
-                new(row.Position.X, row.Position.Y), initialization));
-            actorInputs.Add(actorInput);
+            deployments.Add(deployment);
+            actorInputs.Add(new(deployment.Actor, enemy.MaxHp, enemy.MaxMp, null, null, null, 0, null));
         }
         var terrain = encounter.Terrain.Select(value => value switch
         {
@@ -139,9 +93,13 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         }).ToArray();
         var regions = encounter.Regions.Select(region => new BattleActivationRegion(region.Id,
             region.Vertices.Select(point => new MapPosition(point.X, point.Y))));
-        var healing = definitions.Spells.Values.Where(spell => spell.Code == "HEAL" && spell.Power != 255 && spell.Radius == 0 &&
+        var healing = definitions.Spells.Values.Where(spell => spell.Code == "HEAL" && (spell.Power != 255 || definitions.Enemies.Values.Any(enemy => enemy.Spells.Any(s => s.Spell == "HEAL" && s.Level == 4))) && spell.Radius == 0 &&
             spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE")
             .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange))
+            .Concat(definitions.Spells.Values.Where(spell => spell is { Code: "AURA", Level: 1 } &&
+                definitions.Enemies.Values.Any(enemy => enemy.Spells.Any(s => s.Spell == "AURA")))
+                .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange,
+                    spell.MaximumRange, HealingTargets.AuraRadius, spell.Radius)))
             .Concat(PrivateBattleActionBindings.PoisonCure(definitions));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         EnemyDropRow? drop = encounter.Battle.Id switch
@@ -183,6 +141,65 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         return new(new("private-encounter", [battle], definitions), inputStart);
     }
 
+
+    private static BattleDeploymentDefinition Enemy(PrivateBattleDefinitions definitions, EncounterPlacement row,
+        int order, SourceEnemyDefinition enemy)
+    {
+        byte spawnMode = row.Behavior.SpawnExpression switch
+        {
+            "STARTING" => 0,
+            "HIDDEN" => 2,
+            _ => throw Unsupported("spawn-expression", "placements.spawn"),
+        };
+        Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP" ||
+            row.ItemExpression is ("POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP"),
+            "placement-item-refresh", "placements.item", true);
+        byte commandset = row.AiCommandsetExpression switch
+        {
+            "HEALER1" => 0, "HEALER3" => 2, "ATTACKER1" => 6, "ATTACKER2" => 7,
+            "SENTRY" => 8, "ATTACKER3" => 9, "LEADER" => 14, "SWARM" => 15,
+            _ => throw Unsupported("source-commandset", "placements.aiCommandset"),
+        };
+        var actor = new ActorRef("enemy-" + (order - 128).ToString(CultureInfo.InvariantCulture));
+        Require(enemy.InitialStatusExpression == "NONE" && enemy.SpellPower is "REGULAR" or "ENHANCED",
+            "enemy-derived-state", "enemy.initialStatus/spellPower", true);
+        var match = Regex.Match(enemy.AiBitfieldExpression, "^PRIORITYMOD_([0-9]+)(\\|BIT4)?(\\|BIT5)?$", RegexOptions.CultureInvariant);
+        Require(match.Success && byte.TryParse(match.Groups[1].Value, out byte _) && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) <= 15,
+            "source-ai-word", "enemy.aiBitfield", true);
+        ushort enemyAi = (ushort)((int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) << 12) |
+            (match.Groups[2].Success ? 16 : 0) | (match.Groups[3].Success ? 32 : 0));
+        var items = enemy.Items.Select(item => (ushort)(definitions.Items.Values.Single(value => value.Code == item.Item).Id | (item.Equipped ? 128 : 0))).ToArray();
+        if (row.ItemExpression != "NOTHING")
+        {
+            // InitializeEnemyItems -> AddItem masks with $807F. Source $6000 stores0.
+            int empty = System.Array.FindIndex(items, word => (word & 127) == 127);
+            if (empty >= 0)
+            {
+                string code = row.ItemExpression.Split('|')[0];
+                items[empty] = definitions.Items.Values.Single(value => value.Code == code).Id;
+            }
+        }
+        var spells = enemy.Spells.Select(spell => spell.Spell == "NOTHING" ? (byte)63 :
+            (byte)(definitions.Spells.Values.Single(value => value.Code == spell.Spell && value.Level == spell.Level).BaseId | ((spell.Level - 1) << 6))).ToArray();
+        var definition = new BattleActorDefinition(actor, BattleClassRule.Ordinary, enemy.Level, enemy.MaxHp, enemy.MaxMp, enemy.BaseAttack,
+            enemy.BaseDefense, (byte)(enemy.BaseAgility & 127), (enemy.BaseAgility & 128) != 0, enemy.BaseMovement,
+            enemy.Spells.Where(spell => spell.Spell != "NOTHING").SelectMany(spell => Enumerable.Range(1, spell.Level)
+                .Select(level => new SpellRef(spell.Spell.ToLowerInvariant(), (byte)level))),
+            physical: PrivateBattleActionBindings.Physical(definitions, enemy.ProwessExpression, items,
+                leader: false, gold: definitions.EnemyGold[enemy.Id].Gold,
+                unarmedMaximum: enemy.Code switch { "KRAKEN_ARM" => 2, "KRAKEN_HEAD" => 3, _ => 1 },
+                cannotCounter: enemy.Code == "KRAKEN_HEAD"),
+            mover: Mover(enemy.MovementType), sourceLoadout: new(items, spells),
+            equipment: PrivateBattleActionBindings.EnemyEquipment(definitions, enemy.BaseAttack, items),
+            resistance: PrivateAttackSpellBindings.Resistance(enemy.ResistanceExpression), enhancedSpellPower: enemy.SpellPower == "ENHANCED");
+        var initialization = new BattleDeploymentInitialization(enemyAi, spawnMode, row.Behavior.PrimaryRegion,
+            row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
+            Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
+            SwarmThreshold: commandset == 15 ? SwarmThreshold(definitions.Encounter.Battle.Id, order - 128) : null,
+            KrakenPursuit: row.IdentityExpression is ("KRAKEN_HEAD" or "KRAKEN_ARM" or "KRAKEN_LEG"));
+        return new(definition, BattleFaction.Enemy, order, BattleControl.Automatic, new BattleStrategyRef("source-orders"),
+            new(row.Position.X, row.Position.Y), initialization) { SourceEnemy = enemy.Id };
+    }
 
     private static (BattleDeploymentDefinition Deployment, BattleActorStartInput Start) Ally(
         PrivateBattleDefinitions definitions, PrivateAllyStart input, MapPosition position)

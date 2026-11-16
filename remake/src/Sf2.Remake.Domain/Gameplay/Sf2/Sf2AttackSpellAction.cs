@@ -22,7 +22,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         spell.RequireSupported(enemy: !actor.IsAlly);
         if (actor.Hp == 0 || (actor.IsAlly ? actor.Control != BattleControl.Player :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
-                !sword && key is not ({ Value: "blaze" or "freeze" or "blast" or "aqua", Level: 1 } or { Value: "blaze" or "blast" or "freeze", Level: 2 })))
+            key.Value == "bolt" && !sword))
             throw new BattleRuleException("attack-spell-caster", "actor", true);
         if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("attack-spell-status", "actor.status", true);
@@ -89,9 +89,9 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         bool ineffective = taros?.IsTaros(targets[0]) == true;
         foreach (var target in targets)
         {
-            int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
+            int power = SpellPower(actor, spell, action.ItemSlot.HasValue);
             int quarter = power / 4;
-            int damage = PotentialDamage(actor, target, spell);
+            int damage = ResistedDamage(target, spell, power);
             bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;
             if (ineffective && taros!.IsTaros(target))
             {
@@ -136,9 +136,14 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         }
     }
 
-    internal static int PotentialDamage(BattleActorState actor, BattleActorState target, AttackSpellDefinition spell)
+    private static int SpellPower(BattleActorState actor, AttackSpellDefinition spell, bool item) =>
+        item ? spell.Power : actor.Definition.CastPower(spell.Power);
+
+    internal static int PotentialDamage(BattleActorState actor, BattleActorState target, AttackSpellDefinition spell, bool item = false) =>
+        ResistedDamage(target, spell, SpellPower(actor, spell, item));
+
+    private static int ResistedDamage(BattleActorState target, AttackSpellDefinition spell, int power)
     {
-        int power = actor.Definition.Physical!.Promoted ? spell.Power * 5 / 4 : spell.Power;
         int quarter = power / 4;
         int resistance = target.Definition.Resistance >> (int)spell.Element & 3;
         return resistance switch { 1 => power - quarter, 2 => power / 2, 3 => power + quarter, _ => power };

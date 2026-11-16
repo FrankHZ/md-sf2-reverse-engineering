@@ -402,7 +402,9 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
                 reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
-        Require(actor.Mp >= spell.MpCost);
+        // The source enemy HEAL level lookup can approve a cheaper packed key.
+        // Its scripted MP reaction then clamps the actual selected cost at zero.
+        Require(Sf2HealingRule.CanPay(actor, spell));
         Require(Reward is null || Reward.Actor == actorRef && Reward.Amount > 0);
         uint seed = before.MainSeed;
         // The rule owns draw count, purpose and range. This boundary checks that
@@ -516,7 +518,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
         AttackItemSlot.HasValue ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
-            ? actor.With(mp: checked((byte)(actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)))) : actor));
+            ? actor.With(mp: (byte)Math.Max(0, actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost))) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)
     {

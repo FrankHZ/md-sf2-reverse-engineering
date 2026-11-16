@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
@@ -59,12 +60,25 @@ internal static class BattleEntry
         var world = current.Exploration ?? throw new BattleRuleException("entry-mode", "entry");
         if (!definition.Encounters.TryGetValue(selected.Encounter, out var encounter))
             throw new BattleRuleException("missing-encounter", "entry.encounter");
+        var baseEncounter = encounter;
+        uint main = world.Party.MainSeed;
         if (selected.RepeatUpgradeLevel is { } upgrade && selected.CompletedFlag is { } done && story.Flags.Contains(done))
         {
             var leader = encounter.Deployments.Single(row => row.Initialization?.AllyPartyMember == 0);
             var carried = world.Party.Actors.FirstOrDefault(row => row.Actor == leader.Actor);
-            if ((carried?.Progress?.Level ?? leader.Definition.Level) >= upgrade)
-                throw new BattleRuleException("repeat-enemy-upgrade", "encounter.placements", true);
+            int quotient = RepeatEnemySelection.Quotient(carried?.Progress?.Level ?? leader.Definition.Level,
+                leader.Definition.Growth?.ClassId ?? 0, upgrade);
+            if (quotient > 0)
+            {
+                var ids = new List<byte>();
+                foreach (var row in encounter.Deployments.Where(row => row.Faction == BattleFaction.Enemy))
+                {
+                    if (row.SourceEnemy is not { } original || row.Replacements is null)
+                        throw new BattleRuleException("repeat-enemy-upgrade", "encounter.placements", true);
+                    ids.Add(RepeatEnemySelection.Select(original, row.Definition.Mover, quotient, ref main));
+                }
+                encounter = RepeatEnemySelection.Bind(encounter, ids);
+            }
         }
         if (world.Party.NewBattle is not null && story.Flags.Contains(88))
             throw new BattleRuleException("suspended-battle-entry", "entry.flags", true);
@@ -90,12 +104,17 @@ internal static class BattleEntry
         if (definition.EncounterStarts.TryGetValue(selected.Encounter, out var defaults))
         {
             var carried = world.Party.Actors.ToDictionary(input => input.Actor);
+            var starts = defaults.Actors.ToDictionary(input => input.Actor);
             actors = encounter.Deployments.Select(deployment =>
-                deployment.Faction == BattleFaction.Ally && carried.TryGetValue(deployment.Actor, out var input)
-                    ? input with { PositionOverride = null }
-                    : defaults.Actors.Single(input => input.Actor == deployment.Actor)).ToArray();
+            {
+                if (deployment.Faction == BattleFaction.Ally && carried.TryGetValue(deployment.Actor, out var input))
+                    return input with { PositionOverride = null };
+                var start = starts[deployment.Actor];
+                return ReferenceEquals(encounter, baseEncounter) || deployment.Faction != BattleFaction.Enemy ? start :
+                    start with { Hp = deployment.Definition.MaxHp, Mp = deployment.Definition.MaxMp };
+            }).ToArray();
         }
-        var input = new BattleStartInput(selected.Encounter, actors, world.Party.MainSeed,
+        var input = new BattleStartInput(selected.Encounter, actors, main,
             world.Party.ThinkingSeed, world.Party.Gold,
             world.Party.NewBattle is { } policy ? policy with { SkipIntro = false, BeforeBattleRouted = true } : null, active, world.Party.ItemCustody,
             deathCredit: world.Party.DeathCredit ?? (encounter.Poison ? new BattleDeathCredit(null) : null));

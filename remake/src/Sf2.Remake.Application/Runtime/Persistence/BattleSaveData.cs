@@ -14,7 +14,7 @@ public sealed record SavedBattleStory(IReadOnlyList<int> Flags, IReadOnlyDiction
     EntityRef? Speaker, bool? EntityServices, bool WindowFixPending, FieldReturnAnchor? SaveAnchor,
     SavedBattleMusic Music, SavedBattlePlayer Player, SavedRaft? Raft = null);
 public sealed record BattleSaveData(SaveCompatibility Compatibility, int BattleRecipeRevision,
-    SavedBattleRoute Route, BattleContinuationData Battle, SavedBattleStory Story);
+    SavedBattleRoute Route, BattleContinuationData Battle, SavedBattleStory Story, IReadOnlyList<byte>? EnemyDefinitions = null);
 public sealed record BattleSaveLocation(string Encounter, int Round, string Actor);
 public sealed record BattleSaveAvailability(Guid SessionId, long Revision, BattleSaveLocation? Location, string? Error)
 {

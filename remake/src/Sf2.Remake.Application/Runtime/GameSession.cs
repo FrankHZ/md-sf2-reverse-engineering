@@ -73,7 +73,7 @@ public sealed class GameSession
     public BattleMovementRange? QueryBattleMovementRange() => BattleMovementQuery.Query(Current);
 
     public BattleSceneDefinition? ActiveBattleScenes => Current.Mode == SessionMode.Battle
-        ? Definition.ScenesFor(Current.Battle.Definition.Encounter) : null;
+        ? Definition.ScenesFor(Current.Battle.Definition) : null;
 
     public static SessionStartOutcome Start(IScenarioSource source) => Start(source, RuleCompositions.Sf2());
 

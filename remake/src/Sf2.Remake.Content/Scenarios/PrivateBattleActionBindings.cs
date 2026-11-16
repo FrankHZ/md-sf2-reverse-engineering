@@ -86,6 +86,8 @@ internal static class PrivateBattleActionBindings
             "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Orc,
             "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.OneIn8WithHalfBonus,
             "CRITICAL150_1IN4|DOUBLE_1IN8|COUNTER_1IN8" => PhysicalCriticalRule.OneIn4WithFrequentDoubleAndCounter,
+            "CRITICAL_SILENCE|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.OozeSilence,
+            "CRITICAL125_1IN4|DOUBLE_1IN8|COUNTER_1IN16" => PhysicalCriticalRule.MasterMonk,
             "CRITICAL_SILENCE|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Silence,
             "CRITICAL_POISON|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Poison,
             "CRITICAL_STUN|DOUBLE_1IN32|COUNTER_1IN32" => PhysicalCriticalRule.Stun,

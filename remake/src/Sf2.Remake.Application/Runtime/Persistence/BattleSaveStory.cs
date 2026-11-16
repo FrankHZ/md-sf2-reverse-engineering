@@ -78,7 +78,7 @@ internal static class BattleSaveStory
                 "return-population");
             if (battle.Visuals is { } visuals)
                 foreach (var actor in battle.Actors) _ = visuals.Resolve(actor.Actor);
-            Require(definition.ScenesFor(battle.Definition.Encounter)?.FieldDeath is { } field &&
+            Require(definition.ScenesFor(battle.Definition)?.FieldDeath is { } field &&
                 battle.Actors.Where(a => !a.IsAlly).All(a => field.EnemySprites.TryGetValue(a.Actor, out int sprite) &&
                     world.Visuals!.Sprites.ContainsKey(sprite)), "return-sprite-resource");
         }

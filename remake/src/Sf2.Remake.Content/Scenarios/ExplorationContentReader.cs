@@ -368,7 +368,7 @@ internal static class ExplorationContentReader
             route.TryGetProperty("triggerX", out _) ? Number(route, "triggerX", 0, 63) : null,
             route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null,
             // DetermineBattleUpgrade first has a positive quotient at battle index + 10.
-            // The private reader currently admits only unpromoted classes and the base formation.
+            // Each encounter supplies its own source index and separately admitted content.
             RepeatUpgradeLevel: battle.Definition.PrivateDefinitions is null ? null : encounter switch
             {
                 "battle-14" => 24,

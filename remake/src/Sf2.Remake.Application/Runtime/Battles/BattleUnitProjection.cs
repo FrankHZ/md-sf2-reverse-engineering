@@ -19,7 +19,7 @@ internal static class BattleUnitProjection
 
     internal static string Name(ScenarioDefinition definition, SessionSnapshot current, BattleActorState actor)
     {
-        var scenes = definition.ScenesFor(current.Battle.Definition.Encounter);
+        var scenes = definition.ScenesFor(current.Battle.Definition);
         int member = actor.Deployment.Initialization?.AllyPartyMember ?? actor.ProcessingOrder;
         bool admitted = actor.IsAlly
             ? scenes is not null && member >= 0 && member < scenes.MemberNames.Count && !string.IsNullOrWhiteSpace(scenes.MemberNames[member])
@@ -37,7 +37,7 @@ internal static class BattleUnitProjection
         string? expression = classId is { } key ? definition.PrivateDefinitions?.Classes.GetValueOrDefault(key)?.NameExpression : null;
         string? className = expression is { Length: >= 2 } && expression[0] == '"' && expression[^1] == '"' ? expression[1..^1] : null;
         return new(actor.Actor, actor.IsAlly, Name(definition, current, actor),
-            NameIndex(actor, definition.ScenesFor(current.Battle.Definition.Encounter)), current.Story.Names.GetValueOrDefault(actor.Actor.Value),
+            NameIndex(actor, definition.ScenesFor(current.Battle.Definition)), current.Story.Names.GetValueOrDefault(actor.Actor.Value),
             classId, className, actor.IsAlly ? actor.Level : null,
             Stat(definition, actor.Hp), Stat(definition, actor.MaxHp), Stat(definition, actor.Mp), Stat(definition, actor.MaxMp), actor.Status);
     }

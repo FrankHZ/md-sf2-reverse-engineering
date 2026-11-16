@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Application.Gameplay;
 
@@ -100,8 +101,10 @@ public sealed class SessionRules
             if (!battle.GetActor(actor).Spells.Contains(spellRef) ||
                 !battle.Definition.Spells.TryGetValue(spellRef, out var admitted) || spell != admitted)
                 throw new InvalidOperationException("Invalid admitted spell.");
-            if (!spell.IsAura && spellRef.Level is < 1 or > 3) throw new BattleRuleException("healing-animation", "spell.level", true);
-            if (battle.GetActor(actor).Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
+            if (!spell.IsAura && spellRef.Level is < 1 or > 3 && spellRef is not { Value: "heal", Level: 4 })
+                throw new BattleRuleException("healing-animation", "spell.level", true);
+            if (!Sf2HealingRule.CanPay(battle.GetActor(actor), spell))
+                throw new BattleRuleException("insufficient-mp", "actor.mp");
             return new(spell.MinimumRange, spell.MaximumRange, Spell: spell);
         }
         public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>

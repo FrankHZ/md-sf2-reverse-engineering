@@ -16,6 +16,9 @@ internal static class PrivateAttackSpellBindings
                 (source.Code, source.Level) switch
                 {
                     ("BLAZE", 1) => (11, 2, 6, 2, 0, AttackSpellElement.Fire),
+                    ("BLAZE", 3) => (11, 10, 15, 2, 1, AttackSpellElement.Fire),
+                    ("BLAST", 3) => (14, 8, 12, 2, 1, AttackSpellElement.Wind),
+                    ("AQUA", 2) => (40, 0, 15, 1, 0, AttackSpellElement.Ice),
                     ("BLAZE", 2) => (11, 6, 10, 2, 1, AttackSpellElement.Fire),
                     ("FREEZE", 2) => (12, 7, 12, 2, 1, AttackSpellElement.Ice),
                     ("FREEZE", 1) => (12, 3, 10, 2, 0, AttackSpellElement.Ice),

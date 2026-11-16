@@ -5,6 +5,12 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal sealed class Sf2HealingRule : IHealingRule
 {
+    // DetermineHealingSpellLevel can select HEAL3/4 using a cheaper packed key.
+    internal static bool CanPay(BattleActorState actor, HealingSpellDefinition spell) =>
+        actor.Mp >= spell.MpCost || actor.Control == BattleControl.Automatic && !actor.IsAlly &&
+        actor.Spells.Contains(new SpellRef("heal", 4)) && spell.Spell.Value == "heal" &&
+        (spell.Spell.Level == 3 && actor.Mp >= 3 || spell.Spell.Level == 4 && actor.Mp >= 14);
+
     public HealingSpellDefinition RequireSpell(EngineBattleState battle, ActorRef actorRef, SpellRef spellRef)
     {
         var actor = battle.GetActor(actorRef);
@@ -15,21 +21,20 @@ internal sealed class Sf2HealingRule : IHealingRule
             throw new BattleRuleException("poison-cure-definition", "spell", true);
         if (spell.CuresPoison && !actor.IsAlly)
             throw new BattleRuleException("enemy-poison-cure", "spell", true);
-        if (!spell.IsAura && spellRef.Level is < 1 or > 3)
+        if (!spell.IsAura && spellRef.Level is < 1 or > 4)
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
-                spellRef is not { Value: "heal", Level: >= 1 and <= 3 } ||
+                spellRef is not ({ Value: "heal", Level: >= 1 and <= 4 } or { Value: "aura", Level: 1 }) ||
                 !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (spell.IsAura)
         {
             HealingTargetRules.ValidateAura(battle.Definition);
-            if (!actor.IsAlly || actor.Control != BattleControl.Player ||
-                !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
+            if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
                 throw new BattleRuleException("aura-caster", "actor", true);
         }
-        if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
+        if (!CanPay(actor, spell)) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return spell;
     }
 
@@ -53,8 +58,10 @@ internal sealed class Sf2HealingRule : IHealingRule
         BattleReaction[] reactions = targets.Select(target =>
         {
             if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal");
-            int recovery = spell.Targets == HealingTargets.AuraAllAllies ? target.MaxHp - target.Hp :
-                Math.Min(spell.Power, target.MaxHp - target.Hp);
+            bool fullRecovery = spell.Targets == HealingTargets.AuraAllAllies || spell.Spell is { Value: "heal", Level: 4 } && spell.Power == 255;
+            // Authored healing supplies adjusted power; imported enemies carry the raw spell operand.
+            int power = fullRecovery ? target.MaxHp : actor.Deployment.SourceEnemy.HasValue ? actor.Definition.CastPower(spell.Power) : spell.Power;
+            int recovery = Math.Min(power, target.MaxHp - target.Hp);
             return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
                 (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);
         }).ToArray();
