@@ -120,6 +120,22 @@ git clone --no-local -- $target $wiki
 加入一篇含跨页锚点的公开设计文档。从该工具副本运行相同入口。核对独立读回的
 `git ls-tree --name-only HEAD`、`git show HEAD:<页面>` 和纠正前后的受管路径差异。
 
+### 从首页或侧栏查 ROM 证据
+
+所选主仓提交包含[ROM 分块总表](../research/rom-block-ledger.md)时，首页与侧栏各显示一个
+“ROM 分块总表（主仓英文）”链接。两处都打开该提交的总表。早于总表的来源保留原有设计导航。
+可用来源 `ff68b54341806563afc7c195a0a46225d63e3c0d` 在本地 bare 目标上演练，独立读回后
+分别检查 `Home.md` 和 `_Sidebar.md` 的链接含有完整来源 SHA，再沿总表核对以下路径：
+
+- 查地图时，在 **Physical sections** 的 S08 行打开 **Block and layout ranges by map**。
+  页首的 **Map07's layout** 定位到 Map07 与 Map46 共用的布局行，同段的 **Decode and ROM parity**
+  通向[解码与 ROM 比对证据](../research/world/map-content.md#private-binary-payloads)。
+- 查具名资源时，从总表首段的 **family and topic** 打开家族表。例如 `portraits` 行的
+  **Portrait graphics** 通向[肖像数据头与压缩流合同](../design/contracts/graphics/portrait-graphics-data.md#payload-header-and-stream-partition)。
+- 查尚未解释的字节时，在 **Documented subranges** 找到 `S17-ally-tail`，沿 **Canonical entities**
+  打开[队员记录证据](../research/party/static-core-data.md#canonical-entities)。总表给出该段的
+  12 字节物理范围，其游戏用途仍为 **Unknown**。
+
 ## 页面与来源
 
 审计基准是 Wiki 提交 `c027ddb07884c481cf06d20238065051d18ed093`。该版本的正文镜像来自
