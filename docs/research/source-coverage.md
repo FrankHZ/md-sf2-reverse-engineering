@@ -13,6 +13,8 @@ functions, one H3 fixture can exercise several branches, and a parsed data table
 runtime semantics of every consumer. Report the evidence surface with explicit denominators instead
 of treating fixture or address counts as line coverage.
 
+For a ROM file offset, start with the [USA ROM block ledger](rom-block-ledger.md). It records physical sections, split-file coverage and byte-level evidence owners.
+
 Story-content coverage has a separate [chapter and connection owner](./story-content-coverage.md).
 It organizes accepted static research through the ending and Battle0, with explicit encounter and
 optional-content gaps; those prose owners do not change this ledger's fixture or index denominators.

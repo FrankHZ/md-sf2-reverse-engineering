@@ -52,6 +52,8 @@ and 22 reuse payload 12, while slot 29 reuses payload 13. Each container holds a
 two Stack-compressed tile streams addressed through three relative-offset words. All 54 streams
 decode to exactly 6,144 bytes, for 331,776 bytes total, and all table/payload bytes match the ROM.
 
+The ROM ledger locates the [portrait pointers](../rom-block-ledger.md#s15-table) and their [stored payloads](../rom-block-ledger.md#s15-payloads).
+
 The 56-entry portrait pointer table has 52 unique containers and four aliases. Each container holds
 counted four-byte eye entries, counted four-byte mouth entries, one 32-byte palette, and a
 Stack-compressed tile stream. All 52 streams decode to exactly 2,048 bytes; the corpus contains 261

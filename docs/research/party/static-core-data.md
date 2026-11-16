@@ -41,6 +41,8 @@ zero field mismatches.
 
 ## ROM Table Map
 
+For physical addresses across the cartridge, see the [item](../rom-block-ledger.md#s03-items), [spell](../rom-block-ledger.md#s03-spells) and [trailing ally slots](../rom-block-ledger.md#s17-ally-tail) in the ROM block ledger.
+
 Addresses use half-open ranges: `[start, endExclusive)`.
 
 | Table | ROM range | Records | Fixed bytes/record |
