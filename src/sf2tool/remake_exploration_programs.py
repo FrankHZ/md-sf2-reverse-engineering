@@ -385,6 +385,14 @@ class OriginalPrograms:
                 result.append({"op": "name-member", "member": registers["d0"]})
             elif op == "jsr" and args == ["GetEntityPortaitAndSpeechSfx"]:
                 speaker = self.entity(str(registers["d0"]))
+                if Path(relative).name.startswith("s4_descriptions"):
+                    result.append({"op": "speaker", "entity": speaker})
+            elif (
+                op == "jsr"
+                and args == ["DisplayCurrentPortrait"]
+                and Path(relative).name.startswith("s4_descriptions")
+            ):
+                result.append({"op": "open-speaker-portrait"})
             elif op == "jsr" and args == ["DisplayCurrentPortrait"]:
                 if narration and speaker is None:
                     speaker, event_speaker = saved_speaker
@@ -480,23 +488,12 @@ class OriginalPrograms:
                 result.append({"op": "request-current-map"})
             elif op == "executeSubroutine" and args[0] in self.raw:
                 result.append({"op": "call", "target": _location(self.compile(args[0]))})
-            elif op == "jsr" and args in (["j_GetMaxHp"], ["j_GetMaxMp"]):
-                setter = "j_SetCurrentHp" if args == ["j_GetMaxHp"] else "j_SetCurrentMp"
-                if (
-                    index < len(rows)
-                    and rows[index]["opcode"] == "jsr"
-                    and rows[index]["operandText"] == setter
-                ):
-                    index += 1
-                    result.append(
-                        {
-                            "op": "restore-member-resource",
-                            "member": registers["d0"],
-                            "hp": setter == "j_SetCurrentHp",
-                        }
-                    )
-                else:
-                    result.append(self.native(op, source))
+            elif op == "jsr" and (
+                resource := services.member_resource(self, args, registers, rows, index)
+            ):
+                instruction, consumed = resource
+                result.append(instruction)
+                index += consumed
             elif op == "jsr" and args == ["(WaitForViewScrollEnd).l"]:
                 result.append(
                     {
@@ -554,10 +551,14 @@ class OriginalPrograms:
                     }
                 )
             elif op == "txt":
+                text = services.raw_display_text()
+                if Path(relative).name.startswith("s4_descriptions"):
+                    # CheckArea starts DIALOGUE_NAME_INDEX_1 at Bowie for a field investigation.
+                    text["nameMember"] = registers.get("nameMember", 0)
                 result.extend(
                     [
                         {"op": "text-cursor", "text": self.number(args[0])},
-                        services.raw_display_text(),
+                        text,
                     ]
                 )
             elif (

@@ -71,6 +71,7 @@ internal static class CaravanContentReader
                 Require(instruction switch
                 {
                     JumpProgram jump => !Reserved(jump.Target), CallProgram call => !Reserved(call.Target),
+                    BranchAlive branch => !Reserved(branch.Target),
                     BranchFlag branch => !Reserved(branch.Target), BranchEntityCoordinates branch => !Reserved(branch.Target),
                     SourceRandomBattle or TransferToMap or QueueMapWarp or LoadSceneMap or LoadSceneEntities or ReloadSceneMap => false,
                     AddMapEntity or HideMapEntity => false,

@@ -41,7 +41,7 @@ internal static class FieldSearch
                 if (description?.Program is { } program)
                 {
                     List<SessionObservation> observations = [];
-                    var started = ProgramRunner.Commit(current, current.Active, current.Story.Copy(program),
+                    var started = ProgramRunner.Commit(current, current.Active, current.Story.Copy(program, eventCaller: new AreaDescriptionContext(), clearSpeaker: true),
                         observations, "field-search", FieldSearchKind.Description.ToString());
                     return ProgramRunner.Run(definition, started, observations, rules);
                 }

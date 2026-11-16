@@ -65,3 +65,30 @@ def description_service(op, args, registers):
     if op == "jsr" and args == ["(Sleep).w"]:
         return [{"op": "wait-ticks", "ticks": registers["d0"]}]
     return None
+
+
+def member_resource(compiler, args, registers, rows, index):
+    """Bind a field member's HP test or the adjacent max-resource restore service."""
+    if "d0" not in registers or index >= len(rows):
+        return None
+    member = registers["d0"]
+    following = rows[index]
+    if args == ["j_GetCurrentHp"] and index + 1 < len(rows):
+        branch = rows[index + 1]
+        if (following["opcode"], following["operandText"]) == ("tst.w", "d1") and branch[
+            "opcode"
+        ] in ("beq.s", "bne.s"):
+            target = compiler.compile(branch["operandText"]).lower().replace("_", "-")
+            return {
+                "op": "branch-alive",
+                "actor": f"ally-{member}",
+                "whenAlive": branch["opcode"] == "bne.s",
+                "target": {"program": target, "instruction": 0},
+            }, 2
+    if args in (["j_GetMaxHp"], ["j_GetMaxMp"]):
+        hp = args == ["j_GetMaxHp"]
+        if following["opcode"] == "jsr" and following["operandText"] == (
+            "j_SetCurrentHp" if hp else "j_SetCurrentMp"
+        ):
+            return {"op": "restore-member-resource", "member": member, "hp": hp}, 1
+    return None

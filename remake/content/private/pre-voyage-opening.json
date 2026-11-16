@@ -41,7 +41,8 @@
     50,
     23,
     67,
-    51
+    51,
+    32
   ],
   "battles": [
     1,
@@ -139,7 +140,7 @@
     "20": 9
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Map51 return.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -514,7 +515,9 @@
     10,
     11,
     61,
-    50
+    50,
+    67,
+    32
   ],
   "basePalettes": true,
   "audioCues": [

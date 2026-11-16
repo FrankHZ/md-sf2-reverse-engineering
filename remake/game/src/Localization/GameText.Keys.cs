@@ -706,6 +706,7 @@ internal static partial class GameText
         ["save.destination.ribble-welcome"] = 0,
         ["save.destination.dark-caves"] = 0,
         ["save.destination.mount-volcano"] = 0,
+        ["save.destination.fairy-cave"] = 0,
         ["save.destination.harpy-pond"] = 0,
         ["save.destination.taros-shrine"] = 0,
         ["save.destination.southwest-parmecia"] = 0,
