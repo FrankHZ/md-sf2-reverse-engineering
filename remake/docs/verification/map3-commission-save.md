@@ -124,7 +124,64 @@ The crash did not recur in these comparisons. Verbose output identifies each war
 `AudioStreamWAV` and `AudioStreamPlaybackWAV`, each with reference count 1.
 [Audio lifetime observation](host.md#audio-resource-lifetime-observation)
 
-**Unknown:** Whether either leaked object participated in the original fault, and whether ordinary
-player exits can trigger it. Keep #1716 open. A fresh finalizer fault or unexpected native exit on
-ordinary Quit warrants collecting its build, path through the UI, process status, logs and matching
-local dump. A crash during play or lost progress changes the severity.
+### Later finalizer faults and ordinary Quit
+
+The Map3 capture/restore fix shipped in [#1714](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1714).
+The [first shutdown investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1741)
+separately established native-exit capture and the windowed controls above.
+
+**Confirmed:** Three [East Shrine gate observations](../application/east-shrine-panel.md) on
+2026-11-13 have the same four managed frames as the Map3 crash. The English
+`admitted14` and Chinese `natural03` observers ended with “no battle”. The English
+`desert-release` observer captured the expected `battle-entry-unavailable` result before the
+fault. For PIDs 22864, 48040 and 38492 respectively, Windows events 1026/1000 and the matching
+minidumps identify a read at zero at the same CoreCLR 10.0.8 offset. ClrMD 4.2.751201 with the
+matching DAC places the fault on each finalizer thread. Each dump contains the stack root for
+`GodotObject.Finalize()` and omits the target object's memory page. The exception code is
+a Windows exception record. The gate handoff reports 0xC0000005, but there is no separate
+per-sample process-handle receipt in those three directories. These cases extend the signature
+to English and to a different map and outcome.
+
+The [Battle15 handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1831)
+records ten cold observer runs with exit 0. Eight console logs warn of 2–10 live ObjectDB
+instances. Those non-verbose logs give counts only. The observer queues the host for deletion,
+waits six frames and calls `SceneTree.quit()`.
+
+**Confirmed:** The following independent runs reused the #1814 Debug build
+(adapter product revision `e03be159`, game and engine sources identical to accepted `0f274ac2`),
+registered Godot 4.7.2 .NET and Dummy audio. Each loaded a fresh copy of its seed and left it
+byte-identical. The three Map50 runs used the same post-Panel slot, package and Chinese settings.
+
+| Entry and exit owner | Evidence before exit | Native exit | Verbose ObjectDB output |
+| --- | --- | ---: | --- |
+| Map50, headless observer teardown | Witch Continue reached a settled field with F152. Observer queued the host for deletion, waited six frames and quit. | 0 | One WAV/playback pair |
+| Map50, headless host menu | Same Continue. F10 → Quit showed 取消 selected first. The observer selected 退出 and sent Enter. The game handled exit. | 0 | None |
+| Map50, ordinary Main on a non-displayed Windows desktop, no script | PID-targeted keys drove Witch Continue. After `WM_CLOSE` and Down, a read-only process snapshot found Map50 and `confirm-quit` selection 1. Enter ended the native process. | 0 | One WAV/playback pair |
+| Map61, headless gate observer | Continued the pre-battle elder slot with the retained 14-battle package, opened the gate and captured the unavailable Battle15 receipt before observer teardown. | 0 | One WAV/playback pair |
+
+To repeat in the prepared checkout, run each line serially with a new sample name. The private
+runner selects the registered native executable, isolates saves, settings, logs and temporary files,
+and waits on the process handle. The desktop case requires a supported client size. An initial
+1280×720 launch reached size recovery and exited 0 without establishing Map50. The first observer
+launcher's slot comparison also failed to open the path. Direct binary comparison of the same
+retained slot then passed. The failed checks remain with their samples.
+
+```powershell
+./local/issue1716/run.ps1 probe   map50-probe-new
+./local/issue1716/run.ps1 menu    map50-menu-new
+./local/issue1716/run.ps1 desktop map50-window-new
+./local/issue1716/run.ps1 gate    map61-gate-new
+```
+
+**Unknown:** The concrete wrapper and its allocating owner, whether it was either audio object,
+and whether an ordinary player exit can fault this way. The current controls reproduced the
+gameplay boundaries and the WAV/playback warning. All four processes exited normally. The
+[backend and SessionAudio comparisons](host.md#audio-resource-lifetime-observation) explain how a
+WAV/playback pair can survive immediate audio shutdown. No sample identifies a production object
+requiring a lifecycle change for the access violation.
+
+Reopen on a fault or unexpected native status after ordinary Quit/close, or on a new observer
+fault that identifies the wrapper or yields a reproducibly failing input. Preserve the build,
+language, slot copy, exit action and owner, terminal gameplay result, native PID/status, separate
+logs and matching private dump. A dump that includes the finalizing object's heap page can narrow
+ownership. A fault during play or loss of saved progress warrants immediate escalation.
