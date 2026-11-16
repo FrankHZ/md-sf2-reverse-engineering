@@ -67,7 +67,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         }
     }
 
-    internal ScenarioReadAccepted Read(string placement, string scene, string terrain, string core, string enemies, string gold, string? scenes)
+    internal ScenarioReadAccepted Read(string placement, string scene, string terrain, string core, string enemies, string gold, string? scenes, IReadOnlyList<byte>? repeatEnemies = null)
     {
         foreach (string path in new[] { placement, scene, terrain, core, enemies, gold })
             Require(!string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path), "private-input-selection", "private-inputs");
@@ -78,7 +78,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         var policy = new NewBattleStartPolicy("opening-new-game", "source-initialization", "", 0, false, true, true, false, false, null)
             { Origin = BattleStartOrigin.NewGame };
         var start = new PrivateBattleStart(encounter.Battle.Id, mainSeed, thinkingSeed, 0, policy, _baselines);
-        var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells, _fieldItems);
+        var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells, _fieldItems, repeatEnemies);
         // Movement is immutable class content; attack gets the admitted equipment contribution once.
         var baselines = _baselines.Select(ally => ally with
         {

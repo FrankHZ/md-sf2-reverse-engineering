@@ -28,9 +28,9 @@ internal static class HealingFairy
 
     internal static HealingFairyUpdate Begin(int level, uint seed, ActorRef actor)
     {
-        if (level is < 1 or > 3) throw new BattleRuleException("healing-animation", "spell.level", true);
+        if (level is < 1 or > 4) throw new BattleRuleException("healing-animation", "spell.level", true);
         List<BattleEffect> effects = [];
-        var fairies = new HealingFairyInstance[level == 3 ? 2 : 1];
+        var fairies = new HealingFairyInstance[Math.Max(1, level - 1)];
         for (int i = 0; i < fairies.Length; i++)
         {
             ushort y = (ushort)(128 + Draw(32, "setup-y", actor, ref seed, effects));

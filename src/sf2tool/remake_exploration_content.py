@@ -292,11 +292,21 @@ def prepare(
         if not isinstance(encounters, list) or len(encounters) > additional_count:
             raise ValueError("additional encounters exceed selected battle routes")
         for entry in encounters:
-            if not isinstance(entry, dict) or set(entry) not in (keys, keys - {"start"}):
+            if not isinstance(entry, dict) or set(entry) not in (
+                keys,
+                keys - {"start"},
+                (keys - {"start"}) | {"repeatEnemies"},
+            ):
                 raise ValueError("encounter input selection fields")
             if len(encounters) > 1 and "start" in entry:
                 raise ValueError("multiple additional encounters require product-only rows")
             for key, value in entry.items():
+                if key == "repeatEnemies":
+                    if not isinstance(value, list) or not all(
+                        type(i) is int and 0 <= i <= 102 for i in value
+                    ):
+                        raise ValueError("invalid repeat enemy definitions")
+                    continue
                 if key == "battleScenes" and value is None:
                     continue
                 relative = Path(value)

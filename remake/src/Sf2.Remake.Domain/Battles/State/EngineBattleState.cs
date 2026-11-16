@@ -36,6 +36,8 @@ public sealed class PhysicalCriticalRule
     public ushort DoubleChanceDenominator { get; }
     public static PhysicalCriticalRule Sleep { get; } = new(4, 0, true);
     public static PhysicalCriticalRule Silence { get; } = new(4, 0, doubleChanceDenominator: 16, counterChanceDenominator: 16, inflictsSilence: true);
+    public static PhysicalCriticalRule OozeSilence { get; } = new(4, 0, counterChanceDenominator: 16, inflictsSilence: true);
+    public static PhysicalCriticalRule MasterMonk { get; } = new(4, 2, doubleChanceDenominator: 8, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Poison { get; } = new(4, 0, inflictsPoison: true);
     public static PhysicalCriticalRule Stun { get; } = new(4, 0, inflictsStun: true);
     public bool InflictsStun { get; }
@@ -73,9 +75,10 @@ public sealed class BattleActorDefinition
         byte level, ushort maxHp, byte maxMp,
         byte attack, byte defense, byte agility, bool extraRoundAction, byte move, IEnumerable<SpellRef> spells,
         PhysicalActorDefinition? physical = null, BattleMover mover = BattleMover.Regular,
-        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null, BattleEquipmentDefinition? equipment = null, ushort resistance = 0)
+        BattleSourceLoadout? sourceLoadout = null, BattleGrowthDefinition? growth = null, BattleEquipmentDefinition? equipment = null, ushort resistance = 0, bool enhancedSpellPower = false)
     {
         Actor = actor; ClassRule = classRule; Resistance = resistance;
+        EnhancedSpellPower = enhancedSpellPower || physical?.Promoted == true;
         Level = level; MaxHp = maxHp; MaxMp = maxMp; Attack = attack; Defense = defense;
         Agility = agility; ExtraRoundAction = extraRoundAction; Move = move; Spells = Array.AsReadOnly(spells.ToArray()); Physical = physical;
         Mover = mover; SourceLoadout = sourceLoadout; Growth = growth; Equipment = equipment;
@@ -83,6 +86,8 @@ public sealed class BattleActorDefinition
     public ActorRef Actor { get; }
     public BattleClassRule ClassRule { get; }
     public ushort Resistance { get; }
+    private bool EnhancedSpellPower { get; }
+    internal int CastPower(int power) => EnhancedSpellPower ? power * 5 / 4 : power;
     public byte Level { get; }
     public ushort MaxHp { get; }
     public byte MaxMp { get; }
@@ -169,6 +174,8 @@ public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition
     int ProcessingOrder, BattleControl Control, BattleStrategyRef? AiStrategy, MapPosition Position,
     BattleDeploymentInitialization? Initialization = null, bool SourceAllyControl = false)
 {
+    internal byte? SourceEnemy { get; init; }
+    internal IReadOnlyDictionary<byte, BattleDeploymentDefinition>? Replacements { get; init; }
     public ActorRef Actor => Definition.Actor;
 }
 

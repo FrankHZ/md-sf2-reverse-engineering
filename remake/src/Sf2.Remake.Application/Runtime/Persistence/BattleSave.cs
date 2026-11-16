@@ -49,7 +49,12 @@ internal static class BattleSave
             AlreadyRefreshedAllies: true, RosterOnly: true, SkipIntro: false }) Fail("profile-unavailable");
         var route = BattleSaveStory.Locate(definition, current.Story.EnteringBattle!);
         BattleSaveStory.RequireMembership(definition, current.Story, current.Battle);
-        return new(compatibility, 1, route, BattleContinuationValues.Capture(current.Battle), BattleSaveStory.Capture(current.Story));
+        var battle = current.Battle;
+        var enemies = battle.Definition.Deployments.Where(row => row.Faction == BattleFaction.Enemy).ToArray();
+        var original = definition.Encounters[battle.Definition.Encounter].Deployments.Where(row => row.Faction == BattleFaction.Enemy);
+        bool replaced = !enemies.Select(row => row.SourceEnemy).SequenceEqual(original.Select(row => row.SourceEnemy));
+        return new(compatibility, replaced ? 2 : 1, route, BattleContinuationValues.Capture(battle), BattleSaveStory.Capture(current.Story),
+            replaced ? enemies.Select(row => row.SourceEnemy!.Value).ToArray() : null);
     }
 
     internal static void RequireStable(SessionSnapshot current, SessionRules rules)

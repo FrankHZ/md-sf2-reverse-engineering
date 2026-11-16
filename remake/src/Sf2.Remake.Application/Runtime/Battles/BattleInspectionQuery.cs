@@ -26,7 +26,7 @@ internal static class BattleInspectionQuery
         if (Unavailable(current, session, revision) is { } reason) return Reject(reason);
         var battle = current.Battle;
         var active = current.Selection!.Actor;
-        var scenes = definition.ScenesFor(battle.Definition.Encounter);
+        var scenes = definition.ScenesFor(battle.Definition);
         var actors = battle.Actors.Where(a => a.Hp > 0 && a.Initialized && BattleVisibility.OnBoard(current, a)).ToArray();
         var markers = actors.Select(a => new BattleInspectionMarker(a.Actor, a.Position!, a.IsAlly,
             BattleUnitProjection.Name(definition, current, a), BattleUnitProjection.NameIndex(a, scenes), current.Story.Names.GetValueOrDefault(a.Actor.Value))).ToArray();

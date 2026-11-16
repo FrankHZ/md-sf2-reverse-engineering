@@ -242,8 +242,8 @@ def world_dependencies(document: dict, world: Path) -> set[str]:
     dependencies = {
         value
         for row in document.get("encounters", [])
-        for value in row.values()
-        if value is not None
+        for key, value in row.items()
+        if key != "repeatEnemies" and value is not None
     }
     dependencies.update(
         f"audio-{sound['command']:02x}-{sound['timerB']:02x}/"
@@ -312,7 +312,14 @@ def prepare_church(
         )
 
         icons = identity_assets(
-            rom, upstream, listing, rom_assets, field_items=field_item_ids(world_document)
+            rom,
+            upstream,
+            listing,
+            rom_assets,
+            field_items=field_item_ids(world_document),
+            repeat_enemies={
+                i for row in document.get("encounters", []) for i in row.get("repeatEnemies", [])
+            },
         )
     if icons:
         presentation = world_document["presentation"]

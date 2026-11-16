@@ -14,6 +14,7 @@ public sealed record NeutralBattleSprite(int Sprite, int X, int Y, int Facing, i
 public sealed record FieldDeathVisual(IReadOnlyDictionary<int, int> AllySprites,
     IReadOnlyDictionary<ActorRef, int> EnemySprites, IReadOnlyList<string> ExitFrames, NeutralBattleSprite? Neutral = null);
 public sealed record BattleSceneTerrainVisual(string Background, string Ground);
+public sealed record EnemyAppearance(string Name, BattleSceneActorVisual Body, int MapSprite);
 public sealed record BattleSceneDefinition(string Encounter, string Background, string Ground,
     IReadOnlyDictionary<string, ExplorationRaster> Rasters,
     IReadOnlyDictionary<BattleClassRule, BattleSceneActorVisual> Allies,
@@ -22,7 +23,7 @@ public sealed record BattleSceneDefinition(string Encounter, string Background, 
     IReadOnlyList<BattleSceneTerrainVisual>? TerrainScenes = null,
     IReadOnlyDictionary<ActorRef, string>? EnemyNames = null,
     IReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>? Equipment = null,
-    IReadOnlyDictionary<ActorRef, byte>? EnemyNameIds = null)
+    IReadOnlyDictionary<ActorRef, byte>? EnemyNameIds = null, IReadOnlyDictionary<byte, EnemyAppearance>? Species = null)
 {
     public bool TryAllyVisual(BattleActorState actor, out BattleSceneActorVisual visual)
     {

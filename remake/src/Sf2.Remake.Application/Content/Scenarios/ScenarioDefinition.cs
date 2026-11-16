@@ -37,6 +37,27 @@ public sealed class ScenarioDefinition
     public IReadOnlyDictionary<string, BattleStartInput> EncounterStarts { get; }
     public IReadOnlyDictionary<string, BattleSceneDefinition> EncounterScenes { get; }
     public BattleSceneDefinition? ScenesFor(string encounter) => EncounterScenes.GetValueOrDefault(encounter);
+    // The Godot viewport retains resources by scene reference across frames. Bind a
+    // fresh roster once and release it when the live battle definition goes away.
+    private readonly ConditionalWeakTable<BattleDefinition, BattleSceneDefinition> _battleScenes = new();
+    public BattleSceneDefinition? ScenesFor(BattleDefinition battle)
+    {
+        var scene = ScenesFor(battle.Encounter);
+        if (scene?.Species is not { Count: > 0 } species || ReferenceEquals(battle, Encounters[battle.Encounter])) return scene;
+        return _battleScenes.GetValue(battle, value =>
+        {
+            var ids = value.Deployments.Where(row => row.SourceEnemy.HasValue)
+                .ToDictionary(row => row.Actor, row => row.SourceEnemy!.Value);
+            if (ids.All(row => scene.EnemyNameIds![row.Key] == row.Value)) return scene;
+            return scene with
+            {
+                EnemyNameIds = ids.AsReadOnly(),
+                EnemyNames = ids.ToDictionary(row => row.Key, row => species[row.Value].Name).AsReadOnly(),
+                Enemies = ids.ToDictionary(row => row.Key, row => species[row.Value].Body).AsReadOnly(),
+                FieldDeath = scene.FieldDeath! with { EnemySprites = ids.ToDictionary(row => row.Key, row => species[row.Value].MapSprite).AsReadOnly() },
+            };
+        });
+    }
     public PrivateBattleDefinitions? PrivateDefinitions { get; }
     public BattleStartOrigin StartOrigin { get; }
     public string Origin => PrivateDefinitions is null ? "public-authored-controlled-start" :

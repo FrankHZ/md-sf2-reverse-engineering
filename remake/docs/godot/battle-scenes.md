@@ -366,8 +366,9 @@ reads actual choices, label visibility/text, state, input results and subsequent
 actor/recipient names and live HP/MP. One cast is followed by each source-ordered recipient, including zero recovery.
 Target-specific recovery text and one EXP message require ordinary confirmation. Cast/reaction and
 switch stages complete after actual elapsed delivery; the same session then accepts next-turn
-movement. AURA does not use the HEAL1–3 fairy cursor, private rasters or original animation-selector
-claims. This is an intentional modern presentation boundary.
+movement. Authored AURA does not use the HEAL1–3 fairy cursor, private rasters or original animation-selector
+claims. The [Battle19 repeat](../application/battle19-repeat.md) uses the private Dark Bishop body and the
+HEALING_FAIRY selector for its AURA1.
 
 The scene clock and acknowledgement stop while hidden or focus-suspended, preserving paid resources
 and the wait token. Focus re-entry resumes without catch-up or duplicate completion. Presenter errors

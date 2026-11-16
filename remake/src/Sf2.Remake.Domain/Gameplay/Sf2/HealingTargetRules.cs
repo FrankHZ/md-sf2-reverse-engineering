@@ -44,14 +44,14 @@ internal static class HealingTargetRules
         if (!spell.IsAura) return [target];
         ValidateAura(battle.Definition);
         var caster = battle.GetActor(actor);
-        if (!caster.IsAlly || caster.Control != BattleControl.Player ||
+        if ((caster.IsAlly ? caster.Control != BattleControl.Player : caster.Control != BattleControl.Automatic) ||
             !(SilenceRules.Supported(caster.Status, battle.Definition.Poison) && (caster.Status & 0xC0) == 0))
             throw new BattleRuleException("aura-caster", "actor", true);
         var origin = center == actor ? destination : target.Position!;
         // Admitted live states have unique, in-map occupancy. No raw-memory overlap emulation.
         var actors = battle.Actors.ToDictionary(row => row.Actor);
         var targets = battle.Definition.Initialization!.SourceCombatants.OrderBy(row => row.Key)
-            .Where(row => row.Key < 30).Select(row => actors[row.Value])
+            .Where(row => caster.IsAlly ? row.Key < 30 : row.Key >= 128).Select(row => actors[row.Value])
             .Where(row => row.Hp > 0 && row.Position is not null &&
                 (spell.Targets == HealingTargets.AuraAllAllies || (row.ActivationWord & 8) == 0 &&
                     BattleRange.Contains(origin, row.Actor == actor ? destination : row.Position!, 0, spell.Radius)))
@@ -83,8 +83,10 @@ internal static class HealingTargetRules
                 throw new BattleRuleException("aura-definition", "spell", true);
         }
         if (definition.Deployments.Any(d => d.Definition.Spells.Any(s => definition.Spells.TryGetValue(s, out var spell) && spell.IsAura) &&
-            (d.Faction != BattleFaction.Ally || d.Control != BattleControl.Player || d.SourceAllyControl ||
-                d.Definition.ClassRule != BattleClassRule.UnpromotedPriest)))
+            (d.Faction == BattleFaction.Ally ? d.Control != BattleControl.Player || d.SourceAllyControl ||
+                d.Definition.ClassRule != BattleClassRule.UnpromotedPriest : d.SourceEnemy is null ||
+                d.Control != BattleControl.Automatic || d.Definition.ClassRule != BattleClassRule.Ordinary ||
+                d.Definition.Spells.Any(s => s.Value == "aura" && s.Level != 1))))
             throw new BattleRuleException("aura-caster", "placements", true);
     }
 }

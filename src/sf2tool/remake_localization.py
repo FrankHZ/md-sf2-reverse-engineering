@@ -264,6 +264,9 @@ def derive(args: argparse.Namespace) -> dict:
     )
     if battle20:
         field_texts.update(range(2566, 2576))
+    repeat_enemies = {
+        enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
+    }
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -305,6 +308,12 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.ally"] += (13,)
         name_ids["name.enemy"] += (44,)
         name_ids["name.class"] += (5,)
+    if 82 in repeat_enemies:
+        field_items.add(28)  # Equipped Brass Knuckles
+    if 81 in repeat_enemies:
+        name_ids["name.spell"] += (1,)  # AURA
+    repeat_names = repeat_enemies.difference(name_ids["name.enemy"])
+    name_ids["name.enemy"] += tuple(sorted(repeat_names))
     extra_items = field_items.difference(name_ids["name.item"])
     name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
@@ -424,6 +433,8 @@ def derive(args: argparse.Namespace) -> dict:
             + 3 * battle19
             + 3 * battle20
             + len(extra_items)
+            + len(repeat_names)
+            + (81 in repeat_enemies)
         ),
         "candidate budget/selection mismatch",
     )

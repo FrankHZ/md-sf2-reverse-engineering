@@ -294,9 +294,45 @@ public sealed class EnemySpellDecisionTests
     [InlineData(3, 19, 15, false, 2)]
     [InlineData(3, 20, 15, false, 3)]
     [InlineData(2, 29, 20, false, 1)]
+    [InlineData(4, 14, 29, false, 4)]
+    [InlineData(4, 13, 29, false, 3)]
+    [InlineData(4, 3, 15, false, 3)]
+    [InlineData(4, 19, 14, false, null)]
+    [InlineData(4, 20, 14, false, 2)]
+    [InlineData(4, 20, 14, true, 1)]
     public void EnemyHealUsesIncomingEntryForMissingHpAndAffordability(
         byte entryLevel, byte mp, int missingHp, bool self, int? expected)
         => Assert.Equal(expected, (int?)EnemySpellDecision.HealLevel(entryLevel, mp, missingHp, self));
+
+    [Theory]
+    [InlineData(19, 9, 3)]
+    [InlineData(16, 14, 4)]
+    public void EnemyHealCanSpendItsRemainingMpWhenThePackedLookupApprovesAHigherRank(int hp, int mp, byte rank)
+    {
+        var battle = Battle(d =>
+        {
+            var cleric = d["actors"]![2]!;
+            cleric["maxHp"] = 47; cleric["maxMp"] = 39;
+            d["start"]!["actors"]![2]!["hp"] = hp;
+            d["start"]!["actors"]![2]!["mp"] = mp;
+            for (int level = 2; level <= 4; level++)
+            {
+                var spell = d["spells"]![1]!.DeepClone();
+                spell["level"] = level;
+                spell["mpCost"] = level switch { 2 => 5, 3 => 10, _ => 20 };
+                spell["effect"]!["adjustedPower"] = level == 2 ? 15 : 30;
+                d["spells"]!.AsArray().Add(spell);
+                cleric["spells"]!.AsArray().Add(new JsonObject { ["id"] = "heal", ["level"] = level });
+            }
+        });
+        var rules = RuleCompositions.Sf2();
+        var choice = Decide(battle, Cleric, rules);
+        var action = new BattleActionRef(BattleActionKind.Healing, new SpellRef("heal", rank));
+        Assert.Equal(action, choice.ChosenAction);
+        var resolution = BattleActionRules.Prepare(rules.Action(action), battle, Cleric, choice.Destination,
+            action, choice.Target, rules.Progression);
+        Assert.Equal(0, resolution.ApplySpellCost(battle).GetActor(Cleric).Mp);
+    }
 
     [Fact]
     public void TinyMissingHpDoesNotCastAndHealerCanHealItselfUsingItsCurrentPosition()

@@ -22,7 +22,8 @@ public static class OpeningSaveJson
         TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { info =>
             { foreach (var property in info.Properties)
                 property.IsRequired = !(info.Type == typeof(OpeningSaveData) && property.Name is "names" or "raft" ||
-                    info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft"); } } },
+                    info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft" ||
+                    info.Type == typeof(BattleSaveWire.Data) && property.Name == "enemyDefinitions"); } } },
         MaxDepth = 32,
     };
     private static readonly JsonSerializerOptions BattleOptions = CreateBattleOptions();

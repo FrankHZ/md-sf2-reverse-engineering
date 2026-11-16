@@ -29,7 +29,7 @@ internal static class BattleMemberQuery
             : a.Deployment.Initialization?.AllyPartyMember is { } member ? membership.Active.Contains(member)
                 : definition.PrivateDefinitions is null))
             .OrderBy(a => a.Deployment.Initialization?.AllyPartyMember ?? a.ProcessingOrder).ToArray();
-        var scenes = definition.ScenesFor(current.Battle.Definition.Encounter);
+        var scenes = definition.ScenesFor(current.Battle.Definition);
         var members = actors.Select(a => new BattleMemberEntry(a.Actor, BattleUnitProjection.Name(definition, current, a),
             BattleUnitProjection.NameIndex(a, scenes), current.Story.Names.GetValueOrDefault(a.Actor.Value),
             a.Initialized, a.Initialized && a.Hp == 0, a.Initialized && a.Hp > 0 && BattleVisibility.OnBoard(current, a))).ToArray();
