@@ -848,6 +848,9 @@ msgstr "No learned magic."
 msgid "battle.no-items"
 msgstr "No carried items."
 
+msgid "battle.appearance"
+msgstr "{0} emerges!"
+
 msgid "battle.empty"
 msgstr "Empty"
 

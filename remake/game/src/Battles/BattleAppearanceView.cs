@@ -2,6 +2,8 @@ using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Sf2.Remake.GodotAdapter.Localization;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -9,7 +11,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // the view never initializes an actor or generates a turn.
 internal sealed partial class BattleAppearanceView : Control
 {
-    private Label _notice = null!;
+    private readonly ContextHint _notice = new() { Name = "AppearanceNotice" };
     private GameSession _session = null!;
     private BattleMapViewport _map = null!;
     private InputSettings _settings = null!;
@@ -21,10 +23,9 @@ internal sealed partial class BattleAppearanceView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
-        _notice = new Label { Name = "AppearanceNotice", HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Top, MouseFilter = MouseFilterEnum.Ignore };
-        AddChild(_notice); _notice.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _notice.AddThemeColorOverride("font_color", Colors.Gold); Hide();
+        _notice.Text.HorizontalAlignment = HorizontalAlignment.Center;
+        AddChild(_notice);
+        Hide();
     }
     public override void _EnterTree()
     { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
@@ -40,8 +41,14 @@ internal sealed partial class BattleAppearanceView : Control
         if (round?.Actor is null) { Hide(); _state = null; return; }
         if (_state?.Token != round.Token) { _elapsed = 0; _delivered = false; }
         _state = round; Show();
-        _notice.Text = $"{round.Actor.Value.Value} emerges!";
         _notice.Visible = Stage == "notice";
+        if (_notice.Visible)
+        {
+            var actor = _session.Current.Battle.GetActor(round.Actor.Value);
+            string name = DisplayNames.Battle(_session.Current.Story, actor, _session.ActiveBattleScenes);
+            _notice.Text.Text = GameText.Get("battle.appearance", name);
+            _notice.Arrange(Size);
+        }
         _map.PresentAppearance(round, _session.Current.Battle, (float)Math.Min(1, _elapsed / 0.6), _settings.ReducedFlash);
     }
     internal SessionCommand? Consume(double delta)
@@ -56,5 +63,5 @@ internal sealed partial class BattleAppearanceView : Control
     internal object Observe() => new { active = _state is not null, actor = _state?.Actor?.Value,
         cursor = _state?.Cursor, list = _state?.Appearances.Select(a => a.Value), token = _state?.Token.Value,
         stage = Stage, elapsed = _elapsed, delivered = _delivered, suspended = _suspended,
-        text = _notice.Text, noticeVisible = _notice.Visible, authored = true };
+        text = _notice.Text.Text, noticeVisible = _notice.IsVisibleInTree(), authored = true };
 }

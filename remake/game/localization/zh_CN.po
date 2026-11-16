@@ -848,6 +848,9 @@ msgstr "尚未学会魔法。"
 msgid "battle.no-items"
 msgstr "未携带道具。"
 
+msgid "battle.appearance"
+msgstr "{0}出现了！"
+
 msgid "battle.empty"
 msgstr "空"
 
