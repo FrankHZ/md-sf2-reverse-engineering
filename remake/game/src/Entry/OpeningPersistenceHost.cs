@@ -195,6 +195,7 @@ public sealed partial class GameRoot
         "ribble-welcome" => GameText.Get("save.destination.ribble-welcome"),
         "dark-caves" => GameText.Get("save.destination.dark-caves"),
         "mount-volcano" => GameText.Get("save.destination.mount-volcano"),
+        "harpy-pond" => GameText.Get("save.destination.harpy-pond"),
         "taros-shrine" => GameText.Get("save.destination.taros-shrine"),
         "southwest-parmecia" => GameText.Get("save.destination.southwest-parmecia"),
         "polca-raft" => GameText.Get("save.destination.polca-raft"),

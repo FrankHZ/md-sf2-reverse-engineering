@@ -12,6 +12,36 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class OpeningRestoreTests
 {
+    [Theory]
+    [InlineData(0, -1, true)]
+    [InlineData(0, 519, true)]
+    [InlineData(0, 420, false)]
+    [InlineData(0, 470, false)]
+    [InlineData(0, 520, false)]
+    [InlineData(0x1400, -1, false)]
+    [InlineData(0xC000, -1, false)]
+    public void PondSaveKeepsOrdinaryGroundBeforeConfrontation(ushort tile, int flag, bool allowed)
+    {
+        var (basis, data) = Fixture();
+        var words = new ushort[4096];
+        words[4 * 64 + 3] = tile;
+        var map = new ExplorationMapDefinition(new("map-51"), new(words), new([new(0, 0, 12, 12)]), [], []);
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
+        var player = new FieldReturnAnchor(map.Map, new(3, 4), 2);
+        int[] flags = flag < 0 ? [] : [flag];
+        var policy = basis.Persistence!;
+        if (!allowed)
+        {
+            Assert.Equal("save-location-unavailable",
+                Assert.Throws<BattleRuleException>(() => policy.Select(definition, player, flags, null)).Code);
+            return;
+        }
+        var location = policy.Select(definition, player, flags, null);
+        Assert.Equal("harpy-pond", location.Recipe);
+        Assert.Equal(player, location.Anchor);
+        policy.ValidateRegisters(data with { Recipe = location.Recipe, EgressMap = "map-9" });
+    }
+
     internal static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joined = false, bool victory = false)
     {
         var growth = new BattleGrowthDefinition(0, 0, [], [], new Dictionary<byte, SpellRef>());
