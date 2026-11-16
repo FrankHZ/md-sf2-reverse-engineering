@@ -103,6 +103,7 @@ internal sealed partial class BattleMapViewport : Control
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
         _neutral = null;
+        _neutralTime = 0;
         _specialSprite = null; _specialPoseTime = 0;
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
@@ -230,6 +231,16 @@ internal sealed partial class BattleMapViewport : Control
         marker.Rotation = reducedMotion ? 0 : Mathf.Tau * 2 * progress;
         marker.Modulate = new Color(Colors.LightCoral, progress);
         _focus = [battle.GetActor(actor).Position!]; Frame();
+    }
+
+    private double _neutralTime;
+    public override void _Process(double delta)
+    {
+        if (_neutral is not { Visible: true } || _sceneContent?.FieldDeath?.Neutral is not { WhirlsInWater: true } neutral) return;
+        _neutralTime = (_neutralTime + delta) % (40.0 / 60);
+        int facing = (int)(_neutralTime * 6);
+        _neutral.Texture = Texture(neutral.Sprite, facing switch { 1 => 0, 3 => 2, _ => 1 });
+        _neutral.FlipH = facing == 0;
     }
 
     private void ReleaseTextures()

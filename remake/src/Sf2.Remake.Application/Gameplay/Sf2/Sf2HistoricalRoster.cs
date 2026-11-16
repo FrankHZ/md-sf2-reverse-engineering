@@ -5,11 +5,11 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Gameplay.Sf2;
 
-// Gameplay 4 expanded the same private opening profile in three batches.
+// Saved prefixes in the private opening profile, including the gap between Luke and Elric.
 internal static class Sf2HistoricalRoster
 {
-    // Content selections at 960d90d2, fd7ac137, 65ce9376 and 52f6a2c3, in field recipe order.
-    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 13)];
+    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 20)];
+    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13];
 
     internal static SavedBattleStory UpgradeBattle(ScenarioDefinition definition, BattleSaveData data,
         EngineBattleState battle, SaveCompatibility expected)
@@ -21,10 +21,10 @@ internal static class Sf2HistoricalRoster
             .Concat(player.RetainedAllies.Select(actor => actor.Actor)).ToHashSet();
         // All legacy v2 writers stamped recipe 1, including those with 9, 10 or 11 members.
         int prior = data.Compatibility.RecipeRevision == 1
-            ? Array.FindIndex(Revisions, row => row.Members == saved.Count) + 1 : data.Compatibility.RecipeRevision;
+            ? Array.FindIndex(Revisions, 0, 4, row => row.Members == saved.Count) + 1 : data.Compatibility.RecipeRevision;
         if (prior < 1 || prior > Revisions.Length)
             throw new BattleRuleException("save-battle-retained-roster", "save.story");
-        int lastEncounter = Revisions[prior - 1].LastBattle;
+        int lastEncounter = data.Compatibility.RecipeRevision == 1 && prior == 4 ? 13 : Revisions[prior - 1].LastBattle;
         if (!Enumerable.Range(1, lastEncounter).Any(id => data.Battle.Encounter == $"battle-{id}"))
             throw new BattleRuleException("save-battle-retained-roster", "save.story");
         var added = Missing(definition, prior, expected, roster, saved, data.Story.Flags, data.Story.Names.Keys,
@@ -46,7 +46,7 @@ internal static class Sf2HistoricalRoster
         var layout = definition.Exploration!.PartyFlags;
         var source = definition.PrivateDefinitions;
         if (source is null || layout is null || rows.Length != Revisions[current - 1].Members ||
-            rows.Where((row, id) => row.Initialization?.AllyPartyMember != id || row.Actor.Value != $"ally-{id}").Any() ||
+            rows.Where((row, id) => row.Initialization?.AllyPartyMember != MemberIds[id] || row.Actor.Value != $"ally-{MemberIds[id]}").Any() ||
             !saved.SetEquals(rows.Take(Revisions[prior - 1].Members).Select(row => row.Actor)))
             throw new BattleRuleException(rosterError, "save.allies");
 
@@ -56,9 +56,10 @@ internal static class Sf2HistoricalRoster
             // Replay each expansion as its writer did on a single upgrade. Growth draws
             // affect only that expansion, even when Continue crosses several at once.
             uint seed = mainSeed;
-            for (int id = Revisions[revision - 1].Members; id < Revisions[revision].Members; id++)
+            for (int index = Revisions[revision - 1].Members; index < Revisions[revision].Members; index++)
             {
-                var row = rows[id];
+                int id = MemberIds[index];
+                var row = rows[index];
                 if (flags.Contains(layout.JoinedStart + id) || flags.Contains(layout.ActiveStart + id) ||
                     claimedActors.Contains(row.Actor.Value) || !source.Allies.TryGetValue((byte)id, out var ally))
                     throw new BattleRuleException(rosterError, "save.allies");

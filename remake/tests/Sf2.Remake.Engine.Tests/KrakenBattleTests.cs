@@ -1,3 +1,4 @@
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
@@ -24,25 +25,43 @@ public sealed class KrakenBattleTests
     }
 
     [Theory]
-    [InlineData(16, 16, true)]
-    [InlineData(15, 16, false)]
-    [InlineData(16, 0, false)]
-    public void SwarmChecksCurrentHealthAndDefeatedEnemiesBeforePursuit(int hp, int peerHp, bool waits)
+    [InlineData(16, 136, 16, 16, 138, 0, true)]
+    [InlineData(16, 136, 15, 16, 138, 0, false)]
+    [InlineData(16, 136, 16, 0, 138, 1, false)]
+    [InlineData(20, 139, 16, 0, 138, 1, false)]
+    [InlineData(20, 134, 16, 0, 139, 0, true)]
+    [InlineData(20, 134, 16, 0, 159, 0, true)]
+    [InlineData(20, 134, 16, 0, 139, 1, true, 13)]
+    public void SwarmChecksCurrentHealthAndDefeatedEnemiesBeforePursuit(int battleId, int sourceSlot,
+        int hp, int peerHp, int peerSlot, int defeated, bool waits, int formationSize = 12)
     {
         var template = SourceEnemyAiTests.State(active: true, commandset: 15, primaryRegion: 15);
         var original = template.Actors[0];
         var deployment = original.Deployment with
         {
-            Initialization = original.Deployment.Initialization! with { SwarmThreshold = 1 },
+            Initialization = original.Deployment.Initialization! with
+            {
+                SwarmThreshold = PrivateBattleScenarioReader.SwarmThreshold(battleId, sourceSlot - 128),
+                KrakenPursuit = battleId == 16,
+            },
         };
         var actor = new BattleActorState(deployment, (ushort)hp, 0, null, original.Position, null, null,
             activationWord: original.ActivationWord);
-        var peer = template.Actors[2].With(hp: (ushort)peerHp);
-        var before = template.With(actors: [actor, template.Actors[1], peer]);
+        var peerDeployment = template.Actors[2].Deployment;
+        var peer = new BattleActorState(peerDeployment, (ushort)peerHp, 0, null, peerDeployment.Position,
+            null, null, activationWord: 0x2060);
+        var source = template.Definition;
+        var definition = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height,
+            source.Terrain, [deployment, template.Actors[1].Deployment, peerDeployment], [],
+            initialization: new([], BattleRegionProgram.None, Enumerable.Range(0, formationSize).Select(x => new MapPosition(x, 1)),
+                sourceCombatants: new Dictionary<int, ActorRef> { [sourceSlot] = actor.Actor, [peerSlot] = peer.Actor }));
+        var before = new EngineBattleState(definition, [actor, template.Actors[1], peer], template.MainSeed,
+            template.ThinkingSeed, template.Round, template.Queue, template.Cursor, template.Gold, regions: template.Regions);
         var result = SourceEnemyAi.Resolve(before, actor.Actor);
         Assert.Equal(waits, result.Effects.Any(effect => effect.Kind == "swarm-wait"));
         if (waits)
         {
+            Assert.Equal(defeated, result.Effects.Single(effect => effect.Kind == "swarm-wait").Before);
             Assert.Equal(actor.Position, result.Destination);
             Assert.Equal(before.MainSeed, result.Battle.MainSeed);
             Assert.Equal(before.ThinkingSeed, result.Battle.ThinkingSeed);

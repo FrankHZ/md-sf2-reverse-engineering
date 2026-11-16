@@ -101,7 +101,7 @@ internal static class BattleSceneContentReader
                         "GALAM_KNIGHT" => (3, 0), "GALAM_MAGE" => (36, 0), "DARK_CLERIC" => (40, 0), "DARK_SMOKE" => (22, 0),
                         "HOBGOBLIN" => (4, 2), "EVIL_CLOUD" => (22, 1), "DEATH_ARCHER" => (31, 1),
                         "DEATH_MONK" => (41, 0), "BLACK_MONK" => (41, 1), "ZOMBIE" => (6, 0), "TAROS" => (45, 0), "GOLEM" => (7, 0), "MASTER_MAGE" => (36, 1),
-                        "ORC" => (10, 0), "HIGH_PRIEST" => (40, 1), "DARK_MADAM" => (37, 1),
+                        "HARPY" => (25, 0), "ORC" => (10, 0), "HIGH_PRIEST" => (40, 1), "DARK_MADAM" => (37, 1),
                         "SOULSOWER" => (9, 0), "GARGOYLE" => (24, 0), "ARROW_LAUNCHER" => (34, 0),
                         "VAMPIRE_BAT" => (23, 2), "DARK_DWARF" => (5, 2),
                         "HUNTER_GOBLIN" => (32, 0), "WITCH" => (37, 0), "GOBLIN" => (4, 0), "GREEN_OOZE" => (0, 0),
@@ -180,9 +180,10 @@ internal static class BattleSceneContentReader
             NeutralBattleSprite? neutral = null;
             if (field.TryGetProperty("neutral", out var neutralRow))
             {
-                Object(neutralRow, "neutral", "sprite", "x", "y", "facing", "completedFlag");
+                ObjectOptional(neutralRow, "neutral", "whirlsInWater", "sprite", "x", "y", "facing", "completedFlag");
                 neutral = new(Number(neutralRow, "sprite", 0, 255), Number(neutralRow, "x", 0, 63), Number(neutralRow, "y", 0, 63),
-                    Number(neutralRow, "facing", 0, 3), Number(neutralRow, "completedFlag", 0, 1023));
+                    Number(neutralRow, "facing", 0, 3), Number(neutralRow, "completedFlag", 0, 1023),
+                    neutralRow.TryGetProperty("whirlsInWater", out _) && Boolean(neutralRow, "whirlsInWater"));
             }
             fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
                 System.Array.AsReadOnly(frames), neutral);

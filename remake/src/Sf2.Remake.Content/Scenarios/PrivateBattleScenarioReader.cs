@@ -44,7 +44,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         catch (FormatException) { return Rejected("invalid-definition-field", "definitions"); }
     }
 
-    internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, PrivateBattleStart start, bool validateStart = true)
+    internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, PrivateBattleStart start, bool validateStart = true, IReadOnlyList<byte>? allyMembers = null)
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
@@ -79,6 +79,11 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 Require(byte.TryParse(row.IdentityExpression, NumberStyles.None, CultureInfo.InvariantCulture, out byte id) && id <= 29,
                     "ally-identity-expression", "placements.identity", true);
                 // Source ally rows are formation capacity, not a roster/recruit command.
+                if (allyMembers is not null)
+                {
+                    Require(id < allyMembers.Count, "formation-members", "placements.identity");
+                    id = allyMembers[id];
+                }
                 if (!party.TryGetValue(id, out var input)) continue;
                 Require(usedAllies.Add(id), "duplicate-party-actor", "placements.identity");
                 order = id; actor = new("ally-" + id.ToString(CultureInfo.InvariantCulture));
@@ -150,7 +155,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 row.Behavior.SecondaryRegion, row.Behavior.Filler, commandset,
                 Order(row.Behavior.PrimaryOrderExpression), Order(row.Behavior.SecondaryOrderExpression),
                 AllyPartyMember: ally ? order : null,
-                SwarmThreshold: commandset == 15 && encounter.Battle.Id == 16 ? KrakenThresholds[order - 128] : null,
+                SwarmThreshold: commandset == 15 ? SwarmThreshold(encounter.Battle.Id, order - 128) : null,
                 KrakenPursuit: !ally && row.IdentityExpression is ("KRAKEN_HEAD" or "KRAKEN_ARM" or "KRAKEN_LEG"));
             deployments.Add(new(definition, ally ? BattleFaction.Ally : BattleFaction.Enemy, order,
                 ally ? BattleControl.Player : BattleControl.Automatic, ally ? order == 7 ? new BattleStrategyRef("source-ally-physical") : null : new BattleStrategyRef("source-orders"),
@@ -215,8 +220,18 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         return new(new("private-encounter", [battle], definitions), inputStart);
     }
 
-    // table_SwarmAiEnemyCounts0 is indexed by source enemy slot.
-    private static ReadOnlySpan<byte> KrakenThresholds => [5, 4, 2, 2, 3, 0, 0, 4, 1, 3, 0];
+    // Each pinned table_SwarmAiEnemyCounts row is indexed by source enemy slot.
+    internal static byte SwarmThreshold(int battle, int row)
+    {
+        ReadOnlySpan<byte> thresholds = battle switch
+        {
+            16 => [5, 4, 2, 2, 3, 0, 0, 4, 1, 3, 0],
+            20 => [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+            _ => [],
+        };
+        if ((uint)row >= thresholds.Length) throw Unsupported("source-swarm-table", "placements.ai");
+        return thresholds[row];
+    }
 
     // Preserve unresolved source expressions in PrivateDefinitions; null never means NONE.
     private static byte? Order(string expression)
