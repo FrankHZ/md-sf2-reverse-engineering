@@ -128,6 +128,8 @@ Static consumers confirm the important ownership rules:
 
 ## Private Binary Payloads
 
+The [S08 map block and layout index](map-payload-ranges.md) lists each stored ROM interval and every map header that selects it.
+
 Seventy-seven maps own one `0-blocks.bin` and one `1-layout.bin`. Maps 24 and 46 intentionally alias
 both payloads from maps 23 and 7 respectively, so all 79 entry records are covered by 77 payload
 pairs. The 154 files total 193,678 bytes:
