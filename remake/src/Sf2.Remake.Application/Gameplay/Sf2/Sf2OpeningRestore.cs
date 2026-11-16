@@ -71,7 +71,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
-        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
@@ -131,6 +131,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-12" && flags.Contains(518) && flags.Contains(725) && flags.Contains(65) &&
             content!.Traversal.SelectActiveArea(player.Position) is not null)
             return new("taros-shrine", player, "Taros Shrine, after the Caravan");
+        if (map.Value == "map-51" && !flags.Contains(420) && !flags.Contains(470) && !flags.Contains(520) &&
+            content!.Traversal.IsWithinActiveArea(player.Position) && (content.Layout[player.Position.X, player.Position.Y] & 0xFC00) == 0)
+            return new("harpy-pond", player, "Harpy Pond");
         if (map.Value == "map-68" && flags.Contains(65) && CaravanRuntime.HasOverworldPopulation(content!.SelectSetup(flags).Population) &&
             content.Traversal.IsWithinActiveArea(player.Position))
             return new("southwest-parmecia", player, "Southwest Parmecia");

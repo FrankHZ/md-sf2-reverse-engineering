@@ -22,7 +22,7 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 
 ## Map and setup inventory
 
-**Confirmed (static).** The current campaign supplies Search on 30 of its 31 map defaults and their compiled variants. All defaults and selected variants below have a null input program. A null input program alone does not grant control during a script. Each row lists every **compiled** flag variant alongside its default. Placements are source receipt flags, including optional and later-area entries. Counts in parentheses are ordinary text rows per setup; a dash denotes no placement. A compiled row alone gives no route to the item. [Selection](../../content/private/pre-voyage-opening.json) · [Original field menu Search entry](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm).
+**Confirmed (static).** The first-raft campaign selection supplies Search on 30 of its 31 map defaults and their compiled variants. All defaults and selected variants below have a null input program. A null input program alone does not grant control during a script. Each row lists every **compiled** flag variant alongside its default. Placements are source receipt flags, including optional and later-area entries. Counts in parentheses are ordinary text rows per setup; a dash denotes no placement. A compiled row alone gives no route to the item. [Selection](../../content/private/pre-voyage-opening.json) · [Original field menu Search entry](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm).
 
 | Map | Additional setup flags | Source placements (descriptions) | Campaign Search / entry evidence |
 | --- | --- | --- | --- |
@@ -59,6 +59,8 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 | 11 | — | — (1) | Added. Volcanon Shrine. |
 
 Route evidence outside the named Search observations is for entering the chapter or map. Separate rooms, endgame sections, unopened doors and every individual item are not implied by the entrance. See the [Grans stages](pre-voyage-campaign.md), [eastern travel and conditional shrine](new-granseal-east-shrine.md), [caves through Bedoe](dark-caves-bedoe.md) and [Polca departure](polca-first-raft.md).
+
+**Harpy Pond approach.** The pinned Map67 and Map51 other-item tables place Mithril at (45,9), F214, and a Healing Drop at (8,5), F159, respectively. Both chest tables are empty. The pond package admits travel on these maps and leaves both outside its Search selection. Collection and repeat Search are unverified. [Chapter and package](harpy-pond-approach.md) · [Campaign selection](../../content/private/pre-voyage-opening.json)
 
 ## New Granseal and Ribble
 

@@ -52,6 +52,8 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
     vehicle_action = symbol in ("eas_452BA", "eas_4536C")
     if vehicle_action:
         path = "disasm/code/common/scripting/map/vehiclefunctions.asm"
+    elif symbol == "eas_WhirlsInWater":
+        path = "disasm/data/scripting/entity/eas_battleneutralentities.asm"
     elif symbol in self.raw:
         path = "disasm/" + self.raw[symbol]["path"]
     if symbol.startswith("eas_Follower"):
@@ -65,7 +67,7 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
     )
     if body is None:
         raise ValueError("selected action source label is missing: " + symbol)
-    if symbol.startswith("eas_Follower"):
+    if symbol.startswith("eas_Follower") or symbol == "eas_WhirlsInWater":
         result, labels, pending = [], {}, False
         for line in body[1].splitlines():
             if match := re.match(r"^(\w+):[ \t]*(.*)", line):
