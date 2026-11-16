@@ -9,8 +9,8 @@ public sealed class BattleSearchDefinition
     internal BattleSearchDefinition(IEnumerable<BattleChest> chests) => Chests = Array.AsReadOnly(chests.ToArray());
     public IReadOnlyList<BattleChest> Chests { get; }
 }
-public enum BattleSearchKind { Item, Gold, Empty, Full, Occupied }
-internal sealed record BattleSearchResult(EngineBattleState Battle, BattleSearchKind Kind, ActorRef? Occupant = null);
+public enum BattleSearchKind { Item, Gold, Empty, Full, Occupied, Trap }
+internal sealed record BattleSearchResult(EngineBattleState Battle, BattleSearchKind Kind, ActorRef? Occupant = null, ActorRef? Attacker = null);
 
 internal static class BattleSearch
 {
@@ -21,7 +21,7 @@ internal static class BattleSearch
             chest.Position.X == origin.X + offset.Item1 && chest.Position.Y == origin.Y + offset.Item2);
     }
 
-    internal static BattleSearchResult Prepare(EngineBattleState battle, ActorRef actorRef, BattleChest chest, bool opened)
+    internal static BattleSearchResult Prepare(EngineBattleState battle, ActorRef actorRef, BattleChest chest, bool opened, MapPosition? destination = null)
     {
         var actor = battle.GetActor(actorRef);
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null || !actor.Initialized)
@@ -29,6 +29,14 @@ internal static class BattleSearch
         var occupant = battle.Actors.FirstOrDefault(a => a.Actor != actorRef && a.Position == chest.Position);
         if (occupant is not null) return new(battle, BattleSearchKind.Occupied, occupant.Actor);
         if (opened || chest.ItemId is null && chest.Gold is null) return new(battle, BattleSearchKind.Empty);
+        var trap = BattleSpawnRules.TrappedEnemy(battle, chest.Position);
+        if (trap is { } match)
+        {
+            var placed = BattleMovement.Commit(battle, actorRef, destination ?? actor.Position);
+            var reset = BattleSpawnRules.Reset(placed, match.Slot, match.Enemy);
+            return new(placed.With(actors: placed.Actors.Select(a => a.Actor == reset.Actor ? reset : a)),
+                BattleSearchKind.Trap, Attacker: reset.Actor);
+        }
         if (chest.Gold is { } gold)
         {
             if (battle.Gold is null) throw new BattleRuleException("search-gold-unknown", "battle.gold", true);

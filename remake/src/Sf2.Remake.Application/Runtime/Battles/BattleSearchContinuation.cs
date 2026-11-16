@@ -5,7 +5,7 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 
 public sealed record BeginBattleSearch : SessionCommand;
 public sealed record BattleSearchState(ActorRef Actor, BattleChest Chest, BattleSearchKind Kind,
-    WaitToken Token, ActorRef? Occupant = null, bool Revealed = false)
+    WaitToken Token, ActorRef? Occupant = null, bool Revealed = false, ActorRef? Attacker = null)
 {
     public bool EndsTurn => Kind is not (BattleSearchKind.Full or BattleSearchKind.Occupied);
 }
@@ -27,11 +27,11 @@ internal static class BattleSearchContinuation
     {
         var selection = current.Selection!;
         var chest = Query(current) ?? throw new BattleRuleException("search-unavailable", "search");
-        // Validate the ordinary Stay suffix before publishing any reward; execute it only after real result delivery.
-        _ = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
-            new(BattleActionKind.Stay), null);
         bool opened = current.Story.Flags.Contains(chest.Flag);
-        var result = BattleSearch.Prepare(current.Battle, selection.Actor, chest, opened);
+        var result = BattleSearch.Prepare(current.Battle, selection.Actor, chest, opened, selection.Preview.Destination);
+        if (result.Kind != BattleSearchKind.Trap)
+            _ = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
+                new(BattleActionKind.Stay), null);
         bool claimed = !opened && result.Kind is not (BattleSearchKind.Full or BattleSearchKind.Occupied);
         var story = claimed ? current.Story.Copy(null, flags: current.Story.Flags.Append(chest.Flag).Order().ToArray()) : current.Story;
         long revision = current.Revision + 1, sequence = current.ObservationSequence;
@@ -40,7 +40,7 @@ internal static class BattleSearchContinuation
         observations.Add(new(++sequence, revision, "battle-search-result", selection.Actor, Detail: result.Kind.ToString()));
         var next = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(result.Battle, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice),
-                Search: new(selection.Actor, chest, result.Kind, new(sequence), result.Occupant)), story, SessionStopReason.PresentationWait);
+                Search: new(selection.Actor, chest, result.Kind, new(sequence), result.Occupant, Attacker: result.Attacker)), story, SessionStopReason.PresentationWait);
         return new(next, observations.AsReadOnly(), next.StopReason);
     }
 
@@ -61,6 +61,17 @@ internal static class BattleSearchContinuation
         try
         {
             var selection = next.Selection!;
+            if (search.Attacker is { } attacker)
+            {
+                // The original caller uses the returned enemy slot even when reset refused it.
+                // Keep the opened receipt and report the unsupported offscreen scene in that case.
+                if (next.Battle.GetActor(attacker).Position is not { } position)
+                    return Failed(new(SessionFailureKind.UnsupportedCapability, "trap-attacker-offscreen",
+                        "search.attacker", "Trap attacker is offscreen after reset."), SessionStopReason.Unsupported);
+                var attack = BattleChoices.Prepare(rules, next.Battle, attacker, position,
+                    new(BattleActionKind.Physical), selection.Actor);
+                return BattleSceneContinuation.Begin(next, attack, [observation]);
+            }
             var action = BattleChoices.Prepare(rules, next.Battle, selection.Actor, selection.Preview.Destination,
                 new(BattleActionKind.Stay), null);
             List<SessionObservation> observations = [observation];
@@ -72,7 +83,7 @@ internal static class BattleSearchContinuation
         catch (BattleActionRuleFault error) { return Failed(BattleChoices.Failure(error)); }
 
         // The committed grant and receipt survive a later callback failure, with the exact wait retained.
-        SessionResult Failed(SessionFailure failure) => new(new(current.SessionId, current.Revision,
-            current.ObservationSequence, current.Active, current.Story, SessionStopReason.Faulted), [], SessionStopReason.Faulted, failure);
+        SessionResult Failed(SessionFailure failure, SessionStopReason reason = SessionStopReason.Faulted) => new(new(current.SessionId, current.Revision,
+            current.ObservationSequence, current.Active, current.Story, reason), [], reason, failure);
     }
 }

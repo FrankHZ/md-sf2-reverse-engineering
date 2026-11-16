@@ -17,6 +17,7 @@ internal sealed partial class BattlefieldTerrain : Node2D
     private Vector2I _offset;
     private int _width, _height, _cellSize;
     private bool _high, _overlay, _followsTarget;
+    private readonly HashSet<(int X, int Y)> _openChests = [];
     internal Vector2 CameraShift { get; set; }
     private MapPosition _target = new(0, 0);
     private int _draws;
@@ -45,6 +46,17 @@ internal sealed partial class BattlefieldTerrain : Node2D
         QueueRedraw();
     }
 
+    internal void PresentChests(IReadOnlyList<int> flags)
+    {
+        if (_map.Search is not { } search) return;
+        foreach (var chest in search.Chests)
+        {
+            var cell = (chest.Position.X, chest.Position.Y);
+            bool changed = flags.Contains(chest.Flag) ? _openChests.Add(cell) : _openChests.Remove(cell);
+            if (changed) QueueRedraw();
+        }
+    }
+
     internal void Follow(MapPosition target)
     {
         if (!_followsTarget || target == _target) return;
@@ -70,7 +82,9 @@ internal sealed partial class BattlefieldTerrain : Node2D
             {
                 var (sourceX, sourceY) = SourceCell(x, y);
                 if (sourceX is < 0 or >= 64 || sourceY is < 0 or >= 64) continue;
-                int block = _map.Layout[sourceX, sourceY] & 0x3FF;
+                int wordAtCell = _openChests.Contains((sourceX, sourceY))
+                    ? _map.Search!.OpenChest : _map.Layout[sourceX, sourceY];
+                int block = wordAtCell & 0x3FF;
                 if (_overlay && block == 0) continue;
                 var texture = _textures.Block(_visual, block);
                 for (int tile = 0; tile < 9; tile++)
@@ -90,6 +104,7 @@ internal sealed partial class BattlefieldTerrain : Node2D
     internal object Observe() => new
     {
         name = Name.ToString(), map = _map.Map.Value, origin = _region.Origin,
+        openedChests = _openChests.Select(cell => new { cell.X, cell.Y, block = _map.Search!.OpenChest & 0x3FF }),
         width = _width, height = _height, offsetX = _offset.X, offsetY = _offset.Y,
         positionX = Position.X, positionY = Position.Y, target = _followsTarget ? _target : null, overlay = _overlay, highPriority = _high, z = ZIndex, draws = _draws, drawSequence = _drawSequence, first = _first,
         visualMap = _visual.Map.Value, atlasWidth = _visual.Atlas.Width, atlasHeight = _visual.Atlas.Height,

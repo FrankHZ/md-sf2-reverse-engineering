@@ -242,6 +242,11 @@ internal static class ExplorationContentReader
                 ? encounter.WithOutcome(outcome, PrivateBattleActionBindings.RetreatSpells(source!), PrivateBattleActionBindings.RetreatItems(source!))
                 : encounter.WithOutcome(outcome);
         }
+        if (!authored && battle.Definition.PrivateDefinitions is { } privateContent)
+        {
+            int shrine = System.Array.FindIndex(encounters, encounter => encounter.Encounter == "battle-15");
+            if (shrine >= 0) encounters[shrine] = BattleSearchReader.BindShrine(encounters[shrine], definition, privateContent);
+        }
         foreach (var operation in programs.SelectMany(p => p.Instructions).OfType<OutcomePartyInstruction>())
         {
             Require(authored && partyFlags == new MapPartyFlagLayout(30, 0, 32, 12),

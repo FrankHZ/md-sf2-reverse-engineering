@@ -1,3 +1,5 @@
+using Sf2.Remake.Domain.Maps;
+
 namespace Sf2.Remake.Domain.Battles;
 
 internal sealed record BattleSpawnBatch(EngineBattleState Battle, IReadOnlyList<ActorRef> Appearances,
@@ -46,23 +48,39 @@ internal static class BattleSpawnRules
             enemy = enemy.With(activationWord: word);
             // UpdateEnemyActivationIfDead precedes HIDDEN's maximum-HP check.
             if (mode == 2 && enemy.MaxHp != 0) { Replace(enemy); continue; }
-            bool occupied = battle.Actors.Any(a => a.Position == enemy.Deployment.Position);
-            bool admitted = row.Key < 128 + init.EnemyCount && !occupied;
-            if (admitted)
-            {
-                enemy = new(enemy.Deployment, enemy.Definition.MaxHp, enemy.Definition.MaxMp, 0,
-                    enemy.Deployment.Position, enemy.Kills, enemy.Defeats, lastTarget: enemy.LastTarget, aiMemory: enemy.AiMemory,
-                    attack: BattleInitializationRules.EnemyAttack(enemy.Definition.Attack, before.StartPolicy?.Difficulty ?? 0),
-                    activationWord: word, sourceLoadout: enemy.Definition.SourceLoadout);
-                appearances.Add(enemy.Actor);
-            }
-            else enemy = enemy.With(hp: 0, initialized: false, clearPosition: true);
+            enemy = Reset(battle, row.Key, enemy);
+            bool admitted = enemy.Initialized;
+            if (admitted) appearances.Add(enemy.Actor);
             Replace(enemy);
             effects.Add(new(admitted ? "spawn-reset" : "spawn-refused", enemy.Actor, After: row.Key));
         }
         return new(battle, appearances.AsReadOnly(), effects.AsReadOnly());
 
         void Replace(BattleActorState actor) => battle = battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? actor : a));
+    }
+
+    internal static (int Slot, BattleActorState Enemy)? TrappedEnemy(EngineBattleState battle, MapPosition position)
+    {
+        if (battle.Definition.Initialization is not { } init) return null;
+        foreach (var (slot, actor) in init.SourceCombatants.Where(row => row.Key >= 128).OrderBy(row => row.Key))
+        {
+            var enemy = battle.GetActor(actor);
+            if (enemy.Deployment.Position == position && enemy.ActivationWord == 0x0200 && enemy.MaxHp == 0 &&
+                enemy.Deployment.Initialization is { PrimaryRegion: 15, SecondaryRegion: 15 }) return (slot, enemy);
+        }
+        return null;
+    }
+
+    internal static BattleActorState Reset(EngineBattleState battle, int slot, BattleActorState enemy)
+    {
+        if (slot >= 128 + battle.Definition.Initialization!.EnemyCount ||
+            battle.Actors.Any(actor => actor.Position == enemy.Deployment.Position))
+            return enemy.With(hp: 0, initialized: false, clearPosition: true);
+
+        return new(enemy.Deployment, enemy.Definition.MaxHp, enemy.Definition.MaxMp, 0,
+            enemy.Deployment.Position, enemy.Kills, enemy.Defeats, lastTarget: enemy.LastTarget, aiMemory: enemy.AiMemory,
+            attack: BattleInitializationRules.EnemyAttack(enemy.Definition.Attack, battle.StartPolicy?.Difficulty ?? 0),
+            activationWord: enemy.ActivationWord, sourceLoadout: enemy.Definition.SourceLoadout);
     }
 
     private static void Require(bool valid, string code)

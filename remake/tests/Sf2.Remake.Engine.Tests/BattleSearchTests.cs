@@ -126,6 +126,85 @@ public sealed class BattleSearchTests
         Assert.Contains(Dismiss(session).Observations, o => o.Kind == "action-committed");
     }
 
+    [Theory]
+    [InlineData(0x200, 15, false, false, BattleSearchKind.Trap)]
+    [InlineData(0x201, 15, false, false, BattleSearchKind.Full)]
+    [InlineData(0x200, 0, false, false, BattleSearchKind.Full)]
+    [InlineData(0x200, 15, true, false, BattleSearchKind.Full)]
+    [InlineData(0x200, 15, false, true, BattleSearchKind.Empty)]
+    public void OnlyTheExactDormantDeploymentReplacesTheChestReward(
+        ushort activation, byte region, bool previouslyInitialized, bool opened, BattleSearchKind expected)
+    {
+        var doc = Document("hidden-spawns");
+        doc["encounters"]![0]!["placements"]![2]!["initialization"]!["primaryRegion"] = region;
+        var input = Assert.IsType<ScenarioReadAccepted>(Reader(doc).Read());
+        var battle = BattleTurnFlow.Start(input.Definition.Encounters[input.Start.Encounter], input.Start);
+        var opener = HiddenSpawnTests.Leader;
+        var hidden = HiddenSpawnTests.Hidden;
+        battle = battle.With(actors: battle.Actors.Select(a => a.Actor == hidden
+            ? a.With(activationWord: activation, initialized: previouslyInitialized, clearPosition: true)
+            : a.Actor == opener ? a.With(sourceLoadout: new([0, 0, 0, 0], [63, 63, 63, 63])) : a));
+        var chest = new BattleChest(battle.GetActor(hidden).Deployment.Position, 151, 9, "Power Water", null);
+        var destination = new MapPosition(3, 4);
+        var result = BattleSearch.Prepare(battle, opener, chest, opened, destination);
+        Assert.Equal(expected, result.Kind);
+        Assert.Equal(battle.GetActor(opener).SourceLoadout!.Items, result.Battle.GetActor(opener).SourceLoadout!.Items);
+        if (expected == BattleSearchKind.Trap)
+        {
+            Assert.Equal(hidden, result.Attacker);
+            Assert.Equal(destination, result.Battle.GetActor(opener).Position);
+            Assert.Equal(chest.Position, result.Battle.GetActor(hidden).Position);
+            Assert.True(result.Battle.GetActor(hidden).Initialized);
+            Assert.Equal(BattleSearchKind.Occupied, BattleSearch.Prepare(result.Battle, opener, chest, true).Kind);
+            var killed = result.Battle.With(actors: result.Battle.Actors.Select(a =>
+                a.Actor == hidden ? a.With(hp: 0, clearPosition: true) : a));
+            Assert.Equal(BattleSearchKind.Empty, BattleSearch.Prepare(killed, opener, chest, true).Kind);
+        }
+        else Assert.Same(battle, result.Battle);
+    }
+
+    [Theory]
+    [InlineData(3)]
+    [InlineData(1)]
+    public void TrapDispatchUsesReturnedEnemyAndKeepsOpenersTurn(int enemyCount)
+    {
+        var session = Start("hidden-spawns", doc =>
+        {
+            var encounter = doc["encounters"]![0]!;
+            encounter["initialization"]!["enemyCount"] = enemyCount;
+            var hidden = encounter["placements"]![2]!;
+            hidden["x"] = 2;
+            hidden["y"] = 5;
+            hidden["initialization"]!["primaryRegion"] = 15;
+            encounter["search"] = JsonNode.Parse("""{"chests":[{"x":2,"y":5,"flag":151,"item":0,"gold":null}]}""");
+            doc["items"] = Document("battle-search")["items"]!.DeepClone();
+        });
+        var opener = session.Current.Selection!.Actor;
+        Accept(session, new Confirm());
+        Accept(session, new BeginBattleSearch());
+        Accept(session, new Confirm());
+        var wait = session.Current.BattleSearch!;
+        Assert.Equal(BattleSearchKind.Trap, wait.Kind);
+        Assert.Contains(151, session.Current.Story.Flags);
+        Assert.DoesNotContain(152, session.Current.Story.Flags);
+        Accept(session, new CompleteTextReveal(wait.Token));
+        var result = Send(session, new Acknowledge(wait.Token));
+        if (enemyCount == 1)
+        {
+            Assert.Equal("trap-attacker-offscreen", result.Failure!.Code);
+            Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
+            Assert.Contains(151, session.Current.Story.Flags);
+            Assert.Null(session.Current.Battle.GetActor(HiddenSpawnTests.Hidden).Position);
+            return;
+        }
+        Assert.Null(result.Failure);
+        var action = session.Current.BattleScene!.Action!;
+        Assert.Equal(HiddenSpawnTests.Hidden, action.Actor);
+        Assert.Equal(opener, action.Reactions[0].Target);
+        var completed = FinishBattleScenes(session, result);
+        Assert.Equal(opener, completed.Observations.First(o => o.Kind == "after-turn").Actor);
+    }
+
     [Fact]
     public void StableV2RestoreKeepsReceiptAndDoesNotRegrant()
     {

@@ -49,16 +49,18 @@ internal static class BattleActionCommitter
                 new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
             return BattleFieldDeathContinuation.Begin(pending, new(actor, destination, battle.DeathCredit!), deaths, observations);
         }
-        bool lifecycle = outcome is null && battle.GetActor(actor).Hp > 0 && battle.GetActor(actor).Position is not null &&
-            ((battle.GetActor(actor).Status & 0x3C1) != 0 || battle.Definition.Poison && PoisonTurnRules.Eligible(battle.GetActor(actor)));
-        if (outcome is null && !lifecycle) observations.Add(new(++sequence, revision, "after-turn", actor));
+        // BattleLoop reloads the queue entry for after-turn effects. A trap rewrites only the scene attacker.
+        var turnOwner = outcome is null ? BattleTurnFlow.QueuedActor(battle) : null;
+        bool lifecycle = turnOwner is { Hp: > 0, Position: not null } &&
+            ((turnOwner.Status & 0x3C1) != 0 || battle.Definition.Poison && PoisonTurnRules.Eligible(turnOwner));
+        if (outcome is null && !lifecycle) observations.Add(new(++sequence, revision, "after-turn", turnOwner!.Actor));
         else if (outcome is not null) observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
         if (battle.MainSeed != current.Battle.MainSeed)
             observations.Add(new(++sequence, revision, "action-rng", actor, current.Battle.MainSeed, battle.MainSeed));
         observations.Add(new(++sequence, revision, "action-committed", actor));
         var published = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
-        if (lifecycle) return BattleAfterTurnContinuation.Begin(published, actor, observations);
+        if (lifecycle) return BattleAfterTurnContinuation.Begin(published, turnOwner!.Actor, observations);
         return new(current.SessionId, revision, sequence,
             new ActiveBattle(outcome is null ? BattleTurnFlow.ConsumeEntry(battle) : battle, null), current.Story, SessionStopReason.SimulationWait);
     }

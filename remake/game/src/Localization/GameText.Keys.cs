@@ -239,6 +239,7 @@ internal static partial class GameText
         ["battle.search-item"] = 2,
         ["battle.search-gold"] = 2,
         ["battle.search-empty"] = 1,
+        ["battle.search-trap"] = 2,
         ["battle.search-full"] = 2,
         ["battle.search-occupied"] = 1,
         ["save.and-return"] = 0,

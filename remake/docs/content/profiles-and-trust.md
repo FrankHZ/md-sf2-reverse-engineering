@@ -1213,8 +1213,7 @@ public authored battle format, including its existing composed authored-world co
 has battle-local `x`/`y`, a durable `flag`, nullable `item` and nullable `gold`; both null means empty,
 both non-null rejects. `BattleSearchReader` bounds positions, receipt flags and gold, rejects duplicate
 positions/flags within an encounter, and permits only already admitted healing/retreat/weapon item
-identities with their canonical metadata. Up to 64 explicit rows are admitted. There is no trap field,
-map-description fallback, private importer, scenario-ID predicate or private guard relaxation.
+identities with their canonical metadata. Up to 64 explicit rows are admitted. Trap eligibility comes from the live hidden deployment at the chest coordinate.
 Definition copies preserve this capability. Authors own global receipt-flag allocation just as for
 existing field placements/program flags; distinct rewards must not reuse a flag.
 
@@ -1228,6 +1227,10 @@ SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `git show <pin>:disasm/<path>`; no source bytes are republished. Therefore this finite source inventory
 supplies no in-region chest candidate to connect. Original natural Search reach remains **Unknown**;
 this does not authorize a new world export or later campaign admission.
+
+For private Battle15, the world reader binds Map50's F151 item placement after checking its
+chest marker and translating through the battle region. The held-item drop uses slot 143,
+Power Water and once-bit 29. [Original indexing correction and playable route](../application/east-shrine-panel.md#optional-battle-chest).
 
 The [application owner](../application/session-and-programs.md#battle-search-and-chest-return)
 defines opened/full/occupied/result/turn semantics and the existing save authority.

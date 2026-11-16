@@ -74,6 +74,8 @@ internal sealed partial class BattleSearchView : Control
         {
             Sf2.Remake.Domain.Battles.BattleSearchKind.Item => GameText.Get("battle.search-item", actor, item),
             Sf2.Remake.Domain.Battles.BattleSearchKind.Gold => GameText.Get("battle.search-gold", actor, state.Chest.Gold!.Value),
+            Sf2.Remake.Domain.Battles.BattleSearchKind.Trap => GameText.Get("battle.search-trap", actor,
+                DisplayNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Attacker!.Value), _session.ActiveBattleScenes)),
             Sf2.Remake.Domain.Battles.BattleSearchKind.Full => GameText.Get("battle.search-full", actor, item),
             Sf2.Remake.Domain.Battles.BattleSearchKind.Occupied => GameText.Get("battle.search-occupied",
                 DisplayNames.Battle(_session.Current.Story, _session.Current.Battle.GetActor(state.Occupant!.Value), _session.ActiveBattleScenes)),

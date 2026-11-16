@@ -2166,8 +2166,10 @@ service is never persisted. See [cost/status policy and limits](opening-session-
 **Standard rigor; #1649, with the existing High inventory/save consistency boundary.** The bounded
 outcome is a faced-chest battle command, atomic actor-only reward/receipt, actual result delivery and
 the correct caller suffix. Authored/controlled admission is explicit; connected Battles01–07 do not
-invent chest placements. No traps, field descriptions, party-wide distribution, later campaign,
-original timing or natural access claim enters this slice.
+supply in-region chest placements. The [private Battle15 binding](east-shrine-panel.md#optional-battle-chest)
+extends this command to the hidden Golem. A qualifying nonempty chest commits the opener's
+destination, receipt and enemy reset. Acknowledgement dispatches the enemy physical attack
+against the opener. The original queue entry still owns after-turn processing.
 
 The pinned [S2 caller](../godot/battle-interaction-baseline.md#evidence-and-reproduction-boundary),
 `battlefunctions_2.asm:@StartBattleMenu..byte_2517C`, checks `GetEntityPositionAfterApplyingFacing`
