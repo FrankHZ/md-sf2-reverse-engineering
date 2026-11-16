@@ -44,6 +44,27 @@ public sealed class OpeningRestoreTests
         policy.ValidateRegisters(data with { Recipe = location.Recipe, EgressMap = "map-9" });
     }
 
+    [Theory]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    public void CaveSaveRebuildsTheExactFieldFacing(byte facing)
+    {
+        var (definition, data) = Fixture();
+        var slot = data with { Map = "map-32", Recipe = "fairy-cave", X = 28, Y = 4, Facing = facing };
+        var result = GameSession.Restore(definition, slot, RuleCompositions.Sf2());
+        if (facing == 8)
+            Assert.Equal("save-range", Assert.IsType<SessionStartFailed>(result).Failure.Code);
+        else
+        {
+            var world = Assert.IsType<SessionStarted>(result).Session.Current.Exploration!;
+            Assert.Equal(new MapPosition(28, 4), world.PlayerEntity.Position);
+            Assert.Equal(facing, world.PlayerEntity.Motion.Facing);
+        }
+    }
+
     internal static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joined = false, bool victory = false)
     {
         var growth = new BattleGrowthDefinition(0, 0, [], [], new Dictionary<byte, SpellRef>());
@@ -53,7 +74,7 @@ public sealed class OpeningRestoreTests
             id, BattleControl.Player, null, new(1 + id, 1), new(null, 0, 0, 0, 0, AllyPartyMember: id))).ToArray();
         var battle = new BattleDefinition("opening", new("battle"), 1, 1, [], deployments, []);
         var palette = new PalettePair(0x222, 0x444);
-        var maps = new[] { "map-3", "map-57" }.Select(id => new ExplorationMapDefinition(new(id),
+        var maps = new[] { "map-3", "map-57", "map-32" }.Select(id => new ExplorationMapDefinition(new(id),
             new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]), new([new(0, 0, 63, 63)]),
             id == "map-3" ? [new(new("entity-1"), new(42, 8), 3, 32, Sprite: 1,
                 Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : [], [],

@@ -21,6 +21,7 @@ public sealed record BranchInteractionFacing(byte Facing, bool WhenEqual, Progra
 public sealed record BranchHasItem(byte Item, ProgramLocation Target) : StoryInstruction;
 public sealed record RemovePartyItem(byte Item) : StoryInstruction;
 public sealed record FaceInteraction(EntityRef Entity) : StoryInstruction;
+public sealed record BranchAlive(ActorRef Actor, bool WhenAlive, ProgramLocation Target) : StoryInstruction;
 public sealed record BranchFlag(int Flag, bool WhenSet, ProgramLocation Target) : StoryInstruction;
 public sealed record BranchEntityCoordinates(EntityRef Entity, short X, short Y, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record CallProgram(ProgramLocation Target, bool ActivateEntities = false) : StoryInstruction;
@@ -34,7 +35,7 @@ public sealed record SetTextCursor(int Text) : StoryInstruction;
 public sealed record ShowText(TextDisplayMode Mode, EntityRef? Speaker, byte SpeakerFlags = 0, bool UseEventSpeaker = false,
     bool WaitForAcknowledgement = true, bool ExplicitWindows = false, int? NameMember = null, int? TextId = null,
     bool Narration = false) : StoryInstruction;
-public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0, bool UseEventSpeaker = false) : StoryInstruction;
+public sealed record OpenPortrait(EntityRef? Entity, byte Flags = 0, bool UseEventSpeaker = false, bool UseCurrentSpeaker = false) : StoryInstruction;
 public sealed record ClosePortrait : StoryInstruction;
 public sealed record WaitForTextInput : StoryInstruction;
 public sealed record CloseText : StoryInstruction;

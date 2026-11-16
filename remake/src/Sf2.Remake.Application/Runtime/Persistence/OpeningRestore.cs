@@ -19,7 +19,7 @@ internal static class OpeningRestore
             data.Deals.All(deal => deal.Item < 127 && deal.Count <= 15) && data.Deals.Select(d => d.Item).Distinct().Count() == data.Deals.Count, "save-duplicates-or-range");
         Require(data.Gold <= 999999 && data.TextCursor is >= 0 and <= 65535 && data.FadePeriod > 0 && data.Difficulty <= 3 &&
             data.TextSettings is { MessageSpeed: <= 3, ViewSpeed: 0 } &&
-            data.X is >= 0 and < 64 && data.Y is >= 0 and < 64 && data.Facing <= 3, "save-range");
+            data.X is >= 0 and < 64 && data.Y is >= 0 and < 64 && data.Facing <= 7, "save-range");
         Require(definition.Encounters.ContainsKey(data.Encounter), "save-encounter");
         if (definition.PrivateDefinitions is { } source)
             Require(data.Allies.SelectMany(actor => actor.Items).All(word => source.Items.ContainsKey((byte)(word & 127))) &&

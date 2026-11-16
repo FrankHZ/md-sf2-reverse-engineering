@@ -83,7 +83,7 @@ internal static class BattleSaveStory
                     world.Visuals!.Sprites.ContainsKey(sprite)), "return-sprite-resource");
         }
         if (value.SaveAnchor is { } anchor)
-            Require(anchor.Facing <= 3 && world.Maps.ContainsKey(anchor.Map), "prior-anchor");
+            Require(anchor.Facing <= 7 && world.Maps.ContainsKey(anchor.Map), "prior-anchor");
         ExplorationViewRunner.Validate(value.LogicalView.Area);
         var egress = Sf2OutcomeReturnPolicy.FindEgress(definition, new(value.EgressMap), route.Outcome);
         if (egress is null && definition.DefeatFallback is { } fallback && fallback.Register.Value == value.EgressMap)

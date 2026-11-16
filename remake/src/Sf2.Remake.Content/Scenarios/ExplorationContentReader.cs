@@ -583,6 +583,12 @@ internal static class ExplorationContentReader
             case "face-interaction":
                 Object(row, opcode, "op", "entity");
                 return new FaceInteraction(new(Id(row, "entity")));
+            case "branch-alive":
+                Object(row, opcode, "op", "actor", "whenAlive", "target");
+                return new BranchAlive(new(Id(row, "actor")), Boolean(row, "whenAlive"), RequiredLocation(row.GetProperty("target")));
+            case "open-speaker-portrait":
+                Object(row, opcode, "op");
+                return new OpenPortrait(null, UseCurrentSpeaker: true);
             case "branch-flag":
                 Object(row, opcode, "op", "flag", "whenSet", "target");
                 return new BranchFlag(Number(row, "flag", 0, 65535), Boolean(row, "whenSet"), RequiredLocation(row.GetProperty("target")));
@@ -878,6 +884,7 @@ internal static class ExplorationContentReader
                 {
                     case JumpProgram jump: Target(jump.Target); break;
                     case BranchHasItem branch: Target(branch.Target); break;
+                    case BranchAlive branch: Target(branch.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
                     case BranchInteractionFacing branch: Target(branch.Target); break;
                     case ChooseYesNo choice: Target(choice.NoTarget); break;

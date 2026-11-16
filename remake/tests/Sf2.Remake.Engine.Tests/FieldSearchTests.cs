@@ -225,6 +225,25 @@ public sealed class FieldSearchTests
         Assert.True(session.Current.CanWaitAtInput);
     }
 
+    [Theory]
+    [InlineData("champion", true, true)]
+    [InlineData("champion", false, false)]
+    [InlineData("receiver", true, false)]
+    [InlineData("receiver", false, true)]
+    public void FieldCallbackTestsTheSelectedCarriedActorsCurrentHp(string actor, bool whenAlive, bool matches)
+    {
+        ProgramLocation entry = new("inspect", 0);
+        var program = new StoryProgram(entry.Program, [
+            new BranchAlive(new(actor), whenAlive, new(entry.Program, 2)),
+            new EndProgram(),
+            new WriteFlag(102, true),
+            new EndProgram()]);
+        var session = Session(0, descriptions: [new(Faced, false, [], entry)], programs: [program]);
+        Assert.Null(Send(session, new Search()).Failure);
+        Assert.Equal(matches, session.Current.Story.Flags.Contains(102));
+        Assert.True(session.Current.CanWaitAtInput);
+    }
+
     [Fact]
     public void GoldUsesSharedAccountingCapsAndIsOnceOnly()
     {

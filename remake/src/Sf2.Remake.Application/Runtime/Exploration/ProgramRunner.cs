@@ -131,7 +131,7 @@ internal static class ProgramRunner
                     throw new BattleRuleException("battle-program-instruction", "program." + instruction.GetType().Name, true);
                 // Only synchronous, effect-free dispatch may return arrival to the producing Move.
                 // A yielded wait resumes in a new Run, without the move token.
-                if (instruction is not (BranchFlag or BranchEntityCoordinates or JumpProgram or
+                if (instruction is not (BranchFlag or BranchAlive or BranchEntityCoordinates or JumpProgram or
                     CallProgram { ActivateEntities: false } or ReturnProgram or EndProgram { SourceMapScript: false }))
                     fieldMoveToken = null;
                 var callersBefore = current.Story.Callers;
@@ -222,6 +222,11 @@ internal static class ProgramRunner
                     case BranchFlag branch when current.Story.Flags.Contains(branch.Flag) == branch.WhenSet:
                         story = story.Copy(branch.Target); break;
                     case BranchFlag: break;
+                    case BranchAlive branch:
+                        var ally = current.Exploration!.Party.Actors.FirstOrDefault(actor => actor.Actor == branch.Actor)
+                            ?? throw new BattleRuleException("missing-party-member", "branch.actor", true);
+                        if ((ally.Hp != 0) == branch.WhenAlive) story = story.Copy(branch.Target);
+                        break;
                     case BranchHasItem branch:
                         if (FieldItemEvents.Find(definition, current, branch.Item) is not null) story = story.Copy(branch.Target);
                         break;
@@ -332,7 +337,7 @@ internal static class ProgramRunner
                     case OpenPortrait portrait:
                         EntityRef? portraitActor = portrait.UseEventSpeaker
                             ? story.EntityEvent?.Entity ?? throw new BattleRuleException("portrait-event-speaker", "program.portrait", true)
-                            : portrait.Entity;
+                            : portrait.UseCurrentSpeaker ? story.Speaker : portrait.Entity;
                         if (story.TextSettings is not null && ExplorationPortraitRunner.HasCaller(story) && portraitActor is { } boundActor)
                         {
                             current = ExplorationPortraitRunner.Open(definition, current, boundActor, portrait.Flags, observations, false);
