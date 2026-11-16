@@ -54,7 +54,7 @@ $diff = Join-Path $candidate 'preview.diff'
 ```powershell
 if ((Get-Item -LiteralPath $diff).Length) {
     git -C $wiki apply --stat $diff
-    git -C $wiki apply --check --index $diff
+    git -C $wiki apply --check --cached $diff
     Get-Content -Raw -Encoding utf8 -LiteralPath $diff
 }
 ```

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import difflib
 import io
+import os
 import re
 import subprocess
+import tempfile
 from pathlib import Path, PurePosixPath
 
 WIKI_BASE = "c027ddb07884c481cf06d20238065051d18ed093"
@@ -47,9 +49,12 @@ PAGE_SUFFIXES = {
 }
 
 
-def git(repo: Path, *args: str, data: bytes | None = None) -> str:
+def git(repo: Path, *args: str, data: bytes | None = None, index: Path | None = None) -> str:
     result = subprocess.run(
-        ["git", "--no-optional-locks", "-C", str(repo), *args], input=data, capture_output=True
+        ["git", "--no-optional-locks", "-C", str(repo), *args],
+        input=data,
+        capture_output=True,
+        env={**os.environ, "GIT_INDEX_FILE": str(index)} if index is not None else None,
     )
     if result.returncode:
         raise ValueError(
@@ -125,6 +130,15 @@ def apply_review(wiki: Path, source: str, pages: dict[str, str], patch: bytes, r
     if git(wiki, "diff", "--cached", "--name-only"):
         raise ValueError("commit or unstage existing staged changes before applying the preview")
     trailers = "\n".join(f"SF2-Wiki-Page: {title}" for title in sorted(pages))
-    git(wiki, "apply", "--index", "--whitespace=nowarn", "-", data=patch)
+    # Applying directly to a case-insensitive worktree rejects case-only page renames.
+    # Construct the reviewed tree in a temporary index, then let Git check it out.
+    head = git(wiki, "rev-parse", "HEAD").strip()
+    git_dir = git(wiki, "rev-parse", "--absolute-git-dir").strip()
+    with tempfile.TemporaryDirectory(prefix="wiki-sync-", dir=git_dir) as scratch:
+        index = Path(scratch) / "index"
+        git(wiki, "read-tree", head, index=index)
+        git(wiki, "apply", "--cached", "--whitespace=nowarn", "-", data=patch, index=index)
+        tree = git(wiki, "write-tree", index=index).strip()
+    git(wiki, "read-tree", "-m", "-u", head, tree)
     git(wiki, "commit", "-m", SUBJECT + source, "-m", trailers)
     return git(wiki, "rev-parse", "HEAD").strip()

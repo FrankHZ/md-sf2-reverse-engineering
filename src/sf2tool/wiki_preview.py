@@ -7,7 +7,7 @@ import csv
 import posixpath
 import re
 import tempfile
-from pathlib import Path, PureWindowsPath
+from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 
 from sf2tool.paths import REPO_ROOT
@@ -58,7 +58,7 @@ class Source:
                 raise ValueError(f"expected a tracked design document in {MAPPING}: {path}")
             if (
                 not re.fullmatch(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", title)
-                or PureWindowsPath(title + ".md").is_reserved()
+                or re.fullmatch(r"CON|AUX|NUL|PRN|(?:COM|LPT)[0-9]", title, re.IGNORECASE)
                 or title.casefold() in titles
                 or path in result
                 or not label.strip()
