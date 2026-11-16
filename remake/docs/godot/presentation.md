@@ -459,7 +459,7 @@ migration has bounded engineering acceptance; it does not assert human acceptanc
 | Dialogue, ContextHint, status/detail panels, battle messages/results | Already use shared readable frames with distinct content roles. No Stage1 change; preserve portraits, numeric warnings and the existing reward sequence without another summary. |
 | `BattleGiveView` / `BattleDiscardView` | Real results now reuse `StoryDialoguePanel` frame/body and existing reading pages over their retained veil. Reveal completion and token acknowledgement remain with each view; a fresh Confirm reads remaining pages before acknowledgement. |
 | `BattleRetreatView` | Text uses the same panel/body/reading guard; effect/closure hide that panel. Cue/pulse, reduced-flash, focus suspension, payment and delivery phases remain. No original timing claim. |
-| `BattleAppearanceView` | Explicitly deferred outside this opening route: default-size gold text/raw actor notice remain the finite later-consumer gap [#1463](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1463). No production or emergence-timing change here. |
+| `BattleAppearanceView` | The later [authored enemy appearance](#authored-enemy-appearance) uses the shared timed hint with the current battle display name in English and Chinese. |
 | `BattleSessionView` auxiliary HUD | Actual Give/Discard/equipment choices now use one shared reading panel, projecting the current typed offer and index/count with existing mapped cycle/confirm/back guidance. Every offer remains reachable. Irrelevant spell/item/equipment stacks no longer crowd the current choice. Title/roster strings stay diagnostic. |
 
 The auxiliary HUD replaces its separate label/scroll geometry with the existing `StoryDialoguePanel`,
@@ -516,7 +516,7 @@ helper tests or unrelated suites. Main-gate independently reviews/merges the fro
 The finite correction is independently accepted and integrated in
 [PR1465](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1465).
 Human readability/physical devices/DPI remain **Unknown** under #1456; #1447 findings await
-independent review and #1463 stays deferred.
+independent review.
 
 ## Human opening review boundary (#1456)
 
@@ -536,7 +536,7 @@ remain **Unknown/pending**; injected events, node geometry and available builds 
 Keep #1456 open for the explicit experience decision after engineering integration. No new font/art
 direction, all-map UI or gameplay extension is authorized. #1447 has a bounded
 [investigation-only finding](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)
-awaiting independent review; Appearance #1463 remains deferred.
+awaiting independent review. The later [appearance notice](#authored-enemy-appearance) has its own authored observation.
 
 ## Battle Speed and selective messages (#1650)
 
@@ -1575,16 +1575,21 @@ See the [ordinary-key witness](../development-and-verification.md#jaro-conversio
 
 `BattleAppearanceView` consumes the pending round's actor/list/token through the ordinary battle
 view. The map focuses the current actor, hides later pending list members, and delivers an authored
-0.6-second spin/fade,0.2-second settle and0.7-second paraphrased appearance notice. Reduced-flash mode
+0.6-second spin/fade, 0.2-second settle and 0.7-second notice in a shared `ContextHint` frame.
+The English and Chinese `battle.appearance` rows take one name from `DisplayNames.Battle`,
+including its source metadata, story overrides and existing authored-name fallback. Reduced-flash mode
 omits rotation. Focus loss suspends delivery. Only the actual view's completion submits the matching
 `EntityEffect` token; the view never resets actors or generates a queue. Ordinary commands are blocked
 during this finite wait and resume after appearances and automatic work.
 
-The semantic observation includes current stage/token and actual marker rotation/alpha/visibility,
-plus future-member hiding and final control. The [native recipe](../development-and-verification.md#hidden-spawn-authored-observation)
-uses ordinary keys and verifies intermediate/final node values. This is a project-authored visual
-with no original sprites, SFX, frame timing or natural-source reach claim. It adds no menu/layout or
-input redesign to the separately owned UI work.
+The [hidden-spawn observation](../development-and-verification.md#hidden-spawn-authored-observation)
+uses ordinary gameplay keys and the supported 1600×900 client. Run it at fixed 60 FPS with
+`--input-settings` selecting English or Chinese. The representative checks use normal rotation in
+English and reduced flash in Chinese. The authored package provides no translated enemy names, so the
+first notice reads “Returner emerges!” or “Returner出现了！”. The probe reads the visible label and
+frame bounds, checks the focus signals and completion threshold, and follows the returning enemy
+through a second appearance to usable movement. Natural campaign reach and human visual judgment
+remain **Unknown**.
 
 Godot is the outer composition, semantic input and presentation adapter. Its nodes/textures/audio
 are projections; Application owns gameplay state, program/scene continuation and completion tokens.

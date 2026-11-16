@@ -361,6 +361,7 @@ internal static partial class GameText
         ["battle.stay-detail"] = 0,
         ["battle.no-magic"] = 0,
         ["battle.no-items"] = 0,
+        ["battle.appearance"] = 1,
         ["battle.empty"] = 0,
         ["battle.unavailable-tag"] = 0,
         ["battle.range"] = 2,
