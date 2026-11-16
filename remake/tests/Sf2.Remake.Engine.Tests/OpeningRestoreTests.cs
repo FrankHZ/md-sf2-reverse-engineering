@@ -18,9 +18,11 @@ public sealed class OpeningRestoreTests
     [InlineData(0, 420, false)]
     [InlineData(0, 470, false)]
     [InlineData(0, 520, false)]
+    [InlineData(0, 470, true, 520)]
+    [InlineData(0x1400, 470, false, 520)]
     [InlineData(0x1400, -1, false)]
     [InlineData(0xC000, -1, false)]
-    public void PondSaveKeepsOrdinaryGroundBeforeConfrontation(ushort tile, int flag, bool allowed)
+    public void PondSaveKeepsSettledGroundBeforeConfrontationOrAfterRescue(ushort tile, int flag, bool allowed, int second = -1)
     {
         var (basis, data) = Fixture();
         var words = new ushort[4096];
@@ -28,7 +30,7 @@ public sealed class OpeningRestoreTests
         var map = new ExplorationMapDefinition(new("map-51"), new(words), new([new(0, 0, 12, 12)]), [], []);
         var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
         var player = new FieldReturnAnchor(map.Map, new(3, 4), 2);
-        int[] flags = flag < 0 ? [] : [flag];
+        int[] flags = new[] { flag, second }.Where(value => value >= 0).ToArray();
         var policy = basis.Persistence!;
         if (!allowed)
         {

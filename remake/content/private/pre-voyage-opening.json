@@ -62,9 +62,10 @@
     16,
     17,
     18,
-    19
+    19,
+    20
   ],
-  "unavailableBattles": [20, 21],
+  "unavailableBattles": [21],
   "growthClasses": [
     {
       "member": 0,
@@ -109,6 +110,10 @@
     {
       "member": 10,
       "class": "BDMN"
+    },
+    {
+      "member": 13,
+      "class": "ACHR"
     }
   ],
   "outcomeEgressMap": {
@@ -130,10 +135,11 @@
     "16": 13,
     "17": 9,
     "18": 9,
-    "19": 9
+    "19": 9,
+    "20": 9
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the pre-confrontation Harpy Pond field.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Map51 return.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -258,6 +264,10 @@
     {
       "symbol": "abcs_battle18",
       "path": "data/battles/entries/battle18/cs_afterbattle.asm"
+    },
+    {
+      "symbol": "abcs_battle20",
+      "path": "data/battles/entries/battle20/cs_afterbattle.asm"
     }
   ],
   "programs": [
@@ -277,7 +287,8 @@
     "bbcs_15",
     "abcs_battle15",
     "bbcs_18",
-    "abcs_battle18"
+    "abcs_battle18",
+    "abcs_battle20"
   ],
   "eventMaps": [
     3,
@@ -467,7 +478,8 @@
     16,
     17,
     18,
-    19
+    19,
+    20
   ],
   "itemEventMaps": [8, 9],
   "searchMaps": [
@@ -617,7 +629,8 @@
     16,
     17,
     18,
-    19
+    19,
+    20
   ],
   "completedOnDefeat": [
     4

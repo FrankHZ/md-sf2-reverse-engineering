@@ -1,0 +1,33 @@
+# Rescue Elric at Harpy Pond
+
+**Confirmed** in the private remake. The registered private handoff `handoffs/issue1847-formation` contains `Play-en.cmd`, `Play-zh-CN.cmd` and `HANDOFF.md`. Open either launcher and choose **Continue → Slot 1** to walk around the pond with Elric in the force. The package includes the original bank saves and an ordinary battle save for each party. The private instructions reproduce the battle and cold return with disposable slot copies. [Approach and inherited saves](harpy-pond-approach.md)
+
+## From the bank to the battle
+
+Left from (10,9) plays lines 2555–2564 and sets F420/F470. The private crop on Map51 is 18×26. Twelve placement templates take the actual active party. Dead ordinary allies stay off the field on fresh admission. Both old parties had three living deployed members. The English party retained clear F519 and 9,174 gold. The Chinese party retained set F519, the Shining Ball and 13,264 gold. Field recipe 5 initializes the previously unrepresented archer from his source class, starting level and equipment on an isolated copy of the saved growth seed. Existing stats, equipment, membership and RNG carry through Continue. [Formation and first control](../../../docs/research/chapters/southern-travel-creed/battle20-initialization-and-first-control.md)
+
+Five Harpies occupy enemy slots 128, 134, 137, 138 and 139. Only 128, 134 and 139 take SWARM, with thresholds 3, 2 and 1. A full-health SWARM actor scans HP in slots 128–138 because the original loop uses the ally template count minus one. Being out of position does not remove a dead slot from that count. Slot 139 still has turns, attacks and counts toward the battle outcome. The observed command streams included Harpy DISPEL and High Priest HEAL. The neutral sprite at (6,6) uses Elric’s art and four facings while F520 is clear. The twelve enemy target rows exclude the neutral. The force’s separate unjoined member record retains its own HP and equipment. [Initialization and neutral lookup](../../../docs/research/chapters/southern-travel-creed/battle20-initialization-and-first-control.md) · [Shared SWARM decision](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceEnemyAi.cs)
+
+## Leave, return and win
+
+Both parties cast EGRESS, kept their gold and returned to their recorded town, New Granseal (Map6). A separate Chinese defeat restored Bowie and halved 13,264 gold to 6,632. Each return kept F420/F470, left F13/F520 clear and reset the enabled raft to Map69 (42,15). On the winning journeys, the player used the church’s Raise service, walked and boarded the Caravan again. The retained unlock admitted Battle20 on fresh Map51 entry. Neither party needed to replay the pond confrontation. A normal Movement save at this point allows independent combat replay. [Original outcomes and Egress](../../../docs/research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)
+
+Both victories defeated all twelve enemies. Elric was still outside the force when he thanked the party. During 2566–2574 the fresh scene used Bowie, Peter, Oddler and a separate Elric actor. At the join notice (446), the force had gained member 13 and F45 while F420 remained set and F520 clear. The notice displayed “ELRIC the ACHR has joined the force.” or “弓箭手埃尔里克加入了队伍。” The next line (2575) and the three scene follower instructions precede the common Bowie join and the completion writes. With eleven active members before the join, Elric became the twelfth. At full capacity the common JoinForce rule leaves a new member in reserve. [Join and follower order](../../../docs/research/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md#membership-and-the-three-temporary-follow-commands)
+
+| Ordinary observation | English, F519 clear | Simplified Chinese, F519 set |
+| --- | --- | --- |
+| First usable return, Down | Map51 (6,11), 11,614 gold | Map51 (9,12), 15,704 gold |
+| Sealed field save | (6,10), Up | (10,12), Right |
+| Cold Continue, step and save | (7,10), Right | (11,12), Right |
+
+Each returned to Bowie’s last battle tile with F420 clear and F470/F520 set. Fresh Map51 populated Bowie, Peter and Oddler. The roster menu showed Elric with his portrait and equipped Steel Arrow. Cold re-save changed only the recorded player position and, in English, facing. The private comparison checks the complete gameplay payload, including inventory, names, membership, RNG, return town, raft and persistent flags.
+
+## Return to Battle19 with Elric
+
+**Confirmed** with ordinary input from the Chinese rescued-party slot. Leave the pond through its south exit, walk east from Map67 into Map68, then return to the Battle19 zone at (47,29). F519 is already set. On this slot the 26th alternating step between (47,29) and (48,29) triggered the repeat. Bowie was level 24, below the original level 29 threshold for upgraded enemies. Higher-level repeats that require enemy substitution remain unsupported. [Original repeat selection and placement](../../../docs/research/chapters/southern-travel-creed/battle19-initialization-and-first-control.md)
+
+The active list contained members 0–10 and 13. Five ordinary allies were dead. Bowie, Sarah, Jaha, Kazin, Peter, Luke and Elric occupied the first seven source positions in that order. Elric stood at (42,13) with 35 HP, his Steel Arrow and a round-one turn. Sarah received the first player Movement input. F10 Save, title-screen Continue in a fresh process and a second Save produced identical gameplay data, including all actors, positions, queue and both RNG words. The private handoff reproduces the route with `Play.ps1 zh-CN <fresh-sample> repeat` and the cold load with `Play.ps1 zh-CN <fresh-sample> cold`.
+
+All twenty selected encounters admit the package’s growth roster. Source ally rows supply ordered positions. When a formation has fewer rows than active members, the excess remain joined and move to reserve. A dead active member uses a place in this capacity check and leaves its coordinate available to the next survivor. The engine test varies capacity around a nonconsecutive living member following a casualty. [Formation behavior test](../../tests/Sf2.Remake.Engine.Tests/YeelToBattle03Tests.cs)
+
+**Unknown** includes natural original-console timing, the original neutral lookup mismatch in presentation and hardware-exact water/animation effects. The full-party reserve and already-completed bypass have source coverage. These two original bank saves exercise first victory. F751 remains clear. Opening the Fairy Cave passage requires a later field interaction. [Subsequent passage](../../../docs/research/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)

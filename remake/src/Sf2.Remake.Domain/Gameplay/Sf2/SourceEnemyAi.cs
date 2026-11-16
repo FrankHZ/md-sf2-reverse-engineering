@@ -49,8 +49,12 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         if (source.AiCommandset == 15)
         {
             int threshold = source.SwarmThreshold ?? throw new BattleRuleException("source-swarm-table", "placements.ai", true);
-            // Battle16's table spans all declared enemy slots. HP alone contributes to its count.
-            int defeated = current.Actors.Count(unit => !unit.IsAlly && unit.Hp == 0);
+            // CountDefeatedEnemies uses the ally template count minus one, even for a smaller active party.
+            var formation = current.Definition.Initialization;
+            if (formation?.AllyFormation is not { } templates)
+                throw new BattleRuleException("source-swarm-formation", "placements.allies", true);
+            int defeated = formation.SourceCombatants.Count(slot => slot.Key >= 128 &&
+                slot.Key < 128 + templates.Count - 1 && current.GetActor(slot.Value).Hp == 0);
             if (actor.Hp == actor.MaxHp && defeated < threshold)
                 return new(current, [new("swarm-wait", actorRef, defeated, threshold)], actor.Position, [actor.Position]);
         }

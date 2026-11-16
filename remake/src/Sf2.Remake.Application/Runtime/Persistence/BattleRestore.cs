@@ -14,6 +14,14 @@ internal static class BattleRestore
             data.Compatibility == (expected with { RecipeRevision = revision }), "incompatible");
         Require(data.BattleRecipeRevision == 1, "recipe-version");
         Require(definition.Encounters.TryGetValue(data.Battle.Encounter, out var encounter), "encounter");
+        if (definition.PrivateDefinitions is not null)
+        {
+            // Historical encounters stored part of the party in the field-player binding.
+            // Restore the saved partition. The story validator checks the full union and active membership.
+            var actors = data.Battle.Actors.Select(actor => actor.Actor).ToHashSet(StringComparer.Ordinal);
+            encounter = encounter!.WithDeployments(encounter.Deployments.Where(row =>
+                row.Faction == BattleFaction.Enemy || actors.Contains(row.Actor.Value)));
+        }
         var battle = BattleContinuationRestore.Build(encounter!, data.Battle);
         if (revision < expected.RecipeRevision)
             data = data with { Story = definition.Persistence!.UpgradeBattleRoster(definition, data, battle, expected) };

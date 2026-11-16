@@ -30,11 +30,11 @@ internal static class PrivateWorldEncounterReader
                     "input-path-escape", "encounters." + key);
                 return resolved;
             }
-            string? scenes = row.GetProperty("battleScenes").ValueKind == JsonValueKind.Null ? null : Input("battleScenes");
+            string? scenePath = row.GetProperty("battleScenes").ValueKind == JsonValueKind.Null ? null : Input("battleScenes");
             var result = newGame is null
                 ? new PrivateBattleScenarioReader(Input("placement"), Input("scene"), Input("terrain"),
-                    Input("static"), Input("enemies"), Input("gold"), Input("start"), scenes).Read(fieldItems)
-                : newGame.Read(Input("placement"), Input("scene"), Input("terrain"), Input("static"), Input("enemies"), Input("gold"), scenes);
+                    Input("static"), Input("enemies"), Input("gold"), Input("start"), scenePath).Read(fieldItems)
+                : newGame.Read(Input("placement"), Input("scene"), Input("terrain"), Input("static"), Input("enemies"), Input("gold"), scenePath);
             if (result is ScenarioReadRejected rejected) throw new AdmissionIssue(rejected.Failure);
             admitted.Add((ScenarioReadAccepted)result);
         }
@@ -63,9 +63,42 @@ internal static class PrivateWorldEncounterReader
             .Deployments.Single(row => row.Actor == input.Actor).Faction == BattleFaction.Ally)).DistinctBy(input => input.Actor);
         var start = new BattleStartInput(first.Start.Encounter, party, first.Start.MainSeed, first.Start.ThinkingSeed,
             first.Start.Gold, first.Start.NewBattle, first.Start.ActiveAllies);
-        return new(new(first.Definition.Package, encounters, merged, battleScenes: first.Definition.BattleScenes,
+        var scenes = admitted.SelectMany(read => read.Definition.EncounterScenes.Values).ToArray();
+        if (newGame is not null) scenes = CampaignScenes(scenes, merged);
+        return new(new(first.Definition.Package, encounters, merged,
+            battleScenes: scenes.FirstOrDefault(scene => scene.Encounter == first.Start.Encounter),
             encounterStarts: admitted.Select(read => read.Start),
-            encounterScenes: admitted.SelectMany(read => read.Definition.EncounterScenes.Values)), start);
+            encounterScenes: scenes), start);
+    }
+
+    // An admitted party can revisit any selected encounter. Older scene inputs carry only
+    // the ally resources known at their chapter. Share their immutable frames by reference.
+    private static BattleSceneDefinition[] CampaignScenes(BattleSceneDefinition[] scenes, PrivateBattleDefinitions source)
+    {
+        var bodies = scenes.SelectMany(scene => scene.Allies.Select(pair => (pair.Key, pair.Value, scene.Rasters)))
+            .DistinctBy(row => row.Key).ToArray();
+        var equipment = scenes.SelectMany(scene => scene.Equipment!.Select(pair => (pair.Key, pair.Value, scene.Rasters)))
+            .DistinctBy(row => row.Key).ToArray();
+        var sprites = scenes.SelectMany(scene => scene.FieldDeath?.AllySprites ?? new Dictionary<int, int>())
+            .Where(pair => source.Allies.ContainsKey((byte)pair.Key)).DistinctBy(pair => pair.Key)
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
+        return scenes.Select(scene =>
+        {
+            var rasters = scene.Rasters.ToDictionary();
+            var allies = scene.Allies.ToDictionary();
+            var weapons = scene.Equipment!.ToDictionary();
+            foreach (var row in bodies)
+                if (allies.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
+            foreach (var row in equipment)
+                if (weapons.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
+            return scene with { Rasters = rasters.AsReadOnly(), Allies = allies.AsReadOnly(), Equipment = weapons.AsReadOnly(),
+                FieldDeath = scene.FieldDeath is { } field ? field with { AllySprites = sprites.AsReadOnly() } : null };
+
+            void IncludeFrames(BattleSceneActorVisual visual, IReadOnlyDictionary<string, ExplorationRaster> resources)
+            {
+                foreach (var id in visual.Frames.Concat(visual.WeaponFrames)) rasters.TryAdd(id, resources[id]);
+            }
+        }).ToArray();
     }
 
     private static bool SameAlly(BattleActorDefinition left, BattleActorDefinition right) =>

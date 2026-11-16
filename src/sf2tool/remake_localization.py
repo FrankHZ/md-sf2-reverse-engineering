@@ -255,6 +255,13 @@ def derive(args: argparse.Namespace) -> dict:
         for row in world["world"]["maps"]
         if (route := row.get("battle"))
     )
+    battle20 = args.scope == "current" and any(
+        route.get("encounter") == "battle-20" and not route.get("unavailable")
+        for row in world["world"]["maps"]
+        if (route := row.get("battle"))
+    )
+    if battle20:
+        field_texts.update(range(2566, 2576))
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -292,6 +299,10 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (88,)
     if battle19:
         name_ids["name.enemy"] += (12, 70, 79)
+    if battle20:
+        name_ids["name.ally"] += (13,)
+        name_ids["name.enemy"] += (44,)
+        name_ids["name.class"] += (5,)
     extra_items = field_items.difference(name_ids["name.item"])
     name_ids["name.item"] = tuple(sorted((*name_ids["name.item"], *extra_items)))
     for space, indices in sorted(name_ids.items()):
@@ -409,6 +420,7 @@ def derive(args: argparse.Namespace) -> dict:
             + shrine
             + taros
             + 3 * battle19
+            + 3 * battle20
             + len(extra_items)
         ),
         "candidate budget/selection mismatch",

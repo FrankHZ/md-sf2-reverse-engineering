@@ -131,7 +131,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-12" && flags.Contains(518) && flags.Contains(725) && flags.Contains(65) &&
             content!.Traversal.SelectActiveArea(player.Position) is not null)
             return new("taros-shrine", player, "Taros Shrine, after the Caravan");
-        if (map.Value == "map-51" && !flags.Contains(420) && !flags.Contains(470) && !flags.Contains(520) &&
+        if (map.Value == "map-51" && !flags.Contains(420) && flags.Contains(470) == flags.Contains(520) &&
             content!.Traversal.IsWithinActiveArea(player.Position) && (content.Layout[player.Position.X, player.Position.Y] & 0xFC00) == 0)
             return new("harpy-pond", player, "Harpy Pond");
         if (map.Value == "map-68" && flags.Contains(65) && CaravanRuntime.HasOverworldPopulation(content!.SelectSetup(flags).Population) &&

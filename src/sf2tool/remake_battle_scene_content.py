@@ -135,9 +135,12 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
     )
 
 
-def campaign_ally_visuals(battle, read, ally_table, stats_table):
-    # First deployment of each unpromoted member, including optional Kiwi and May.
-    joins = (1, 1, 1, 2, 4, 6, 7, 9, 10, 13, 14)
+def campaign_members(selection: Path | None = None) -> list[int]:
+    path = selection or repo_path("remake/content/private/pre-voyage-opening.json")
+    return [row["member"] for row in json.loads(path.read_text(encoding="utf-8"))["growthClasses"]]
+
+
+def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_members):
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
     cursor = stats_table["list_ShopInventories"]
@@ -152,9 +155,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
     if battle >= 9:
         carried.add(61)  # Achilles Sword can be carried back into Parmecia encounters.
     members = []
-    for member, first_battle in enumerate(joins):
-        if battle < first_battle:
-            continue
+    for member in selected_members:
         start = read(ally_table["table_AllyStartDefinitions"] + 6 * member, 6)
         kind, sprite, palette = read(ally_table["table_AllyBattlesprites"] + 9 * member, 3)
         assert kind == start[0]
@@ -175,8 +176,10 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table):
                 yield ("ally", sprite, palette, item)
 
 
-def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict:
-    if battle not in range(1, 20):
+def build(
+    rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None
+) -> dict:
+    if battle not in range(1, 21):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -308,7 +311,11 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     actor_rows = []
     actor_selections = list(
         campaign_ally_visuals(
-            battle, read, table("ally-data-static"), table("core-stats-data-static")
+            battle,
+            read,
+            table("ally-data-static"),
+            table("core-stats-data-static"),
+            campaign_members(selection),
         )
     )
     # Preserve the existing selected enemy resources independently of carried ally weapons.
@@ -621,7 +628,9 @@ def build(rom_path: Path, upstream: Path, output: Path, battle: int = 1) -> dict
     return report
 
 
-def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Path) -> dict:
+def add_field_death(
+    rom_path: Path, upstream: Path, output: Path, scene_path: Path, selection: Path | None = None
+) -> dict:
     """Add only field selectors and effect63 to an existing selected scene document."""
     from sf2tool.compression import decode_basic_compressed
     from sf2tool.remake_asset_build import (
@@ -676,6 +685,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             "battle-17",
             "battle-18",
             "battle-19",
+            "battle-20",
         )
         or "fieldDeath" in scene
     ):
@@ -683,31 +693,11 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
     compiler = OriginalPrograms(
         {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream
     )
+    members = set(campaign_members(selection))
     allies = [
-        {"character": r["character"], "sprite": r["sprite"]}
-        for r in compiler.initial_ally_sprites()[
-            : {
-                "battle-1": 3,
-                "battle-2": 4,
-                "battle-3": 12,
-                "battle-4": 5,
-                "battle-5": 6,
-                "battle-6": 6,
-                "battle-7": 7,
-                "battle-8": 13,
-                "battle-9": 12,
-                "battle-10": 12,
-                "battle-11": 12,
-                "battle-12": 12,
-                "battle-13": 12,
-                "battle-14": 12,
-                "battle-15": 12,
-                "battle-16": 12,
-                "battle-17": 12,
-                "battle-18": 12,
-                "battle-19": 12,
-            }[scene["encounter"]]
-        ]
+        {"character": row["character"], "sprite": row["sprite"]}
+        for row in compiler.initial_ally_sprites()
+        if row["character"] in members
     ]
     enemy_table = json.loads(
         repo_path("tests/fixtures/h2/enemy-map-sprites-static-v1.json").read_text(encoding="utf-8")
@@ -740,6 +730,7 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
         "battle-17",
         "battle-18",
         "battle-19",
+        "battle-20",
     ):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
@@ -779,26 +770,32 @@ def add_field_death(rom_path: Path, upstream: Path, output: Path, scene_path: Pa
             dict(pointerAddress=entry, address=address, byteLength=decoded.input_bytes_consumed)
         )
     scene["fieldDeath"] = dict(allies=allies, enemies=enemy_sprites, exitFrames=frames)
-    if scene["encounter"] == "battle-18":
+    neutral_rows = {
+        "battle-18": ("VERSUS_TAROS", 12, 5, "LEFT", "CARAVAN", "eas_Motionless", 518),
+        "battle-20": ("HARPIES_POND", 6, 6, "DOWN", "ELRIC_BASE", "eas_WhirlsInWater", 520),
+    }
+    if scene["encounter"] in neutral_rows:
+        code, x, y, facing, sprite, action, completed = neutral_rows[scene["encounter"]]
         table = upstream / "disasm/data/battles/global/battleneutralentities.asm"
-        body = table.read_text(encoding="utf-8").split("battle.w VERSUS_TAROS", 1)[1]
+        body = table.read_text(encoding="utf-8").split(f"battle.w {code}", 1)[1]
         rows = [
             line.split(";", 1)[0].split()
             for line in body.split("dc.w TERMINATOR_WORD", 1)[0].splitlines()
         ]
         if [row for row in rows if row] != [
-            ["position", "12,5"],
-            ["facing", "LEFT"],
-            ["mapsprite", "CARAVAN"],
-            ["dc.l", "eas_Motionless"],
+            ["position", f"{x},{y}"],
+            ["facing", facing],
+            ["mapsprite", sprite],
+            ["dc.l", action],
         ]:
-            raise ValueError("unexpected first Taros battle neutral")
+            raise ValueError("unexpected first-victory battle neutral")
         scene["fieldDeath"]["neutral"] = dict(
-            sprite=compiler.equates["MAPSPRITE_CARAVAN"],
-            x=12,
-            y=5,
-            facing=compiler.equates["LEFT"],
-            completedFlag=518,
+            sprite=compiler.equates["MAPSPRITE_" + sprite],
+            x=x,
+            y=y,
+            facing=compiler.equates[facing],
+            completedFlag=completed,
+            **({"whirlsInWater": True} if action == "eas_WhirlsInWater" else {}),
         )
     output.mkdir(parents=True)
     write_json(output / "battle-scenes.json", scene)
@@ -831,16 +828,19 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(1, 20), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 21), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,
         help="Existing selected scene document; add field selectors/effect63 only",
     )
+    parser.add_argument("--campaign-selection", type=Path)
     args = parser.parse_args()
     result = (
-        add_field_death(args.rom, args.upstream, args.output, args.field_death_base)
+        add_field_death(
+            args.rom, args.upstream, args.output, args.field_death_base, args.campaign_selection
+        )
         if args.field_death_base
-        else build(args.rom, args.upstream, args.output, args.battle)
+        else build(args.rom, args.upstream, args.output, args.battle, args.campaign_selection)
     )
     print(json.dumps(result))
