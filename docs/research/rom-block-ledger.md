@@ -53,7 +53,7 @@ In PowerShell, set `$upstream` to the local SF2DISASM checkout and `$offset` to 
 ```powershell
 $offset = 0x1C80E4
 $pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
-git -C $upstream show "$c834c652b6862bc5679fd7f69a38a7093206efc6:split/sf2splits.txt" | ForEach-Object {
+git -C $upstream show ($pin + ':split/sf2splits.txt') | ForEach-Object {
     if ($_ -match '^#split\s+(0x[0-9a-f]+),(0x[0-9a-f]+),(.+)$') {
         if ([int]$Matches[1] -le $offset -and $offset -lt [int]$Matches[2]) { $_ }
     }
