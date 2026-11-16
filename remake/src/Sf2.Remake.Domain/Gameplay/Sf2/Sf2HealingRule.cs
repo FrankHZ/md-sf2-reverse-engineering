@@ -19,7 +19,7 @@ internal sealed class Sf2HealingRule : IHealingRule
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
-                spellRef is not { Value: "heal", Level: 1 } ||
+                spellRef is not { Value: "heal", Level: >= 1 and <= 3 } ||
                 !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (spell.IsAura)

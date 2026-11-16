@@ -14,12 +14,12 @@ public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort P
         bool aqua = Spell is { Value: "aqua", Level: 1 } && Element == AttackSpellElement.Ice && MpCost == 0 && Radius == 0;
         bool bolt = Spell is { Value: "bolt", Level: 2 } && Element == AttackSpellElement.Lightning;
         bool selected = bolt || aqua || Spell is { Value: "blaze", Level: 1 or 2 } && Element == AttackSpellElement.Fire ||
-            Spell is { Value: "freeze", Level: 1 } && Element == AttackSpellElement.Ice ||
-            Spell is { Value: "blast", Level: 1 } && Element == AttackSpellElement.Wind;
+            Spell is { Value: "freeze", Level: 1 or 2 } && Element == AttackSpellElement.Ice ||
+            Spell is { Value: "blast", Level: 1 or 2 } && Element == AttackSpellElement.Wind;
         if (!selected || Power is 0 or > 255 || MinimumRange < 1 || MaximumRange < MinimumRange ||
             MaximumRange > (aqua || bolt ? 3 : 2) || Radius > (bolt ? 2 : 1))
             throw new BattleRuleException("attack-spell-definition", "spells", true);
-        if (enemy && !bolt && Radius != 0 && Spell is not { Value: "blaze", Level: 2 })
+        if (enemy && !bolt && Radius != 0 && Spell is not { Value: "blaze" or "freeze" or "blast", Level: 2 })
             throw new BattleRuleException("enemy-spell-radius", "spells.radius", true);
     }
 }

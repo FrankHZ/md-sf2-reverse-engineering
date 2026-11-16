@@ -38,7 +38,8 @@
     68,
     12,
     61,
-    50
+    50,
+    23
   ],
   "battles": [
     1,
@@ -58,9 +59,9 @@
     15,
     16,
     17,
-    18
+    18,
+    19
   ],
-  "unavailableBattles": [19],
   "growthClasses": [
     {
       "member": 0,
@@ -125,10 +126,11 @@
     "15": 9,
     "16": 13,
     "17": 9,
-    "18": 9
+    "18": 9,
+    "19": 9
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -309,7 +311,8 @@
     68,
     12,
     61,
-    50
+    50,
+    23
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -351,6 +354,12 @@
       "wavSha256": "A2F814D48CC247C6F92AE6230D5C0171C3DCDAC343384526FCEADD0611A1E7AC",
       "loopBegin": 272467,
       "loopEnd": 3670285
+    },
+    "MUSIC_ELVEN_TOWN": {
+      "loopBegin": 2016392,
+      "loopEnd": 4032153,
+      "timerB": 207,
+      "wavSha256": "5786343D9EFB8CF2AFC9E9A181F1E044A687512B50C65594A6D333F57DD605BA"
     }
   },
   "presentationAtlases": {
@@ -451,7 +460,8 @@
     15,
     16,
     17,
-    18
+    18,
+    19
   ],
   "itemEventMaps": [8, 9],
   "searchMaps": [
@@ -579,7 +589,9 @@
     "SFX_DIALOG_BLEEP_6_TIMER_C0",
     "SFX_WARP_TIMER_C0",
     "SFX_DIALOG_BLEEP_7_TIMER_D2",
-    "SFX_TAROS_DIALOG_BLEEP_TIMER_BD"
+    "SFX_TAROS_DIALOG_BLEEP_TIMER_BD",
+    "MUSIC_ELVEN_TOWN",
+    "SFX_WARP_TIMER_CF"
   ],
   "paidRetreatBattles": [
     2,
@@ -598,7 +610,8 @@
     15,
     16,
     17,
-    18
+    18,
+    19
   ],
   "completedOnDefeat": [
     4

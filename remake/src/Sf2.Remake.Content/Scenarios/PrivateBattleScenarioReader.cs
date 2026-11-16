@@ -64,7 +64,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 _ => throw Unsupported("spawn-expression", "placements.spawn"),
             };
             Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP" ||
-                !ally && row.ItemExpression == "POWER_WATER",
+                !ally && row.ItemExpression is ("POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP"),
                 "placement-item-refresh", "placements.item", true);
             byte commandset = row.AiCommandsetExpression switch
             {
@@ -176,6 +176,13 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange))
             .Concat(PrivateBattleActionBindings.PoisonCure(definitions));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
+        EnemyDropRow? drop = encounter.Battle.Id switch
+        {
+            10 => new(10, 129, 19, 4),
+            18 => new(18, 128, 110, 24),
+            19 => new(19, 129, 16, 6),
+            _ => null,
+        };
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
             encounter.Area.Width, encounter.Area.Height, terrain, deployments, healing, new BattleRewardDefinition(encounter.Scene.HalfExperience),
             initialization: new(regions, BattleRegionProgram.None,
@@ -196,12 +203,9 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 definitions.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("WEAPON")).Select(item => item.Id)) : null,
             leaderCleanup: encounter.Scene.EnemyLeaderPresent ? new(new("ally-0"),
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder)) : null,
-            itemDrops: encounter.Battle.Id == 10 ? new(10,
+            itemDrops: drop is null ? null : new(drop.Battle,
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
-                [new(10, 129, 19, 4)], [new(19, definitions.Items[19].DisplayName, true)]) :
-                encounter.Battle.Id == 18 ? new(18,
-                    deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
-                    [new(18, 128, 110, 24)], [new(110, definitions.Items[110].DisplayName, true)]) : null,
+                [drop], [new(drop.ItemId, definitions.Items[drop.ItemId].DisplayName, true)]),
             poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy,
             deathCredit: battle.Poison ? new BattleDeathCredit(null) : null);

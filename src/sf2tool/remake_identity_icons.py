@@ -66,6 +66,13 @@ def field_item_ids(world: dict) -> set[int]:
                     for row in (*search["chests"], *search["otherItems"])
                     if row["itemWord"] is not None
                 )
+    if any(
+        route.get("encounter") == "battle-19" and not route.get("unavailable")
+        for field in world["maps"]
+        if (route := field.get("battle"))
+    ):
+        # Shining Ball custody and the equipped Power Stick enter this campaign package.
+        ids.update((16, 89))
     return ids
 
 

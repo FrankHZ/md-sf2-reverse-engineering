@@ -86,8 +86,8 @@ public static class BattleEquipment
     {
         if (loadout is null) return false;
         if (!allowEarlySpells && (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0)) return false;
-        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not ({ Value: "heal" or "blaze" or "freeze" or "blast" or "dispel" or "aqua", Level: 1 } or { Value: "blaze" or "heal", Level: 2 })) ||
-            loadout.Spells.Any(spell => spell is not (0 or 6 or 11 or 12 or 14 or 40 or 63 or 64 or 75)))) return false;
+        if (allowEarlySpells && (definition.Spells.Any(spell => spell is not ({ Value: "heal" or "blaze" or "freeze" or "blast" or "dispel" or "aqua", Level: 1 } or { Value: "blaze" or "freeze" or "blast" or "heal", Level: 2 } or { Value: "heal", Level: 3 })) ||
+            loadout.Spells.Any(spell => spell is not (0 or 6 or 11 or 12 or 14 or 40 or 63 or 64 or 75 or 76 or 78 or 128)))) return false;
         // Authored semantic books use an empty packed book. A nonempty source book
         // must agree with its decoded definitions; orphan packed spells cannot disappear.
         if (allowEarlySpells && loadout.Spells.Any(spell => spell != 63) &&
