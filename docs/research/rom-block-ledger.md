@@ -1,6 +1,6 @@
 # USA ROM block ledger
 
-Find a zero-based file offset in the section table, then follow its layout and research links. For a named binary asset, the [offset lookup](#look-up-a-split-file) returns every matching upstream path. The [documented subranges](#documented-subranges) have stable IDs for citations from research and issues. All ends are exclusive. The last byte belongs to S18 at `0x1FFFFF`. [ROM identity](../../manifests/roms/sf2-us.json) · [Byte-identical reconstruction](reproducible-original.md#result)
+Find a zero-based file offset in the section table, then follow its layout and research links. The [split lookup](#look-up-a-split-file) accepts an offset or a named binary path and returns all same-range names, their [family and topic](rom-split-families.md), and any documented child. The [documented subranges](#documented-subranges) have stable IDs for citations from research and issues. All ends are exclusive. The last byte belongs to S18 at `0x1FFFFF`. [ROM identity](../../manifests/roms/sf2-us.json) · [Byte-identical reconstruction](reproducible-original.md#result)
 
 ## Physical sections
 
@@ -48,7 +48,7 @@ The [S08 map block and layout index](world/map-payload-ranges.md) lists 154 phys
 | <a id="s18-bank1"></a>S18-bank1 | `0x1F0000` | `0x1F8000` | 32,768 | First stored music bank. [Bank 1 parity and selection](presentation/sound-data-inventory.md#static-bank-parity) |
 | <a id="s18-bank0"></a>S18-bank0 | `0x1F8000` | `0x200000` | 32,768 | Second stored music bank. Both banks use Z80 origin `0x8000`. Convert a bank-local address by adding its displacement from that origin to the selected physical start. [Separate address space](presentation/sound-data-inventory.md#separate-address-space) |
 
-Across both tables, 164 disjoint subranges cover 327,893 bytes. Of these, 327,881 have an identified static purpose and 12 have an explicit semantic question. The remaining 1,769,259 bytes have a section assignment and await finer classification **in this ledger**. Existing subsystem owners may already explain them. Behavior coverage has no byte denominator. No runtime observation is attributed to these rows here. Source-file and runtime evidence keep their own denominators in [source coverage](source-coverage.md#what-covered-means).
+Across both tables, 164 disjoint subranges cover 327,893 bytes. Of these, 327,881 have an identified static purpose and 12 have an explicit semantic question. The [split families](rom-split-families.md) also route individual named files, including files within these subranges. Count the physical intersection only once. Existing subsystem owners may already explain them. Behavior coverage has no byte denominator. No runtime observation is attributed to these rows here. Source-file and runtime evidence keep their own denominators in [source coverage](source-coverage.md#what-covered-means).
 
 ## Map68 and Battle19
 
@@ -96,16 +96,31 @@ The formation gives enemy slot 128 an Orc base and the LEADER AI command set. Th
 
 ## Look up a split file
 
-In PowerShell, set `$upstream` to the local SF2DISASM checkout and `$offset` to a ROM file offset. Read the pinned Git object so local changes cannot alter the result. At `0x1C80E4` this prints the first portrait payload. At `0x0176A6` no split matches: use S03-spells above. A 68k listing address can be used directly only for a symbol mapped in this ROM image. RAM addresses, banked Z80 addresses and offsets in decoded assets require their own mapping.
+From the worktree root, run the query against the local object named in the [toolchain manifest](../../manifests/toolchain.json). The default checkout is the manifest's `localPath`. Use `--upstream <checkout>` to select another local repository containing the pin. No ROM, extracted bins or emulator are needed. A 68k listing address applies directly only when its symbol maps into this ROM image. RAM addresses, banked Z80 addresses and offsets in decoded assets need their own mapping.
 
 ```powershell
-$offset = 0x1C80E4
-$pin = 'c834c652b6862bc5679fd7f69a38a7093206efc6'
-git -C $upstream show ($pin + ':split/sf2splits.txt') | ForEach-Object {
-    if ($_ -match '^#split\s+(0x[0-9a-f]+),(0x[0-9a-f]+),(.+)$') {
-        if ([int]$Matches[1] -le $offset -and $offset -lt [int]$Matches[2]) { $_ }
-    }
-}
+. ./local/private-inputs.ps1
+uv run python -m sf2tool.rom_split_lookup 0x1DDF44
+uv run python -m sf2tool.rom_split_lookup data/graphics/icons/item/icon127.bin
+uv run python -m sf2tool.rom_split_lookup data/maps/entries/map07/1-layout.bin
+uv run python -m sf2tool.rom_split_lookup 0x0176A6
+uv run python -m sf2tool.rom_split_lookup --family debug-script
+uv run python -m sf2tool.rom_split_lookup --summary
 ```
+
+The first two queries return both icon names at the same 192-byte interval. The map query returns the Map07 layout row and both selecting maps, 07 and 46. The spell boundary returns S03-spells. An offset with no split or documented child, such as `0x000000`, returns its enclosing section and layout entry.
+
+### Coverage by evidence
+
+The [family table](rom-split-families.md) assigns the 1,748 names to 38 families. The union of the 1,744 distinct file intervals is 1,732,587 bytes. Four same-range icon pairs account for the difference in counts. Pointer-slot reuse, decoded data, and nested ledger rows contribute zero additional stored bytes.
+
+| Best documented evidence for the named file | Split paths | Distinct intervals | Stored bytes in those intervals |
+| --- | ---: | ---: | ---: |
+| Corpus or resource structure, including documented alias exceptions | 1,737 | 1,733 | 1,681,361 |
+| Specific use or interpreted subset | 10 | 10 | 51,106 |
+| Location only, internal semantics **Unknown** | 1 | 1 | 120 |
+| All active splits | 1,748 | 1,744 | 1,732,587 |
+
+The 364,565 bytes outside active splits include 3,363 bytes in six existing exact children (S03-items, S03-spells, S03-name-align, S13-battle19-spriteset, S15-table and S17-ally-tail). The last 12 bytes of this set have an **Unknown** gameplay purpose at S17-ally-tail. The remaining 361,202 bytes route to the containing section and its vanilla layout. This is the ledger's current granularity for those bytes. Behavioral evidence stays attached to each owner's named observation, such as the [four-command music sample](presentation/sound-data-inventory.md#concentrated-runtime-matrix).
 
 For a boundary disagreement, compare the vanilla layout, active split directive and H1 listing or ROM-parity owner. An approximate free-space comment alone cannot classify a byte as padding. Keep conflicting claims and their source separate until the endpoints are resolved. Add a disjoint child row when its boundary and evidence owner can be named. Put pointers, aliases and decoded views in that row's explanation. Keep existing IDs linkable when subdividing. Track unresolved research by block ID in [the ROM inventory epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1819).
