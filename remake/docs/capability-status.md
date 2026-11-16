@@ -5,6 +5,8 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 
 ## Campaign feature trace
 
+To plan play beyond the Southwest Parmecia landing save, use the [remaining campaign risk baseline](application/remaining-campaign-risk-baseline.md). It traces the original Elven Village fork, the proposed Battle19 acceptance and the save passed between later chapters.
+
 Start with the player's action. For battle turns, inspection, actions and outcomes use the [battle decision and return matrix](godot/battle-interaction-baseline.md#one-player-decision-from-entry-through-return). For exploration, the [opening flow](evidence/opening-ui-gaps.md#entry-and-exploration-matrix) covers entry, walking, party and church; the rows below follow optional interactions across chapter boundaries through the Southeast Desert, Taros Shrine and the Southwest Parmecia riverbed. A map visit establishes arrival. The evidence column identifies which interactions someone actually performed there.
 
 | Player action | What selects the behavior and handles the return | Confirmed coverage and remaining limits |
