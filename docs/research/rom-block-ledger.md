@@ -94,6 +94,10 @@ At `(47,29)` the decoded marker is `0x1400`. Walking opcode 2 can request event 
 
 The formation gives enemy slot 128 an Orc base and the LEADER AI command set. The defeated hook reads a separate leader-presence byte at `0x047CA1` (slot 19, `0xFF`). With Bowie alive and enemy 128 dead, it queues surviving enemies for removal from the placed count. The loop tests zero allies before zero enemies, so Bowie's death takes precedence. **Unknown** here are natural traversal of either fork and an actual Battle19 victory in the original. [End checks and outcomes](chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#end-checks-and-firstrepeated-outcomes)
 
+For a completed Battle19, the airborne upgrade record starts at `0x1B6DC6`.
+The [retail ROM scan](chapters/southern-travel-creed/battle19-initialization-and-first-control.md#retail-rom-scan-and-replacement-definitions)
+locates the first match for each in-bound Gargoyle candidate and gives the resulting RNG consumption.
+
 ## Look up a split file
 
 From the worktree root, run the query against the local object named in the [toolchain manifest](../../manifests/toolchain.json). The default checkout is the manifest's `localPath`. Use `--upstream <checkout>` to select another local repository containing the pin. No ROM, extracted bins or emulator are needed. A 68k listing address applies directly only when its symbol maps into this ROM image. RAM addresses, banked Z80 addresses and offsets in decoded assets need their own mapping.

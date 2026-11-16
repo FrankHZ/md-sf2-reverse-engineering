@@ -49,7 +49,7 @@ relative to `disasm/` at
 [SF2DISASM master c834c652b6862bc5679fd7f69a38a7093206efc6](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm).
 The read-only checkout is clean at that pin; the
 [USA baseline](../../../../README.md#pinned-original-baseline) owns ROM identity.
-No fresh ROM-equivalence claim is made. Short battle-code paths use prefix
+The airborne scan below uses that verified ROM. Short battle-code paths use prefix
 `code/gameflow/battle/`; sibling filenames keep their directory. Fnnn denotes
 flag nnn; indices and template numbers are zero-based. Resolve `j_` aliases to
 actual bodies, enum expressions to their declared radix, and comments to opcodes.
@@ -235,7 +235,7 @@ not the row commandset, enemy name or the substitute's later movement:
 | REGULAR Orc12/Soulsower11; BRASS_GUNNER Launcher60 | Melee5 | OOZE0..REAPER35 | KRAKEN_LEG10, PAWN13, KNIGHT14, RAT15, BURST_ROCK32, ZEON_GUARD38 |
 | MAGE Madam70 | Mage1 | GALAM_MAGE67..CHAOS_WIZARD74 | QUEEN71 |
 | HEALER Priest79 | Healer2 | DARK_CLERIC76..EVIL_BISHOP84 | BISHOP80 |
-| FLYING Gargoyle43 | Airborne2 | HUGE_BAT40..DEMON52 | Count0, unsafe scan below |
+| FLYING Gargoyle43 | Airborne2 | HUGE_BAT40..DEMON52 | Count0, retail overread below |
 
 Unrecognized movement returns base early; all six selected bases have recognized
 branches. Bowie's current level supplies E, with+20 when signed-byte class>11.
@@ -256,22 +256,88 @@ clamp, unlimited retry, guaranteed strength increase or bulk random census follo
 | Soulsower11 | 11..16;13/14/15 excluded | q5:31..36, with32 excluded/36 out; q≥6 has no in-bound candidate. |
 | Madam70 | 71..72;71 excluded | q2:72..73; q3:73..74; q4:74..75 with75 out; q≥5 all out. |
 | Priest79 | 80..82;80 excluded | q2:81..83; q3:82..84; q4:83..85; q5:84..86; q≥6 all out. |
-| Gargoyle43 | 44..46, before unsafe scan | Bounds and the same defective exclusion consumer still precede any claimed result. |
+| Gargoyle43 | 44..46, all match | All in-bound candidates through 52 match. Higher rolls fail the upper bound. |
 | Launcher60 | 60..65, all above35 | Ordinary q1..25 produces60..185:60..127 fails signed upper35;128..185 fails signed lower0. |
 
 Thus ordinary eligible Launcher calls return60 after two draws despite no
 substitution; earlier ineligible calls return it without those draws. It uses
-melee, not ranged-family bounds. Gargoyle's blank excludedEnemies macro emits0;
-the consumer subtracts1 and executes DBF across65,536 following bytes unless an
-equality intervenes. A match uses retry/base fallback; exhaustion can accept the
-candidate. The comment does not prove a safe base return. No out-of-table byte
-census or successful Gargoyle roster is asserted.
+melee bounds.
 
-All fifteen calls occur128–142 in order. Fallback draws and unsafe scans can
-change subsequent seeds/returns and turn order. Returned substitutes change
+All fifteen calls occur128–142 in order. Retry draws advance the seed used for
+later selections and turn order. Returned substitutes change
 stats/HP/MP/movement/gear/spells/resistance/prowess/priority; placement commandset,
 coordinates, regions, orders and item request remain the row's operands. The
 base stats, healing and turn claims here are conditional on unchanged definitions.
+
+### Retail ROM scan and replacement definitions
+
+**Confirmed** on 2026-11-16 for the pinned USA ROM. The FLYING and HOVERING
+PC-relative loads at `0x1B18CC` and `0x1B18DC` both select
+`table_AirborneTypeEnemyUpgradeDefinition` at `0x1B6DC6`. Its range and bounds
+occupy three bytes. At `@CheckExcludedEnemies`, A1 reads the zero count at
+`0x1B6DC9` and advances to `0x1B6DCA`, the first byte of the ranged definition.
+Subtracting one sets D1.W to `0xFFFF`. Each iteration reads one byte with
+`(A1)+` and compares it to D3.B before reaching DBF on a mismatch. With no
+match, the loop would read 65,536 bytes through `0x1C6DC9` inclusive and
+return D3.B. These 68000 ROM addresses are file offsets in the retail image
+mapped at `0x000000..0x1FFFFF` inclusive. All actual matches below are in
+[S13](../../rom-block-ledger.md#s13).
+
+| Candidate ID in increasing order | First equal byte in the same order (ROM offset, hex) |
+| --- | --- |
+| 44, 45, 46 (q1) | `1B6F12`, `1B6F89`, `1B6E36` |
+| 47, 48, 49 | `1B7137`, `1B6E0F`, `1B6E1D` |
+| 50, 51, 52 | `1B6F9C`, `1B7243`, `1B6E1A` |
+
+At q1–7 all three rolls from `43 + q` are in bounds and match. At q8 only
+51/52 reach the scan, at q9 only 52, and at q10–25 every roll exceeds 52.
+Thus every eligible attempt fails. An initial failure resets D3 to the center
+and draws again. The second failure returns Gargoyle43. Byte comparisons
+consume zero RNG draws. **Slots 131, 136 and 142 each advance the main seed
+twice** during formation initialization. Launcher slots 138 and 141 also
+advance it twice each by bounds fallback. These five fixed returns account for
+ten draws interleaved with the other ten slots' draws. At q6–25 the other
+categories also have no admissible roll, so all fifteen keep their bases
+after 30 draws. During fresh initialization, F519 clear or E below 29 gives
+the base roster with zero upgrade draws. A suspended entry uses the saved roster.
+
+For q1 (E29–38), content needs the six base definitions plus **Bubbling Ooze16,
+Skeleton17, Wizard72, Dark Bishop81 and Master Monk82**. Orc can select 12/16/17,
+Soulsower 11/12/16, Madam 72 and Priest 81/82, with original-base fallback
+on two rejections. Across q1–25 the union of additional definition IDs is
+**16–31, 33–35, 72–74 and 81–84**. Airborne candidates 44–52 are compared
+but never copied. Within q1–5 the remaining slots' selections depend on q and
+the incoming seed. Those draws advance the main RNG also used for turn generation.
+
+Battle17 uses the same Gargoyle43 base and scan with F517 and E27 as its
+threshold. Battle14 uses F514, E24 and Hovering Evil Cloud42, which starts q1
+at 43. The offsets above apply to equal candidate bytes on this ROM. Each
+battle supplies its own formation order, candidates and entry state.
+[Battle17 repeat selection](./battle17-initialization-and-first-control.md#f517-and-actual-repeat-definition-selection)
+· [Battle14 repeat selection](./battle14-desert-encounter-and-outcomes.md#completed-repeats-and-actual-enemy-upgrade-selection)
+
+From the research worktree root, verify the registered ROM and print the first
+match (or exhaustion) for every in-bound Battle19 Gargoyle candidate. The
+lookup reads one 64 KiB window and prints only offsets.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run --locked sf2 rom verify
+if ($LASTEXITCODE -ne 0) { throw 'USA ROM identity check failed' }
+@'
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+
+with private_input_path(ROM_INPUT_IDENTITY).open("rb") as rom:
+    rom.seek(0x1B6DC6)
+    assert rom.read(4) == bytes([2, 40, 52, 0])
+    first = rom.tell()
+    window = rom.read(0x10000)
+assert len(window) == 0x10000
+for candidate in range(44, 53):
+    index = window.find(bytes([candidate]))
+    print(candidate, "exhausted" if index < 0 else hex(first + index))
+'@ | uv run --locked python -X utf8 -
+```
 
 ## Three ordered regions, signed projection and standby
 
@@ -593,7 +659,7 @@ behavior are different. No admission-only edit or new platform is proposed.
 ## Unknowns, retained failures and reproduction
 
 **Unknown:** natural flags/route/party/capacity/levels/classes/gear/status/seeds,
-Gargoyle scan/substitution results, later crossings/cache state, actual targets/
+seed-dependent repeat roster, later crossings/cache state, actual targets/
 paths/healing/item/spell choices, first actor/action, performed damage/prowess,
 obtained Ball/deals, resumed-state validity, completed services/presentation/
 hardware timing and persistence. These do not create an automatic runtime queue.
@@ -618,8 +684,8 @@ claim; the original PASS receipts remain mechanical results, not semantic closur
 Reproduce at the pin/base by reading all27 rows, three regions, declared point
 and six full bases, then named callers/consumers above. Resolve Map68's sole19
 and independent globals/hooks before fresh/saved claims. Re-derive E−19/q,
-categories/bounds/exclusions/retry/seed and copy order; keep unsafe airborne
-outcomes Unknown. Substitute every placement into both triangles of each region
+categories/bounds/exclusions/retry/seed and copy order, and run the retail scan
+above for the airborne branch. Substitute every placement into both triangles of each region
 with signed projection/CCR and edge order. Separate cache, region assignments,
 NONE/follow standby, actual referents and stream short-circuiting. Trace current
 local`$80` through helper keys`$C0/$A0/$80`, default lookup, cost20/3/10 and
