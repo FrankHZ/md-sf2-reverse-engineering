@@ -72,6 +72,8 @@ prose adds no executable Battle19 fixture or indexed count.
 
 ## Map68 selection and fresh versus saved lifetimes
 
+The ROM ledger locates the [Battle19 terrain](../../rom-block-ledger.md#s13-battle19-terrain) and [formation, regions and AI point](../../rom-block-ledger.md#s13-battle19-spriteset) by file offset.
+
 **Confirmed:** BATTLE_OUTSIDE_ELVEN_VILLAGE19 is Map68's sole battle-map row:
 output crop `(5,19,48,32)`, wildcard trigger255/255. CheckBattle requires F419,
 not geometric containment, Caravan mode, F65, F518, F762 or membership. F519 set

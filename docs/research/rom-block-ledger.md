@@ -38,13 +38,58 @@ These entries record byte-level interpretations that can be followed back to a p
 | <a id="s03-items"></a>S03-items | `0x016EA6` | `0x0176A6` | 2,048 | Item definitions, 128 records of 16 bytes. [ROM layout manifest](../../manifests/extractions/rom-static-layout.json) · [Source/ROM parity](party/static-core-data.md#rom-table-map) |
 | <a id="s03-spells"></a>S03-spells | `0x0176A6` | `0x01796E` | 712 | Spell definitions, 89 records of 8 bytes. At the shared boundary the first spell owns the byte. [Source/ROM parity](party/static-core-data.md#rom-table-map) |
 | <a id="s03-name-align"></a>S03-name-align | `0x017F3D` | `0x017F3E` | 1 | Assembly alignment between the item and class names. [Listing and adjacent table boundaries](party/static-core-data.md#rom-table-map) |
+| <a id="s08-map68-layout"></a>S08-map68-layout | `0x0BE05E` | `0x0BE60E` | 1,456 | `Map68s1_Layout`, compressed field layout. Its 64×64 decoded words carry block indices and flags. [Map68 pointer and fork tiles](#map68-and-battle19) · [Walking zone](chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md#walking-zone-callback-and-battle19-admission) · [Village warp](chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#independent-map68-entrance-to-map23) |
+| <a id="s13-battle19-terrain"></a>S13-battle19-terrain | `0x1AEB5A` | `0x1AED3C` | 482 | `BattleTerrain19`, Stack-compressed battle terrain. The loader expands it to 48×48 one-byte cells. [Decode parity](battle/battle-routing-data.md#static-shape) · [Battle19 map and terrain selection](chapters/southern-travel-creed/battle19-initialization-and-first-control.md#map68-selection-and-fresh-versus-saved-lifetimes) |
+| <a id="s13-battle19-spriteset"></a>S13-battle19-spriteset | `0x1B46BE` | `0x1B482C` | 366 | `BattleSpriteset19`, four count bytes followed by 12 ally templates and 15 enemy records (12 bytes each), three AI regions (12 bytes each) and one two-byte AI point. [Formation and placement](chapters/southern-travel-creed/battle19-initialization-and-first-control.md#twelve-templates-and-the-actual-party) · [Victory rule](chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#end-checks-and-firstrepeated-outcomes) |
 | <a id="s15-table"></a>S15-table | `0x1C8004` | `0x1C80E4` | 224 | `pt_Portraits`, 56 four-byte pointers. Slots 35 and 53–55 reuse other targets. [Pointer address and aliases](../../tests/fixtures/h2/portrait-graphics-decode-v1.json) |
 | <a id="s15-payloads"></a>S15-payloads | `0x1C80E4` | `0x1D7E26` | 64,834 | 52 adjacent stored containers, portrait00 through portrait52 with alias slots excluded. Use the split lookup below for any member boundary. The 106,496 decoded tile bytes live outside ROM offset space. [Container format and parity](presentation/auxiliary-data-inventory.md#static-shape-and-copyright-boundary) |
 | <a id="s17-ally-tail"></a>S17-ally-tail | `0x1EE884` | `0x1EE890` | 12 | **Unknown** gameplay purpose. Slots 30 and 31 are physically present at `start + 30 × 6` in the 32-record ally start table. Their status as reserved, reachable or padding remains open. [Canonical entities](party/static-core-data.md#canonical-entities) |
 | <a id="s18-bank1"></a>S18-bank1 | `0x1F0000` | `0x1F8000` | 32,768 | First stored music bank. [Bank 1 parity and selection](presentation/sound-data-inventory.md#static-bank-parity) |
 | <a id="s18-bank0"></a>S18-bank0 | `0x1F8000` | `0x200000` | 32,768 | Second stored music bank. Both banks use Z80 origin `0x8000`. Convert a bank-local address by adding its displacement from that origin to the selected physical start. [Separate address space](presentation/sound-data-inventory.md#separate-address-space) |
 
-The eight listed subranges cover 133,367 bytes. Of these, 133,355 have an identified static purpose and 12 have an explicit semantic question. The remaining 1,963,785 bytes have a section assignment and await finer classification **in this ledger**. Existing subsystem owners may already explain them. Behavior coverage has no byte denominator. No runtime observation is attributed to these eight rows here. Source-file and runtime evidence keep their own denominators in [source coverage](source-coverage.md#what-covered-means).
+The eleven listed subranges cover 135,671 bytes. The Map68 and Battle19 rows contribute 2,304 stored bytes. Of the total, 135,659 have an identified static purpose and 12 have an explicit semantic question. The remaining 1,961,481 bytes have a section assignment and await finer classification **in this ledger**. Existing subsystem owners may already explain them. Behavior coverage has no byte denominator. No runtime observation is attributed to these rows here. Source-file and runtime evidence keep their own denominators in [source coverage](source-coverage.md#what-covered-means).
+
+## Map68 and Battle19
+
+**Confirmed** for the pinned USA image. The map, terrain and formation pointer tables store four-byte big-endian ROM addresses. Map slot 68 (`pt_MapData + 4 × 68`, file offset `0x094C9A`) selects the Map68 header at `0x0BDA0A`. Its layout pointer begins at header offset **10**, after six palette/tileset bytes and the block pointer. The unused `MAPDATA_OFFSET_LAYOUT` enum gives 8. The loader and retail header agree on 10. Among the 79 maps, only Map68 selects this layout. [Pinned map entries](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries.asm#L1458-L1478) · [Header and loader parity](world/map-content.md#complete-static-boundary)
+
+| First and last stored byte | At the exclusive end | Boundary evidence |
+| --- | --- | --- |
+| `0x0BE05E`, `0x0BE60D` → S08-map68-layout | `0x0BE60E` starts `Map68s9_Animations`. | The [split lookup](#look-up-a-split-file) returns the Map68 `1-layout.bin` path for both bytes. The preceding byte at `0x0BE05D` belongs to `0-blocks.bin`. H1 labels the following animation table. |
+| `0x1AEB5A`, `0x1AED3B` → S13-battle19-terrain | `0x1AED3C` starts Battle20 terrain. | Slot 19 at `0x1AD150` in [pt_BattleTerrainData](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/terrainentries.asm) agrees with the `battle19/terrain.bin` split. Slots 4 and 32 reuse 3 and 27 respectively. Only 19 selects this target. |
+| `0x1B46BE`, `0x1B482B` → S13-battle19-spriteset | `0x1B482C` starts the Battle20 header. | Slot 19 at `0x1B313A` in [pt_BattleSpritesets](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/spritesets/entries.asm) is the sole pointer to this assembled formation. H1 labels both headers. The [unused binary aggregate](battle/battle-routing-data.md#build-boundary) repeats the symbol names and contributes zero additional bytes. |
+
+To repeat the pointer and marker lookup, load the [local input configuration](../operations/local-private-inputs.md), set `$rom` to the verified USA file and run this from the repository root. For each target the query prints its file offset and every slot sharing it.
+
+```powershell
+@'
+from pathlib import Path
+from struct import unpack_from
+import sys
+from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
+
+rom = Path(sys.argv[1]).read_bytes()
+def ptr(offset):
+    return unpack_from(">I", rom, offset)[0]
+
+headers = [ptr(0x094B8A + 4*i) for i in range(79)]
+layouts = [ptr(h + 10) for h in headers]
+terrain = [ptr(0x1AD104 + 4*i) for i in range(45)]
+formations = [ptr(0x1B30EE + 4*i) for i in range(45)]
+for targets, slot in [(layouts, 68), (terrain, 19), (formations, 19)]:
+    print(hex(targets[slot]), [i for i, target in enumerate(targets) if target == targets[slot]])
+
+h = headers[68]
+blocks, *_ = decode_map_blocks(rom[ptr(h + 6):ptr(h + 10)])
+words, *_ = decode_map_layout(rom[ptr(h + 10):ptr(h + 42)], len(blocks) // 9)
+for x, y in [(47, 29), (48, 30)]:
+    print(x, y, hex(words[64*y + x] & 0x3C00))
+'@ | uv run python -X utf8 - $rom
+```
+
+At `(47,29)` the decoded marker is `0x1400`. Walking opcode 2 can request event 6 here. Map68's default zone callback selects battle 19. With F519 clear it sets F419 and requests a reload. On reload, `CheckBattle` admits the F419-enabled Map68 row with wildcard trigger coordinates. The row's `(5,19)` origin and 48×32 size describe the battle crop. Driving opcode 7 has no zone request. At `(48,30)` the marker is `0x1000`. The pointer at header offset 30 selects `Map68s6_WarpEvents` at `0x0BDA5E`. Its zero-based row 2 supplies Map23 `(22,29)`, facing Right, independently of F519. [Walking and reload](chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md#walking-zone-callback-and-battle19-admission) · [Village warp](chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#independent-map68-entrance-to-map23)
+
+The formation gives enemy slot 128 an Orc base and the LEADER AI command set. The defeated hook reads a separate leader-presence byte at `0x047CA1` (slot 19, `0xFF`). With Bowie alive and enemy 128 dead, it queues surviving enemies for removal from the placed count. The loop tests zero allies before zero enemies, so Bowie's death takes precedence. **Unknown** here are natural traversal of either fork and an actual Battle19 victory in the original. [End checks and outcomes](chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md#end-checks-and-firstrepeated-outcomes)
 
 ## Look up a split file
 
@@ -60,4 +105,4 @@ git -C $upstream show ($pin + ':split/sf2splits.txt') | ForEach-Object {
 }
 ```
 
-For a boundary disagreement, compare the vanilla layout, active split directive and H1 listing or ROM-parity owner. An approximate free-space comment alone cannot classify a byte as padding. Keep conflicting claims and their source separate until the endpoints are resolved. Add a disjoint child row when its boundary and evidence owner can be named. Put pointers, aliases and decoded views in that row's explanation. Keep existing IDs linkable when subdividing. Start the next pass with the encounter and map data needed by Battle19 in S13 and S08. Track unresolved research by block ID in [the ROM inventory epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1819).
+For a boundary disagreement, compare the vanilla layout, active split directive and H1 listing or ROM-parity owner. An approximate free-space comment alone cannot classify a byte as padding. Keep conflicting claims and their source separate until the endpoints are resolved. Add a disjoint child row when its boundary and evidence owner can be named. Put pointers, aliases and decoded views in that row's explanation. Keep existing IDs linkable when subdividing. Track unresolved research by block ID in [the ROM inventory epic](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1819).
