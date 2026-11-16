@@ -26,6 +26,7 @@ REPOSITORY = "https://github.com/FrankHZ/md-sf2-reverse-engineering"
 MAPPING = "docs/operations/wiki-mirrors.tsv"
 INDEX = "docs/README.zh-CN.md"
 ROADMAP = "docs/design/documentation-roadmap.md"
+ROM_LEDGER = "docs/research/rom-block-ledger.md"
 
 
 class Source:
@@ -127,6 +128,9 @@ def render(source: Source) -> dict[str, str]:
         )
 
     index = f"[主仓中文文档索引]({source.url(INDEX)})"
+    rom_entry = ""
+    if ROM_LEDGER in source.files:
+        rom_entry = f"- [ROM 分块总表（主仓英文）]({source.url(ROM_LEDGER)})\n"
     roadmap = source.chinese_link(ROADMAP, "设计路线图")
     entries = []
     design_entries = []
@@ -156,6 +160,7 @@ def render(source: Source) -> dict[str, str]:
             + "\n## 从这里开始\n\n"
             f"- {roadmap} · [[Design Documentation]]\n"
             f"{navigation}"
+            f"{rom_entry}"
             f"- {index}\n\n"
             "## 阅读边界\n\n"
             "- **Confirmed**：由项目命令、测试或具名证据直接支持。\n"
@@ -165,7 +170,7 @@ def render(source: Source) -> dict[str, str]:
         ),
         "_Sidebar": (
             "## SF2 Wiki 试点\n\n- [[Home]]\n- [[Design Documentation]]\n"
-            f"{''.join(sidebar)}\n"
+            f"{''.join(sidebar)}{rom_entry}\n"
             f"{index} · {roadmap}\n\n" + credit(INDEX)
         ),
         "Design-Documentation": (
