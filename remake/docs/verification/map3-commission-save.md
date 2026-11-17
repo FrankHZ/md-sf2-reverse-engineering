@@ -220,8 +220,121 @@ path, while retaining the original driver
 for failure reproduction. Report terminal gameplay and native exit independently; do not add a lifecycle
 patch solely to make an observer pass.
 
-Reopen on a fault or unexpected native status after ordinary Quit/close, or on a new observer
-fault that identifies the wrapper or yields a reproducibly failing input. Preserve the build,
+Keep the incident open. Prioritize a fault or unexpected native status after ordinary Quit/close,
+or a new observer fault that identifies the wrapper. Preserve the build,
 language, slot copy, exit action and owner, terminal gameplay result, native PID/status, separate
 logs and matching private dump. A dump that includes the finalizing object's heap page can narrow
 ownership. A fault during play or loss of saved progress warrants immediate escalation.
+
+### Heap-backed InputEventKey shutdown diagnosis
+
+This investigation uses **Standard** rigor: an intermittent cross-runtime failure needs a bounded
+capture and independent review. Its decision is whether an application lifecycle correction is
+supported. Scope is the frozen Creed menu-observer input, finalizing wrapper and native binding;
+campaign replay, an engine upgrade and speculative cleanup are outside this slice. Acceptance is
+an independently readable object/binding receipt and explicit limits on the original access violation.
+
+**Confirmed:** After [#1880](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1880)
+was accepted at `b329610976df64f992469530f3c4739c0fe00d4f`, two serial debugger acquisitions
+on 2026-11-17 reused its unchanged `a56fe51c` product, English `basement-en` seed and
+`finalizer-controls/verify-menu.gd`. Each reached Continue, Save, movement, `END` and
+`MENU QUIT confirmation`; each complete decoded saved-data object equals the seed.
+
+| Private sample | Capture boundary | Native process result |
+| --- | --- | --- |
+| `menu-heap01`, PID41372 | ProcDump native second-chance monitoring saw first-chance CLR events and `C000001D`, but no second-chance dump was produced. Retained failed acquisition. | `-1073741795` (`0xC000001D`), no controller termination |
+| `menu-heap02`, PID44892 | Corrected first-chance filter admitted only `C0000005` or `C000001D`; one full-memory dump captured the latter. Ordinary first-chance CLR events were not collected or counted as the target fault. | `-1073741795`, no controller termination |
+
+The second sample identifies a different native failure signature from the earlier `C0000005`.
+Neither is a successful Quit. ProcDump 12.02 ran as a native debugger (`-g`), with
+`-ma -e 1 -f C0000005,C000001D -n 1 -at 15`; the unchanged game was its `-x` target.
+The recorded native process handle, rather than the debugger exit code, owns the game result.
+Debugger timing/heap effects remain part of this observation's boundary.
+
+The one private dump is 1,469,930,520 bytes; observed target private memory peaked near 1.12 GiB.
+It remains in the external private `issue1716-finalizer` investigation root, with no handoff copy.
+The two acquisitions plus small tools/receipts stayed below the 2 GiB new-output budget and left
+over 2.2 GiB free on the output volume. No further native sample followed this capture.
+
+**Confirmed:** Existing ClrMD NuGet `4.2.751201` (assembly `4.2.15.1201`) and the installed
+.NET 10.0.8 DAC read the following fields from that dump. The CLR version is `10.0.826.23019`.
+All four loaded remake modules and GodotSharp/GodotPlugins match the frozen disk modules by
+metadata bytes and MVID; this does not substitute for the retained product build provenance.
+
+| Boundary | Direct observation |
+| --- | --- |
+| Finalizer thread | TID37000, `IsFinalizer=true`; `GC.RunFinalizers → GodotObject.Finalize → Dispose → godotsharp_internal_refcounted_disposed` |
+| Managed `this` | `0x169789103d8`, type `Godot.InputEventKey`; `NativePtr=0x188466522d0`, `_disposed=true`, `_memoryOwn=true` |
+| Native fault | Godot executable RVA `0xd944c5`, `UD2` bytes `0f0b`; embedded assertion identifies `!rc_owner`, `_instance_binding_reference_callback`, `csharp_script.cpp:1264` |
+| Binding record | `0x18846556ba0`; object key `0x188466522d0`, `inited=false`, GC handle zero and `owner=null` |
+
+`GodotObject.Dispose` sets `_disposed` before entering the native call; that flag is not evidence
+of an earlier application disposal or double-dispose.
+The binding offsets are checked against the captured callback instructions and the pinned source
+structure. They are not inferred from a preceding warning. From the private investigation root,
+`pwsh -NoProfile -File ./read-target.ps1` rereads the finalizer object and module locations;
+`python -X utf8 ./proof.py` rereads the same dump's assertion/binding bytes, compares module
+metadata and decodes both saved payloads. `menu-heap02/proof.json` is the compact combined receipt.
+These are offline reads, not a request to repeat the game. The first offline save comparison
+incorrectly expected top-level `data`; the corrected reader decodes the existing base64 `payload`.
+That inspection error did not change a save or rerun either sample.
+
+**Confirmed:** The relevant upstream source is Godot
+[`ed1daf0bf001b61586d9930840f2f1394092c079`](https://github.com/godotengine/godot/tree/ed1daf0bf001b61586d9930840f2f1394092c079).
+[`CSharpLanguage::finalize`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/modules/mono/csharp_script.cpp#L140)
+calls the managed disposable tracker, then releases native bindings and deletes the `GDMono` host.
+The [tracker](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/modules/mono/glue/GodotSharp/GodotSharp/Core/DisposablesTracker.cs)
+uses ordinary weak references and disposes targets still returned by `TryGetTarget`.
+[`get_existing_instance_binding`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/modules/mono/csharp_script.cpp#L1355)
+actually calls the binding-creating path. Its creation callback inserts a default record with null
+owner; the separate setup path supplies the owner. The reference callback checks the owner before
+checking whether the record was initialized. Those facts explain how an uninitialized binding can
+reach the captured assertion; they do not establish when this particular record was created.
+
+**Inferred:** A late managed finalizer overlapping native binding teardown can recreate a default
+binding and then enter its reference callback. This is an upstream lifecycle candidate, supported
+by the concrete object/record and source paths. The capture is not an allocation/free trace or a
+native stack unwind, so the precise interleaving remains **Unknown**. The earlier `C0000005`
+wrapper and whether both signatures share that cause also remain **Unknown**.
+
+#### Input ownership and player risk
+
+The retained menu observer inherits `key(code)` through `issue1867/verify.gd → issue1864/verify.gd
+→ issue1862/verify.gd → issue1861/verify.gd → issue1804/campaign.gd → issue1804/direct.gd
+→ issue1759/observe.gd`. That helper creates native GDScript `InputEventKey` objects and feeds
+press/release edges through `Input.parse_input_event`. Godot's
+[pinned input contract](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/doc/classes/Input.xml#L541)
+routes those events to `Node._input`, including the product's
+[`GameRoot._Input(InputEvent)`](../../game/src/GameRoot.cs).
+Native-object conversion uses `VariantUtils.ConvertToGodotObject` and
+[`InteropUtils.UnmanagedGetManaged`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/modules/mono/glue/GodotSharp/GodotSharp/Core/NativeInterop/InteropUtils.cs#L11)
+to reuse or create a managed wrapper; `ScriptManagerBridge.CreateManagedForGodotObjectBinding`
+constructs the managed type around the existing native pointer. Godot owns that bridge and its
+reference release. The product input handler does not take exclusive disposal ownership of each
+borrowed event. Disposing borrowed callback arguments is not an evidenced remedy.
+
+**Confirmed:** Ordinary OS keyboard events also enter the typed product input callback; wrapper
+conversion does not select a different ownership mechanism based on GDScript versus OS origin.
+The product separately allocates binding templates in `GameInput.PrepareRows`. A postmortem type
+alone cannot establish which allocation produced the captured object. **Unknown:** its exact
+allocating call and whether a no-script player exit reproduces either failure. The previous ordinary
+Quit success remains one observation, not proof that ordinary exits are immune. Theme/audio warning
+identities and saved-data equality answer different questions from wrapper lifetime and safe exit.
+
+#### Next useful boundary
+
+No application patch or release-safety claim follows from this sample. Keep #1716 open. A useful
+upstream reproducer would use only an authored C# `Node._Input` callback, transient native key
+events and ordinary `SceneTree.Quit`, with no private content, explicit GC or lifecycle delay.
+Compare a real OS-input/no-script exit with the synthetic-event case; accept the same binding
+assertion or a separately identified access-violation object as evidence, not a generic nonzero exit.
+This reduction and any upstream submission are next work, not completed results here.
+
+An upstream correction needs to preserve binding lookup/creation and teardown ownership while
+preventing late finalizers from using cleared or uninitialized records. Merely removing the assert,
+forcing collection, sleeping or exiting the process is not that correction. Validate any candidate
+on a pinned engine build with the reduced case and frozen original input, preserving all failed
+receipts. An application fix instead requires an allocation/free trace identifying an application
+owner that releases a resource incorrectly. Until one of those boundaries is satisfied, local
+campaign progress can retain separate gameplay/save acceptance, but reliable ordinary shutdown
+and readiness for a general player release remain unestablished.
