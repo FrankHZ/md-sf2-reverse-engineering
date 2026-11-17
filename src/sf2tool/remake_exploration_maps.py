@@ -96,7 +96,10 @@ def compile_maps(
                 sprite = entity["mapSprite"]
                 if (
                     sprite >= compiler.equates["MAPSPRITES_SPECIALS_START"]
-                    and sprite != compiler.equates["MAPSPRITE_TAROS"]
+                    and sprite not in (
+                        compiler.equates["MAPSPRITE_TAROS"],
+                        compiler.equates["MAPSPRITE_EVIL_SPIRIT"],
+                    )
                 ):
                     raise ValueError("special entity index mapping is not admitted")
                 identity = sprite if sprite < 30 else npc

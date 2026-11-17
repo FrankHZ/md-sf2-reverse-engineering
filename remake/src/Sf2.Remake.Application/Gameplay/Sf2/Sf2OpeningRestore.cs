@@ -66,6 +66,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data)
     {
+        if (data.Recipe == "evil-spirit-shrine" && data.EgressMap == "map-9") return;
         if (data.Recipe is "floor-world" or "willard-burrow" && data.EgressMap == "map-26") return;
         if (data.Recipe == "desktop-kingdom" && data.EgressMap == "map-22") return;
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
@@ -135,10 +136,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("taros-shrine", player, "Taros Shrine, after the Caravan");
         if (map.Value == "map-67" && flags.Contains(521) && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("devils-tail", player, "Devil's Tail");
-        // Only the first-visit setup is admitted. Entry and F774 do not require Battle21 victory.
-        if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 523 or 783 or 784 or 786) &&
+        // First visit and completed restoration retain their separate source init tails.
+        if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 784 or 786) &&
+            (!flags.Contains(523) || flags.Contains(783)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
+        if (map.Value == "map-34" && !flags.Contains(784) &&
+            content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("evil-spirit-shrine", player, "Evil Spirit Shrine");
         // A nonvictory return retains F422; completion requires the separate aftermath to return.
         if (map.Value == "map-22" && flags.Contains(776) && (!flags.Contains(522) || flags.Contains(778)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
@@ -230,13 +235,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         // him after a completed attempt, unlike the scene's same-visit Hide.
         if (location.Recipe == "floor-world" && flags.Contains(780))
             world = world.MoveOffMap(new("entity-129"));
-        if (location.Recipe == "creed-mansion" && flags.Contains(774))
+        if (location.Recipe == "creed-mansion" && (flags.Contains(783) || flags.Contains(774)))
         {
             // ms_map33_InitFunction / cs_5ABE6: reentry places Goliath only.
             // F774 does not replay cs_5AC58's two live door copies or temporary followers.
             var goliath = world.Entities[new("entity-128")];
             world = world.WithEntity(goliath with { Motion = goliath.Motion with
-                { X = 17 * 384, Y = 12 * 384, XDestination = 17 * 384, YDestination = 12 * 384, Facing = 3 } });
+                { X = 17 * 384, Y = (short)((flags.Contains(783) ? 10 : 12) * 384),
+                    XDestination = 17 * 384, YDestination = (short)((flags.Contains(783) ? 10 : 12) * 384), Facing = 3 } });
         }
         // Allocation starts followers at the leader. This is the same legal overlap as a map reload;
         // their ordinary following service establishes spacing on the next deliberate input.

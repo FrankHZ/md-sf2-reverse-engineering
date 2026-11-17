@@ -390,6 +390,8 @@ def prepare_visuals(
     special_bases = {
         compiler.equates["MAPSPRITE_KRAKEN_HEAD"]: 0x261A6,
         compiler.equates["MAPSPRITE_TAROS"]: 0x25DF6,
+        # pt_SpecialSprites entry 3: same two-frame battle sprite DMA/layout.
+        compiler.equates["MAPSPRITE_EVIL_SPIRIT"]: int.from_bytes(rom[0x25C08:0x25C0C], "big"),
     }
     for sprite in sorted(sprites):
         portrait, speech = dialogue.get(sprite, (None, compiler.equates["SFX_DIALOG_BLEEP_6"]))

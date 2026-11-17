@@ -96,6 +96,16 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         if op == "ac_jump" and args == ["eas_Idle"]:
             finish_in_idle(result)
             break
+        if op == "ac_jump" and args == ["eas_Init"]:
+            # A tail transfer executes Init's movement flags, size and sprite refresh.
+            # Keep its local jumps relative to the combined stream.
+            offset = len(result)
+            result.extend(
+                {**action, "instruction": action["instruction"] + offset}
+                if action["op"] == "jump" else dict(action)
+                for action in action_stream(self, "eas_Init")
+            )
+            break
         result.extend(compile_action(self, op, args, source))
         if op in ("ac_end", "ac_jump"):
             break

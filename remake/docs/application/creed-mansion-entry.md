@@ -22,7 +22,7 @@ Facing Goliath from (17,13), Up leaves Bowie blocked at that position. Confirm g
 
 ## Savepoint restoration and reentry
 
-The `creed-mansion` recipe accepts settled positions in the active map area before or after F774. It does not require F521. Later setup states F22/F523/F783/F784/F786 remain outside its admitted restoration boundary. An occupied or blocked reconstructed landing remains unsaveable; for example, leave an opened door tile before saving.
+The `creed-mansion` recipe accepts settled positions in the active map area before or after F774. It does not require F521. That first-visit boundary excluded F22/F523/F783/F784/F786. The [restoration chapter](creed-restoration.md) now extends the recipe to completed F783 restoration; F22/F784/F786 remain outside the current recipe. An occupied or blocked reconstructed landing remains unsaveable; for example, leave an opened door tile before saving.
 
 Like the existing field recipes, Continue rebuilds the baseline layout and population at the recorded player position. F774 restores Goliath to (17,12), Down, without replaying the scene. The two live door edits and custom follower spacing are not part of the serialized record; ordinary population followers resume from the leader. This is a remake savepoint restoration, not an original-game save-state claim. The cold Continue → Save check compared **every field of the decoded recorded data**, including RNG, text/music state, names, party, inventory, Deals, once flags, gold, return town and vehicle berth. Both languages matched their own input record exactly.
 

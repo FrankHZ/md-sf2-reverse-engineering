@@ -249,6 +249,12 @@ def derive(args: argparse.Namespace) -> dict:
         field_texts.update(range(2590, 2596))
     if args.scope == "current" and any(row["id"] == "map-33" for row in world["world"]["maps"]):
         field_texts.update(range(1804, 1840))
+    if args.scope == "current" and any(
+        setup["id"] == "ms-map33-flag523"
+        for row in world["world"]["maps"] for setup in row.get("setups", [])
+    ):
+        field_texts.update(range(1840, 1898))
+        field_texts.add(1904)  # Goliath's F783-set ordinary return dialogue.
     if args.scope == "current" and any(row["id"] == "map-22" for row in world["world"]["maps"]):
         field_texts.update(range(1748, 1804))
     floor_world = args.scope == "current" and any(

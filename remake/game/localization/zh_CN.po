@@ -2497,3 +2497,9 @@ msgstr "已解除中毒，解毒草已消耗。"
 
 msgid "caravan.items.result.no-effect"
 msgstr "没有需要解除的中毒，解毒草已消耗。"
+
+msgid "save.destination.creed-mansion"
+msgstr "克里德的宅邸"
+
+msgid "save.destination.evil-spirit-shrine"
+msgstr "恶灵神殿"

@@ -198,6 +198,8 @@ public sealed partial class GameRoot
         "devils-tail" => GameText.Get("save.destination.devils-tail"),
         "desktop-kingdom" => GameText.Get("save.destination.desktop-kingdom"),
         "willard-burrow" => GameText.Get("save.destination.willard-burrow"),
+        "creed-mansion" => GameText.Get("save.destination.creed-mansion"),
+        "evil-spirit-shrine" => GameText.Get("save.destination.evil-spirit-shrine"),
         "floor-world" => GameText.Get("save.destination.floor-world"),
         "fairy-cave" => GameText.Get("save.destination.fairy-cave"),
         "harpy-pond" => GameText.Get("save.destination.harpy-pond"),

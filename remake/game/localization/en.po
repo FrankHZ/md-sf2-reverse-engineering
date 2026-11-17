@@ -2497,3 +2497,9 @@ msgstr "Poison cured. The Antidote was consumed."
 
 msgid "caravan.items.result.no-effect"
 msgstr "No poison to cure. The Antidote was consumed."
+
+msgid "save.destination.creed-mansion"
+msgstr "Creed's Mansion"
+
+msgid "save.destination.evil-spirit-shrine"
+msgstr "Evil Spirit Shrine"
