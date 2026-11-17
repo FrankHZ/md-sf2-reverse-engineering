@@ -365,7 +365,7 @@ and separately record `RequestedTimerB`. It does not change the original `Load_S
 entries, and its type-2 effects have separate temporary YM records. `StopMusic` preserves these
 extra records. The existing H2 sound inventory's `sfxModel.entries.activeSlots` supplies the bounded
 classification in `SessionAudio`; command names and type numbers alone are insufficient. Commands
-83 and 102 occupy YM6 and PSG tone3 respectively; 113 occupies YM4/5 while 67 occupies PSG tone3.
+76 (Desktop arrival), 83 and 102 occupy PSG tone3, YM6 and PSG tone3 respectively; 113 occupies YM4/5 while 67 occupies PSG tone3.
 The former single player truncated 83 on level sound 102 and recovery 113 on confirmation 67 in
 retained ordinary controlled scene observations. These are independent cue-lifetime defects, not
 waveform-fidelity requirements. Classification of PSG noise and tone slots expresses replacement

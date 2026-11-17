@@ -40,8 +40,8 @@ internal static class ExplorationViewRunner
         bool mainFollowsItself = area.Layer == 0
             ? (byte)area.AutoscrollBX == 128 || (byte)area.AutoscrollBY == 128
             : (byte)area.AutoscrollAX == 128 || (byte)area.AutoscrollAY == 128;
-        if (!main || mainFollowsItself || area.ParallaxAX is not (128 or 256) || area.ParallaxAY is not (128 or 256) ||
-            area.ParallaxBX is not (128 or 256) || area.ParallaxBY is not (128 or 256) ||
+        if (!main || mainFollowsItself || area.ParallaxAX is not (128 or 192 or 256) || area.ParallaxAY is not (128 or 192 or 256) ||
+            area.ParallaxBX is not (128 or 192 or 256) || area.ParallaxBY is not (128 or 192 or 256) ||
             new[] { area.AutoscrollAX, area.AutoscrollAY, area.AutoscrollBX, area.AutoscrollBY }.Any(value => value is < -128 or > 255))
             throw new BattleRuleException("field-view-profile", "map.view", true);
     }

@@ -34,7 +34,7 @@ public sealed class CastleTowerProgramTests
         Assert.True(next.HideWindows);
         var upper = view with { AX = new(20 * 384), BX = new(20 * 384), AY = new(21 * 384 + 32 * 384), BY = new(21 * 384) };
         Assert.False(TickAt(30 * 384, 30 * 384, upper).Scrolling);
-        Assert.Equal("field-view-profile", Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { Area = view.Area with { ParallaxAX = 192 } }, new(2, 0, 0))).Message);
+        Assert.Equal("field-view-profile", Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { Area = view.Area with { ParallaxAX = 64 } }, new(2, 0, 0))).Message);
         Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() => ExplorationViewRunner.Tick(world, view with { TargetSlot = 63 }, new(2, 0, 0)));
         var slow = ExplorationViewRunner.Tick(world, ExplorationViewRunner.SetDestination(view, new(1, 1)), new(2, 0, 1));
         Assert.Equal(1, slow.BX.Speed);
@@ -136,7 +136,28 @@ public sealed class CastleTowerProgramTests
         Assert.Equal(24, next.BY.Position);
     }
 
-    private static ExplorationState ParallaxWorld(int layer) => Start("harbor-arrival", document =>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(255)]
+    public void ThreeQuarterParallaxUsesExistingPlaneMathForLoadDestinationAndScroll(int layer)
+    {
+        var world = ParallaxWorld(layer, 192);
+        world = world.WithEntity(world.PlayerEntity with { Motion = world.PlayerEntity.Motion with { X = 4020, Y = 4310 } });
+        var view = ExplorationViewRunner.Initialize(world);
+        Assert.Equal(1536 + 768, layer == 0 ? view.AX.Position : view.BX.Position);
+        Assert.Equal(1728 + 1152, layer == 0 ? view.AY.Position : view.BY.Position);
+        var destination = ExplorationViewRunner.SetDestination(view, new(9, 11));
+        Assert.Equal(2592 + 768, layer == 0 ? destination.AX.Destination : destination.BX.Destination);
+        Assert.Equal(3168 + 1152, layer == 0 ? destination.AY.Destination : destination.BY.Destination);
+        var next = ExplorationViewRunner.Tick(world, destination, new(2, 0, 24));
+        Assert.Equal(18, layer == 0 ? next.AX.Speed : next.BX.Speed);
+        Assert.Equal(1536 + 768 + 18, layer == 0 ? next.AX.Position : next.BX.Position);
+        var reload = ExplorationViewRunner.LoadScene(world, new(0, 19), next);
+        Assert.Equal(5472 + 1152, layer == 0 ? reload.AY.Position : reload.BY.Position);
+        Assert.Null(reload.TargetSlot);
+    }
+
+    private static ExplorationState ParallaxWorld(int layer, int secondary = 128) => Start("harbor-arrival", document =>
     {
         document["world"]!["maps"]![0]!["layout"] = new JsonArray(Enumerable.Range(0, 32)
             .Select(_ => (JsonNode)new JsonArray(Enumerable.Range(0, 32).Select(_ => (JsonNode)JsonValue.Create(0)!).ToArray())).ToArray());
@@ -146,8 +167,8 @@ public sealed class CastleTowerProgramTests
         area["view"] = JsonNode.Parse($$"""
             {"foregroundX":{{(layer == 0 ? 2 : 0)}},"foregroundY":{{(layer == 0 ? 3 : 0)}},
              "backgroundX":{{(layer == 0 ? 0 : 2)}},"backgroundY":{{(layer == 0 ? 0 : 3)}},
-             "parallaxAX":{{(layer == 0 ? 128 : 256)}},"parallaxAY":{{(layer == 0 ? 128 : 256)}},
-             "parallaxBX":{{(layer == 0 ? 256 : 128)}},"parallaxBY":{{(layer == 0 ? 256 : 128)}},
+             "parallaxAX":{{(layer == 0 ? secondary : 256)}},"parallaxAY":{{(layer == 0 ? secondary : 256)}},
+             "parallaxBX":{{(layer == 0 ? 256 : secondary)}},"parallaxBY":{{(layer == 0 ? 256 : secondary)}},
              "autoscrollAX":0,"autoscrollAY":0,"autoscrollBX":0,"autoscrollBY":0,"layer":{{layer}}}
             """);
     }).Current.Exploration!;

@@ -1,6 +1,6 @@
 # First visit to Creed's mansion
 
-**Confirmed** in the private remake: both ordinary Battle21 victory saves enter Map33, complete Goliath's first scene, recover movement, save and cold-continue. The registered `handoffs/issue1857` package provides `Play-en.cmd` and `Play-zh-CN.cmd`. Choose **Continue → Slot 1**. Each language has its own history and player namespace. The default save stands at (12,15), beside the next magic-door zone; the desktop transfer remains unsupported. Use `./Play.ps1 -Language en -StartAt victory` to replay the entrance or `-StartAt mansion` for the immediate post-scene save. [Predecessor](battle21-devils-tail.md) · [Original entrance and complete scene](../../../docs/research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)
+**Confirmed** in the private remake: both ordinary Battle21 victory saves enter Map33, complete Goliath's first scene, recover movement, save and cold-continue. The registered `handoffs/issue1857` package provides `Play-en.cmd` and `Play-zh-CN.cmd`. Choose **Continue → Slot 1**. Each language has its own history and player namespace. The default save stands at (12,15), beside the next magic-door zone; the [Desktop chapter](desktop-arrival.md) continues those saves through the transfer. Use `./Play.ps1 -Language en -StartAt victory` to replay the entrance or `-StartAt mansion` for the immediate post-scene save. [Predecessor](battle21-devils-tail.md) · [Original entrance and complete scene](../../../docs/research/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)
 
 ## Chapter agreement
 
@@ -32,7 +32,7 @@ For ordinary reentry, walk south through Map33's y=31 exit to Map67 (26,23), Up,
 
 ## Next reachable boundary
 
-The separate zone (12,14) is naturally reachable from the `door` save by pressing Up. Its guard is F783, not F774. The existing importer also lowers its shrinking/collection sequence; this chapter supplies the reached text IDs 1834–1839 in both languages. The English observation reached the source warp to Map22 and stopped at the unadmitted destination. The Chinese observation confirmed the localized first warning at the same entrance. The next chapter must admit Desktop population/init, continue to usable control and then handle Battle22 under its own flags. The stable starting slots are before that scene; no success is claimed for its destination. The other Map33 exit, (9,5) to the Evil Spirit Shrine, remains a later interior-route boundary. [Magic door and destination selectors](../../../docs/research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)
+The separate zone (12,14) is naturally reachable from the `door` save by pressing Up. Its guard is F783, not F774. The [Desktop arrival chapter](desktop-arrival.md) now consumes both stable door saves, completes collection and first arrival, and leaves ordinary saves before the king. Battle22 and the later Cotton Balloon exit remain its named successors. The other Map33 exit, (9,5) to the Evil Spirit Shrine, remains a later interior-route boundary. [Magic door and destination selectors](../../../docs/research/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)
 
 ## Reproduction and limits
 

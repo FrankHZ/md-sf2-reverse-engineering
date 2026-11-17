@@ -194,17 +194,18 @@ public sealed class OriginalMapTraversal
         return null;
     }
 
-    public static bool IsBlocked(WorkingMapLayout layout, MapPosition position)
+    public static bool IsBlocked(WorkingMapLayout layout, MapPosition position, int offsetX = 0, int offsetY = 0)
     {
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentNullException.ThrowIfNull(position);
-        return (layout[position.X, position.Y] & CollisionMask) == CollisionMask;
+        return !IsWithinLayout(position.X + offsetX, position.Y + offsetY) ||
+            (layout[position.X + offsetX, position.Y + offsetY] & CollisionMask) == CollisionMask;
     }
 
     public OriginalMapTraversalResult TryMove(
         WorkingMapLayout layout,
         MapPosition position,
-        ExplorationDirection direction)
+        ExplorationDirection direction, int offsetX = 0, int offsetY = 0)
     {
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentNullException.ThrowIfNull(position);
@@ -213,8 +214,9 @@ public sealed class OriginalMapTraversal
             throw new ArgumentOutOfRangeException(nameof(direction));
         }
 
-        ushort sourceWord = layout[position.X, position.Y];
-        MapPosition? destination = ResolveCandidateTarget(layout, position, direction);
+        ushort sourceWord = IsWithinLayout(position.X + offsetX, position.Y + offsetY)
+            ? layout[position.X + offsetX, position.Y + offsetY] : CollisionMask;
+        MapPosition? destination = ResolveCandidateTarget(layout, position, direction, offsetX, offsetY);
         if (destination is null)
         {
             return Blocked(
@@ -225,7 +227,7 @@ public sealed class OriginalMapTraversal
                 destinationWord: null);
         }
 
-        ushort destinationWord = layout[destination.X, destination.Y];
+        ushort destinationWord = layout[destination.X + offsetX, destination.Y + offsetY];
         if (!IsWithinActiveArea(destination))
         {
             return Blocked(
@@ -258,7 +260,7 @@ public sealed class OriginalMapTraversal
     public MapPosition? ResolveCandidateTarget(
         WorkingMapLayout layout,
         MapPosition position,
-        ExplorationDirection direction)
+        ExplorationDirection direction, int offsetX = 0, int offsetY = 0)
     {
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentNullException.ThrowIfNull(position);
@@ -267,7 +269,8 @@ public sealed class OriginalMapTraversal
             throw new ArgumentOutOfRangeException(nameof(direction));
         }
 
-        ushort sourceWord = layout[position.X, position.Y];
+        ushort sourceWord = IsWithinLayout(position.X + offsetX, position.Y + offsetY)
+            ? layout[position.X + offsetX, position.Y + offsetY] : CollisionMask;
         (int deltaX, int deltaY) = DirectionDelta(direction);
         ushort sourceCollision = (ushort)(sourceWord & CollisionMask);
         if (direction is ExplorationDirection.East or ExplorationDirection.West &&
@@ -277,8 +280,8 @@ public sealed class OriginalMapTraversal
                 position,
                 direction,
                 sourceCollision);
-            if (IsWithinLayout(stairX, stairY) &&
-                (layout[stairX, stairY] & CollisionMask) == sourceCollision)
+            if (IsWithinLayout(stairX, stairY) && IsWithinLayout(stairX + offsetX, stairY + offsetY) &&
+                (layout[stairX + offsetX, stairY + offsetY] & CollisionMask) == sourceCollision)
             {
                 deltaY = stairY - position.Y;
             }
@@ -286,7 +289,7 @@ public sealed class OriginalMapTraversal
 
         int destinationX = position.X + deltaX;
         int destinationY = position.Y + deltaY;
-        if (!IsWithinLayout(destinationX, destinationY))
+        if (!IsWithinLayout(destinationX, destinationY) || !IsWithinLayout(destinationX + offsetX, destinationY + offsetY))
         {
             return null;
         }

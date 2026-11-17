@@ -2621,7 +2621,7 @@ Unknown source palette/layer/timing or final pixels remain unproved by modern no
 ### Bound map-init foreground projection
 
 The bound camera admits zero-autoscroll layer0/255, with unity/origin0 on the main plane and
-secondary per-axis parallax128/256 and tile offsets0–63, within nonnegative signed-word positions.
+secondary per-axis parallax128/192/256 and tile offsets0–63, within nonnegative signed-word positions.
 [Source/behavior contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-camera-lifecycle)
 owns initialization, transforms, independent scroll speeds and main-plane follow. A and B logical
 origins remain source state. Their modern draw origins derive from the shared presentation origin

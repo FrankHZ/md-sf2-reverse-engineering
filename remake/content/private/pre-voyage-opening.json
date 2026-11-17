@@ -43,7 +43,8 @@
     67,
     51,
     32,
-    33
+    33,
+    22
   ],
   "battles": [
     1,
@@ -342,7 +343,8 @@
     23,
     67,
     51,
-    33
+    33,
+    22
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -532,7 +534,8 @@
     50,
     67,
     32,
-    33
+    33,
+    22
   ],
   "basePalettes": true,
   "audioCues": [
@@ -627,7 +630,8 @@
     "SFX_DIALOG_BLEEP_7_TIMER_D2",
     "SFX_TAROS_DIALOG_BLEEP_TIMER_BD",
     "MUSIC_ELVEN_TOWN",
-    "SFX_WARP_TIMER_CF"
+    "SFX_WARP_TIMER_CF",
+    "SFX_DIALOG_BLEEP_8_TIMER_CB"
   ],
   "paidRetreatBattles": [
     2,

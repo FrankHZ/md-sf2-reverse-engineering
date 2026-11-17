@@ -19,7 +19,9 @@ internal static class MapEventDispatcher
         if (world.Definition.Caravan is not null && CaravanTraversal.Candidate(player.Motion,
             world.Definition.Traversal.ActiveAreas[0], direction, true) is null)
             return (world, new(false, false, null));
-        var candidate = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, player.Position, direction);
+        var offset = FieldLayout.Offset(world, player.Motion);
+        var candidate = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, player.Position, direction, offset.X, offset.Y);
+        ushort Word(MapPosition point) => world.Layout[point.X + offset.X, point.Y + offset.Y];
         var others = world.AllEntities.Where(entity => entity.Slot != player.Slot && (world.Definition.Caravan is null ? entity.Visible : entity.Slot < 32)).ToArray();
         // PR559: obstruction precedes the door copy and the marker, even for an
         // otherwise non-passable candidate. A blocked traversal returns the origin.
@@ -28,26 +30,26 @@ internal static class MapEventDispatcher
             return (world, new(false, false, null));
         if ((world.Definition.Caravan is not null || CaravanRuntime.HasOverworldPopulation(world.Population)) && candidate is not null &&
             (world.Definition.Caravan is not null || world.Definition.Traversal.IsWithinActiveArea(candidate)) &&
-            (world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x3800 && flags.Contains(65))
+            (Word(candidate) & 0x3C00) == 0x3800 && flags.Contains(65))
             return (world, new(false, false, null, 2));
         if (world.Population is not null && candidate is not null && flags.Contains(64) &&
-            world.Definition.Traversal.IsWithinActiveArea(candidate) && (world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x3C00)
+            world.Definition.Traversal.IsWithinActiveArea(candidate) && (Word(candidate) & 0x3C00) == 0x3C00)
             return (world, new(false, false, null, 3));
         bool opened = false;
         ExplorationEvent? reached = null;
         if (candidate is not null && (world.Definition.Caravan is not null || world.Definition.Traversal.IsWithinActiveArea(candidate)))
         {
             var before = world;
-            if ((world.Layout[candidate.X, candidate.Y] & 0x3C00) == 0x400) world = OpenDoor(world, candidate);
+            if ((Word(candidate) & 0x3C00) == 0x400) world = OpenDoor(world, candidate);
             opened = !ReferenceEquals(before, world);
             reached = world.Definition.Events.FirstOrDefault(entry => entry.Kind is ExplorationEventKind.Warp or ExplorationEventKind.SourceZone &&
-                Matches(entry, candidate, world.Layout[candidate.X, candidate.Y], flags));
+                Matches(entry, candidate, Word(candidate), flags));
         }
-        var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, direction);
+        var traversal = world.Definition.Traversal.TryMove(world.Layout, player.Position, direction, offset.X, offset.Y);
         // Caravan's admitted fixed area is already checked by the directional controller.
         // A script/clone can place the actor outside it without loading another area.
         var destination = world.Definition.Caravan is not null
-            ? candidate is not null && !OriginalMapTraversal.IsBlocked(world.Layout, candidate) ? candidate : null
+            ? candidate is not null && !OriginalMapTraversal.IsBlocked(world.Layout, candidate, offset.X, offset.Y) ? candidate : null
             : traversal.Outcome == OriginalMapTraversalOutcome.Moved ? traversal.Position : null;
         bool occupied = world.Population is null && world.Definition.Caravan is null && others.Any(entity =>
             entity.Motion.XDestination / 384 == traversal.Position.X && entity.Motion.YDestination / 384 == traversal.Position.Y);
@@ -59,7 +61,7 @@ internal static class MapEventDispatcher
             world = world.WithEntity(player with { Motion = motion,
                 Actions = new EntityActionProgram([new StopEntityActions()]), ActionCursor = 0, WaitingForMotion = true });
             reached ??= world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
-                Matches(entry, destination!, world.Layout[destination!.X, destination.Y], flags));
+                Matches(entry, destination!, Word(destination!), flags));
         }
         return (world, new(motion is not null, opened, reached));
     }
