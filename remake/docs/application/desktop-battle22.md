@@ -37,8 +37,9 @@ and requests the battle. The king conversation itself does not enter combat.
 
 The pinned Battle22 content supplies twelve ally positions, sixteen enemies, no trigger regions and
 one AI point. All current living/dead party records remain authoritative. KING has the source extra
-action; the single SWARM deployment uses Battle22's sixteen bytes with the existing first-eleven
-source-slot counting rule, rather than counting every enemy. HEALER4 reuses HEAL2, MOVE_ORDER4,
+action; the nine SWARM deployments (enemy rows 4,5,7,8,9,10,11,13,14) use Battle22's sixteen bytes
+with the existing first-eleven source-slot counting rule, rather than counting every enemy.
+HEALER4 reuses HEAL2, MOVE_ORDER4,
 support and ATTACK3, then clears the restricted grid for MOVE1. Its behavior tests vary the fallback
 against HEALER3 and prefer healing when an attack is also available.
 
