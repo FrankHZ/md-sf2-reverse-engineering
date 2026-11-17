@@ -2346,3 +2346,6 @@ msgstr "{0}的麻痹解除了。"
 
 msgid "save.destination.desktop-kingdom"
 msgstr "桌面王国"
+
+msgid "save.destination.floor-world"
+msgstr "地板世界"

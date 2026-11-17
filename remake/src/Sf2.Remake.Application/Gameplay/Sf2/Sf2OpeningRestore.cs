@@ -66,6 +66,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data)
     {
+        if (data.Recipe == "floor-world" && data.EgressMap == "map-26") return;
         if (data.Recipe == "desktop-kingdom" && data.EgressMap == "map-22") return;
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
         if (data.Recipe is "new-granseal-castle" or "ribble-welcome" or "east-shrine" or "parmecia-battle-return" &&
@@ -142,6 +143,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-22" && flags.Contains(776) && (!flags.Contains(522) || flags.Contains(778)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("desktop-kingdom", player, "Desktop Kingdom");
+        if (map.Value == "map-26" && flags.Contains(779) && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("floor-world", player, "Floor World");
         if (map.Value == "map-32" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("fairy-cave", player, "Fairy Cave");
         if (map.Value == "map-51" && !flags.Contains(420) && flags.Contains(470) == flags.Contains(520) &&
@@ -221,6 +224,10 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             throw new BattleRuleException("save-anchor-unusable", "save.anchor");
         if (location.Recipe == "taros-shrine")
             world = world.MoveOffMap(new("entity-128"));
+        // Fresh population keeps the ring worker's lookup; the init tail parks
+        // him after a completed attempt, unlike the scene's same-visit Hide.
+        if (location.Recipe == "floor-world" && flags.Contains(780))
+            world = world.MoveOffMap(new("entity-129"));
         if (location.Recipe == "creed-mansion" && flags.Contains(774))
         {
             // ms_map33_InitFunction / cs_5ABE6: reentry places Goliath only.

@@ -119,10 +119,11 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
         "DownLeft": (-1, 1),
         "DownRight": (1, 1),
     }
-    if op == "jumpUp":
-        # csc2D_D copies the 34-byte eas_Jump body, excluding its jump to idle.
+    if op in ("jumpUp", "jumpRight", "jumpLeft"):
+        # csc2D_D/E/F copy the selected 34-byte body, excluding its jump to idle.
+        # The inline operand is consumed but does not change this fixed template.
         self.sources.add("disasm/code/common/scripting/map/mapscriptengine_1.asm")
-        jump = action_stream(self, "eas_Jump")
+        jump = action_stream(self, "eas_Jump" + ("" if op == "jumpUp" else op[4:]))
         return jump[:-2]
     if op.startswith("move") and op[4:] in directions:
         x, y = directions[op[4:]]
