@@ -16,24 +16,24 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
 
     internal BattleAutomaticAction Resolve(int commandset)
     {
-        int mode = commandset == 14 ? 2 : commandset is 2 or 9 ? 1 : 0;
+        int mode = commandset == 14 ? 2 : commandset is 2 or 3 or 9 ? 1 : 0;
         Restrict(mode);
-        if (commandset == 2)
+        if (commandset is 2 or 3)
         {
             if (Heal() is { } heal) { _effects.Add(new("ai-command-heal2", actorRef, After: 0)); return Complete(heal); }
             _effects.Add(new("ai-command-heal2", actorRef, After: -1));
         }
-        int first = commandset switch { 2 => 4, 14 => 5, 9 => 3, _ => 1 };
+        int first = commandset switch { 2 or 3 => 4, 14 => 5, 9 => 3, _ => 1 };
         if (MoveOrder(first, mode, follow: first == 3) is { } move) return Complete(move);
-        if (commandset == 2 && Support() is { } supportFirst) return Complete(supportFirst);
-        int attack = commandset == 14 ? 2 : commandset is 2 or 9 or 15 ? 3 : 1;
+        if (commandset is 2 or 3 && Support() is { } supportFirst) return Complete(supportFirst);
+        int attack = commandset == 14 ? 2 : commandset is 2 or 3 or 9 or 15 ? 3 : 1;
         if (Attack() is { } action)
         {
             _effects.Add(new("ai-command-attack" + attack, actorRef, After: 0));
             return Complete(action);
         }
         _effects.Add(new("ai-command-attack" + attack, actorRef, After: -1));
-        if (commandset != 2)
+        if (commandset is not (2 or 3))
         {
             int healCommand = commandset == 14 ? 3 : commandset is 9 or 15 ? 2 : 1;
             if (Heal() is { } heal) { _effects.Add(new("ai-command-heal" + healCommand, actorRef, After: 0)); return Complete(heal); }
@@ -44,6 +44,8 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
             return Complete(fallback);
         // SWARM starts unrestricted, then MOVE2 requests block-non-movable.
         if (commandset == 15) mode = 1;
+        // HEALER4 shares HEAL2/MOVE_ORDER4/ATTACK3, then falls back to unrestricted MOVE1.
+        if (commandset == 3) { mode = 0; _blocked = new bool[2304]; }
         Restrict(mode);
         var targets = _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != Actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();

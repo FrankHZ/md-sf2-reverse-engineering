@@ -32,6 +32,10 @@ public sealed class KrakenBattleTests
     [InlineData(20, 134, 16, 0, 139, 0, true)]
     [InlineData(20, 134, 16, 0, 159, 0, true)]
     [InlineData(20, 134, 16, 0, 139, 1, true, 13)]
+    [InlineData(22, 132, 16, 0, 138, 1, false)]
+    [InlineData(22, 132, 16, 0, 139, 0, true)]
+    [InlineData(22, 135, 16, 0, 159, 0, true)]
+    [InlineData(22, 142, 15, 16, 128, 0, false)]
     public void SwarmChecksCurrentHealthAndDefeatedEnemiesBeforePursuit(int battleId, int sourceSlot,
         int hp, int peerHp, int peerSlot, int defeated, bool waits, int formationSize = 12)
     {

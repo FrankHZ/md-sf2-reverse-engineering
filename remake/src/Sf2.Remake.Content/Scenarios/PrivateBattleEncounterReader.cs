@@ -172,6 +172,11 @@ public sealed class PrivateBattleEncounterReader
         int TerrainId, EncounterRange PlacementRange, EncounterRange TerrainRange);
     private static readonly Dictionary<int, EncounterPin> Pins = new()
     {
+        [22] = new("CHESSBOARD", "51B623B10FCDFB32EC47829D2A535054BEECCDEE2A5559E48ACFA5C33BB8CC7C",
+            "DCC65E982C48AFCAFD5EFC3D191CEE7D81A39695739DA73BD6FD806DC6A902CB",
+            "578F341AB1FA11B5D5DD11BD2409D1F35B15AB05BF3612AE4C4F187F26D6A4E9",
+            "A7D8E6400B4EF72F56A955F18A5C723AB87A0B9865663AC5BEFFC69DB4E6ECF1",
+            22, new(1788580, 1788922, 342), new(1765362, 1765588, 226)),
         [1] = new("INSIDE_ANCIENT_TOWER", PlacementExportDigest, SceneExportDigest, CompressedTerrainDigest, PlacementSourceDigest,
             1, new(1782498, 1782646, 148), new(1758020, 1758304, 284)),
         [2] = new("TO_YEEL", Placement02Digest, Scene02Digest, Terrain02Digest, Source02Digest,

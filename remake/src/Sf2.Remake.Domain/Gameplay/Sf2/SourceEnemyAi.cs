@@ -84,7 +84,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         // GetAiCommandset reads the dedicated combatant byte; the activation filler nibble
         // happens to match it in Battle01 but is zero in Battle02.
         int commandset = source.AiCommandset;
-        if (commandset is not (0 or 2 or 6 or 7 or 8 or 9 or 14 or 15)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
+        if (commandset is not (0 or 2 or 3 or 6 or 7 or 8 or 9 or 14 or 15)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
         // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
         // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
         // Neither path draws RNG. Admitted ATT-only weapons have no AI use action;
@@ -110,7 +110,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
                 primary = secondary; secondary = 255;
             }
         }
-        if (commandset is 2 or 9 or 14 or 15 || commandset == 7 && (primary != 255 || secondary != 255))
+        if (commandset is 2 or 3 or 9 or 14 or 15 || commandset == 7 && (primary != 255 || secondary != 255))
         {
             var ordered = new SourceMoveOrderAi(prepared, actorRef, physical, actions).Resolve(commandset);
             return ordered with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. ordered.Effects]) };

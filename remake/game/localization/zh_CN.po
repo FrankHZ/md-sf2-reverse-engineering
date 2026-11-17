@@ -2343,3 +2343,6 @@ msgstr "{0}麻痹了。"
 
 msgid "battle.scene.stun-cleared"
 msgstr "{0}的麻痹解除了。"
+
+msgid "save.destination.desktop-kingdom"
+msgstr "桌面王国"

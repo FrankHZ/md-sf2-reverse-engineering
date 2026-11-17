@@ -59,10 +59,11 @@ internal static class PrivateBattleActionBindings
     internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
     {
         var weapons = definitions.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" && item.UseSpell == "NOTHING" || item is { Id: 110, Code: "TAROS_SWORD", ItemTypeExpression: "WEAPON|RARE|BREAKABLE", UseSpell: "BOLT", UseSpellLevel: 2 }) &&
-            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect => effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
+            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3) && item.EquipEffects.All(effect => effect.Type is "INCREASE_ATT" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 }))
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName, 0,
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
-                item.MinimumRange, item.MaximumRange)).ToArray();
+                item.MinimumRange, item.MaximumRange,
+                CriticalIncrease: checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_CRITICAL").Sum(effect => effect.Parameter)))).ToArray();
         // Bare placement items can be carried without enabling their use or equip effects.
         var inert = definitions.Items.Values.Where(item => item is
             { Id: 19, Code: "POWER_RING" } or { Id: 20, Code: "PROTECT_RING" } or { Id: 9, Code: "POWER_WATER" } or { Id: 16, Code: "SHINING_BALL" })
@@ -81,6 +82,7 @@ internal static class PrivateBattleActionBindings
             "CRITICAL125_1IN16|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.Thief,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Cleric,
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.OneIn32WithFrequentDoubleAndCounter,
+            "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.OneIn32WithFrequentDouble,
             "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN8" => PhysicalCriticalRule.Taros,
             "CRITICAL150_1IN4|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.Monk,
             "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Orc,
@@ -100,9 +102,9 @@ internal static class PrivateBattleActionBindings
         foreach (var item in equipped)
         {
             Require(item.ItemTypeExpression.Split('|').Contains("WEAPON") && item.EquipEffects.All(effect =>
-                effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }),
+                effect.Type is "INCREASE_ATT" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 }),
                 "source-equipment-effects", "actor.items", true);
-            Require((item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2),
+            Require((item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3),
                 "source-weapon-range", "actor.items", true);
             minimum = item.MinimumRange; maximum = item.MaximumRange;
         }
