@@ -46,7 +46,8 @@ public sealed class WillardBurrowSaveTests
         Assert.DoesNotContain(999, session.Current.Story.Flags);
         var capture = session.CaptureSave(session.Current.SessionId, session.Current.Revision);
         Assert.Null(capture.Error);
+        Assert.Equal(slot.Depot, capture.Data!.Depot);
         Assert.Equal(slot, capture.Data! with { Allies = slot.Allies, ActiveAllies = slot.ActiveAllies,
-            OnceFlags = slot.OnceFlags, Deals = slot.Deals, Flags = slot.Flags, Music = slot.Music, Names = slot.Names });
+            OnceFlags = slot.OnceFlags, Deals = slot.Deals, Flags = slot.Flags, Music = slot.Music, Names = slot.Names, Depot = slot.Depot });
     }
 }

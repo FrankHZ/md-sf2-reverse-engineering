@@ -30,7 +30,7 @@ internal static class BattleContinuationRestore
         return new(definition, actors, data.MainSeed, data.ThinkingSeed, data.Round,
             data.Queue.Select(t => new TurnOrderEntry<ActorRef>(t.Actor is null ? null : new ActorRef(t.Actor), t.AlteredAgility)),
             data.Cursor, data.Gold, policy, data.Regions is null ? null : new(data.Regions.Flags, data.Regions.Tested),
-            itemCustody: new(data.Custody.OnceFlags, data.Custody.Deals), deathCredit: data.DeathCredit is null ? null : data.DeathCredit with { }, visuals: visuals);
+            itemCustody: new(data.Custody.OnceFlags, data.Custody.Deals, data.Custody.Depot), deathCredit: data.DeathCredit is null ? null : data.DeathCredit with { }, visuals: visuals);
     }
 
     private static BattleActorState Actor(BattleDeploymentDefinition deployment, SavedBattleActor saved, BattleDefinition battle)

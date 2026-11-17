@@ -47,7 +47,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     {
         if (data.Recipe != InitialRecipe) return null;
         if (data.Map != "map-3" || data.X != 56 || data.Y != 3 || data.Facing != 3 || data.Layer != 0 ||
-            !data.Flags.Order().SequenceEqual(new[] { 0, 32, 80 }) || data.Gold != 0 || data.OnceFlags.Count != 0 || data.Deals.Count != 0 ||
+            !data.Flags.Order().SequenceEqual(new[] { 0, 32, 80 }) || data.Gold != 0 || data.OnceFlags.Count != 0 || data.Deals.Count != 0 || data.Depot.Count != 0 ||
             data.StepCounter != 0 || data.EgressMap is not ("map-0" or "map-3") || data.TextCursor != 0 || data.FadePeriod != 3 ||
             data.TextSettings != new ExplorationTextSettings(2, 0, 0) || data.Difficulty != 0 || data.AllyAutoBattle || data.OpponentControl ||
             !data.ActiveAllies.SequenceEqual(new[] { "ally-0" }) ||

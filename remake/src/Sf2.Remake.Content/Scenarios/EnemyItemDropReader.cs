@@ -62,7 +62,7 @@ internal static class EnemyItemDropReader
     internal static BattleItemCustody? Start(JsonElement start, IReadOnlyDictionary<byte, EnemyDropItem> items)
     {
         if (!start.TryGetProperty("itemCustody", out var custody)) return null;
-        Object(custody, "itemCustody", "onceFlags", "deals");
+        ObjectOptional(custody, "itemCustody", "depot", "onceFlags", "deals");
         var flags = new List<byte>();
         foreach (var flag in Array(custody, "onceFlags"))
         {
@@ -78,6 +78,17 @@ internal static class EnemyItemDropReader
             Require(items.TryGetValue(item, out var definition) && definition.Rare, "deals-item", "itemCustody.deals.item");
             Require(deals.TryAdd(item, (byte)Number(row, "count", 0, 15)), "duplicate-deals-item", "itemCustody.deals.item");
         }
-        return new(flags, deals);
+        var depot = new List<byte>();
+        if (custody.TryGetProperty("depot", out _))
+        {
+            foreach (var item in Array(custody, "depot"))
+            {
+                Require(item.ValueKind == JsonValueKind.Number && item.TryGetByte(out byte id) &&
+                    id < 127 && items.ContainsKey(id), "depot-item", "itemCustody.depot");
+                depot.Add(item.GetByte());
+            }
+        }
+        Require(depot.Count <= 64, "depot-capacity", "itemCustody.depot");
+        return new(flags, deals, depot);
     }
 }

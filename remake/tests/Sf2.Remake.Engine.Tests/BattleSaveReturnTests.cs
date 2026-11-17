@@ -76,7 +76,7 @@ public sealed class BattleSaveReturnTests
         }).ToArray();
         var b = original.Battle;
         var battle = new EngineBattleState(encounter, actors, b.MainSeed, b.ThinkingSeed, b.Round, b.Queue, b.Cursor, b.Gold,
-            b.StartPolicy, b.Regions, itemCustody: b.ItemCustody, deathCredit: b.DeathCredit);
+            b.StartPolicy, b.Regions, itemCustody: b.ItemCustody!.WithDepot([1, 0, 1]), deathCredit: b.DeathCredit);
         var story = original.Story;
         RaftBerth? berth = null;
         if (kind == BattleOutcomeKind.Victory)
@@ -95,6 +95,7 @@ public sealed class BattleSaveReturnTests
         var resumed = End(definition, restored.Current, kind);
         Assert.True(control.CanWaitAtInput); Assert.True(resumed.CanWaitAtInput);
         Assert.Equal(berth, resumed.Story.Raft);
+        Assert.Equal(new byte[] { 1, 0, 1 }, resumed.Exploration!.Party.ItemCustody!.Depot);
         if (kind == BattleOutcomeKind.Victory)
         {
             Assert.Contains(64, resumed.Story.Flags);
@@ -132,6 +133,7 @@ public sealed class BattleSaveReturnTests
         Assert.Null(field.Error);
         var again = Assert.IsType<SessionStarted>(GameSession.Restore(definition, field.Data!, RuleCompositions.Sf2())).Session;
         Assert.Equal(berth, again.Current.Story.Raft);
+        Assert.Equal(new byte[] { 1, 0, 1 }, again.Current.Exploration!.Party.ItemCustody!.Depot);
         Assert.Equal(actual.Gold, again.Current.Exploration!.Party.Gold);
         Assert.Equal(actual.Actors.First().Kills, again.Current.Exploration.Party.Actors.First().Kills);
         Assert.Null(EngineTestContent.Send(again, new WaitAtInput()).Failure);

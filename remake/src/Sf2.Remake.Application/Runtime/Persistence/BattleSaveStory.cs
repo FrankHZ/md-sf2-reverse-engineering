@@ -111,7 +111,7 @@ internal static class BattleSaveStory
         }
         if (definition.PrivateDefinitions is { } source)
             Require(battle.Actors.SelectMany(a => a.SourceLoadout?.Items ?? []).Concat(retained.SelectMany(a => a.SourceLoadout?.Items ?? []))
-                .All(w => source.Items.ContainsKey((byte)(w & 127))) && battle.ItemCustody!.Deals.Keys.All(source.Items.ContainsKey), "item-identity");
+                .All(w => source.Items.ContainsKey((byte)(w & 127))) && battle.ItemCustody!.Deals.Keys.All(source.Items.ContainsKey) && battle.ItemCustody.Depot.All(source.Items.ContainsKey), "item-identity");
         var layout = world.PartyFlags ?? throw new BattleRuleException("save-battle-membership-unknown", "save.story");
         return new(value.Flags, textCursor: value.TextCursor, enteringBattle: route,
             partyLists: MapPartyMembership.Rebuild(value.Flags, layout), speaker: value.Speaker,

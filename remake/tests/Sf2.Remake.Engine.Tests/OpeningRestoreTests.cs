@@ -306,10 +306,12 @@ public sealed class OpeningRestoreTests
         var session = Assert.IsType<SessionStarted>(GameSession.Restore(definition, data, RuleCompositions.Sf2())).Session;
         Assert.Equal(new MapPosition(x, y), session.Current.Exploration!.PlayerEntity.Position);
         Assert.Equal(new FieldReturnAnchor(new("map-57"), new(x, y), 3), session.Current.Story.SaveAnchor);
-        Assert.Equal(data, session.CaptureSave(session.Current.SessionId, session.Current.Revision).Data! with
+        var captured = session.CaptureSave(session.Current.SessionId, session.Current.Revision).Data!;
+        Assert.Equal(data.Depot, captured.Depot);
+        Assert.Equal(data, captured with
         {
             Allies = data.Allies, ActiveAllies = data.ActiveAllies, OnceFlags = data.OnceFlags, Deals = data.Deals,
-            Flags = data.Flags, Music = data.Music, Names = data.Names,
+            Flags = data.Flags, Music = data.Music, Names = data.Names, Depot = data.Depot,
         });
     }
 

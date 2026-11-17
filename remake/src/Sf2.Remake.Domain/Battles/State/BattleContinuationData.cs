@@ -37,6 +37,7 @@ internal static class BattleContinuationValues
             SameProgress(p.First.Progress, p.Second.Progress) && SameLoadout(p.First.Loadout, p.Second.Loadout)) &&
         (left.Regions is null || right.Regions is null ? left.Regions == right.Regions :
             left.Regions.Tested == right.Regions.Tested && left.Regions.Flags.SequenceEqual(right.Regions.Flags)) &&
+        left.Custody.Depot.SequenceEqual(right.Custody.Depot) &&
         left.Custody.OnceFlags.SequenceEqual(right.Custody.OnceFlags) && left.Custody.Deals.OrderBy(p => p.Key).SequenceEqual(right.Custody.Deals.OrderBy(p => p.Key)) &&
         (left.Visuals is null || right.Visuals is null ? left.Visuals == right.Visuals :
             left.Visuals.Records.OrderBy(v => v.Slot).SequenceEqual(right.Visuals.Records.OrderBy(v => v.Slot)) &&
@@ -61,7 +62,7 @@ internal static class BattleContinuationValues
             battle.Cursor, battle.Gold.Value, new(policy.Difficulty, policy.AllyAutoBattle, policy.OpponentControl, policy.MissingCandidateAllyWord),
             battle.Regions is null ? null : new(Array.AsReadOnly(battle.Regions.Flags.ToArray()), battle.Regions.Tested),
             battle.DeathCredit is null ? null : battle.DeathCredit with { },
-            new(battle.ItemCustody.OnceFlags, battle.ItemCustody.Deals), battle.Visuals is null ? null :
+            new(battle.ItemCustody.OnceFlags, battle.ItemCustody.Deals, battle.ItemCustody.Depot), battle.Visuals is null ? null :
             new(new System.Collections.ObjectModel.ReadOnlyDictionary<string, int>(battle.Visuals.Aliases.ToDictionary(p => p.Key.Value, p => p.Value)),
                 Array.AsReadOnly(battle.Visuals.Visuals.Values.Select(v => v with { }).ToArray())));
     }

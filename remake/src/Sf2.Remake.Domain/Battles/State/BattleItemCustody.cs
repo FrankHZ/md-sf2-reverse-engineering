@@ -6,19 +6,24 @@ namespace Sf2.Remake.Domain.Battles;
 // exploration party. Null at either boundary means unobserved, never an empty store.
 public sealed class BattleItemCustody
 {
-    internal BattleItemCustody(IEnumerable<byte> onceFlags, IReadOnlyDictionary<byte, byte> deals)
+    internal BattleItemCustody(IEnumerable<byte> onceFlags, IReadOnlyDictionary<byte, byte> deals, IEnumerable<byte>? depot = null)
     {
+        Depot = Array.AsReadOnly((depot ?? []).ToArray());
+        if (Depot.Count > 64 || Depot.Any(item => item >= 127))
+            throw new ArgumentOutOfRangeException(nameof(depot));
         OnceFlags = Array.AsReadOnly(onceFlags.Distinct().Order().ToArray());
         Deals = new ReadOnlyDictionary<byte, byte>(deals.ToDictionary(pair => pair.Key, pair => pair.Value));
         if (OnceFlags.Any(flag => flag > 29) || Deals.Any(pair => pair.Key >= 127 || pair.Value > 15))
             throw new ArgumentOutOfRangeException(nameof(deals));
     }
+    public IReadOnlyList<byte> Depot { get; }
+    internal BattleItemCustody WithDepot(IEnumerable<byte> depot) => new(OnceFlags, Deals, depot);
     public IReadOnlyList<byte> OnceFlags { get; }
     public IReadOnlyDictionary<byte, byte> Deals { get; }
-    internal BattleItemCustody Mark(byte flag) => new(OnceFlags.Append(flag), Deals);
+    internal BattleItemCustody Mark(byte flag) => new(OnceFlags.Append(flag), Deals, Depot);
     internal BattleItemCustody AddDeal(byte item) => new(OnceFlags,
         Deals.Where(pair => pair.Key != item).Append(new KeyValuePair<byte, byte>(item,
-            (byte)Math.Min(15, Deals.GetValueOrDefault(item) + 1))).ToDictionary());
+            (byte)Math.Min(15, Deals.GetValueOrDefault(item) + 1))).ToDictionary(), Depot);
 }
 
 public sealed record EnemyDropItem(byte ItemId, string Name, bool Rare);
