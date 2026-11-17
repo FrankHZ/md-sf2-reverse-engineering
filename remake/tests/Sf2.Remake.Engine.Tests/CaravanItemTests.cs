@@ -22,8 +22,8 @@ public sealed class CaravanItemTests
         bool fail = false, Func<int, byte>? status = null, PrivateBattleDefinitions? source = null)
     {
         var preparation = new FieldPreparationDefinition(
-            new byte[] { 0, 1, 3, 5, 9, 50, 61, 104 }.Select(id => new BattleDiscardItem(id, "item-" + id, id == 61, id == 104)),
-            [new(0, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison), new(104, FieldRecoveryEffect.MapEvent)]);
+            new byte[] { 0, 1, 3, 5, 9, 50, 61, 125 }.Select(id => new BattleDiscardItem(id, "item-" + id, id == 61, id == 125)),
+            [new(0, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison), new(125, FieldRecoveryEffect.MapEvent)]);
         var s = CaravanServiceTests.Session(pack: pack ?? (_ => new([50, 0, 61, 1], [])),
             custody: new([2], new Dictionary<byte, byte> { [61] = 15 }, [50, 50, 61]),
             preparation: preparation, equipment: equipment, failReturn: fail, status: status, privateDefinitions: source);
@@ -133,7 +133,7 @@ public sealed class CaravanItemTests
 
     [Theory]
     [InlineData(0, "caravan-item-not-usable")]
-    [InlineData(104, "caravan-item-not-usable")]
+    [InlineData(125, "caravan-item-not-usable")]
     [InlineData(5, "field-item-effect-unsupported")]
     [InlineData(9, "field-item-effect-unsupported")]
     public void NonusableMapEventAndUnsupportedEffectsNeverConsume(ushort word, string code)
@@ -275,7 +275,7 @@ public sealed class CaravanItemTests
     [Fact]
     public void MissingUseTargetAndUnsellableDropDoNotPublishOrConsume()
     {
-        var s = Start(_ => new([3, 104, 127, 127], []));
+        var s = Start(_ => new([3, 125, 127, 127], []));
         Action(s, CaravanItemAction.Use);
         Select(s, 0);
         Slot(s, 0, 3);
@@ -287,7 +287,7 @@ public sealed class CaravanItemTests
         Action(s, CaravanItemAction.Drop);
         Select(s, 0);
         before = s.Current;
-        Assert.Equal("discard-unsellable", Send(s, new SelectCaravanItemSlot(Wait(s).Token, 1, 104)).Failure!.Code);
+        Assert.Equal("discard-unsellable", Send(s, new SelectCaravanItemSlot(Wait(s).Token, 1, 125)).Failure!.Code);
         Assert.Same(before, s.Current);
     }
 }
