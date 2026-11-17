@@ -158,7 +158,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             "placement-item-refresh", "placements.item", true);
         byte commandset = row.AiCommandsetExpression switch
         {
-            "HEALER1" => 0, "HEALER3" => 2, "ATTACKER1" => 6, "ATTACKER2" => 7,
+            "HEALER1" => 0, "HEALER3" => 2, "HEALER4" => 3, "ATTACKER1" => 6, "ATTACKER2" => 7,
             "SENTRY" => 8, "ATTACKER3" => 9, "LEADER" => 14, "SWARM" => 15,
             _ => throw Unsupported("source-commandset", "placements.aiCommandset"),
         };
@@ -247,6 +247,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         {
             16 => [5, 4, 2, 2, 3, 0, 0, 4, 1, 3, 0],
             20 => [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+            22 => [0, 0, 0, 6, 1, 3, 0, 1, 3, 6, 6, 1, 0, 3, 3, 0],
             _ => [],
         };
         if ((uint)row >= thresholds.Length) throw Unsupported("source-swarm-table", "placements.ai");

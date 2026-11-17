@@ -191,7 +191,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_member
 def build(
     rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None
 ) -> dict:
-    if battle not in range(1, 22):
+    if battle not in range(1, 23):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -701,6 +701,7 @@ def add_field_death(
             "battle-19",
             "battle-20",
             "battle-21",
+            "battle-22",
         )
         or "fieldDeath" in scene
     ):
@@ -747,6 +748,7 @@ def add_field_death(
         "battle-19",
         "battle-20",
         "battle-21",
+        "battle-22",
     ):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
@@ -789,32 +791,45 @@ def add_field_death(
         )
     scene["fieldDeath"] = dict(allies=allies, enemies=enemy_sprites, exitFrames=frames)
     neutral_rows = {
-        "battle-18": ("VERSUS_TAROS", 12, 5, "LEFT", "CARAVAN", "eas_Motionless", 518),
-        "battle-20": ("HARPIES_POND", 6, 6, "DOWN", "ELRIC_BASE", "eas_WhirlsInWater", 520),
+        "battle-18": ("VERSUS_TAROS", 518, [(12, 5, "LEFT", "CARAVAN", "eas_Motionless")]),
+        "battle-20": ("HARPIES_POND", 520, [(6, 6, "DOWN", "ELRIC_BASE", "eas_WhirlsInWater")]),
+        "battle-22": (
+            "CHESSBOARD",
+            522,
+            [(6, 2, "DOWN", "KING_PONPEI", "eas_Standing"), (5, 3, "DOWN", "MAID", "eas_Standing")],
+        ),
     }
     if scene["encounter"] in neutral_rows:
-        code, x, y, facing, sprite, action, completed = neutral_rows[scene["encounter"]]
+        code, completed, actors = neutral_rows[scene["encounter"]]
         table = upstream / "disasm/data/battles/global/battleneutralentities.asm"
         body = table.read_text(encoding="utf-8").split(f"battle.w {code}", 1)[1]
         rows = [
             line.split(";", 1)[0].split()
             for line in body.split("dc.w TERMINATOR_WORD", 1)[0].splitlines()
         ]
-        if [row for row in rows if row] != [
-            ["position", f"{x},{y}"],
-            ["facing", facing],
-            ["mapsprite", sprite],
-            ["dc.l", action],
-        ]:
-            raise ValueError("unexpected first-victory battle neutral")
-        scene["fieldDeath"]["neutral"] = dict(
-            sprite=compiler.equates["MAPSPRITE_" + sprite],
-            x=x,
-            y=y,
-            facing=compiler.equates[facing],
-            completedFlag=completed,
-            **({"whirlsInWater": True} if action == "eas_WhirlsInWater" else {}),
-        )
+        expected = [
+            row
+            for x, y, facing, sprite, action in actors
+            for row in [
+                ["position", f"{x},{y}"],
+                ["facing", facing],
+                ["mapsprite", sprite],
+                ["dc.l", action],
+            ]
+        ]
+        if [row for row in rows if row] != expected:
+            raise ValueError("unexpected first-victory battle neutrals")
+        scene["fieldDeath"]["neutrals"] = [
+            dict(
+                sprite=compiler.equates["MAPSPRITE_" + sprite],
+                x=x,
+                y=y,
+                facing=compiler.equates[facing],
+                completedFlag=completed,
+                **({"whirlsInWater": True} if action == "eas_WhirlsInWater" else {}),
+            )
+            for x, y, facing, sprite, action in actors
+        ]
     output.mkdir(parents=True)
     write_json(output / "battle-scenes.json", scene)
     report = dict(
@@ -846,7 +861,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(1, 22), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 23), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

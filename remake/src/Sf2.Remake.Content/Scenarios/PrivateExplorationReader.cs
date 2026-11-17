@@ -96,7 +96,7 @@ public sealed class PrivateExplorationReader : IScenarioSource
                             field.AllySprites.Values.All(visuals.Sprites.ContainsKey) &&
                             (scene.Species?.Values.All(value => value.MapSprite == 254 || visuals.Sprites.ContainsKey(value.MapSprite)) ?? true) &&
                             field.EnemySprites.Values.All(sprite => sprite == 254 || visuals.Sprites.ContainsKey(sprite)) &&
-                            (field.Neutral is null || visuals.Sprites.ContainsKey(field.Neutral.Sprite)),
+                            (field.Neutrals is null || field.Neutrals.All(neutral => visuals.Sprites.ContainsKey(neutral.Sprite))),
                             "field-actor-resource-unavailable", "world.presentation.sprites");
             return newGame is null ? result : initializeParty ? newGame.Initialize(result) : newGame.Definitions(result);
         }

@@ -12,7 +12,7 @@ public sealed record BattleSceneActorVisual(int Sprite, int Palette, int? Item,
 public sealed record HealingSceneVisual(IReadOnlyList<string> Bodies, IReadOnlyList<string> Wings, IReadOnlyList<string> Dust);
 public sealed record NeutralBattleSprite(int Sprite, int X, int Y, int Facing, int CompletedFlag, bool WhirlsInWater = false);
 public sealed record FieldDeathVisual(IReadOnlyDictionary<int, int> AllySprites,
-    IReadOnlyDictionary<ActorRef, int> EnemySprites, IReadOnlyList<string> ExitFrames, NeutralBattleSprite? Neutral = null);
+    IReadOnlyDictionary<ActorRef, int> EnemySprites, IReadOnlyList<string> ExitFrames, IReadOnlyList<NeutralBattleSprite>? Neutrals = null);
 public sealed record BattleSceneTerrainVisual(string Background, string Ground);
 public sealed record EnemyAppearance(string Name, BattleSceneActorVisual Body, int MapSprite);
 public sealed record BattleSceneDefinition(string Encounter, string Background, string Ground,

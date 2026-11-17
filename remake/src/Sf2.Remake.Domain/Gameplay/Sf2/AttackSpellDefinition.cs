@@ -15,7 +15,7 @@ public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort P
         bool bolt = Spell is { Value: "bolt", Level: 2 } && Element == AttackSpellElement.Lightning;
         bool selected = bolt || aqua || Spell is { Value: "blaze", Level: 1 or 2 or 3 } && Element == AttackSpellElement.Fire ||
             Spell is { Value: "freeze", Level: 1 or 2 } && Element == AttackSpellElement.Ice ||
-            Spell is { Value: "blast", Level: 1 or 2 or 3 } && Element == AttackSpellElement.Wind;
+            Spell is { Value: "blast", Level: 1 or 2 or 3 or 4 } && Element == AttackSpellElement.Wind;
         if (!selected || Power is 0 or > 255 || MinimumRange < 1 || MaximumRange < MinimumRange ||
             MaximumRange > (aqua || bolt ? 3 : 2) || Radius > (bolt ? 2 : 1))
             throw new BattleRuleException("attack-spell-definition", "spells", true);

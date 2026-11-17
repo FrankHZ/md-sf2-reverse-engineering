@@ -131,7 +131,7 @@ internal static class BattleSceneContentReader
         FieldDeathVisual? fieldDeath = null;
         if (root.TryGetProperty("fieldDeath", out var field))
         {
-            ObjectOptional(field, "fieldDeath", ["allies", "enemies", "exitFrames"], "neutral");
+            ObjectOptional(field, "fieldDeath", ["allies", "enemies", "exitFrames"], "neutral", "neutrals");
             var allySprites = new Dictionary<int, int>();
             foreach (var row in Array(field, "allies"))
             {
@@ -168,16 +168,20 @@ internal static class BattleSceneContentReader
             var frames = Strings(field, "exitFrames");
             Require(frames.Length == 3 && frames.All(key => rasters.TryGetValue(key, out var raster) &&
                 raster.Width == 48 && raster.Height == 24), "field-exit-resource", "fieldDeath.exitFrames");
-            NeutralBattleSprite? neutral = null;
-            if (field.TryGetProperty("neutral", out var neutralRow))
+            Require(!(field.TryGetProperty("neutral", out _) && field.TryGetProperty("neutrals", out _)),
+                "field-neutral-shape", "fieldDeath.neutrals");
+            var neutralRows = field.TryGetProperty("neutrals", out _) ? Array(field, "neutrals").ToArray() :
+                field.TryGetProperty("neutral", out var legacyNeutral) ? [legacyNeutral] : System.Array.Empty<JsonElement>();
+            Require(neutralRows.Length <= 32, "field-neutral-count", "fieldDeath.neutrals");
+            var neutrals = neutralRows.Select(neutralRow =>
             {
                 ObjectOptional(neutralRow, "neutral", "whirlsInWater", "sprite", "x", "y", "facing", "completedFlag");
-                neutral = new(Number(neutralRow, "sprite", 0, 255), Number(neutralRow, "x", 0, 63), Number(neutralRow, "y", 0, 63),
+                return new NeutralBattleSprite(Number(neutralRow, "sprite", 0, 255), Number(neutralRow, "x", 0, 63), Number(neutralRow, "y", 0, 63),
                     Number(neutralRow, "facing", 0, 3), Number(neutralRow, "completedFlag", 0, 1023),
                     neutralRow.TryGetProperty("whirlsInWater", out _) && Boolean(neutralRow, "whirlsInWater"));
-            }
+            }).ToArray();
             fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
-                System.Array.AsReadOnly(frames), neutral);
+                System.Array.AsReadOnly(frames), System.Array.AsReadOnly(neutrals));
         }
         BattleSceneTerrainVisual[]? terrainScenes = null;
         if (root.TryGetProperty("terrainScenes", out _))
@@ -205,6 +209,8 @@ internal static class BattleSceneContentReader
     // Pinned EnemyBattlesprites sprite and palette pairs.
     private static (int, int) Body(string code) => code switch
         { "KRAKEN_HEAD" => (44, 0), "KRAKEN_ARM" => (33, 0), "KRAKEN_LEG" => (8, 0),
+            "KING" => (46, 1), "QUEEN" => (37, 2), "BISHOP" => (42, 0),
+            "KNIGHT" => (3, 1), "ROOK" => (34, 1), "PAWN" => (2, 1),
             "BUBBLING_OOZE" => (0, 2), "SKELETON" => (11, 0), "WIZARD" => (38, 0),
             "DARK_BISHOP" => (42, 1), "MASTER_MONK" => (41, 2),
             "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),

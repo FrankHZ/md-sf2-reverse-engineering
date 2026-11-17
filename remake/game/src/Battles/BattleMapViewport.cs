@@ -28,7 +28,7 @@ internal sealed partial class BattleMapViewport : Control
     private const int TarosSprite = 255;
     private static bool SpecialSprite(int id) => id is KrakenHeadSprite or TarosSprite;
     private Sprite2D? _specialSprite;
-    private Sprite2D? _neutral;
+    private readonly List<(NeutralBattleSprite Definition, Sprite2D Sprite)> _neutrals = [];
     private double _specialPoseTime;
     private int SpecialPose => _specialPoseTime * 30 >= 16 ? 1 : 0;
     private BattleMovementState? _movement;
@@ -102,7 +102,7 @@ internal sealed partial class BattleMapViewport : Control
     {
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
-        _neutral = null;
+        _neutrals.Clear();
         _neutralTime = 0;
         _specialSprite = null; _specialPoseTime = 0;
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
@@ -141,13 +141,14 @@ internal sealed partial class BattleMapViewport : Control
         _targetCursor = new BattleInspectionCursor { Name = "TargetCursor", Size = Vector2.One * CellSize, ZIndex = 3, Visible = false };
         _targetCursor.Configure(_sceneContent?.Rasters);
         _board.AddChild(_targetCursor);
-        if (_sceneContent?.FieldDeath?.Neutral is { } neutral && _visuals is not null)
+        foreach (var neutral in _visuals is not null ? _sceneContent?.FieldDeath?.Neutrals ?? [] : [])
         {
             int direction = neutral.Facing switch { 1 => 0, 3 => 2, _ => 1 };
-            _neutral = new Sprite2D { Name = "NeutralMapSprite", Texture = Texture(neutral.Sprite, direction),
+            var sprite = new Sprite2D { Name = "NeutralMapSprite" + _neutrals.Count, Texture = Texture(neutral.Sprite, direction),
                 Position = new((neutral.X + 0.5f) * CellSize, (neutral.Y + 0.5f) * CellSize),
+                Scale = Vector2.One * (CellSize / 24f),
                 TextureFilter = TextureFilterEnum.Nearest, FlipH = neutral.Facing == 0, Visible = false, ZIndex = 1 };
-            _board.AddChild(_neutral);
+            _board.AddChild(sprite); _neutrals.Add((neutral, sprite));
         }
         foreach (var actor in definition.Deployments)
         {
@@ -185,7 +186,7 @@ internal sealed partial class BattleMapViewport : Control
         var view = map.ViewAreas.ElementAtOrDefault(area.OneBasedRecordOrdinal - 1);
         bool followsTarget = view is { Layer: not 0, AutoscrollBX: 128, AutoscrollBY: 128 };
         if (view is not null && (view.ParallaxAX != 256 || view.ParallaxAY != 256 ||
-            view.ParallaxBX is not (128 or 256) || view.ParallaxBY is not (128 or 256) ||
+            view.ParallaxBX is not (128 or 192 or 256) || view.ParallaxBY is not (128 or 192 or 256) ||
             (view.Layer == 0 || followsTarget) && (view.ParallaxBX != 256 || view.ParallaxBY != 256) || view.AutoscrollAX != 0 ||
             view.AutoscrollAY != 0 || !followsTarget && (view.AutoscrollBX != 0 || view.AutoscrollBY != 0)))
             throw new InvalidOperationException("battlefield-map-plane-motion-unsupported");
@@ -236,11 +237,14 @@ internal sealed partial class BattleMapViewport : Control
     private double _neutralTime;
     public override void _Process(double delta)
     {
-        if (_neutral is not { Visible: true } || _sceneContent?.FieldDeath?.Neutral is not { WhirlsInWater: true } neutral) return;
         _neutralTime = (_neutralTime + delta) % (40.0 / 60);
         int facing = (int)(_neutralTime * 6);
-        _neutral.Texture = Texture(neutral.Sprite, facing switch { 1 => 0, 3 => 2, _ => 1 });
-        _neutral.FlipH = facing == 0;
+        foreach (var (neutral, sprite) in _neutrals)
+            if (sprite.Visible && neutral.WhirlsInWater)
+            {
+                sprite.Texture = Texture(neutral.Sprite, facing switch { 1 => 0, 3 => 2, _ => 1 });
+                sprite.FlipH = facing == 0;
+            }
     }
 
     private void ReleaseTextures()
@@ -257,8 +261,8 @@ internal sealed partial class BattleMapViewport : Control
 
     internal void Present(BattlePresentation projection, SessionSnapshot current, ActorRef? candidate)
     {
-        if (_neutral is not null && _sceneContent?.FieldDeath?.Neutral is { } neutral)
-            _neutral.Visible = !current.Story.Flags.Contains(neutral.CompletedFlag);
+        foreach (var (neutral, sprite) in _neutrals)
+            sprite.Visible = !current.Story.Flags.Contains(neutral.CompletedFlag);
         if (current.Battle.Definition.Search is not null)
             foreach (var layer in _terrain) layer.PresentChests(current.Story.Flags);
         foreach (var chest in _chests)

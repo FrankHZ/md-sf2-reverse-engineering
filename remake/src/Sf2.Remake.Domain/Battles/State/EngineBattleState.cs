@@ -31,6 +31,7 @@ public sealed class PhysicalCriticalRule
     public static PhysicalCriticalRule Taros { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 8);
     public static PhysicalCriticalRule Monk { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
+    public static PhysicalCriticalRule OneIn32WithFrequentDouble { get; } = new(32, 1, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule Cleric { get; } = new(32, 1, counterChanceDenominator: 16);
     public ushort CounterChanceDenominator { get; }
     public ushort DoubleChanceDenominator { get; }
@@ -47,6 +48,18 @@ public sealed class PhysicalCriticalRule
     public ushort ChanceDenominator { get; }
     public int DamageBonusDenominator => DamageBonusShift == 0 ? 0 : 1 << DamageBonusShift;
     internal int DamageBonusShift { get; }
+
+    internal PhysicalCriticalRule IncreaseCritical(byte amount)
+    {
+        // Source regular settings alternate 150%/125%, then halve the denominator.
+        // Ailment/no-critical settings are unchanged; double/counter bits are independent.
+        if (amount == 0 || DamageBonusShift == 0) return this;
+        int setting = (ChanceDenominator switch { 32 => 0, 16 => 2, 8 => 4, 4 => 6,
+            _ => throw new BattleRuleException("critical-setting", "actor.physical") }) + (DamageBonusShift == 2 ? 1 : 0);
+        setting = Math.Min(7, setting + amount);
+        return new((ushort)(32 >> (setting / 2)), (setting & 1) == 0 ? 1 : 2,
+            doubleChanceDenominator: DoubleChanceDenominator, counterChanceDenominator: CounterChanceDenominator);
+    }
 }
 
 public sealed record PhysicalActorDefinition(PhysicalCriticalRule Critical, bool Promoted, bool Leader, ushort Gold,

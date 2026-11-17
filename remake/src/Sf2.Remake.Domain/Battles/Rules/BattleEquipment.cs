@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 namespace Sf2.Remake.Domain.Battles;
 
 public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint ClassMask, byte AttackBonus,
-    byte MinimumRange, byte MaximumRange);
+    byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0);
 
 public sealed class BattleEquipmentDefinition
 {
@@ -56,7 +56,8 @@ public static class BattleEquipment
         if (actor.Definition.Equipment is null || actor.Definition.Physical is not { } physical) return actor.Definition.Physical;
         int slot = EquippedSlot(actor.Definition, actor.SourceLoadout);
         var weapon = slot == 4 ? null : actor.Definition.Equipment.Weapons[(byte)(actor.SourceLoadout!.Items[slot] & 127)];
-        return physical with { MinimumRange = weapon?.MinimumRange ?? 1, MaximumRange = weapon?.MaximumRange ?? 1 };
+        return physical with { MinimumRange = weapon?.MinimumRange ?? 1, MaximumRange = weapon?.MaximumRange ?? 1,
+            Critical = physical.Critical.IncreaseCritical(weapon?.CriticalIncrease ?? 0) };
     }
 
     internal static void ValidateLoadout(BattleActorDefinition definition, BattleSourceLoadout? loadout)

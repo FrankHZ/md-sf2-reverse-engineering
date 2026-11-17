@@ -2343,3 +2343,6 @@ msgstr "{0} is stunned."
 
 msgid "battle.scene.stun-cleared"
 msgstr "{0} is no longer stunned."
+
+msgid "save.destination.desktop-kingdom"
+msgstr "Desktop Kingdom"

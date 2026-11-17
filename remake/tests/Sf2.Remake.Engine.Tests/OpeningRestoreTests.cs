@@ -123,9 +123,27 @@ public sealed class OpeningRestoreTests
         Assert.DoesNotContain(774, restored.Session.Current.Story.Flags); // mansion scene is not the arrival selector
         var policy = definition.Persistence!;
         var anchor = new FieldReturnAnchor(new("map-22"), new(x, y), facing);
-        foreach (var unsupported in new[] { data.Flags, flags.Append(422).ToArray(), flags.Append(522).ToArray() })
+        foreach (var unsupported in new[] { data.Flags, flags.Append(522).ToArray() })
             Assert.Equal("save-location-unavailable", Assert.Throws<BattleRuleException>(() =>
                 policy.Select(definition, anchor, unsupported, null)).Code);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DesktopOutcomeSaveRetainsUnlockOrCompletedAftermathWithoutReplayingInit(bool victory)
+    {
+        var (definition, data) = Fixture();
+        var flags = data.Flags.Concat(victory ? new[] { 776, 777, 522, 778 } : new[] { 776, 777, 422 }).ToArray();
+        var slot = data with { Map = "map-22", Recipe = "desktop-kingdom", X = 5, Y = 8, Facing = 1,
+            Flags = flags, EgressMap = "map-22" };
+        var restored = Assert.IsType<SessionStarted>(GameSession.Restore(definition, slot, RuleCompositions.Sf2()));
+        Assert.Equal(new MapPosition(5, 8), restored.Session.Current.Exploration!.PlayerEntity.Position);
+        // This authored fixture clears its local F256 entry flag on population rebuild.
+        Assert.Equal(flags.Where(flag => flag != 256).Order(), restored.Session.Current.Story.Flags.Order());
+        Assert.DoesNotContain(999, restored.Session.Current.Story.Flags);
+        Assert.Equal("desktop-kingdom", definition.Persistence!.Select(definition,
+            new(new("map-22"), new(5, 8), 1), flags, null).Recipe);
     }
 
     private static ushort[] MansionLayout()
