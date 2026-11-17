@@ -192,21 +192,28 @@ Field NoEffect policies. Only the admitted Antidote poison-cure effect is implem
 consumes the selected slot even if the target has no poison, with distinct bilingual feedback;
 a missing/invalid target consumes nothing. Herbs/seeds and map-event items refuse without effect or
 consumption. The service never dispatches the Cotton Balloon map event. Fairy Powder and stat/level
-items remain unsupported and are not consumed. Bare carrying does not grant equipment or Use effects:
-existing Field loadout/admission limits, including unsupported ring identities/effects and broken
-weapon equipment, remain in force. This does not implement a wider curse/ring/broken lifecycle.
+items remain unsupported and are not consumed. Bare carrying does not grant equipment or Use effects. Shared Field validation distinguishes pack
+shape/known identities, the selected slot's operation admission, and actually equipped words.
+An unselected, unequipped known Power Ring19 stays in the pack without blocking another admitted
+slot's Give/Drop/Use or a recipient transfer. Queries display that identity without granting its
+operations; its unsupported Use/equipment still refuses. Unknown identities, stale words, invalid
+packs and unsupported worn effects remain rejected. Equipment choices retain source slot indices
+and omit unsupported/broken choices without deleting their live words. Selected broken-weapon
+operations remain unsupported; no wider curse/ring/broken lifecycle is implemented.
 `PrivateFieldPreparation` was reviewed and remains unchanged.
 
 All item changes reuse `FieldInventory.Replace` and `ExplorationState.WithParty`, retaining depot,
 OnceFlags/Deals, all other actor resources, RNG, active membership and story/transport continuity.
-No persistence format change is needed. Small actual-engine tests distinguish the full self-Give
+No persistence format change is needed. Small actual-engine tests also cover ring-bearing donor/recipient packs, full exchanges, Drop and
+Antidote under both callers, while retaining ring effect refusal and ordinary Field self-exchange.
+They distinguish the full self-Give
 rule from ordinary Field self-exchange, both exchange guards, supported and ineffective Antidote,
 unsupported/unsellable refusal, stale/cancelled commands, equipment limits and failing callback return.
 
 The registered private `handoffs/issue1872` bundle reuses the accepted issue1870 world/catalogs and
-issue1871 slots read-only. Its `player/Play-en.cmd` and `player/Play-zh-CN.cmd` open the ordinary title;
+issue1871 slots read-only. Its `correction/Play-en.cmd` and `correction/Play-zh-CN.cmd` open the ordinary title;
 Continue → Slot1 reaches Map26's NPC. Each review uses a fresh Sample and disposable save namespace.
-From its `player/` directory in PowerShell7:
+From its current `correction/` directory in PowerShell7:
 
 ```powershell
 ./Play.ps1 -Language en -Sample items-review -Mode items-journey -Seed ./slots/depot-en.json
@@ -228,10 +235,31 @@ keeps a no-effect recovery item, equips, returns, saves and moves. Native Antido
 is not claimed: those cases use actual-engine controlled tests. The preceding depot slice's natural
 victory/defeat/EGRESS evidence is retained, not relabelled as a new Item-slice outcome run.
 
+The same original retained seed with Jaha's `[161,19,127,127]` pack also completes a bounded bilingual
+ordinary route in the registered bundle's `correction/` reader: Caravan gives the supported axe to
+Peter, receives Healing Seed from Bowie, refuses ring Use without consumption, and returns. Ordinary
+Field then queries Jaha, performs no-effect Seed Use and gives the Seed back. Power Ring19 remains
+unchanged, all other actor resources remain intact, and the complete cold field-save data agree.
+This uses the original ring-bearing history, not a replacement pack. Reproduce from `correction/`:
+
+```powershell
+./Play.ps1 -Language en -Sample ring-review -Mode ring -Seed ./slots/service-en.json
+./Play.ps1 -Language zh-CN -Sample ring-review -Mode ring -Seed ./slots/service-zh-CN.json
+./Play.ps1 -Language en -Sample ring-cold-review -Mode cold -Seed ./receipts/en-ring-review/ring-slot.json
+python -X utf8 ../CompareCorrection.py
+```
+
+`player/` retains the earlier receipts unchanged; `correction/` mounts the current runtime and its
+`Rebuild.py` reconstructs that candidate with the same input configuration. Earlier completed local
+aggregates/native observations are retained; the correction runs affected actual-engine tests,
+adapter/selected dependent builds, the bounded ring route and final CI. NPC greeting/return ticks can
+advance RNG, so native seed comparisons separate service selections from ordinary Field actions;
+complete save comparisons retain the actual resulting seeds.
+
 High rigor remains appropriate for the shared inventory/save boundary. New output is bounded to one
 small candidate runtime, reused immutable inputs and selected state/input receipts, budget250 MiB;
 no world/media extraction or new tool platform is needed. Rebuild the owning Debug adapter, then run
-`player/Rebuild.py --repository <checkout> --output <fresh-output>` and import changed PO resources
+`correction/Rebuild.py --repository <checkout> --output <fresh-output>` and import changed PO resources
 with the configured Godot before launching. The engine aggregate, affected behavior selection, actual
 adapter, direct native observations, clean committed planner and selected CI own separate checks.
 The stable handoff retains exact candidate, commands and failures, including native exit status
