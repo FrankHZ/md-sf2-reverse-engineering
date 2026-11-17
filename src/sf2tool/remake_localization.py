@@ -241,6 +241,8 @@ def derive(args: argparse.Namespace) -> dict:
         field_texts.update(range(2543, 2566))
     if args.scope == "current" and any(row["id"] == "map-32" for row in world["world"]["maps"]):
         field_texts.update(range(2590, 2596))
+    if args.scope == "current" and any(row["id"] == "map-33" for row in world["world"]["maps"]):
+        field_texts.update(range(1804, 1840))
     eastern_shrine = args.scope == "current" and any(
         row["id"] == "map-61" for row in world["world"]["maps"]
     )

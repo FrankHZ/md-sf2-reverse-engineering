@@ -71,7 +71,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
-        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
@@ -133,6 +133,10 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("taros-shrine", player, "Taros Shrine, after the Caravan");
         if (map.Value == "map-67" && flags.Contains(521) && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("devils-tail", player, "Devil's Tail");
+        // Only the first-visit setup is admitted. Entry and F774 do not require Battle21 victory.
+        if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 523 or 783 or 784 or 786) &&
+            content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("creed-mansion", player, "Creed's Mansion");
         if (map.Value == "map-32" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("fairy-cave", player, "Fairy Cave");
         if (map.Value == "map-51" && !flags.Contains(420) && flags.Contains(470) == flags.Contains(520) &&
@@ -204,6 +208,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             throw new BattleRuleException("save-anchor-unusable", "save.anchor");
         if (location.Recipe == "taros-shrine")
             world = world.MoveOffMap(new("entity-128"));
+        if (location.Recipe == "creed-mansion" && flags.Contains(774))
+        {
+            // ms_map33_InitFunction / cs_5ABE6: reentry places Goliath only.
+            // F774 does not replay cs_5AC58's two live door copies or temporary followers.
+            var goliath = world.Entities[new("entity-128")];
+            world = world.WithEntity(goliath with { Motion = goliath.Motion with
+                { X = 17 * 384, Y = 12 * 384, XDestination = 17 * 384, YDestination = 12 * 384, Facing = 3 } });
+        }
         // Allocation starts followers at the leader. This is the same legal overlap as a map reload;
         // their ordinary following service establishes spacing on the next deliberate input.
         if (world.AllEntities.Any(entity => entity.Visible && entity.Slot != world.PlayerEntity.Slot &&

@@ -80,6 +80,38 @@ public sealed class OpeningRestoreTests
         }
     }
 
+    [Theory]
+    [InlineData(false, 15, 30, 1)]
+    [InlineData(true, 17, 15, 1)]
+    [InlineData(true, 12, 15, 2)]
+    public void MansionSaveRebuildsFirstVisitWithoutReplayingStory(bool metGoliath, int x, int y, byte facing)
+    {
+        var (definition, data) = Fixture();
+        var flags = metGoliath ? data.Flags.Append(774).ToArray() : data.Flags;
+        var slot = data with { Map = "map-33", Recipe = "creed-mansion", X = x, Y = y, Facing = facing,
+            Flags = flags, EgressMap = "map-6" };
+        var restored = Assert.IsType<SessionStarted>(GameSession.Restore(definition, slot, RuleCompositions.Sf2()));
+        var world = restored.Session.Current.Exploration!;
+        Assert.Equal(new MapPosition(x, y), world.PlayerEntity.Position);
+        Assert.Equal(facing, world.PlayerEntity.Motion.Facing);
+        Assert.Equal(metGoliath ? new MapPosition(17, 12) : new MapPosition(63, 63), world.Entities[new("entity-128")].Position);
+        Assert.Equal(metGoliath ? 3 : 1, world.Entities[new("entity-128")].Motion.Facing);
+        Assert.Equal((ushort)0xC400, world.Layout[15, 20]);
+        Assert.Equal((ushort)0xC400, world.Layout[17, 11]);
+        Assert.DoesNotContain(999, restored.Session.Current.Story.Flags); // on-load must not run
+        Assert.DoesNotContain(521, restored.Session.Current.Story.Flags); // no invented prerequisite
+        foreach (int later in new[] { 22, 523, 783, 784, 786 })
+            Assert.Equal("save-location-unavailable", Assert.Throws<BattleRuleException>(() => definition.Persistence!.Select(
+                definition, new(new("map-33"), new(x, y), facing), flags.Append(later).ToArray(), null)).Code);
+    }
+
+    private static ushort[] MansionLayout()
+    {
+        var words = new ushort[WorkingMapLayout.WordCount];
+        words[20 * 64 + 15] = words[11 * 64 + 17] = 0xC400;
+        return words;
+    }
+
     internal static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joined = false, bool victory = false)
     {
         var growth = new BattleGrowthDefinition(0, 0, [], [], new Dictionary<byte, SpellRef>());
@@ -89,10 +121,10 @@ public sealed class OpeningRestoreTests
             id, BattleControl.Player, null, new(1 + id, 1), new(null, 0, 0, 0, 0, AllyPartyMember: id))).ToArray();
         var battle = new BattleDefinition("opening", new("battle"), 1, 1, [], deployments, []);
         var palette = new PalettePair(0x222, 0x444);
-        var maps = new[] { "map-3", "map-57", "map-32", "map-67" }.Select(id => new ExplorationMapDefinition(new(id),
-            new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]), new([new(0, 0, 63, 63)]),
+        var maps = new[] { "map-3", "map-57", "map-32", "map-67", "map-33" }.Select(id => new ExplorationMapDefinition(new(id),
+            new WorkingMapLayout(id == "map-33" ? MansionLayout() : new ushort[WorkingMapLayout.WordCount]), new([new(0, 0, 63, 63)]),
             id == "map-3" ? [new(new("entity-1"), new(42, 8), 3, 32, Sprite: 1,
-                Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : [], [],
+                Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : id == "map-33" ? [new(new("entity-128"), new(63, 63), 1, 32, Sprite: 202)] : [], [],
             // This must never execute during restore.
             onLoad: new("dangerous-onload", 0), population: new(30, 128, 0, [new(66, 1, 1)]),
             entryFlags: [new(256, false)], basePalette: palette,

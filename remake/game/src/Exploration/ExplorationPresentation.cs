@@ -32,6 +32,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private readonly MapBlockTextures _mapTextures = new();
     private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd, bool Shadowless), ImageTexture> _sprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _blankSprites = [];
+    private readonly HashSet<(MapId Map, int Slot, long Request)> _wipedSprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth, bool Hd), ImageTexture> _portraits = [];
     private readonly Dictionary<ImageTexture, IReadOnlyList<Rect2>> _spriteInk = [];
     private readonly Dictionary<ImageTexture, object> _resourceSelectors = [];
@@ -173,6 +174,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 {
                     _ = Sprite(entity, false, world.Map);
                     _blankSprites.RemoveWhere(key => key.Map == world.Map && key.Slot == entity.Slot);
+                    _wipedSprites.RemoveWhere(key => key.Map == world.Map && key.Slot == entity.Slot);
                     _spriteMounts++;
                     completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
                 }
@@ -253,12 +255,15 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.EntityEffect)
                 {
-                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "flash-white") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
-                    if (wait.Cue.Resource is "slide-in" or "slide-out" or "flash-white") _storyEffect = wait.Cue.Entity;
+                    if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "wipe-in" or "wipe-out" or "flash-white") || wait.Cue.Entity is null) throw new InvalidOperationException("effect-binding");
+                    if (wait.Cue.Resource is "slide-in" or "slide-out" or "wipe-in" or "wipe-out" or "flash-white") _storyEffect = wait.Cue.Entity;
                     else _mosaic = wait.Cue.Entity;
                     _mosaicOut = wait.Cue.Resource == "mosaic-out";
                     _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false, current.Exploration.Map);
                     if (wait.Cue.Resource == "slide-in") SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, false);
+                    // Every csc22 transition starts from LoadMapsprite, including a different effect after a wipe.
+                    SetSpriteWiped(current.Exploration, wait.Cue.Entity.Value, false);
+                    if (wait.Cue.Resource is "wipe-in" or "wipe-out") SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, false);
                     _cueAge = -delta;
                 }
                 else if (wait.Cue.Kind == PresentationCueKind.BattleLoad)
@@ -342,6 +347,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
             {
                 if (wait.Cue.Kind == PresentationCueKind.EntityEffect && wait.Cue.Resource == "slide-out")
                     SetSpriteBlank(current.Exploration!, wait.Cue.Entity!.Value, true);
+                if (wait.Cue.Kind == PresentationCueKind.EntityEffect && wait.Cue.Resource == "wipe-out")
+                    SetSpriteWiped(current.Exploration!, wait.Cue.Entity!.Value, true);
                 completions.Add(new CompletePresentation(wait.Token, wait.Cue.Kind));
                 CompletedCueToken = wait.Token.Value;
                 CompletedCueKind = wait.Cue.Kind.ToString();
@@ -515,6 +522,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 }
                 else if (_storyEffect is { } effect && world.TryResolveEntity(effect, out var effectActor) && effectActor.SpriteSlot == entity.SpriteSlot)
                     inkRuns = ExplorationStoryEffects.Draw(_owner, texture, destination, inkRuns, mirror, _scale, _cueResource!, _cueAge, _reducedFlash);
+                else if (_wipedSprites.Contains((world.Map, entity.Slot, entity.SpriteRequest)))
+                    inkRuns = ExplorationStoryEffects.Draw(_owner, texture, destination, inkRuns, mirror, _scale, "wipe-out", 46.0 / 60, _reducedFlash);
                 else
                 {
                     // Godot flips a negative-width texture rect around its unchanged position.

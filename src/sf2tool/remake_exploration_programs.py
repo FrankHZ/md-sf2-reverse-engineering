@@ -854,7 +854,10 @@ class OriginalPrograms:
                 "MOSAIC_OUT",
                 "SLIDE_IN",
                 "SLIDE_OUT",
+                "WIPE_IN",
+                "WIPE_OUT",
             ):
+                self.sources.add("disasm/code/common/scripting/entity/entityfunctions_4.asm")
                 result.append(
                     {
                         "op": "present",
@@ -864,10 +867,16 @@ class OriginalPrograms:
                             "MOSAIC_OUT": "mosaic-out",
                             "SLIDE_IN": "slide-in",
                             "SLIDE_OUT": "slide-out",
+                            "WIPE_IN": "wipe-in",
+                            "WIPE_OUT": "wipe-out",
                         }[args[1]],
                         "entity": self.entity(args[0]),
                         "position": None,
-                        **({"durationTicks": 46} if args[1] in ("SLIDE_IN", "SLIDE_OUT") else {}),
+                        **(
+                            {"durationTicks": 46}
+                            if args[1] in ("SLIDE_IN", "SLIDE_OUT", "WIPE_IN", "WIPE_OUT")
+                            else {}
+                        ),
                     }
                 )
             elif op == "shiver":
