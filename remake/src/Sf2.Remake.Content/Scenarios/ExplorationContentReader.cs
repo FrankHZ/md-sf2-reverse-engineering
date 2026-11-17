@@ -549,6 +549,7 @@ internal static class ExplorationContentReader
         string opcode = Text(row, "op");
         switch (opcode)
         {
+            case "caravan": Object(row, opcode, "op"); return new OpenCaravan();
             case "shop": return ShopInstructionReader.Read(row, source);
             case "church":
                 Object(row, opcode, "op", "raisePerLevel", "promotedExtra", "raisedHpCap", "poisonCost", "stunCost");

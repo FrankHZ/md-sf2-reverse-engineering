@@ -56,9 +56,10 @@ retain command tables, callers, addresses and original-runtime Unknowns.
 The selected Map26 content includes all six resident callbacks, empty search/item lists and all three
 source exits. Randolf16 has1742–1743; Tyrin17 has1744–1745; old man128 has1746–1747 with the fixed
 Randolf name; worker129/default is a bare return. Priest133 uses the existing Church service.
-Caravan134 still reaches the explicit unsupported `j_CaravanMenu` consumer; this chapter does not
-claim depot/party service support. The existing [service extension work](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369)
-owns that distinct capability. Map27 remains an explicit frontier, not a fabricated passable interior.
+Caravan134 now opens the ordinary [Join/Purge service](caravan-services-design.md#current-formation-implementation),
+with bilingual cancellation/return, changed next-battle formation and complete cold saves.
+Depot and Item remain explicitly unsupported. The [Willard chapter](willard-burrow-battle23.md)
+owns the actual Map27 cave and Battle23 continuation.
 
 ## Persistence and onward play
 

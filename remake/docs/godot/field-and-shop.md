@@ -178,3 +178,16 @@ Use `SF2_FIELD_MENU_CASE=help` with the F5–F7 observer to open actual F10 → 
 read the Exploration/Menus pages in the selected language and return to usable field control.
 Older combined field-art observers are explicitly historical at6c2d0982 under their presentation
 owner; their4×/cardinal geometry is not a current gate. No removed observation field is restored.
+
+## Caravan formation
+
+The [ordinary Caravan service](../application/caravan-services-design.md#current-formation-implementation)
+uses the field choice and pack panels. Up/Down selects a row, Left/Right scrolls, Confirm commits the
+current choice and Back returns to its owning selection or exits the root. Pointer rows/footer and
+controller actions use the same commands. The member list shows current HP/MP and the selected pack;
+dead members require confirmation. Bowie refusal is readable, and Depot/Item stay visibly unavailable.
+Application owns phases and member validation; the view retains only focus, scroll and input release.
+Each new token requires release before another confirmation; service input excludes movement,
+ordinary field menus and automatic field time. Source greeting/exit dialogue completes before field
+movement and Save resume. Native evidence covers keyboard/held-input traversal in both languages;
+no new controller hardware or screenshot acceptance is claimed.

@@ -142,6 +142,12 @@ internal static class ProgramRunner
                 var token = new WaitToken(checked(current.ObservationSequence + 1));
                 switch (instruction)
                 {
+                    case OpenCaravan when current.Exploration is not null:
+                        story = story.Copy(story.Cursor, new CaravanWait(token)); break;
+                    case OpenServicePortrait servicePortrait:
+                        current = ExplorationPortraitRunner.Open(definition, current, default, 0, observations, false,
+                            servicePortrait.Portrait);
+                        story = current.Story.Wait is null ? current.Story.Copy(Next(cursor)) : current.Story; break;
                     case OpenShop shop when current.Exploration is not null:
                         story = story.Copy(story.Cursor, new ShopWait(token, shop.Definition));
                         break;
@@ -717,7 +723,7 @@ internal static class ProgramRunner
         {
             FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
-            DialogueWait or W1TextWait or ChoiceWait or NameWait or ChurchWait or ShopWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
+            DialogueWait or W1TextWait or ChoiceWait or NameWait or ChurchWait or ShopWait or CaravanWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or PhysicalEntityWait or TickWait => SessionStopReason.SimulationWait,
             _ => SessionStopReason.SimulationWait,
         };

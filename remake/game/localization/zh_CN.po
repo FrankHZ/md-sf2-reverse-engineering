@@ -2352,3 +2352,51 @@ msgstr "地板世界"
 
 msgid "save.destination.willard-burrow"
 msgstr "威拉德洞穴"
+
+msgid "caravan.title"
+msgstr "马车 · 战斗编队 {0}/{1}"
+
+msgid "caravan.join"
+msgstr "加入编队"
+
+msgid "caravan.purge"
+msgstr "退出编队"
+
+msgid "caravan.depot"
+msgstr "仓库 · 尚未支持"
+
+msgid "caravan.item"
+msgstr "道具 · 尚未支持"
+
+msgid "caravan.choose-join"
+msgstr "让谁加入战斗编队？"
+
+msgid "caravan.choose-purge"
+msgstr "让谁退出战斗编队？"
+
+msgid "caravan.relief"
+msgstr "选择一名队员返回马车。"
+
+msgid "caravan.dead"
+msgstr "{0}已阵亡。仍要加入战斗编队吗？"
+
+msgid "caravan.missing"
+msgstr "队员{0} · 数据不可用"
+
+msgid "caravan.failed"
+msgstr "无法选择该队员。编队未改变。"
+
+msgid "caravan.result.joined"
+msgstr "队员已加入战斗编队。"
+
+msgid "caravan.result.purged"
+msgstr "队员已返回后备队伍。"
+
+msgid "caravan.result.leaderrequired"
+msgstr "主角必须留在战斗编队中。"
+
+msgid "caravan.result.noreserve"
+msgstr "没有后备队员。"
+
+msgid "caravan.result.unsupported"
+msgstr "这项马车服务尚未支持。"

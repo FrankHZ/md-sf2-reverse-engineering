@@ -28,6 +28,15 @@ The engine now applies that coordinate conversion to ordinary movement/events, a
 
 From the arrival save, walk to (5,16) and face Up for Karna's 1774–1776 dialogue. Walk around to (33,25), face Up and talk to the guard for 1802. He still requires the Cotton Balloon; walking through him is not a new exit. The source Map22 ordinary warp and step-copy tables are empty. The later item-event exit retains its separate dependency. Both parties can then use the actual stairs to (15,3), Up, and save before the king. The path changes entity layer and returns to layer 0. F777 remains clear. The next slice starts by confirming the king conversation; F777 then governs the y16 zone independently of F522. [Local conversations and Battle22 admission](../../../docs/research/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md).
 
+## Caravan formation service
+
+**Confirmed:** the [formation service](caravan-services-design.md#current-formation-implementation)
+now consumes the ordinary entity128 callback at (3,6). Approach from (4,6), face Left and Confirm.
+Both retained post-Battle22 histories exercise Join/Purge, dead confirmation, nested/top cancellation,
+held-input release and source callback return, retaining resources and ordinary Save access. Depot
+and Item are still unavailable. The inherited arrival evidence above does not claim these later
+service observations; the registered service bundle owns their reproduction and limits.
+
 ## Save and continuity boundary
 
 The `desktop-kingdom` recipe accepts settled primary or secondary-layer positions in Map22 after F776, with F422/F522 clear in this arrival witness. The [Battle22 extension](desktop-battle22.md#persistence-delivery-and-remaining-boundaries) also accepts incomplete returns and completed aftermath. It does not require F774, F777 or a particular prior Battle19 history. Continue rebuilds the baseline population at the saved position/facing/layer and does not execute init or replay arrival. Transient ORB hides and custom follower spacing are not serialized; source population positions and ordinary following are rebuilt. The [optional v1 layer extension](opening-session-lifecycle.md#secondary-layer-field-saves) defaults old records to primary and validates secondary collision and follower layers. Its separate private handoff retains both ordinary histories through actual secondary Save/Continue and return to primary ground.

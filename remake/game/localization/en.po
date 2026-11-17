@@ -2352,3 +2352,51 @@ msgstr "Floor World"
 
 msgid "save.destination.willard-burrow"
 msgstr "Willard Burrow"
+
+msgid "caravan.title"
+msgstr "Caravan · Battle party {0}/{1}"
+
+msgid "caravan.join"
+msgstr "Join"
+
+msgid "caravan.purge"
+msgstr "Purge"
+
+msgid "caravan.depot"
+msgstr "Depot · Unavailable"
+
+msgid "caravan.item"
+msgstr "Item · Unavailable"
+
+msgid "caravan.choose-join"
+msgstr "Who joins the battle party?"
+
+msgid "caravan.choose-purge"
+msgstr "Who leaves the battle party?"
+
+msgid "caravan.relief"
+msgstr "Choose a member to return to the Caravan."
+
+msgid "caravan.dead"
+msgstr "{0} is dead. Join the battle party anyway?"
+
+msgid "caravan.missing"
+msgstr "Member {0} · Unavailable"
+
+msgid "caravan.failed"
+msgstr "That selection is unavailable. No formation change was made."
+
+msgid "caravan.result.joined"
+msgstr "The member joined the battle party."
+
+msgid "caravan.result.purged"
+msgstr "The member returned to reserve."
+
+msgid "caravan.result.leaderrequired"
+msgstr "The leader must stay in the battle party."
+
+msgid "caravan.result.noreserve"
+msgstr "There are no reserve members."
+
+msgid "caravan.result.unsupported"
+msgstr "This Caravan service is not available yet."
