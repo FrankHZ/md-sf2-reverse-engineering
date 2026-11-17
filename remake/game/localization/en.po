@@ -2349,3 +2349,6 @@ msgstr "Desktop Kingdom"
 
 msgid "save.destination.floor-world"
 msgstr "Floor World"
+
+msgid "save.destination.willard-burrow"
+msgstr "Willard Burrow"

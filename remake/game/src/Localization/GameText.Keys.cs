@@ -708,6 +708,7 @@ internal static partial class GameText
         ["save.destination.mount-volcano"] = 0,
         ["save.destination.devils-tail"] = 0,
         ["save.destination.desktop-kingdom"] = 0,
+        ["save.destination.willard-burrow"] = 0,
         ["save.destination.floor-world"] = 0,
         ["save.destination.fairy-cave"] = 0,
         ["save.destination.harpy-pond"] = 0,

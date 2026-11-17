@@ -2349,3 +2349,6 @@ msgstr "桌面王国"
 
 msgid "save.destination.floor-world"
 msgstr "地板世界"
+
+msgid "save.destination.willard-burrow"
+msgstr "威拉德洞穴"
