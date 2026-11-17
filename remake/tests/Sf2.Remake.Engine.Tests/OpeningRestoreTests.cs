@@ -45,6 +45,21 @@ public sealed class OpeningRestoreTests
     }
 
     [Theory]
+    [InlineData(26, 23, 3)]
+    [InlineData(25, 23, 2)]
+    public void CompletedDevilsTailRestoresThePlayersCurrentFieldPosition(int x, int y, byte facing)
+    {
+        var (definition, data) = Fixture();
+        var field = data with { Map = "map-67", Recipe = "devils-tail", X = x, Y = y, Facing = facing,
+            Flags = data.Flags.Append(521).ToArray(), EgressMap = "map-6" };
+        var restored = Assert.IsType<SessionStarted>(GameSession.Restore(definition, field, RuleCompositions.Sf2()));
+        var player = restored.Session.Current.Exploration!.PlayerEntity;
+        Assert.Equal(new MapPosition(x, y), player.Position);
+        Assert.Equal(facing, player.Motion.Facing);
+        Assert.IsType<SessionStartFailed>(GameSession.Restore(definition, field with { Flags = data.Flags }, RuleCompositions.Sf2()));
+    }
+
+    [Theory]
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(6)]
@@ -74,7 +89,7 @@ public sealed class OpeningRestoreTests
             id, BattleControl.Player, null, new(1 + id, 1), new(null, 0, 0, 0, 0, AllyPartyMember: id))).ToArray();
         var battle = new BattleDefinition("opening", new("battle"), 1, 1, [], deployments, []);
         var palette = new PalettePair(0x222, 0x444);
-        var maps = new[] { "map-3", "map-57", "map-32" }.Select(id => new ExplorationMapDefinition(new(id),
+        var maps = new[] { "map-3", "map-57", "map-32", "map-67" }.Select(id => new ExplorationMapDefinition(new(id),
             new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]), new([new(0, 0, 63, 63)]),
             id == "map-3" ? [new(new("entity-1"), new(42, 8), 3, 32, Sprite: 1,
                 Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : [], [],

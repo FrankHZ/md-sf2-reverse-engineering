@@ -49,11 +49,17 @@ internal static class BattleEntry
         var selected = story.EnteringBattle ?? throw new BattleRuleException("entry-route", "entry");
         if (story.Continuation == ProgramContinuation.BattleLoadFinished)
         {
+            // LoadBattle replaces the field camera. A warp from a still-scrolling field
+            // can skip the before program on re-entry, leaving its destinations armed.
+            var view = story.LogicalView;
+            if (view is { Scrolling: true })
+                view = view with { AX = new(view.AX.Position), AY = new(view.AY.Position),
+                    BX = new(view.BX.Position), BY = new(view.BY.Position), HideWindows = false };
             bool skipStart = selected.IntroFlag is { } flag && story.Flags.Contains(flag);
             return ProgramRunner.Commit(current, current.Active,
                 story.Copy(skipStart ? null : selected.StartProgram,
                     flags: selected.IntroFlag is { } intro ? ProgramRunner.Flags(story, intro, true) : story.Flags,
-                    continuation: ProgramContinuation.BattleStartFinished, clearCameraEntity: true, clearCameraTarget: true),
+                    continuation: ProgramContinuation.BattleStartFinished, logicalView: view, clearCameraEntity: true, clearCameraTarget: true),
                 observations, "battle-loaded");
         }
 

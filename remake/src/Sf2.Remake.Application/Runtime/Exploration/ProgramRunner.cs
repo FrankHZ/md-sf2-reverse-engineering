@@ -313,7 +313,7 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, cameraEntitySlot: target.Entity is { } tracked ? Entity(current, tracked).Slot : null,
                             clearCameraEntity: target.Entity is null); break;
                     case LoadSceneMap load:
-                        var scene = MapTransfer.LoadScene(definition.Exploration!, current.Exploration!, load);
+                        var scene = MapTransfer.LoadScene(definition, current, load);
                         story = story.TextSettings is not null ? MapTransfer.BindScene(current, scene, load).Copy(story.Cursor) :
                             story.Copy(story.Cursor, cameraTarget: load.Camera, clearCameraEntity: true);
                         active = new ActiveExploration(scene); break;

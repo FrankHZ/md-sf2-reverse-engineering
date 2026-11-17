@@ -2185,6 +2185,9 @@ msgstr "Mount Volcano, battle return"
 msgid "save.destination.polca-return"
 msgstr "Polca, eastern approach"
 
+msgid "save.destination.devils-tail"
+msgstr "Devil's Tail"
+
 msgid "save.destination.fairy-cave"
 msgstr "Fairy Cave"
 

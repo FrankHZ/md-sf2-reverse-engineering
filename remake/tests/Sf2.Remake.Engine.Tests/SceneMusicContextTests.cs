@@ -3,6 +3,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
+using Sf2.Remake.Domain.Battles;
 using Xunit;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
 
@@ -164,6 +165,30 @@ public sealed class SceneMusicContextTests
             Assert.Equal("save-music-observation", wrong.Failure!.Code);
             Assert.Same(stable, wrong.Snapshot);
         }
+    }
+
+    [Theory]
+    [InlineData(ProgramContinuation.BeforeBattleFinished)]
+    [InlineData(ProgramContinuation.VictoryProgramFinished)]
+    public void BattleSceneCopiesItsRegionAndPreservesTheFieldLayoutAndAreaOrdinal(ProgramContinuation phase)
+    {
+        var session = Start("scene-music-context", document =>
+            document["world"]!["maps"]![1]!["layout"]![8]![20] = 0xC000);
+        var map = session.Definition.Exploration!.Maps[new("yard-map")];
+        var battle = new BattleDefinition("encounter", map.Map, 22, 6, [], [], [],
+            sourceMapRegion: new(map.Map, new(19, 7)));
+        var definition = new ScenarioDefinition("scene", [battle], exploration: session.Definition.Exploration);
+        var snapshot = session.Current;
+        var active = snapshot.WithStory(snapshot.Story.Copy(snapshot.Story.Cursor, snapshot.Story.Wait,
+            continuation: phase, enteringBattle: new("encounter", null, null, null, null, null)));
+        var command = new LoadSceneMap(map.Map, new(18, 4));
+        var scene = MapTransfer.LoadScene(definition, active, command);
+        Assert.Equal(0xC000, scene.Layout[1, 1]);
+        var view = ExplorationViewRunner.LoadScene(scene, command.Camera, snapshot.Story.LogicalView!);
+        Assert.Equal(map.ViewAreas[1] with { MinX = 0, MinY = 0, MaxX = 21, MaxY = 5 }, view.Area);
+        Assert.Equal(1, ExplorationViewContext.Resolve(scene, view).Area);
+        Assert.Equal(0, MapTransfer.LoadScene(definition, snapshot, command).Layout[1, 1]);
+        Assert.Equal(16, map.ViewAreas[1].MinX);
     }
 
     private static GameSession Scene(bool offArea, int scroll) => Start("scene-music-context", document =>

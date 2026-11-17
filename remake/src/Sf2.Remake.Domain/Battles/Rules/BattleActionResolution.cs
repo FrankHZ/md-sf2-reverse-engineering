@@ -219,12 +219,13 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         for (int index = 0; index < before.Actors.Count; index++)
         {
             var old = before.Actors[index]; var candidate = Prepared.Actors[index];
+            var afterDrops = inventory?.GetActor(old.Actor) ?? old;
             var expectedLoadout = old.Actor == actor && consumedLoadout is not null ? consumedLoadout :
-                inventory?.GetActor(old.Actor).SourceLoadout ?? old.SourceLoadout;
+                afterDrops.SourceLoadout;
             bool changedLoadout = !ReferenceEquals(expectedLoadout, old.SourceLoadout);
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
-                candidate.LastTarget == old.LastTarget && candidate.Attack == old.Attack && candidate.Status == old.Status && candidate.Facing == old.Facing &&
+                candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == old.Status && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
                 Equals(changedLoadout && candidate.Progress is { } progress
                     ? progress with { SourceLoadout = old.Progress?.SourceLoadout } : candidate.Progress, old.Progress) &&

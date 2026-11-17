@@ -51,6 +51,7 @@ public sealed class EnemyCarriedItemTests
     [InlineData("unarmed-encounter", 19, false)]
     [InlineData("armed-encounter", 19, true)]
     [InlineData("alternate-carry", 61, true)]
+    [InlineData("protect-ring", 20, true)]
     public void BoundBareItemSurvivesEntryAndDropsWithoutGrantingEquipmentEffects(string encounter, byte item, bool armed)
     {
         var (definition, start) = Setup(encounter, item, armed);
@@ -75,6 +76,20 @@ public sealed class EnemyCarriedItemTests
         Assert.Equal(item, holder.SourceLoadout.Items[1]); Assert.Empty(battle.ItemCustody!.OnceFlags);
         var repeated = EnemyItemDropRules.Prepare(result.Battle, Ally, Enemy, true);
         Assert.Null(repeated.Receipt); Assert.Same(result.Battle, repeated.Battle);
+    }
+
+    [Fact]
+    public void LosingTheHeldWeaponRefreshesAttackAndRangeWithoutDrawingDropRng()
+    {
+        var (definition, start) = Setup("weapon-drop", 33, true, held: 0);
+        var battle = BattleTurnFlow.Start(definition, start);
+        var drop = EnemyItemDropRules.Prepare(battle, Ally, Enemy, true);
+        var holder = drop.Battle.GetActor(Enemy);
+        Assert.Equal(new ushort[] { 0, 127, 127, 127 }, holder.SourceLoadout!.Items);
+        Assert.Equal(holder.BaseAttack, holder.Attack);
+        Assert.Equal(1, BattleEquipment.Physical(holder)!.MaximumRange);
+        Assert.Equal(33, drop.Battle.GetActor(Ally).SourceLoadout!.Items[0]);
+        Assert.Equal(battle.MainSeed, drop.Battle.MainSeed);
     }
 
     [Theory]

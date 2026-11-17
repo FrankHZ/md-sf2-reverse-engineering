@@ -262,13 +262,25 @@ internal static class MapTransfer
         return MapEventDispatcher.RoofOnLoad(new(map, layout, player, entities, party));
     }
 
-    internal static ExplorationState LoadScene(ExplorationDefinition definition, ExplorationState world, LoadSceneMap load)
+    internal static ExplorationState LoadScene(ScenarioDefinition definition, SessionSnapshot current, LoadSceneMap load)
     {
+        var world = current.Exploration!;
         CaravanRuntime.RequireOrdinaryMapOperation(world);
-        if (!definition.Maps.TryGetValue(load.Map, out var map)) throw new BattleRuleException("missing-map", "scene.map");
+        if (!definition.Exploration!.Maps.TryGetValue(load.Map, out var map)) throw new BattleRuleException("missing-map", "scene.map");
         // csc48 changes the displayed layout/view; entity allocation, map init and battle selection
         // are separate calls. Keep the running program, party, physical entities and append order intact here.
-        return new(map, map.Layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
+        var layout = map.Layout;
+        if (current.Story.Continuation is ProgramContinuation.BeforeBattleFinished or ProgramContinuation.VictoryProgramFinished &&
+            current.Story.EnteringBattle is { } route && definition.Encounters.TryGetValue(route.Encounter, out var battle) &&
+            battle.SourceMapRegion is { } region && region.Map == load.Map)
+        {
+            // CopyMapBlocks runs after the ordinary flag and chest overlays. Script coordinates
+            // address the resulting working layout, while the later warp carries full map coordinates.
+            layout = LoadLayout(map.SelectSetup(current.Story.Flags), current.Story.Flags)
+                .ApplyBlockCopy(new(region.Origin.X, region.Origin.Y, 0, 0, battle.Width, battle.Height));
+            map = map.WithBattleSceneArea(load.Camera, battle.Width, battle.Height);
+        }
+        return new(map, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
             world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities);
     }
 
