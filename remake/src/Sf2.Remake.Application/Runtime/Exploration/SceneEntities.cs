@@ -59,7 +59,7 @@ internal static class SceneEntities
                 EntityMotionState.At(source?.Position ?? position, source?.Facing ?? facing, source?.Speed ?? speed) with
                     { FlagsA = 0xE0, AnimationCounter = (byte)(slot.Slot + 1), WaitTimer = (byte)slot.Slot },
                 source?.Visible ?? true, source?.Actions, Slot: slot.Slot, Sprite: AllySprite(slot.Character, slot.Sprite),
-                SharedSpriteSlot: slot.Sprite is 254 or 255 ? 32 : null);
+                SharedSpriteSlot: slot.Sprite >= 240 ? 32 : null);
             if (slot.FollowerOrder is not { } order) return entity;
             return caravan ? CaravanRuntime.InstallPopulationFollower(entity, order, true)
                 : FollowerMotion.Install(entity, order, -24, 0);

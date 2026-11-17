@@ -46,7 +46,8 @@
     33,
     22,
     26,
-    27
+    27,
+    34
   ],
   "battles": [
     1,
@@ -149,7 +150,7 @@
     "23": 26
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; excludes Creed restoration and subsequent recruitment.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration and the ordinary Evil Spirit Shrine entrance; excludes consultation and subsequent recruitment.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -352,10 +353,17 @@
     33,
     22,
     26,
-    27
+    27,
+    34
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
+    "MUSIC_WITCH": {
+      "timerB": 193,
+      "wavSha256": "9D95BB53B3B20044D7D8C054063C9FB7EA30E9CDC0CF93125F57E1CDBC0DB69E",
+      "loopBegin": 279419,
+      "loopEnd": 1561247
+    },
     "MUSIC_SAD_THEME_1": {
       "timerB": 209,
       "wavSha256": "FCDF6C3CA351200916BD40C09F19EE9AE821197BAC62187E9E99547BC7972485",
@@ -412,6 +420,8 @@
   },
   "setups": {
     "27": [523],
+    "33": [523],
+    "34": [784],
     "51": [520],
     "22": [522],
     "3": [
@@ -510,7 +520,7 @@
     22,
     23
   ],
-  "itemEventMaps": [8, 9, 22],
+  "itemEventMaps": [8, 9, 22, 33, 34],
   "searchMaps": [
     3,
     19,
@@ -548,10 +558,12 @@
     32,
     33,
     22,
-    26
+    26,
+    34
   ],
   "basePalettes": true,
   "audioCues": [
+    "MUSIC_WITCH",
     "MUSIC_TOWN",
     "MUSIC_JOIN",
     "MUSIC_ATTACK",
