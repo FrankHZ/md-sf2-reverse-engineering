@@ -188,25 +188,35 @@ again reaches `associated_gchandle` through `GodotObject.Dispose`, `Finalize` an
 The observer explicitly deletes its host, waits five process frames and quits. English restored-mansion
 and all three Chinese cold controls exited 0. Complete decoded save-data comparisons passed separately.
 
-Two bounded controls reused that frozen runtime and the same English shrine seed in fresh namespaces:
+Bounded controls reused that frozen runtime and the same English shrine seed in fresh namespaces:
 
 | Exit owner | Retained observation | Native exit |
 | --- | --- | ---: |
 | Ordinary Main, no script, hidden separate desktop | PID-targeted input performed Continue → Save → close panel → Left → settled field → system-menu Quit. Read-only managed fields/MVIDs confirmed Map34, default Cancel0, then Quit1 before Enter. | 0 |
 | Same cold observer, only its terminal action changed | The original route and `END` remained; actual menu Quit replaced explicit host deletion and quit. Cancel0 and Quit1 were observed before confirmation. The two-instance ObjectDB warning remains. | 0 |
+| Independent repeat of the same menu observer, `root-menu1117` | Reached `END` and `MENU QUIT confirmation`, PID4248; no timeout. The original explicit host deletion was absent. | -1073741819 |
+| Independent ordinary Main preparation, `root-desktop1117` | First `loaded` read-only snapshot failed with `Object is null`; controller status1, PID19852. Quit was not reached or confirmed. | 124, controller-forced; no player-exit result |
 
-Both saved data objects matched the input completely. An initial desktop-controller assertion wrongly
+Saved data objects from the successful controls and root menu repeat matched the input completely.
+The root desktop's retained copy also matched, without establishing that Save was reached.
+An initial desktop-controller assertion wrongly
 required Y28 after Left; actual tile(25,29) matched both root failure receipts. That preparation failure
 ended with controller-forced124 before Quit, and is retained separately from game exits. The successful
 repeat changed only that assertion. The private registered `handoffs/issue1874/finalizer-controls`
 contains the exact scripts, exit-only diff, native receipts, read-only snapshots and reproduction report;
-the original failing driver and all three root failures remain intact. No product patch, GC workaround,
-lifecycle sleep, log suppression, screenshot or new dump was used.
+the original failing driver, all three earlier root failures and both new root controls remain intact.
+The root desktop preparation failure supplies no independent ordinary-Quit acceptance; the earlier
+successful no-script control remains valid for its single observation. No further preparation retry
+was undertaken. No product patch, GC workaround, lifecycle sleep, log suppression, screenshot or new
+dump was used.
 
-**Inferred:** The explicit observer teardown path is a relevant failure boundary. **Unknown:** the
-faulting wrapper, exact cause and intermittent ordinary-player Quit risk. Two successful menu controls
-do not resolve #1716 or erase the reproducible observer failures. Subsequent campaign observers use the
-existing product menu Quit entry to accept the player's exit path, while retaining the original driver
+**Confirmed:** The independent menu-observer failure withdraws the earlier inference associating the
+fault with explicit observer teardown. Product menu Quit does not exclude the failure. **Unknown:** the
+faulting wrapper, exact cause and intermittent ordinary-player Quit risk. The successful controls
+do not resolve [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716), which remains
+open and linked to [long-term maintenance #1881](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1881).
+Subsequent campaign observers use the existing product menu Quit entry to accept the player's exit
+path, while retaining the original driver
 for failure reproduction. Report terminal gameplay and native exit independently; do not add a lifecycle
 patch solely to make an observer pass.
 

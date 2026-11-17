@@ -134,8 +134,10 @@ Completed failures are retained. In particular, the successful English shrine co
 ended with native `0xC0000005` during Godot finalization. ObjectDB warnings and other finalizer exits
 remain separate from gameplay results under [Issue1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).
 The [finalizer verification owner](../verification/map3-commission-save.md#later-finalizer-faults-and-ordinary-quit)
-records the reproducible English observer failures, two successful ordinary-menu Quit controls and
-remaining Unknowns. Subsequent observer acceptance uses the product menu Quit path; the original
-failure driver remains available. These controls do not resolve #1716 or establish a lifecycle fix.
+records the English observer failures, two successful menu Quit controls, an independent menu-observer
+failure and an independent desktop preparation failure before Quit. Root cause and intermittent
+ordinary-player Quit risk remain Unknown. Subsequent observer acceptance uses the product menu Quit
+path; the original failure driver remains available. These controls do not resolve #1716 or establish
+a lifecycle fix.
 The frozen candidate awaits independent review. Consultation, later recruitment, original hardware
 timing and human visual acceptance remain outside this chapter result.
