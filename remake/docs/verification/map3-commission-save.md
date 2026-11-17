@@ -333,7 +333,7 @@ upstream reproducer would use only an authored C# `Node._Input` callback, transi
 events and ordinary `SceneTree.Quit`, with no private content, explicit GC or lifecycle delay.
 Compare a real OS-input/no-script exit with the synthetic-event case; accept the same binding
 assertion or a separately identified access-violation object as evidence, not a generic nonzero exit.
-This reduction and any upstream submission are next work, not completed results here.
+The bounded reduction below is now available; upstream submission has not been performed.
 
 An upstream correction needs to preserve binding lookup/creation and teardown ownership while
 preventing late finalizers from using cleared or uninitialized records. Merely removing the assert,
@@ -343,3 +343,103 @@ receipts. An application fix instead requires an allocation/free trace identifyi
 owner that releases a resource incorrectly. Until one of those boundaries is satisfied, local
 campaign progress can retain separate gameplay/save acceptance, but reliable ordinary shutdown
 and readiness for a general player release remain unestablished.
+
+### Standalone Input/Quit reduction
+
+The [asset-free diagnostic](../../diagnostics/input-quit/README.md) continues **Standard** rigor.
+Scope is official upstream applicability and a finite ordinary/synthetic input reduction, not a
+product fix, engine cutover, stress campaign or upstream submission. Acceptance requires a locked
+standalone build, explicit dependency/planner boundaries, and separate terminal/native-exit receipts.
+Input consumption and native exit are required separately; a successful reduction does not establish
+reliability or close the original incident.
+
+#### Official upstream applicability
+
+**Confirmed:** On 2026-11-17 the official latest stable release is
+[`4.7.2-stable`](https://github.com/godotengine/godot/releases/tag/4.7.2-stable), the installed baseline.
+The following accepted fixes are already ancestors of its pinned `ed1daf0bf001b61586d9930840f2f1394092c079`
+source. GitHub compare results identify each merge as the merge base, with zero commits behind.
+
+| Upstream fix | Accepted merge | Applicability |
+| --- | --- | --- |
+| [#78157](https://github.com/godotengine/godot/pull/78157), disposable-tracker shutdown ordering | `6afd320984cf14198368cc6c53752813a02169e3` | Tracker disposal already precedes binding/host teardown. |
+| [#92201](https://github.com/godotengine/godot/pull/92201), clear parsed input events before language teardown | `be2c5e66f44df2a49a3238434c06ad33a212e544` | `Main::cleanup` already calls `Input::flush_frame_parsed_events`; a relevant synthetic-event retention fix, not a new candidate. |
+| [#93172](https://github.com/godotengine/godot/pull/93172), clear binding callbacks during finalization | `3647bc33cdeaf26ef0b9bb1512fddbfbc7ba010e` | `CSharpLanguage::finalize` already frees each owner's instance binding. |
+
+The inspected official master object is
+[`bf828694fd29ccb0902cba2d2a8375cbaedd721f`](https://github.com/godotengine/godot/tree/bf828694fd29ccb0902cba2d2a8375cbaedd721f).
+Direct source comparison found identical `CSharpLanguage::finalize`, binding create/free/reference
+callbacks, `get_existing_instance_binding`, and the complete `DisposablesTracker.cs` between that
+object and the installed pin. Both contain the parsed-event cleanup. This bounded review found no
+new applicable correction; it does not prove all intervening changes are irrelevant or that master
+has been runtime-tested. [#77362](https://github.com/godotengine/godot/pull/77362), proposed runtime-null
+guard at head `3e437f2fbcc064ad8688542e23bfca95189484c9`, was closed **without merging** and is not
+an accepted fix. A non-null GitHub test-merge field does not establish merge acceptance.
+
+Godot's [MIT license at the baseline](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/LICENSE.txt)
+also matches the inspected master. No upstream source/binary was vendored and no engine or SDK was
+installed/upgraded. Candidate adoption remains separate work requiring an actual applicable change,
+pinned provenance/license, and validation against both the reduction and frozen original failure.
+
+#### Bounded pilot and its limits
+
+**Confirmed:** The standalone Godot.NET.Sdk `4.7.2`/`net8.0` project has no project references and
+no production project references it. Its copied source, SDK selection and package lock built outside
+the checkout with SDK `10.0.204`, zero warnings/errors. Locked restore passed. The initial restore
+failed because repeated source arguments were interpreted as a malformed local HTTPS path; a small
+explicit NuGet configuration corrected the preparation. The failed log is retained.
+
+The C# callback receives borrowed `InputEventKey` values, logs primitive observations, and quits
+after Left down/up and Enter down. GDScript only supplies native synthetic events. No forced GC,
+manual event disposal, shutdown delay, private content or allocation-pressure loop was added.
+Both launches used the same registered native Godot executable, Compatibility renderer, Dummy audio,
+640×360 window, 60 FPS limit, and managed MVID `794ea9f5-3e2e-4055-9707-85388ebceede`.
+The observed CLR is .NET `10.0.8`; the target framework alone does not identify the loaded CLR.
+
+| Retained sample | Terminal observation | Native result |
+| --- | --- | --- |
+| `os`, PID28024 | C# Ready, no input/terminal receipts. No driver script. | Controller's 60-second preparation cap terminated the process: `124`, forced. This is not a Quit observation. |
+| `synthetic`, PID15652 | All three expected typed edges and `SceneTree.Quit` terminal receipt. | `0`, unforced. One successful reduced sample; no original fault reproduced. |
+| `os-corrected`, PID11560 | After the bounded controller correction, ordinary Main received all three expected OS-message edges and the same Quit terminal, without a driver script. | `0`, unforced. One successful ordinary reduced exit. |
+
+**Confirmed protocol deviation:** The synthetic process completed at 23:47:13 UTC while the ordinary
+process remained alive until its 23:47:21 timeout. The controller was not awaited before the second
+launch. These are not an equivalent serial pair; the overlap prevents a controlled origin comparison.
+The ordinary controller also omitted the established `Engine` window-class filter and persisted its
+sent-edge count only on normal completion. Its retained receipt therefore cannot distinguish a
+window-selection failure from a posted first edge that was not delivered. Ready-line parsing is
+correct. The pinned Windows key-event path does not require a window-focus flag before parsing key
+events; adding speculative activation messages is not an evidenced correction.
+
+**Confirmed:** Main-gate authorized one OS-only preparation correction; synthetic was not repeated.
+The controller restored PID plus `Engine` class matching and persisted a bounded window inventory,
+each message's target/parameters/result, and the sent-edge count even on timeout. The corrected PID
+had three visible windows: `Engine`, `UAC_InputIndicatorOverlayWnd` and `UAC Input Indicator`.
+The original all-visible-windows count predicate would reject that inventory. All three corrected
+messages targeted the single Engine window; the C# receipts prove consumption, beyond message-post
+success. Logical keys/pressed states, runtime and MVID match synthetic; OS physical key values are
+Left/Enter rather than synthetic zero. No activation message or shutdown intervention was added.
+
+**Inferred:** Auxiliary visible windows explain the first controller's zero-input observation.
+Its missing window/sent-edge record prevents proving the exact original state retrospectively.
+The corrected run had no other process from this investigation running. The independently owned
+#1875 headless chapter observation was active with a different project/output root; main-gate
+explicitly allowed that parallelism. No timing or hardware-equivalence claim follows. This does
+not erase the first pair's protocol deviation or turn the samples into a clean serial comparison.
+
+**Unknown:** whether either input origin reliably reproduces either original fault signature,
+and whether a reduced successful exit predicts product shutdown safety.
+The original failed receipts and heap diagnosis remain authoritative for their named seams. No new
+dump was taken or copied, and neither this success nor the already-included upstream fixes closes
+#1716. The first pair is preserved, not replaced by a retry-until-green result.
+
+Local receipts, upstream snapshots/ancestry and the bounded controller are retained in the external
+`issue1716-input-repro` investigation root. The initial estimate was under 200 MiB total new output,
+with one process at a time and O(three input events); observed package/build/source/log output was
+about 140 MiB. Runtime concurrency deviated as recorded above. The project README gives standalone
+preparation and manual ordinary/synthetic reproduction without private paths. Only the explicit
+`remake/diagnostics/input-quit/` prefix receives no product partitions in the local planner; it
+requires its direct locked build/observation instead. A direct comparison of 1233 existing paths
+found no selection changes. The shared planner file itself still selects its existing broad gates;
+the unchanged CI workflow also retains its broad `remake/*` fallback. The diagnostic is not run
+by CI. No new test platform, CI runtime job or tests of verification tools were added.
