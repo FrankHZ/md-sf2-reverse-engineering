@@ -29,6 +29,9 @@ internal static class OpeningSave
             var player = world.PlayerEntity;
             var location = definition.Persistence!.Select(definition, new(world.Map, player.Position, player.Motion.Facing),
                 current.Story.Flags, current.Story.SaveAnchor);
+            // Relocated finite anchors retain their primary landing contract.
+            if (player.Motion.Layer != 0 && location.Anchor != new FieldReturnAnchor(world.Map, player.Position, player.Motion.Facing))
+                throw new BattleRuleException("save-player-layer", "save.anchor");
             var data = CaptureValues(definition, current, rules, location);
             // Validate the detached progress and the recipe's landing before offering a slot.
             _ = OpeningRestore.Build(definition, data, rules);
@@ -57,10 +60,10 @@ internal static class OpeningSave
         var player = world.PlayerEntity;
         if (world.Quake != 0 || world.TravelMode != FieldTravelMode.Walking ||
             player.Motion.X % 384 != 0 || player.Motion.Y % 384 != 0 ||
-            !world.Definition.Traversal.IsWithinActiveArea(player.Position) || OriginalMapTraversal.IsBlocked(world.Layout, player.Position))
+            !world.Definition.Traversal.IsWithinActiveArea(player.Position) ||
+            FieldLayout.Word(world, player.Motion, player.Position.X, player.Position.Y) is not < 0xC000)
             throw new BattleRuleException("save-player-unsettled", "save.boundary");
-        // Finite field recipes rebuild the primary-layer population; the v1 record has no layer.
-        if (player.Motion.Layer != 0) throw new BattleRuleException("save-player-layer", "save.boundary");
+        if (player.Motion.Layer is not (0 or 2)) throw new BattleRuleException("save-player-layer", "save.boundary");
         foreach (var entity in world.AllEntities.Where(entity => entity.Visible))
         {
             if (entity.WaitingForSprite || entity.Follower is not null && (entity.Motion.IsMoving || entity.WaitingForMotion))
@@ -134,7 +137,7 @@ internal static class OpeningSave
             Array.AsReadOnly(story.Flags.ToArray()), story.StepCounter.Value, story.EgressMap.Value, story.TextCursor,
             story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
             party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
-            { Raft = SavedRaft.Capture(story.Raft),
+            { Layer = world.PlayerEntity.Motion.Layer, Raft = SavedRaft.Capture(story.Raft),
                 Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 

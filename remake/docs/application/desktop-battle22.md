@@ -87,12 +87,12 @@ Caravan operations are not needed by these witnesses; no new Caravan capability 
 
 The existing `desktop-kingdom` field recipe now accepts the incomplete F422 return, EGRESS_MAP22,
 and a completed F522 return only after F778. Continue selects the flag-dependent population at the
-saved primary-layer position and skips init, so neither arrival nor aftermath replays. The existing
-field format still refuses nonzero entity layers. Battle saves use the existing complete v2 battle
+saved position/facing/layer and skips init, so neither arrival nor aftermath replays. The
+[optional v1 layer field](opening-session-lifecycle.md#secondary-layer-field-saves) also supports settled secondary positions and defaults older records to primary. Battle saves use the existing complete v2 battle
 record; no save migration or parallel persistence format is introduced. The native Save/Continue
 label now names Desktop Kingdom in both core languages.
 
-The complete battle and field records match after separate title Continue → Save round trips in both languages. The old Battle19 input also matches after movement confirm/cancel and Save. On Map22, returning from the save confirmation permits an ordinary step; stepping onto a secondary marker retains the existing layer-specific save limitation. Waiting in an unpaused field can advance ambient RNG, so the comparison uses immediate Continue → Save rather than an additional idle interval.
+The complete battle and field records match after separate title Continue → Save round trips in both languages. The old Battle19 input also matches after movement confirm/cancel and Save. On Map22, returning from the save confirmation permits an ordinary step; the separate layer-save acceptance continues both victory histories onto secondary ground, saves and cold-restores there, then walks back through the stairs to primary ground. Waiting in an unpaused field can advance ambient RNG, so the comparison uses immediate Continue → Save rather than an additional idle interval.
 
 The eight-command field challenge and the aftermath are outside the existing skip predicate. At the actual `BattleLoadFinished` boundary, ordinary Cancel requests the existing skip. Normal and skipped entry from the same English source slot produce identical complete battle-save data, including both seeds, queue, flags and party. Battle22 has empty before/start callbacks; no extra exploration skip scope is added.
 

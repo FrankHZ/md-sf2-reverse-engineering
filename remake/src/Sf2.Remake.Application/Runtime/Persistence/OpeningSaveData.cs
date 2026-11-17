@@ -23,6 +23,9 @@ public sealed record OpeningSaveData(SaveCompatibility Compatibility, string Rec
     short StepCounter, string EgressMap, int TextCursor, ExplorationTextSettings TextSettings,
     byte FadePeriod, SavedMusic Music, byte Difficulty, bool AllyAutoBattle, bool OpponentControl)
 {
+    // Missing in older v1 records means primary. Preserve their wire shape for primary saves.
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public byte Layer { get; init; }
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public SavedRaft? Raft { get; init; }
     // Optional on disk for compatible pre-naming version1 saves; all new writes include it.
@@ -62,5 +65,5 @@ internal interface IOpeningRestorePolicy
     bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity, IReadOnlyList<int> flags);
     SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);
     ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
-        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags);
+        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0);
 }
