@@ -44,6 +44,39 @@ public sealed class EnemySpellDecisionTests
         Assert.Equal(5, Sf2AttackSpellAction.PotentialDamage(battle.GetActor(Mage), battle.GetActor(Scout), battle.Definition.AttackSpells[key]));
     }
 
+    [Theory]
+    [InlineData(1, 0u, true, false)]
+    [InlineData(2, 0u, false, false)]
+    [InlineData(2, 0x10000000u, true, false)]
+    [InlineData(2, 0u, true, true)]
+    public void AquaRankSelectsTheActualPackedCategoryRule(byte level, uint seed, bool cast, bool spellOnly)
+    {
+        var battle = Battle(d =>
+        {
+            var spell = d["spells"]![0]!;
+            spell["id"] = "aqua"; spell["level"] = level; spell["mpCost"] = 0;
+            spell["maximumRange"] = spellOnly ? 3 : 1; spell["effect"]!["element"] = "ice";
+            spell["effect"]!["power"] = 15;
+            d["actors"]![1]!["spells"]![0]!["id"] = "aqua";
+            d["actors"]![1]!["spells"]![0]!["level"] = level;
+        }).With(mainSeed: seed);
+        battle = battle.With(actors: battle.Actors.Select(a => a.Actor == Mage
+            ? a.With(position: new(spellOnly ? 6 : 3, 2), mp: 0, status: SilenceRules.Mask) : a));
+        var chosen = Decide(battle, Mage);
+        Assert.Equal(cast, chosen.ChosenAction?.Kind == BattleActionKind.AttackSpell);
+        Assert.Equal(level == 1 ? seed : BattleRandom.NextMain(seed, 6).After, chosen.Battle.MainSeed);
+        Assert.Equal(level == 1 ? 0 : 1, chosen.Effects.Count(e => e.Kind == "rng-ai-attack-category"));
+        if (cast)
+        {
+            Assert.Equal(new SpellRef("aqua", level), chosen.ChosenAction!.Value.Spell);
+            var rules = RuleCompositions.Sf2();
+            var prepared = BattleActionRules.Prepare(new Sf2AttackSpellAction(), chosen.Battle, Mage,
+                chosen.Destination, chosen.ChosenAction.Value, Scout, rules.Progression);
+            Assert.Equal(0, prepared.Prepared.GetActor(Mage).Mp);
+            Assert.Contains(prepared.Reactions, hit => hit.Target == Scout && hit.HpAfter < hit.HpBefore);
+        }
+    }
+
     [Fact]
     public void EnemySwordUsesActualSlotAtZeroMpAndRetainsTheWeapon()
     {

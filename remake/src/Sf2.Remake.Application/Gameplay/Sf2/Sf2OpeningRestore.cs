@@ -66,7 +66,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data)
     {
-        if (data.Recipe == "floor-world" && data.EgressMap == "map-26") return;
+        if (data.Recipe is "floor-world" or "willard-burrow" && data.EgressMap == "map-26") return;
         if (data.Recipe == "desktop-kingdom" && data.EgressMap == "map-22") return;
         // Preserve legacy saved zero without migration; the Witch New Game handoff writes Map3.
         if (data.Recipe is "new-granseal-castle" or "ribble-welcome" or "east-shrine" or "parmecia-battle-return" &&
@@ -145,6 +145,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("desktop-kingdom", player, "Desktop Kingdom");
         if (map.Value == "map-26" && flags.Contains(779) && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("floor-world", player, "Floor World");
+        if (map.Value == "map-27" && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("willard-burrow", player, "Willard Burrow");
         if (map.Value == "map-32" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("fairy-cave", player, "Fairy Cave");
         if (map.Value == "map-51" && !flags.Contains(420) && flags.Contains(470) == flags.Contains(520) &&

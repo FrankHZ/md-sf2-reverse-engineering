@@ -250,6 +250,11 @@ def derive(args: argparse.Namespace) -> dict:
     )
     if floor_world:
         field_texts.update(range(1739, 1748))
+    willard = args.scope == "current" and any(
+        row["id"] == "map-27" for row in world["world"]["maps"]
+    )
+    if willard:
+        field_texts.update(range(1733, 1739))
     eastern_shrine = args.scope == "current" and any(
         row["id"] == "map-61" for row in world["world"]["maps"]
     )
@@ -333,6 +338,8 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (17,)  # Skeleton
     if battle22:
         name_ids["name.enemy"] += (13, 14, 61, 71, 80, 89)  # Chess pieces
+    if willard:
+        name_ids["name.enemy"] += (15, 16, 90)
     if floor_world:
         name_ids["name.ally"] += (16, 17)  # Floor World residents; text1747 fixes Randolf's name.
     if 82 in repeat_enemies:
@@ -462,6 +469,7 @@ def derive(args: argparse.Namespace) -> dict:
             + battle21
             + 6 * battle22
             + 2 * floor_world
+            + 3 * willard
             + len(extra_items)
             + len(repeat_names)
             + (81 in repeat_enemies)

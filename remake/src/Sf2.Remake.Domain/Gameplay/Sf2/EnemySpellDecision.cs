@@ -55,7 +55,9 @@ internal static class EnemySpellDecision
         // later selects physical. Category selection uses MAIN, not thinking RNG.
         var attack = EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, selectedGrid);
         if (attack is not null) { effects.AddRange(attack.Effects); prepared = attack.Battle; }
-        if (key.Value != "aqua")
+        // determinebattleaction compares the full packed spell word with AQUA1.
+        // AQUA2 therefore consumes the ordinary category draw, including spell-only choices.
+        if (key is not { Value: "aqua", Level: 1 })
         {
             var category = BattleRandom.NextMain(battle.MainSeed, 6);
             effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, 6, category.Value));

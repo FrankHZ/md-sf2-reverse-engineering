@@ -20,7 +20,7 @@ from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
 )
 
-SUPPORTED_ENCOUNTERS = tuple(range(2, 23))
+SUPPORTED_ENCOUNTERS = tuple(range(2, 24))
 
 
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
@@ -91,6 +91,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             20: [12, 12, 0, 0],
             21: [12, 12, 4, 0],
             22: [12, 16, 0, 1],
+            23: [12, 12, 1, 1],
         }[battle]
     ):
         raise ValueError("selected spriteset header drift")
@@ -178,6 +179,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         20: "HARPIES_POND",
         21: "DEVIL_TAIL",
         22: "CHESSBOARD",
+        23: "VERSUS_WILLARD",
     }[battle]
     identity = dict(id=battle, code=code)
 

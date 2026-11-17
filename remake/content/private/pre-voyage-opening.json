@@ -45,7 +45,8 @@
     32,
     33,
     22,
-    26
+    26,
+    27
   ],
   "battles": [
     1,
@@ -69,7 +70,8 @@
     19,
     20,
     21,
-    22
+    22,
+    23
   ],
   "growthClasses": [
     {
@@ -143,10 +145,11 @@
     "19": 9,
     "20": 9,
     "21": 9,
-    "22": 22
+    "22": 22,
+    "23": 26
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; excludes Map27 and Battle23.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; excludes Creed restoration and subsequent recruitment.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -348,7 +351,8 @@
     51,
     33,
     22,
-    26
+    26,
+    27
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -407,6 +411,7 @@
     "map-57": "world.map57.base-tileset-atlas"
   },
   "setups": {
+    "27": [523],
     "51": [520],
     "22": [522],
     "3": [
@@ -502,7 +507,8 @@
     19,
     20,
     21,
-    22
+    22,
+    23
   ],
   "itemEventMaps": [8, 9, 22],
   "searchMaps": [
@@ -661,7 +667,8 @@
     19,
     20,
     21,
-    22
+    22,
+    23
   ],
   "completedOnDefeat": [
     4

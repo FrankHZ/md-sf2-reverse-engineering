@@ -197,6 +197,7 @@ public sealed partial class GameRoot
         "mount-volcano" => GameText.Get("save.destination.mount-volcano"),
         "devils-tail" => GameText.Get("save.destination.devils-tail"),
         "desktop-kingdom" => GameText.Get("save.destination.desktop-kingdom"),
+        "willard-burrow" => GameText.Get("save.destination.willard-burrow"),
         "floor-world" => GameText.Get("save.destination.floor-world"),
         "fairy-cave" => GameText.Get("save.destination.fairy-cave"),
         "harpy-pond" => GameText.Get("save.destination.harpy-pond"),
