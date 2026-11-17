@@ -58,7 +58,8 @@ source exits. Randolf16 has1742–1743; Tyrin17 has1744–1745; old man128 has17
 Randolf name; worker129/default is a bare return. Priest133 uses the existing Church service.
 Caravan134 now opens the ordinary [Join/Purge service](caravan-services-design.md#current-formation-implementation),
 with bilingual cancellation/return, changed next-battle formation and complete cold saves.
-Depot and Item remain explicitly unsupported. The [Willard chapter](willard-burrow-battle23.md)
+The same NPC now supports [Depot storage](caravan-services-design.md#current-depot-implementation)
+with reserve-member transfers and field/battle persistence. Item remains explicitly unsupported. The [Willard chapter](willard-burrow-battle23.md)
 owns the actual Map27 cave and Battle23 continuation.
 
 ## Persistence and onward play

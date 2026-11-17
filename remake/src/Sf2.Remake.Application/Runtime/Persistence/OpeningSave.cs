@@ -137,7 +137,7 @@ internal static class OpeningSave
             Array.AsReadOnly(story.Flags.ToArray()), story.StepCounter.Value, story.EgressMap.Value, story.TextCursor,
             story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
             party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
-            { Layer = world.PlayerEntity.Motion.Layer, Raft = SavedRaft.Capture(story.Raft),
+            { Depot = Array.AsReadOnly(party.ItemCustody.Depot.ToArray()), Layer = world.PlayerEntity.Motion.Layer, Raft = SavedRaft.Capture(story.Raft),
                 Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 

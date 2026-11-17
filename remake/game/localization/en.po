@@ -2400,3 +2400,73 @@ msgstr "There are no reserve members."
 
 msgid "caravan.result.unsupported"
 msgstr "This Caravan service is not available yet."
+
+
+msgid "depot.title"
+msgstr "Depot · {0}/64"
+
+msgid "depot.look"
+msgstr "Look"
+
+msgid "depot.deposit"
+msgstr "Deposit"
+
+msgid "depot.derive"
+msgstr "Retrieve"
+
+msgid "depot.drop"
+msgstr "Drop"
+
+msgid "depot.donor"
+msgstr "Choose a member to deposit an item."
+
+msgid "depot.exchange"
+msgstr "Pack full. Choose an item to return to the depot."
+
+msgid "depot.confirm-drop"
+msgstr "Drop {0}?"
+
+msgid "depot.cursed"
+msgstr "An equipped cursed item cannot be removed."
+
+msgid "depot.kind.weapon"
+msgstr "Weapon"
+
+msgid "depot.kind.consumable"
+msgstr "Consumable"
+
+msgid "depot.kind.other"
+msgstr "Item"
+
+msgid "depot.value"
+msgstr "Sale value: {0} gold"
+
+msgid "depot.eligible"
+msgstr "Can equip: {0}"
+
+msgid "depot.none"
+msgstr "None"
+
+msgid "depot.appraisal-unavailable"
+msgstr "Special appraisal and equipment effects are not available."
+
+msgid "depot.result.empty"
+msgstr "The depot is empty."
+
+msgid "depot.result.full"
+msgstr "The depot is full."
+
+msgid "depot.result.empty-pack"
+msgstr "This member carries no items."
+
+msgid "depot.result.deposited"
+msgstr "Item deposited."
+
+msgid "depot.result.derived"
+msgstr "Item retrieved."
+
+msgid "depot.result.dropped"
+msgstr "Item dropped."
+
+msgid "depot.result.unsellable"
+msgstr "This item cannot be dropped."

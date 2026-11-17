@@ -21,7 +21,8 @@ public static class OpeningSaveJson
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { info =>
             { foreach (var property in info.Properties)
-                property.IsRequired = !(info.Type == typeof(OpeningSaveData) && property.Name is "names" or "raft" or "layer" ||
+                property.IsRequired = !(info.Type == typeof(OpeningSaveData) && property.Name is "names" or "raft" or "layer" or "depot" ||
+                    info.Type == typeof(BattleSaveWire.Custody) && property.Name == "depot" ||
                     info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft" ||
                     info.Type == typeof(BattleSaveWire.Data) && property.Name == "enemyDefinitions"); } } },
         MaxDepth = 32,

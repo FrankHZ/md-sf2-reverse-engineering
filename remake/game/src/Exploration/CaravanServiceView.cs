@@ -88,7 +88,12 @@ internal sealed partial class CaravanServiceView : Control
         _hint = GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         _page.Present(_title + (_error is null ? "" : "\n" + _error), _hint,
             input.CompactHint(GameAction.Cancel) + " · " + GameText.Get(wait.Phase == CaravanPhase.Menu ? "shop.leave" : "shop.back"),
-            _options.Select(row => (row.Text, (string?)null, row.Available)).ToArray(), _icons, _index);
+            _options.Select(row => (row.Text, row.Command switch
+            {
+                SelectDepotItem item => IdentityIcons.Item(item.ExpectedItem),
+                SelectDepotSlot slot => IdentityIcons.Item(slot.ExpectedWord),
+                _ => (string?)null,
+            }, row.Available)).ToArray(), _icons, _index);
         var member = _options.Count > 0 ? _options[_index].Member : null;
         _pack.Visible = member is not null;
         if (member is not null)
@@ -103,11 +108,16 @@ internal sealed partial class CaravanServiceView : Control
         var lists = MapPartyMembership.Rebuild(_session.Current.Story.Flags, _session.Definition.Exploration!.PartyFlags!);
         _title = GameText.Get("caravan.title", lists.Active.Count, _session.Definition.Exploration.PartyFlags!.Capacity);
         void Add(string key, CaravanCommand command, bool available = true) => _options.Add((GameText.Get(key), command, null, available));
+        if (wait.Action == CaravanAction.Depot)
+        {
+            BuildDepot(wait);
+            return;
+        }
         switch (wait.Phase)
         {
             case CaravanPhase.Menu:
                 Add("caravan.join", new ChooseCaravan(wait.Token, CaravanAction.Join));
-                Add("caravan.depot", new ChooseCaravan(wait.Token, CaravanAction.Depot), false);
+                Add("caravan.depot", new ChooseCaravan(wait.Token, CaravanAction.Depot));
                 Add("caravan.item", new ChooseCaravan(wait.Token, CaravanAction.Item), false);
                 Add("caravan.purge", new ChooseCaravan(wait.Token, CaravanAction.Purge));
                 Add("shop.leave", new BackCaravan(wait.Token));
@@ -144,7 +154,7 @@ internal sealed partial class CaravanServiceView : Control
         _pointer.Suspend();
     }
 
-    private CaravanCommand Back() => _wait!.Phase == CaravanPhase.Result ? new ContinueCaravan(_wait.Token) : new BackCaravan(_wait.Token);
+    private CaravanCommand Back() => _wait!.Phase is CaravanPhase.Result or CaravanPhase.DepotResult or CaravanPhase.DepotLook ? new ContinueCaravan(_wait.Token) : new BackCaravan(_wait.Token);
 
     private void Choose(CaravanCommand command)
     {
@@ -155,7 +165,7 @@ internal sealed partial class CaravanServiceView : Control
         Present(_session, _input, _submit);
         if (result.Failure is not null)
         {
-            _error = GameText.Get("caravan.failed");
+            _error = GameText.Get(result.Failure.Code == "depot-equipped-curse" ? "depot.cursed" : "caravan.failed");
             Present(_session, _input, _submit);
         }
     }

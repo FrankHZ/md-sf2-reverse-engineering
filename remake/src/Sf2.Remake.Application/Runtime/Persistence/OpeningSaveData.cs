@@ -23,6 +23,7 @@ public sealed record OpeningSaveData(SaveCompatibility Compatibility, string Rec
     short StepCounter, string EgressMap, int TextCursor, ExplorationTextSettings TextSettings,
     byte FadePeriod, SavedMusic Music, byte Difficulty, bool AllyAutoBattle, bool OpponentControl)
 {
+    public IReadOnlyList<byte> Depot { get; init; } = [];
     // Missing in older v1 records means primary. Preserve their wire shape for primary saves.
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public byte Layer { get; init; }

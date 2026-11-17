@@ -10,14 +10,15 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class CaravanServiceTests
 {
     private static readonly MapPartyFlagLayout Layout = new(20, 0, 32, 12);
-    private static GameSession Session(int active = 12, int count = 14, int? dead = null, bool failReturn = false)
+    internal static GameSession Session(int active = 12, int count = 14, int? dead = null, bool failReturn = false,
+        BattleItemCustody? custody = null, Func<int, BattleSourceLoadout>? pack = null)
     {
         var basis = FieldInventoryTests.Session();
         var source = basis.Definition.Encounters.Values.Single();
         var prototype = source.Deployments[0].Definition;
         var deployments = Enumerable.Range(0, count).Select(i => new BattleDeploymentDefinition(
             new(new("member-" + i), prototype.ClassRule, 2, 30, 8, 20, 12, 10, false, 5, [],
-                prototype.Physical, sourceLoadout: new([127, 127, 127, 127], [])), BattleFaction.Ally, i,
+                prototype.Physical, sourceLoadout: pack?.Invoke(i) ?? new([127, 127, 127, 127], [])), BattleFaction.Ally, i,
             BattleControl.Player, null, new(i % 6, i / 6), new(null, 0, 0, 0, 0, AllyPartyMember: i))).ToArray();
         var battle = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height, source.Terrain, deployments, []);
         EntityRef npc = new("keeper");
@@ -31,9 +32,9 @@ public sealed class CaravanServiceTests
         var party = new BattleStartInput(battle.Encounter, deployments.Select((row, i) =>
             new BattleActorStartInput(row.Actor, (ushort)(i == dead ? 0 : 25), 6, (byte)i, 2, 3, 0, null,
                 SourceLoadout: row.Definition.SourceLoadout)), 123, 456, 789,
-            activeAllies: deployments.Take(active).Select(row => row.Actor), itemCustody: new([], new Dictionary<byte, byte>()));
+            activeAllies: deployments.Take(active).Select(row => row.Actor), itemCustody: custody ?? new([], new Dictionary<byte, byte>()));
         var flags = Enumerable.Range(0, count).Concat(Enumerable.Range(32, active)).Append(70).Append(787);
-        var session = Assert.IsType<SessionStarted>(GameSession.Start(new("formation-test", [battle], exploration: world),
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(new("formation-test", [battle], exploration: world) { FieldPreparation = basis.Definition.FieldPreparation },
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, flags, party))).Session;
         Accept(session, new Interact(npc));
         return session;
@@ -110,7 +111,7 @@ public sealed class CaravanServiceTests
     {
         var s = Session(count: 12); var before = s.Current.Exploration!.Party;
         Choose(s, CaravanAction.Join); Assert.Equal(CaravanResult.NoReserve, Wait(s).Result); Continue(s);
-        foreach (var a in new[] { CaravanAction.Depot, CaravanAction.Item })
+        foreach (var a in new[] { CaravanAction.Item })
         { Choose(s, a); Assert.Equal(CaravanResult.Unsupported, Wait(s).Result); Continue(s); Assert.Equal(CaravanPhase.Menu, Wait(s).Phase); }
         Assert.Same(before, s.Current.Exploration!.Party);
     }

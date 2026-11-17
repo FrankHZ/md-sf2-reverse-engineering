@@ -10,6 +10,7 @@ internal static class OpeningRestore
     internal static SessionResult Build(ScenarioDefinition definition, OpeningSaveData data, SessionRules rules)
     {
         var expected = OpeningSave.FieldCompatibility(definition, rules);
+        Require(data.Depot is { Count: <= 64 } && data.Depot.All(item => item < 127), "save-depot");
         Require(data.Layer is 0 or 2, "save-player-layer");
         definition.Persistence!.ValidateRegisters(data);
         Require(data.Allies is { Count: > 0 and <= 30 } && data.Flags is { Count: <= 65536 } &&
@@ -24,7 +25,7 @@ internal static class OpeningRestore
         Require(definition.Encounters.ContainsKey(data.Encounter), "save-encounter");
         if (definition.PrivateDefinitions is { } source)
             Require(data.Allies.SelectMany(actor => actor.Items).All(word => source.Items.ContainsKey((byte)(word & 127))) &&
-                data.Deals.All(deal => source.Items.ContainsKey(deal.Item)), "save-item-identity");
+                data.Deals.All(deal => source.Items.ContainsKey(deal.Item)) && data.Depot.All(source.Items.ContainsKey), "save-item-identity");
         var deployments = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
             .Where(row => row.Faction == BattleFaction.Ally).GroupBy(row => row.Actor).ToDictionary(group => group.Key, group => group.First());
         Require(data.Names is { Count: <= 30 } && data.Names.All(pair => deployments.ContainsKey(new(pair.Key)) &&
@@ -44,7 +45,7 @@ internal static class OpeningRestore
         var party = new BattleStartInput(data.Encounter, actors, data.MainSeed, data.ThinkingSeed, data.Gold,
             new("opening-new-game", "source-initialization", "", data.Difficulty, false, true, true,
                 data.AllyAutoBattle, data.OpponentControl, null) { Origin = BattleStartOrigin.NewGame },
-            data.ActiveAllies.Select(id => new ActorRef(id)), new(data.OnceFlags, data.Deals.ToDictionary(deal => deal.Item, deal => deal.Count)));
+            data.ActiveAllies.Select(id => new ActorRef(id)), new(data.OnceFlags, data.Deals.ToDictionary(deal => deal.Item, deal => deal.Count), data.Depot));
         var anchor = new FieldReturnAnchor(new(data.Map), new(data.X, data.Y), data.Facing);
         var visuals = definition.Exploration!.Visuals;
         Require(data.Music is { Previous.Count: <= 9 } && visuals is not null &&

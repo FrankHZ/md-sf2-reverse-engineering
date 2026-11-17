@@ -6,10 +6,16 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public enum CaravanAction { Join, Depot, Item, Purge }
-public enum CaravanPhase { Menu, Member, ConfirmDead, Relief, Result }
+public enum CaravanPhase
+{
+    Menu, Member, ConfirmDead, Relief, Result,
+    DepotMenu, DepotMember, DepotSlot, DepotIndex, DepotRecipient,
+    DepotExchange, DepotConfirm, DepotLook, DepotResult,
+}
 public enum CaravanResult { Joined, Purged, LeaderRequired, NoReserve, Unsupported }
 public sealed record CaravanWait(WaitToken Token, CaravanPhase Phase = CaravanPhase.Menu,
-    CaravanAction? Action = null, int? Member = null, CaravanResult? Result = null) : ProgramWait(Token);
+    CaravanAction? Action = null, int? Member = null, CaravanResult? Result = null,
+    DepotAction? DepotAction = null, int? DepotIndex = null, byte? Item = null, string? DepotResult = null) : ProgramWait(Token);
 public abstract record CaravanCommand(WaitToken Wait) : SessionCommand;
 public sealed record ChooseCaravan(WaitToken Wait, CaravanAction Action) : CaravanCommand(Wait);
 public sealed record SelectCaravanMember(WaitToken Wait, int Member) : CaravanCommand(Wait);
@@ -24,6 +30,11 @@ internal static class CaravanService
         if (current.Exploration is not { } field || current.Story.Wait is not CaravanWait wait || command.Wait != wait.Token)
         {
             return BattleCommandDispatcher.Reject(current, "stale-or-wrong-service", "wait");
+        }
+
+        if (wait.Action == CaravanAction.Depot)
+        {
+            return CaravanDepotService.Submit(definition, current, command, wait);
         }
 
         try
@@ -152,7 +163,8 @@ internal static class CaravanService
 
     private static CaravanWait Start(WaitToken token, CaravanAction action, MapPartyLists lists) => action switch
     {
-        CaravanAction.Depot or CaravanAction.Item => new(token, CaravanPhase.Result, action, Result: CaravanResult.Unsupported),
+        CaravanAction.Depot => new(token, CaravanPhase.DepotMenu, action),
+        CaravanAction.Item => new(token, CaravanPhase.Result, action, Result: CaravanResult.Unsupported),
         CaravanAction.Join when lists.Reserve.Count == 0 => new(token, CaravanPhase.Result, action, Result: CaravanResult.NoReserve),
         _ => new(token, CaravanPhase.Member, action),
     };

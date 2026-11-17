@@ -25,7 +25,10 @@ internal static class BattleSaveWire
     internal sealed record Turn(Presence<string> Actor, byte AlteredAgility);
     internal sealed record Options(byte Difficulty, bool AllyAutoBattle, bool OpponentControl, Presence<ushort> MissingCandidateAllyWord);
     internal sealed record Credit(Presence<string> Ally);
-    internal sealed record Custody(IReadOnlyList<byte> OnceFlags, IReadOnlyList<SavedDeal> Deals);
+    internal sealed record Custody(IReadOnlyList<byte> OnceFlags, IReadOnlyList<SavedDeal> Deals)
+    {
+        public IReadOnlyList<byte> Depot { get; init; } = [];
+    }
     internal sealed record Visual(int Slot, string Appearance, MapPosition Position, byte Facing);
     internal sealed record Visuals(IReadOnlyDictionary<string, int> Aliases, IReadOnlyList<Visual> Records);
     internal sealed record Loadout(IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells);
@@ -86,7 +89,7 @@ internal static class BattleSaveWire
         b.MainSeed, b.ThinkingSeed, b.Round, b.Queue.Select(t => new Turn(String(t.Actor), t.AlteredAgility)).ToArray(), b.Cursor, b.Gold,
         new(b.Options.Difficulty, b.Options.AllyAutoBattle, b.Options.OpponentControl, Optional(b.Options.MissingCandidateAllyWord)),
         Optional(b.Regions, r => r), Optional(b.DeathCredit, c => new Credit(String(c.Ally?.Value))),
-        new(b.Custody.OnceFlags, b.Custody.Deals.Select(p => new SavedDeal(p.Key, p.Value)).ToArray()),
+        new(b.Custody.OnceFlags, b.Custody.Deals.Select(p => new SavedDeal(p.Key, p.Value)).ToArray()) { Depot = b.Custody.Depot },
         Optional(b.Visuals, v => new Visuals(v.Aliases, v.Records.Select(r => new Visual(r.Slot, r.Appearance.Value, r.Position, r.Facing)).ToArray())));
     private static BattleContinuationData Decode(Battle b)
     {
@@ -101,7 +104,7 @@ internal static class BattleSaveWire
             b.MainSeed, b.ThinkingSeed, b.Round, b.Queue.Select(t => new SavedBattleTurn(String(t.Actor), t.AlteredAgility)).ToArray(),
             b.Cursor, b.Gold, new(b.Options.Difficulty, b.Options.AllyAutoBattle, b.Options.OpponentControl, Value(b.Options.MissingCandidateAllyWord)),
             Value(b.Regions, r => r), Value(b.DeathCredit, c => new BattleDeathCredit(c.Ally.Present ? new ActorRef(c.Ally.Value) : null)),
-            new(b.Custody.OnceFlags, b.Custody.Deals.ToDictionary(d => d.Item, d => d.Count)),
+            new(b.Custody.OnceFlags, b.Custody.Deals.ToDictionary(d => d.Item, d => d.Count), b.Custody.Depot),
             Value(b.Visuals, v => new SavedBattleVisuals(v.Aliases, v.Records.Select(r => new BattleVisual(r.Slot, new(r.Appearance), r.Position, r.Facing)).ToArray())));
     }
     private static Story Encode(SavedBattleStory s) => new(s.Flags, s.Names, s.StepCounter, s.EgressMap, s.TextCursor,

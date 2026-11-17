@@ -214,7 +214,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Prepared.Actors.Count == before.Actors.Count);
         var expectedCustody = (inventory ?? before).ItemCustody;
         Require(ReferenceEquals(Prepared.ItemCustody, expectedCustody) || Prepared.ItemCustody is { } actual &&
-            expectedCustody is { } expected && actual.OnceFlags.SequenceEqual(expected.OnceFlags) &&
+            expectedCustody is { } expected && actual.Depot.SequenceEqual(expected.Depot) && actual.OnceFlags.SequenceEqual(expected.OnceFlags) &&
             actual.Deals.OrderBy(pair => pair.Key).SequenceEqual(expected.Deals.OrderBy(pair => pair.Key)));
         for (int index = 0; index < before.Actors.Count; index++)
         {

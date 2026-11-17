@@ -8,7 +8,7 @@ under [campaign risk 4](remaining-campaign-risk-baseline.md#risks-in-blocking-or
 formation, inventory, story return and historical saves share state across chapters. The immediate
 outcome is usable ordinary Caravan service at the already admitted Desktop/Floor World NPCs and a
 way to deploy a newly recruited Creed companion when twelve members are already active. This is
-a staged service: ordinary entry and Join/Purge are implemented below; Depot and Item remain unsupported.
+a staged service: ordinary entry, Join/Purge and Depot are implemented below; Item remains unsupported.
 
 The design was inspected at `726da800a843a9af0bc951d6b83fd5d5ae0ee8df`. Formation implementation
 consumes accepted Battle23 main `84a08691384a88f69fa4e85f9f52e8655f6e03d3`. Subsequent service
@@ -29,7 +29,7 @@ ordinary Map22 entity128 and Map26 entity134 entry, Join/Purge, nested cancellat
 Application owns `CaravanWait` and token-checked commands; `MapPartyMembership` changes active flags
 without deleting joined flags or actor resources. The same publication rebuilds `PartyLists` and
 `ActiveAllies`. Godot projects the existing scrollable field choices/pack panel and retains release,
-focus and pointer barriers. Depot and Item remain visible with a readable unsupported result.
+focus and pointer barriers. Depot opens its storage submenu; Item retains a readable unsupported result.
 Neither service entry requires the vehicle flags nor service exit reloads the map.
 
 Private compilation lowers the actual `j_CaravanMenu` call, retaining call/tail return. Content binds
@@ -90,6 +90,83 @@ changes lower remake services/select display text only; original extraction/evid
 The bundle preserves early admission/localization/source-copy failures and native exit codes separately
 from observer results. Existing #1716 ObjectDB shutdown warnings remain; successful observations do
 not establish leak-free exit. The final handoff owns exact commands, candidate identity and CI.
+
+## Current depot implementation
+
+**Confirmed:** [#1871](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1871) adds
+Look / Deposit / Retrieve (source Derive) / Drop to the same Map22/26 service. The single
+`BattleItemCustody.Depot` owns immutable ordered identities, including duplicates, at capacity64.
+`CaravanInventory` prepares both stores before `CaravanDepotService` publishes a transaction.
+Member selection includes every initialized joined member, including reserves. Slot/index plus
+expected word/identity and the existing session/wait tokens guard stale input. The numbered list
+uses the existing scrollable choice/pack widgets and item icons, with English and Chinese prompts.
+
+Deposit compacts the donor pack and appends identity only, clearing equipped/broken bits. Retrieve
+removes the selected depot index; a full-pack exchange compacts the pack, adds the requested item,
+and appends the returned identity to the depot tail. A full64 depot can exchange. Equipped cursed
+outgoing items refuse. Unsellable prevents Drop, not Deposit. Drop requires confirmation and rare
+items update existing Deals with saturation15. Cancellation and rejected commands preserve both
+stores; later caller failure retains a committed transfer. Unknown custody remains unknown and
+refuses operations while still allowing the player to leave the submenu.
+
+Look reuses admitted names, item type, `floor(price*3/4)` valuation and actual supported weapon
+class eligibility. The observed Wooden Sword shows45 gold and Bowie/Luke eligibility in both
+languages. No sale is performed. Ring eligibility, Chirrup Sandals' special description, broader
+appraisal/equipment effects and field Item actions remain explicitly unsupported; absent price is
+shown as unknown. Carrying an admitted identity does not grant its Use or equipped effect.
+
+Every custody reconstruction preserves Depot: `Mark`, `AddDeal`, battle start/action validation,
+continuation capture/equality/restore, field capture/restore and battle wire decode. New field-v1
+and battle-v2 writes include `depot`. Only the compatible old formats' missing field means empty;
+explicit null, malformed values, sentinel/out-of-range identities, unknown private identities and
+more than64 entries reject admission. The existing slot reader validates before publishing and
+does not rewrite a rejected source slot. Older readers reject the unfamiliar property rather than
+silently discard it. New Game remains empty; unavailable live custody is never upgraded to empty.
+
+Small engine behavior tests cover63→64/65th refusal, duplicate index order, full pack/depot exchange,
+normalization, curse/unsellable guards, reserve mutation, stale/cancelled commands, callback failure,
+rare saturation, source appraisal, old-format absence and invalid saves. Controlled real engine
+victory/defeat/retreat tests carry nonempty storage through battle save and field return/restore.
+These capacity/rare/curse and controlled outcome cases are not claimed as natural acquisition journeys.
+
+The registered private `handoffs/issue1871` bundle uses the accepted issue1870 world and bilingual
+catalogs read-only through explicit configuration; only the adapter runtime and bounded receipts are
+new. Its `Play-en.cmd` / `Play-zh-CN.cmd` open the ordinary title. Continue → Slot1 starts at the
+Map26 NPC. Review uses a fresh Sample and disposable namespace. No user slot, original input,
+predecessor package or removable checkout is a writable dependency. The added-output budget is
+400 MiB, with no world/media extraction. From that bundle in PowerShell7:
+
+```powershell
+./Play.ps1 -Language en -Sample depot-review -Mode journey
+./Play.ps1 -Language zh-CN -Sample depot-review -Mode journey
+./Play.ps1 -Language en -Sample field-review -Mode cold -Seed ./slots/depot-en.json
+./Play.ps1 -Language zh-CN -Sample battle-review -Mode exercise -Seed ./slots/depot-battle-zh-CN.json
+./Play.ps1 -Language en -Sample victory-review -Mode return -Seed ./slots/depot-victory-en.json
+./Play.ps1 -Language zh-CN -Sample egress-review -Mode return -Seed ./slots/depot-egress-zh-CN.json
+./Play.ps1 -Language en -Sample defeat-review -Mode return -Seed ./slots/depot-defeat-en.json
+```
+
+Both Map22 and Map26 have ordinary bilingual Depot observations. The Map22 route first purges
+Peter to make him a reserve, then restores him after the transfers. The Map26 journey deposits Bowie's naturally held Wooden Sword and Sarah's herb,
+retrieves into Sarah's pack, cancels then commits a full-pack exchange, retrieves into reserve Peter,
+and deposits from Peter. It inspects the weapon, cancels a Drop and confirms a common-herb Drop.
+The remaining weapon stays in storage through service return, ordinary field Save, Join Peter,
+paid Church Raise and actual cave/Battle23 admission. These are ordinary input and naturally held
+items; no save was edited to manufacture acquisition or storage. English ordinary Battle23 victory, English ordinary defeat and Chinese paid EGRESS retain the
+nonempty depot through their own returns. Each is cold-loaded and walked back to the actual NPC
+for Look. Both languages' field and battle cold Continue → Save preserve the entire decoded data;
+battle cold Continue also commits Stay and reaches the next actor. Accepted old field-v1 and
+Battle19 battle-v2 inputs retain all prior data and gain only an empty depot. A separately labelled
+controlled null-depot save is refused in the real Continue list, with its original slot bytes intact.
+The outcome/cold-read receipts and exact commands are retained in the stable handoff. Native finalizer/ObjectDB failures remain
+separate from observer success under #1716; no leak-free-exit claim is made.
+
+Verification uses the engine aggregate once, failed owning classes after corrections, the affected
+Caravan behavior selection, actual adapter build and native observations, then the committed
+planner/CI. Preserve the completed aggregate and failed nodes rather than repeat a whole suite to
+replace its history. The stable `Rebuild.py` mounts a current Debug adapter into a fresh explicitly
+selected output using retained inputs; import changed PO resources before launching. No new original
+ROM/emulator evidence or original SRAM compatibility is claimed.
 
 ## Evidence and the first consumers
 
@@ -208,7 +285,7 @@ directory. They are implementation dependencies, not paths owned by this design 
 | Service entry and return | `src/sf2tool/remake_exploration_programs.py` and `remake_exploration_services.py` currently lower Shop/Church, leaving the Caravan native call unsupported. Add its typed lowering, preserving call versus tail return. `src/Sf2.Remake.Application/Content/Scenarios/StoryProgram.cs`, Content `Scenarios/ExplorationContentReader.cs`, Application `Runtime/Exploration/ProgramRunner.cs` and `Runtime/GameSession.cs` admit/dispatch a dedicated OpenCaravan/wait/commands. Follow `ShopService.cs` and `FieldService.cs`; do not introduce a pluggable service registry. Extend `ExplorationDispatcher.cs` control exclusion and the actual host wait routes. |
 | Content and presentation | Content `Scenarios/PrivateServicePrograms.cs` owns source service greeting wrappers; Caravan greeting/portrait must follow its own source, including F70's Astral/Rohde selection. Do not reuse Church text110 or Shop text158. Add a small `game/src/Exploration/CaravanServiceView.cs`, reusing existing choice/pack/party widgets and localization keys. Wire it through `ExplorationSessionView.cs`, `.Clock.cs`, `.Mouse.cs` and existing menu exclusion. Neither transport `CaravanRuntime.cs` nor `CaravanDefinition.cs` owns services. |
 | Items | Domain `Battles/Rules/BattleInventory.cs` already supplies compacting Remove and Add that clears equipped while retaining the engine broken marker. Application `Runtime/Exploration/FieldInventory.cs` and `FieldRecovery.cs` own carried mutation/effects. Content `Scenarios/PrivateFieldPreparation.cs` admits a bounded subset. Add only the service-context checks and actual reached operations; reuse private item metadata for rare/unsellable/cursed classification. Unsupported effects must not prevent carrying an otherwise admitted bare identity. |
-| Depot lifetime | Domain `Battles/State/BattleItemCustody.cs` currently contains only OnceFlags and Deals. Extend that same carried value with a distinct immutable ordered depot list, bounded at64; do not encode depot entries in Deals. It already crosses BattleStartInput → battle → outcome → field. Update every reconstruction (`Mark`, `AddDeal`, continuation capture/restore and wire decode) to retain depot, including a rare drop while depot is nonempty. A nullable custody still means unavailable knowledge, not empty inventory. |
+| Depot lifetime | Domain `Battles/State/BattleItemCustody.cs` contains OnceFlags, Deals and the immutable ordered depot list, bounded at64; do not encode depot entries in Deals. It already crosses BattleStartInput → battle → outcome → field. Update every reconstruction (`Mark`, `AddDeal`, continuation capture/restore and wire decode) to retain depot, including a rare drop while depot is nonempty. A nullable custody still means unavailable knowledge, not empty inventory. |
 | Persistence | Application `Runtime/Persistence/OpeningSaveData.cs`, `OpeningSave.cs`, `OpeningRestore.cs`; Domain `Battles/State/BattleContinuationData.cs`, `BattleContinuationRestore.cs`; Content `Persistence/BattleSaveWire.cs`, `OpeningSaveJson.cs`; Application `Runtime/Persistence/BattleSaveStory.cs`. Carry/validate depot at both field and battle boundaries. Wire admission currently requires properties except an explicit compatibility list; merely adding a C# default is not enough. |
 
 The concrete new state prevents item loss at a battle/save boundary. A UI-owned array would be lost
@@ -216,7 +293,7 @@ there; Deals cannot express duplicate ordered slots or transfer semantics. Exten
 is smaller than adding a second campaign store and propagating it through every battle/field copy.
 No new cache, manifest, checksum or generic migration framework is justified.
 
-For old accepted field-v1 and battle-v2 saves, propose an optional depot property whose absence means
+For old accepted field-v1 and battle-v2 saves, the implemented optional depot property has absence meaning
 empty **only for the previously supported remake formats**, where no depot operation existed.
 New writes include the list. Keep explicit null/malformed/over64/out-of-range or unsupported identities
 as admission failures; allow duplicates and preserve order. Keep unknown live custody distinct from
