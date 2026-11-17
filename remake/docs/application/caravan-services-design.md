@@ -245,8 +245,9 @@ invented here. At each relevant boundary verify:
   victory, defeat/EGRESS, battle Save/Continue and a later depot visit retain storage and reserves;
 - bilingual names, prompts, failure reasons and actual input reach the same command outcomes.
 
-**Unknown:** ordinary original transaction timing/persistence, unimplemented wider item effects and
-equipment lifecycles, and the future Creed-to-next-service natural route remain explicit. The last
-requires the chapter's source-owned transport/follower/return path, not a new global Caravan hotkey.
+**Unknown:** ordinary original transaction timing/persistence and the future remake
+Creed-to-next-service natural route. The latter requires the chapter's source-owned
+transport/follower/return path, not a new global Caravan hotkey. Wider item effects and equipment
+lifecycles are known unsupported remake capabilities, not missing original static evidence.
 Later recruitment variants, transport UI access, debug BattleTest entry, blacksmith, shop Deals/Repair,
 church promotion and original SRAM compatibility are outside this bounded service delivery.
