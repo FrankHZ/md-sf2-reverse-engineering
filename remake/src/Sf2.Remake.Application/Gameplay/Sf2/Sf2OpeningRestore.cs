@@ -46,7 +46,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     public ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party)
     {
         if (data.Recipe != InitialRecipe) return null;
-        if (data.Map != "map-3" || data.X != 56 || data.Y != 3 || data.Facing != 3 ||
+        if (data.Map != "map-3" || data.X != 56 || data.Y != 3 || data.Facing != 3 || data.Layer != 0 ||
             !data.Flags.Order().SequenceEqual(new[] { 0, 32, 80 }) || data.Gold != 0 || data.OnceFlags.Count != 0 || data.Deals.Count != 0 ||
             data.StepCounter != 0 || data.EgressMap is not ("map-0" or "map-3") || data.TextCursor != 0 || data.FadePeriod != 3 ||
             data.TextSettings != new ExplorationTextSettings(2, 0, 0) || data.Difficulty != 0 || data.AllyAutoBattle || data.OpponentControl ||
@@ -173,7 +173,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     }
 
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
-        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags)
+        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0)
     {
         var anchor = location.Anchor;
         var source = definition.Exploration!.Maps[anchor.Map];
@@ -183,7 +183,15 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         foreach (var write in map.EntryFlags)
             if (write.Value) entered.Add(write.Flag); else entered.Remove(write.Flag);
         enteredFlags = Array.AsReadOnly(entered.Order().ToArray());
-        var world = MapTransfer.Build(map, new("entity-0"), anchor.Position, anchor.Facing, 32, party, flags, enteredFlags);
+        if (layer is not (0 or 2)) throw new BattleRuleException("save-player-layer", "save.layer");
+        // Secondary landings may be blocked in the primary layout. Build the ordinary population,
+        // then validate the saved layer against the rebuilt layout through the movement accessor.
+        var world = MapTransfer.Build(map, new("entity-0"), anchor.Position, anchor.Facing, 32, party, flags, enteredFlags,
+            sourcePlacement: layer != 0);
+        world = world.WithEntities(world.AllEntities.Select(entity => entity.Slot == world.PlayerEntity.Slot || entity.Follower is not null
+            ? entity with { Motion = entity.Motion with { Layer = layer } } : entity));
+        if (FieldLayout.Word(world, world.PlayerEntity.Motion, anchor.Position.X, anchor.Position.Y) is not < 0xC000)
+            throw new BattleRuleException("save-anchor-unusable", "save.anchor");
         if (anchor.Map.Value == "map-3" && selected?.Value == "ms-map3-flag609")
         {
             // ms_map3_flag609 init retires Jaha only after his actual join.

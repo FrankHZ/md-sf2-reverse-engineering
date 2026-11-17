@@ -101,7 +101,7 @@ public sealed partial class GameRoot
     {
         "save-location-unavailable" => GameText.Get("save.error.location"),
         "save-profile-unavailable" or "save-battle-profile-unavailable" or "save-battle-route-unavailable" => GameText.Get("save.error.profile"),
-        "save-incompatible" or "save-version" or "save-kind" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
+        "save-incompatible" or "save-version" or "save-kind" or "save-player-layer" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
         "save-publication-uncertain" => GameText.Get("save.error.uncertain"),
         "save-storage-unavailable" => GameText.Get("save.error.storage"),
         "save-slot-empty" => GameText.Get("save.error.empty"),

@@ -52,12 +52,12 @@ public sealed class LayeredFieldMovementTests
     }
 
     [Fact]
-    public void FiniteSaveRefusesToDropAnUnrecordedPlayerLayer()
+    public void FiniteSaveRefusesAnUnsupportedPlayerLayer()
     {
         var (definition, data) = OpeningRestoreTests.Fixture();
         var current = Assert.IsType<SessionStarted>(GameSession.Restore(definition, data, RuleCompositions.Sf2())).Session.Current;
         var world = current.Exploration!;
-        world = world.WithEntity(world.PlayerEntity with { Motion = world.PlayerEntity.Motion with { Layer = 2 } });
+        world = world.WithEntity(world.PlayerEntity with { Motion = world.PlayerEntity.Motion with { Layer = 1 } });
         var changed = new SessionSnapshot(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(world), current.Story, current.StopReason);
         Assert.Equal("save-player-layer", OpeningSave.Query(definition, changed, RuleCompositions.Sf2()).Error);

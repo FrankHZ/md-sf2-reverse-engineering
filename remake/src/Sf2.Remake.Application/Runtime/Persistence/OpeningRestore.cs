@@ -10,6 +10,7 @@ internal static class OpeningRestore
     internal static SessionResult Build(ScenarioDefinition definition, OpeningSaveData data, SessionRules rules)
     {
         var expected = OpeningSave.FieldCompatibility(definition, rules);
+        Require(data.Layer is 0 or 2, "save-player-layer");
         definition.Persistence!.ValidateRegisters(data);
         Require(data.Allies is { Count: > 0 and <= 30 } && data.Flags is { Count: <= 65536 } &&
             data.ActiveAllies is { Count: > 0 and <= 12 } && data.OnceFlags is { Count: <= 30 } && data.Deals is { Count: <= 127 }, "save-shape");
@@ -56,7 +57,7 @@ internal static class OpeningRestore
         var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor);
         Require(location.Recipe == data.Recipe && location.Anchor == anchor, "save-recipe");
         var raft = data.Raft?.Restore(definition.Exploration);
-        var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, raft, out var flags);
+        var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, raft, out var flags, data.Layer);
         Require(world.Definition.BasePalette is { Valid: true }, "save-palette-resource");
         int area = world.Definition.Traversal.SelectActiveArea(anchor.Position)!.OneBasedRecordOrdinal - 1;
         var music = new MusicProgress(1, data.Music.Cue, Array.AsReadOnly(data.Music.Previous.ToArray()), anchor.Map, area,

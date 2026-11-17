@@ -576,6 +576,54 @@ commands add ways to reach already admitted loadouts, without changing restore o
 The [native recipe and results](../verification/host.md#opening-field-preparation) separate remake
 observations from original static policy. No original runtime timing claim follows from them.
 
+## Secondary-layer field saves
+
+**High rigor, bounded persistence extension:** a settled player on a supported field recipe can
+save on layer 2 and cold-Continue at that position, facing and layer. The existing recovery agreement
+applies because silently dropping the layer changes collision and subsequent travel. Scope is the
+existing field record, capture, reconstruction and ordinary host; new maps, story branches, arbitrary
+scene suspension, NPC continuation and a separate save system are excluded.
+
+Version1 has an optional byte `layer`: absent or 0 means primary; 2 means secondary. New primary
+writes omit it, retaining their prior wire shape. The unchanged envelope/checksum, content and recipe
+identities still apply. No format or roster migration is needed: names and raft already use this
+optional-field mechanism. Older readers cannot load a new secondary record because their strict
+unknown-member admission rejects it; forward compatibility with those binaries is not promised.
+Unknown byte values fail with `save-player-layer`; negative, oversized, string and null values fail
+the existing strict JSON admission. The ordinary error flow retains the original slot bytes and
+shows the matching-content/rules message for an unsupported layer, with the diagnostic code in details.
+
+Capture checks the player's actual layer through the existing `FieldLayout` accessor. A secondary
+player cannot be silently relocated by a recipe whose anchor differs from the live map/position/facing.
+Restore rebuilds the ordinary flag-selected population, layout copies and roofs without replaying
+on-load, assigns the saved layer to the player and reconstructed followers, and validates the offset
+landing against that rebuilt layout. Primary terrain above a valid secondary landing is not its
+collision surface. Nonfollowers retain their ordinary map layer; transient following offsets still
+restart at the leader, as in other field recipes. Existing occupancy and other save guards remain.
+Initial `new-game` records still require layer 0. Battle v2 and historical roster upgrading are unchanged.
+
+**Confirmed bounded native acceptance:** both independent ordinary Desktop victory histories walk
+from (25,12) to layer2 (26,12), then separately save near the stairs and at (28,12). Fresh title
+Continue → Save preserves every decoded field, including the complete party, inventories, flags,
+gold, names, raft, both RNGs and scalar registers. Restored followers have layer2. Ordinary movement
+then reaches (32,12), rejects Right into the secondary wall, and follows the stairs to (15,3), layer0.
+The existing primary Creed/Desktop and Battle22 records in both languages, plus the older Battle19
+record, retain complete decoded equality after Continue → Save. Five malformed/unsupported-layer
+variants reject without changing the seeded slot bytes. Original SRAM compatibility, natural original
+timing and leak-free shutdown remain **Unknown**; existing ObjectDB exit warnings persist.
+
+`LayeredFieldSaveTests` varies both main-plane selectors and secondary offsets, saves actual stepped
+states, checks rebuilt followers/full progress and rejects blocked/out-of-layout landings or unknown
+layers. Together with the existing movement/save/restore tests, it runs via `uv run sf2 verify engine`;
+`uv run sf2 verify adapter` compiles the ordinary host. The stable private `handoffs/issue1862` bundle
+reuses `issue1861` world/catalog/encounter inputs read-only, with its own runtime, receipts and save
+namespace. Its `Play.ps1 -Language en|zh-CN -Sample <fresh> -Mode near|middle` performs ordinary saves;
+`-Mode cold -Seed <that-run>/saved-slot.json` checks cold restoration, collision and return. `-Mode old`
+checks a named legacy record, and `-Mode reject` observes a named invalid record. `python compare.py`
+compares retained complete records and input-slot preservation. No screenshot, debug state injection
+or rewritten gameplay history is used. The small runner is about 36 MiB; receipts/slots are bounded
+to a 100 MiB total new-output budget, with sequential native runs and no duplicated 132 MB world.
+
 ## Format, compatibility and local storage
 
 Use a small explicit version1 JSON record: format version, slot, sequence number, save timestamp for
