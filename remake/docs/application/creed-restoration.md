@@ -3,8 +3,9 @@
 **Confirmed** in the private remake candidate: both ordinary [Willard victory](willard-burrow-battle23.md)
 saves continue through Map27's exit, all 58 restoration messages, usable Map33 control and the first
 Map34 entrance. Both languages save in each map and cold-continue with every decoded save-data field
-unchanged. This is not yet complete chapter acceptance: the shrine-to-mansion warp fails audio
-selection, and restoration is outside the existing battle-entry skip predicate.
+unchanged. Both also return from the shrine to the mansion, resume ordinary interaction, reenter
+the shrine and cold-save again without replaying restoration or rewards. Independent main-gate
+acceptance remains separate from these candidate observations.
 
 ## Agreement and source boundary
 
@@ -13,7 +14,8 @@ Rigor remains **High** under the [campaign agreement](remaining-campaign-risk-ba
 complete restoration followed by an ordinary, movable and saveable shrine entrance, preserving each
 inherited party and independent F519 history. Reentry, body/follower/camera state and full cold-save
 equality are acceptance boundaries. Consultation, recruit choices, Fairy handoff and Oddler's departure
-belong to subsequent chapters. No original-game capture or new comparison platform is introduced.
+belong to subsequent chapters. A single bounded original-driver audio-only capture supplies the
+ordinary return warp at its existing TimerB context; no new comparison platform is introduced.
 
 The [restoration source owner](../../../docs/research/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)
 and [shrine entry owner](../../../docs/research/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)
@@ -45,8 +47,9 @@ joined/active lists, HP/MP, packs/equipment, gold, once receipts, Deals and raft
 advances RNG; the seeds stored at each actual save are preserved by cold Continue.
 
 The existing [skip boundary](desktop-arrival.md) requires an entering battle and a before/load/start
-continuation. Restoration does not qualify. No skipped restoration is claimed, and no new exploration
-skip policy is silently introduced. Normal-versus-skipped restoration acceptance remains unresolved.
+continuation. Restoration does not qualify. Restoration is
+accepted through its normal performance under the existing [Issue1386](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1386)
+boundary. The corrected chapter agreement does not require or claim exploration skipping.
 
 ## Shrine entrance and persistence
 
@@ -70,7 +73,8 @@ Down with F774. It does not replay restoration, rewards or transient door copies
 Hassan return register. It does not invent a F523/F783 entrance prerequisite. Both names appear in
 the ordinary localized Save/Continue UI.
 
-All four new cold Continue → immediate Save comparisons match their complete decoded `data` objects.
+All six cold Continue → immediate Save comparisons match their complete decoded `data` objects:
+both languages in the restored mansion, at the first shrine entrance and after an ordinary round trip.
 Temporary flags256–383 are absent at the fresh Map34 entrance. Old Battle23 and Desktop secondary-plane
 slots also load and save; their only recorded-data addition is the already adopted empty Caravan
 depot (`battle.custody.depot` or `depot`). No old slot is rewritten in place. English retains F519
@@ -80,19 +84,34 @@ clear and Chinese retains F519 set; these are distinct journeys, not alternate t
 
 | Consumer | Current support and observation |
 | --- | --- |
-| Goliath after restoration | Original text1904 and return to movement observed from an ordinary restored save. His (17,10) placement still obstructs the closed southern doorway. |
-| Upper-room books and locked door | Existing generic Search and source Map33 descriptions are admitted. A book Search was issued from (14,3), Up; its transient reading was not separately retained, so no exact text claim is made. The locked-door branch was not exercised. |
+| Goliath after restoration | Original text1904 and return to movement observed in both languages after ordinary shrine return. His (17,10) placement still obstructs the closed southern doorway. |
+| Upper-room books and locked door | Existing generic Search and source Map33 descriptions are admitted. Ordinary book Search at (14,3), Up selected source texts427/4120 and returned control in both languages; no full rendered-text equality claim is made. The locked-door branch was not exercised. |
 | Map33 lower rooms, magic-door zone and item placements | Existing source inventory remains admitted: F164 Healing Rain, F165 Antidote, F166 Medical Herb and F167 Running Ring. No new pickup is claimed. The restored Goliath/door layout prevented the attempted ordinary route to the magic-door zone; its F783 no-op guard has static evidence only here. |
 | Map33 north warp | Ordinary first Map34 entrance and Save observed in both languages. |
-| Map34 return and internal passage | Original (26,28) return and (22,29)↔(24,2) passage remain content-driven. The attempted return fails before transfer: SFX89 has multiple admitted timer variants but none for current MUSIC_WITCH TimerB193. Internal passage consumption remains unobserved. |
+| Map34 return and internal passage | Original (26,28) return and (22,29)↔(24,2) passage remain content-driven. Both languages return through (26,28), recover Map33 control with Goliath at (17,10), read1904 and reenter Map34. No1840–1897 replay, reward or consultation flag write occurs. Internal passage consumption remains unobserved. |
 | Map34 local interactions | Entity and item callbacks are return-only; chest/hidden-item tables are empty. Generic Search/item behavior is not globally disabled. No consultation, recruit or healing-service result is claimed. |
 | Map34 Y13 consultation | Preserved, unsupported next-chapter boundary; F784/F802 remain clear. |
 
 MUSIC_WITCH reuses the accepted title-entry PCM, losslessly wrapped as WAV through the existing
 runtime-WAV mechanism. This avoids exceeding the 128-MiB world-document bound and does not acquire
-or synthesize new audio. The warp failure is `audio-command-ambiguous`, not missing music. It needs a
-properly sourced TimerB193 SFX89 input; selecting an arbitrary variant, deleting other candidates or
-retiming the source would hide the failure. Reentry acceptance remains blocked pending that input.
+or synthesize that music. The return-warp SFX89/C1 uses one separate, bounded controlled original-driver
+capture. Source Map34 area music is MUSIC_WITCH10; its pinned music-bank header supplies TimerB193.
+The existing finite observer loads that context, consumes stop254 without replacing its timer, then
+dispatches89 and verifies the source channel9 cursor against its finite stream. It observes dispatch
+at243, all channels inactive at288 and a60-frame tail through348. The verified canonical ROM and
+shared BizHawk2.11.1 installation remain unchanged; isolated launch state and all receipts stay private.
+This proves a controlled driver export, not natural original map traversal or hardware-phase equality.
+
+The1400-frame PCM16 stereo44,100-Hz WAV is4,121,348 bytes, capture SHA256
+`57370D4D8AA57E83D42E6EE9FBAFC9B6633AD4D86C5645B40B67B08FA066C101`.
+The existing materializer retains unchanged sample frames `[179271,207168)` including10ms on each
+side of the finite audible interval; the observed quiet tail is48,351 sample frames at at most one
+PCM16 unit. The27,897-frame candidate is111,632 bytes with WAV SHA256
+`3D015AF9902BE233E1E2271D24E5417EEF4B4AD3BDAB785BC352C22245316DE2`.
+No normalization, sample replacement or retiming occurs. Existing candidate admission and world
+preparation bind `SFX_WARP_TIMER_C1`; ordinary bilingual return observes this exact cue playing at
+TimerB193 and stopped without audio error at regained Map33 control. Other variants remain intact.
+The earlier `audio-command-ambiguous` attempt is preserved as a completed failure.
 
 ## Reproduction and verification
 
@@ -102,7 +121,7 @@ at the shrine entrance; `-StartAt victory` selects the earlier seed for a fresh 
 `Play.ps1 -Language en -Sample <fresh-name> -Mode route` replays the full route;
 `cold`, `old`, `interactions` and `revisit` take an explicit `-Seed`. Use disposable namespaces.
 `Compare.py` checks retained route and complete cold-save data. `HANDOFF.md` retains exact attempts,
-native exits, source/build commands and the unresolved acceptance boundaries. Private content stays local.
+native exits, the bounded audio recipe, source/build commands and the remaining chapter limits. Private content stays local.
 
 Affected actual-engine tests cover cold mansion reconstruction, source-independent shrine admission
 and special-resident/follower allocation with varied legal flags and follower counts. Existing
@@ -114,5 +133,5 @@ Research extraction and original evidence are unchanged. No legacy aggregate is 
 Completed failures are retained. In particular, the successful English shrine cold-save comparison
 ended with native `0xC0000005` during Godot finalization. ObjectDB warnings and other finalizer exits
 remain separate from gameplay results under [Issue1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).
-The frozen candidate requires independent review and resolution of reentry/skip acceptance before
-this chapter can be reported complete.
+The frozen candidate awaits independent review. Consultation, later recruitment, original hardware
+timing and human visual acceptance remain outside this chapter result.

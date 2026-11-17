@@ -120,7 +120,7 @@ Both `after02` routes walk back through the first passage, leave to Floor World,
 completed cave without a battle, and traverse both directions of the upper passage. The final
 ordinary save is Map27 `(20,15)`, Right. From there **Right** reaches the wildcard exit toward
 Map33 `(15,9)`, Right. `en-frontier01` observes `Unsupported / map-setup / ms-map33-flag523`:
-that retained failure identifies the next consumer. The [restoration candidate](creed-restoration.md) now consumes this ordinary exit and reaches Map34; its remaining reentry/skip boundaries are explicit there.
+that retained failure identifies the next consumer. The [restoration candidate](creed-restoration.md) now consumes this ordinary exit and reaches Map34; its ordinary return/reentry observations and remaining chapter limits are explicit there.
 
 `comparisons.json` compares all decoded save `data`, not a selected-field approximation: both
 battle-cold01 and field-cold01 pairs, old Battle19, Desktop secondary-layer and initial cave records
