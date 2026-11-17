@@ -20,11 +20,13 @@ internal sealed partial class ExplorationPresentation
                 _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], wait.Cue.Resource == "nod", current.Exploration.Map);
                 break;
             case PresentationCueKind.EntityEffect:
-                if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "flash-white") || wait.Cue.Entity is null)
+                if (wait.Cue.Resource is not ("mosaic-in" or "mosaic-out" or "slide-in" or "slide-out" or "wipe-in" or "wipe-out" or "flash-white") || wait.Cue.Entity is null)
                     throw new InvalidOperationException("effect-binding");
                 _ = Sprite(current.Exploration!.Entities[wait.Cue.Entity.Value], false, current.Exploration.Map);
                 if (wait.Cue.Resource is "slide-in" or "slide-out")
                     SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, wait.Cue.Resource == "slide-out");
+                SetSpriteWiped(current.Exploration, wait.Cue.Entity.Value, wait.Cue.Resource == "wipe-out");
+                if (wait.Cue.Resource is "wipe-in" or "wipe-out") SetSpriteBlank(current.Exploration, wait.Cue.Entity.Value, false);
                 break;
             case PresentationCueKind.CameraWait: _camera = target; break;
             case PresentationCueKind.FlashWhite:
@@ -59,6 +61,13 @@ internal sealed partial class ExplorationPresentation
         _cue = wait.Token; _cueAge = 0; _cueResource = null;
         _gesture = null; _mosaic = null; _storyEffect = null; _shivering = _nodding = false;
         ActiveCue = null; CompletedCueToken = wait.Token.Value; CompletedCueKind = "Skipped:" + wait.Cue.Kind;
+    }
+
+    private void SetSpriteWiped(ExplorationState world, EntityRef reference, bool wiped)
+    {
+        var entity = world.Entities[reference];
+        var key = (world.Map, entity.Slot, entity.SpriteRequest);
+        if (wiped) _wipedSprites.Add(key); else _wipedSprites.Remove(key);
     }
 
     private void SetSpriteBlank(ExplorationState world, EntityRef reference, bool blank)

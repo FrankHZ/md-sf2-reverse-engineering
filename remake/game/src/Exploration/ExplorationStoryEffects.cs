@@ -66,6 +66,26 @@ internal static class ExplorationStoryEffects
             }
             return ink;
         }
+        if (effect is "wipe-in" or "wipe-out")
+        {
+            // csc22 table: d0=1..23 (out), 22..0 (in), d1=0.
+            // ApplySpriteCropEffect copies row zero to d0, clears rows
+            // 0..d0-1, and leaves rows d0+1..23 unchanged.
+            int step = Math.Clamp((int)(age * 30), 0, 22);
+            int row = effect == "wipe-out" ? step + 1 : 22 - step;
+            List<Rect2> croppedInk = [];
+            var bands = new[] { (new Rect2(0, 0, 24, 1), row), (new Rect2(0, row + 1, 24, 23 - row), 0) };
+            foreach (var (source, shift) in bands)
+            {
+                if (!source.HasArea()) continue;
+                croppedInk.AddRange(ink.Select(run => run.Intersection(source)).Where(run => run.HasArea())
+                    .Select(run => new Rect2(run.Position + new Vector2(0, shift), run.Size)));
+                var target = new Rect2(bounds.Position + new Vector2(0, source.Position.Y + shift) * scale,
+                    new Vector2(mirror ? -24 : 24, source.Size.Y) * scale);
+                owner.DrawTextureRectRegion(texture, target, ExplorationRasterImages.TextureRegion(source, texture));
+            }
+            return croppedInk;
+        }
         if (effect is not ("slide-in" or "slide-out")) throw new InvalidOperationException("story-effect-binding");
         int progress = Math.Clamp((int)(age * 30), 0, 22);
         int offset = effect == "slide-in" ? 22 - progress : progress;
