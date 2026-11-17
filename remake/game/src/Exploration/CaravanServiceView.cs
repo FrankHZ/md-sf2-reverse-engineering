@@ -92,6 +92,7 @@ internal sealed partial class CaravanServiceView : Control
             {
                 SelectDepotItem item => IdentityIcons.Item(item.ExpectedItem),
                 SelectDepotSlot slot => IdentityIcons.Item(slot.ExpectedWord),
+                SelectCaravanItemSlot { ExpectedWord: { } word } => IdentityIcons.Item(word),
                 _ => (string?)null,
             }, row.Available)).ToArray(), _icons, _index);
         var member = _options.Count > 0 ? _options[_index].Member : null;
@@ -113,12 +114,17 @@ internal sealed partial class CaravanServiceView : Control
             BuildDepot(wait);
             return;
         }
+        if (wait.Action == CaravanAction.Item)
+        {
+            BuildItems(wait);
+            return;
+        }
         switch (wait.Phase)
         {
             case CaravanPhase.Menu:
                 Add("caravan.join", new ChooseCaravan(wait.Token, CaravanAction.Join));
                 Add("caravan.depot", new ChooseCaravan(wait.Token, CaravanAction.Depot));
-                Add("caravan.item", new ChooseCaravan(wait.Token, CaravanAction.Item), false);
+                Add("caravan.item", new ChooseCaravan(wait.Token, CaravanAction.Item));
                 Add("caravan.purge", new ChooseCaravan(wait.Token, CaravanAction.Purge));
                 Add("shop.leave", new BackCaravan(wait.Token));
                 break;
@@ -154,7 +160,7 @@ internal sealed partial class CaravanServiceView : Control
         _pointer.Suspend();
     }
 
-    private CaravanCommand Back() => _wait!.Phase is CaravanPhase.Result or CaravanPhase.DepotResult or CaravanPhase.DepotLook ? new ContinueCaravan(_wait.Token) : new BackCaravan(_wait.Token);
+    private CaravanCommand Back() => _wait!.Phase is CaravanPhase.Result or CaravanPhase.DepotResult or CaravanPhase.DepotLook or CaravanPhase.ItemResult ? new ContinueCaravan(_wait.Token) : new BackCaravan(_wait.Token);
 
     private void Choose(CaravanCommand command)
     {
@@ -165,7 +171,14 @@ internal sealed partial class CaravanServiceView : Control
         Present(_session, _input, _submit);
         if (result.Failure is not null)
         {
-            _error = GameText.Get(result.Failure.Code == "depot-equipped-curse" ? "depot.cursed" : "caravan.failed");
+            _error = GameText.Get(result.Failure.Code switch
+            {
+                "depot-equipped-curse" or "caravan-equipped-curse" => "depot.cursed",
+                "caravan-item-not-usable" => "caravan.items.not-usable",
+                "field-item-effect-unsupported" => "caravan.items.unsupported",
+                "discard-unsellable" => "prepare.drop-refused",
+                _ => "caravan.failed",
+            });
             Present(_session, _input, _submit);
         }
     }

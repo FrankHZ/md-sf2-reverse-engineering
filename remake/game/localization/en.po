@@ -2363,10 +2363,10 @@ msgid "caravan.purge"
 msgstr "Purge"
 
 msgid "caravan.depot"
-msgstr "Depot · Unavailable"
+msgstr "Depot"
 
 msgid "caravan.item"
-msgstr "Item · Unavailable"
+msgstr "Item"
 
 msgid "caravan.choose-join"
 msgstr "Who joins the battle party?"
@@ -2384,7 +2384,7 @@ msgid "caravan.missing"
 msgstr "Member {0} · Unavailable"
 
 msgid "caravan.failed"
-msgstr "That selection is unavailable. No formation change was made."
+msgstr "That selection is unavailable. Nothing was changed."
 
 msgid "caravan.result.joined"
 msgstr "The member joined the battle party."
@@ -2470,3 +2470,30 @@ msgstr "Item dropped."
 
 msgid "depot.result.unsellable"
 msgstr "This item cannot be dropped."
+
+msgid "caravan.items.not-usable"
+msgstr "This item cannot be used here. It was kept."
+
+msgid "caravan.items.unsupported"
+msgstr "This item effect is not supported yet. It was kept."
+
+msgid "caravan.items.equipment-unavailable"
+msgstr "No supported equipment choice is available."
+
+msgid "caravan.items.result.empty-pack"
+msgstr "This member carries no items."
+
+msgid "caravan.items.result.given"
+msgstr "The item was handed over."
+
+msgid "caravan.items.result.equipped"
+msgstr "Equipment updated."
+
+msgid "caravan.items.result.dropped"
+msgstr "The item was dropped."
+
+msgid "caravan.items.result.cured"
+msgstr "Poison cured. The Antidote was consumed."
+
+msgid "caravan.items.result.no-effect"
+msgstr "No poison to cure. The Antidote was consumed."

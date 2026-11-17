@@ -40,11 +40,16 @@ public sealed record FieldActionChoices(Guid SessionId, long Revision, ActorRef 
     IReadOnlyList<BattleEquipmentChoice> Equipment, IReadOnlyList<FieldInventoryChoice> Items,
     IReadOnlyList<FieldSpellChoice> Spells, string? Error = null);
 
+internal enum FieldItemCaller { Field, Caravan }
+
 internal static class FieldInventory
 {
-    internal static PartyMemberDetails Member(ScenarioDefinition definition, SessionSnapshot current, ActorRef actor)
+    internal static PartyMemberDetails Member(ScenarioDefinition definition, SessionSnapshot current, ActorRef actor,
+        FieldItemCaller caller = FieldItemCaller.Field)
     {
-        if (!current.CanWaitAtInput || current.Mode != SessionMode.Exploration || current.Story.Warp is not null ||
+        bool available = caller == FieldItemCaller.Field ? current.CanWaitAtInput :
+            current.Story.Wait is CaravanWait { Action: CaravanAction.Item };
+        if (!available || current.Mode != SessionMode.Exploration || current.Story.Warp is not null ||
             current.Story.ScriptWarp is not null || current.Story.BattleRequest)
             throw new BattleRuleException("field-preparation-unavailable", "field");
         if (definition.FieldPreparation is null)
@@ -84,11 +89,12 @@ internal static class FieldInventory
     internal static byte BaseAttack(PartyMemberDetails member) => member.Carried.Progress?.BaseAttack ??
         member.Deployment!.Definition.Equipment!.BaseAttack;
 
-    internal static FieldActionChoices Query(ScenarioDefinition definition, SessionSnapshot current, ActorRef actor)
+    internal static FieldActionChoices Query(ScenarioDefinition definition, SessionSnapshot current, ActorRef actor,
+        FieldItemCaller caller = FieldItemCaller.Field)
     {
         try
         {
-            var member = Member(definition, current, actor);
+            var member = Member(definition, current, actor, caller);
             var items = Items(definition, member, current.Exploration!.Map);
             var equipment = member.Deployment!.Definition.Equipment is null ? [] :
                 BattleEquipment.Choices(member.Deployment.Definition, BaseAttack(member), Loadout(member));
@@ -119,11 +125,30 @@ internal static class FieldInventory
         return choice;
     }
 
-    internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command)
+    internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command,
+        FieldItemCaller caller = FieldItemCaller.Field)
     {
-        var member = Member(definition, current, command.Member);
+        var member = Member(definition, current, command.Member, caller);
         var party = current.Exploration!.Party;
         var loadout = Loadout(member);
+        // Known source refusals precede the broader unsupported equipment/loadout checks.
+        if (caller == FieldItemCaller.Caravan)
+        {
+            if (command is FieldGive outgoing)
+            {
+                RequireNotCursed(definition, loadout, outgoing.Slot, outgoing.ExpectedWord);
+                if (outgoing.ReturnSlot is { } returned && outgoing.ExpectedReturnWord is { } word)
+                    RequireNotCursed(definition, Loadout(Member(definition, current, outgoing.Target, caller)), returned, word);
+            }
+            else if (command is FieldDrop dropItem)
+                RequireNotCursed(definition, loadout, dropItem.Slot, dropItem.ExpectedWord);
+            else if (command is FieldEquip)
+            {
+                for (int slot = 0; slot < loadout.Items.Count; slot++)
+                    if ((loadout.Items[slot] & 127) != 127)
+                        RequireNotCursed(definition, loadout, slot, loadout.Items[slot]);
+            }
+        }
         switch (command)
         {
             case FieldEquip equip:
@@ -137,9 +162,16 @@ internal static class FieldInventory
                 return Replace(party, [WithLoadout(member, BattleEquipment.Equip(member.Deployment.Definition, loadout, choice.Slot))]);
             case FieldGive give:
                 var given = Slot(definition, member, give.Slot, give.ExpectedWord);
-                var target = Member(definition, current, give.Target);
+                var target = Member(definition, current, give.Target, caller);
                 _ = Items(definition, target);
                 var targetLoadout = Loadout(target);
+                if (caller == FieldItemCaller.Caravan && give.Target == command.Member)
+                {
+                    if (give.ReturnSlot.HasValue || give.ExpectedReturnWord.HasValue)
+                        throw new BattleRuleException("caravan-self-exchange", "target.items");
+                    return Replace(party, [WithLoadout(member,
+                        BattleInventory.Add(BattleInventory.Remove(loadout, given.Slot), given.Word))]);
+                }
                 bool full = targetLoadout.Items.All(word => (word & 127) != 127);
                 if (full != give.ReturnSlot.HasValue || give.ReturnSlot.HasValue != give.ExpectedReturnWord.HasValue)
                     throw new BattleRuleException("field-give-exchange-required", "target.items");
@@ -180,5 +212,13 @@ internal static class FieldInventory
                     item.Rare ? party.ItemCustody!.AddDeal(item.ItemId) : party.ItemCustody);
             default: throw new BattleRuleException("field-command-unsupported", "command", true);
         }
+    }
+
+    private static void RequireNotCursed(ScenarioDefinition definition, BattleSourceLoadout loadout, int slot, ushort word)
+    {
+        if (slot is < 0 or >= 4 || loadout.Items.Count != 4 || loadout.Items[slot] != word || (word & 127) == 127)
+            throw new BattleRuleException("field-stale-item", "item.word");
+        if ((word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word))
+            throw new BattleRuleException("caravan-equipped-curse", "item.word");
     }
 }

@@ -11,11 +11,14 @@ public enum CaravanPhase
     Menu, Member, ConfirmDead, Relief, Result,
     DepotMenu, DepotMember, DepotSlot, DepotIndex, DepotRecipient,
     DepotExchange, DepotConfirm, DepotLook, DepotResult,
+    ItemMenu, ItemMember, ItemSlot, ItemTarget, ItemExchange, ItemConfirm, ItemResult,
 }
 public enum CaravanResult { Joined, Purged, LeaderRequired, NoReserve, Unsupported }
 public sealed record CaravanWait(WaitToken Token, CaravanPhase Phase = CaravanPhase.Menu,
     CaravanAction? Action = null, int? Member = null, CaravanResult? Result = null,
-    DepotAction? DepotAction = null, int? DepotIndex = null, byte? Item = null, string? DepotResult = null) : ProgramWait(Token);
+    DepotAction? DepotAction = null, int? DepotIndex = null, byte? Item = null, string? DepotResult = null,
+    CaravanItemAction? ItemAction = null, int? ItemSlot = null, ushort? ItemWord = null,
+    int? ItemTarget = null, string? ItemResult = null) : ProgramWait(Token);
 public abstract record CaravanCommand(WaitToken Wait) : SessionCommand;
 public sealed record ChooseCaravan(WaitToken Wait, CaravanAction Action) : CaravanCommand(Wait);
 public sealed record SelectCaravanMember(WaitToken Wait, int Member) : CaravanCommand(Wait);
@@ -35,6 +38,10 @@ internal static class CaravanService
         if (wait.Action == CaravanAction.Depot)
         {
             return CaravanDepotService.Submit(definition, current, command, wait);
+        }
+        if (wait.Action == CaravanAction.Item)
+        {
+            return CaravanItemService.Submit(definition, current, command, wait);
         }
 
         try
@@ -164,7 +171,7 @@ internal static class CaravanService
     private static CaravanWait Start(WaitToken token, CaravanAction action, MapPartyLists lists) => action switch
     {
         CaravanAction.Depot => new(token, CaravanPhase.DepotMenu, action),
-        CaravanAction.Item => new(token, CaravanPhase.Result, action, Result: CaravanResult.Unsupported),
+        CaravanAction.Item => new(token, CaravanPhase.ItemMenu, action),
         CaravanAction.Join when lists.Reserve.Count == 0 => new(token, CaravanPhase.Result, action, Result: CaravanResult.NoReserve),
         _ => new(token, CaravanPhase.Member, action),
     };

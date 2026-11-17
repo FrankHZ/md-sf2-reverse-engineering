@@ -59,7 +59,9 @@ Randolf name; worker129/default is a bare return. Priest133 uses the existing Ch
 Caravan134 now opens the ordinary [Join/Purge service](caravan-services-design.md#current-formation-implementation),
 with bilingual cancellation/return, changed next-battle formation and complete cold saves.
 The same NPC now supports [Depot storage](caravan-services-design.md#current-depot-implementation)
-with reserve-member transfers and field/battle persistence. Item remains explicitly unsupported. The [Willard chapter](willard-burrow-battle23.md)
+with reserve-member transfers and field/battle persistence. Its [Item submenu](caravan-services-design.md#current-item-implementation)
+now connects admitted Use/Give/Equip/Drop with source caller rules, nested cancellation and callback
+return. Wider item/equipment effects remain unsupported. The [Willard chapter](willard-burrow-battle23.md)
 owns the actual Map27 cave and Battle23 continuation.
 
 ## Persistence and onward play

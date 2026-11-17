@@ -8,7 +8,7 @@ under [campaign risk 4](remaining-campaign-risk-baseline.md#risks-in-blocking-or
 formation, inventory, story return and historical saves share state across chapters. The immediate
 outcome is usable ordinary Caravan service at the already admitted Desktop/Floor World NPCs and a
 way to deploy a newly recruited Creed companion when twelve members are already active. This is
-a staged service: ordinary entry, Join/Purge and Depot are implemented below; Item remains unsupported.
+a bounded service: ordinary entry, Join/Purge, Depot and the admitted Item operations are implemented below.
 
 The design was inspected at `726da800a843a9af0bc951d6b83fd5d5ae0ee8df`. Formation implementation
 consumes accepted Battle23 main `84a08691384a88f69fa4e85f9f52e8655f6e03d3`. Subsequent service
@@ -29,7 +29,7 @@ ordinary Map22 entity128 and Map26 entity134 entry, Join/Purge, nested cancellat
 Application owns `CaravanWait` and token-checked commands; `MapPartyMembership` changes active flags
 without deleting joined flags or actor resources. The same publication rebuilds `PartyLists` and
 `ActiveAllies`. Godot projects the existing scrollable field choices/pack panel and retains release,
-focus and pointer barriers. Depot opens its storage submenu; Item retains a readable unsupported result.
+focus and pointer barriers. Depot and Item open their respective submenus; unsupported item effects remain readable refusals.
 Neither service entry requires the vehicle flags nor service exit reloads the map.
 
 Private compilation lowers the actual `j_CaravanMenu` call, retaining call/tail return. Content binds
@@ -111,8 +111,8 @@ refuses operations while still allowing the player to leave the submenu.
 
 Look reuses admitted names, item type, `floor(price*3/4)` valuation and actual supported weapon
 class eligibility. The observed Wooden Sword shows45 gold and Bowie/Luke eligibility in both
-languages. No sale is performed. Ring eligibility, Chirrup Sandals' special description, broader
-appraisal/equipment effects and field Item actions remain explicitly unsupported; absent price is
+languages. No sale is performed. Ring eligibility, Chirrup Sandals' special description and broader
+appraisal/equipment effects remain explicitly unsupported; absent price is
 shown as unknown. Carrying an admitted identity does not grant its Use or equipped effect.
 
 Every custody reconstruction preserves Depot: `Mark`, `AddDeal`, battle start/action validation,
@@ -167,6 +167,76 @@ planner/CI. Preserve the completed aggregate and failed nodes rather than repeat
 replace its history. The stable `Rebuild.py` mounts a current Debug adapter into a fresh explicitly
 selected output using retained inputs; import changed PO resources before launching. No new original
 ROM/emulator evidence or original SRAM compatibility is claimed.
+
+## Current Item implementation
+
+**Confirmed:** [#1872](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1872) connects
+Use / Give / Equip / Drop at the same ordinary Map22/26 NPCs. `CaravanItemService` owns the typed
+selection phases, expected slot words, wait tokens, cancellation and publication. It calls the actual
+`FieldInventory` / `FieldRecovery` mutations with an internal Caravan caller policy. The live service
+wait is retained throughout. Ordinary `FieldCommand` and `QueryFieldActions` still require settled
+field input and cannot bypass a service wait; no alternate inventory or save authority is introduced.
+
+Self-Give removes the selected slot then appends its word, even when the member's pack is full.
+Add clears equipped and preserves the existing broken marker. Different-member Give checks both
+outgoing slots, compacts both packs and clears equipped on moved words. All initialized joined
+members, including reserves, are selectable. Cancelling target selection restarts the donor loop;
+cancelling exchange returns to target selection. Equip uses the existing admitted weapon/class
+choices. Drop requires confirmation, compacts the selected slot and retains the existing rare Deals
+saturation and unsellable rules. Known equipped cursed outgoing items refuse before broader
+unsupported-loadout checks, including both sides of exchange and unequipping. Selection/transaction
+failure preserves the snapshot; a later callback failure does not undo a committed item action.
+
+Caravan Use checks the source field-usable identity table separately from map events and ordinary
+Field NoEffect policies. Only the admitted Antidote poison-cure effect is implemented here. It
+consumes the selected slot even if the target has no poison, with distinct bilingual feedback;
+a missing/invalid target consumes nothing. Herbs/seeds and map-event items refuse without effect or
+consumption. The service never dispatches the Cotton Balloon map event. Fairy Powder and stat/level
+items remain unsupported and are not consumed. Bare carrying does not grant equipment or Use effects:
+existing Field loadout/admission limits, including unsupported ring identities/effects and broken
+weapon equipment, remain in force. This does not implement a wider curse/ring/broken lifecycle.
+`PrivateFieldPreparation` was reviewed and remains unchanged.
+
+All item changes reuse `FieldInventory.Replace` and `ExplorationState.WithParty`, retaining depot,
+OnceFlags/Deals, all other actor resources, RNG, active membership and story/transport continuity.
+No persistence format change is needed. Small actual-engine tests distinguish the full self-Give
+rule from ordinary Field self-exchange, both exchange guards, supported and ineffective Antidote,
+unsupported/unsellable refusal, stale/cancelled commands, equipment limits and failing callback return.
+
+The registered private `handoffs/issue1872` bundle reuses the accepted issue1870 world/catalogs and
+issue1871 slots read-only. Its `player/Play-en.cmd` and `player/Play-zh-CN.cmd` open the ordinary title;
+Continue → Slot1 reaches Map26's NPC. Each review uses a fresh Sample and disposable save namespace.
+From its `player/` directory in PowerShell7:
+
+```powershell
+./Play.ps1 -Language en -Sample items-review -Mode items-journey -Seed ./slots/depot-en.json
+./Play.ps1 -Language zh-CN -Sample desktop-review -Mode items-desktop -Seed ./slots/desktop-zh-CN.json
+./Play.ps1 -Language en -Sample field-review -Mode items-field -Seed ./slots/service-en.json
+./Play.ps1 -Language zh-CN -Sample cold-review -Mode cold -Seed ./slots/items-zh-CN.json
+./Play.ps1 -Language en -Sample battle-review -Mode exercise -Seed ./slots/items-battle-en.json
+python -X utf8 ../Compare.py
+```
+
+Both languages exercise ordinary Map22/26 entry, naturally held full-pack self-Give, cross-member
+exchange/cancellation, re-equipping the admitted weapon, unsupported Brave Apple and nonusable item
+feedback, target cancellation, Drop cancellation/commit, source text10 and field Save. Map26's
+nonempty depot persists through paid Church recovery, ordinary cave entry and real Battle23 admission.
+Cold Continue → Save preserves the complete decoded field and battle records in both languages;
+ordinary Stay reaches the next actor. Known old field-v1 and battle-v2 slots retain all prior data
+and only gain empty depot. Separate bilingual ordinary Field input still shows full self-exchange,
+keeps a no-effect recovery item, equips, returns, saves and moves. Native Antidote/curse acquisition
+is not claimed: those cases use actual-engine controlled tests. The preceding depot slice's natural
+victory/defeat/EGRESS evidence is retained, not relabelled as a new Item-slice outcome run.
+
+High rigor remains appropriate for the shared inventory/save boundary. New output is bounded to one
+small candidate runtime, reused immutable inputs and selected state/input receipts, budget250 MiB;
+no world/media extraction or new tool platform is needed. Rebuild the owning Debug adapter, then run
+`player/Rebuild.py --repository <checkout> --output <fresh-output>` and import changed PO resources
+with the configured Godot before launching. The engine aggregate, affected behavior selection, actual
+adapter, direct native observations, clean committed planner and selected CI own separate checks.
+The stable handoff retains exact candidate, commands and failures, including native exit status
+separately from game/observer state. #1716 finalizer/ObjectDB clean-exit behavior remains **Unknown**;
+no new original-game runtime, hardware or SRAM claim is made.
 
 ## Evidence and the first consumers
 
@@ -310,7 +380,7 @@ berth must survive unchanged except for the expressly selected operation.
 
 ## Recommended implementation tickets
 
-These are concrete proposed slices, not dispatched work or a request to create parallel writers.
+These are the serialized slice boundaries implemented above, not a request to create parallel writers.
 They consume accepted main sequentially. Each claims its exact edits at dispatch; listed shared files
 must be transferred after #1867/the current chapter writer stops. Existing files over the source-size
 threshold require extracting the affected responsibility without net growth, per repository guidance.
@@ -355,16 +425,16 @@ wiring only when their actual semantic boundary excludes changes to research evi
 
 ## Acceptance and reproduction boundary
 
-For design review, use the accepted base and pinned source above. Read the named routines with
+For original-source review, use the accepted base and pinned source above. Read the named routines with
 `git -C local/upstream/SF2DISASM show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/<path>`;
 verify that checkout's HEAD/status before filesystem reads. Compare tracked service evidence in
 `tests/fixtures/h2/common-menus-static-v1.json`, `common-stats-static-v1.json` and
 `field-item-effects-static-v1.json` with the linked owners. Their existing reproduction commands are
 `uv run sf2 h2 common-menus`, `uv run sf2 h2 common-stats` and `uv run sf2 h2 field-item-effects`;
 these are provenance routes, not newly claimed gate runs in this design. Run `git diff --check`,
-resolve this document's relative links, inspect the one-file staged diff/private boundary, and obtain
+resolve affected relative links, inspect the owned staged diff/private boundary, and obtain
 `uv run sf2 verify plan --base origin/main --head HEAD` on the clean committed candidate. Do not
-launch engine/H3 suites for this documentation change.
+launch engine/H3 suites solely for a documentation change.
 
 Implementation acceptance uses small actual Domain/Application/Content behavior tests via
 `uv run sf2 verify engine`, `uv run sf2 verify adapter`, and the affected ordinary host observations.
@@ -372,12 +442,12 @@ Follow the [environment and scope owner](../development-and-verification.md#scop
 probes/planners or new comparison platform. Exact source/H2 comparison is needed only if its claim
 changes. Use real state/input/projection and error observations, never screenshots.
 
-The retained **future** ordinary starting inputs are the registered `issue1864` handoff's
+The retained ordinary starting-input ancestry includes the registered `issue1864` handoff's
 `slots/floor-en.json` and `slots/floor-zh-CN.json`, and the earlier Desktop victory slots identified
 by [its reproduction route](cotton-balloon-floor-world.md#confirmed-remake-observations).
-They were not opened or modified here. A later implementation must copy them to disposable review
-namespaces, use its compatible candidate bundle and matching localization, and visit the actual
-NPC; do not launch the old package and mistake its unsupported native call for candidate behavior.
+The implementation bundles above retain their descendants. Copy selected seeds to disposable review
+namespaces, use the compatible candidate bundle and matching localization, and visit the actual
+NPC; do not mistake a predecessor binary's capability boundary for candidate behavior.
 Creed's post-recruit ordinary slot must come from the chapter implementation when accepted; none is
 invented here. At each relevant boundary verify:
 
