@@ -340,14 +340,8 @@ class OriginalPrograms:
                 and args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w"
             ):
                 registers["shop"] = self.number(args[0][1:])
-            elif op in ("jsr", "jmp") and args == ["j_ShopMenu"] and "shop" in registers:
-                result.append(services.shop_service(self, registers.pop("shop")))
-                if op == "jmp":
-                    result.append({"op": "end"})
-            elif op in ("jsr", "jmp") and args == ["j_ChurchMenu"]:
-                result.append(services.church_service(self))
-                if op == "jmp":
-                    result.append({"op": "end"})
+            elif (service := services.menu_service(self, op, args, registers)) is not None:
+                result.extend(service)
             elif op == "jsr" and args == ["j_YesNoPrompt"]:
                 # The direct prompt returns d0, unlike csc06 which writes F89.
                 if rows[index]["opcode"] == "tst.w" and rows[index]["operandText"] == "d0":

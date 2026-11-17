@@ -223,6 +223,12 @@ def derive(args: argparse.Namespace) -> dict:
     field_texts, field_items = set(), set()
     if args.scope == "current":
         field_texts = _search_text_ids(world["world"])
+        if any(
+            op["op"] == "caravan"
+            for program in world["world"]["programs"]
+            for op in program["instructions"]
+        ):
+            field_texts.update((2, 10))
         field_items = field_item_ids(world["world"]) - {127}
     hassan = args.scope == "current" and any(row["id"] == "map-9" for row in world["world"]["maps"])
     if hassan:

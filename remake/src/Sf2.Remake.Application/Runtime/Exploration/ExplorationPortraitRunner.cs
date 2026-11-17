@@ -12,7 +12,7 @@ internal static class ExplorationPortraitRunner
         HasCaller(story) && story.PortraitWindow is OpenPortraitWindow { Work: { Registered: true } work } && work.Y == work.DestinationY;
 
     internal static SessionSnapshot Open(ScenarioDefinition definition, SessionSnapshot current, EntityRef actor, byte flags,
-        List<SessionObservation> observations, bool entry)
+        List<SessionObservation> observations, bool entry, int? explicitPortrait = null)
     {
         if (current.Exploration is null || !HasCaller(current.Story) || current.Story.PortraitWindow is UnknownPortraitWindow)
             throw new BattleRuleException("field-portrait-context", "story.portrait", true);
@@ -22,12 +22,17 @@ internal static class ExplorationPortraitRunner
                 throw new BattleRuleException("field-portrait-state", "story.portrait", true);
             return current; // OpenPortraitWindow does not replace an existing window or counters.
         }
-        var entity = ProgramRunner.Entity(current, actor);
-        if (entity.Sprite is not { } sprite || definition.Exploration!.Visuals is not { } visuals ||
-            !visuals.Sprites.TryGetValue(sprite, out var visual))
-            throw new BattleRuleException("field-portrait-speaker", "program.portrait", true);
-        if (visual.Portrait is not { } portrait) return current;
-        if (!visuals.Portraits.TryGetValue(portrait, out var asset) || asset.Eyes is null || asset.Mouth is null)
+        var visuals = definition.Exploration!.Visuals;
+        int? selected = explicitPortrait;
+        if (selected is null)
+        {
+            var entity = ProgramRunner.Entity(current, actor);
+            if (entity.Sprite is not { } sprite || visuals is null || !visuals.Sprites.TryGetValue(sprite, out var visual))
+                throw new BattleRuleException("field-portrait-speaker", "program.portrait", true);
+            selected = visual.Portrait;
+        }
+        if (selected is not { } portrait) return current;
+        if (visuals is null || !visuals.Portraits.TryGetValue(portrait, out var asset) || asset.Eyes is null || asset.Mouth is null)
             throw new BattleRuleException("field-portrait-mapping", "world.portrait", true);
         var story = current.Story.Copy(current.Story.Cursor,
             new PortraitMovementWait(new(current.ObservationSequence + 1), false, entry),

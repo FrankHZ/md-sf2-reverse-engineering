@@ -14,7 +14,7 @@ public sealed partial class ExplorationSessionView
         session.Current.Story.EntrySkip is null && !SessionPresentationOwner.IsBattle(session.Current) &&
         !session.Current.CanWaitForText && !session.Current.CanWaitForChoice &&
         session.Current.Story.Wait is not (DialogueWait or W1TextWait or FieldTextWait { LogicalDone: true } or
-            FieldSearchWait or ChurchWait or ShopWait or ChoiceWait { Work: null } or ChoiceWait { Work.Automatic: false });
+            FieldSearchWait or ChurchWait or ShopWait or CaravanWait or ChoiceWait { Work: null } or ChoiceWait { Work.Automatic: false });
 
     internal void SuspendPacing()
     {

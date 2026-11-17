@@ -14,15 +14,31 @@ internal static class PrivateServicePrograms
         for (int p = 0; p < callerCount; p++)
         {
             var caller = programs[p];
-            if (!caller.Instructions.Any(op => op is OpenChurch or OpenShop)) continue;
+            if (!caller.Instructions.Any(op => op is OpenChurch or OpenShop or OpenCaravan)) continue;
             var instructions = caller.Instructions.ToArray();
             for (int i = 0; i < instructions.Length; i++)
             {
                 var service = instructions[i];
-                if (service is not (OpenChurch or OpenShop)) continue;
-                int text = service is OpenChurch ? 110 : 158;
+                if (service is not (OpenChurch or OpenShop or OpenCaravan)) continue;
+                int text = service is OpenCaravan ? 2 : service is OpenChurch ? 110 : 158;
                 string id = $"{caller.Id}-service-{i}";
                 Require(texts.ContainsKey(text) && ids.Add(id), "service-entry-binding", "world.programs");
+                if (service is OpenCaravan)
+                {
+                    Require(texts.ContainsKey(10), "service-exit-binding", "world.programs");
+                    string portrait = id + "-portrait";
+                    Require(ids.Add(portrait), "service-portrait-binding", "world.programs");
+                    programs.Add(new(portrait, [new BranchFlag(70, true, new(portrait, 3)),
+                        new OpenServicePortrait(11), new ReturnProgram(),
+                        new OpenServicePortrait(31), new ReturnProgram()], caller.Source, caller.EntitiesRunning));
+                    programs.Add(new(id, [new CallProgram(new(portrait, 0)),
+                        new ShowText(TextDisplayMode.Single, null, WaitForAcknowledgement: false, ExplicitWindows: true, TextId: 2),
+                        new CloseText(), new ClosePortrait(), service, new CallProgram(new(portrait, 0)),
+                        new ShowText(TextDisplayMode.Single, null, WaitForAcknowledgement: false, ExplicitWindows: true, TextId: 10),
+                        new CloseText(), new ClosePortrait(), new ReturnProgram()], caller.Source, caller.EntitiesRunning));
+                    instructions[i] = new CallProgram(new(id, 0));
+                    continue;
+                }
                 programs.Add(new(id, [
                     new OpenPortrait(null, UseEventSpeaker: true),
                     new ShowText(TextDisplayMode.Single, null, UseEventSpeaker: true,

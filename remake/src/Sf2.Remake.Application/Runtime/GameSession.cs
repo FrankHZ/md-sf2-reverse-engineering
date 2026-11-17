@@ -179,6 +179,12 @@ public sealed class GameSession
             _current = victory.Snapshot;
             return victory;
         }
+        if (envelope.Command is CaravanCommand caravan)
+        {
+            var serviced = CaravanService.Submit(Definition, current, caravan, Rules);
+            _current = serviced.Snapshot;
+            return serviced;
+        }
         if (envelope.Command is ShopCommand shop)
         {
             var serviced = ShopService.Submit(Definition, current, shop, Rules);

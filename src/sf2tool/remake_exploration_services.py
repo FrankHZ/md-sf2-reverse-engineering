@@ -92,3 +92,24 @@ def member_resource(compiler, args, registers, rows, index):
         ):
             return {"op": "restore-member-resource", "member": member, "hp": hp}, 1
     return None
+
+
+def menu_service(compiler, op, args, registers):
+    if op not in ("jsr", "jmp"):
+        return None
+    if args == ["j_ShopMenu"] and "shop" in registers:
+        result = shop_service(compiler, registers.pop("shop"))
+    elif args == ["j_ChurchMenu"]:
+        result = church_service(compiler)
+    elif args == ["j_CaravanMenu"]:
+        compiler.sources.update(
+            {
+                "disasm/code/common/menus/caravan/caravanactions_1.asm",
+                "disasm/code/common/menus/caravan/caravanactions_2.asm",
+                "disasm/code/common/stats/battleparty.asm",
+            }
+        )
+        result = {"op": "caravan"}
+    else:
+        return None
+    return [result, {"op": "end"}] if op == "jmp" else [result]

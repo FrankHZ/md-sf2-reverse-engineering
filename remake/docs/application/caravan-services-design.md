@@ -2,27 +2,94 @@
 
 ## Bounded agreement
 
-This is the implementation proposal for [#1868](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1868),
+This is the staged implementation agreement derived from [#1868](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1868),
 under [campaign risk 4](remaining-campaign-risk-baseline.md#risks-in-blocking-order) and
 [#1369](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369). Rigor remains **High**:
 formation, inventory, story return and historical saves share state across chapters. The immediate
 outcome is usable ordinary Caravan service at the already admitted Desktop/Floor World NPCs and a
 way to deploy a newly recruited Creed companion when twelve members are already active. This is
-not implementation acceptance; Caravan services remain unsupported in the inspected remake.
+a staged service: ordinary entry and Join/Purge are implemented below; Depot and Item remain unsupported.
 
-The inspected accepted base is `726da800a843a9af0bc951d6b83fd5d5ae0ee8df`. This design owns only
-this file. The concurrent [Battle23 task](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1867)
-owns its game worktree and shared runtime/content changes. Future implementation starts from its
-then-accepted base, serializes the shared paths below, and updates the
-[campaign feature trace](../capability-status.md#campaign-feature-trace) with actual support.
-Neither that unmerged work nor a private package is evidence for a new original-game claim.
+The design was inspected at `726da800a843a9af0bc951d6b83fd5d5ae0ee8df`. Formation implementation
+consumes accepted Battle23 main `84a08691384a88f69fa4e85f9f52e8655f6e03d3`. Subsequent service
+slices serialize the shared owners below and update the [campaign feature trace](../capability-status.md#campaign-feature-trace).
+A private remake package is not evidence for a new original-game claim.
 
 Use the existing party flags, carried resources, immutable custody, service wait, content compiler,
 save formats and field/shop design system. No service platform, second roster, alternate inventory,
-capture system, new savepoint or private acquisition is needed. This investigation reads tracked
-owners and the clean pinned source checkout only; it does not open private bundles or slots, run an
-emulator/Godot, or regenerate content. Documentation acceptance is source/contract correspondence,
-valid local links, scoped diff and private-boundary inspection. Engine suites are not its gate.
+capture system, new savepoint or private acquisition is needed. The original design investigation
+used tracked owners and pinned source only. Implementation
+acceptance additionally uses the engine and ordinary native observations below, with private inputs
+kept local. No new original emulator evidence is claimed.
+
+## Current formation implementation
+
+**Confirmed:** [#1870](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1870) implements
+ordinary Map22 entity128 and Map26 entity134 entry, Join/Purge, nested cancellation and callback return.
+Application owns `CaravanWait` and token-checked commands; `MapPartyMembership` changes active flags
+without deleting joined flags or actor resources. The same publication rebuilds `PartyLists` and
+`ActiveAllies`. Godot projects the existing scrollable field choices/pack panel and retains release,
+focus and pointer barriers. Depot and Item remain visible with a readable unsupported result.
+Neither service entry requires the vehicle flags nor service exit reloads the map.
+
+Private compilation lowers the actual `j_CaravanMenu` call, retaining call/tail return. Content binds
+source text2 at entry and text10 at exit through the existing text/portrait player. The native
+portrait is Rohde11 or Astral31 according to F70, independent of the NPC sprite. The bilingual catalog
+selects these two source messages; formation prompts use the ordinary UI translation keys. Two engine behavior tests cover F70-clear/Rohde and F70-set/Astral through entry,
+service and final return. Natural retained observations exercise F70-clear/Rohde. **Unknown:** native F70-set/Astral service traversal.
+
+The nine focused `CaravanServiceTests` exercise different reserve/relief members, dead confirmation,
+under-capacity join, full12 exchange/cancel/Bowie refusal, Purge/rejoin, empty reserve and unsupported
+choices, stale/repeated/foreign commands and a failing callback after a committed exchange. Selection
+failures leave the snapshot unchanged; a later callback failure retains the accepted formation.
+They use actual engine state, not a reference-case predicate or a separate service model.
+
+The registered private `handoffs/issue1870` bundle contains `Play-en.cmd` / `Play-zh-CN.cmd`.
+Choose **Continue → Slot1**. The default is the ordinary Map26 service-return save at (11,36), Up,
+with Peter7 in reserve and eleven active members. Confirm speaks to the NPC. Join can restore Peter;
+Purge can select another non-leader. Save is available after Leave and the text10 return. The
+`floor-*` and `desktop-*` seeds retain the independent original twelve-member histories unchanged.
+No existing player namespace is overwritten; each review needs a fresh Sample.
+
+From that registered bundle in PowerShell7:
+
+```powershell
+./Play.ps1 -Language en -Sample floor-review -Mode formation
+./Play.ps1 -Language zh-CN -Sample floor-review -Mode formation
+./Play.ps1 -Language en -Sample desktop-review -Mode formation -Seed ./slots/desktop-en.json
+./Play.ps1 -Language zh-CN -Sample desktop-review -Mode formation -Seed ./slots/desktop-zh-CN.json
+./Play.ps1 -Language en -Sample field-review -Mode cold -Seed ./slots/service-en.json
+./Play.ps1 -Language zh-CN -Sample battle-review -Mode exercise -Seed ./slots/battle-zh-CN.json
+```
+
+`formation` uses ordinary keyboard input to inspect empty Join, Depot/Item refusal, Bowie refusal,
+Purge Sarah1 and dead Kazin4, decline/accept dead rejoin, rejoin Sarah, cancel nested selection,
+and Purge Peter7. Held Confirm is observed without a second command leaking into the result. Both
+Map22 and Map26 run these operations in both languages. Complete party resources stay equal across
+the service; only active flag39 is absent at final return. Names, story/transport flags and inventory
+are retained. Map26 then walks through the real cave/confrontation into Battle23 with the selected
+eleven-member formation; Peter remains retained with his HP/items and no battle position. Cold battle
+Continue executes ordinary movement confirmation and Stay to the next actor without an adapter fault.
+
+All complete decoded field and battle save data match before and after cold Continue → Save in both
+languages. The old Battle19 record also round-trips unchanged. Actual field movement after cold load
+is observed. These are remake persistence results, not original SRAM/runtime claims. The inherited
+natural saves have only twelve joined members: native full-thirteen-member replacement and Creed's
+new recruit → service → next-battle journey await the recruitment chapter. Full-capacity exchange is
+engine-tested, not mislabelled as that natural journey.
+
+The resource bound is one incrementally recompiled existing world and its required contained
+encounter/audio dependencies, one reused runtime, and bounded receipts; initial added-output budget
+350 MiB. No second full acquisition, capture system, service registry, new save schema or migration
+is introduced. The old formats already persist flags, active members and all retained resources.
+The registered `Rebuild.py --repository <checkout> --output local/<fresh-directory>` recipe uses
+the maintained compiler and localization selector against the same pinned inputs after the owning
+Debug adapter build; it does not re-extract world media. Run `uv run sf2 verify engine`, `uv run sf2 verify adapter`, direct native observations and the clean
+committed `uv run sf2 verify plan --scope engine --base origin/main --head HEAD`. The shared Python
+changes lower remake services/select display text only; original extraction/evidence is unchanged.
+The bundle preserves early admission/localization/source-copy failures and native exit codes separately
+from observer results. Existing #1716 ObjectDB shutdown warnings remain; successful observations do
+not establish leak-free exit. The final handoff owns exact commands, candidate identity and CI.
 
 ## Evidence and the first consumers
 
