@@ -40,11 +40,11 @@ internal static class FollowerMotion
     };
 
     internal static ExplorationEntity Tick(ExplorationEntity entity, IReadOnlyDictionary<int, ExplorationEntity> slots,
-        WorkingMapLayout layout)
+        ExplorationState world, bool inBattle = false)
     {
         if (entity.Follower is not { } follow || entity.Actions is not null || (follow.WaitForDestination && entity.Motion.IsMoving)) return entity;
         var leader = slots[follow.LeaderSlot].Motion;
         return entity with { Motion = EntityMotion.Follow(entity.Motion, leader, follow.OffsetX, follow.OffsetY,
-            (x, y) => x is >= 0 and < 64 && y is >= 0 and < 64 && layout[x, y] < 0xC000) };
+            (x, y) => FieldLayout.Word(world, leader, x, y, inBattle) is < 0xC000) };
     }
 }

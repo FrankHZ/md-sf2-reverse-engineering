@@ -59,6 +59,8 @@ internal static class OpeningSave
             player.Motion.X % 384 != 0 || player.Motion.Y % 384 != 0 ||
             !world.Definition.Traversal.IsWithinActiveArea(player.Position) || OriginalMapTraversal.IsBlocked(world.Layout, player.Position))
             throw new BattleRuleException("save-player-unsettled", "save.boundary");
+        // Finite field recipes rebuild the primary-layer population; the v1 record has no layer.
+        if (player.Motion.Layer != 0) throw new BattleRuleException("save-player-layer", "save.boundary");
         foreach (var entity in world.AllEntities.Where(entity => entity.Visible))
         {
             if (entity.WaitingForSprite || entity.Follower is not null && (entity.Motion.IsMoving || entity.WaitingForMotion))

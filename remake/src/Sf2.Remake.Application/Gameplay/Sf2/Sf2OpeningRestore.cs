@@ -71,7 +71,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
-        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" or "desktop-kingdom" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
@@ -137,6 +137,10 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 523 or 783 or 784 or 786) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
+        // First arrival has returned; completed Chessboard uses a separate init branch.
+        if (map.Value == "map-22" && flags.Contains(776) && !flags.Contains(422) && !flags.Contains(522) &&
+            content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("desktop-kingdom", player, "Desktop Kingdom");
         if (map.Value == "map-32" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("fairy-cave", player, "Fairy Cave");
         if (map.Value == "map-51" && !flags.Contains(420) && flags.Contains(470) == flags.Contains(520) &&

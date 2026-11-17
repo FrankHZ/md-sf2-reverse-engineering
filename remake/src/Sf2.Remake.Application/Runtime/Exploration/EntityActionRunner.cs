@@ -18,7 +18,7 @@ internal static class EntityActionRunner
     };
 
     internal static EntityActionTickResult Tick(ExplorationState world, ExplorationDirection? fieldMove = null,
-        IReadOnlyList<int>? storyFlags = null, bool fieldControl = false, bool ordinarySprites = false)
+        IReadOnlyList<int>? storyFlags = null, bool fieldControl = false, bool ordinarySprites = false, bool inBattle = false)
     {
         var entities = world.AllEntities.ToDictionary(entity => entity.Slot);
         ushort spriteSize = world.SpriteSize;
@@ -33,8 +33,7 @@ internal static class EntityActionRunner
             var entity = entities[original.Slot];
             var initial = entity.Motion;
             int destinationX = initial.XDestination / 384, destinationY = initial.YDestination / 384;
-            ushort? word = destinationX is >= 0 and < 64 && destinationY is >= 0 and < 64
-                ? world.Layout[destinationX, destinationY] : null;
+            ushort? word = initial.IsMoving ? FieldLayout.Word(world, initial, destinationX, destinationY, inBattle) : null;
             entity = entity with { Motion = EntityMotion.Tick(initial, word) };
             // Selected ac_animSpeedX2 scenes animate even without translation. The
             // modern simulation tick owns this projection; it is not a VInt claim.
@@ -56,7 +55,7 @@ internal static class EntityActionRunner
                 continue;
             }
             if (entity.WaitingForMotion && entity.Motion.IsMoving) continue;
-            entity = FollowerMotion.Tick(entity with { WaitingForMotion = false }, entities, world.Layout);
+            entity = FollowerMotion.Tick(entity with { WaitingForMotion = false }, entities, world, inBattle);
             for (int budget = 0; budget < 1024 && entity.Actions is { } program; budget++)
             {
                 if (entity.ActionCursor < 0 || entity.ActionCursor >= program.Actions.Count)
@@ -71,7 +70,7 @@ internal static class EntityActionRunner
                     case FollowPhysical follow:
                         var leader = CaravanRuntime.Physical(Publish(), follow.Slot).Motion;
                         motion = EntityMotion.Follow(motion, leader, follow.X, follow.Y,
-                            (fx, fy) => fx is >= 0 and < 64 && fy is >= 0 and < 64 && world.Layout[fx, fy] < 0xC000);
+                            (fx, fy) => FieldLayout.Word(world, leader, fx, fy, inBattle) is < 0xC000);
                         yield = true;
                         break;
                     case MoveOwnFacing own: motion = EntityMotion.FacingRelative(motion, motion, own.Distance); break;
@@ -125,8 +124,9 @@ internal static class EntityActionRunner
                                 _ => motion.Y >= (walk.Origin.Y + walk.Radius) * 384,
                             };
                             if (outside) continue;
-                            var target = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, entity.Position, direction);
-                            if (target is null || ((motion.FlagsA & 0x40) != 0 && OriginalMapTraversal.IsBlocked(world.Layout, target))) continue;
+                            var offset = FieldLayout.Offset(world, motion, inBattle);
+                            var target = world.Definition.Traversal.ResolveCandidateTarget(world.Layout, entity.Position, direction, offset.X, offset.Y);
+                            if (target is null || ((motion.FlagsA & 0x40) != 0 && OriginalMapTraversal.IsBlocked(world.Layout, target, offset.X, offset.Y))) continue;
                             var started = EntityMotion.Start(motion, (short)(target.X * 384), (short)(target.Y * 384),
                                 entities.Values.Where(other => other.Slot != entity.Slot && other.Visible).Select(other => other.Motion));
                             if (started is null) continue;

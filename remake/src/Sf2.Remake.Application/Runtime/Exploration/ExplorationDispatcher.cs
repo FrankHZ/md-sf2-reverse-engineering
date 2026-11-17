@@ -338,7 +338,7 @@ internal static class ExplorationDispatcher
                         bool ordinarySprites = current.HasOrdinaryFieldTime;
                         EntityActionTickResult? tickResult = entityUpdates && current.Exploration is { } world
                             ? EntityActionRunner.Tick(world, pendingMove, current.Story.Flags,
-                                fieldControl: existingFieldInput || pendingMove is not null, ordinarySprites: ordinarySprites) : null;
+                                fieldControl: existingFieldInput || pendingMove is not null, ordinarySprites: ordinarySprites, inBattle: current.Story.EnteringBattle is not null) : null;
                         var active = tickResult is not null ? new ActiveExploration(MapEventDispatcher.FieldRoof(tickResult.World, current.Story)) : current.Active;
                         if (ordinarySprites && active is ActiveExploration ordinary && tickResult?.Failure is null)
                             active = new ActiveExploration(OrdinaryFieldService.Sprites(ordinary.World));
@@ -544,7 +544,7 @@ internal static class ExplorationDispatcher
         if (!musicServiced) current = ExplorationMusicRunner.BeforeService(current, observations);
         bool enabled = entityEnabled ?? current.Story.EntityServices ?? (current.Story.Wait is not TextCloseWait { CallerReturn: true } &&
             (current.Story.Cursor is not { } cursor || definition.Exploration!.Programs[cursor.Program].EntitiesRunning));
-        var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags) : null;
+        var tick = enabled ? EntityActionRunner.Tick(current.Exploration!, storyFlags: current.Story.Flags, inBattle: current.Story.EnteringBattle is not null) : null;
         var world = tick is null ? current.Exploration! : MapEventDispatcher.FieldRoof(tick.World, current.Story);
         var story = ExplorationTextRunner.AfterEntities(world, current.Story);
         story = story.Copy(story.Cursor, story.Wait, simulationTick: checked(story.SimulationTick + 1));

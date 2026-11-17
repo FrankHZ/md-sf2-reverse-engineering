@@ -1401,7 +1401,7 @@ The map-init camera profile includes source layer255 with zero foreground/backgr
 unity parallax and zero autoscroll. It follows A rather than B, retaining identical initialized
 A/B axes through destination/scroll/window service. The existing renderer uses that same origin
 without a duplicate foreground. The field profile also admits main-plane unity/origin0 and secondary
-per-axis128/256 parallax, offsets0–63 and zero autoscroll within nonnegative signed-word positions.
+per-axis128/192/256 parallax, offsets0–63 and zero autoscroll within nonnegative signed-word positions.
 Initialization quantizes before scaling/offset; destination and speed transforms preserve independent
 axes. Ordinary actors subtract the area main plane; entity Layer still controls window priority.
 Foreground presence includes parallax differences. Other view profiles, outcome windows and camera-entity retain their explicit limits.
@@ -1575,7 +1575,7 @@ entity/destination hints clear; actual bound projection continues to use Logical
 The existing common service moves enabled entities before updating the view/windows and registered
 portrait. Following reads that live physical record, selecting B for layer0 or A for255. While any
 axis is active it preserves prepared speed/counter and completes the existing scroll; later settled
-following uses the existing deadband/clamp/counter rule and independent128/256 parallax. Null detach
+following uses the existing deadband/clamp/counter rule and independent128/192/256 parallax. Null detach
 retains axes/counter; explicit destinations clear tracking. Sprite visibility is independent of
 identity removal. No new reducer, render smoothing, resource, clock or content lowering is needed.
 

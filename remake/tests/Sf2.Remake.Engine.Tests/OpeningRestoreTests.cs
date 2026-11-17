@@ -105,6 +105,29 @@ public sealed class OpeningRestoreTests
                 definition, new(new("map-33"), new(x, y), facing), flags.Append(later).ToArray(), null)).Code);
     }
 
+    [Theory]
+    [InlineData(4, 24, 0, false)]
+    [InlineData(15, 3, 1, true)]
+    public void DesktopSaveRestoresCompletedArrivalWithoutReplayingIt(int x, int y, byte facing, bool permission)
+    {
+        var (definition, data) = Fixture();
+        var flags = data.Flags.Concat(permission ? new[] { 776, 777 } : new[] { 776 }).ToArray();
+        var slot = data with { Map = "map-22", Recipe = "desktop-kingdom", X = x, Y = y, Facing = facing,
+            Flags = flags, EgressMap = "map-9" };
+        var restored = Assert.IsType<SessionStarted>(GameSession.Restore(definition, slot, RuleCompositions.Sf2()));
+        Assert.Equal(new MapPosition(x, y), restored.Session.Current.Exploration!.PlayerEntity.Position);
+        Assert.Equal(facing, restored.Session.Current.Exploration.PlayerEntity.Motion.Facing);
+        Assert.Contains(776, restored.Session.Current.Story.Flags);
+        Assert.Equal(permission, restored.Session.Current.Story.Flags.Contains(777));
+        Assert.DoesNotContain(999, restored.Session.Current.Story.Flags);
+        Assert.DoesNotContain(774, restored.Session.Current.Story.Flags); // mansion scene is not the arrival selector
+        var policy = definition.Persistence!;
+        var anchor = new FieldReturnAnchor(new("map-22"), new(x, y), facing);
+        foreach (var unsupported in new[] { data.Flags, flags.Append(422).ToArray(), flags.Append(522).ToArray() })
+            Assert.Equal("save-location-unavailable", Assert.Throws<BattleRuleException>(() =>
+                policy.Select(definition, anchor, unsupported, null)).Code);
+    }
+
     private static ushort[] MansionLayout()
     {
         var words = new ushort[WorkingMapLayout.WordCount];
@@ -121,7 +144,7 @@ public sealed class OpeningRestoreTests
             id, BattleControl.Player, null, new(1 + id, 1), new(null, 0, 0, 0, 0, AllyPartyMember: id))).ToArray();
         var battle = new BattleDefinition("opening", new("battle"), 1, 1, [], deployments, []);
         var palette = new PalettePair(0x222, 0x444);
-        var maps = new[] { "map-3", "map-57", "map-32", "map-67", "map-33" }.Select(id => new ExplorationMapDefinition(new(id),
+        var maps = new[] { "map-3", "map-57", "map-32", "map-67", "map-33", "map-22" }.Select(id => new ExplorationMapDefinition(new(id),
             new WorkingMapLayout(id == "map-33" ? MansionLayout() : new ushort[WorkingMapLayout.WordCount]), new([new(0, 0, 63, 63)]),
             id == "map-3" ? [new(new("entity-1"), new(42, 8), 3, 32, Sprite: 1,
                 Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : id == "map-33" ? [new(new("entity-128"), new(63, 63), 1, 32, Sprite: 202)] : [], [],
