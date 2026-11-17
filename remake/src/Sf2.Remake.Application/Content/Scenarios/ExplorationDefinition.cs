@@ -137,8 +137,20 @@ public sealed class ExplorationMapDefinition
     public IReadOnlyList<ExplorationBattleRoute> Battles { get; }
     public IReadOnlyList<WriteFlag> EntryFlags { get; }
     public PalettePair? BasePalette { get; }
-    public IReadOnlyList<ExplorationViewArea> ViewAreas { get; }
+    public IReadOnlyList<ExplorationViewArea> ViewAreas { get; private set; }
     public IReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition> Setups { get; }
+
+    internal ExplorationMapDefinition WithBattleSceneArea(MapPosition camera, int width, int height)
+    {
+        var areas = ViewAreas.ToArray();
+        int index = Array.FindIndex(areas, area => camera.X >= area.MinX && camera.X <= area.MaxX &&
+            camera.Y >= area.MinY && camera.Y <= area.MaxY);
+        if (index < 0) throw new BattleRuleException("field-view-area", "program.map", true);
+        areas[index] = areas[index] with { MinX = 0, MinY = 0, MaxX = width - 1, MaxY = height - 1 };
+        var scene = (ExplorationMapDefinition)MemberwiseClone();
+        scene.ViewAreas = Array.AsReadOnly(areas);
+        return scene;
+    }
 
     internal MapSetupId? SelectedSetup(IReadOnlyList<int> flags) => Setup is null ? null :
         MapSetupSelector.Select(Setup, Setup.DefaultSetup,

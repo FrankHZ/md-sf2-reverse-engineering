@@ -25,9 +25,9 @@ Each immediate second search gave 403/408 and an empty chest. After cold Continu
 
 | Take this exit | Arrival and next ordinary input |
 | --- | --- |
-| West stair, (2,3) | Map67 (51,23), Down. Up at (51,22) re-enters the west side. Left onto the default zone (50,23) with F521 clear sets F421 and requests the current map. The wildcard row selects Battle21. The retained run stopped at `battle-entry-unavailable / battle-21`. |
+| West stair, (2,3) | Map67 (51,23), Down. Up at (51,22) re-enters the west side. Left onto the default zone (50,23) with F521 clear sets F421 and requests the current map. The wildcard row selects Battle21. The cave handoff stops at admission. Continue through the [Battle21 opening and return](battle21-devils-tail.md). |
 | East stair, (29,3) | Map67 (57,24), Down. Moving into the opened (57,23) re-enters the east side. The return also supports the eastern scroll to Map68 and back with the same party. |
 
 The sealed round trips returned to Map32 (19,25), Down. An independent title Continue and immediate re-save matched each complete gameplay payload, including both RNG words, item slots, chest and passage flags, facing, music and transport. The separate east-stair save exercises diagonal facing across a cold load. Run `python -X utf8 compare.py` in the private handoff for the bilingual comparison. [Save and Continue contract](battle-save-and-continue.md)
 
-**Unknown:** natural original-console timing, hardware presentation and the zero-HP hint in a natural playthrough. The terrain and program joins use the registered USA ROM and pinned SF2DISASM revision identified by the original chapters. Battle21 combat and the onward trip to Creed remain beyond this playable route.
+**Unknown:** natural original-console timing, hardware presentation and the zero-HP hint in a natural playthrough. The terrain and program joins use the registered USA ROM and pinned SF2DISASM revision identified by the original chapters. The next playable handoff starts at this west exit.

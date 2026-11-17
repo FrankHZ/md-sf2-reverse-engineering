@@ -62,7 +62,8 @@ public sealed class BattleEntryProgramTests
         {
             // A stored period and live target cannot turn a battle-loader delivery into a field pass.
             initialized = initialized.WithStory(initialized.Story.Copy(initialized.Story.Cursor, initialized.Story.Wait,
-                logicalView: initialized.Story.LogicalView! with { TargetSlot = 0, FollowCounter = 7 }));
+                logicalView: initialized.Story.LogicalView! with { TargetSlot = 0, FollowCounter = 7,
+                    AX = seen ? new(100, 484, 16) : initialized.Story.LogicalView!.AX }));
         }
         var current = initialized;
         foreach (var kind in new[] { PresentationCueKind.FadeOut, PresentationCueKind.BattleLoad, PresentationCueKind.FadeIn })
@@ -87,7 +88,11 @@ public sealed class BattleEntryProgramTests
             Assert.Equal(initialized.Story.SimulationTick, current.Story.SimulationTick);
             Assert.Equal(initialized.Story.RandomSeedCopy, current.Story.RandomSeedCopy);
             Assert.Equal(initialized.Story.Display, current.Story.Display);
-            Assert.Equal(initialized.Story.LogicalView, current.Story.LogicalView);
+            if (seen && kind == PresentationCueKind.FadeIn)
+                Assert.Equal(initialized.Story.LogicalView! with { AX = new(100),
+                    AY = new(initialized.Story.LogicalView.AY.Position), BX = new(initialized.Story.LogicalView.BX.Position),
+                    BY = new(initialized.Story.LogicalView.BY.Position) }, current.Story.LogicalView);
+            else Assert.Equal(initialized.Story.LogicalView, current.Story.LogicalView);
             Assert.Equal(initialized.Story.TextSettings, current.Story.TextSettings);
             Assert.Equal(initialized.Story.Callers, current.Story.Callers);
             Assert.DoesNotContain(result.Observations, row => row.Kind is "simulation-tick" or "entity-service" or "full-fade-started");

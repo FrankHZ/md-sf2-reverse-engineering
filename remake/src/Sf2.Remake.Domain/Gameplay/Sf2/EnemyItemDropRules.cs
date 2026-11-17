@@ -31,8 +31,7 @@ internal static class EnemyItemDropRules
         custody = custody.Mark(row.OnceFlag);
         effects.Add(new("drop-once-set", actorRef, 0, row.OnceFlag, Target: targetRef));
         int slot = held.Items.ToList().FindIndex(word => (word & 127) == row.ItemId);
-        var remaining = held.Items.ToList(); remaining.RemoveAt(slot); remaining.Add(127);
-        target = target.With(sourceLoadout: new(remaining, held.Spells));
+        target = BattleEquipment.RemoveItem(target, slot);
         effects.Add(new("enemy-item-removed", targetRef, held.Items[slot], slot));
         var item = definition.Items[row.ItemId];
         BattleItemReceipt? receipt = null;

@@ -164,6 +164,8 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_member
 
     if battle >= 9:
         carried.add(61)  # Achilles Sword can be carried back into Parmecia encounters.
+    if battle >= 21:
+        carried.add(62)  # Broad Sword can transfer from the second Skeleton.
     members = []
     for member in selected_members:
         start = read(ally_table["table_AllyStartDefinitions"] + 6 * member, 6)
@@ -189,7 +191,7 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_member
 def build(
     rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None
 ) -> dict:
-    if battle not in range(1, 21):
+    if battle not in range(1, 22):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -698,6 +700,7 @@ def add_field_death(
             "battle-18",
             "battle-19",
             "battle-20",
+            "battle-21",
         )
         or "fieldDeath" in scene
     ):
@@ -743,6 +746,7 @@ def add_field_death(
         "battle-18",
         "battle-19",
         "battle-20",
+        "battle-21",
     ):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
@@ -842,7 +846,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(1, 21), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 22), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

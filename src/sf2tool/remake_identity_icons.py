@@ -73,6 +73,12 @@ def field_item_ids(world: dict) -> set[int]:
     ):
         # Shining Ball custody and the equipped Power Stick enter this campaign package.
         ids.update((16, 89))
+    if any(
+        route.get("encounter") == "battle-21" and not route.get("unavailable")
+        for field in world["maps"]
+        if (route := field.get("battle"))
+    ):
+        ids.update((20, 62))  # Protect Ring and Broad Sword
     return ids
 
 

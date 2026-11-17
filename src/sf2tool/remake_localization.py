@@ -262,6 +262,13 @@ def derive(args: argparse.Namespace) -> dict:
         for row in world["world"]["maps"]
         if (route := row.get("battle"))
     )
+    battle21 = args.scope == "current" and any(
+        route.get("encounter") == "battle-21" and not route.get("unavailable")
+        for row in world["world"]["maps"]
+        if (route := row.get("battle"))
+    )
+    if battle21:
+        field_texts.update(range(2576, 2590))
     if battle20:
         field_texts.update(range(2566, 2576))
     repeat_enemies = {
@@ -308,6 +315,8 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.ally"] += (13,)
         name_ids["name.enemy"] += (44,)
         name_ids["name.class"] += (5,)
+    if battle21:
+        name_ids["name.enemy"] += (17,)  # Skeleton
     if 82 in repeat_enemies:
         field_items.add(28)  # Equipped Brass Knuckles
     if 81 in repeat_enemies:
@@ -432,6 +441,7 @@ def derive(args: argparse.Namespace) -> dict:
             + taros
             + 3 * battle19
             + 3 * battle20
+            + battle21
             + len(extra_items)
             + len(repeat_names)
             + (81 in repeat_enemies)

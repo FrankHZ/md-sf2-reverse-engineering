@@ -374,6 +374,7 @@ internal static class ExplorationContentReader
                 "battle-14" => 24,
                 "battle-17" => 27,
                 "battle-19" => 29,
+                "battle-21" => 31,
                 _ => null,
             });
     }

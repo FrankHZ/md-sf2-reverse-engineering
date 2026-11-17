@@ -2185,6 +2185,9 @@ msgstr "火山，战斗结束处"
 msgid "save.destination.polca-return"
 msgstr "波尔卡，东侧入口"
 
+msgid "save.destination.devils-tail"
+msgstr "恶魔之尾"
+
 msgid "save.destination.fairy-cave"
 msgstr "妖精洞"
 
