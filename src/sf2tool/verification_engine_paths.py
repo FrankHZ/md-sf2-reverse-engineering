@@ -99,6 +99,10 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         return ("private-admission-build",)
     if path.startswith("remake/tools/Sf2.Remake.LiveInspection/"):
         return ("live-inspection-build",)
+    if path.startswith("remake/diagnostics/input-quit/"):
+        # Standalone incident reduction: direct locked build/native pilot in its owner.
+        # Neither it nor the production projects reference each other.
+        return ()
     if path.startswith("remake/tests/Sf2.Remake.Engine.Tests/"):
         return ("engine-unit",)
     if path.startswith("remake/tests/"):
