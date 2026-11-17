@@ -79,7 +79,7 @@ with ordinary Up from the stable (59,4), Right save and must implement the desti
 Load the current worktree's ignored `local/private-inputs.ps1` in the launching process. Use the
 [locked SDK workflow](../development-and-verification.md#locked-net-workflow), `uv sync --locked`,
 `uv run sf2 verify engine`, `uv run sf2 verify adapter`, and the clean committed
-`uv run sf2 verify plan --base origin/main --head HEAD`. Compiler changes here are engine content
+`uv run sf2 verify plan --scope engine --base origin/main --head HEAD`. The explicit engine scope follows review of this producer-only diff and retains the three direct `research-public` checks. Compiler changes here are engine content
 production; no research extractor, original observation or legacy aggregate changes.
 
 **Unknown:** original natural reach, hardware-exact timing, raster/audio parity and original SRAM
