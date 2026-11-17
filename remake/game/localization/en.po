@@ -2346,3 +2346,6 @@ msgstr "{0} is no longer stunned."
 
 msgid "save.destination.desktop-kingdom"
 msgstr "Desktop Kingdom"
+
+msgid "save.destination.floor-world"
+msgstr "Floor World"

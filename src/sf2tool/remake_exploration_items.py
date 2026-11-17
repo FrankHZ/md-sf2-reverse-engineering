@@ -1,5 +1,7 @@
 """Bind selected map item-use tables and their joined-inventory services."""
 
+import re
+
 from sf2tool.h2.battle_global_data import _tokens
 
 
@@ -27,20 +29,28 @@ def item_events(compiler, folder, setup, resources):
             record[key] for key in ("x", "y", "facing", "item")
         ):
             raise ValueError("map item event binding mismatch: " + symbol)
-        # Both admitted handlers first test an already-completed flag, returning
-        # d6=0 on repeat. Keep the menu's no-effect path separate from script entry.
+        # Guarded handlers return d6=0 on repeat. The lookup/removal caller has
+        # no flag prerequisite; its selected held item is checked by the runtime.
         handler = compiler.source_operations(relative, symbol)
+        lookup = [r["opcode"] for r in handler[:2]] == ["moveq", "jsr"] and (
+            _tokens(handler[0]["operandText"]) == ["#" + args[3], "d1"]
+            and handler[1]["operandText"] == "j_GetItemInventoryLocation"
+        )
         guard = [r["opcode"] for r in handler[:2]]
         no_effect = guard == ["chkFlg", "bne.s"] and [
             r["opcode"] for r in compiler.source_operations(relative, handler[1]["operandText"])
         ] == ["rts"]
-        if not no_effect and not (
-            guard == ["chkFlg", "beq.s"]
-            and handler[2]["opcode"] == "moveq"
-            and _tokens(handler[2]["operandText"]) == ["#0", "d6"]
-            and handler[3]["opcode"] == "bra.s"
-            and compiler.source_operations(relative, handler[3]["operandText"])[0]["opcode"]
-            == "rts"
+        if (
+            not lookup
+            and not no_effect
+            and not (
+                guard == ["chkFlg", "beq.s"]
+                and handler[2]["opcode"] == "moveq"
+                and _tokens(handler[2]["operandText"]) == ["#0", "d6"]
+                and handler[3]["opcode"] == "bra.s"
+                and compiler.source_operations(relative, handler[3]["operandText"])[0]["opcode"]
+                == "rts"
+            )
         ):
             raise ValueError("unsupported map item event guard: " + symbol)
         events.append(
@@ -50,7 +60,7 @@ def item_events(compiler, folder, setup, resources):
                 "x": x,
                 "y": y,
                 "facing": None if facing == 255 else facing,
-                "requiredFlag": compiler.number(handler[0]["operandText"]),
+                "requiredFlag": None if lookup else compiler.number(handler[0]["operandText"]),
                 "requiredValue": False,
                 "program": {
                     "program": compiler.compile(symbol).lower().replace("_", "-"),
@@ -68,6 +78,7 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
     if op != "jsr" or relative not in (
         map_path + "map08/mapsetups/s5_itemevents.asm",
         map_path + "map09/mapsetups/s2_entityevents.asm",
+        map_path + "map22/mapsetups/s5_itemevents.asm",
     ):
         return None
     if args == ["(Sleep).w"] and "d0" in registers:
@@ -75,6 +86,23 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
     if args == ["j_GetItemInventoryLocation"]:
         compiler.sources.add("disasm/code/common/stats/itemstats.asm")
         compare, branch = rows[index : index + 2]
+        if branch["opcode"] == "beq.s":
+            # Conditional removal rejoins the immediate next source label. The
+            # common RemovePartyItem performs the same no-match no-op and scan.
+            if not (
+                compare["opcode"] == "cmpi.w"
+                and _tokens(compare["operandText"]) == ["#-1", "d0"]
+                and index + 3 == len(rows)
+                and rows[index + 2]["opcode"] == "jsr"
+                and rows[index + 2]["operandText"] == "j_RemoveItemBySlot"
+            ):
+                raise ValueError("unsupported conditional joined-item removal")
+            # The compiler appends the immediate fallthrough label normally.
+            target = branch["operandText"]
+            text = (compiler.upstream / relative).read_text(encoding="utf-8")
+            if not re.search(r"jsr\s+j_RemoveItemBySlot\s*\n" + re.escape(target) + r":", text):
+                raise ValueError("conditional removal must rejoin its fallthrough")
+            return {"op": "remove-party-item", "item": registers["d1"]}, index + 3
         if not (
             compare["opcode"] == "cmpi.w"
             and _tokens(compare["operandText"]) == ["#-1", "d0"]

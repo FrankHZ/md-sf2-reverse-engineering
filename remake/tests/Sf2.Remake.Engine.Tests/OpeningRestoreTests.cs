@@ -162,10 +162,10 @@ public sealed class OpeningRestoreTests
             id, BattleControl.Player, null, new(1 + id, 1), new(null, 0, 0, 0, 0, AllyPartyMember: id))).ToArray();
         var battle = new BattleDefinition("opening", new("battle"), 1, 1, [], deployments, []);
         var palette = new PalettePair(0x222, 0x444);
-        var maps = new[] { "map-3", "map-57", "map-32", "map-67", "map-33", "map-22" }.Select(id => new ExplorationMapDefinition(new(id),
+        var maps = new[] { "map-3", "map-57", "map-32", "map-67", "map-33", "map-22", "map-26" }.Select(id => new ExplorationMapDefinition(new(id),
             new WorkingMapLayout(id == "map-33" ? MansionLayout() : new ushort[WorkingMapLayout.WordCount]), new([new(0, 0, 63, 63)]),
             id == "map-3" ? [new(new("entity-1"), new(42, 8), 3, 32, Sprite: 1,
-                Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : id == "map-33" ? [new(new("entity-128"), new(63, 63), 1, 32, Sprite: 202)] : [], [],
+                Actions: new([new WaitEntityTicks(5), new JumpEntityAction(0)])), new(new("entity-142"), new(54, 17), 1, 32, Sprite: 2)] : id == "map-33" ? [new(new("entity-128"), new(63, 63), 1, 32, Sprite: 202)] : id == "map-26" ? [new(new("entity-128"), new(10, 10), 1, 32, Sprite: 135), new(new("entity-129"), new(5, 24), 3, 32, Sprite: 131)] : [], [],
             // This must never execute during restore.
             onLoad: new("dangerous-onload", 0), population: new(30, 128, 0, [new(66, 1, 1)]),
             entryFlags: [new(256, false)], basePalette: palette,
