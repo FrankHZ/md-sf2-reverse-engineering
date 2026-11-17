@@ -272,7 +272,12 @@ metadata bytes and MVID; this does not substitute for the retained product build
 of an earlier application disposal or double-dispose.
 The binding offsets are checked against the captured callback instructions and the pinned source
 structure. They are not inferred from a preceding warning. From the private investigation root,
-`pwsh -NoProfile -File ./read-target.ps1` rereads the finalizer object and module locations;
+`pwsh -NoProfile -File ./read-target.ps1 -Checkout "<checkout>"` rereads the finalizer object and
+module locations. The checkout path is absolute or relative to the caller's working directory;
+its `local/private-inputs.ps1` selects the shared DAC, and its existing LiveInspection Release
+build supplies ClrMD. It need not be the original checkout. If that build is absent, rebuild the
+pinned `4.2.751201` dependency using the [standalone tool build instructions](../../../docs/operations/godot-live-inspection.md#build-and-capture);
+retain the matching .NET 10.0.8 DAC for this dump. No game build or launch is required.
 `python -X utf8 ./proof.py` rereads the same dump's assertion/binding bytes, compares module
 metadata and decodes both saved payloads. `menu-heap02/proof.json` is the compact combined receipt.
 These are offline reads, not a request to repeat the game. The first offline save comparison
