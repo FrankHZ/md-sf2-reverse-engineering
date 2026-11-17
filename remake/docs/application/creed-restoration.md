@@ -133,5 +133,9 @@ Research extraction and original evidence are unchanged. No legacy aggregate is 
 Completed failures are retained. In particular, the successful English shrine cold-save comparison
 ended with native `0xC0000005` during Godot finalization. ObjectDB warnings and other finalizer exits
 remain separate from gameplay results under [Issue1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).
+The [finalizer verification owner](../verification/map3-commission-save.md#later-finalizer-faults-and-ordinary-quit)
+records the reproducible English observer failures, two successful ordinary-menu Quit controls and
+remaining Unknowns. Subsequent observer acceptance uses the product menu Quit path; the original
+failure driver remains available. These controls do not resolve #1716 or establish a lifecycle fix.
 The frozen candidate awaits independent review. Consultation, later recruitment, original hardware
 timing and human visual acceptance remain outside this chapter result.

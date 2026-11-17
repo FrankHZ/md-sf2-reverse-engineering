@@ -174,11 +174,41 @@ retained slot then passed. The failed checks remain with their samples.
 ```
 
 **Unknown:** The concrete wrapper and its allocating owner, whether it was either audio object,
-and whether an ordinary player exit can fault this way. The current controls reproduced the
+and whether an ordinary player exit can fault this way. Those Map50/61 controls reproduced the
 gameplay boundaries and the WAV/playback warning. All four processes exited normally. The
 [backend and SessionAudio comparisons](host.md#audio-resource-lifetime-observation) explain how a
 WAV/playback pair can survive immediate audio shutdown. No sample identifies a production object
 requiring a lifecycle change for the access violation.
+
+**Confirmed:** Independent [Creed restoration](../application/creed-restoration.md) acceptance on
+frozen `a56fe51c1f57ce7e5e3f13e7932fc7003bf4a6e6` reopened #1716. English shrine cold Continue,
+its repeat from the same `basement-en` seed, and the post-round-trip cold case each completed
+Continue, Save and movement, wrote `END`, then exited `-1073741819` (`0xC0000005`). The stack
+again reaches `associated_gchandle` through `GodotObject.Dispose`, `Finalize` and `GC.RunFinalizers`.
+The observer explicitly deletes its host, waits five process frames and quits. English restored-mansion
+and all three Chinese cold controls exited 0. Complete decoded save-data comparisons passed separately.
+
+Two bounded controls reused that frozen runtime and the same English shrine seed in fresh namespaces:
+
+| Exit owner | Retained observation | Native exit |
+| --- | --- | ---: |
+| Ordinary Main, no script, hidden separate desktop | PID-targeted input performed Continue → Save → close panel → Left → settled field → system-menu Quit. Read-only managed fields/MVIDs confirmed Map34, default Cancel0, then Quit1 before Enter. | 0 |
+| Same cold observer, only its terminal action changed | The original route and `END` remained; actual menu Quit replaced explicit host deletion and quit. Cancel0 and Quit1 were observed before confirmation. The two-instance ObjectDB warning remains. | 0 |
+
+Both saved data objects matched the input completely. An initial desktop-controller assertion wrongly
+required Y28 after Left; actual tile(25,29) matched both root failure receipts. That preparation failure
+ended with controller-forced124 before Quit, and is retained separately from game exits. The successful
+repeat changed only that assertion. The private registered `handoffs/issue1874/finalizer-controls`
+contains the exact scripts, exit-only diff, native receipts, read-only snapshots and reproduction report;
+the original failing driver and all three root failures remain intact. No product patch, GC workaround,
+lifecycle sleep, log suppression, screenshot or new dump was used.
+
+**Inferred:** The explicit observer teardown path is a relevant failure boundary. **Unknown:** the
+faulting wrapper, exact cause and intermittent ordinary-player Quit risk. Two successful menu controls
+do not resolve #1716 or erase the reproducible observer failures. Subsequent campaign observers use the
+existing product menu Quit entry to accept the player's exit path, while retaining the original driver
+for failure reproduction. Report terminal gameplay and native exit independently; do not add a lifecycle
+patch solely to make an observer pass.
 
 Reopen on a fault or unexpected native status after ordinary Quit/close, or on a new observer
 fault that identifies the wrapper or yields a reproducibly failing input. Preserve the build,
