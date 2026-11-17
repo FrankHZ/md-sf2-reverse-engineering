@@ -2363,10 +2363,10 @@ msgid "caravan.purge"
 msgstr "退出编队"
 
 msgid "caravan.depot"
-msgstr "仓库 · 尚未支持"
+msgstr "仓库"
 
 msgid "caravan.item"
-msgstr "道具 · 尚未支持"
+msgstr "道具"
 
 msgid "caravan.choose-join"
 msgstr "让谁加入战斗编队？"
@@ -2384,7 +2384,7 @@ msgid "caravan.missing"
 msgstr "队员{0} · 数据不可用"
 
 msgid "caravan.failed"
-msgstr "无法选择该队员。编队未改变。"
+msgstr "无法进行这项操作，未做任何改变。"
 
 msgid "caravan.result.joined"
 msgstr "队员已加入战斗编队。"
@@ -2470,3 +2470,30 @@ msgstr "物品已丢弃。"
 
 msgid "depot.result.unsellable"
 msgstr "这件物品不能丢弃。"
+
+msgid "caravan.items.not-usable"
+msgstr "这个道具不能在此使用，已保留。"
+
+msgid "caravan.items.unsupported"
+msgstr "这个道具的效果尚未支持，已保留。"
+
+msgid "caravan.items.equipment-unavailable"
+msgstr "没有可用的已支持装备选项。"
+
+msgid "caravan.items.result.empty-pack"
+msgstr "这位成员没有携带道具。"
+
+msgid "caravan.items.result.given"
+msgstr "已交接道具。"
+
+msgid "caravan.items.result.equipped"
+msgstr "已更换装备。"
+
+msgid "caravan.items.result.dropped"
+msgstr "已丢弃道具。"
+
+msgid "caravan.items.result.cured"
+msgstr "已解除中毒，解毒草已消耗。"
+
+msgid "caravan.items.result.no-effect"
+msgstr "没有需要解除的中毒，解毒草已消耗。"

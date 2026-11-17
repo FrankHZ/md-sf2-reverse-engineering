@@ -9,9 +9,10 @@ public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, 
 // Field caller policies are admitted separately from battle recovery and its EXP/RNG rolls.
 internal static class FieldRecovery
 {
-    internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command, out FieldRecoveryEffect effect, out bool effective)
+    internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command,
+        out FieldRecoveryEffect effect, out bool effective, FieldItemCaller caller = FieldItemCaller.Field)
     {
-        var member = FieldInventory.Member(definition, current, command.Member);
+        var member = FieldInventory.Member(definition, current, command.Member, caller);
         var party = current.Exploration!.Party;
         var capabilities = definition.FieldPreparation!;
         FieldSpellChoice? spell = null;
@@ -20,12 +21,13 @@ internal static class FieldRecovery
         if (command is FieldUseItem use)
         {
             item = FieldInventory.Slot(definition, member, use.Slot, use.ExpectedWord);
-            if (capabilities.Effect((byte)(item.Word & 127), current.Exploration!.Map) is not { } itemEffect)
+            if ((caller == FieldItemCaller.Caravan ? CaravanEffect(capabilities, (byte)(item.Word & 127)) :
+                capabilities.Effect((byte)(item.Word & 127), current.Exploration!.Map)) is not { } itemEffect)
                 throw new BattleRuleException("field-item-effect-unsupported", "item", true);
             effect = itemEffect;
             targetRef = use.Target;
         }
-        else if (command is FieldCast cast)
+        else if (command is FieldCast cast && caller == FieldItemCaller.Field)
         {
             var learned = member.Carried.Progress?.Spells ?? member.Deployment!.Definition.Spells;
             spell = capabilities.Spell(cast.Spell, current.Exploration.Map);
@@ -49,7 +51,7 @@ internal static class FieldRecovery
                 [member.Carried with { Mp = (byte)Math.Max(0, member.Carried.Mp - spell.MpCost) }]);
         }
         var target = FieldInventory.Member(definition, current,
-            targetRef ?? throw new BattleRuleException("field-recovery-target", "target"));
+            targetRef ?? throw new BattleRuleException("field-recovery-target", "target"), caller);
         var changedTarget = target.Carried with { Status = (ushort)(target.Carried.Status & ~2) };
         effective = changedTarget.Status != target.Carried.Status;
         var changedMember = member.Carried;
@@ -59,5 +61,16 @@ internal static class FieldRecovery
         if (target.Carried.Actor == member.Carried.Actor)
             return FieldInventory.Replace(party, [changedMember with { Status = changedTarget.Status }]);
         return FieldInventory.Replace(party, [changedMember, changedTarget]);
+    }
+
+    internal static FieldRecoveryEffect CaravanEffect(FieldPreparationDefinition capabilities, byte item)
+    {
+        // The source Caravan caller checks IsItemUsableOnField before UseItemOnField.
+        // Map-specific events and ordinary-field NoEffect policies are separate callers.
+        if (item is not (3 or 5 or >= 9 and <= 15))
+            throw new BattleRuleException("caravan-item-not-usable", "item");
+        if (item != 3 || capabilities.ItemEffects.GetValueOrDefault(item) != FieldRecoveryEffect.CurePoison)
+            throw new BattleRuleException("field-item-effect-unsupported", "item", true);
+        return FieldRecoveryEffect.CurePoison;
     }
 }
