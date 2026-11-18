@@ -3,10 +3,11 @@
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior. Reference routes support external comparisons. The common
 session runs authored packages and the connected private campaign through bilingual
-[mine recovery, Cannon and ordinary return](application/dwarven-mine-cannon.md). Creed and the mine
-share finite loaded-scene restoration mechanics with separate SF2 population policies. The
+[New Granseal audience, Dynamite, Janet and ordinary town exit](application/new-granseal-return.md).
+Creed, the mine and New Granseal share finite loaded-scene restoration mechanics with separate SF2
+population policies; the town policy admits Janet’s source-allocated local actor. The
 [campaign agreement](application/remaining-campaign-risk-baseline.md) owns current scope;
-Astral, Dynamite and North Cliff remain outside this boundary. The [Polca chapter](application/polca-first-raft.md)
+Battle24 and North Cliff remain outside this boundary. The [Polca chapter](application/polca-first-raft.md)
 documents the earlier raft boundary.
 The [Battle08–13 and raft audit](evidence/polca-raft-engine-save-audit.zh-CN.md) identifies current
 engine-boundary and save-compatibility risks. The [earlier engine and script audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)

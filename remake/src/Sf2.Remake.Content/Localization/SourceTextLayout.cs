@@ -66,7 +66,7 @@ public static class SourceTextLayout
             Separator(text[match.Index - 1], text[match.Index + 1], locale));
 
     private static bool Text(ExplorationTextToken token) => token.Kind is
-        ExplorationTextTokenKind.Literal or ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName;
+        ExplorationTextTokenKind.Literal or ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName or ExplorationTextTokenKind.ItemName;
 
     private static string Separator(char left, char right, string locale)
     {

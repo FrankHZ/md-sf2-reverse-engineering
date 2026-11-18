@@ -59,6 +59,7 @@ internal static class PrivateFieldPreparation
             .OfType<FieldSearchDefinition>().SelectMany(search => search.Chests.Concat(search.OtherItems))
             .Where(row => row.ItemWord.HasValue).Select(row => (byte)(row.ItemWord!.Value & 127)).ToHashSet();
         pickupIds.UnionWith((world?.Programs.Values ?? []).SelectMany(program => program.Instructions).OfType<TryAddActorItem>().Select(row => row.Item));
+        pickupIds.UnionWith((world?.Programs.Values ?? []).SelectMany(program => program.Instructions).OfType<TryAddPartyItem>().Select(row => row.Item));
         var eventItems = (world?.Maps.Values ?? []).SelectMany(map =>
                 map.Events.Concat(map.Setups.Values.SelectMany(setup => setup.Events)))
             .Where(row => row.Kind == ExplorationEventKind.UseItem).Select(row => row.Item!.Value).ToHashSet();

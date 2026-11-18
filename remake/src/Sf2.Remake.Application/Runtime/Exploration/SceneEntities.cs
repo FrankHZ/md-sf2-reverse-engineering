@@ -22,7 +22,7 @@ internal static class SceneEntities
             .Select(pair => pair.Value).DefaultIfEmpty(0).Max() + 1;
         if (slot >= 49) throw new BattleRuleException("source-entity-capacity", "program.entity", true);
         int sprite = add.Sprite;
-        if (sprite == 255 && add.Entity.Value.StartsWith("entity-", StringComparison.Ordinal) &&
+        if (add.Entity.Value.StartsWith("entity-", StringComparison.Ordinal) &&
             int.TryParse(add.Entity.Value.AsSpan("entity-".Length), out int member) && member < 30)
             sprite = world.Party.Actors.FirstOrDefault(row => row.Actor.Value == $"ally-{member}")?.Hp == 0
                 ? 190 : ResolveAllySprite(world.Population, flags ?? [], member, member);

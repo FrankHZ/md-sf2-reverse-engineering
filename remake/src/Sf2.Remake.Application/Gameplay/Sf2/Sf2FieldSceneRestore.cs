@@ -30,7 +30,8 @@ internal static class Sf2FieldSceneRestore
     }
 
     internal static ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
-        IReadOnlyList<int> flags, SavedFieldScene scene, out IReadOnlyList<int> enteredFlags, byte layer)
+        IReadOnlyList<int> flags, SavedFieldScene scene, out IReadOnlyList<int> enteredFlags, byte layer,
+        IReadOnlyList<AddMapEntity>? allocations = null)
     {
         var anchor = location.Anchor;
         var source = definition.Exploration!.Maps[anchor.Map];
@@ -52,7 +53,8 @@ internal static class Sf2FieldSceneRestore
         Require(scene.Aliases.All(pair => Reference(pair.Key) && slots.Contains(pair.Value)) &&
             scene.Aliases.GetValueOrDefault("entity-0", -1) == 0 && scene.Actors.All(actor => Reference(actor.Entity)), "save-field-scene-alias");
         var identities = setup.Entities.Select(row => row.Entity.Value)
-            .Concat(setup.Population.Followers.Select(row => "entity-" + row.Character)).Append("entity-0").ToHashSet();
+            .Concat(setup.Population.Followers.Select(row => "entity-" + row.Character))
+            .Concat((allocations ?? []).Select(row => row.Entity.Value)).Append("entity-0").ToHashSet();
         Require(scene.Actors.All(actor => identities.Contains(actor.Entity)), "save-field-scene-actor");
         var player = scene.Actors.Single(actor => actor.Slot == 0);
         Require(player.Entity == "entity-0" && player.X == anchor.Position.X * 384 && player.Y == anchor.Position.Y * 384 &&

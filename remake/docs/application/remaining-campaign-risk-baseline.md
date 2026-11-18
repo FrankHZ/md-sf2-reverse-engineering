@@ -3,14 +3,14 @@
 The first fork now supports two usable returns. Players can visit Elven Village before clearing Battle19, or win Battle19 and save on the overworld. Both branches can walk west to the [Harpy Pond bank saves](harpy-pond-approach.md). Both continue through [Battle20 and Elric’s recruitment](battle20-elric.md) to a usable Map51 save and through the [Fairy Cave passage](fairy-cave.md) to the [Battle21 victory save on Devil’s Tail](battle21-devils-tail.md). [Campaign feature trace](../capability-status.md#campaign-feature-trace)
 
 The current milestone under [the remaining campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1818)
-is the first Stage2 [mine recovery and Cannon slice](dwarven-mine-cannon.md), consuming the ordinary
-Creed endpoint after the finite-audio and save-format repairs. Live F785 and fresh F761 scenes retain
-their different population/layout through cold continuation. The [Stage1 audit](../evidence/creed-stage1-engine-save-audit.md)
-remains the earlier assessment; the mine chapter owns its A2 implementation and bounded acceptance.
-Rigor is **High** because a wrong assumption about a recruit, return town or vehicle can invalidate
-saves several chapters later. Stage2 now reaches a controllable saved return after recovery and Cannon;
-Astral, Dynamite, North Cliff and northern towns remain separate work. Optional branches and human
-acceptance are explicit below; Stage1 does not mean the whole campaign or every optional recruit.
+is the Stage2 [New Granseal return](new-granseal-return.md), consuming the ordinary bilingual
+[mine recovery and Cannon saves](dwarven-mine-cannon.md). The audience, Astral following, Dynamite,
+Janet recruitment and town exit have ordinary witnesses. Live and fresh populations remain distinct;
+cold continuation preserves player-owned resources and following while town ambient work resumes.
+Rigor remains **High** because an incorrect recruit, scene or vehicle assumption can invalidate later
+saves. Battle24, North Cliff/Rohde and northern towns are separate outcomes. The [Stage1 audit](../evidence/creed-stage1-engine-save-audit.md)
+retains the earlier assessment; the chapter owners record the consumed repairs and bounded results.
+Optional branches and human acceptance remain explicit; neither stage means full campaign acceptance.
 
 ## What can be continued today
 

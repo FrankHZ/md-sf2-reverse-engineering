@@ -8,8 +8,8 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 // Saved prefixes in the private opening profile, including the gap between Luke and Elric.
 internal static class Sf2HistoricalRoster
 {
-    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23)];
-    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17];
+    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23), (17, 23)];
+    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18];
 
     internal static SavedBattleStory UpgradeBattle(ScenarioDefinition definition, BattleSaveData data,
         EngineBattleState battle, SaveCompatibility expected)

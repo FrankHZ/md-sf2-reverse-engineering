@@ -24,7 +24,8 @@ internal static class FieldItemEvents
         foreach (var member in members)
         {
             var words = FieldInventory.Loadout(member).Items;
-            for (int slot = words.Count - 1; slot >= 0; slot--)
+            // Source counts occupied slots, then searches count-1..0; gaps are not compacted.
+            for (int slot = words.Count(word => (word & 127) != 127) - 1; slot >= 0; slot--)
                 if ((words[slot] & 127) == item) return (member, slot);
         }
         return null;

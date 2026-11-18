@@ -30,10 +30,10 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - Godot 4.7.2 .NET/C# is the accepted Phase 4 baseline. The user explicitly authorized a bounded
   Phase 4 implementation start on 2026-08-28 under ADR 0016. [`remake/`](../../remake/) now contains
   bounded Domain, Application, validated Content, and a thin Godot host for authored packages and the
-  connected private-local world through bilingual [mine recovery, Cannon and ordinary return](../../remake/docs/application/dwarven-mine-cannon.md).
+  connected private-local world through bilingual [New Granseal audience, Dynamite, Janet and town exit](../../remake/docs/application/new-granseal-return.md).
   The [capability trace](../../remake/docs/capability-status.md#campaign-feature-trace) and
   [campaign agreement](../../remake/docs/application/remaining-campaign-risk-baseline.md) own current
-  scope and limits; Astral, Dynamite and North Cliff remain outside this boundary. The finite
+  scope and limits; Battle24 and North Cliff remain outside this boundary. The finite
   Map58 return savepoint supports earlier replay. The [capability owner](../../remake/docs/capability-status.md) records
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.
 - Research coverage, evidence gaps and cadence belong to

@@ -101,14 +101,16 @@ internal static class ExplorationTextRunner
         var units = new List<FieldTextUnit>();
         var partyLists = current.Story.PartyLists;
         var names = new List<DisplayNameBinding>();
+        var receipt = text.UseItemReceipt ? current.Story.ItemReceipt
+            ?? throw new BattleRuleException("field-item-receipt", "program.text", true) : null;
         for (int sourceToken = 0; sourceToken < tokens.Count; sourceToken++)
         {
             var part = tokens[sourceToken];
             if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3 or ExplorationTextTokenKind.Clear)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "", SourceToken: sourceToken)); continue; }
             int? member = part.Member;
-            if (part.Kind == ExplorationTextTokenKind.ClassName) member = text.NameMember;
-            if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{NAME}") member = text.NameMember;
+            if (part.Kind == ExplorationTextTokenKind.ClassName) member = receipt?.Member ?? text.NameMember;
+            if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{NAME}") member = receipt?.Member ?? text.NameMember;
             if (part.Kind == ExplorationTextTokenKind.MemberName && part.Value == "{LEADER}" && definition.PartyFlags is { } partyFlags)
             {
                 // symbol_leader calls UpdateForce before choosing the first active member.
@@ -116,14 +118,19 @@ internal static class ExplorationTextRunner
                 member = partyLists.Active.Count > 0 ? partyLists.Active[0] : null;
             }
             (byte Id, string Name)? role = part.Kind == ExplorationTextTokenKind.ClassName ? JoinedClass(scenario, current, member) : null;
+            var item = part.Kind == ExplorationTextTokenKind.ItemName && receipt is not null
+                ? scenario?.FieldPreparation?.Items.GetValueOrDefault(receipt.Item) : null;
             string value = part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
                 ExplorationTextTokenKind.MemberName when member is >= 0 && member < definition.MemberNames.Count => scenario is null
                     ? definition.MemberNames[member.Value] : CharacterNames.Member(scenario, current.Story, member.Value),
                 ExplorationTextTokenKind.ClassName => role!.Value.Name,
+                ExplorationTextTokenKind.ItemName when item is not null => item.Name,
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };
+            if (part.Kind == ExplorationTextTokenKind.ItemName)
+                names.Add(new(sourceToken, null, value, null, ItemId: receipt!.Item));
             if (part.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
             {
                 ActorRef? namedActor = scenario is not null

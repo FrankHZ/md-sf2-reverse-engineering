@@ -1,6 +1,16 @@
 """Lower the selected csc08 join service without consuming the cutscene text cursor."""
 
 
+def music_input_return() -> list[dict]:
+    """FadeOut_WaitForP1Input waits for music and input; it does not fade the palette."""
+    return [
+        {"op": "present", "kind": "SoundWait", "resource": None, "entity": None, "position": None},
+        {"op": "present", "kind": "PreviousMusic", "resource": None,
+         "entity": None, "position": None},
+        {"op": "wait-text-input"},
+    ]
+
+
 def join_selector(expression, number):
     selector = 0
     for operand in expression.split("|"):
@@ -41,21 +51,7 @@ def join_service(selector: int) -> list[dict]:
                 "explicitWindows": True,
                 **({"nameMember": selector & 32767} if selector & 32767 != 128 else {}),
             },
-            {
-                "op": "present",
-                "kind": "SoundWait",
-                "resource": None,
-                "entity": None,
-                "position": None,
-            },
-            {
-                "op": "present",
-                "kind": "PreviousMusic",
-                "resource": None,
-                "entity": None,
-                "position": None,
-            },
-            {"op": "wait-text-input"},
+            *music_input_return(),
             {"op": "close-text"},
             {"op": "wait-ticks", "ticks": 10},
         ]
