@@ -58,12 +58,13 @@ internal static class BattleGrowthRules
             {
                 packed[slot] = learned.PackedSpell;
                 loadout = new(loadout.Items, packed);
+                int firstRank = packed.Take(slot).Where(value => (value & 63) != 63).Sum(value => (value >> 6) + 1);
                 for (int rank = 0; rank <= learned.PackedSpell >> 6; rank++)
                 {
                     byte key = (byte)((learned.PackedSpell & 63) | rank << 6);
                     if (!growth.SpellDefinitions.TryGetValue(key, out var spell))
                         throw new BattleRuleException("growth-spell-definition", "actor.growth.spells", true);
-                    if (!known.Contains(spell)) known.Add(spell);
+                    if (!known.Contains(spell)) known.Insert(firstRank + rank, spell);
                 }
                 effects.Add(new("spell-learned", actor.Actor, After: learned.PackedSpell));
             }

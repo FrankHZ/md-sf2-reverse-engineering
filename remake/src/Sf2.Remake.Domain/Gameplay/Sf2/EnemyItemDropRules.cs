@@ -31,7 +31,10 @@ internal static class EnemyItemDropRules
         custody = custody.Mark(row.OnceFlag);
         effects.Add(new("drop-once-set", actorRef, 0, row.OnceFlag, Target: targetRef));
         int slot = held.Items.ToList().FindIndex(word => (word & 127) == row.ItemId);
-        target = BattleEquipment.RemoveItem(target, slot);
+        // Source initialization writes the adjusted enemy base before equipment contributes.
+        byte? initializedBase = current.StartPolicy is { } policy && target.Initialized && target.Definition.Equipment is not null
+            ? BattleInitializationRules.EnemyAttack(target.Definition.Attack, policy.Difficulty) : null;
+        target = BattleEquipment.RemoveItem(target, slot, initializedBase);
         effects.Add(new("enemy-item-removed", targetRef, held.Items[slot], slot));
         var item = definition.Items[row.ItemId];
         BattleItemReceipt? receipt = null;

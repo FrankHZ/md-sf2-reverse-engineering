@@ -110,6 +110,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             18 => [new(18, 128, 110, 24)],
             19 => [new(19, 129, 16, 6)],
             21 => [new(21, 135, 62, 7), new(21, 129, 20, 8)],
+            24 => [new(24, 135, 17, 9), new(24, 133, 0, 20), new(24, 140, 0, 21)],
             _ => [],
         };
         var battle = new BattleDefinition(encounterId, new("map" + encounter.Area.MapId.ToString(CultureInfo.InvariantCulture)),
@@ -134,7 +135,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder)) : null,
             itemDrops: drops.Length == 0 ? null : new(encounter.Battle.Id,
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
-                drops, drops.Select(drop => definitions.Items[drop.ItemId])
+                drops, drops.Select(drop => drop.ItemId).Distinct().Select(id => definitions.Items[id])
                     .Select(item => new EnemyDropItem(item.Id, item.DisplayName, item.ItemTypeExpression.Split('|').Contains("RARE")))),
             poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy,
@@ -156,7 +157,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             _ => throw Unsupported("spawn-expression", "placements.spawn"),
         };
         Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP" ||
-            row.ItemExpression is ("MEDICAL_HERB|USABLE_BY_AI" or "PROTECT_RING|EQUIPPED|UNUSED_ITEM_DROP" or "POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP"),
+            row.ItemExpression is ("MEDICAL_HERB|USABLE_BY_AI" or "PROTECT_RING|EQUIPPED|UNUSED_ITEM_DROP" or "POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP" or "BLIZZARD|USABLE_BY_AI|UNUSED_ITEM_DROP"),
             "placement-item-refresh", "placements.item", true);
         byte commandset = row.AiCommandsetExpression switch
         {

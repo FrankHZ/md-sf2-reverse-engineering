@@ -16,7 +16,7 @@ from pathlib import Path
 
 from sf2tool.jsonio import load_json
 from sf2tool.paths import REPO_ROOT
-from sf2tool.remake_identity_icons import field_item_ids
+from sf2tool.remake_identity_icons import field_encounters, field_item_ids
 from sf2tool.source_text import read_upstream_text
 
 _PRE_VOYAGE_RANGES = (
@@ -320,6 +320,7 @@ def derive(args: argparse.Namespace) -> dict:
     )
     if battle20:
         field_texts.update(range(2566, 2576))
+    battle24 = args.scope == "current" and "battle-24" in field_encounters(world["world"])
     repeat_enemies = {
         enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
     }
@@ -381,7 +382,11 @@ def derive(args: argparse.Namespace) -> dict:
     name_ids["name.ally"] += tuple(sorted(extra_growth))
     if 82 in repeat_enemies:
         field_items.add(28)  # Equipped Brass Knuckles
-    if 81 in repeat_enemies:
+    road_enemies = {17, 45, 62, 81}.difference(name_ids["name.enemy"]) if battle24 else set()
+    name_ids["name.enemy"] += tuple(sorted(road_enemies))
+    if battle24:
+        name_ids["name.spell"] += (3,)  # BOOST
+    if battle24 or 81 in repeat_enemies:
         name_ids["name.spell"] += (1,)  # AURA
     repeat_names = repeat_enemies.difference(name_ids["name.enemy"])
     name_ids["name.enemy"] += tuple(sorted(repeat_names))
@@ -515,7 +520,9 @@ def derive(args: argparse.Namespace) -> dict:
             + 3 * willard
             + len(extra_items)
             + len(repeat_names)
-            + (81 in repeat_enemies)
+            + len(road_enemies)
+            + battle24
+            + (battle24 or 81 in repeat_enemies)
             + len(extra_growth)
         ),
         "candidate budget/selection mismatch",

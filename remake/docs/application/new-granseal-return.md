@@ -1,5 +1,7 @@
 # New Granseal return, Astral, Dynamite and Janet
 
+The next [Battle24 chapter](battle24-north-parmecia.md) consumes the ordinary exit and deployed Janet saves.
+
 **Confirmed in the remake:** unchanged bilingual [mine-return saves](dwarven-mine-cannon.md)
 continue through the town and castle audience, Astral following, Dynamite, Janet recruitment and an
 ordinary Map73 save. This is the bounded [Issue1896](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1896)
@@ -101,9 +103,8 @@ It is not claimed as a playable optional destination by this return slice.
 Janet's actual ACHR sprite12 uses palette0; Elric's existing archer binding is not a substitute.
 Maintained ROM/source preparation generates her weapon45/46/47 bodies and field sprite45, mounted
 into all23 existing encounter scene packs. Their referenced rasters and member identity are checked
-directly; missing bindings were repaired before handoff. Natural Janet combat and promoted SNIP/BRGN
-bindings remain **Unknown**, and must be checked at their first consumer. No Battle24 content is
-admitted by this repair. North Cliff must consume actual Cannon/Dynamite custody and retain its own
+directly; missing bindings were repaired before handoff. The [Battle24 chapter](battle24-north-parmecia.md) observes Janet's natural ACHR attack.
+Her promoted SNIP/BRGN bindings remain **Unknown**. North Cliff must consume actual Cannon/Dynamite custody and retain its own
 current/fresh terrain distinction.
 
 ## Reproduction, gates and retained limits

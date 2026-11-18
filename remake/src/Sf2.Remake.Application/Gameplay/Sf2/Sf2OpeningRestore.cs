@@ -79,7 +79,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
-        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" or "dwarven-mine" or "desktop-kingdom" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe is "ancient-hall" or "taros-shrine" or "north-parmecia" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" or "dwarven-mine" or "desktop-kingdom" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
@@ -181,6 +181,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("polca-return", new(map, new(30, 6), 2), "Polca, eastern approach");
         if (map.Value == "map-13" && flags.Contains(513) && !flags.Contains(716) && anchor?.Map == map)
             return new("polca-victory", anchor, "Polca, battle return");
+        if (map.Value == "map-72" && flags.Contains(524) && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("north-parmecia", player, "North Parmecia");
         if (map.Value == "map-72" && flags.Contains(64) && flags.Contains(10) &&
             player.Position == new MapPosition(43, 47))
             return new("polca-raft", player, "Polca, raft landing");

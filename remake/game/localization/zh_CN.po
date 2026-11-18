@@ -2221,6 +2221,9 @@ msgstr "鹰身女妖池塘"
 msgid "save.destination.taros-shrine"
 msgstr "塔罗斯神殿"
 
+msgid "save.destination.north-parmecia"
+msgstr "帕尔梅西亚北部"
+
 msgid "save.destination.southwest-parmecia"
 msgstr "帕尔梅西亚西南部"
 
