@@ -12,6 +12,8 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 internal sealed partial class ExplorationPresentation : IDisposable
 {
     private readonly Control _owner;
+    private readonly ExplorationPaletteView _palette;
+    private IReadOnlyDictionary<int, string> _spriteGraphics = new Dictionary<int, string>();
     private bool _paintPrepared;
     internal void PreparePaintedRasters()
     {
@@ -30,7 +32,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
-    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd, bool Shadowless), ImageTexture> _sprites = [];
+    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd, bool Shadowless, string? Graphics), ImageTexture> _sprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _blankSprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _wipedSprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth, bool Hd), ImageTexture> _portraits = [];
@@ -84,7 +86,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     internal ExplorationPresentation(Control owner, ExplorationDefinition definition, Input.InputSettings settings, Action prepareBattle, SessionAudio audio, WorldViewportLayout viewport)
     {
         _viewport = viewport;
-        _owner = owner; _visuals = definition.Visuals; _settings = settings; _prepareBattle = prepareBattle;
+        _owner = owner; _palette = new(owner); _visuals = definition.Visuals; _settings = settings; _prepareBattle = prepareBattle;
         _audio = audio; Error = audio.Error;
         _capture = ObservationCapture.Find(owner);
         _white = new ColorRect { Name = "WhiteFade", Color = new Color(1, 1, 1, 0),
@@ -145,6 +147,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         gesture = _gesture?.Value, lowered = _nodding, shivering = _shivering,
         mosaic = _mosaic?.Value, mosaicOut = _mosaicOut,
         paletteBrightness = PaletteBrightness, whiteOpacity = WhiteOpacity, reducedFlash = _reducedFlash,
+        paletteColors = _palette.Projection,
         whiteVisible = _white.IsVisibleInTree(), ownerVisible = _owner.IsVisibleInTree(),
         flashPulses = FlashPulses, flashRestorations = FlashRestorations, flashPulse = _flashPulse,
     };
@@ -155,6 +158,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (Error is not null) return completions;
         try
         {
+            _palette.Project(current.Story.Display?.Colors, current.Story.SimulationTick);
+            _spriteGraphics = current.Exploration?.SpriteGraphics ?? new Dictionary<int, string>();
             bool skipping = current.Story.EntrySkip is not null;
             if (!skipping && current.Story.Wait is MusicWait helper &&
                 (_audio.MusicGeneration != helper.Generation || _audio.MusicCue != current.Story.Music?.Cue))
@@ -483,14 +488,17 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 double mosaicAge = _mosaicOut ? 0.5 - _cueAge : _cueAge;
                 int? mosaicBlock = _mosaic == entity.Entity ? (mosaicAge < 0.1 ? 8 : mosaicAge < 0.2 ? 6 : mosaicAge < 0.3 ? 4 : mosaicAge < 0.4 ? 2 : 1) : null;
                 var destination = new Rect2((point - actorOrigin) * _scale, Vector2.One * frameSize * _scale);
-                bool visible = _screen.Intersects(destination);
+                bool blinking = (entity.Motion.FlagsB & 128) != 0;
+                bool blinkHidden = blinking && !_reducedFlash && story.SimulationTick % 2 == 0;
+                bool visible = _screen.Intersects(destination) && !blinkHidden;
                 actors?.Add(new { entity = entity.Entity.Value, slot = entity.Slot, sprite = entity.Sprite,
+                    spriteSlot = entity.SpriteSlot, graphics = _spriteGraphics.GetValueOrDefault(entity.SpriteSlot),
                     facing = entity.Motion.Facing, layer = entity.Motion.Layer, spritePriority = entity.Priority, highPriority, pass = actorPass,
                     x = destination.Position.X, y = destination.Position.Y,
-                    width = destination.Size.X, height = destination.Size.Y, visible,
+                    width = destination.Size.X, height = destination.Size.Y, visible, blinking, blinkHidden,
                     originX = actorOrigin.X, originY = actorOrigin.Y,
                     gesture, lowered, shiverOffsetX, mosaicBlock,
-                    resourceSelector = _observeResources ? _resourceSelectors[texture] : null,
+                    resourceSelector = _resourceSelectors[texture],
                     texture = texture.GetInstanceId().ToString() });
                 if (_observeCamera && gesture && sourceNod is not null)
                     NodProjection = new { simulationTick = story.SimulationTick, token = sourceNod.Token.Value,
@@ -824,9 +832,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
         int size = entity.RenderSize;
         bool shadowless = entity.ShadowRemovedAt == entity.SpriteRequest;
         bool hd = !shadowless && Painted(map) && visual.HdDirections is not null;
-        var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless);
+        string? graphics = _spriteGraphics.GetValueOrDefault(entity.SpriteSlot);
+        var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless, graphics);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
-        using var sheet = ExplorationRasterImages.Open((hd ? visual.HdDirections! : visual.Directions)[direction]);
+        var directions = graphics is null ? (hd ? visual.HdDirections! : visual.Directions) :
+            visual.Graphics?.GetValueOrDefault(graphics) ?? throw new InvalidOperationException("shared-sprite-graphics-binding");
+        using var sheet = ExplorationRasterImages.Open(directions[direction]);
         int density = sheet.GetHeight() / frameSize;
         using var image = sheet.GetRegion(new(half * sheet.GetHeight(), 0, sheet.GetHeight(), sheet.GetHeight()));
         if (shadowless) ExplorationStoryEffects.RemoveShadow(image);
@@ -840,7 +851,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             image.FillRect(new(0, 0, 24 * density, density), Colors.Transparent);
         }
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
-        _resourceSelectors[texture] = new { kind = "entity", sprite, direction, half, nod, orientation, size, pixels = image.GetWidth() };
+        _resourceSelectors[texture] = new { kind = "entity", sprite, graphics, direction, half, nod, orientation, size, pixels = image.GetWidth() };
         List<Rect2> ink = [];
         for (int y = 0; y < frameSize; y++)
             for (int x = 0; x < frameSize;)
@@ -856,6 +867,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
     public void Dispose()
     {
+        _palette.Dispose();
         foreach (var texture in _sprites.Values.Concat(_portraits.Values)) texture.Dispose();
         _mapTextures.Dispose();
     }

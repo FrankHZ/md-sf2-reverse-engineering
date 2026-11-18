@@ -109,6 +109,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     {
         var map = player.Map;
         if (!definition.Exploration!.Maps.TryGetValue(map, out var content)) Fail();
+        if (map.Value is "map-33" or "map-34" && flags.Any(flag => flag is 785 or 787))
+            throw new BattleRuleException("save-creed-following-unavailable", "save.recipe", true);
         if (map.Value == "map-3")
         {
             var selected = content!.SelectedSetup(flags);
@@ -137,11 +139,11 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-67" && flags.Contains(521) && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("devils-tail", player, "Devil's Tail");
         // First visit and completed restoration retain their separate source init tails.
-        if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 784 or 786) &&
+        if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 786) &&
             (!flags.Contains(523) || flags.Contains(783)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
-        if (map.Value == "map-34" && !flags.Contains(784) &&
+        if (map.Value == "map-34" &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("evil-spirit-shrine", player, "Evil Spirit Shrine");
         // A nonvictory return retains F422; completion requires the separate aftermath to return.
@@ -235,7 +237,15 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         // him after a completed attempt, unlike the scene's same-visit Hide.
         if (location.Recipe == "floor-world" && flags.Contains(780))
             world = world.MoveOffMap(new("entity-129"));
-        if (location.Recipe == "creed-mansion" && (flags.Contains(783) || flags.Contains(774)))
+        if (location.Recipe == "creed-mansion" && flags.Contains(784))
+        {
+            // The post-consultation init places the still-unjoined offer actors only.
+            foreach (var (member, x, y) in new[] { (14, 15, 14), (16, 16, 15), (17, 18, 15), (15, 19, 14) })
+                if (!flags.Contains(member) && world.TryResolveEntity(new("entity-" + member), out var offer))
+                    world = world.WithEntity(offer with { Motion = offer.Motion with
+                        { X = (short)(x * 384), Y = (short)(y * 384), XDestination = (short)(x * 384), YDestination = (short)(y * 384), Facing = 3 } });
+        }
+        else if (location.Recipe == "creed-mansion" && (flags.Contains(783) || flags.Contains(774)))
         {
             // ms_map33_InitFunction / cs_5ABE6: reentry places Goliath only.
             // F774 does not replay cs_5AC58's two live door copies or temporary followers.

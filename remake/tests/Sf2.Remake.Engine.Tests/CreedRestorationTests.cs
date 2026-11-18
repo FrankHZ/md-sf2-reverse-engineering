@@ -52,9 +52,6 @@ public sealed class CreedRestorationTests
         var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
         var player = new FieldReturnAnchor(map.Map, new(26, 28), 2);
         int[] flags = restored ? [523, 783] : complete ? [784] : [];
-        if (complete)
-            Assert.Throws<BattleRuleException>(() => basis.Persistence!.Select(definition, player, flags, null));
-        else
         {
             var location = basis.Persistence!.Select(definition, player, flags, null);
             Assert.Equal("evil-spirit-shrine", location.Recipe);

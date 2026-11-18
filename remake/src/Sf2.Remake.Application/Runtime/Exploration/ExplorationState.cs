@@ -240,11 +240,13 @@ public sealed class ExplorationState
         IEnumerable<ExplorationEntity> entities, BattleStartInput party, ushort spriteSize = 16,
         IReadOnlyDictionary<EntityRef, int>? aliases = null, MapBlockCopyLifecycleState? roofState = null,
         ExplorationPopulation? population = null, byte quake = 0,
-        FieldTravelMode travelMode = FieldTravelMode.Walking, IReadOnlyList<int>? currentEntities = null)
+        FieldTravelMode travelMode = FieldTravelMode.Walking, IReadOnlyList<int>? currentEntities = null,
+        IReadOnlyDictionary<int, string>? spriteGraphics = null)
     {
         Definition = definition; Layout = layout; Player = player; Party = party; SpriteSize = spriteSize; RoofState = roofState ?? MapBlockCopyLifecycleState.Inactive;
         Population = population ?? definition.Population;
         Quake = quake; TravelMode = travelMode;
+        SpriteGraphics = new ReadOnlyDictionary<int, string>((spriteGraphics ?? new Dictionary<int, string>()).ToDictionary());
         CurrentEntities = Array.AsReadOnly((currentEntities ?? definition.Caravan?.CurrentEntities ?? []).ToArray());
         AllEntities = Array.AsReadOnly(entities.Select((entity, index) => entity.Slot < 0 ? entity with { Slot = index } : entity)
             .OrderBy(entity => entity.Slot).ToArray());
@@ -268,10 +270,14 @@ public sealed class ExplorationState
     public byte Quake { get; }
     public FieldTravelMode TravelMode { get; }
     public IReadOnlyList<int> CurrentEntities { get; }
-    internal ExplorationState WithTravelMode(FieldTravelMode mode) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, mode, CurrentEntities);
+    public IReadOnlyDictionary<int, string> SpriteGraphics { get; }
+    internal ExplorationState WithSpriteGraphics(int slot, string resource) => new(Definition, Layout, Player,
+        AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities,
+        SpriteGraphics.Where(pair => pair.Key != slot).Append(new(slot, resource)).ToDictionary());
+    internal ExplorationState WithTravelMode(FieldTravelMode mode) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, mode, CurrentEntities, SpriteGraphics);
     internal ExplorationState WithFollower(ExplorationEntity entity) => new(Definition, Layout, Player,
         AllEntities.Select(row => row.Slot == entity.Slot ? entity : row), Party, SpriteSize, Aliases, RoofState,
-        Population, Quake, TravelMode, CurrentEntities.Contains(entity.Slot) ? CurrentEntities : CurrentEntities.Append(entity.Slot).ToArray());
+        Population, Quake, TravelMode, CurrentEntities.Contains(entity.Slot) ? CurrentEntities : CurrentEntities.Append(entity.Slot).ToArray(), SpriteGraphics);
     public ExplorationEntity PlayerEntity => Entities[Player];
     public bool TryResolveEntity(EntityRef reference, out ExplorationEntity entity)
     {
@@ -291,11 +297,11 @@ public sealed class ExplorationState
         }
         return Entities.TryGetValue(reference, out entity!);
     }
-    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities);
+    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities, SpriteGraphics);
     internal ExplorationState WithLayout(WorkingMapLayout layout, MapBlockCopyLifecycleState? roofState = null) =>
-        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake, TravelMode, CurrentEntities);
-    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities);
-    internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount, TravelMode, CurrentEntities);
+        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake, TravelMode, CurrentEntities, SpriteGraphics);
+    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities, SpriteGraphics);
+    internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount, TravelMode, CurrentEntities, SpriteGraphics);
     internal ExplorationState MoveOffMap(EntityRef reference)
     {
         if (!TryResolveEntity(reference, out var entity)) throw new BattleRuleException("missing-entity", "program.entity", true);
@@ -311,16 +317,16 @@ public sealed class ExplorationState
         if (Population is not null && AllEntities.Any(row => row.Entity == reference &&
             !row.Visible && row.Motion.X == 0x7000 && row.Motion.Y == 0x7000 &&
             row.Motion.XDestination == 0x7000 && row.Motion.YDestination == 0x7000 &&
-            row.Actions is null && !Aliases.Values.Contains(row.Slot))) return this;
+            !Aliases.Values.Contains(row.Slot))) return this;
         throw new BattleRuleException("program-entity", "program.entity", true);
     }
     internal ExplorationState Hide(ExplorationEntity entity, bool removeAliases)
     {
-        var hidden = entity with { Visible = false, Actions = null, Follower = null, WaitingForSprite = false,
+        var hidden = entity with { Visible = false, WaitingForSprite = false,
             Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } };
         // For source populations an absent reference represents FF, distinct from a fresh zero mapping.
         return new(Definition, Layout, Player, AllEntities.Select(row => row.Slot == hidden.Slot ? hidden : row), Party, SpriteSize,
-            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population, Quake, TravelMode, CurrentEntities);
+            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population, Quake, TravelMode, CurrentEntities.Where(slot => slot != hidden.Slot).ToArray(), SpriteGraphics);
     }
     internal ExplorationState WithEntity(ExplorationEntity entity) =>
         WithEntities(AllEntities.Select(current => current.Slot == entity.Slot ? entity : current));

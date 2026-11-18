@@ -327,7 +327,7 @@ internal static class MapTransfer
             throw new BattleRuleException("scene-load-palette-binding", "map.basePalette", true);
         return story.Copy(story.Cursor, logicalView: ExplorationViewRunner.LoadScene(next, load.Camera, story.LogicalView!),
             logicalText: new(), textWindow: new ClosedTextWindow(),
-            display: story.Display with { Base = palette }, clearCameraEntity: true, clearCameraTarget: true);
+            display: story.Display with { Base = palette, Colors = null }, clearCameraEntity: true, clearCameraTarget: true);
     }
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,
@@ -383,7 +383,7 @@ internal static class MapTransfer
         {
             if (target.BasePalette is not { Valid: true })
                 throw new BattleRuleException("warp-palette-binding", "map.basePalette", true);
-            story = story.Copy(story.Cursor, display: story.Display with { Base = target.BasePalette });
+            story = story.Copy(story.Cursor, display: story.Display with { Base = target.BasePalette, Colors = null });
         }
         if (target.OnLoad is { } onLoad)
             story = story.Copy(onLoad, callers: story.Cursor is { } caller ? story.Callers.Append(caller) : story.Callers);

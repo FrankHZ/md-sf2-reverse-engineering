@@ -40,7 +40,8 @@ public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, in
     IReadOnlyList<ExplorationRaster>? HdBlocks = null,
     IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? HdBlockContexts = null);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech,
-    IReadOnlyList<ExplorationRaster>? HdDirections = null);
+    IReadOnlyList<ExplorationRaster>? HdDirections = null,
+    IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics = null);
 public sealed record PortraitTileChange(byte X, byte Y, byte AlternateX, byte AlternateY);
 public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster,
     IReadOnlyList<PortraitTileChange>? Eyes = null, IReadOnlyList<PortraitTileChange>? Mouth = null, ExplorationRaster? HdRaster = null);
@@ -98,7 +99,8 @@ public sealed record PalettePair(ushort Color2, ushort Color3)
     public bool White => Color2 == 0xEEE && Color3 == 0xEEE;
 }
 public enum FullFadeVisibility { Black, BaseRestored, Transitioning, White }
-public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePair Current, FullFadeVisibility Visibility);
+public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePair Current, FullFadeVisibility Visibility,
+    Runtime.Exploration.PaletteColorTransition? Colors = null);
 
 public sealed class ExplorationMapDefinition
 {

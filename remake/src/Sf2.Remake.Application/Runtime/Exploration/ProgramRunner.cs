@@ -448,6 +448,10 @@ internal static class ProgramRunner
                         story = current.Story.Copy(cursor, ExplorationMusicRunner.Begin(current, token));
                         break;
                     case PresentCue cue:
+                        if (current.Story.Display is { Colors: { } colors } colored &&
+                            (cue.Kind == PresentationCueKind.FlashWhite || MapTransfer.IsPalette(cue)))
+                            current = current.WithStory(current.Story.Copy(current.Story.Cursor,
+                                display: colored with { Colors = colors.SnapToBase(current.Story.SimulationTick) }));
                         if (cue.Kind == PresentationCueKind.FlashWhite)
                         {
                             MapTransfer.ValidateFlash(cue);
@@ -540,6 +544,18 @@ internal static class ProgramRunner
                         var sourceSlot = Entity(current, copySlot.Source).SpriteSlot;
                         var targetActor = Entity(current, copySlot.Target);
                         active = new ActiveExploration(current.Exploration!.WithEntity(targetActor with { SharedSpriteSlot = sourceSlot }));
+                        break;
+                    case SetSharedSpriteGraphics graphics:
+                        var graphicsWorld = current.Exploration!;
+                        foreach (var owner in graphicsWorld.AllEntities.Where(entity => entity.SpriteSlot == graphics.Slot))
+                            if (owner.Sprite is not { } ownerSprite || definition.Exploration!.Visuals?.Sprites.GetValueOrDefault(ownerSprite)?.Graphics?.ContainsKey(graphics.Resource) != true)
+                                throw new BattleRuleException("shared-sprite-graphics-binding", "program.resource", true);
+                        active = new ActiveExploration(graphicsWorld.WithSpriteGraphics(graphics.Slot, graphics.Resource));
+                        break;
+                    case RemapPaletteColors remap:
+                        var colorDisplay = current.Story.Display ?? throw new BattleRuleException("palette-context", "story.display", true);
+                        story = current.Story.Copy(Next(cursor), display: colorDisplay with
+                            { Colors = PaletteColorTransition.Request(colorDisplay.Colors, remap.Lookup, current.Story.SimulationTick) });
                         break;
                     case AddMapEntity add:
                         active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value, story.Flags));
