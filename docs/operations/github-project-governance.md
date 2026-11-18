@@ -355,8 +355,7 @@ Load the retained worktree's ignored shared installation selections under the
 [local input/tool owner](./local-private-inputs.md). JDK, H1, .NET and Godot installations are shared;
 BizHawk executes its registered installation under serial ownership with explicit local
 configuration/save/movie paths; follow the local-input owner for executable-base exceptions. Keep
-source/build checkouts and Python/NuGet caches owned by one worktree, and preserve old copies and
-completed results until separately authorized cleanup.
+source/build checkouts and Python/NuGet caches owned by one worktree during its use.
 
 When another checkout will consume an input or an accepted package, publish the selected files
 under an operator-owned private data root outside all worktrees. Preserve relative dependencies
@@ -367,7 +366,16 @@ saves, build output and diagnostic runs in their owning writable locations.
 Update consumers, including launchers and rebuild recipes, to resolve that publication through
 their local configuration. Before retiring the producer, compare the published files with the
 accepted selection and exercise the affected reader or launcher from another checkout with the
-old location unavailable. Preserve required failure evidence and uncommitted work separately.
+old location unavailable. Before retirement, land durable source, decisions, reproducible commands
+and shareable findings in the owning Git repository. Publish only required private inputs, final
+packages and irreplaceable evidence to their stable private owners. Resolve uncommitted work and
+check nested repository ownership before removing the checkout.
+
+The operator authorizes direct removal of accepted, idle worktrees selected for retirement once
+these checks pass. Reuse an assigned checkout while it still has a consumer. For a registered
+worktree use Git's worktree removal command. Discard its disposable builds, caches and scratch
+with it. Do not create retirement directories, ZIP files or copies of the whole checkout or its
+`local/` tree. If a specific file still has unresolved ownership, resolve that file first.
 
 Select the destination before calling the task-creation tool. For reuse through the app, use an
 existing isolated worktree registered as its own saved project and explicitly select local execution
@@ -386,7 +394,7 @@ The app distinguishes [managed and permanent worktrees](https://learn.chatgpt.co
 Archiving a managed task can trigger worktree cleanup; permanent worktrees are not automatically
 removed by task archival. A clean Git tree or app snapshot is not proof that ignored private inputs,
 failure records and gate results are safely retained. If retention is unresolved, leave the task idle
-and record that condition. Worktree/ref deletion remains separately authorized under `AGENTS.md`.
+and record that condition. Ref deletion requires separate authorization.
 
 When retiring old role sessions, first reconcile their active work and retained results with Issues.
 Do not revive completed slices, copy entire chat histories, or reset a runtime budget during migration.

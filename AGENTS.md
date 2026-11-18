@@ -130,8 +130,9 @@ selection and verification; do not replay historical per-run CLI-home launchers.
 Before handoff, update onto current `origin/main`, resolve ownership conflicts semantically, run the
 selected gates, stage only the declared paths, inspect the cached diff and private boundary, commit,
 push, and leave a Draft PR for independent integration. An unmerged branch is collaboration state,
-not a second source of truth. Remove only an accepted topic's own worktree and refs after explicit
-merge-cleanup authorization.
+not a second source of truth. For an accepted worktree selected for retirement, follow
+[the retirement procedure](docs/operations/github-project-governance.md#worktree-selection-and-retirement).
+Ref deletion requires separate authorization.
 
 ## Scale and Resource Planning
 
