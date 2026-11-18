@@ -84,13 +84,14 @@ public static class OpeningSaveJson
     public static OpeningSaveRecord Read(byte[] bytes, int slot) => ReadRecord(bytes, slot) is OpeningSaveRecord field
         ? field : throw new SaveFormatException("save-version");
 
-    public static SaveRecord ReadRecord(byte[] bytes, int slot)
+    public static SaveRecord ReadRecord(byte[] bytes, int slot) => ReadRecord(bytes, (int?)slot);
+
+    public static SaveRecord ReadRecord(byte[] bytes, int? slot)
     {
         if (bytes.Length == 0 || bytes.Length > MaximumBytes) throw new SaveFormatException("save-size");
         try
         {
-            CheckKeys(bytes);
-            var envelope = JsonSerializer.Deserialize<Envelope>(bytes, Options) ?? throw new SaveFormatException("save-empty");
+            var envelope = Bind<Envelope>(bytes, Options);
             byte[] payload = Convert.FromBase64String(envelope.Payload);
             if (!string.Equals(envelope.Sha256, Convert.ToHexString(SHA256.HashData(payload)), StringComparison.Ordinal))
                 throw new SaveFormatException("save-checksum");
@@ -112,16 +113,30 @@ public static class OpeningSaveJson
                 if (kinds[0].Value.ValueKind != JsonValueKind.String || kinds[0].Value.GetString() != "battle-player-input")
                     throw new SaveFormatException("save-kind");
             }
-            CheckKeys(payload);
             SaveRecord record = version is 1 or 3
-                ? JsonSerializer.Deserialize<OpeningSaveRecord>(payload, Options) ?? throw new SaveFormatException("save-empty")
-                : BattleSaveWire.Decode(JsonSerializer.Deserialize<BattleSaveWire.Record>(payload, BattleOptions) ?? throw new SaveFormatException("save-empty"));
-            if (record.Slot is not (1 or 2) || record.Slot != slot || record.Sequence < 1 || record.SavedAt.Offset != TimeSpan.Zero)
+                ? Bind<OpeningSaveRecord>(payload, Options)
+                : BattleSaveWire.Decode(Bind<BattleSaveWire.Record>(payload, BattleOptions));
+            if (record.Slot <= 0 || slot.HasValue && record.Slot != slot || record.Sequence < 1 || record.SavedAt.Offset != TimeSpan.Zero)
                 throw new SaveFormatException("save-header");
             return record;
         }
         catch (Exception error) when (error is JsonException or FormatException or ArgumentException)
         { throw new SaveFormatException("save-malformed"); }
+    }
+
+    private static T Bind<T>(byte[] bytes, JsonSerializerOptions options) where T : class
+    {
+        // Identify an unknown member even when its value is null. For known typed members keep
+        // the original null diagnostic, including non-nullable numbers rejected by the binder.
+        try { CheckKeys(bytes); }
+        catch (SaveFormatException error) when (error.Code == "save-null-value")
+        {
+            try { JsonSerializer.Deserialize<T>(bytes, options); }
+            catch (JsonException) { }
+            catch (SaveFormatException known) when (known.Code != "save-shape") { }
+            throw;
+        }
+        return JsonSerializer.Deserialize<T>(bytes, options) ?? throw new SaveFormatException("save-empty");
     }
 
     private static void CheckKeys(byte[] bytes)

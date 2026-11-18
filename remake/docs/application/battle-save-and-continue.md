@@ -16,10 +16,10 @@ continues to own delivered field savepoints and the common storage/entry rules.
 The admitted boundary is **an unfinished battle at settled player Movement input, at the actor's
 committed origin, after all prior work has completed**. Save preserves the current queue entry;
 Continue returns to that actor's Movement input, not battle entry or the beginning of the round.
-Use the existing two manual slots. Offer Save and return to play, or explicitly Save and Quit;
+Use the shared manual save history. Offer Save and return to play, or explicitly Save and Quit;
 Continue is reusable, not a consumable suspend file. This is a remake UX choice within the user's
 authorization. There is no save during arbitrary animation, autosave, cloud, original SRAM import,
-new slot manager, event log, predictive simulation, or later campaign admission.
+event log, predictive simulation, or later campaign admission.
 
 The implementation target is the currently admitted connected campaign's battle/return routes.
 Stage the first vertical proof in Battle01, then admit the remaining existing routes after the same
@@ -177,7 +177,7 @@ selects no input file or rule implementation. Failed admission returns no mounta
 and a record validator. Both use one slot lock, sequence calculation, same-directory temp,
 WriteThrough/flush, validated temp readback, atomic Move/Replace and validated final readback.
 Readbacks also compare exact bytes, in addition to sequence; this is an inexpensive transaction
-check, not a content-comparison framework. Recovery's second backup read is bounded as well.
+check. Recovery rereads the selected pair under the lock and uses the validated backup bytes.
 `SlotRead.CanRecover` is shared by store and host: only missing or structurally corrupt primary
 permits explicit repair from a valid backup. Semantic/content rejection, unknown versions/kinds
 and unavailable readers preserve both files and forbid downgrade. Repair preserves the good backup
@@ -189,6 +189,49 @@ as though the attempt certainly failed. Only the operation's own unpublished tem
 `OpeningPersistenceHost` consumes both typed variants. The shared recovery decision still forbids
 downgrade behind unsupported versions/kinds or semantic/content rejection. Valid battle records
 use their own labels and restore path; they are never converted to v1 field progress.
+
+### Manual save history and developer files
+
+**High rigor.** [#1903](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1903) shares the
+publication boundary across New Game, field/battle Save, Continue and explicit developer files.
+Each player slot has a positive numeric identity in its filename and record header. Slots 1 and 2
+keep their original paths. The list also discovers backup-only slots. Each page validates at most
+six pairs. New Game and Save offer a fresh number, even when the existing slots are occupied.
+
+The listing and each player publication enumerate the directory once. Listing sorts numeric IDs
+and decodes only the selected page. A write checks the observed primary and backup under the slot
+lock, validates the candidate, flushes and verifies a sibling temp, then atomically publishes and
+verifies the installed record. The comparison uses bounded original bytes and presence/error
+status. An oversized corrupt file is identified by length and modification time for recovery.
+Any unreadable backup blocks normal publication. The directory scan rejects linked children.
+Each actual open checks its ancestor chain and leaf, and replacement rechecks its named operands
+after validation. The lock coordinates participating writers. A process that replaces a path
+between filesystem calls is outside this guarantee. Write latency was not measured.
+
+Godot user arguments after `--` accept absolute paths for `--load-save` and `--save-output`.
+Startup mounts the named seed directly through the ordinary configured content/restore path.
+Its filename can differ from its embedded positive slot. Seed-only launches refuse writes.
+With output selected, New Game, Save and subsequent Continue use that file and sibling
+`.bak` and `.lock` suffixes. Seed and writable names must be distinct, outside the player
+namespace. Settings retain their existing location or explicit read-only override. An unavailable
+seed produces its read/compatibility diagnostic.
+
+**Confirmed in disposable storage.** The private review bundle is `handoffs/issue1903` under
+the registered shared-input root. Its handoff gives the runnable host, input selections, commands
+and receipts. Ordinary title Continue loaded both legacy slots, including a second slot encoded by
+the earlier writer. Chinese field Save created slot 3, a fresh process resumed its stored progress,
+and New Game created slot 4. Both legacy files remained byte-identical. The native confirmation
+race rejected Save and Quit after an independent writer committed. Repeated launches of one
+non-slot filename restored the same field progress. Seed-only Save refused publication, a separate
+output cold-restored, and output-only New Game and Continue mounted successfully with the disposable
+player path unavailable. A battle seed also mounted. Some headless processes reported the existing
+ObjectDB shutdown warning. Leak attribution remains **Unknown**.
+
+Run `uv run sf2 verify engine`, `uv run sf2 verify adapter` and build the Debug host for native
+input. For the storage matrix, use the production store and configured restore validator against
+a fresh namespace. Keep the selection from instance A, publish different progress through B,
+then try the original selection twice in A. For the compatibility samples, recompute the envelope
+checksum after changing the version or adding the unknown member. The bundle retains this driver.
 
 ### Future shape protection and binary rollback
 
@@ -313,7 +356,7 @@ environment workflow. No normal/full research suite or Godot restart is selected
 ## Implemented ordinary host boundary (C)
 
 **Confirmed in bounded remake observations; [#1638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1638).**
-The existing system menu offers the same two slots at admitted player Movement, with localized
+The system menu offers the shared save history at admitted player Movement, with localized
 encounter/round/actor/time labels and explicit overwrite consent. Confirmation offers Save and
 return or Save and Quit; only verified publication marks the captured revision clean or exits.
 The saved acknowledgement returns directly to play. Nonzero preview, pending movement/scene,
@@ -549,6 +592,9 @@ Do not duplicate the filesystem transaction in a battle-specific store.
 | Replacement attempted, exception or failed final readback | Preserve `save-publication-uncertain`; no blind retry or claim that the old primary survived. Keep session paused, offer read-only Continue/slot inspection and Cancel; reconcile the actual slot before another write. |
 | Process interruption | Before publication: last good primary wins; leftover temp is never Continue input. After publication: validate actual primary; if missing/corrupt offer the compatible backup explicitly. Do not infer commit from temp/mtime alone. No universal disk-controller/power-loss guarantee is claimed. |
 | Corrupt primary, valid compatible backup | Show backup kind/destination/actor/time and require explicit recovery. Reuse Recover's temp/replace path preserving backup bytes; never rotate corrupt primary over the last good backup. |
+| Primary or backup changed since selection | Refuse stale publication or recovery under the writer lock. Keep both files and require a fresh selection. |
+| Readable primary and checksum-valid future backup | Refuse Save with `save-backup-unreadable`. Continue can still load the readable primary. |
+| Supported version with a constructed unknown numeric or null-valued member | Both variants report `save-shape`. Explicit recovery keeps the original primary and backup bytes. A truncated primary still repairs from the valid backup. |
 | Incompatible/future-version/unknown-shape primary or unavailable required content | Preserve files and report matching build/content required. Do not silently load an older backup, downgrade to field return, restart battle, delete a slot or overwrite it to unblock Save. Retain current recovery exclusions. |
 | Existing v1 field/new-game save, including absent names | Continue through unchanged v1 semantics; do not reinterpret it as a battle or rewrite on read. Scene-free new field saves stay v1; populated scene writes use protected field-v3. |
 | Old executable sees v2 primary | It rejects the unsupported record; supported new code can still read the prior v1 backup. The existing reader deserializes v1 before checking version, so a differently shaped v2 can report `save-malformed` and expose old backup recovery instead of `save-version`. Do not use that old recovery to overwrite v2 during rollback. Preserve user-owned bytes locally before operator-directed rollback; no automatic downgrade. New version dispatch must classify unsupported versions before typed payload parsing. |
@@ -620,7 +666,7 @@ claim linear end-to-end validation. Content admission/resource preparation is ad
 no history/frames/traces are retained. Keep the 1 MiB encoded-file
 cap. One save uses at most primary + backup + one unpublished temp (at most 3 MiB per active slot),
 with bounded encoded/decoded/candidate copies in memory; configured content dominates memory.
-Two existing slots plus one active temp remain a small fixed disk budget. No new network/model/API
+Disk use grows with the number of player-created slots. No new network/model/API
 cost or content duplication is required. Measure one representative serialized battle and fresh
 restore latency/memory in A/B; target comfortably below the cap (review if over 256 KiB or if saving
 visibly blocks input). Use existing detached entry work if resource preparation needs it, never a
