@@ -34,4 +34,4 @@ research uses its normal and owning narrow gates. Do not run normal/full suites 
 ## Handoff
 
 - Current Issue handoff: <!-- executor task, preserved failures, process/retention needs and stopping condition -->
-- Independent acceptance: <!-- main-gate; stop at Review / Verify, before merge or archival -->
+<!-- The independent reviewer records the decision on this PR before merge. -->

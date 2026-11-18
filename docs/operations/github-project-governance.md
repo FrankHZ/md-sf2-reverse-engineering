@@ -1,11 +1,6 @@
 # GitHub Project Governance
 
-- Status: **Accepted governance; hosted configuration applied and read back.**
-  This document describes the current Project configuration and its use.
-- Scope: division of authority between repository knowledge and GitHub work coordination;
-  conventions for Issues, Project fields, and milestones.
-- Applies to: agents and humans planning, dispatching, executing, or integrating work in this
-  repository.
+This guide governs goal tracking, Issue dispatch and independent integration.
 
 ## Authority Boundary
 
@@ -33,99 +28,20 @@ Accepted capability matrices and coverage denominators remain technical knowledg
 
 ## Project
 
-Use [SF2 Modernization](https://github.com/users/FrankHZ/projects/1) as the single project.
-Keep it private. Do not create per-lane projects; use multiple views of one item pool. Link this
-owner from the Project rather than duplicating its rules.
+The private [Goals view](https://github.com/users/FrankHZ/projects/1/views/1) shows open
+parent Issues with `Work Type = Epic`. It displays the title and status. Add a goal when it
+becomes a project commitment and change its status when the goal itself changes:
 
-The statuses, fields, views and built-in workflows below are configured on that Project. Its
-README links here. Track work ownership, migration handoffs and outstanding acceptance in
-Issues, not a running checklist in this document. A queue entry is not permission to execute.
-
-### Status Model
-
-| Status | Entry condition |
+| Status | When to use it |
 | --- | --- |
-| `Backlog` | Candidate work whose scope, dependencies, or authorization is not yet settled |
-| `Ready` | Goal, owned paths, acceptance commands/observations, and dependencies are declared |
-| `In Progress` | An executor has confirmed Git/worktree/path/process ownership and started |
-| `Review / Verify` | Candidate committed and pushed; awaiting independent review or its selected verification |
-| `Blocked` | A concrete blocker with the resolving owner and condition named in the Issue |
-| `Done` | The item's own acceptance is met; for code or docs, independently accepted and merged |
+| `Backlog` | Queued, paused, or waiting for playtest or another dependency. Record a material dependency on the Issue. |
+| `In Progress` | The goal is a current focus. |
+| `Done` | The goal's acceptance owner has accepted the outcome. Setting Done closes the Issue and removes it from the open Goals view. |
 
-Rules:
-
-- **Unknown is not Blocked.** An open question that does not currently gate the slice stays with its
-  knowledge owner. `Blocked` requires a named resolving owner and condition.
-- **Closing is not delivering.** Canceled, duplicate, or declined items keep their close reason and
-  do not count as delivered work. Only accepted/merged implementation counts as Done.
-- A merged PR closes its implementation slice; it does not by itself close an epic, milestone
-  acceptance, or any original-game acceptance claim.
-- Lane worktrees are worktrees, not board state. Branch or worktree existence alone never sets
-  `In Progress`; a named executor plus declared ownership does.
-
-### Fields and Labels
-
-Fields (single project-wide set):
-
-- `Area` single-select: `Research`, `Battle Engine`, `Map & World`, `Presentation`, `Content`,
-  `Tooling`, `Design`, `Governance`.
-- `Work Type` single-select: `Epic`, `Feature`, `Research`, `Task`, `Bug`. GitHub reserves the name
-  `Type` and rejects it for this personal Project's custom field; use `Work Type` consistently.
-- `Priority` single-select: `P0`–`P3`. `P0` is reserved for a reproduced, actively harming defect
-  that must be addressed immediately; it is not a popularity rank.
-
-- `Assignees`: existing GitHub field for the accountable account; agent sessions are not accounts.
-- `Lane` single-select: `Research`, `Design`, `Remake`, `Tooling`, `Governance`. These are stable
-  responsibilities; record the actual executor/session in the current Issue handoff.
-- `Milestone`: existing field for an accepted target, not a new phase numbering scheme.
-
-Optional `graphics` and `audio` labels can distinguish presentation work. Do not duplicate Area,
-Work Type or Status into separately maintained labels.
-
-Explicit non-goals:
-
-- No single-item `Confidence` field. Issue bodies state evidence per claim with the repository's
-  **Confirmed / Inferred / Unknown** labels and links to owning evidence; a card cannot be stamped
-  "Verified" wholesale.
-- No `Effort` field until a real scheduling need appears; if added later, size only, never an
-  evidence claim.
-- Graphics and audio work starts under optional labels; split `Area` values only when a durable
-  dedicated queue exists.
-
-### Views
-
-The configured views use table layout and the same item pool:
-
-| View | Filter | Grouping | Sorting |
-| --- | --- | --- | --- |
-| [All items](https://github.com/users/FrankHZ/projects/1/views/1) | None; includes retained completed items | None | Manual order |
-| [Active](https://github.com/users/FrankHZ/projects/1/views/2) | `-status:Backlog,Done` | Status | Priority, then Lane, ascending |
-| [Agent Queue](https://github.com/users/FrankHZ/projects/1/views/3) | `status:Ready` | None | Priority, then Lane, ascending |
-| [Backlog](https://github.com/users/FrankHZ/projects/1/views/4) | `status:Backlog` | None | Priority, then Lane, ascending |
-| [Milestones](https://github.com/users/FrankHZ/projects/1/views/5) | `has:milestone` | Milestone | Priority ascending |
-
-Visible columns are Title, Status, Area, Work Type, Priority, Lane, Assignees, Milestone and Linked
-pull requests. An empty Agent Queue means no item is Ready; an empty Milestones view means no item
-has a milestone. Neither is an execution failure. No Roadmap is configured; add one only when items
-carry real dates. Views are presentation only; field values and statuses remain the coordination
-authority.
-
-### Built-in Workflows
-
-| Workflow | Configuration | Boundary |
-| --- | --- | --- |
-| Item added to project | Enabled: new Issue/PR items enter Backlog | Adding an item does not assign it |
-| Auto-add sub-issues to project | Enabled | Explicit sub-issues of existing items join the same queue; this does not create or dispatch work |
-| Pull request merged | Enabled: the PR item enters Done | Its merge does not complete a parent epic or milestone |
-| Auto-close issue | Enabled: setting an Issue item to Done closes it | Only the acceptance owner sets Done after that Issue's own criteria are met |
-| Item closed | Disabled | Closing canceled, duplicate or unmerged work must not mark it delivered |
-| Pull request linked to issue | Disabled | A PR link must not assign In Progress before executor ownership is confirmed |
-
-Issue closure and Project status are distinct operations: after independent acceptance, the owner
-sets Done; the configured workflow can then close the Issue. If a closing keyword closes an Issue
-on merge, the acceptance owner still sets its Project status. Canceled or superseded Issues retain
-their close reason and are not promoted to Done. Do not enable automatic review or dispatch status
-changes that bypass the entry conditions above.
+Child Issues carry scope, dependencies and blockers. Their linked PRs carry delivery and review.
+Keep automatic sub-issue addition off and let executors work from Issues. No per-slice board
+updates or extra fields are required. [All items](https://github.com/users/FrankHZ/projects/1/views/6)
+retains the existing cards for lookup. Canceled or superseded goals keep their Issue close reason.
 
 ## Work Items
 
@@ -225,7 +141,7 @@ evidence-label rules of `AGENTS.md` applying verbatim to issue bodies and commen
 inputs, absolute private paths, generated artifacts, or redistribution rights; state reproduction
 commands and fixture identity instead of pasted dumps.
 
-For a player-facing remake change, put a link to the affected [campaign feature row](../../remake/docs/capability-status.md#campaign-feature-trace) or battle row and its detailed owner in the Issue. Name the player action, affected chapter/map/setup and expected result or return. A chapter extension includes newly reachable optional interactions even when their engine rule stays the same. During review, compare the published callers or placements with the owner's inventory and distinguish ordinary input from static or controlled evidence. Update the affected row or linked owner in the implementation PR where its claim changes. Link a remaining actionable gap to its existing Issue, or open one for a distinct outcome. Group equivalent variants in the owner; the Project tracks work and dependencies.
+For a player-facing remake change, put a link to the affected [campaign feature row](../../remake/docs/capability-status.md#campaign-feature-trace) or battle row and its detailed owner in the Issue. Name the player action, affected chapter/map/setup and expected result or return. A chapter extension includes newly reachable optional interactions even when their engine rule stays the same. During review, compare the published callers or placements with the owner's inventory and distinguish ordinary input from static or controlled evidence. Update the affected row or linked owner in the implementation PR where its claim changes. Link a remaining actionable gap to its existing Issue, or open one for a distinct outcome. Group equivalent variants in the owner; the linked Issues track work and dependencies.
 
 When a newly reachable player state relies on a changed or separately admitted consumer, name its next ordinary use and the visible result or return required for acceptance. For example, after a new weapon can be bought and equipped, check its first use in a supported encounter. Compare the newly reachable class/weapon pairs with the encounter artwork; one live route can exercise a shared implementation. If a missing binding stops ordinary play, fix and verify it or link the blocker and keep that route marked blocked.
 
@@ -235,8 +151,7 @@ Where similar inputs can preserve or transfer player control, check the cases th
 
 Main-gate plans, dispatches, independently reviews, integrates and tracks work. Within the user's
 authorized scope, it may create a fresh execution task for each bounded, executable Issue without
-requiring the user to create that task manually. Ready is eligibility, not authorization or an
-automatic claim. An epic supplies a target; dispatch its scoped child Issues rather than assign an
+requiring the user to create that task manually. An epic supplies a target; dispatch its scoped child Issues rather than assign an
 unbounded epic to a permanent role session. No task may select unrelated Backlog work for itself.
 
 Roles and lanes describe responsibilities, not permanent conversations. One execution task owns one
@@ -269,13 +184,9 @@ The executor:
 1. Reads the Issue, its parent/dependencies, and the linked necessary owners.
 2. Performs the read-only Git/worktree/ownership check required by `AGENTS.md`, checking other
     active Issues and PRs as well. Confirm the assignment, selected checkout and ownership before writing.
-3. Sets `In Progress` (with executor identity) only after step 2 confirms it may proceed.
-4. Discovers adjacent work → new linked Issue; never silently expands a slice.
-5. Delivers a committed, pushed Draft PR; moves the item to `Review / Verify` only at its declared
-   handoff, not merely when a draft opens. Use `Fixes #NNN` only when merge will satisfy the entire
-   Issue; otherwise use `Refs #NNN` and retain the unmet acceptance work.
-6. After independent review, acceptance, and merge, the item may move to `Done`. Closing the Issue
-   or the PR never substitutes for the task's own acceptance boundary.
+3. Tracks material blockers or newly discovered work on the Issue. Link a separate outcome to its own Issue.
+4. Delivers a committed, pushed Draft PR at the declared handoff. Use `Fixes #NNN` when merge
+   satisfies the whole Issue. Otherwise use `Refs #NNN` and keep the unmet criteria open.
 
 At slice completion or a concrete blocker, record the Issue/PR handoff, freeze at the declared
 stopping condition and end normally. The final answer names the Issue/PR, exact head, handoff link,
@@ -318,9 +229,12 @@ cursor, returned host, unreviewed result and next intake action in the current h
 a read-only completion snapshot before dispatching or rerunning anything;
 do not claim work will resume automatically without an actual, authorized wake-up mechanism. Do not
 add a scheduler, hook or service merely to deliver a completion notification.
-Review corrections return to the same execution task and scoped Issue, with In Progress restored when
-the executor resumes. An optional bounded subagent reports to that executor; it is not another
-top-level Issue owner. Completion stops execution rather than starting the lane's next Issue.
+The independent reviewer leaves one short PR review or comment identifying the decision,
+the decisive check and any material limitation. A review is attached to its commit; in a
+standalone comment identify the reviewed head. Main-gate may relay a separate reviewer's
+finding there. Corrections return to the same executor for review of the affected change.
+After acceptance and merge, continue with the next authorized Issue when the user requested a batch.
+No separate review report, duplicate Issue entry or historical backfill is required.
 
 #### Recovery
 
@@ -411,6 +325,4 @@ new work regardless of import order.
 
 When an owning document changes a conclusion, update the affected open Issues the same way the
 document update is reviewed, rather than leaving a stale queue. When a slice is superseded or
-blocked, the Issue (not a side channel) records it with the named blocker. Periodically review the
-Project for items whose entry conditions no longer hold; demote or close them with reasons instead
-of letting the board drift.
+blocked, the Issue (not a side channel) records it with the named blocker. Update the goal on the Project when its priority as a current focus or its acceptance changes.

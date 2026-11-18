@@ -87,15 +87,15 @@ completed results, failed nodes and process state across compaction.
 
 ## Bounded Worker Handoff
 
-For an ordinary independent Phase 2 slice, follow the normative
-[`phase2-lane-runbook.md`](./phase2-lane-runbook.md). It owns the exact role, bounded no-history
-handoff, same-worker correction, recovery, acceptance, and escalation rules. This resume route does
-not duplicate them.
+Use [ADR 0018](../decisions/0018-astra-role-routing-trial.md#current-routing) for model selection.
+The assigned executor may complete a Phase 2 slice directly. Apply the
+[Phase 2 runbook](./phase2-lane-runbook.md) for evidence and acceptance on every Phase 2 slice,
+and for worker handoff and corrections when delegating.
 
 ## Work Items and Task State
 
-Open work, ownership, and next steps are tracked as GitHub Issues in the
-[SF2 Modernization project](https://github.com/users/FrankHZ/projects/1) under
+Track goals on the [Goals view](https://github.com/users/FrankHZ/projects/1/views/1).
+Open work, ownership and dependencies belong on GitHub Issues under
 [GitHub Project Governance](./github-project-governance.md#task-lifecycle). Main-gate creates a fresh
 task for each dispatched coherent Issue outcome; its review corrections stay in that task. For a
 dispatched task, read the Issue and current handoff first, then this route and the owners it names.
