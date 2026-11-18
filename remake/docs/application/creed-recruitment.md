@@ -9,8 +9,9 @@ bilingual Stage1 route continues the unchanged English and Simplified Chinese or
 [consultation return](evil-spirit-consultation.md), accepts Eric or Karna, receives the Fairy,
 completes Oddler staying, leaves and reenters the mansion, and reaches mine exterior Map68 (57,25).
 The [engine and save audit](../evidence/creed-stage1-engine-save-audit.md) records the accepted
-consumer boundaries. Mine Map30 recovery and Cannon dialogue, Dynamite, and North Cliff remain
-Stage2; entering Map30 is still an explicit unsupported frontier.
+consumer boundaries. This Creed chapter and its original private bundle stop outside Map30.
+The subsequent [mine chapter](dwarven-mine-cannon.md) now consumes those ordinary slots through
+Fairy recovery, Cannon and a saved return. Astral, Dynamite and North Cliff remain later work.
 
 The registered private `handoffs/issue1876` bundle contains `Play-en.cmd` / `Play-zh-CN.cmd`,
 ordinary stage slots, recipes and receipts. Continue → Slot1 starts from the selected ordinary seed.
