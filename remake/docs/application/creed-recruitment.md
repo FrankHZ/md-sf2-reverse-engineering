@@ -115,6 +115,10 @@ selected source/media; peak-memory estimate remains below1.5 GiB. Reassess befor
 missing dependency, twice the output estimate or memory pressure. Existing captures/results remain
 read-only. The final rebuild uses maintained APIs and compares semantically equal world data,
 byte-equal new scene input and byte-equal catalogs with the consumed candidate.
+Retaining failed candidates and the independent final rebuild brings actual working scratch to
+451,657,686 bytes (about431 MiB), above the initial300 MiB estimate. The retained-scratch budget is
+revised to450 MiB; no additional extraction/rebuild is planned. Final publication remains about449 MiB
+within500 MiB, with about1.67 GiB H free. No predecessor input or failure evidence is removed.
 
 Only MUSIC_TOWN's33,110,876 base64 characters are externalized from the old133,443,497-byte world.
 Its registered24,833,200-byte WAV has exactly the old PCM, loop, command/timer and identity. The
