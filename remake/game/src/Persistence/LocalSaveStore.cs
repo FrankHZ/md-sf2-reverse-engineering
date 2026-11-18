@@ -7,7 +7,7 @@ namespace Sf2.Remake.GodotAdapter.Persistence;
 internal sealed record SlotRead(SaveRecord? Primary, SaveRecord? Backup, string? Error, string? BackupError)
 {
     // Only absent or structurally corrupt primary files permit explicit backup repair.
-    // Semantic/content rejection, future versions and unavailable readers preserve primary bytes.
+    // Semantic/content rejection and unsupported versions/kinds/shapes (save-shape) preserve bytes.
     internal bool CanRecover => Primary is null && Backup is not null && Error is null or
         "save-size" or "save-malformed" or "save-empty" or "save-checksum" or "save-header" or
         "save-null-value" or "save-duplicate-key" or "save-presence" or "save-battle-custody";

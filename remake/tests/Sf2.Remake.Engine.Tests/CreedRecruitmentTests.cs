@@ -6,6 +6,7 @@ using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Content.Persistence;
 using Xunit;
 
 namespace Sf2.Remake.Engine.Tests;
@@ -68,7 +69,12 @@ public sealed class CreedRecruitmentTests
         var original = session.Current.Exploration!;
         var data = session.CaptureSave(session.Current.SessionId, session.Current.Revision);
         Assert.Null(data.Error);
-        var restored = Assert.IsType<SessionStarted>(GameSession.Restore(session.Definition, data.Data!, session.Rules)).Session;
+        var bytes = OpeningSaveJson.Write(new(1, 1, 1, DateTimeOffset.UnixEpoch, data.Data!));
+        var record = OpeningSaveJson.Read(bytes, 1);
+        Assert.Equal(3, record.FormatVersion);
+        var restored = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(session.Definition, record, session.Rules)).Session;
+        // Scene-bearing v1 files already written by the accepted Creed build remain readable.
+        Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(session.Definition, record with { FormatVersion = 1 }, session.Rules));
         var world = restored.Current.Exploration!;
         Assert.Equal(original.CurrentEntities, world.CurrentEntities);
         Assert.Equal(original.AllEntities.Select(actor => (actor.Entity, actor.Position, actor.Follower)),

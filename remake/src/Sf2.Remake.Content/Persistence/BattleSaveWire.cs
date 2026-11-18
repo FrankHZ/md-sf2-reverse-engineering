@@ -151,6 +151,8 @@ internal sealed class PresenceConverter<T> : JsonConverter<Presence<T>>
     {
         using var document = JsonDocument.ParseValue(ref reader);
         var root = document.RootElement;
+        if (root.ValueKind == JsonValueKind.Object && root.EnumerateObject().Any(p => p.Name is not ("present" or "value")))
+            throw new SaveFormatException("save-shape");
         if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("present", out var present) ||
             present.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) throw new SaveFormatException("save-presence");
         bool has = present.GetBoolean();
