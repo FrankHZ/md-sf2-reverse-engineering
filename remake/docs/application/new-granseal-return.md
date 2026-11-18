@@ -75,10 +75,13 @@ Loaded audience retains Astral139; fresh Map7/F805 reconstructs B31 and removes1
 retains the source-allocated18/following graph; ordinary fresh Map6 does not recreate that local
 actor. Both states can be saved and continued. Cold observations at audience, gift and Janet preserve
 all player-owned payload fields, aliases, follower identity/offsets and layout. Elapsed ordinary town
-work changes only ambient resident position/facing and main RNG. Thinking RNG, party statistics,
+work changes ambient resident position/facing and main RNG. The finite restore restarts resident
+ambient initialization: castle minister128/king129 idle speed returns from the saved scene’s40/32
+to the source idle16. This is an explicit restore limit, not exact preservation of every NPC work
+register. Thinking RNG, party statistics,
 packs/equipment, flags, names, gold, depot/deals, counter, raft and return town remain unchanged.
 Both Map73 exit payloads round-trip completely equal. Fresh805 castle also cold-continues successfully.
-The new package loads the predecessor's unchanged old roster through the ordinary return routes.
+The predecessor's unchanged mine-return slots upgrade16 records to17: every retained ally record and\nboth RNG words remain equal; only the compatibility revision and newly initialized Janet record differ.
 
 ## Optional callers and next consumer
 
