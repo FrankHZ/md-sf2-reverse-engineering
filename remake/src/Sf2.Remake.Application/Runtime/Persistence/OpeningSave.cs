@@ -138,6 +138,7 @@ internal static class OpeningSave
             story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
             party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
             { Depot = Array.AsReadOnly(party.ItemCustody.Depot.ToArray()), Layer = world.PlayerEntity.Motion.Layer, Raft = SavedRaft.Capture(story.Raft),
+                FieldScene = definition.Persistence!.CaptureScene(definition, world, story.Flags),
                 Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 

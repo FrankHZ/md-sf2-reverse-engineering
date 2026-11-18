@@ -5,10 +5,12 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 // The same candidate and event predicate serves the hint and the committing command.
 internal static class ExplorationInteractionQuery
 {
-    internal static EntityRef? Query(SessionSnapshot current)
+    internal static EntityRef? Query(SessionSnapshot current, ScenarioDefinition? definition = null)
     {
         if (!current.CanWaitAtInput || current.Exploration is not { } world || world.Definition.InputProgram is not null)
             return null;
+        if (definition?.Exploration?.Programs.ContainsKey(CaravanPrograms.Service) == true && CaravanRuntime.ServiceTarget(current) is { } caravan)
+            return caravan;
         foreach (var entity in world.AllEntities.OrderBy(entity => entity.Slot))
             if (entity.Entity != world.Player && InReach(current, entity.Entity) && Event(current, entity.Entity)?.Program is not null)
                 return entity.Entity;

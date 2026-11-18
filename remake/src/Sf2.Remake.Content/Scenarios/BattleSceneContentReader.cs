@@ -41,10 +41,11 @@ internal static class BattleSceneContentReader
         Require(rasters.ContainsKey(background) && rasters.ContainsKey(ground), "scene-background", "battleScenes.rasters");
         var allies = new Dictionary<BattleClassRule, BattleSceneActorVisual>();
         var equipment = new Dictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>();
+        var allyAppearances = new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>();
         var enemyBodies = new Dictionary<(int, int), BattleSceneActorVisual>();
         foreach (var row in Array(root, "actors"))
         {
-            Object(row, "sceneActor", "side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences", "idleTicks");
+            ObjectOptional(row, "sceneActor", "members", "side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences", "idleTicks");
             string side = Text(row, "side");
             int sprite = Number(row, "sprite", 0, 255), palette = Number(row, "palette", 0, 255);
             int? item = row.GetProperty("item").ValueKind == JsonValueKind.Null ? null : Number(row, "item", 0, 127);
@@ -84,8 +85,34 @@ internal static class BattleSceneContentReader
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
                     7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 12 => BattleClassRule.UnpromotedArcher, _ => BattleClassRule.UnpromotedBirdman };
-                Require(palette == (sprite == 12 ? 1 : 0) && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
-                allies.TryAdd(kind, visual);
+                if (row.TryGetProperty("members", out _))
+                {
+                    var members = Array(row, "members").Select(value =>
+                    {
+                        Require(value.TryGetByte(out byte id) && definitions.Allies.TryGetValue(id, out var member) &&
+                            member.ClassId == Sf2.Remake.Domain.Gameplay.Sf2.Sf2ClassRules.SourceClass(kind),
+                            "scene-ally-member", "battleScenes.actors.members");
+                        return new ActorRef("ally-" + id);
+                    }).ToArray();
+                    Require(members.Length > 0 && members.Distinct().Count() == members.Length, "scene-ally-member", "battleScenes.actors.members");
+                    foreach (var member in members)
+                    {
+                        if (item is { } weapon)
+                            Require(allyAppearances.TryAdd((member, kind, weapon), visual), "scene-ally-binding", "battleScenes.actors");
+                        allyAppearances.TryAdd((member, kind, -1), visual);
+                    }
+                    // Older class consumers retain the ordinary palette as their fallback.
+                    if (palette == (sprite == 12 ? 1 : 0))
+                    {
+                        if (item is { } weapon) equipment.TryAdd((kind, weapon), visual);
+                        allies.TryAdd(kind, visual);
+                    }
+                }
+                else
+                {
+                    Require(palette == (sprite == 12 ? 1 : 0) && (item is null || equipment.TryAdd((kind, item.Value), visual)), "scene-ally-binding", "battleScenes.actors");
+                    allies.TryAdd(kind, visual);
+                }
             }
             else
             {
@@ -203,7 +230,7 @@ internal static class BattleSceneContentReader
             new ReadOnlyDictionary<int, string>(texts),
             System.Array.AsReadOnly(names), healing, fieldDeath, terrainScenes is null ? null : System.Array.AsReadOnly(terrainScenes),
             roster.ToDictionary(row => row.Actor, row => row.Enemy.DisplayName).AsReadOnly(), equipment.AsReadOnly(),
-            roster.ToDictionary(row => row.Actor, row => row.Enemy.Id).AsReadOnly(), appearances.AsReadOnly());
+            roster.ToDictionary(row => row.Actor, row => row.Enemy.Id).AsReadOnly(), appearances.AsReadOnly(), allyAppearances.AsReadOnly());
     }
 
     // Pinned EnemyBattlesprites sprite and palette pairs.

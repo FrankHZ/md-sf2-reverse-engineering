@@ -108,9 +108,9 @@ internal static class MapEventDispatcher
     internal static SessionSnapshot Finish(SessionSnapshot current, List<SessionObservation> observations,
         WaitToken? fieldMoveToken = null)
     {
-        if (current.Story.EventCaller is AreaDescriptionContext)
+        if (current.Story.EventCaller is AreaDescriptionContext or CaravanEntryContext)
             return ProgramRunner.Commit(current, current.Active, current.Story.Copy(null, clearEventCaller: true),
-                observations, "area-description-return");
+                observations, current.Story.EventCaller is CaravanEntryContext ? "caravan-service-return" : "area-description-return");
         if (current.Story.EventCaller is ZoneEventContext or ItemEventContext)
             return FinishMapAction(current, current.Story.EventCaller, observations, fieldMoveToken);
         if (current.Story.EntityEvent is not { } context) return current;

@@ -23,11 +23,14 @@ public sealed record BattleSceneDefinition(string Encounter, string Background, 
     IReadOnlyList<BattleSceneTerrainVisual>? TerrainScenes = null,
     IReadOnlyDictionary<ActorRef, string>? EnemyNames = null,
     IReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>? Equipment = null,
-    IReadOnlyDictionary<ActorRef, byte>? EnemyNameIds = null, IReadOnlyDictionary<byte, EnemyAppearance>? Species = null)
+    IReadOnlyDictionary<ActorRef, byte>? EnemyNameIds = null, IReadOnlyDictionary<byte, EnemyAppearance>? Species = null,
+    IReadOnlyDictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>? AllyAppearances = null)
 {
     public bool TryAllyVisual(BattleActorState actor, out BattleSceneActorVisual visual)
     {
         ushort equipped = actor.SourceLoadout?.Items.FirstOrDefault(word => (word & 128) != 0 && (word & 127) != 127) ?? 0;
+        if (AllyAppearances is not null && AllyAppearances.Keys.Any(key => key.Actor == actor.Actor && key.Class == actor.Definition.ClassRule))
+            return AllyAppearances.TryGetValue((actor.Actor, actor.Definition.ClassRule, equipped == 0 ? -1 : equipped & 127), out visual!);
         if (Equipment is not null && equipped != 0)
             return Equipment.TryGetValue((actor.Definition.ClassRule, equipped & 127), out visual!);
         return Allies.TryGetValue(actor.Definition.ClassRule, out visual!);

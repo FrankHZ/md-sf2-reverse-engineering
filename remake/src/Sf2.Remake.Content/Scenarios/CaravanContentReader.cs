@@ -45,7 +45,7 @@ internal static class CaravanContentReader
         if (selected.Length == 0)
         {
             if (!authored && maps.Any(map => CaravanRuntime.HasOverworldPopulation(map.Population)))
-                programs.AddRange(CaravanPrograms.Create(new("entity-30"), player));
+                programs.AddRange(CaravanPrograms.Create(new("entity-30"), player, service: true));
             return;
         }
         Require(authored && maps.Count == 1 && selected.Length == 1, "caravan-standalone-world", "world.maps", true);

@@ -517,6 +517,23 @@ def prepare_visuals(
         external = asset["cue"] in wav_profiles
         end_step = 505 if asset["command"] == 19 else None
         if external:
+            # Registered manifest media starts outside the publication. Materialize only
+            # this selected WAV at the existing reader's world-relative location.
+            expected = (
+                world_directory / f"audio-{asset['command']:02x}-{asset['timerB']:02x}" / path.name
+            )
+            if path != expected:
+                source = path.read_bytes()
+                if hashlib.sha256(source).hexdigest().upper() != runtime["sha256"].upper():
+                    raise ValueError("admitted audio identity mismatch")
+                expected.parent.mkdir(parents=True, exist_ok=True)
+                if expected.exists():
+                    if expected.read_bytes() != source:
+                        raise ValueError("world-relative WAV already contains different media")
+                else:
+                    with expected.open("xb") as target:
+                        target.write(source)
+                path = expected
             payload, end_step = _read_world_wav(
                 world_directory,
                 path,

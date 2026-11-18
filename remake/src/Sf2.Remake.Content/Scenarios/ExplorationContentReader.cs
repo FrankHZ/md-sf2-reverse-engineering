@@ -161,6 +161,7 @@ internal static class ExplorationContentReader
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
+        CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         if (!authored)
         {
             PrivateCastleSceneContent.Bind(maps, programs);
@@ -169,7 +170,6 @@ internal static class ExplorationContentReader
         }
         if (programs.Any(program => program.Instructions.Any(op => op is ParkRaft)))
             programs.AddRange(RaftRuntime.Programs(new(Id(start, "player"))));
-        CaravanContentReader.Bind(maps, programs, new(Id(start, "player")), authored);
         Require(partyFlags is not null || !programs.Any(program => program.Instructions.Any(op => op is OpenCaravan)),
             "caravan-party-layout", "world.partyFlags");
         var definition = new ExplorationDefinition(maps, programs, texts, provenance, partyFlags,

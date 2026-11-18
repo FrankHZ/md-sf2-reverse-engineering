@@ -58,7 +58,7 @@ internal static class OpeningRestore
         var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor);
         Require(location.Recipe == data.Recipe && location.Anchor == anchor, "save-recipe");
         var raft = data.Raft?.Restore(definition.Exploration);
-        var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, raft, out var flags, data.Layer);
+        var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, raft, out var flags, data.Layer, data.FieldScene);
         Require(world.Definition.BasePalette is { Valid: true }, "save-palette-resource");
         int area = world.Definition.Traversal.SelectActiveArea(anchor.Position)!.OneBasedRecordOrdinal - 1;
         var music = new MusicProgress(1, data.Music.Cue, Array.AsReadOnly(data.Music.Previous.ToArray()), anchor.Map, area,

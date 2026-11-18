@@ -12,6 +12,17 @@ internal static class CaravanRuntime
     internal static bool HasOverworldPopulation(ExplorationPopulation? population) =>
         population?.Followers.FirstOrDefault() is { Flag: 65, Character: 30, Sprite: 62 };
 
+    internal static EntityRef? ServiceTarget(SessionSnapshot current)
+    {
+        if (!current.CanWaitAtInput || current.Exploration is not { TravelMode: FieldTravelMode.Walking } world ||
+            !HasOverworldPopulation(world.Population)) return null;
+        var vehicle = world.AllEntities.FirstOrDefault(actor => actor.Slot == 1);
+        var player = world.PlayerEntity.Motion;
+        return vehicle is { Visible: true, Sprite: 62 } && !vehicle.Motion.IsMoving &&
+            vehicle.Motion.XDestination == player.XDestination && vehicle.Motion.YDestination == player.YDestination
+            ? vehicle.Entity : null;
+    }
+
     private static IEnumerable<int> FollowerSlots(ExplorationState world, bool skipCaravan) =>
         world.CurrentEntities.Skip((world.Population is null ? 0 : 1) + (skipCaravan ? 1 : 0));
 

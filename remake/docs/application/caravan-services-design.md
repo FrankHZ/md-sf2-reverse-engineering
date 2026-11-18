@@ -73,10 +73,10 @@ Continue executes ordinary movement confirmation and Stay to the next actor with
 
 All complete decoded field and battle save data match before and after cold Continue → Save in both
 languages. The old Battle19 record also round-trips unchanged. Actual field movement after cold load
-is observed. These are remake persistence results, not original SRAM/runtime claims. The inherited
-natural saves have only twelve joined members: native full-thirteen-member replacement and Creed's
-new recruit → service → next-battle journey await the recruitment chapter. Full-capacity exchange is
-engine-tested, not mislabelled as that natural journey.
+is observed. These are remake persistence results, not original SRAM/runtime claims. The [Creed chapter](creed-recruitment.md) supplies the later ordinary thirteenth-member reserve,
+actual vehicle entry and full12 relief. English Eric replaces Sarah1; Chinese Karna replaces Peter7,
+with all retained resources intact. Eric enters, acts and wins ordinary Battle19 on one branch.
+The older NPC service witnesses retain their own unchanged twelve-member histories.
 
 The resource bound is one incrementally recompiled existing world and its required contained
 encounter/audio dependencies, one reused runtime, and bounded receipts; initial added-output budget
@@ -90,6 +90,17 @@ changes lower remake services/select display text only; original extraction/evid
 The bundle preserves early admission/localization/source-copy failures and native exit codes separately
 from observer results. Existing #1716 ObjectDB shutdown warnings remain; successful observations do
 not establish leak-free exit. The final handoff owns exact commands, candidate identity and CI.
+
+## Current overworld vehicle entry
+
+The [Creed recruitment candidate](creed-recruitment.md) binds the source field-action service when
+walking settled over physical1's visible Caravan sprite at the same destination. It reuses the
+formation/depot/Item service and source2/10 Rohde/Astral caller. Shrink/park, HEADQUARTERS39,
+menu return, grow, following, camera and previous music complete in ordinary bilingual observations.
+No chapter/recruit flag controls admission. Five engine tests vary sprite, visibility, target and
+position and consume the return with party/transport preserved. The source owner is
+`explorationvints.asm:loc_25B40..return_25BF2` at the pinned revision. This extends the existing NPC
+callers; it does not add appraisal/item effects, human acceptance or lifecycle claims.
 
 ## Current depot implementation
 

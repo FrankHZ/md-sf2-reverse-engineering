@@ -5,6 +5,16 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 // SF2 initialization policy, independent of map/story names and diagnostic checkpoints.
 internal static class OpeningPartyInitialization
 {
+    internal static PhysicalCriticalRule InitialCritical(BattleGrowthDefinition growth, byte startingLevel, PhysicalCriticalRule critical)
+    {
+        if (!growth.Spells.Any(spell => spell.Level <= startingLevel && spell.PackedSpell == 128)) return critical;
+        if (critical != PhysicalCriticalRule.OneIn16WithQuarterBonus)
+            throw new BattleRuleException("initial-heal3-prowess", "opening.spells", true);
+        // InitializeAllyStats increments the combined double/counter nibble before LevelUp.
+        // The admitted PRST baseline is03, so this source initialization yields13.
+        return PhysicalCriticalRule.Thief;
+    }
+
     internal static BattleActorStartInput Initialize(BattleDeploymentDefinition deployment, byte startingLevel, ref uint seed)
     {
         var definition = deployment.Definition;
@@ -14,11 +24,9 @@ internal static class OpeningPartyInitialization
         var items = definition.SourceLoadout?.Items ?? throw new BattleRuleException("initial-items-required", "opening.items");
         var packed = Enumerable.Repeat((byte)63, 4).ToArray();
         // InitializeAllyStats scans the initial spell list before replaying LevelUp.
-        // The HEAL3 prowess special case is outside the admitted opening initial classes/levels.
+        // Initial prowess is already bound to the immutable source definition before replay.
         foreach (var spell in growth.Spells.Where(spell => spell.Level <= startingLevel))
         {
-            if (spell.PackedSpell == 128)
-                throw new BattleRuleException("initial-heal3-prowess", "opening.spells", true);
             int slot = Array.FindIndex(packed, value => (value & 63) == (spell.PackedSpell & 63));
             if (slot < 0) slot = Array.FindIndex(packed, value => value == 63);
             if (slot >= 0 && (packed[slot] == 63 || packed[slot] >> 6 < spell.PackedSpell >> 6)) packed[slot] = spell.PackedSpell;

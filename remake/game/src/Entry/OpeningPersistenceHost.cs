@@ -100,7 +100,6 @@ public sealed partial class GameRoot
     private static string Explain(string code) => code switch
     {
         "save-location-unavailable" => GameText.Get("save.error.location"),
-        "save-creed-following-unavailable" => GameText.Get("save.error.story-stage"),
         "save-profile-unavailable" or "save-battle-profile-unavailable" or "save-battle-route-unavailable" => GameText.Get("save.error.profile"),
         "save-incompatible" or "save-version" or "save-kind" or "save-player-layer" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
         "save-publication-uncertain" => GameText.Get("save.error.uncertain"),

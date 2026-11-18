@@ -474,6 +474,13 @@ def build(
                 idleTicks=word(base),
             )
         )
+        if side == "ally":
+            address = table("ally-data-static")["table_AllyBattlesprites"]
+            actor_rows[-1]["members"] = [
+                member
+                for member in campaign_members(selection)
+                if tuple(read(address + 9 * member + 1, 2)) == (index, pal_index)
+            ]
 
     base_palette = palette(0x198A8)  # palette_BattlesceneBase, battlesceneengine_1.asm.
     if battle == 16:

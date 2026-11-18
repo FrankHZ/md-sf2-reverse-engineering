@@ -84,6 +84,8 @@ internal static class PrivateWorldEncounterReader
             .DistinctBy(row => row.Key).ToArray();
         var equipment = scenes.SelectMany(scene => scene.Equipment!.Select(pair => (pair.Key, pair.Value, scene.Rasters)))
             .DistinctBy(row => row.Key).ToArray();
+        var appearances = scenes.SelectMany(scene => (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>())
+            .Select(pair => (pair.Key, pair.Value, scene.Rasters))).DistinctBy(row => row.Key).ToArray();
         var sprites = scenes.SelectMany(scene => scene.FieldDeath?.AllySprites ?? new Dictionary<int, int>())
             .Where(pair => source.Allies.ContainsKey((byte)pair.Key)).DistinctBy(pair => pair.Key)
             .ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -92,11 +94,15 @@ internal static class PrivateWorldEncounterReader
             var rasters = scene.Rasters.ToDictionary();
             var allies = scene.Allies.ToDictionary();
             var weapons = scene.Equipment!.ToDictionary();
+            var actorVisuals = (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>()).ToDictionary();
             foreach (var row in bodies)
                 if (allies.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
             foreach (var row in equipment)
                 if (weapons.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
+            foreach (var row in appearances)
+                if (actorVisuals.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
             return scene with { Rasters = rasters.AsReadOnly(), Allies = allies.AsReadOnly(), Equipment = weapons.AsReadOnly(),
+                AllyAppearances = actorVisuals.AsReadOnly(),
                 FieldDeath = scene.FieldDeath is { } field ? field with { AllySprites = sprites.AsReadOnly() } : null };
 
             void IncludeFrames(BattleSceneActorVisual visual, IReadOnlyDictionary<string, ExplorationRaster> resources)

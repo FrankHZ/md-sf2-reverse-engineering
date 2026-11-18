@@ -473,9 +473,6 @@ msgstr "The new save may already exist. Check Continue before starting again. Yo
 msgid "save.error.location"
 msgstr "Save after returning to a supported location: opening Granseal or the settled first battle return."
 
-msgid "save.error.story-stage"
-msgstr "Saving is not supported at this story stage yet."
-
 msgid "save.error.profile"
 msgstr "Saving is unavailable in this game. Your existing saves have been kept."
 
