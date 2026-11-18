@@ -97,6 +97,21 @@ for a concrete credible regression, preferably using information from necessary 
    decision. Retain failures and required evidence: narrower scope cannot turn missing evidence into
    PASS or silently weaken a contract. Deferred work is explicit and is not an automatic future queue.
 
+#### Defensive Code
+
+During design and implementation, place validation at the boundary that owns the input or state.
+Before adding a fallback, retry, compatibility branch or repeated check, identify the credible
+failure, the guarantee already supplied by callers or types, and the observable failure behavior.
+Reuse an existing error path when it covers that failure. Validate again when data can change or
+crosses a new trust boundary. Keep external-input validation, supported old data, resource cleanup
+and safe storage publication grounded in their accepted contracts.
+
+If the proposed branch only compensates for an internal invariant violation, fix its owner or
+surface the failure with useful context. Default values and catch-and-continue require an accepted
+degraded behavior. Retries require a recoverable cause, a bound and safe repeated execution.
+Review these choices in the existing diff and explanation, with detail proportional to the risk.
+When simplifying existing defenses, trace callers and supported inputs before removing a check.
+
 #### Audit and Design Assignments
 
 Dispatch the decision to support, the evidence owner, constraints and the stopping condition.
