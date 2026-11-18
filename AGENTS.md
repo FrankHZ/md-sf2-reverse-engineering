@@ -93,9 +93,9 @@ is merged, tracked changes are clean and the old writer has stopped, start the n
 current accepted `origin/main` in that worktree and explicitly transfer ownership to the new executor.
 Record any retained idle Godot/debug instance and transfer its control with the environment; a task
 boundary alone does not require restarting it. Task creation or archival does not itself authorize
-environment creation or cleanup. Preserve private inputs, completed gate results and failure records;
-use separate ignored output locations for new runs and
-apply the existing dependency-based gate invalidation rules. Create another worktree when concurrent
+environment creation or cleanup. Keep results and failures available through review. After acceptance
+and merge, clear checkout scratch under the [post-merge rules](./docs/operations/github-project-governance.md#worktree-selection-and-retirement).
+Use separate ignored outputs for new runs and dependency-based gate invalidation. Create another worktree when concurrent
 work or preserving a required reproduction environment needs separate isolation. Reuse never permits
 ordinary writes on `main` or multiple active writers in one worktree.
 

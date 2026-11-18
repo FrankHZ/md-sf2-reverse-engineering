@@ -261,7 +261,7 @@ keep the same task for the same problem, without a fixed duration or compaction-
 Task lifetime and environment lifetime are separate. Prefer an available existing isolated worktree
 for the next Issue after the previous topic is accepted/merged, tracked state is clean, its owned
 processes are settled and exclusive ownership is transferred. Start the new topic from accepted
-`origin/main`; preserve worktree-local inputs, dependencies and results under the existing rules.
+`origin/main` after the previous slice's post-merge cleanup.
 Record any retained idle Godot/debug instance and transfer its control to the new executor rather
 than restarting it solely because the task changed, including during recovery.
 A new task alone does not justify a new SDK, Godot installation, cache or worktree.
@@ -271,25 +271,23 @@ BizHawk executes its registered installation under serial ownership with explici
 configuration/save/movie paths; follow the local-input owner for executable-base exceptions. Keep
 source/build checkouts and Python/NuGet caches owned by one worktree during its use.
 
-When another checkout will consume an input or an accepted package, publish the selected files
-under an operator-owned private data root outside all worktrees. Preserve relative dependencies
-such as catalogs, media and save seeds. Record the accepted revision, selection and reproduction
-command in the handoff. Reuse an existing verified publication when its contents match. Keep live
-saves, build output and diagnostic runs in their owning writable locations.
+Treat each checkout's top-level ignored `local/` as disposable. During review it can hold scratch,
+failed runs and handoffs. Before merge, put durable findings and reproduction commands in their Git
+owners and record the acceptance result on the PR. Keep canonical private inputs, player saves and
+any package needed by a current consumer under their operator-owned roots outside all worktrees.
+For a delivery that uses local material, make the producing scratch unavailable and exercise the
+affected entry point with the published inputs. A changed build recipe also needs a clean build.
 
-Update consumers, including launchers and rebuild recipes, to resolve that publication through
-their local configuration. Before retiring the producer, compare the published files with the
-accepted selection and exercise the affected reader or launcher from another checkout with the
-old location unavailable. Before retirement, land durable source, decisions, reproducible commands
-and shareable findings in the owning Git repository. Publish only required private inputs, final
-packages and irreplaceable evidence to their stable private owners. Resolve uncommitted work and
-check nested repository ownership before removing the checkout.
+After every accepted merge, main-gate removes the slice's `local/` before handing the checkout on,
+including on a reused worktree. Check the exact checkout path and that writers and consumers have
+finished. If the clean check fails, repair the dependency and rerun that check before deleting.
+Use [fresh setup](./local-private-inputs.md#fresh-worktree-setup) for the next slice. Discard raw
+runs, caches and old handoffs together. Recollect historical observations if needed. This requires
+neither a file inventory nor an archive. The cleanup applies only to checkout scratch.
 
-The operator authorizes direct removal of accepted, idle worktrees selected for retirement once
-these checks pass. Reuse an assigned checkout while it still has a consumer. For a registered
-worktree use Git's worktree removal command. Discard its disposable builds, caches and scratch
-with it. Do not create retirement directories, ZIP files or copies of the whole checkout or its
-`local/` tree. If a specific file still has unresolved ownership, resolve that file first.
+For an accepted idle checkout selected for retirement, resolve uncommitted work and nested Git
+ownership, then use Git's worktree removal command. The operator authorizes this removal after
+the same checks. Keep reusable checkouts that still have a consumer.
 
 Select the destination before calling the task-creation tool. For reuse through the app, use an
 existing isolated worktree registered as its own saved project and explicitly select local execution
@@ -306,9 +304,8 @@ location before archiving. Declined or superseded work retains its close reason 
 
 The app distinguishes [managed and permanent worktrees](https://learn.chatgpt.com/docs/environments/git-worktrees#codex-managed-and-permanent-worktrees).
 Archiving a managed task can trigger worktree cleanup; permanent worktrees are not automatically
-removed by task archival. A clean Git tree or app snapshot is not proof that ignored private inputs,
-failure records and gate results are safely retained. If retention is unresolved, leave the task idle
-and record that condition. Ref deletion requires separate authorization.
+removed by task archival. If a current consumer still depends on the checkout, leave the task idle
+and record the specific active dependency. Ref deletion requires separate authorization.
 
 When retiring old role sessions, first reconcile their active work and retained results with Issues.
 Do not revive completed slices, copy entire chat histories, or reset a runtime budget during migration.
