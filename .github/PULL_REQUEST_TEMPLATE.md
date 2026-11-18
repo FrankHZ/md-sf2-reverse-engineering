@@ -1,37 +1,15 @@
-## Scope
+## Outcome
 
-- Issue: <!-- Fixes #NNN only if merge satisfies the whole Issue; otherwise Refs #NNN -->
-- Lane: <!-- Research / Design / Remake / Tooling / Governance -->
-- Base commit:
-- Owned paths:
-- Shared integration files:
-- Branch dependencies and merge order: <!-- none, or name the stacked branch -->
+<!-- Link the Issue (Fixes or Refs as appropriate). State what changed and why. -->
 
-## Change
+## Evidence and validation
 
-<!-- What changed, why it changed, and its user/developer impact. -->
-
-## Evidence and contract impact
-
-- Evidence labels/provenance changed: <!-- no, or summarize Confirmed/Inferred/Unknown changes -->
-- Fixture/schema/design-contract impact:
-<!-- Player-facing remake changes: link the affected feature row and detailed owner from the Issue. Identify changed chapter/setup coverage, ordinary-input evidence and remaining gaps. For an affected downstream consumer or control handoff, name the next player operation and its observed result or return. -->
-- Remaining questions or deliberate non-goals:
-
-## Validation
-
-- [ ] Branch updated onto current `main` before final acceptance.
-- [ ] Committed planner and scope-appropriate checks are reported with actual outcomes and skip reasons.
-- [ ] Actual public CI/check state is recorded; required-check configuration remains main-gate owned.
-- [ ] Staged paths and cached diff were reviewed.
-- [ ] No ROM, patch, save, trace, extracted asset, downloaded tool, or generated/private artifact is included.
-- [ ] `uv run sf2 verify --full` was run only if this is a milestone, shared-harness, or release-readiness change.
-
-<!-- Use remake/docs/development-and-verification.md#scope and the owning research route:
-docs use direct checks; engine uses behavior unit tests and affected direct verification;
-research uses its normal and owning narrow gates. Do not run normal/full suites just to fill this template. -->
+<!-- Name the checked revision, selected checks, actual results and CI status. For a player-facing
+change link the capability owner and ordinary input/result. For research link reproducible evidence.
+For an audit or design decision give the finding or choice, its basis and remaining uncertainty. -->
 
 ## Handoff
 
-- Current Issue handoff: <!-- executor task, preserved failures, process/retention needs and stopping condition -->
-<!-- The independent reviewer records the decision on this PR before merge. -->
+<!-- Link the Issue handoff for declared scope and ownership. Note deviations, shared paths or
+stacked dependencies, preserved failures and private-boundary review as applicable. The independent
+reviewer records the decision on this PR before merge. -->

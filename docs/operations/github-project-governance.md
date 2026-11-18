@@ -97,6 +97,24 @@ for a concrete credible regression, preferably using information from necessary 
    decision. Retain failures and required evidence: narrower scope cannot turn missing evidence into
    PASS or silently weaken a contract. Deferred work is explicit and is not an automatic future queue.
 
+#### Audit and Design Assignments
+
+Dispatch the decision to support, the evidence owner, constraints and the stopping condition.
+The executor selects sources, competing explanations, representative legal states and the
+smallest observation that distinguishes them. Reading a caller, consumer or adjacent contract
+is within scope when it can change the answer. Declared write ownership still applies.
+
+For an audit, report the trigger, consequence, evidence and remaining uncertainty. A bounded
+search with no finding can close the question. For design, select and justify a workable
+option within accepted product constraints, including the behavior by which it can be judged.
+A recommendation for a product change stays a proposal until accepted. The executor can finish
+either assignment without waiting for approval of intermediate investigative choices.
+
+A chat review can deliver its answer directly. A durable project finding belongs in its tracked
+owner through the usual reviewed change. Issue creation, implementation, runtime acquisition and
+publication follow their existing authority and evidence rules. Ask for a product decision when
+the available evidence leaves a material tradeoff outside the assignment.
+
 #### Resolve Evidence Conflicts Before Product Choices
 
 When a contract and observed behavior disagree, the executor and main-gate first locate the
@@ -174,6 +192,9 @@ Link stable rules and relevant results instead of copying controller history. Th
 > Work on #NNN following the current lane runbook and repository rules; stop at the declared
 > stopping condition.
 
+For routine continuation, send the current objective, changed ownership or base, remaining failures
+and stopping condition. Link the existing handoff for completed work.
+
 Record the returned task identity in the Issue's current handoff. Queued creation is pending, not a
 running executor; wait for the task's read-only ownership check before reporting execution started.
 If the creation result is uncertain, locate the existing task before retrying so one Issue does not
@@ -241,7 +262,7 @@ No separate review report, duplicate Issue entry or historical backfill is requi
 If an execution task cannot continue, main-gate first confirms its writer and active commands have
 stopped and accounts for any retained idle instance, then creates one replacement for the same Issue
 within the original authorization. The Issue
-handoff names the old and new task identities and one compact current-state anchor: base, branch,
+handoff names the old and new task identities and one compact current-state anchor: selected checkout, excluded paths, owned files, base, branch,
 candidate commit, dirt/process/gate state, preserved failures and Unknowns, and stopping condition.
 Keep private checkout and input locations in the local handoff. Preserve the candidate and local
 results; recovery is not a new slice or a reset of runtime budgets.

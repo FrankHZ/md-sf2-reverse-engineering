@@ -26,60 +26,19 @@ original game.
    or auditing their global scope, routing, counters, or frontier.
 5. Reproduce a claim from its named command and fixture instead of copying an old progress summary.
 
-Use these durable routes rather than duplicating their details here:
-
-| Concern | Owner |
-| --- | --- |
-| Project entry, stable status, and layout | [README](./README.md) and [documentation index](./docs/README.md) |
-| Fresh-task routing | [Agent Resume Route](./docs/operations/agent-resume.md) |
-| Ordinary Phase 2 lane mechanics | [Phase 2 Lane Runbook](./docs/operations/phase2-lane-runbook.md) and [ADR 0004](./docs/decisions/0004-single-terra-worker-with-root-acceptance.md) |
-| Research coverage and cadence | [Source Coverage](./docs/research/source-coverage.md), [ADR 0003](./docs/decisions/0003-static-first-batched-runtime-research.md), and [ADR 0014](./docs/decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) |
-| Verification selection | [ADR 0012](./docs/decisions/0012-dependency-aware-partitioned-verification.md) |
-| Local private inputs | [Local Private Inputs](./docs/operations/local-private-inputs.md) |
-| Remake implementation | [Remake README](./remake/README.md) and its linked architecture, profile, capability, and verification owners |
-| New-engine direction and test policy | [ADR 0019](./docs/decisions/0019-state-and-content-driven-remake-engine.md) and the [current verification scope](./remake/docs/development-and-verification.md#scope) |
-| Bounded implementation start | [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md) |
-
-An ordinary Phase 2 handoff uses the complete slice contract defined by ADR 0004; its Worker
-Acceptance Checklist is the normative detailed acceptance profile.
-For H3, callback exceptions must reach the status/exit contract. New schema placement follows
-[`schemas/README.md`](./schemas/README.md).
+The [resume route](./docs/operations/agent-resume.md#route-by-task-ownership) indexes the owners.
+For Phase 2 use the runbook and ADR 0004 acceptance checklist. H3 callback exceptions must reach
+the status/exit contract. Place new schemas according to [schema ownership](./schemas/README.md).
 
 ## Agent and Session Routing
 
-Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md) for current task-based Astra/Sol
-model routing and the completed Astra trial's historical evidence. Use
-[GitHub Project Governance](./docs/operations/github-project-governance.md#task-lifecycle) for
-Issue dispatch, task creation, recovery and retirement. Main-gate may create a fresh task for an
-executable Issue within the user's authorized scope; roles and lanes do not require permanent sessions.
-The assigned executor may complete its Issue directly; bounded delegated research uses the same
-task-based routing. The project-specific Terra role is retired. This routing replaces
-ADR 0004's earlier model and mandatory-worker choice; its evidence, handoff, and root-acceptance
-checklist remains normative for any bounded Phase 2 task.
+Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md#current-routing) for task models.
+[Project governance](./docs/operations/github-project-governance.md#task-lifecycle) owns dispatch,
+completion intake, recovery and independent integration. Keep same-outcome corrections with the
+executor. Delegate only bounded independent subtasks when authorized.
 
-Keep implementation and corrections for the same outcome in the same task. Start a fresh task for a
-new independent outcome; compaction alone is not a new task boundary. Keep in-thread subagents limited
-to small, independent subtasks, not replacements for an Issue's accountable executor or main-gate.
-
-Main-gate owns event-driven completion intake through the
-[completion-wait procedure](./docs/operations/github-project-governance.md#completion-intake).
-Keep authorized orchestration active through worker completion and independent review; do not finish
-with only a dispatch acknowledgement or depend on a worker callback or user reminder.
-
-For routine continuation of the same Issue, send only the current objective, changes to
-base/branch/ownership, slice-specific constraints, acceptance and stopping conditions, and links to
-necessary owners and results. Reference stable rules rather than repeating them. Explicitly carry
-unresolved failures and Unknowns that affect this slice; retain completed counts, CI results, and
-correction history in the named handoff. Do not replace a long dispatch with another long required
-document.
-
-For a replacement session or actual context recovery, send one compact current-state anchor: canonical
-repository and forbidden paths, worktree and branch, accepted base, exact owned paths, current
-commit/dirt/process/gate state, preserved failures and Unknowns, and the next stopping condition.
-Limit recovery material to what the task needs.
-Require a read-only state check before mutation, and state that this anchor supersedes stale or
-replayed instructions from compacted history. The main gate retains independent review and merge
-authority.
+For an [audit or design assignment](./docs/operations/github-project-governance.md#audit-and-design-assignments),
+follow the evidence within the agreed decision boundary. Before editing, apply the ownership rules below.
 
 ## Git, Ownership, and Integration
 
@@ -290,9 +249,6 @@ for thresholds, exclusions and direct checks.
   lane runbook instead of recreating its mechanics here.
 - Keep the legacy `scripts/*.ps1` compatibility surface frozen; new maintained logic belongs in
   `src/sf2tool/` unless an accepted owner says otherwise.
-
-On Windows, prefer PowerShell-native filesystem operations and pass native executable arguments as
-separate values; keep paths literal, validated, and UTF-8-safe.
 
 ## Definition of Done
 

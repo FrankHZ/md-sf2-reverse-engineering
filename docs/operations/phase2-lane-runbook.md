@@ -29,7 +29,7 @@ granularity, cardinality, time/space cost and publication headroom, then calibra
 before scaling. This complements the existing runtime-admission rules; it does not make an Unknown
 an acquisition queue, weaken evidence requirements or impose a new permission step.
 
-The self-contained handoff names:
+When delegating, the self-contained handoff names:
 
 - the exact base and isolated worktree;
 - the owning document and bounded source surface;
@@ -79,15 +79,10 @@ Use the bounded identity, diff, artifact, and findings-first handoff in
 [`bounded-inspection-and-review.md`](./bounded-inspection-and-review.md). Do not paste the controller
 history or complete large fixtures into the worker, root, or main-gate handoff.
 
-`uv run sf2 verify --full` remains a milestone, release or merge-readiness, shared-harness, or
-explicit full-parity gate. It is never the default worker or root command. A design-synthesis branch
-or design-only advance of `main` does not trigger it. Worker instructions and root review are both
-required; this division of responsibility is not a security boundary.
-
-Progress checkpoints are commentary, not completion. While safe in-scope work remains, neither a
-worker checkpoint nor a root review checkpoint ends the lane or waits for authorization. Continue
-through worker handoff, root review, required gates, exact-path staging, commit, push, and Draft PR
-handoff.
+Select full verification and reuse completed gates under the
+[root verification rules](../../AGENTS.md#verification-rules).
+A direct executor performs the slice checks; a delegated worker returns its findings to that
+executor for review. The executor stops at its Draft PR handoff. Main-gate owns independent acceptance.
 
 ## Corrections and Owned-Path Expansion
 
