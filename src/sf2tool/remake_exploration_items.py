@@ -147,11 +147,16 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
             raise ValueError("unsupported joined-item lookup result")
         missing = branch["opcode"].startswith("beq")
         tail = rows[index + 2:]
-        if missing and tail and tail[0]["opcode"] == "jsr" and tail[0]["operandText"] == "j_RemoveItemBySlot":
-            # This caller uses the returned slot directly and rejoins its single-instruction fallthrough.
+        if (
+            missing and tail and tail[0]["opcode"] == "jsr"
+            and tail[0]["operandText"] == "j_RemoveItemBySlot"
+        ):
+            # The caller removes the returned slot and rejoins after that single instruction.
             target = branch["operandText"]
             text = (compiler.upstream / relative).read_text(encoding="utf-8")
-            if len(tail) != 1 or not re.search(r"jsr\s+j_RemoveItemBySlot\s*\n" + re.escape(target) + r":", text):
+            if len(tail) != 1 or not re.search(
+                r"jsr\s+j_RemoveItemBySlot\s*\n" + re.escape(target) + r":", text
+            ):
                 raise ValueError("conditional removal must rejoin its fallthrough")
             return {"op": "remove-party-item", "item": registers["d1"]}, index + 3
         target = compiler.compile(branch["operandText"]).lower().replace("_", "-")

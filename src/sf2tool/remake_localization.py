@@ -385,7 +385,9 @@ def derive(args: argparse.Namespace) -> dict:
         growth_members.difference(name_ids["name.ally"]) if args.scope == "current" else set()
     )
     name_ids["name.ally"] += tuple(sorted(extra_growth))
-    extra_classes = growth_classes.difference(name_ids["name.class"]) if args.scope == "current" else set()
+    extra_classes = (
+        growth_classes.difference(name_ids["name.class"]) if args.scope == "current" else set()
+    )
     name_ids["name.class"] += tuple(sorted(extra_classes))
     if 82 in repeat_enemies:
         field_items.add(28)  # Equipped Brass Knuckles

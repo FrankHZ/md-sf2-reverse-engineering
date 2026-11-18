@@ -24,7 +24,11 @@ def raft_placement(compiler, args, tail):
 
 def scene_operation(compiler, op, args):
     if op == "setSize":
-        return [{"op": "resize-entity", "entity": compiler.entity(args[0]), "size": compiler.number(args[1])}]
+        return [{
+            "op": "resize-entity",
+            "entity": compiler.entity(args[0]),
+            "size": compiler.number(args[1]),
+        }]
     if op == "setQuake":
         word = compiler.number(args[0])
         amount = word & 0x3FFF
