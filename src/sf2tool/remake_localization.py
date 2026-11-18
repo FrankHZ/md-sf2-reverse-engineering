@@ -248,6 +248,9 @@ def derive(args: argparse.Namespace) -> dict:
     if args.scope == "current" and any(row["id"] == "map-32" for row in world["world"]["maps"]):
         field_texts.update(range(2590, 2596))
     if args.scope == "current" and any(row["id"] == "map-33" for row in world["world"]["maps"]):
+        if any(setup["id"] == "ms-map33-flag786" for row in world["world"]["maps"]
+               if row["id"] == "map-33" for setup in row.get("setups", [])):
+            field_texts.update(range(1898, 1956))
         field_texts.update(range(1804, 1840))
     if args.scope == "current" and any(
         setup["id"] == "ms-map33-flag523"
@@ -310,6 +313,9 @@ def derive(args: argparse.Namespace) -> dict:
     repeat_enemies = {
         enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
     }
+    growth_members = {
+        int(row["actor"].removeprefix("ally-")) for row in world["world"].get("growth", [])
+    }
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -359,6 +365,10 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (15, 16, 90)
     if floor_world:
         name_ids["name.ally"] += (16, 17)  # Floor World residents; text1747 fixes Randolf's name.
+    extra_growth = (
+        growth_members.difference(name_ids["name.ally"]) if args.scope == "current" else set()
+    )
+    name_ids["name.ally"] += tuple(sorted(extra_growth))
     if 82 in repeat_enemies:
         field_items.add(28)  # Equipped Brass Knuckles
     if 81 in repeat_enemies:
@@ -490,6 +500,7 @@ def derive(args: argparse.Namespace) -> dict:
             + len(extra_items)
             + len(repeat_names)
             + (81 in repeat_enemies)
+            + len(extra_growth)
         ),
         "candidate budget/selection mismatch",
     )

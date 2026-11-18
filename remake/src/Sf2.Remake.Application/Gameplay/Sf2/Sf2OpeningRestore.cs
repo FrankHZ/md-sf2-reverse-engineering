@@ -66,6 +66,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data)
     {
+        if (data.Map == "map-33" && data.Flags.Any(flag => flag is 785 or 786 or 787) && data.FieldScene is null)
+            throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if (data.Recipe == "evil-spirit-shrine" && data.EgressMap == "map-9") return;
         if (data.Recipe is "floor-world" or "willard-burrow" && data.EgressMap == "map-26") return;
         if (data.Recipe == "desktop-kingdom" && data.EgressMap == "map-22") return;
@@ -109,8 +111,6 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     {
         var map = player.Map;
         if (!definition.Exploration!.Maps.TryGetValue(map, out var content)) Fail();
-        if (map.Value is "map-33" or "map-34" && flags.Any(flag => flag is 785 or 787))
-            throw new BattleRuleException("save-creed-following-unavailable", "save.recipe", true);
         if (map.Value == "map-3")
         {
             var selected = content!.SelectedSetup(flags);
@@ -139,7 +139,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-67" && flags.Contains(521) && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("devils-tail", player, "Devil's Tail");
         // First visit and completed restoration retain their separate source init tails.
-        if (map.Value == "map-33" && !flags.Any(flag => flag is 22 or 786) &&
+        if (map.Value == "map-33" && !flags.Contains(22) &&
             (!flags.Contains(523) || flags.Contains(783)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
@@ -184,9 +184,15 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         Fail(); return null!;
     }
 
+    public SavedFieldScene? CaptureScene(ScenarioDefinition definition, ExplorationState world, IReadOnlyList<int> flags) =>
+        Sf2CreedRestore.Capture(definition, world, flags);
+
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
-        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0)
+        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
+        SavedFieldScene? scene = null)
     {
+        if (scene is not null)
+            return Sf2CreedRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         var anchor = location.Anchor;
         var source = definition.Exploration!.Maps[anchor.Map];
         var selected = source.SelectedSetup(flags);
@@ -237,7 +243,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         // him after a completed attempt, unlike the scene's same-visit Hide.
         if (location.Recipe == "floor-world" && flags.Contains(780))
             world = world.MoveOffMap(new("entity-129"));
-        if (location.Recipe == "creed-mansion" && flags.Contains(784))
+        if (location.Recipe == "creed-mansion" && flags.Contains(784) && !flags.Contains(786))
         {
             // The post-consultation init places the still-unjoined offer actors only.
             foreach (var (member, x, y) in new[] { (14, 15, 14), (16, 16, 15), (17, 18, 15), (15, 19, 14) })

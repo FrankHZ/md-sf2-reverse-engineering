@@ -122,6 +122,22 @@
     {
       "member": 13,
       "class": "ACHR"
+    },
+    {
+      "member": 14,
+      "class": "KNTE"
+    },
+    {
+      "member": 15,
+      "class": "PRST"
+    },
+    {
+      "member": 16,
+      "class": "WARR"
+    },
+    {
+      "member": 17,
+      "class": "MAGE"
     }
   ],
   "outcomeEgressMap": {
@@ -150,7 +166,7 @@
     "23": 26
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; excludes subsequent recruitment, Fairy handoff and Oddler departure.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; includes the initial four-way recruitment choice, Fairy receipt, Oddler staying and ordinary mansion departure; the later F22 offers have controlled coverage only. Mine healing and Cannon remain outside this chapter.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -428,6 +444,38 @@
     "SFX_DIALOG_BLEEP_6_TIMER_C1": {
       "timerB": 193,
       "wavSha256": "96F45CC705C8A36CB62C19C4EE4840B97D16DB9E36A5C4A31166461B88180886"
+    },
+    "MUSIC_TOWN": {
+      "timerB": 203,
+      "wavSha256": "E297493DEC3637184A380449BD658FCE9BA7D7CAB6893654E4A9773811E62356",
+      "loopBegin": 1894900,
+      "loopEnd": 6208289
+    },
+    "MUSIC_HEADQUARTERS": {
+      "timerB": 195,
+      "wavSha256": "5CD6858A9EBEACD4B335634DC399F77072736AAE92D00453B288B1EA3923FCBB",
+      "loopBegin": 2225122,
+      "loopEnd": 4500672
+    },
+    "SFX_MENU_SWITCH_TIMER_C3": {
+      "timerB": 195,
+      "wavSha256": "31363681F181C59D5F503D298DE0F99054BEF92BB1A664B93B640D20239001E0"
+    },
+    "SFX_VALIDATION_TIMER_C3": {
+      "timerB": 195,
+      "wavSha256": "8748B8220CE3DFEB3D8C21D01990E55DE014E7F6BB12E6D203BF19F0127818BD"
+    },
+    "SFX_DIALOG_BLEEP_6_TIMER_C3": {
+      "timerB": 195,
+      "wavSha256": "AF48E7A0976D2EB9BE556B672B5589AEE84FC42EC8049CF8A57B07000171A2F2"
+    },
+    "SFX_WARP_TIMER_C3": {
+      "timerB": 195,
+      "wavSha256": "B3644A06DBDCE2601148143A1B1F3EFD5FC015CC0300A45D16B4823D5A51D5F2"
+    },
+    "SFX_BATTLEFIELD_DEATH_TIMER_C2": {
+      "timerB": 194,
+      "wavSha256": "5064EC6C0B530B5C5E5D847D7BA8731B2CC9EB004BBA07D42D91F176FE3A6104"
     }
   },
   "presentationAtlases": {
@@ -444,7 +492,8 @@
     ],
     "33": [
       523,
-      784
+      784,
+      786
     ],
     "34": [
       784
@@ -699,7 +748,13 @@
     "SFX_BATTLEFIELD_DEATH_TIMER_C1",
     "SFX_MENU_SWITCH_TIMER_C1",
     "SFX_VALIDATION_TIMER_C1",
-    "SFX_DIALOG_BLEEP_6_TIMER_C1"
+    "SFX_DIALOG_BLEEP_6_TIMER_C1",
+    "MUSIC_HEADQUARTERS",
+    "SFX_MENU_SWITCH_TIMER_C3",
+    "SFX_VALIDATION_TIMER_C3",
+    "SFX_DIALOG_BLEEP_6_TIMER_C3",
+    "SFX_WARP_TIMER_C3",
+    "SFX_BATTLEFIELD_DEATH_TIMER_C2"
   ],
   "paidRetreatBattles": [
     2,

@@ -112,14 +112,14 @@ public sealed class SharedSceneGraphicsTests
     [Theory]
     [InlineData("map-33", 785)] [InlineData("map-33", 787)]
     [InlineData("map-34", 785)] [InlineData("map-34", 787)]
-    public void LaterCreedTransactionsCannotUseThePreRecruitRestoreRecipe(string mapId, int later)
+    public void LaterCreedFlagsDoNotInventGlobalSaveOrRecruitmentGates(string mapId, int later)
     {
         var (basis, _) = OpeningRestoreTests.Fixture();
         var map = new ExplorationMapDefinition(new(mapId), new(new ushort[4096]), new([new(0, 0, 63, 63)]), [], []);
         var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
         var anchor = new FieldReturnAnchor(map.Map, new(7, 12), 3);
-        Assert.Equal("save-creed-following-unavailable", Assert.Throws<Sf2.Remake.Domain.Battles.BattleRuleException>(() =>
-            basis.Persistence!.Select(definition, anchor, [784, 802, later], null)).Code);
+        Assert.Equal(mapId == "map-33" ? "creed-mansion" : "evil-spirit-shrine",
+            basis.Persistence!.Select(definition, anchor, [784, 802, later], null).Recipe);
     }
 
     [Theory]

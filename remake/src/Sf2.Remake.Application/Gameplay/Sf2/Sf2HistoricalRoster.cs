@@ -8,8 +8,8 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 // Saved prefixes in the private opening profile, including the gap between Luke and Elric.
 internal static class Sf2HistoricalRoster
 {
-    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 20)];
-    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13];
+    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23)];
+    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17];
 
     internal static SavedBattleStory UpgradeBattle(ScenarioDefinition definition, BattleSaveData data,
         EngineBattleState battle, SaveCompatibility expected)
@@ -19,9 +19,9 @@ internal static class Sf2HistoricalRoster
         var player = data.Story.Player;
         var saved = battle.Actors.Where(actor => actor.IsAlly).Select(actor => actor.Actor)
             .Concat(player.RetainedAllies.Select(actor => actor.Actor)).ToHashSet();
-        // All legacy v2 writers stamped recipe 1, including those with 9, 10 or 11 members.
+        // Legacy v2 writers stamped recipe1 through the twelve-member Battle23 package.
         int prior = data.Compatibility.RecipeRevision == 1
-            ? Array.FindIndex(Revisions, 0, 4, row => row.Members == saved.Count) + 1 : data.Compatibility.RecipeRevision;
+            ? Array.FindIndex(Revisions, 0, 5, row => row.Members == saved.Count) + 1 : data.Compatibility.RecipeRevision;
         if (prior < 1 || prior > Revisions.Length)
             throw new BattleRuleException("save-battle-retained-roster", "save.story");
         int lastEncounter = data.Compatibility.RecipeRevision == 1 && prior == 4 ? 13 : Revisions[prior - 1].LastBattle;

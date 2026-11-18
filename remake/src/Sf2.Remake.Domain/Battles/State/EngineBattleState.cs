@@ -115,8 +115,8 @@ public sealed class BattleActorDefinition
     public BattleSourceLoadout? SourceLoadout { get; }
     public BattleGrowthDefinition? Growth { get; }
     public BattleEquipmentDefinition? Equipment { get; }
-    internal BattleActorDefinition WithGrowth(BattleGrowthDefinition growth) => new(Actor, ClassRule,
-        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, growth, Equipment, Resistance);
+    internal BattleActorDefinition WithGrowth(BattleGrowthDefinition growth, PhysicalActorDefinition? physical = null) => new(Actor, ClassRule,
+        Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, physical ?? Physical, Mover, SourceLoadout, growth, Equipment, Resistance);
     internal BattleActorDefinition WithEquipment(BattleEquipmentDefinition equipment) => new(Actor, ClassRule,
         Level, MaxHp, MaxMp, Attack, Defense, Agility, ExtraRoundAction, Move, Spells, Physical, Mover, SourceLoadout, Growth, equipment, Resistance);
 }

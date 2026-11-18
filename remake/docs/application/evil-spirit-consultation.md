@@ -68,14 +68,13 @@ followers remain. The `creed-mansion` recipe admits the F784 stage. Cold reconst
 selected seven-resident population and the source init positions for each still-unjoined offer actor,
 without replaying consultation/restoration or executing an offer. Goliath, Creed and Fairy retain the
 F784 population's base positions; earlier F774/F783 recipes retain their own reconstruction.
-The pre-recruit recipes refuse F785/F787 stages. Their later Fairy/recruit following transactions
-need the next chapter's reconstruction; a settled transient follower alone is not a safe save recipe.
-`save-creed-following-unavailable` has a short localized player explanation. Separate controlled
-negative Continue inputs show that explanation in both languages and exit through the title menu;
-they are not natural Fairy/recruit observations. [Issue1876](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1876)
-must reconstruct the current Fairy130 and the chosen recruit's transient following before lifting
-this capability boundary, then recheck ordinary Save/cold continuation. It must preserve the caller
-flags and the already accepted pre-recruit/older slots.
+The [recruitment chapter](creed-recruitment.md) extends these recipes with the actual settled room
+population, current follow relationships and live layout progress. F785/F787 no longer cause the
+previous temporary refusal. Fresh map entry still runs the original population selector, so the
+current Fairy130 and the next population's Fairy158 remain distinct. Old pre-recruit slots keep
+working without a scene field; older fabricated later-stage records without their required local
+progress remain unavailable. The retired short stage-reason key and routing have no remaining
+consumer. Recruitment observations and later cold comparisons belong to that chapter.
 
 The existing [skip boundary](desktop-arrival.md) applies only to entering battles. This exploration
 scene requires its normal performance. No exploration skip or skip-as-flag-write path is added.

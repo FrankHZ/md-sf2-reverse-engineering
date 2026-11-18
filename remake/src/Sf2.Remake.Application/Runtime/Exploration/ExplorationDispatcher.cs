@@ -515,6 +515,14 @@ internal static class ExplorationDispatcher
         List<SessionObservation> observations, SessionRules rules)
     {
         var world = current.Exploration!;
+        if (definition.Exploration!.Programs.ContainsKey(CaravanPrograms.Service) &&
+            CaravanRuntime.ServiceTarget(current) == command.Entity)
+        {
+            current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(new(CaravanPrograms.Service, 0),
+                eventCaller: new CaravanEntryContext()),
+                observations, "caravan-service-requested");
+            return ProgramRunner.Run(definition, current, observations, rules);
+        }
         if (!world.Entities.TryGetValue(command.Entity, out var entity) || !entity.Visible)
             return Reject(current, "missing-interaction-entity", "entity");
         if (!ExplorationInteractionQuery.InReach(current, command.Entity))

@@ -51,8 +51,15 @@ internal static class BattleGrowthReader
             Require(growth.TryAdd(reference, ReadDefinition(row, (byte)bonus)), "duplicate-growth", "world.growth.actor");
         }
         return scenario.Encounters.Values.Select(encounter => encounter.WithDeployments(
-            encounter.Deployments.Select(deployment => growth.TryGetValue(deployment.Actor, out var value)
-                ? deployment with { Definition = deployment.Definition.WithGrowth(value) } : deployment)));
+            encounter.Deployments.Select(deployment =>
+            {
+                if (!growth.TryGetValue(deployment.Actor, out var value)) return deployment;
+                var physical = deployment.Definition.Physical;
+                if (!authored && physical is not null && deployment.Initialization?.AllyPartyMember is { } member &&
+                    scenario.PrivateDefinitions!.Allies.TryGetValue((byte)member, out var ally))
+                    physical = physical with { Critical = OpeningPartyInitialization.InitialCritical(value, ally.StartingLevel, physical.Critical) };
+                return deployment with { Definition = deployment.Definition.WithGrowth(value, physical) };
+            })));
     }
 
     internal static BattleGrowthDefinition ReadDefinition(JsonElement row, byte attackBonus)

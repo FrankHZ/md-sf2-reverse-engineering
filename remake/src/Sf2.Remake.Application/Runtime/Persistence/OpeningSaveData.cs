@@ -24,6 +24,8 @@ public sealed record OpeningSaveData(SaveCompatibility Compatibility, string Rec
     byte FadePeriod, SavedMusic Music, byte Difficulty, bool AllyAutoBattle, bool OpponentControl)
 {
     public IReadOnlyList<byte> Depot { get; init; } = [];
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public SavedFieldScene? FieldScene { get; init; }
     // Missing in older v1 records means primary. Preserve their wire shape for primary saves.
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public byte Layer { get; init; }
@@ -64,7 +66,9 @@ internal interface IOpeningRestorePolicy
     ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party);
     void ValidateRegisters(OpeningSaveData data);
     bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity, IReadOnlyList<int> flags);
+    SavedFieldScene? CaptureScene(ScenarioDefinition definition, ExplorationState world, IReadOnlyList<int> flags);
     SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);
     ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
-        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0);
+        IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
+        SavedFieldScene? scene = null);
 }
