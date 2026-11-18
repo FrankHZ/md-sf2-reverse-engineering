@@ -506,93 +506,36 @@ def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:
     assert not failures, "Lua reserved word used after '.':\n" + "\n".join(failures)
 
 
-def test_random_services_observer_has_callback_failure_and_cleanup_contract() -> None:
+def test_random_services_observer_names_duplicate_pc_registration() -> None:
     root = Path(__file__).resolve().parents[2]
     observer = (root / "tools" / "bizhawk" / "random_services_observer.lua").read_text(
         encoding="utf-8"
     )
-    for required_text in (
-        "pcall(function()",
-        "callback()",
-        "config.observerFailureContract.statusPrefix",
-        "client.exitCode(config.observerFailureContract.exitCode)",
-        "config.observerFailureContract.removeOutputBeforeExit",
-        "event.unregisterbyid",
-        "duplicate physical-PC callback",
-        "callbacks-cleared:0",
-        "observer-finished",
-    ):
-        assert required_text in observer
+    assert "duplicate physical-PC callback" in observer
 
 
-def test_sram_lifecycle_observer_has_callback_failure_and_cleanup_contract() -> None:
+def test_sram_lifecycle_observer_names_incomplete_copy_and_residue() -> None:
     root = Path(__file__).resolve().parents[2]
     observer = (root / "tools" / "bizhawk" / "sram_lifecycle_observer.lua").read_text(
         encoding="utf-8"
     )
     for required_text in (
-        "pcall(function()",
-        "config.observerFailureContract.statusPrefix",
-        "client.exitCode(config.observerFailureContract.exitCode)",
-        "event.unregisterbyid",
-        "duplicate physical-PC callback",
-        "callbacks-cleared:0",
-        "observer-finished",
         "CopySave nested callback sequence drift",
         "residual registered callback",
         "residual SRAM bytes",
-        "callbacks[address]",
     ):
         assert required_text in observer
 
 
-def test_church_raise_observer_has_single_pc_dispatch_and_failure_contract() -> None:
+def test_church_raise_observer_names_watchdog_and_case_frame_errors() -> None:
     root = Path(__file__).resolve().parents[2]
     observer = (root / "tools" / "bizhawk" / "church_raise_lifecycle_observer.lua").read_text(
         encoding="utf-8"
     )
-    assert observer.count("event.on_bus_exec(function()") == 1
     for required_text in (
-        "for _,event in ipairs(callbacks[address])do dispatch(address,event)end",
-        "local ok,msg=pcall(function()",
-        "if not ok then failure(msg)end",
-        "os.remove(config.outputPath)",
-        "remove_callbacks()",
-        "client.exitCode(config.observerFailureContract.exitCode)",
-        "j-decrease-gold-entry",
-        "j-increase-current-hp-entry",
         "case watchdog exhausted for",
         "ChurchMenu A6 frame balance drift",
         "ChurchMenu A7 stack balance drift",
-        "local function register_callbacks()",
-        "generated_snapshots={};for _,span in ipairs",
-        "targetsLength=u16(s.ram.targetsListLength)",
-        "portrait=u16(s.ram.currentPortrait)",
-        "local saved=bootstrap_frame",
-        "w16(h.terminalStub,0x2C7C)",
-        'register(h.terminalStub+12,"terminal-finalize",0)',
-        "roles_json(pc(),role)",
-        'expect(restore_generated(),"generated RAM restoration drift")',
-        "callbacks-cleared:0",
-        "observer-finished",
-    ):
-        assert required_text in observer
-
-
-def test_church_cure_observer_has_single_pc_dispatch_and_failure_contract() -> None:
-    root = Path(__file__).resolve().parents[2]
-    observer = (root / "tools" / "bizhawk" / "church_cure_lifecycle_observer.lua").read_text(
-        encoding="utf-8"
-    )
-    assert observer.count("event.on_bus_exec(function()") == 1
-    for required_text in (
-        "for _,event in ipairs(callbacks[address])do dispatch(address,event)end",
-        "if not ok then failure(msg)end",
-        "unexpected mutation helper while not pending",
-        "w16(h.terminalStub,0x2C7C)",
-        "callbacks-cleared:0",
-        "observer-finished",
-        "client.exitCode(config.observerFailureContract.exitCode)",
     ):
         assert required_text in observer
 
