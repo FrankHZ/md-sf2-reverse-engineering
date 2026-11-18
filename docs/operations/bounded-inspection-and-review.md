@@ -1060,6 +1060,9 @@ then performs one bounded semantic pass across every owned path and its direct c
 that are independently discoverable in the original candidate return as one consolidated batch with
 severity, evidence, owner, and smallest correction scope.
 
+Apply the [defensive-code review](./github-project-governance.md#defensive-code) to added guards,
+fallbacks and retries. Check the failure they address and the guarantees already supplied upstream.
+
 Report a destructive or externally harmful P0 immediately; consolidation is never a reason to delay
 containment. A later correction round is appropriate when the correction introduces a new defect, the
 base advances, a required check was unavailable, or new evidence changes the review boundary. Do not
