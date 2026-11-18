@@ -83,11 +83,12 @@ internal static class ExplorationAssetReader
         Require(sprites.Values.All(sprite => sprite.Portrait is null || portraits.ContainsKey(sprite.Portrait.Value)), "missing-portrait", "presentation.sprites");
         var audio = new Dictionary<string, ExplorationAudio>(StringComparer.Ordinal);
         var commands = new HashSet<(int Command, int Timer)>();
+        var defaults = new HashSet<int>();
         if (row.TryGetProperty("audio", out _))
             foreach (var sound in Array(row, "audio"))
             {
                 bool external = sound.TryGetProperty("runtimeWav", out _);
-                ObjectOptional(sound, "audio", "modernEndStep", ["cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", external ? "runtimeWav" : "pcm16", "sha256", "loopBegin", "loopEnd"]);
+                ObjectOptional(sound, "audio", ["cue", "command", "timerB", "sampleRate", "channels", "sampleFrames", external ? "runtimeWav" : "pcm16", "sha256", "loopBegin", "loopEnd"], "modernEndStep", "defaultForCommand");
                 string cue = Text(sound, "cue");
                 int command = Number(sound, "command", 1, 120);
                 int timerB = Number(sound, "timerB", 0, 255);
@@ -98,6 +99,10 @@ internal static class ExplorationAssetReader
                 int? begin = sound.GetProperty("loopBegin").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopBegin", 0, frames - 1);
                 int? end = sound.GetProperty("loopEnd").ValueKind == JsonValueKind.Null ? null : Number(sound, "loopEnd", 1, frames);
                 Require(begin.HasValue == end.HasValue && (begin is null || begin < end), "audio-loop", "presentation.audio");
+                int? defaultFor = sound.TryGetProperty("defaultForCommand", out _) ? Number(sound, "defaultForCommand", 65, 120) : null;
+                Require(defaultFor is null || defaultFor == command && begin is null,
+                    "audio-default-resource", "presentation.audio");
+                Require(defaultFor is null || defaults.Add(defaultFor.Value), "audio-default-duplicate", "presentation.audio");
                 int? modernEnd = sound.TryGetProperty("modernEndStep", out _) ? Number(sound, "modernEndStep", 1, 1000000) : null;
                 Require(modernEnd is null || command < 65 && begin is null, "finite-music-profile", "presentation.audio");
                 byte[] pcm;
@@ -115,7 +120,7 @@ internal static class ExplorationAssetReader
                 Require(pcm.Length == frames * channels * 2 &&
                     digest.Equals(Text(sound, "sha256"), StringComparison.OrdinalIgnoreCase),
                     "audio-identity", "presentation.audio");
-                Require(audio.TryAdd(cue, new(command, timerB, rate, channels, pcm, digest, begin, end, modernEnd)),
+                Require(audio.TryAdd(cue, new(command, timerB, rate, channels, pcm, digest, begin, end, modernEnd, defaultFor)),
                     "duplicate-audio-cue", "presentation.audio");
             }
         var churchMenu = Menu(row, "churchMenu", ["raise", "cure", "promote", "save"]);

@@ -354,12 +354,89 @@ An admitted command without a
 reviewed slot classification fails with `sfx-slots-unavailable`. Missing or ambiguous content remains
 explicit. No extra action wait or gameplay tick is introduced for a cosmetic effect's tail.
 
-Finite SFX selection prefers the exact command/current-music Timer B pair. If that pair is absent,
-the host may reuse the unique admitted finite PCM for the same command. Zero candidates fail as
-unavailable; multiple candidates fail as ambiguous. Named resource playback follows the same rule
-when its timer differs. This accepted modern approximation changes neither music selection nor PCM,
+Finite SFX selection prefers the exact command/current-music Timer B pair, then the explicit
+same-command default, then the legacy unique admitted finite PCM. Without a default, zero finite
+candidates fail as unavailable and multiple candidates fail as ambiguous. Named resource playback
+resolves the named cue's command through this same selection, including when a different resource
+has the exact requested timer. This accepted modern approximation changes neither music selection nor PCM,
 cue identity, recorded Timer B, sample rate or pitch. Playback receipts retain the asset's `TimerB`
 and separately record `RequestedTimerB`. It does not change the original `Load_SFX` inheritance fact.
+
+### Explicit finite defaults
+
+High rigor for [#1888](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1888):
+selection failure can stop presentation completion and subsequent input. The bounded outcome is
+stable existing finite-cue fallback as timer variants are added. Preserve music/history, slot
+compatibility, PCM, source facts and the existing replacement groups. Acquisition, retiming, new
+asset infrastructure, lifecycle changes and a hardware-fidelity expansion are outside this slice.
+Acceptance covers real Content/selector behavior and the actual adapter at the retained death seam,
+a different unmatched command/context, named playback, completion and later ordinary input.
+
+The existing private selection's `audioDefaults` maps decimal command strings to selected cue IDs,
+for example `"116": "SFX_BATTLEFIELD_DEATH_TIMER_BD"`. These explicit modern presentation choices
+include the selected finite commands, even when presently unique, so another admitted variant does
+not implicitly redefine fallback. They are not original driver timing findings. The existing
+producer marks only that row with optional `defaultForCommand: 116`; omission retains old-package
+behavior. Missing selected cue, another command, music or a looping resource rejects preparation.
+Content rejects a row whose designation differs from its own finite SFX command, and rejects a
+second designation for that command. The designation is on an existing row, so it cannot name a
+dangling cue. Existing command/timer and cue uniqueness still apply. No save field is introduced.
+
+`ExplorationAudio.SelectCue` owns the single resource decision consumed by `SessionAudio`, including
+entry suppression and named cues. The integer command and a named cue for that command therefore
+choose the same resource in the same music context. The requested named cue must itself exist;
+its name does not force a mismatched recording or bypass exact/default selection. Missing resources
+and undeclared ambiguity remain explicit errors.
+
+Run the actual engine selection/Content cases with the locked SDK from `remake/`:
+
+```powershell
+. ../local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+    --configuration Release --no-restore `
+    --filter 'FullyQualifiedName~FiniteAudioSelectionTests|FullyQualifiedName~SceneMusicContextTests'
+```
+
+The bounded native entry is `probes/engine_finite_audio_default_observation.gd`, backed by
+`FiniteAudioDefaultObservation.cs`. Load the same ignored input configuration, select the unchanged
+private inputs and the explicitly prepared review world with the existing `SF2_PRIVATE_*` variables,
+and set `SF2_AUDIO_SELECTION_OUTPUT` to a fresh ignored report path. Build the actual Debug adapter
+with the locked SDK, then launch the existing selected Godot/project with `--headless --audio-driver
+Dummy --script res://probes/engine_finite_audio_default_observation.gd`. No import, screenshots,
+emulator or original recording is needed. This controlled observer consumes admitted existing PCM,
+uses native Finished and records actual/requested timers; it does not prove natural original reach.
+The registered `handoffs/issue1888` preparation/launcher and reports own exact private selections.
+
+Resource plan: one 100 MB accepted-world read plus bounded JSON/PCM processing, linear in selected
+input size, estimated peak memory below 1 GiB. The review candidate keeps old-slot music history and
+all non-audio data, omits unrelated music and the exact116/194 and67/194 resources to expose fallback,
+and copies only its required relative WAVs/encounter inputs. Measured candidate plus inputs is
+156,744,153 bytes; total preparation/reports budget160 MiB on the selected H-volume scratch, serial
+native observations bounded60s (renderer case120s). No API/model cost, media acquisition or full-pack
+copy. Replan before exceeding this bound. Accepted inputs, original failures and earlier outputs
+remain read-only. The candidate is a controlled review selection, not a complete player pack.
+
+**Confirmed bounded consumption:** the Content/selection and existing scene-music selection totals
+17 passing behavior cases. Six actual SessionAudio starts each receive one native Finished: death
+by command and named cue at requested194/actual189, validation by name at194/203 and command at198/203,
+then integer and named exact65/194 despite the CB default. Music returns from ATTACK to MAIN_THEME
+through the existing history. All receipt PCM identities and sample rates match the admitted rows.
+The direct run exits0; its existing two ObjectDB warnings remain separate.
+
+From the unchanged retained `en-fight04` input slot, ordinary Continue and native combat consume
+death116 at requested194/actual189 (start48, Finished56), then regain player control, Save and product
+Menu Quit0. Its94 sampled receipts are contiguous. A separate cold Continue/Save preserves the full
+decoded slot data exactly. The stable published `battle-en` input also completes ordinary combat,
+Save and Quit0. These are actual inputs on a controlled audio selection, not a complete natural
+journey. Renderer runs retain two ObjectDB warnings and NVAPI diagnostics; #1716 remains open.
+
+Preserved preparation/observation failures: the first direct candidate lacked required relative
+encounter inputs; the initial new unit fixture expected a battle rather than exploration result;
+the stable earlier-round battle slot did not reach death and its explicit observer assertion failed.
+The corrected death observation uses the exact historical input, without editing its state. Old
+`en-fight03/04` ambiguity failures and #1876's completed aggregate/targeted correction remain in their
+original handoff; no old aggregate rerun or retroactive pass is claimed. This slice adds no captures.
 
 **Confirmed source structure:** pinned `sounddriver.asm:Load_SFX` initializes only non-FF channel
 entries, and its type-2 effects have separate temporary YM records. `StopMusic` preserves these

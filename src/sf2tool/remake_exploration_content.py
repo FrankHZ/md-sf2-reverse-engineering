@@ -253,6 +253,7 @@ def prepare(
             tuple(selection["battles"]),
             tuple(selection["audioCues"]) if "audioCues" in selection else None,
             wav_profiles=selection.get("runtimeWavCues", {}),
+            audio_defaults=selection.get("audioDefaults", {}),
             world_directory=output.parent,
         )
     if audio_candidates and visuals is None:

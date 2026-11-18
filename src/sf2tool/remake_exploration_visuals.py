@@ -196,6 +196,32 @@ def _read_world_wav(directory, path, asset, profile, source_command):
         return source.read(size + 45), end_step
 
 
+def select_audio_defaults(audio: list[dict], defaults: dict[str, str]) -> None:
+    """Mark explicitly selected existing finite cues; never infer a default from order."""
+    if not isinstance(defaults, dict):
+        raise ValueError("audio defaults must map command strings to selected cues")
+    by_cue = {row["cue"]: row for row in audio}
+    for command, cue in defaults.items():
+        if (
+            not isinstance(command, str)
+            or not command.isascii()
+            or not command.isdecimal()
+            or str(int(command)) != command
+            or not 65 <= int(command) <= 120
+            or not isinstance(cue, str)
+            or cue not in by_cue
+        ):
+            raise ValueError("audio default requires a selected finite same-command cue")
+        row = by_cue[cue]
+        if (
+            row["command"] != int(command)
+            or row["loopBegin"] is not None
+            or row["loopEnd"] is not None
+        ):
+            raise ValueError("audio default requires a selected finite same-command cue")
+        row["defaultForCommand"] = int(command)
+
+
 def prepare_visuals(
     compiler,
     canonical: dict[str, Any],
@@ -209,6 +235,7 @@ def prepare_visuals(
     audio_cues: tuple[str, ...] | None = None,
     *,
     wav_profiles: dict[str, dict] | None = None,
+    audio_defaults: dict[str, str] | None = None,
     world_directory: Path | None = None,
 ) -> dict[str, Any]:
     if audio_cues is not None and (
@@ -590,6 +617,7 @@ def prepare_visuals(
         raise ValueError(
             "selected audio cue is unavailable: " + ", ".join(sorted(set(audio_cues) - cues))
         )
+    select_audio_defaults(audio, {} if audio_defaults is None else audio_defaults)
     return {
         "maps": map_visuals,
         "sprites": sprite_visuals,

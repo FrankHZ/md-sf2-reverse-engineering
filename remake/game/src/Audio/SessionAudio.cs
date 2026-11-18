@@ -196,24 +196,7 @@ internal sealed partial class SessionAudio : IDisposable
         catch (InvalidOperationException error) { Error = error.Message; }
     }
 
-    private string Select(int command)
-    {
-        var candidates = _assets.Where(pair => pair.Value.Command == command).ToArray();
-        if (command < 65)
-            return candidates.FirstOrDefault().Key ?? throw new InvalidOperationException("audio-command-unavailable");
-        var exact = candidates.Where(pair => pair.Value.TimerB == TimerB).ToArray();
-        if (exact.Length == 1) return exact[0].Key;
-        if (exact.Length > 1) throw new InvalidOperationException("audio-command-ambiguous");
-        // Modern finite PCM reuse: never relabel the recording's hardware timer,
-        // infer a pitch, choose by enumeration order, or borrow another command.
-        var finite = candidates.Where(pair => pair.Value.LoopBegin is null).ToArray();
-        return finite.Length switch
-        {
-            1 => finite[0].Key,
-            0 => throw new InvalidOperationException("audio-command-unavailable"),
-            _ => throw new InvalidOperationException("audio-command-ambiguous"),
-        };
-    }
+    private string Select(int command) => ExplorationAudio.SelectCue(_assets, command, TimerB);
 
     internal void Play(int command)
     {
@@ -230,13 +213,12 @@ internal sealed partial class SessionAudio : IDisposable
     internal void Play(string resource, bool remember = true)
     {
         if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
-        if (_entrySuppressed) { SuppressEntryCue(resource, remember); return; }
         if (!_assets.TryGetValue(resource, out var audio)) throw new InvalidOperationException("audio-content-unavailable");
         bool music = audio.Command < 65;
+        if (!music) { resource = Select(audio.Command); audio = _assets[resource]; }
+        if (_entrySuppressed) { SuppressEntryCue(resource, remember); return; }
         // The source suppresses identical music requests even when the finite track already ended.
         if (music && remember && MusicCue == resource) return;
-        if (!music && audio.TimerB != TimerB && Select(audio.Command) != resource)
-            throw new InvalidOperationException("sfx-timer-context-unavailable");
         SoundVoice? voice = null;
         if (!music)
         {
