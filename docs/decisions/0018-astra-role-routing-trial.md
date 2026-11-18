@@ -152,9 +152,7 @@ start a new product slice or authorize worktree/ref cleanup.
 
 ## References
 
-- [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.2-sol), accessed 2026-10-01:
-  confirms the requested model ID and support for Medium reasoning. The user selected it for all
-  current Sol routing; this does not establish a project performance or quota comparison.
+- [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol), accessed 2026-10-01, informed the earlier Sol selection.
 - [Codex Sol and Luna selection guidance](https://learn.chatgpt.com/docs/whats-new#choose-gpt-6-sol-and-luna),
   accessed 2026-09-22: recommends Sol Medium for everyday coding and Luna High for focused,
   repeatable tasks, subject to plan, client and workspace availability.
