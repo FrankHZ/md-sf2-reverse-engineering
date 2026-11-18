@@ -3,9 +3,10 @@
 **Decision: retain the current engine and typed story programs. Repair A1's audio selection before
 expanding ordinary Stage2 play; make A2's live-room persistence part of the first mine slice.**
 The accepted bilingual Stage1 histories remain valid. No evidence here calls for a general script
-VM, save framework, engine rewrite or more audio capture. A3 is a release/recovery risk, not a
-failure of current-version Continue. A4 concerns documentation routing. Main-gate owns repair
-dispatch and independent integration; this audit neither implements fixes nor starts Stage2.
+VM, save framework, engine rewrite or more audio capture. A3 concerns older readers of populated
+Creed scene saves, not current-version Continue or omitted scene fields. A4 concerns documentation
+routing. Main-gate owns repair dispatch and independent integration; this audit neither implements
+fixes nor starts Stage2.
 
 ## Agreement and evidence boundary
 
@@ -117,8 +118,12 @@ all-map persistence project or a blocker to unrelated design.**
 
 ### A3 — P2: older readers classify a new optional save field as corruption
 
-**Confirmed source classification; Inferred user-facing loss path.** New field-v1 writes include
-`fieldScene`, including null outside Creed. At pre-recruit accepted `8b559f14`,
+**Confirmed source classification and payload shape; Inferred user-facing loss path.**
+[OpeningSaveData.FieldScene](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSaveData.cs)
+uses `JsonIgnore(WhenWritingNull)`: normal field-v1 writes omit the property when no scene is captured.
+Independent decoding of the retained English Fairy and bilingual recruited Map33 slots found
+populated `fieldScene` objects; both languages' outside Map67 and mine-approach Map68 slots omit it.
+The older-reader risk below applies to the populated Creed records. At pre-recruit accepted `8b559f14`,
 [OpeningSaveJson](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs) has no such property,
 disallows unmapped members and translates the resulting `JsonException` to `save-malformed` before
 compatibility validation. The current reader has the same general classification for future
@@ -126,7 +131,9 @@ unknown fields. [SlotRead.CanRecover / LocalSaveStore.Recover](../../game/src/Pe
 permit `save-malformed` recovery and replace the primary with a valid older backup, preserving the
 backup but not the superseded primary. Reopening the same namespace with an old binary can therefore
 offer corruption recovery for valid newer progress. This needs an old readable backup and explicit
-user recovery; it is not automatic current-version data loss. No recovery was executed on user slots.
+user recovery; it is not automatic current-version data loss. Explicit `fieldScene: null` is not a
+normal writer output: current `CheckKeys` rejects that constructed input as `save-null-value`.
+No recovery was executed on user slots.
 
 **Owner / minimum correction.** Content save-envelope classification and Godot slot recovery, owned
 by [Save/Continue](../application/battle-save-and-continue.md), must distinguish unsupported shape
@@ -137,11 +144,14 @@ nonrecoverable in the maintained reader. Already shipped old binaries cannot be 
 keep their namespaces separate and preserve original slots when publishing or reverting packages.
 Backward loading by old binaries is not promised; preserving valid newer bytes is a distinct concern.
 
-**Acceptance / disposition.** In disposable slots, pair an old readable backup with a newer primary
-containing `fieldScene` (null and populated), and repeat with an unknown future field/version.
-Inspect actual old/current diagnostics and recovery availability. Unsupported primary bytes must
-survive; real checksum corruption may still offer explicit backup recovery. **Nonblocking for
-Stage2 in isolated forward-only namespaces; fix before supporting shared-namespace binary rollback
+**Acceptance / disposition.** In disposable slots, pair an old readable backup with an actual newer
+Creed primary containing a populated `fieldScene`. Use actual outside/mine records with the property
+omitted as wire-shape controls, keeping any separate roster/recipe compatibility rejection distinct.
+Also inspect a deliberately constructed non-null unknown future field and a future format version;
+these are synthetic compatibility cases, not current writer outputs. Inspect old/current diagnostics
+and recovery availability. Valid unsupported primary bytes must survive; real checksum corruption
+may still offer explicit backup recovery. **Nonblocking for Stage2 in isolated forward-only
+namespaces; fix before supporting shared-namespace binary rollback
 or distributing that recovery promise.** No new migration database is needed.
 
 ### A4 — P3: navigation and scope prose lag the accepted consumer
@@ -175,7 +185,7 @@ Conclusions follow actual callers and changed states, not an identifier scan or 
 | Current actor/class/equipment appearance | `Application/Content/Scenarios/BattleSceneDefinition.TryAllyVisual` reads current actor/class/equipped item; optional actor rows precede class fallback. Content `BattleSceneContentReader` binds source members; `PrivateWorldEncounterReader.CampaignScenes` shares immutable frames across selected encounters. `BattleSceneAllyAppearanceTests` varies identity, class, armed/unarmed, missing weapon and legacy null bindings. The producer includes initial/admitted equipable weapons; host hides weapon drawing when unarmed. Retained Eric uses ally2-palette2/weapon75. Missing combinations refuse; promotion/new classes still need content acceptance, not join-loadout caching. |
 | Shared graphics / palette / loops | `ProgramRunner` changes slot resources without replacing actors; `PaletteColorTransition` owns BASE/COPY and interpolation; Godot palette view projects it. `EntityActionRunner` skips X≥0x7000 before motion/actions. Repository `src/sf2tool/remake_exploration_actions.py:cyclic_entry_actions` lowers the supported shared backward cycle from each entry; named source-family admission is finite. `SharedSceneGraphicsTests` varies slots, hidden/reactivated loops, partial COPY restore and new-palette versus CURRENT255 passage. #1875 retains eight four-destination orbits,15 graphics requests and exact18-program comparison. New branch shapes need explicit admission, not silent truncation; no fixed itinerary selects engine behavior. |
 | Size/layer and old roster | `Application/Runtime/Persistence/OpeningSave` rejects busy/riding/unsettled states; layer0/2 and actor render sizes are separate payloads. `LayeredFieldSaveTests` varies offsets/positions and invalid anchors. `Gameplay/Sf2/Sf2HistoricalRoster` revisions for7/9/10/11/12/16 records initialize missing unjoined actors, replay per-expansion growth seeds and preserve existing resources/live RNG. Legacy recipe1 Battle23 is recognized from its twelve-member roster. `HistoricalSaveRosterTests` covers that old battle and direct/staged upgrades; no arbitrary-roster or SRAM promise follows. |
-| Finite current-room Continue | `OpeningSave.Query` rebuilds a detached candidate before offering Save; `OpeningRestore` passes optional `fieldScene` to SF2 policy. Map33 F785/786/787 without it rejects; old pre-recruit records rebuild without it. Fairy130 in the loaded F784 room, later Fairy158 and Oddler130 on fresh F786 entry remain distinct. Settled scene progress restores without replaying rewards; ordinary ambient actions restart. F22 and unfinished restoration remain excluded. A2 prevents promoting this finite success to all-map persistence. |
+| Finite current-room Continue | `OpeningSave.Query` rebuilds a detached candidate before offering Save; `OpeningRestore` passes optional `fieldScene` to SF2 policy. Map33 F785/786/787 without it rejects; old pre-recruit records rebuild without it. The writer omits null scene values; actual outside/mine records have no scene property, while the inspected Creed records contain objects. Fairy130 in the loaded F784 room, later Fairy158 and Oddler130 on fresh F786 entry remain distinct. Settled scene progress restores without replaying rewards; ordinary ambient actions restart. F22 and unfinished restoration remain excluded. A2 prevents promoting this finite success to all-map persistence. |
 
 Application service/action filenames above are under `Sf2.Remake.Application/Runtime/Exploration/`;
 Content scene readers are under `Sf2.Remake.Content/Scenarios/`; tests are under
@@ -192,7 +202,8 @@ This audit repeated decoded-data comparison for all16 pairs in registered
 `fieldScene`, matching their retained150-tick ambient interval. This checks existing bytes, not a
 new cold process. It also independently extracted A1's audio error/context. Local
 `issue1885/check_receipts.py` and `receipt-check.json` retain the exact read-only procedure/results;
-inputs are the registered handoff, never copied worlds or modified slots. Load the checkout's
+`issue1885/field-scene-presence-review.json` records the seven decoded payload-shape checks in A3.
+Inputs are the registered handoff, never copied worlds or modified slots. Load the checkout's
 ignored private-input configuration and run that script with its existing Python environment.
 
 Earlier findings were reconciled against current source: [the Polca audit](polca-raft-engine-save-audit.zh-CN.md)
