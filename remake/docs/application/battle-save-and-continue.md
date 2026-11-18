@@ -147,8 +147,10 @@ checks. The private comparison exercises the command and persistence entry point
 **Confirmed in the remake; [#1637](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1637).**
 [SaveRecord](../../src/Sf2.Remake.Content/Persistence/SaveRecord.cs) has finite field and battle
 variants. `OpeningSaveJson.ReadRecord`/`WriteRecord` dispatch these records; the original
-`Read`/`Write` API remains field-only. Version1 keeps its exact original property order, payload,
-checksum and missing-`names` compatibility. Reading never rewrites a file. Version2 has required
+`Read`/`Write` API remains field-only. Scene-free version1 keeps its exact original property order,
+payload, checksum and missing-`names` compatibility. Scene-bearing field writes use version3 as
+described below; accepted scene-bearing v1 files remain readable. Reading never rewrites a file.
+Version2 has required
 `formatVersion`, `slot`, `sequence`, `savedAt`, `kind: "battle-player-input"` and `data` keys.
 [BattleSaveWire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs) maps only A's finite
 battle/story progress, with no CLR type discriminator, path, definitions or computed view property.
@@ -159,7 +161,7 @@ and sorted; duplicate deal identities reject before their constructor could norm
 
 The existing base64/SHA-256 envelope checks the exact decoded payload bytes. The 1 MiB encoded-file
 and depth32 limits, duplicate/unknown/missing-key rejection and UTC/slot/positive-sequence header
-checks apply to both versions. After envelope/checksum validation, the untyped top-level version
+checks apply to all three versions. After envelope/checksum validation, the untyped top-level version
 and v2 kind are classified before typed payload binding or null/key inspection of that payload.
 Unknown versions/kinds produce `save-version`/`save-kind`, even with unfamiliar/null payload data;
 they do not become a malformed old payload eligible for downgrade. Invalid JSON or excessive depth
@@ -187,6 +189,88 @@ as though the attempt certainly failed. Only the operation's own unpublished tem
 `OpeningPersistenceHost` consumes both typed variants. The shared recovery decision still forbids
 downgrade behind unsupported versions/kinds or semantic/content rejection. Valid battle records
 use their own labels and restore path; they are never converted to v1 field progress.
+
+### Future shape protection and binary rollback
+
+**High rigor; [#1889](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1889).**
+This bounded correction addresses [A3](../evidence/creed-stage1-engine-save-audit.md#a3--p2-older-readers-classify-a-new-optional-save-field-as-corruption):
+preserve valid progress when the selected reader cannot understand its wire shape. Reuse the codec,
+two-slot store and compatibility labels. No migration framework, original SRAM support, new campaign
+admission or lifecycle repair is included; #1716 remains separate. Main-gate owns independent acceptance.
+
+`OpeningSaveJson.Write`/`WriteRecord` now emit **field version3 whenever `FieldScene` is populated**,
+including when the caller supplies an in-memory v1 record. V3 has the same field header/order and
+typed data as v1, with `formatVersion: 3`; no battle `kind` is added. The maintained reader/restore
+accepts v1, battle-v2 and field-v3. Previously accepted Creed scene-bearing v1 files still restore
+normally without rewriting. Scene-free outside/mine writes remain v1 and omit `fieldScene` through
+`WhenWritingNull`; an explicit null is a constructed input, not their normal writer output.
+
+The existing early version dispatch protects these **new v3 bytes** from the pre-Creed reader.
+Future incompatible writes must similarly use an unsupported top-level format/kind before typed
+payload binding. Recipe/gameplay revisions govern semantic compatibility after binding; increasing
+one cannot protect an old reader that already treats a new property as malformed.
+
+For a supported version, unknown members in the envelope or typed payload now raise `save-shape`,
+including nested records and battle presence values/wrappers. The serializer's existing metadata
+binds known fields; its extension-member sink rejects unknown fields without discarding them or
+relying on exception message text. Known missing/type-invalid fields, duplicate keys, prohibited
+nulls and checksum failures retain corruption rejection. This does not prove that an unsupported
+payload is semantically valid; it preserves bytes when the maintained reader cannot decide.
+`SlotRead.CanRecover` excludes `save-shape`, just as it excludes versions/kinds and semantic/content
+failures. Explicit `Recover` returns `save-recovery-unavailable`, and ordinary Write refuses an
+unreadable primary. Host slot/error text requests a matching build/content using the existing
+localized compatibility labels. No automatic fallback or file rewrite occurs on read.
+
+**Confirmed by direct disposable-slot observation.** The retained pre-Creed package from accepted
+`8b559f14` (PR1884 candidate `7d8ced58`) uses its actual Content/Application/Domain assemblies and
+the production store source at `8b559f14`. The maintained build uses its production assemblies/store.
+Both validators use `OpeningRestoreReader` and `SaveRecordRestore` with their respective configured
+content. Every case pairs the primary with the same actually readable pre-Creed v1 backup; explicit
+Recover is invoked even when unavailable. The results distinguish wire decoding from restore policy:
+
+| Disposable primary | Pre-Creed reader: diagnostic / CanRecover / Recover | Maintained reader: diagnostic / CanRecover / Recover |
+| --- | --- | --- |
+| Actual Fairy and recruited Creed v1, populated scene | `save-malformed` / yes / replaces primary with backup | accepted / no / unavailable, primary preserved |
+| Same progress newly written as field-v3 | `save-version` / no / unavailable, primary preserved | accepted / no / unavailable, primary preserved |
+| Actual outside Map67 and mine-approach Map68 v1, scene omitted | wire accepted, `save-roster` / no / unavailable, primary preserved | accepted / no / unavailable, primary preserved |
+| Synthetic non-null future field, including nested ally and battle presence value | `save-malformed` / yes / replaces primary with backup | `save-shape` / no / unavailable, primary preserved |
+| Synthetic extra battle presence-wrapper member | `save-presence` / yes / replaces primary with backup | `save-shape` / no / unavailable, primary preserved |
+| Synthetic future format99 or battle kind, unfamiliar/null data | `save-version` or `save-kind` / no / unavailable, primary preserved | same diagnostic / no / unavailable, primary preserved |
+| Real checksum mismatch over otherwise readable old progress | `save-checksum` / yes / exact backup repair | same diagnostic / yes / exact backup repair |
+| Known-wire unsupported recipe | wire accepted, `save-egress-map` / no / unavailable, primary preserved | same diagnostic / no / unavailable, primary preserved |
+
+All reads preserve primary bytes, all backups remain byte-identical, and every refused write to an
+invalid primary preserves it. The old readable control restores in both readers. Current battle-v2
+restores normally; the older configured content rejects that newer campaign battle semantically
+with `save-battle-incompatible`, without recovery. Actual scene-bearing inputs were not edited to
+simulate a future field. Synthetic cases recompute the envelope checksum, except the deliberate
+checksum-corruption case. Four direct store publications also preserve decoded progress: Fairy and
+recruited produce v3, outside and mine produce v1, and final readback accepts the published version.
+No user save directory or world copy was used, and no Godot/UI/lifecycle
+acceptance is claimed. The existing Creed cold-restore engine behavior test now crosses the real
+v3 codec/record restore and retains the scene-bearing v1 restore path.
+
+Reproduce with a small console consumer of `OpeningSaveJson`, `OpeningRestoreReader`,
+`SaveRecordRestore` and the linked production `LocalSaveStore`; use configured read-only package
+inputs and a fresh external root/namespace. Copy only the selected small records. Read each primary,
+record codec and semantic diagnostics plus `CanRecover`, call Recover, compare primary/backup bytes,
+then inspect refused Write on an invalid primary. The executor's ignored `local/issue1889/HANDOFF.md`
+locates the exact driver, old package, inputs, commands and result matrix. Run affected Creed/field
+and battle persistence behavior checks and `uv run sf2 verify adapter`; no observer-test suite,
+full research aggregate, new capture or native startup is needed for this storage boundary.
+
+**Rollback/release constraint.** Already shipped binaries cannot receive this reader fix retroactively.
+Existing scene-bearing v1 bytes remain exposed if opened with an old binary and an old readable
+backup. Forward-only isolated namespaces remain supported; shared-namespace backward loading is not
+promised. Use a separate `SF2_SAVE_NAMESPACE` for an older executable. Before any operator-directed
+rollback or package replacement, preserve both original primary and backup outside the working
+namespace and leave that preserved copy untouched. Seed a separate old namespace only with a record
+that its matching build/content can read. Do not use the old corruption-recovery action on newer
+progress, copy only its backup over the original, or infer that a late recipe revision protects it.
+The maintained nonrecoverable diagnostic preserves progress; it does not downgrade or make old
+executables compatible.
+
+### Codec and publication acceptance
 
 Direct acceptance invokes the real codec, `SaveRecordRestore` and linked production store from a
 disposable console driver, with A's small `BattleSaveFixture.Create`/`Capture` and existing
@@ -465,8 +549,8 @@ Do not duplicate the filesystem transaction in a battle-specific store.
 | Replacement attempted, exception or failed final readback | Preserve `save-publication-uncertain`; no blind retry or claim that the old primary survived. Keep session paused, offer read-only Continue/slot inspection and Cancel; reconcile the actual slot before another write. |
 | Process interruption | Before publication: last good primary wins; leftover temp is never Continue input. After publication: validate actual primary; if missing/corrupt offer the compatible backup explicitly. Do not infer commit from temp/mtime alone. No universal disk-controller/power-loss guarantee is claimed. |
 | Corrupt primary, valid compatible backup | Show backup kind/destination/actor/time and require explicit recovery. Reuse Recover's temp/replace path preserving backup bytes; never rotate corrupt primary over the last good backup. |
-| Incompatible/future-version primary or unavailable required content | Preserve files and report matching build/content required. Do not silently load an older backup, downgrade to field return, restart battle, delete a slot or overwrite it to unblock Save. Retain current recovery exclusions. |
-| Existing v1 field/new-game save, including absent names | Continue through unchanged v1 semantics; do not reinterpret it as a battle or rewrite on read. New field saves stay v1. |
+| Incompatible/future-version/unknown-shape primary or unavailable required content | Preserve files and report matching build/content required. Do not silently load an older backup, downgrade to field return, restart battle, delete a slot or overwrite it to unblock Save. Retain current recovery exclusions. |
+| Existing v1 field/new-game save, including absent names | Continue through unchanged v1 semantics; do not reinterpret it as a battle or rewrite on read. Scene-free new field saves stay v1; populated scene writes use protected field-v3. |
 | Old executable sees v2 primary | It rejects the unsupported record; supported new code can still read the prior v1 backup. The existing reader deserializes v1 before checking version, so a differently shaped v2 can report `save-malformed` and expose old backup recovery instead of `save-version`. Do not use that old recovery to overwrite v2 during rollback. Preserve user-owned bytes locally before operator-directed rollback; no automatic downgrade. New version dispatch must classify unsupported versions before typed payload parsing. |
 
 Overwrite consent remains explicit, including replacing a field save with a battle save. Mark saved
