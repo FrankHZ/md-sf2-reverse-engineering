@@ -24,34 +24,13 @@ Choose the model for the task's reasoning difficulty within its assigned role an
 
 | Work | Default model / reasoning |
 | --- | --- |
-| Main-gate planning, independent review and serialized integration; independently assigned investigation of systemic problems | `gpt-6.2-astra` / `high` |
-| Difficult architecture, conflicting evidence, novel reverse engineering or runtime-admission design | `gpt-6.2-astra` / `high` |
-| Ordinary scoped implementation or tooling, accepted-evidence extraction and design synthesis | `gpt-6.2-sol` / `high` |
-| Focused repeatable work with settled semantics, explicit ownership and direct acceptance, such as mechanical documentation or translation synchronization and routine bounded implementation | `gpt-6-luna` / `high` |
+| Main-gate, independent review, systemic investigations, difficult architecture, conflicting evidence and novel reverse engineering | `gpt-6.2-astra` / `high` |
+| Scoped implementation, tooling, settled research or design synthesis, documentation and translation | `gpt-6.2-sol` / `high` |
 
-The godot-architect, research and design-doc roles retain their responsibilities; a lane name alone
-does not select a model. Main-gate and independently assigned investigator retain Astra/High. Keep
-unclear evidence and integration authority with the accountable owner rather than assigning Luna
-solely for cost. A user-specific choice overrides these defaults.
-
-All current Sol dispatches, escalations to Sol and continuations of existing Sol tasks use
-`gpt-6.2-sol` with High as the default and minimum reasoning effort, as selected by the user.
-Raise a lower setting to High on the next authorized continuation; preserve an already higher
-supported setting and completed evidence. Historical model selections remain historical records.
-
-Model and reasoning effort are separate. Sol's High floor is a project dispatch policy, not a measured
-model-performance claim. Reserve XHigh for an exceptional named difficulty where High is insufficient or comparable
-work shows a concrete benefit. Record an override reason in the Issue handoff. Distinguish reasoning
-difficulty or scope limitations from missing input, tool or environment failures and ordinary failed
-checks. Escalate Luna to Sol or Sol to Astra when a named reasoning or scope limitation warrants it;
-escalation changes neither scope nor acceptance and does not reset runtime budgets.
-
-Preserve running or frozen executors and completed results. Apply the updated Astra or Sol selection on the next
-authorized continuation; no interruption, task recreation, extra verification, benchmark or
-investigator dispatch follows from this routing update. Do not create an
-extra executor solely to spend emulator or test wait time on another model. Official model guidance
-informs these defaults; it does not establish project performance, account quota savings or a model
-ranking for this repository.
+These are the two dispatch defaults. Apply them to new work and the next authorized continuation.
+Keep running tasks and completed evidence. Sol uses High as its minimum. Escalate to Astra or
+raise reasoning effort for a concrete reasoning difficulty. Record an override in the handoff.
+An explicit user selection takes precedence.
 
 At dispatch, main-gate requests the selected model and supported reasoning level through the
 task-creation tool instead of inheriting an application default. Record the request and any override

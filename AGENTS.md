@@ -47,7 +47,7 @@ For H3, callback exceptions must reach the status/exit contract. New schema plac
 
 ## Agent and Session Routing
 
-Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md) for current task-based Astra/Sol/Luna
+Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md) for current task-based Astra/Sol
 model routing and the completed Astra trial's historical evidence. Use
 [GitHub Project Governance](./docs/operations/github-project-governance.md#task-lifecycle) for
 Issue dispatch, task creation, recovery and retirement. Main-gate may create a fresh task for an
