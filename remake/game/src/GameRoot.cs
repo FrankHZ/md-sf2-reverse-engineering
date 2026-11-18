@@ -231,9 +231,9 @@ public sealed partial class GameRoot : Node
         if (_restoring && candidateAudio is not null)
         {
             candidateAudio.Restore(started.Result.Snapshot);
-            candidateAudio.SetPaused(true);
             if (candidateAudio.Error is { } restoreAudioError)
             { candidateAudio.Dispose(); SaveError(restoreAudioError); return; }
+            candidateAudio.SetPaused(true);
         }
         BattleSessionView? preparedBattle = null;
         if (_restoring && SessionPresentationOwner.IsBattle(started.Result.Snapshot))
