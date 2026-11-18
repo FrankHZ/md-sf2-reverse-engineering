@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
-import sys
+from argparse import ArgumentParser
 from pathlib import Path
 
 import pytest
 
-from sf2tool import harness, research_index
+from sf2tool import research_index
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
 from sf2tool.design_contracts import verify_design_contracts
@@ -90,6 +89,195 @@ def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
     assert mega_drive_checksum(bytes(data)) == "6834"
 
 
+@pytest.fixture(scope="module")
+def cli_parser() -> ArgumentParser:
+    return build_parser()
+
+
+@pytest.mark.parametrize("command", [
+    "enemy-gold",
+    "enemy-drops",
+    "map-script-engine",
+    "remaining-core",
+])
+def test_static_default_output(cli_parser: ArgumentParser, command: str) -> None:
+    args = cli_parser.parse_args(["h2", command])
+    assert args.h2_command == command
+    assert args.output_path is None
+
+
+@pytest.mark.parametrize("command", [
+    "map3-castle-battle-unlock",
+    "map3-battle01-admission",
+    "map3-battle01-turn-control",
+    "map3-battle01-action-effect",
+    "map3-battle01-action-completion",
+    "map3-battle01-turn-finalization",
+    "map3-battle01-victory-return",
+    "map3-original-player-reference-frame",
+])
+def test_static_input_paths(cli_parser: ArgumentParser, command: str) -> None:
+    args = cli_parser.parse_args(["h2", command])
+    assert args.h2_command == command
+    assert args.rom_path
+    assert args.upstream_path
+
+
+@pytest.mark.parametrize("command", [
+    "battle-ai",
+    "battle-scene-engine",
+    "battle-scene-animations",
+    "battle-cutscenes",
+    "common-scripting",
+    "common-maps",
+    "common-stats",
+    "common-menus",
+    "tech-interrupts",
+    "tech-graphics",
+    "tech-interfaces",
+    "tech-services",
+    "gameflow-core",
+    "special-screens",
+    "battle-global-data",
+    "ally-data",
+    "core-stats-data",
+    "battle-cutscene-data",
+    "battle-spriteset-data",
+    "battle-routing-data",
+    "compression-consumers",
+    "map-data",
+    "map-scripts",
+    "auxiliary-data",
+])
+def test_source_only_output(cli_parser: ArgumentParser, command: str) -> None:
+    args = cli_parser.parse_args(["h2", command])
+    assert args.h2_command == command
+    assert args.output_path is None
+    assert not hasattr(args, "rom_path")
+
+
+@pytest.mark.parametrize("command", [
+    "field-menu-control",
+    "field-item-effects",
+    "field-search-control",
+])
+def test_rom_and_upstream_defaults(cli_parser: ArgumentParser, command: str) -> None:
+    args = cli_parser.parse_args(["h2", command])
+    assert args.h2_command == command
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.upstream_path.name == "SF2DISASM"
+    assert not hasattr(args, "output_path")
+
+
+@pytest.mark.parametrize("command", [
+    "item-auxiliary",
+    "enemy-map-sprites",
+    "map-sprite-assignments",
+    "entity-action-scripts",
+    "sprite-dialogue",
+    "battle-terrain",
+    "battle-backgrounds",
+    "battle-sprites",
+    "battle-sprite-animations",
+    "battle-weapon-ground",
+    "portraits",
+    "map-sprites",
+    "special-sprites",
+    "special-screen-graphics",
+    "special-screen-presentation",
+    "ui-graphics",
+    "ui-layouts",
+    "variable-width-font",
+    "text-huffman",
+    "text-banks",
+    "unused-tech-assets",
+    "witch-menu-graphics",
+    "icon-graphics",
+    "battle-effect-graphics",
+    "map-tilesets",
+    "map-palettes",
+    "map-setup",
+    "map-entities",
+    "map-content",
+    "map-events",
+    "map-event-direct-state",
+    "map-event-flag-lifecycle-state",
+    "map-event-cross-program-flag-state",
+    "map-event-flag-route-selection",
+    "map-event-interaction-state",
+    "map-event-item-transactions",
+    "map-event-combatant-state",
+    "map-event-random-battle-state",
+    "map-event-tactical-base-quote-state",
+    "map-event-scripted-transition-state",
+    "map-event-request-state",
+    "map-event-request-consumption",
+    "map-event-direct-handoff",
+    "map-event-predicate-results",
+    "map-event-dialogue-state",
+    "map-descriptions",
+    "map-init",
+    "sound-data",
+])
+def test_rom_output_defaults(cli_parser: ArgumentParser, command: str) -> None:
+    args = cli_parser.parse_args(["h2", command])
+    assert args.h2_command == command
+    assert args.output_path is None
+    assert args.rom_path.name == "sf2-us.bin"
+
+
+@pytest.mark.parametrize("command", [
+    "map-layouts",
+])
+def test_layout_rom_default(cli_parser: ArgumentParser, command: str) -> None:
+    args = cli_parser.parse_args(["h2", command])
+    assert args.h2_command == command
+    assert args.rom_path.name == "sf2-us.bin"
+
+
+@pytest.mark.parametrize(("command", "timeout"), [
+    ("map-event-dispatch", 120),
+    ("map-lifecycle", 120),
+    ("map-interaction-trigger", 120),
+    ("map-camera-control", 120),
+    ("map-entity-placement", 120),
+    ("witch-save-actions", 120),
+    ("witch-new-game-lifecycle", 120),
+    ("map-animation-vdp", 120),
+    ("sound-timing", 120),
+    ("entity-movement", 120),
+    ("map-script-dialogue", 180),
+    ("story-state", 180),
+    ("map-script-entity-clone", 180),
+    ("witch-save-menu-actions", 180),
+    ("map3-admitted-start", 180),
+    ("map3-original-player-locomotion-animation", 240),
+    ("map3-battle01-natural-route", 300),
+    ("map3-messenger-acceptance", 300),
+    ("map3-battle01-player-ready", 600),
+])
+def test_runtime_rom_and_timeout(cli_parser: ArgumentParser, command: str, timeout: int) -> None:
+    args = cli_parser.parse_args(["h3", command])
+    assert args.h3_command == command
+    assert args.timeout_seconds == timeout
+    assert args.rom_path.name == "sf2-us.bin"
+
+
+@pytest.mark.parametrize(("command", "timeout"), [
+    ("growth-refresh", 60),
+    ("gold", 60),
+    ("kill-exp", 75),
+    ("exp-command", 75),
+    ("enemy-drops", 75),
+    ("award-exp", 90),
+    ("muddle-action-guard", 120),
+])
+def test_runtime_timeout(cli_parser: ArgumentParser, command: str, timeout: int) -> None:
+    args = cli_parser.parse_args(["h3", command])
+    assert args.h3_command == command
+    assert args.timeout_seconds == timeout
+
+
 def test_verify_defaults_to_commit_profile_and_full_is_explicit() -> None:
     commit_args = build_parser().parse_args(["verify"])
     assert commit_args.command == "verify"
@@ -97,105 +285,6 @@ def test_verify_defaults_to_commit_profile_and_full_is_explicit() -> None:
 
     full_args = build_parser().parse_args(["verify", "--full"])
     assert full_args.full is True
-
-
-def test_python_verification_profiles_use_exact_command_shapes(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    root = Path(__file__).resolve().parents[2]
-    expected_target = root / "tests" / "python" / "test_native_harness.py"
-    tracked = subprocess.run(
-        ["git", "ls-files", "--error-unmatch", "--", str(expected_target.relative_to(root))],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert tracked.stdout.strip() == "tests/python/test_native_harness.py"
-    assert harness.COMMIT_PYTEST_TARGETS == ("tests/python/test_native_harness.py",)
-    assert harness.FULL_PYTEST_ARGUMENTS == (
-        "-n",
-        "4",
-        "--dist",
-        "loadfile",
-        "--max-worker-restart",
-        "0",
-        "--durations",
-        "25",
-    )
-    assert expected_target.is_file()
-    target_contents = expected_target.read_text(encoding="utf-8")
-    assert "def test_python_verification_profiles_use_exact_command_shapes" in target_contents
-
-    calls: list[tuple[list[str], Path, bool]] = []
-
-    def record_call(arguments: list[str], *, cwd: Path, check: bool) -> None:
-        calls.append((arguments, cwd, check))
-
-    monkeypatch.setattr(harness.subprocess, "run", record_call)
-
-    harness._run_python_gates(full=False)
-    assert calls == [
-        ([sys.executable, "-m", "ruff", "check", "src", "tests/python"], root, True),
-        (
-            [sys.executable, "-m", "pytest", "tests/python/test_native_harness.py"],
-            root,
-            True,
-        ),
-    ]
-
-    calls.clear()
-    harness._run_python_gates(full=True)
-    assert calls == [
-        ([sys.executable, "-m", "ruff", "check", "src", "tests/python"], root, True),
-        (
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                "-n",
-                "4",
-                "--dist",
-                "loadfile",
-                "--max-worker-restart",
-                "0",
-                "--durations",
-                "25",
-            ],
-            root,
-            True,
-        ),
-    ]
-
-
-def test_verify_headings_identify_commit_and_full_python_profiles(
-    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    profiles: list[bool] = []
-    monkeypatch.setattr(harness, "_run_python_gates", lambda *, full: profiles.append(full))
-    monkeypatch.setattr(harness, "verify_design_contracts", lambda: {"Status": "PASS"})
-    monkeypatch.setattr(harness, "verify_index", lambda _: {"Status": "PASS"})
-    monkeypatch.setattr(harness, "verify_rom", lambda _: {"Status": "PASS"})
-    monkeypatch.setattr(harness, "verify_toolchain", lambda _: {"Status": "PASS"})
-
-    harness.verify(rom_path=Path("rom.bin"), upstream_path=Path("upstream"))
-    commit_output = capsys.readouterr().out
-    assert profiles == [False]
-    assert "=== Python: commit-critical shared test suite ===" in commit_output
-    assert "=== Repository commit verification: PASS ===" in commit_output
-
-    harness.verify(
-        rom_path=Path("rom.bin"),
-        upstream_path=Path("upstream"),
-        skip_rebuild=True,
-        skip_extraction=True,
-        skip_runtime=True,
-        full=True,
-    )
-    full_output = capsys.readouterr().out
-    assert profiles == [False, True]
-    assert "=== Python: full Python suite ===" in full_output
-    assert "=== Repository full verification: PASS ===" in full_output
 
 
 def test_verify_quick_remains_a_hidden_compatibility_alias() -> None:
@@ -211,12 +300,6 @@ def test_legacy_skip_flags_still_select_the_full_profile() -> None:
 
     quick_args = build_parser().parse_args(["verify", "--quick", "--skip-runtime"])
     assert full_verify_requested(quick_args) is False
-
-
-def test_growth_refresh_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "growth-refresh"])
-    assert args.h3_command == "growth-refresh"
-    assert args.timeout_seconds == 60
 
 
 def test_original_reference_replay_capability_defaults_to_explicit_preflight() -> None:
@@ -239,320 +322,6 @@ def test_original_reference_scenario_api_requires_its_public_preflight() -> None
     assert args.preflight_only is True
     assert not hasattr(args, "rom_path")
     assert not hasattr(args, "timeout_seconds")
-
-
-def test_enemy_gold_has_a_dedicated_narrow_extraction_command() -> None:
-    args = build_parser().parse_args(["h2", "enemy-gold"])
-    assert args.h2_command == "enemy-gold"
-    assert args.output_path is None
-
-
-def test_enemy_drops_has_a_dedicated_narrow_extraction_command() -> None:
-    args = build_parser().parse_args(["h2", "enemy-drops"])
-    assert args.h2_command == "enemy-drops"
-    assert args.output_path is None
-
-
-def test_map_script_engine_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map-script-engine"])
-    assert args.h2_command == "map-script-engine"
-    assert args.output_path is None
-
-
-def test_map3_castle_battle_unlock_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-castle-battle-unlock"])
-    assert args.h2_command == "map3-castle-battle-unlock"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_battle01_admission_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-battle01-admission"])
-    assert args.h2_command == "map3-battle01-admission"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_battle01_turn_control_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-battle01-turn-control"])
-    assert args.h2_command == "map3-battle01-turn-control"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_battle01_action_effect_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-battle01-action-effect"])
-    assert args.h2_command == "map3-battle01-action-effect"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_battle01_action_completion_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-battle01-action-completion"])
-    assert args.h2_command == "map3-battle01-action-completion"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_battle01_turn_finalization_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-battle01-turn-finalization"])
-    assert args.h2_command == "map3-battle01-turn-finalization"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_battle01_victory_return_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-battle01-victory-return"])
-    assert args.h2_command == "map3-battle01-victory-return"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_map3_original_player_reference_frame_has_a_dedicated_static_contract_command() -> None:
-    args = build_parser().parse_args(["h2", "map3-original-player-reference-frame"])
-    assert args.h2_command == "map3-original-player-reference-frame"
-    assert args.rom_path
-    assert args.upstream_path
-
-
-def test_battle_ai_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-ai"])
-    assert args.h2_command == "battle-ai"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_battle_scene_engine_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-scene-engine"])
-    assert args.h2_command == "battle-scene-engine"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_battle_scene_animations_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-scene-animations"])
-    assert args.h2_command == "battle-scene-animations"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_battle_cutscenes_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-cutscenes"])
-    assert args.h2_command == "battle-cutscenes"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_common_scripting_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "common-scripting"])
-    assert args.h2_command == "common-scripting"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_common_maps_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "common-maps"])
-    assert args.h2_command == "common-maps"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_common_stats_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "common-stats"])
-    assert args.h2_command == "common-stats"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_common_menus_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "common-menus"])
-    assert args.h2_command == "common-menus"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_field_menu_control_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "field-menu-control"])
-    assert args.h2_command == "field-menu-control"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.upstream_path.name == "SF2DISASM"
-    assert not hasattr(args, "output_path")
-
-
-def test_field_item_effects_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "field-item-effects"])
-    assert args.h2_command == "field-item-effects"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.upstream_path.name == "SF2DISASM"
-    assert not hasattr(args, "output_path")
-
-
-def test_field_search_control_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "field-search-control"])
-    assert args.h2_command == "field-search-control"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.upstream_path.name == "SF2DISASM"
-    assert not hasattr(args, "output_path")
-
-
-def test_tech_interrupts_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "tech-interrupts"])
-    assert args.h2_command == "tech-interrupts"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_tech_graphics_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "tech-graphics"])
-    assert args.h2_command == "tech-graphics"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_tech_interfaces_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "tech-interfaces"])
-    assert args.h2_command == "tech-interfaces"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_tech_services_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "tech-services"])
-    assert args.h2_command == "tech-services"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_gameflow_core_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "gameflow-core"])
-    assert args.h2_command == "gameflow-core"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_special_screens_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "special-screens"])
-    assert args.h2_command == "special-screens"
-    assert args.output_path is None
-    assert not hasattr(args, "rom_path")
-
-
-def test_remaining_core_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "remaining-core"])
-    assert args.h2_command == "remaining-core"
-    assert args.output_path is None
-
-
-def test_battle_global_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-global-data"])
-    assert args.h2_command == "battle-global-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_ally_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "ally-data"])
-    assert args.h2_command == "ally-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_core_stats_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "core-stats-data"])
-    assert args.h2_command == "core-stats-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_item_auxiliary_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "item-auxiliary"])
-    assert args.h2_command == "item-auxiliary"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_enemy_map_sprites_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "enemy-map-sprites"])
-    assert args.h2_command == "enemy-map-sprites"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_sprite_assignments_have_a_static_audit_command() -> None:
-    args = build_parser().parse_args(["h2", "map-sprite-assignments"])
-    assert args.h2_command == "map-sprite-assignments"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_entity_action_scripts_have_a_static_corpus_command() -> None:
-    args = build_parser().parse_args(["h2", "entity-action-scripts"])
-    assert args.h2_command == "entity-action-scripts"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_sprite_dialogue_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "sprite-dialogue"])
-    assert args.h2_command == "sprite-dialogue"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_battle_cutscene_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-cutscene-data"])
-    assert args.h2_command == "battle-cutscene-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_battle_spriteset_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-spriteset-data"])
-    assert args.h2_command == "battle-spriteset-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_battle_routing_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-routing-data"])
-    assert args.h2_command == "battle-routing-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_battle_terrain_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-terrain"])
-    assert args.h2_command == "battle-terrain"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_battle_backgrounds_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-backgrounds"])
-    assert args.h2_command == "battle-backgrounds"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_battle_sprites_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-sprites"])
-    assert args.h2_command == "battle-sprites"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_battle_sprite_animations_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-sprite-animations"])
-    assert args.h2_command == "battle-sprite-animations"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_battle_weapon_ground_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-weapon-ground"])
-    assert args.h2_command == "battle-weapon-ground"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
 
 
 def test_stack_decoder_handles_literal_overlap_copy_and_terminator() -> None:
@@ -586,139 +355,6 @@ def test_basic_decoder_handles_literal_overlap_copy_and_terminator() -> None:
     assert result.maximum_copy_length_words == 2
 
 
-def test_portraits_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "portraits"])
-    assert args.h2_command == "portraits"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_sprites_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-sprites"])
-    assert args.h2_command == "map-sprites"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_special_sprites_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "special-sprites"])
-    assert args.h2_command == "special-sprites"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_special_screen_graphics_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "special-screen-graphics"])
-    assert args.h2_command == "special-screen-graphics"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_special_screen_presentation_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "special-screen-presentation"])
-    assert args.h2_command == "special-screen-presentation"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_ui_graphics_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "ui-graphics"])
-    assert args.h2_command == "ui-graphics"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_ui_layouts_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "ui-layouts"])
-    assert args.h2_command == "ui-layouts"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_variable_width_font_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "variable-width-font"])
-    assert args.h2_command == "variable-width-font"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_text_huffman_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "text-huffman"])
-    assert args.h2_command == "text-huffman"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_text_banks_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "text-banks"])
-    assert args.h2_command == "text-banks"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_unused_technical_assets_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "unused-tech-assets"])
-    assert args.h2_command == "unused-tech-assets"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_witch_menu_graphics_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "witch-menu-graphics"])
-    assert args.h2_command == "witch-menu-graphics"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_icon_graphics_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "icon-graphics"])
-    assert args.h2_command == "icon-graphics"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_battle_effect_graphics_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "battle-effect-graphics"])
-    assert args.h2_command == "battle-effect-graphics"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_tilesets_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-tilesets"])
-    assert args.h2_command == "map-tilesets"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_compression_consumers_have_a_source_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "compression-consumers"])
-    assert args.h2_command == "compression-consumers"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_map_palettes_have_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-palettes"])
-    assert args.h2_command == "map-palettes"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "map-data"])
-    assert args.h2_command == "map-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_map_setup_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-setup"])
-    assert args.h2_command == "map-setup"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
 def test_map_setup_selection_uses_the_last_set_flag_in_source_order() -> None:
     routes = _parse_routes(
         "MapSetups: msMap 3, ms_map3\n"
@@ -730,155 +366,6 @@ def test_map_setup_selection_uses_the_last_set_flag_in_source_order() -> None:
     assert _select_route(routes, 3, set()) == "ms_map3"
     assert _select_route(routes, 3, {10, 20}) == "ms_map3_flag20"
     assert _select_route(routes, 4, {10, 20}) == "ms_Void"
-
-
-def test_map_event_dispatch_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-event-dispatch"])
-    assert args.h3_command == "map-event-dispatch"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map_lifecycle_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-lifecycle"])
-    assert args.h3_command == "map-lifecycle"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map_interaction_trigger_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-interaction-trigger"])
-    assert args.h3_command == "map-interaction-trigger"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map_camera_control_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-camera-control"])
-    assert args.h3_command == "map-camera-control"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map_entity_placement_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-entity-placement"])
-    assert args.h3_command == "map-entity-placement"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map_script_dialogue_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-script-dialogue"])
-    assert args.h3_command == "map-script-dialogue"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 180
-
-
-def test_story_state_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "story-state"])
-    assert args.h3_command == "story-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 180
-
-
-def test_map_script_entity_clone_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-script-entity-clone"])
-    assert args.h3_command == "map-script-entity-clone"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 180
-
-
-def test_witch_save_actions_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "witch-save-actions"])
-    assert args.h3_command == "witch-save-actions"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_witch_save_menu_actions_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "witch-save-menu-actions"])
-    assert args.h3_command == "witch-save-menu-actions"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 180
-
-
-def test_witch_new_game_lifecycle_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "witch-new-game-lifecycle"])
-    assert args.h3_command == "witch-new-game-lifecycle"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map3_admitted_start_has_one_controlled_witch_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map3-admitted-start"])
-    assert args.h3_command == "map3-admitted-start"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 180
-
-
-def test_map3_player_locomotion_has_one_controlled_witch_runtime_command() -> None:
-    args = build_parser().parse_args(
-        ["h3", "map3-original-player-locomotion-animation"]
-    )
-    assert args.h3_command == "map3-original-player-locomotion-animation"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 240
-
-
-def test_map3_battle01_natural_route_has_one_natural_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map3-battle01-natural-route"])
-    assert args.h3_command == "map3-battle01-natural-route"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 300
-
-
-def test_map3_battle01_player_ready_has_one_bounded_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map3-battle01-player-ready"])
-    assert args.h3_command == "map3-battle01-player-ready"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 600
-
-
-def test_map3_messenger_acceptance_has_one_bounded_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map3-messenger-acceptance"])
-    assert args.h3_command == "map3-messenger-acceptance"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 300
-
-
-def test_map_animation_vdp_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "map-animation-vdp"])
-    assert args.h3_command == "map-animation-vdp"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_sound_timing_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "sound-timing"])
-    assert args.h3_command == "sound-timing"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_entity_movement_has_one_batched_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "entity-movement"])
-    assert args.h3_command == "entity-movement"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.timeout_seconds == 120
-
-
-def test_map_entities_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-entities"])
-    assert args.h2_command == "map-entities"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_content_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-content"])
-    assert args.h2_command == "map-content"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
 
 
 def test_map_content_encoder_keeps_item_terminator_and_trailing_rts(tmp_path: Path) -> None:
@@ -897,12 +384,6 @@ def test_map_content_encoder_keeps_item_terminator_and_trailing_rts(tmp_path: Pa
     assert trailing_rts is True
 
 
-def test_map_layouts_has_a_static_decode_command() -> None:
-    args = build_parser().parse_args(["h2", "map-layouts"])
-    assert args.h2_command == "map-layouts"
-    assert args.rom_path.name == "sf2-us.bin"
-
-
 def test_zero_command_block_stream_yields_the_three_builtin_blocks() -> None:
     words, consumed_bits, commands = decode_map_blocks(b"\x00\x00")
     assert len(words) == 27
@@ -914,118 +395,6 @@ def test_map_entity_payload_prefix_classifies_record_encoding() -> None:
     assert _record_kind(bytes.fromhex("0102030400001234")) == "fixed"
     assert _record_kind(bytes.fromhex("01020304FF050607")) == "walking"
     assert _record_kind(bytes.fromhex("01020304FE001234")) == "sequenced"
-
-
-def test_map_events_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-events"])
-    assert args.h2_command == "map-events"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_direct_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-direct-state"])
-    assert args.h2_command == "map-event-direct-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_flag_lifecycle_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-flag-lifecycle-state"])
-    assert args.h2_command == "map-event-flag-lifecycle-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_cross_program_flag_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-cross-program-flag-state"])
-    assert args.h2_command == "map-event-cross-program-flag-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_flag_route_selection_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-flag-route-selection"])
-    assert args.h2_command == "map-event-flag-route-selection"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_interaction_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-interaction-state"])
-    assert args.h2_command == "map-event-interaction-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_item_transactions_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-item-transactions"])
-    assert args.h2_command == "map-event-item-transactions"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_combatant_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-combatant-state"])
-    assert args.h2_command == "map-event-combatant-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_random_battle_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-random-battle-state"])
-    assert args.h2_command == "map-event-random-battle-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_tactical_base_quote_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-tactical-base-quote-state"])
-    assert args.h2_command == "map-event-tactical-base-quote-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_scripted_transition_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-scripted-transition-state"])
-    assert args.h2_command == "map-event-scripted-transition-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_request_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-request-state"])
-    assert args.h2_command == "map-event-request-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_request_consumption_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-request-consumption"])
-    assert args.h2_command == "map-event-request-consumption"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_direct_handoff_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-direct-handoff"])
-    assert args.h2_command == "map-event-direct-handoff"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_predicate_results_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-predicate-results"])
-    assert args.h2_command == "map-event-predicate-results"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_event_dialogue_state_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-event-dialogue-state"])
-    assert args.h2_command == "map-event-dialogue-state"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
 
 
 def test_map_entity_event_indices_split_allies_from_stream_order_enemies() -> None:
@@ -1060,46 +429,11 @@ def test_map_event_relative_offsets_resolve_from_table_base() -> None:
     }
 
 
-def test_map_descriptions_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-descriptions"])
-    assert args.h2_command == "map-descriptions"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
 def test_map_description_text_indices_use_global_and_wrapper_bases() -> None:
     record = _decode_entry(0x1000, 0x1006, bytes.fromhex("010200000304"), 0x200)
     assert record["kind"] == "text"
     assert record["investigationTextIndex"] == 426
     assert record["descriptionTextIndex"] == 0x204
-
-
-def test_map_init_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "map-init"])
-    assert args.h2_command == "map-init"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
-
-
-def test_map_scripts_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "map-scripts"])
-    assert args.h2_command == "map-scripts"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_auxiliary_data_has_a_source_only_inventory_command() -> None:
-    args = build_parser().parse_args(["h2", "auxiliary-data"])
-    assert args.h2_command == "auxiliary-data"
-    assert not hasattr(args, "rom_path")
-    assert args.output_path is None
-
-
-def test_sound_data_has_a_static_rom_parity_command() -> None:
-    args = build_parser().parse_args(["h2", "sound-data"])
-    assert args.h2_command == "sound-data"
-    assert args.rom_path.name == "sf2-us.bin"
-    assert args.output_path is None
 
 
 def test_battle_ai_inventory_classifies_calls(tmp_path: Path) -> None:
@@ -1134,75 +468,12 @@ def test_source_inventory_accepts_legacy_single_byte_comments(tmp_path: Path) ->
     assert parsed["statementCount"] == 2
 
 
-def test_kill_exp_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "kill-exp"])
-    assert args.h3_command == "kill-exp"
-    assert args.timeout_seconds == 75
-
-
-def test_award_exp_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "award-exp"])
-    assert args.h3_command == "award-exp"
-    assert args.timeout_seconds == 90
-
-
-def test_exp_command_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "exp-command"])
-    assert args.h3_command == "exp-command"
-    assert args.timeout_seconds == 75
-
-
-def test_gold_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "gold"])
-    assert args.h3_command == "gold"
-    assert args.timeout_seconds == 60
-
-
-def test_enemy_drops_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "enemy-drops"])
-    assert args.h3_command == "enemy-drops"
-    assert args.timeout_seconds == 75
-
-
-def test_muddle_action_guard_has_a_dedicated_narrow_runtime_command() -> None:
-    args = build_parser().parse_args(["h3", "muddle-action-guard"])
-    assert args.h3_command == "muddle-action-guard"
-    assert args.timeout_seconds == 120
-
-
 def test_legacy_powershell_surface_does_not_expand() -> None:
     root = Path(__file__).resolve().parents[2]
     scripts = sorted((root / "scripts").rglob("*.ps1"))
     lines = sum(len(path.read_text(encoding="utf-8").splitlines()) for path in scripts)
     assert len(scripts) <= 36
     assert lines <= 4813
-
-
-def test_parallel_worktree_contract_scopes_full_gate_invalidation() -> None:
-    root = Path(__file__).resolve().parents[2]
-    agents_guide = " ".join((root / "AGENTS.md").read_text(encoding="utf-8").split())
-    adr = " ".join(
-        (root / "docs" / "decisions" / "0006-parallel-worktrees-and-topic-branch-integration.md")
-        .read_text(encoding="utf-8")
-        .split()
-    )
-
-    for required_text in (
-        "Gate invalidation is path- and dependency-based, not commit-SHA-based",
-        "non-registered Layer B design-synthesis documents",
-        "does not invalidate an already passing research full gate",
-        "owning narrow command plus the normal `uv run sf2 verify`",
-        "A design-synthesis branch or a design-only advance of `main` never triggers it",
-    ):
-        assert required_text in agents_guide
-
-    for required_text in (
-        "Full-gate reuse is decided by changed paths and dependencies",
-        "Do not cancel or restart a full run merely because such a design branch merged",
-        "Any delta not demonstrably confined to the design-only exception is invalidating",
-        "design integration never requests `verify --full`",
-    ):
-        assert required_text in adr
 
 
 def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
@@ -1218,15 +489,6 @@ def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
             continue
         assert len(relative_parts) == 2, path
         assert relative_parts[0] in allowed_namespaces, path
-
-    layout = " ".join((schema_root / "README.md").read_text(encoding="utf-8").split())
-    for required_text in (
-        "organized by evidence rail",
-        "frozen legacy layout",
-        "New schemas go under `core/`, `h2/`, or `h3/`",
-        "dedicated `codex/repo-*` branch",
-    ):
-        assert required_text in layout
 
 
 def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:

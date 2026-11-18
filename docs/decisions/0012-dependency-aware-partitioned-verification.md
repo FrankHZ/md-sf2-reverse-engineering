@@ -139,12 +139,10 @@ original-runtime acceptance requirement that the changed source paths do not exp
 declare that semantic dependency through the existing `--include-partition` option. Test selection is
 not permission to omit such a requirement.
 
-The planner's own existing production-path mapping selects the complete `test_verification_plan.py`
-and `test_native_harness.py` files for its Python gate. Its direct production consumer is the CLI;
-the planner tests cover CLI parsing, dispatch, execution-mode separation, Git-range admission,
-partition selection, and artifact ownership, while the native harness covers the shared public CLI
-contract. This scoped command selection keeps the mapping's .NET/Godot gates and production reverse
-dependencies. It does not narrow any other shared production module's default Python gate.
+Changes to the planner or its engine-path selector use the planner's production dependency
+selection. Exercise the changed path classifications directly against the candidate. Keep the shared
+build and public gates and select actual reverse dependencies. A changed Python test file still
+selects its own pytest command. Other Python tooling retains its owning selection.
 
 ### Checked-Out Candidate Consistency
 
