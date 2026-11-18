@@ -527,6 +527,30 @@ msgstr "保存当前进度，继续游戏将返回{0}。\nNPC 位置和音乐会
 msgid "slot.record"
 msgstr "槽位 {0} · {1}\n{2} · {3} UTC"
 
+msgid "slot.output"
+msgstr "输出文件：{0}"
+
+msgid "slot.create"
+msgstr "新建存档（槽位 {0}）"
+
+msgid "slot.previous"
+msgstr "上一页存档"
+
+msgid "slot.next"
+msgstr "下一页存档"
+
+msgid "save.error.changed"
+msgstr "此存档在选择后已更改。请重新打开列表，查看最新进度。"
+
+msgid "save.error.protected"
+msgstr "此槽位有无法读取的存档。请选择其他槽位，以保留主存档和备份。"
+
+msgid "save.error.read-only"
+msgstr "本次启动读取了只读存档。请使用 --save-output 重新启动，将进度保存到另一文件。"
+
+msgid "save.error.seed-missing"
+msgstr "找不到启动时指定的存档文件。请检查路径后重新启动。"
+
 msgid "slot.status"
 msgstr "槽位 {0} · {1}{2}"
 

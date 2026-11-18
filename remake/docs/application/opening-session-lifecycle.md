@@ -18,7 +18,7 @@ that same party. Existing Battle02/Yeel consumers are shared-state regression de
 an extension of this endpoint. The [capability matrix](../capability-status.md) owns delivered
 behavior; [UI gaps](../evidence/opening-ui-gaps.md) owns presentation acceptance.
 
-Use **two manually selected local slots and savepoint restoration**, initially for the
+Use **manually selected local slots and savepoint restoration**, initially for the
 supported Map3 phases and settled Battle01 return on Map57. Save is explicit from a field menu;
 Continue chooses a slot. A save records progress now, but loading relocates to the declared safe
 anchor and rebuilds ambient NPCs/doors/camera. Show that destination before saving. It neither
@@ -84,7 +84,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
 | Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
-| Persistence/Continue | **Implemented, bounded:** two explicit local slots, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. Four field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return and completed Battle07 Map58 aftermath. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
+| Persistence/Continue | **Implemented, bounded:** selectable local save history, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. Four field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return and completed Battle07 Map58 aftermath. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL; Antidote/DETOX1 cure poison with caller-specific payment. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
@@ -671,7 +671,7 @@ Use an explicitly configured absolute save root outside removable worktrees, wit
 namespace by default; no source-root/cwd inference, C-drive fallback, cache copying or shared mutable
 test slots. Production installation chooses its persistent root once. Acceptance uses a separate
 temporary H-local namespace, preserving previous evidence and user slots. Content profile namespaces
-separate authored and private saves. Slot names are fixed by the adapter, never supplied paths.
+separate authored and private saves. Player filenames follow the numbered convention. [Manual save history and developer files](battle-save-and-continue.md#manual-save-history-and-developer-files) owns history selection, version-bound consent and the separate explicit-file launch.
 
 For each slot retain `slotN.json` and one last valid `slotN.bak`; only one writer holds the slot lock.
 Capture immutable bytes and freeze further gameplay commands while the short save operation runs.
@@ -887,7 +887,7 @@ Save from Church requests close first. The host waits for actual program/event/p
 settled field input, then uses the existing Save menu, music-history observation, eligibility query,
 slot confirmation and format. A service wait is never captured. The Church
 [Record adventure entry](../godot/presentation.md#church-and-shared-save-agreement-1519) explains the
-shared two slots and existing save-point limits. Closing its save flow after cancel, success or
+shared save history and existing save-point limits. Closing its save flow after cancel, success or
 failure returns to usable exploration; another priest interaction opens services again. Menu Save
 keeps its own existing Back-to-Menu hierarchy. Both use identical slot/destination/overwrite rules;
 neither grants arbitrary saving. A settled but ineligible location

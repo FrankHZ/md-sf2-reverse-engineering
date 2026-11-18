@@ -85,16 +85,20 @@ field actors and portraits; other maps retain their installed artwork. Original 
 The ordinary launch opens the title; New Game needs the six
 private battle/static selections, prepared world and optional battle scene content described by the
 [New Game input owner](docs/content/profiles-and-trust.md#opening-new-game-admission). Missing content
-reports a startup diagnostic. Witch New Game chooses one of two slots, then a protagonist name
+reports a startup diagnostic. Witch New Game selects or creates a slot, then asks for a protagonist name
 (up to seven supported characters; empty keeps the default) and a final Normal Start/save
 confirmation. A write succeeds before gameplay replaces the paused session; occupied replacement
 is explicit and Cancel retains current progress. At settled field input, New Game… opens the same
-flow with Cancel selected. Save… (default Space / Pad LB) opens two local slots at a supported settled
+flow with Cancel selected. Save… (default Space / Pad LB) opens the same save history at a supported settled
 field boundary; use the system Menu during admitted battle Movement. Title Continue restores the
 selected journey at its displayed savepoint or battle turn. Configure
 absolute `SF2_SAVE_ROOT` outside every checkout and a unique `SF2_SAVE_NAMESPACE` first; there is no
 default save folder. See [save/restart usage and limits](docs/verification/host.md#opening-save-and-continue).
-Explicit diagnostic play uses a start selection. The
+Pass `-- --load-save <absolute-file>` to open a read-only field or battle seed. Add
+`--save-output <absolute-file>` to save separately. With only the output option, start New Game
+or Continue using that file. Settings keep their own path and accept the usual `--input-settings`
+override. See [file selection and compatibility](docs/application/battle-save-and-continue.md#manual-save-history-and-developer-files).
+Explicit diagnostic play also supports a scenario start selection. The
 [ordinary-host recipe](./docs/verification/host.md#ordinary-host-startup) and
 [Yeel–Battle03 recipe](./docs/verification/field-programs.md#yeel-guide-through-battle03)
 own preparation and reproduction; the launch above does not prepare original assets.

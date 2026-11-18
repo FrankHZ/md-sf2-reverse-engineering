@@ -20,6 +20,7 @@ internal sealed partial class SaveSlotView : Control
     private readonly List<Button> _buttons = [];
     private readonly List<Action> _actions = [];
     private int _selected;
+    internal int SelectedIndex => _selected;
     private bool _loading;
     private Action? _loadingBack;
     internal Action? Cancel;

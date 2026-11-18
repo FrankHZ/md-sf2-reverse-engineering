@@ -527,6 +527,30 @@ msgstr "Save current progress. Continue returns to {0}.\nNPC positions and music
 msgid "slot.record"
 msgstr "Slot {0} · {1}\n{2} · {3} UTC"
 
+msgid "slot.output"
+msgstr "Output file: {0}"
+
+msgid "slot.create"
+msgstr "Create a new save (Slot {0})"
+
+msgid "slot.previous"
+msgstr "Previous saves"
+
+msgid "slot.next"
+msgstr "More saves"
+
+msgid "save.error.changed"
+msgstr "This save changed after you selected it. Open the list again to review the latest progress."
+
+msgid "save.error.protected"
+msgstr "This slot contains a file that cannot be read. Choose a different slot to keep both files."
+
+msgid "save.error.read-only"
+msgstr "This launch opened a read-only save. Relaunch with --save-output to save progress to a separate file."
+
+msgid "save.error.seed-missing"
+msgstr "The save file selected at launch could not be found. Check the path and relaunch."
+
 msgid "slot.status"
 msgstr "Slot {0} · {1}{2}"
 

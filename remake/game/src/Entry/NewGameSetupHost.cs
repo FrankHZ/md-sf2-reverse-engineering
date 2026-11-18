@@ -15,6 +15,7 @@ public sealed partial class GameRoot
     private NameEntryView? _nameEntry;
     private string _nameDraft = "";
     private int _newSlot = 1;
+    private SlotRead? _newSlotSeen;
     private PreparedNewGame? _preparedNewGame;
     private SessionAudio? _preparedAudio;
     private uint? _newMainSeed, _newThinkingSeed;
@@ -30,7 +31,7 @@ public sealed partial class GameRoot
     private async void ShowNewSlots()
     {
         if (_entryLoading) return;
-        ClearPreparedNewGame(); CloseName();
+        ClearPreparedNewGame(); CloseName(); _newSlotSeen = null;
         _slots!.Show(); _slots.Cancel = CancelNewGame;
         try
         {
@@ -43,15 +44,16 @@ public sealed partial class GameRoot
             }
             GameText.Bind(admitted.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
             var store = Store(admitted.Definition);
-            var slots = await LoadEntry(() => (First: store.Read(1), Second: store.Read(2)));
-            _slots.ShowChoices("new-game-slots", GameText.Get("new.slots"),
-                (Label(1, slots.First, admitted.Definition), () => ChooseNewSlot(1)), (Label(2, slots.Second, admitted.Definition), () => ChooseNewSlot(2)), (GameText.Get("entry.cancel"), CancelNewGame));
+            await ShowHistory(store, admitted.Definition, "new-game-slots", GameText.Get("new.slots"), ChooseNewSlot, CancelNewGame);
         }
         catch (ArgumentException error) { NewGameError(error.Message); }
         catch (OperationCanceledException) { }
     }
 
-    private void ChooseNewSlot(int slot) { _newSlot = slot; ShowName(); }
+    private void ChooseNewSlot(int slot, SlotRead seen)
+    {
+        _newSlot = slot; _newSlotSeen = seen; _saveSelection = _slots!.SelectedIndex; ShowName();
+    }
     private void ShowName()
     {
         ClearPreparedNewGame(); _slots!.Hide(); CloseName();
@@ -100,7 +102,8 @@ public sealed partial class GameRoot
             }
             var prepared = _preparedNewGame;
             var store = Store(prepared.Started!.Session.Definition);
-            var written = await LoadEntry(() => store.Write(_newSlot, prepared.Save!), publishing: true);
+            var written = await LoadEntry(() => store.Write(_newSlot, _newSlotSeen!, prepared.Save!), publishing: true,
+                publicationObserved: result => { if (result.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
             if (!written.Success)
             {
                 if (written.Error == "save-publication-uncertain")
@@ -113,7 +116,7 @@ public sealed partial class GameRoot
                 else NewGameError(written.Error!);
                 return;
             }
-            var audio = _preparedAudio; _preparedAudio = null; _preparedNewGame = null;
+            var audio = _preparedAudio; _preparedAudio = null; _preparedNewGame = null; _newSlotSeen = null;
             MountSession(prepared.Started, audio);
             _savedSession = _session!.Current.SessionId; _savedRevision = _session.Current.Revision;
         }
@@ -125,14 +128,16 @@ public sealed partial class GameRoot
     private void NewGameError(string error)
     {
         _slots!.Show(); _slots.Cancel = CancelNewGame;
-        _slots.ShowChoices("new-game-error", GameText.Get("new.error", error),
-            (GameText.Get("entry.back"), ShowNewSlots), (GameText.Get("entry.retry"), _newMainSeed is null ? ShowNewSlots : CommitNewGame), (GameText.Get("entry.cancel"), CancelNewGame));
+        bool review = error is "save-record-changed" or "save-backup-unreadable" or "save-seed-read-only" or "save-primary-invalid-use-recovery";
+        _slots.ShowChoices("new-game-error", review ? Explain(error) : GameText.Get("new.error", error),
+            (GameText.Get("entry.back"), ShowNewSlots), (GameText.Get("entry.retry"), _newSlotSeen is null || _newMainSeed is null || review ? ShowNewSlots : CommitNewGame), (GameText.Get("entry.cancel"), CancelNewGame));
+        if (review) _slots.ShowDetail(GameText.Get("save.details", error));
         DisarmInput();
     }
     private void ClearPreparedNewGame() { _preparedAudio?.Dispose(); _preparedAudio = null; _preparedNewGame = null; }
     private void CancelNewGame()
     {
         if (_entryLoading) return;
-        ClearPreparedNewGame(); CloseName(); CloseSavePanel(); _entry?.ReturnFromSetup(); DisarmInput();
+        ClearPreparedNewGame(); _newSlotSeen = null; CloseName(); CloseSavePanel(); _entry?.ReturnFromSetup(); DisarmInput();
     }
 }

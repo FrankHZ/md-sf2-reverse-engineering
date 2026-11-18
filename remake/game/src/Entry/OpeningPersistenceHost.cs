@@ -19,6 +19,9 @@ public sealed partial class GameRoot
     private bool _saveNeedsInspection;
     private bool _battleSaveCaller;
     private int _saveSelection;
+    private int _historyPage;
+    private string? _seedFile, _outputFile;
+    private bool SeedOnly => _seedFile is not null && _outputFile is null;
     private sealed record HostSaveOffer(Guid SessionId, long Revision, string Destination, string? Error);
 
     private HostSaveOffer SaveOffer(bool previewMusic = false)
@@ -63,14 +66,88 @@ public sealed partial class GameRoot
         Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"),
         System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT"));
 
-    private LocalSaveStore Store(ScenarioDefinition definition) => new(Selected("SF2_SAVE_ROOT"), Selected("SF2_SAVE_NAMESPACE"),
-        System.IO.Path.GetFullPath(System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "..")),
-        record => SaveRecordRestore.Restore(definition, record, RuleCompositions.ForGame()) is SessionStartFailed failed ? failed.Failure.Code : null);
+    private void ConfigureSaveFiles(Dictionary<string, string> options)
+    {
+        if (!options.ContainsKey("--load-save") && !options.ContainsKey("--save-output")) return;
+        string? FileOption(string key)
+        {
+            if (!options.TryGetValue(key, out var raw)) return null;
+            string path = System.IO.Path.GetFullPath(raw);
+            if (!System.IO.Path.IsPathFullyQualified(raw) || System.IO.Path.GetFileName(path).Length == 0)
+                throw new ArgumentException();
+            // Windows device paths, streams and trailing dots/spaces can give one
+            // directory entry a second spelling, bypassing the seed and player-path exclusions.
+            if (OperatingSystem.IsWindows() && (path.StartsWith(@"\\?\") || path.StartsWith(@"\\.\") ||
+                path[2..].Split('\\').Any(part => part.EndsWith('.') || part.EndsWith(' ') || part.Contains(':') ||
+                    System.Text.RegularExpressions.Regex.IsMatch(part, @"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)",
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase))))
+                throw new ArgumentException();
+            var root = Selected("SF2_SAVE_ROOT");
+            var space = Selected("SF2_SAVE_NAMESPACE");
+            if (System.IO.Path.IsPathFullyQualified(root))
+            {
+                var relative = System.IO.Path.GetRelativePath(root, path);
+                var parts = relative.Split(System.IO.Path.DirectorySeparatorChar);
+                if (!System.IO.Path.IsPathRooted(relative) && parts[0] != ".." &&
+                    (parts[0].Equals(space, StringComparison.OrdinalIgnoreCase) || parts.Length >= 2 &&
+                        (parts[1].Equals("sf2-opening", StringComparison.OrdinalIgnoreCase) ||
+                         parts[1].Equals("sf2-preferences", StringComparison.OrdinalIgnoreCase))))
+                    throw new ArgumentException();
+            }
+            return path;
+        }
+        _seedFile = FileOption("--load-save");
+        _outputFile = FileOption("--save-output");
+        if (_outputFile is null) return;
+        string[] targets = [_outputFile, _outputFile + ".bak", _outputFile + ".lock"];
+        if (targets.Contains(_seedFile, StringComparer.OrdinalIgnoreCase) ||
+            options.TryGetValue("--input-settings", out var settings) &&
+            targets.Contains(System.IO.Path.GetFullPath(settings), StringComparer.OrdinalIgnoreCase))
+            throw new ArgumentException();
+    }
+
+    private LocalSaveStore Store(ScenarioDefinition definition)
+    {
+        string? Validate(SaveRecord record) => SaveRecordRestore.Restore(definition, record, RuleCompositions.ForGame())
+            is SessionStartFailed failed ? failed.Failure.Code : null;
+        if (_outputFile is not null) return new(_outputFile, Validate);
+        if (SeedOnly) throw new ArgumentException("save-seed-read-only");
+        return new(Selected("SF2_SAVE_ROOT"), Selected("SF2_SAVE_NAMESPACE"),
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "..")), Validate);
+    }
+
+    private async Task ShowHistory(LocalSaveStore store, ScenarioDefinition definition, string state, string message,
+        Action<int, SlotRead> choose, Action cancel, bool continuing = false)
+    {
+        var page = await LoadEntry(() => store.ReadPage(_historyPage));
+        _historyPage = page.Index;
+        var choices = new List<(string, Action)>();
+        foreach (var (slot, read) in page.Rows)
+            choices.Add((Label(slot, read, definition, continuing), () => choose(slot, read)));
+        if (!continuing && page.NewSlot is int fresh)
+            choices.Add((GameText.Get("slot.create", fresh), () => choose(fresh, new(new(null, null), new(null, null)))));
+        if (page.Index > 0) choices.Add((GameText.Get("slot.previous"), () => ChangePage(-1)));
+        if (page.Index + 1 < page.Count) choices.Add((GameText.Get("slot.next"), () => ChangePage(1)));
+        choices.Add((GameText.Get("entry.cancel"), cancel));
+        string heading = _outputFile is null ? message : message + "\n" + GameText.Get("slot.output", System.IO.Path.GetFileName(_outputFile));
+        _slots!.Cancel = cancel;
+        _slots.ShowChoices(state, heading, choices.ToArray());
+        _slots.Select(Math.Clamp(_saveSelection, 0, choices.Count - 1));
+
+        async void ChangePage(int direction)
+        {
+            if (_entryLoading) return;
+            _historyPage += direction; _saveSelection = 0;
+            try { await ShowHistory(store, definition, state, message, choose, cancel, continuing); }
+            catch (ArgumentException error) { SaveError(error.Message); }
+            catch (OperationCanceledException) { }
+        }
+    }
 
     private void OpenSavePanel(bool overEntry = false)
     {
         if (_slots is not null) return;
-        _saveSelection = 0;
+        _saveSelection = 0; _historyPage = 0;
         if (_entry is not null && !overEntry) _entry.Hide();
         _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
         if (overEntry) _entry?.Setup(true);
@@ -99,6 +176,10 @@ public sealed partial class GameRoot
     private void QuitFromMenu() { CloseSavePanel(); RequestQuit(); }
     private static string Explain(string code) => code switch
     {
+        "save-record-changed" => GameText.Get("save.error.changed"),
+        "save-seed-read-only" => GameText.Get("save.error.read-only"),
+        "save-backup-unreadable" or "save-primary-invalid-use-recovery" => GameText.Get("save.error.protected"),
+        "save-seed-missing" => GameText.Get("save.error.seed-missing"),
         "save-location-unavailable" => GameText.Get("save.error.location"),
         "save-profile-unavailable" or "save-battle-profile-unavailable" or "save-battle-route-unavailable" => GameText.Get("save.error.profile"),
         "save-incompatible" or "save-version" or "save-kind" or "save-shape" or "save-player-layer" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
@@ -152,11 +233,9 @@ public sealed partial class GameRoot
             var offer = SaveOffer();
             if (offer.Error is { } error) { SaveError(error); return; }
             var store = Store(_session.Definition);
-            var slots = await LoadEntry(() => (First: store.Read(1), Second: store.Read(2)));
-            _slots!.ShowChoices("save-slots", GameText.Get(_session.Current.Active is ActiveBattle ? "save.battle-offer" : "save.offer", offer.Destination),
-                (Label(1, slots.First, _session.Definition), () => ConfirmSave(1, store, offer)),
-                (Label(2, slots.Second, _session.Definition), () => ConfirmSave(2, store, offer)), (GameText.Get("entry.cancel"), CloseSavePanel));
-            _slots.Select(_saveSelection);
+            await ShowHistory(store, _session.Definition, "save-slots",
+                GameText.Get(_session.Current.Active is ActiveBattle ? "save.battle-offer" : "save.offer", offer.Destination),
+                (slot, seen) => ConfirmSave(slot, seen, store, offer), CloseSavePanel);
         }
         catch (ArgumentException error) { SaveError(error.Message); }
         catch (OperationCanceledException) { }
@@ -176,6 +255,7 @@ public sealed partial class GameRoot
             "save-incompatible" or "save-version" or "save-kind" or "save-shape" => GameText.Get("slot.matching"),
             "save-storage-unavailable" => GameText.Get("slot.unreadable"),
             not null => GameText.Get("slot.unavailable"),
+            _ when read.BackupError is not null => GameText.Get("slot.unreadable"),
             _ => read.Backup is null ? GameText.Get("slot.empty") : GameText.Get("slot.primary-missing"),
         };
         return GameText.Get("slot.status", slot, status, read.Backup is null ? "" : forContinue && CanRecover(read)
@@ -226,10 +306,9 @@ public sealed partial class GameRoot
             round, name);
     }
 
-    private void ConfirmSave(int slot, LocalSaveStore store, HostSaveOffer offer)
+    private void ConfirmSave(int slot, SlotRead existing, LocalSaveStore store, HostSaveOffer offer)
     {
-        _saveSelection = slot - 1;
-        var existing = store.Read(slot);
+        _saveSelection = _slots!.SelectedIndex;
         _slots!.Cancel = BackToSave;
         _slots.ShowChoices("confirm-save", existing.Primary is not null ? GameText.Get("save.overwrite", slot)
             : GameText.Get("save.confirm", slot), (GameText.Get("entry.cancel"), BackToSave),
@@ -247,10 +326,10 @@ public sealed partial class GameRoot
                     if (session.Current.Active is ActiveBattle)
                     {
                         var capture = session.CaptureBattleSave(offer.SessionId, offer.Revision);
-                        return capture.Data is { } data ? store.Write(slot, data) : new SlotWrite(false, capture.Error);
+                        return capture.Data is { } data ? store.Write(slot, existing, data) : new SlotWrite(false, capture.Error);
                     }
                     var field = session.CaptureSave(offer.SessionId, offer.Revision);
-                    return field.Data is { } progress ? store.Write(slot, progress) : new SlotWrite(false, field.Error);
+                    return field.Data is { } progress ? store.Write(slot, existing, progress) : new SlotWrite(false, field.Error);
                 }, publishing: true, publicationObserved: written =>
                 { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
                 if (!result.Success) { SaveError(result.Error!); return; }
@@ -266,9 +345,11 @@ public sealed partial class GameRoot
         }
     }
 
-    private async void ShowContinue()
+    private void ShowContinue() => ShowContinue(loadSeed: SeedOnly);
+
+    private async void ShowContinue(bool loadSeed)
     {
-        if (_entryLoading) return;
+        if (_entryLoading || _input is null) return;
         OpenSavePanel(overEntry: _entry is not null);
         try
         {
@@ -280,34 +361,40 @@ public sealed partial class GameRoot
                 SaveError(read is ScenarioReadRejected rejected ? rejected.Failure.Code : "save-content-required"); return;
             }
             GameText.Bind(admitted.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
+            if (loadSeed)
+            {
+                var seed = await LoadEntry(() => LocalSaveStore.ReadSeed(_seedFile!));
+                if (seed.Record is null) SaveError(seed.Error ?? "save-seed-missing");
+                else RestoreRecord(seed.Record, admitted.Definition);
+                return;
+            }
             var store = Store(admitted.Definition);
-            var slots = await LoadEntry(() => (First: store.Read(1), Second: store.Read(2)));
+            await ShowHistory(store, admitted.Definition, "continue-slots", GameText.Get("save.choose"),
+                (slot, seen) => ContinueSlot(slot, seen, store, admitted.Definition), CloseSavePanel, continuing: true);
             _saveNeedsInspection = false;
-            _slots!.ShowChoices("continue-slots", GameText.Get("save.choose"),
-                (Label(1, slots.First, admitted.Definition, forContinue: true), () => ContinueSlot(1, store, admitted.Definition)),
-                (Label(2, slots.Second, admitted.Definition, forContinue: true), () => ContinueSlot(2, store, admitted.Definition)), (GameText.Get("entry.cancel"), CloseSavePanel));
         }
         catch (ArgumentException error) { SaveError(error.Message); }
         catch (OperationCanceledException) { }
     }
 
-    private async void ContinueSlot(int slot, LocalSaveStore store, ScenarioDefinition definition)
+    private async void ContinueSlot(int slot, SlotRead seen, LocalSaveStore store, ScenarioDefinition definition)
     {
         try
         {
             if (_entryLoading || !EnsureWindowSupport()) return;
             var read = await LoadEntry(() => store.Read(slot));
+            if (!read.Matches(seen)) { SaveError("save-record-changed"); return; }
             if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
             if (read.Backup is { } backup && CanRecover(read))
             {
                 _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery-record", Label(slot,
-                    new(backup, null, null, null), definition)),
+                    new(read.Previous, new(null, null)), definition)),
                     (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.recover"), async () =>
                     {
                         if (_entryLoading || !EnsureWindowSupport()) return;
                         try
                         {
-                            var recovery = await LoadEntry(() => store.Recover(slot), publishing: true,
+                            var recovery = await LoadEntry(() => store.Recover(slot, read), publishing: true,
                                 publicationObserved: written =>
                                 { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
                             if (recovery.Record is null) SaveError(recovery.Error!);

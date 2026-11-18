@@ -118,15 +118,23 @@ public sealed partial class GameRoot : Node
         for (int index = 0; index < arguments.Length; index++)
         {
             string option = arguments[index];
-            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--input-settings"))
+            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--input-settings" or "--load-save" or "--save-output"))
             { Fail("unknown-startup-option", "Unknown game option."); return; }
             if (options.ContainsKey(option))
             { Fail("duplicate-startup-option", "Each game option may appear only once."); return; }
-            if (option != "--input-settings" && options.Keys.Any(key => key != "--input-settings"))
-            { Fail("conflicting-startup-options", "Select one session entry."); return; }
             if (++index >= arguments.Length || string.IsNullOrWhiteSpace(arguments[index]) || arguments[index].StartsWith("--", StringComparison.Ordinal))
             { Fail("missing-startup-path", "The selected game option requires a path."); return; }
             options.Add(option, arguments[index]);
+        }
+        bool diagnostic = options.Keys.Any(key => key is "--authored-package" or "--private-battle-start" or "--private-exploration-start");
+        if (diagnostic && options.Keys.Count(key => key != "--input-settings") != 1)
+        { Fail("conflicting-startup-options", "Select one session entry."); return; }
+        try { ConfigureSaveFiles(options); }
+        catch (Exception error) when (error is ArgumentException or System.IO.IOException or NotSupportedException)
+        {
+            GameText.Initialize(OS.GetLocaleLanguage() == "zh" ? "zh-CN" : "en");
+            Fail("invalid-save-paths", "Use distinct save files outside the player namespace and settings files.");
+            return;
         }
         try { LoadPreferences(options.GetValueOrDefault("--input-settings")); }
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or
@@ -139,7 +147,11 @@ public sealed partial class GameRoot : Node
             BeginSource(new PrivateExplorationReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"), explorationStart,
                 PrivateBattle(Selected("SF2_PRIVATE_CONTROLLED_START"))));
         else if (options.TryGetValue("--authored-package", out string? authored)) BeginSource(new AuthoredScenarioPackageReader(authored));
-        else ShowEntry();
+        else
+        {
+            ShowEntry();
+            if (_seedFile is not null) ShowContinue(loadSeed: true);
+        }
     }
 
     private static string Selected(string name) => System.Environment.GetEnvironmentVariable(name) ?? "";
