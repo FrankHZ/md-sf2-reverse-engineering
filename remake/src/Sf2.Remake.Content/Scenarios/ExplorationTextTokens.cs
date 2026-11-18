@@ -17,6 +17,7 @@ public static class ExplorationTextTokens
             else if (value == "{CLEAR}") tokens.Add(new(ExplorationTextTokenKind.Clear, value));
             else if (value == "{LEADER}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value, 0));
             else if (value == "{NAME}") tokens.Add(new(ExplorationTextTokenKind.MemberName, value));
+            else if (value == "{ITEM}") tokens.Add(new(ExplorationTextTokenKind.ItemName, value));
             else if (value == "{CLASS}") tokens.Add(new(ExplorationTextTokenKind.ClassName, value));
             else if (value.StartsWith("{NAME;", StringComparison.Ordinal) && value.EndsWith('}') &&
                 int.TryParse(value.AsSpan(6, value.Length - 7), System.Globalization.NumberStyles.None,

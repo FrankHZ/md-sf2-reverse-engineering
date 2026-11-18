@@ -75,6 +75,27 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
     # Other chapters call these services with different operands and continuations.
     # They retain their existing boundaries until their callers are admitted.
     map_path = "disasm/data/maps/entries/"
+    if (op == "bsr.w" and args == ["ReceiveMandatoryItem"]
+            and relative == map_path + "map06/mapsetups/s2_entityevents_701.asm"):
+        test, branch = rows[index:index + 2]
+        if not (registers.get("d1") == 0 and test["opcode"] == "btst"
+                and _tokens(test["operandText"]) == ["#0", "d0"]
+                and branch["opcode"] == "bne.s"):
+            raise ValueError("unsupported mandatory-item result/option")
+        compiler.sources.update(("disasm/code/common/stats/iteminventory.asm",
+                                 "disasm/code/common/stats/itemstats.asm"))
+        from sf2tool.remake_exploration_joins import music_input_return
+        from sf2tool.remake_exploration_scene import sound_operation
+
+        target = compiler.compile(branch["operandText"]).lower().replace("_", "-")
+        return [
+            {"op": "try-add-party-item", "item": registers["d0"],
+             "fullTarget": {"program": target, "instruction": 0}},
+            sound_operation("MUSIC_ITEM"),
+            {"op": "show-text", "text": 213, "mode": "single", "speaker": None,
+             "useItemReceipt": True, "waitForAcknowledgement": False, "explicitWindows": True},
+            *music_input_return(), {"op": "wait-text-input"}, {"op": "close-text"},
+        ], index + 2
     if (op in ("bsr.s", "bsr.w") and args == ["sub_5A278"]
             and relative in (map_path + "map30/mapsetups/s2_entityevents.asm",
                              map_path + "map30/mapsetups/s3_zoneevents.asm")):
@@ -89,6 +110,7 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
                     "entity": None, "position": None}, index
         return sound_operation(args[0]), index
     if op != "jsr" or relative not in (
+        map_path + "map06/mapsetups/s2_entityevents_701.asm",
         map_path + "map08/mapsetups/s5_itemevents.asm",
         map_path + "map09/mapsetups/s2_entityevents.asm",
         map_path + "map22/mapsetups/s5_itemevents.asm",

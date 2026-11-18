@@ -189,17 +189,24 @@ def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_member
 
 
 def build(
-    rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None
+    rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None,
+    scratch_root: Path | None = None,
 ) -> dict:
     if battle not in range(1, 24):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
-    if not output.is_relative_to(root / "local") or output.exists():
+    writable = scratch_root.resolve() if scratch_root is not None else root / "local"
+    if (not output.is_relative_to(writable) or output == writable or output.exists()
+            or output.is_relative_to(upstream.resolve()) or output == rom_path.resolve()
+            or selection is not None and output == selection.resolve()):
         raise ValueError("output must be a new worktree-local ignored directory")
-    ignored = subprocess.run(["git", "check-ignore", "--quiet", str(output)], cwd=root, check=False)
-    if ignored.returncode != 0:
-        raise ValueError("output is not ignored")
+    if output.is_relative_to(root):
+        ignored = subprocess.run(
+            ["git", "check-ignore", "--quiet", str(output)], cwd=root, check=False
+        )
+        if ignored.returncode != 0:
+            raise ValueError("output is not ignored")
     commit = subprocess.check_output(
         ["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True
     ).strip()

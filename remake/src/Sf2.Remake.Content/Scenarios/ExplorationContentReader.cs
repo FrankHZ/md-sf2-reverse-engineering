@@ -584,6 +584,9 @@ internal static class ExplorationContentReader
             case "branch-pack-space":
                 Object(row, opcode, "op", "actor", "target");
                 return new BranchPackSpace(new(Id(row, "actor")), RequiredLocation(row.GetProperty("target")));
+            case "try-add-party-item":
+                Object(row, opcode, "op", "item", "fullTarget");
+                return new TryAddPartyItem((byte)Number(row, "item", 0, 126), RequiredLocation(row.GetProperty("fullTarget")));
             case "try-add-actor-item":
                 Object(row, opcode, "op", "actor", "item");
                 return new TryAddActorItem(new(Id(row, "actor")), (byte)Number(row, "item", 0, 126));
@@ -613,7 +616,7 @@ internal static class ExplorationContentReader
             case "text-cursor": Object(row, opcode, "op", "text"); return new SetTextCursor(Number(row, "text", 0, 65534));
             case "show-text":
                 ObjectOptional(row, opcode, ["op", "mode", "speaker"],
-                    "speakerFlags", "nameMember", "text", "explicitWindows", "waitForAcknowledgement", "narration", "useEventSpeaker");
+                    "speakerFlags", "nameMember", "text", "explicitWindows", "waitForAcknowledgement", "narration", "useEventSpeaker", "useItemReceipt");
                 string mode = Text(row, "mode"); Require(mode is "single" or "continued", "text-mode", "program.mode");
                 bool narration = row.TryGetProperty("narration", out _) && Boolean(row, "narration");
                 Require(!narration || row.GetProperty("speaker").ValueKind == JsonValueKind.Null &&
@@ -625,7 +628,7 @@ internal static class ExplorationContentReader
                     !row.TryGetProperty("waitForAcknowledgement", out _) || Boolean(row, "waitForAcknowledgement"),
                     row.TryGetProperty("explicitWindows", out _) && Boolean(row, "explicitWindows"),
                     row.TryGetProperty("nameMember", out _) ? Number(row, "nameMember", 0, 29) : null,
-                    row.TryGetProperty("text", out _) ? Number(row, "text", 0, 65535) : null, narration);
+                    row.TryGetProperty("text", out _) ? Number(row, "text", 0, 65535) : null, narration, row.TryGetProperty("useItemReceipt", out _) && Boolean(row, "useItemReceipt"));
             case "open-portrait":
                 ObjectOptional(row, opcode, ["op", "entity", "flags"], "useEventSpeaker");
                 return new OpenPortrait(row.GetProperty("entity").ValueKind == JsonValueKind.Null ? null : new EntityRef(Id(row, "entity")),
@@ -697,7 +700,7 @@ internal static class ExplorationContentReader
             case "new-entity":
                 Object(row, opcode, "op", "entity", "position", "facing", "sprite", "actions");
                 return new AddMapEntity(new(Id(row, "entity")), Position(row.GetProperty("position")),
-                    (byte)Number(row, "facing", 0, 3), Number(row, "sprite", 30, 255), Actions(row));
+                    (byte)Number(row, "facing", 0, 3), Number(row, "sprite", 0, 255), Actions(row));
             case "restore-member-resource":
                 Object(row, opcode, "op", "member", "hp");
                 return new RestoreMemberResource(Number(row, "member", 0, 29), Boolean(row, "hp"));
@@ -910,6 +913,7 @@ internal static class ExplorationContentReader
                     case JumpProgram jump: Target(jump.Target); break;
                     case BranchHasItem branch: Target(branch.Target); break;
                     case BranchPackSpace branch: Target(branch.Target); break;
+                    case TryAddPartyItem add: Target(add.FullTarget); break;
                     case BranchAlive branch: Target(branch.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
                     case BranchInteractionFacing branch: Target(branch.Target); break;

@@ -111,7 +111,7 @@ _COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 _ROM = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 _CONTROL = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR)\}")
 _TOKEN = re.compile(r"\{[^{}]+\}")
-_SUPPORTED = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR|LEADER|NAME(?:;[0-9]+)?|CLASS)\}")
+_SUPPORTED = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR|LEADER|NAME(?:;[0-9]+)?|CLASS|ITEM)\}")
 
 
 def _require(ok: bool, message: str) -> None:
@@ -232,6 +232,14 @@ def derive(args: argparse.Namespace) -> dict:
         field_items = field_item_ids(world["world"]) - {127}
     if args.scope == "current" and any(row["id"] == "map-30" for row in world["world"]["maps"]):
         field_texts.update(range(1705, 1733))
+    if args.scope == "current" and any(
+        row["id"] == "cs-55bee" for row in world["world"]["programs"]
+    ):
+        # New Granseal return: existing town callers, audience, Janet and the
+        # mandatory gift's actual recipient/item acknowledgement.
+        field_texts.update(range(1021, 1136))
+        field_texts.update(range(1237, 1290))
+        field_texts.add(213)
     hassan = args.scope == "current" and any(row["id"] == "map-9" for row in world["world"]["maps"])
     if hassan:
         field_texts.update(range(2513, 2520))
@@ -479,6 +487,12 @@ def derive(args: argparse.Namespace) -> dict:
         name: (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
         for name, value in files.items()
     }
+    if args.scope == "current":
+        # The growing campaign needs no larger reader budget: omit transport
+        # whitespace while retaining the exact selected messages and identities.
+        encoded["world.zh-CN.json"] = (
+            json.dumps(catalog, ensure_ascii=False, separators=(",", ":")) + "\n"
+        ).encode("utf-8")
     _require(
         len(encoded["world.zh-CN.json"]) <= 256 * 1024
         and len(selected)

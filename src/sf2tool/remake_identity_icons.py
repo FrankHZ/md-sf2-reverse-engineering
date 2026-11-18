@@ -59,7 +59,7 @@ def field_item_ids(world: dict) -> set[int]:
     }
     ids.update(instruction["item"] for program in world.get("programs", [])
                for instruction in program["instructions"]
-               if instruction["op"] == "try-add-actor-item")
+               if instruction["op"] in ("try-add-actor-item", "try-add-party-item"))
     for field in world["maps"]:
         for setup in (field, *field.get("setups", [])):
             search = setup.get("search")

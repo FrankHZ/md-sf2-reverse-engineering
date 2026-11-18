@@ -44,6 +44,7 @@ internal static class MapTransfer
                     case BranchAlive branch: Check(branch.Target); break;
                     case BranchHasItem branch: Check(branch.Target); break;
                     case BranchPackSpace branch: Check(branch.Target); break;
+                    case TryAddPartyItem add: Check(add.FullTarget); break;
                     case BranchFlag branch: Check(branch.Target); break;
                     case BranchInteractionFacing branch: Check(branch.Target); break;
                     case BranchEntityCoordinates branch: Check(branch.Target); break;

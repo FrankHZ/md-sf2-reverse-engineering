@@ -75,12 +75,15 @@ public sealed class DisplayCatalog
         {
             if (!translated) return binding.CustomName ?? binding.CanonicalName;
             bool isClass = tokens[index].Kind == ExplorationTextTokenKind.ClassName;
-            var result = ResolveName(isClass ? "name.class" : "name.ally", isClass ? binding.ClassId : binding.Member,
+            bool isItem = tokens[index].Kind == ExplorationTextTokenKind.ItemName;
+            string category = isItem ? "name.item" : isClass ? "name.class" : "name.ally";
+            int? identity = isItem ? binding.ItemId : isClass ? binding.ClassId : binding.Member;
+            var result = ResolveName(category, identity,
                 binding.CanonicalName, isClass ? null : binding.CustomName);
             nameReason ??= result.Reason;
             if (result.Reason is { } reason)
             {
-                string key = isClass ? $"name.class/{binding.ClassId?.ToString() ?? "unknown"}" : $"name.ally/{binding.Member?.ToString() ?? "unknown"}";
+                string key = $"{category}/{identity?.ToString() ?? "unknown"}";
                 var issue = new DisplayDiagnostic(reason, key);
                 if (!nameDiagnostics.Contains(issue)) nameDiagnostics.Add(issue);
             }
@@ -98,7 +101,7 @@ public sealed class DisplayCatalog
             if (token.Kind == ExplorationTextTokenKind.Literal) output.Append(token.Value);
             else if (token.Kind == ExplorationTextTokenKind.Newline) output.Append(reflow && preservedBreaks?.Contains(original) != true ?
                 SourceTextLayout.Break(tokens, i, translated ? Locale : "en", Boundary(i - 1), Boundary(i + 1)) : "\n");
-            else if (token.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
+            else if (token.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName or ExplorationTextTokenKind.ItemName)
             {
                 var binding = Binding(i);
                 if (binding is null) return new("Text unavailable (display-operands).", "en", "display-operands");

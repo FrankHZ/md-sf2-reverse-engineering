@@ -66,6 +66,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data)
     {
+        if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
+            throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
+        if (data.Recipe == "new-granseal-return" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if ((data.Map == "map-30" || data.Map == "map-33" && data.Flags.Any(flag => flag is 785 or 786 or 787)) && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if (data.Recipe == "evil-spirit-shrine" && data.EgressMap == "map-9") return;
@@ -111,6 +114,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     {
         var map = player.Map;
         if (!definition.Exploration!.Maps.TryGetValue(map, out var content)) Fail();
+        if (map.Value is "map-6" or "map-7" or "map-73" && flags.Contains(802) &&
+            content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("new-granseal-return", player, "New Granseal, return journey");
         if (map.Value == "map-3")
         {
             var selected = content!.SelectedSetup(flags);
@@ -187,12 +193,15 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     }
 
     public SavedFieldScene? CaptureScene(ScenarioDefinition definition, ExplorationState world, IReadOnlyList<int> flags) =>
+        world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
         world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
 
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
+        if (scene is not null && location.Anchor.Map.Value is "map-6" or "map-7")
+            return Sf2NewGransealRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         if (scene is not null && location.Anchor.Map.Value == "map-30")
             return Sf2MineRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         if (scene is not null)

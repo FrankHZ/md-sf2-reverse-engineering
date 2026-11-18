@@ -11,7 +11,7 @@ from sf2tool.h2.battle_ai import _equates
 from sf2tool.h2.battle_global_data import _arguments, _integer, _statements, _tokens
 from sf2tool.remake_exploration_actions import action_stream, inline_actions, walking_actions
 from sf2tool.remake_exploration_items import inventory_operation
-from sf2tool.remake_exploration_joins import join_selector, join_service
+from sf2tool.remake_exploration_joins import join_selector, join_service, music_input_return
 from sf2tool.remake_exploration_scene import (
     graphics_helper,
     portrait_operations,
@@ -223,7 +223,7 @@ class OriginalPrograms:
                 continue
             if found := inventory_operation(self, relative, op, args, registers, rows, index):
                 operation, index = found
-                result.append(operation)
+                result.extend(operation if isinstance(operation, list) else [operation])
             elif lowered_view := view_operation(self, op, args):
                 result.append(lowered_view)
             elif op == "flashScreenWhite" and 24 <= self.number(args[0]) < 32:
@@ -440,6 +440,10 @@ class OriginalPrograms:
                         "member": self.number(args[0]),
                     }
                 )
+            elif (op == "executeSubroutine" and args == ["j_FadeOut_WaitForP1Input"]
+                  and relative == "disasm/data/maps/entries/map07/mapsetups/scripts.asm"):
+                self.sources.add("disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm")
+                result.extend(music_input_return())
             elif op == "reloadEntities" and (
                 variant := re.fullmatch(r"ms_map(\d+)_flag(\d+)_Entities", args[0])
             ):
@@ -651,7 +655,6 @@ class OriginalPrograms:
             elif op == "newEntity" and (
                 128 <= self.number(args[0]) < 160
                 or self.number(args[0]) < 30
-                and args[4] == "NOTHING_BYTE"
             ):
                 self.sources.add("disasm/code/common/scripting/entity/entityfunctions_1.asm")
                 result.append(

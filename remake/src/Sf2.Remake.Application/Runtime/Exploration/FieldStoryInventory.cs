@@ -6,6 +6,11 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 // Direct story services use the named combatant, without joined/deployed/HP or party-space gates.
 internal static class FieldStoryInventory
 {
+    internal static PartyMemberDetails? Recipient(ScenarioDefinition definition, SessionSnapshot current) =>
+        PartyDetailsQuery.Query(definition, current)!.Members
+            .OrderBy(member => member.Deployment?.Initialization?.AllyPartyMember ?? member.Deployment?.ProcessingOrder ?? int.MaxValue)
+            .FirstOrDefault(member => FieldInventory.Loadout(member).Items.Any(word => (word & 127) == 127));
+
     private static (BattleActorStartInput Actor, BattleSourceLoadout Loadout) Pack(
         ScenarioDefinition definition, SessionSnapshot current, ActorRef actor)
     {

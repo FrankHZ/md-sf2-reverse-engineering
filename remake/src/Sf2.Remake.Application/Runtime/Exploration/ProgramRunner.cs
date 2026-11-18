@@ -242,6 +242,17 @@ internal static class ProgramRunner
                     case TryAddActorItem add:
                         active = FieldStoryInventory.Add(definition, current, add.Actor, add.Item);
                         break;
+                    case TryAddPartyItem add:
+                        var recipient = FieldStoryInventory.Recipient(definition, current);
+                        if (recipient is null) story = story.Copy(add.FullTarget, clearItemReceipt: true);
+                        else
+                        {
+                            int recipientMember = recipient.Deployment?.Initialization?.AllyPartyMember
+                                ?? throw new BattleRuleException("field-recipient-identity", "program.item", true);
+                            active = FieldStoryInventory.Add(definition, current, recipient.Carried.Actor, add.Item);
+                            story = story.Copy(story.Cursor, itemReceipt: new(recipientMember, add.Item));
+                        }
+                        break;
                     case RemovePartyItem remove:
                         active = FieldItemEvents.Remove(definition, current, remove.Item);
                         break;
