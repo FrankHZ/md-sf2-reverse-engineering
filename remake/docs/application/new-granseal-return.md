@@ -81,7 +81,8 @@ to the source idle16. This is an explicit restore limit, not exact preservation 
 register. Thinking RNG, party statistics,
 packs/equipment, flags, names, gold, depot/deals, counter, raft and return town remain unchanged.
 Both Map73 exit payloads round-trip completely equal. Fresh805 castle also cold-continues successfully.
-The predecessor's unchanged mine-return slots upgrade16 records to17: every retained ally record and\nboth RNG words remain equal; only the compatibility revision and newly initialized Janet record differ.
+The predecessor's unchanged mine-return slots upgrade16 records to17: every retained ally record and
+both RNG words remain equal; only the compatibility revision and newly initialized Janet record differ.
 
 ## Optional callers and next consumer
 
@@ -92,7 +93,9 @@ F802 talk branches and F802 stock are source-derived; Search placements retain t
 The current observations cover inventor, the F802 item shop, town route conversation1123 and fresh
 royal callers. Existing Church, weapon shop and Search engines are reused. Other resident talks,
 weapon-counter transactions, church services and every optional Search are statically admitted but
-not all naturally observed here. Earlier mine optional1705–1710 limits remain unchanged. The castle headquarters warp at (19,2)\nretains its existing explicit unavailable frontier to the Tactical Base; it is not claimed as a\nplayable optional destination by this return slice.
+not all naturally observed here. Earlier mine optional1705–1710 limits remain unchanged. The castle headquarters warp at (19,2)
+retains its existing explicit unavailable frontier to the Tactical Base; it is not claimed as a
+playable optional destination by this return slice.
 
 Janet's actual ACHR sprite12 uses palette0; Elric's existing archer binding is not a substitute.
 Maintained ROM/source preparation generates her weapon45/46/47 bodies and field sprite45, mounted
