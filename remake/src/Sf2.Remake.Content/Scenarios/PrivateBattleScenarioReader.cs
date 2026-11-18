@@ -45,7 +45,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         catch (FormatException) { return Rejected("invalid-definition-field", "definitions"); }
     }
 
-    internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, PrivateBattleStart start, bool campaign = false)
+    internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, PrivateBattleStart start, bool campaign = false,
+        bool bindRepeatEnemies = false)
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
@@ -71,7 +72,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             int order = enemyOrder++;
             var enemy = definitions.Enemies[row.IdentityExpression];
             var deployment = Enemy(definitions, row, order, enemy);
-            if (campaign && encounter.Battle.Id == 19)
+            // Keep the base-roster candidates for older packages without an explicit candidate list.
+            if (campaign && (bindRepeatEnemies || encounter.Battle.Id == 19))
             {
                 var replacements = definitions.Enemies.Values.Where(other => other.Id > enemy.Id &&
                     RepeatEnemySelection.Admits(deployment.Definition.Mover, other.Id)).ToDictionary(other => other.Id, other => Enemy(definitions, row, order, other));

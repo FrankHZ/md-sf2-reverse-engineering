@@ -360,25 +360,33 @@ internal static class ExplorationContentReader
                 null, null, null, TriggerX: route.TryGetProperty("triggerX", out _) ? Number(route, "triggerX", 0, 63) : null,
                 TriggerY: route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null, Unavailable: true);
         }
-        ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"], "load", "outcome", "triggerX", "triggerY");
+        ObjectOptional(route, "battle-route", ["encounter", "unlockedFlag", "completedFlag", "introFlag", "before", "start"],
+            "load", "outcome", "triggerX", "triggerY", "repeatUpgradeLevel");
         string encounter = Id(route, "encounter");
         Require(battle.Definition.Encounters.ContainsKey(encounter), "missing-encounter", "map.battle");
-        return new(encounter, NullableNumber(route, "unlockedFlag", 65535), NullableNumber(route, "completedFlag", 65535),
+        int? completed = NullableNumber(route, "completedFlag", 65535);
+        byte? repeatUpgradeLevel = null;
+        if (route.TryGetProperty("repeatUpgradeLevel", out _))
+        {
+            Require(battle.Definition.PrivateDefinitions is not null && completed.HasValue,
+                "repeat-upgrade-route", "map.battle.repeatUpgradeLevel");
+            repeatUpgradeLevel = (byte)Number(route, "repeatUpgradeLevel", 1, byte.MaxValue);
+        }
+        return new(encounter, NullableNumber(route, "unlockedFlag", 65535), completed,
             NullableNumber(route, "introFlag", 65535), Location(route.GetProperty("before")), Location(route.GetProperty("start")),
             route.TryGetProperty("load", out var load) ? Location(load) : null,
             route.TryGetProperty("outcome", out var outcome) ? ReadOutcome(outcome, map) : null,
             route.TryGetProperty("triggerX", out _) ? Number(route, "triggerX", 0, 63) : null,
             route.TryGetProperty("triggerY", out _) ? Number(route, "triggerY", 0, 63) : null,
-            // DetermineBattleUpgrade first has a positive quotient at battle index + 10.
-            // Each encounter supplies its own source index and separately admitted content.
-            RepeatUpgradeLevel: battle.Definition.PrivateDefinitions is null ? null : encounter switch
+            // Older private packages predate the explicit route field.
+            RepeatUpgradeLevel: repeatUpgradeLevel ?? (battle.Definition.PrivateDefinitions is null ? null : encounter switch
             {
                 "battle-14" => 24,
                 "battle-17" => 27,
                 "battle-19" => 29,
                 "battle-21" => 31,
                 _ => null,
-            });
+            }));
     }
 
     private static ExplorationOutcomeRoute ReadOutcome(JsonElement row, MapId battleMap)
