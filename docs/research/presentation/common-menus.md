@@ -707,6 +707,29 @@ and frame timing, economic meaning, save/load/SRAM/map reload/cross-process pers
 Raise/Promotion/Save, other statuses, inventory-capacity/equipment-selection UI, rendered outcomes,
 and remake choices remain **Unknown**.
 
+### Church observer failures
+
+**Confirmed:** The [controlled failure procedure](../system/technical-services.md#reproducing-the-controlled-failures)
+used the Raise and Cure v1 fixtures above. Each callback exception reached the owner diagnostic
+validator, produced one terminal failure row, removed an existing partial output, and exited 1
+in both EmuHawk and the CLI. In both observers the failure handler reads back scoped state, removes
+output and unregisters callbacks before writing the diagnostic. Python disposed of each session ROM.
+The registered installation and its original settings and user database passed the post-run checks.
+
+| Generated-config change | Reached callback and restoration readback |
+| --- | --- |
+| Raise. Set `c.static.ram.hpCap = 201`. | The equality-cost unpromoted case reached `j-increase-current-hp-entry` at `0x8110` after DecreaseGold. The real HP operand tripped the cap guard. Gold, combatants, mapsprites, target list, dialogue, portrait and generated spans read back successfully. The first frame mismatch was A6. All 33 registered IDs were successfully unregistered. |
+| Cure. Set `c.static.entryAddresses.poisonDo = c.static.entryAddresses.stunDo`. | Both logical roles now registered at the stun PC. The original poison commit ran without the poison admission notification. At `0x8160`, `j-decrease-gold-entry` rejected the missing pending transaction in the equality-cost poison case. Gold, combatant, target list, dialogue, portrait and generated spans read back successfully. The terminal trampoline had not executed. All 42 registered IDs were successfully unregistered. |
+
+The earlier seven- and eleven-case successful fixtures cover the helper order, executed terminal
+trampoline, bootstrap-frame readback and exact success tail. The two failures above occurred before
+that trampoline and both reported `a6a7Balance=false`. The existing `assert_lua_role_contract()`
+in each CLI owner still checks the single registration site and dispatch loop. The Cure fault
+demonstrates coalesced registration. Execution order of both roles at the artificial stun PC remains
+**Unknown** because the run stopped at the preceding poison helper. Raise case-watchdog expiry and
+case-result A6/A7 imbalance also remain **Unknown**. The native-harness checks retain the three
+corresponding Raise messages pending a direct observation of those branches.
+
 ## Church Save Lifecycle
 
 **Confirmed — bounded Church Save H3 seam.** The five-case
