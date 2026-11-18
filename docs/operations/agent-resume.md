@@ -30,11 +30,11 @@ and dependencies are worktree and handoff state, not a second tracked source of 
 - Godot 4.7.2 .NET/C# is the accepted Phase 4 baseline. The user explicitly authorized a bounded
   Phase 4 implementation start on 2026-08-28 under ADR 0016. [`remake/`](../../remake/) now contains
   bounded Domain, Application, validated Content, and a thin Godot host for authored packages and the
-  connected private-local world through Battles01–08 and the
-  [New Granseal handoff](../../remake/docs/application/battle08-new-granseal.md). The finite Map58 return
-  savepoint supports replay. The year-later castle scene is the next chapter. Its
-  [campaign agreement](../../remake/docs/application/pre-voyage-campaign.md) owns this boundary and its acceptance evidence. Its
-  [capability owner](../../remake/docs/capability-status.md) records
+  connected private-local world through the accepted bilingual Creed Stage1 endpoint: walking on mine
+  exterior Map68 (57,25), facing Up, with F69 set. The [Creed chapter](../../remake/docs/application/creed-recruitment.md)
+  owns this route; the [engine and save audit](../../remake/docs/evidence/creed-stage1-engine-save-audit.md)
+  records its next-consumer boundary. Mine Map30 recovery and Cannon content remain Stage2. The finite
+  Map58 return savepoint supports earlier replay. The [capability owner](../../remake/docs/capability-status.md) records
   what is runnable, diagnostic, admitted-but-unconsumed, Unsupported, or Unknown.
 - Research coverage, evidence gaps and cadence belong to
   [`research/source-coverage.md`](../research/source-coverage.md); work scheduling and assignments

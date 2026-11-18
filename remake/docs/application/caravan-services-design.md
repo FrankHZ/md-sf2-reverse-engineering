@@ -487,8 +487,9 @@ by [its reproduction route](cotton-balloon-floor-world.md#confirmed-remake-obser
 The implementation bundles above retain their descendants. Copy selected seeds to disposable review
 namespaces, use the compatible candidate bundle and matching localization, and visit the actual
 NPC; do not mistake a predecessor binary's capability boundary for candidate behavior.
-Creed's post-recruit ordinary slot must come from the chapter implementation when accepted; none is
-invented here. At each relevant boundary verify:
+The accepted [Creed chapter](creed-recruitment.md) supplies the post-recruit ordinary slot and actual
+overworld vehicle caller into this existing service; its current route is documented under
+[overworld vehicle entry](#current-overworld-vehicle-entry). At each relevant boundary verify:
 
 - top/nested cancellation, held Confirm, stale command and failed transaction retain state/control;
 - different valid party/item choices work, including a dead reserve and full packs, not just one
@@ -498,9 +499,8 @@ invented here. At each relevant boundary verify:
   victory, defeat/EGRESS, battle Save/Continue and a later depot visit retain storage and reserves;
 - bilingual names, prompts, failure reasons and actual input reach the same command outcomes.
 
-**Unknown:** ordinary original transaction timing/persistence and the future remake
-Creed-to-next-service natural route. The latter requires the chapter's source-owned
-transport/follower/return path, not a new global Caravan hotkey. Wider item effects and equipment
-lifecycles are known unsupported remake capabilities, not missing original static evidence.
-Later recruitment variants, transport UI access, debug BattleTest entry, blacksmith, shop Deals/Repair,
-church promotion and original SRAM compatibility are outside this bounded service delivery.
+**Unknown:** ordinary original transaction timing/persistence. Wider item effects and equipment
+lifecycles are known unsupported remake capabilities, not missing original static evidence. A global
+Caravan hotkey, debug BattleTest entry, blacksmith, shop Deals/Repair, church promotion and original
+SRAM compatibility are outside this bounded service delivery. Later recruitment variants remain
+with their source and optional chapter owners.
