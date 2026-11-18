@@ -21,11 +21,11 @@ sequential delivery plan.
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
 [current composed boundary](./docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
-The private-local remake connects Battles01–08, their admitted field returns and recruitment,
-and the damaged-ship deck through the [New Granseal handoff](./remake/docs/application/battle08-new-granseal.md). Finite safe
-savepoints include the Map58 Battle07 return. The [campaign owner](./remake/docs/application/pre-voyage-campaign.md)
-records this playable scope and its separate acceptance evidence; it does not expand the original
-Map3→Battle01 milestone's proof boundary. The next chapter begins with the year-later castle scene.
+The private-local remake's accepted bilingual Stage1 route ends walking on mine exterior Map68 (57,25),
+facing Up with F69 set. The [Creed chapter](./remake/docs/application/creed-recruitment.md) and its
+[engine/save audit](./remake/docs/evidence/creed-stage1-engine-save-audit.md) own the route and limits;
+mine Map30 recovery and Cannon content remain Stage2. This playable scope does not expand the original
+Map3→Battle01 milestone's proof boundary.
 
 Current presentation includes continuous exploration with contextual Talk, a shared 1920×1080 world
 with 96px cells, blue/gold story dialogue, reachable battle tiles, image-based HP/MP cards, battle

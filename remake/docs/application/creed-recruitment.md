@@ -4,12 +4,13 @@
 
 Rigor is **High** under [the campaign agreement](remaining-campaign-risk-baseline.md) and
 [Issue1876](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1876): membership,
-formation, temporary followers and changed map populations persist across chapters. The candidate
-continues the unchanged English and Simplified Chinese ordinary
+formation, temporary followers and changed map populations persist across chapters. The accepted
+bilingual Stage1 route continues the unchanged English and Simplified Chinese ordinary
 [consultation return](evil-spirit-consultation.md), accepts Eric or Karna, receives the Fairy,
 completes Oddler staying, leaves and reenters the mansion, and reaches mine exterior Map68 (57,25).
-Independent main-gate acceptance remains required. Mine recovery, Cannon, Dynamite and North Cliff
-are Stage2; entering Map30 is still an explicit unsupported frontier.
+The [engine and save audit](../evidence/creed-stage1-engine-save-audit.md) records the accepted
+consumer boundaries. Mine Map30 recovery and Cannon dialogue, Dynamite, and North Cliff remain
+Stage2; entering Map30 is still an explicit unsupported frontier.
 
 The registered private `handoffs/issue1876` bundle contains `Play-en.cmd` / `Play-zh-CN.cmd`,
 ordinary stage slots, recipes and receipts. Continue → Slot1 starts from the selected ordinary seed.
