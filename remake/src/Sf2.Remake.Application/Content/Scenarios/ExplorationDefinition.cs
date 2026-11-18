@@ -48,10 +48,12 @@ public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster R
 public sealed class ExplorationAudio
 {
     private readonly byte[] _pcm;
-    internal ExplorationAudio(int command, int timerB, int sampleRate, int channels, byte[] pcm, string pcmSha256, int? loopBegin, int? loopEnd, int? modernEndStep = null)
-    { Command = command; TimerB = timerB; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; PcmSha256 = pcmSha256; LoopBegin = loopBegin; LoopEnd = loopEnd; ModernEndStep = modernEndStep; }
+    internal ExplorationAudio(int command, int timerB, int sampleRate, int channels, byte[] pcm, string pcmSha256, int? loopBegin, int? loopEnd, int? modernEndStep = null, int? defaultForCommand = null)
+    { Command = command; TimerB = timerB; SampleRate = sampleRate; Channels = channels; _pcm = [.. pcm]; PcmSha256 = pcmSha256; LoopBegin = loopBegin; LoopEnd = loopEnd; ModernEndStep = modernEndStep; DefaultForCommand = defaultForCommand; }
     public int Command { get; }
     public int TimerB { get; }
+    // Explicit remake presentation choice on this existing finite same-command resource.
+    public int? DefaultForCommand { get; }
     public string PcmSha256 { get; }
     public int SampleRate { get; }
     public int Channels { get; }
@@ -61,6 +63,26 @@ public sealed class ExplorationAudio
     // Normalized logical services, never PCM samples, seconds or original VInts.
     public int? ModernEndStep { get; }
     public byte[] CopyPcm() => [.. _pcm];
+
+    public static string SelectCue(IReadOnlyDictionary<string, ExplorationAudio> assets, int command, int? timerB)
+    {
+        var candidates = assets.Where(pair => pair.Value.Command == command).ToArray();
+        if (command < 65)
+            return candidates.FirstOrDefault().Key ?? throw new InvalidOperationException("audio-command-unavailable");
+        var exact = candidates.Where(pair => pair.Value.TimerB == timerB).ToArray();
+        if (exact.Length == 1) return exact[0].Key;
+        if (exact.Length > 1) throw new InvalidOperationException("audio-command-ambiguous");
+        var defaults = candidates.Where(pair => pair.Value.DefaultForCommand == command).ToArray();
+        if (defaults.Length == 1) return defaults[0].Key;
+        if (defaults.Length > 1) throw new InvalidOperationException("audio-command-ambiguous");
+        var finite = candidates.Where(pair => pair.Value.LoopBegin is null).ToArray();
+        return finite.Length switch
+        {
+            1 => finite[0].Key,
+            0 => throw new InvalidOperationException("audio-command-unavailable"),
+            _ => throw new InvalidOperationException("audio-command-ambiguous"),
+        };
+    }
 }
 public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMapVisual> Maps,
     IReadOnlyDictionary<int, ExplorationSpriteVisual> Sprites, IReadOnlyDictionary<int, ExplorationPortraitVisual> Portraits,

@@ -26,8 +26,6 @@ internal sealed partial class SessionAudio
         if (!_assets.TryGetValue(resource, out var audio)) throw new InvalidOperationException("audio-content-unavailable");
         if (audio.Command >= 65)
         {
-            if (audio.TimerB != TimerB && Select(audio.Command) != resource)
-                throw new InvalidOperationException("sfx-timer-context-unavailable");
             Record("battle-entry-skip", _music, resource);
             return;
         }

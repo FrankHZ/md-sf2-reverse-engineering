@@ -38,6 +38,9 @@ Adjacent #1870–1875 results remain owned by the service/restoration/consultati
 
 ### A1 — P1: additive finite audio can disable a previously usable context
 
+Current repair and bounded acceptance: [explicit finite defaults (#1888)](../godot/audio.md#explicit-finite-defaults).
+The original finding and failed observations below remain historical evidence.
+
 **Confirmed.** [SessionAudio.Select](../../game/src/Audio/SessionAudio.cs) selects an exact
 command/current-music Timer B pair; without one it accepts only a unique finite candidate for that
 command. Adding a second finite variant changes a previously successful fallback into
