@@ -891,7 +891,10 @@ def plan_paths(
             )
             continue
 
-        if normalized == "src/sf2tool/verification_plan.py":
+        if normalized in {
+            "src/sf2tool/verification_plan.py",
+            "src/sf2tool/verification_engine_paths.py",
+        }:
             _select_all(selected, ("engine-unit", "adapter-build", "research-public"), normalized)
             _select_dependents(selected, root, normalized)
             continue
