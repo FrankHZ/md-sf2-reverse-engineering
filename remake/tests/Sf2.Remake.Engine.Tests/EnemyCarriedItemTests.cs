@@ -73,6 +73,7 @@ public sealed class EnemyCarriedItemTests
         Assert.Equal(battle.MainSeed, result.Battle.MainSeed); Assert.Equal(battle.ThinkingSeed, result.Battle.ThinkingSeed);
         Assert.Equal(battle.Gold, result.Battle.Gold);
         Assert.Equal(battle.GetActor(Ally).Attack, result.Battle.GetActor(Ally).Attack);
+        Assert.Equal(holder.Attack, result.Battle.GetActor(Enemy).Attack);
         Assert.Equal(item, holder.SourceLoadout.Items[1]); Assert.Empty(battle.ItemCustody!.OnceFlags);
         var repeated = EnemyItemDropRules.Prepare(result.Battle, Ally, Enemy, true);
         Assert.Null(repeated.Receipt); Assert.Same(result.Battle, repeated.Battle);
@@ -86,7 +87,7 @@ public sealed class EnemyCarriedItemTests
         var drop = EnemyItemDropRules.Prepare(battle, Ally, Enemy, true);
         var holder = drop.Battle.GetActor(Enemy);
         Assert.Equal(new ushort[] { 0, 127, 127, 127 }, holder.SourceLoadout!.Items);
-        Assert.Equal(holder.BaseAttack, holder.Attack);
+        Assert.Equal(battle.GetActor(Enemy).Attack - 5, holder.Attack);
         Assert.Equal(1, BattleEquipment.Physical(holder)!.MaximumRange);
         Assert.Equal(33, drop.Battle.GetActor(Ally).SourceLoadout!.Items[0]);
         Assert.Equal(battle.MainSeed, drop.Battle.MainSeed);

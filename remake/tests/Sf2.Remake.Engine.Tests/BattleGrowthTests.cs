@@ -74,12 +74,12 @@ public sealed class BattleGrowthTests
     [Fact]
     public void LearnedUpgradeChangesLiveSpellChoicesAndPackedSpellbookTogether()
     {
-        var before = Actor(learn: true);
+        var before = Actor(learn: true, packedSpells: [0, 11, 63, 63],
+            knownSpells: [new("heal", 1), new("blaze", 1)]);
         uint seed = 0x1234;
         List<BattleEffect> effects = [];
         var after = BattleGrowthRules.Award(before, 24, ref seed, effects);
-        Assert.Contains(new SpellRef("heal", 1), after.Spells);
-        Assert.Contains(new SpellRef("heal", 2), after.Spells);
+        Assert.Equal(new SpellRef[] { new("heal", 1), new("heal", 2), new("blaze", 1) }, after.Spells);
         Assert.Equal(64, after.SourceLoadout!.Spells[0]);
         Assert.Equal(0, before.SourceLoadout!.Spells[0]);
         Assert.Equal(before.SourceLoadout.Items, after.SourceLoadout.Items);
@@ -111,7 +111,7 @@ public sealed class BattleGrowthTests
         List<BattleEffect> effects = [];
         var after = BattleGrowthRules.Award(before, 24, ref seed, effects);
         Assert.Equal(new byte[] { 1, 64, 2, 63 }, after.SourceLoadout!.Spells);
-        Assert.Equal(new SpellRef[] { known[0], known[1], new("heal", 1), new("heal", 2) }, after.Spells);
+        Assert.Equal(new SpellRef[] { known[0], new("heal", 1), new("heal", 2), known[1] }, after.Spells);
         Assert.Equal(64, Assert.Single(effects, effect => effect.Kind == "spell-learned").After);
         Assert.Equal(new byte[] { 1, 63, 2, 63 }, before.SourceLoadout!.Spells);
     }

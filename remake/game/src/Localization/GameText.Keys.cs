@@ -723,6 +723,7 @@ internal static partial class GameText
         ["save.destination.fairy-cave"] = 0,
         ["save.destination.harpy-pond"] = 0,
         ["save.destination.taros-shrine"] = 0,
+        ["save.destination.north-parmecia"] = 0,
         ["save.destination.southwest-parmecia"] = 0,
         ["save.destination.polca-raft"] = 0,
         ["save.destination.polca-victory"] = 0,

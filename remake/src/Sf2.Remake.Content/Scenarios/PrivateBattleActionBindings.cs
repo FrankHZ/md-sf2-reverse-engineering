@@ -58,7 +58,7 @@ internal static class PrivateBattleActionBindings
 
     internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
     {
-        var weapons = definitions.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" && item.UseSpell == "NOTHING" || item is { Id: 110, Code: "TAROS_SWORD", ItemTypeExpression: "WEAPON|RARE|BREAKABLE", UseSpell: "BOLT", UseSpellLevel: 2 }) &&
+        var weapons = definitions.Items.Values.Where(item => (item.ItemTypeExpression is ("WEAPON" or "WEAPON|RARE") && item.UseSpell == "NOTHING" || item is { Id: 110, Code: "TAROS_SWORD", ItemTypeExpression: "WEAPON|RARE|BREAKABLE", UseSpell: "BOLT", UseSpellLevel: 2 }) &&
             (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3) && item.EquipEffects.All(effect => effect.Type is "INCREASE_ATT" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 }))
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName, 0,
                 checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
@@ -66,7 +66,7 @@ internal static class PrivateBattleActionBindings
                 CriticalIncrease: checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_CRITICAL").Sum(effect => effect.Parameter)))).ToArray();
         // Bare placement items can be carried without enabling their use or equip effects.
         var inert = definitions.Items.Values.Where(item => item is
-            { Id: 19, Code: "POWER_RING" } or { Id: 20, Code: "PROTECT_RING" } or { Id: 9, Code: "POWER_WATER" } or { Id: 16, Code: "SHINING_BALL" })
+            { Id: 19, Code: "POWER_RING" } or { Id: 20, Code: "PROTECT_RING" } or { Id: 9, Code: "POWER_WATER" } or { Id: 16, Code: "SHINING_BALL" } or { Id: 17, Code: "BLIZZARD" })
             .Select(item => item.Id).ToArray();
         if (!items.Any(word => weapons.Any(w => w.ItemId == (word & 127)) || word < 127 && inert.Contains((byte)word))) return null;
         return new(attack, weapons, allowChanges: false, inertItems: inert);

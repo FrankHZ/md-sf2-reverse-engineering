@@ -284,6 +284,7 @@ public sealed partial class GameRoot
         "fairy-cave" => GameText.Get("save.destination.fairy-cave"),
         "harpy-pond" => GameText.Get("save.destination.harpy-pond"),
         "taros-shrine" => GameText.Get("save.destination.taros-shrine"),
+        "north-parmecia" => GameText.Get("save.destination.north-parmecia"),
         "southwest-parmecia" => GameText.Get("save.destination.southwest-parmecia"),
         "polca-raft" => GameText.Get("save.destination.polca-raft"),
         "polca-victory" => GameText.Get("save.destination.polca-victory"),

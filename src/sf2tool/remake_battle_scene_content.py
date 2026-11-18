@@ -192,7 +192,7 @@ def build(
     rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None,
     scratch_root: Path | None = None,
 ) -> dict:
-    if battle not in range(1, 24):
+    if battle not in range(1, 25):
         raise ValueError("unsupported battle-scene selection")
     root = repo_path("")
     output = output.resolve()
@@ -717,6 +717,7 @@ def add_field_death(
             "battle-21",
             "battle-22",
             "battle-23",
+            "battle-24",
         )
         or "fieldDeath" in scene
     ):
@@ -765,6 +766,7 @@ def add_field_death(
         "battle-21",
         "battle-22",
         "battle-23",
+        "battle-24",
     ):
         battle = int(scene["encounter"].split("-")[1])
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
@@ -877,7 +879,7 @@ if __name__ == "__main__":
     parser.add_argument("--rom", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--battle", type=int, choices=range(1, 24), default=1)
+    parser.add_argument("--battle", type=int, choices=range(1, 25), default=1)
     parser.add_argument(
         "--field-death-base",
         type=Path,

@@ -20,7 +20,7 @@ from sf2tool.remake_asset_build import (
     ACCEPTED_UPSTREAM_REPOSITORY,
 )
 
-SUPPORTED_ENCOUNTERS = tuple(range(2, 24))
+SUPPORTED_ENCOUNTERS = tuple(range(2, 25))
 
 
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
@@ -92,6 +92,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
             21: [12, 12, 4, 0],
             22: [12, 16, 0, 1],
             23: [12, 12, 1, 1],
+            24: [12, 16, 3, 1],
         }[battle]
     ):
         raise ValueError("selected spriteset header drift")
@@ -180,6 +181,7 @@ def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> 
         21: "DEVIL_TAIL",
         22: "CHESSBOARD",
         23: "VERSUS_WILLARD",
+        24: "TO_NORTH_PARMECIA",
     }[battle]
     identity = dict(id=battle, code=code)
 
@@ -359,6 +361,8 @@ def compile_routes(compiler, selection, upstream):
             route["unavailable"] = True
             battle_routes.setdefault(map_id, []).append(route)
             continue
+        if str(battle_id) in selection.get("repeatUpgradeLevels", {}):
+            route["repeatUpgradeLevel"] = selection["repeatUpgradeLevels"][str(battle_id)]
         hooks = []
         for hook in ("beforebattle", "battlestart"):
             path = "disasm/data/battles/cutscenes/" + hook + "cutscenes.asm"

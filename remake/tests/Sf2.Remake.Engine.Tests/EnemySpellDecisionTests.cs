@@ -26,6 +26,35 @@ public sealed class EnemySpellDecisionTests
     }
 
     [Fact]
+    public void AutomaticCasterWithBlazeThreeAndBoostTwoCastsTheAffordableBlazeRank()
+    {
+        var document = Document("enemy-spells");
+        foreach (var (rank, cost, power) in new[] { (2, 5, 10), (3, 10, 15) })
+        {
+            var spell = document["spells"]![0]!.DeepClone();
+            spell["level"] = rank;
+            spell["mpCost"] = cost;
+            spell["effect"]!["power"] = power;
+            spell["effect"]!["radius"] = 1;
+            document["spells"]!.AsArray().Add(spell);
+        }
+        var admitted = Assert.IsType<ScenarioReadAccepted>(Reader(document).Read());
+        var encounter = admitted.Definition.Encounters.Values.Single();
+        var mage = encounter.Deployments.Single(row => row.Actor == Mage).Definition;
+        var caster = new BattleActorDefinition(Mage, mage.ClassRule, mage.Level, mage.MaxHp, mage.MaxMp,
+            mage.Attack, mage.Defense, mage.Agility, mage.ExtraRoundAction, mage.Move,
+            [new("blaze", 1), new("blaze", 2), new("blaze", 3), new("boost", 1), new("boost", 2)],
+            mage.Physical, mage.Mover, new([127, 127, 127, 127], [0x8B, 0x43, 63, 63]));
+        var battle = BattleTurnFlow.Start(encounter.WithDeployments(encounter.Deployments.Select(
+            row => row.Actor == Mage ? row with { Definition = caster } : row)), admitted.Start);
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == Mage ? actor.With(mp: 2) : actor));
+
+        var decision = Decide(battle, Mage);
+        Assert.Equal(new BattleActionRef(BattleActionKind.AttackSpell, new("blaze", 1)), decision.ChosenAction);
+        Assert.Equal(Scout, decision.Target);
+    }
+
+    [Fact]
     public void EnemySelectsKnownFreezeAndUsesIceResistance()
     {
         var battle = Battle(d =>

@@ -3,12 +3,11 @@
 The first fork now supports two usable returns. Players can visit Elven Village before clearing Battle19, or win Battle19 and save on the overworld. Both branches can walk west to the [Harpy Pond bank saves](harpy-pond-approach.md). Both continue through [Battle20 and Elric’s recruitment](battle20-elric.md) to a usable Map51 save and through the [Fairy Cave passage](fairy-cave.md) to the [Battle21 victory save on Devil’s Tail](battle21-devils-tail.md). [Campaign feature trace](../capability-status.md#campaign-feature-trace)
 
 The current milestone under [the remaining campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1818)
-is the Stage2 [New Granseal return](new-granseal-return.md), consuming the ordinary bilingual
-[mine recovery and Cannon saves](dwarven-mine-cannon.md). The audience, Astral following, Dynamite,
-Janet recruitment and town exit have ordinary witnesses. Live and fresh populations remain distinct;
-cold continuation preserves player-owned resources and following while town ambient work resumes.
-Rigor remains **High** because an incorrect recruit, scene or vehicle assumption can invalidate later
-saves. Battle24, North Cliff/Rohde and northern towns are separate outcomes. The [Stage1 audit](../evidence/creed-stage1-engine-save-audit.md)
+is the Stage2 [Battle24 and North Cliff approach](battle24-north-parmecia.md). It consumes the ordinary
+[New Granseal return and Janet deployment](new-granseal-return.md) after the [Cannon recovery](dwarven-mine-cannon.md).
+Rigor remains **High** because the next cliff interaction consumes the live member, item custody and
+field save produced by this encounter. The explosion, Rohde and northern towns have separate acceptance.
+The [Stage1 audit](../evidence/creed-stage1-engine-save-audit.md)
 retains the earlier assessment; the chapter owners record the consumed repairs and bounded results.
 Optional branches and human acceptance remain explicit; neither stage means full campaign acceptance.
 

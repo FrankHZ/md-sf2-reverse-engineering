@@ -32,11 +32,11 @@ public static class BattleEquipment
             (byte)(definition.Attack - (definition.Growth?.AttackBonus ?? 0))) + Contribution(definition, loadout));
 
     // RemoveItemBySlot shifts following words and refreshes from the live base.
-    internal static BattleActorState RemoveItem(BattleActorState actor, int slot)
+    internal static BattleActorState RemoveItem(BattleActorState actor, int slot, byte? initializedBaseAttack = null)
     {
         var loadout = BattleInventory.Remove(actor.SourceLoadout!, slot);
         return actor.With(sourceLoadout: loadout, attack: actor.Definition.Equipment is null ? actor.Attack :
-            (byte)Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, loadout)));
+            (byte)Math.Min(200, (initializedBaseAttack ?? actor.BaseAttack) + Contribution(actor.Definition, loadout)));
     }
 
     public static int EquippedSlot(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
@@ -89,12 +89,12 @@ public static class BattleEquipment
         if (!allowEarlySpells && (loadout.Spells.Any(spell => spell != 63) || definition.Spells.Count != 0)) return false;
         if (allowEarlySpells && definition.Spells.Any(spell => spell is not
             ({ Value: "heal", Level: >= 1 and <= 4 } or { Value: "blaze" or "blast", Level: >= 1 and <= 3 } or
-             { Value: "aqua" or "freeze", Level: 1 or 2 } or { Value: "aura" or "dispel", Level: 1 }))) return false;
+             { Value: "aqua" or "freeze" or "boost", Level: 1 or 2 } or { Value: "aura" or "dispel", Level: 1 }))) return false;
         // Authored semantic books use an empty packed book. A nonempty source book
         // must agree with its decoded definitions; orphan packed spells cannot disappear.
         if (allowEarlySpells && loadout.Spells.Any(spell => spell != 63) &&
             !definition.Spells.GroupBy(spell => spell.Value).Select(book =>
-                ((book.Max(spell => spell.Level) - 1) << 6) | (book.Key switch { "heal" => 0, "aura" => 1, "dispel" => 6, "freeze" => 12, "blast" => 14, "aqua" => 40, _ => 11 })).ToHashSet()
+                ((book.Max(spell => spell.Level) - 1) << 6) | (book.Key switch { "heal" => 0, "aura" => 1, "boost" => 3, "dispel" => 6, "freeze" => 12, "blast" => 14, "aqua" => 40, _ => 11 })).ToHashSet()
                 .SetEquals(loadout.Spells.Where(spell => spell != 63).Select(spell => (int)spell))) return false;
         if (definition.Equipment is not null) ValidateLoadout(definition, loadout);
         return loadout.Items.All(word => OrdinaryItem(definition, word, allowHerb));

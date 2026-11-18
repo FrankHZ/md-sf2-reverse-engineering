@@ -48,6 +48,15 @@ ITEMS = (
 SPELLS = ("HEAL", "DETOX", "DISPEL", "EGRESS", "BLAZE", "FREEZE", "BLAST")
 
 
+def field_encounters(world: dict) -> set[str]:
+    return {
+        route["encounter"]
+        for field in world["maps"]
+        for route in (field.get("battle"), *field.get("battles", ()))
+        if route and not route.get("unavailable")
+    }
+
+
 def field_item_ids(world: dict) -> set[int]:
     """Icons for the inventory the selected world can offer or award."""
     ids = {
@@ -69,19 +78,13 @@ def field_item_ids(world: dict) -> set[int]:
                     for row in (*search["chests"], *search["otherItems"])
                     if row["itemWord"] is not None
                 )
-    if any(
-        route.get("encounter") == "battle-19" and not route.get("unavailable")
-        for field in world["maps"]
-        if (route := field.get("battle"))
-    ):
-        # Shining Ball custody and the equipped Power Stick enter this campaign package.
-        ids.update((16, 89))
-    if any(
-        route.get("encounter") == "battle-21" and not route.get("unavailable")
-        for field in world["maps"]
-        if (route := field.get("battle"))
-    ):
+    encounters = field_encounters(world)
+    if "battle-19" in encounters:
+        ids.update((16, 89))  # Shining Ball and Power Stick
+    if "battle-21" in encounters:
         ids.update((20, 62))  # Protect Ring and Broad Sword
+    if "battle-24" in encounters:
+        ids.update((17, 53))  # Blizzard and Hyper Cannon
     return ids
 
 

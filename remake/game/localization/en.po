@@ -2221,6 +2221,9 @@ msgstr "Harpy Pond"
 msgid "save.destination.taros-shrine"
 msgstr "Taros Shrine"
 
+msgid "save.destination.north-parmecia"
+msgstr "North Parmecia"
+
 msgid "save.destination.southwest-parmecia"
 msgstr "Southwest Parmecia"
 
