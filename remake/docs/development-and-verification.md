@@ -1700,12 +1700,15 @@ engine/adapter/research, private-admission and live-inspection compilation; the 
 Changes under `remake/tools/Sf2.Remake.PrivateAdmission/` select only private-admission compilation;
 shared product/build inputs also compile that consumer.
 Changes under `remake/tools/Sf2.Remake.LiveInspection/` select only live-inspection compilation;
-shared product/build inputs conservatively compile that consumer too. The shared partition record
+the standalone inspector has no game project or campaign content dependency. Ordinary changes to
+`remake/src/` and `remake/content/` select engine, adapter and private-admission builds. Shared build
+configuration still selects the inspector. The standalone `remake/diagnostics/input-quit/` reduction
+uses the direct build and native pilot in its incident owner. The shared partition record
 owner `src/sf2tool/verification_partitions.py` follows the same workflow/planner dependency selection.
 Changes under `tools/h4-comparison/` or to the named H4 bridge/comparator/environment/planner/workflow
 paths select `h4-comparison-build`. Non-research documentation and legacy remake test edits select no product jobs. Other non-remake inputs conservatively select research. The full
 predicate lives in the workflow; add a genuinely consumed external unit input when that dependency
-is introduced. M1's consumed authored JSON lives under `remake/content/`, which conservatively selects all product/host builds.
+is introduced. M1's consumed authored JSON lives under `remake/content/`, which selects its product and host consumers.
 
 Main-gate owns required-check configuration. The reference host and its build job are retired;
 do not request that obsolete context as a current gate.

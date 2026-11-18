@@ -72,6 +72,9 @@ jobs:
               $admission = $true
             } elseif ($changedPath -like 'remake/tools/Sf2.Remake.LiveInspection/*') {
               $inspection = $true
+            } elseif ($changedPath -like 'remake/diagnostics/input-quit/*') {
+              # Standalone incident reduction, verified directly under its own workflow.
+              continue
             } elseif ($changedPath -like 'remake/tests/Sf2.Remake.Engine.Tests/*') {
               $engine = $true
             } elseif ($changedPath -like 'remake/tests/*') {
@@ -84,7 +87,9 @@ jobs:
               $engine = $true
               $adapter = $true
               $admission = $true
-              $inspection = $true
+              if ($changedPath -notlike 'remake/src/*' -and $changedPath -notlike 'remake/content/*') {
+                $inspection = $true
+              }
             } else {
               $research = $true
             }

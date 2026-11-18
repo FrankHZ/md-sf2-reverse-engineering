@@ -111,4 +111,7 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         return ("engine-unit",)
     if path.startswith("remake/game/"):
         return ("adapter-build",)
-    return ("engine-unit", "adapter-build", "private-admission-build", "live-inspection-build")
+    product_builds = ("engine-unit", "adapter-build", "private-admission-build")
+    if path.startswith(("remake/src/", "remake/content/")):
+        return product_builds
+    return (*product_builds, "live-inspection-build")
