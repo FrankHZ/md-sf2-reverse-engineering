@@ -6,8 +6,27 @@ its command. Keep actual machine paths untracked. No user/machine PATH changes a
 ```powershell
 . ./local/private-inputs.ps1
 uv sync --locked
+# Research checkouts need the pinned writable upstream before toolchain verification.
+# On first research use, run: uv run sf2 init
 uv run sf2 toolchain verify
 ```
+
+## Fresh worktree setup
+
+Keep the machine configuration template outside all worktrees. Register its absolute path once
+with `git config --local sf2.privateInputsTemplate <absolute-template-path>` in the owning repo.
+Linked worktrees share that setting. From the root of a checkout with no `local/`, restore just
+the configuration before running the commands above:
+
+```powershell
+$template = git config --path --get sf2.privateInputsTemplate
+if (!$template -or !(Test-Path -LiteralPath $template -PathType Leaf)) { throw 'Missing private input template' }
+New-Item -ItemType Directory -Path ./local/tmp -Force | Out-Null
+Copy-Item -LiteralPath $template -Destination ./local/private-inputs.ps1
+```
+
+The restored script selects stable installations and inputs and derives writable paths from its
+new checkout. Register a template for each host/clone that uses private inputs.
 
 ## Selections
 
