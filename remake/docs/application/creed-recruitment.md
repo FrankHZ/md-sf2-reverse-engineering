@@ -97,8 +97,9 @@ scrolls into Map68 and uses actual Caravan boarding/riverbed driving/landing. Th
 history can admit its unfinished Battle19 during travel; that battle is a real stopping boundary,
 not a mine arrival. The final English witness wins it before continuing. The final bilingual endpoint
 is walking Map68 (57,25), facing Up, with F69 and the selected membership. One Up requests the
-unsupported Map30 frontier; Stage2 owns its recovery/Cannon dialogue, F759–761, item custody and
-later North Cliff. No save or flag editing supplies this entry.
+Map30 entry now consumed by the [mine chapter](dwarven-mine-cannon.md), which owns recovery/Cannon,
+F759–761, item custody and the ordinary return. Later North Cliff remains outside that boundary.
+No save or flag editing supplies this entry.
 
 Stage1 optional dispositions are explicit: Rick's post-Taros Hassan recruit, Fairy Woods/Battle44,
 later F22 offers and later F762 village population/services are not accepted natural journeys here.

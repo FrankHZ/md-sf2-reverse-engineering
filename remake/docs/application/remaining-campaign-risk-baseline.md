@@ -3,14 +3,13 @@
 The first fork now supports two usable returns. Players can visit Elven Village before clearing Battle19, or win Battle19 and save on the overworld. Both branches can walk west to the [Harpy Pond bank saves](harpy-pond-approach.md). Both continue through [Battle20 and Elric’s recruitment](battle20-elric.md) to a usable Map51 save and through the [Fairy Cave passage](fairy-cave.md) to the [Battle21 victory save on Devil’s Tail](battle21-devils-tail.md). [Campaign feature trace](../capability-status.md#campaign-feature-trace)
 
 The current milestone under [the remaining campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1818)
-is Stage1 closure after accepted [Creed recruitment](creed-recruitment.md) and the
-[engine/save audit](../evidence/creed-stage1-engine-save-audit.md). The audit recommends retaining the
-engine, correcting finite-audio fallback before ordinary Stage2 expansion, and making live-versus-fresh
-Map30 persistence part of the first mine slice. Older-reader recovery and stale shared navigation
-retain separate owners; this audit implements no repairs or full-campaign acceptance.
+is the first Stage2 [mine recovery and Cannon slice](dwarven-mine-cannon.md), consuming the ordinary
+Creed endpoint after the finite-audio and save-format repairs. Live F785 and fresh F761 scenes retain
+their different population/layout through cold continuation. The [Stage1 audit](../evidence/creed-stage1-engine-save-audit.md)
+remains the earlier assessment; the mine chapter owns its A2 implementation and bounded acceptance.
 Rigor is **High** because a wrong assumption about a recruit, return town or vehicle can invalidate
-saves several chapters later. Stage2 begins at the ordinary mine exterior slots; recovery, Cannon,
-Dynamite, North Cliff and northern towns retain their separate owners. Optional branches and human
+saves several chapters later. Stage2 now reaches a controllable saved return after recovery and Cannon;
+Astral, Dynamite, North Cliff and northern towns remain separate work. Optional branches and human
 acceptance are explicit below; Stage1 does not mean the whole campaign or every optional recruit.
 
 ## What can be continued today

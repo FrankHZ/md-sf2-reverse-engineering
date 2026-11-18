@@ -581,6 +581,12 @@ internal static class ExplorationContentReader
             case "branch-has-item":
                 Object(row, opcode, "op", "item", "target");
                 return new BranchHasItem((byte)Number(row, "item", 0, 126), RequiredLocation(row.GetProperty("target")));
+            case "branch-pack-space":
+                Object(row, opcode, "op", "actor", "target");
+                return new BranchPackSpace(new(Id(row, "actor")), RequiredLocation(row.GetProperty("target")));
+            case "try-add-actor-item":
+                Object(row, opcode, "op", "actor", "item");
+                return new TryAddActorItem(new(Id(row, "actor")), (byte)Number(row, "item", 0, 126));
             case "remove-party-item":
                 Object(row, opcode, "op", "item");
                 return new RemovePartyItem((byte)Number(row, "item", 0, 126));
@@ -903,6 +909,7 @@ internal static class ExplorationContentReader
                 {
                     case JumpProgram jump: Target(jump.Target); break;
                     case BranchHasItem branch: Target(branch.Target); break;
+                    case BranchPackSpace branch: Target(branch.Target); break;
                     case BranchAlive branch: Target(branch.Target); break;
                     case BranchFlag branch: Target(branch.Target); break;
                     case BranchInteractionFacing branch: Target(branch.Target); break;

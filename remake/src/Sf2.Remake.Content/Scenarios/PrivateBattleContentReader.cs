@@ -50,7 +50,9 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
     {
         foreach (var program in Array(world, "programs"))
             foreach (var instruction in Array(program, "instructions"))
-                if (Text(instruction, "op") == "shop")
+                if (Text(instruction, "op") == "try-add-actor-item")
+                    yield return (byte)Number(instruction, "item", 0, 126);
+                else if (Text(instruction, "op") == "shop")
                     foreach (var value in Array(instruction, "stock"))
                     {
                         Require(value.ValueKind == JsonValueKind.Number && value.TryGetByte(out byte id) && id < 127, "shop-stock", "shop.stock");
