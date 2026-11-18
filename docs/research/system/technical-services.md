@@ -281,6 +281,95 @@ Unknowns. Existing range-two action evidence is `battle-ai-action-choice-v1.json
 (`sf2-battle-ai-action-choice-runtime-v1`). The implementation boundary is
 [`randomness.md`](../../design/contracts/system/randomness.md).
 
+## H3 observer failure evidence
+
+**Confirmed:** On the USA ROM and pinned source identified by the two v1 fixtures above,
+BizHawk 2.11.1 / Genesis Plus GX produced the following controlled failures with the observers
+at `2817c03a`. The same launch procedure applies to the [Church Raise and Cure cases](../presentation/common-menus.md#church-observer-failures).
+
+| Observer and fault in its generated Lua config `c` | Reached error and cleanup |
+| --- | --- |
+| Random services. Set `c.callbackExpectations.cases[1]["unsigned-entry"].expectedTargetPc = 0`. | The body of the unsigned helper callback rejected the target at PC `0x1628` in `unsigned-low-byte-zero`. All 34 registered IDs were successfully unregistered. |
+| SRAM lifecycle. Raise one register-read error at the nested `SaveGame` entry as shown below. | In `copy-save-1-to-2`, PC `0x6F6A`, the diagnostic named `CopySave->SaveGame` with both nested entry flags set. The 33 registered IDs were successfully unregistered. An independent read of all 8,192 logical SRAM bytes immediately before exit found zero nonzero bytes. |
+
+The execution callback caught the error with `pcall`. Python’s `run_observer` rejects a failure
+marker before reading the observation JSON, even when the native exit code is zero. Each owner
+validated its diagnostic, and the CLI returned failure. The status contained exactly one schema-validated
+`failure:observer-callback:` row, last in the file, and no success tail. Both EmuHawk and
+the CLI exited 1. A partial observation file placed after launch preparation was gone at exit.
+In these two observers the callback guard writes the diagnostic **before** removing output and
+unregistering. SRAM clears and reads back the logical window between those operations. The failure
+handler ignores the SRAM readback return value. The exit readback supplies that evidence. The
+ordinary fixture commands separately verify the success tail `callbacks-cleared:0` then `observer-finished`.
+
+**Unknown:** duplicate-PC rejection in random services, a *missing* nested LoadGame or SaveGame
+notification at the SRAM case result, and a residual callback or byte at successful finalization.
+The remaining native-harness source checks retain those diagnostic strings. The SRAM replay reached
+the ordinary and nested roles on the same SaveGame PC with one physical registration. Its former
+“duplicate physical-PC callback” string occurred only in a comment.
+
+### Reproducing the controlled failures
+
+Use the [configured research worktree](../../operations/local-private-inputs.md) with its byte-perfect
+H1 listing installed as `build/sf2build-h1.lst`. Use serial installation ownership and fresh local
+outputs. Place the selected config change in `local/tmp/fault.lua` and the following launcher in
+`local/tmp/fault.py`. From that worktree run `uv run --locked python local/tmp/fault.py random-services`
+or substitute `sram-lifecycle`, `church-raise-lifecycle` or `church-cure-lifecycle`. The ordinary
+H3 CLI supplies the source checks, fixture, observer, and runtime. Church owners also prepare and
+dispose of their private session ROM.
+
+```python
+import sys
+from importlib import import_module
+from pathlib import Path
+
+from sf2tool.cli import main
+from sf2tool.h3.bizhawk import run_observer
+
+owner = sys.argv[1]
+
+def at_launch(launch):
+    path = Path(launch["observerConfig"])
+    table = path.read_text(encoding="utf-8").removeprefix("return ")
+    fault = Path("local/tmp/fault.lua").read_text(encoding="utf-8")
+    path.write_text("local c = " + table + fault + "\nreturn c\n", encoding="utf-8")
+    path.with_suffix("").with_suffix(".observed.json").write_text("partial", encoding="utf-8")
+
+def observe(**kwargs):
+    try:
+        return run_observer(**kwargs, on_launch=at_launch)
+    except RuntimeError as error:
+        print(str(error).splitlines()[0])  # Native result before owner diagnostics.
+        raise
+
+import_module("sf2tool.h3." + owner.replace("-", "_")).run_observer = observe
+sys.exit(main(["h3", owner, "--timeout-seconds", "180"]))
+```
+
+For SRAM use the source-bound return on the emulated stack to distinguish the nested SaveGame
+call from earlier direct calls. Restore the original register reader before raising so the
+failure handler samples the real PC.
+
+```lua
+local get = emu.getregister
+emu.getregister = function(name)
+  local value = get(name)
+  if name == "M68K PC" and value == c.static.functionEntries.SaveGame and
+     memory.read_u32_be(get("M68K A7") & 0xffffff, "M68K BUS") == c.static.copyFlow.saveReturnPc then
+    emu.getregister = get
+    error("nested SaveGame register read", 0)
+  end
+  return value
+end
+```
+
+For the exit readbacks, forward `event.on_bus_exec` and retain its returned IDs and addresses.
+Count a removal only when the real `event.unregisterbyid` returns true for a retained ID.
+Immediately before forwarding `client.exitCode`, record the counts to a separate local file.
+For SRAM read the `SRAM` domain at offsets `SRAM_START - physicalWindowBaseAddress +
+i * physicalAddressStepPerLogicalByte` for every logical byte. Across all four runs each
+physical address was registered once. Check the status and output after the process returns.
+
 ## Concentrated Runtime Queue
 
 This batch's one-launch random-services H3 probe closes helper-local range/retry and alias behavior plus
