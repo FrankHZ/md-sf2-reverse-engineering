@@ -601,6 +601,16 @@ programs exercise the same session and presenter. Their curves, entities and tex
 They establish neither original natural continuity nor a successful private outcome observation.
 Algorithm selection remains compiled C# composition, separate from this content/trust admission.
 
+### Private repeat encounters
+
+A private battle route can set `repeatUpgradeLevel` to the effective party-leader level at which
+completed reentry starts enemy selection. The route needs a completion flag. The associated
+campaign encounter's optional `repeatEnemies` list admits candidate definitions from the existing
+pinned export. Candidates must also pass the original slot's mover and ID checks. An unmounted
+definition selected at runtime reports its slot and ID. Older packages retain their implicit
+thresholds and candidate behavior. A suspended battle restores its selected IDs through the existing
+battle save recipe, without drawing replacements again.
+
 ### Story content and source policy selection
 
 The public v8 story examples [A](../../content/authored/story-rule-demo-a.json) and

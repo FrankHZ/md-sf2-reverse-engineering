@@ -33,7 +33,6 @@ internal static class PrivateBattleDefinitionReader
         _ = Number(core, "schemaVersion", 1, 1); _ = Number(enemy, "schemaVersion", 1, 1);
         var sources = Sources(core).Concat(Sources(enemy)).Distinct().ToArray();
         var classes = start.Allies.Select(row => row.ClassId).Distinct().Select(id => Class(FindId(core, "classes", id))).ToArray();
-        Require(repeatEnemies is not { Count: > 0 } || encounter.Battle.Id == 19, "repeat-enemy-encounter", "repeatEnemies");
         var enemies = encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Enemy)
             .Select(row => row.IdentityExpression).Distinct().Select(code => Enemy(FindCode(enemy, "enemies", code)))
             .Concat((repeatEnemies ?? []).Select(id => Enemy(FindId(enemy, "enemies", id)))).DistinctBy(row => row.Id).ToArray();
