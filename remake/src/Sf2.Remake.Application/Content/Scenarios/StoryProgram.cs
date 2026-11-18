@@ -59,6 +59,8 @@ public sealed record AddMapEntity(EntityRef Entity, MapPosition Position, byte F
 public sealed record RestoreMemberResource(int Member, bool Hp) : StoryInstruction;
 public sealed record SetMapQuake(byte Amount) : StoryInstruction;
 public sealed record CopyEntitySpriteSlot(EntityRef Source, EntityRef Target) : StoryInstruction;
+public sealed record SetSharedSpriteGraphics(int Slot, string Resource) : StoryInstruction;
+public sealed record RemapPaletteColors(IReadOnlyList<ushort>? Lookup) : StoryInstruction;
 public sealed record ReloadSceneMap(MapPosition Camera, bool ResetLayout = false) : StoryInstruction;
 public sealed record MoveEntityNextToPlayer(EntityRef Entity, byte Direction) : StoryInstruction;
 public sealed record WaitForEntityMotion(EntityRef Entity) : StoryInstruction;

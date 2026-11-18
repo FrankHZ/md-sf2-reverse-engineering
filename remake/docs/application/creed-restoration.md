@@ -63,13 +63,13 @@ animation is outside this observation.
 
 The default Map34 init is return-only. No consultation flags are set at arrival. The original
 wildcard Y13 zone still requires a working-layout zone marker and calls the consultation before
-writing F784 and F802. This chapter neither invokes its unsupported native helpers nor fakes those
-completion flags. F784's later empty population remains separately selected.
+writing F784 and F802. These entrance observations leave both completion flags clear. The
+[consultation chapter](evil-spirit-consultation.md) consumes the full scene and its shared helpers. F784's later empty population remains separately selected.
 
 The `creed-mansion` save recipe now admits completed restoration while retaining first-visit
 compatibility. Cold reconstruction places Goliath at (17,10), Down with F783, otherwise (17,12),
-Down with F774. It does not replay restoration, rewards or transient door copies. The new
-`evil-spirit-shrine` recipe admits settled active-area positions before F784, with the existing
+Down with F774. It does not replay restoration, rewards or transient door copies. The
+`evil-spirit-shrine` recipe initially admits settled active-area positions before F784, with the existing
 Hassan return register. It does not invent a F523/F783 entrance prerequisite. Both names appear in
 the ordinary localized Save/Continue UI.
 
@@ -90,7 +90,7 @@ clear and Chinese retains F519 set; these are distinct journeys, not alternate t
 | Map33 north warp | Ordinary first Map34 entrance and Save observed in both languages. |
 | Map34 return and internal passage | Original (26,28) return and (22,29)↔(24,2) passage remain content-driven. Both languages return through (26,28), recover Map33 control with Goliath at (17,10), read1904 and reenter Map34. No1840–1897 replay, reward or consultation flag write occurs. Internal passage consumption remains unobserved. |
 | Map34 local interactions | Entity and item callbacks are return-only; chest/hidden-item tables are empty. Generic Search/item behavior is not globally disabled. No consultation, recruit or healing-service result is claimed. |
-| Map34 Y13 consultation | Preserved, unsupported next-chapter boundary; F784/F802 remain clear. |
+| Map34 Y13 consultation | The [consultation chapter](evil-spirit-consultation.md) consumes this next boundary; these entrance observations retain F784/F802 clear. |
 
 MUSIC_WITCH reuses the accepted title-entry PCM, losslessly wrapped as WAV through the existing
 runtime-WAV mechanism. This avoids exceeding the 128-MiB world-document bound and does not acquire
@@ -139,5 +139,5 @@ failure and an independent desktop preparation failure before Quit. Root cause a
 ordinary-player Quit risk remain Unknown. Subsequent observer acceptance uses the product menu Quit
 path; the original failure driver remains available. These controls do not resolve #1716 or establish
 a lifecycle fix.
-The frozen candidate awaits independent review. Consultation, later recruitment, original hardware
-timing and human visual acceptance remain outside this chapter result.
+The [consultation chapter](evil-spirit-consultation.md) owns the next ordinary continuation. Later
+recruitment, original hardware timing and human visual acceptance remain outside this chapter result.

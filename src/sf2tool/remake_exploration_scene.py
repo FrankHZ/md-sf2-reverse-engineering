@@ -186,3 +186,43 @@ def scene_entities(compiler, relative: str, symbol: str) -> dict[str, Any]:
         "population": compiler.population(),
         "entities": entities,
     }
+
+
+def graphics_helper(compiler, symbol):
+    variants = {"csub_5BFD0": "evil-spirit", "sub_5BFDA": "evil-spirit-alt", "sub_5BFE4": "zeon"}
+    if symbol in variants:
+        path = "disasm/data/maps/entries/map34/mapsetups/scripts.asm"
+        compiler.sources.update((path, "disasm/code/common/tech/graphics/specialsprites.asm"))
+        rows = compiler.source_operations(path, symbol)
+        selection = list(variants).index(symbol)
+        if [(r["opcode"], _tokens(r["operandText"])) for r in rows] != [
+            ("moveq", [f"#{selection}", "d0"]),
+            ("jsr", ["j_AnimateSpecialSprite"]),
+            ("rts", []),
+        ]:
+            raise ValueError("shared special graphics helper changed")
+        return [{"op": "shared-sprite-graphics", "slot": 32, "resource": variants[symbol]}]
+    if symbol not in ("csub_55EF4", "sub_55F82"):
+        return None
+    path = "disasm/data/maps/entries/map07/mapsetups/scripts.asm"
+    compiler.sources.update((path, "disasm/code/common/tech/graphics/updatefadingpalette.asm"))
+    if symbol == "sub_55F82":
+        return [{"op": "restore-palette-copy"}]
+    rows = compiler.source_operations(path, "palette_55F6A")
+    tables = [
+        byte
+        for r in rows
+        if r["opcode"] == "dc.w"
+        for v in _tokens(r["operandText"])
+        for byte in compiler.number(v).to_bytes(2, "big")
+    ]
+    if len(tables) != 24:
+        raise ValueError("palette remap table changed")
+    lookup = []
+    for index in range(512):
+        word = ((index & 448) << 3) | ((index & 56) << 2) | ((index & 7) << 1)
+        total = ((word & 0xE00) >> 9) + (word & 14) + ((word & 0xE0) >> 3)
+        q, remainder = divmod(total, 7)
+        q += remainder >= 4
+        lookup.append((tables[16 + q] << 8) | (tables[7 - q] << 4) | tables[8 + 7 - q])
+    return [{"op": "remap-palette", "lookup": lookup}]

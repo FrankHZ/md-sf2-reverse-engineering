@@ -673,6 +673,21 @@ internal static class ExplorationContentReader
             case "copy-sprite-slot":
                 Object(row, opcode, "op", "source", "target");
                 return new CopyEntitySpriteSlot(new(Id(row, "source")), new(Id(row, "target")));
+            case "shared-sprite-graphics":
+                Object(row, opcode, "op", "slot", "resource");
+                return new SetSharedSpriteGraphics(Number(row, "slot", 0, 48), Id(row, "resource"));
+            case "restore-palette-copy":
+                Object(row, opcode, "op");
+                return new RemapPaletteColors(null);
+            case "remap-palette":
+                Object(row, opcode, "op", "lookup");
+                var colorLookup = Array(row, "lookup").Select(value =>
+                {
+                    Require(value.TryGetUInt16(out ushort color) && PaletteColorTransition.Valid(color), "palette-word", "program.lookup");
+                    return color;
+                }).ToArray();
+                Require(colorLookup.Length == 512, "palette-lookup-size", "program.lookup");
+                return new RemapPaletteColors(System.Array.AsReadOnly(colorLookup));
             case "new-entity":
                 Object(row, opcode, "op", "entity", "position", "facing", "sprite", "actions");
                 return new AddMapEntity(new(Id(row, "entity")), Position(row.GetProperty("position")),

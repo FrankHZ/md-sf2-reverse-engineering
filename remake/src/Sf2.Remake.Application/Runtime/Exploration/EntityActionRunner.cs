@@ -31,6 +31,8 @@ internal static class EntityActionRunner
         foreach (var original in world.AllEntities)
         {
             var entity = entities[original.Slot];
+            // The source entity loop leaves hidden records and their action pointers dormant.
+            if (entity.Motion.X >= 0x7000) continue;
             var initial = entity.Motion;
             int destinationX = initial.XDestination / 384, destinationY = initial.YDestination / 384;
             ushort? word = initial.IsMoving ? FieldLayout.Word(world, initial, destinationX, destinationY, inBattle) : null;

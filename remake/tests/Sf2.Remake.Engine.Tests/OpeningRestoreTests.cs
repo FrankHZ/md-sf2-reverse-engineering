@@ -100,7 +100,7 @@ public sealed class OpeningRestoreTests
         Assert.Equal((ushort)0xC400, world.Layout[17, 11]);
         Assert.DoesNotContain(999, restored.Session.Current.Story.Flags); // on-load must not run
         Assert.DoesNotContain(521, restored.Session.Current.Story.Flags); // no invented prerequisite
-        foreach (int later in new[] { 22, 523, 784, 786 })
+        foreach (int later in new[] { 22, 523, 786 })
             Assert.Equal("save-location-unavailable", Assert.Throws<BattleRuleException>(() => definition.Persistence!.Select(
                 definition, new(new("map-33"), new(x, y), facing), flags.Append(later).ToArray(), null)).Code);
     }

@@ -10,6 +10,20 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class ExplorationAssetReader
 {
+    private static IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics(JsonElement row, int size)
+    {
+        if (!row.TryGetProperty("graphics", out var graphics)) return null;
+        Require(graphics.ValueKind == JsonValueKind.Object, "sprite-graphics", "presentation.graphics");
+        var result = new Dictionary<string, IReadOnlyList<ExplorationRaster>>(StringComparer.Ordinal);
+        foreach (var property in graphics.EnumerateObject())
+        {
+            var frames = property.Value.EnumerateArray().Select(Raster).ToArray();
+            Require(frames.Length == 3 && frames.All(frame => frame.Width == 2 * size && frame.Height == size), "sprite-graphics-shape", "presentation.graphics");
+            Require(result.TryAdd(property.Name, System.Array.AsReadOnly(frames)), "sprite-graphics-duplicate", "presentation.graphics");
+        }
+        return new ReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>(result);
+    }
+
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
         ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu", "shopMenu", "hdIdentityIcons");
@@ -42,7 +56,7 @@ internal static class ExplorationAssetReader
         var sprites = new Dictionary<int, ExplorationSpriteVisual>();
         foreach (var sprite in Array(row, "sprites"))
         {
-            ObjectOptional(sprite, "spriteVisual", ["sprite", "directions", "portrait", "speech"], "hdDirections");
+            ObjectOptional(sprite, "spriteVisual", ["sprite", "directions", "portrait", "speech"], "hdDirections", "graphics");
             int id = Number(sprite, "sprite", 0, 255);
             Require(id < 240 || id is 252 or 254 or 255, "sprite-id", "presentation.sprites");
             int size = id is 252 or 254 or 255 ? 48 : 24;
@@ -50,7 +64,7 @@ internal static class ExplorationAssetReader
             Require(directions.Length == 3 && directions.All(raster => raster.Width == 2 * size && raster.Height == size), "sprite-shape", "presentation.sprites");
             int? portrait = sprite.GetProperty("portrait").ValueKind == JsonValueKind.Null ? null : Number(sprite, "portrait", 0, 55);
             Require(sprites.TryAdd(id, new(id, System.Array.AsReadOnly(directions), portrait, Number(sprite, "speech", 0, 255),
-                OptionalFrames(sprite, "hdDirections", 3, size * 8, size * 4))), "duplicate-sprite-visual", "presentation.sprites");
+                OptionalFrames(sprite, "hdDirections", 3, size * 8, size * 4), Graphics(sprite, size))), "duplicate-sprite-visual", "presentation.sprites");
         }
         var portraits = new Dictionary<int, ExplorationPortraitVisual>();
         foreach (var portrait in Array(row, "portraits"))

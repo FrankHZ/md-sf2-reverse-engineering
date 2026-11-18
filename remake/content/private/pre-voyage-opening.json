@@ -150,7 +150,7 @@
     "23": 26
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration and the ordinary Evil Spirit Shrine entrance; excludes consultation and subsequent recruitment.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; excludes subsequent recruitment, Fairy handoff and Oddler departure.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -408,6 +408,26 @@
       "loopEnd": 4032153,
       "timerB": 207,
       "wavSha256": "5786343D9EFB8CF2AFC9E9A181F1E044A687512B50C65594A6D333F57DD605BA"
+    },
+    "SFX_BIG_DOOR_RUMBLE_TIMER_C1": {
+      "timerB": 193,
+      "wavSha256": "18BC9F6F2764C73A6DB1388419E21D02CE48CEBD03F363037B18FA40D9F5E225"
+    },
+    "SFX_BATTLEFIELD_DEATH_TIMER_C1": {
+      "timerB": 193,
+      "wavSha256": "90544A5F80135ED52761CD6B146B1D6C5A76FD7A6ED2701EEAB139E87F6EECE1"
+    },
+    "SFX_MENU_SWITCH_TIMER_C1": {
+      "timerB": 193,
+      "wavSha256": "84ABEC21A9B431BEF256BD3200C24C3AC6015D6F347FDAEAF682664252C8D2F8"
+    },
+    "SFX_VALIDATION_TIMER_C1": {
+      "timerB": 193,
+      "wavSha256": "5736A17B5EBFBC414F3EA8FFD36FB89828900B886C74FB055220C17B961825C8"
+    },
+    "SFX_DIALOG_BLEEP_6_TIMER_C1": {
+      "timerB": 193,
+      "wavSha256": "96F45CC705C8A36CB62C19C4EE4840B97D16DB9E36A5C4A31166461B88180886"
     }
   },
   "presentationAtlases": {
@@ -419,11 +439,22 @@
     "map-57": "world.map57.base-tileset-atlas"
   },
   "setups": {
-    "27": [523],
-    "33": [523],
-    "34": [784],
-    "51": [520],
-    "22": [522],
+    "27": [
+      523
+    ],
+    "33": [
+      523,
+      784
+    ],
+    "34": [
+      784
+    ],
+    "51": [
+      520
+    ],
+    "22": [
+      522
+    ],
     "3": [
       609,
       506
@@ -520,7 +551,13 @@
     22,
     23
   ],
-  "itemEventMaps": [8, 9, 22, 33, 34],
+  "itemEventMaps": [
+    8,
+    9,
+    22,
+    33,
+    34
+  ],
   "searchMaps": [
     3,
     19,
@@ -657,7 +694,12 @@
     "SFX_TAROS_DIALOG_BLEEP_TIMER_BD",
     "MUSIC_ELVEN_TOWN",
     "SFX_WARP_TIMER_CF",
-    "SFX_DIALOG_BLEEP_8_TIMER_CB"
+    "SFX_DIALOG_BLEEP_8_TIMER_CB",
+    "SFX_BIG_DOOR_RUMBLE_TIMER_C1",
+    "SFX_BATTLEFIELD_DEATH_TIMER_C1",
+    "SFX_MENU_SWITCH_TIMER_C1",
+    "SFX_VALIDATION_TIMER_C1",
+    "SFX_DIALOG_BLEEP_6_TIMER_C1"
   ],
   "paidRetreatBattles": [
     2,

@@ -35,7 +35,7 @@ from sf2tool.texture_extract import (
 )
 
 
-def _special_battle_sprite_sheet(rom, base):
+def _special_battle_sprite_sheet(rom, base, graphics=None):
     def read(address, size):
         return rom[address : address + size]
 
@@ -46,6 +46,8 @@ def _special_battle_sprite_sheet(rom, base):
         ]
 
     def decode(address, size):
+        if graphics is not None and address == base + 32:
+            address = graphics
         return decode_stack_compressed(rom[address:], expected_output_bytes=size).output
 
     sheet = bytearray(96 * 48 * 4)
@@ -412,6 +414,22 @@ def prepare_visuals(
                     "speech": speech,
                 }
             )
+            if sprite == compiler.equates["MAPSPRITE_EVIL_SPIRIT"]:
+                sprite_visuals[-1]["graphics"] = {
+                    name: [
+                        raster(
+                            96,
+                            48,
+                            _special_battle_sprite_sheet(rom, special_bases[sprite], address),
+                        )
+                    ]
+                    * 3
+                    for name, address in (
+                        ("evil-spirit", 0x26912),
+                        ("evil-spirit-alt", 0x26DB8),
+                        ("zeon", 0x27284),
+                    )
+                }
             continue
         directions = []
         for direction in range(3):
@@ -504,7 +522,7 @@ def prepare_visuals(
                 path,
                 asset,
                 wav_profiles[asset["cue"]],
-                compiler.number(asset["cue"]),
+                compiler.number(asset["cue"].split("_TIMER_", 1)[0]),
             )
         else:
             payload = path.read_bytes()

@@ -11,6 +11,36 @@ def finish_in_idle(actions: list[dict[str, Any]]) -> None:
     actions.extend([{"op": "jump", "instruction": len(actions) + 1}, {"op": "idle"}])
 
 
+def cyclic_entry_actions(compiler, text, symbol, path):
+    """Preserve a shared backward-branch loop entered through any of its labels."""
+    entry = re.search(rf"^{re.escape(symbol)}:[ \t]*", text, re.MULTILINE)
+    branch = re.search(
+        r"^(\w+):[ \t]*ac_branch\s*\n\s*dc.w\s+\((\w+)-\1\)\s*&\s*\$FFFF",
+        text[entry.end() :],
+        re.MULTILINE,
+    )
+    if branch is None:
+        raise ValueError("shared action loop branch is missing")
+    root = re.search(rf"^{re.escape(branch[2])}:[ \t]*", text, re.MULTILINE)
+    end = entry.end() + branch.start()
+    if root is None or root.start() > entry.start():
+        raise ValueError("shared action loop entry is outside its backward branch")
+    actions, start = [], 0
+    for line in text[root.start() : end].splitlines():
+        if label := re.match(r"^(\w+):[ \t]*(.*)", line):
+            if label[1] == symbol:
+                start = len(actions)
+            line = label[2]
+        for statement in _statements(line):
+            op, _, operands = statement.partition(" ")
+            if op in ("ac_end", "ac_jump", "ac_branch"):
+                raise ValueError("shared action loop has an earlier exit")
+            actions.extend(compile_action(compiler, op, _tokens(operands), path + ":" + symbol))
+    # The same cycle can begin at any quarter. Rotation preserves its first tail,
+    # wrap and subsequent iterations without introducing an idle/stop boundary.
+    return actions[start:] + actions[:start] + [{"op": "jump", "instruction": 0}]
+
+
 def action_stream(self, symbol: str) -> list[dict[str, Any]]:
     if symbol in self.actions:
         return self.actions[symbol]
@@ -60,6 +90,10 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         path = "disasm/data/scripting/entity/eas_main.asm"
     self.sources.add(path)
     text = (self.upstream / path).read_text(encoding="utf-8")
+    if symbol.startswith(("eas_ClockwiseMove", "eas_CounterClockwiseMove")):
+        result = cyclic_entry_actions(self, text, symbol, path)
+        self.actions[symbol] = result
+        return result
     body = re.search(
         rf"^{re.escape(symbol)}:[ \t]*(.*?)(?=^(?!byte_|word_)[A-Za-z_]\w*:|\Z)",
         text,
@@ -102,7 +136,8 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
             offset = len(result)
             result.extend(
                 {**action, "instruction": action["instruction"] + offset}
-                if action["op"] == "jump" else dict(action)
+                if action["op"] == "jump"
+                else dict(action)
                 for action in action_stream(self, "eas_Init")
             )
             break
@@ -166,6 +201,7 @@ def compile_action(self, op: str, args: list[str], source: str) -> list[dict[str
             }
         ]
     flag_ops = {
+        "ac_transparency": ("b", 128),
         "ac_entityObstructable": ("a", 128),
         "ac_mapUncollidable": ("a", 64),
         "ac_entityUncollidable": ("a", 32),

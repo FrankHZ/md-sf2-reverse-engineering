@@ -13,6 +13,7 @@ from sf2tool.remake_exploration_actions import action_stream, inline_actions, wa
 from sf2tool.remake_exploration_items import inventory_operation
 from sf2tool.remake_exploration_joins import join_selector, join_service
 from sf2tool.remake_exploration_scene import (
+    graphics_helper,
     portrait_operations,
     raft_placement,
     scene_entities,
@@ -218,6 +219,8 @@ class OriginalPrograms:
             op, args = row["opcode"], _tokens(row["operandText"])
             source = f"{relative}:{symbol}[{row['index']}]"
             index += 1
+            if op == "nop":
+                continue
             if found := inventory_operation(self, relative, op, args, registers, rows, index):
                 operation, index = found
                 result.append(operation)
@@ -480,6 +483,8 @@ class OriginalPrograms:
                 "((MAP_EVENT_TYPE-$1000000)).w",
             ]:
                 result.append({"op": "request-current-map"})
+            elif op == "executeSubroutine" and (graphics := graphics_helper(self, args[0])):
+                result.extend(graphics)
             elif op == "executeSubroutine" and args[0] in self.raw:
                 result.append({"op": "call", "target": _location(self.compile(args[0]))})
             elif op == "jsr" and (

@@ -527,6 +527,7 @@ internal static partial class GameText
         ["new.slots"] = 0,
         ["new.uncertain"] = 0,
         ["save.error.location"] = 0,
+        ["save.error.story-stage"] = 0,
         ["save.error.profile"] = 0,
         ["save.error.compatibility"] = 0,
         ["save.error.uncertain"] = 0,
