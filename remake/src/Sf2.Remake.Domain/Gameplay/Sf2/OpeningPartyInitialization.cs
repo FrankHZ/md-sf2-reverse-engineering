@@ -19,7 +19,7 @@ internal static class OpeningPartyInitialization
     {
         var definition = deployment.Definition;
         var growth = definition.Growth ?? throw new BattleRuleException("initial-growth-required", "opening.growth");
-        if (growth.ClassId > 11 || startingLevel is 0 or > 40 || growth.Stats.Count != 5)
+        if (growth.ClassId is > 11 and not 22 || startingLevel is 0 or > 40 || growth.Stats.Count != 5)
             throw new BattleRuleException("initial-class-level", "opening.ally", true);
         var items = definition.SourceLoadout?.Items ?? throw new BattleRuleException("initial-items-required", "opening.items");
         var packed = Enumerable.Repeat((byte)63, 4).ToArray();

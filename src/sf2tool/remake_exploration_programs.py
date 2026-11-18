@@ -683,8 +683,7 @@ class OriginalPrograms:
                     ]
                 )
             elif (
-                op == "setQuake"
-                or op == "cloneEntity"
+                op in ("setQuake", "setSize", "cloneEntity")
                 or (op in ("clr.b", "move.b") and args[-1] == "((PLAYER_TYPE-$1000000)).w")
             ):
                 result.extend(scene_operation(self, op, args))

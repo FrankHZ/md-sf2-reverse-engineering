@@ -103,6 +103,7 @@ internal static class ExplorationTextRunner
         var names = new List<DisplayNameBinding>();
         var receipt = text.UseItemReceipt ? current.Story.ItemReceipt
             ?? throw new BattleRuleException("field-item-receipt", "program.text", true) : null;
+        var itemId = receipt?.Item ?? current.Story.DialogueItem;
         for (int sourceToken = 0; sourceToken < tokens.Count; sourceToken++)
         {
             var part = tokens[sourceToken];
@@ -118,8 +119,8 @@ internal static class ExplorationTextRunner
                 member = partyLists.Active.Count > 0 ? partyLists.Active[0] : null;
             }
             (byte Id, string Name)? role = part.Kind == ExplorationTextTokenKind.ClassName ? JoinedClass(scenario, current, member) : null;
-            var item = part.Kind == ExplorationTextTokenKind.ItemName && receipt is not null
-                ? scenario?.FieldPreparation?.Items.GetValueOrDefault(receipt.Item) : null;
+            var item = part.Kind == ExplorationTextTokenKind.ItemName && itemId is { } id
+                ? scenario?.FieldPreparation?.Items.GetValueOrDefault(id) : null;
             string value = part.Kind switch
             {
                 ExplorationTextTokenKind.Literal => part.Value,
@@ -130,7 +131,7 @@ internal static class ExplorationTextRunner
                 _ => throw new BattleRuleException("field-text-token", "program.text", true),
             };
             if (part.Kind == ExplorationTextTokenKind.ItemName)
-                names.Add(new(sourceToken, null, value, null, ItemId: receipt!.Item));
+                names.Add(new(sourceToken, null, value, null, ItemId: itemId));
             if (part.Kind is ExplorationTextTokenKind.MemberName or ExplorationTextTokenKind.ClassName)
             {
                 ActorRef? namedActor = scenario is not null

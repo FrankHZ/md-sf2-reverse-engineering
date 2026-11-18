@@ -28,7 +28,7 @@ internal static class PrivateFieldPreparation
             // Field-only/controlled consumers and enemy equipment keep their immutable binding.
             if (allowBattleChanges)
                 Require(row.Control == BattleControl.Player && Sf2ClassRules.SourceClass(row.Definition.ClassRule) is not null &&
-                    row.Definition.Physical is { Promoted: false } && row.Definition.Growth is not null,
+                    row.Definition.Growth is { } growth && row.Definition.Physical?.Promoted == (growth.ClassId > 11),
                     "source-battle-equipment-actor", "actor.equipment", true);
             int bonus = row.Definition.Growth?.AttackBonus ?? row.Definition.SourceLoadout?.Items
                 .Where(word => (word & 128) != 0).Sum(word => weapons.Single(item => item.ItemId == (word & 127)).AttackBonus) ?? 0;
@@ -41,7 +41,7 @@ internal static class PrivateFieldPreparation
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)
     {
         return source.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" || item is { Code: "ACHILLES_SWORD", ItemTypeExpression: "WEAPON|RARE" }) &&
-            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) && item.EquipEffects.All(effect =>
+            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3) && item.EquipEffects.All(effect =>
                 effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
             .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName,
                 source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))

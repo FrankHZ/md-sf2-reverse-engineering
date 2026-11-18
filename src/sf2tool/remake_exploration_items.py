@@ -109,12 +109,17 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
             return {"op": "present", "kind": "PreviousMusic", "resource": None,
                     "entity": None, "position": None}, index
         return sound_operation(args[0]), index
+    cliff = relative == map_path + "map72/mapsetups/s3_zoneevents.asm"
+    if (cliff and op == "move.w" and len(args) == 2 and args[0].startswith("#ITEM_")
+            and args[1] == "((DIALOGUE_NAME_INDEX_1-$1000000)).w"):
+        return {"op": "name-dialogue-item", "item": compiler.number(args[0][1:])}, index
     if op != "jsr" or relative not in (
         map_path + "map06/mapsetups/s2_entityevents_701.asm",
         map_path + "map08/mapsetups/s5_itemevents.asm",
         map_path + "map09/mapsetups/s2_entityevents.asm",
         map_path + "map22/mapsetups/s5_itemevents.asm",
         map_path + "map30/mapsetups/s2_entityevents.asm",
+        map_path + "map72/mapsetups/s3_zoneevents.asm",
     ):
         return None
     if args == ["(Sleep).w"] and "d0" in registers:
@@ -137,32 +142,21 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
     if args == ["j_GetItemInventoryLocation"]:
         compiler.sources.add("disasm/code/common/stats/itemstats.asm")
         compare, branch = rows[index : index + 2]
-        if branch["opcode"] == "beq.s":
-            # Conditional removal rejoins the immediate next source label. The
-            # common RemovePartyItem performs the same no-match no-op and scan.
-            if not (
-                compare["opcode"] == "cmpi.w"
-                and _tokens(compare["operandText"]) == ["#-1", "d0"]
-                and index + 3 == len(rows)
-                and rows[index + 2]["opcode"] == "jsr"
-                and rows[index + 2]["operandText"] == "j_RemoveItemBySlot"
-            ):
-                raise ValueError("unsupported conditional joined-item removal")
-            # The compiler appends the immediate fallthrough label normally.
+        if not (compare["opcode"] == "cmpi.w" and _tokens(compare["operandText"]) == ["#-1", "d0"]
+                and branch["opcode"] in ("beq.s", "beq.w", "bne.s", "bne.w")):
+            raise ValueError("unsupported joined-item lookup result")
+        missing = branch["opcode"].startswith("beq")
+        tail = rows[index + 2:]
+        if missing and tail and tail[0]["opcode"] == "jsr" and tail[0]["operandText"] == "j_RemoveItemBySlot":
+            # This caller uses the returned slot directly and rejoins its single-instruction fallthrough.
             target = branch["operandText"]
             text = (compiler.upstream / relative).read_text(encoding="utf-8")
-            if not re.search(r"jsr\s+j_RemoveItemBySlot\s*\n" + re.escape(target) + r":", text):
+            if len(tail) != 1 or not re.search(r"jsr\s+j_RemoveItemBySlot\s*\n" + re.escape(target) + r":", text):
                 raise ValueError("conditional removal must rejoin its fallthrough")
             return {"op": "remove-party-item", "item": registers["d1"]}, index + 3
-        if not (
-            compare["opcode"] == "cmpi.w"
-            and _tokens(compare["operandText"]) == ["#-1", "d0"]
-            and branch["opcode"] in ("bne.s", "bne.w")
-        ):
-            raise ValueError("unsupported joined-item lookup result")
         target = compiler.compile(branch["operandText"]).lower().replace("_", "-")
         return {
-            "op": "branch-has-item",
+            "op": "branch-missing-item" if missing else "branch-has-item",
             "item": registers["d1"],
             "target": {"program": target, "instruction": 0},
         }, index + 2

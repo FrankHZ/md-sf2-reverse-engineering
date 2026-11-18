@@ -128,8 +128,9 @@ public sealed class StoryState
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
         bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, FieldReturnAnchor? saveAnchor = null,
-        IReadOnlyDictionary<string, string>? names = null, Battles.DefeatedProgramState? defeatedScene = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null)
+        IReadOnlyDictionary<string, string>? names = null, Battles.DefeatedProgramState? defeatedScene = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, byte? dialogueItem = null)
     {
+        DialogueItem = dialogueItem;
         ItemReceipt = itemReceipt;
         Raft = raft;
         DefeatedScene = defeatedScene;
@@ -197,6 +198,7 @@ public sealed class StoryState
     public bool WindowFixPending { get; }
     public MusicProgress? Music { get; }
     public RaftBerth? Raft { get; }
+    public byte? DialogueItem { get; }
     public StoryItemReceipt? ItemReceipt { get; }
     internal StoryState Copy(ProgramLocation? cursor, ProgramWait? wait = null,
         IEnumerable<int>? flags = null, IEnumerable<ProgramLocation>? callers = null, int? textCursor = null,
@@ -210,7 +212,7 @@ public sealed class StoryState
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
         short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false, FieldReturnAnchor? saveAnchor = null,
-        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, bool clearItemReceipt = false) =>
+        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, bool clearItemReceipt = false, byte? dialogueItem = null) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -221,7 +223,7 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene, raft ?? Raft, clearItemReceipt ? null : itemReceipt ?? ItemReceipt);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene, raft ?? Raft, clearItemReceipt ? null : itemReceipt ?? ItemReceipt, dialogueItem ?? DialogueItem);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

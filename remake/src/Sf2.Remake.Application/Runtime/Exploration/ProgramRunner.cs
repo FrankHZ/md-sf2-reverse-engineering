@@ -233,8 +233,11 @@ internal static class ProgramRunner
                             ?? throw new BattleRuleException("missing-party-member", "branch.actor", true);
                         if ((ally.Hp != 0) == branch.WhenAlive) story = story.Copy(branch.Target);
                         break;
+                    case NameDialogueItem nameItem:
+                        story = story.Copy(story.Cursor, dialogueItem: nameItem.Item);
+                        break;
                     case BranchHasItem branch:
-                        if (FieldItemEvents.Find(definition, current, branch.Item) is not null) story = story.Copy(branch.Target);
+                        if ((FieldItemEvents.Find(definition, current, branch.Item) is not null) == branch.WhenPresent) story = story.Copy(branch.Target);
                         break;
                     case BranchPackSpace branch:
                         if (FieldStoryInventory.HasSpace(definition, current, branch.Actor)) story = story.Copy(branch.Target);
@@ -511,6 +514,14 @@ internal static class ProgramRunner
                                 music = music with { EndStep = null, ActualDone = false, PreviousEligible = false };
                         }
                         story = current.Story.Copy(cursor, boundNod ? new NodWait(token, cue.Entity!.Value) : new PresentationWait(token, cue, restore), music: music); break;
+                    case ResizeEntity resize:
+                        var sized = Entity(current, resize.Entity);
+                        long refresh = checked(sized.SpriteRequest + 1);
+                        active = new ActiveExploration(current.Exploration!.WithEntity(sized with {
+                            Motion = sized.Motion with { FlagsB = (byte)(sized.Motion.FlagsB | 8) },
+                            RenderSize = resize.Size, SpriteRequest = refresh, WaitingForSprite = true }));
+                        story = current.Story.Copy(cursor, new EntitySpriteWait(token, sized.Slot, refresh));
+                        break;
                     case RemoveEntityShadow remove:
                         var posed = Entity(current, remove.Entity);
                         long update = checked(posed.SpriteRequest + 1);
