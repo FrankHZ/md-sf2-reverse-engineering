@@ -236,6 +236,12 @@ internal static class ProgramRunner
                     case BranchHasItem branch:
                         if (FieldItemEvents.Find(definition, current, branch.Item) is not null) story = story.Copy(branch.Target);
                         break;
+                    case BranchPackSpace branch:
+                        if (FieldStoryInventory.HasSpace(definition, current, branch.Actor)) story = story.Copy(branch.Target);
+                        break;
+                    case TryAddActorItem add:
+                        active = FieldStoryInventory.Add(definition, current, add.Actor, add.Item);
+                        break;
                     case RemovePartyItem remove:
                         active = FieldItemEvents.Remove(definition, current, remove.Item);
                         break;

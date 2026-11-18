@@ -75,14 +75,43 @@ def inventory_operation(compiler, relative, op, args, registers, rows, index):
     # Other chapters call these services with different operands and continuations.
     # They retain their existing boundaries until their callers are admitted.
     map_path = "disasm/data/maps/entries/"
+    if (op in ("bsr.s", "bsr.w") and args == ["sub_5A278"]
+            and relative in (map_path + "map30/mapsetups/s2_entityevents.asm",
+                             map_path + "map30/mapsetups/s3_zoneevents.asm")):
+        return {"op": "call", "target": {
+            "program": compiler.compile(args[0]).lower().replace("_", "-"),
+            "instruction": 0}}, index
+    if op == "sndCom" and relative == map_path + "map30/mapsetups/s2_entityevents.asm":
+        from sf2tool.remake_exploration_scene import sound_operation
+
+        if args == ["SOUND_COMMAND_PLAY_PREVIOUS_MUSIC"]:
+            return {"op": "present", "kind": "PreviousMusic", "resource": None,
+                    "entity": None, "position": None}, index
+        return sound_operation(args[0]), index
     if op != "jsr" or relative not in (
         map_path + "map08/mapsetups/s5_itemevents.asm",
         map_path + "map09/mapsetups/s2_entityevents.asm",
         map_path + "map22/mapsetups/s5_itemevents.asm",
+        map_path + "map30/mapsetups/s2_entityevents.asm",
     ):
         return None
     if args == ["(Sleep).w"] and "d0" in registers:
         return {"op": "wait-ticks", "ticks": registers["d0"]}, index
+    if args == ["j_GetItemBySlotAndHeldItemsNumber"]:
+        compiler.sources.add("disasm/code/common/stats/itemstats.asm")
+        compare, branch = rows[index : index + 2]
+        if not (registers.get("d1") == 0 and compare["opcode"] == "cmpi.w"
+                and _tokens(compare["operandText"]) == ["#COMBATANT_ITEMSLOTS", "d2"]
+                and compiler.number("COMBATANT_ITEMSLOTS") == 4 and branch["opcode"] == "bne.s"):
+            raise ValueError("unsupported actor pack capacity branch")
+        return {"op": "branch-pack-space", "actor": "ally-" + str(registers["d0"]),
+                "target": {"program": compiler.compile(branch["operandText"])
+                           .lower().replace("_", "-"),
+                           "instruction": 0}}, index + 2
+    if args == ["j_AddItem"]:
+        compiler.sources.add("disasm/code/common/stats/itemstats.asm")
+        return {"op": "try-add-actor-item", "actor": "ally-" + str(registers["d0"]),
+                "item": registers["d1"]}, index
     if args == ["j_GetItemInventoryLocation"]:
         compiler.sources.add("disasm/code/common/stats/itemstats.asm")
         compare, branch = rows[index : index + 2]

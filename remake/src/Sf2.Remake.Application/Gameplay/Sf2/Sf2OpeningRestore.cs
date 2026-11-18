@@ -66,7 +66,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data)
     {
-        if (data.Map == "map-33" && data.Flags.Any(flag => flag is 785 or 786 or 787) && data.FieldScene is null)
+        if ((data.Map == "map-30" || data.Map == "map-33" && data.Flags.Any(flag => flag is 785 or 786 or 787)) && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if (data.Recipe == "evil-spirit-shrine" && data.EgressMap == "map-9") return;
         if (data.Recipe is "floor-world" or "willard-burrow" && data.EgressMap == "map-26") return;
@@ -76,7 +76,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             data.EgressMap is "map-6" or "map-8") return;
         if (data.Recipe is "dark-caves" or "mount-volcano" or "polca-return" or "polca-victory" or "polca-raft" or "hassan" &&
             data.EgressMap is "map-6" or "map-8" or "map-10" or "map-13") return;
-        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" or "desktop-kingdom" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if (data.Recipe is "ancient-hall" or "taros-shrine" or "southwest-parmecia" or "harpy-pond" or "fairy-cave" or "devils-tail" or "creed-mansion" or "dwarven-mine" or "desktop-kingdom" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "east-shrine" && data.Flags.Contains(514) && data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "hassan" && data.EgressMap == "map-9") return;
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
@@ -143,6 +143,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             (!flags.Contains(523) || flags.Contains(783)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
+        if (map.Value == "map-30" && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("dwarven-mine", player, "Dwarven Mine");
         if (map.Value == "map-34" &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("evil-spirit-shrine", player, "Evil Spirit Shrine");
@@ -185,12 +187,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     }
 
     public SavedFieldScene? CaptureScene(ScenarioDefinition definition, ExplorationState world, IReadOnlyList<int> flags) =>
-        Sf2CreedRestore.Capture(definition, world, flags);
+        world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
 
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
+        if (scene is not null && location.Anchor.Map.Value == "map-30")
+            return Sf2MineRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         if (scene is not null)
             return Sf2CreedRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         var anchor = location.Anchor;

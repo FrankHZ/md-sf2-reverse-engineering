@@ -230,6 +230,8 @@ def derive(args: argparse.Namespace) -> dict:
         ):
             field_texts.update((2, 10))
         field_items = field_item_ids(world["world"]) - {127}
+    if args.scope == "current" and any(row["id"] == "map-30" for row in world["world"]["maps"]):
+        field_texts.update(range(1705, 1733))
     hassan = args.scope == "current" and any(row["id"] == "map-9" for row in world["world"]["maps"])
     if hassan:
         field_texts.update(range(2513, 2520))

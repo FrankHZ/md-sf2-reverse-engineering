@@ -146,12 +146,15 @@ def prepare(
     presentation_root: Path | None = None,
     audio_candidates: tuple[Path, ...] = (),
     encounter_inputs: Path | None = None,
+    scratch_root: Path | None = None,
 ) -> dict[str, int]:
     output = output.resolve()
     repository = Path(__file__).resolve().parents[2]
+    writable = scratch_root.resolve() if scratch_root is not None else repository / "local"
     if (
-        not output.is_relative_to(repository / "local")
+        not output.is_relative_to(writable)
         or output in (canonical_path.resolve(), selection_path.resolve())
+        or (rom_path is not None and output == rom_path.resolve())
         or output.is_relative_to(upstream.resolve())
     ):
         raise ValueError("output must be ignored scratch distinct from read-only inputs")
@@ -399,6 +402,10 @@ def main() -> None:
     parser.add_argument("--upstream", required=True, type=Path)
     parser.add_argument("--selection", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument(
+        "--scratch-root", type=Path,
+        help="Explicit task-owned scratch root; defaults to checkout local/",
+    )
     parser.add_argument("--rom-path", type=Path)
     parser.add_argument("--presentation-root", type=Path)
     parser.add_argument(
@@ -415,11 +422,6 @@ def main() -> None:
     )
     args = parser.parse_args()
     destination = args.output.resolve()
-    repo = Path(__file__).resolve().parents[2]
-    if not destination.is_relative_to(repo / "local"):
-        raise SystemExit(
-            "private content output must stay in this worktree's ignored local directory"
-        )
     try:
         print(
             json.dumps(
@@ -432,6 +434,7 @@ def main() -> None:
                     args.presentation_root,
                     tuple(args.audio_candidate),
                     args.encounter_inputs,
+                    args.scratch_root,
                 )
             )
         )

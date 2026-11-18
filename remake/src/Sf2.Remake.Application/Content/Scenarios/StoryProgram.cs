@@ -19,6 +19,8 @@ public sealed record EndProgram(bool SourceMapScript = false) : StoryInstruction
 public sealed record JumpProgram(ProgramLocation Target) : StoryInstruction;
 public sealed record BranchInteractionFacing(byte Facing, bool WhenEqual, ProgramLocation Target) : StoryInstruction;
 public sealed record BranchHasItem(byte Item, ProgramLocation Target) : StoryInstruction;
+public sealed record BranchPackSpace(ActorRef Actor, ProgramLocation Target) : StoryInstruction;
+public sealed record TryAddActorItem(ActorRef Actor, byte Item) : StoryInstruction;
 public sealed record RemovePartyItem(byte Item) : StoryInstruction;
 public sealed record FaceInteraction(EntityRef Entity) : StoryInstruction;
 public sealed record BranchAlive(ActorRef Actor, bool WhenAlive, ProgramLocation Target) : StoryInstruction;

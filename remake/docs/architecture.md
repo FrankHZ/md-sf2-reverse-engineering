@@ -2,11 +2,11 @@
 
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior. Reference routes support external comparisons. The common
-session runs authored packages and the connected private campaign through the accepted bilingual
-Creed Stage1 endpoint: walking on mine exterior Map68 (57,25), facing Up, with F69 set. The
-[Creed chapter](application/creed-recruitment.md) owns this route; the [engine and save audit](evidence/creed-stage1-engine-save-audit.md)
-records its limits and the next consumer boundary. Mine Map30 recovery and Cannon content remain
-Stage2; this endpoint does not enter the mine. The [Polca chapter](application/polca-first-raft.md)
+session runs authored packages and the connected private campaign through bilingual
+[mine recovery, Cannon and ordinary return](application/dwarven-mine-cannon.md). Creed and the mine
+share finite loaded-scene restoration mechanics with separate SF2 population policies. The
+[campaign agreement](application/remaining-campaign-risk-baseline.md) owns current scope;
+Astral, Dynamite and North Cliff remain outside this boundary. The [Polca chapter](application/polca-first-raft.md)
 documents the earlier raft boundary.
 The [Battle08–13 and raft audit](evidence/polca-raft-engine-save-audit.zh-CN.md) identifies current
 engine-boundary and save-compatibility risks. The [earlier engine and script audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)

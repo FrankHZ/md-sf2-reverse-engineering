@@ -21,10 +21,10 @@ sequential delivery plan.
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
 [current composed boundary](./docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
-The private-local remake's accepted bilingual Stage1 route ends walking on mine exterior Map68 (57,25),
-facing Up with F69 set. The [Creed chapter](./remake/docs/application/creed-recruitment.md) and its
-[engine/save audit](./remake/docs/evidence/creed-stage1-engine-save-audit.md) own the route and limits;
-mine Map30 recovery and Cannon content remain Stage2. This playable scope does not expand the original
+The private-local bilingual route continues through Creed into the [dwarven mine](./remake/docs/application/dwarven-mine-cannon.md):
+Fairy recovery, Cannon, digging and a saved ordinary return. The [capability trace](./remake/docs/capability-status.md#campaign-feature-trace)
+and [campaign agreement](./remake/docs/application/remaining-campaign-risk-baseline.md) own current
+scope and limits; Astral, Dynamite and North Cliff remain outside this boundary. This playable scope does not expand the original
 Map3→Battle01 milestone's proof boundary.
 
 Current presentation includes continuous exploration with contextual Talk, a shared 1920×1080 world
