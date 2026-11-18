@@ -31,8 +31,11 @@ internal sealed class EntryPresentationAssets : IDisposable
             foreach (var (name, bytes) in Content.Images)
             {
                 using var image = new Image();
-                if (image.LoadPngFromBuffer(bytes) != Error.Ok || image.GetWidth() != 256 || image.GetHeight() != 224)
-                    throw new ArgumentException("entry-image-decode");
+                var result = image.LoadPngFromBuffer(bytes);
+                if (result != Error.Ok)
+                    throw new ArgumentException($"entry-image-decode ({name}): {result}");
+                if (image.GetWidth() != 256 || image.GetHeight() != 224)
+                    throw new ArgumentException($"entry-image-dimensions ({name}): {image.GetWidth()}x{image.GetHeight()}, expected 256x224");
                 Textures.Add(name, ImageTexture.CreateFromImage(image));
             }
         }

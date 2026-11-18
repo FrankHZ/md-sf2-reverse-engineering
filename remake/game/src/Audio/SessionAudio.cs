@@ -113,9 +113,10 @@ internal sealed partial class SessionAudio : IDisposable
 
     internal void Restore(SessionSnapshot snapshot)
     {
+        var music = snapshot.Story.Music;
         try
         {
-            var music = snapshot.Story.Music ?? throw new InvalidOperationException("restore-music-required");
+            if (music is null) throw new InvalidOperationException("restore-music-required");
             // Prepare the new playback and its logical history before replacing the old host session.
             Play(music.Cue, remember: false);
             _history.Clear(); _history.Add(music.Cue); _history.AddRange(music.Previous);
@@ -123,7 +124,12 @@ internal sealed partial class SessionAudio : IDisposable
             BindMusic(music.Generation, music.Cue);
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException)
-        { Error = "restore-audio-unavailable"; }
+        {
+            Error = "restore-audio-unavailable";
+            string context = music is null ? "saved music missing" :
+                $"cue {music.Cue}, map {music.Map.Value}, area {music.Area}, generation {music.Generation}";
+            GD.PushWarning($"{Error}: restore session music ({context}): {error.GetType().Name}: {error.Message}");
+        }
     }
 
     internal Sf2.Remake.Application.Runtime.Persistence.ObserveFieldMusic? ObserveFieldHistory()

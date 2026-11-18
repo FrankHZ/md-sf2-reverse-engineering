@@ -1687,6 +1687,37 @@ No fixed sleep, GC or warning filter was added to production. Headless success d
 human aesthetic approval, physical-controller behavior, natural source navigation, exact cadence,
 render/CRAM timing, original DMA tails or sample-exact audio parity.
 
+### Entry and Continue failure diagnostics
+
+The entry menu retains its localized package message and `assetError` in
+`ReadEntryObservationJson`. Continue retains its localized save error, Back, and
+`restore-audio-unavailable` detail. Godot's warning log adds the operation, exception type and
+reason. Entry shape rejections retain their content field, and image failures identify the
+resource. Restore warnings identify the saved cue, map, area and generation when available.
+Keep raw logs local because filesystem exception messages can include the selected path.
+
+Reproduce on the built Debug adapter and the selected Godot installation with `--headless
+--audio-driver Dummy`. Use fresh ignored logs, runtime state and scratch for each case. Select a
+registered title/Witch package, the compatible world and dependencies, and zh-CN input settings.
+For Continue, copy a compatible settled field record into scratch and select that copy with
+`--save-output` so the ordinary title → Witch → Continue → record route runs against it. Compare
+its bytes after both outcomes. The retained local launcher is
+`pwsh -NoProfile -File local/issue1911/Run.ps1 -Case <case> -Sample <fresh-name>`.
+
+| Case | Confirmed on Godot 4.7.2 Mono with Dummy audio |
+| --- | --- |
+| `entry-missing`, `entry-json`, `entry-shape`, `entry-image` | Select a missing file, a truncated JSON file, an empty JSON object, or a copied package whose last image is a valid 1×1 PNG. The warnings distinguish filesystem, JSON parsing, missing entry field, and named image dimensions. The localized menu disables New Game and exposes no art or audio from the failed load. Continue and Settings remain selectable. |
+| `entry-playback`, `restore-fault` | In the local SceneTree observer, connect to the target `AudioStreamPlayer` on `node_added`. At its first non-null stream assignment, remember only the player and stream IDs and remove the player from its parent in `property_list_changed`. Target the title player or the candidate player directly under the host, respectively. Godot rejects playback outside the tree. The adapter records `InvalidOperationException` and `audio-stream-did-not-start` with the relevant operation. Both IDs become invalid. Failed Continue mounts no session, keeps the record bytes, and returns to the Witch menu with its music when Back is selected. |
+| `restore-ok` | Ordinary title and Witch cues play. Continue mounts the selected field progress with bound, playing music and releases all six entry textures. In the system menu, New Game opens the replacement Witch menu with Cancel selected. Cancel and Resume preserve the restored session and field playback. |
+
+The fault observer induces a native playback failure after content admission without changing the
+candidate assembly or saved data. Its two playback cases each produce the expected native refusal
+and an adapter warning, then exit0. Other final cases exit0 without native errors. The initial
+observer receipts retain two exit1 results. The progress comparison omitted the legacy empty-depot
+default, and the stream check incorrectly required a positive signed instance ID. Both checks pass
+after accounting for those representations. Physical audio output and the attribution of earlier
+headless ObjectDB shutdown warnings remain **Unknown** for this slice.
+
 ### Title lifecycle investigation (#1447)
 
 The [investigation-only agreement](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447)

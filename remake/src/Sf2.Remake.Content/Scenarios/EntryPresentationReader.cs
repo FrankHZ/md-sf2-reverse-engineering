@@ -13,7 +13,8 @@ public static class EntryPresentationReader
     public static EntryPresentation Read(string path)
     {
         try { return ReadCore(path); }
-        catch (ScenarioJson.AdmissionIssue issue) { throw new ArgumentException(issue.Failure.Code); }
+        catch (ScenarioJson.AdmissionIssue issue)
+        { throw new ArgumentException($"{issue.Failure.Code} ({issue.Failure.Field})", issue); }
     }
 
     private static EntryPresentation ReadCore(string path)

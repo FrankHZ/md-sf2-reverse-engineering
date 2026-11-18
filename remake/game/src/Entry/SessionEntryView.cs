@@ -34,16 +34,7 @@ public sealed partial class SessionEntryView : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
-        try
-        {
-            _assets = new EntryPresentationAssets(); _assets.AttachAudio(this);
-            // Host pause owns audio explicitly; disabling entry gestures must not pause BGM.
-            GetNode<AudioStreamPlayer>("SessionMusic").ProcessMode = ProcessModeEnum.Always;
-        }
-        catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or
-            System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
-        { _assets?.Dispose(); _assets = null; _assetError = "entry-content-unavailable"; }
-        _backdrop = new EntryBackdrop { Name = "EntryBackdrop", Assets = _assets }; AddChild(_backdrop);
+        _backdrop = new EntryBackdrop { Name = "EntryBackdrop" }; AddChild(_backdrop);
         _backdrop.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _dialogue = new StoryDialoguePanel { Name = "EntryDialogue", LayoutRegion = EntryLayout.Greeting }; AddChild(_dialogue);
         _start = new Button { Name = "Start", Text = GameText.Get("entry.press-start"), Position = new(640, 900), Size = new(640, 72), FocusMode = FocusModeEnum.None };
@@ -72,13 +63,28 @@ public sealed partial class SessionEntryView : Control
                 input is InputEventMouseMotion { Device: >= 0 } motion && motion.Relative.Length() >= 4) Select(selected); };
             actions.AddChild(button); StoryTheme.EntryChoice(button); _buttons.Add(button);
         }
-        if (_assetError is not null)
+        string operation = "load title/Witch presentation (SF2_PRIVATE_ENTRY_CONTENT)";
+        try
         {
-            ShowMenu(); _buttons[0].Disabled = true;
-            Message(GameText.Get("entry.assets"));
+            _assets = new EntryPresentationAssets();
+            operation = "attach entry audio";
+            _assets.AttachAudio(this);
+            // Host pause owns audio explicitly; disabling entry gestures must not pause BGM.
+            GetNode<AudioStreamPlayer>("SessionMusic").ProcessMode = ProcessModeEnum.Always;
+            string cue = Replacement ? "MUSIC_WITCH" : "MUSIC_TITLE";
+            operation = $"start entry music ({cue})";
+            _assets.Audio!.Play(cue);
+            _backdrop.Assets = _assets;
         }
-        else if (Replacement) { ShowMenu(); Select(1); }
-        else _assets!.Audio!.Play("MUSIC_TITLE");
+        catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or ArgumentException or
+            System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
+        {
+            _assets?.Dispose(); _assets = null;
+            _assetError = "entry-content-unavailable";
+            GD.PushWarning($"{_assetError}: {operation}: {error.GetType().Name}: {error.Message}");
+        }
+        if (_assetError is not null) { ShowMenu(); _buttons[0].Disabled = true; }
+        else if (Replacement) ShowMenu(startMusic: false);
     }
 
     internal void ConfigureHints(GameInput input)
@@ -168,15 +174,15 @@ public sealed partial class SessionEntryView : Control
         if (++_page >= 5) { ShowMenu(); return; }
         _backdrop.Arrival = false; EntryMessage(216 + _page);
     }
-    private void ShowMenu()
+    private void ShowMenu(bool startMusic = true)
     {
         _failure = null; _canRetry = false;
         _page = -2; _start.Hide(); _backdrop.Witch = true; _backdrop.Arrival = false;
         foreach (var button in _buttons) button.Show();
-        if (_assets is not null) _assets.Audio!.Play("MUSIC_WITCH");
-        if (Replacement) Message(GameText.Get("entry.replacement"));
-        else if (_assets is not null) EntryMessage(221);
-        else Message(GameText.Get("entry.unavailable"));
+        if (startMusic && _assets is not null) _assets.Audio!.Play("MUSIC_WITCH");
+        if (_assetError is not null) Message(GameText.Get("entry.assets"));
+        else if (Replacement) Message(GameText.Get("entry.replacement"));
+        else EntryMessage(221);
         Select(Replacement ? 1 : 0);
     }
     private void ShowTitle()
