@@ -104,6 +104,26 @@ public sealed class HistoricalSaveRosterTests
         Assert.Equal(data.Battle.MainSeed, upgraded.Battle.MainSeed);
     }
 
+    [Fact]
+    public void NorthCaveBattleAddsHiginsToRetainedPartyWithoutJoiningOrDeployingHim()
+    {
+        var (basis, snapshot) = BattleSaveFixture.Create(encounterId: "battle-25");
+        var latest = Package(9, 19, basis);
+        var seed = BattleSaveFixture.Capture(basis, snapshot);
+        int[] members = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18];
+        var data = seed with
+        {
+            Compatibility = OpeningSave.FieldCompatibility(latest, RuleCompositions.Sf2()) with { RecipeRevision = 8 },
+            Story = seed.Story with { Player = seed.Story.Player with
+                { RetainedAllies = members.Select(id => seed.Story.Player.RetainedAllies[0] with { Actor = new("ally-" + id) }).ToArray() } },
+        };
+        var session = Assert.IsType<SessionStarted>(GameSession.RestoreBattle(latest, data, RuleCompositions.Sf2())).Session;
+        var upgraded = Assert.IsType<BattleSaveData>(session.CaptureBattleSave(session.Current.SessionId, session.Current.Revision).Data);
+        Assert.True(BattleContinuationValues.Same(data.Battle, upgraded.Battle));
+        Assert.Equal(data.Story.Flags, upgraded.Story.Flags);
+        Assert.Single(upgraded.Story.Player.RetainedAllies, row => row.Actor == new ActorRef("ally-19"));
+    }
+
     private static void EqualAlly(SavedAlly expected, SavedAlly actual)
     {
         Assert.Equal(expected.Items, actual.Items);
@@ -129,7 +149,7 @@ public sealed class HistoricalSaveRosterTests
         var curve = Enumerable.Repeat(new StatGrowthFraction(32, 32), 29).ToArray();
         var growth = new BattleGrowthDefinition(0, 0, Enumerable.Repeat(new StatGrowth(7, 35, curve), 5).ToArray(),
             [], new Dictionary<byte, SpellRef>());
-        var ids = count < 12 ? Enumerable.Range(0, count).ToArray() : new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17 }.Take(count).ToArray();
+        var ids = count < 12 ? Enumerable.Range(0, count).ToArray() : new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19 }.Take(count).ToArray();
         var rows = ids.Select(id => original with
         {
             Definition = new(new($"ally-{id}"), original.Definition.ClassRule, 1, 7, 7, 7, 7, 7, false, 6, [],

@@ -329,6 +329,9 @@ def derive(args: argparse.Namespace) -> dict:
         field_texts.update(range(2566, 2576))
     encounters = field_encounters(world["world"]) if args.scope == "current" else set()
     northern_enemies = bool(encounters & {"battle-24", "battle-25"})
+    battle26 = "battle-26" in encounters
+    if battle26:
+        field_texts.update(range(2596, 2658))
     battle25 = "battle-25" in encounters
     repeat_enemies = {
         enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
@@ -399,6 +402,8 @@ def derive(args: argparse.Namespace) -> dict:
     road_enemies = (
         {17, 45, 62, 81}.difference(name_ids["name.enemy"]) if northern_enemies else set()
     )
+    if battle26:
+        road_enemies.update({19, 72}.difference(name_ids["name.enemy"]))
     name_ids["name.enemy"] += tuple(sorted(road_enemies))
     if northern_enemies:
         name_ids["name.spell"] += (3,)  # BOOST

@@ -147,6 +147,7 @@ internal sealed partial class BattleMapViewport : Control
             var sprite = new Sprite2D { Name = "NeutralMapSprite" + _neutrals.Count, Texture = Texture(neutral.Sprite, direction),
                 Position = new((neutral.X + 0.5f) * CellSize, (neutral.Y + 0.5f) * CellSize),
                 Scale = Vector2.One * (CellSize / 24f),
+                RotationDegrees = neutral.LyingLeft ? -90 : 0,
                 TextureFilter = TextureFilterEnum.Nearest, FlipH = neutral.Facing == 0, Visible = false, ZIndex = 1 };
             _board.AddChild(sprite); _neutrals.Add((neutral, sprite));
         }

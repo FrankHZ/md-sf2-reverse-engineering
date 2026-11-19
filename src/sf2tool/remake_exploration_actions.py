@@ -86,11 +86,13 @@ def action_stream(self, symbol: str) -> list[dict[str, Any]]:
         path = "disasm/data/scripting/entity/eas_battleneutralentities.asm"
     elif symbol in self.raw:
         path = "disasm/" + self.raw[symbol]["path"]
-    if symbol.startswith("eas_Follower"):
+    if symbol.startswith("eas_Follower") or symbol == "eas_EvilGizmoCircle":
         path = "disasm/data/scripting/entity/eas_main.asm"
     self.sources.add(path)
     text = (self.upstream / path).read_text(encoding="utf-8")
-    if symbol.startswith(("eas_ClockwiseMove", "eas_CounterClockwiseMove")):
+    if symbol == "eas_EvilGizmoCircle" or symbol.startswith(
+        ("eas_ClockwiseMove", "eas_CounterClockwiseMove")
+    ):
         result = cyclic_entry_actions(self, text, symbol, path)
         self.actions[symbol] = result
         return result

@@ -13,10 +13,12 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class SourceEnemyAiTests
 {
-    [Fact]
-    public void AutomaticMovementAcceptsTheSourceGradientRouteButRejectsAnExtraDetour()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AutomaticMovementAcceptsTheSourceGradientRouteButRejectsAnExtraDetour(bool moveOrder)
     {
-        var original = State(BattleMover.Regular, peer: false, blockSouth: false);
+        var original = State(BattleMover.Regular, peer: false, blockSouth: false, allyPosition: moveOrder ? new(5, 6) : null);
         var terrain = original.Definition.Terrain.ToArray();
         terrain[5 * 48 + 4] = new(TerrainSurface.Open, TerrainProtection.None);
         terrain[6 * 48 + 5] = new(TerrainSurface.Brush, TerrainProtection.None);
@@ -27,13 +29,22 @@ public sealed class SourceEnemyAiTests
             original.Round, original.Queue, original.Cursor, original.Gold, regions: original.Regions);
         var origin = before.GetActor(Enemy).Position!;
         var destination = new MapPosition(4, 6);
-        var grid = BattleMovement.Grid(before, Enemy);
+        // A source point move blocks its own faction during propagation. Its route can
+        // cross the opponent at (5,6) and still stop on the unoccupied destination.
+        var grid = moveOrder ? BattleTerrainRules.MovementGrid(terrain, origin, BattleMover.Regular, 2, [origin]) :
+            BattleMovement.Grid(before, Enemy);
         var path = BattleMovement.Route(origin, BattleMovement.MoveString(grid, origin, destination, 20, 20));
         Assert.Equal(4, grid.CostAt(destination));
         Assert.Equal(new[] { origin, new MapPosition(5, 6), destination }, path);
         Assert.Equal(5, path.Skip(1).Sum(position => BattleTerrainRules.MovementCost(terrain[position.Y * 48 + position.X])));
-        var decision = new BattleAutomaticAction(before, [], destination, path);
+        var decision = new BattleAutomaticAction(before, [], destination, path) { MovementGrid = moveOrder ? grid : null };
+        if (moveOrder) Assert.Throws<InvalidOperationException>(() => (decision with { MovementGrid = null }).Validate(before, Enemy));
         decision.Validate(before, Enemy);
+        // Removing the cheap western approach makes the brush route cost five.
+        // A decision grid built with cheaper terrain cannot authorize that stop at MOV 2.
+        var discounted = terrain.Select(_ => new BattleTerrain(TerrainSurface.Open, TerrainProtection.None)).ToArray();
+        var falseCost = BattleTerrainRules.MovementGrid(discounted, origin, BattleMover.Regular, 2, [new(4, 5)]);
+        Assert.Throws<InvalidOperationException>(() => (decision with { MovementGrid = falseCost }).Validate(before, Enemy));
         var detour = decision with { Path = new[] { origin, new MapPosition(6, 5), origin }.Concat(path.Skip(1)).ToArray() };
         Assert.Throws<InvalidOperationException>(() => detour.Validate(before, Enemy));
     }

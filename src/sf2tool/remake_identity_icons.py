@@ -85,6 +85,8 @@ def field_item_ids(world: dict) -> set[int]:
         ids.update((20, 62))  # Protect Ring and Broad Sword
     if "battle-24" in encounters:
         ids.update((17, 53))  # Blizzard and Hyper Cannon
+    if "battle-26" in encounters:
+        ids.add(24)  # Black Ring
     return ids
 
 

@@ -61,18 +61,19 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         _blocked = new bool[2304];
         var approachCosts = Actor.Deployment.Initialization?.KrakenPursuit == true ? SourceEnemyAi.KrakenApproachCosts(_battle) : Costs();
         Restrict(mode);
-        var pursuit = AiMovementRules.PursueOrdered(approachCosts, scores, Grid(), Actor.Position!, targets,
+        var legal = Grid();
+        var pursuit = AiMovementRules.PursueOrdered(approachCosts, scores, legal, Actor.Position!, targets,
             PhysicalTargetRules.Table(Actor.Definition.Mover),
             Occupied, _battle.Definition.Width, _battle.Definition.Height);
         _effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost,
             Target: targets[pursuit.TargetIndex].Actor));
         _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: 0));
-        return Complete(new(_battle, [], pursuit.Destination, BattleMovement.Route(Actor.Position!, pursuit.MoveString)));
+        return Complete(new(_battle, [], pursuit.Destination, BattleMovement.Route(Actor.Position!, pursuit.MoveString)) { MovementGrid = legal });
     }
 
     private BattleAutomaticAction? Support()
     {
-        var action = EnemySupportDecision.Resolve(_battle, actorRef, actions ?? [physical], Grid());
+        var action = OnGrid(grid => EnemySupportDecision.Resolve(_battle, actorRef, actions ?? [physical], grid));
         _effects.Add(new("ai-command-support", actorRef, After: action is null ? -1 : 0));
         return action;
     }
@@ -107,7 +108,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
                             destination = AiMovementRules.AttackPosition(legal, preliminary.Destination, radius, Occupied);
                         if (destination is not null && destination != Actor.Position)
                             result = new(_battle, [], destination, BattleMovement.Route(Actor.Position!,
-                                BattleMovement.MoveString(legal, Actor.Position!, destination, _battle.Definition.Width, _battle.Definition.Height)));
+                                BattleMovement.MoveString(legal, Actor.Position!, destination, _battle.Definition.Width, _battle.Definition.Height))) { MovementGrid = legal };
                     }
                 }
             }
@@ -166,8 +167,15 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         return WeightedMovement.Build(costs, Offset(Actor.Position!), Actor.Definition.Move * 2);
     }
     private bool Occupied(MapPosition position) => _battle.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-    private BattleAutomaticAction? Attack() => EnemySpellDecision.Attack(_battle, actorRef, physical, actions ?? [physical], Grid());
-    private BattleAutomaticAction? Heal() => EnemySpellDecision.Heal(_battle, actorRef, actions ?? [physical], Grid());
+    private BattleAutomaticAction? Attack() => OnGrid(grid =>
+        EnemySpellDecision.Attack(_battle, actorRef, physical, actions ?? [physical], grid));
+    private BattleAutomaticAction? Heal() => OnGrid(grid =>
+        EnemySpellDecision.Heal(_battle, actorRef, actions ?? [physical], grid));
+    private BattleAutomaticAction? OnGrid(Func<WeightedMovementGrid, BattleAutomaticAction?> decide)
+    {
+        var grid = Grid();
+        return decide(grid) is { } action ? action with { MovementGrid = grid } : null;
+    }
     private BattleAutomaticAction Complete(BattleAutomaticAction result) => result with { Effects = Array.AsReadOnly<BattleEffect>([.. _effects, .. result.Effects]) };
     private static int Offset(MapPosition position) => position.Y * 48 + position.X;
     private static BattleRuleException Missing(string code) => new(code, "placements.orders", true);
