@@ -1,6 +1,6 @@
 # North Cliff and Rohde
 
-Both ordinary [Battle24 returns](battle24-north-parmecia.md) reach a save immediately outside the opened cave at Map72 (27,34). The English and Chinese parties retain their own progression. Cave entry and Battle25 consume this handoff.
+Both ordinary [Battle24 returns](battle24-north-parmecia.md) reach a save immediately outside the opened cave at Map72 (27,34). The English and Chinese parties retain their own progression. The [North Cave chapter](battle25-north-cave.md) continues both saves through Battle25.
 
 ## Original callback
 
@@ -29,4 +29,4 @@ Run `Play.ps1 -Language en -Mode cliff -Sample <fresh-name>` from the package fo
 
 With the package inputs and `SF2_NORTH_CLIFF_SAVE` set to an ordinary approach slot, run the engine test project with filter `FullyQualifiedName~NorthCliffTests`. It drives the compiled callback with changed custody, including two items in one pack, duplicate items, a dead reserve, unjoined and depot copies, and each missing-item branch. It also exercises an explicit Map72 rebuild with each completion state. The existing Ribble inventory test covers removal with no match.
 
-**Unknown** for this chapter includes Rohde's first actual battle action, the cave interior, Battle25, human presentation acceptance and original hardware timing. Some native processes emitted the existing ObjectDB shutdown warning. [Exit issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+**Unknown** for this chapter includes human presentation acceptance and original hardware timing. Some native processes emitted the existing ObjectDB shutdown warning. [Exit issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)

@@ -14,6 +14,19 @@ public sealed class TargetSelectionTests
     [InlineData(BattleMover.Flying, 1)]
     [InlineData(BattleMover.Archer, 0)]
     [InlineData(BattleMover.Mage, 1)]
+    public void GunnerAndWolfmanResolveLethalTiesByAttackerMovement(BattleMover mover, int selected)
+    {
+        var gunner = Sf2ClassRules.SourceClass(BattleClassRule.BrassGunner);
+        var wolfman = Sf2ClassRules.SourceClass(BattleClassRule.UnpromotedWolfman);
+        var choice = PhysicalTargetRules.Select([new(1, 16, gunner), new(1, 16, wolfman)], PhysicalTargetRules.Table(mover));
+        Assert.Equal(selected, choice!.Value.Index);
+    }
+
+    [Theory]
+    [InlineData(BattleMover.Regular, 0)]
+    [InlineData(BattleMover.Flying, 1)]
+    [InlineData(BattleMover.Archer, 0)]
+    [InlineData(BattleMover.Mage, 1)]
     public void WolfmanAndRangerResolveLethalTiesByAttackerMovement(BattleMover mover, int selected)
     {
         var wolfman = Sf2ClassRules.SourceClass(BattleClassRule.UnpromotedWolfman);

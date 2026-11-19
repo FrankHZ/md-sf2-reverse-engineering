@@ -240,7 +240,7 @@ internal static class BattleSceneContentReader
             "KNIGHT" => (3, 1), "ROOK" => (34, 1), "PAWN" => (2, 1),
             "RAT" => (1, 1), "WILLARD" => (1, 2),
             "BUBBLING_OOZE" => (0, 2), "SKELETON" => (11, 0), "WIZARD" => (38, 0),
-            "LESSER_DEMON" => (24, 1), "DARK_SNIPER" => (32, 1),
+            "LESSER_DEMON" => (24, 1), "DARK_SNIPER" => (32, 1), "DARK_SOLDIER" => (5, 1),
             "DARK_BISHOP" => (42, 1), "MASTER_MONK" => (41, 2),
             "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
             "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),
