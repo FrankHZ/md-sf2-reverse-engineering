@@ -81,10 +81,10 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 12, "scene-class", "battleScenes.actors", true);
+                Require(sprite is >= 0 and <= 13, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
-                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 11 => BattleClassRule.BrassGunner, 12 => BattleClassRule.UnpromotedArcher, _ => BattleClassRule.UnpromotedBirdman };
+                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 11 => BattleClassRule.BrassGunner, 12 => BattleClassRule.UnpromotedArcher, 13 => BattleClassRule.Paladin, _ => BattleClassRule.UnpromotedBirdman };
                 if (row.TryGetProperty("members", out _))
                 {
                     var members = Array(row, "members").Select(value =>
@@ -202,10 +202,11 @@ internal static class BattleSceneContentReader
             Require(neutralRows.Length <= 32, "field-neutral-count", "fieldDeath.neutrals");
             var neutrals = neutralRows.Select(neutralRow =>
             {
-                ObjectOptional(neutralRow, "neutral", "whirlsInWater", "sprite", "x", "y", "facing", "completedFlag");
+                ObjectOptional(neutralRow, "neutral", ["sprite", "x", "y", "facing", "completedFlag"], "whirlsInWater", "lyingLeft");
                 return new NeutralBattleSprite(Number(neutralRow, "sprite", 0, 255), Number(neutralRow, "x", 0, 63), Number(neutralRow, "y", 0, 63),
                     Number(neutralRow, "facing", 0, 3), Number(neutralRow, "completedFlag", 0, 1023),
-                    neutralRow.TryGetProperty("whirlsInWater", out _) && Boolean(neutralRow, "whirlsInWater"));
+                    neutralRow.TryGetProperty("whirlsInWater", out _) && Boolean(neutralRow, "whirlsInWater"),
+                    neutralRow.TryGetProperty("lyingLeft", out _) && Boolean(neutralRow, "lyingLeft"));
             }).ToArray();
             fieldDeath = new(new ReadOnlyDictionary<int, int>(allySprites), new ReadOnlyDictionary<ActorRef, int>(enemySprites),
                 System.Array.AsReadOnly(frames), System.Array.AsReadOnly(neutrals));
@@ -240,7 +241,7 @@ internal static class BattleSceneContentReader
             "KNIGHT" => (3, 1), "ROOK" => (34, 1), "PAWN" => (2, 1),
             "RAT" => (1, 1), "WILLARD" => (1, 2),
             "BUBBLING_OOZE" => (0, 2), "SKELETON" => (11, 0), "WIZARD" => (38, 0),
-            "LESSER_DEMON" => (24, 1), "DARK_SNIPER" => (32, 1), "DARK_SOLDIER" => (5, 1),
+            "LIZARDMAN" => (12, 0), "LESSER_DEMON" => (24, 1), "DARK_SNIPER" => (32, 1), "DARK_SOLDIER" => (5, 1),
             "DARK_BISHOP" => (42, 1), "MASTER_MONK" => (41, 2),
             "GIZMO" => (22, 2), "OOZE" => (0, 1), "HUGE_RAT" => (1, 0), "HUGE_BAT" => (23, 0),
             "GALAM_SOLDIER" => (2, 0), "GALAM_ARCHER" => (31, 0),

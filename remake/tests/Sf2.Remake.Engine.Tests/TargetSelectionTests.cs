@@ -11,6 +11,19 @@ public sealed class TargetSelectionTests
 {
     [Theory]
     [InlineData(BattleMover.Regular, 0)]
+    [InlineData(BattleMover.Archer, 0)]
+    [InlineData(BattleMover.Mage, 1)]
+    [InlineData(BattleMover.Flying, 1)]
+    public void PaladinAndWarriorResolveLethalTiesByAttackerMovement(BattleMover mover, int selected)
+    {
+        var paladin = Sf2ClassRules.SourceClass(BattleClassRule.Paladin);
+        var warrior = Sf2ClassRules.SourceClass(BattleClassRule.UnpromotedWarrior);
+        var choice = PhysicalTargetRules.Select([new(1, 16, paladin), new(1, 16, warrior)], PhysicalTargetRules.Table(mover));
+        Assert.Equal(selected, choice!.Value.Index);
+    }
+
+    [Theory]
+    [InlineData(BattleMover.Regular, 0)]
     [InlineData(BattleMover.Flying, 1)]
     [InlineData(BattleMover.Archer, 0)]
     [InlineData(BattleMover.Mage, 1)]

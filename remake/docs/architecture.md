@@ -3,9 +3,11 @@
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior. Reference routes support external comparisons. The common
 session runs authored packages and the connected private campaign through bilingual
-[Ketto and its return to the overworld](application/ketto-town.md). Map48 selects its two battles
+[Battle26, Higins’s rescue and its overworld return](application/battle26-higins.md). Map48 selects its two battles
 by entry coordinates and unlock flags. Ketto declares its church return point on the exploration
-map. Church Save, battle return and field return share that destination lookup.
+map. Church Save, battle return and field return share that destination lookup. The battlefield
+neutral list owns Higins’s lying pose until the first victory. Recruitment uses party flags and
+leaves his existing character record available to Caravan Relief.
 Creed, the mine, New Granseal and North Cliff share settled-scene restoration. Each SF2 location owns
 its admitted population. At the cliff, Continue retains the visit latch, opened terrain, hidden actors
 and physical follower links. The [campaign agreement](application/remaining-campaign-risk-baseline.md)

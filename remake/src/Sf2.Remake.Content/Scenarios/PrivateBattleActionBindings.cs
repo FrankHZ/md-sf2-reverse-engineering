@@ -73,7 +73,7 @@ internal static class PrivateBattleActionBindings
             .Select(item => Weapon(item, 0)).ToArray();
         // Bare placement items can be carried without enabling their use or equip effects.
         var inert = definitions.Items.Values.Where(item => item is
-            { Id: 19, Code: "POWER_RING" } or { Id: 20, Code: "PROTECT_RING" } or { Id: 9, Code: "POWER_WATER" } or { Id: 16, Code: "SHINING_BALL" } or { Id: 17, Code: "BLIZZARD" })
+            { Id: 19, Code: "POWER_RING" } or { Id: 20, Code: "PROTECT_RING" } or { Id: 24, Code: "BLACK_RING" } or { Id: 9, Code: "POWER_WATER" } or { Id: 16, Code: "SHINING_BALL" } or { Id: 17, Code: "BLIZZARD" })
             .Select(item => item.Id).ToArray();
         if (!items.Any(word => weapons.Any(w => w.ItemId == (word & 127)) || word < 127 && inert.Contains((byte)word))) return null;
         return new(attack, weapons, allowChanges: false, inertItems: inert);

@@ -110,6 +110,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             18 => [new(18, 128, 110, 24)],
             19 => [new(19, 129, 16, 6)],
             21 => [new(21, 135, 62, 7), new(21, 129, 20, 8)],
+            26 => [new(26, 130, 24, 10)],
             25 => [new(25, 133, 0, 22), new(25, 142, 0, 23)],
             24 => [new(24, 135, 17, 9), new(24, 133, 0, 20), new(24, 140, 0, 21)],
             _ => [],
@@ -158,7 +159,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             _ => throw Unsupported("spawn-expression", "placements.spawn"),
         };
         Require(row.ItemExpression is "NOTHING" or "MEDICAL_HERB|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_RING|EQUIPPED|UNUSED_ITEM_DROP" ||
-            row.ItemExpression is ("MEDICAL_HERB|USABLE_BY_AI" or "PROTECT_RING|EQUIPPED|UNUSED_ITEM_DROP" or "POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP" or "BLIZZARD|USABLE_BY_AI|UNUSED_ITEM_DROP"),
+            row.ItemExpression is ("MEDICAL_HERB|USABLE_BY_AI" or "PROTECT_RING|EQUIPPED|UNUSED_ITEM_DROP" or "BLACK_RING|EQUIPPED|USABLE_BY_AI|UNUSED_ITEM_DROP" or "POWER_WATER" or "SHINING_BALL|USABLE_BY_AI|UNUSED_ITEM_DROP" or "BLIZZARD|USABLE_BY_AI|UNUSED_ITEM_DROP"),
             "placement-item-refresh", "placements.item", true);
         byte commandset = row.AiCommandsetExpression switch
         {
@@ -220,7 +221,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
             6 => BattleClassRule.UnpromotedBirdman, 7 => BattleClassRule.UnpromotedWolfman, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
             10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
-            22 => BattleClassRule.BrassGunner,
+            13 => BattleClassRule.Paladin, 22 => BattleClassRule.BrassGunner,
             _ => throw Unsupported("source-class", "actors.class"),
         };
         Require(input.Hp <= input.MaxHp && input.Mp <= input.MaxMp, "numeric-range", "allies.resources");

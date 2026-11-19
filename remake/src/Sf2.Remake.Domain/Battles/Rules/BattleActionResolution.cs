@@ -12,6 +12,8 @@ internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
     MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false, BattleActionRef? ChosenAction = null)
 {
+    internal WeightedMovementGrid? MovementGrid { get; init; }
+
     internal void Validate(EngineBattleState before, ActorRef actorRef)
     {
         static void Require(bool valid)
@@ -76,7 +78,13 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         {
             // The source descending-cost walker can retain an earlier direction bit and
             // travel farther than the destination's propagated cost. Admit that exact path.
-            var grid = BattleMovement.Grid(before, actorRef);
+            // Reuse only the decision's obstruction footprint. Terrain costs, origin
+            // and MOV always come from the authoritative battle.
+            var grid = MovementGrid is null ? BattleMovement.Grid(before, actorRef) :
+                BattleTerrainRules.MovementGrid(before.Definition.Terrain, actor.Position!, actor.Definition.Mover,
+                    actor.Definition.Move, Enumerable.Range(0, MovementGrid.MovableGrid.Count)
+                        .Where(index => MovementGrid.CostAtOffset(index) is null)
+                        .Select(index => new MapPosition(index % 48, index / 48)));
             Require(grid.CostAt(Destination) is { } destinationCost && destinationCost <= actor.Definition.Move * 2 &&
                 Path.SequenceEqual(BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
                     Destination, before.Definition.Width, before.Definition.Height))));
