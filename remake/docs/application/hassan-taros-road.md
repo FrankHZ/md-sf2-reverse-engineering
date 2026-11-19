@@ -4,7 +4,7 @@ The western exit continues the [Kraken and Hassan chapter](kraken-hassan.md). Th
 
 ## Walk from the Hassan save
 
-Use the private `handoffs/issue1920/repeat17` package for the retained Hassan save. Run
+Use the private `handoffs/issue1920/repeat17-standard` package for the retained Hassan save. Run
 `./Play.ps1 -Language en -Mode interactive -Sample first17 -Seed ./slots/hassan-fresh17.json`
 and choose **Continue → slot 1**. Use `zh-CN` for the Chinese interface. Each sample opens a
 separate player copy. The trained church save already has F417 and selects the first formation
@@ -56,6 +56,11 @@ High Priest's mounted HEAL3 scene. The Dark Madam carried a Power Stick and FREE
 using a physical attack. The book alone grants no new AI choice. Recipe 2 stored the chosen
 definitions, and a Chinese title Continue and ordinary re-save preserved the entire battle payload.
 
+The standard Battle17 scene and field-death producer outputs passed an independent admission
+and ordinary action check. All eleven selected enemy sprites resolved in the prepared world, and
+the new English first-control save matched the earlier run's entire gameplay data. The new scene
+was exercised by the High Priest's BLAST2 and an Orc's attack before returning to player input.
+
 The English repeat ended in victory in round 10. Bowie's local (9,20) projected to Map69 (9,51),
 with F517 set, F417 clear and 6,547 gold. Ordinary walking and Caravan travel crossed Map68 and
 Map73 to Map72 and saved at North Cliff (27,34), keeping F425 and F750. The predecessor's direct
@@ -72,7 +77,8 @@ registered private environment. On the Battle17 row in the world producer's
 point `battleScenes` at the prepared Battle17 scene. Run the existing command-menu and identity
 mount and derive the display catalog from that world. They consume `repeatEnemies` for the
 selected names and AURA identity. The handoff names the accepted private inputs and startup
-commands.
+commands. Its `Rebuild.ps1` assembles a fresh private package from the supplied standard field
+scene, the accepted world and its existing menu, identity, sprite and audio resources.
 
 ```powershell
 uv run python -m sf2tool.remake_exploration_battles --battle 17 --rom $rom --upstream $upstream --output local/road/inputs/battle17
