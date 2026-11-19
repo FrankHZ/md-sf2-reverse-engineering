@@ -138,7 +138,8 @@ effects, and persistence. The [campaign locations index](../../remake/docs/conte
 routes visits, setup and service changes, exits, and return or Continue. The
 [campaign characters index](../../remake/docs/content/campaign-characters.md) routes recruitment,
 following, deployment and return or Continue. The [campaign feature trace](../../remake/docs/capability-status.md#campaign-feature-trace)
-is the shared implementation entry point.
+is the shared implementation entry point. The accepted [church promotion design](../../remake/docs/application/church-promotion-design.md)
+covers ordinary and special-item promotion. Both await implementation.
 
 The indexes cite the original research and contracts for original behavior and the application
 owners for remake admission and observations. Acceptance follows each reader route through its
