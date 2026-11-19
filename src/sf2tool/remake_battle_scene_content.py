@@ -159,7 +159,9 @@ def campaign_selection(selection: Path | None = None) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_members, carried_shops=()):
+def campaign_ally_visuals(
+    battle, read, ally_table, stats_table, selected_members, carried_shops=()
+):
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
     cursor = stats_table["list_ShopInventories"]
