@@ -5,11 +5,11 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Gameplay.Sf2;
 
-// Saved prefixes in the private opening profile, including the gap between Luke and Elric.
+// Members are appended in package revision order. Rohde fills an earlier numeric gap.
 internal static class Sf2HistoricalRoster
 {
-    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23), (17, 23)];
-    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18];
+    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23), (17, 24), (18, 24)];
+    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11];
 
     internal static SavedBattleStory UpgradeBattle(ScenarioDefinition definition, BattleSaveData data,
         EngineBattleState battle, SaveCompatibility expected)
@@ -42,12 +42,12 @@ internal static class Sf2HistoricalRoster
             prior < 1 || current > Revisions.Length || prior > current)
             throw new BattleRuleException("save-incompatible", "save.compatibility");
 
-        var rows = deployments.Values.OrderBy(row => row.Initialization?.AllyPartyMember).ToArray();
         var layout = definition.Exploration!.PartyFlags;
         var source = definition.PrivateDefinitions;
-        if (source is null || layout is null || rows.Length != Revisions[current - 1].Members ||
-            rows.Where((row, id) => row.Initialization?.AllyPartyMember != MemberIds[id] || row.Actor.Value != $"ally-{MemberIds[id]}").Any() ||
-            !saved.SetEquals(rows.Take(Revisions[prior - 1].Members).Select(row => row.Actor)))
+        var expectedIds = MemberIds.Take(Revisions[current - 1].Members);
+        if (source is null || layout is null || deployments.Count != Revisions[current - 1].Members ||
+            expectedIds.Any(id => !deployments.TryGetValue(new($"ally-{id}"), out var row) || row.Initialization?.AllyPartyMember != id) ||
+            !saved.SetEquals(MemberIds.Take(Revisions[prior - 1].Members).Select(id => new ActorRef($"ally-{id}"))))
             throw new BattleRuleException(rosterError, "save.allies");
 
         var added = new List<BattleActorStartInput>();
@@ -59,7 +59,7 @@ internal static class Sf2HistoricalRoster
             for (int index = Revisions[revision - 1].Members; index < Revisions[revision].Members; index++)
             {
                 int id = MemberIds[index];
-                var row = rows[index];
+                var row = deployments[new($"ally-{id}")];
                 if (flags.Contains(layout.JoinedStart + id) || flags.Contains(layout.ActiveStart + id) ||
                     claimedActors.Contains(row.Actor.Value) || !source.Allies.TryGetValue((byte)id, out var ally))
                     throw new BattleRuleException(rosterError, "save.allies");

@@ -21,12 +21,11 @@ sequential delivery plan.
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
 [current composed boundary](./docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
-The private-local bilingual route continues through Creed and the mine into the
-[New Granseal return](./remake/docs/application/new-granseal-return.md): Astral's audience, Dynamite,
-Janet recruitment and a saved ordinary town exit. The [capability trace](./remake/docs/capability-status.md#campaign-feature-trace)
-and [campaign agreement](./remake/docs/application/remaining-campaign-risk-baseline.md) own current
-scope and limits; Battle24 and North Cliff remain outside this boundary. This playable scope does not expand the original
-Map3→Battle01 milestone's proof boundary.
+The private bilingual campaign continues through Creed, the mine and New Granseal to Battle24.
+Both parties can open North Cliff, recruit Rohde and continue from a save at the cave entrance.
+The next chapter starts there. [North Cliff](./remake/docs/application/north-cliff-rohde.md) ·
+[Capability trace](./remake/docs/capability-status.md#campaign-feature-trace) ·
+[Campaign agreement](./remake/docs/application/remaining-campaign-risk-baseline.md)
 
 Current presentation includes continuous exploration with contextual Talk, a shared 1920×1080 world
 with 96px cells, blue/gold story dialogue, reachable battle tiles, image-based HP/MP cards, battle

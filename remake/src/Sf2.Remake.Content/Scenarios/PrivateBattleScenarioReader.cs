@@ -219,6 +219,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
             6 => BattleClassRule.UnpromotedBirdman, 7 => BattleClassRule.UnpromotedWolfman, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
             10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
+            22 => BattleClassRule.BrassGunner,
             _ => throw Unsupported("source-class", "actors.class"),
         };
         Require(input.Hp <= input.MaxHp && input.Mp <= input.MaxMp, "numeric-range", "allies.resources");
@@ -233,7 +234,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         var definition = new BattleActorDefinition(actor, classRule, input.Level, input.MaxHp, input.MaxMp, input.Attack, input.Defense,
             (byte)(input.Agility & 127), (input.Agility & 128) != 0, input.Move, spells,
             physical: PrivateBattleActionBindings.Physical(definitions, classDefinition.ProwessExpression, input.Items,
-                leader: id == 0, gold: 0),
+                leader: id == 0, gold: 0) with { Promoted = classDefinition.Id > 11 },
             mover: Mover(classDefinition.MovementType), sourceLoadout: new(input.Items, input.Spells),
             resistance: PrivateAttackSpellBindings.Resistance(classDefinition.ResistanceExpression));
         var actorInput = new BattleActorStartInput(actor, input.Hp, input.Mp, input.Exp, input.Kills, input.Defeats, input.Status, null, ActivationWord: input.ActivationWord);

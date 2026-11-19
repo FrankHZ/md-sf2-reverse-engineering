@@ -240,6 +240,10 @@ def derive(args: argparse.Namespace) -> dict:
         field_texts.update(range(1021, 1136))
         field_texts.update(range(1237, 1290))
         field_texts.add(213)
+    if args.scope == "current" and any(
+        row["id"] == "cs-4ffda" for row in world["world"]["programs"]
+    ):
+        field_texts.update(range(3341, 3359))
     hassan = args.scope == "current" and any(row["id"] == "map-9" for row in world["world"]["maps"])
     if hassan:
         field_texts.update(range(2513, 2520))
@@ -327,6 +331,7 @@ def derive(args: argparse.Namespace) -> dict:
     growth_members = {
         int(row["actor"].removeprefix("ally-")) for row in world["world"].get("growth", [])
     }
+    growth_classes = {row["classId"] for row in world["world"].get("growth", [])}
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -380,6 +385,10 @@ def derive(args: argparse.Namespace) -> dict:
         growth_members.difference(name_ids["name.ally"]) if args.scope == "current" else set()
     )
     name_ids["name.ally"] += tuple(sorted(extra_growth))
+    extra_classes = (
+        growth_classes.difference(name_ids["name.class"]) if args.scope == "current" else set()
+    )
+    name_ids["name.class"] += tuple(sorted(extra_classes))
     if 82 in repeat_enemies:
         field_items.add(28)  # Equipped Brass Knuckles
     road_enemies = {17, 45, 62, 81}.difference(name_ids["name.enemy"]) if battle24 else set()
@@ -524,6 +533,7 @@ def derive(args: argparse.Namespace) -> dict:
             + battle24
             + (battle24 or 81 in repeat_enemies)
             + len(extra_growth)
+            + len(extra_classes)
         ),
         "candidate budget/selection mismatch",
     )

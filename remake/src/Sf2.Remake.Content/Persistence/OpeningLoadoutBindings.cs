@@ -49,8 +49,8 @@ internal static class OpeningLoadoutBindings
             admitted.EncounterScenes.Values, admitted.BattleStory, BattleStartOrigin.NewGame)
         {
             Persistence = new Sf2OpeningRestore(encounters.SelectMany(encounter => encounter.Deployments)
-                .Where(row => row.Faction == BattleFaction.Ally).Max(row => row.Initialization?.AllyPartyMember) switch
-                { 18 => 7, 17 => 6, 13 => 5, 10 => 4, 9 => 3, 8 => 2, _ => 1 }),
+                .Where(row => row.Faction == BattleFaction.Ally).Select(row => row.Initialization?.AllyPartyMember).Distinct().Count() switch
+                { 18 => 8, 17 => 7, 16 => 6, 12 => 5, 11 => 4, 10 => 3, 9 => 2, _ => 1 }),
             DefeatFallback = (new("map-0"), openingMap),
             FieldPreparation = preparation,
         };

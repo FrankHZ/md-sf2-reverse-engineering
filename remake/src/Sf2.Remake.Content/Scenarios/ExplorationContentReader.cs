@@ -586,9 +586,16 @@ internal static class ExplorationContentReader
                 ObjectOptional(row, opcode, "activateEntities", ["op", "target"]);
                 return new CallProgram(RequiredLocation(row.GetProperty("target")),
                     row.TryGetProperty("activateEntities", out _) && Boolean(row, "activateEntities"));
+            case "resize-entity":
+                Object(row, opcode, "op", "entity", "size");
+                return new ResizeEntity(new(Id(row, "entity")), (ushort)Number(row, "size", 0, 24));
+            case "name-dialogue-item":
+                Object(row, opcode, "op", "item");
+                return new NameDialogueItem((byte)Number(row, "item", 0, 126));
+            case "branch-missing-item":
             case "branch-has-item":
                 Object(row, opcode, "op", "item", "target");
-                return new BranchHasItem((byte)Number(row, "item", 0, 126), RequiredLocation(row.GetProperty("target")));
+                return new BranchHasItem((byte)Number(row, "item", 0, 126), RequiredLocation(row.GetProperty("target")), opcode == "branch-has-item");
             case "branch-pack-space":
                 Object(row, opcode, "op", "actor", "target");
                 return new BranchPackSpace(new(Id(row, "actor")), RequiredLocation(row.GetProperty("target")));

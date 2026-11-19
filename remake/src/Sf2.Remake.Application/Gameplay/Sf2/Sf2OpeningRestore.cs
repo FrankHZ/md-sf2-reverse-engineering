@@ -195,6 +195,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     }
 
     public SavedFieldScene? CaptureScene(ScenarioDefinition definition, ExplorationState world, IReadOnlyList<int> flags) =>
+        world.Map.Value == "map-72" && flags.Contains(256) && definition.Exploration!.Programs.ContainsKey("cs-4ffda")
+            ? Sf2FieldSceneRestore.Capture(definition, RaftRuntime.OnScroll(world, flags, null), definition.Exploration.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
         world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
 
@@ -202,6 +204,18 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
+        if (scene is not null && location.Anchor.Map.Value == "map-72")
+        {
+            var cliff = definition.Exploration!.Maps[location.Anchor.Map];
+            if (location.Recipe != "north-parmecia" || scene.Setup != cliff.Setup?.DefaultSetup.Value || !flags.Contains(256))
+                throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
+            var allocations = flags.Contains(750) && definition.Exploration.Programs.TryGetValue("cs-4ffda", out var blast)
+                ? blast.Instructions.OfType<AddMapEntity>().ToArray() : [];
+            var loaded = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer, allocations);
+            // Continue the saved encounter visit. A fresh map transfer owns the temporary reset.
+            enteredFlags = flags;
+            return RaftRuntime.Declare(loaded, flags, raft);
+        }
         if (scene is not null && location.Anchor.Map.Value is "map-6" or "map-7")
             return Sf2NewGransealRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         if (scene is not null && location.Anchor.Map.Value == "map-30")

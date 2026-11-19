@@ -1,6 +1,6 @@
 # New Granseal to the North Cliff approach
 
-Continue the ordinary [New Granseal exit](new-granseal-return.md) on Map73, cross east onto Map72 and enter the northern road encounter. On victory the party can walk to the south side of the cliff and save. The next chapter owns the cliff interaction, the explosion and Rohde's recruitment. High rigor applies because the next chapter consumes this party's actual battle outcome, inventory and location.
+Continue the ordinary [New Granseal exit](new-granseal-return.md) on Map73, cross east onto Map72 and enter the northern road encounter. On victory the party can walk to the south side of the cliff and save. The [North Cliff chapter](north-cliff-rohde.md) consumes these saves for the explosion and Rohde's recruitment. High rigor applies because the next chapter consumes this party's actual battle outcome, inventory and location.
 
 ## Original rules
 
