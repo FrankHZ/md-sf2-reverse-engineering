@@ -126,6 +126,24 @@ cross-system dependencies: declare each theme's claims and acceptance, independe
 and reassess when a new claim or ownership conflict changes the scope. This agreement does not select
 a new engine, rebalance the game or expand the playable milestone.
 
+### Campaign lifecycle indexes
+
+[Epic #1931](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1931) uses **Standard**
+rigor because item, place and character lookups cross chapter, service, and save boundaries.
+This round covers the opening through first Pacalon town and castle and the post-Battle26 Map71
+departure. Later consumers are linked at the relevant dependency. The
+[campaign flag index](../../remake/docs/content/campaign-flags.md) routes state and receipts.
+The [campaign item index](../../remake/docs/content/campaign-items.md) routes acquisition, custody,
+effects, and persistence. The [campaign feature trace](../../remake/docs/capability-status.md#campaign-feature-trace)
+is the shared implementation entry point.
+
+The indexes cite the original research and contracts for original behavior and the application
+owners for remake admission and observations. Acceptance follows each reader route through its
+condition, failure or repeat case, evidence and current support boundary. This round uses accepted
+evidence and documents current implementation. The design corpus under #514 retains its accepted
+baseline. English is canonical for this addition, so the existing Chinese roadmap has source drift
+pending semantic synchronization under the [translation agreement](#bounded-translation-repair-agreement).
+
 ### Bounded battle-design analysis pilot
 
 **Current scope agreement — Standard:** [Issue #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
