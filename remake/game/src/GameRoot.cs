@@ -300,7 +300,7 @@ public sealed partial class GameRoot : Node
         void ShowExploration(SessionResult initial, bool returning)
         {
             var exploration = new ExplorationSessionView { Name = "ExplorationSessionView", WorldViewport = _worldViewport,
-                RequestServiceSave = ShowSave };
+                RequestServiceSave = () => RequestFieldEntry(() => ShowSettledSave(church: true)) };
             _exploration = exploration; AddChild(exploration);
             if (returning) { view.Reparent(exploration, false); exploration.MoveChild(view, 0); }
             exploration.Begin(started.Session, initial, _input!, _audio!, EnterBattle,

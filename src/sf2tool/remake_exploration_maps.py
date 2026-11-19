@@ -4,6 +4,7 @@ import re
 
 from sf2tool.h2.battle_global_data import _tokens
 from sf2tool.remake_exploration_actions import action_stream, walking_actions
+from sf2tool.remake_exploration_battles import savepoints
 from sf2tool.remake_exploration_items import item_events
 from sf2tool.remake_exploration_search import compile_search
 
@@ -415,6 +416,8 @@ def compile_maps(
         maps.append(
             {
                 "id": "map-" + str(selected),
+                **({"churchSavepoint": savepoints(compiler)[selected]}
+                   if selected in selection.get("churchSavepointMaps", []) else {}),
                 "layout": [words[n : n + 64] for n in range(0, 4096, 64)],
                 "areas": [
                     {

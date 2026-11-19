@@ -21,7 +21,7 @@ internal static class ShopInstructionReader
             items = source.Items.Values.Select(item => new ShopItem(item.Id, item.DisplayName, item.Price,
                 item.ItemTypeExpression.Split('|').Contains("UNSELLABLE"),
                 item.ItemTypeExpression.Split('|').Contains("RARE")));
-            Require(stock.All(id => source.Items.TryGetValue(id, out var item) && item.ItemTypeExpression is "WEAPON" or "CONSUMABLE"),
+            Require(stock.All(id => source.Items.TryGetValue(id, out var item) && item.ItemTypeExpression is "WEAPON" or "WEAPON|BREAKABLE" or "CONSUMABLE"),
                 "shop-stock-unsupported", "shop.stock", true);
         }
         else

@@ -64,7 +64,8 @@ internal interface IOpeningRestorePolicy
         EngineBattleState battle, SaveCompatibility expected);
     SaveLocation InitialLocation(ScenarioDefinition definition, ExplorationStartInput start);
     ExplorationStartInput? InitialStart(ScenarioDefinition definition, OpeningSaveData data, BattleStartInput party);
-    void ValidateRegisters(OpeningSaveData data);
+    StoryState RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story);
+    void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null);
     bool CanDiscardEntityProgram(ExplorationState world, ExplorationEntity entity, IReadOnlyList<int> flags);
     SavedFieldScene? CaptureScene(ScenarioDefinition definition, ExplorationState world, IReadOnlyList<int> flags);
     SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags, FieldReturnAnchor? anchor);

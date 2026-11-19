@@ -311,6 +311,13 @@ internal static class ProgramRunner
                     case SetPlanePosition plane:
                         story = story.Copy(story.Cursor, logicalView: ExplorationViewRunner.Position(
                             story.LogicalView ?? throw new BattleRuleException("field-view-context", "program.view", true), plane)); break;
+                    case SaveMessageSpeed when story.EntityEvent is { SavedMessageSpeed: null } caller && story.TextSettings is { } settings:
+                        story = story.Copy(story.Cursor, entityEvent: caller with { SavedMessageSpeed = settings.MessageSpeed }); break;
+                    case SetMessageSpeed message when story.TextSettings is { } textSettings:
+                        story = story.Copy(story.Cursor, textSettings: textSettings with { MessageSpeed = message.Speed }); break;
+                    case RestoreMessageSpeed when story.EntityEvent is { SavedMessageSpeed: { } savedSpeed } savedCaller && story.TextSettings is { } previous:
+                        story = story.Copy(story.Cursor, entityEvent: savedCaller with { SavedMessageSpeed = null },
+                            textSettings: previous with { MessageSpeed = savedSpeed }); break;
                     case SetCameraSpeed speed:
                         if (story.TextSettings is null) throw new BattleRuleException("field-text-settings", "program.camera", true);
                         story = story.Copy(story.Cursor, textSettings: story.TextSettings with { ViewSpeed = speed.Speed }); break;

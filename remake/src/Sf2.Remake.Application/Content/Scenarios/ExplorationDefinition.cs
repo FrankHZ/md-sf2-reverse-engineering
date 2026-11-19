@@ -144,6 +144,7 @@ public sealed class ExplorationMapDefinition
         BasePalette = basePalette; ViewAreas = Array.AsReadOnly((viewAreas ?? []).ToArray());
         Setups = new ReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition>((setups ?? []).ToDictionary(value => value.Id));
     }
+    public Runtime.Exploration.FieldReturnAnchor? ChurchSavepoint { get; init; }
     public CaravanDefinition? Caravan { get; }
     public FieldSearchDefinition? Search { get; }
     public MapId Map { get; }
