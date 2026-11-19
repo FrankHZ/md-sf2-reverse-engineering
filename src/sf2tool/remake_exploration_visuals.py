@@ -23,7 +23,7 @@ from sf2tool.remake_asset_build import (
     _render_player_frame,
 )
 from sf2tool.remake_battle_scene_content import (
-    BATTLE19_REPEAT_ENEMIES,
+    BATTLE_REPEAT_ENEMIES,
     compose,
     special_battle_sprite_frames,
 )
@@ -222,6 +222,25 @@ def select_audio_defaults(audio: list[dict], defaults: dict[str, str]) -> None:
         row["defaultForCommand"] = int(command)
 
 
+def enemy_map_sprites(compiler, battles: tuple[int, ...]) -> set[int]:
+    """Select field sprites before loading their presentation assets."""
+    if not battles:
+        return set()
+    table = "disasm/data/stats/enemies/enemymapsprites.asm"
+    compiler.sources.add(table)
+    enemy_sprites = _arguments((compiler.upstream / table).read_text(encoding="utf-8"), "mapsprite")
+    enemies = set()
+    for battle in battles:
+        path = f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm"
+        compiler.sources.add(path)
+        placements = _arguments(
+            (compiler.upstream / path).read_text(encoding="utf-8"), "enemyCombatant"
+        )
+        enemies.update(compiler.number("ENEMY_" + _tokens(row)[0]) for row in placements)
+        enemies.update(BATTLE_REPEAT_ENEMIES.get(battle, {}))
+    return {compiler.number("MAPSPRITE_" + enemy_sprites[enemy]) for enemy in enemies}
+
+
 def prepare_visuals(
     compiler,
     canonical: dict[str, Any],
@@ -368,25 +387,7 @@ def prepare_visuals(
                     for row in population["followers"]
                     if row["character"] >= population["allyCount"]
                 )
-    if battles:
-        enemy_sprites_path = "disasm/data/stats/enemies/enemymapsprites.asm"
-        compiler.sources.add(enemy_sprites_path)
-        enemy_sprites = _arguments(
-            (compiler.upstream / enemy_sprites_path).read_text(encoding="utf-8"), "mapsprite"
-        )
-        for battle in battles:
-            path = f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm"
-            compiler.sources.add(path)
-            for row in _arguments(
-                (compiler.upstream / path).read_text(encoding="utf-8"), "enemyCombatant"
-            ):
-                enemy = compiler.number("ENEMY_" + _tokens(row)[0])
-                sprites.add(compiler.number("MAPSPRITE_" + enemy_sprites[enemy]))
-        if 19 in battles:
-            sprites.update(
-                compiler.number("MAPSPRITE_" + enemy_sprites[enemy])
-                for enemy in BATTLE19_REPEAT_ENEMIES
-            )
+    sprites.update(enemy_map_sprites(compiler, battles))
     properties_path = "disasm/data/spritedialogproperties.asm"
     compiler.sources.update(
         (

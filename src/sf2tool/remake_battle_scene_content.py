@@ -135,13 +135,22 @@ def single_cell_cursor(rom: bytes) -> tuple[dict, dict]:
     )
 
 
-# Additional definitions reached by the first Battle19 repeat band on the USA cartridge.
-BATTLE19_REPEAT_ENEMIES = {
-    16: "BUBBLING_OOZE",
-    17: "SKELETON",
-    72: "WIZARD",
-    81: "DARK_BISHOP",
-    82: "MASTER_MONK",
+# Additional definitions for the supported first repeat bands.
+BATTLE_REPEAT_ENEMIES = {
+    17: {
+        12: "ORC",
+        16: "BUBBLING_OOZE",
+        70: "DARK_MADAM",
+        79: "HIGH_PRIEST",
+        81: "DARK_BISHOP",
+    },
+    19: {
+        16: "BUBBLING_OOZE",
+        17: "SKELETON",
+        72: "WIZARD",
+        81: "DARK_BISHOP",
+        82: "MASTER_MONK",
+    },
 }
 
 
@@ -363,8 +372,7 @@ def build(
         )
         species = set(re.findall(r"enemyCombatant\s+(\w+)", source))
         enums = (upstream / "disasm/sf2enums.asm").read_text(encoding="utf-8")
-        if battle == 19:
-            species.update(BATTLE19_REPEAT_ENEMIES.values())
+        species.update(BATTLE_REPEAT_ENEMIES.get(battle, {}).values())
         for code in sorted(species):
             enemy = int(re.search(rf"^ENEMY_{code}:\s+equ (\d+)", enums, re.MULTILINE)[1])
             sprite, palette_index = read(0x1F914 + enemy * 2, 2)
@@ -774,9 +782,11 @@ def add_field_death(
         source = (upstream / f"disasm/data/battles/spritesets/spriteset{battle:02d}.asm").read_text(
             encoding="utf-8"
         )
-        species = sorted(set(re.findall(r"enemyCombatant\s+(\w+)", source)))
-    if scene["encounter"] == "battle-19":
-        species = sorted(set(species).union(BATTLE19_REPEAT_ENEMIES.values()))
+        species = sorted(
+            set(re.findall(r"enemyCombatant\s+(\w+)", source)).union(
+                BATTLE_REPEAT_ENEMIES.get(battle, {}).values()
+            )
+        )
     enemy_sprites = [
         dict(code=code, sprite=rom[enemy_table + compiler.equates["ENEMY_" + code]])
         for code in species

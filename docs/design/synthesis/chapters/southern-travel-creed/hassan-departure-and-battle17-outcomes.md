@@ -161,6 +161,11 @@ base enemy is SOULSOWER at `(1,10)`. Battle17 belongs to the repeat-upgrade set,
 shared upgrade algorithm, so base rows do not fix post-upgrade identities. Level/random results, AI,
 turns, damage and winning trajectories are not evaluated here.
 
+The [Battle17 initialization owner](../../../../research/chapters/southern-travel-creed/battle17-initialization-and-first-control.md#f517-and-actual-repeat-definition-selection)
+gives the effective-level predicate and ordered draws. The [remake consumer](../../../../../remake/docs/application/hassan-taros-road.md#upgraded-interception-on-the-northern-return)
+observes first-band admission, saved identities and the northern return from ordinary input in the
+remake. Those observations are separate from original runtime evidence.
+
 LoadBattle clears physical entities/lookups and declares actors from placed combatants, with the
 neutral-enemy exclusion. It replaces the town/follower/raft mapping rather than preserving that cast.
 Tiles, sprites, terrain, VInts, music and fades have their ordinary service dependencies. Start
