@@ -134,7 +134,8 @@ This round covers the opening through first Pacalon town and castle and the post
 departure. Later consumers are linked at the relevant dependency. The
 [campaign flag index](../../remake/docs/content/campaign-flags.md) routes state and receipts.
 The [campaign item index](../../remake/docs/content/campaign-items.md) routes acquisition, custody,
-effects, and persistence. The [campaign feature trace](../../remake/docs/capability-status.md#campaign-feature-trace)
+effects, and persistence. The [campaign locations index](../../remake/docs/content/campaign-locations.md)
+routes visits, setup and service changes, exits, and return or Continue. The [campaign feature trace](../../remake/docs/capability-status.md#campaign-feature-trace)
 is the shared implementation entry point.
 
 The indexes cite the original research and contracts for original behavior and the application
