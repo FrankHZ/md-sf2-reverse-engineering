@@ -123,9 +123,16 @@ and the cited chapter consumers.
   route keeps it. A save before payment retains the item. A saved retreat carries the paid
   inventory. Fairy Cave's F160 is a retained pickup witness. [Original and remake Retreat](../application/session-and-programs.md#paid-retreat-and-field-return) ·
   [Fairy Cave pickup](../application/fairy-cave.md#walk-search-and-return)
+- **Healing Drop** (2) can be bought for 300 gold, as observed in Ribble and Pacalon. The original
+  `HEALIN` level 3 row describes single-target recovery up to 30 HP within range 0–1 for 0 MP.
+  Battle Use in the remake spends the chosen holder's slot and preserves other items and receipt
+  flags. Ordinary Field Use yields NoEffect and Caravan refuses. An ordinary Pacalon purchase,
+  Battle26 Use and bilingual cold Continue cover the selected slot and HP. The Map51 F159 pickup
+  remains outside the current Search selection. [Use and reproduction](profiles-and-trust.md#healing-drop-use) ·
+  [Map51 placement](../application/campaign-field-search.md#map-and-setup-inventory)
 - **Recovery and stat supplies** share the normal pack and receipt lifecycle. Check actual Use
   bindings before spending them. The remake has selected battle healing items and Antidote,
-  and distinct field no-effect Herb/Seed and Antidote paths. Fairy Powder (including Pacalon
+  and distinct field no-effect recovery and Antidote paths. Fairy Powder (including Pacalon
   F174), Fairy Tear (North Cave F168), Healing Rain (Creed F164), Brave Apple (Fairy Cave F161)
   and other stat supplies can be selected or received in their owning chapters without a
   corresponding Use effect here. The optional North Cave witness gave Fairy Tear to Bowie

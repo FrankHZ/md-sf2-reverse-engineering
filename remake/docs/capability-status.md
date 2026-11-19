@@ -164,10 +164,15 @@ source-bound stock with static entrance coverage.
 Buy/Sell, member/actual-slot selection, exact prices, atomic gold/loadout changes, full/poor/cancel/
 unsellable/stale handling, equipped-sale refresh and caller return. Private F663 Map16 entity135/144
 bind the source inventories1/16. Default Map16 has no such shop rows; F530 remains a separate frontier.
-Purchased Healing Seed restores up to20 HP in battle; Antidote and learned DETOX1 perform finite
+Purchased Healing Seed restores up to 20 HP in battle. Antidote and learned DETOX1 perform finite
 poison cure through the existing scene/payment/end rules. Actual English/Chinese observations cover
 private Talk/trades/return and a separate authored same-session purchase→battle→use→further control.
 The existing save payload preserves completed trade resources at its already supported recipes.
+
+Purchased Healing Drop restores up to 30 HP in battle for 0 MP. The Pacalon purchase and Battle26
+ordinary inputs cover slot consumption, bilingual feedback and cold battle Continue. Field Use
+keeps the item with no effect. Caravan Use refuses it under the source usability policy.
+[Healing Drop source and reproduction](content/profiles-and-trust.md#healing-drop-use)
 
 Deals/Repair, rare/broken sale support, higher DETOX and full Map16 remain Unsupported. The selected
 Battle03–07 story connection is described above. No Map16 save eligibility or natural original timing/reach is claimed. The current

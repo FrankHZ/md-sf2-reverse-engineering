@@ -78,7 +78,8 @@ internal static class PrivateFieldPreparation
     private static IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>> FieldItems(Application.Content.Scenarios.PrivateBattleDefinitions source)
     {
         foreach (var (id, code, useSpell, level) in new (byte, string, string, byte)[]
-            { (0, "MEDICAL_HERB", "HEALIN", 1), (1, "HEALING_SEED", "HEALIN", 2), (3, "ANTIDOTE", "DETOX", 1) })
+            { (0, "MEDICAL_HERB", "HEALIN", 1), (1, "HEALING_SEED", "HEALIN", 2),
+              (2, "HEALING_DROP", "HEALIN", 3), (3, "ANTIDOTE", "DETOX", 1) })
         {
             if (!source.Items.TryGetValue(id, out var item)) continue;
             Require(item.Code == code && item.UseSpell == useSpell && item.UseSpellLevel == level &&
