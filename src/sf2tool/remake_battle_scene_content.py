@@ -154,21 +154,25 @@ BATTLE_REPEAT_ENEMIES = {
 }
 
 
-def campaign_members(selection: Path | None = None) -> list[int]:
+def campaign_selection(selection: Path | None = None) -> dict:
     path = selection or repo_path("remake/content/private/pre-voyage-opening.json")
-    return [row["member"] for row in json.loads(path.read_text(encoding="utf-8"))["growthClasses"]]
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def campaign_ally_visuals(battle, read, ally_table, stats_table, selected_members):
+def campaign_ally_visuals(
+    battle, read, ally_table, stats_table, selected_members, carried_shops=()
+):
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
     cursor = stats_table["list_ShopInventories"]
     carried = set()
-    for first_battle in shop_entry:
-        if battle < first_battle:
-            break
+    # An equipped purchase can return to an earlier encounter with its owner.
+    selected_shops = {index for index, first in enumerate(shop_entry) if first <= battle}
+    selected_shops.update(carried_shops)
+    for index in range(max(selected_shops, default=-1) + 1):
         count = read(cursor, 1)[0]
-        carried.update(read(cursor + 1, count))
+        if index in selected_shops:
+            carried.update(read(cursor + 1, count))
         cursor += 1 + count
 
     if battle >= 9:
@@ -337,13 +341,16 @@ def build(
     animations = table("battle-sprite-animation-static")
     weapons = table("battle-weapon-ground-decode")
     actor_rows = []
+    campaign = campaign_selection(selection)
+    members = [row["member"] for row in campaign["growthClasses"]]
     actor_selections = list(
         campaign_ally_visuals(
             battle,
             read,
             table("ally-data-static"),
             table("core-stats-data-static"),
-            campaign_members(selection),
+            members,
+            campaign.get("carriedWeaponShops", ()),
         )
     )
     # Preserve the existing selected enemy resources independently of carried ally weapons.
@@ -493,7 +500,7 @@ def build(
             address = table("ally-data-static")["table_AllyBattlesprites"]
             actor_rows[-1]["members"] = [
                 member
-                for member in campaign_members(selection)
+                for member in members
                 if tuple(read(address + 9 * member + 1, 2)) == (index, pal_index)
             ]
 
@@ -734,7 +741,7 @@ def add_field_death(
     compiler = OriginalPrograms(
         {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream
     )
-    members = set(campaign_members(selection))
+    members = {row["member"] for row in campaign_selection(selection)["growthClasses"]}
     allies = [
         {"character": row["character"], "sprite": row["sprite"]}
         for row in compiler.initial_ally_sprites()

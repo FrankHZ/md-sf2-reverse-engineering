@@ -18,6 +18,22 @@ public sealed class GameSession
         OpeningNewGame.Prepare(source, options, rules);
     public SaveAvailability QuerySave() => OpeningSave.Query(Definition, Current, Rules);
     public SaveCapture CaptureSave(Guid session, long revision) => OpeningSave.Capture(Definition, Current, Rules, session, revision);
+    public SaveCapture RecordChurchSave(Guid session, long revision, Func<OpeningSaveData, bool> publish)
+    {
+        var before = Current;
+        if (before.SessionId != session || before.Revision != revision) return new(null, "save-stale-revision");
+        var candidate = before;
+        if (before.Exploration is { } field && Definition.Persistence is { } policy)
+        {
+            var story = policy.RecordAtChurch(Definition, field, before.Story);
+            if (story != before.Story)
+                candidate = new(session, revision + 1, before.ObservationSequence, before.Active, story, before.StopReason);
+        }
+        var capture = OpeningSave.Capture(Definition, candidate, Rules, session, candidate.Revision);
+        if (capture.Data is { } data && publish(data)) _current = candidate;
+        return capture;
+    }
+
     public BattleSaveAvailability QueryBattleSave(ObserveBattleMusic? observedMusic = null) =>
         BattleSave.Query(Definition, Current, Rules, observedMusic);
     public BattleSaveCapture CaptureBattleSave(Guid session, long revision) => BattleSave.Capture(Definition, Current, Rules, session, revision);

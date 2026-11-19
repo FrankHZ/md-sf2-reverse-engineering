@@ -41,13 +41,10 @@ internal static class PrivateFieldPreparation
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)
     {
         return source.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" || item is { Code: "ACHILLES_SWORD", ItemTypeExpression: "WEAPON|RARE" }) &&
-            (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3) && item.EquipEffects.All(effect =>
-                effect.Type == "INCREASE_ATT" || effect is { Type: "NONE", Parameter: 0 }))
-            .Select(item => new BattleWeaponDefinition(item.Id, item.DisplayName,
+            PrivateBattleActionBindings.HasSupportedWeaponEffects(item))
+            .Select(item => PrivateBattleActionBindings.Weapon(item,
                 source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))
-                    .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id),
-                checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
-                item.MinimumRange, item.MaximumRange)).ToArray();
+                    .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id))).ToArray();
     }
     internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, ExplorationDefinition? world = null, IEnumerable<string>? wingMaps = null,
         FieldEgressDefinition? egress = null)
@@ -60,6 +57,8 @@ internal static class PrivateFieldPreparation
             .Where(row => row.ItemWord.HasValue).Select(row => (byte)(row.ItemWord!.Value & 127)).ToHashSet();
         pickupIds.UnionWith((world?.Programs.Values ?? []).SelectMany(program => program.Instructions).OfType<TryAddActorItem>().Select(row => row.Item));
         pickupIds.UnionWith((world?.Programs.Values ?? []).SelectMany(program => program.Instructions).OfType<TryAddPartyItem>().Select(row => row.Item));
+        pickupIds.UnionWith((world?.Programs.Values ?? []).SelectMany(program => program.Instructions).OfType<OpenShop>()
+            .SelectMany(shop => shop.Definition.Stock));
         var eventItems = (world?.Maps.Values ?? []).SelectMany(map =>
                 map.Events.Concat(map.Setups.Values.SelectMany(setup => setup.Events)))
             .Where(row => row.Kind == ExplorationEventKind.UseItem).Select(row => row.Item!.Value).ToHashSet();

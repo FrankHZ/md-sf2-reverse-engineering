@@ -155,7 +155,8 @@ public sealed class OpeningRestoreTests
         return words;
     }
 
-    internal static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joined = false, bool victory = false)
+    internal static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joined = false, bool victory = false,
+        FieldReturnAnchor? church = null)
     {
         var growth = new BattleGrowthDefinition(0, 0, [], [], new Dictionary<byte, SpellRef>());
         var deployments = Enumerable.Range(0, 2).Select(id => new BattleDeploymentDefinition(
@@ -171,7 +172,8 @@ public sealed class OpeningRestoreTests
             // This must never execute during restore.
             onLoad: new("dangerous-onload", 0), population: new(30, 128, 0, [new(66, 1, 1)]),
             entryFlags: [new(256, false)], basePalette: palette,
-            viewAreas: [new(0, 0, 63, 63, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0)])).ToArray();
+            viewAreas: [new(0, 0, 63, 63, 0, 0, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0)])
+            { ChurchSavepoint = id == church?.Map.Value ? church : null }).ToArray();
         var audio = new ExplorationAudio(1, 0, 44100, 1, [], "", 0, 1);
         var visuals = new ExplorationVisuals(maps.ToDictionary(map => map.Map, map => new ExplorationMapVisual(map.Map,
             new(1, 1, "rgba8", []), 1, [], [new(1, 1)])), new Dictionary<int, ExplorationSpriteVisual>(),

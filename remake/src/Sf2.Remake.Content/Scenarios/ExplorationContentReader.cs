@@ -76,7 +76,7 @@ internal static class ExplorationContentReader
         foreach (var row in Array(world, "maps"))
         {
             ObjectOptional(row, "map", ["id", "layout", "areas", "entities", "events", "onLoad", "battle", "setup"],
-                "input", "setups", "caravan", "battles", "basePalette", "population", "entryFlags", "layoutEvents", "search");
+                "input", "setups", "caravan", "battles", "basePalette", "population", "entryFlags", "layoutEvents", "search", "churchSavepoint");
             var id = new MapId(Id(row, "id"));
             Require(mapIds.Add(id), "duplicate-map", "world.maps");
             PalettePair? palette = null;
@@ -146,6 +146,13 @@ internal static class ExplorationContentReader
                         Location(variant.GetProperty("onLoad")), Location(variant.GetProperty("input")),
                         ReadPopulation(variant.GetProperty("population")), variant.TryGetProperty("search", out var variantSearch) ? FieldSearchReader.Read(variantSearch, texts) : null));
                 }
+            FieldReturnAnchor? savepoint = null;
+            if (row.TryGetProperty("churchSavepoint", out var point))
+            {
+                Object(point, "churchSavepoint", "map", "position", "facing");
+                Require(Id(point, "map") == id.Value, "church-savepoint-map", "churchSavepoint.map");
+                savepoint = new(id, Position(point.GetProperty("position")), (byte)Number(point, "facing", 0, 3));
+            }
             maps.Add(new(id, new(words), new(areas), entities, events, Location(row.GetProperty("onLoad")), encounter, row.TryGetProperty("input", out var input) ? Location(input) : null, setupRoute, population, row.TryGetProperty("layoutEvents", out var layoutEvents) ? ReadLayoutEvents(layoutEvents) : null, Array(row, "areas").Select(area =>
                 {
                     if (!area.TryGetProperty("overlay", out var offset)) return new MapOverlayOffset(0, 0);
@@ -157,7 +164,7 @@ internal static class ExplorationContentReader
                     return new WriteFlag(Number(flag, "flag", 0, 65535), Boolean(flag, "value"));
                 }) : null, palette, Array(row, "areas").Where(area => area.TryGetProperty("view", out _)).Select(ReadViewArea), setups, routes, row.TryGetProperty("caravan", out var caravan)
                     ? CaravanContentReader.Read(caravan, entities, new(Id(start, "player")), battle) : null,
-                search: row.TryGetProperty("search", out var search) ? FieldSearchReader.Read(search, texts) : null));
+                search: row.TryGetProperty("search", out var search) ? FieldSearchReader.Read(search, texts) : null) { ChurchSavepoint = savepoint });
         }
         Require(paletteBindings.Keys.All(mapIds.Contains), "unknown-map-palette", "start.mapPalettes");
         Require(maps.Count > 0, "empty-world", "world.maps");
@@ -662,6 +669,9 @@ internal static class ExplorationContentReader
             case "plane-position":
                 Object(row, opcode, "op", "axis", "value");
                 return new SetPlanePosition(Number(row,"axis",0,3), Number(row,"value",0,24575));
+            case "save-message-speed": Object(row, opcode, "op"); return new SaveMessageSpeed();
+            case "message-speed": Object(row, opcode, "op", "speed"); return new SetMessageSpeed((byte)Number(row, "speed", 0, 3));
+            case "restore-message-speed": Object(row, opcode, "op"); return new RestoreMessageSpeed();
             case "camera-speed": Object(row, opcode, "op", "speed"); return new SetCameraSpeed((ushort)Number(row, "speed", 0, 32767));
             case "add-follower": Object(row, opcode, "op", "entity"); return new AddExplorationFollower(new(Text(row, "entity")));
             case "wait-idle": Object(row, opcode, "op", "entity"); return new WaitForEntity(new(Text(row, "entity")), true);

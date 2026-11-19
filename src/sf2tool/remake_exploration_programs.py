@@ -336,13 +336,10 @@ class OriginalPrograms:
             ]:
                 speaker, event_speaker = saved_speaker
                 narration = False
-            elif (
-                op == "move.b"
-                and len(args) == 2
-                and args[0].startswith("#")
-                and args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w"
-            ):
-                registers["shop"] = self.number(args[0][1:])
+            elif field_write := services.callback_register(self, op, args, registers, rows, index):
+                instructions, consumed = field_write
+                result.extend(instructions)
+                index += consumed
             elif (service := services.menu_service(self, op, args, registers)) is not None:
                 result.extend(service)
             elif op == "jsr" and args == ["j_YesNoPrompt"]:

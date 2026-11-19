@@ -23,6 +23,17 @@ from sf2tool.remake_asset_build import (
 SUPPORTED_ENCOUNTERS = tuple(range(2, 26))
 
 
+def savepoints(compiler):
+    path = "disasm/data/maps/global/savepointmapcoords.asm"
+    compiler.sources.add(path)
+    source = (compiler.upstream / path).read_text(encoding="utf-8")
+    anchors = {}
+    for operands in _arguments(source, "savePointMapCoordinates"):
+        map_id, x, y, facing = map(compiler.number, _tokens(operands))
+        anchors[map_id] = {"map": f"map-{map_id}", "position": {"x": x, "y": y}, "facing": facing}
+    return anchors
+
+
 def prepare_encounter(upstream: Path, rom: bytes, battle: int, output: Path) -> dict:
     """Reuse the selected encounter transport for admitted overworld slots.
 
@@ -406,19 +417,9 @@ def compile_routes(compiler, selection, upstream):
             joins_path = "disasm/data/battles/cutscenes/afterbattlejoins.asm"
             compiler.sources.add(joins_path)
             joins = _arguments((upstream / joins_path).read_text(encoding="utf-8"), "dc.b")
-            savepoints_path = "disasm/data/maps/global/savepointmapcoords.asm"
-            compiler.sources.add(savepoints_path)
-            savepoints = [
-                list(map(compiler.number, _tokens(row)))
-                for row in _arguments(
-                    (upstream / savepoints_path).read_text(encoding="utf-8"),
-                    "savePointMapCoordinates",
-                )
-            ]
             egress_map = selection["outcomeEgressMap"]
             if isinstance(egress_map, dict):
                 egress_map = egress_map[str(battle_id)]
-            egress, ex, ey, facing = next(row for row in savepoints if row[0] == egress_map)
             route["outcome"] = {
                 **({"defeatedScene": True} if outcome_hooks[0]["program"] != "ms-empty" else {}),
                 "after": outcome_hooks[1],
@@ -428,11 +429,7 @@ def compile_routes(compiler, selection, upstream):
                 "battleOrigin": {"x": origin_x, "y": origin_y},
                 "defeat": _location("source-ordinary-defeat"),
                 "return": _location("source-outcome-return"),
-                "egress": {
-                    "map": "map-" + str(egress),
-                    "position": {"x": ex, "y": ey},
-                    "facing": facing,
-                },
+                "egress": savepoints(compiler)[egress_map],
             }
         if "outcome" in route and battle_id in (
             compiler.equates["BATTLE_POLCA_VILLAGE"],

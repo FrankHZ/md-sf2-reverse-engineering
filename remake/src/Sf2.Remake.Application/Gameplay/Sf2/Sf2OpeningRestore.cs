@@ -64,13 +64,25 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             stepCounter: 0, egressMap: new(data.EgressMap)) { Names = data.Names };
     }
 
-    public void ValidateRegisters(OpeningSaveData data)
+    public StoryState RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story)
     {
+        if (definition.Exploration!.Maps[field.Map].ChurchSavepoint is not { } point) return story;
+        return story.Copy(story.Cursor, story.Wait, flags: story.Flags.Append(399).Distinct().Order().ToArray(),
+            egressMap: point.Map);
+    }
+
+    public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
+    {
+        if (data.Map == "map-25" && data.FieldScene is null)
+            throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
+        if (data.Recipe == "ketto" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if (data.Recipe == "new-granseal-return" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if ((data.Map == "map-30" || data.Map == "map-33" && data.Flags.Any(flag => flag is 785 or 786 or 787)) && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
+        if (world?.Maps.TryGetValue(new(data.EgressMap), out var town) == true &&
+            town.ChurchSavepoint is not null && data.Flags.Contains(399)) return;
         if (data.Recipe == "evil-spirit-shrine" && data.EgressMap == "map-9") return;
         if (data.Recipe is "floor-world" or "willard-burrow" && data.EgressMap == "map-26") return;
         if (data.Recipe == "desktop-kingdom" && data.EgressMap == "map-22") return;
@@ -149,6 +161,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             (!flags.Contains(523) || flags.Contains(783)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
+        if (map.Value == "map-25" && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("ketto", player, "Ketto");
         if (map.Value == "map-30" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("dwarven-mine", player, "Dwarven Mine");
         if (map.Value == "map-34" &&
@@ -198,6 +212,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         world.Map.Value == "map-72" && flags.Contains(256) && definition.Exploration!.Programs.ContainsKey("cs-4ffda")
             ? Sf2FieldSceneRestore.Capture(definition, RaftRuntime.OnScroll(world, flags, null), definition.Exploration.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
+        world.Map.Value == "map-25" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
 
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
@@ -218,6 +233,18 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         }
         if (scene is not null && location.Anchor.Map.Value is "map-6" or "map-7")
             return Sf2NewGransealRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
+        if (scene is not null && location.Anchor.Map.Value == "map-25")
+        {
+            var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
+            if (location.Recipe != "ketto" || scene.Setup != sourceMap.Setup?.DefaultSetup.Value)
+                throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
+            var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
+            enteredFlags = flags;
+            // The live merchant finished in idle. Reinstalling eas_Init here would reset his speed.
+            if (flags.Contains(800) && town.TryResolveEntity(new("entity-133"), out var merchant))
+                town = town.WithEntity(merchant with { Actions = null });
+            return town;
+        }
         if (scene is not null && location.Anchor.Map.Value == "map-30")
             return Sf2MineRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
         if (scene is not null)

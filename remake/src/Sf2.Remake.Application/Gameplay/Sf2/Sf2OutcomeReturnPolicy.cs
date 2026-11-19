@@ -76,6 +76,8 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
 
     internal static FieldReturnAnchor? FindEgress(ScenarioDefinition definition, MapId live, ExplorationOutcomeRoute? preferred = null)
     {
+        if (definition.Exploration!.Maps.TryGetValue(live, out var town) && town.ChurchSavepoint is { } anchor)
+            return anchor;
         var destination = preferred?.EgressMap == live ? preferred : definition.Exploration!.Maps.Values
             .SelectMany(value => value.Battles).Select(value => value.Outcome)
             .FirstOrDefault(value => value?.EgressMap == live);

@@ -207,7 +207,7 @@ public sealed partial class GameRoot
     {
         if (_session is null || _slots is not null) return;
         if (_systemMenu is not null) ShowSettledSave();
-        else RequestFieldEntry(ShowSettledSave);
+        else RequestFieldEntry(() => ShowSettledSave());
     }
 
     private void ShowBattleQuit()
@@ -219,7 +219,7 @@ public sealed partial class GameRoot
         ShowSettledSave();
     }
 
-    private async void ShowSettledSave()
+    private async void ShowSettledSave(bool church = false)
     {
         if (_session is null) return;
         // Freeze dispatch before music publication and the revision-bound query.
@@ -235,7 +235,7 @@ public sealed partial class GameRoot
             var store = Store(_session.Definition);
             await ShowHistory(store, _session.Definition, "save-slots",
                 GameText.Get(_session.Current.Active is ActiveBattle ? "save.battle-offer" : "save.offer", offer.Destination),
-                (slot, seen) => ConfirmSave(slot, seen, store, offer), CloseSavePanel);
+                (slot, seen) => ConfirmSave(slot, seen, store, offer, church), CloseSavePanel);
         }
         catch (ArgumentException error) { SaveError(error.Message); }
         catch (OperationCanceledException) { }
@@ -288,6 +288,7 @@ public sealed partial class GameRoot
         "southwest-parmecia" => GameText.Get("save.destination.southwest-parmecia"),
         "polca-raft" => GameText.Get("save.destination.polca-raft"),
         "polca-victory" => GameText.Get("save.destination.polca-victory"),
+        "ketto" => GameText.Get("save.destination.ketto"),
         "hassan" => GameText.Get("save.destination.hassan"),
         "polca-return" => GameText.Get("save.destination.polca-return"),
         "ancient-hall" => GameText.Get("save.destination.ancient-hall"),
@@ -307,7 +308,7 @@ public sealed partial class GameRoot
             round, name);
     }
 
-    private void ConfirmSave(int slot, SlotRead existing, LocalSaveStore store, HostSaveOffer offer)
+    private void ConfirmSave(int slot, SlotRead existing, LocalSaveStore store, HostSaveOffer offer, bool church)
     {
         _saveSelection = _slots!.SelectedIndex;
         _slots!.Cancel = BackToSave;
@@ -315,7 +316,7 @@ public sealed partial class GameRoot
             : GameText.Get("save.confirm", slot), (GameText.Get("entry.cancel"), BackToSave),
             (GameText.Get("save.and-return"), () => PublishSave(false)), (GameText.Get("save.and-quit"), () => PublishSave(true)));
 
-        void BackToSave() { ShowSettledSave(); }
+        void BackToSave() { ShowSettledSave(church); }
         async void PublishSave(bool quit)
         {
             if (_entryLoading) return;
@@ -329,12 +330,19 @@ public sealed partial class GameRoot
                         var capture = session.CaptureBattleSave(offer.SessionId, offer.Revision);
                         return capture.Data is { } data ? store.Write(slot, existing, data) : new SlotWrite(false, capture.Error);
                     }
+                    if (church)
+                    {
+                        SlotWrite? written = null;
+                        var recorded = session.RecordChurchSave(offer.SessionId, offer.Revision,
+                            data => (written = store.Write(slot, existing, data)).Success);
+                        return written ?? new SlotWrite(false, recorded.Error);
+                    }
                     var field = session.CaptureSave(offer.SessionId, offer.Revision);
                     return field.Data is { } progress ? store.Write(slot, existing, progress) : new SlotWrite(false, field.Error);
                 }, publishing: true, publicationObserved: written =>
                 { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
                 if (!result.Success) { SaveError(result.Error!); return; }
-                _savedSession = offer.SessionId; _savedRevision = offer.Revision;
+                _savedSession = offer.SessionId; _savedRevision = session.Current.Revision;
                 if (quit) { GetTree().Quit(); return; }
                 void ReturnToPlay() { CloseSavePanel(); CloseSystemMenu(); }
                 _slots!.Cancel = ReturnToPlay;

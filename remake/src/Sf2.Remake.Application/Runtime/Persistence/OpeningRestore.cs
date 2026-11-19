@@ -12,7 +12,7 @@ internal static class OpeningRestore
         var expected = OpeningSave.FieldCompatibility(definition, rules);
         Require(data.Depot is { Count: <= 64 } && data.Depot.All(item => item < 127), "save-depot");
         Require(data.Layer is 0 or 2, "save-player-layer");
-        definition.Persistence!.ValidateRegisters(data);
+        definition.Persistence!.ValidateRegisters(data, definition.Exploration);
         Require(data.Allies is { Count: > 0 and <= 30 } && data.Flags is { Count: <= 65536 } &&
             data.ActiveAllies is { Count: > 0 and <= 12 } && data.OnceFlags is { Count: <= 30 } && data.Deals is { Count: <= 127 }, "save-shape");
         Require(data.Flags.All(flag => flag is >= 0 and <= 65535) && data.Flags.Distinct().Count() == data.Flags.Count &&

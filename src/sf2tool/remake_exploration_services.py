@@ -94,6 +94,27 @@ def member_resource(compiler, args, registers, rows, index):
     return None
 
 
+def callback_register(compiler, op, args, registers, rows, index):
+    if op == "move.b" and len(args) == 2 and args[0].startswith("#"):
+        if args[1] == "((CURRENT_SHOP_INDEX-$1000000)).w":
+            registers["shop"] = compiler.number(args[0][1:])
+            return [], 0
+        if args[1] == "((MESSAGE_SPEED-$1000000)).w" and "savedMessageSpeed" in registers:
+            return [{"op": "message-speed", "speed": compiler.number(args[0][1:])}], 0
+    if index >= len(rows):
+        return None
+    following = rows[index]["opcode"], _tokens(rows[index]["operandText"])
+    speed = "((MESSAGE_SPEED-$1000000)).w"
+    if op == "move.b" and args == [speed, "d0"] and following == ("movem.l", ["d0", "-(sp)"]):
+        registers["savedMessageSpeed"] = 1
+        return [{"op": "save-message-speed"}], 1
+    if (op == "movem.l" and args == ["(sp)+", "d0"] and "savedMessageSpeed" in registers
+            and following == ("move.b", ["d0", speed])):
+        del registers["savedMessageSpeed"]
+        return [{"op": "restore-message-speed"}], 1
+    return None
+
+
 def menu_service(compiler, op, args, registers):
     if op not in ("jsr", "jmp"):
         return None

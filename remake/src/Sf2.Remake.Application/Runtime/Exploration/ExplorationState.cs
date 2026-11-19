@@ -92,7 +92,7 @@ public sealed record PositionFlashWait(WaitToken Token, EntityRef Entity, bool O
 public sealed record TickWait(WaitToken Token, int Remaining) : ProgramWait(Token);
 public sealed record EntityEventFacingWait(WaitToken Token) : ProgramWait(Token);
 public abstract record FieldEventContext(bool Returning);
-public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false, byte InteractionFacing = 0) : FieldEventContext(Returning);
+public sealed record EntityEventContext(EntityRef Entity, byte OriginalFacing, byte Flags, bool Returning = false, byte InteractionFacing = 0, byte? SavedMessageSpeed = null) : FieldEventContext(Returning);
 public sealed record ItemEventContext(bool Returning = false) : FieldEventContext(Returning);
 public sealed record AreaDescriptionContext() : FieldEventContext(false);
 public sealed record CaravanEntryContext() : FieldEventContext(false);
