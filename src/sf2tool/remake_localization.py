@@ -230,6 +230,13 @@ def derive(args: argparse.Namespace) -> dict:
         ):
             field_texts.update((2, 10))
         field_items = field_item_ids(world["world"]) - {127}
+    pacalon_castle = args.scope == "current" and any(
+        row["id"] == "map-36" for row in world["world"]["maps"]
+    )
+    if pacalon_castle:
+        field_texts.update(range(3281, 3308))
+    if args.scope == "current" and any(row["id"] == "map-2" for row in world["world"]["maps"]):
+        field_texts.update(range(3583, 3595))
     if args.scope == "current" and any(row["id"] == "map-25" for row in world["world"]["maps"]):
         field_texts.update(range(1956, 1970))
         field_texts.update(range(1971, 1979))
@@ -387,6 +394,8 @@ def derive(args: argparse.Namespace) -> dict:
         name_ids["name.enemy"] += (13, 14, 61, 71, 80, 89)  # Chess pieces
     if willard:
         name_ids["name.enemy"] += (15, 16, 90)
+    if pacalon_castle:
+        name_ids["name.ally"] += (22,)  # Frayja is named before joining.
     if floor_world:
         name_ids["name.ally"] += (16, 17)  # Floor World residents; text1747 fixes Randolf's name.
     extra_growth = (
@@ -541,6 +550,7 @@ def derive(args: argparse.Namespace) -> dict:
             + battle21
             + 6 * battle22
             + 2 * floor_world
+            + pacalon_castle
             + 3 * willard
             + len(extra_items)
             + len(repeat_names)

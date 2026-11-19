@@ -153,7 +153,7 @@ def compile_maps(
                 destination in selection["maps"]
                 and not warp["retainsCoordinates"]
                 and warp["scrollMode"] == 0
-                and all(0 <= warp["destination"][axis] < 64 for axis in ("x", "y"))
+                and all(0 <= value < 64 or value == 255 for value in warp["destination"].values())
                 and all(
                     warp["trigger"][axis] < 64 or warp["trigger"][axis] == 255
                     for axis in ("x", "y")
@@ -164,7 +164,10 @@ def compile_maps(
                         "kind": "warp",
                         **common,
                         "map": "map-" + str(destination),
-                        "position": warp["destination"],
+                        "position": {
+                            axis: None if value == 255 else value
+                            for axis, value in warp["destination"].items()
+                        },
                         "facing": warp["facing"],
                         "loadMode": "preserve" if warp["targetMap"] == 255 else "rebuild",
                     }
@@ -176,11 +179,15 @@ def compile_maps(
                 events.append({"kind": "warp-frontier", **common, "program": _location(symbol)})
         # SwitchMap checks the source flag table before an explicit map transfer.
         # Express it with the existing conditional event dispatch; current-map
-        # warps preserve their map and do not invoke SwitchMap.
+        # warps preserve their map and do not invoke SwitchMap. The source scroll
+        # handler independently checks F530 for its drought overworld target.
         switched_events = []
+        drought_overworld = compiler.equates["MAP_OVERWORLD_PACALON_KINGDOM_DROUGHT"]
         for event in events:
             target = int(event["map"][4:]) if event["kind"] == "warp" else None
-            if event.get("loadMode") == "rebuild" and target in switches:
+            mode = event.get("loadMode")
+            switches_map = mode == "rebuild" or (mode == "scroll" and target == drought_overworld)
+            if target in switches and switches_map:
                 flag, replacement = switches[target]
                 if replacement in selection["maps"]:
                     switched_events.append(

@@ -49,7 +49,9 @@
     27,
     34,
     30,
-    25
+    25,
+    2,
+    36
   ],
   "battles": [
     1,
@@ -79,6 +81,7 @@
     25,
     26
   ],
+  "unavailableBattles": [31],
   "growthClasses": [
     {
       "member": 0,
@@ -186,7 +189,7 @@
     "26": 25
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; includes the initial four-way recruitment choice, Fairy receipt, Oddler staying and ordinary mansion departure; the later F22 offers have controlled coverage only. Includes Map30 Fairy recovery, full-pack refusal, Cannon retry, digging and live/fresh mine return; Includes the New Granseal return audience, Astral following, inventor/Dynamite gift and Janet recruitment through the ordinary town exit; Battle24 connects the northern road to its ordinary battle outcomes and the North Cliff blast, Rohde recruitment and entry into North Cave, Battle25 and its northern field exit. Ketto admits its resident callbacks, relocation, shops, church, Search and return to North Parmecia. Battle26 outside Ketto includes the Geshp confrontation, Higins rescue and return to North Parmecia.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; includes the initial four-way recruitment choice, Fairy receipt, Oddler staying and ordinary mansion departure; the later F22 offers have controlled coverage only. Includes Map30 Fairy recovery, full-pack refusal, Cannon retry, digging and live/fresh mine return; Includes the New Granseal return audience, Astral following, inventor/Dynamite gift and Janet recruitment through the ordinary town exit; Battle24 connects the northern road to its ordinary battle outcomes and the North Cliff blast, Rohde recruitment and entry into North Cave, Battle25 and its northern field exit. Ketto admits its resident callbacks, relocation, shops, church, Search and return to North Parmecia. Battle26 outside Ketto includes the Geshp confrontation, Higins rescue and return to North Parmecia. Drought-state Pacalon town and castle include their residents, services, search, first centaur scene and return to the Map71 departure.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -400,7 +403,9 @@
     27,
     34,
     30,
-    25
+    25,
+    2,
+    36
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
@@ -696,7 +701,9 @@
     26,
     34,
     30,
-    25
+    25,
+    2,
+    36
   ],
   "basePalettes": true,
   "audioCues": [
@@ -880,9 +887,12 @@
     5
   ],
   "churchSavepointMaps": [
-    25
+    25,
+    2,
+    36
   ],
   "carriedWeaponShops": [
-    9
+    9,
+    10
   ]
 }

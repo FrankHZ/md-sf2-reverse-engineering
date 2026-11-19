@@ -2533,3 +2533,12 @@ msgstr "克里德的宅邸"
 
 msgid "save.destination.evil-spirit-shrine"
 msgstr "恶灵神殿"
+
+msgid "save.destination.pacalon-town"
+msgstr "帕卡隆"
+
+msgid "save.destination.pacalon-castle"
+msgstr "帕卡隆城堡"
+
+msgid "save.destination.pacalon-road"
+msgstr "帕卡隆南方道路"
