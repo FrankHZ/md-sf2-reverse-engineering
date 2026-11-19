@@ -23,7 +23,7 @@ from sf2tool.remake_asset_build import (
     _render_player_frame,
 )
 from sf2tool.remake_battle_scene_content import (
-    BATTLE19_REPEAT_ENEMIES,
+    BATTLE_REPEAT_ENEMIES,
     compose,
     special_battle_sprite_frames,
 )
@@ -382,10 +382,9 @@ def prepare_visuals(
             ):
                 enemy = compiler.number("ENEMY_" + _tokens(row)[0])
                 sprites.add(compiler.number("MAPSPRITE_" + enemy_sprites[enemy]))
-        if 19 in battles:
             sprites.update(
                 compiler.number("MAPSPRITE_" + enemy_sprites[enemy])
-                for enemy in BATTLE19_REPEAT_ENEMIES
+                for enemy in BATTLE_REPEAT_ENEMIES.get(battle, {})
             )
     properties_path = "disasm/data/spritedialogproperties.asm"
     compiler.sources.update(

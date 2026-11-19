@@ -4,9 +4,18 @@ The western exit continues the [Kraken and Hassan chapter](kraken-hassan.md). Th
 
 ## Walk from the Hassan save
 
-In the prepared checkout use `./local/issue1806/play.ps1 en play-en` or `./local/issue1806/play.ps1 zh-CN play-zh`. Choose **Continue → slot 1**. A new sample name gives the player a separate copy. Names starting with `full-` use the eleven-living save obtained by paying the Hassan priest 980 gold.
+Use the private `handoffs/issue1920/repeat17` package for the retained Hassan save. Run
+`./Play.ps1 -Language en -Mode interactive -Sample first17 -Seed ./slots/hassan-fresh17.json`
+and choose **Continue → slot 1**. Use `zh-CN` for the Chinese interface. Each sample opens a
+separate player copy. The trained church save already has F417 and selects the first formation
+on leaving Hassan.
 
-From the church counter at (8,9), walk Down three, Right four, then Up twelve. If a wandering villager blocks the aisle, wait for them to move. The exit places Bowie at Map69 (26,54) facing Down. One step Left reaches (25,54) and starts Battle17 on the first visit. In battle, arrow keys move the preview, Enter accepts the destination, F chooses Attack, H opens Magic and Space chooses Stay. Protect Bowie. The party can return to the church during training, revive fallen allies and retry with earned experience.
+From the church counter at (8,9), walk Down three, Right four, then Up twelve. If a wandering
+villager blocks the aisle, wait for them to move. With neither encounter unlocked the exit
+places Bowie at Map69 (26,54) facing Down. One step Left reaches the Battle17 zone at (25,54).
+In battle, arrow keys move the preview, Enter accepts the destination, F chooses Attack, H opens
+Magic and Space chooses Stay. The party can return to the church during training, revive fallen
+allies and retry with earned experience.
 
 ## Observed in the running remake
 
@@ -25,11 +34,45 @@ Battle09 precedes Battle17 in Map69's source table. An outstanding F409 therefor
 
 From the western edge of Map69, the scroll crosses to Map68 at X62 with the same Y. The shrine gate at (55,43) enters Map12 at (12,30) Up. The source checks an outstanding Battle18 unlock before map initialization. With F418 and F725 clear the warning uses text IDs 3197–3203 and returns to Map68 (55,44) Down. A controlled copy of the normal victory save with F725 set and F418 clear reached stable input at (12,30) Up without the warning. A second copy with F418 set produced the Battle18 unavailable observation before any warning text. An independent town copy with F409 and F417 set selected the eleven-enemy Battle09, cleared F409 and retained F417. The party from the subsequent sword and Rohde chapter has a separate integration acceptance.
 
+The shrine displays Taros in a 48-pixel field pose with portrait 42. Gradual text plays his speech
+using command 112 at timer 189 on YM4. The pinned `sfx_30` header selects that slot. The initial
+gradual playback stopped at line 3197 with `sfx-slots-unavailable`. The corrected adapter started
+the 28,057-frame sound and continued through the warning.
+
+## Upgraded interception on the northern return
+
+**Confirmed** from ordinary Battle25 defeat and paid EGRESS town saves. Reviving at Hassan and
+walking the direct road triggered the completed Battle17 at effective level 27. The original
+selector uses F517, Bowie's effective level and each original row's movement type, in slot order.
+The first band spans effective levels 27–36. It can add Orc, Bubbling Ooze, Dark Madam, High Priest
+and Dark Bishop. The USA airborne exclusion overread rejects all three in-band Gargoyle rolls.
+The Arrow Launcher uses the melee bounds and falls back to its base definition. See the
+[upgrade predicate and tables](../../../docs/research/chapters/southern-travel-creed/battle17-initialization-and-first-control.md#f517-and-actual-repeat-definition-selection).
+
+Both ordinary first-control rosters matched the draws from their preserved request seeds.
+The English and Chinese projections resolved the selected identities and field poses. The High
+Priest carried its Power Stick and HEAL3/BLAST2 book. Ordinary English play showed BLAST2 and the
+High Priest's mounted HEAL3 scene. The Dark Madam carried a Power Stick and FREEZE2 and was observed
+using a physical attack. The book alone grants no new AI choice. Recipe 2 stored the chosen
+definitions, and a Chinese title Continue and ordinary re-save preserved the entire battle payload.
+
+The English repeat ended in victory in round 10. Bowie's local (9,20) projected to Map69 (9,51),
+with F517 set, F417 clear and 6,547 gold. Ordinary walking and Caravan travel crossed Map68 and
+Map73 to Map72 and saved at North Cliff (27,34), keeping F425 and F750. The predecessor's direct
+route failed at `repeat-enemy-upgrade` on `encounter.placements`; its later town detour reached
+the northern route. Both paths retain their own receipts.
+
 ## Reproduction and scope
 
 The private package uses the registered USA ROM and SF2DISASM commit `c834c652b6862bc5679fd7f69a38a7093206efc6`. The `BattleSpriteset17` source and table-driven map, background, prowess and movement selections provide the combatants and presentation. The ordinary product loaders, battle rules and Godot main scene handle the observations. Inputs, captures and generated assets stay in the prepared checkout. See the [Battle17 opening research](../../../docs/research/chapters/southern-travel-creed/battle17-initialization-and-first-control.md) for original first-control evidence.
 
-Generate the encounter operands, scene and field poses with the standard producers and fresh ignored destinations. Load the registered private environment in the same shell. The campaign binds these operands with its existing static data, enemy tables, identity and command icons. The shrine displays Taros in a 48-pixel field pose with portrait 42. Gradual text plays his speech using command 112 at timer 189 on YM4. The pinned `sfx_30` header selects that slot. The initial gradual playback stopped at line 3197 with `sfx-slots-unavailable`; the corrected adapter started the 28,057-frame sound and continued through the warning.
+Use the existing encounter, scene and field-pose producers with fresh ignored destinations and the
+registered private environment. On the Battle17 row in the world producer's
+`--encounter-inputs`, set `repeatEnemies` to the IDs in `BATTLE_REPEAT_ENEMIES[17]` and
+point `battleScenes` at the prepared Battle17 scene. Run the existing command-menu and identity
+mount and derive the display catalog from that world. They consume `repeatEnemies` for the
+selected names and AURA identity. The handoff names the accepted private inputs and startup
+commands.
 
 ```powershell
 uv run python -m sf2tool.remake_exploration_battles --battle 17 --rom $rom --upstream $upstream --output local/road/inputs/battle17
@@ -37,6 +80,12 @@ uv run python -m sf2tool.remake_battle_scene_content --battle 17 --rom $rom --up
 uv run python -m sf2tool.remake_battle_scene_content --field-death-base local/road/scene/battle-scenes.json --rom $rom --upstream $upstream --output local/road/field
 ```
 
-In the prepared checkout, run `./local/issue1806/check-route.ps1 Egress en`, `Defeat en`, `Win en` or `Win zh-CN`. `Road zh-CN` starts from the ordinary post-victory save and reads the warning with gradual text and audio. The win shortcut starts from a normal church save after training and saves again through the menu after victory. The isolated flag checks are `Priority en`, `Skip en` and `Battle18 en`. The `Repeat26`, `Repeat27` and `First27` checks vary the unpromoted leader level and completion flag on disposable town copies. Level 26 admitted the completed base formation, level 27 stopped at `repeat-enemy-upgrade`, and level 27 with F517 clear admitted the first formation. The local handoff identifies the retained field save and the input, build and observation commands.
+The earlier isolated observations used disposable town copies. Level 26 admitted the completed base
+formation. Level 27 with F517 set stopped at `repeat-enemy-upgrade` in the earlier package.
+Level 27 with F517 clear admitted the first formation. These historical observations are separate
+from the new native first-form check and the two ordinary upgrade runs.
 
-The observed party had no Achilles Sword or agreement with Rohde. The [Taros Shrine chapter](taros-caravan.md) follows the later sword-bearing party through Battle18. On completed Battle17 repeats the base formation is supported until the first possible enemy substitution at unpromoted Bowie level 27. Eligible high-level substitutions and DETOX level two are outside this chapter.
+The [Taros Shrine chapter](taros-caravan.md) follows the later sword-bearing party through Battle18.
+At effective level 37 and above, draws can require additional unmounted definitions, including
+Skeleton or Wizard. Those draws retain the `repeat-enemy-definition` boundary. Full higher-band
+support, other upgraded outcomes, DETOX level two and human audiovisual acceptance remain open.
