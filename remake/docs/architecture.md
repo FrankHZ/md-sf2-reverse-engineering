@@ -2,13 +2,13 @@
 
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior. Reference routes support external comparisons. The common
-session runs authored packages and the connected private campaign through bilingual
-[Battle26, Higins’s rescue and its overworld return](application/battle26-higins.md). Map48 selects its two battles
-by entry coordinates and unlock flags. Ketto declares its church return point on the exploration
-map. Church Save, battle return and field return share that destination lookup. The battlefield
+session runs authored packages and the connected private campaign through the bilingual
+[Pacalon first visit and Map71 departure](application/pacalon-first-visit.md). Map48 selects its two battles
+by entry coordinates and unlock flags. Ketto and both Pacalon locations declare their church return points
+on the exploration maps. Church Save, battle return and field return share that destination lookup. The battlefield
 neutral list owns Higins’s lying pose until the first victory. Recruitment uses party flags and
 leaves his existing character record available to Caravan Relief.
-Creed, the mine, New Granseal and North Cliff share settled-scene restoration. Each SF2 location owns
+Creed, the mine, New Granseal, North Cliff and both Pacalon locations share settled-scene restoration. Each SF2 location owns
 its admitted population. At the cliff, Continue retains the visit latch, opened terrain, hidden actors
 and physical follower links. The [campaign agreement](application/remaining-campaign-risk-baseline.md)
 owns the playable scope. The [Polca chapter](application/polca-first-raft.md)

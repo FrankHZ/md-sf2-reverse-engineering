@@ -11,6 +11,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 {
     private const string InitialRecipe = "new-game";
 
+    private static (string Recipe, string Destination)? PacalonLocation(string map) => map switch
+    {
+        "map-2" => ("pacalon-town", "Pacalon"),
+        "map-36" => ("pacalon-castle", "Pacalon Castle"),
+        "map-71" => ("pacalon-road", "Pacalon, southern road"),
+        _ => null
+    };
+
     public int FieldRecipeRevision { get; } = fieldRecipeRevision;
 
     public IReadOnlyList<BattleActorStartInput> RestoreRoster(ScenarioDefinition definition, OpeningSaveData data,
@@ -73,9 +81,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
-        if (data.Map == "map-25" && data.FieldScene is null)
+        if (data.Map is "map-25" or "map-2" or "map-36" && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
-        if (data.Recipe == "ketto" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if ((data.Recipe == "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if (data.Recipe == "new-granseal-return" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
@@ -161,6 +169,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             (!flags.Contains(523) || flags.Contains(783)) &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new("creed-mansion", player, "Creed's Mansion");
+        if (!flags.Contains(530) && PacalonLocation(map.Value) is { } pacalon && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new(pacalon.Recipe, player, pacalon.Destination);
         if (map.Value == "map-25" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("ketto", player, "Ketto");
         if (map.Value == "map-30" && content!.Traversal.IsWithinActiveArea(player.Position))
@@ -212,7 +222,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         world.Map.Value == "map-72" && flags.Contains(256) && definition.Exploration!.Programs.ContainsKey("cs-4ffda")
             ? Sf2FieldSceneRestore.Capture(definition, RaftRuntime.OnScroll(world, flags, null), definition.Exploration.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
-        world.Map.Value == "map-25" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].Setup!.DefaultSetup.Value) :
+        world.Map.Value is "map-25" or "map-2" or "map-36" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
 
     public ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
@@ -233,16 +243,21 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         }
         if (scene is not null && location.Anchor.Map.Value is "map-6" or "map-7")
             return Sf2NewGransealRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
-        if (scene is not null && location.Anchor.Map.Value == "map-25")
+        if (scene is not null && location.Anchor.Map.Value is "map-25" or "map-2" or "map-36")
         {
             var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
-            if (location.Recipe != "ketto" || scene.Setup != sourceMap.Setup?.DefaultSetup.Value)
+            if (location.Recipe != (PacalonLocation(sourceMap.Map.Value)?.Recipe ?? "ketto") || scene.Setup != sourceMap.Setup?.DefaultSetup.Value)
                 throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
             var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
             enteredFlags = flags;
             // The live merchant finished in idle. Reinstalling eas_Init here would reset his speed.
-            if (flags.Contains(800) && town.TryResolveEntity(new("entity-133"), out var merchant))
+            if (sourceMap.Map.Value == "map-25" && flags.Contains(800) && town.TryResolveEntity(new("entity-133"), out var merchant))
                 town = town.WithEntity(merchant with { Actions = null });
+            // The completed castle scene leaves the centaur idle at speed 8. A fresh visit
+            // with the same flag still starts his original ambient script at speed 32.
+            if (sourceMap.Map.Value == "map-36" && flags.Contains(810) &&
+                town.TryResolveEntity(new("entity-131"), out var centaur) && centaur.Motion.XSpeed == 8)
+                town = town.WithEntity(centaur with { Actions = null });
             return town;
         }
         if (scene is not null && location.Anchor.Map.Value == "map-30")

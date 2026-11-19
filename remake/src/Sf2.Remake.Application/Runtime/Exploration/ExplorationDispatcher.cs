@@ -493,7 +493,8 @@ internal static class ExplorationDispatcher
                 return FieldSearch.Feedback(current, new(FieldSearchKind.Unavailable, [], Message: unavailable), prior: observations);
             if (warp.LoadMode == MapLoadMode.Rebuild && warp.DestinationMap is { } target &&
                 definition.Exploration!.Maps[target].Battles.Any(candidate => candidate.Unavailable) &&
-                BattleEntry.First(definition, current.Story, definition.Exploration.Maps[target], rules, warp.Destination)
+                BattleEntry.First(definition, current.Story, definition.Exploration.Maps[target], rules,
+                    MapTransfer.Destination(warp, preview.World.PlayerEntity.Position))
                     is { Unavailable: true } route)
             {
                 current = ProgramRunner.Commit(current, current.Active, current.Story, observations, "battle-entry-unavailable", route.Encounter);

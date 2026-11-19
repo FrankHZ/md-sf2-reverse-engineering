@@ -6,6 +6,10 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class MapTransfer
 {
+    internal static MapPosition Destination(ExplorationEvent warp, MapPosition origin) => new(
+        warp.RetainDestinationX ? origin.X : warp.Destination!.X,
+        warp.RetainDestinationY ? origin.Y : warp.Destination!.Y);
+
     // Apply is a pure snapshot construction. Reuse its full admission before consuming a
     // field action; publish again after the old-world pass with its resulting party seed.
     internal static void Validate(ScenarioDefinition definition, SessionSnapshot current, ExplorationState candidate,
@@ -18,9 +22,10 @@ internal static class MapTransfer
             _ = Scroll(definition, preview, warp, []);
             return;
         }
-        var admitted = Apply(definition, preview, warp.DestinationMap!, warp.Destination!, warp.Facing,
+        var position = Destination(warp, candidate.PlayerEntity.Position);
+        var admitted = Apply(definition, preview, warp.DestinationMap!, position, warp.Facing,
             warp.LoadMode, current.Story, [], rules, sourcePlacement);
-        if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules, warp.Destination) is not null) return;
+        if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules, position) is not null) return;
         ValidateDisplay(current.Story.Display);
         var target = definition.Exploration.Maps[warp.DestinationMap!].SelectSetup(current.Story.Flags);
         if (warp.LoadMode == MapLoadMode.Rebuild && target.BasePalette is not { Valid: true })
@@ -104,11 +109,12 @@ internal static class MapTransfer
     {
         if (warp.LoadMode is MapLoadMode.ScrollHorizontal or MapLoadMode.ScrollVertical)
             return Scroll(definition, current, warp, observations);
-        if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules, warp.Destination) is not null)
-            return Apply(definition, current, warp.DestinationMap!, warp.Destination!, warp.Facing,
-                warp.LoadMode, current.Story, observations, rules, sourcePlacement);
-        var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, warp.Destination!, warp.Facing, warp.LoadMode, sourcePlacement));
         var world = current.Exploration!;
+        var position = Destination(warp, world.PlayerEntity.Position);
+        if (BattleEntry.First(definition, current.Story, definition.Exploration!.Maps[warp.DestinationMap!], rules, position) is not null)
+            return Apply(definition, current, warp.DestinationMap!, position, warp.Facing,
+                warp.LoadMode, current.Story, observations, rules, sourcePlacement);
+        var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, position, warp.Facing, warp.LoadMode, sourcePlacement));
         current = new(current.SessionId, current.Revision, current.ObservationSequence,
             new ActiveExploration(world.WithEntity(world.PlayerEntity with { Actions = null, ActionCursor = 0, WaitingForMotion = false })),
             story, current.StopReason);

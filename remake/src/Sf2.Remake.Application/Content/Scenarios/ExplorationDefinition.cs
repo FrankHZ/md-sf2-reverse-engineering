@@ -98,7 +98,8 @@ public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,
     MapPosition? Destination = null, byte Facing = 0, ushort? RequiredMarker = null,
     int? RequiredFlag = null, bool RequiredFlagValue = true, byte? EntityFlags = null, MapLoadMode LoadMode = MapLoadMode.Rebuild,
-    EntityActionProgram? SourceInit = null, string? Unavailable = null, byte? Item = null, byte? ItemFacing = null);
+    EntityActionProgram? SourceInit = null, string? Unavailable = null, byte? Item = null, byte? ItemFacing = null,
+    bool RetainDestinationX = false, bool RetainDestinationY = false);
 public sealed record ExplorationBattleRoute(string Encounter, int? UnlockedFlag, int? CompletedFlag,
     int? IntroFlag, ProgramLocation? BeforeProgram, ProgramLocation? StartProgram, ProgramLocation? LoadProgram = null,
     ExplorationOutcomeRoute? Outcome = null, int? TriggerX = null, int? TriggerY = null, bool Unavailable = false,

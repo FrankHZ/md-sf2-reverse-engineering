@@ -538,11 +538,11 @@ internal static class ExplorationContentReader
         MapPosition position;
         MapLoadMode loadMode;
         var target = row.GetProperty("position");
+        Object(target, "position", "x", "y");
+        var x = NullableNumber(target, "x", 63);
+        var y = NullableNumber(target, "y", 63);
         if (mode == "scroll")
         {
-            Object(target, "position", "x", "y");
-            var x = NullableNumber(target, "x", 63);
-            var y = NullableNumber(target, "y", 63);
             Require(x.HasValue != y.HasValue, "scroll-retained-axis", "event.position");
             loadMode = x.HasValue ? MapLoadMode.ScrollHorizontal : MapLoadMode.ScrollVertical;
             position = new(x ?? 0, y ?? 0);
@@ -551,12 +551,12 @@ internal static class ExplorationContentReader
         {
             Require(mode is "rebuild" or "preserve", "map-load-mode", "event.loadMode");
             loadMode = mode == "preserve" ? MapLoadMode.Preserve : MapLoadMode.Rebuild;
-            position = Position(target);
+            position = new(x ?? 0, y ?? 0);
         }
         return new(ExplorationEventKind.Warp, NullableNumber(row, "x", 63), NullableNumber(row, "y", 63), null, null,
             new MapId(Id(row, "map")), position, (byte)Number(row, "facing", 0, 3),
             (ushort?)NullableNumber(row, "marker", 0x3C00), NullableNumber(row, "requiredFlag", 65535), Boolean(row, "requiredValue"),
-            LoadMode: loadMode);
+            LoadMode: loadMode, RetainDestinationX: !x.HasValue, RetainDestinationY: !y.HasValue);
     }
 
     internal static StoryInstruction ReadInstruction(JsonElement row) => ReadInstruction(row, null);

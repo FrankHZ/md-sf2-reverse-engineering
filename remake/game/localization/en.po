@@ -2533,3 +2533,12 @@ msgstr "Creed's Mansion"
 
 msgid "save.destination.evil-spirit-shrine"
 msgstr "Evil Spirit Shrine"
+
+msgid "save.destination.pacalon-town"
+msgstr "Pacalon"
+
+msgid "save.destination.pacalon-castle"
+msgstr "Pacalon Castle"
+
+msgid "save.destination.pacalon-road"
+msgstr "Pacalon, southern road"
