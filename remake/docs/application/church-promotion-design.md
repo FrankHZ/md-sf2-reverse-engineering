@@ -1,6 +1,6 @@
 # Church promotion
 
-**Design for review · first Pacalon visit.** Give a joined ally a current class that survives ordinary play. The first implementation should let a player promote Bowie from SDMN to HERO at a church, see the result in the field, fight and grow as HERO, then resume the same party from a save. A second slice spends a specific holder’s Pegasus Wing to promote an eligible knight. Both use the same member progress and class selection. The Promote command is still unavailable in the accepted engine. The campaign remains at High rigor because a class change crosses growth, equipment, presentation and both save recipes. [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
+**Design accepted · first Pacalon visit.** Give a joined ally a current class that survives ordinary play. The first implementation should let a player promote Bowie from SDMN to HERO at a church, see the result in the field, fight and grow as HERO, then resume the same party from a save. A second slice spends a specific holder’s Pegasus Wing to promote an eligible knight. Both use the same member progress and class selection. The Promote command is still unavailable in the accepted engine. The campaign remains at High rigor because a class change crosses growth, equipment, presentation and both save recipes. [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
 
 ## Which parties can exercise it?
 
@@ -11,7 +11,7 @@
 | English | Bowie, SDMN 27. Kazin, MAGE 27, is fallen. | Kazin, slot 2 | Eric, joined KNTE 27, is fallen. Also Chester, KNTE 1. |
 | Simplified Chinese | Bowie, SDMN 27. Kazin, MAGE 29, is alive. | Slade, slot 3 | Chester, KNTE 1. The seeded Eric row has no joined flag. |
 
-To check these facts, open `slots/castle-en.json` and `slots/castle-zh-CN.json` read-only in the registered Pacalon handoff. Decode the envelope’s base64 `payload` as UTF-8 JSON. Read `data.allies` by actor alongside the joined flags, stored level/class, HP and the four item words. Item 118 is the Wing and F175 records Search. For play, fork the ordinary history using a separate save output. English can Raise Eric before deploying him. For the Chinese PGNT playthrough, train joined Chester to 20 through play, or continue a legal alternate Creed history that recruited Eric. Switching display language on the English party can check translated prompts but does not produce the Chinese party’s history. [Save input and output](battle-save-and-continue.md#manual-save-history-and-developer-files)
+To check these facts, open `slots/castle-en.json` and `slots/castle-zh-CN.json` read-only in the registered Pacalon handoff. Decode the envelope’s base64 `payload` as UTF-8 JSON. Read `data.allies` by actor alongside the joined flags, stored level/class, HP and the four item words. Item 118 is the Wing and F175 records Search. For play, copy the slot into a fresh external acceptance namespace as described below. English can Raise Eric before deploying him. For the Chinese PGNT playthrough, train joined Chester to 20 through play, or continue a legal alternate Creed history that recruited Eric. Switching display language on the English party can check translated prompts but does not produce the Chinese party’s history. [Save input and output](battle-save-and-continue.md#manual-save-history-and-developer-files)
 
 ## Original rules that the implementation must preserve
 
@@ -115,12 +115,19 @@ uv run sf2 verify adapter
 uv run sf2 verify plan --base origin/main --head HEAD
 ```
 
-For ordinary play, mount the selected private inputs using the Pacalon handoff’s `player-config.json` entries as in its `Play.ps1`, with the implementation’s changed world/scene rows and current Debug adapter. Keep the save namespace, profile, TEMP and logs in the owning checkout. Set `$game` to that configured project, `$settings` to its English or Chinese settings, `$seed` to the absolute path of the corresponding legal input and `$output` to a distinct fresh absolute file. These are existing native entry options. In an already-owned running instance, use ordinary input there until a fresh process is needed.
+For ordinary play, mount the Pacalon handoff’s `player-config.json` inputs as in its `Play.ps1`, with the implementation’s changed world/scene rows and current Debug adapter. Keep the disposable host profile, TEMP and logs under the owning checkout. Select an absolute operator-owned `$operatorSaveRoot` outside every checkout, with no linked ancestor. Ordinary Save rejected an in-checkout root in the Healing Drop pilot. Give each acceptance run a fresh namespace under the external root so that play only updates its copy. [Save storage policy](opening-session-lifecycle.md#format-compatibility-and-local-storage) · [Healing Drop pilot](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1953)
+
+Set `$game` to the configured Godot project, `$settings` to the language settings, and `$seed` to the matching read-only Pacalon castle slot. Both castle seeds have embedded slot number 1. Run the setup once, then reuse the same environment and slot for the cold launch. This exercises the ordinary player store through title Continue, Save and Quit, and fresh-process Continue. The separate developer-file workflow uses `--load-save` and `--save-output`. [Save file modes](battle-save-and-continue.md#manual-save-history-and-developer-files)
 
 ```powershell
-& $env:GODOT_BIN --path $game -- --input-settings $settings --load-save $seed --save-output $output
-# After ordinary Save and Quit, launch the same project and select title Continue.
-& $env:GODOT_BIN --path $game -- --input-settings $settings --save-output $output
+$env:SF2_SAVE_ROOT = $operatorSaveRoot
+$env:SF2_SAVE_NAMESPACE = "promotion-$([guid]::NewGuid().ToString('N'))"
+$slotDirectory = Join-Path $env:SF2_SAVE_ROOT "$env:SF2_SAVE_NAMESPACE/sf2-opening"
+New-Item -ItemType Directory -Path $slotDirectory -ErrorAction Stop | Out-Null
+Copy-Item -LiteralPath $seed -Destination (Join-Path $slotDirectory 'slot1.json') -ErrorAction Stop
+& $env:GODOT_BIN --path $game -- --input-settings $settings
+# After Save and Quit, select Continue again in the same namespace.
+& $env:GODOT_BIN --path $game -- --input-settings $settings
 ```
 
 Read the existing exploration/battle `ReadObservationJson`, scene projection, church wait, item words, save/entry observations and native errors. Use mapped controls; keep screenshots, frame capture, manually edited saves and public private-content attachments out of acceptance. Compare decoded progress before/after across all actors, flags, gold, depot, seeds and actual slot/class/book; check stale input after reentry and successful ordinary control return. Compare level-up outcomes against an uninterrupted run from the same state/RNG. Separate existing shutdown failures from new action/restore errors. Use the clean committed planner and record actual PR checks. [Engine/adapter verification](../development-and-verification.md) · [Native save and control](battle-save-and-continue.md) · [Known Pacalon shutdown evidence](pacalon-first-visit.md#reproduction)
