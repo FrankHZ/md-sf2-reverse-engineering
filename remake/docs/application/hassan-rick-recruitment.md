@@ -51,11 +51,33 @@ retained its complete live battle. [Historical roster rules](battle-save-and-con
 
 ## Reproduction and limits
 
-Use the registered private `handoffs/issue1939` bundle and its `HANDOFF.md`. It gives the
-rebuild and fresh-sample launch commands for ordinary Talk, Relief, Attack and all cold
-Continue checks. The unedited starts are an earlier Taros victory, a later full-force Hassan
-return, and pre-upgrade Pacalon and Battle26 slots. The retained baseline shows ordinary Talk
-stopping at `join-member-binding` on `program.member` after text 1418.
+Prepare the review checkout with `uv sync --locked`, restore the adapter with the locked SDK,
+and build `remake/game/Sf2.Remake.Godot.csproj` in Debug. Load the checkout's private input
+configuration in the process that runs those commands. [Fresh worktree setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup) ·
+[Locked .NET workflow](../development-and-verification.md#locked-net-workflow)
+
+Set `$review` to the registered private `handoffs/issue1939` directory and `$checkout` to the
+review worktree. Use unused sample names. These runs exercise Simplified Chinese Talk and
+Hassan reentry, the English Battle17 attack, and English Continue and re-save of old Battle26.
+
+```powershell
+$review = (Resolve-Path -LiteralPath '<registered handoffs/issue1939 directory>').ProviderPath
+$checkout = (Resolve-Path -LiteralPath '<review worktree>').ProviderPath
+& "$review/Review.ps1" -Repo $checkout -Seed "$review/inputs/hassan-full.json" -Mode hassan -Language zh-CN -Sample rick-hassan-review
+& "$review/Review.ps1" -Repo $checkout -Seed "$review/slots/battle-ready.json" -Mode fight -Language en -Sample rick-attack-review
+& "$review/Review.ps1" -Repo $checkout -Seed "$review/inputs/battle26-en.json" -Mode old-battle -Language en -Sample rick-battle26-review
+```
+
+To rebuild, set `$freshPrivateDirectory` to an unused private output path. Pass it to
+`Review.ps1` as `-Build $freshPrivateDirectory` to review the new package.
+
+```powershell
+& "$review/runner/Rebuild.ps1" -Repo $checkout -Output $freshPrivateDirectory
+```
+
+The bundle's `HANDOFF.md` locates the private inputs and receipts for the other runs. The
+retained baseline shows ordinary Talk stopping at `join-member-binding` on `program.member`
+after text 1418.
 
 The slice uses **High** rigor because changed content crosses live party, formation, rendering
 and existing field and battle saves. The retained world comparison changes only Rick's growth
