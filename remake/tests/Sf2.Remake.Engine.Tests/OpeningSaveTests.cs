@@ -1,4 +1,5 @@
 using Sf2.Remake.Application.Gameplay;
+using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -13,6 +14,79 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class OpeningSaveTests
 {
+    private static readonly FieldReturnAnchor Church = new(new("map-3"), new(14, 9), 1);
+
+    private static GameSession StartAtChurch()
+    {
+        var (definition, data) = OpeningRestoreTests.Fixture(church: Church);
+        return Assert.IsType<SessionStarted>(GameSession.Restore(definition,
+            data with { EgressMap = "map-0" }, RuleCompositions.Sf2())).Session;
+    }
+
+    [Fact]
+    public void ChurchSavePublishesTheNewReturnTownAndRejectsThePreviousRevision()
+    {
+        var session = StartAtChurch();
+        var before = session.Current;
+        Assert.Equal(new MapId("map-0"), before.Story.EgressMap);
+        Assert.DoesNotContain(399, before.Story.Flags);
+        OpeningSaveData? published = null;
+
+        var capture = session.RecordChurchSave(before.SessionId, before.Revision, data =>
+        {
+            Assert.Same(before, session.Current);
+            published = data;
+            return true;
+        });
+
+        Assert.Null(capture.Error);
+        Assert.NotNull(published);
+        Assert.Same(published, capture.Data);
+        var committed = session.Current;
+        Assert.Equal(before.Revision + 1, committed.Revision);
+        Assert.Equal(Church.Map.Value, published.EgressMap);
+        Assert.Contains(399, published.Flags);
+        Assert.Equal(published.EgressMap, committed.Story.EgressMap!.Value);
+        Assert.Equal(published.Flags, committed.Story.Flags);
+        Assert.All(session.Definition.Exploration!.Maps.Values, map => Assert.Empty(map.Battles));
+        Assert.Equal(Church, Sf2OutcomeReturnPolicy.FindEgress(session.Definition, committed.Story.EgressMap));
+
+        var stale = session.RecordChurchSave(before.SessionId, before.Revision,
+            _ => throw new InvalidOperationException("A stale save reached the publisher."));
+        Assert.Equal("save-stale-revision", stale.Error);
+        Assert.Null(stale.Data);
+        Assert.Same(committed, session.Current);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ChurchSaveKeepsThePreviousTownWhenPublicationFails(bool throws)
+    {
+        var session = StartAtChurch();
+        var before = session.Current;
+        bool called = false;
+        bool Publish(OpeningSaveData data)
+        {
+            called = true;
+            Assert.Equal(Church.Map.Value, data.EgressMap);
+            Assert.Contains(399, data.Flags);
+            Assert.Same(before, session.Current);
+            if (throws) throw new IOException("Failed to write slot.");
+            return false;
+        }
+
+        if (throws)
+            Assert.Throws<IOException>(() => session.RecordChurchSave(before.SessionId, before.Revision, Publish));
+        else
+            session.RecordChurchSave(before.SessionId, before.Revision, Publish);
+
+        Assert.True(called);
+        Assert.Same(before, session.Current);
+        Assert.Equal(new MapId("map-0"), session.Current.Story.EgressMap);
+        Assert.DoesNotContain(399, session.Current.Story.Flags);
+    }
+
     [Fact]
     public void CompletedShopResourcesUseTheExistingSavePayloadAndRestoreAuthority()
     {
