@@ -110,6 +110,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             18 => [new(18, 128, 110, 24)],
             19 => [new(19, 129, 16, 6)],
             21 => [new(21, 135, 62, 7), new(21, 129, 20, 8)],
+            25 => [new(25, 133, 0, 22), new(25, 142, 0, 23)],
             24 => [new(24, 135, 17, 9), new(24, 133, 0, 20), new(24, 140, 0, 21)],
             _ => [],
         };

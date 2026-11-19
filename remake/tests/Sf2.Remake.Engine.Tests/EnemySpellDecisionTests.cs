@@ -26,6 +26,28 @@ public sealed class EnemySpellDecisionTests
     }
 
     [Fact]
+    public void OrdinaryAttackerWithAttackOneAndSufficientMpChoosesPhysicalContact()
+    {
+        var document = Document("enemy-spells");
+        var placement = document["encounters"]![0]!["placements"]![1]!;
+        placement["x"] = 3;
+        placement["initialization"]!["commandset"] = 6;
+        var admitted = Assert.IsType<ScenarioReadAccepted>(Reader(document).Read());
+        var encounter = admitted.Definition.Encounters.Values.Single();
+        var mage = encounter.Deployments.Single(row => row.Actor == Mage).Definition;
+        var attacker = new BattleActorDefinition(Mage, mage.ClassRule, mage.Level, mage.MaxHp, 12,
+            mage.Attack, mage.Defense, mage.Agility, mage.ExtraRoundAction, mage.Move,
+            [new("attack", 1)], mage.Physical, mage.Mover, new([127, 127, 127, 127], [5, 63, 63, 63]));
+        var battle = BattleTurnFlow.Start(encounter.WithDeployments(encounter.Deployments.Select(
+            row => row.Actor == Mage ? row with { Definition = attacker } : row)), admitted.Start);
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == Mage ? actor.With(mp: 12) : actor));
+
+        var decision = Decide(battle, Mage);
+        Assert.Equal(Scout, decision.Target);
+        Assert.Null(decision.ChosenAction); // The ordinary physical target commits through the default action.
+    }
+
+    [Fact]
     public void AutomaticCasterWithBlazeThreeAndBoostTwoCastsTheAffordableBlazeRank()
     {
         var document = Document("enemy-spells");

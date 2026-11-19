@@ -324,7 +324,9 @@ def derive(args: argparse.Namespace) -> dict:
     )
     if battle20:
         field_texts.update(range(2566, 2576))
-    battle24 = args.scope == "current" and "battle-24" in field_encounters(world["world"])
+    encounters = field_encounters(world["world"]) if args.scope == "current" else set()
+    northern_enemies = bool(encounters & {"battle-24", "battle-25"})
+    battle25 = "battle-25" in encounters
     repeat_enemies = {
         enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
     }
@@ -391,12 +393,17 @@ def derive(args: argparse.Namespace) -> dict:
     name_ids["name.class"] += tuple(sorted(extra_classes))
     if 82 in repeat_enemies:
         field_items.add(28)  # Equipped Brass Knuckles
-    road_enemies = {17, 45, 62, 81}.difference(name_ids["name.enemy"]) if battle24 else set()
+    road_enemies = (
+        {17, 45, 62, 81}.difference(name_ids["name.enemy"]) if northern_enemies else set()
+    )
     name_ids["name.enemy"] += tuple(sorted(road_enemies))
-    if battle24:
+    if northern_enemies:
         name_ids["name.spell"] += (3,)  # BOOST
-    if battle24 or 81 in repeat_enemies:
+    if northern_enemies or 81 in repeat_enemies:
         name_ids["name.spell"] += (1,)  # AURA
+    if battle25:
+        name_ids["name.enemy"] += (18,)  # Dark Soldier
+        name_ids["name.spell"] += (5,)  # ATTACK
     repeat_names = repeat_enemies.difference(name_ids["name.enemy"])
     name_ids["name.enemy"] += tuple(sorted(repeat_names))
     extra_items = field_items.difference(name_ids["name.item"])
@@ -530,8 +537,9 @@ def derive(args: argparse.Namespace) -> dict:
             + len(extra_items)
             + len(repeat_names)
             + len(road_enemies)
-            + battle24
-            + (battle24 or 81 in repeat_enemies)
+            + northern_enemies
+            + 2 * battle25
+            + (northern_enemies or 81 in repeat_enemies)
             + len(extra_growth)
             + len(extra_classes)
         ),

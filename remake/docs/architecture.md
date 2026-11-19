@@ -3,7 +3,8 @@
 The remake is a deterministic modular monolith hosted by Godot. Validated content, live state and
 implemented rules determine behavior. Reference routes support external comparisons. The common
 session runs authored packages and the connected private campaign through bilingual
-[Battle24](application/battle24-north-parmecia.md) and the [North Cliff entrance](application/north-cliff-rohde.md).
+[Battle25 and the northern cave exit](application/battle25-north-cave.md). Map48 selects its two battles
+by their separate entry coordinates and unlock flags.
 Creed, the mine, New Granseal and North Cliff share settled-scene restoration. Each SF2 location owns
 its admitted population. At the cliff, Continue retains the visit latch, opened terrain, hidden actors
 and physical follower links. The [campaign agreement](application/remaining-campaign-risk-baseline.md)
