@@ -13,25 +13,25 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class FieldRecoveryTests
 {
     private static readonly SpellRef Heal = new("heal", 1), Detox = new("detox", 1);
-    private static GameSession Recovery(byte mp = 7, ushort targetHp = 100, ushort targetStatus = 2)
+    private static GameSession Recovery(byte mp = 7, ushort targetHp = 100, ushort targetStatus = 2, byte recoveryItem = 0)
     {
-        var content = new FieldPreparationDefinition([new(0, "Recovery item", false, false), new(3, "Antidote", false, false)],
-            [new(0, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison)],
+        var content = new FieldPreparationDefinition([new(recoveryItem, "Recovery item", false, false), new(3, "Antidote", false, false)],
+            [new(recoveryItem, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison)],
             [new(Heal, "Heal", 3, FieldRecoveryEffect.NoEffect), new(Detox, "Detox", 3, FieldRecoveryEffect.CurePoison)]);
-        var loadout = new BattleSourceLoadout([0, 3, 3, 127], []);
+        var loadout = new BattleSourceLoadout([recoveryItem, 3, 3, 127], []);
         return Session(carried: actor => actor.Actor == Giver ? actor with { Hp = 50, Mp = mp,
             SourceLoadout = loadout, Progress = new(2, 200, 10, 20, 4, 60, [Heal, Detox], loadout) }
             : actor.Actor == Recipient ? actor with { Hp = targetHp, Status = targetStatus } : actor, preparation: content);
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public void OrdinaryFieldHealAndRecoveryItemHaveNoEffectAndNoPayment(bool magic)
+    [InlineData(false, 0)] [InlineData(false, 2)] [InlineData(true, 0)]
+    public void OrdinaryFieldHealAndRecoveryItemHaveNoEffectAndNoPayment(bool magic, byte recoveryItem)
     {
-        var session = Recovery(); var before = session.Current;
+        var session = Recovery(recoveryItem: recoveryItem); var before = session.Current;
         var query = session.QueryFieldActions(Giver); Assert.Null(query.Error);
         Assert.Same(before, session.Current);
-        var result = Accept(session, magic ? new FieldCast(Giver, Heal) : new FieldUseItem(Giver, 0, 0));
+        var result = Accept(session, magic ? new FieldCast(Giver, Heal) : new FieldUseItem(Giver, 0, recoveryItem));
         Assert.Equal("field-no-effect", Assert.Single(result.Observations).Kind);
         Assert.Same(before.Exploration!.Party, session.Current.Exploration!.Party);
         Assert.Same(before.Story, session.Current.Story);

@@ -20,7 +20,8 @@ internal static class PrivateBattleActionBindings
     internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
     {
         foreach (var (id, code, effect, level, power) in new (byte, string, string, byte, ushort)[]
-            { (0, "MEDICAL_HERB", "HEALIN", 1, 10), (1, "HEALING_SEED", "HEALIN", 2, 20), (3, "ANTIDOTE", "DETOX", 1, 0) })
+            { (0, "MEDICAL_HERB", "HEALIN", 1, 10), (1, "HEALING_SEED", "HEALIN", 2, 20),
+              (2, "HEALING_DROP", "HEALIN", 3, 30), (3, "ANTIDOTE", "DETOX", 1, 0) })
         {
             if (!definitions.Items.TryGetValue(id, out var item)) continue;
             Require(item.Code == code && item.ItemTypeExpression == "CONSUMABLE" &&

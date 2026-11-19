@@ -156,6 +156,31 @@ public sealed class MedicalHerbTests
         Assert.NotEqual(actor, result.Snapshot.Selection!.Actor);
     }
 
+    [Theory]
+    [InlineData(5, 35)]
+    [InlineData(85, 100)]
+    public void HealingDropConsumesOnlyTheChosenSlotAndClampsRecovery(int hp, int expected)
+    {
+        var document = Package();
+        document["items"]!.AsArray().Add(JsonNode.Parse("""
+            {"id":2,"name":"Healing Drop","effect":"consumable-healing","power":30,"minimumRange":0,"maximumRange":1}
+            """));
+        document["actors"]![0]!["items"] = JsonNode.Parse("[2,6,2,0]");
+        document["start"]!["actors"]![0]!["hp"] = hp;
+        var session = Session(document);
+        var user = session.Current.Selection!.Actor;
+        var before = session.Current.Battle.GetActor(user);
+        var result = Use(session, 2, user);
+        var after = result.Snapshot.Battle.GetActor(user);
+
+        Assert.Equal(expected, after.Hp);
+        Assert.Equal(before.Mp, after.Mp);
+        Assert.Equal(new ushort[] { 2, 6, 0, 127 }, after.SourceLoadout!.Items);
+        Assert.Single(result.Observations, row => row.Kind == "item-consumed");
+        Assert.True(result.Snapshot.HasBattleControl);
+        Assert.NotEqual(user, result.Snapshot.Selection!.Actor);
+    }
+
     [Fact]
     public void RejectedItemsTargetsAndCancelledReselectionAreAtomic()
     {

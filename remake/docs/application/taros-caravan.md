@@ -1,6 +1,6 @@
 # Taros Shrine and the first Caravan
 
-Continue from the Hassan agreement with Rohde. Take the western exit, win Battle17 and follow the road into Map12. The first shrine battle has fourteen enemies. Taros stands on the impassable shrine tile at (12,8) and carries the Taros Sword. Its item action casts BOLT 2 without using MP. Select Equipment on Bowie's turn and equip the Achilles Sword before attacking Taros. Other allies can fight the ordinary enemies.
+Continue from the Hassan agreement with Rohde. Take the western exit, win Battle17 and follow the road into Map12. The first shrine battle has fourteen enemies. Taros stands on the impassable shrine tile at (12,8) and carries the Taros Sword. Taros casts BOLT 2 from the sword without using MP. The sword's empty class mask prevents ordinary player Equip and Battle Use. Select Equipment on Bowie's turn and equip the Achilles Sword before attacking Taros. Other allies can fight the ordinary enemies. [Player Use eligibility](../content/campaign-items.md#special-equipment-and-attack-items)
 
 ## Play in the prepared checkout
 

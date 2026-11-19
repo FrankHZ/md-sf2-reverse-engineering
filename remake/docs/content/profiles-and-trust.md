@@ -62,6 +62,57 @@ equipment uses source class/effect rules. Battle animations require the equipped
 visual in the encounter's own scene package. **Unknown** for natural original merchant visits,
 unobserved remake counter approaches and combat presentation of every purchased weapon.
 
+## Healing Drop use
+
+**Confirmed original static behavior.** Item 2 costs 300 gold and is a `CONSUMABLE` with
+`HEALIN|LV3`. Its spell record has MP 0, range 0–1, radius 0, power 30 and teammate targeting.
+The field-usable table omits item 2. The ordinary Field caller checks the map item event and
+reports no effect without removing the slot when no event handles Use. The Caravan caller
+refuses at its usability check before target selection or consumption.
+[Pinned item](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm) ·
+[Spell](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
+[Field table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/usableoutsidebattleitems.asm) ·
+[Field caller](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm) ·
+[Caravan caller](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/caravan/caravanactions_1.asm)
+
+The private remake selects item 2 and `HEALIN` level 3 before possession. Battle Item Use accepts
+self or an adjacent living ally under the shared targeting rules, restores up to 30 HP, and
+compacts the selected holder's pack on commit. Ordinary Field Use on the admitted maps yields
+`field-no-effect` and retains the slot. Caravan rejects it before target selection with
+`caravan-item-not-usable`. This is a Standard slice because the content selection feeds three
+callers and an existing save boundary.
+
+**Confirmed in the remake.** From the accepted Pacalon town slot, face north at (15,7), open the
+item shop and buy the third row for Rohde. Gold falls from 5,527 to 5,227 and his third slot receives
+the Drop. The ordinary Field Item → Rohde → Use → slot 3 → Confirm path shows “But nothing
+happened.” and preserves the party and its resources. For Battle26, take the south exit through
+Map71, west to Map72, then use Ketto's south exit back to Map72. On Rohde's first turn, move from
+(4,25) up once and right three times, then Stay. Let the other allies Stay until Rohde's next turn.
+At 20/45 HP, open Item, choose slot 3 and target Rohde. The English and Simplified Chinese menus
+show `Healing Drop` and `治愈露滴`. Recovery raises HP to 45 and removes slot 3, preserving his
+two weapons, MP, gold, story flags and item custody. A subsequent enemy spell reduces Rohde to
+30 HP before Sarah's next Movement. System Save at that input, restart, Continue and re-save.
+The complete decoded battle save data agree in each language, including Rohde's 30 HP and
+`[177,50,127,127]` pack, and Confirm opens the next action menu.
+
+Reuse the registered private `handoffs/issue1938` debug bundle and `handoffs/issue1927/pacalon`
+world/catalog. Set `$review` and `$pacalon` to their registered local directories and choose fresh
+sample names. The retained `wounded.json` and `used-*.json` were made through ordinary Save.
+
+```powershell
+$env:SF2_DROP_TASK = 'field'
+& "$review/Play.ps1" -Mode continue -Language en -Sample review-field -Seed "$pacalon/slots/town-en.json"
+$env:SF2_DROP_TASK = 'use'
+& "$review/Play.ps1" -Mode battle-continue -Language en -Sample review-use -Seed "$review/slots/wounded.json"
+$env:SF2_DROP_TASK = 'cold'
+& "$review/Play.ps1" -Mode battle-continue -Language en -Sample review-cold -Seed "$review/slots/used-en.json"
+```
+
+Use `zh-CN` and `used-zh-CN.json` for the Chinese battle/save check. `uv run sf2 verify engine`
+also exercises the 30 HP amount, cap, payment from a specific slot and the Caravan refusal.
+**Unknown** at this boundary are original runtime timing and an ordinary Caravan NPC attempt
+with the Drop. The connected Map51 pickup remains outside the Search selection.
+
 ## Finite Galam shop admission
 
 `galam-shop-programs.json` selects Map16 plus its F663 variant and the two real caller symbols.
@@ -1117,10 +1168,10 @@ custody properties come from selected source item records; unadmitted equipped/b
 effects reject. Field preparation itself does not relax battle profiles. Product battle equipment,
 Give and Discard have separate admission below.
 
-Opening static selection additionally retains Medical Herb0, Healing Seed1, Antidote3 and Angel Wing4 with their
-exact codes, use-spell families and no-equipment-effect definitions. This is immutable admission,
-not possession or an award. Field effects admit the first two as original NoEffect and Antidote as
-poison cure. Selected HEAL spells admit NoEffect; selected DETOX1 admits poison cure with its trusted
+Opening static selection additionally retains Medical Herb0, Healing Seed1, Healing Drop2,
+Antidote3 and Angel Wing4 with their exact codes, use-spell families and no-equipment-effect
+definitions. Field effects admit the first three as NoEffect and Antidote as poison cure.
+Selected HEAL spells admit NoEffect; selected DETOX1 admits poison cure with its trusted
 MP cost. Other item/spell effects remain explicitly unavailable. The
 [field policy](../application/opening-session-lifecycle.md#implemented-field-preparation) names the
 static caller provenance and exact payment; battle healing power/EXP/RNG is not reused for field use.

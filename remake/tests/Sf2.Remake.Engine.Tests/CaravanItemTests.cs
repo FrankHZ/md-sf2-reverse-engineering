@@ -22,8 +22,9 @@ public sealed class CaravanItemTests
         bool fail = false, Func<int, byte>? status = null, PrivateBattleDefinitions? source = null)
     {
         var preparation = new FieldPreparationDefinition(
-            new byte[] { 0, 1, 3, 5, 9, 50, 61, 125 }.Select(id => new BattleDiscardItem(id, "item-" + id, id == 61, id == 125)),
-            [new(0, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison), new(125, FieldRecoveryEffect.MapEvent)]);
+            new byte[] { 0, 1, 2, 3, 5, 9, 50, 61, 125 }.Select(id => new BattleDiscardItem(id, "item-" + id, id == 61, id == 125)),
+            [new(0, FieldRecoveryEffect.NoEffect), new(2, FieldRecoveryEffect.NoEffect),
+             new(3, FieldRecoveryEffect.CurePoison), new(125, FieldRecoveryEffect.MapEvent)]);
         var s = CaravanServiceTests.Session(pack: pack ?? (_ => new([50, 0, 61, 1], [])),
             custody: new([2], new Dictionary<byte, byte> { [61] = 15 }, [50, 50, 61]),
             preparation: preparation, equipment: equipment, failReturn: fail, status: status, privateDefinitions: source);
@@ -133,6 +134,7 @@ public sealed class CaravanItemTests
 
     [Theory]
     [InlineData(0, "caravan-item-not-usable")]
+    [InlineData(2, "caravan-item-not-usable")]
     [InlineData(125, "caravan-item-not-usable")]
     [InlineData(5, "field-item-effect-unsupported")]
     [InlineData(9, "field-item-effect-unsupported")]
