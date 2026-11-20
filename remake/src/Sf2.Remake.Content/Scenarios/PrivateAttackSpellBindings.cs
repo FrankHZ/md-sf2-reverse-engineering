@@ -23,6 +23,7 @@ internal static class PrivateAttackSpellBindings
                     ("BLAZE", 2) => (11, 6, 10, 2, 1, AttackSpellElement.Fire),
                     ("FREEZE", 2) => (12, 7, 12, 2, 1, AttackSpellElement.Ice),
                     ("FREEZE", 1) => (12, 3, 10, 2, 0, AttackSpellElement.Ice),
+                    ("BOLT", 1) => (13, 8, 14, 2, 1, AttackSpellElement.Lightning),
                     ("BOLT", 2) => (13, 15, 16, 3, 2, AttackSpellElement.Lightning),
                     ("AQUA", 1) => (40, 0, 13, 3, 0, AttackSpellElement.Ice),
                     ("BLAST", 2) => (14, 5, 8, 2, 1, AttackSpellElement.Wind),

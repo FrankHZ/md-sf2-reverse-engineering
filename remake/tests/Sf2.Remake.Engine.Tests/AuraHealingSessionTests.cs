@@ -3,8 +3,10 @@ using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
+using Sf2.Remake.TestSupport;
 using Xunit;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
 using static Sf2.Remake.Engine.Tests.AuraHealingTests;
@@ -71,6 +73,76 @@ public sealed class AuraHealingSessionTests
         Assert.Same(initial.Battle,s.Current.Battle);
         var poor=Start("aura-healing",d=>d["start"]!["actors"]![0]!["mp"]=6);
         Assert.All(poor.QueryBattleChoices().Spells,choice=>Assert.Equal("insufficient-mp",choice.Reason!.Code));
+    }
+
+    [PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN",
+        "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD", "SF2_PRIVATE_CONTROLLED_START")]
+    public void CurrentPackedBooksCanCastWithoutMatchingEnemySpells()
+    {
+        string Input(string name) => PrivateInputFactAttribute.RequireInput(name);
+        var encounter = Assert.IsType<ScenarioReadAccepted>(PrivateBattleScenarioTests.Selected().Read()).Definition.PrivateDefinitions!.Encounter;
+        var start = ControlledBattleStartReader.Read(Input("SF2_PRIVATE_CONTROLLED_START"));
+        var bowie = start.Allies[0] with { Level = 31, MaxHp = 60, Hp = 15, MaxMp = 16, Mp = 16,
+            Exp = 0, ActivationWord = 0, Spells = new byte[] { 10, 77, 63, 63 } };
+        var sarah = start.Allies[1] with { Level = 40, MaxHp = 58, Hp = 58, MaxMp = 42, Mp = 42, Exp = 0,
+            ActivationWord = 0, Spells = new byte[] { 192, 130, 206, 68 } };
+        var karna = sarah with { Id = 15, Level = 33, MaxHp = 48, Hp = 20, MaxMp = 55, Mp = 55,
+            Spells = new byte[] { 128, 142, 67, 1 } };
+        start = start with { Allies = new[] { bowie, sarah, karna } };
+        var definitions = PrivateBattleDefinitionReader.Read(Input("SF2_PRIVATE_STATIC_DATA"), Input("SF2_PRIVATE_ENEMY_DATA"),
+            Input("SF2_PRIVATE_ENEMY_GOLD"), encounter, start);
+        Assert.DoesNotContain(definitions.Enemies.Values.SelectMany(enemy => enemy.Spells),
+            spell => spell is { Spell: "HEAL", Level: 4 } or { Spell: "AURA" });
+        var admitted = PrivateBattleScenarioReader.Assemble(definitions, start);
+        var battle = BattleTurnFlow.Start(admitted.Definition.Encounters.Values.Single(), admitted.Start);
+        ActorRef leader = new("ally-0"), healer = new("ally-1"), auraCaster = new("ally-15");
+        Assert.Equal(new[] { new SpellRef("bolt", 1), new("bolt", 2) },
+            battle.GetActor(leader).Spells.Where(spell => spell.Value == "bolt"));
+        Assert.Equal(8, new Sf2AttackSpellAction().RequireAction(battle, leader,
+            new(BattleActionKind.AttackSpell, new("bolt", 1))).AttackSpell!.MpCost);
+        var healing = new Sf2HealingRule();
+        var progression = new Sf2BattleProgressionRule();
+        // These three stops model placed living members after ordinary movement.
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == leader ? actor.With(position: new(8, 9), hp: 15) :
+            actor.Actor == healer ? actor.With(position: new(9, 9), mp: 42) :
+            actor.Actor == auraCaster ? actor.With(position: new(8, 10), hp: 20, mp: 55) : actor));
+        var restore = healing.Prepare(battle, healer, new(9, 9), new("heal", 4), leader, progression);
+        Assert.Equal(255, restore.Spell!.Power);
+        Assert.Equal(20, restore.Spell.MpCost);
+        Assert.Equal(45, Assert.Single(restore.Reactions).Amount);
+        var aura = healing.Prepare(battle, auraCaster, new(8, 10), new("aura", 1), leader, progression);
+        Assert.Equal(7, aura.Spell!.MpCost);
+        Assert.Equal(new[] { leader, healer, auraCaster }, aura.Reactions.Select(hit => hit.Target));
+        Assert.Equal(new[] { 15, 0, 15 }, aura.Reactions.Select(hit => hit.Amount));
+        Assert.InRange(aura.Reward!.Amount, 1, 25);
+    }
+
+    [Fact]
+    public void AuraWithBoundFairyUsesTheActualRecipientsInOrder()
+    {
+        var admitted = Admitted("aura-healing");
+        var encounter = admitted.Definition.Encounters.Values.Single();
+        var cast = new BattleSceneAnimation(0, 0, 4, false, null, [new(0, 1, 0, 0, null), new(0, 1, 0, 0, null)]);
+        var scene = new BattleSceneDefinition(encounter.Encounter, "", "", new Dictionary<string, ExplorationRaster>(),
+            new Dictionary<BattleClassRule, BattleSceneActorVisual>
+            {
+                [BattleClassRule.UnpromotedPriest] = new(0, 0, null, [], [],
+                    new Dictionary<string, BattleSceneAnimation> { ["cast"] = cast }, IdleTicks: 2),
+                [BattleClassRule.Ordinary] = new(1, 0, null, [], [], new Dictionary<string, BattleSceneAnimation>(), IdleTicks: 3),
+            },
+            new Dictionary<ActorRef, BattleSceneActorVisual>(),
+            new Dictionary<int, string> { [274] = "{NAME} casts {SPELL} {#}.", [298] = "{NAME} recovers {#}." },
+            Enumerable.Range(0, 30).Select(slot => $"Member {slot}").ToArray(), new([], [], []));
+        var started = GameSession.Start(new ScenarioDefinition("aura-with-fairy", [encounter], battleScenes: scene), admitted.Start);
+        var session = Assert.IsType<SessionStarted>(started).Session;
+        var result = Cast(session, 1);
+        Assert.NotNull(session.Current.BattleScene!.Healing);
+        var events = FinishBattleScenes(session, result).Observations;
+        Assert.Equal(new[] { new ActorRef("a-edge"), Center, new("m-full"), Caster },
+            events.Where(row => row.Kind == "healing-recovery").Select(row => row.Target!.Value));
+        Assert.Equal(73, session.Current.Battle.GetActor(Caster).Mp);
+        Assert.Single(events, row => row.Kind == "exp" && row.Actor == Caster);
+        Assert.True(session.Current.HasBattleControl);
     }
 
     [Fact]

@@ -20,6 +20,7 @@ public sealed record HealingDisplay(ActorRef Caster, ActorRef Target, SpellRef S
 
 public sealed record HealingSceneCursor
 {
+    internal BattleSceneDefinition? AllyAuraContent { get; init; }
     internal BattleSceneAnimation Cast { get; init; } = null!;
     internal int CasterIdleTicks { get; init; }
     internal int TargetIdleTicks { get; init; }
@@ -78,7 +79,8 @@ public sealed record HealingSceneCursor
             casterIdle = visual.IdleTicks; targetIdle = targetVisual.IdleTicks;
             actionText = content.Texts[274]; recoveryText = content.Texts[298];
         }
-        return new() { Cast = cast, CasterIdleTicks = casterIdle, TargetIdleTicks = targetIdle,
+        return new() { AllyAuraContent = action.Spell!.IsAura && actor.IsAlly ? content : null,
+            Cast = cast, CasterIdleTicks = casterIdle, TargetIdleTicks = targetIdle,
             Display = new(action.Actor, target.Actor, action.Spell!.Spell, action.Reactions[index].Amount,
                 story is null ? CharacterNames.ReadableIdentity(actor.Actor) : CharacterNames.Battle(story, actor, content),
                 story is null ? CharacterNames.ReadableIdentity(target.Actor) : CharacterNames.Battle(story, target, content),
@@ -320,8 +322,10 @@ internal static class BattleSceneContinuation
             if (effect.Kind is not ("hp" or "mp" or "dodge" or "ineffective" or "critical" or "physical-first" or "physical-second" or "physical-counter"))
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
+        bool authoredAura = action.Spell?.IsAura == true && sceneContent is null && action.Prepared.GetActor(action.Actor).IsAlly;
         var scene = new BattleSceneState(action, BattleScenePhase.Initialize, 0, new(sequence),
-            healing: action.Silenced is not null || action.Spell is null || (action.Spell.IsAura && action.Prepared.GetActor(action.Actor).IsAlly) || action.Spell.CuresPoison ? null : HealingSceneCursor.Create(action, sceneContent, current.Story));
+            healing: action.Spell is { CuresPoison: false } && action.Silenced is null && !authoredAura
+                ? HealingSceneCursor.Create(action, sceneContent, current.Story) : null);
         return Result(current, action.Prepared.With(deathCredit: new(action.Laser is null ? action.FirstAlly : null)), scene, revision, sequence, observations);
     }
 
@@ -542,8 +546,12 @@ internal static class BattleSceneContinuation
         var healing = scene.Healing;
         if (healing is not null && index != scene.ReactionIndex && scene.IsAura)
         {
-            var recipient = HealingSceneCursor.Create(scene.Action, null, current.Story, index);
-            healing = healing with { Display = recipient.Display, RecoveryText = recipient.RecoveryText };
+            var recipient = HealingSceneCursor.Create(scene.Action, healing.AllyAuraContent, current.Story, index);
+            healing = healing with
+            {
+                Display = recipient.Display, RecoveryText = recipient.RecoveryText,
+                TargetIdleTicks = healing.AllyAuraContent is null ? healing.TargetIdleTicks : recipient.TargetIdleTicks,
+            };
         }
         healing = healing?.Enter(next);
         if (healing is not null)

@@ -268,7 +268,7 @@ file. A chapter owner should size its selected pack before expanding generation.
 | Action and direction | Working consumer and bounded evidence | Remaining decision or minimum check at first use |
 | --- | --- | --- |
 | Physical, ally → enemy and enemy → ally | [Physical scenes](#physical-battle-scenes) use the acting side's attack and the target's reaction, including dodge, damage recoil, second/counter role changes, result and death. Private samples cover actual hits in both directions. [Ranged sample](../development-and-verification.md#early-ranged-physical-observation) covers changed equip/range, distance-2 attacks and continued input with authored content. | Reuse the combat rule. For newly bound archers and knights check a legal station, actual attacker/defender and equipped presentation. For a follow-up that occurs, cards and reaction must follow the current pair. No projectile asset or exhaustive per-actor dice outcomes required. |
-| HEAL, ally → ally or self | [Private HEAL1–3](#heal-spell-scenes) has cast/idle, healing fairy, recovery, recipient switch where required, restore caster, EXP and release. | Reuse for Sarah. A new recipient needs its own bound idle and current equipment, even if that member never casts. |
+| HEAL, ally → ally or self | [Private HEAL1–4](#heal-spell-scenes) has cast/idle, healing fairy, recovery, recipient switch where required, restore caster, EXP and release. | Sarah's HEAL 4 has a Battle26 witness. A new recipient needs its own bound idle and current equipment, even if that member never casts. |
 | HEAL1, enemy → wounded enemy | The [enemy-spell witness](../development-and-verification.md#enemy-spell-observation) reads one 3 MP payment, 8→23 HP, no enemy reward and later player movement in the authored package. | #1539 needs the private cast/idle binding above. Check enemy-side recipient switch, recovery text/card and return after a legal heal. Full-health enemies do not establish this case. |
 | BLAZE1–2 / BLAST1, learned ally → enemy; BLAZE1, Mage → ally | [AttackSpellView](../../game/src/Battles/AttackSpellView.cs) draws modern fire or wind. Cards and messages carry identity and damage. [Player witness](../development-and-verification.md#player-attack-spell-observation) covers BLAZE2's ordered pair and BLAST1's single target; the enemy witness covers BLAZE1. | Keep the effects. Marks show affected targets and the current card/text identifies the reaction. Check Kazin or Mage in the actual chapter and a reached change of recipient. Recipient-specific highlighting and original spell art can wait. |
 | DISPEL1 / suppressed spell / physical silence | [Silence witness](../development-and-verification.md#silence-observation) covers area results, one cost, a paid suppressed cast, expiry, effective later cast and movement. Support/suppressed scenes intentionally show messages/cards on black, with no character gesture. Physical silence uses the physical hit and a notice. | #1539 checks the displayed recipient and status/no-effect, or paid suppression as reached, then continued play. A quiet backdrop between acknowledged messages is expected. A stuck wait, wrong name or missing result would be a functional defect. |
@@ -706,14 +706,16 @@ contract and no screenshots, original emulator, runtime state setters or fixed c
 
 ## HEAL spell scenes
 
-The bounded HEAL1–3 consumer prepares two award draws, then retains scene/turn ownership through
+The bounded HEAL1–4 consumer prepares two award draws, then retains scene/turn ownership through
 MP cost, casting, optional ally switch, HP recovery, recovery text, ordinary idle, fairy retirement,
 cleanup, actor restoration, EXP/growth and input release. Full HP still casts and awards the healing
 minimum; self-healing preserves the already charged caster MP. Growth consumes the seed carried
 through the scene, not the construction seed. Private scenes require admitted PRST cast content,
 idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
-Private AURA and HEAL4 remain unsupported. Public authored AURA and the
-[finite attack, support and cure spells](#which-actions-can-be-reused) use their own delivery paths.
+Private player AURA 1 uses the fairy path and checks the actual recovery recipients' scene bindings.
+Its engine test checks ordered recovery and turn release. Ordinary player AURA 1 in private content
+remains **Unknown**. Public authored AURA and the [finite attack, support and cure spells](#which-actions-can-be-reused)
+use their own delivery paths. [Battle26 input and save observation](../application/church-promotion-design.md#current-battle-spells)
 The historical #523/#437 records do not establish full scene or hardware parity; the
 [current composed milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 has its separately bounded acceptance.

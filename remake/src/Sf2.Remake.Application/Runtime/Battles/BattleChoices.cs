@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
@@ -110,20 +111,21 @@ internal static class BattleChoices
         MapPosition destination, BattleActionRef action, ActorRef target, BattleSceneDefinition? content,
         bool requireContent)
     {
-        _ = RequireAction(rules, battle, actor, action);
+        var admission = RequireAction(rules, battle, actor, action);
         var rule = rules.Action(action);
         return BattleActionRules.Invoke(rule, "target-admission", () =>
         {
             var patient = rule.RequireTarget(battle, actor, destination, action, target);
             if (!ReferenceEquals(patient, battle.GetActor(target))) throw new InvalidOperationException("Invalid admitted target.");
-            if (action.Kind == BattleActionKind.Healing && !Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Present(battle.GetActor(actor).Status))
+            if (admission.Spell is { } spell && !SilenceRules.Present(battle.GetActor(actor).Status))
             {
-                if (battle.Definition.Spells[action.Spell!.Value].CuresPoison)
+                if (spell.CuresPoison)
                     RequireCureContent(battle, actor, target, content, requireContent);
-                else if (battle.Definition.Spells[action.Spell!.Value].IsAura)
+                else if (spell.IsAura)
                 {
                     if (content is not null || requireContent)
-                        throw new BattleRuleException("aura-private-presentation", "battleScenes", true);
+                        foreach (var recipient in HealingTargetRules.Resolve(battle, actor, destination, spell, target))
+                            HealingSceneCursor.RequireContent(battle, actor, recipient.Actor, content, requireContent);
                 }
                 else HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
             }

@@ -95,13 +95,12 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         }).ToArray();
         var regions = encounter.Regions.Select(region => new BattleActivationRegion(region.Id,
             region.Vertices.Select(point => new MapPosition(point.X, point.Y))));
-        var healing = definitions.Spells.Values.Where(spell => spell.Code == "HEAL" && (spell.Power != 255 || definitions.Enemies.Values.Any(enemy => enemy.Spells.Any(s => s.Spell == "HEAL" && s.Level == 4))) && spell.Radius == 0 &&
-            spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE")
-            .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange, spell.MaximumRange))
-            .Concat(definitions.Spells.Values.Where(spell => spell is { Code: "AURA", Level: 1 } &&
-                definitions.Enemies.Values.Any(enemy => enemy.Spells.Any(s => s.Spell == "AURA")))
-                .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange,
-                    spell.MaximumRange, HealingTargets.AuraRadius, spell.Radius)))
+        // The source reader already selects ranks from current books, admitted growth and encounter resources.
+        var healing = definitions.Spells.Values
+            .Where(spell => spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" &&
+                spell is { Code: "HEAL", Radius: 0 } or { Code: "AURA", Level: 1 })
+            .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange,
+                spell.MaximumRange, spell.Code == "AURA" ? HealingTargets.AuraRadius : HealingTargets.Single, spell.Radius))
             .Concat(PrivateBattleActionBindings.PoisonCure(definitions));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         EnemyDropRow[] drops = encounter.Battle.Id switch
