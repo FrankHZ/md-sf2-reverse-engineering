@@ -13,6 +13,7 @@ from sf2tool.remake_exploration_actions import action_stream, inline_actions, wa
 from sf2tool.remake_exploration_items import inventory_operation
 from sf2tool.remake_exploration_joins import join_selector, join_service, music_input_return
 from sf2tool.remake_exploration_scene import (
+    ally_sprites,
     graphics_helper,
     portrait_operations,
     raft_placement,
@@ -36,10 +37,12 @@ class OriginalPrograms:
         upstream: Path,
         entity_speed: int = 32,
         scene_maps: list[int] | None = None,
+        promotion_classes: tuple = (),
     ):
         self.upstream = upstream
         self.entity_speed = entity_speed
         self.scene_maps = scene_maps
+        self.promotion_classes = promotion_classes
         self.equates = _equates(upstream / "disasm")
         self.sources: set[str] = {"disasm/sf2enums.asm"}
         resources = canonical["resources"]
@@ -93,40 +96,7 @@ class OriginalPrograms:
                 }
 
     def initial_ally_sprites(self) -> list[dict[str, Any]]:
-        classes_path = "disasm/data/stats/allies/allystartdefs.asm"
-        sprites_path = "disasm/data/stats/allies/allymapsprites.asm"
-        self.sources.update(
-            (classes_path, sprites_path, "disasm/code/common/scripting/entity/getallymapsprite.asm")
-        )
-        classes = _arguments(
-            (self.upstream / classes_path).read_text(encoding="utf-8"), "startClass"
-        )
-        sprites = _arguments(
-            (self.upstream / sprites_path).read_text(encoding="utf-8"), "mapsprite"
-        )
-        result = []
-        for character in range(self.equates["COMBATANT_ALLIES_NUMBER"]):
-            role = self.number("CLASS_" + classes[character])
-            sprite = self.number("MAPSPRITE_" + sprites[character])
-            if role == self.equates["CLASS_SDMN"]:
-                sprite -= 1
-            elif role != self.equates["CLASS_HERO"] and role < self.equates["CLASS_BDBT"]:
-                if self.equates["CLASS_BDMN"] <= role <= self.equates["CLASS_TORT"]:
-                    sprite -= 1
-                elif role <= self.equates["CLASS_ACHR"]:
-                    sprite -= 2
-                elif role & 1:
-                    sprite -= 1
-            rohde = character == self.equates["ALLY_ROHDE"]
-            result.append(
-                {
-                    "character": character,
-                    "sprite": sprite,
-                    "joinedFlag": 11 if rohde else None,
-                    "unjoinedSprite": self.equates["MAPSPRITE_NPC_ROHDE"] if rohde else None,
-                }
-            )
-        return result
+        return ally_sprites(self)
 
     def number(self, value: str) -> int:
         return self.equates[value] if value in self.equates else _integer(value)

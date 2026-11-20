@@ -7,7 +7,11 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public sealed record ExplorationEntityDefinition(EntityRef Entity, MapPosition Position, byte Facing, ushort Speed,
     bool Visible = true, bool Obstruction = false, int? Sprite = null, EntityActionProgram? Actions = null);
 public sealed record ExplorationFollowerDefinition(int Flag, int Character, int Sprite);
-public sealed record ExplorationAllySprite(int Character, int Sprite, int? JoinedFlag, int? UnjoinedSprite);
+public sealed record ExplorationAllySprite(int Character, int Sprite, int? JoinedFlag, int? UnjoinedSprite,
+    byte? PromotionClass = null, int? PromotionSprite = null)
+{
+    public int ForClass(byte? classId) => PromotionClass is not null && PromotionClass == classId ? PromotionSprite!.Value : Sprite;
+}
 public sealed record ExplorationPopulation(int AllyCount, int NonAllyStart, int PlayerSprite,
     IReadOnlyList<ExplorationFollowerDefinition> Followers, IReadOnlyList<ExplorationAllySprite>? AllySprites = null);
 public sealed record ExplorationDoor(MapPosition Trigger, WorkingMapBlockCopy Copy);

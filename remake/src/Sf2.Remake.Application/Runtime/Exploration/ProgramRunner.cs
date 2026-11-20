@@ -539,7 +539,7 @@ internal static class ProgramRunner
                     case SetEntitySprite sprite:
                         var changedSprite = Entity(current, sprite.Entity);
                         int spriteId = sprite.Ally ? SceneEntities.ResolveAllySprite(current.Exploration!.Population
-                            ?? throw new BattleRuleException("ally-sprite-population", "program.sprite", true), current.Story.Flags, sprite.Sprite, sprite.Sprite) : sprite.Sprite;
+                            ?? throw new BattleRuleException("ally-sprite-population", "program.sprite", true), current.Story.Flags, sprite.Sprite, sprite.Sprite, current.Exploration.Party) : sprite.Sprite;
                         changedSprite = changedSprite with { Sprite = spriteId,
                             SpriteRequest = checked(changedSprite.SpriteRequest + 1), WaitingForSprite = true };
                         active = new ActiveExploration(current.Exploration!.WithEntity(changedSprite));

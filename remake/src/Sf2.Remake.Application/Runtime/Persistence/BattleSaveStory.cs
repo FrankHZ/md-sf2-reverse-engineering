@@ -10,6 +10,10 @@ namespace Sf2.Remake.Application.Runtime.Persistence;
 
 internal static class BattleSaveStory
 {
+    internal static Dictionary<ActorRef, BattleDeploymentDefinition> AllyDefinitions(ScenarioDefinition definition) =>
+        definition.Encounters.Values.SelectMany(e => e.Deployments).Where(d => d.Faction == BattleFaction.Ally)
+            .DistinctBy(d => d.Actor).ToDictionary(d => d.Actor);
+
     internal static bool Same(SavedBattleStory left, SavedBattleStory right) =>
         left with { Flags = right.Flags, Names = right.Names, Music = right.Music, Player = right.Player } == right &&
         left.Flags.SequenceEqual(right.Flags) && left.Names.OrderBy(p => p.Key).SequenceEqual(right.Names.OrderBy(p => p.Key)) &&
@@ -92,8 +96,7 @@ internal static class BattleSaveStory
         RequireReturnPlayer(world, route.Outcome.BattleMap, value.Player.Entity);
         RequireReturnPlayer(world, egress!.Map, value.Player.Entity);
         if (route.Outcome.CompletedDefeatMap is { } handoff) RequireReturnPlayer(world, handoff, value.Player.Entity);
-        var roster = definition.Encounters.Values.SelectMany(e => e.Deployments).Where(d => d.Faction == BattleFaction.Ally)
-            .GroupBy(d => d.Actor).ToDictionary(g => g.Key, g => g.First());
+        var roster = AllyDefinitions(definition);
         Require(value.Names.Count <= 30 && value.Names.All(p => roster.ContainsKey(new(p.Key)) &&
             p.Value is { Length: > 0 } && NewGameName.Error(p.Value) is null), "names");
         var retained = value.Player.RetainedAllies;
@@ -102,7 +105,7 @@ internal static class BattleSaveStory
             roster.Keys.ToHashSet().SetEquals(battle.Actors.Where(a => a.IsAlly).Select(a => a.Actor).Concat(retained.Select(a => a.Actor))), "retained-roster");
         foreach (var ally in retained)
         {
-            var deployment = roster[ally.Actor];
+            var deployment = roster[ally.Actor].ResolveClass(ally.Progress?.ClassId);
             Require(ally.Initialized is not null && ally.ActivationWord is not null && ally.Exp is not null &&
                 ally.Kills is not null && ally.Defeats is not null && ally.PositionOverride is null && !ally.RetainDeadPosition, "retained-unknown");
             ValidateValues(new(ally.Actor.Value, null, deployment.Position, 3, ally.Hp, ally.Mp, ally.Exp, ally.Kills, ally.Defeats,

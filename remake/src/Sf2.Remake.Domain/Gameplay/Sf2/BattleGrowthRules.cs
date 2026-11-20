@@ -70,7 +70,7 @@ internal static class BattleGrowthRules
             }
         }
         var progress = new BattleActorProgress(level, (ushort)increased[0], (byte)increased[1],
-            (byte)increased[2], (byte)increased[3], (byte)increased[4], known.AsReadOnly(), loadout);
+            (byte)increased[2], (byte)increased[3], (byte)increased[4], known.AsReadOnly(), loadout, actor.Progress?.ClassId);
         effects.Add(new("level", actor.Actor, actor.Level, level));
         // Maxima grow; current HP/MP do not heal. Reapply the admitted ATT-only equipment once.
         return actor.With(exp: (byte)total, progress: progress,

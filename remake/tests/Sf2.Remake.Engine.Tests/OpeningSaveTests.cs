@@ -23,6 +23,33 @@ public sealed class OpeningSaveTests
             data with { EgressMap = "map-0" }, RuleCompositions.Sf2())).Session;
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void FieldContinueSelectsTheSavedClassAndItsPossibleRetainedBook(int version)
+    {
+        var (basis, data) = OpeningRestoreTests.Fixture(joined: true);
+        var encounter = basis.Encounters[data.Encounter];
+        var ally = encounter.Deployments[0];
+        var definition = BattleSaveProgressTests.Replace(basis, encounter.WithDeployments(encounter.Deployments.Select(d =>
+            d == ally ? d with { RegularPromotion = BattleSaveProgressTests.Hero(d.Definition) } : d)));
+        var member = data.Allies.First() with { Class = 12, Level = 1, Exp = 0, Spells = [13, 63, 63, 63] };
+        SessionStartOutcome Restore(SavedAlly changed)
+        {
+            var slot = new Sf2.Remake.Content.Persistence.OpeningSaveRecord(version, 1, 1, DateTimeOffset.UnixEpoch,
+                data with { Allies = data.Allies.Select(a => a.Actor == member.Actor ? changed : a).ToArray() });
+            var wire = Sf2.Remake.Content.Persistence.OpeningSaveJson.ReadRecord(Sf2.Remake.Content.Persistence.OpeningSaveJson.WriteRecord(slot), 1);
+            return Sf2.Remake.Content.Persistence.SaveRecordRestore.Restore(definition, wire, RuleCompositions.Sf2());
+        }
+        var current = Assert.IsType<SessionStarted>(Restore(member)).Session.Current.Exploration!.Party;
+        var carried = current.Actors.Single(a => a.Actor.Value == member.Actor);
+        Assert.Equal((byte)12, carried.Progress!.ClassId);
+        Assert.Equal(new SpellRef("bolt", 1), Assert.Single(carried.Progress.Spells));
+        Assert.Equal(member.Hp, carried.Hp);
+        Assert.Equal("actor-class", Assert.IsType<SessionStartFailed>(Restore(member with { Class = 14 })).Failure.Code);
+        Assert.Equal("save-learned-spell", Assert.IsType<SessionStartFailed>(Restore(member with { Spells = [141, 63, 63, 63] })).Failure.Code);
+    }
+
     [Fact]
     public void ChurchSavePublishesTheNewReturnTownAndRejectsThePreviousRevision()
     {

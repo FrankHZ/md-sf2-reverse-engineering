@@ -35,7 +35,7 @@ internal static class PrivateFieldPreparation
             Require(row.Definition.Attack >= bonus, "source-base-attack", "actor.attack");
             var definition = row.Definition.WithEquipment(new((byte)(row.Definition.Attack - bonus), weapons, allowChanges: allowBattleChanges));
             if (allowBattleChanges) BattleEquipment.ValidateLoadout(definition, definition.SourceLoadout);
-            return row with { Definition = definition };
+            return row with { Definition = definition, RegularPromotion = row.RegularPromotion?.WithEquipment(definition.Equipment!) };
         }));
     }
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)

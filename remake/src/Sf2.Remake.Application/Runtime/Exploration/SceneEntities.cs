@@ -6,11 +6,11 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class SceneEntities
 {
-    internal static int ResolveAllySprite(ExplorationPopulation population, IReadOnlyList<int> flags, int character, int fallback)
+    internal static int ResolveAllySprite(ExplorationPopulation population, IReadOnlyList<int> flags, int character, int fallback, BattleStartInput? party = null)
     {
         var appearance = population.AllySprites?.FirstOrDefault(row => row.Character == character);
         return appearance is null ? fallback : appearance.JoinedFlag is { } joined && !flags.Contains(joined)
-            ? appearance.UnjoinedSprite!.Value : appearance.Sprite;
+            ? appearance.UnjoinedSprite!.Value : appearance.ForClass(party?.Actors.FirstOrDefault(a => a.Actor.Value == $"ally-{character}")?.Progress?.ClassId);
     }
 
     internal static ExplorationState Add(ExplorationState world, AddMapEntity add, long request, IReadOnlyList<int>? flags = null)
@@ -25,7 +25,7 @@ internal static class SceneEntities
         if (add.Entity.Value.StartsWith("entity-", StringComparison.Ordinal) &&
             int.TryParse(add.Entity.Value.AsSpan("entity-".Length), out int member) && member < 30)
             sprite = world.Party.Actors.FirstOrDefault(row => row.Actor.Value == $"ally-{member}")?.Hp == 0
-                ? 190 : ResolveAllySprite(world.Population, flags ?? [], member, member);
+                ? 190 : ResolveAllySprite(world.Population, flags ?? [], member, member, world.Party);
         var entity = new ExplorationEntity(add.Entity, EntityMotionState.At(add.Position, add.Facing, 0) with
             { FlagsA = 0xE0, AnimationCounter = (byte)(slot + 1), WaitTimer = (byte)slot },
             true, add.Actions, Slot: slot, Sprite: sprite,
@@ -42,7 +42,7 @@ internal static class SceneEntities
         ExplorationPopulation population, IReadOnlyList<ExplorationEntityDefinition> records,
         MapBlockCopyLifecycleState? roofState = null)
     {
-        int AllySprite(int character, int fallback) => ResolveAllySprite(population, flags, character, fallback);
+        int AllySprite(int character, int fallback) => ResolveAllySprite(population, flags, character, fallback, party);
         var followers = population.Followers.Where(follower => flags.Contains(follower.Flag))
             .Select(follower => new MapFollowerSpawn(follower.Character, AllySprite(follower.Character, follower.Sprite))).ToArray();
         var allocation = MapEntityAllocator.Allocate(records.Select(entity => entity.Sprite ??

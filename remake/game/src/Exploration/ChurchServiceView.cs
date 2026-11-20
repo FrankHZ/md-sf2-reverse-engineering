@@ -66,11 +66,45 @@ internal sealed partial class ChurchServiceView : Control
         if (_wait?.Token != wait.Token || _language != GameText.Language)
         {
             _wait = wait; _language = GameText.Language; _options.Clear();
-            if (wait.Phase == ChurchPhase.Result)
+            var members = session.QueryPartyDetails()!.Members;
+            string Member(PromotionOffer offer) => PartyStatusView.MemberName(members.Single(m => m.Carried.Actor == offer.Member), session);
+            string Destination(PromotionOffer offer)
+            {
+                var name = session.Definition.PrivateDefinitions?.Classes.GetValueOrDefault(offer.Destination!.Value)?.NameExpression.Trim('"');
+                return DisplayNames.Name("name.class", offer.Destination, name ?? GameText.Get("party.class-unavailable"));
+            }
+            if (wait.Phase == ChurchPhase.AnotherService)
+            {
+                _title.Text = GameText.Get("church.another");
+                _options.Add((GameText.Get("story.yes"), new ContinueChurch(wait.Token)));
+                _options.Add((GameText.Get("story.no"), new LeaveChurch(wait.Token)));
+            }
+            else if (wait.Phase == ChurchPhase.Members)
+            {
+                _title.Text = GameText.Get("church.members");
+                foreach (var row in wait.Candidates!)
+                    _options.Add(($"{Member(row)}  Lv {row.Level}", new SelectPromotion(wait.Token, row)));
+            }
+            else if (wait.Phase is ChurchPhase.Consent or ChurchPhase.Regular)
+            {
+                var row = wait.Candidate!;
+                _title.Text = wait.Consented ? GameText.Get("church.regular", Member(row), Destination(row)) :
+                    GameText.Get("church.consent", Member(row));
+                _options.Add((GameText.Get("story.yes"), new AnswerPromotion(wait.Token, row, true)));
+                _options.Add((GameText.Get("story.no"), new AnswerPromotion(wait.Token, row, false)));
+            }
+            else if (wait.Phase == ChurchPhase.Result)
             {
                 _title.Text = wait.Result!.Kind switch
                 {
                     ChurchResultKind.NoApplicableMember => GameText.Get("church.none"),
+                    ChurchResultKind.NoPromotion => GameText.Get("church.no-promotion", Member(wait.Candidate!)),
+                    ChurchResultKind.LowLevel => GameText.Get("church.low-level", Member(wait.Candidate!)),
+                    ChurchResultKind.SpecialUnavailable => GameText.Get("church.special-unavailable",
+                        PartyStatusView.MemberName(members.Single(m => m.Carried.Actor == wait.Candidate!.SpecialItem!.Holder), session),
+                        DisplayNames.ItemWord(wait.Candidate!.SpecialItem!.Word, session.Definition.PrivateDefinitions!.Items[(byte)wait.Candidate.SpecialItem.Word].DisplayName)),
+                    ChurchResultKind.Unavailable => GameText.Get("church.promotion"),
+                    ChurchResultKind.Promoted => GameText.Get("church.promoted", Member(wait.Candidate!), Destination(wait.Candidate!)),
                     ChurchResultKind.Declined => GameText.Get("church.declined"),
                     ChurchResultKind.InsufficientGold => GameText.Get("church.insufficient"),
                     _ => GameText.Get("church.paid." + EffectKey(wait.Result.Treatment!.Effect), wait.Result.Treatment.Cost),
@@ -89,7 +123,9 @@ internal sealed partial class ChurchServiceView : Control
             {
                 _title.Text = GameText.Get("church.menu", session.Current.Exploration!.Party.Gold?.ToString() ?? "?");
                 _options.AddRange([(GameText.Get("church.raise"), new ChooseChurch(wait.Token, ChurchAction.Raise)),
-                    (GameText.Get("church.cure"), new ChooseChurch(wait.Token, ChurchAction.Cure)), (GameText.Get("church.promote"), null),
+                    (GameText.Get("church.cure"), new ChooseChurch(wait.Token, ChurchAction.Cure)), (GameText.Get("church.promote"),
+                        session.Definition.Encounters.Values.Any(e => e.Deployments.Any(d => d.RegularPromotion is not null))
+                            ? new ChooseChurch(wait.Token, ChurchAction.Promote) : null),
                     (GameText.Get("church.save"), new LeaveChurch(wait.Token, true)),
                     (GameText.Get("church.leave"), new LeaveChurch(wait.Token))]);
             }
@@ -112,6 +148,7 @@ internal sealed partial class ChurchServiceView : Control
         }
         else for (int i = 0; i < _options.Count; i++)
         {
+            _rows[i].Visible = i / 4 == _index / 4;
             _rows[i].Text = (i == _index ? "> " : "   ") + _options[i].Label;
             _rows[i].AddThemeColorOverride("font_color", i == _index ? StoryTheme.Selected : Colors.White);
         }
@@ -145,7 +182,7 @@ internal sealed partial class ChurchServiceView : Control
         else
         {
             for (int i = 0; i < _options.Count; i++)
-            { _rows[i].Position = new(inset, top); _rows[i].Size = new(inner, 0); top += Math.Max(64, _rows[i].GetMinimumSize().Y) + 12; }
+            { if (!_rows[i].Visible) continue; _rows[i].Position = new(inset, top); _rows[i].Size = new(inner, 0); top += Math.Max(64, _rows[i].GetMinimumSize().Y) + 12; }
         }
         _hint.Position = new(inset, top + 12); _hint.Size = new(inner, 0);
         _panel.Size = new(width, _hint.Position.Y + _hint.GetMinimumSize().Y + inset);
@@ -181,7 +218,9 @@ internal sealed partial class ChurchServiceView : Control
         _pointer.Cancel(); if (_requiresRelease || _wait is null) return;
         if (action == GameAction.Cancel)
         {
-            Choose(_wait.Phase == ChurchPhase.Result ? new ContinueChurch(_wait.Token) : _wait.Offer is { } offer
+            Choose(_wait.Phase == ChurchPhase.Members ? new CancelPromotion(_wait.Token) :
+                _wait.Phase is ChurchPhase.Consent or ChurchPhase.Regular ? new AnswerPromotion(_wait.Token, _wait.Candidate!, false) :
+                _wait.Phase == ChurchPhase.Result ? new ContinueChurch(_wait.Token) : _wait.Offer is { } offer
                 ? new AnswerChurch(_wait.Token, offer, false) : new LeaveChurch(_wait.Token)); return;
         }
         if (action is GameAction.Up or GameAction.Down) Focus((_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count);
@@ -201,6 +240,10 @@ internal sealed partial class ChurchServiceView : Control
             return;
         }
         if (input is not InputEventMouseButton button) return;
+        if (_wait.Phase == ChurchPhase.Members && button.Pressed && button.ButtonIndex is MouseButton.WheelDown or MouseButton.WheelUp)
+        {
+            Handle(button.ButtonIndex == MouseButton.WheelDown ? GameAction.Down : GameAction.Up); return;
+        }
         back |= button.ButtonIndex == MouseButton.Right;
         string? id = back ? "back" : hit < 0 ? null : hit.ToString();
         Rect2 rect = button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : back ? _rows[0].GetGlobalRect() :
@@ -221,7 +264,7 @@ internal sealed partial class ChurchServiceView : Control
     { ChurchEffect.Poison => "poison", ChurchEffect.Stun => "stun", _ => "raise" };
     private static string Treatment(ChurchEffect effect) => GameText.Get("church." + EffectKey(effect));
     internal object Observe() => new { visible = IsVisibleInTree(), wait = _wait, index = _index, revision = _revision,
-        title = _title.Text, hint = _hint.Text, error = _error, page = IsMenu ? "services" : _wait?.Phase == ChurchPhase.Offer ? "offer" : "result",
+        title = _title.Text, hint = _hint.Text, error = _error, page = IsMenu ? "services" : _wait?.Phase.ToString().ToLowerInvariant(),
         commandList = _commandsList.Observe(),
         commands = _commands.Select(button => new { id = button.Identity, label = button.Caption, selected = button.Selected, enabled = button.Available,
             rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }),

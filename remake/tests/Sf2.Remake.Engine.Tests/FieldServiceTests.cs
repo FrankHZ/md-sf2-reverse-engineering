@@ -13,7 +13,7 @@ public sealed class FieldServiceTests
     private static readonly ChurchDefinition Terms = new(10, 200, 200, 10, 20);
     private static GameSession Session(uint? gold = 100, ushort hp = 0, ushort status = 0,
         ushort secondHp = 100, ushort secondStatus = 0, byte level = 2, bool promoted = false, ushort maxHp = 250,
-        ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false)
+        ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false)
     {
         var original = FieldInventoryTests.Session().Current.Exploration!.Party;
         var source = FieldInventoryTests.Session().Definition.Encounters.Values.Single();
@@ -23,6 +23,20 @@ public sealed class FieldServiceTests
                 row.Definition.Attack, row.Definition.Defense, row.Definition.Agility, false, row.Definition.Move,
                 row.Definition.Spells, row.Definition.Physical! with { Promoted = promoted }, sourceLoadout: row.Definition.SourceLoadout),
         });
+        var book = currentLevel >= 22 ? new byte[] { 10, 13, 63, 63 } : [10, 63, 63, 63];
+        var spells = book.Where(spell => spell != 63).Select(spell => new SpellRef(spell == 10 ? "egress" : "bolt", 1)).ToArray();
+        var loadout = new BattleSourceLoadout([armed ? (ushort)178 : (ushort)50, 127, 127, 127], book);
+        if (promotion)
+        {
+            var growth = new BattleGrowthDefinition(0, 0, Enumerable.Repeat(new StatGrowth(20, 20, []), 5).ToArray(),
+                [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
+            var equipment = new BattleEquipmentDefinition(20, [new(50, "Sword", 1 | 1u << 12, 5, 1, 1)]);
+            deployments = deployments.Select(d => d.Actor != First ? d : d with {
+                Definition = d.Definition.WithGrowth(growth).WithEquipment(equipment),
+                RegularPromotion = new(d.Actor, BattleClassRule.Hero, 1, 42, 14, 28, 25, 24, false, 6, [],
+                    d.Definition.Physical! with { Promoted = true, Critical = PhysicalCriticalRule.Hero },
+                    sourceLoadout: loadout, growth: growth with { ClassId = 12, RetainedSpells = growth.Spells }, equipment: equipment) });
+        }
         var battle = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height,
             source.Terrain, deployments, source.Spells.Values);
         EntityRef priest = new("priest");
@@ -39,6 +53,10 @@ public sealed class FieldServiceTests
                 ? new(attained, 76, 10, 20, 4, 60, [], actor.SourceLoadout) : null }
             : actor.Actor == Second ? actor with { Hp = secondHp, Status = secondStatus } : actor),
             original.MainSeed, original.ThinkingSeed, gold, original.NewBattle, original.ActiveAllies, original.ItemCustody);
+        if (promotion)
+            party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
+                Progress = a.Progress! with { ClassId = 0, SourceLoadout = loadout, Spells = spells } } : a),
+                party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, [Second], party.ItemCustody);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, [], party))).Session;
         Accept(session, new Interact(priest));
@@ -54,6 +72,52 @@ public sealed class FieldServiceTests
     private static SessionResult Answer(GameSession session, bool yes = true) => Accept(session, new AnswerChurch(Wait(session).Token, Wait(session).Offer!, yes));
     private static void Continue(GameSession session) => Accept(session, new ContinueChurch(Wait(session).Token));
     private static BattleActorStartInput Member(GameSession session, ActorRef actor) => session.Current.Exploration!.Party.Actors.Single(row => row.Actor == actor);
+
+    [Theory]
+    [InlineData(19, false, 5)]
+    [InlineData(20, true, 0)]
+    [InlineData(31, false, 3)]
+    public void OrdinaryPromotionCarriesEarnedStateThroughConsentAndTheNextLevel(byte level, bool armed, ushort hp)
+    {
+        var session = Session(hp: hp, currentLevel: level, promotion: true, armed: armed);
+        var before = session.Current.Exploration!.Party;
+        Choose(session, ChurchAction.Promote);
+        if (level < 20)
+        {
+            Assert.Equal(ChurchResultKind.NoApplicableMember, Wait(session).Result!.Kind);
+            Assert.Same(before, session.Current.Exploration.Party);
+            return;
+        }
+        var row = Wait(session).Candidates!.Single(c => c.Member == First);
+        Accept(session, new SelectPromotion(Wait(session).Token, row));
+        Accept(session, new AnswerPromotion(Wait(session).Token, row, false));
+        Assert.Same(before, session.Current.Exploration.Party);
+        Accept(session, new SelectPromotion(Wait(session).Token, row));
+        Accept(session, new AnswerPromotion(Wait(session).Token, row, true));
+        var yes = new AnswerPromotion(Wait(session).Token, row, true);
+        Accept(session, yes);
+        var after = session.Current.Exploration.Party;
+        var member = Member(session, First);
+        var prior = before.Actors.Single(a => a.Actor == First);
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = 12, Level = 1 } }, member);
+        Assert.Equal(before.MainSeed, after.MainSeed); Assert.Equal(before.ThinkingSeed, after.ThinkingSeed);
+        Assert.Equal(before.Gold, after.Gold); Assert.Same(before.ItemCustody, after.ItemCustody);
+        Assert.DoesNotContain(First, after.ActiveAllies!);
+        Assert.NotNull(Send(session, yes).Failure); Assert.Same(after, session.Current.Exploration.Party);
+        var projected = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First);
+        Assert.Equal(armed ? 25 : 20, projected.Attack!.Value);
+        Assert.Equal(BattleClassRule.Hero, projected.Deployment!.Definition.ClassRule);
+        var actor = new BattleActorState(projected.Deployment, hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
+        uint seed = before.MainSeed;
+        var grown = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(actor, 1, ref seed, []);
+        Assert.Equal((byte)12, grown.Progress!.ClassId); Assert.Equal(2, grown.Level);
+        Assert.Equal(hp, grown.Hp); Assert.Equal(member.Mp, grown.Mp);
+        Assert.Single(grown.Spells, spell => spell.Value == "bolt");
+        Assert.Equal(new byte[] { 10, 13, 63, 63 }, grown.SourceLoadout!.Spells);
+        Continue(session);
+        Accept(session, new SelectPromotion(Wait(session).Token, Wait(session).Candidates!.Single(c => c.Member == First)));
+        Assert.Equal(ChurchResultKind.NoPromotion, Wait(session).Result!.Kind);
+    }
 
     [Theory]
     [InlineData(2, false, 250, 20, 200)]

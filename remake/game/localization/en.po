@@ -199,7 +199,7 @@ msgstr "Cure"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.promote"
-msgstr "Promote · Unavailable"
+msgstr "Promote"
 
 #. Church/Search display only; positional arguments are retained semantic values.
 msgid "church.save"
@@ -2542,3 +2542,27 @@ msgstr "Pacalon Castle"
 
 msgid "save.destination.pacalon-road"
 msgstr "Pacalon, southern road"
+
+msgid "church.members"
+msgstr "Who would you like to promote?"
+
+msgid "church.consent"
+msgstr "Does {0} wish to be promoted?"
+
+msgid "church.regular"
+msgstr "Promote {0} to {1}?"
+
+msgid "church.low-level"
+msgstr "{0} needs more experience."
+
+msgid "church.no-promotion"
+msgstr "{0} should remain in the current class."
+
+msgid "church.special-unavailable"
+msgstr "{0} holds the {1}. This special promotion is unavailable."
+
+msgid "church.promoted"
+msgstr "{0} was promoted to {1}!"
+
+msgid "church.another"
+msgstr "Do you have another desire?"

@@ -120,7 +120,7 @@ internal static class OpeningSave
             if (progress is null || loadout is null || source?.Growth is null || actor.Exp is null ||
                 actor.Kills is null || actor.Defeats is null || actor.ActivationWord is null || actor.Initialized is null)
                 throw new BattleRuleException("save-party-unknown", "save.allies");
-            return new SavedAlly(actor.Actor.Value, source.Growth.ClassId, actor.Hp, actor.Mp, actor.Exp.Value,
+            return new SavedAlly(actor.Actor.Value, progress.ClassId ?? source.Growth.ClassId, actor.Hp, actor.Mp, actor.Exp.Value,
                 actor.Kills.Value, actor.Defeats.Value, actor.Status, actor.ActivationWord.Value, actor.Initialized.Value, actor.Absent,
                 progress.Level, progress.MaxHp, progress.MaxMp, progress.BaseAttack, progress.Defense, progress.Agility,
                 Array.AsReadOnly(loadout.Items.ToArray()), Array.AsReadOnly(loadout.Spells.ToArray()));

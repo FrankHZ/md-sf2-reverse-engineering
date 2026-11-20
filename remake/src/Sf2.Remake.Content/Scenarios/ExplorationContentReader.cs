@@ -459,10 +459,13 @@ internal static class ExplorationContentReader
             Number(row, "playerSprite", 0, 255), System.Array.AsReadOnly(followers),
             row.TryGetProperty("allySprites", out _) ? System.Array.AsReadOnly(Array(row, "allySprites").Select(appearance =>
             {
-                Object(appearance, "allySprite", "character", "sprite", "joinedFlag", "unjoinedSprite");
+                ObjectOptional(appearance, "allySprite", ["character", "sprite", "joinedFlag", "unjoinedSprite"], "promotionClass", "promotionSprite");
                 int? joined = NullableNumber(appearance, "joinedFlag", 65535), unjoined = NullableNumber(appearance, "unjoinedSprite", 255);
                 Require((joined is null) == (unjoined is null), "ally-sprite-override", "population.allySprites");
-                return new ExplorationAllySprite(Number(appearance, "character", 0, 255), Number(appearance, "sprite", 0, 255), joined, unjoined);
+                Require(appearance.TryGetProperty("promotionClass", out _) == appearance.TryGetProperty("promotionSprite", out _), "ally-promotion-sprite", "population.allySprites");
+                return new ExplorationAllySprite(Number(appearance, "character", 0, 255), Number(appearance, "sprite", 0, 255), joined, unjoined,
+                    appearance.TryGetProperty("promotionClass", out _) ? (byte)Number(appearance, "promotionClass", 0, 31) : null,
+                    appearance.TryGetProperty("promotionSprite", out _) ? Number(appearance, "promotionSprite", 0, 255) : null);
             }).ToArray()) : null);
     }
 
@@ -905,7 +908,7 @@ internal static class ExplorationContentReader
                 var sprites = map.Population is { } population
                     ? map.Entities.Where(entity => entity.Sprite >= population.AllyCount).Select(entity => entity.Sprite)
                         .Concat(population.Followers.Where(follower => follower.Character >= population.AllyCount).Select(follower => (int?)follower.Sprite))
-                        .Concat((population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite })).Append(population.PlayerSprite)
+                        .Concat((population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite, sprite.PromotionSprite })).Append(population.PlayerSprite)
                     : map.Entities.Select(entity => entity.Sprite);
                 Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites");
             }
@@ -961,7 +964,7 @@ internal static class ExplorationContentReader
                             ? visuals.Sprites.ContainsKey(190) : visuals.Sprites.ContainsKey(add.Sprite), "missing-sprite-visual", "program.sprite"); break;
                     case LoadSceneEntities load when definition.Visuals is { } visuals:
                         var sprites = load.Entities.Where(entity => entity.Sprite >= load.Population.AllyCount).Select(entity => entity.Sprite)
-                            .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite }))
+                            .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite, sprite.PromotionSprite }))
                             .Concat(load.Population.Followers.Where(follower => follower.Character >= load.Population.AllyCount).Select(follower => (int?)follower.Sprite))
                             .Append(load.Population.PlayerSprite);
                         Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites"); break;

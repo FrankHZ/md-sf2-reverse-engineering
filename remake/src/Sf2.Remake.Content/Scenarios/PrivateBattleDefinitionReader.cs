@@ -13,7 +13,8 @@ internal static class PrivateBattleDefinitionReader
 
     internal static PrivateBattleDefinitions Read(string staticPath, string enemyPath, string goldPath,
         BattleEncounterDefinition encounter, PrivateBattleStart start, IReadOnlyList<SourceAllyDefinition>? initialAllies = null,
-        IReadOnlyList<byte>? growthSpells = null, IReadOnlyList<byte>? fieldItems = null, IReadOnlyList<byte>? repeatEnemies = null)
+        IReadOnlyList<byte>? growthSpells = null, IReadOnlyList<byte>? fieldItems = null, IReadOnlyList<byte>? repeatEnemies = null,
+        IReadOnlyList<byte>? growthClasses = null)
     {
         var coreBytes = PrivateBattleEncounterReader.ReadInput(staticPath, StaticDigest, "static-data", maximumLength: 1048576);
         var enemyBytes = PrivateBattleEncounterReader.ReadInput(enemyPath, EnemyDigest, "enemy-data", maximumLength: 1048576);
@@ -21,18 +22,19 @@ internal static class PrivateBattleDefinitionReader
         using var enemy = JsonDocument.Parse(enemyBytes, new JsonDocumentOptions { MaxDepth = 32 });
         using var gold = JsonDocument.Parse(PrivateBattleEncounterReader.ReadInput(goldPath,
             "16607CA1AE0477BC22FE81BEA044B7711D8C1EA3A31F4A0064C0288C026AD3DF", "enemy-gold", maximumLength: 16384));
-        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start, initialAllies, growthSpells, fieldItems, repeatEnemies);
+        return Decode(core.RootElement, enemy.RootElement, gold.RootElement, encounter, start, initialAllies, growthSpells, fieldItems, repeatEnemies, growthClasses);
     }
 
     internal static PrivateBattleDefinitions Decode(JsonElement core, JsonElement enemy, JsonElement gold,
         BattleEncounterDefinition encounter, PrivateBattleStart start, IReadOnlyList<SourceAllyDefinition>? initialAllies = null,
-        IReadOnlyList<byte>? growthSpells = null, IReadOnlyList<byte>? fieldItems = null, IReadOnlyList<byte>? repeatEnemies = null)
+        IReadOnlyList<byte>? growthSpells = null, IReadOnlyList<byte>? fieldItems = null, IReadOnlyList<byte>? repeatEnemies = null,
+        IReadOnlyList<byte>? growthClasses = null)
     {
         Object(core, "static-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "allies", "classes", "items", "spellNames", "spellDefinitions");
         Object(enemy, "enemy-data", "schemaVersion", "provenance", "romRangeConvention", "romRanges", "promotions", "enemies");
         _ = Number(core, "schemaVersion", 1, 1); _ = Number(enemy, "schemaVersion", 1, 1);
         var sources = Sources(core).Concat(Sources(enemy)).Distinct().ToArray();
-        var classes = start.Allies.Select(row => row.ClassId).Distinct().Select(id => Class(FindId(core, "classes", id))).ToArray();
+        var classes = start.Allies.Select(row => row.ClassId).Concat(growthClasses ?? []).Distinct().Select(id => Class(FindId(core, "classes", id))).ToArray();
         var enemies = encounter.Placements.Where(row => row.Kind == EncounterEntityKind.Enemy)
             .Select(row => row.IdentityExpression).Distinct().Select(code => Enemy(FindCode(enemy, "enemies", code)))
             .Concat((repeatEnemies ?? []).Select(id => Enemy(FindId(enemy, "enemies", id)))).DistinctBy(row => row.Id).ToArray();

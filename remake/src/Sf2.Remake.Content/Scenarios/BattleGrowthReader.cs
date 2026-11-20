@@ -24,7 +24,7 @@ internal static class BattleGrowthReader
     private static IEnumerable<BattleDefinition> BindRows(JsonElement rows, ScenarioDefinition scenario, bool authored)
     {
         Require(rows.ValueKind == JsonValueKind.Array, "array-required", "world.growth");
-        var growth = new Dictionary<ActorRef, BattleGrowthDefinition>();
+        var growth = new Dictionary<(ActorRef Actor, byte Class), BattleGrowthDefinition>();
         foreach (var row in rows.EnumerateArray())
         {
             Object(row, "growth", "actor", "classId", "stats", "spells");
@@ -33,7 +33,7 @@ internal static class BattleGrowthReader
                 .Select(deployment => deployment.Definition).FirstOrDefault(actor => actor.Actor == reference);
             Require(actor is not null, "growth-actor", "world.growth.actor");
             byte classId = (byte)Number(row, "classId", 0, 31);
-            Require(Sf2ClassRules.SourceClass(actor!.ClassRule) == classId, "growth-class", "world.growth.classId", true);
+            Require(Sf2ClassRules.SourceClass(actor!.ClassRule) == classId || !authored && actor.ClassRule == BattleClassRule.UnpromotedSwordsman && classId == 12, "growth-class", "world.growth.classId", true);
             Require(actor.SourceLoadout is not null, "growth-loadout", "world.growth.actor", true);
             if (authored)
             {
@@ -48,17 +48,29 @@ internal static class BattleGrowthReader
                 .SelectMany(word => scenario.PrivateDefinitions!.Items[(byte)(word & 127)].EquipEffects)
                 .Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter);
             Require(bonus >= 0 && bonus <= actor.Attack, "growth-base-attack", "world.growth.actor", true);
-            Require(growth.TryAdd(reference, ReadDefinition(row, (byte)bonus)), "duplicate-growth", "world.growth.actor");
+            Require(growth.TryAdd((reference, classId), ReadDefinition(row, (byte)bonus)), "duplicate-growth", "world.growth.actor");
         }
         return scenario.Encounters.Values.Select(encounter => encounter.WithDeployments(
             encounter.Deployments.Select(deployment =>
             {
-                if (!growth.TryGetValue(deployment.Actor, out var value)) return deployment;
+                var baseline = deployment.Definition;
+                if (Sf2ClassRules.SourceClass(baseline.ClassRule) is not { } initial ||
+                    !growth.TryGetValue((deployment.Actor, initial), out var value)) return deployment;
                 var physical = deployment.Definition.Physical;
                 if (!authored && physical is not null && deployment.Initialization?.AllyPartyMember is { } member &&
                     scenario.PrivateDefinitions!.Allies.TryGetValue((byte)member, out var ally))
                     physical = physical with { Critical = OpeningPartyInitialization.InitialCritical(value, ally.StartingLevel, physical.Critical) };
-                return deployment with { Definition = deployment.Definition.WithGrowth(value, physical) };
+                var bound = deployment with { Definition = baseline.WithGrowth(value, physical) };
+                if (authored || !growth.TryGetValue((deployment.Actor, 12), out var promoted)) return bound;
+                var source = scenario.PrivateDefinitions!;
+                var destination = source.Classes[promoted.ClassId];
+                var prowess = PrivateBattleActionBindings.Physical(source, destination.ProwessExpression,
+                    baseline.SourceLoadout!.Items, leader: physical!.Leader, gold: 0) with { Promoted = true };
+                return bound with { RegularPromotion = new(baseline.Actor, BattleClassRule.Hero, 1, baseline.MaxHp, baseline.MaxMp,
+                    baseline.Attack, baseline.Defense, baseline.Agility, baseline.ExtraRoundAction, destination.Movement, baseline.Spells,
+                    prowess, PrivateBattleScenarioReader.Mover(destination.MovementType), baseline.SourceLoadout,
+                    promoted with { RetainedSpells = value.Spells.Where(spell => spell.Level <= 40).ToArray() },
+                    resistance: PrivateAttackSpellBindings.Resistance(destination.ResistanceExpression)) };
             })));
     }
 

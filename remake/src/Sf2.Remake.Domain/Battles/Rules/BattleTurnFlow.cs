@@ -7,9 +7,9 @@ internal static class BattleTurnFlow
 {
     internal static EngineBattleState Start(BattleDefinition definition, BattleStartInput start)
     {
-        ValidateStart(definition, start);
-        definition.PrismLaser?.RequireDefinition(definition);
+        definition = ValidateStart(definition, start);
         var inputs = start.Actors.ToDictionary(actor => actor.Actor);
+        definition.PrismLaser?.RequireDefinition(definition);
         // Deployment order owns turn/candidate order; the external input array is only keyed data.
         var actors = BattleInitializationRules.Deployments(definition, start).Select(deployment =>
         {
@@ -44,7 +44,7 @@ internal static class BattleTurnFlow
     }
 
     // Used by the real Content admission and again by the reusable public session start boundary.
-    internal static void ValidateStart(BattleDefinition definition, BattleStartInput start)
+    internal static BattleDefinition ValidateStart(BattleDefinition definition, BattleStartInput start)
     {
         Require(start.StoryFlags.All(flag => flag is >= 0 and <= 65535), "story-flag", "start.storyFlags");
         Require(start.Encounter == definition.Encounter, "missing-encounter", "start.encounter");
@@ -60,6 +60,8 @@ internal static class BattleTurnFlow
             Require(definition.Deployments.Any(d => d.Actor == input.Actor), "missing-actor", "start.actors.actor");
         }
         Require(definition.Deployments.All(d => inputs.ContainsKey(d.Actor)), "missing-start-actor", "start.actors");
+        if (definition.Deployments.Any(row => inputs[row.Actor].Progress?.ClassId is { } id && id != row.Definition.Growth?.ClassId))
+            definition = definition.WithDeployments(definition.Deployments.Select(row => row.ResolveClass(inputs[row.Actor].Progress?.ClassId)));
         if (start.ActiveAllies is { } activeAllies)
         {
             Require(start.NewBattle is not null, "active-party-initialization", "start.activeAllies");
@@ -132,6 +134,7 @@ internal static class BattleTurnFlow
         }
         Require(allies > 0 && enemies > 0, "battle-outcome", "start.actors", true);
         Require(turns <= 64, "turn-buffer-capacity", "start.actors");
+        return definition;
     }
 
     private static void Require(bool condition, string code, string field, bool unsupported = false)
