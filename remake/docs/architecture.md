@@ -13,7 +13,7 @@ its admitted population. At the cliff, Continue retains the visit latch, opened 
 and physical follower links. The [campaign agreement](application/remaining-campaign-risk-baseline.md)
 owns the playable scope. The [Polca chapter](application/polca-first-raft.md)
 documents the earlier raft boundary.
-The [Battle08–13 and raft audit](evidence/polca-raft-engine-save-audit.zh-CN.md) identifies current
+The [Battle08–13 and raft audit](evidence/polca-raft-engine-save-audit.md) identifies current
 engine-boundary and save-compatibility risks. The [earlier engine and script audit](evidence/engine-script-boundary-review.md#post-campaign-boundary-assessment)
 covers the opening campaign through arrival on the damaged ship.
 

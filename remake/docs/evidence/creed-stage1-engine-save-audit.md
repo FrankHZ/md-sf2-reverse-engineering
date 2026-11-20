@@ -209,7 +209,7 @@ new cold process. It also independently extracted A1's audio error/context. Loca
 Inputs are the registered handoff, never copied worlds or modified slots. Load the checkout's
 ignored private-input configuration and run that script with its existing Python environment.
 
-Earlier findings were reconciled against current source: [the Polca audit](polca-raft-engine-save-audit.zh-CN.md)
+Earlier findings were reconciled against current source: [the Polca audit](polca-raft-engine-save-audit.md)
 #1749/#1750/#1751/#1752 corrections cover roster migration, raft berth, birdman AI, carried enemy
 items and recovery policy; [engine/script review](engine-script-boundary-review.md) records F6–F8's
 admitted-defeat, follower-list and shared music-context fixes. Current source retains those mechanisms.

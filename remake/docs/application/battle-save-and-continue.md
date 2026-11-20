@@ -131,7 +131,7 @@ Existing members retain all progress. Both gameplay RNG words and the live battl
 through the restore.
 
 **Confirmed** with the real Battle01 and Map58 slots identified in the
-[historical audit](../evidence/polca-raft-engine-save-audit.zh-CN.md#存读档实测及最小复核).
+[historical audit](../evidence/polca-raft-engine-save-audit.md#save-and-restore-observations).
 In the same v2 slot, the seven- and eleven-member worlds resumed ally 2 in round 1 at cursor 0.
 Confirm, Stay and Confirm through `GameSession.Submit`, followed by the pending presentations
 and automatic turns, both reached ally 0 at cursor 3. The full queue, actors, inventory, gold

@@ -2,7 +2,7 @@
 
 **Light rigor:** a bounded SF2 class-table correction. `PhysicalTargetRules.ClassRank` binds source
 class 6 (BDMN) for both critical physical target cohorts and ordered pursuit. The accepted
-[Polca/raft audit](polca-raft-engine-save-audit.zh-CN.md) retains the original `ai-target-class` failure
+[Polca/raft audit](polca-raft-engine-save-audit.md) retains the original `ai-target-class` failure
 and its controlled-input limit. Recruitment, story content, roster restoration and generic battle
 rules are outside this correction.
 

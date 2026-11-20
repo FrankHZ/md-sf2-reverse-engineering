@@ -46,19 +46,18 @@ in design-synthesis documents and governs the zh-CN mirror conventions under
 rules (evidence-label translations, preserved source identifiers, one-term-one-translation, proper
 nouns kept in English with suggested annotations, and entry revision process).
 
-Non-English localization from the canonical English source proceeds as a dedicated batch per the
-glossary's rules, with terminology consistency, link integrity, evidence-label preservation, and
-fixture-trace QA. A zh-CN mirror under `docs/design/zh-CN/` is a derivative; the English source
-remains the review baseline unless a localization batch defines another explicit policy.
+The [Chinese reader entry](../README.zh-CN.md) maintains L0–L3 design. A translated design excerpt
+can combine rule passages or remove technical sections from its English counterpart. Retain
+the glossary's terminology, evidence distinctions, rule-significant values and identifiers for
+what is translated. Fixture inventories, raw records, reproduction and implementation stay at
+their English owners. Design navigation should prefer existing Chinese counterparts and label
+necessary English sources.
 
-The reviewed Chinese mirrors retain the baselines accepted under
-[the design-documentation epic #514](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/514).
-Those baselines predate the L0–L3 publication scope. The current index and enumerator still apply
-to their existing corpus until [#1977](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1977)
-reconciles them with the scope above. The Wiki mapping changes under
-[#1978](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1978). A new design source or a
-changed English source keeps its real pending or drift status until the corresponding review.
-Game localization has its own scope under [#1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
+The translation index covers the Chinese design pages present under the mirror root. An English
+addition creates no translation status by itself. English owners remain authoritative for
+original behavior and current remake support. Wiki publication is tracked in
+[#1978](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1978). Game localization has
+its own scope under [#1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
 
 ## Design Information Architecture
 
@@ -156,10 +155,8 @@ Other ordinary and special destinations remain with their respective follow-ups.
 
 The indexes cite the original research and contracts for original behavior and the application
 owners for remake admission and observations. Acceptance follows each reader route through its
-condition, failure or repeat case, evidence and current support boundary. This round uses accepted
-evidence and documents current implementation. The design corpus under #514 retains its accepted
-baseline. English is canonical for this addition, so the existing Chinese roadmap has source drift
-pending semantic synchronization under the [translation agreement](#bounded-translation-repair-agreement).
+condition, failure or repeat case, evidence and current support boundary. Use accepted evidence and keep the
+observed boundaries attached to the corresponding implementation owners.
 
 ### Bounded battle-design analysis pilot
 
@@ -183,11 +180,9 @@ and diff checks, the existing `zh-meta test`, clean-head planner and selected do
 verification; no normal/full, SDK, Godot or emulator suite is selected. This is small text synthesis
 using retained tools and inputs, with no data-processing run or new environment.
 
-Only this roadmap and its Chinese mirror are synchronized in this slice, alongside minimal root
-and documentation navigation and their actual translation-index records. The analysis is English
-first; Chinese readers receive an explicit English entry and pending status. Translation follows
-source stabilization as a separate bounded scope. The pilot stops here without expanding to other
-encounters or changing balance or production admission.
+The [Chinese design excerpt](zh-CN/synthesis/analyses/battle-design-analysis-pilot.md) presents the
+three design problems and conditional choices. The English source retains exact evidence and
+assumptions.
 
 ### Accepted starting point
 
@@ -358,7 +353,7 @@ and review are not sacrificed to an arbitrary cost or document-length target.
 Each slice requires direct prose/scope, relative-link/anchor, UTF-8/private-boundary and
 `git diff --check` inspection, plus the configured committed planner and actual scoped CI under the
 documentation-only policy. Translation slices use the existing glossary, index and direct
-source-to-mirror label, structure, fixture and anchor checks; run the existing global `zh-meta test`
+scope-appropriate label, structure, fixture and anchor checks; run the existing `zh-meta test`
 at the bounded handoff and preserve any outside-scope FAIL. Do not launch blanket normal/full Python,
 .NET, Godot or H3/H4 suites for this agreement. Independent review checks evidence interpretation and reader usefulness;
 a mechanical PASS alone is insufficient. Leave a clean committed/pushed Draft PR for independent
@@ -375,10 +370,21 @@ full-game parity or a general comparator.
 
 ### Bounded translation repair agreement
 
-Previously accepted mirrors retain their reviewed anchors. The current tool still reports pending
-sources and source drift under its existing inventory. Run `uv run --locked sf2 zh-meta test`
-and use `uv run --locked sf2 zh-meta list` for per-document status. The
-[L0–L3 scope](#design-and-support-scope) guides the inventory cutover in #1977.
+**Current scope agreement — Standard.** The Chinese body covers the
+[L0–L3 decisions](#design-and-support-scope). A translated design excerpt carries the same
+relative path as its English counterpart and is declared in the existing index. The index and
+the on-disk Chinese pages must agree. English-only technical pages and new English design sources
+have no automatic pending or drift record. Independent review checks retained conditions, choices,
+formulas, evidence levels and terms. Whole-source Markdown structure, fixture sequences and label
+counts apply to full translations. Excerpts check Chinese text, evidence-label vocabulary, local
+links and anchors; the review establishes equivalence of the selected behavior.
+
+Run `uv run --locked sf2 zh-meta test` for strict inventory, link and reviewed-anchor checks and
+`uv run --locked sf2 zh-meta list` for per-page drift. Whole-English-file anchors on retained
+mixed pages are conservative: edits to support passages can still require checking whether the
+selected rules changed. Keep an older source anchor if a relevant revision has not been reviewed.
+The remaining source drift is in the story system, in the Hassan departure and Battle17 outcomes
+guide. The accepted Chinese excerpt there retains its earlier reviewed rules.
 
 For each later change:
 
@@ -397,8 +403,8 @@ For each later change:
 4. **Re-anchor only reviewed changes.** Update only the affected index records after real bilingual
    review, preserving unrelated records and glossary metadata. If a source change is accepted before
    its mirror is synchronized, retain the old reviewed anchor and report the synchronization gap;
-   do not clear drift by refreshing hashes or dates alone. `pending` means no mirror exists, whereas
-   a retained translated record can have source drift. Neither status is a new research queue.
+   keep drift visible until semantic review. If a scope retires a mirror, remove its index record
+   in the same change.
 5. **Verify and hand off.** Run the original global checks after loading the retained private-input
    configuration in the same process, plus direct scope, links/fragments, semantic targets, metadata
    and private-boundary checks. Inspect the clean-head planner and actual scoped CI under the
