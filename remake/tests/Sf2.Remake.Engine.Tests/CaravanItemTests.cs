@@ -24,7 +24,8 @@ public sealed class CaravanItemTests
         var preparation = new FieldPreparationDefinition(
             new byte[] { 0, 1, 2, 3, 5, 9, 50, 61, 125 }.Select(id => new BattleDiscardItem(id, "item-" + id, id == 61, id == 125)),
             [new(0, FieldRecoveryEffect.NoEffect), new(2, FieldRecoveryEffect.NoEffect),
-             new(3, FieldRecoveryEffect.CurePoison), new(125, FieldRecoveryEffect.MapEvent)]);
+             new(3, FieldRecoveryEffect.CurePoison), new(5, FieldRecoveryEffect.CurePoisonAndParalysis),
+             new(125, FieldRecoveryEffect.MapEvent)]);
         var s = CaravanServiceTests.Session(pack: pack ?? (_ => new([50, 0, 61, 1], [])),
             custody: new([2], new Dictionary<byte, byte> { [61] = 15 }, [50, 50, 61]),
             preparation: preparation, equipment: equipment, failReturn: fail, status: status, privateDefinitions: source);
@@ -102,19 +103,33 @@ public sealed class CaravanItemTests
     }
 
     [Theory]
-    [InlineData(2, true)]
-    [InlineData(0, false)]
-    public void AntidoteConsumesSelectedSlotEvenWhenTargetHasNoPoison(byte status, bool effective)
+    [InlineData(3, 0x82, "cured", 0x80)]
+    [InlineData(3, 0x81, "no-effect", 0x81)]
+    [InlineData(5, 0x81, "powder-cured", 0x80)]
+    [InlineData(5, 0x82, "powder-cured", 0x80)]
+    [InlineData(5, 0x83, "powder-cured", 0x80)]
+    [InlineData(5, 0x80, "powder-no-effect", 0x80)]
+    public void RecoveryUsesSelectedHolderSlotEvenWhenTargetHasNoMatchingStatus(
+        ushort word, byte status, string result, ushort expectedStatus)
     {
-        var s = Start(_ => new([0, 3, 1, 127], []), status: _ => status);
+        var s = Start(_ => new([0, word, 1, 127], []), status: _ => status);
         var p = s.Current.Exploration!.Party;
         Action(s, CaravanItemAction.Use);
         Select(s, 13);
-        Slot(s, 1, 3);
+        Slot(s, 1, word);
+        var choosing = s.Current;
+        Assert.NotNull(Send(s, new SelectCaravanMember(Wait(s).Token, 99)).Failure);
+        Assert.Same(choosing, s.Current);
+        Back(s);
+        Assert.Equal(CaravanPhase.ItemMember, Wait(s).Phase);
+        Assert.Same(p, s.Current.Exploration!.Party);
+        Select(s, 13);
+        Slot(s, 1, word);
         Select(s, 2);
-        Assert.Equal(effective ? "cured" : "no-effect", Wait(s).ItemResult);
+        Assert.Equal(result, Wait(s).ItemResult);
         Assert.Equal(new ushort[] { 0, 1, 127, 127 }, Pack(s, 13));
-        Assert.Equal(0, s.Current.Exploration!.Party.Actors[2].Status);
+        Assert.Equal(new ushort[] { 0, word, 1, 127 }, Pack(s, 2));
+        Assert.Equal(expectedStatus, s.Current.Exploration!.Party.Actors[2].Status);
         Assert.Same(p.ItemCustody, s.Current.Exploration.Party.ItemCustody);
         Assert.Equal(p.Actors[2].Hp, s.Current.Exploration.Party.Actors[2].Hp);
         Assert.Equal(p.Actors[2].Mp, s.Current.Exploration.Party.Actors[2].Mp);
@@ -136,7 +151,6 @@ public sealed class CaravanItemTests
     [InlineData(0, "caravan-item-not-usable")]
     [InlineData(2, "caravan-item-not-usable")]
     [InlineData(125, "caravan-item-not-usable")]
-    [InlineData(5, "field-item-effect-unsupported")]
     [InlineData(9, "field-item-effect-unsupported")]
     public void NonusableMapEventAndUnsupportedEffectsNeverConsume(ushort word, string code)
     {

@@ -199,11 +199,10 @@ unsupported-loadout checks, including both sides of exchange and unequipping. Se
 failure preserves the snapshot; a later callback failure does not undo a committed item action.
 
 Caravan Use checks the source field-usable identity table separately from map events and ordinary
-Field NoEffect policies. Only the admitted Antidote poison-cure effect is implemented here. It
-consumes the selected slot even if the target has no poison, with distinct bilingual feedback;
-a missing/invalid target consumes nothing. Herbs/seeds and map-event items refuse without effect or
-consumption. The service never dispatches the Cotton Balloon map event. Fairy Powder and stat/level
-items remain unsupported and are not consumed. Bare carrying does not grant equipment or Use effects. Shared Field validation distinguishes pack
+Field NoEffect policies. Antidote clears poison, and Fairy Powder clears poison and paralysis.
+Each consumes the selected holder's slot even if the target has no relevant status, with distinct
+bilingual feedback. A missing or invalid target consumes nothing. Herbs, seeds and map-event items
+refuse without payment. Stat and level items remain unsupported. Shared Field validation distinguishes pack
 shape/known identities, the selected slot's operation admission, and actually equipped words.
 An unselected, unequipped known Power Ring19 stays in the pack without blocking another admitted
 slot's Give/Drop/Use or a recipient transfer. Queries display that identity without granting its
@@ -211,12 +210,13 @@ operations; its unsupported Use/equipment still refuses. Unknown identities, sta
 packs and unsupported worn effects remain rejected. Equipment choices retain source slot indices
 and omit unsupported/broken choices without deleting their live words. Selected broken-weapon
 operations remain unsupported; no wider curse/ring/broken lifecycle is implemented.
-`PrivateFieldPreparation` was reviewed and remains unchanged.
+The [Pacalon Use observation](pacalon-first-visit.md#fairy-powder-use) exercises an overworld Caravan
+caller with a legally held Powder and a status-free target, then saves and cold-continues.
 
 All item changes reuse `FieldInventory.Replace` and `ExplorationState.WithParty`, retaining depot,
 OnceFlags/Deals, all other actor resources, RNG, active membership and story/transport continuity.
 No persistence format change is needed. Small actual-engine tests also cover ring-bearing donor/recipient packs, full exchanges, Drop and
-Antidote under both callers, while retaining ring effect refusal and ordinary Field self-exchange.
+Antidote and Fairy Powder recovery under both callers, plus ring effect refusal and ordinary Field self-exchange.
 They distinguish the full self-Give
 rule from ordinary Field self-exchange, both exchange guards, supported and ineffective Antidote,
 unsupported/unsellable refusal, stale/cancelled commands, equipment limits and failing callback return.
@@ -359,8 +359,8 @@ forwarding existing Field commands is insufficient:
   members, retain the full-pack exchange and equipped-curse guards on both outgoing items.
 - **Confirmed:** Caravan Use checks the field-usable table, calls UseItemOnField, then removes the
   selected donor slot after return. The [field effects owner](../../../docs/research/world/field-item-effects.md)
-  lists IDs3,5,9–15; herbs/seeds are not field healing. Current `FieldRecovery` supports Antidote,
-  ordinary no-effect handling and map-event/EGRESS policies; it does not implement the whole table.
+  lists IDs3,5,9–15. `FieldRecovery` admits Antidote and Fairy Powder for Caravan Use. The Field
+  caller also owns ordinary no-effect handling and map-event/EGRESS policies.
   Reuse supported effects only with the Caravan policy. Never trigger the Cotton Balloon map-event
   route from the depot/Caravan Use submenu, or consume an unsupported stat item as a success.
 - Equip reuses admitted equipment rules and selected-slot handoff; Drop reuses compacting removal,
@@ -450,7 +450,7 @@ threshold require extracting the affected responsibility without net growth, per
    service/view/localization extensions and `tests/Sf2.Remake.Engine.Tests/CaravanItemTests.cs`.
    Add service-context admission and the source self-Give rule, supported Use/Equip/Drop, then prove
    ordinary field preparation still follows its own policy. Acceptance includes full/self/different
-   member Give, exact slot compaction, supported Antidote consumption, refusal of nonusable items,
+   member Give, exact slot compaction, supported Antidote and Fairy Powder consumption, refusal of nonusable items,
    unsupported effects with no consumption, return to Caravan and final callback return. Wider
    field stat items, cursed/ring/broken equipment lifecycles and exhaustive appraisal remain separate
    first-consumer extensions under #1369, not prerequisites disguised as a full inventory redesign.

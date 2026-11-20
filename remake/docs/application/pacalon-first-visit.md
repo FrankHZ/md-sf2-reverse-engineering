@@ -101,6 +101,70 @@ matched their immediate re-saves. Ordinary movement worked after Continue on
 the field. Both parties retained reserve Higins. Frayja stayed outside the
 party, and F810 and the collection flags survived the castle Continue.
 
+## Fairy Powder Use
+
+[#1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942) covers Powder carried in the
+existing campaign through Pacalon and Battle26. It uses the existing field, service, battle and
+save transactions. The field route retains current target selection, localized feedback and input
+return. The item can come from Search or a shop, and the command pays from the actual holder and slot.
+
+At pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, the Field and Caravan callers
+`mainactions.asm:@PickTarget` and `caravanactions_1.asm:caravanItemSubmenu_Use` check the target
+selection before calling `UseItemOnField`. Each invokes `RemoveItemBySlot` on the holder after the
+effect returns. In both callers item 5 reaches `CurePoisonAndParalysis`, which clears bits 1 and 0
+and updates stats even along the no-effect message path. In the remake, valid confirmation consumes
+one item and preserves HP, MP, unrelated status and custody. Cancel, missing target and stale slot
+leave the party unchanged. [Field item evidence](../../../docs/research/world/field-item-effects.md#confirmed-static-contract) ·
+[Caravan Use rules](caravan-services-design.md#current-item-implementation)
+
+Battle has its own source behavior. `itemdefs.asm` selects `POWDER` rank 1, and `spelldefs.asm`
+specifies 0 MP, teammate range 0–1 and radius 0. `castspell.asm:spellEffect_Detox` clears poison
+at that rank, leaving paralysis intact. `breakuseditem.asm:battlesceneScript_BreakUsedItem` removes
+the selected non-equipment slot even after ineffective resolution. The remake uses the existing
+battle poison-cure reaction, ineffective draw, item consumption and EXP rules.
+[Original item records](../../../docs/design/contracts/party/item-definition-data.md) ·
+[Remake battle binding](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs)
+
+### Ordinary input and controlled status checks
+
+Use the #1927 Pacalon handoff's matching castle or departure slot as a read-only seed. Confirm F174
+and item 5 in the live loadout after title Continue. Keep an external sample save namespace per
+journey. For current content, mount the registered [#1966 prepared world and scenes](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction)
+and the current Debug adapter. The shared older routes lack a required SLOW icon. One preparation
+from the existing package added four rasters, producing a 101,835,469-byte world and a 635,539-byte
+main scene file. The field slot copies are at most 50,178 bytes each.
+
+| Ordinary caller | Reproduce from legitimate custody |
+| --- | --- |
+| Field, English | Continue `castle-en.json` on Map36. Open Field Item, choose Kazin, then Use and his second slot. Back from the target list and from final confirmation, checking both return paths. Confirm against Bowie. The no-effect result spends item 5 and compacts `[213,5,118,123]` to `[213,118,123,127]`. |
+| Caravan, Chinese | Continue `departure-zh-CN.json` on Map71. Align with the visible Caravan and confirm the [overworld service entry](caravan-services-design.md#current-overworld-vehicle-entry). Choose Item, Use, Slade and his third slot. Cancel the target list, reopen the same slot and confirm Bowie. The Chinese result reports no poison or paralysis to cure and that 妖精粉 was consumed. The pack changes from `[231,0,5,118]` to `[231,0,118,127]`. |
+
+Dismiss each result and exit to settled field input, then use the ordinary Save slot and Quit.
+Start a fresh process and Continue from that same slot. Re-save and compare the entire decoded
+`data` object, including pack words, F174 and party resources. Both comparisons match with the
+record sequence advancing by one. All four runs exited 0. Some processes logged an ObjectDB
+warning during shutdown. The input, state, projected feedback and save observations completed.
+Both ordinary targets have status 0. The observed branches cover ownership,
+cancellation, ineffective confirmation, control, save and cold restore. Natural acquisition of
+the target ailments in these histories remains **Unknown**.
+
+For Battle26, start with a fresh copy of `castle-en.json`. Kazin is fallen. Use ordinary Field Give
+to exchange Powder for Sarah's Medical Herb in her third slot. Sarah receives Powder in her fourth
+slot. Follow the [Battle26 road](#reproduction), and on Sarah's first turn use Item on herself.
+Cancel at target selection once, then confirm. The ineffective result leaves HP 58, MP 59 and
+status 0. The pack remains `[214,15,123,5]` on cancel and becomes `[214,15,123,127]` on confirmation.
+The action gives 1 EXP in that run and returns to the next player's Movement. Save there and
+cold-continue. The complete decoded battle `data` matches after the fresh process re-save, and the
+record sequence advances by one. The Use process saved successfully and then exited with
+`0xC0000005` in `GodotObject.Finalize` after confirming ordinary Quit. The cold process exited 0 with
+an ObjectDB shutdown warning. [Shutdown issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+`FieldRecoveryTests` and `CaravanItemTests` separately use controlled poison-only, paralysis-only,
+combined and unrelated statuses. They check no-effect payment, other resources and invalid-target
+rejection. `PoisonCureTests` observes the battle status write and later stun-turn processing separately.
+These tests and the ordinary remake observations leave original runtime timing and audiovisual
+behavior **Unknown**.
+
 ## Reproduction
 
 The private handoff is `issue1927/pacalon`. Use fresh sample names to preserve

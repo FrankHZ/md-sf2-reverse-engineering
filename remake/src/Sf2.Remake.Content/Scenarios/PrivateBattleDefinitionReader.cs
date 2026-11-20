@@ -44,6 +44,8 @@ internal static class PrivateBattleDefinitionReader
         foreach (string code in new[] { "MEDICAL_HERB", "HEALING_SEED", "HEALING_DROP", "ANTIDOTE", "ANGEL_WING", "MITHRIL",
             "SHORT_SWORD", "SHORT_SPEAR", "BRONZE_LANCE", "SHORT_AXE", "WOODEN_ROD", "SHORT_ROD", "SHORT_KNIFE" })
             itemIds.Add((byte)Number(FindCode(core, "items", code), "id", 0, 126));
+        // A mounted world can supply Fairy Powder after the encounter catalog is built.
+        if (fieldItems?.Contains((byte)5) == true) itemIds.Add(5);
         foreach (var row in enemies.SelectMany(row => row.Items)) itemIds.Add((byte)Number(FindCode(core, "items", row.Item), "id", 0, 127));
         foreach (var row in encounter.Placements)
             itemIds.Add((byte)Number(FindCode(core, "items", row.ItemExpression.Split('|')[0]), "id", 0, 127));

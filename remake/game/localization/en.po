@@ -2555,6 +2555,12 @@ msgstr "Poison cured. The Antidote was consumed."
 msgid "caravan.items.result.no-effect"
 msgstr "No poison to cure. The Antidote was consumed."
 
+msgid "caravan.items.result.powder-cured"
+msgstr "Status cured. The Fairy Powder was consumed."
+
+msgid "caravan.items.result.powder-no-effect"
+msgstr "No poison or paralysis to cure. The Fairy Powder was consumed."
+
 msgid "save.destination.creed-mansion"
 msgstr "Creed's Mansion"
 
