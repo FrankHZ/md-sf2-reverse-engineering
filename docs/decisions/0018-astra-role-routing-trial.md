@@ -3,7 +3,7 @@
 - Status: **Accepted**; trial closed, task-based routing adopted
 - Proposal date: 2026-09-05
 - Decision date: 2026-09-06
-- Routing update: 2026-11-18
+- Routing update: 2026-11-20
 - Scope: task model routing and handoffs after the bounded trial
 
 ## Context
@@ -20,33 +20,32 @@ cross-Issue planning and independent integration; Issues and repository owners h
 
 ## Current Routing
 
-Choose the model for the task's reasoning difficulty within its assigned role and Issue ownership:
-
-| Work | Default model / reasoning |
+| Responsibility | Default model / reasoning |
 | --- | --- |
-| Main-gate, independent review, systemic investigations, difficult architecture, conflicting evidence and novel reverse engineering | `gpt-6.2-astra` / `high` |
-| Scoped implementation, tooling, settled research or design synthesis, documentation and translation | `gpt-6.2-sol` / `high` |
+| Main-gate | `gpt-6.2-astra` / `high` |
+| All workers | `gpt-6.2-sol` / `high` |
 
-These are the two dispatch defaults. Apply them to new work and the next authorized continuation.
-Keep running tasks and completed evidence. Sol uses High as its minimum. Escalate to Astra or
-raise reasoning effort for a concrete reasoning difficulty. Record an override in the handoff.
-An explicit user selection takes precedence.
+Use the worker default for new dispatches and the next authorized continuation across implementation,
+design, audit, architecture and reverse engineering. An explicit user selection takes precedence.
+
+Escalate a worker to `gpt-6.2-astra` / `high` only for a specific reasoning problem the worker
+could not resolve. Give main-gate the unresolved question, relevant evidence and approaches
+already tried. Report a missing input, unaccepted dependency or permission limit as a blocker to
+its owner. Use the evidence already available to justify escalation.
 
 At dispatch, main-gate requests the selected model and supported reasoning level through the
 task-creation tool instead of inheriting an application default. Record the request and any override
 reason in the current Issue handoff. Respect the callable tool's current choices and constraints.
-For an existing task, a supported setting change can apply on its next continuation; do not restart
-the task or repeat completed gates solely to change settings. A tool request establishes the requested
-selection; confirm it through tool or host evidence when available. If selection cannot be applied or
-verified, report that limitation instead of claiming the task is running at the chosen settings. An
-agent's self-description is not verification.
+Apply an escalation through a supported continuation of the same task. Preserve the checkout,
+commits, completed checks and failures. Repeat a check or acquisition only when its evidence needs
+renewing under the existing verification rules. Confirm the requested setting with tool or host
+evidence when available, and report any selection or verification limit in the handoff.
 
 The project-specific Terra reverse-engineering role and model fallback are retired. Bounded research
-subtasks use the same task-based routing above; the accountable owner may execute a slice directly.
-Where older ADR 0004 or
-Phase 2 wording prescribes a model or mandatory worker, this routing controls. ADR 0004's evidence,
-Worker Acceptance Checklist, handoff, and independent acceptance requirements remain binding for
-Phase 2 work. Main-gate-authored changes also require independent review before integration.
+subtasks follow the worker default above. The accountable owner may execute a slice directly.
+Where older ADR 0004 or Phase 2 wording prescribes a model or mandatory worker, this routing controls.
+ADR 0004's evidence, Worker Acceptance Checklist, handoff, and independent acceptance requirements
+remain binding for Phase 2 work. Main-gate-authored changes also require independent review before integration.
 
 ## Task Lifecycle and Recovery
 

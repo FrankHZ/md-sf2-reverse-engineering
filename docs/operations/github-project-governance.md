@@ -162,7 +162,7 @@ Accepted base / Context
 Owned paths and shared-path needs
 Acceptance criteria and commands
 Dependencies
-Relevant owners (documents, contracts, ADRs)
+Relevant owners (design, English evidence and configuration tables, implementation, ADRs)
 Known failures / Unknowns affecting this slice
 Out of scope
 Stopping condition
@@ -173,6 +173,30 @@ slice once Git, worktree, and ownership state are checked. Keep the private-boun
 evidence-label rules of `AGENTS.md` applying verbatim to issue bodies and comments: no private
 inputs, absolute private paths, generated artifacts, or redistribution rights; state reproduction
 commands and fixture identity instead of pasted dumps.
+
+#### Design-Driven Remake Issues
+
+Start with the affected [design owners](../design/documentation-roadmap.md). Use the relevant levels
+from L0 vision, L1 overall gameplay, L2 system design and L3 mechanism or behavior specification.
+Name the specific behavior or decision needed, then link the English original-game evidence and applicable
+configuration tables. Use those links to define the remake implementation boundary and proportional
+acceptance. Independent review follows the same chain from design through evidence and data to
+implemented behavior. Reuse accepted links for bounded fixes or translations. Add design work only
+where a missing or conflicting decision materially affects the slice, and resolve it before
+dispatching the dependent implementation.
+
+Before selecting a chapter slice, compare the affected system designs with the chapter's behavior and
+configuration inventory, including optional interactions. Use the campaign route to identify callers
+and exercise accepted behavior. If a newly discovered caller requires developing a whole mechanism,
+reassess the outcome, dependencies and stopping point before taking on that work. Main-gate updates
+the affected Issue or links a separately scoped dependency for a distinct outcome.
+
+For example, a church-promotion Issue starts with [the class and promotion design](../design/synthesis/themes/progression-and-economy.md#definitions-current-class-and-promotion).
+It checks the [English church evidence](../design/contracts/party/service-interactions.md#church-source-boundary)
+and [class and promotion tables](../design/contracts/party/ally-definition-data.md#class-and-promotion-definition-topology).
+The [playable HERO boundary](../../remake/docs/application/church-promotion-design.md#playable-hero-and-reproduction)
+gives the current implementation and acceptance reference. A slice for that rite can exercise
+ordinary selection, class change and Continue while placing further destinations in their own scope.
 
 For a player-facing remake change, put a link to the affected [campaign feature row](../../remake/docs/capability-status.md#campaign-feature-trace) or battle row and its detailed owner in the Issue. Name the player action, affected chapter/map/setup and expected result or return. A chapter extension includes newly reachable optional interactions even when their engine rule stays the same. During review, compare the published callers or placements with the owner's inventory and distinguish ordinary input from static or controlled evidence. Update the affected row or linked owner in the implementation PR where its claim changes. Link a remaining actionable gap to its existing Issue, or open one for a distinct outcome. Group equivalent variants in the owner; the linked Issues track work and dependencies.
 
@@ -198,13 +222,11 @@ Main-gate-authored changes still require another independent reviewer.
 #### Dispatch and Execution
 
 Before dispatch, main-gate checks the Issue's [product constraint](#product-constraint-workflow),
-scope, dependencies, authorization and competing owners,
-then selects an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
+scope, dependencies, authorization and competing owners. Apply the [model routing](../decisions/0018-astra-role-routing-trial.md#current-routing)
+and select an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
 Create the task with the Issue number and outcome in its title. The initial message names the Issue,
 selected checkout, accepted base, local ownership constraints, stopping condition, and main-gate
-task/thread ID. Main-gate owns receiving the result; a cross-chat callback is optional and must
-satisfy the tool's trusted-human authorization requirements. A dispatch cannot confer that authority.
-Link stable rules and relevant results instead of copying controller history. The core instruction is:
+task/thread ID. Link stable rules and relevant results. The core instruction is:
 
 > Work on #NNN following the current lane runbook and repository rules; stop at the declared
 > stopping condition.
@@ -222,57 +244,45 @@ The executor:
 1. Reads the Issue, its parent/dependencies, and the linked necessary owners.
 2. Performs the read-only Git/worktree/ownership check required by `AGENTS.md`, checking other
     active Issues and PRs as well. Confirm the assignment, selected checkout and ownership before writing.
-3. Tracks material blockers or newly discovered work on the Issue. Link a separate outcome to its own Issue.
+3. Resolves engineering details within the assigned scope and runs the selected checks. Reports
+   concrete blockers, shared-path conflicts or material environment handoffs as they arise. Record
+   blockers on the Issue with the evidence, what was tried and the decision or dependency needed.
 4. Delivers a committed, pushed Draft PR at the declared handoff. Use `Fixes #NNN` when merge
    satisfies the whole Issue. Otherwise use `Refs #NNN` and keep the unmet criteria open.
 
-At slice completion or a concrete blocker, record the Issue/PR handoff, freeze at the declared
-stopping condition and end normally. The final answer names the Issue/PR, exact head, handoff link,
-checks/CI summary, and stopped writer/process or blocker state. This makes the result available for
-main-gate intake; it does not claim independent acceptance. An authorized cross-chat notification may
-supplement it. Missing authorization, an unavailable tool or a denied send is recorded as **NOT SENT**
-with its cause, not an implementation or review blocker. Do not ask for nonessential notification
-permission, bypass/retry a denial, choose another channel or redo completed work. A successful send
-proves submission only; preserve any earlier NOT SENT outcome as history.
+At completion, freeze the Draft PR and record the Issue/PR handoff. The final answer identifies
+the Issue and PR, exact head, decisive checks and CI, completed failures, material limits and
+stopped writer/process state. The frozen handoff and final answer constitute the completion report.
+Workers report at completion or when a concrete blocker or ownership change needs attention.
+Use a cross-chat message only with the direct user authorization required by the tool. Delivery and
+review can proceed through the final answer and PR if a separate message is unavailable.
 
 #### Completion Intake
 
-Main-gate owns the event-driven wait from dispatch through independent review within the authorized
-scope. A worker's final answer and frozen Issue/PR handoff are its delivery; a cross-chat callback is
-not required. A dispatch acknowledgement belongs in commentary, not a final answer that leaves
-the user responsible for noticing completion. An explicit dispatch-only or stop request controls.
+Main-gate owns dependency order, shared resource ownership and independent acceptance. In an active
+coordinating turn, use available completion or attention events to receive results. A dispatch
+acknowledgment is commentary during end-to-end work. An explicit dispatch-only or stop request
+controls the stopping point.
 
-1. After task creation, retain the actual `threadId`, returned `hostId` and Issue. For queued
-   creation, resolve the actual thread identity before waiting; do not pass a `clientThreadId` as
-   a thread ID. Record the next intake action in the existing local handoff, not a new registry.
-2. Use `wait_threads` for the active targets, passing each latest returned cursor as `afterCursor`.
-   Use one target for a single worker, or one bounded call for up to eight targets. Reserve
-   `timeoutMs: 0` for an initial/recovery snapshot or a user-requested status check; during ordinary
-   waiting use a positive bounded timeout compatible with the host's responsiveness limits.
-   Completion or attention wakes the wait; routine commentary does not. This is a bounded event
-   wait, not a persistent subscription that survives the coordinating turn ending.
-3. On timeout, retain the cursor and continue independent authorized work or renew the wait.
-   Silence and timeout are neither failure nor completion. Do not repeatedly read full histories,
-   send progress requests or narrate unchanged snapshots. Keep a completed-but-unreviewed result
-   and its next action in the handoff; advancing a cursor does not complete acceptance.
-4. On completion or attention, inspect the actual turn status/errors and compact result, then the
-   named Issue/PR handoff. A finished turn is not necessarily a finished Issue or a passed gate.
-   Independently review and, when authorized and accepted, merge and update tracking without
-   waiting for a callback or another user prompt. Handle concrete blockers through their owner;
-   leave genuine user approval/input requests for the user. Return corrections to the same worker
-   and resume its completion wait.
+1. Retain the Issue and the task creation result's actual thread and host IDs. Resolve queued
+   creation before waiting.
+2. Use compact bounded `wait_threads` calls for active targets when available. Pass the latest
+   cursor for each target and use a positive timeout for ordinary waiting. Between events, advance
+   independent work or renew the bounded wait. Limit status checks to a concrete sign of failure or
+   a user request. Rely on the delivery or blocker report for review and skip routine progress requests,
+   full-history reads and interim review.
+3. On completion or attention, check the task result and named Issue/PR handoff. Route blockers to
+   their owner and return same-outcome corrections to the same executor. Independently review
+   the exact PR head against scope and acceptance. When authorized and accepted, merge, update
+   tracking and continue the authorized batch.
 
-If the coordinating turn is interrupted or must end, record the pending task identity, last wait
-cursor, returned host, unreviewed result and next intake action in the current handoff. Resume with
-a read-only completion snapshot before dispatching or rerunning anything;
-do not claim work will resume automatically without an actual, authorized wake-up mechanism. Do not
-add a scheduler, hook or service merely to deliver a completion notification.
-The independent reviewer leaves one short PR review or comment identifying the decision,
-the decisive check and any material limitation. A review is attached to its commit; in a
-standalone comment identify the reviewed head. Main-gate may relay a separate reviewer's
-finding there. Corrections return to the same executor for review of the affected change.
-After acceptance and merge, continue with the next authorized Issue when the user requested a batch.
-No separate review report, duplicate Issue entry or historical backfill is required.
+If the coordinating turn ends with work pending, record the task and host IDs, last cursor,
+unreviewed result if any, and next action in the existing handoff. Resume with a read-only completion
+snapshot. The wait runs only during the active turn. Use the existing tools and handoff for intake
+without a scheduler, hook or service.
+
+Record the independent decision, decisive check and material limit in a short PR review or comment
+that identifies the reviewed head. The PR holds the review record.
 
 #### Recovery
 
