@@ -112,35 +112,99 @@ New Granseal 再访让 Astral 随行。Cannon 与 Dynamite 同时在军团携带
 - [Pacalon 离开：北向滚动与有条件 Battle27 准入](../chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)
 - [Pacalon：对话、补给与城堡交接](../chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)
 
+以下后段以所引选定剧情、地方选择和结果为**已确认**的边界。自然旅行、可见时序和存档持久性仍按各处证据区分。
+
 #### Tristan 居民与通向 Mitula 的洞穴路线
 
-Tristan 的居民与服务可以单独访问；洞穴路线和遭遇按各自条件打开。Mitula 的后续与恢复降雨、Pacalon 和 Frayja 邀请相连。需要实际完成相应动作，不能用对话提示直接取得后续许可。参阅[Tristan 至 Mitula 条件（英文源）](../../../synthesis/themes/story-progression.md#northern-travel-pacalon-tristan-and-mitula)。
+旱灾期间，Tristan 居民指向洞穴彼端的神殿；提及 Ground Orb 的妖精不会交付它。商店和教堂可以另行使用。进入 Pangoat Valley Bridge 时，有桥梁战斗解锁才接纳 Battle28，否则可探索。救人呼喊和桥震没有确认的倒计时；首胜中 Cameela 现身索要邪恶宝石，但不会拿走宝石。桥上胜利不是洞穴或 Battle29 的前置。
+
+城镇数个出口通往洞穴。洞穴可返回镇上、穿越房间或前往神殿外部，部分房间连接只通单向；宝箱可另取 Protect Milk 与 Healing Seeds。外部请求遇到 Battle29 解锁先进入战斗，否则进入探索。Battle29 胜利回到神殿外部、取消本场的解锁且记录完成。败北和获准撤退回实际撤退点，都不新记完成。
+
+#### Zalbard、Mitula 与可选同伴
+
+外部的门区可触发 Zalbard 邀请，开门并改变以后加载的布局；若已经记录场景返回，则不会重演或补开不一致的门。外部邀请并不解锁 Battle30。神殿内部请求另查 Battle30 解锁；已经完成的战斗若仍有对应解锁，本次仍可进入，并清除此解锁。Battle30 首胜呈现 Ground Orb 光中 Zalbard 消失与 Mitula 获救，宝石、Orb 和圣剑的叙述不会把物品放入队伍背包。再胜跳过 Mitula 场景。胜利返回神殿之前保存的队伍位置，败北或撤退跳过场景且不新设完成。
+
+探索神殿可调查传说，也可通过激活或菜单搜索显露 Taya。尚未记录此场景时会尝试加入，没有 Yes/No 或局部 Battle30 胜利要求；不调查便离开就可跳过。新加入时有空位才自动出战，满队可收为后备。场景返回才记为已看过；已有记录会抑制重演，即使成员状态不一致。离开后会失去临时跟随。南返经外部和洞穴到 Tristan，若 Battle29 解锁仍有可能中途再战。Battle30 完成后的 Tristan 提供恢复后的居民内容；只有此前在 Bedoe 救过 Skreech 且未触发当地招募时，踏入相应区域才可收他同行。满队可收为后备，重访不会重演或重建场景随从。两名同伴都非南行前置。参阅[Tristan 至 Mitula 条件（英文源）](../../../synthesis/themes/story-progression.md#northern-travel-pacalon-tristan-and-mitula)。
+
+#### 恢复降雨与 Frayja 的后续
+
+Battle30 完成后，向南滚动到恢复降雨的区域，Pacalon 的城镇和城堡也分别改变内容。变更天气和居民不自动兑现补给或服务。访问恢复后的城堡，Frayja 首次邀请同行并解锁 Battle31、33 和 34；没有拒绝选项，此时只请求跟随，尚未正式加入。重访不会重新解锁已清除的遭遇。若 Battle31 已解锁，则进城镇时可先被战斗截获。
+
+Battle31 胜利返回 Pacalon 城镇的队伍位置，不自动接下一战。败北和获准撤退都转到 Pacalon 城堡存档点，只有败北恢复 Bowie HP、金币减半；撤退支付所用法术或物品。返回北区后，在另一个区域里，Battle27 未完成时优先走它和 Battles28–30 的解锁分支。Battle27 完成且 Frayja 邀请已返回、Battle32 尚未完成时才新增 Battle32 解锁。这里无需 Battle31 胜利或 Frayja 已正式加入；地图扫描仍优先选择已解锁的 Battle27。参阅[Pacalon 与 Battle32 条件（英文源）](../../../../research/chapters/northern-travel-mitula/battle31-outcomes-and-battle32-admission.md)。
 
 ### Moun、Nazca 与返回 Grans
 
 #### Jaro 叛离、Frayja 加入与 Moun 幸存者
 
-Battle32 的特定区域可触发 Jaro 脱离敌方并以 AI 控制变为己方；该变化不补满其 HP。战后正式招募、Frayja 加入与 Moun 幸存者的场景另有条件。在有人 Moun 可访问商店、祭司、画家与检查物品。画家的拒绝回到提示，接受才继续。参阅[Jaro 的区域规则（英文源）](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)。
+Battle32 中两处区域共享一次叛离机会。踏中任一处且场景未用时，Jaro 离开敌方，将其战场位置用于己方 Jaro，并以 AI 控制参战，满队也强制入列。他不会继承敌方 HP 或自动恢复。一次性记录先于场景；中断在转换前可能无法重试。首胜可以另行触发 Jaro 正式请求加入，无需此前叛离；场景解除 AI 控制，把他从出战名单移出，安排临时跟随。此处没有玩家拒绝选项。
+
+从大地图走入 Moun 还需此前 Frayja 邀请所提供的 Battle33 解锁才触发战斗，无需 Jaro 或前场胜利。Battle33 开场时 Frayja 开门并正式加入；开门叙事不要求玩家交出钥匙。如果他还没出战，普通替换路径优先让所检查名单中首名倒下队员让位，否则选列表最后的队员。玩家不选被替换者。参阅[Jaro 的区域规则（英文源）](../../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md#region-hook-admission-and-complete-jaro-scene)。
+
+Battle33 首胜中队伍移开岩石，Zynk 指向地下幸存者；他尚未加入或成为普通随从。实际走到地下区域才可收 Gyan，满队时留在后备；返回后把后来城镇及地下访问切换为有人内容。另与 Zynk 交谈才建立跟随和起航所需的谈话记录，仍未正式招募他。返回城镇使用独立出口。参阅[地下招募与 Zynk 条件（英文源）](../../../../research/chapters/moun-nazca-grans/moun-underground-gyan-and-zynk.md)。
+
+#### Moun 的画家与 Arm of Golem
+
+有人 Moun 开放居民、商店与教堂。画家第一次询问时已记录交谈；No 或 B 取消会回到恳求和选择，Yes 才继续布置。之后交谈或检查画作位置读取该记录，不保证中断的首次作画已经完成。
+
+踏入指定区域先显露 Arm of Golem；使用场地菜单搜索才能询问是否捡起。No 留在原地；Yes 尝试交给所有已加入者（包括后备），全满时不强制丢弃，可腾位再试。领取后再次调查不会重复授予，后来遗失也一样。未领取就重载有人城镇会重置显露状态，可再踏区域把它找回来。臂是 Claude 的道具条件，与画家选择无关。
 
 #### Nazca、Roft 与各自旅行选择
 
-到达 Nazca 区域、接纳 Battle34、获胜后开始登船是三步。船上角色及后续航行另取当前状态。Dojo 与 Sheela 是独立可选分支。Roft 问候、Petro 的内容、Zynk 实际加入和前往 Galam 都各有准入。这条线也包含 Dry Stone、锻造与可选 Claude；不把可选支线作为所有路线必经。参阅[北方旅行与可选分支（英文源）](../../../synthesis/themes/story-progression.md#moun-nazca-and-the-return-to-grans)。
+向西滚动到 Nazca 地区不接战；实际请求进入 Nazca 时，早前 Frayja 邀请解锁的 Battle34 才可截获。Cameela 首败后显露 Sky Orb；Wish Staff 与有条件的 Iron Ball 另靠战斗行动掉落。Sky Orb 优先交给任何有空位的已加入成员；全满时进入强制挑选丢弃，取消、拒绝、不可出售或已装备的诅咒物品都回到选项。珍稀物品转入特卖后仍继续挑选，接受一件非珍稀物品的替换才返回。已有胜利记录会跳过首次场景，即使缺少 Orb 也不会补发。
+
+Battle34 完成后踏入区域可登船，登船不检查持有 Orb。起航另要求在船内指定位置面向左使用 Sky Orb、与 Moun 地下 Zynk 的对话已记录且未发生坠船。未谈过会收到提示而无法启程；物品、位置或朝向不匹配走无效果路径。起航不消耗 Orb，也不招募船员；航行只发出后续地图请求，目的地仍按当时状态决定。参阅[北方旅行与可选分支（英文源）](../../../synthesis/themes/story-progression.md#moun-nazca-and-the-return-to-grans)。
+
+若获准到达未坠船的后续地图探索，会议、Prism Flowers 准备及击落场景按顺序运行。仅全段返回后才记坠船、改用 Dojo 撤退地图并解锁 Prism Flowers、Odd Eye、Galam 与 Zeon 的对应遭遇。遭遇解锁仍须后续入口扫描；飞行与坠落演出也不扣队员 HP。已坠船后不能凭仍持有的 Sky Orb 重新起航。船上与 Astral 的交谈在本次访问中可改变他的在场状态，离船与进入 Nazca 大地图另走出口及初始化。参阅[击落和坠船后的交接（英文源）](../../../../research/chapters/moun-nazca-grans/nazca-ship-shootdown-and-crash-handoff.md)。
+
+Dojo 是独立可选入口。经过当地触发区可招募未加入的 Sheela，无需物品或选择同意。提前离开可跳过；满队可收为后备。新地图不保留场景跟随，已加入后重访不再次招募。当地祭司和搜索奖励须分别使用或搜查。
+
+Roft 入城与 Battle35 各自准入。战斗未完成时区域事件解锁并重载，后续扫描才接战。获胜回区域探索，败退使用实际撤退点；Heat Axe 要独立掉落。Zynk 招募区域要求 Petro 场景返回，且 Zynk 正跟随，或在后期替代路径中他尚未加入、且本次访问已和 Paseran 首次交谈。其他居民不代替 Paseran，新访问清除临时交谈。Battle35 胜利没有替代作用。
+
+#### Galam、锻造与可选 Claude
+
+Roft 离开后向西滚动只换区域；踏入 Prism Flowers 的入口要有击落交接提供的解锁才接战。另一路区域事件在 Red Baron 尚未击败时可独立解锁 Battle37，不要求打过 Prism Flowers。Battle36 首胜后 Geshp 威胁回来，不直接开战。Battle37 首胜揭晓 Red Baron 是 Lemon，队伍尚未招募他；再胜跳过揭晓。两场胜利都按场景前保存的位置回探索。其后向南滚动也不接战；只有 Red Baron 已完成且 Geshp 未完成时，后续区域事件产生 Battle38 解锁和重载。较早的已解锁遭遇仍可在扫描抢先。
+
+在 Galam 区域的指定位置面向左使用 Dry Stone，首次改变布局，保留石头。再次使用无效果；新入场按记录重建布局；场景若中断，当前地图可能需重载才能与记录一致。村庄铁匠需选符合资格且已转职的顾客、Mithril，确认付款才建立订单。材料持有者、顾客与领取者可不同；无材料、无资格或金币不足不能下单，取消可离开。四单容量与成品领取另见[秘银订单](progression-and-economy.md#秘银订单下单就绪与领取)。
+
+Magic Tunnel 是可选枢纽，带桥、内部传送和独立 Pipe 旅程。未加入的 Claude 可通过交谈（检查全军团持有的 Arm of Golem），或在指定地点面朝上使用 Arm 唤醒。没有臂时交谈仅得提示；有臂时先尝试移除全军团的一份，不一定是当前携带者那份。中断可能消耗道具却未完成加入。加入后满队可留为后备，与重新入场失去临时跟随并存；已加入时不重复唤醒。
 
 #### 后期 Yeel：钢琴、Chaz 与 Lemon
 
-后期 Yeel 的钢琴交互、Chaz 与 Lemon 的各自加入内容适用当前访问状态。击败 Prism Flowers、Red Baron 或 Geshp 所打开的后续需另行进入；Battle38 后的新大地图事件才可继续 Battle39。参阅[后期 Yeel 及战斗前沿（英文源）](../../../synthesis/themes/story-progression.md#moun-nazca-and-the-return-to-grans)。
+早先神殿战斗完成可让 Yeel 选择后期人口，Lemon 已加入时走优先的另一分支，跳过首次悬崖场景及其再访姿势。调查钢琴时，No 或 B 不开楼梯，可再问；Yes 改变教堂楼梯及之后的加载布局。下一个教堂场景须已打开楼梯且未播放；地下场景另查实际抵达位置和一次性状态。已知后期秘密时会说不同台词。两处场景都不自动招募 Chaz、设置塔进度或代替走楼梯。
+
+另与 Chaz 交谈才加入，没有玩家 Yes/No、物品费、楼梯场景或已知秘密的独立检查。新进场隐藏已加入的 Chaz；当前访问仍可能重复对话。Yeel 内踏入 Lemon 区域要求 Chaz 已加入且 Lemon 尚未加入；无需 Force Sword。招募完成后场景不重演，后来新入场的人口选择与临时队形分别处理。Battle38 胜利后另踏入相应大地图区域，若 Battle39 尚未完成才请求下一战；较早已解锁遭遇仍可优先。参阅[后期 Yeel 及战斗前沿（英文源）](../../../synthesis/themes/story-progression.md#moun-nazca-and-the-return-to-grans)。
 
 ### 最终对决与结局
 
-Battle39 败北有优先级，胜利后可走神殿。吸引守卫、拔取 Force Sword 和实际使用剑是三件事。迷宫不同朝向有不同路径，准入 Odd Eye 遭遇后，首次胜利的告别才引向登塔。阶梯、Galam 和 Zeon 的战斗分别检查已生效的进度。首次战胜 Zeon 才进入特定结局返回，之后城镇居民、Astral 护送和议事各是独立内容。参阅[最终对决的规则（英文源）](../../../synthesis/themes/story-progression.md#final-confrontations-and-ending)。
+#### 神殿进路与三种剑相关操作
+
+Battle39 同时满足胜败时先判 Bowie 倒下。Bowie 存活且 Hydra 倒下可扫除残敌；被扫掉的敌人不会因此交付其战斗掉落。胜利后的头部与神殿是独立入口。神殿内，已记录 Nazca 坠船且未触发对应场景时，走进区域可以吸引守卫、改变路线；场景不会授予剑。
+
+拔取 Force Sword 要在剑的位置选择场地菜单搜索。快捷调查只描述嵌入的剑；菜单搜索不要求已吸引守卫、Battle39 胜利或 Lemon 加入。拔取尝试交给任一已加入成员，满包需强制丢弃（与 Sky Orb 同类）；取消或不合资格的物品会返回挑选。拔取记录抑制重复领取，即使此后物品不在包内。头部的捷径则在指定格面朝上，选用已持有的 Force Sword 才打开；不要求刀剑由 Bowie 装备、不消耗剑。位置、朝向或物品错误时无效果。首次打开通道还会招募尚未加入的 Lemon，无需 Chaz；已加入则跳过招募。头部已开后再用不会重演，重新入场恢复开口，也不补做中断的招募。参阅[Force Sword 的三种交互（英文源）](../../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md)。
+
+#### 迷宫、Odd Eye 与塔中服务
+
+迷宫区域按当前朝向行动，面朝右走向右下，其余朝向走向左下并增加等待。踩踏开通的是当前布局，不保存为通关记录。另有出口返回头部；另一侧去 Odd Eye 的地图，是否接纳 Battle40 取决于早前 Nazca 交接提供的解锁，与持剑或完成迷宫无关。缺解锁进入普通探索。
+
+Battle40 同样先判 Bowie 倒下。首次胜利呈现 Odd Eye 告别，普通返回照用告别前保存的位置，临时演员和跟随不会留下。再胜不播放告别。败退不新记完成且用实际撤退点；未完成时保留解锁，已完成时清除。Fairy Tear 和 Counter Sword 都有独立战斗掉落条件。南返迷宫、北进塔是两个独立出口。塔里第一次与 Creed 交谈会欢迎并提供教堂，以后仍提供服务；只有确认保存才更改返回点。另踏入区域才解锁 Battle41，后续扫描还需请求从符合入口行的位置进来。已经用掉该区域的解锁机会时不自动补发，听过欢迎或取消服务也不能代替区域。
+
+#### 阶梯、Galam 与 Zeon
+
+Battle41 胜利回普通塔内探索，并无新招募；败退不设完成或重放 Creed。塔的出口连接阶梯。阶梯内可保留当前状态转移，不同出口可通往不同的大地图。已记录 Nazca 坠船才把通往旧区域的相应请求改去后期地图；Battle41 完成或持有剑都不能代替该条件。后期地图若同时符合两场战斗，先选 Battle42 再选 Battle43。Battle42 首胜的 Galam 对峙结束时才新增 Zeon 解锁；返回探索和实际接纳 Battle43 是后续步骤。
+
+Battle43 的首次胜利清除几个剧情随从状态，改用为结局设定的返回点；再胜跳过此场景，用通常队伍位置且保留原随从状态。败退不新记完成、不进入该后续，解锁按战斗原先是否完成处理。普通入场时已有 Battle43 的完成状态，才选择相应结局场景。场景表现 Peter 移除宝石、Lemon 带走 Galam、Mitula 指出 Elis 中毒而后重新封印；这些不产生物品栏转移或新的战斗毒状态。之后的 Granseal 尾声仍需经场景返回。参阅[最终对决的规则（英文源）](../../../synthesis/themes/story-progression.md#final-confrontations-and-ending)。
+
+#### Granseal 居民、Astral 护送与议事
+
+城镇居民对话能传达重建、Elis 和 Lemon 的近况，与护送及亲吻选择独立。Astral 问是否去城堡。Yes 在护送前记录同意并请求城堡；No 或 B 返回，不发护送，已有同意状态也不清除。之后可再选 Yes，先前记过同意不代表已经抵达。城堡议事还要求同意已记且议事未完成；议事选定 Bowie，无玩家表决，May 的发言取决于是否已加入。完成后重访不重演议事。
 
 #### Minister 提示与玩家真正的亲吻选择
 
-大臣可分别给提示，搜查描写 Elis 的状态。这些互动独立于最后的真实选择。选择接受进入结局的后继，拒绝保留该选择的独立返回。参阅[房间交互与选择（英文源）](../../../../research/chapters/final-confrontations-ending/granseal-chamber-interactions-and-ending-kiss.md#zone-admission-flags-and-complete-choice-route)。
+两处大臣提示各有一次性条件，第二个不要求第一个已发生。普通交谈或搜索对 Elis 的描述都不会唤醒她。另踏入亲吻区域才遇到真正的 Yes/No，它不要求大臣提示或议事均已完成。No 与 B 取消都恢复声音及城镇音乐并返回，保留原提示状态；之后能再问，但站在原地不保证自动重触发。Yes 走接近和亲吻呈现，场景返回才进入字幕。参阅[房间交互与选择（英文源）](../../../../research/chapters/final-confrontations-ending/granseal-chamber-interactions-and-ending-kiss.md#zone-admission-flags-and-complete-choice-route)。
 
 #### 字幕终场完成存储与隐藏战斗
 
-字幕按已加入军团的人物呈现立绘，终场之后交给游戏完成。持有完成记录与之后获准进入隐藏遭遇是独立条件，普通战斗返回也不沿用该规则。参阅[字幕、终场和隐藏遭遇（英文源）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#credits-entry-portraits-and-completion)。
+字幕呈现所有已加入成员，包括后备和倒下者；未确认有当地输入跳过分支。城堡终场之后转女巫与游戏完成，不回普通房间探索。游戏完成记录独立于 Battle43 进度和个别存档槽；硬件写成或断电后保留仍在观察边界外。完成呈现后由专门入口请求额外 Battle0，即使已有完成记录清除了战斗解锁，本次仍能接纳。普通探索不因此能到 Battle0；继续已有挂起状态仍是另一路。参阅[字幕、终场和隐藏遭遇（英文源）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#credits-entry-portraits-and-completion)。
 
 ## 完整示例：Taros 与 Caravan
 

@@ -12,7 +12,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/battle-action-construction.md",
       "sourceSha256": "7800d1f2945b10c9dcd448344fb104a05797f2f2cdf4f7720318e27ebcfa37c6",
-      "mirrorSha256": "e66a40683b5ebddc169dc606b5b37611c415bb71663a28f9273d20b6ab5e6b3d",
+      "mirrorSha256": "7715c91c87caa1d133a2b93f33fe1fa3a79a85149df1831bfaa501240a013583",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -22,7 +22,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/battle-ai-decision.md",
       "sourceSha256": "3d318517cc7b9c57c1cf85896de492efb96ba322a38f368847865b38a21ba293",
-      "mirrorSha256": "50f9bfcccc44fc55bc937d1c7e14d6abe3360afd08266bbf4587bcdf2161ca58",
+      "mirrorSha256": "289a980e32c1efc22d82ae01024403b8bb6dcca13207bf2e4db646e87292b8cd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -32,7 +32,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/battle-control-lifecycle.md",
       "sourceSha256": "f4a1e14329d3a156c97308924e6395f8e3a9bebd80898a5c9073b727c25d5f0f",
-      "mirrorSha256": "60ababc0c9e5735ef5555ae187b60b486759552db60632d4bf525f993a2155f4",
+      "mirrorSha256": "6a1830a4bf557452463e84a0942e53273d42c9114d2bb439a1c9010600c105dd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -42,7 +42,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/battle-scene-presentation.md",
       "sourceSha256": "69a7638931a0ca3d0cfd48f45465c57a8238a2cea2f43319417aa3f1c806fe2f",
-      "mirrorSha256": "bf35e93182101199ec5d0e29f7a4e301b764d75a6fb501de3d5b92e95b9d1e9e",
+      "mirrorSha256": "d486fe974ef9aab1d62c8c97405a99096064b3b1dd09d06c844e8675dda3e79e",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -52,7 +52,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/battlefield-navigation.md",
       "sourceSha256": "3a3f6b18630a01a103b06f10cc2e1d23d91f86bd6a90aae32bcbb1550789cb97",
-      "mirrorSha256": "595fa9e174caf690d703a67de3dbb76c7afe3916a2b92357a3769cb0c22d99c6",
+      "mirrorSha256": "681500b4e40454cef16f3f2978fcef39d84a5b5c6b57789ca1e6e48701757b92",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -72,7 +72,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/spell-resolution.md",
       "sourceSha256": "73d3694aa991c80cd3f8e342356bc676e35a0768425ecdf9f3ec661d24720870",
-      "mirrorSha256": "1b86a3b4a17d7c6ac9a7b619750dd3e93badc55ef9a896e3d671c38774e1e3aa",
+      "mirrorSha256": "3935c12ca55d6b3ed1cd1866dae73c55cc59cdea86338fb0b35437c58f1ec5f9",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -82,7 +82,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/interface/dialogue-system.md",
       "sourceSha256": "957ecf931840f3eaff1435d1b9b128d98c7967c4975a00602ef70bcfbf254ab0",
-      "mirrorSha256": "5ecc5fbe6f0c75a4110ec8d0471ced4879407f63e8a962ff8e95fbc392f68300",
+      "mirrorSha256": "5bb0bde87733f7d81cb6aabd77c3555c4c30f3c9c3cd5994c1c4eb49c4ac68f5",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -92,7 +92,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/interface/input-system.md",
       "sourceSha256": "d43d262c229bb8ef7d1ee119c0e79c0f45319f3f5b5a4fcec2157704d90c6956",
-      "mirrorSha256": "bb37479525766050296378f28f9df21fa1f401899a10426d0ac7216f01a60b3c",
+      "mirrorSha256": "06711a2dd954123877a91c1e102763ffd2b97a6fa9e7e0dea65c8bb5b709bf5d",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -112,7 +112,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/party/caravan-and-deals-state.md",
       "sourceSha256": "aefcf899a466c544057bb21c6e51d139ded8289d78d85cc84cfa1af1da4de2f9",
-      "mirrorSha256": "27bbf29cf82084423cdff99b9fa2c9f831c91133924fd877dd93c03e7a565c5a",
+      "mirrorSha256": "e56b24fb4da9f77fb12deb3ed477fe8c2cc3c74a2f235ebfbbfeaaa346c2573c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -122,7 +122,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/party/level-up.md",
       "sourceSha256": "8a34886adc02008bec25ca0048b903fe82dae6cc79541782f6272f35975956b0",
-      "mirrorSha256": "b50ef076439ffdf257f1b7aff294fc66639277a0d0fe6ff623dc8c3d8490a925",
+      "mirrorSha256": "7d02112cb5da512883e79d5933bb373e671d6ded704299b27c811ac4283e4e52",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -132,7 +132,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/party/party-roster-state.md",
       "sourceSha256": "2ef2bf269b1d145ea6ca32d152af235ae7edcd37204279e7384acfef90bb56bc",
-      "mirrorSha256": "62cb7eaba47278392e5250638346efd04168a4a4c8365a922d5ec2cbbbeb7127",
+      "mirrorSha256": "3b9606c0946093b1df7e2ff080860775d1a8ed98281fff52c785369071ffd263",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -142,7 +142,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/party/service-interactions.md",
       "sourceSha256": "3497044a171d0dd53b64d26d2e5573f62095e38f396dc9ba6c5f6eda5b883dff",
-      "mirrorSha256": "cd59efdad2bb3afe7aa3072cccb8cb287b57660c0e99ffe8a86d943742f7ee46",
+      "mirrorSha256": "5f2df43be5e9d2e84ffc588458e0e266a26efe67d655360ae81e028d41f7c0a2",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -152,7 +152,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/party/spellbook-state.md",
       "sourceSha256": "4dc5210790674fc59ef63f07e45b3ece24c6da72c19935ed3d739cd9ef7d4b67",
-      "mirrorSha256": "fd43fadc022f2e93ec7dd02c54b09cf534b1f14def0520f844f852ff5c49cadf",
+      "mirrorSha256": "a64bbf6c7c38c656f44b2f0d11189a461c4b739e509436dce49430beec058a29",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -162,7 +162,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/system/save-system.md",
       "sourceSha256": "8405b7a22bfa116ab8425c0d15754dd60fb483a2859b6ce7e3da5f0b24324e6a",
-      "mirrorSha256": "c828bc2fcac8f8a29f88414aadb8ec91d80f073c45cc0e392dc0dffb3c960fe3",
+      "mirrorSha256": "9480f93bc6ac5e599a1ecfa34107bafa4354e4e8c96160939a36502990f58266",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -172,7 +172,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/world/map-exploration.md",
       "sourceSha256": "a4be315f0cbab36b05c25d1b5189b40f671a040fb6410f6cd8cb871102233c89",
-      "mirrorSha256": "350d52695b50edcf3eac2e75f82a380a5c0bea913bdafa9412019e20600366a8",
+      "mirrorSha256": "c108cbe3fcb755e6d0887a2d8b5642bb30c0f5c91ded91c596f1672a6981b9c1",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -222,7 +222,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md",
       "sourceSha256": "e1fa46bbc45367758a7f70773fed0835713a452cb09f4110dca2b06614691457",
-      "mirrorSha256": "1bfde8577fa6e783a2b0ca87ba55cc4c9272343db6ee8858820ab937921c8536",
+      "mirrorSha256": "9e2c456d0e6d41981fb19d96a0d6d871c3fae695217409c8a1fc0db758ae4a81",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -232,7 +232,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle09-outcomes-through-ribble-welcome.md",
       "sourceSha256": "2be713319b32468ebc87833862f251ee8d861da486fe90122380aaf672ebc3db",
-      "mirrorSha256": "9906dd2e00195575120583b1a93cfd5a23b165d58d698d949bf582553d94af56",
+      "mirrorSha256": "866b82d90a3f6701b7eae2e8a88543300bcd099d6ebbbeecc465746a4c23fe87",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -242,7 +242,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md",
       "sourceSha256": "8ec55a956f31d180fc9941e9fcab7da8888c6bd6561bbd2f7c52ae5e75349f3e",
-      "mirrorSha256": "ceed091c182a0b2a0042b91318b8dfab5016dabba6612609438b1e814f67eaef",
+      "mirrorSha256": "1da4eb2ae52a47aea5f15b0d23c6ae0a548ef2f69a05b983a94197d17c379952",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -252,7 +252,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md",
       "sourceSha256": "e15453659c51978cb5322165981de737bcd28951b84f0a36913137a291d04ffa",
-      "mirrorSha256": "13ce2e5b708e26b94d127780b673911aad534f1c242bf5cf2238faf02bd3dece",
+      "mirrorSha256": "331ba7d5ca47a982ad57dc7e48e393a82946367681d543088eb1275733e90725",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -262,7 +262,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md",
       "sourceSha256": "de0bef062aa469bedf6b6f2cbf155bc53436d7d52304b2be731df47e1f5c0f0d",
-      "mirrorSha256": "e88b00e4e08bc9a476eaad927ab0a35ac1233a562803ab6cce00e7652d5ff26e",
+      "mirrorSha256": "b4bf916d48f05390291b6b363510a03a537a043ef966ff8324ba5bbef8513670",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -272,7 +272,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md",
       "sourceSha256": "c1d984343c54b6ef4d45479a8ae9ca39746b10753dd286332493f34b94cb82d3",
-      "mirrorSha256": "324a88dc94717306527fb5144f9d0d98d7139a01a8acc3b05a5dca7cdb1657ba",
+      "mirrorSha256": "2b2e4aefb0a09840bc126d2d6931ee2589abf2132bc7035e4869ffd264216e36",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -282,7 +282,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md",
       "sourceSha256": "2ddb43ce19077fc0899642ac6f8deaa67a3a758e74a34a832b683cb10c658de3",
-      "mirrorSha256": "ca23c29d5925e6dab2ef616237580c1f6e0301ed24d8605a9bc61bcc3deff3c8",
+      "mirrorSha256": "982249567603adc268259ffad12864816854ce017355b41290565bf79e4d5d42",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -292,7 +292,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md",
       "sourceSha256": "204e9f2ea5a33bffcc5a195b6d406ea453c147588c5ec572c0a7d71a254e97e8",
-      "mirrorSha256": "b49e96b0ab748fea85f5732dd7cd4d5957615f6dac6d90f5804632be54dddb58",
+      "mirrorSha256": "9bdf26976445e5c9de9bf97c1f687a0cb0ba67c0e0bfc116b9f8fc3513f6713c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -302,7 +302,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md",
       "sourceSha256": "a12afee9b25f461cc3e9c30d55891cf6e8588e611c07d8a03947bb1c7c27ed32",
-      "mirrorSha256": "0d31f32d4b6e333ac4b68067676ff8479964556d52cd0ecd4d3a12e19dfc50e6",
+      "mirrorSha256": "0ce73372829ddde11cd480ae350d3473be43a3a1c8305b75cd1f961e028e9cb5",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -312,7 +312,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md",
       "sourceSha256": "882497cb8ec47aea27d29f9499be831665ae933ee9caae3164dd43800bb7fdfa",
-      "mirrorSha256": "4c94a143cd5ad75c02f1215aa0628d0cb9a98d865c02089e388cc3f8b8f45425",
+      "mirrorSha256": "d281afee33dcbfa5e0bf29fec02a2b8c2319448ad4f2478adfd97394ab5cba08",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -322,7 +322,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md",
       "sourceSha256": "5bfa0520182535df476444b7c24ad25892ea671e1dec0d32e4ae4a46f0e5f8a5",
-      "mirrorSha256": "22dbb736cc62d754980388d01789646c183a991f6a21eee61ce06e7070427633",
+      "mirrorSha256": "931b7bfe95963506f4efa7e217c6b4d4abef17cad130a27df352a26652c5db58",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -332,7 +332,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md",
       "sourceSha256": "964a0f44ba3e200c144c0ff348d6b3c65f84e251ea90a0079abe1efaea8236ec",
-      "mirrorSha256": "b0753b216cc9d87a990a307e9b3f8debbcf34e776d74d6cce9d72933c3fa9df4",
+      "mirrorSha256": "fac780915eeea8847c79a171773a9cf4bb18df7922b6c01f4d9275095eab168a",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -342,7 +342,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/new-granseal-castle-year-later-control.md",
       "sourceSha256": "f834b8bc0ab159a92e100a5f1a4b0b3a22f90617040bfe89c33130a2c8a18b1c",
-      "mirrorSha256": "6f7198a352588f5a301547bdaf972a16e66202e9a3ddd39f0e9a7bf2e5d93ab7",
+      "mirrorSha256": "2417047c07f35d9de63f1f7f478bab021dfc2f910e839b0393b5d258566da429",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -352,7 +352,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/new-granseal-departure-through-battle09.md",
       "sourceSha256": "25262fe6731e0422589345cff06dca16083e15d24de69e36ab5e6fcddfd8a25e",
-      "mirrorSha256": "6b05dfbade0bc75360fdc3fefd1b90b039b0fe9432fcc1b42d71f0126fcd9654",
+      "mirrorSha256": "013740c0d455fcdbb2718c3b48fa4953021677ec6121442a82fd6395cefb12d9",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -362,7 +362,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md",
       "sourceSha256": "677d567f60fbcdf942bb654ffac09d14e0584d1634549b32cc38b5b6e56fa1ee",
-      "mirrorSha256": "0f924938013fb8632e88e83a2953175c5fe27eecacbd96603f43553c5f9efdb1",
+      "mirrorSha256": "065a027ea4437cdf0a3b1f0716130b5cc34375eaa4c52e27dfe20b360cb03ac3",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -372,7 +372,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/peter-castle-audience-through-town-return.md",
       "sourceSha256": "761427d457e6d589d42b7f697ed3090f03970ff82fc954f830d24209c80a7c39",
-      "mirrorSha256": "6ea3962d2989b8ad48ce7245162457d9a3f24a32f144548a3d92ba2707d33976",
+      "mirrorSha256": "4215c1c740c359ea6e2e835b25d8356bceb5ab9434b89978e6dd42e3e4e1c1be",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -382,7 +382,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md",
       "sourceSha256": "4f663bb664476be075775eeaf8aec58947e9bf172faf4dd97f215cc22c7b2a67",
-      "mirrorSha256": "405b1320df8c641f7404dd2949c6df32e1ae8d93de950f219120fd2289be9ef6",
+      "mirrorSha256": "7675730d20269b3636d6820312b7a6ae266b84b5b82e6331f058ce7172d730ed",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -392,7 +392,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md",
       "sourceSha256": "01bcb2c1b2489b462c575ea72e2fab0dcfea2cfcea3d9d7ad2d8b67f0e10b0e5",
-      "mirrorSha256": "e71c8c5db7f54c4329d25eaf128a00303e14f3d4e0d8b9d23212125f10122ab5",
+      "mirrorSha256": "c44b81fdaa7f366796b24e10945470b9248a4bfc85c14bb81c6fda2904b57db0",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -402,7 +402,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/polca-oddler-choice-and-following.md",
       "sourceSha256": "56de0410e43aa690f535f822851f6030a1f9e0002b78254d5990251633aba498",
-      "mirrorSha256": "0e9203d6fde13f93a7931874e70f3f042a274686e0c86ff9d6f9f603769d7386",
+      "mirrorSha256": "df74528c9f72efa683c6b58bf4c9bf8c2ca360dc164d6467f84ab1ef39107aaf",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -412,7 +412,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/ribble-may-through-battle10-admission.md",
       "sourceSha256": "ff107056ce5d2a98d4724d5a8bf284421df69ee42affe02ed681c4d2b8222561",
-      "mirrorSha256": "25414f9916f63c51f29949ab838160c5a41c68dd435420a661acca0295051dc3",
+      "mirrorSha256": "9a217f57cc8171152bf032d2660b742f9ad4ab06d4632aa52da4d67d7385ae7a",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -422,7 +422,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md",
       "sourceSha256": "9ebad52d1307b9a71a7876e44b752123859806835018234fe208e3d221b1f9ff",
-      "mirrorSha256": "2b45ac96ac4913a13ce8267c9bc74fe72f935a5bc4e20c73c7ebbb168310b458",
+      "mirrorSha256": "426cafc8e86b8e1d310e8f92613d32cf5868a88feed030f5e14461cda71603e0",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -432,7 +432,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle01-return-through-battle02.md",
       "sourceSha256": "810afc6c6736cbcb5d1ddf8c9d7c7eeb741ac74f9f081ce6dd50f7bbc279d1cd",
-      "mirrorSha256": "fa7c1a4d7305b3ba06f23150428b1da34af7efbc88b9561759328a9a6b5f1a0f",
+      "mirrorSha256": "67ea438efc3e10a7597aee6036e40080e8301d7f48327900b5f158773c64cf9c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -442,7 +442,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle02-outcome-through-battle03.md",
       "sourceSha256": "f740f4dd44ee94e6c16258b9d1d430deaa033dfc1a2efeb6da6ee455389a6b0a",
-      "mirrorSha256": "60cca7867091a005579950dc8ecf56fc8c900a67eacf576702746995e7b1bb22",
+      "mirrorSha256": "213f1b2f7edaf86cd318325c32fa9b2bcc92ba310285ca9c66f8ee8825905445",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -452,7 +452,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle03-outcome-through-battle04.md",
       "sourceSha256": "0324950d44012d624aaf6b1793b5c6a280b1506a1ed2183a37a7c0c490940fc8",
-      "mirrorSha256": "eaf96d93c3b0b10fd820ef72d564314b68e1177eebfe1b6a191d6fc890829752",
+      "mirrorSha256": "06a0531268d90e33839683c77475169b7eafe07986a036f75ca291c8410fada0",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -462,7 +462,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle04-outcomes-through-battle05.md",
       "sourceSha256": "e50dd0fc5d165fa68a6c7ec3565ecff32e327a523ac00c190d1b5c844e636240",
-      "mirrorSha256": "c0af76821608d1a1b076077b26c74258a9655a34efc902f6737ca3ac4454a181",
+      "mirrorSha256": "bb0bc2a6fddd08dc284614e9d296372c30dd3f15c65c7348974cc9aa341568ee",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -472,7 +472,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle05-outcomes-through-battle06.md",
       "sourceSha256": "a6e95fb0d61928694efc9913f61fd34d60c7799fd7ab3baaf9a0236376d0f34e",
-      "mirrorSha256": "b9fe230de956d47c313a3e228d4aeb0ee2bf5e9ece1c3d7cd24a08e3a8855f18",
+      "mirrorSha256": "3844919f2dcfadaecab35bd52731687b9b6c5e921b389d1ff65a30fe17bb6875",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -482,7 +482,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle06-outcomes-through-battle07.md",
       "sourceSha256": "d0464139d07271a69513a9777d10f4be1a6773a30ddca26787e82db22658126d",
-      "mirrorSha256": "3be9966ceca260a39fd2b97917a55a73117b7b989a03906c64dc8f35b0dfd2bf",
+      "mirrorSha256": "947d0a3e30babf98a5b10960f6ab7587f5822e25e2d81261d3f596cbfb23376a",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -492,7 +492,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/battle07-outcomes-and-aftermath.md",
       "sourceSha256": "530737adfbb4e55003607d83c0bed15ea6d4fe1ec8e0bcabba0d8c1dffe3bd72",
-      "mirrorSha256": "0bc49cb85fa19902baaa5d701f0da914938f6e7b687e0ba1040209cdc794d538",
+      "mirrorSha256": "c96d076571a4d2de5cf3e246cc9faad5a39141f1c033f2a754d9a72d6a82c5cd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -502,7 +502,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md",
       "sourceSha256": "d7718978b0dad3ed37ee5ed8b161ab5c0ab1edde6bbe140f0e76a7c81627e23c",
-      "mirrorSha256": "8a8d643eda3495abf691ccdf08c323e521ee99ed095525bc34cd94094cf10f09",
+      "mirrorSha256": "a361c1ee1d523a15aae1785e76fbb14c6c6f9bc77d517783974e54dac518d719",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -512,7 +512,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/opening-through-battle01.md",
       "sourceSha256": "27584336cbc676623fc94cba5a0b850b4038f005e6091fd9a4a3af044a6bf002",
-      "mirrorSha256": "6c6d1cf733359bf2fa114246f7a8e55a435155a4db1324e4b1339a364691504f",
+      "mirrorSha256": "aea15a712cd9888fe8b5e78b03017389f14432376ce41979461fb342724c3b0d",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -522,7 +522,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/post-tower-return-through-earthquake-entry.md",
       "sourceSha256": "46d5f5ceba6698bee6c6c106f68846d8d9aec55a66bceb242a46f42199d9dd3c",
-      "mirrorSha256": "84e3bf03d34dfa060318d6dd47546432192c094a0e727258b8fc3bfc91495447",
+      "mirrorSha256": "11374807760d5c05254c26901a13196a36cce1f237640981d9388ccd0b34064c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -532,7 +532,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/voyage-through-damaged-ship-control.md",
       "sourceSha256": "9e04b2bd7b1818ee95c9d2d7a0b75814ee3f7cf83e1add4e41f10ddbeb86250e",
-      "mirrorSha256": "9b673733b7900664819cb7cbea822d5c8884b605032bd0b9b31f1e5921f67f2b",
+      "mirrorSha256": "21868f15f8abb0684732a2cc72f61b8f461012a2d27847d4be1f17b1c5278056",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -542,7 +542,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md",
       "sourceSha256": "644912bc185bf19331fbec6a8e95760c1ef57157011d58402f70fdea51756e51",
-      "mirrorSha256": "dfef33d5ac219c894a723b17c133b693019775ff55ac2f6912d468827ac48155",
+      "mirrorSha256": "238821d83fbe8b39652be4c41495a7655eabd2d1609848ad3be6d8485dce472e",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -552,7 +552,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md",
       "sourceSha256": "4f4134cf62f3b1f949904d33d77fe3c2625bd8a654e011e92948359e4fc2f092",
-      "mirrorSha256": "e3a79fd0d350fadfcfcbee6e2127f74afe1d4cf731f1e4154bf4c0d274ffc1c7",
+      "mirrorSha256": "1e139f1322b3baa34665760bb9872026824d7c62134f87546dc5a82f30fa05b8",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -562,7 +562,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md",
       "sourceSha256": "67cd5035319534ad8285c151c7f6d779bb901e93923046c0f0905d3c81eed644",
-      "mirrorSha256": "f334d24e2a0f51d7bc99cba979abc56935498b989fdb5c8356578f6d52c9f0b7",
+      "mirrorSha256": "59abf91e7a685f70a2987091d1808a2e298d5556548aa0e7b1a02249ddb9c174",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -572,7 +572,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md",
       "sourceSha256": "f4379de219c400150553759c534ba8584dbf8121c97a686b6c5055948a637da4",
-      "mirrorSha256": "f521bc8a53a0f857f59b53c7b005e4039d7d119612382326ac63666a5619e098",
+      "mirrorSha256": "23ce38c33604beb35f2ca1e16580d41d48a669ca3efc82a495df2cd0c936cd07",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -582,7 +582,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle26-initialization-and-roster.md",
       "sourceSha256": "609615a74a0bea87b1cb3f28ad43f15d523c45fba7ba91028304c27d52133b74",
-      "mirrorSha256": "100bd48ff3aa7b0bdcac8c04ce0a067ea35a9fe56f8c5265a9dfa087525a0103",
+      "mirrorSha256": "2f8118f75d9b300125ef9a12f8754d2454b0d610608cbfe6d5f317e6578352eb",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -592,7 +592,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md",
       "sourceSha256": "a2d2c9c76ee61cf0a7c0fb152c48d7937783e7c3d42d8504acb66c17e333dd5a",
-      "mirrorSha256": "92112f42bbd8de91e9bfd7e96224a8e9e5269c403fa267b21cbd4e2ee0cafee7",
+      "mirrorSha256": "fae0a582a86eb61f0e19f083238d1adc4cde3e3b8622d1174c6988deeeb7c863",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -602,7 +602,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md",
       "sourceSha256": "baf8d2194c3e98d39a0f99b5615bf6a024b90a307f099b475192a5ce35f59e29",
-      "mirrorSha256": "da18802e4d77461f91f750f1acd84e2b8fdc9346cca2b6c3ef26fd3cbff7438e",
+      "mirrorSha256": "105544d73eee34bdff5c5e7dcfd4ca24c2a945d009f0854862a7a3e1a575a1a4",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -612,7 +612,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md",
       "sourceSha256": "c9a2aa183074a79efdcb2996e9c52c188ce9f31976ded2c3e9c8aca5736b75b2",
-      "mirrorSha256": "0992858aeaa9b92df750dd26da0c309e82391d9a5744e1129466385b997e2ccc",
+      "mirrorSha256": "ff0f76b6911db0cedc5271cdb28e798569e9ece28b45f46993fe9154572a5fd6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -622,7 +622,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/battle27-initialization-and-opening.md",
       "sourceSha256": "d7077f0340dcc97cb95f3f48d8c6e6e879d8caf1f2d5360ced2e5a2c10a799b3",
-      "mirrorSha256": "e60fd924d50bc348cf33046511078bd1e29e0feaadd84d244cc49c59c7b9ee49",
+      "mirrorSha256": "46a1125cb99210a2dba21a6221e3d1198c29e916d7ee01b77501b13b4951cfe6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -632,7 +632,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md",
       "sourceSha256": "c1a444c08296c0de2bb3c4f9b7ef84b916e44921e7377a28491192362b045afd",
-      "mirrorSha256": "ca3db607fbd269fbef82d6d919ec2b4947d2456ec421d644962473cd977dd630",
+      "mirrorSha256": "21b072ec82e8d9c5eeebd5db2472911b000030a57e52a0597ea136e1e1bda657",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -642,7 +642,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md",
       "sourceSha256": "12315fc322870cc37f598f5a9d015d5b8d323c33334fed751e64205d600e01bb",
-      "mirrorSha256": "8be97f55366384f6a048141d68116636b0631f05d8d7c00b9e3013e8a1ef338c",
+      "mirrorSha256": "c28e8cc11c741a3ef2ae865805bcae56dedf08cd18b7eb7174e7ef9d28ee5b61",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -652,7 +652,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md",
       "sourceSha256": "6bcb253873ef17fa0e4560f854c95903f1864a736aa10c270ca946d489dbdd73",
-      "mirrorSha256": "d43716df1f7cfabfd36cb348098aa2493eac8f8825e426521ab219d3dc47a71c",
+      "mirrorSha256": "243fdb7763120a700ebc10fe3216c88f1ed5ff9cb7228796a79d149e75fc5c75",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -662,7 +662,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/new-granseal-janet-recruitment-and-departure.md",
       "sourceSha256": "c95347c5bc2d33ebce8e01345922885b1c6263d5d34e60de1a0e5caf1b103f7f",
-      "mirrorSha256": "dc41883d716ec9637a92f28210a86e7bf6585f56322b8ec3e39c779b63ac23bf",
+      "mirrorSha256": "64547710500fe9aa908c6c3253487492b9fcb3500a38a605ba667075d80fc472",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -672,7 +672,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md",
       "sourceSha256": "cbe93ffef4c92b45d8ce45d5d943cc4bbea0aa3e8bd1920ab34504213da41a8f",
-      "mirrorSha256": "db0d74b124b97d215febddf7a3c2a84e46f3a0c280eae93b07d6b4c7156e864c",
+      "mirrorSha256": "03ebfae3bf521791678d181d0aa8e7c626409d9b4f4c0a4a82c52baf849ec359",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -682,7 +682,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md",
       "sourceSha256": "fea15fb649ba999def269e988f6af561a8b62aab7e185f955c9f3feedcf22406",
-      "mirrorSha256": "bebda7b535495f39144bf29254fd8765d2a1390af7ef7be2cdbaa001701804ab",
+      "mirrorSha256": "e120788a380439217b0eb57f8ac6b12b0fe44f9e16876ad197e6339cc5ac22af",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -692,7 +692,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md",
       "sourceSha256": "32a7318517f2f591b327bb4058eb1a02cc598689271c16b2e14dc18a72f4e56e",
-      "mirrorSha256": "a2fcc172452576a05caf0868195c3471d5d5b9c59d04d306b65eb518a5cac67a",
+      "mirrorSha256": "6d6c1a80bfaa88ffa9091cc697e73da4862859d3bc35d4f19cfc219b2b8ea1af",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -702,7 +702,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md",
       "sourceSha256": "561c2e672d3b26151d227c04ab85b187bee785f5abfcf4e6f5683f83da403130",
-      "mirrorSha256": "9d964f2f6b8b78c75e18477c67e245b9c7d068425515360c5e28f03e7ed4137c",
+      "mirrorSha256": "118158b85c81ddebf3ecd2c574a76de08d227c860af392137cbd369c2c0c78b6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -712,7 +712,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md",
       "sourceSha256": "a6ecd362ab5380a21efd5070ca94c85152e82fc73fdfa5dbcb5b3c6333d69f46",
-      "mirrorSha256": "cd352a28ec081cc94354aed533b14b92a93edb35ad18a353540487e66bc0fa88",
+      "mirrorSha256": "604b92afb4fe91a0249f2a9b256d953497d44f4a9ea09879a492116e5d6a3ebc",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -722,7 +722,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md",
       "sourceSha256": "86ecf0e27f55d9af80a0791c51c6682d76cf60ab7e06ada581d01be8359db69f",
-      "mirrorSha256": "a9eba56929065e52aff3058b745e39b9c91ff54eb71bd0ec84f6f431c67d1bc5",
+      "mirrorSha256": "3df9fdcd461e07aee69bb0040d0ce94efb88df049d3c3aab9d920a62d7d86525",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -732,7 +732,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md",
       "sourceSha256": "514c06a77e2021324d7dbc485684bdd71a03c13b2e01858b2c48b54382296725",
-      "mirrorSha256": "9752bafa0eecd707bee501413a79b0ba7aee3eca26e072e3dc51fed7efde1c15",
+      "mirrorSha256": "7d16b030e1770ad5d146cbd1cb8eb7d02c5f0f78678a2da489545dd4d76a6f02",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -742,7 +742,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md",
       "sourceSha256": "745c841bc95514dd9d6e87ed91dcc6ba3100d648aaea320becf28272e77afb8a",
-      "mirrorSha256": "ca1a67b0c9f9b6cd802a3897f22820df7dc9a0ee1e3ca98b7f8a81d1fa7ac589",
+      "mirrorSha256": "edde5b19eb9073a849b2031ad06b1614bd7d4af18ab7c5b1d53e7bdf2dc89173",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -752,7 +752,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md",
       "sourceSha256": "bb83e5c5d85aabdef512e5b44ce1a5b49e360fb3771a55a8193bf5d8b68f297a",
-      "mirrorSha256": "87ad9ce4fbba00f741cf01f819d5e2ce310339b0c4fa3e98eb03449787812d1a",
+      "mirrorSha256": "bbb981b9d56439439b55ab859733bc58e01f730654f35eadd60cebd89cacaaf0",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -762,7 +762,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md",
       "sourceSha256": "003cffa01bafc8becd2041a607b3c5ee1c0af0644540fefc67dbe44122abfd77",
-      "mirrorSha256": "2efbe5669262d9614812c9a45f7c629de8d2e96696948c26661824dffa0e1e69",
+      "mirrorSha256": "b4ad4b13fb4d72b8e2f8f751f1ef5191bc4814c6afbcf034cfe1ea53519e4a61",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -772,7 +772,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle21-opening-and-initial-roster.md",
       "sourceSha256": "df9c3d8f9b5887b8baab3443563a635a56ee983093795d4c30ae519f394dba59",
-      "mirrorSha256": "f1c2b7db3c5040ec58e3edc3a9950fb13dfdd61b8bbae4b81be8d37900c2c5a5",
+      "mirrorSha256": "67a78ad9f03805f2351b961ba10cbe1addf0afb6ac04ead491c69a5ef2c9faf0",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -782,7 +782,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md",
       "sourceSha256": "5184b6777468b9312b6ee51ac84f3bca0116e246aa130b7f6310b95d5200e50c",
-      "mirrorSha256": "21661be8b3187160a018113f87527cba66552c4ed561740d5be175ac8a9d41f2",
+      "mirrorSha256": "608f08c42a58b248e9bbd2766358fa104891ac250a534d29066966bc06c60428",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -792,7 +792,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle22-initialization-and-roster.md",
       "sourceSha256": "656048c855b8f63e733cfb7c12078e9fb0ebf1f44ac4a49b5503f08807e19117",
-      "mirrorSha256": "57bf89e02f247de4ae4c41ef3a49f5421bf120718efc391497ba6d5526224b29",
+      "mirrorSha256": "1e11d8c98269299c37b592e666bacec6776cf1bcf7cb48dd3fdb83c829e013b2",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -802,7 +802,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md",
       "sourceSha256": "8eb073f5696fd3fe3574c7e82672aed949b9a8a453bbbd84ab4147a78c84fa3d",
-      "mirrorSha256": "7a8d3c6a4471dfd2ec6ee031281b018ef8cedf754ab325fc502fff05f99912f8",
+      "mirrorSha256": "1c7fed52842940c8d2d23f443045c9770fb3e8f60ad3c71baa17449c16c9ca79",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -812,7 +812,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle23-initialization-and-roster.md",
       "sourceSha256": "c854011506723b664c5acf33e6925fc51c0d909464cfcab5ec292694b82201c9",
-      "mirrorSha256": "7205eca756bf0c52dca2aab491ba5f9dcba98c04bca6cdd451cb7ed5dad0ae84",
+      "mirrorSha256": "2f4e743aa7fb80c470e4187c6cb533100cae292f58aff3fa4bea31cb506c2cd6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -822,7 +822,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md",
       "sourceSha256": "90b1fc2c7c0b6221b5d4406d4bb49f9845413083cd3d22571d3184e215c615c9",
-      "mirrorSha256": "5834b2d587c11cb5783bd1c747387e17a330e88d557dc168943fbb121e934a3a",
+      "mirrorSha256": "650d3fe0c5560a592a8353b3deabc5fb019bba59e1d8b74b3f68787ae96e401e",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -832,7 +832,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md",
       "sourceSha256": "82cfb41171d1cfe3b37c04444309d4254295772d843530d4b0e5ed32ad5d4900",
-      "mirrorSha256": "5ad9404383d73b61d9b0aedb5043a479485fa06aee941b680983bb4072c77752",
+      "mirrorSha256": "b2f1110a0a170f91aeb58c087d350e603d019b5b870c1e3b3eb4607f8ebd15fd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -842,7 +842,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md",
       "sourceSha256": "282836f7ba6cd92645c9846a0c28642eaa794051c7f8d6045b146d76f7b511ae",
-      "mirrorSha256": "dbe331ff8642b91e3321f8bab8d49772ea140f6dea5e967a525acb30c64f0096",
+      "mirrorSha256": "c8ca6704dc0c121fdb85c2e14029eaaf6e4bbdd29df4f1515175319d6fa73778",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -852,7 +852,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md",
       "sourceSha256": "a0bf5bfbd79c5a700c68ce1c6cc921bee2fe0e3f0a5ba10f66e3608ea2cee19f",
-      "mirrorSha256": "6dd415956fd310b67142b2207c01b7a2e04a623eae8abd73177cacdaed37f491",
+      "mirrorSha256": "2f94bf2d8320a74bc1e504711ed4e16c1ace754bbd1073a6c3d97b96d4987db9",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -862,7 +862,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md",
       "sourceSha256": "da0645a0b33ae08f2f01014b7a7cdfa7725c64785ef0069220a46c1073cea810",
-      "mirrorSha256": "5d59cff76e43b15f1aa00abbafaa44a2bc4f8b2a00c2336c89213ae244afbde3",
+      "mirrorSha256": "442156aeddfd52dab29821d295c26e03727599cc3f7f4dfcf68ff9d909d926ca",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -872,7 +872,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md",
       "sourceSha256": "1d026435b9fc4d3c5c694d04b81fe6bc558a85bf105fe3ac648740913d11d35d",
-      "mirrorSha256": "16a3799e4f36bd6e7bea5744e5732acc01aa9418168d5d24d92d6279b0afafb8",
+      "mirrorSha256": "1405344b2e9b13c785930eed1fb9fa8a318c7688b9c6f4d1dd363ffe02fb6224",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -882,7 +882,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/creed-restoration-and-basement-departure.md",
       "sourceSha256": "d7164346f0846134040d1ebcb7dc5070008cec0ca440b60b0ba46ada032937eb",
-      "mirrorSha256": "607824b2bac7e7137a2b7225e085c69063806ead98afe0ba0abe1fd2440bc0a5",
+      "mirrorSha256": "e865c5526b10cfeaa3a962187d297bf7f76eabff95e78f70158f3b22b2d0c622",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -892,7 +892,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md",
       "sourceSha256": "7c4295d225d6d4077e9f02ba9feee3ab49599d5a3b8abfb6160c259a7d960374",
-      "mirrorSha256": "0940b5cbb05dc506f4f5243bab81f7d14b4b08debb58b4a830b4ca872a498601",
+      "mirrorSha256": "b3b9e743ab2ae1d46f7eb46a77219db9874636ce3704316fbd73f4e947d2fb7c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -902,7 +902,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/desktop-kingdom-first-arrival.md",
       "sourceSha256": "2a1157dfe714f8cb5e10384e911b16674ea1825da64a2ecb0510d05599d71e07",
-      "mirrorSha256": "1720206d2d0986bea1b55b5f1947a14ee455d3f3ea0a9df32c35c69fb62380c2",
+      "mirrorSha256": "dbec236038701bb6237362b550fc9047615895f60fe997d8dae9e862d33c54bd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -912,7 +912,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md",
       "sourceSha256": "77e6ae22dd8b4af41a8689f7dd9836abc31d57b19ba3a0e180a2d5bcfd4f232b",
-      "mirrorSha256": "0760f394d72ce319d73d468fc496aa92b2508d1ea2f31dd90224bd7c0f27f471",
+      "mirrorSha256": "e664d45c6f132f44938e9c1aa97839180dc390e2b56e2a19bc66d73afdd96916",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -922,7 +922,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md",
       "sourceSha256": "f548c3145d4bdadc68753257cb3b47754c9646f8147b1f7493b4e4d15b16ab45",
-      "mirrorSha256": "d230d262eefaa411b8bc12127bbbeea7e3d09b456686670e296d30de05a65240",
+      "mirrorSha256": "235c992506ab2c7251ceea192df2b891c4c01c945691fa7bb325b11e5bb023b0",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -932,7 +932,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md",
       "sourceSha256": "dfcf9e6e6c141f2cd8b50c6e8984d3cfa1917f2a1de60105702c9d2d783b9e36",
-      "mirrorSha256": "86133d6d4e77a29dfc1accc280fa4df55c2f5c1591d0453c06956bf45b572b90",
+      "mirrorSha256": "b1d30407bfbcb66a5fd595ab5dd443a28e4f7bd01acc8dfa8d4091f550c0df9b",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -942,7 +942,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md",
       "sourceSha256": "ff1780ac6c9086ccf6febac96a8b5259ac84a2bd6129861adeab6e23163e8e8f",
-      "mirrorSha256": "1314282bff16947216e589b58ff8daaccbc840cef46191f9f955472d6280f24a",
+      "mirrorSha256": "48584d523cf58df3a217217a624033572d6d9785163e7105b830539ca409ddf6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -952,7 +952,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md",
       "sourceSha256": "c627c77de69580a1c13d21fc1602a565c1cbbc0bc69758ed8b558618cd879e04",
-      "mirrorSha256": "b8eaaed7061b8d5c262872b3b37409bf3f71da30f0051a8a24cdade566c80068",
+      "mirrorSha256": "fde0d6ea1ad6ef00f57ce97b8e10252c87a211515384ee653da31277c8505b9c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -962,7 +962,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md",
       "sourceSha256": "ad8eeecdc8cbebf1cbaf7b158169cdd126a4a9be1f5af8c2ae1d71c3c3e55415",
-      "mirrorSha256": "7edd4c303083513c8fef531c0b6fc073f840f7106f540a0dfba07f3bb647d0ba",
+      "mirrorSha256": "f14ae285f4ddc39609047a54cc637282c5bbc358862d6081734a1e0b6cc7f499",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -972,7 +972,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/floor-world-first-arrival.md",
       "sourceSha256": "0f9ff0647578cc89b10c1f1533e11abc6e297e820397d48dd608e6b8a0ec2203",
-      "mirrorSha256": "80a5e085be15caec69f8e9aa6652b431ecbac01ed5999217e8d35450d65abc00",
+      "mirrorSha256": "71fd4e2672c3e5d49cb1160ece04e14d1b2944d79b80ec76c2aa9e5e97ed435c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -982,7 +982,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/floor-world-interactions-and-exits.md",
       "sourceSha256": "b4d710b6406911be4b049160d63148f1d6c83bd209e3f87c53bb3bbba6c881d9",
-      "mirrorSha256": "ec5d80644e24638fbef9d275f8c5fb4be9cb5e71ab87025bf1b17146470dde12",
+      "mirrorSha256": "e9de1a65f54bd429ba31811c22c413eb30df0fb7db7b3c894c90f60b4da00b26",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -992,7 +992,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md",
       "sourceSha256": "522f8f0c219716a7cb088a8cbd05b35ed469ef815100e8373a65e7369f11f94b",
-      "mirrorSha256": "8fb1da29d56351e2267e7cc0d63f36d04eff588e731875ddfdef691d6d16c428",
+      "mirrorSha256": "96c2dbd3f143b70e7e3b5ef492fcb9cf990ce06fa155a344af26beec5f06745d",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1002,7 +1002,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md",
       "sourceSha256": "c0603b6ff709eead4cc7caee048c3d1408fca111da57aa3b44a8786307c58104",
-      "mirrorSha256": "bf7cb4b93efe21b34478b58ec46f3338be1bd346aa890c3da9b8288ec34bec87",
+      "mirrorSha256": "6316ee910ee0e2ac18a0b47af7a0cfd788d840d56832c5313b90b11e8c8a9fa8",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1012,7 +1012,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md",
       "sourceSha256": "26353b43d070c15d9e245535f29e4e36908d2ffecb714ec42011b39319aae39d",
-      "mirrorSha256": "142fbe7f77ee82154d50489e1d4f726b097ac3825a347d7ccd99f8da00902ae7",
+      "mirrorSha256": "045ad6ae17d39e913482ed928fef78d079a9f81842dfb3177514aeee33a44828",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1022,7 +1022,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md",
       "sourceSha256": "4c7f733882823edc671fb74e57915b91c0319b9f26b96517955f782c64778f6b",
-      "mirrorSha256": "fc7e33e04d033f8fc18bfecfcbc414e8262fd10eb34584b84bfad0968138545c",
+      "mirrorSha256": "8a41be940ca43804ff9b943e687be60c93b701cdcdab78a997ac7deedaf31008",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1032,7 +1032,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/hassan-rick-recruitment.md",
       "sourceSha256": "a820808e6bdf7f7014dc1a4dbf8c22571a8efb5bc442fc5c453903188b25bfe3",
-      "mirrorSha256": "abf9c2834cdd3dde1cfb7b15c363101b8147f354b4b78a56bf874e083ff06ecf",
+      "mirrorSha256": "531045b97d6baeb3c801616d1ec29bff517264c1607a0d1f4e6f88e7b0c9be45",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1042,7 +1042,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md",
       "sourceSha256": "935356e7ee3741031343e25ad4b9e2b80fc5432a866a819fc7def80a5d4f5f4a",
-      "mirrorSha256": "88cfe7081ce558346bed45a3675635fcd16200368bb244faf679c312285699fd",
+      "mirrorSha256": "e52aee8cb0aec0cf75a8dcc4ed540f6854c85f6dcb7ec3520135377f490d5fc2",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1052,7 +1052,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md",
       "sourceSha256": "34f826eec9df6b18b049fcae14f19f6b59427a95a23ecc0519333fe20a96c0f3",
-      "mirrorSha256": "7b0aaeca4c0dcd7c0f7dce01fbf82820007db969bc0f4696d70b73229c3da373",
+      "mirrorSha256": "2b965172044d9b57515864529a006071ca3d5baec66eb1ffe0f523b55494b6d8",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1062,7 +1062,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md",
       "sourceSha256": "82c1b25141dc7be78640429b75a535ea9fe05bd7d7a12bcde1ea031aa02bc720",
-      "mirrorSha256": "cd28b4e8975e0dd13fe667e1ef3373aceb57b87716efd4ec9e2b2c8bfca72ccc",
+      "mirrorSha256": "66be4ccd80c9713d11eba34f651aee7ea7f1e4dca0121d2b0faaa4988369ca93",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1072,7 +1072,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md",
       "sourceSha256": "24c2ec248013d02c5682ba8219f6f77e5870291b61c7ecb5971c8eca7ced615d",
-      "mirrorSha256": "c17a1c8c088e17617be1b731afd698acb37e2927fd690a61690574ca1e3b464a",
+      "mirrorSha256": "5dfee3c03fb4607a0ce97280ed26d1e40127c204ff740b5005bdf6391e7d6f35",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1082,7 +1082,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md",
       "sourceSha256": "4e8ba53e42d7fe1ce79f35fe1b7284fe70f9abbe6e79ecd5eb5a998870772633",
-      "mirrorSha256": "9b8464ebc5a6dd811f6ccfcc1b796e573d9fd6c3fa10b768034ffc19775398ba",
+      "mirrorSha256": "65480e10da6b58df6c0b639ecf057c5e03ef53f98da3dd09533754c2a25952c6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1092,7 +1092,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md",
       "sourceSha256": "4d470a1abe598c60ccecc86a4454601ca0ea8ebbe2410c58dfaa408e42205d93",
-      "mirrorSha256": "eac197484d1844495ca89f156f472debf50f1071a422738b38012299057b2725",
+      "mirrorSha256": "3ef3f2195afe947cdeaa7e284a381c75b3b0c3b9c6c3063ce51933f060be568e",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1112,7 +1112,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/map-design-principles.md",
       "sourceSha256": "e8f64ede84b7418cef0a81e89412c82b46af2eff09e365661c072eefd2bd3972",
-      "mirrorSha256": "4dbc507ab83d08eade0a77b43cfb44e07c8898e977b61a85ecd21a9bf30bddad",
+      "mirrorSha256": "a408ca759fa3a11c616f3da3aec741d0b8a2d8d1c14070508ee62894e6bf8156",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1122,7 +1122,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/progression-and-economy.md",
       "sourceSha256": "f99b0ceff46ac9c1ef21132b7a4d0521e65486ec381492ec52f1cf6f6d4c85fa",
-      "mirrorSha256": "55a4fa00d4d95cb33dc3d68d4e13abe5caeeb61920809d7d737a0b2ec3625d8a",
+      "mirrorSha256": "230b8075305349ab26977a2c39fe5fca21f3b46145ca33177ee553ed3c2eeadd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1132,7 +1132,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/story-progression.md",
       "sourceSha256": "30a7c11973d52403e1c983c2c892fcb6cf544aa1bb3fad03693176208cec8e03",
-      "mirrorSha256": "1d03f09b1c557e6bbe46b5a1346301666a0ce606ee8711d9337a41c88e5fe861",
+      "mirrorSha256": "a19c82a06a3a8c4262a1af406cdaa36cee3a1565e63a469d53ac927dfb706f57",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },
@@ -1142,7 +1142,7 @@
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md",
       "sourceSha256": "50ef5a2b07601295b2a5ab8b500098fd0ee1182f98adcf98459a117c2985d316",
-      "mirrorSha256": "8ff5fb2dbc1af0499a0432e222cb43145da610314cdbb0ac617f321dfc30dc9a",
+      "mirrorSha256": "0e044cd172e78513c32d182c34de043bb16384148ea442c7ee564f4416fd7650",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     }

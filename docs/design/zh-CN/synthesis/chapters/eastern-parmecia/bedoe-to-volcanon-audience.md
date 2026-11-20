@@ -1,8 +1,10 @@
 # Bedoe 至 Volcanon 觐见
 
-以下为原版已接受的条件与分支。静态规则的实际自然触发以所引证据为限。
+## 觐见与加入
 
-进入神殿后另有 Volcanon 觐见。Peter 介绍 Bowie 并请求帮助；Volcanon 因 Grans 和 Zeon 发怒，仍给出关于宝石的建议。Peter 承诺加入。正式加入、出战容量、AI 状态与场景中的跟随各自处理。
+**已确认：**走进神殿还须到独立觐见触发处。此前两次国王场景、Peter 的正式成员或随从及他的当前 HP 都不是这一场景的准入条件。成功完成后跳过后续同场请求，并记录相应剧情进展；已完成觐见时不会仅因为缺少另一进度重新播放。
+
+Volcanon 指责 Grans 释放 Zeon，拒绝直接援助并建议重新封印，Peter 决定帮助 Bowie。加入使 Peter 成为正式成员并改变 AI 控制；未满十二人时才把此前未出战的 Peter 纳入出战。当前跟随还要满足在场与 Bowie 存活条件，加入也不会治疗。之后恢复场地探索需等待场景及待处理事件交接。**未知：**自然到达、可见演出和持续跟随。
 
 [回到剧情推进](../../themes/story-progression.md#分段阅读故事内容) · [本章条件与证据（英文源）](../../../../synthesis/chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)
 

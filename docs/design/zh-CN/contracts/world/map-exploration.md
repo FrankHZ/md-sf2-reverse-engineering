@@ -19,3 +19,7 @@
 ## 返回与持久性
 
 战斗结束后，由该结果选择当前地点、预定目的地或撤退地点。返回探索后，等待先完成适用的场景、界面和本地事件，才可继续接受玩家操作。当前布局或随从状态是否随返回保留，要看是复用当前场景还是重新入场。保存和从记录继续另有[存档规则](../system/save-system.md)。参阅[战斗结果与地图返回（英文源）](../../../contracts/world/map-exploration.md#bound-outcome-world-and-return)。
+
+## 一次交互与下一次访问
+
+**已确认（静态）：**门或区域效果发生时，能改变当前地图上的下一步；通过内部楼梯保留工作布局，与从外部新加载后按剧情进度重建布局不同。返回触发格是否再次给出选择由当前场景的记录决定：明确留下重试的 No/B 可以再次询问；一次性机会在拒绝后仍可被记为已用。参阅[两次各自计数的 Oddler 请求](../../synthesis/chapters/eastern-parmecia/polca-oddler-choice-and-following.md)和[地图交通示例](../../synthesis/themes/map-design-principles.md#连接实例从-polca-返回到南方行程)。

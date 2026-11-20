@@ -22,6 +22,15 @@
 
 赠予木筏或取得 Caravan 只建立后续旅行的条件。实际登乘还要到达适用位置并满足朝向或接触条件，完成后控制方可用于相应地形。离开交通工具另行保存位置、恢复步行和跟随。水上或 Caravan 的路线与只能步行触发的遭遇不可互换。参阅[Polca 木筏](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)及 [Caravan 行驶](../chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)。
 
+## 连接实例：从 Polca 返回到南方行程
+
+这条**推断**的路线连接各段已确认的规则，连贯自然旅行仍为**未知**。
+
+1. Battle13 首胜发起特定 Polca 返回，并安排 Luke 跟随；再胜会跳过首胜场景，败北或撤退走各自的 Bedoe 返回。参阅[战斗结果](../chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md#首次与重复胜利)。
+2. 在适用的 Polca 人口中，前三次市长接触推进临时对话，第四次才给议价。重访会清除未做完的临时对话；已记过授予则只给重复台词，不补发木筏。参阅[请求木筏](../chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md#市长的四次接触)。
+3. 南出口不检查是否已招募 Luke 或接受 Oddler。普通入场按条件重建木筏与随从。登乘还要求获准标记、无战斗且面前一格匹配实际木筏；有木筏资格但位置不对，仍能留下步行状态。参阅[离开与招募](../chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)。
+4. 两条南出口都去 South Parmecia。一条重新入场并可先接纳已解锁战斗；另一条滚动保留在场者和木筏模式，本次不会接战。参阅[两种进入南方的方法](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md#同一个目的地区域两种南出口)。
+
 ## 返回与持久性
 
 战斗结果给出当前或预定的回归点；能否继续操作还取决于当地场景或事件。重访可能保留剧情完成和持有，同时重建邻近人物。传统存档服务再选用专门的恢复地点与场景，临时停留可以走另一条路径。参阅[战斗结果](../../contracts/battle/battle-control-lifecycle.md)和[存档规则](../../contracts/system/save-system.md)。

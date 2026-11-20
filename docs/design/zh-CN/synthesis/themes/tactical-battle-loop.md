@@ -46,4 +46,18 @@
 - **Fairy Woods。** 隐藏入口与重现、试炼开始和重试有独立条件。计分细节和每次可达性以各自证据或待定产品决定为准。参阅[特殊机制（英文源）](../../../../../remake/docs/domain/special-mechanics-design.md)。
 - **隐藏 Battle0。** 特殊遭遇有自己的进入、退出与返回。不可推导普通挂起或清除战役进度。参阅[结局与隐藏战斗](story-progression.md#字幕终场完成存储与隐藏战斗)。
 
+### 目标取消与待机的差别
+
+**已确认（静态）：**方向在候选目标间循环，A/C 确认，B 返回当前选择。候选空时不会生成虚构的目标。取消整个移动／行动时恢复原位和未提交状态；提交待机则消耗该次机会，仍处理状态和终局。搜索可触发陷阱宝箱；无陷阱的已确认分支成功后待机，满包时尝试关箱并回菜单。完整光标与嵌套菜单时序仍为**未知**。
+
+### Fairy Woods 的邀请、计时与重试
+
+从 Elven Village 东门前往 Fairy Woods，在未解锁且不处于结果回访时会询问。Yes 请求开战，No 或 B 回村不开始；已解锁的入场可绕过邀请。隐藏敌人首次从区域出现后，普通击杀不会再生；有重生资格的敌人在区域仍有效、重置获准时可从下一回合出现。Bowie 存活时，首领 Bubbling Ooze 的行动侧死亡能清场，无需消灭未出现的敌人，两侧都归零时仍先败北。试炼胜利无额外物品奖。
+
+胜利用计时窗口最后保存的秒数比较纪录，只在严格更快时更新。演出关闭窗口不一定停表，显示的快照也不是首领被击倒的准确时点。结果请求回村并清除完成，以后再走东门可再试；更新纪录不会立即存档。败退不新记纪录，走通常恢复、费用与撤退地点。此处可用普通 Suspend，获准继续恢复该场队列与秒数。参阅[试炼与重试规则（英文源）](../../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md)。
+
+### 隐藏 Battle0 的终局
+
+Zeon 倒下不会扫掉其他敌人；剩余在场存活的敌人能延续战斗。Bowie 同时倒下则先判败。首胜显示简短结束文本，再胜跳过。败北恢复 Bowie 并减半金币，获准撤退付费；取消、MP 不足或没有合法目标不算撤退。此处 Suspend 在写存档之前被拒并回战斗菜单，普通完成后的返回会回女巫流程。参阅[Battle0 结果和返回（英文源）](../../../../research/chapters/final-confrontations-ending/ending-credits-finale-and-bonus-admission.md#battle0-admission-and-normal-return-reset)。
+
 [战斗循环规范与证据（英文源）](../../../synthesis/themes/tactical-battle-loop.md)

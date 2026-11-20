@@ -1,8 +1,14 @@
 # Elven Village 对话与局部探索
 
-以下为原版已接受的条件与分支。静态规则的实际自然触发以所引证据为限。
+## 对话的先后和可用服务
 
-Elven Village 有关于 Fairy 和 Elric 的对话、可查阅的书和搜索物品，以及共用祭司。Fairy 回来后的来访条件选择另一组居民；上下楼保持当前居民和改变后的布局。居民交谈不会招募 Elric 或打开 Creed 进路。领到物品才更新收集状态。参阅[楼梯与居民依据（英文源）](../../../../../research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#internal-stairs-and-conditional-map23-control)。
+**已确认：**Fairy 相关进度会选另一批在场者。村中的精灵按 Elric 是否正式加入改变话语；交谈本身不招募、不重做池塘营救、不打开通道。两个状态可访问共用的祭司，他仍要求走普通交互及各服务自己的确认；费用、取消和存档各自处理。
+
+## 搜索与楼梯
+
+搜寻前方地格会先看布局是否归为宝箱或其他可搜物，再考虑普通描述。同一位置多个候选时按类型与首条匹配规则选一个，不把两项一起给出。可用物品先给 Bowie，再择有空位的已加入成员，含后备及倒下者。无人接收时恢复本次候选供重试；已拿过可得到空物体回应。失败、还原和收到物品均不等同于调查文本已经演完。
+
+内部楼梯在当前地图的两区间转移，保留已经选择的居民和当前布局，不重置普通再访的临时状态。不应用全新入场的治疗或重建。只有适用事件完成且没有下一项待处理时才恢复控制。自然可达、各项完整服务及存档为**未知**。
 
 [回到剧情推进](../../themes/story-progression.md#分段阅读故事内容) · [本章条件与证据（英文源）](../../../../synthesis/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md)
 
