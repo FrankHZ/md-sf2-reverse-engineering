@@ -383,8 +383,6 @@ Run `uv run --locked sf2 zh-meta test` for strict inventory, link and reviewed-a
 `uv run --locked sf2 zh-meta list` for per-page drift. Whole-English-file anchors on retained
 mixed pages are conservative: edits to support passages can still require checking whether the
 selected rules changed. Keep an older source anchor if a relevant revision has not been reviewed.
-The remaining source drift is in the story system, in the Hassan departure and Battle17 outcomes
-guide. The accepted Chinese excerpt there retains its earlier reviewed rules.
 
 For each later change:
 
