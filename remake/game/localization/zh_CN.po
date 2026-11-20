@@ -1277,7 +1277,10 @@ msgstr "修理（未开放）"
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "shop.deals"
-msgstr "特价品（未开放）"
+msgstr "特价品"
+
+msgid "shop.deals.empty"
+msgstr "暂无特价品。"
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "shop.leave"

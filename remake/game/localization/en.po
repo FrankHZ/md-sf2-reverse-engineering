@@ -1277,7 +1277,10 @@ msgstr "Repair (unavailable)"
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "shop.deals"
-msgstr "Deals (unavailable)"
+msgstr "Deals"
+
+msgid "shop.deals.empty"
+msgstr "No items in Deals."
 
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "shop.leave"

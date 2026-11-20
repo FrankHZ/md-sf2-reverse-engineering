@@ -95,7 +95,8 @@ func art(label: String) -> void:
         check(menu.rect.x == root.size.x-592 and menu.rect.y >=32, "right service list beside merchant")
         for i in 4:
             var command: Dictionary = menu.commands[i]
-            check(command.id == ["Buy","Sell","Repair","Deals"][i] and command.enabled == (i<2), "source service slot/availability")
+            var enabled := i < 2 or (i == 3 and field().get("itemCustody") != null)
+            check(command.id == ["Buy","Sell","Repair","Deals"][i] and command.enabled == enabled, "source service slot/availability")
             check(command.art.mounted == original, "explicit shop resource mode")
             check(command.rect.width==528 and command.rect.height>=80,"shared command row bounds")
             if original: check(command.art.width==24 and command.art.height==24 and command.art.scale==3,"source command3x")
@@ -123,7 +124,7 @@ func art_flow() -> void:
         picture("bad-shop-return");return
     for index in range(4):
         await focus_shop(index); await art("service-"+str(index))
-    for index in [2,3]:
+    for index in [2]:
         await focus_shop(index); await key(KEY_ENTER)
         check(field().gold==baseline.gold and field().party==baseline.party and int(field().shop.wait.Phase)==0, "unavailable service preserves authority")
         await art("unavailable-"+str(index))

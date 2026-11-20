@@ -48,8 +48,9 @@ uses the actual child's rectangle for the full click gesture. Resize cancels an 
 
 Operation hints use 24px in the shop root, stock, recipient, sell-slot, quote and result pages.
 Previously the root wrote the keys into its 30px reason label. The field, item and shop root lists
-now give prose and controls separate wrapping labels in the existing scroll area. Repair/Deals
-refusal remains visible; names, funds and prices remain transaction information. Shop footer copy
+now give prose and controls separate wrapping labels in the existing scroll area. Repair's
+unavailable reason remains visible. Deals uses the same recipient and quote flow as Buy and shows
+localized empty stock with Back when its list is exhausted. Shop footer copy
 contains the actions available to the player. Item artwork and name resolution keep their existing
 display rules. [Production measurements](ui-scene-review.md#production-controls-audit)
 
@@ -68,14 +69,14 @@ release barriers keep their existing input ownership. Holding Confirm cannot com
 Back unwinds provisional preparation and restores its selection, then the originating field choice.
 Use/Drop/Give and completed purchases/sales remain committed after acknowledgement. Shop Back follows
 `ShopService.Back`: a quote returns to member selection (including Sell), a sale slot returns to its
-owner, a purchase recipient returns to stock, and Leave completes the actual source caller. The UI
-retains the corresponding owner/stock/slot focus when that phase is re-entered. Search continues to use
+owner, a purchase recipient returns to its Buy or Deals stock, and Leave completes the actual
+source caller. The UI retains the corresponding owner/stock/slot focus when that phase is
+re-entered. Search continues to use
 its actual faced consumer and existing reader: meaningful line breaks, receipt/full-pack feedback,
 Cancel dismissal and subsequent usable control are unchanged.
 
 The gameplay list and preparation pause field time and retain their host-menu exclusion. Services
-retain their actual wait owner. No remote services, free healing, auto-equip purchase, new savepoint,
-Repair/Deals capability, battle rule or story program is added.
+retain their actual wait owner. Repair remains unavailable.
 
 ## Reproduce the bounded observations
 
@@ -146,6 +147,40 @@ native case, serial ownership, and 16 MiB for small authored inputs and reports 
 state excluded). Completed cases take roughly 7–11 seconds; replan if a case exceeds those bounds.
 Build outputs, private inputs and retained prior reports remain ignored.
 
+### Hassan Deals and cold Continue
+
+**Confirmed, bounded native.** Continue a disposable copy of the registered #1941 Hassan
+Search slot (`hassan-en-final`) with the matching #1941 world, scene and name catalog. This
+slot carries Search receipt F201 and Bowie holds Mithril in slot four. Use Field → Item →
+Bowie → Drop and confirm that piece. His pack loses the item and Deals gains one copy.
+Approach the weapon counter in Map9 from (20,10), facing Up. Talk, acknowledge the greeting
+and select Deals. Select Mithril and Bowie, decline, then reselect the recipient and confirm
+the same 2,000-gold quote. Gold moves from 9,174 to 7,174, Mithril returns to slot four, and
+the next visit to Deals shows its localized empty state. Back and Leave finish the merchant
+script. Walking remains available. F10 → Save uses the existing Hassan anchor.
+
+Both English and Simplified Chinese shop projections passed this flow. A fresh process
+continued each post-purchase save and saved identical decoded gameplay data, including the
+party, gold, location, flags, depot and Deals. In a separate Chinese Continue from the Save
+made just after Drop, the same merchant still listed one Mithril before purchase.
+The checked inputs, trade rules and remaining coverage are in the
+[session owner](../application/session-and-programs.md#rare-stock-and-deals-repurchase).
+
+The local #1947 handoff retains `Play.ps1` and the ordinary-input `Deals.gd` observer. Run
+from the owned checkout with the existing Debug adapter and the registered private inputs.
+Use a fresh sample for each Trade, and reuse that sample for the two cold modes.
+
+```powershell
+& ./local/issue1947/Play.ps1 -Language zh-CN -Sample review01 -Mode trade
+& ./local/issue1947/Play.ps1 -Language zh-CN -Sample review01 -Mode cold-stock
+& ./local/issue1947/Play.ps1 -Language zh-CN -Sample review01 -Mode cold
+```
+
+The runner uses keyboard input, live state, UI projection and error output. It reuses the
+existing roughly 102 MB world read-only. Budget one native process at a time, 60 seconds and
+2 MiB of receipts per process. Some successful exits produced ObjectDB warnings.
+Physical input hardware and a native rare Sell or undelivered-reward buyback are **Unknown**.
+
 ## Verification boundary and remaining gaps
 
 **Confirmed, bounded native:** the real field menu, persistent member sheet, spells, fixed empty and
@@ -153,8 +188,8 @@ duplicate slots, Give with room/full-pack exchange, equipment cancellation, conf
 and return, pointer/pad/keyboard and remapped confirmation, 1080p/1440p/2160p list bounds, and long
 reading with a fixed footer. The real Galam shop exercises insufficient funds, full-pack refusal,
 exact sale/payment/slot changes, actual purchase and subsequent movement. Original command art and
-Chinese source names are checked when their existing private publication is selected. The adapter
-build is the affected executable gate; no engine behavior changed and no new helper tests are added.
+Chinese source names are checked when their existing private publication is selected. Shop behavior
+changes also run the relevant [engine tests](../../tests/Sf2.Remake.Engine.Tests/ShopServiceTests.cs).
 Exact candidate identities, native receipts, completed failures and CI belong to the Issue/PR handoff.
 
 **Unknown:** human visual acceptance, physical controller hardware, native focus/DPI/ultrawide coverage,

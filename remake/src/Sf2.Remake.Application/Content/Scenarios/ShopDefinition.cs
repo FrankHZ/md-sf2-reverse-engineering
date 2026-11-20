@@ -2,7 +2,8 @@ using System.Collections.ObjectModel;
 
 namespace Sf2.Remake.Application.Content.Scenarios;
 
-public sealed record ShopItem(byte ItemId, string Name, ushort Price, bool Unsellable = false, bool Rare = false);
+public sealed record ShopItem(byte ItemId, string Name, ushort Price, bool Unsellable = false, bool Rare = false,
+    bool Cursed = false);
 
 public sealed class ShopDefinition
 {

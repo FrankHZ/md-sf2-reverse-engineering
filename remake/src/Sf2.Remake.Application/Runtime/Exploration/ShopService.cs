@@ -5,13 +5,23 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public enum ShopAction { Buy, Sell }
+public enum ShopAction { Buy, Sell, Deals }
 public enum ShopPhase { Menu, Stock, Member, Slot, Confirm, Result }
 public enum ShopResult { Bought, Sold, Full, InsufficientGold, Unsellable, UnsupportedItem }
 public sealed record ShopOffer(ShopAction Action, ActorRef Member, byte Item, uint Price, int? Slot = null, ushort? Word = null);
 public sealed record ShopWait(WaitToken Token, ShopDefinition Definition, ShopPhase Phase = ShopPhase.Menu,
     ShopAction? Action = null, byte? Item = null, ActorRef? Member = null, ShopOffer? Offer = null,
-    ShopResult? Result = null) : ProgramWait(Token);
+    ShopResult? Result = null) : ProgramWait(Token)
+{
+    public IReadOnlyList<byte> AvailableStock(BattleItemCustody? custody) => Action switch
+    {
+        ShopAction.Buy => Definition.Stock,
+        ShopAction.Deals when custody is not null => custody.Deals
+            .Where(entry => entry.Value > 0 && Definition.Items.ContainsKey(entry.Key) && !Definition.Stock.Contains(entry.Key))
+            .Select(entry => entry.Key).Order().ToArray(),
+        _ => [],
+    };
+}
 public abstract record ShopCommand(WaitToken Wait) : SessionCommand;
 public sealed record ChooseShop(WaitToken Wait, ShopAction Action) : ShopCommand(Wait);
 public sealed record SelectShopItem(WaitToken Wait, byte Item) : ShopCommand(Wait);
@@ -21,7 +31,7 @@ public sealed record AnswerShop(WaitToken Wait, ShopOffer Offer, bool Accept) : 
 public sealed record BackShop(WaitToken Wait) : ShopCommand(Wait);
 public sealed record ContinueShop(WaitToken Wait) : ShopCommand(Wait);
 
-// One immutable wait owns selection; only a revalidated confirmation publishes gold and loadout.
+// One immutable wait owns selection; confirmation publishes gold, loadout and custody together.
 internal static class ShopService
 {
     internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, ShopCommand command, SessionRules rules)
@@ -32,29 +42,29 @@ internal static class ShopService
         {
             var next = wait with { Token = new(current.ObservationSequence + 1) };
             var party = field.Party;
+            var custody = party.ItemCustody;
             string kind = "shop-selection";
             switch (command)
             {
                 case ChooseShop choose when wait.Phase == ShopPhase.Menu && Enum.IsDefined(choose.Action):
-                    next = next with { Phase = choose.Action == ShopAction.Buy ? ShopPhase.Stock : ShopPhase.Member, Action = choose.Action }; break;
-                case SelectShopItem item when wait.Phase == ShopPhase.Stock && wait.Definition.Stock.Contains(item.Item):
+                    if (choose.Action == ShopAction.Deals && custody is null)
+                        throw new BattleRuleException("shop-custody-unavailable", "party.itemCustody", true);
+                    next = next with { Phase = choose.Action == ShopAction.Sell ? ShopPhase.Member : ShopPhase.Stock, Action = choose.Action }; break;
+                case SelectShopItem item when wait.Phase == ShopPhase.Stock && wait.AvailableStock(custody).Contains(item.Item):
                     next = next with { Phase = ShopPhase.Member, Item = item.Item }; break;
                 case SelectShopMember member when wait.Phase == ShopPhase.Member:
                     var selected = Member(definition, current, member.Member);
                     _ = Loadout(selected);
-                    next = next with { Member = member.Member, Phase = wait.Action == ShopAction.Buy ? ShopPhase.Confirm : ShopPhase.Slot,
-                        Offer = wait.Action == ShopAction.Buy ? Offer(wait, member.Member, wait.Item!.Value) : null }; break;
+                    bool selling = wait.Action == ShopAction.Sell;
+                    next = next with { Member = member.Member, Phase = selling ? ShopPhase.Slot : ShopPhase.Confirm,
+                        Offer = selling ? null : Offer(wait, member.Member, wait.Item!.Value) }; break;
                 case SelectShopSlot slot when wait.Phase == ShopPhase.Slot:
                     var loadout = Loadout(Member(definition, current, wait.Member!.Value));
                     if (slot.Slot < 0 || slot.Slot >= 4 || loadout.Items[slot.Slot] != slot.Word || (slot.Word & 127) == 127)
                         throw new BattleRuleException("shop-stale-slot", "item.slot");
                     byte id = (byte)(slot.Word & 127);
-                    if (!wait.Definition.Items.TryGetValue(id, out var terms))
-                        next = next with { Phase = ShopPhase.Result, Result = ShopResult.UnsupportedItem };
-                    else if (terms.Unsellable)
-                        next = next with { Phase = ShopPhase.Result, Result = ShopResult.Unsellable };
-                    else if (terms.Rare || (slot.Word & 256) != 0)
-                        next = next with { Phase = ShopPhase.Result, Result = ShopResult.UnsupportedItem };
+                    if (SaleRefusal(wait.Definition.Items.GetValueOrDefault(id), slot.Word, custody) is { } refusal)
+                        next = next with { Phase = ShopPhase.Result, Result = refusal };
                     else next = next with { Phase = ShopPhase.Confirm, Item = id, Offer = Offer(wait, wait.Member.Value, id, slot.Slot, slot.Word) };
                     break;
                 case AnswerShop answer when wait.Phase == ShopPhase.Confirm && answer.Offer == wait.Offer:
@@ -66,14 +76,17 @@ internal static class ShopService
                     var items = Loadout(owner);
                     uint gold = party.Gold ?? throw new BattleRuleException("service-gold-unavailable", "party.gold", true);
                     ShopResult result;
-                    if (offer.Action == ShopAction.Buy)
+                    if (offer.Action != ShopAction.Sell)
                     {
-                        if (!wait.Definition.Stock.Contains(offer.Item)) throw new BattleRuleException("shop-stock", "item");
+                        if (!wait.AvailableStock(custody).Contains(offer.Item)) throw new BattleRuleException("shop-stock", "item");
                         if (items.Items.All(word => (word & 127) != 127)) result = ShopResult.Full;
                         else if (gold < offer.Price) result = ShopResult.InsufficientGold;
                         else
                         {
-                            party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, BattleInventory.Add(items, offer.Item))], gold: gold - offer.Price);
+                            var purchased = FieldInventory.WithLoadout(owner, BattleInventory.Add(items, offer.Item));
+                            party = FieldInventory.Replace(party, [purchased],
+                                custody: offer.Action == ShopAction.Deals ? custody!.RemoveDeal(offer.Item) : custody,
+                                gold: gold - offer.Price);
                             result = ShopResult.Bought;
                         }
                     }
@@ -82,9 +95,10 @@ internal static class ShopService
                         if (offer.Slot is not { } index || index < 0 || index >= 4 || items.Items[index] != offer.Word)
                             throw new BattleRuleException("shop-stale-slot", "item.slot");
                         var soldTerms = wait.Definition.Items[offer.Item];
-                        if (soldTerms.Unsellable || soldTerms.Rare || (offer.Word!.Value & 256) != 0)
+                        if (SaleRefusal(soldTerms, offer.Word!.Value, custody) is not null)
                             throw new BattleRuleException("shop-item-unsupported", "item", true);
                         party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, BattleInventory.Remove(items, index))],
+                            custody: soldTerms.Rare ? custody!.AddDeal(offer.Item) : custody,
                             gold: BattleRewards.Gold(gold, offer.Price));
                         result = ShopResult.Sold;
                     }
@@ -127,14 +141,23 @@ internal static class ShopService
     private static ShopOffer Offer(ShopWait wait, ActorRef member, byte item, int? slot = null, ushort? word = null)
     {
         if (!wait.Definition.Items.TryGetValue(item, out var terms)) throw new BattleRuleException("shop-item", "item");
-        return new(wait.Action!.Value, member, item, wait.Action == ShopAction.Buy ? terms.Price : (uint)terms.Price * 3 / 4, slot, word);
+        return new(wait.Action!.Value, member, item, wait.Action == ShopAction.Sell ? (uint)terms.Price * 3 / 4 : terms.Price, slot, word);
+    }
+
+    private static ShopResult? SaleRefusal(ShopItem? item, ushort word, BattleItemCustody? custody)
+    {
+        if (item is null) return ShopResult.UnsupportedItem;
+        if (item.Unsellable) return ShopResult.Unsellable;
+        if ((word & 256) != 0 || (word & 128) != 0 && item.Cursed || item.Rare && custody is null)
+            return ShopResult.UnsupportedItem;
+        return null;
     }
 
     private static ShopWait Back(ShopWait wait) => wait.Phase switch
     {
         ShopPhase.Confirm => wait with { Phase = ShopPhase.Member, Member = null, Offer = null },
         ShopPhase.Slot => wait with { Phase = ShopPhase.Member, Member = null },
-        ShopPhase.Member when wait.Action == ShopAction.Buy => wait with { Phase = ShopPhase.Stock, Item = null },
+        ShopPhase.Member when wait.Action is ShopAction.Buy or ShopAction.Deals => wait with { Phase = ShopPhase.Stock, Item = null },
         _ => new(wait.Token, wait.Definition),
     };
 }
