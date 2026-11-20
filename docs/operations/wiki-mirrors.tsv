@@ -1,3 +1,5 @@
 source	title	中文入口
-docs/design/contracts/world/map-exploration.md	Map-Exploration-Contract	地图与探索合同
-docs/design/synthesis/milestones/map3-battle01-readiness.md	Map3-Battle01-Readiness	Map 3 至 Battle 01 就绪台账
+docs/design/zh-CN/game-vision.md	Remake-Vision	L0 · 重制愿景
+docs/design/zh-CN/synthesis/gameplay-overview.md	Gameplay-Overview	L1 · 玩法总览
+docs/design/zh-CN/synthesis/themes/map-design-principles.md	Map-Design-Principles	L2 · 地图设计原则
+docs/design/zh-CN/contracts/world/map-exploration.md	Map-Exploration-Contract	L3 · 地图探索
