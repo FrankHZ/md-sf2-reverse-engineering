@@ -1,6 +1,6 @@
 # Campaign field Search
 
-This Standard content correction covers optional searches in the ordinary campaign through the first raft step.
+This Standard content slice covers optional searches in the connected campaign. Its latest scope is the five maps from Hassan and the shrines through Harpy Pond. The ordinary input witness ends at collection, repeat, and the supported save and re-entry routes.
 
 At ordinary field control, open the field menu and choose **Search** while facing the tile. Confirm also searches when there is no one to talk to. Close the result to move again. A full party can leave the item, free a slot and search again. During departure dialogue, choices, warps and battle entry, the current scene owns the input.
 
@@ -22,7 +22,7 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 
 ## Map and setup inventory
 
-**Confirmed (static).** The first-raft campaign selection supplies Search on 30 of its 31 map defaults and their compiled variants. All defaults and selected variants below have a null input program. A null input program alone does not grant control during a script. Each row lists every **compiled** flag variant alongside its default. Placements are source receipt flags, including optional and later-area entries. Counts in parentheses are ordinary text rows per setup; a dash denotes no placement. A compiled row alone gives no route to the item. [Selection](../../content/private/pre-voyage-opening.json) · [Original field menu Search entry](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm).
+**Confirmed (static).** The current campaign supplies Search on all 31 map defaults in the first-raft inventory and their compiled variants. All defaults and selected variants below have a null input program. A null input program alone does not grant control during a script. Each row lists every **compiled** flag variant alongside its default. Placements are source receipt flags, including optional and later-area entries. Counts in parentheses are ordinary text rows per setup; a dash denotes no placement. A compiled row alone gives no route to the item. [Selection](../../content/private/pre-voyage-opening.json) · [Original field menu Search entry](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/main/mainactions.asm).
 
 | Map | Additional setup flags | Source placements (descriptions) | Campaign Search / entry evidence |
 | --- | --- | --- | --- |
@@ -50,7 +50,7 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 | 69 | — | — (0) | Added. Battle09 return and Ribble approach. |
 | 8 | 708 | 144,145 (4) | Ribble. Both setups exercised at the well, shop, door and tree. F708 diary and Mithril pickup/repeat observed. [Town details](#new-granseal-and-ribble). |
 | 70 | — | 188 (0) | Added. Battle10 field return and cave route. |
-| 62 | 77 | 150 (0) | Deferred. The shrine entrance on the other bank was tested from supplied coordinates. Natural access before the raft remains Unknown. |
+| 62 | 77 | 150 (0) | Selected. Ordinary travel from the desert victory reached the shrine and its chest on the later route. Earliest pre-raft access remains **Unknown**. [Shrine Search](#hassan-the-shrines-elven-village-and-harpy-pond) |
 | 71 | — | — (0) | Added. Overworld passage between 70 and 72. |
 | 48 | — | 146,168 (0) | Added. Dark Caves entrance and Battle11 return. |
 | 13 | 710, 799, 513 | 148 (4) | Added. Polca and mayor. F513 ordinary sign at (5,9) shows 425/4101 in Chinese. Enter at (9,19), face Left from (36,6) and collect Protect Milk with F148. |
@@ -60,7 +60,76 @@ From a carried Map58 save, take the earthquake route. The F507 docks again allow
 
 Route evidence outside the named Search observations is for entering the chapter or map. Separate rooms, endgame sections, unopened doors and every individual item are not implied by the entrance. See the [Grans stages](pre-voyage-campaign.md), [eastern travel and conditional shrine](new-granseal-east-shrine.md), [caves through Bedoe](dark-caves-bedoe.md) and [Polca departure](polca-first-raft.md).
 
-**Harpy Pond approach.** The pinned Map67 and Map51 other-item tables place Mithril at (45,9), F214, and a Healing Drop at (8,5), F159, respectively. Both chest tables are empty. The pond package admits travel on these maps and leaves both outside its Search selection. Collection and repeat Search are unverified. [Chapter and package](harpy-pond-approach.md) · [Campaign selection](../../content/private/pre-voyage-opening.json)
+## Hassan, the shrines, Elven Village and Harpy Pond
+
+**Confirmed (static).** The USA baseline and pinned SF2DISASM commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6` agree with the registered canonical map export.
+Map9 default/F518 share four descriptions and the same item tables. Map62 default/F77 and
+Map51 default/F520 have empty description handlers and share their respective item tables.
+Map12 and Map23 compile their defaults, with zero and three descriptions respectively.
+All eight compiled setups admit ordinary input. [Campaign selection](../../content/private/pre-voyage-opening.json) ·
+[Source map entries](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries.asm) ·
+[Search control](../../../docs/research/world/field-search-control.md)
+
+**Confirmed (remake, ordinary input).** The full private interface granted each reward below and
+gave the corresponding empty result on immediate repeat. The observations start from unedited
+carried slots with the respective receipt flags clear. Positions and facings describe the
+successful Search input. Markers are the faced working word masked by `$3C00`.
+
+| Map and selected setup | Faced tile and reward | Stand and face | Marker and repeat text IDs |
+| --- | --- | --- | --- |
+| Hassan (9), F518 | (23,22) Running Pimento F153 | (23,23) Up | `$3000`, 405/410 |
+| Hassan (9), F518 | (15,40) Mithril F154 | (15,39) Down | `$3000`, 405/410 |
+| Hassan (9), F518 | (1,11) Mithril F201 | (2,11) Left | `$1800`, 403/408 |
+| East Shrine (62), default | (9,5) Steel Sword F150 | (9,6) Up | `$1800`, 403/408 |
+| Taros Shrine (12), default after Caravan acquisition | (15,7) Healing Water F155 | (15,8) Up | `$1800`, 403/408 |
+| Elven Village (23), default | (24,9) Fairy Powder F157 | (24,10) Up | `$1C00`, 423/412 |
+| Elven Village (23), default | (52,2) Secret Book F158 | (52,3) Up | `$1C00`, 423/412 |
+| Elven Village (23), default | (29,27) Mithril F202 | (29,26) Down | `$1800`, 403/408 |
+| Elven Village (23), default | (2,3) Vigor Ball F221 | (2,4) Up | `$1800`, 403/408 |
+| Harpy Pond (51), F520 | (8,5) Healing Drop F159 | (9,5) Left | `$1C00`, 423/412 |
+
+In Map23, take the existing stair from (22,9) with Left, landing at (57,3). The working word
+at (52,2) is `$DC18`. Original `CheckArea` dispatches `$1C00` to the loose-item table first, so
+the Secret Book path uses 423 and the repeat uses 423/412. The compiled 427/4119 description
+would require a working marker outside the item kinds. The running remake reached the upper
+wing by the stairs, granted F158 once and gave 423/412 on repeat and at the adjacent (51,2)
+shelf, which has the same marker and no placement. [Original Map23 dispatcher and stairs](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#local-descriptions-and-item-search-precedence)
+
+Hassan's church Continue restores the church position. Walk back to the F154 barrel for an empty
+result, then exit to Map69 and re-enter Hassan. The F201 chest is still empty. East Shrine's chest
+stays empty after walking out to Map70 and returning. Talk to the old man twice for the ordinary
+F77/F729 save recipe. Cold Continue restores the shrine entrance and the F150 receipt. Taros and
+post-rescue Harpy Pond both Save on the approach tile and repeat empty after cold Continue. Leave
+Elven Village through the south exit and Save on Map68. Cold Continue retains all four village
+receipts. Re-enter and Search the F202 chest again for the empty result.
+
+For the representative full-pack check, fill the empty slots on a disposable Hassan save copy
+with Medical Herbs. Facing the F201 chest through ordinary input gives Full and preserves the
+items, closed block and clear F201. Drop a Medical Herb through the field Item menu and retry at
+the same tile. The chest grants one Mithril and sets F201. A third Search gives 403/408. The controlled
+copy supplies inventory capacity only. [Engine cases](../../tests/Sf2.Remake.Engine.Tests/FieldSearchTests.cs)
+
+The older pond approach package covered walking and save continuity on Maps67 and 51.
+Both maps are selected in the current campaign. Ordinary collection of the Map67 F214 reward
+remains **Unknown** here. [Pond approach](harpy-pond-approach.md)
+
+The selected rewards use the existing carry catalog. Steel Sword follows regular class-based
+Equip rules. Healing Drop already has battle Use and field NoEffect. Running Pimento, Healing
+Water, Fairy Powder, Secret Book and Vigor Ball retain their own unresolved consumption rules.
+[Recovery and equipment](../content/campaign-items.md#shared-supplies-and-nearby-boundaries) ·
+[Promotion items](../content/campaign-items.md#promotion-supplies)
+
+**Unknown.** Original runtime behavior on these approaches and the earliest natural pre-raft East
+Shrine visit. The selected Hassan default and Harpy Pond default have static table coverage. The
+Map23 F762 services are outside this selection.
+
+Use the registered private `handoffs/issue1941` runner with the accepted #1955 world and the
+unmodified #1939 Hassan and Taros, #1809 desert victory, #1834 Battle19 return and #1847 post-rescue
+slots. The runner compiles only the newly selected Search metadata, mounts both states of the
+three newly admitted item icons with the existing identity producer, and derives the Chinese catalog.
+It reuses the world and media from #1955. The observations use ordinary title Continue, walking
+and field-menu input with the full private interface. [World and catalog preparation](../development-and-verification.md#pre-voyage-chinese-consumer-observation)
 
 ## New Granseal and Ribble
 
