@@ -220,6 +220,9 @@ def derive(args: argparse.Namespace) -> dict:
         all(rows[i]["source"] == originals[i] == pinned[i] for i in rows), "source text mismatch"
     )
     package = world["package"]
+    growth_members = {
+        int(row["actor"].removeprefix("ally-")) for row in world["world"].get("growth", [])
+    }
     field_texts, field_items = set(), set()
     if args.scope == "current":
         field_texts = _search_text_ids(world["world"])
@@ -258,6 +261,8 @@ def derive(args: argparse.Namespace) -> dict:
     if hassan:
         field_texts.update(range(2513, 2520))
         field_texts.update(range(1363, 1397))
+        if 12 in growth_members:
+            field_texts.update(range(1411, 1420))
     shrine = args.scope == "current" and any(
         row["id"] == "map-12" for row in world["world"]["maps"]
     )
@@ -342,9 +347,6 @@ def derive(args: argparse.Namespace) -> dict:
     battle25 = "battle-25" in encounters
     repeat_enemies = {
         enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
-    }
-    growth_members = {
-        int(row["actor"].removeprefix("ally-")) for row in world["world"].get("growth", [])
     }
     growth_classes = {row["classId"] for row in world["world"].get("growth", [])}
     del world

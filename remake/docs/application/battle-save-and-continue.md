@@ -96,8 +96,8 @@ continuation, later campaign content and arbitrary saves remain outside admissio
 
 ## Continuing across historical opening rosters
 
-Gameplay revision 4 of the private SF2 opening has four known roster revisions. Field v1
-and newly captured battle v2 records carry the roster revision in `Compatibility.RecipeRevision`.
+Gameplay revision 4 of the private SF2 opening uses `Compatibility.RecipeRevision` for the
+roster in field and battle records. The record format version is separate.
 The battle continuation itself still uses `BattleRecipeRevision = 1`.
 
 | Roster revision | Complete member IDs | Last encounter in that package |
@@ -105,11 +105,17 @@ The battle continuation itself still uses `BattleRecipeRevision = 1`.
 | 1 | 0–6 | Battle08 |
 | 2 | 0–8 | Battle10 |
 | 3 | 0–9 | Battle13 |
-| 4 | 0–10 | Battle13 |
+| 4 | 0–10 | Battle19 |
+| 5 | Previous plus Elric (13) | Battle23 |
+| 6 | Previous plus the Creed offers (14–17) | Battle23 |
+| 7 | Previous plus Janet (18) | Battle24 |
+| 8 | Previous plus Rohde (11) | Battle25 |
+| 9 | Previous plus Higins (19) | Battle26 |
+| 10 | Previous plus Rick (12) | Battle26 |
 
-Historical v2 writers stamped all four rosters as revision 1. For those records, Continue
-recognizes the exact union of deployed and retained IDs and checks the encounter against the
-historical package. A valid checksum, matching provenance, rules and gameplay identity are
+Legacy battle v2 writers stamped the first five roster shapes as revision 1. For those records,
+Continue recognizes the exact union of deployed and retained IDs and checks the encounter against
+the historical package. A legacy eleven-member record is limited to Battle13. A valid checksum, matching provenance, rules and gameplay identity are
 still required. A record with a hole, unknown shape, or a missing member claimed by a joined
 flag, active flag or custom name fails. Field saves also check their explicit active list.
 An old v2 record with an exact historical prefix can be indistinguishable
@@ -117,8 +123,10 @@ from a later legacy record whose entire unclaimed suffix was removed and checksu
 New captures bind the actual roster revision and reject that truncation.
 
 Continue appends missing members to the field party or to the battle's retained party. Each
-expansion (7→9, 9→10 and 10→11) runs the ordinary starting growth of just its new members
-using a fresh copy of the saved main seed. This reproduces the historical one-step upgrades.
+expansion runs the ordinary starting growth of just its new members using a fresh copy of
+the saved main seed. This reproduces the historical one-step upgrades. A restored revision 9 slot
+gains Rick's initialized record without setting F12 or F44. The [Rick chapter](hassan-rick-recruitment.md)
+covers pre-upgrade Battle26 and Pacalon field slots through native title Continue.
 Existing members retain all progress. Both gameplay RNG words and the live battle queue carry
 through the restore.
 

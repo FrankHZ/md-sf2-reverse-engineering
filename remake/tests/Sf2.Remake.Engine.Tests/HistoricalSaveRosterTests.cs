@@ -124,6 +124,72 @@ public sealed class HistoricalSaveRosterTests
         Assert.Single(upgraded.Story.Player.RetainedAllies, row => row.Actor == new ActorRef("ally-19"));
     }
 
+    [Fact]
+    public void FieldUpgradeInitializesRickWithoutChangingSavedPartyOrRandomState()
+    {
+        var (_, original) = OpeningRestoreTests.Fixture(joined: true);
+        var prior = Package(9, 19);
+        var latest = Package(10, 20);
+        var rules = RuleCompositions.Sf2();
+        var previousRows = prior.Encounters["opening"].Deployments;
+        var saved = original with
+        {
+            Compatibility = OpeningSave.FieldCompatibility(prior, rules),
+            Flags = original.Flags.Where(flag => flag != 256).Order().ToArray(),
+            Allies = previousRows.Select(row => original.Allies[row.Actor.Value == "ally-0" ? 0 : 1] with
+                { Actor = row.Actor.Value }).ToArray(),
+        };
+
+        var upgraded = Upgrade(latest, saved);
+        var rick = Assert.Single(upgraded.Allies, row => row.Actor == "ally-12");
+        Assert.Equal(5, rick.Level);
+        Assert.Equal(rick.MaxHp, rick.Hp);
+        Assert.Equal(0, rick.Exp);
+        Assert.Equal(OpeningSave.FieldCompatibility(latest, rules), upgraded.Compatibility);
+        Assert.Equal(saved.Flags, upgraded.Flags);
+        Assert.Equal(saved.ActiveAllies, upgraded.ActiveAllies);
+        Assert.Equal(saved.MainSeed, upgraded.MainSeed);
+        Assert.Equal(saved.ThinkingSeed, upgraded.ThinkingSeed);
+        Assert.Equal(saved.Gold, upgraded.Gold);
+        Assert.Equal(saved.Allies.Count + 1, upgraded.Allies.Count);
+        foreach (var member in saved.Allies)
+            EqualAlly(member, upgraded.Allies.Single(row => row.Actor == member.Actor));
+
+        var resaved = Upgrade(latest, upgraded);
+        EqualAlly(rick, Assert.Single(resaved.Allies, row => row.Actor == "ally-12"));
+    }
+
+    [Fact]
+    public void Battle26UpgradeAppendsRickToRetainedPartyAndResumesTheSameFight()
+    {
+        var (basis, snapshot) = BattleSaveFixture.Create(encounterId: "battle-26");
+        var prior = Package(9, 19, basis);
+        var latest = Package(10, 20, basis);
+        var rules = RuleCompositions.Sf2();
+        var seed = BattleSaveFixture.Capture(basis, snapshot);
+        var player = seed.Story.Player;
+        var retained = prior.Encounters["opening"].Deployments.Where(row => row.Actor.Value != "ally-0")
+            .Select(row => player.RetainedAllies[0] with { Actor = row.Actor }).ToArray();
+        var data = seed with
+        {
+            Compatibility = OpeningSave.FieldCompatibility(prior, rules),
+            Story = seed.Story with { Player = player with { RetainedAllies = retained } },
+        };
+
+        var session = Assert.IsType<SessionStarted>(GameSession.RestoreBattle(latest, data, rules)).Session;
+        var upgraded = Assert.IsType<BattleSaveData>(session.CaptureBattleSave(session.Current.SessionId, session.Current.Revision).Data);
+        Assert.Equal(OpeningSave.FieldCompatibility(latest, rules), upgraded.Compatibility);
+        Assert.True(BattleContinuationValues.Same(data.Battle, upgraded.Battle));
+        Assert.Equal(data.Story.Flags, upgraded.Story.Flags);
+        Assert.Equal(retained.Length + 1, upgraded.Story.Player.RetainedAllies.Count);
+        foreach (var member in retained)
+            Assert.True(BattleContinuationValues.SameCarried(member,
+                upgraded.Story.Player.RetainedAllies.Single(row => row.Actor == member.Actor)));
+        var rick = Assert.Single(upgraded.Story.Player.RetainedAllies, row => row.Actor.Value == "ally-12");
+        Assert.Equal(5, rick.Progress!.Level);
+        Assert.IsType<SessionStarted>(GameSession.RestoreBattle(latest, upgraded, rules));
+    }
+
     private static void EqualAlly(SavedAlly expected, SavedAlly actual)
     {
         Assert.Equal(expected.Items, actual.Items);
@@ -149,7 +215,7 @@ public sealed class HistoricalSaveRosterTests
         var curve = Enumerable.Repeat(new StatGrowthFraction(32, 32), 29).ToArray();
         var growth = new BattleGrowthDefinition(0, 0, Enumerable.Repeat(new StatGrowth(7, 35, curve), 5).ToArray(),
             [], new Dictionary<byte, SpellRef>());
-        var ids = count < 12 ? Enumerable.Range(0, count).ToArray() : new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19 }.Take(count).ToArray();
+        var ids = count < 12 ? Enumerable.Range(0, count).ToArray() : new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19, 12 }.Take(count).ToArray();
         var rows = ids.Select(id => original with
         {
             Definition = new(new($"ally-{id}"), original.Definition.ClassRule, 1, 7, 7, 7, 7, 7, false, 6, [],

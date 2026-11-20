@@ -18,6 +18,9 @@ Run `./local/issue1807/play.ps1 en Shrine` or `./local/issue1807/play.ps1 zh-CN 
 
 The [entry contract](../../../docs/design/synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md) owns the original formation, neutral and entry rules. The [outcome contract](../../../docs/design/synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md) owns the return position, follower flags and first-victory program.
 
+The F518 population makes [Rick’s optional Hassan recruitment](hassan-rick-recruitment.md) available
+on a later visit. The same Caravan can deploy him if the active party was full when he joined.
+
 ## Private content and reproduction
 
 Use `sf2tool.remake_exploration_battles.prepare_encounter` with battle 18 and the pinned source/verified ROM. Build its battle scene with `sf2tool.remake_battle_scene_content.build` and `add_field_death`. Bind the scene and formation in the campaign encounter list alongside Battle17. Generate the pre-voyage world and current Chinese catalog. The scene uses the source Taros field poses and Caravan sprite, and the earlier Parmecia ally scenes require the Achilles Sword selector when equipped.
