@@ -41,8 +41,7 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors, IReadOnl
                     dead.IsAlly ? a.With(defeats: after) : a.With(kills: after)));
                 effects.Add(new(dead.IsAlly ? "defeats" : "kills", owner.Actor, before, after));
             }
-            // Admitted status-free, ATT-only equipment needs no derived-stat change.
-            battle = battle.With(actors: battle.Actors.Select(a => a.Actor == id ? a.With(clearPosition: true, status: 0) : a));
+            battle = battle.With(actors: battle.Actors.Select(a => a.Actor == id ? a.With(clearPosition: true, status: 0, refreshStats: true) : a));
             effects.Add(new("death-cleanup", id, 1, 0));
         }
         return (battle, effects.AsReadOnly());

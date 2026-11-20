@@ -52,7 +52,7 @@ internal static class BattleActionCommitter
         // BattleLoop reloads the queue entry for after-turn effects. A trap rewrites only the scene attacker.
         var turnOwner = outcome is null ? BattleTurnFlow.QueuedActor(battle) : null;
         bool lifecycle = turnOwner is { Hp: > 0, Position: not null } &&
-            ((turnOwner.Status & 0x3C1) != 0 || battle.Definition.Poison && PoisonTurnRules.Eligible(turnOwner));
+            (turnOwner.NeedsStatRefresh || (turnOwner.Status & (0x3C1 | BattleStatCounters.Mask)) != 0 || battle.Definition.Poison && PoisonTurnRules.Eligible(turnOwner));
         if (outcome is null && !lifecycle) observations.Add(new(++sequence, revision, "after-turn", turnOwner!.Actor));
         else if (outcome is not null) observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
         if (battle.MainSeed != current.Battle.MainSeed)

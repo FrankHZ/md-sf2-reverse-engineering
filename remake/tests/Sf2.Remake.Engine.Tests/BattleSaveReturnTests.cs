@@ -71,7 +71,7 @@ public sealed class BattleSaveReturnTests
         var loadout = new BattleSourceLoadout([115, 127, 127, 127], [63, 63, 63, 63]);
         var actors = original.Battle.Actors.Select(a => a.Actor.Value switch
         {
-            "ally-0" => a.With(hp: 1, sourceLoadout: loadout),
+            "ally-0" => a.With(hp: 1, sourceLoadout: loadout, status: 0x1000, refreshStats: true),
             "enemy" => a.With(hp: 1, position: new(5, 5), activationWord: 0x2061), _ => a,
         }).ToArray();
         var b = original.Battle;
@@ -119,6 +119,7 @@ public sealed class BattleSaveReturnTests
             Assert.Equal(actor.Kills, other.Kills); Assert.Equal(actor.Defeats, other.Defeats); Assert.Equal(actor.Status, other.Status);
             Assert.Equal(actor.SourceLoadout!.Items, other.SourceLoadout!.Items);
         }
+        Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-0").Status);
         Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-1").Hp);
         Assert.Null(resumed.Story.EnteringBattle); Assert.Null(resumed.Story.FieldPlayer);
         if (authoredPlayer)

@@ -98,7 +98,7 @@ internal static class OutcomeReturnRules
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == a.Actor);
             bool canRecover = healing && deployment.Faction == BattleFaction.Ally && rule.CanRecover(deployment, a, all);
             Require(!healing || canRecover || b == a);
-            Require(b.Status == a.Status || (canRecover && b.Status == (a.Status & ~(0xC0 | 0x0300))));
+            Require(b.Status == a.Status || (canRecover && b.Status == (a.Status & ~(0xC0 | 0x0300 | BattleStatCounters.Mask))));
             Require(b with { Hp = a.Hp, Mp = a.Mp, Status = a.Status } == a);
             Require(deployment.Faction == BattleFaction.Ally || b == a);
             Require(b.Hp <= (a.Progress?.MaxHp ?? deployment.Definition.MaxHp) &&

@@ -62,7 +62,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             int slot = action.ItemSlot!.Value;
             ushort word = items[slot]; items.RemoveAt(slot); items.Add(127);
             var paid = battle.With(actors: battle.Actors.Select(a => a.Actor == actor
-                ? a.With(position: destination, sourceLoadout: new(items, owner.SourceLoadout.Spells)) : a));
+                ? a.With(position: destination, sourceLoadout: new(items, owner.SourceLoadout.Spells), refreshStats: true) : a));
             return new(paid, actor, destination, [], null, [new("item-consumed", actor, word, slot)], [],
                 Retreat: new ItemRetreatPayment(wing.ItemId, wing.Name, slot, word));
         }
@@ -106,7 +106,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         var items = actor.SourceLoadout!.Items.ToList();
         ushort consumed = items[slot];
         items.RemoveAt(slot); items.Add(127);
-        var consumedActor = actor.With(sourceLoadout: new(items, actor.SourceLoadout.Spells));
+        var consumedActor = actor.With(sourceLoadout: new(items, actor.SourceLoadout.Spells), refreshStats: true);
         effects.Add(new("item-consumed", actorRef, consumed, slot));
         effects.AddRange(award.Effects);
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef

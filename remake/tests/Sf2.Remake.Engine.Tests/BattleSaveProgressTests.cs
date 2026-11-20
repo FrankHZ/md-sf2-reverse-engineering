@@ -13,9 +13,11 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleSaveProgressTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void BattleContinueRestoresThePromotedDeployedOrRetainedMember(bool reserve)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void BattleContinueRestoresThePromotedDeployedOrRetainedMember(bool reserve, bool timed)
     {
         var (basis, current) = BattleSaveFixture.Create();
         var saved = BattleSaveFixture.Capture(basis, current);
@@ -30,12 +32,14 @@ public sealed class BattleSaveProgressTests
             a with { Progress = Promoted(a.Progress!), SourceLoadout = Promoted(a.Progress!).SourceLoadout }).ToArray();
         var actors = saved.Battle.Actors.Select(a => a.Actor != actor.Value ? a :
             a with { Progress = Promoted(a.Progress!), Loadout = Promoted(a.Progress!).SourceLoadout }).ToArray();
+        if (timed)
+            actors = actors.Select(a => a.Actor == "enemy" ? a with { Status = 0x0C00, LastRefreshCounters = 0x0400 } : a).ToArray();
         saved = saved with { HasClassTerms = true, Battle = saved.Battle with { Actors = actors },
             Story = saved.Story with { Player = saved.Story.Player with { RetainedAllies = retained } } };
         var record = new Sf2.Remake.Content.Persistence.BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved);
         var bytes = Sf2.Remake.Content.Persistence.OpeningSaveJson.WriteRecord(record);
         var wire = Sf2.Remake.Content.Persistence.OpeningSaveJson.ReadRecord(bytes, 1);
-        Assert.Equal(4, wire.FormatVersion);
+        Assert.Equal(timed ? 5 : 4, wire.FormatVersion);
         var session = Assert.IsType<SessionStarted>(Sf2.Remake.Content.Persistence.SaveRecordRestore.Restore(definition, wire, RuleCompositions.Sf2())).Session;
         var recaptured = BattleSaveFixture.Capture(definition, session.Current);
         Assert.True(recaptured.HasClassTerms);

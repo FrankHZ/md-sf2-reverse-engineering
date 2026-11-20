@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -211,19 +211,19 @@ public sealed class BattleSceneState
 {
     internal BattleSceneState(BattleActionResolution? action, BattleScenePhase phase, int reactionIndex,
         WaitToken token, IReadOnlyList<BattleSceneOffset>? motion = null, IReadOnlyList<BattleGrowthNotice>? growth = null, int noticeIndex = 0,
-        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null, PoisonTurnNotice? poisonTurn = null, SilenceTurnNotice? silenceTurn = null, StunTurnNotice? stunTurn = null)
-    { StunTurn = stunTurn; SilenceTurn = silenceTurn; PoisonTurn = poisonTurn; FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
+        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null, PoisonTurnNotice? poisonTurn = null, CounterExpiryNotice? counterExpiry = null, StunTurnNotice? stunTurn = null)
+    { StunTurn = stunTurn; CounterExpiry = counterExpiry; PoisonTurn = poisonTurn; FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
     private readonly BattleActionResolution? _action;
     internal StunTurnNotice? StunTurn { get; }
     public bool StunCleared => StunTurn is { After: var status } && (status & 1) == 0;
-    internal SilenceTurnNotice? SilenceTurn { get; }
-    public bool IsSilenceTurn => SilenceTurn is not null;
+    internal CounterExpiryNotice? CounterExpiry { get; }
+    public bool IsSilenceTurn => Phase == BattleScenePhase.SilenceTurnMessage;
     public bool IsSilencedCast => _action?.Silenced is not null;
     public SpellRef? SilencedSpell => _action?.Silenced?.Action.Spell;
     internal SleepTurnNotice? SleepTurn { get; }
     internal PoisonTurnNotice? PoisonTurn { get; }
     public bool IsPoisonTurn => PoisonTurn is not null;
-    public bool IsAfterTurnNotice => IsSleepTurn || IsPoisonTurn || IsSilenceTurn || StunTurn is not null;
+    public bool IsAfterTurnNotice => IsSleepTurn || IsPoisonTurn || CounterExpiry is not null || StunTurn is not null;
     internal FieldDeathTurn? FieldDeath { get; }
     public bool IsSleepTurn => SleepTurn is not null;
     public int? SleepTurnText => SleepTurn?.Text;
@@ -243,9 +243,9 @@ public sealed class BattleSceneState
     public PrismLaserShot? Laser => _action?.Laser;
     public bool HasReaction => _action is not null && ReactionIndex < Action.Reactions.Count;
     public ActorRef? ReactionTarget => HasReaction ? Reaction.Target : null;
-    public ActorRef Actor => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? SilenceTurn?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
-    public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? SilenceTurn?.Actor ?? ReactionTarget;
-    public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" : Laser is not null ? "prism-laser" : Reaction.Action;
+    public ActorRef Actor => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
+    public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? ReactionTarget;
+    public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" : Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
     public bool UsesAttackItem => _action?.AttackItemSlot is not null;
     public HealingItemDefinition? Item => _action?.Item;
@@ -336,7 +336,7 @@ internal static class BattleSceneContinuation
     {
         var scene = current.BattleScene!;
         if (scene.IsPoisonTurn) return BattlePoisonContinuation.Complete(current, command, rules);
-        if (scene.IsSleepTurn || scene.IsSilenceTurn || scene.StunTurn is not null) return BattleAfterTurnContinuation.Complete(current, command, rules);
+        if (scene.IsSleepTurn || scene.CounterExpiry is not null || scene.StunTurn is not null) return BattleAfterTurnContinuation.Complete(current, command, rules);
         if (scene.IsFieldDeath) return BattleFieldDeathContinuation.Submit(current, command, rules);
         if (scene.Healing is not { } healing) return Continue(current, command, rules);
         bool advancing = command is AdvanceSimulation { Ticks: 1 } advance && advance.Wait == scene.Token && !healing.LogicalComplete;
@@ -571,7 +571,7 @@ internal static class BattleSceneContinuation
         List<BattleGrowthNotice> notices = [new(BattleGrowthNoticeKind.Level, after.Level)];
         foreach (var (kind, gain) in new[] { (BattleGrowthNoticeKind.MaxHp, after.MaxHp-before.MaxHp),
             (BattleGrowthNoticeKind.MaxMp, after.MaxMp-before.MaxMp), (BattleGrowthNoticeKind.Attack, after.BaseAttack-before.BaseAttack),
-            (BattleGrowthNoticeKind.Defense, after.Defense-before.Defense), (BattleGrowthNoticeKind.Agility, after.Agility-before.Agility) })
+            (BattleGrowthNoticeKind.Defense, after.BaseDefense-before.BaseDefense), (BattleGrowthNoticeKind.Agility, after.BaseAgility-before.BaseAgility) })
             if (gain > 0) notices.Add(new(kind, gain));
         foreach (var spell in after.Spells.Except(before.Spells)) notices.Add(new(BattleGrowthNoticeKind.Spell, spell.Level, spell));
         return notices.AsReadOnly();

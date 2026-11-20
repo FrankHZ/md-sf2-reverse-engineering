@@ -509,7 +509,7 @@ internal sealed partial class BattleMapViewport : Control
         var physical = PhysicalActor(a.Actor);
         var node = _markers[physical];
         return new { id = a.Actor.Value, physicalAppearance = physical.Value, control = a.Control.ToString(), facing = a.Facing, hp = a.Hp, mp = a.Mp, exp = a.Exp, kills = a.Kills, defeats = a.Defeats, x = a.Position?.X, y = a.Position?.Y,
-            initialized = a.Initialized, maxHp = a.MaxHp, maxMp = a.MaxMp, level = a.Level, defense = a.Defense, move = a.Definition.Move,
+            initialized = a.Initialized, maxHp = a.MaxHp, maxMp = a.MaxMp, level = a.Level, defense = a.Defense, agility = a.Agility, extraRoundAction = a.ExtraRoundAction, move = a.Move,
             learned = a.Spells, leader = a.Definition.Physical?.Leader == true,
             attack = a.Attack, sourceAttack = a.Definition.Attack, mover = a.Definition.Mover.ToString(),
             status = a.Status, activationWord = a.ActivationWord, aiMemory = a.AiMemory, lastTarget = a.LastTarget?.Value,

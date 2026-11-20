@@ -18,7 +18,8 @@ internal static class BattleTurnFlow
                 input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
                     ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
                 progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0),
-                initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition);
+                initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition,
+                useInitialStats: start.NewBattle is null);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
             regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals, deathCredit: start.DeathCredit);
@@ -151,7 +152,7 @@ internal static class BattleTurnFlow
     internal static EngineBattleState GenerateQueue(EngineBattleState battle, out TurnOrderResult<ActorRef> generated)
     {
         generated = TurnOrderRules.Generate(battle.Actors.Select(a =>
-            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Agility, a.Definition.ExtraRoundAction)),
+            new TurnOrderCandidate<ActorRef>(a.Actor, a.ProcessingOrder, a.Position is not null, a.Hp, a.Agility, a.ExtraRoundAction)),
             (ushort)(battle.MainSeed >> 16));
         return battle.With(mainSeed: ((uint)generated.NextSeed << 16) | (battle.MainSeed & 0xFFFF),
             round: checked(battle.Round + 1), queue: generated.Slots, cursor: 0);

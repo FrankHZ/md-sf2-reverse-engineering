@@ -31,7 +31,7 @@ internal static class BattleGrowthRules
             effects.Add(new("level-cap", actor.Actor, actor.Level, 255));
             return actor.With(exp: (byte)total);
         }
-        int[] current = [actor.MaxHp, actor.MaxMp, actor.BaseAttack, actor.Defense, actor.Agility];
+        int[] current = [actor.MaxHp, actor.MaxMp, actor.BaseAttack, actor.BaseDefense, actor.BaseAgility];
         int[] increased = new int[5];
         string[] names = ["max-hp", "max-mp", "base-attack", "defense", "agility"];
         for (int i = 0; i < current.Length; i++)
@@ -73,7 +73,7 @@ internal static class BattleGrowthRules
             (byte)increased[2], (byte)increased[3], (byte)increased[4], known.AsReadOnly(), loadout, actor.Progress?.ClassId);
         effects.Add(new("level", actor.Actor, actor.Level, level));
         // Maxima grow; current HP/MP do not heal. Reapply the admitted ATT-only equipment once.
-        return actor.With(exp: (byte)total, progress: progress,
+        return actor.With(exp: (byte)total, progress: progress, refreshStats: true,
             attack: (byte)Math.Min(200, progress.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)));
     }
 

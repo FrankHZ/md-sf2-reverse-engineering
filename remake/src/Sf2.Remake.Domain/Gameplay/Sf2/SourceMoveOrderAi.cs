@@ -49,7 +49,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         Restrict(mode);
         var targets = _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != Actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
-        if (targets.Length == 0 || Actor.Definition.Move == 0)
+        if (targets.Length == 0 || Actor.Move == 0)
         {
             _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: -1));
             _effects.Add(new("ai-stay", actorRef));
@@ -82,7 +82,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
     {
         BattleAutomaticAction? result = null;
         var target = Target();
-        if (Actor.Definition.Move != 0 && target is not null && (!follow || _blocked[Offset(Actor.Position!)]))
+        if (Actor.Move != 0 && target is not null && (!follow || _blocked[Offset(Actor.Position!)]))
         {
             // The point command first checks the current/adjacent tile in the allied-occupancy grid.
             var nearby = follow ? null : AiMovementRules.AttackPosition(Grid(allies: true), Actor.Position!, 0, Occupied) ??
@@ -100,7 +100,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
                     var reverse = WeightedMovement.Build(Costs(), Offset(target), 128);
                     if (reverse.CostAt(Actor.Position!) is { } distance && distance > 0)
                     {
-                        var preliminary = BattleMovement.Walk(reverse, Actor.Position!, Math.Max(0, distance - Actor.Definition.Move * 2),
+                        var preliminary = BattleMovement.Walk(reverse, Actor.Position!, Math.Max(0, distance - Actor.Move * 2),
                             _battle.Definition.Width, _battle.Definition.Height);
                         var legal = Grid(allies: true);
                         MapPosition? destination = null;
@@ -124,7 +124,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         if (target is null || mode == 0) return;
         if (mode == 1)
         {
-            var reachable = WeightedMovement.Build(Costs(), Offset(target), Actor.Definition.Move * 2);
+            var reachable = WeightedMovement.Build(Costs(), Offset(target), Actor.Move * 2);
             for (int i = 0; i < _blocked.Length; i++) _blocked[i] |= reachable.CostAtOffset(i) is null;
         }
         else
@@ -164,7 +164,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         var costs = Costs();
         foreach (var unit in _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null &&
             (allies ? unit.Faction == Actor.Faction : unit.Faction != Actor.Faction))) costs[Offset(unit.Position!)] = -1;
-        return WeightedMovement.Build(costs, Offset(Actor.Position!), Actor.Definition.Move * 2);
+        return WeightedMovement.Build(costs, Offset(Actor.Position!), Actor.Move * 2);
     }
     private bool Occupied(MapPosition position) => _battle.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
     private BattleAutomaticAction? Attack() => OnGrid(grid =>

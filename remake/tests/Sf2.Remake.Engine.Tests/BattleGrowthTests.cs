@@ -58,6 +58,21 @@ public sealed class BattleGrowthTests
     }
 
     [Fact]
+    public void GrowthUsesEarnedBasesAndRefreshesTheStoredCountersOnce()
+    {
+        var actor = Actor().With(exp: 100);
+        var pending = actor.With(status: 0x1000, refreshStats: true).With(status: 0x3000);
+        var ordinary = BattleProgressionRules.Grow(new Sf2BattleProgressionRule(), actor, 0x1234);
+        var grown = BattleProgressionRules.Grow(new Sf2BattleProgressionRule(), pending, 0x1234);
+        Assert.Equal(ordinary.Seed, grown.Seed);
+        Assert.Equal(ordinary.Actor.BaseDefense, grown.Actor.BaseDefense);
+        Assert.Equal(ordinary.Actor.BaseAgility, grown.Actor.BaseAgility);
+        Assert.Null(grown.Actor.LastRefreshBits);
+        Assert.Equal(17, grown.Actor.Defense);
+        Assert.Equal(22, grown.Actor.Agility);
+    }
+
+    [Fact]
     public void SaturatedExperienceProcessesOnlyOneThresholdAtTheClassCapWithoutDrawing()
     {
         var before = Actor(199, 40);

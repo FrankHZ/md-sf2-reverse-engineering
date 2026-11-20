@@ -8,12 +8,13 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Content.Persistence;
 
-// Finite version2 wire recipe. No runtime types, paths, computed properties or constructor defaults.
+// Finite battle wire recipe shared by versions 2, 4 and 5. No runtime types, paths, computed properties or constructor defaults.
 internal static class BattleSaveWire
 {
     internal sealed record Record(int FormatVersion, int Slot, long Sequence, DateTimeOffset SavedAt, string Kind, Data Data);
     internal sealed record Data(SaveCompatibility Compatibility, int BattleRecipeRevision, SavedBattleRoute Route, Battle Battle, Story Story,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<byte>? EnemyDefinitions = null);
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<byte>? EnemyDefinitions = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? HasClassTerms = null);
     internal sealed record Battle(string Encounter, IReadOnlyList<Actor> Actors, uint MainSeed, uint ThinkingSeed,
         int Round, IReadOnlyList<Turn> Queue, int Cursor, uint Gold, Options Options,
         Presence<SavedBattleRegions> Regions, Presence<Credit> DeathCredit, Custody Custody, Presence<Visuals> Visuals);
@@ -21,7 +22,8 @@ internal static class BattleSaveWire
         byte Facing, ushort Hp, byte Mp, Presence<byte> Exp, Presence<ushort> Kills, Presence<ushort> Defeats,
         ushort Status, bool Initialized, byte Attack, Presence<ushort> ActivationWord, byte AiMemory,
         Presence<byte> PrimaryOrder, Presence<byte> SecondaryOrder, Presence<string> LastTarget,
-        Presence<Progress> Progress, Presence<Loadout> Loadout);
+        Presence<Progress> Progress, Presence<Loadout> Loadout,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ushort? LastRefreshCounters = null);
     internal sealed record Turn(Presence<string> Actor, byte AlteredAgility);
     internal sealed record Options(byte Difficulty, bool AllyAutoBattle, bool OpponentControl, Presence<ushort> MissingCandidateAllyWord);
     internal sealed record Credit(Presence<string> Ally);
@@ -55,7 +57,8 @@ internal static class BattleSaveWire
 
     internal static Record Encode(BattleSaveRecord record) => new(record.FormatVersion, record.Slot, record.Sequence, record.SavedAt,
         "battle-player-input", new(record.Data.Compatibility, record.Data.BattleRecipeRevision, record.Data.Route,
-            Encode(record.Data.Battle, record.Data.HasClassTerms), Encode(record.Data.Story, record.Data.HasClassTerms), record.Data.EnemyDefinitions));
+            Encode(record.Data.Battle, record.Data.HasClassTerms), Encode(record.Data.Story, record.Data.HasClassTerms), record.Data.EnemyDefinitions,
+            record.FormatVersion == 5 ? record.Data.HasClassTerms : null));
     internal static BattleSaveRecord Decode(Record record)
     {
         if (record.Kind != "battle-player-input") throw new SaveFormatException("save-kind");
@@ -63,11 +66,18 @@ internal static class BattleSaveWire
         // scalar contract here, before handing untrusted bytes to the typed validator.
         _ = new MapId(record.Data.Route.Map);
         _ = new MapId(record.Data.Story.EgressMap);
+        if (record.Data.Story.Player.RetainedAllies.Any(a => (a.Status & BattleStatCounters.Mask) != 0))
+            throw new SaveFormatException("save-battle-retained-status");
+        bool timed = record.Data.Battle.Actors.Any(a => (a.Status & BattleStatCounters.Mask) != 0 || a.LastRefreshCounters.HasValue);
+        if (timed != (record.FormatVersion == 5) || timed != record.Data.HasClassTerms.HasValue ||
+            record.Data.Battle.Actors.Any(a => !BattleStatCounters.ValidSavedOperand(a.Status, a.LastRefreshCounters)))
+            throw new SaveFormatException("save-battle-stat-counters");
+        bool classes = record.Data.HasClassTerms ?? (record.FormatVersion == 4);
         var terms = record.Data.Battle.Actors.Select(a => a.Progress).Concat(record.Data.Story.Player.RetainedAllies.Select(a => a.Progress));
-        if (terms.Where(p => p.Present).Any(p => p.Value.ClassId.HasValue != (record.FormatVersion == 4)))
+        if (terms.Where(p => p.Present).Any(p => p.Value.ClassId.HasValue != classes))
             throw new SaveFormatException("save-battle-class");
         return new(record.Slot, record.Sequence, record.SavedAt, new(record.Data.Compatibility, record.Data.BattleRecipeRevision,
-            record.Data.Route, Decode(record.Data.Battle), Decode(record.Data.Story), record.Data.EnemyDefinitions) { HasClassTerms = record.FormatVersion == 4 });
+            record.Data.Route, Decode(record.Data.Battle), Decode(record.Data.Story), record.Data.EnemyDefinitions) { HasClassTerms = classes });
     }
 
     private static Presence<T> Optional<T>(T? value) where T : struct => value.HasValue ? new(value.Value) : default;
@@ -89,7 +99,7 @@ internal static class BattleSaveWire
     private static Battle Encode(BattleContinuationData b, bool classes) => new(b.Encounter, b.Actors.Select(a => new Actor(a.Actor,
         Optional(a.Position, p => p), a.DeploymentPosition, a.Facing, a.Hp, a.Mp, Optional(a.Exp), Optional(a.Kills), Optional(a.Defeats),
         a.Status, a.Initialized, a.Attack, Optional(a.ActivationWord), a.AiMemory, Optional(a.PrimaryOrder), Optional(a.SecondaryOrder),
-        String(a.LastTarget), Optional(a.Progress, p => Encode(p, classes)), Optional(a.Loadout, Encode))).ToArray(),
+        String(a.LastTarget), Optional(a.Progress, p => Encode(p, classes)), Optional(a.Loadout, Encode), a.LastRefreshCounters)).ToArray(),
         b.MainSeed, b.ThinkingSeed, b.Round, b.Queue.Select(t => new Turn(String(t.Actor), t.AlteredAgility)).ToArray(), b.Cursor, b.Gold,
         new(b.Options.Difficulty, b.Options.AllyAutoBattle, b.Options.OpponentControl, Optional(b.Options.MissingCandidateAllyWord)),
         Optional(b.Regions, r => r), Optional(b.DeathCredit, c => new Credit(String(c.Ally?.Value))),
@@ -104,7 +114,7 @@ internal static class BattleSaveWire
         return new(b.Encounter, b.Actors.Select(a => new SavedBattleActor(a.ActorId, Value(a.Position, p => p),
             a.DeploymentPosition, a.Facing, a.Hp, a.Mp, Value(a.Exp), Value(a.Kills), Value(a.Defeats), a.Status,
             a.Initialized, a.Attack, Value(a.ActivationWord), a.AiMemory, Value(a.PrimaryOrder), Value(a.SecondaryOrder),
-            String(a.LastTarget), Value(a.Progress, Decode), Value(a.Loadout, Decode))).ToArray(),
+            String(a.LastTarget), Value(a.Progress, Decode), Value(a.Loadout, Decode), a.LastRefreshCounters)).ToArray(),
             b.MainSeed, b.ThinkingSeed, b.Round, b.Queue.Select(t => new SavedBattleTurn(String(t.Actor), t.AlteredAgility)).ToArray(),
             b.Cursor, b.Gold, new(b.Options.Difficulty, b.Options.AllyAutoBattle, b.Options.OpponentControl, Value(b.Options.MissingCandidateAllyWord)),
             Value(b.Regions, r => r), Value(b.DeathCredit, c => new BattleDeathCredit(c.Ally.Present ? new ActorRef(c.Ally.Value) : null)),
