@@ -20,12 +20,8 @@ _MIRROR_ROOT = REPO_ROOT / "docs" / "design" / "zh-CN"
 _GLOSSARY = _DESIGN_ROOT / "glossary.md"
 _DESIGN_PREFIX = Path("docs/design")
 
-# The glossary is the translation key itself, never a mirror target.
-NON_TRANSLATABLE = {"docs/design/glossary.md"}
-
-# R1 fixed evidence-label translations. A mirror must retain every label class
-# used by its English source, but it may add labels where Chinese prose needs an
-# explicit boundary.
+# R1 fixed evidence-label translations. Full translations preserve the source's
+# label counts; design excerpts preserve the evidence levels of retained claims.
 _EVIDENCE_LABELS = {
     "Confirmed": "已确认",
     "Inferred": "推断",
@@ -73,16 +69,11 @@ def _mirror_path(source: str) -> Path:
 
 
 def _translatable_sources() -> list[str]:
-    if not _DESIGN_ROOT.is_dir():
-        raise ValueError(f"missing design root: {_DESIGN_ROOT}")
-    sources: list[str] = []
-    for path in _DESIGN_ROOT.rglob("*.md"):
-        if _MIRROR_ROOT in path.parents:
-            continue
-        source = (_DESIGN_PREFIX / path.relative_to(_DESIGN_ROOT)).as_posix()
-        if source not in NON_TRANSLATABLE:
-            sources.append(source)
-    return sorted(sources)
+    """Enumerate published Chinese design pages, independent of English additions."""
+    return sorted(
+        (_DESIGN_PREFIX / path.relative_to(_MIRROR_ROOT)).as_posix()
+        for path in _MIRROR_ROOT.rglob("*.md")
+    )
 
 
 def _markdown_links(text: str) -> list[str]:
@@ -249,22 +240,9 @@ def _structure_issues(source_text: str, mirror_text: str) -> list[str]:
     return issues
 
 
-def _record_by_source(manifest: dict[str, Any], source: str) -> dict[str, Any] | None:
-    return next(
-        (
-            document
-            for document in manifest.get("documents", [])
-            if document.get("source") == source
-        ),
-        None,
-    )
-
-
 def _compute_status(source: str) -> dict[str, Any]:
     """Compute the current on-disk state for one translatable source."""
     mirror = _mirror_path(source)
-    if not mirror.is_file():
-        return {"source": source, "status": "pending"}
     return {
         "source": source,
         "status": "translated",
@@ -286,37 +264,32 @@ def generate_zh_translation(
     Existing translated records retain their accepted anchors by default, even when
     their source, mirror, or glossary changed. A caller must explicitly name each
     reviewed source that may be re-anchored. Newly added mirrors receive their first
-    anchor automatically.
+    anchor automatically. Outstanding drift in other records is reported unchanged.
     """
     output_path = output_path or MANIFEST_PATH
     previous = load_json(output_path) if output_path.is_file() else {"documents": []}
     glossary_hash = glossary_sha256 or _sha256(_GLOSSARY)
     today = translated_date or date.today().isoformat()
     requested = set(reanchor_sources)
-    actual_sources = set(_translatable_sources())
-    unknown = sorted(requested - actual_sources)
+    actual_sources = _translatable_sources()
+    previous_by_source = {document["source"]: document for document in previous["documents"]}
+    unknown = sorted(requested - set(actual_sources))
     if unknown:
-        raise ValueError("cannot re-anchor unknown zh source(s): " + ", ".join(unknown))
+        raise ValueError("cannot re-anchor a source without a mirror: " + ", ".join(unknown))
+    removed = sorted(previous_by_source.keys() - set(actual_sources))
+    if removed:
+        raise ValueError("remove retired records from the index explicitly: " + ", ".join(removed))
 
     documents: list[dict[str, Any]] = []
-    for source in _translatable_sources():
-        current = _compute_status(source)
-        if current["status"] == "pending":
-            if source in requested:
-                raise ValueError(f"cannot re-anchor a source without a mirror: {source}")
-            documents.append({"source": source, "status": "pending"})
-            continue
-        prior = _record_by_source(previous, source)
-        if prior and prior.get("status") == "translated" and source not in requested:
+    for source in actual_sources:
+        prior = previous_by_source.get(source, {})
+        if prior and source not in requested:
             documents.append(prior)
         else:
             documents.append(
                 {
-                    "source": source,
-                    "status": "translated",
-                    "mirror": current["mirror"],
-                    "sourceSha256": current["sourceSha256"],
-                    "mirrorSha256": current["mirrorSha256"],
+                    **prior,
+                    **_compute_status(source),
                     "glossarySha256": glossary_hash,
                     "translatedDate": today,
                 }
@@ -331,7 +304,7 @@ def generate_zh_translation(
     result = verify_zh_translation(
         manifest_path=output_path,
         manifest=manifest,
-        require_current=True,
+        require_current=not requested,
     )
     payload = (json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
     output_path.write_bytes(payload)
@@ -365,11 +338,12 @@ def verify_zh_translation(
         if missing:
             detail.append("missing from index: " + ", ".join(missing))
         if extra:
-            detail.append("not translatable: " + ", ".join(extra))
+            detail.append("indexed without a mirror: " + ", ".join(extra))
+        if not detail:
+            detail.append("sources must be unique and sorted")
         raise ValueError("zh translation document set mismatch: " + "; ".join(detail))
 
     translated = 0
-    pending = 0
     stale = 0
     glossary_drift = 0
     mirror_dirty = 0
@@ -377,6 +351,7 @@ def verify_zh_translation(
     fixture_pairs_preserved = 0
     fixture_ids_checked = 0
     fixture_paths_checked = 0
+    design_excerpts = 0
     structural_documents = 0
     headings_checked = 0
     table_rows_checked = 0
@@ -385,34 +360,18 @@ def verify_zh_translation(
 
     for document in index["documents"]:
         source = document["source"]
-        source_text = _source_path(source).read_text(encoding="utf-8")
-        if document["status"] == "pending":
-            pending += 1
-            if _mirror_path(source).is_file():
-                raise ValueError(f"pending document has an unexpected mirror: {source}")
-            continue
-
-        translated += 1
+        source_path = _source_path(source)
+        if not source_path.is_file():
+            raise ValueError(f"indexed Chinese design has no English source: {source}")
         mirror = _mirror_path(source)
-        if not mirror.is_file():
-            raise ValueError(f"translated document is missing its mirror: {source}")
+        translated += 1
         expected_mirror = f"docs/design/zh-CN/{_relative_source_path(source).as_posix()}"
         if document["mirror"] != expected_mirror:
             raise ValueError(
                 f"indexed mirror path does not match source hierarchy: "
                 f"{document['mirror']} vs {expected_mirror}"
             )
-        if mirror.name != Path(source).name:
-            raise ValueError(
-                f"mirror filename does not match source: {source} vs {mirror.name}"
-            )
         mirror_text = mirror.read_text(encoding="utf-8")
-        evidence_issues = _evidence_label_issues(source_text, mirror_text)
-        if evidence_issues:
-            raise ValueError(
-                f"mirror lacks required evidence-label occurrences for {source}: "
-                + "; ".join(evidence_issues)
-            )
         link_issues, link_count = _relative_link_issues(source, mirror_text)
         links_checked += link_count
         if link_issues:
@@ -420,28 +379,50 @@ def verify_zh_translation(
                 f"mirror contains broken relative link or anchor in {source}: "
                 + ", ".join(link_issues)
             )
-        preserved_issues = _preserved_sequence_issues(source_text, mirror_text)
-        if preserved_issues:
-            raise ValueError(
-                f"mirror changed preserved fixture identity in {source}: "
-                + ", ".join(preserved_issues)
-            )
-        fixture_pairs_preserved += 1
-        fixture_ids_checked += len(_FIXTURE_ID_RE.findall(source_text))
-        fixture_paths_checked += len(_FIXTURE_PATH_RE.findall(source_text))
-        structure_issues = _structure_issues(source_text, mirror_text)
-        if structure_issues:
-            raise ValueError(
-                f"mirror structure differs from {source}: " + "; ".join(structure_issues)
-            )
-        structural_documents += 1
-        mirror_structure = _markdown_structure(mirror_text)
-        headings_checked += len(mirror_structure["headingLevels"])
-        table_rows_checked += mirror_structure["tableRows"]
-        fences_checked += mirror_structure["fences"]
-        mermaid_edges_checked += mirror_structure["mermaidEdges"]
+        # Design excerpts deliberately omit technical sections, so the full-source
+        # counts do not describe their accepted structure or evidence references.
+        if document.get("scope") == "design-excerpt":
+            design_excerpts += 1
+            if not _HAN_RE.search(mirror_text):
+                raise ValueError(f"design excerpt has no Chinese text: {source}")
+            untranslated = [
+                label for label in _EVIDENCE_LABELS if f"**{label}" in mirror_text
+            ]
+            if untranslated:
+                raise ValueError(
+                    f"mirror has untranslated evidence labels for {source}: "
+                    + ", ".join(untranslated)
+                )
+        else:
+            source_text = source_path.read_text(encoding="utf-8")
+            evidence_issues = _evidence_label_issues(source_text, mirror_text)
+            if evidence_issues:
+                raise ValueError(
+                    f"mirror lacks required evidence-label occurrences for {source}: "
+                    + "; ".join(evidence_issues)
+                )
+            preserved_issues = _preserved_sequence_issues(source_text, mirror_text)
+            if preserved_issues:
+                raise ValueError(
+                    f"mirror changed preserved fixture identity in {source}: "
+                    + "; ".join(preserved_issues)
+                )
+            fixture_pairs_preserved += 1
+            fixture_ids_checked += len(_FIXTURE_ID_RE.findall(source_text))
+            fixture_paths_checked += len(_FIXTURE_PATH_RE.findall(source_text))
+            structure_issues = _structure_issues(source_text, mirror_text)
+            if structure_issues:
+                raise ValueError(
+                    f"mirror structure differs from {source}: " + "; ".join(structure_issues)
+                )
+            structural_documents += 1
+            mirror_structure = _markdown_structure(mirror_text)
+            headings_checked += len(mirror_structure["headingLevels"])
+            table_rows_checked += mirror_structure["tableRows"]
+            fences_checked += mirror_structure["fences"]
+            mermaid_edges_checked += mirror_structure["mermaidEdges"]
 
-        current_source_hash = _sha256(_source_path(source))
+        current_source_hash = _sha256(source_path)
         current_mirror_hash = _sha256(mirror)
         if current_source_hash != document["sourceSha256"]:
             stale += 1
@@ -461,7 +442,7 @@ def verify_zh_translation(
         "Manifest": manifest_label,
         "DesignDocuments": len(actual_sources),
         "Translated": translated,
-        "Pending": pending,
+        "DesignExcerpts": design_excerpts,
         "Stale": stale,
         "GlossaryDrift": glossary_drift,
         "MirrorDirty": mirror_dirty,
@@ -497,9 +478,6 @@ def translation_rows() -> list[dict[str, Any]]:
             "Source": document["source"],
             "Status": document["status"],
         }
-        if document["status"] == "pending":
-            rows.append(row)
-            continue
         mirror = _mirror_path(document["source"])
         source = _source_path(document["source"])
         row["Translated"] = document["translatedDate"]

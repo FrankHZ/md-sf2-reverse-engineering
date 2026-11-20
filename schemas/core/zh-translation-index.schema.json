@@ -23,13 +23,17 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["source", "status"],
+        "required": [
+          "source", "status", "mirror", "sourceSha256", "mirrorSha256",
+          "glossarySha256", "translatedDate"
+        ],
         "properties": {
           "source": {
             "type": "string",
             "pattern": "^docs/design/(?!zh-CN/)(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.md$"
           },
-          "status": { "enum": ["translated", "pending"] },
+          "status": { "const": "translated" },
+          "scope": { "const": "design-excerpt" },
           "mirror": {
             "type": "string",
             "pattern": "^docs/design/zh-CN/(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.md$"
@@ -40,24 +44,6 @@
           "translatedDate": {
             "type": "string",
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-          }
-        },
-        "if": {
-          "properties": { "status": { "const": "translated" } },
-          "required": ["status"]
-        },
-        "then": {
-          "required": ["mirror", "sourceSha256", "mirrorSha256", "glossarySha256", "translatedDate"]
-        },
-        "else": {
-          "not": {
-            "anyOf": [
-              { "required": ["mirror"] },
-              { "required": ["sourceSha256"] },
-              { "required": ["mirrorSha256"] },
-              { "required": ["glossarySha256"] },
-              { "required": ["translatedDate"] }
-            ]
           }
         }
       }

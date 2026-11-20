@@ -16,7 +16,7 @@ sequential delivery plan.
 | Responsibility | Current accepted boundary | Read next |
 | --- | --- | --- |
 | Original rebuild and research | The pinned disassembly rebuilds the private USA ROM byte-for-byte. Static-first research and bounded original runtime observations retain their own provenance and Unknowns. | [Reproducible original](./docs/research/reproducible-original.md), [research coverage](./docs/research/source-coverage.md) |
-| Design explanation in English and Chinese | The previously accepted design corpus has complete Chinese mirrors at their reviewed baselines: themes, chapter guides and contracts. Some English sources have since changed beyond those anchors and require semantic review. The new battle-analysis pilot is English first, with Chinese pending. Selected static story connections reach ending/reset; this is neither naturally played campaign proof nor game-script localization. | [English reading routes](./docs/README.md#design), [中文阅读入口](./docs/README.zh-CN.md) |
+| Design explanation in English and Chinese | English is canonical. Chinese covers L0–L3 vision, gameplay, system design and behavior, with links to English evidence, configuration and implementation. Selected static story connections reach ending/reset within their stated evidence bounds. | [English reading routes](./docs/README.md#design), [中文阅读入口](./docs/README.zh-CN.md) |
 | State/content-driven remake | Godot 4.7.2 .NET/C# hosts a common session with Domain rules, Application programs and validated Content. Authored packages and bounded private-local content are runnable. | [Play and develop](./remake/README.md), [capabilities and limits](./remake/docs/capability-status.md) |
 
 The private continuous Map 3 → Battle01 victory and usable-return milestone is accepted at the
@@ -71,8 +71,9 @@ under `docs/design/zh-CN/` and the [glossary](./docs/design/glossary.md); resear
 usage retain their English owners. The [documentation roadmap](./docs/design/documentation-roadmap.md)
 owns design scope and synchronization. The
 [battle-design analysis pilot](./docs/design/synthesis/analyses/battle-design-analysis-pilot.md) explains
-Battle01, Taros and Chessboard through preparation, enemy roles and simple responses with tradeoffs;
-its interpretations are labeled and its Chinese mirror is pending.
+Battle01, Taros and Chessboard through preparation, enemy roles and conditional responses.
+The [Chinese design excerpt](./docs/design/zh-CN/synthesis/analyses/battle-design-analysis-pilot.md)
+follows the same three encounters.
 
 ## Project Goals
 

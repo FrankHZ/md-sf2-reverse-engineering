@@ -1,7 +1,7 @@
 # Remake Structure and Quality Review
 
 For the first playable slice beyond damaged-ship control, see the
-[Map14 readiness audit (中文)](pre-voyage-readiness.zh-CN.md). It traces the next reached
+[Map14 readiness audit](pre-voyage-readiness.md). It traces the next reached
 actor wait, distinguishes Battle08 admission from the plank choice, and checks the player,
 developer and delivery records against the implementation.
 

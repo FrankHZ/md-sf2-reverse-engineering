@@ -34,7 +34,7 @@ restores the recorded berth. On field return, the existing map loader places slo
 destination matches and F64 is set. An older v2 with no berth still loads. F64 alone preserves the
 acquisition flag and leaves the berth unknown.
 
-**Confirmed** — With the [audit's private samples](../evidence/polca-raft-engine-save-audit.zh-CN.md),
+**Confirmed** — With the [audit's private samples](../evidence/polca-raft-engine-save-audit.md),
 restoring `before-raft` and submitting two ordinary Down commands reached raft mode at (43,48)
 and field input at (43,49). Re-encoding the same field save with a missing berth, Map13, the
 player's land tile, the unaligned water tile (43,49), or y=64 produced `save-raft-berth` in all

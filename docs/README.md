@@ -43,10 +43,11 @@ and configuration and to the [remake capability trace](../remake/docs/capability
 connect selected accepted static content through ending/reset. Each chapter or encounter guide has
 its own evidence boundary.
 
-The [Chinese reader entry](./README.zh-CN.md) uses the reviewed translation baselines. The
-[roadmap](./design/documentation-roadmap.md#design-and-support-scope) defines the L0–L3 translation
-and Wiki scope. Check the [translation index](../manifests/zh-translation-index.json) or
-`uv run --locked sf2 zh-meta list` for current mirror status during the migration.
+The [Chinese design entry](./README.zh-CN.md) covers L0–L3 vision, gameplay, systems and behavior.
+Mixed pages keep their technical material in the canonical English owners. Check the
+[translation index](../manifests/zh-translation-index.json) or `uv run --locked sf2 zh-meta list`
+for review anchors. The [roadmap](./design/documentation-roadmap.md#design-and-support-scope)
+defines the scope.
 
 Existing themes explain rules, conditional story flow and selected encounter exceptions. The
 [battle-design analysis pilot](./design/synthesis/analyses/battle-design-analysis-pilot.md) adds three bounded

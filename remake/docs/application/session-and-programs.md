@@ -1145,7 +1145,7 @@ The reader retains the unsigned byte comparison for existing package `wait`/`tic
 rows, including authored content. Historical `native-call` rows lack the discarded
 operand and keep their attributed stop until the source is recompiled. Both wait
 forms retain the low byte used to bind controlled walking phases and identify the
-ambient random-walk loop at save time. See the [bounded source and engine checks](../evidence/pre-voyage-readiness.zh-CN.md#复核入口).
+ambient random-walk loop at save time. See the [bounded source and engine checks](../evidence/pre-voyage-readiness.md#reproduction).
 
 A true source jump-to-idle compiles to `jump` plus terminal `idle`; entityActions gets its
 implicit source idle tail. Inline bytes after an unconditional idle jump are consumed through
