@@ -124,11 +124,12 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null, ushort? CasterCostStatus = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
+        Require(CasterCostStatus == (SupportSpell is null ? (ushort?)null : before.GetActor(actor).Status));
         if (Silenced is { } blocked)
         {
             Require(SilenceRules.Present(before.GetActor(actor).Status) && blocked.Action == action &&
@@ -208,7 +209,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     }
 
     private void ValidateState(EngineBattleState before, ActorRef actor, MapPosition destination,
-        BattleSourceLoadout? consumedLoadout = null, bool allowGold = false, EngineBattleState? inventory = null)
+        BattleSourceLoadout? consumedLoadout = null, bool allowGold = false, EngineBattleState? inventory = null, IReadOnlyDictionary<ActorRef, ushort>? statusWrites = null)
     {
         // A stationary laser has no movement-range/occupancy-grid operation. Its
         // own ray admission also permits departed/off-crop targets.
@@ -228,12 +229,13 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         {
             var old = before.Actors[index]; var candidate = Prepared.Actors[index];
             var afterDrops = inventory?.GetActor(old.Actor) ?? old;
+            if (statusWrites is not null && statusWrites.TryGetValue(old.Actor, out ushort word)) afterDrops = afterDrops.With(status: word);
             bool consumedItem = old.Actor == actor && consumedLoadout is not null;
             var expectedLoadout = consumedItem ? consumedLoadout : afterDrops.SourceLoadout;
             bool changedLoadout = !ReferenceEquals(expectedLoadout, old.SourceLoadout);
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
-                candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == old.Status &&
+                candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == afterDrops.Status &&
                 candidate.UsesInitialStats == (!consumedItem && afterDrops.UsesInitialStats) &&
                 candidate.LastRefreshBits == (consumedItem ? null : afterDrops.LastRefreshBits) && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
@@ -488,22 +490,30 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(SupportSpell == spell && Spell is null && AttackSpell is null && Item is null &&
             CompletionEffects.Count == 0 && Reactions.Count == targets.Count && Reactions.Count > 0 &&
             (before.GetActor(actor).IsAlly ? Reward is { Actor: var recipient } && recipient == actor : Reward is null));
+        int cursor = 0;
+        Dictionary<ActorRef, ushort> writes = [];
         for (int i = 0; i < targets.Count; i++)
         {
-            var target = targets[i]; var reaction = Reactions[i]; var draw = ConstructionEffects[i];
-            int threshold = SilenceRules.HasSpells(target) ? 5 + (target.Definition.Resistance >> 14 & 3) : 8;
-            bool success = draw.RandomValue >= threshold;
-            Require(draw.Kind == "rng-dispel" && draw.Actor == actor && draw.Target == target.Actor && draw.RandomRange == 8 &&
-                reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "support-spell" &&
+            var target = targets[i]; var reaction = Reactions[i];
+            int Roll(string kind)
+            {
+                Require(cursor < ConstructionEffects.Count);
+                var draw = ConstructionEffects[cursor++];
+                Require(draw.Kind == kind && draw.Actor == actor && draw.Target == target.Actor && draw.RandomRange == 8 && draw.RandomValue.HasValue);
+                return draw.RandomValue!.Value;
+            }
+            bool success = spell.Resolve(target, Roll, out var word);
+            if (word.HasValue) writes.Add(target.Actor, word.Value);
+            Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "support-spell" &&
                 reaction.Kind == (success ? BattleReactionKind.Status : BattleReactionKind.Ineffective) &&
                 reaction.HpBefore == target.Hp && reaction.HpAfter == target.Hp && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && !reaction.Critical && reaction.Amount == 0 &&
-                reaction.StatusWrite == (success ? (ushort?)(target.Status | SilenceRules.Mask) : null) &&
+                reaction.StatusWrite == (success ? word ?? (ushort)(target.Status | SilenceRules.Mask) : (ushort?)null) &&
                 reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
-        Require(ConstructionEffects.Skip(targets.Count).All(e => e.Actor == actor && e.Target is null &&
+        Require(ConstructionEffects.Skip(cursor).All(e => e.Actor == actor && e.Target is null &&
             e.Kind is "rng-exp-plus" or "rng-exp-minus"));
-        ValidateState(before, actor, destination); ValidateReward(before, actor); ValidateRandom(before, _ => true);
+        ValidateState(before, actor, destination, statusWrites: writes); ValidateReward(before, actor); ValidateRandom(before, _ => true);
     }
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
@@ -530,7 +540,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
         AttackItemSlot.HasValue ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
-            ? actor.With(mp: (byte)Math.Max(0, actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)), refreshStats: true) : actor));
+            ? actor.With(mp: (byte)Math.Max(0, actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)), status: CasterCostStatus, refreshStats: true) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)
     {

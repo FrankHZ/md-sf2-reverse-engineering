@@ -585,7 +585,7 @@ encounter is 1–32767, avoiding source signed delta/addition overflow. Existing
 unique in-map living occupancy. The player ally priest must have status 0. Promoted classes,
 status-family expansion and original fairy/media/timing parity are outside this authored profile.
 The [Battle19 repeat](application/battle19-repeat.md) admits private enemy AURA1 on the selected Dark Bishop. Natural original casting and opportunity timing remain **Unknown**.
-Private AURA 1 can also bind from player growth or a learned ally book. Its current player boundary has engine evidence. SLOW and BOOST duration, effective stats, expiry and battle v5 Continue have engine coverage. Sarah’s SLOW 1/2 and Karna’s BOOST 1 still need ordinary Magic binding and in-game observation. [Current battle spells](application/church-promotion-design.md#current-battle-spells) · [Support spell design](domain/support-spell-status-design.md)
+Private AURA 1 can also bind from player growth or a learned ally book. Its current player boundary has engine evidence. SLOW and BOOST duration, effective stats, expiry and battle v5 Continue have engine coverage. Sarah’s SLOW 1/2 and Karna’s BOOST 1 bind from the current party books. The ordinary Magic command resolves area targets in combatant order and presents AGI followed by DEF for each successful change. [Current battle spells](application/church-promotion-design.md#current-battle-spells) · [Support spell design](domain/support-spell-status-design.md)
 The twelve #1047 comparison Unknowns and
 [predecessor failure handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1357#issuecomment-6451208918)
 remain unchanged.

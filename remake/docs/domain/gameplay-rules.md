@@ -115,7 +115,7 @@ table targeting property. This is static support, not proof of a natural first c
 source/private admission, staged writes/cost, mixed lifecycle and queue boundaries. The
 [native recipe](../development-and-verification.md#silence-observation) uses an authored small battle
 through ordinary inputs in English/Chinese. Private binding, original natural timing/reach and
-full Battle07 story connection remain separate; MUDDLE/BOOST/SLOW/full buff behavior is deferred.
+full Battle07 story connection remain separate; Sarah’s SLOW 1/2 and Karna’s BOOST 1 use the ordinary Magic command and ordered per-target stat changes. MUDDLE and additional buff ranks remain outside this boundary. [SLOW and BOOST rules](support-spell-status-design.md)
 
 ## Finite early enemy spell decisions
 

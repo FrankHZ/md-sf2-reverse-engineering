@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -258,19 +258,30 @@ public sealed class BattleSceneState
     public HealingSceneCursor? Healing { get; }
     public bool IsAura => Spell?.IsAura == true;
     public IReadOnlyList<ActorRef> HealingTargets => Spell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
+    public bool FriendlySupport => SupportSpell?.TargetsTeammates == true;
+    public int SupportStatAmount
+    {
+        get
+        {
+            var unit = Action.Prepared.GetActor(Reaction.Target);
+            int basis = Phase == BattleScenePhase.SupportDefenseMessage ? unit.BaseDefense :
+                unit.BaseAgility | (unit.Definition.ExtraRoundAction ? 128 : 0);
+            return basis * 3 / 8;
+        }
+    }
     public bool SwitchesAlly => (Item is not null || Spell is not null) && Actor != Target;
     // Recovery switches caster/recipient on their actual faction's single scene side.
     private ActorRef RecoveryDisplayed => IsAura && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
         ? Action.Reactions[ReactionIndex - 1].Target
-        : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
+        : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
             ? Target!.Value : Actor;
     public ActorRef? DisplayedAlly => IsAfterTurnNotice || IsFieldDeath ? null : Laser is not null
-        ? HasReaction && LaserTargetsVisible && Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : null : Item is not null || Spell is not null
+        ? HasReaction && LaserTargetsVisible && Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : null : Item is not null || Spell is not null || FriendlySupport
         ? Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Action.Prepared.GetActor(Actor).IsAlly ? Actor : Target;
     private bool LaserTargetsVisible => Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or
         BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage;
-    public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : Item is not null || Spell is not null
+    public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : Item is not null || Spell is not null || FriendlySupport
         ? !Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
         : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
@@ -294,7 +305,7 @@ public sealed class BattleSceneState
         Phase == BattleScenePhase.ResultMessage && ReactionKind == "Damage" && !Critical &&
         ActionKind is "physical-first" or "physical-second" or "physical-counter";
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or
-        BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage
+        BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.DeathMessage
         or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage
         or BattleScenePhase.ItemDroppedMessage or BattleScenePhase.ItemReceivedMessage;
     public PresentationCueKind CompletionKind => Phase switch
@@ -452,6 +463,8 @@ internal static class BattleSceneContinuation
                 break;
             case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
             case BattleScenePhase.ResultMessage:
+                if (scene.SupportSpell?.ChangesStats == true && scene.Reaction.Kind == BattleReactionKind.Status)
+                { next = BattleScenePhase.SupportDefenseMessage; break; }
                 if (scene.AttackSpell is not null || scene.SupportSpell is not null)
                 {
                     if (scene.TargetDefeated) { next = BattleScenePhase.DeathMessage; break; }
@@ -501,6 +514,7 @@ internal static class BattleSceneContinuation
                 if (scene.ItemReceipt is not null) { next = BattleScenePhase.ItemDroppedMessage; break; }
                 goto case BattleScenePhase.ItemReceivedMessage;
             case BattleScenePhase.ItemDroppedMessage: next = BattleScenePhase.ItemReceivedMessage; break;
+            case BattleScenePhase.SupportDefenseMessage:
             case BattleScenePhase.ItemReceivedMessage:
                 if (index + 1 < scene.Action.Reactions.Count) { index++; next = scene.Laser is not null || scene.AttackSpell is not null || scene.SupportSpell is not null ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage; }
                 else if (scene.Action.Reward is not null)

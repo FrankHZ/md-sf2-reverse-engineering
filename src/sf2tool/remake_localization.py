@@ -416,7 +416,11 @@ def derive(args: argparse.Namespace) -> dict:
     if battle26:
         road_enemies.update({19, 72}.difference(name_ids["name.enemy"]))
     name_ids["name.enemy"] += tuple(sorted(road_enemies))
-    if northern_enemies:
+    if northern_enemies or args.scope == "current" and any(
+        spell["spell"] == "boost"
+        for growth in world["world"].get("growth", [])
+        for spell in growth["spells"]
+    ):
         name_ids["name.spell"] += (3,)  # BOOST
     if northern_enemies or 81 in repeat_enemies:
         name_ids["name.spell"] += (1,)  # AURA

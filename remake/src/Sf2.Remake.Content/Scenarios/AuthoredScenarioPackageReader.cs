@@ -126,11 +126,12 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 continue;
             }
             Require(!supports.ContainsKey(key), "duplicate-spell", "spells.id/level");
-            if (Text(effect, "kind") == "dispel")
+            if (Text(effect, "kind") is "dispel" or "slow" or "boost")
             {
                 Object(effect, "spell.effect", "kind", "radius");
                 var support = new SupportSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
                     (byte)Number(spell, "minimumRange", 0, 255), (byte)Number(spell, "maximumRange", 0, 255), (byte)Number(effect, "radius", 0, 255));
+                Require(key.Value == Text(effect, "kind"), "support-spell-definition", "spell.effect");
                 support.RequireSupported();
                 Require(!spells.ContainsKey(key) && !retreats.ContainsKey(key) && !attacks.ContainsKey(key) && supports.TryAdd(key, support),
                     "duplicate-spell", "spells.id/level");

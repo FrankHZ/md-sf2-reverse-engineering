@@ -26,7 +26,7 @@ internal static class IdentityIconReader
         var identities = definitions.Items.Values.Where(item => item.ItemTypeExpression != "WEAPON" ||
                 definitions.Classes.Values.Any(allowed => item.EquipFlags.Contains(allowed.Code)))
             .Select(item => $"identity-icon.item.{item.Id}")
-            .Concat(definitions.Spells.Values.Where(spell => spell.Code is "HEAL" or "DETOX" or "EGRESS" or "BLAZE" or "BLAST" or "FREEZE" or "DISPEL")
+            .Concat(definitions.Spells.Values.Where(spell => spell.Code is "HEAL" or "DETOX" or "EGRESS" or "BLAZE" or "BLAST" or "FREEZE" or "DISPEL" or "SLOW" or "BOOST")
                 .Select(spell => $"identity-icon.spell.{spell.BaseId}"))
             .Concat(definitions.Enemies.Values.SelectMany(enemy => enemy.Items)
                 .Where(slot => slot.Item == "BRASS_KNUCKLES").Select(_ => "identity-icon.item.28"))

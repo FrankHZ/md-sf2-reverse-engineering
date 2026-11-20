@@ -25,10 +25,15 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         if (actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return new(spell.MinimumRange, spell.MaximumRange, SupportSpell: spell);
     }
-    private static bool Eligible(BattleActorState actor, BattleActorState target) => target.Faction != actor.Faction &&
+    private static bool Eligible(BattleActorState actor, BattleActorState target, SupportSpellDefinition spell) => (target.Faction == actor.Faction) == spell.TargetsTeammates &&
         target.Initialized && target.Hp > 0 && target.Position is not null && (target.ActivationWord & 8) != 8;
-    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
-        battle.Actors.Where(a => Eligible(battle.GetActor(actor), a)).OrderBy(a => a.ProcessingOrder).Select(a => a.Actor).ToArray();
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action)
+    {
+        var caster = battle.GetActor(actor);
+        var spell = battle.Definition.SupportSpells[action.Spell!.Value];
+        return battle.Actors.Where(target => Eligible(caster, target, spell))
+            .OrderBy(target => target.ProcessingOrder).Select(target => target.Actor).ToArray();
+    }
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef target)
     {
@@ -39,10 +44,11 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         MapPosition destination, SupportSpellDefinition spell, ActorRef center)
     {
         var caster = battle.GetActor(actor); var target = battle.Actors.SingleOrDefault(a => a.Actor == center);
-        if (target is null || !Eligible(caster, target)) throw new BattleRuleException("support-spell-target", "target");
-        if (!BattleRange.Contains(destination, target.Position!, spell.MinimumRange, spell.MaximumRange))
+        if (target is null || !Eligible(caster, target, spell)) throw new BattleRuleException("support-spell-target", "target");
+        MapPosition Position(BattleActorState unit) => unit.Actor == actor ? destination : unit.Position!;
+        if (!BattleRange.Contains(destination, Position(target), spell.MinimumRange, spell.MaximumRange))
             throw new BattleRuleException("target-range", "target");
-        var targets = battle.Actors.Where(a => Eligible(caster, a) && BattleRange.Contains(target.Position!, a.Position!, 0, spell.Radius))
+        var targets = battle.Actors.Where(a => Eligible(caster, a, spell) && BattleRange.Contains(Position(target), Position(a), 0, spell.Radius))
             .OrderBy(a => a.ProcessingOrder).ToArray();
         if (targets.Any(a => !SilenceRules.Supported(a.Status, battle.Definition.Poison)))
             throw new BattleRuleException("support-spell-target-status", "actors.status", true);
@@ -54,20 +60,30 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         var spell = RequireAction(battle, actor, action).SupportSpell!;
         var targets = Targets(battle, actor, destination, spell, center ?? throw new BattleRuleException("support-spell-target", "target"));
         uint seed = battle.MainSeed; List<BattleEffect> effects = []; List<BattleReaction> reactions = [];
+        Dictionary<ActorRef, ushort> writes = [];
         foreach (var target in targets)
         {
-            var draw = BattleRandom.NextMain(seed, 8); seed = draw.After;
-            effects.Add(new("rng-dispel", actor, draw.Before, draw.After, 8, draw.Value, target.Actor));
-            int threshold = SilenceRules.HasSpells(target) ? 5 + (target.Definition.Resistance >> 14 & 3) : 8;
-            bool success = draw.Value >= threshold;
+            int Roll(string kind)
+            {
+                var draw = BattleRandom.NextMain(seed, 8);
+                seed = draw.After;
+                effects.Add(new(kind, actor, draw.Before, draw.After, 8, draw.Value, target.Actor));
+                return draw.Value;
+            }
+            bool success = spell.Resolve(target, Roll, out var word);
+            if (word.HasValue) writes.Add(target.Actor, word.Value);
             reactions.Add(new(actor, target.Actor, "support-spell", success ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
-                target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: success ? (ushort)(target.Status | SilenceRules.Mask) : null));
+                target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: success ? word ?? (ushort)(target.Status | SilenceRules.Mask) : null));
         }
         var caster = battle.GetActor(actor);
         var award = caster.IsAlly ? BattleProgressionRules.Award(progression, battle.With(mainSeed: seed), caster, Kind, reactions)
             : (Amount: 0, Seed: seed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
         effects.AddRange(award.Effects);
-        return new(battle.With(mainSeed: award.Seed, actors: battle.Actors.Select(a => a.Actor == actor ? a.With(position: destination) : a)),
-            actor, destination, reactions.AsReadOnly(), caster.IsAlly ? new(actor, award.Amount) : null, effects.AsReadOnly(), [], SupportSpell: spell);
+        return new(battle.With(mainSeed: award.Seed, actors: battle.Actors.Select(a =>
+            {
+                if (writes.TryGetValue(a.Actor, out ushort word)) a = a.With(status: word);
+                return a.Actor == actor ? a.With(position: destination) : a;
+            })),
+            actor, destination, reactions.AsReadOnly(), caster.IsAlly ? new(actor, award.Amount) : null, effects.AsReadOnly(), [], SupportSpell: spell, CasterCostStatus: caster.Status);
     }
 }

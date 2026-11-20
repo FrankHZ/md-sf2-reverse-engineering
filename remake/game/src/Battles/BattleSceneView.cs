@@ -441,16 +441,17 @@ internal sealed partial class BattleSceneView : Control
         var actor = battle.GetActor(state.Actor);
         var target = !state.IsAfterTurnNotice && state.Target is { } id ? battle.GetActor(id) : null;
         // Recovery occupies one actual scene side, switching on Application's displayed participant.
-        if (state.Spell is not null || state.Item is not null)
+        if (state.Spell is not null || state.Item is not null || state.FriendlySupport)
         {
             actor = battle.GetActor(state.DisplayedAlly ?? state.DisplayedEnemy ?? state.Actor);
             target = null;
         }
-        _actorCard.Present(actor, ActorName(actor.Actor), GameText.Get("battle.acting"));
+        string role = state.FriendlySupport && actor.Actor != state.Actor ? "battle.target" : "battle.acting";
+        _actorCard.Present(actor, ActorName(actor.Actor), GameText.Get(role));
         _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), GameText.Get("battle.target"));
         Vector2 Place(BattleActorState unit, Vector2 size)
         {
-            bool recoveryTarget = (state.Spell is not null || state.Item is not null) && unit.Actor != state.Actor;
+            bool recoveryTarget = (state.Spell is not null || state.Item is not null || state.FriendlySupport) && unit.Actor != state.Actor;
             float bottom = _messagePanel.IsVisibleInTree() ? _messagePanel.Position.Y : GetViewportRect().Size.Y - 32;
             if (unit.IsAlly && !recoveryTarget)
                 return new(GetViewportRect().Size.X - StoryTheme.GameplayInset - size.X, StoryTheme.BelowMenu);
@@ -472,7 +473,7 @@ internal sealed partial class BattleSceneView : Control
             Error = GameText.Ready ? "display-operands" : "localization-resources";
             return "Message unavailable (" + Error + ").";
         }
-        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase is BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage or BattleScenePhase.StunMessage or BattleScenePhase.StunTurnMessage)
+        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase is BattleScenePhase.SlowExpiredMessage or BattleScenePhase.BoostExpiredMessage or BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage or BattleScenePhase.StunMessage or BattleScenePhase.StunTurnMessage)
         {
             var spell = state.SilencedSpell ?? state.SupportSpell?.Spell;
             if (spell is { } key && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
@@ -580,6 +581,12 @@ internal sealed partial class BattleSceneView : Control
                 "item-use" => LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(state.Item!.ItemId, state.Item.Name)),
                 "prism-laser" => LocalizedMessage("battle.scene.prism", ActorName(state.Actor)), _ => null,
             },
+            BattleScenePhase.ResultMessage when state.SupportSpell?.ChangesStats == true && state.ReactionKind == "Status" =>
+                LocalizedMessage(state.FriendlySupport ? "battle.scene.agi-up" : "battle.scene.agi-down", Target(), state.SupportStatAmount),
+            BattleScenePhase.SupportDefenseMessage =>
+                LocalizedMessage(state.FriendlySupport ? "battle.scene.def-up" : "battle.scene.def-down", Target(), state.SupportStatAmount),
+            BattleScenePhase.SlowExpiredMessage => LocalizedMessage("battle.scene.slow-expired", Target()),
+            BattleScenePhase.BoostExpiredMessage => LocalizedMessage("battle.scene.boost-expired", Target()),
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {
                 "Status" => LocalizedMessage(state.Spell?.CuresPoison == true || state.Item?.CuresPoison == true ? "battle.scene.poison-cured" : "battle.scene.silence", Target()),
