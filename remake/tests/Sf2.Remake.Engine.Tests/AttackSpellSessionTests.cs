@@ -83,6 +83,45 @@ public sealed class AttackSpellSessionTests
         Assert.DoesNotContain(unlearned.QueryBattleChoices().Spells, s => s.Spell == new SpellRef("blaze", 2));
     }
 
+    [Theory]
+    [InlineData(false, 7)]
+    [InlineData(true, 8)]
+    public void BoltOneUsesLightningResistanceAndPromotedPower(bool promoted, int damage)
+    {
+        var admitted = Admitted("attack-spells");
+        var original = admitted.Definition.Encounters.Values.Single();
+        SpellRef bolt = new("bolt", 1);
+        var deployments = original.Deployments.Select(row => row.Actor == Caster
+            ? row with { Definition = new(Caster, BattleClassRule.Ordinary, 5, 30, 20, 10, 5, 80, false, 5,
+                [bolt], row.Definition.Physical! with { Promoted = promoted }, BattleMover.Mage) }
+            : row.Actor == Center
+                ? row with { Definition = new(Center, BattleClassRule.Ordinary, 5, 30, 0, 10, 5, 20, false, 5,
+                    [], row.Definition.Physical, resistance: 192 | 8) } // Fire weakness, lightning major resistance.
+                : row);
+        var encounter = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height,
+            original.Terrain, deployments, [], original.Rewards, attackSpells: [new(bolt, 8, 14, 1, 2, 1, AttackSpellElement.Lightning)]);
+        var start = admitted.Start;
+        var input = new BattleStartInput(start.Encounter, start.Actors.Select(row => row.Actor == Center ? row with { Hp = 30 } : row),
+            0x12340000u, start.ThinkingSeed, start.Gold);
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(new ScenarioDefinition("bolt", [encounter]), input)).Session;
+        var choice = Assert.Single(session.QueryBattleChoices().Spells, row => row.Spell == new SpellRef("bolt", 1));
+        Assert.True(choice.Enabled);
+        Assert.Equal((byte?)2, choice.MaximumRange);
+        var battle = session.Current.Battle;
+        Assert.Equal(damage, Sf2AttackSpellAction.PotentialDamage(battle.GetActor(Caster), battle.GetActor(Center),
+            encounter.AttackSpells[bolt]));
+        var result = Cast(session, "bolt", 1);
+        Assert.Equal(new[] { Wing, Center }, session.Current.BattleScene!.AttackTargets);
+        var rolls = result.Observations.Where(row => row.Kind == "rng-spell-critical").ToArray();
+        Assert.Equal(2, rolls.Length);
+        Assert.All(rolls, roll => Assert.Equal((ushort?)8, roll.RandomRange));
+        var finished = FinishBattleScenes(session, result);
+        Assert.Equal(12, session.Current.Battle.GetActor(Caster).Mp);
+        Assert.Single(finished.Observations, row => row.Kind == "exp" && row.Actor == Caster);
+        Assert.InRange(session.Current.Battle.GetActor(Center).Hp, 30 - damage, 30 - damage + (promoted ? 2 : 0));
+        Assert.True(session.Current.HasBattleControl);
+    }
+
     [Fact]
     public void PaidPrefixSurvivesWrongCompletionAndLaterCreditFailureWithoutRecast()
     {

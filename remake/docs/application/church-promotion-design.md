@@ -8,7 +8,7 @@
 
 Both cold field saves continued through Map02, Map71, Map72 and Ketto to the Battle26 repeat. HERO moved with MOV 6 and normal terrain costs, attacked with sprite 24/palette 0 and the equipped sword, received damage and earned a level. English reached HERO 2/20 EXP, Chinese HERO 2/0. Both spell books retained one BOLT 1 through level-up and cold Continue. Both cold battle saves continued at player input and returned through ordinary paid EGRESS to a playable Map36 with HERO 2. In English the complete battle save data after level-up matched across uninterrupted play and a separate cold Continue from the same pre-action save. Field formats 1/3 carry the existing Class. A changed party writes battle format 4 with class terms for deployed and retained members. An actual Battle26 format-2 save with a retained ally restored and re-saved in format 2. The engine cases in `FieldServiceTests`, `OpeningSaveTests` and `BattleSaveProgressTests` cover level 19/20/late, living/fallen reserve, equipment variation, cancel, stale/repeated answers, future growth, invalid pair/book and changed-class reserve restore.
 
-The Battle26 spell action witnessed here was EGRESS. An ordinary BOLT 1 cast remains unverified. Its action binding and the HEAL 4 and AURA 1 bindings belong to [#1964](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1964). Other spell actions have separate owners. [DETOX 2/3](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) · [SLOW and BOOST](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1966) · [MUDDLE, DESOUL and SLEEP](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967)
+The promotion observation used EGRESS and proved that the book survived the rite, level-up and Continue. The [battle spell observation](#current-battle-spells) exercises the retained BOLT 1 as an action.
 
 The first scene pilot added eight HERO weapon bindings and 18 unique rasters, 46,956 compact JSON bytes including their actor records. The growth row takes 1,570 bytes. The rebuilt world is 101,808,849 bytes versus 101,761,388 for the Rick selection. The campaign merges the Battle26 member frames into earlier mounted scenes in memory. Only the Battle26 attack is witnessed. The source promotion fanfare (command 25) is absent from the mounted audio selection. The service uses the current church audio. Original rite timing, audiovisual parity and promotion-specific original SRAM behavior remain **Unknown**. The shared rite audio for command 25 and the remaining ordinary pairs are tracked in [#1956](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1956) and special promotion in [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
 
@@ -34,6 +34,45 @@ foreach ($language in 'en', 'zh-CN') {
 For the upgraded legacy input use `-Mode legacy -Language en`. To compare continuation determinism, use a fresh journey with `-Mode fight -Seed <battle-ready-slot.json>` from the road-fight receipts and compare decoded level-slot payload `data`. To rebuild the private content from the registered sources use the accepted `handoffs/issue1939/runner/Rebuild.ps1 -Repo $repo -Output <fresh-package-directory>` on this revision. The evidence runner uses mapped input and state, scene and error projections.
 
 **Retained failures.** Initial content admission stopped on HERO sprite 24. The first cold Battle26 fight completed a HERO attack and stopped at `ai-target-class`. The pinned `data/battles/global/aipriority.asm` gives HERO rank 12 for the archer table and 1 for regular, flying and mage. The corrected run resumed the same battle slot. In the Chinese `zh-CN-fight01` run, ordinary Save published HERO 2 and the driver completed its post-save return. After `END fight`, process shutdown exited **−1073741795 (0xC000001D)** in `godotsharp_internal_refcounted_disposed → GodotObject.Dispose(Boolean) → GodotObject.Finalize → System.GC.RunFinalizers`. A fresh process loaded that exact published slot, used EGRESS and saved on Map36, exit 0. Whether the shutdown fault shares a cause with [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716) is **Unknown**.
+
+## Current battle spells
+
+**Standard rigor.** [#1964](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1964) connects the current retail spell records to the existing attack and healing actions. The private catalog selects source ranks from admitted ally growth and current books, enemy books and item use. A packed highest rank expands to its lower ranks. Actual action selection still checks the live caster's book, MP, status and target. Cancellation before commit preserves HP, MP, EXP and RNG.
+
+| Source action | Terms and current boundary |
+| --- | --- |
+| BOLT 1 | Bowie first learns it at SDMN 22. HERO inherits his learning list and retains the book. The source rank costs 8 MP, has power 14, opponent center range 1–2 and Manhattan radius 1. The attack uses lightning resistance and HERO's integer 5/4 power modifier, giving power 17 before resistance. |
+| HEAL 4 | Sarah first learns it at PRST 40. It costs 20 MP, targets one living teammate or self at range 0–1 and uses power 255 to restore all missing HP. Enemy HEAL ranks do not control its availability. |
+| AURA 1 | Karna first learns it at PRST 33. It costs 7 MP and restores up to 15 HP per living teammate in source-slot order within Manhattan radius 1 of a legal teammate center at range 0–3. An engine case with legal synthetic Karna and no enemy AURA confirms ordered recovery, and the bound fairy path confirms one payment and EXP award across recipients. Ordinary acquisition and casting in the connected campaign remain **Unknown**. |
+
+The source operands are from the pinned USA disassembly's spell table, element table and ally growth. The [spell-resolution contract](../../../docs/design/contracts/battle/spell-resolution.md) owns the damage, promoted adjustment, full recovery and targeting evidence. [Spell terms](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) · [Elements](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm) · [Bowie](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats00.asm) · [Sarah](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) · [Karna](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm)
+
+**Confirmed in the remake.** The ordinary Battle26 repeat from the accepted English HERO 2 level-up slot has no HEAL 4 enemy. Both language settings use that same seed. Sarah's HEAL 4 spends 20 MP (29 to 9), restores Bowie from 32 to 62 HP and earns 12 EXP. Bowie's BOLT 1 spends 8 MP (16 to 8), damages the Dark Bishop for 15 HP (39 to 24) and earns 19 EXP. Both casts were canceled at target selection and reselected before committing. Sarah's cast returns to Bowie in round 5 and Bowie's cast returns to Peter in round 5. Battle Save, fresh title Continue and a second save produce equal complete decoded battle data in each language. The Simplified Chinese choices display 治疗 4 and 雷击 1, and their battle results and EXP messages use Simplified Chinese. Bowie's saved player name remains Bowie.
+
+Use the registered `handoffs/issue1964/Review.ps1` with the unchanged promotion handoff and Pacalon inputs. The driver copies `receipts/en-control01/level-slot.json` into a fresh external player-save namespace per language. It drives ordinary Magic, target, cancel, confirm and Save inputs, then compares the whole decoded battle record after cold Continue. The runner stores receipts under the executing checkout's ignored `local/issue1964/receipts`.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+uv run sf2 verify engine
+uv run sf2 verify adapter
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj -c Debug --no-restore
+$repo = (Get-Location).Path
+$handoffs = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs'
+foreach ($language in 'en', 'zh-CN') {
+    $journey = 'review-' + [guid]::NewGuid().ToString('N').Substring(0,8)
+    foreach ($mode in 'cast', 'cold') {
+        & pwsh -NoProfile -File "$handoffs/issue1964/Review.ps1" -Repo $repo `
+            -PromotionHandoff "$handoffs/issue1955" -PacalonInputs "$handoffs/issue1927/pacalon" `
+            -Journey $journey -Language $language -Mode $mode
+        if ($LASTEXITCODE) { throw "Inspect $language $mode receipts and native exit" }
+    }
+}
+```
+
+BOLT presentation uses the existing modern elemental projection. Ordinary higher-rank player AURA remains beyond this private binding. The accepted SLOW and BOOST design is pending implementation. [SLOW and BOOST design](../domain/support-spell-status-design.md) · [DETOX 2/3](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) · [MUDDLE, DESOUL and SLEEP](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967)
+
+All four candidate processes exited 0. The Simplified Chinese cast process and both cold processes reported ObjectDB leak warnings after the driver completed Save. A connection to the native shutdown fault under [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716) remains **Unknown**.
 
 ## Which parties can exercise it?
 
