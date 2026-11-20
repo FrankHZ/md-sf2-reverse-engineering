@@ -130,6 +130,38 @@ public sealed class SupportSpellActionTests
     }
 
     [Fact]
+    public void SlowRollsFollowDeploymentProcessingOrderWhenAuthoredSourceSlotsDiffer()
+    {
+        var initial = Battle(doc =>
+        {
+            Book(doc);
+            var encounter = doc["encounters"]![0]!;
+            var init = encounter["initialization"]!;
+            var smoke = doc["actors"]![2]!;
+            smoke["resistance"] = 1 << 14;
+            var second = smoke.DeepClone();
+            second["id"] = "second";
+            doc["actors"]!.AsArray().Add(second);
+            var smokePlacement = encounter["placements"]![2]!;
+            smokePlacement["processingOrder"] = 129;
+            var placement = smokePlacement.DeepClone();
+            placement["actor"] = "second"; placement["processingOrder"] = 128;
+            placement["x"] = 4; placement["y"] = 1;
+            encounter["placements"]!.AsArray().Add(placement);
+            var state = doc["start"]!["actors"]![2]!.DeepClone();
+            state["actor"] = "second";
+            doc["start"]!["actors"]!.AsArray().Add(state);
+            init["enemyCount"] = 2;
+            init["sourceCombatants"]!.AsArray().Add(new JsonObject { ["slot"] = 129, ["actor"] = "second" });
+        });
+        var cast = Cast(initial.With(mainSeed: 0x12340000), "slow", 2, Smoke);
+        Assert.Equal(new[] { ("second", 7), (Smoke.Value, 0) },
+            cast.ConstructionEffects.Where(e => e.Kind == "rng-slow").Select(e => (e.Target!.Value.Value, (int)e.RandomValue!.Value)));
+        Assert.Equal(0, cast.Prepared.GetActor(Smoke).Status);
+        Assert.Equal(0x0C00, cast.Prepared.GetActor(new("second")).Status);
+    }
+
+    [Fact]
     public void SlowAreaConsumesOnlyReachedRollsInSourceSlotOrder()
     {
         var original = Battle(d =>
