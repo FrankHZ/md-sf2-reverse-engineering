@@ -47,13 +47,19 @@ observation limits. [Campaign feature trace](../../remake/docs/capability-status
   [Equipment code](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs) ·
   [HERO evidence and limits](../../remake/docs/application/church-promotion-design.md#playable-hero-and-reproduction) ·
   [Connected equipment status](../../remake/docs/capability-status.md#connected-battle-equipment-agreement)
+- **L3 ring equipment design.** One weapon and one ring can be worn in the same pack. Current
+  class determines eligibility. Static ring effects follow status refresh, and the weapon supplies
+  physical range. The design specifies separate removal choices, custody, promotion and Continue
+  for Power, Protect, Quick and Running Ring. [Ring equipment and acceptance](../../remake/docs/domain/ring-equipment-design.md)
 - **Remaining design and work.** Use the rite owner to admit the next actor/class through its actual
-  growth, equipment/book, appearance and save consumers. Check shared weapon/ring refresh and
-  custody before opening use, breakage, repair or curse behavior. [Ordinary classes #1956](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1956) ·
+  growth, equipment/book, appearance and save consumers. Static ring implementation and its ordinary
+  witnesses precede the dependent Use, Repair, curse and Sandals work.
+  [Ordinary classes #1956](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1956) ·
   [Special rites #1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957) ·
   [Ring slot #1946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1946) ·
   [Use and repair #1952](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1952) ·
-  [Black Ring #1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926)
+  [Black Ring #1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) ·
+  [Chirrup Sandals #1962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1962)
 
 ## Status spells
 
