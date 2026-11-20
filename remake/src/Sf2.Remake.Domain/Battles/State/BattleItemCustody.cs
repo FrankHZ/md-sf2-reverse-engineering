@@ -24,6 +24,16 @@ public sealed class BattleItemCustody
     internal BattleItemCustody AddDeal(byte item) => new(OnceFlags,
         Deals.Where(pair => pair.Key != item).Append(new KeyValuePair<byte, byte>(item,
             (byte)Math.Min(15, Deals.GetValueOrDefault(item) + 1))).ToDictionary(), Depot);
+
+    internal BattleItemCustody RemoveDeal(byte item)
+    {
+        byte count = Deals.GetValueOrDefault(item);
+        if (count == 0) return this;
+        var deals = Deals.ToDictionary();
+        if (count == 1) deals.Remove(item);
+        else deals[item] = (byte)(count - 1);
+        return new(OnceFlags, deals, Depot);
+    }
 }
 
 public sealed record EnemyDropItem(byte ItemId, string Name, bool Rare);

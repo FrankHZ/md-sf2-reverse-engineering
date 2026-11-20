@@ -18,9 +18,12 @@ internal static class ShopInstructionReader
         if (source is not null)
         {
             Require(!row.TryGetProperty("items", out _), "private-shop-items", "shop.items");
-            items = source.Items.Values.Select(item => new ShopItem(item.Id, item.DisplayName, item.Price,
-                item.ItemTypeExpression.Split('|').Contains("UNSELLABLE"),
-                item.ItemTypeExpression.Split('|').Contains("RARE")));
+            items = source.Items.Values.Select(item =>
+            {
+                var types = item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries);
+                return new ShopItem(item.Id, item.DisplayName, item.Price, types.Contains("UNSELLABLE"),
+                    types.Contains("RARE"), types.Contains("CURSED"));
+            });
             Require(stock.All(id => source.Items.TryGetValue(id, out var item) && item.ItemTypeExpression is "WEAPON" or "WEAPON|BREAKABLE" or "CONSUMABLE"),
                 "shop-stock-unsupported", "shop.stock", true);
         }

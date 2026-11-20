@@ -72,7 +72,7 @@ internal sealed partial class ShopServiceView : Control
         _hint = GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         _hint += "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕";
         if (IsMenu) _services.Present(input, _index, _title, reason, _hint,
-            "shop.leave", [_assetError is null, _assetError is null, false, false]);
+            "shop.leave", _options.Take(4).Select(option => _assetError is null && option.Command is not null).ToArray());
         else _page.Present(reason.Length == 0 ? _title : _title + "\n" + reason, _hint, input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("shop.back"),
             _options.Select((option, i) => (option.Text, _identities[i], option.Command is not null)).ToArray(), _icons, _index);
         var members = session.QueryPartyDetails()!.Members;
@@ -92,16 +92,21 @@ internal sealed partial class ShopServiceView : Control
         {
             case ShopPhase.Menu:
                 Add("shop.buy", new ChooseShop(wait.Token, ShopAction.Buy)); Add("shop.sell", new ChooseShop(wait.Token, ShopAction.Sell));
-                Add("shop.repair", null); Add("shop.deals", null); Add("shop.leave", new BackShop(wait.Token)); break;
+                Add("shop.repair", null);
+                Add("shop.deals", _session.Current.Exploration!.Party.ItemCustody is null
+                    ? null : new ChooseShop(wait.Token, ShopAction.Deals));
+                Add("shop.leave", new BackShop(wait.Token)); break;
             case ShopPhase.Stock:
-                foreach (byte id in wait.Definition.Stock)
+                if (wait.Action == ShopAction.Deals) _title += "\n" + GameText.Get("shop.deals");
+                foreach (byte id in wait.AvailableStock(_session.Current.Exploration!.Party.ItemCustody))
                 {
                     var item = wait.Definition.Items[id];
                     _options.Add((GameText.Get("shop.stock", DisplayNames.Item(id, item.Name), item.Price), new SelectShopItem(wait.Token, id)));
                 }
+                if (_options.Count == 0) _title += "\n" + GameText.Get("shop.deals.empty");
                 break;
             case ShopPhase.Member:
-                _title += "\n" + GameText.Get(wait.Action == ShopAction.Buy ? "shop.recipient" : "shop.seller");
+                _title += "\n" + GameText.Get(wait.Action == ShopAction.Sell ? "shop.seller" : "shop.recipient");
                 if (wait.Item is { } itemId) _title += "\n" + GameText.Get("shop.stock", DisplayNames.Item(itemId, wait.Definition.Items[itemId].Name), wait.Definition.Items[itemId].Price);
                 foreach (var member in _session.QueryPartyDetails()!.Members)
                     _options.Add((PartyStatusView.MemberName(member, _session), new SelectShopMember(wait.Token, member.Carried.Actor)));
@@ -121,13 +126,13 @@ internal sealed partial class ShopServiceView : Control
             case ShopPhase.Confirm:
                 var offer = wait.Offer!;
                 var selected = _session.QueryPartyDetails()!.Members.Single(row => row.Carried.Actor == offer.Member);
-                _title += "\n" + GameText.Get(wait.Action == ShopAction.Buy ? "shop.confirm-buy" : "shop.confirm-sell",
+                bool selling = offer.Action == ShopAction.Sell;
+                _title += "\n" + GameText.Get(selling ? "shop.confirm-sell" : "shop.confirm-buy",
                     DisplayNames.Item(offer.Item, wait.Definition.Items[offer.Item].Name), PartyStatusView.MemberName(selected, _session), offer.Price);
                 uint balance = _session.Current.Exploration!.Party.Gold ?? 0;
-                long after = wait.Action == ShopAction.Buy ? (long)balance - offer.Price : Math.Min(9_999_999L, (long)balance + offer.Price);
+                long after = selling ? Math.Min(9_999_999L, (long)balance + offer.Price) : (long)balance - offer.Price;
                 bool full = selected.Inventory.All(slot => slot.Empty == false);
-                string? refusal = wait.Action == ShopAction.Buy ? full ? "full" : balance < offer.Price ? "insufficientgold" : null :
-                    wait.Definition.Items[offer.Item].Unsellable ? "unsellable" : wait.Definition.Items[offer.Item].Rare || (offer.Word.GetValueOrDefault() & 256) != 0 ? "unsupporteditem" : null;
+                string? refusal = selling ? null : full ? "full" : balance < offer.Price ? "insufficientgold" : null;
                 _title += "\n" + GameText.Get("party.gold", balance.ToString()) + " → " + (refusal is null ? after : balance);
                 if (refusal is not null) _title += "\n" + GameText.Get("shop.result." + refusal);
                 Add("shop.confirm", new AnswerShop(wait.Token, offer, true)); Add("shop.back", new AnswerShop(wait.Token, offer, false)); break;
@@ -161,6 +166,7 @@ internal sealed partial class ShopServiceView : Control
         _pointer.Cancel(); if (_release || _wait is null) return;
         if (action == GameAction.Cancel) Choose(_wait.Phase == ShopPhase.Result ? new ContinueShop(_wait.Token) : new BackShop(_wait.Token));
         else if (action is GameAction.Left or GameAction.Right) { if (IsMenu) _services.Wheel(action == GameAction.Left ? -192 : 192); else _page.Wheel(action == GameAction.Left ? -192 : 192); if (_pack.Visible) _pack.Wheel(action == GameAction.Left ? -192 : 192); return; }
+        else if (_options.Count == 0) return;
         else if (action is GameAction.Up or GameAction.Down) { _index = (_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count; _error = null; }
         else if (action == GameAction.Confirm) Choose(_options[_index].Command);
         Present(_session, _input, _submit);

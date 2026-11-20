@@ -12,9 +12,10 @@ public sealed class ShopServiceTests
 {
     internal static readonly ActorRef Buyer = FieldInventoryTests.Giver;
     internal static readonly ShopDefinition Terms = new([0, 50], [new(0, "Herb", 11), new(50, "Sword", 40),
-        new(61, "Rare", 77, Rare: true), new(113, "Key", 100, Unsellable: true)]);
+        new(56, "Other", 100), new(61, "Rare", 77, Rare: true), new(113, "Key", 100, Unsellable: true)]);
 
-    internal static GameSession Session(uint? gold = 100, ushort[]? items = null, bool failedReturn = false)
+    internal static GameSession Session(uint? gold = 100, ushort[]? items = null, bool failedReturn = false,
+        BattleItemCustody? custody = null, ShopDefinition? terms = null)
     {
         var original = FieldInventoryTests.Session();
         var battle = original.Definition.Encounters.Values.Single();
@@ -23,26 +24,125 @@ public sealed class ShopServiceTests
             [new(ExplorationEventKind.Interact, null, null, new("trader"), new("caller", 0))]);
         var world = new ExplorationDefinition([map], [new("caller", [new CallProgram(new("trade", 0)),
             new WriteFlag(999, true), failedReturn ? new UnsupportedInstruction("stop", "caller") : new EndProgram()]),
-            new("trade", [new OpenShop(Terms), new ReturnProgram()])], []);
+            new("trade", [new OpenShop(terms ?? Terms), new ReturnProgram()])], []);
         var definition = new ScenarioDefinition("shop-test", [battle], exploration: world) { FieldPreparation = original.Definition.FieldPreparation };
         var party = original.Current.Exploration!.Party;
         var start = new BattleStartInput(party.Encounter, party.Actors.Select(actor => actor.Actor == Buyer && items is not null
             ? actor with { SourceLoadout = new(items, []) } : actor), party.MainSeed, party.ThinkingSeed, gold,
-            activeAllies: party.ActiveAllies, itemCustody: party.ItemCustody);
+            activeAllies: party.ActiveAllies, itemCustody: custody ?? party.ItemCustody);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, [], start))).Session;
         Accept(session, new Interact(new("trader"))); return session;
     }
     internal static ShopWait Wait(GameSession session) => Assert.IsType<ShopWait>(session.Current.Story.Wait);
     internal static void Choose(GameSession session, ShopAction action) => Accept(session, new ChooseShop(Wait(session).Token, action));
-    internal static void Buy(GameSession session, byte id, ActorRef member)
+    internal static void Buy(GameSession session, byte id, ActorRef member, ShopAction action = ShopAction.Buy)
     {
-        Choose(session, ShopAction.Buy); Accept(session, new SelectShopItem(Wait(session).Token, id));
+        Choose(session, action); Accept(session, new SelectShopItem(Wait(session).Token, id));
         Accept(session, new SelectShopMember(Wait(session).Token, member));
     }
     internal static SessionResult Pay(GameSession session, bool yes = true) => Accept(session, new AnswerShop(Wait(session).Token, Wait(session).Offer!, yes));
     internal static void Continue(GameSession session) => Accept(session, new ContinueShop(Wait(session).Token));
     internal static BattleActorStartInput Owner(GameSession session) => session.Current.Exploration!.Party.Actors.Single(row => row.Actor == Buyer);
+    private static BattleStartInput Party(GameSession session) => session.Current.Exploration!.Party;
+
+    [Fact]
+    public void DealsFiltersCurrentStockAndBuysLastCopyExactlyOnceAtListPrice()
+    {
+        var custody = new BattleItemCustody([4], new Dictionary<byte, byte> { [0] = 2, [56] = 0, [61] = 1, [99] = 2 }, [50]);
+        var session = Session(77, [127, 127, 127, 127], custody: custody);
+        Choose(session, ShopAction.Deals);
+        Assert.Equal(new byte[] { 61 }, Wait(session).AvailableStock(Party(session).ItemCustody));
+        foreach (byte item in new byte[] { 0, 56, 99 })
+            Assert.NotNull(Send(session, new SelectShopItem(Wait(session).Token, item)).Failure);
+        Accept(session, new SelectShopItem(Wait(session).Token, 61));
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        var wait = Wait(session);
+        Assert.Equal(77u, wait.Offer!.Price);
+        Pay(session);
+        var bought = Party(session);
+        Assert.Equal(0u, bought.Gold);
+        Assert.Equal(new ushort[] { 61, 127, 127, 127 }, Owner(session).SourceLoadout!.Items);
+        Assert.Equal(new byte[] { 4 }, bought.ItemCustody!.OnceFlags);
+        Assert.Equal(new byte[] { 50 }, bought.ItemCustody.Depot);
+        Assert.Equal(2, bought.ItemCustody.Deals[0]);
+        Assert.Equal(2, bought.ItemCustody.Deals[99]);
+        Assert.Equal(0, bought.ItemCustody.Deals.GetValueOrDefault((byte)61));
+        Assert.Equal(1, custody.Deals[61]);
+        Assert.NotNull(Send(session, new AnswerShop(wait.Token, wait.Offer, true)).Failure);
+        Assert.Same(bought, Party(session));
+        Continue(session);
+        Choose(session, ShopAction.Deals);
+        Assert.Empty(Wait(session).AvailableStock(Party(session).ItemCustody));
+        Assert.NotNull(Send(session, new SelectShopItem(Wait(session).Token, 61)).Failure);
+        Accept(session, new BackShop(Wait(session).Token));
+        Accept(session, new BackShop(Wait(session).Token));
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.Contains(999, session.Current.Story.Flags);
+    }
+
+    [Theory]
+    [InlineData(76u, false, true, ShopResult.InsufficientGold)]
+    [InlineData(77u, true, true, ShopResult.Full)]
+    [InlineData(77u, false, false, null)]
+    public void RefusedOrCancelledDealsPreserveTheWholeParty(uint gold, bool full, bool confirm, ShopResult? result)
+    {
+        var custody = new BattleItemCustody([], new Dictionary<byte, byte> { [61] = 2 });
+        var session = Session(gold, full ? [0, 0, 0, 0] : [127, 127, 127, 127], custody: custody);
+        var party = Party(session);
+        Buy(session, 61, Buyer, ShopAction.Deals);
+        Pay(session, confirm);
+        Assert.Same(party, Party(session));
+        Assert.Equal(result, Wait(session).Result);
+        if (confirm) return;
+        Assert.Equal(ShopPhase.Member, Wait(session).Phase);
+        Accept(session, new BackShop(Wait(session).Token));
+        Assert.Equal(ShopAction.Deals, Wait(session).Action);
+        Assert.Equal(new byte[] { 61 }, Wait(session).AvailableStock(Party(session).ItemCustody));
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(14, 15)]
+    [InlineData(15, 15)]
+    public void RareSaleRoutesIntoTheSameSaturatingStoreAndCanBeBoughtBack(byte initial, byte afterSale)
+    {
+        var custody = new BattleItemCustody([], new Dictionary<byte, byte> { [61] = initial });
+        var session = Session(100, [61, 0, 127, 127], custody: custody);
+        Choose(session, ShopAction.Sell);
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Accept(session, new SelectShopSlot(Wait(session).Token, 0, 61));
+        Assert.Equal(57u, Wait(session).Offer!.Price);
+        var beforeSale = Party(session);
+        Pay(session, false);
+        Assert.Same(beforeSale, Party(session));
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Accept(session, new SelectShopSlot(Wait(session).Token, 0, 61));
+        Pay(session);
+        Assert.Equal(157u, Party(session).Gold);
+        Assert.Equal(new ushort[] { 0, 127, 127, 127 }, Owner(session).SourceLoadout!.Items);
+        Assert.Equal(afterSale, Party(session).ItemCustody!.Deals[61]);
+        Continue(session);
+        Buy(session, 61, Buyer, ShopAction.Deals);
+        Pay(session);
+        Assert.Equal(80u, Party(session).Gold);
+        Assert.Equal(new ushort[] { 0, 61, 127, 127 }, Owner(session).SourceLoadout!.Items);
+        Assert.Equal(afterSale - 1, Party(session).ItemCustody!.Deals.GetValueOrDefault((byte)61));
+    }
+
+    [Fact]
+    public void EquippedCursedItemCannotBeSold()
+    {
+        var terms = new ShopDefinition([0], [Terms.Items[0], Terms.Items[50] with { Rare = true, Cursed = true }]);
+        var session = Session(items: [178, 127, 127, 127],
+            custody: new BattleItemCustody([], new Dictionary<byte, byte>()), terms: terms);
+        var party = Party(session);
+        Choose(session, ShopAction.Sell);
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Accept(session, new SelectShopSlot(Wait(session).Token, 0, 178));
+        Assert.Equal(ShopResult.UnsupportedItem, Wait(session).Result);
+        Assert.Same(party, Party(session));
+    }
 
     [Fact]
     public void ExactGoldPurchasePublishesOneDetachedLoadoutAndReturnsToItsRealCaller()
@@ -119,13 +219,24 @@ public sealed class ShopServiceTests
     }
 
     [Theory]
-    [InlineData(113, ShopResult.Unsellable)] [InlineData(61, ShopResult.UnsupportedItem)] [InlineData(256, ShopResult.UnsupportedItem)]
-    public void ProtectedRareAndBrokenItemsRetainAllCustody(ushort word, ShopResult expected)
+    [InlineData(113, ShopResult.Unsellable)] [InlineData(256, ShopResult.UnsupportedItem)]
+    public void ProtectedAndBrokenItemsRetainAllCustody(ushort word, ShopResult expected)
     {
         var session = Session(items: [word,127,127,127]); var party = session.Current.Exploration!.Party;
         Choose(session, ShopAction.Sell); Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
         Accept(session, new SelectShopSlot(Wait(session).Token, 0, word));
         Assert.Equal(expected, Wait(session).Result); Assert.Same(party, session.Current.Exploration.Party);
+    }
+
+    [Fact]
+    public void BrokenRareWeaponStillFailsShopLoadoutAdmission()
+    {
+        var session = Session(items: [317, 127, 127, 127],
+            custody: new BattleItemCustody([], new Dictionary<byte, byte>()));
+        Choose(session, ShopAction.Sell);
+        var before = session.Current;
+        Assert.Equal("equipment-broken", Send(session, new SelectShopMember(Wait(session).Token, Buyer)).Failure!.Code);
+        Assert.Same(before, session.Current);
     }
 
     [Fact]

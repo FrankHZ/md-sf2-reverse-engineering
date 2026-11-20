@@ -607,6 +607,7 @@ internal static partial class GameText
         ["shop.sell"] = 0,
         ["shop.repair"] = 0,
         ["shop.deals"] = 0,
+        ["shop.deals.empty"] = 0,
         ["shop.leave"] = 0,
         ["shop.back"] = 0,
         ["shop.stock"] = 2,

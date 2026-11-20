@@ -223,18 +223,16 @@ full campaign replay is implied by this implementation.
 creates a typed `ShopWait`; `ShopService` owns menu, stock, member, held slot, final offer and result.
 Every accepted selection rotates its token/revision. Only a matching final confirmation revalidates
 membership, stock, price, full loadout/slot, affordability and supported item properties, then commits
-one replacement party containing both gold and loadout. Buy adds unequipped to the first empty slot;
-Sell compacts the selected slot, refreshes derived equipment ATT/range, and grants `floor(price*3/4)`
+one replacement party. Buy adds a bare item to the first empty slot. Sell compacts the selected
+slot, refreshes derived equipment ATT/range, and grants `floor(price*3/4)`
 through the existing SF2 gold cap. Decline/back, full pack, insufficient funds, unsellable, stale or
 replayed input cannot partially change resources. Failed/declined transactions remain reviewable at
 the wait boundary; result acknowledgement returns to the service menu. Closing resumes the real
 caller, including its normal source entity-event return. A later caller failure retains completed
 transactions and its attributed failure. Other gameplay commands cannot advance a service.
 
-Ordinary early stock has no rare/break service requirement. Deals and Repair are explicitly unavailable;
-rare/broken sales and unknown metadata refuse without changing custody. Existing cursed-equipment
-admission is unchanged. Purchased gear remains unequipped; Party Equip after leaving uses the existing
-field mechanism. This is a finite modern selection flow, without original shop-window/timing parity.
+Purchased gear remains unequipped. Party Equip after leaving uses the existing field mechanism.
+Original shop-window and timing parity are **Unknown**.
 
 `PoisonCureRules` supplies the finite battle Antidote/DETOX1 effect through the existing friendly
 recovery/item selection, scene payment, status, EXP and end-of-turn authority. It clears only poison;
@@ -255,6 +253,32 @@ story connection is introduced. [Admission](../content/profiles-and-trust.md#fin
 [rules/source](../domain/gameplay-rules.md#finite-purchased-supplies-and-detox1) and
 [ordinary native reproduction](../development-and-verification.md#galam-shop-and-supply-observation)
 separate implementation, private binding and natural-route Unknowns.
+
+### Rare stock and Deals repurchase
+
+[#1947](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1947) uses **Standard** rigor
+for the connected transaction across content, session, shop UI and the existing save path.
+The pinned USA source `shopactions.asm` at `c834c652b6862bc5679fd7f69a38a7093206efc6`
+checks positive counts and excludes items in the selected regular stock
+(`DetermineDealsItemsNotInCurrentShop`). The Deals branch takes the item's list price, checks
+gold and space, then calls payment, grant and Deals removal. The Sell branch refuses unsellable
+and equipped cursed items before payment, removal and the rare-item addition.
+[Service contract](../../../docs/design/contracts/party/service-interactions.md) ·
+[Deals storage contract](../../../docs/design/contracts/party/caravan-and-deals-state.md)
+
+`ShopService` reads the live `BattleItemCustody` shared by field and battle Drop and undelivered
+rewards. Deals shows one row per catalogued item with a positive count outside this shop's regular
+stock, sorted by item ID. An empty list can return to the shop menu. Absent custody makes the
+service unavailable. Paying list price commits the gold debit, bare item grant and one count
+reduction together. A supported rare sale credits gold, removes the chosen slot and adds one count
+up to the per-item cap of 15. Unsellable, equipped cursed, unsupported or broken items refuse.
+Rare sales require valid loadouts and known custody.
+
+The existing settled exploration save carries gold, loadouts, Deals counts, depot and once flags.
+The [Hassan observation](../godot/field-and-shop.md#hassan-deals-and-cold-continue) covers natural
+Drop and repurchase. Engine tests cover rare sale, exact payment, full packs, insufficient funds,
+saturated counts and repeated commands. Repair and ring Use belong to their existing issues.
+Original runtime and comprehensive campaign shop reach remain **Unknown**.
 
 ## Finite silence continuation
 
