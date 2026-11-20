@@ -53,8 +53,13 @@ internal static class BattleSave
         var enemies = battle.Definition.Deployments.Where(row => row.Faction == BattleFaction.Enemy).ToArray();
         var original = definition.Encounters[battle.Definition.Encounter].Deployments.Where(row => row.Faction == BattleFaction.Enemy);
         bool replaced = !enemies.Select(row => row.SourceEnemy).SequenceEqual(original.Select(row => row.SourceEnemy));
+        var starting = BattleSaveStory.AllyDefinitions(definition);
+        bool Changed(ActorRef actor, BattleActorProgress? progress) =>
+            progress?.ClassId is { } id && starting[actor].Definition.Growth?.ClassId != id;
+        bool changedClass = battle.Actors.Any(row => row.IsAlly && Changed(row.Actor, row.Progress)) ||
+            (current.Story.FieldPlayer?.RetainedAllies?.Any(row => Changed(row.Actor, row.Progress)) ?? false);
         return new(compatibility, replaced ? 2 : 1, route, BattleContinuationValues.Capture(battle), BattleSaveStory.Capture(current.Story),
-            replaced ? enemies.Select(row => row.SourceEnemy!.Value).ToArray() : null);
+            replaced ? enemies.Select(row => row.SourceEnemy!.Value).ToArray() : null) { HasClassTerms = changedClass };
     }
 
     internal static void RequireStable(SessionSnapshot current, SessionRules rules)

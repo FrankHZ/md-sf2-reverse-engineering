@@ -13,7 +13,7 @@ public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell, SupportSpell }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
-public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman, UnpromotedBirdman, BrassGunner, Paladin }
+public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman, UnpromotedBirdman, BrassGunner, Paladin, Hero }
 public enum BattleControl { Player, Automatic }
 public enum BattleFaction { Ally, Enemy }
 
@@ -30,6 +30,7 @@ public sealed class PhysicalCriticalRule
     public static PhysicalCriticalRule Orc { get; } = new(8, 1, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Taros { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 8);
     public static PhysicalCriticalRule Monk { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
+    public static PhysicalCriticalRule Hero { get; } = new(16, 2, doubleChanceDenominator: 16, counterChanceDenominator: 8);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule OneIn32WithFrequentDouble { get; } = new(32, 1, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule BrassGunner { get; } = new(16, 2, counterChanceDenominator: 16);
@@ -188,6 +189,14 @@ public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition
     int ProcessingOrder, BattleControl Control, BattleStrategyRef? AiStrategy, MapPosition Position,
     BattleDeploymentInitialization? Initialization = null, bool SourceAllyControl = false)
 {
+    public BattleActorDefinition? RegularPromotion { get; internal init; }
+    internal BattleDeploymentDefinition ResolveClass(byte? classId)
+    {
+        if (classId is null || Definition.Growth?.ClassId == classId) return this;
+        if (RegularPromotion?.Growth?.ClassId == classId) return this with { Definition = RegularPromotion };
+        throw new BattleRuleException("actor-class", "actor.progress.classId");
+    }
+
     internal byte? SourceEnemy { get; init; }
     internal IReadOnlyDictionary<byte, BattleDeploymentDefinition>? Replacements { get; init; }
     public ActorRef Actor => Definition.Actor;

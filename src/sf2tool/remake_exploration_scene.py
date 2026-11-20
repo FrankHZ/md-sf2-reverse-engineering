@@ -3,8 +3,58 @@
 import re
 from typing import Any
 
-from sf2tool.h2.battle_global_data import _tokens
+from sf2tool.h2.battle_global_data import _arguments, _tokens
 from sf2tool.remake_exploration_actions import action_stream, walking_actions
+
+
+def ally_sprites(compiler) -> list[dict[str, Any]]:
+    classes_path = "disasm/data/stats/allies/allystartdefs.asm"
+    sprites_path = "disasm/data/stats/allies/allymapsprites.asm"
+    compiler.sources.update(
+        (classes_path, sprites_path, "disasm/code/common/scripting/entity/getallymapsprite.asm")
+    )
+    classes = _arguments(
+        (compiler.upstream / classes_path).read_text(encoding="utf-8"), "startClass"
+    )
+    sprites = _arguments(
+        (compiler.upstream / sprites_path).read_text(encoding="utf-8"), "mapsprite"
+    )
+    promoted = {row["member"]: row["class"] for row in compiler.promotion_classes}
+    result = []
+    for character in range(compiler.equates["COMBATANT_ALLIES_NUMBER"]):
+        role = compiler.number("CLASS_" + classes[character])
+        sprite = compiler.number("MAPSPRITE_" + sprites[character])
+        if role == compiler.equates["CLASS_SDMN"]:
+            sprite -= 1
+        elif role != compiler.equates["CLASS_HERO"] and role < compiler.equates["CLASS_BDBT"]:
+            if compiler.equates["CLASS_BDMN"] <= role <= compiler.equates["CLASS_TORT"]:
+                sprite -= 1
+            elif role <= compiler.equates["CLASS_ACHR"]:
+                sprite -= 2
+            elif role & 1:
+                sprite -= 1
+        variant = {}
+        if character in promoted:
+            destination = compiler.number("CLASS_" + promoted[character])
+            if (role, destination) != (
+                compiler.equates["CLASS_SDMN"], compiler.equates["CLASS_HERO"]
+            ):
+                raise ValueError("unsupported promotion mapsprite")
+            variant = {
+                "promotionClass": destination,
+                "promotionSprite": compiler.number("MAPSPRITE_" + sprites[character]),
+            }
+        rohde = character == compiler.equates["ALLY_ROHDE"]
+        result.append(
+            {
+                "character": character,
+                "sprite": sprite,
+                "joinedFlag": 11 if rohde else None,
+                **variant,
+                "unjoinedSprite": compiler.equates["MAPSPRITE_NPC_ROHDE"] if rohde else None,
+            }
+        )
+    return result
 
 
 def raft_placement(compiler, args, tail):

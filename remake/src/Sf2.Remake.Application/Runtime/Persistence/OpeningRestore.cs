@@ -32,7 +32,7 @@ internal static class OpeningRestore
             pair.Value is { Length: > 0 } && NewGameName.Error(pair.Value) is null), "save-name");
         var savedActors = data.Allies.Select(actor => new ActorRef(actor.Actor)).ToHashSet();
         Require(savedActors.IsSubsetOf(deployments.Keys), "save-roster");
-        var actors = data.Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].Definition)).ToList();
+        var actors = data.Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].ResolveClass(saved.Class).Definition)).ToList();
         actors.AddRange(definition.Persistence.RestoreRoster(definition, data, expected, deployments, savedActors));
         var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("save-membership-unavailable", "save.party");
         var lists = MapPartyMembership.Rebuild(data.Flags, layout);
@@ -86,7 +86,7 @@ internal static class OpeningRestore
         var spells = new List<SpellRef>();
         foreach (byte packed in saved.Spells.Where(value => value != 63))
         {
-            Require(growth!.Spells.Any(spell => spell.PackedSpell == packed && spell.Level <= saved.Level), "save-learned-spell");
+            Require(growth!.CanKnow(packed, saved.Level), "save-learned-spell");
             for (int rank = 0; rank <= packed >> 6; rank++)
             {
                 Require(growth.SpellDefinitions.TryGetValue((byte)((packed & 63) | rank << 6), out var spell), "save-spell-resource");
@@ -98,7 +98,7 @@ internal static class OpeningRestore
         if (definition.Equipment is not null) BattleEquipment.ValidateLoadout(definition, loadout);
         Require(saved.Items.All(word => word <= 511), "save-item-word");
         var progress = new BattleActorProgress(saved.Level, saved.MaxHp, saved.MaxMp, saved.BaseAttack, saved.Defense,
-            saved.Agility, Array.AsReadOnly(spells.ToArray()), loadout);
+            saved.Agility, Array.AsReadOnly(spells.ToArray()), loadout, saved.Class);
         return new(new(saved.Actor), saved.Hp, saved.Mp, saved.Exp, saved.Kills, saved.Defeats, saved.Status, null,
             progress, loadout, saved.Activation, saved.Initialized, saved.Absent);
     }

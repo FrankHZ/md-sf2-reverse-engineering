@@ -17,6 +17,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from sf2tool.compression import decode_stack_compressed
+from sf2tool.h2.battle_ai import _equates
 from sf2tool.paths import repo_path
 from sf2tool.remake_asset_build import (
     ACCEPTED_ROM_SHA256,
@@ -160,7 +161,7 @@ def campaign_selection(selection: Path | None = None) -> dict:
 
 
 def campaign_ally_visuals(
-    battle, read, ally_table, stats_table, selected_members, carried_shops=()
+    battle, read, stats_table, members, carried_shops=()
 ):
     # First encounter following access to Granseal, Galam, New Granseal, Ribble, Polca, Bedoe.
     shop_entry = (2, 5, 9, 10, 12, 13)
@@ -179,21 +180,12 @@ def campaign_ally_visuals(
         carried.add(61)  # Achilles Sword can be carried back into Parmecia encounters.
     if battle >= 21:
         carried.add(62)  # Broad Sword can transfer from the second Skeleton.
-    members = []
-    for member in selected_members:
-        start = read(ally_table["table_AllyStartDefinitions"] + 6 * member, 6)
-        kind, sprite, palette = read(ally_table["table_AllyBattlesprites"] + 9 * member, 3)
-        assert kind == start[0]
-        initial = next((word & 127 for word in start[2:] if word & 128), None)
-        if initial is not None:
-            carried.add(initial)
-        members.append((kind, sprite, palette, initial))
-
+    carried.update(initial for _, _, _, initial in members.values() if initial is not None)
     masks = {
         item: int.from_bytes(read(stats_table["table_ItemDefinitions"] + 16 * item, 4), "big")
         for item in sorted(carried)
     }
-    for kind, sprite, palette, initial in members:
+    for kind, sprite, palette, initial in members.values():
         # The class default supplies the unarmed body/ordinary sequence; the host hides its weapon.
         yield ("ally", sprite, palette, initial)
         for item, mask in masks.items():
@@ -343,13 +335,32 @@ def build(
     actor_rows = []
     campaign = campaign_selection(selection)
     members = [row["member"] for row in campaign["growthClasses"]]
+    equates = _equates(upstream / "disasm")
+    promoted = [
+        (row["member"], equates["CLASS_" + row["class"]])
+        for row in campaign.get("promotionClasses", [])
+    ]
+    ally_table = table("ally-data-static")
+    bindings = {}
+    for member in members:
+        start = read(ally_table["table_AllyStartDefinitions"] + 6 * member, 6)
+        initial = next((word & 127 for word in start[2:] if word & 128), None)
+        address = ally_table["table_AllyBattlesprites"] + 9 * member
+        base, sprite, palette_index = read(address, 3)
+        if base != start[0]:
+            raise ValueError("starting class battlesprite mismatch")
+        bindings[member, base] = (base, sprite, palette_index, initial)
+        for selected, destination in promoted:
+            if selected == member:
+                entries = (read(address + offset, 3) for offset in (3, 6))
+                (variant,) = [entry for entry in entries if entry[0] == destination]
+                bindings[member, destination] = (*variant, initial)
     actor_selections = list(
         campaign_ally_visuals(
             battle,
             read,
-            table("ally-data-static"),
             table("core-stats-data-static"),
-            members,
+            bindings,
             campaign.get("carriedWeaponShops", ()),
         )
     )
@@ -497,11 +508,9 @@ def build(
             )
         )
         if side == "ally":
-            address = table("ally-data-static")["table_AllyBattlesprites"]
             actor_rows[-1]["members"] = [
-                member
-                for member in members
-                if tuple(read(address + 9 * member + 1, 2)) == (index, pal_index)
+                member for (member, _), (_, sprite, palette_index, _) in bindings.items()
+                if (sprite, palette_index) == (index, pal_index)
             ]
 
     base_palette = palette(0x198A8)  # palette_BattlesceneBase, battlesceneengine_1.asm.

@@ -276,7 +276,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         };
     }
 
-    private static BattleMover Mover(string source) => source switch
+    internal static BattleMover Mover(string source) => source switch
     {
         "REGULAR" => BattleMover.Regular, "HEALER" => BattleMover.Healer,
         "CENTAUR" => BattleMover.Centaur, "HOVERING" => BattleMover.Hovering, "STEALTH" => BattleMover.Stealth,

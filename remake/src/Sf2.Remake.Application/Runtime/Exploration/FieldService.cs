@@ -1,24 +1,42 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public enum ChurchAction { Raise, Cure }
+public enum ChurchAction { Raise, Cure, Promote }
 public enum ChurchEffect { Raise, Poison, Stun }
-public enum ChurchPhase { Menu, Offer, Result }
-public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid }
+public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService }
+public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid, LowLevel, NoPromotion, Unavailable, SpecialUnavailable, Promoted }
 public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null);
+public sealed record HeldPromotionItem(ActorRef Holder, int Slot, ushort Word);
+public sealed record PromotionOffer(ActorRef Member, byte? Source, byte? Destination, byte Level, HeldPromotionItem? SpecialItem);
 public sealed record ChurchOffer(ActorRef Member, ChurchEffect Effect, uint Cost, ushort Hp, ushort Status);
 public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, ChurchAction? Action = null,
     IReadOnlyList<ChurchOffer>? Offers = null, int Index = 0, ChurchResult? Result = null, bool CurseUnavailable = false) : ProgramWait(Token)
 {
-    public ChurchPhase Phase => Result is not null ? ChurchPhase.Result : Action is null ? ChurchPhase.Menu : ChurchPhase.Offer;
+    public IReadOnlyList<PromotionOffer>? Candidates { get; init; }
+    public PromotionOffer? Candidate { get; init; }
+    public bool Consented { get; init; }
+    public bool LeavingPromotion { get; init; }
+    public ChurchPhase Phase => LeavingPromotion ? ChurchPhase.AnotherService : (Result, Action, Candidate, Consented) switch
+    {
+        (not null, _, _, _) => ChurchPhase.Result,
+        (_, null, _, _) => ChurchPhase.Menu,
+        (_, ChurchAction.Promote, null, _) => ChurchPhase.Members,
+        (_, ChurchAction.Promote, _, false) => ChurchPhase.Consent,
+        (_, ChurchAction.Promote, _, true) => ChurchPhase.Regular,
+        _ => ChurchPhase.Offer,
+    };
     public ChurchOffer? Offer => Offers is not null && Index < Offers.Count ? Offers[Index] : null;
 }
 public abstract record ChurchCommand(WaitToken Wait) : SessionCommand;
 public sealed record ChooseChurch(WaitToken Wait, ChurchAction Action) : ChurchCommand(Wait);
 public sealed record AnswerChurch(WaitToken Wait, ChurchOffer Offer, bool Accept) : ChurchCommand(Wait);
+public sealed record SelectPromotion(WaitToken Wait, PromotionOffer Candidate) : ChurchCommand(Wait);
+public sealed record AnswerPromotion(WaitToken Wait, PromotionOffer Candidate, bool Accept) : ChurchCommand(Wait);
+public sealed record CancelPromotion(WaitToken Wait) : ChurchCommand(Wait);
 public sealed record ContinueChurch(WaitToken Wait) : ChurchCommand(Wait);
 public sealed record LeaveChurch(WaitToken Wait, bool Save = false) : ChurchCommand(Wait);
 
@@ -36,6 +54,41 @@ internal static class FieldService
             string kind;
             switch (command)
             {
+                case ChooseChurch { Action: ChurchAction.Promote } when wait.Phase == ChurchPhase.Menu:
+                    var candidates = Candidates(definition, current);
+                    next = next with { Action = ChurchAction.Promote, Candidates = candidates,
+                        Result = candidates.Any(c => Sf2ClassRules.RegularBase(c.Source) && c.Level >= 20)
+                            ? null : new(ChurchResultKind.NoApplicableMember) };
+                    kind = "church-promotion-members"; break;
+                case SelectPromotion select when wait.Phase == ChurchPhase.Members && wait.Candidates!.Contains(select.Candidate):
+                    var choice = select.Candidate;
+                    next = next with { Candidate = choice, Consented = false,
+                        Result = !Sf2ClassRules.RegularBase(choice.Source) ? new(ChurchResultKind.NoPromotion) :
+                            choice.Level < 20 ? new(ChurchResultKind.LowLevel) : null };
+                    kind = "church-promotion-selection"; break;
+                case AnswerPromotion answer when wait.Phase is ChurchPhase.Consent or ChurchPhase.Regular &&
+                        wait.Candidate == answer.Candidate:
+                    var candidate = answer.Candidate;
+                    if (!Candidates(definition, current).Contains(candidate))
+                        throw new BattleRuleException("stale-promotion", "service.offer");
+                    if (!answer.Accept) next = next with { Candidate = null, Consented = false };
+                    else if (candidate.SpecialItem is not null || candidate.Destination is null)
+                        next = next with { Result = new(candidate.SpecialItem is not null ? ChurchResultKind.SpecialUnavailable : ChurchResultKind.Unavailable) };
+                    else if (!wait.Consented) next = next with { Consented = true };
+                    else
+                    {
+                        (field, party) = Promote(definition, current, field, candidate);
+                        next = next with { Result = new(ChurchResultKind.Promoted) };
+                    }
+                    kind = "church-promotion-answer"; break;
+                case ContinueChurch when wait.Phase == ChurchPhase.Result && wait.Action == ChurchAction.Promote &&
+                        wait.Result!.Kind != ChurchResultKind.NoApplicableMember:
+                    next = next with { Candidates = Candidates(definition, current), Result = null, Candidate = null, Consented = false };
+                    kind = "church-promotion-members"; break;
+                case CancelPromotion when wait.Phase == ChurchPhase.Members:
+                case ContinueChurch when wait.Action == ChurchAction.Promote && wait.Result?.Kind == ChurchResultKind.NoApplicableMember:
+                    next = new(next.Token, wait.Definition) { LeavingPromotion = true };
+                    kind = "church-promotion-cancelled"; break;
                 case ChooseChurch choose when wait.Phase == ChurchPhase.Menu && Enum.IsDefined(choose.Action):
                     var offers = Offers(definition, current, wait.Definition, choose.Action);
                     next = next with { Action = choose.Action, Offers = offers, Index = 0,
@@ -74,10 +127,11 @@ internal static class FieldService
                         }
                     }
                     next = next with { Index = index, Result = result }; break;
-                case ContinueChurch when wait.Phase == ChurchPhase.Result:
+                case ContinueChurch when wait.Phase is ChurchPhase.Result or ChurchPhase.AnotherService:
                     next = wait.Offer is null ? new(next.Token, wait.Definition) : next with { Result = null, CurseUnavailable = false };
                     kind = "church-continued"; break;
                 case LeaveChurch when wait.Phase == ChurchPhase.Menu:
+                case LeaveChurch { Save: false } when wait.Phase == ChurchPhase.AnotherService:
                     current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor), observations,
                         command is LeaveChurch { Save: true } ? "church-save-requested" : "church-closed");
                     return ProgramRunner.Run(definition, current, observations, rules);
@@ -95,6 +149,58 @@ internal static class FieldService
                 new(error.Unsupported ? SessionFailureKind.UnsupportedCapability : SessionFailureKind.IllegalCommand,
                     error.Code, error.Field, error.Code.Replace('-', ' ')));
         }
+    }
+
+    private static (ExplorationState, BattleStartInput) Promote(ScenarioDefinition definition, SessionSnapshot current,
+        ExplorationState field, PromotionOffer candidate)
+    {
+        var member = PartyDetailsQuery.Query(definition, current)!.Members.Single(m => m.Carried.Actor == candidate.Member);
+        var destination = member.Deployment!.ResolveClass(candidate.Destination).Definition;
+        var loadout = FieldInventory.Loadout(member);
+        if (!PoisonTurnRules.SupportedPhysicalStatus(member.Carried.Status) || member.Carried.Progress is not { } progress)
+            throw new BattleRuleException("promotion-refresh", "party.progress", true);
+        BattleEquipment.ValidateLoadout(destination, loadout);
+        var changed = member.Carried with { Exp = 0, Progress = progress with
+            { ClassId = candidate.Destination, Level = 1, SourceLoadout = loadout } };
+        var party = FieldInventory.Replace(field.Party, [changed]);
+        if (field.Population is { } population && member.Deployment.Initialization?.AllyPartyMember is { } memberIndex)
+        {
+            var sprite = population.AllySprites?.SingleOrDefault(s => s.Character == memberIndex);
+            if (sprite?.PromotionClass != candidate.Destination)
+                throw new BattleRuleException("promotion-appearance", "population.allySprites", true);
+            var entity = field.AllEntities.FirstOrDefault(e => e.Entity.Value == $"entity-{memberIndex}");
+            if (entity is not null && changed.Hp > 0)
+                field = field.WithEntity(entity with { Sprite = sprite!.ForClass(candidate.Destination),
+                    SpriteRequest = checked(entity.SpriteRequest + 1) });
+        }
+        return (field, party);
+    }
+
+    private static IReadOnlyList<PromotionOffer> Candidates(ScenarioDefinition definition, SessionSnapshot current)
+    {
+        var members = PartyDetailsQuery.Query(definition, current)!.Members
+            .OrderBy(m => m.Deployment?.Initialization?.AllyPartyMember ?? int.MaxValue).ToArray();
+        return Array.AsReadOnly(members.Select(m =>
+        {
+            var source = m.Carried.Progress?.ClassId;
+            var item = Sf2ClassRules.PromotionItem(source);
+            HeldPromotionItem? held = null;
+            if (item.HasValue)
+                held = members.SelectMany(holder => FieldInventory.Loadout(holder).Items.Select((word, slot) =>
+                    new HeldPromotionItem(holder.Carried.Actor, slot, word)).Reverse()).FirstOrDefault(slot => (byte)slot.Word == item);
+            var destination = m.Deployment?.RegularPromotion;
+            if (destination is not null && definition.PrivateDefinitions is not null)
+            {
+                var pack = FieldInventory.Loadout(m);
+                int slot = BattleEquipment.EquippedSlot(destination, pack);
+                int itemId = slot == 4 ? -1 : pack.Items[slot] & 127;
+                var key = (m.Carried.Actor, destination.ClassRule, itemId);
+                if (definition.EncounterScenes.Count == 0 || definition.EncounterScenes.Values.Any(scene => scene.AllyAppearances?.ContainsKey(key) != true))
+                    destination = null;
+            }
+            return new PromotionOffer(m.Carried.Actor, source, destination?.Growth?.ClassId,
+                m.Level ?? 0, held);
+        }).ToArray());
     }
 
     private static bool CurseUnavailable(ScenarioDefinition definition, SessionSnapshot current, ChurchAction action) =>

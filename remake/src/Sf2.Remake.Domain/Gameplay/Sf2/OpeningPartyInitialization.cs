@@ -35,7 +35,7 @@ internal static class OpeningPartyInitialization
             .Select(rank => growth.SpellDefinitions[(byte)((value & 63) | rank << 6)])).ToArray();
         var stats = growth.Stats.Select(stat => stat.Start).ToArray();
         var progress = new BattleActorProgress(1, stats[0], stats[1], stats[2], stats[3], stats[4],
-            Array.AsReadOnly(known), new(items, packed));
+            Array.AsReadOnly(known), new(items, packed), growth.ClassId);
         var actor = new BattleActorState(deployment, progress.MaxHp, progress.MaxMp, 0, null, 0, 0,
             status: 0, activationWord: 0, progress: progress);
         for (int level = 1; level < startingLevel; level++)

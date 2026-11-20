@@ -79,7 +79,7 @@ internal static class BattleDefeatedProgram
                     entities.Any(e => e.Entity == Reference(sourceSlot)))
                     throw new BattleRuleException("defeated-source-slot", "battle.actors", true);
                 int sprite;
-                if (actor.IsAlly) sprite = SceneEntities.ResolveAllySprite(shell.Population!, current.Story.Flags, sourceSlot, sourceSlot);
+                if (actor.IsAlly) sprite = SceneEntities.ResolveAllySprite(shell.Population!, current.Story.Flags, sourceSlot, sourceSlot, party);
                 else if (field is null || !field.EnemySprites.TryGetValue(actor.Actor, out sprite))
                     throw new BattleRuleException("defeated-field-sprite", "battleScenes.fieldDeath", true);
                 entities.Add(Entity(sourceSlot, MapPoint(actor.Position!), sprite, entities.Count));
@@ -92,7 +92,7 @@ internal static class BattleDefeatedProgram
                 var deployment = definition.Encounters.Values.SelectMany(e => e.Deployments)
                     .FirstOrDefault(d => d.Faction == BattleFaction.Ally && d.Initialization?.AllyPartyMember == row.Key);
                 if (deployment is null || !party.Actors.Any(a => a.Actor == deployment.Actor && a.Hp > 0)) continue;
-                int sprite = SceneEntities.ResolveAllySprite(shell.Population!, current.Story.Flags, row.Key, row.Key);
+                int sprite = SceneEntities.ResolveAllySprite(shell.Population!, current.Story.Flags, row.Key, row.Key, party);
                 entities.Add(Entity(row.Key, MapPoint(row.Value), sprite, entities.Count));
             }
             var player = entities.Single(e => e.Entity == Reference(leader.Deployment.Initialization?.AllyPartyMember ?? leader.ProcessingOrder));

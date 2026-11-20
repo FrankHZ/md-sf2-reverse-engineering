@@ -12,6 +12,46 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class BattleSaveProgressTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BattleContinueRestoresThePromotedDeployedOrRetainedMember(bool reserve)
+    {
+        var (basis, current) = BattleSaveFixture.Create();
+        var saved = BattleSaveFixture.Capture(basis, current);
+        var actor = reserve ? saved.Story.Player.RetainedAllies.Single().Actor : current.Battle.Actors[0].Actor;
+        var definition = basis;
+        foreach (var encounter in basis.Encounters.Values)
+            definition = Replace(definition, encounter.WithDeployments(encounter.Deployments.Select(d =>
+                d.Actor != actor ? d : d with { RegularPromotion = Hero(d.Definition) })));
+        BattleActorProgress Promoted(BattleActorProgress p) => p with { Level = 1, ClassId = 12,
+            Spells = [new("bolt", 1)], SourceLoadout = new(p.SourceLoadout!.Items, [13, 63, 63, 63]) };
+        var retained = saved.Story.Player.RetainedAllies.Select(a => a.Actor != actor ? a :
+            a with { Progress = Promoted(a.Progress!), SourceLoadout = Promoted(a.Progress!).SourceLoadout }).ToArray();
+        var actors = saved.Battle.Actors.Select(a => a.Actor != actor.Value ? a :
+            a with { Progress = Promoted(a.Progress!), Loadout = Promoted(a.Progress!).SourceLoadout }).ToArray();
+        saved = saved with { HasClassTerms = true, Battle = saved.Battle with { Actors = actors },
+            Story = saved.Story with { Player = saved.Story.Player with { RetainedAllies = retained } } };
+        var record = new Sf2.Remake.Content.Persistence.BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved);
+        var bytes = Sf2.Remake.Content.Persistence.OpeningSaveJson.WriteRecord(record);
+        var wire = Sf2.Remake.Content.Persistence.OpeningSaveJson.ReadRecord(bytes, 1);
+        Assert.Equal(4, wire.FormatVersion);
+        var session = Assert.IsType<SessionStarted>(Sf2.Remake.Content.Persistence.SaveRecordRestore.Restore(definition, wire, RuleCompositions.Sf2())).Session;
+        var recaptured = BattleSaveFixture.Capture(definition, session.Current);
+        Assert.True(recaptured.HasClassTerms);
+        Assert.True(BattleContinuationValues.Same(saved.Battle, recaptured.Battle));
+        Assert.True(BattleSaveStory.Same(saved.Story, recaptured.Story));
+        if (!reserve) Assert.Equal(BattleClassRule.Hero, session.Current.Battle.GetActor(actor).Definition.ClassRule);
+    }
+
+    internal static BattleActorDefinition Hero(BattleActorDefinition original)
+    {
+        var growth = original.Growth! with { ClassId = 12, Spells = [new(22, 13), new(42, 141)],
+            SpellDefinitions = new Dictionary<byte, SpellRef> { [13] = new("bolt", 1) }, RetainedSpells = [new(22, 13)] };
+        return new(original.Actor, BattleClassRule.Hero, 1, 42, 14, original.Attack, 25, 24, false, 6, [],
+            original.Physical, sourceLoadout: original.SourceLoadout, growth: growth, equipment: original.Equipment);
+    }
+
     [Fact]
     public void PromotedEnemyOrderSurvivesRestoreAndLaterAiDecision()
     {

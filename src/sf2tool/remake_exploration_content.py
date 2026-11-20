@@ -170,7 +170,11 @@ def prepare(
         raise ValueError("pinned source commit mismatch")
     selection = load_json(selection_path)
     compiler = OriginalPrograms(
-        canonical, upstream, selection["controlledEntitySpeed"], selection["maps"]
+        canonical,
+        upstream,
+        selection["controlledEntitySpeed"],
+        selection["maps"],
+        tuple(selection.get("promotionClasses", [])),
     )
     for selected in selection.get("eventMaps", []):
         folder = upstream / f"disasm/data/maps/entries/map{selected:02d}/mapsetups"
@@ -320,7 +324,9 @@ def prepare(
                     raise ValueError(
                         "encounter inputs must remain relative to the output directory"
                     )
-    growth = _selected_growth(compiler, selection.get("growthClasses", []))
+    growth = _selected_growth(
+        compiler, selection.get("growthClasses", []) + selection.get("promotionClasses", [])
+    )
     font_path = "disasm/data/graphics/tech/fonts/variablewidthfont.bin"
     ascii_path = "disasm/data/scripting/text/asciitotextsymbolmap.asm"
     compiler.sources.update(

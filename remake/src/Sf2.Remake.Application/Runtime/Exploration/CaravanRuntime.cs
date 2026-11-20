@@ -80,7 +80,7 @@ internal static class CaravanRuntime
         {
             var bowie = world.Party.Actors.SingleOrDefault(member => member.Actor.Value == "ally-0")
                 ?? throw new BattleRuleException("caravan-player-identity", "party", true);
-            return bowie.Hp == 0 ? 190 : SceneEntities.ResolveAllySprite(population, flags, 0, population.PlayerSprite);
+            return bowie.Hp == 0 ? 190 : SceneEntities.ResolveAllySprite(population, flags, 0, population.PlayerSprite, world.Party);
         }
         var appearance = world.Definition.Caravan?.PlayerAppearance
             ?? throw new BattleRuleException("caravan-admission", "map", true);
@@ -90,7 +90,12 @@ internal static class CaravanRuntime
             .Where(actor => actor.Actor == appearance.Actor).ToArray();
         if (identities.Length == 0 || identities.Any(actor => actor.Definition.ClassRule != appearance.Class))
             throw new BattleRuleException("caravan-player-class", "party", true);
-        return member.Hp == 0 ? appearance.DefeatedSprite : appearance.Sprite;
+        if (member.Hp == 0) return appearance.DefeatedSprite;
+        var identity = identities[0].ResolveClass(member.Progress?.ClassId);
+        if (identity.Definition.ClassRule == appearance.Class) return appearance.Sprite;
+        var promoted = definition.Exploration!.Maps.Values.SelectMany(map => map.Population?.AllySprites ?? [])
+            .FirstOrDefault(row => row.Character == identity.Initialization?.AllyPartyMember && row.PromotionClass == member.Progress?.ClassId);
+        return promoted?.PromotionSprite ?? throw new BattleRuleException("caravan-player-class", "party", true);
     }
 
     // Flag rows and consecutive action pointers are independent of the current physical list.

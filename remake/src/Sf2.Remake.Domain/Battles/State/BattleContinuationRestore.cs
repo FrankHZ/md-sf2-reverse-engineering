@@ -18,6 +18,8 @@ internal static class BattleContinuationRestore
             (data.Regions is null || data.Regions.Flags.Count == 16), "regions");
         Require(data.DeathCredit?.Ally is not { } credit || definition.Deployments.Any(d => d.Actor == credit && d.Faction == BattleFaction.Ally), "death-credit");
         if (definition.Poison) Require(data.DeathCredit is not null, "death-credit-unknown");
+        definition = definition.WithDeployments(definition.Deployments.Select(row =>
+            row.ResolveClass(data.Actors.Single(a => a.Actor == row.Actor.Value).Progress?.ClassId)));
         var actors = definition.Deployments.Select(deployment => Actor(deployment,
             data.Actors.Single(a => a.Actor == deployment.Actor.Value), definition)).ToArray();
         var occupied = actors.Where(a => a.Hp > 0 && a.Position is not null).Select(a => a.Position).ToArray();
@@ -95,7 +97,7 @@ internal static class BattleContinuationRestore
                 var spells = new List<SpellRef>();
                 foreach (byte packed in loadout.Spells.Where(p => p != 63))
                 {
-                    Require(definition.Growth!.Spells.Any(s => s.PackedSpell == packed && s.Level <= progress.Level), "learned-spell");
+                    Require(definition.Growth!.CanKnow(packed, progress.Level), "learned-spell");
                     for (int rank = 0; rank <= packed >> 6; rank++)
                     {
                         Require(definition.Growth.SpellDefinitions.ContainsKey((byte)((packed & 63) | rank << 6)), "spell-resource");

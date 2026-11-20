@@ -18,6 +18,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
 {
     private IReadOnlyList<SourceAllyDefinition> _allies = [];
     private IReadOnlyList<PrivateAllyStart> _baselines = [];
+    private IReadOnlyList<byte> _growthClasses = [];
     private IReadOnlyList<byte> _growthSpells = [];
     private IReadOnlyList<byte> _fieldItems = [];
 
@@ -25,11 +26,12 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
     {
         _fieldItems = fieldItems;
         _allies = PrivateBattleDefinitionReader.OpeningAllies(staticPath, growth);
+        _growthClasses = growth.EnumerateArray().Select(row => (byte)Number(row, "classId", 0, 31)).Distinct().ToArray();
         _growthSpells = growth.EnumerateArray().SelectMany(row => BattleGrowthReader.ReadDefinition(row, 0).Spells)
             .Select(spell => spell.PackedSpell).Distinct().ToArray();
         _baselines = _allies.Select(ally =>
         {
-            var row = growth.EnumerateArray().Single(row => Text(row, "actor") == "ally-" + ally.Id);
+            var row = growth.EnumerateArray().Single(row => Text(row, "actor") == "ally-" + ally.Id && Number(row, "classId", 0, 31) == ally.ClassId);
             var definition = BattleGrowthReader.ReadDefinition(row, 0);
             var stats = definition.Stats.Select(stat => stat.Start).ToArray();
             Require(stats[0] > 0, "initial-hp-required", "world.growth.stats");
@@ -80,7 +82,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
         var policy = new NewBattleStartPolicy("opening-new-game", "source-initialization", "", 0, false, true, true, false, false, null)
             { Origin = BattleStartOrigin.NewGame };
         var start = new PrivateBattleStart(encounter.Battle.Id, mainSeed, thinkingSeed, 0, policy, _baselines);
-        var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells, _fieldItems, repeatEnemies);
+        var definitions = PrivateBattleDefinitionReader.Read(core, enemies, gold, encounter, start, _allies, _growthSpells, _fieldItems, repeatEnemies, _growthClasses);
         // Movement is immutable class content; attack gets the admitted equipment contribution once.
         var baselines = _baselines.Select(ally => ally with
         {

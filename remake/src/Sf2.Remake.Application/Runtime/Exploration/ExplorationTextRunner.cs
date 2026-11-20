@@ -170,13 +170,11 @@ internal static class ExplorationTextRunner
             .ToArray();
         if (bindings.Length == 0 || bindings[0].Definition.Growth is not { } growth ||
             bindings.Any(actor => actor.Actor != bindings[0].Actor || actor.Definition.Growth?.ClassId != growth.ClassId) ||
-            !current.Exploration!.Party.Actors.Any(actor => actor.Actor == bindings[0].Actor) ||
-            !source.Classes.TryGetValue(growth.ClassId, out var role) ||
+            current.Exploration!.Party.Actors.FirstOrDefault(actor => actor.Actor == bindings[0].Actor) is not { } carried ||
+            !source.Classes.TryGetValue(carried.Progress?.ClassId ?? growth.ClassId, out var role) ||
             !System.Text.RegularExpressions.Regex.IsMatch(role.NameExpression, "^\"[A-Z0-9 ]+\"$"))
             throw new BattleRuleException("join-text-class", "program.nameMember", true);
-        // The admitted engine has no class-changing command. Growth.ClassId is the same
-        // class authority used for this live ally's stat refresh, not a speaker sprite.
-        return (growth.ClassId, role.NameExpression[1..^1]);
+        return (role.Id, role.NameExpression[1..^1]);
     }
 
     private static FieldTextWait Span(WaitToken token, int text, IReadOnlyList<FieldTextUnit> units, int start,

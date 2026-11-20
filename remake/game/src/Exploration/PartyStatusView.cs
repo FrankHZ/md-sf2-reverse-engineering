@@ -162,7 +162,7 @@ internal sealed partial class PartyStatusView : Control
         var appearance = session.Current.Exploration?.Population?.AllySprites?.FirstOrDefault(row =>
             row.Character == member?.Deployment?.Initialization?.AllyPartyMember);
         int? sprite = appearance is null ? null : appearance.JoinedFlag is { } joined && !session.Current.Story.Flags.Contains(joined)
-            ? appearance.UnjoinedSprite : appearance.Sprite;
+            ? appearance.UnjoinedSprite : appearance.ForClass(member?.Carried.Progress?.ClassId);
         int? portrait = sprite is { } id ? visuals?.Sprites.GetValueOrDefault(id)?.Portrait : null;
         bool hd = _input?.Settings.GraphicsMode == "hd" && session.Current.Exploration is { } field &&
             visuals?.Maps.GetValueOrDefault(field.Map)?.HdBlocks is not null && portrait is { } selected &&

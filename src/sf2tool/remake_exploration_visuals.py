@@ -348,6 +348,11 @@ def prepare_visuals(
             )
             sprites.update(row["sprite"] for row in variant["population"]["allySprites"])
             sprites.update(
+                row["promotionSprite"]
+                for row in variant["population"]["allySprites"]
+                if "promotionSprite" in row
+            )
+            sprites.update(
                 row["unjoinedSprite"]
                 for row in variant["population"]["allySprites"]
                 if row["unjoinedSprite"] is not None

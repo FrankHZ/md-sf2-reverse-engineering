@@ -30,6 +30,7 @@ internal static class PartyDetailsQuery
             if (deployment?.Faction == BattleFaction.Enemy) continue;
             if (membership is not null && (deployment?.Initialization?.AllyPartyMember is { } member
                 ? !membership.Joined.Contains(member) : definition.PrivateDefinitions is not null)) continue;
+            deployment = deployment?.ResolveClass(carried.Progress?.ClassId);
             var actor = deployment?.Definition;
             var progress = carried.Progress;
             var loadout = carried.SourceLoadout ?? progress?.SourceLoadout ?? actor?.SourceLoadout;

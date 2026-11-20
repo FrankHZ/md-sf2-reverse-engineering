@@ -30,12 +30,25 @@ internal static class BattleRestore
             encounter = encounter!.WithDeployments(encounter.Deployments.Where(row =>
                 row.Faction == BattleFaction.Enemy || actors.Contains(row.Actor.Value)));
         }
+        var roster = BattleSaveStory.AllyDefinitions(definition);
+        BattleActorProgress? RestoreClass(ActorRef actor, BattleActorProgress? progress)
+        {
+            if (!roster.TryGetValue(actor, out var row) || row.Definition.Growth is not { } growth) return progress;
+            Require((definition.PrivateDefinitions is null || progress is not null) && (!data.HasClassTerms || progress?.ClassId is not null), "class");
+            if (progress is null || progress.ClassId.HasValue) return progress;
+            return progress with { ClassId = growth.ClassId };
+        }
+        var player = data.Story.Player;
+        data = data with { Battle = data.Battle with { Actors = data.Battle.Actors.Select(a =>
+                a with { Progress = RestoreClass(new(a.Actor), a.Progress) }).ToArray() },
+            Story = data.Story with { Player = player with { RetainedAllies = player.RetainedAllies.Select(a =>
+                a with { Progress = RestoreClass(a.Actor, a.Progress) }).ToArray() } } };
         var battle = BattleContinuationRestore.Build(encounter!, data.Battle);
         if (revision < expected.RecipeRevision)
             data = data with { Story = definition.Persistence!.UpgradeBattleRoster(definition, data, battle, expected) };
         var story = BattleSaveStory.Build(definition, data, battle);
         BattleSaveStory.RequireMembership(definition, story, battle);
-        _ = rules.Bind([encounter!]);
+        _ = rules.Bind([battle.Definition]);
         var actor = BattleTurnFlow.QueuedActor(battle);
         Require(actor.Hp > 0 && actor.Position is not null && actor.Control == BattleControl.Player, "actor-unavailable");
         var selection = new BattleSelection(actor.Actor, BattleMovement.Preview(battle, actor.Actor, actor.Position!), BattleSelectionStage.Movement);

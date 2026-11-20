@@ -33,7 +33,8 @@ internal static class BattleSaveWire
     internal sealed record Visuals(IReadOnlyDictionary<string, int> Aliases, IReadOnlyList<Visual> Records);
     internal sealed record Loadout(IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells);
     internal sealed record Progress(byte Level, ushort MaxHp, byte MaxMp, byte BaseAttack, byte Defense, byte Agility,
-        IReadOnlyList<SpellRef> Spells, Presence<Loadout> SourceLoadout);
+        IReadOnlyList<SpellRef> Spells, Presence<Loadout> SourceLoadout,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] byte? ClassId = null);
     internal sealed record Retained(string Actor, ushort Hp, byte Mp, Presence<byte> Exp, Presence<ushort> Kills,
         Presence<ushort> Defeats, ushort Status, Presence<MapPosition> PositionOverride, Presence<Progress> Progress,
         Presence<Loadout> SourceLoadout, Presence<ushort> ActivationWord, Presence<bool> Initialized, bool Absent, bool RetainDeadPosition);
@@ -52,9 +53,9 @@ internal static class BattleSaveWire
         Presence<Anchor> SaveAnchor, SavedBattleMusic Music, Player Player,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SavedRaft? Raft = null);
 
-    internal static Record Encode(BattleSaveRecord record) => new(2, record.Slot, record.Sequence, record.SavedAt,
+    internal static Record Encode(BattleSaveRecord record) => new(record.FormatVersion, record.Slot, record.Sequence, record.SavedAt,
         "battle-player-input", new(record.Data.Compatibility, record.Data.BattleRecipeRevision, record.Data.Route,
-            Encode(record.Data.Battle), Encode(record.Data.Story), record.Data.EnemyDefinitions));
+            Encode(record.Data.Battle, record.Data.HasClassTerms), Encode(record.Data.Story, record.Data.HasClassTerms), record.Data.EnemyDefinitions));
     internal static BattleSaveRecord Decode(Record record)
     {
         if (record.Kind != "battle-player-input") throw new SaveFormatException("save-kind");
@@ -62,8 +63,11 @@ internal static class BattleSaveWire
         // scalar contract here, before handing untrusted bytes to the typed validator.
         _ = new MapId(record.Data.Route.Map);
         _ = new MapId(record.Data.Story.EgressMap);
+        var terms = record.Data.Battle.Actors.Select(a => a.Progress).Concat(record.Data.Story.Player.RetainedAllies.Select(a => a.Progress));
+        if (terms.Where(p => p.Present).Any(p => p.Value.ClassId.HasValue != (record.FormatVersion == 4)))
+            throw new SaveFormatException("save-battle-class");
         return new(record.Slot, record.Sequence, record.SavedAt, new(record.Data.Compatibility, record.Data.BattleRecipeRevision,
-            record.Data.Route, Decode(record.Data.Battle), Decode(record.Data.Story), record.Data.EnemyDefinitions));
+            record.Data.Route, Decode(record.Data.Battle), Decode(record.Data.Story), record.Data.EnemyDefinitions) { HasClassTerms = record.FormatVersion == 4 });
     }
 
     private static Presence<T> Optional<T>(T? value) where T : struct => value.HasValue ? new(value.Value) : default;
@@ -76,16 +80,16 @@ internal static class BattleSaveWire
     private static string? String(Presence<string> value) => value.Present ? value.Value : null;
     private static Loadout Encode(BattleSourceLoadout value) => new(value.Items, value.Spells);
     private static BattleSourceLoadout Decode(Loadout value) => new(value.Items, value.Spells);
-    private static Progress Encode(BattleActorProgress p) => new(p.Level, p.MaxHp, p.MaxMp, p.BaseAttack, p.Defense,
-        p.Agility, p.Spells, Optional(p.SourceLoadout, Encode));
+    private static Progress Encode(BattleActorProgress p, bool classes) => new(p.Level, p.MaxHp, p.MaxMp, p.BaseAttack, p.Defense,
+        p.Agility, p.Spells, Optional(p.SourceLoadout, Encode), classes ? p.ClassId : null);
     private static BattleActorProgress Decode(Progress p) => new(p.Level, p.MaxHp, p.MaxMp, p.BaseAttack, p.Defense,
-        p.Agility, p.Spells, Value(p.SourceLoadout, Decode));
+        p.Agility, p.Spells, Value(p.SourceLoadout, Decode), p.ClassId);
     private static Axis Encode(LogicalViewAxis a) => new(a.Position, Optional(a.Destination), a.Speed);
     private static LogicalViewAxis Decode(Axis a) => new(a.Position, Value(a.Destination), a.Speed);
-    private static Battle Encode(BattleContinuationData b) => new(b.Encounter, b.Actors.Select(a => new Actor(a.Actor,
+    private static Battle Encode(BattleContinuationData b, bool classes) => new(b.Encounter, b.Actors.Select(a => new Actor(a.Actor,
         Optional(a.Position, p => p), a.DeploymentPosition, a.Facing, a.Hp, a.Mp, Optional(a.Exp), Optional(a.Kills), Optional(a.Defeats),
         a.Status, a.Initialized, a.Attack, Optional(a.ActivationWord), a.AiMemory, Optional(a.PrimaryOrder), Optional(a.SecondaryOrder),
-        String(a.LastTarget), Optional(a.Progress, Encode), Optional(a.Loadout, Encode))).ToArray(),
+        String(a.LastTarget), Optional(a.Progress, p => Encode(p, classes)), Optional(a.Loadout, Encode))).ToArray(),
         b.MainSeed, b.ThinkingSeed, b.Round, b.Queue.Select(t => new Turn(String(t.Actor), t.AlteredAgility)).ToArray(), b.Cursor, b.Gold,
         new(b.Options.Difficulty, b.Options.AllyAutoBattle, b.Options.OpponentControl, Optional(b.Options.MissingCandidateAllyWord)),
         Optional(b.Regions, r => r), Optional(b.DeathCredit, c => new Credit(String(c.Ally?.Value))),
@@ -107,7 +111,7 @@ internal static class BattleSaveWire
             new(b.Custody.OnceFlags, b.Custody.Deals.ToDictionary(d => d.Item, d => d.Count), b.Custody.Depot),
             Value(b.Visuals, v => new SavedBattleVisuals(v.Aliases, v.Records.Select(r => new BattleVisual(r.Slot, new(r.Appearance), r.Position, r.Facing)).ToArray())));
     }
-    private static Story Encode(SavedBattleStory s) => new(s.Flags, s.Names, s.StepCounter, s.EgressMap, s.TextCursor,
+    private static Story Encode(SavedBattleStory s, bool classes) => new(s.Flags, s.Names, s.StepCounter, s.EgressMap, s.TextCursor,
         s.TextSettings, new(s.Display.Period, new(s.Display.Base.Color2, s.Display.Base.Color3),
             new(s.Display.Current.Color2, s.Display.Current.Color3), s.Display.Visibility),
         new(s.LogicalText.Open, s.LogicalText.X, s.LogicalText.Y, s.LogicalText.Row, s.LogicalText.AnimationLength,
@@ -119,7 +123,7 @@ internal static class BattleSaveWire
         Optional(s.SaveAnchor, a => new Anchor(a.Map.Value, a.Position, a.Facing)), s.Music,
         new(s.Player.Entity, s.Player.Speed, s.Player.RetainedAllies.Select(a => new Retained(a.Actor.Value, a.Hp, a.Mp,
             Optional(a.Exp), Optional(a.Kills), Optional(a.Defeats), a.Status, Optional(a.PositionOverride, p => p),
-            Optional(a.Progress, Encode), Optional(a.SourceLoadout, Encode), Optional(a.ActivationWord), Optional(a.Initialized),
+            Optional(a.Progress, p => Encode(p, classes)), Optional(a.SourceLoadout, Encode), Optional(a.ActivationWord), Optional(a.Initialized),
             a.Absent, a.RetainDeadPosition)).ToArray()), s.Raft);
     private static SavedBattleStory Decode(Story s) => new(s.Flags, s.Names, s.StepCounter, s.EgressMap, s.TextCursor,
         s.TextSettings, new(s.Display.Period, new(s.Display.Base.Color2, s.Display.Base.Color3),

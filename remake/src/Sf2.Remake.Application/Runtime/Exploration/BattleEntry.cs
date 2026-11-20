@@ -73,7 +73,7 @@ internal static class BattleEntry
             var leader = encounter.Deployments.Single(row => row.Initialization?.AllyPartyMember == 0);
             var carried = world.Party.Actors.FirstOrDefault(row => row.Actor == leader.Actor);
             int quotient = RepeatEnemySelection.Quotient(carried?.Progress?.Level ?? leader.Definition.Level,
-                leader.Definition.Growth?.ClassId ?? 0, upgrade);
+                carried?.Progress?.ClassId ?? leader.Definition.Growth?.ClassId ?? 0, upgrade);
             if (quotient > 0)
             {
                 var ids = new List<byte>();
