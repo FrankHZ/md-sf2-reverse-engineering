@@ -8,7 +8,8 @@ and remake documentation describes implemented capability. Each owner retains it
 
 | Read to… | Follow… |
 | --- | --- |
-| Understand the game | [Gameplay overview](./design/synthesis/gameplay-overview.md) → [themes](#themes-and-design-governance) → a chapter/example → its named contract/evidence |
+| Understand the remake's design | [L0 vision](./design/game-vision.md) → [L1 gameplay](./design/synthesis/gameplay-overview.md) → [L2 systems and L3 behavior](./design/design-map.md) |
+| Trace a design change | [Examples](./design/design-map.md#equipment-and-promotion) link behavior to English evidence, configuration, code, scoped acceptance and work remaining |
 | Find a location or encounter | [Chapter guides](#chapter-guides-grans-opening-and-departure) and [later story sections](#later-chapters-use-the-connected-story-sections) |
 | Check an exact rule | [Combat contracts](#contracts-combat-turns-and-encounter-decisions), [party/resources](#contracts-party-definitions-growth-and-services), [exploration](#contracts-exploration-scripts-and-world-state) or [interface services](#contracts-dialogue-input-windows-and-audio) |
 | Run or change the remake | [Local play](../remake/README.md#run-locally) → [capability status](../remake/docs/capability-status.md) → [architecture](../remake/docs/architecture.md) / [verification](../remake/docs/development-and-verification.md#scope) |
@@ -22,7 +23,7 @@ and remake documentation describes implemented capability. Each owner retains it
 | `research/` | Source/ROM/fixture/runtime evidence; chapter evidence is routed by [story coverage](./research/story-content-coverage.md). |
 | `design/synthesis/` | Player-facing themes and chapter guides consuming accepted evidence. |
 | `design/contracts/` | Implementation-neutral, evidence-bound subsystem contracts. |
-| `design/zh-CN/` | Chinese mirrors of the same design-relative paths; English remains canonical. |
+| `design/zh-CN/` | Chinese design reading, derived from canonical English. [Scope and migration](./design/documentation-roadmap.md#design-and-support-scope) |
 | `decisions/`, `operations/` | Decisions, setup, ownership and work/verification procedures. |
 | `../remake/docs/` | Current implementation and play/verification instructions, separate from original evidence. |
 
@@ -35,30 +36,17 @@ not supersede current owners.
 
 ## Design
 
-Contracts express implementation-neutral original behavior; synthesis explains accepted research and
-separately identified remake choices. Remake implementation does not establish original evidence.
-Start with the [roadmap's current agreement](./design/documentation-roadmap.md#current-baseline-and-near-term-synthesis):
-the [overview](./design/synthesis/gameplay-overview.md) leads to story/chapters, tactical rules,
-party/resources and exploration/continuity. [Story Progression's six chapter groups](./design/synthesis/themes/story-progression.md#read-story-content-in-segments)
-connect selected accepted static content through ending/reset, with detailed guides and evidence
-at their named boundaries. The [five-theme source disposition](./design/documentation-roadmap.md#selected-english-source-set-and-reconciliation)
-keeps integrated source acceptance separate from the bounded playable remake milestone.
-The previously accepted design corpus has complete Chinese mirrors at its independently reviewed baselines. The new English battle-analysis pilot has no mirror (`pending`). The [Chinese reader entry](./README.zh-CN.md)
-connects themes, chapter guides and English evidence owners. Later chapter sections that link directly
-to English research are not pending Chinese design guides. English remains canonical; translation
-does not advance original observations or playable remake support.
+Start with the [L0–L3 design map](./design/design-map.md). It leads from the remake's product vision
+through the existing gameplay overview and themes to specific behavior, then to English evidence
+and configuration and to the [remake capability trace](../remake/docs/capability-status.md#campaign-feature-trace).
+[Story Progression's six chapter groups](./design/synthesis/themes/story-progression.md#read-story-content-in-segments)
+connect selected accepted static content through ending/reset. Each chapter or encounter guide has
+its own evidence boundary.
 
-Some current English sources have changed since their Chinese mirrors' review anchors. Those
-outstanding differences require document-by-document semantic review; acceptance at a reviewed
-baseline does not establish synchronization with the current English version. Consult the
-[translation index](../manifests/zh-translation-index.json) and `uv run --locked sf2 zh-meta list`
-for the affected records. Their anchors remain unchanged pending review.
-
-The [continuing synchronization agreement](./design/documentation-roadmap.md#bounded-translation-repair-agreement)
-uses the existing glossary, translation index and original `sf2 zh-meta` checks. Future source changes
-require stable accepted content, full bilingual review and reader-route acceptance before affected
-anchors are updated. Metadata PASS alone is insufficient. Content and navigation changes require
-independent semantic and reader-route acceptance; main-gate owns integration and epic completion decisions.
+The [Chinese reader entry](./README.zh-CN.md) uses the reviewed translation baselines. The
+[roadmap](./design/documentation-roadmap.md#design-and-support-scope) defines the L0–L3 translation
+and Wiki scope. Check the [translation index](../manifests/zh-translation-index.json) or
+`uv run --locked sf2 zh-meta list` for current mirror status during the migration.
 
 Existing themes explain rules, conditional story flow and selected encounter exceptions. The
 [battle-design analysis pilot](./design/synthesis/analyses/battle-design-analysis-pilot.md) adds three bounded
@@ -67,8 +55,10 @@ with tradeoffs. Design readings are Inferred; they do not establish author inten
 
 ### Themes and design governance
 
-- [Design Localization Glossary (EN → 中文)](./design/glossary.md)
+- [Remake Vision](./design/game-vision.md)
+- [Remake Design Map](./design/design-map.md)
 - [Documentation Roadmap and Governance Boundaries](./design/documentation-roadmap.md)
+- [Design Localization Glossary (EN → 中文)](./design/glossary.md)
 - [Gameplay Overview and System Boundaries](./design/synthesis/gameplay-overview.md)
 - [Tactical Battle Loop and State Handoffs](./design/synthesis/themes/tactical-battle-loop.md)
 - [Battle Design Analysis: Battle01, Taros and Chessboard](./design/synthesis/analyses/battle-design-analysis-pilot.md) — English pilot; Chinese pending

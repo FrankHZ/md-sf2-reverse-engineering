@@ -1,14 +1,12 @@
 # Gameplay Overview and System Boundaries
 
-- Status: Layer B design synthesis over accepted evidence; the foundation was user-accepted under
-  [Issue #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669).
-- This reading structure consumes accepted `main` evidence under the
-  [current scope agreement](../documentation-roadmap.md#current-baseline-and-near-term-synthesis).
-- Audience: readers choosing which gameplay directions to understand more deeply, and researchers,
-  design authors and implementers following those directions to their evidence owners.
-- Scope: explain the connected gameplay systems, the demonstrated private Map 3 → Battle 01 →
-  return slice, accepted remake choices and remaining questions. This overview adds no original-game
-  fact, balance target or product decision.
+This L1 overview explains the core loop and system dependencies. Its foundation was accepted
+under [Issue #669](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/669).
+Start with the [L0 vision](../game-vision.md) for the remake's fidelity and modernization
+choices. The [design map](../design-map.md) routes each system to its rules, evidence,
+configuration and implementation. The [campaign agreement](../../../remake/docs/application/remaining-campaign-risk-baseline.md)
+owns the current delivery goal from the Caravan landing to the ending and its bounded chapter
+handoffs.
 
 Play connects movement and interaction with changes to the world and the force. In exploration, a
 player moves, faces an entity or searchable place, and requests an interaction. Map and story state
@@ -57,18 +55,11 @@ rule, outcomes and a separately initiated traversal option. Missing custody, ref
 attacks and non-victory returns explain why the connections cannot be read as guaranteed progress.
 Detailed guides retain the exact parameters and evidence; the chapter page explains their relationship.
 
-Keep four frontiers separate. **Confirmed static original knowledge** now has accepted chapter
-connections through the ending, credits and hidden-battle reset, with selected optional branches and
-explicit omissions. **Confirmed bounded original observations** retain their selected Map3–Battle01
-lineage. English explanation is organized here from accepted owners; later chapter research is not
-a completed detailed English series. **Confirmed accepted remake support** includes the private
-Map3–Battle01 composition and bounded early Battle02/Yeel–Battle03 behavior, with actual support and
-Unsupported capabilities owned by the [capability ledger](../../../remake/docs/capability-status.md).
-Taros and Caravan operation are not admitted production content. The
-[coverage owner](../../research/story-content-coverage.md#four-different-frontiers) separates these
-frontiers; reorganizing prose advances none of them. Interpretations remain **Inferred**, gaps remain
-**Unknown**, and [accepted remake choices](#made-remake-choices-and-remaining-product-choices) retain
-their own decision owners.
+The [coverage owner](../../research/story-content-coverage.md#four-different-frontiers) distinguishes
+original static knowledge, original observations, English synthesis and remake support. Static
+chapter connections extend through the ending, credits and bonus battle. Original observations
+retain their named limits. The [campaign feature trace](../../../remake/docs/capability-status.md#campaign-feature-trace)
+records current support, including bounded Taros and Caravan operation.
 
 ## Exploration: moving, facing and discovering a result
 
@@ -302,10 +293,12 @@ not automatically mean it is part of a durable save. **Unknown:** complete campa
 and physical-medium behavior.
 
 Read [save-system](../contracts/system/save-system.md) and [party/roster](../contracts/party/party-roster-state.md)
-for those original boundaries. The current remake milestone explicitly excludes user save/load and
-suspend under [ADR 0010's persistence scope](../../decisions/0010-map3-battle01-product-acceptance.md#6-save-and-resume-scope).
-A playable return therefore does not claim a modern save system. Autosave, atomic writes, recovery
-UX and broader persistence remain future product decisions with their own acceptance scope.
+for those original boundaries. The first private milestone proved playable field return under
+[its original acceptance scope](../../decisions/0010-map3-battle01-product-acceptance.md#6-save-and-resume-scope).
+The current remake offers bounded [field save and Continue](../../../remake/docs/capability-status.md#ordinary-field-time-and-save-entry)
+and [battle continuation](../../../remake/docs/capability-status.md#battle-continuation-state).
+The [exploration and save trace](../design-map.md#exploration-services-and-savecontinue) shows how
+world return, save eligibility and cold restoration fit together.
 
 ## A demonstrated connected slice
 
@@ -350,36 +343,11 @@ schedule new runtime acquisition.
 
 ## Made remake choices and remaining product choices
 
-The following are **Confirmed accepted remake decisions**, not inferred original behavior:
-
-- **Modern logical time:** finite music uses the accepted
-  [deterministic clock policy](../contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy).
-  Logical completion and actual matching playback completion are separate gates. Host delivery delay
-  adds no logical opportunities or tick debt. This can change shared RNG history, actor order and
-  later resources, so acceptance keeps matched-state local rules and mandatory route effects rather
-  than requiring the old whole-history trace unchanged. It authorizes no production reseed.
-- **Player waiting:** the [evidenced Wait policy](../contracts/milestones/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)
-  permits player waiting only at admitted consumers with the required caller/service/phase binding.
-  Mandatory logical work, a player Wait and display/audio delivery delay are distinct. Different
-  interactive choices can diverge from the reproducible acceptance trace.
-- **Input scope:** [default keyboard A is required](../../decisions/0010-map3-battle01-product-acceptance.md#current-keyboard-scope);
-  keyboard C is supplemental and gamepad B/D are excluded from current milestone comparison.
-  Existing remapping, swapped buttons, reduced flash and adjustable text do not create extra required
-  full-route variants simply because they exist. The milestone still requires manual player agency.
-- **Fast text and speech:** the [accepted omission policy](../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)
-  skips speech for omitted character reveals in instant/reveal-all text, preserves an already-playing
-  speech tail across reveal, and retains legitimate later cue replacement. Reveal-only input emits
-  no acknowledgement or gameplay opportunity. The accepted controlled reveal-tail witness proves
-  that mechanism; the historical supplemental C interval keeps its sampling limit.
-- **Content and presentation:** [7C/8D/10A](../../decisions/0010-map3-battle01-product-acceptance.md)
-  requires the reached private content and presentation semantics, including actual consumption and
-  readiness, while keeping hardware parity and public redistribution outside this milestone.
-
-Engine direction and runnable/unsupported capabilities remain owned by
-[ADR 0019](../../decisions/0019-state-and-content-driven-remake-engine.md) and the
-[capability ledger](../../../remake/docs/capability-status.md), not this overview. Broader art/UI/UX,
-campaign scope, gamepad acceptance, durable user saves and intentional rebalance are separate product
-choices. No preferred solution or implementation ticket follows from describing them here.
+The [vision](../game-vision.md#fidelity-and-modernization) collects the accepted fidelity,
+presentation, timing, and input choices with their decision owners. Each choice has a stated
+scope. The [open decisions](../game-vision.md#open-product-decisions) name proposals that still
+need product selection. Use the [capability ledger](../../../remake/docs/capability-status.md)
+to check runnable behavior.
 
 ## Design directions for the user's next review
 
@@ -395,7 +363,7 @@ means choosing a remake behavior. A direction can need more than one kind of wor
 | Party, classes and growth | Distinct membership/active/AI/follower state in [party/roster](../contracts/party/party-roster-state.md); source-backed growth and refresh in [level-up](../contracts/party/level-up.md). | What complete player choice and capacity lifecycle is supported, and how do recruitment, promotion, equipment and growth connect over the campaign? | Synthesis can explain accepted character/class content. Wider lifecycle and numerical application gaps need research; roster or balance changes need a product decision. |
 | Tactical rules and encounters | Local control, movement/target, resolution and outcome owners linked by [Tactical Battle Loop](themes/tactical-battle-loop.md), plus accepted reached Battle 01 compositions. | Which unobserved action, AI, terrain or encounter branches matter for the next bounded behavior? Can the accepted contracts support that behavior together? | Organize existing action/encounter content. A concrete missing original rule needs research; broader action scope or rebalance needs a product decision. A general simulator is not implied. |
 | Items, magic, services and economy | Bounded spell/item/reward flows in [Progression and Economy](themes/progression-and-economy.md), [spells](../contracts/battle/spell-resolution.md) and [services](../contracts/party/service-interactions.md), including Church runtime seams. | Where and when are services admitted, what survives later reload, and what campaign context supports a resource or curve explanation? | Synthesis can join existing definitions and transaction rules. New admission/persistence or campaign claims need research; modern service UX or economy changes need a product decision. |
-| Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/system/save-system.md); current milestone excludes user persistence. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. Modern storage and recovery require a product decision before implementation; usable field return already has its separate accepted boundary. |
+| Persistence and re-entry | Original slots and in-process save/suspend boundaries in [save-system](../contracts/system/save-system.md). The [capability ledger](../../../remake/docs/capability-status.md#ordinary-field-time-and-save-entry) owns current remake admission. | What original state survives the complete lifecycle, and what modern save/recovery behavior should be offered? | Original survival/failure behavior needs research if required by a fidelity claim. A save-everywhere or broader recovery change would need a product decision at the affected service. |
 | Interface, feedback and accessibility | Reached consumer semantics and accepted input/text/music choices in the [current milestone](milestones/map3-battle01-readiness.md#accepted-current-milestone) and [presentation owner](../../../remake/docs/godot/presentation.md). | Which wider information, accessibility, asset and input experience is wanted beyond this private keyboard slice? | Synthesis can explain accepted feedback and deviations. Wider UX/art/input coverage requires product choices; original presentation research is justified only by a concrete required semantic gap, not every hardware Unknown. |
 
 The [roadmap's selected English source set](../documentation-roadmap.md#selected-english-source-set-and-reconciliation)
