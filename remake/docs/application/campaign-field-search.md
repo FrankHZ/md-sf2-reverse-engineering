@@ -124,12 +124,7 @@ Water, Fairy Powder, Secret Book and Vigor Ball retain their own unresolved cons
 Shrine visit. The selected Hassan default and Harpy Pond default have static table coverage. The
 Map23 F762 services are outside this selection.
 
-Use the registered private `handoffs/issue1941` runner with the accepted #1955 world and the
-unmodified #1939 Hassan and Taros, #1809 desert victory, #1834 Battle19 return and #1847 post-rescue
-slots. The runner compiles only the newly selected Search metadata, mounts both states of the
-three newly admitted item icons with the existing identity producer, and derives the Chinese catalog.
-It reuses the world and media from #1955. The observations use ordinary title Continue, walking
-and field-menu input with the full private interface. [World and catalog preparation](../development-and-verification.md#pre-voyage-chinese-consumer-observation)
+Reproduce the five-map slice from the [registered runner below](#hassan-through-harpy-pond).
 
 ## New Granseal and Ribble
 
@@ -154,6 +149,57 @@ and field-menu input with the full private interface. [World and catalog prepara
 **Confirmed (static only).** The well's F802 Yes branch waits a second 50 ticks before the splash and dry-well line 4096. No/cancel jumps over both sounds and both possible results. The F702-set arm inside the older lunch callback is distinct from the ordinary F702-table result. The F731-set tree response, remaining book/sign/paper tiles and alternate coordinates of shared callbacks are source and compiled-content checks. The Bright Honey (F144), Healing Seed (F141) and chests (F210 Angel Wing, F211 Healing Drop) have selected placements. The Antidote barrel at (7,15), F209, also has the matching terrain marker. The F702 walking probe entered its house at (3,20) but did not reach the tile beside the barrel. **Unknown:** natural access to the later F802 and F731 outcomes within the current campaign, and original runtime timing.
 
 ## Reproduce
+
+### Hassan through Harpy Pond
+
+Run from the repository root of a configured review checkout. Use the registered Godot
+installation and the checkout's Debug adapter. `Rebuild.ps1` reuses the #1955 private world and
+media. It compiles the new Search metadata, mounts the normal and selected icon pairs for
+items 12, 121 and 122, then derives the Chinese catalog. It stages the launcher and writes one
+candidate under the ignored `local/issue1941` directory. Use a fresh candidate destination and
+fresh sample names. [Private input setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup) ·
+[Locked .NET workflow](../development-and-verification.md#locked-net-workflow)
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
+. ./local/private-inputs.ps1
+$repo = (Get-Location).Path
+$handoffs = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs'
+$review = Join-Path $handoffs 'issue1941'
+
+uv sync --locked
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+Push-Location ./remake
+try {
+    & $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug -p:RestoreLockedMode=true
+} finally {
+    Pop-Location
+}
+# On a checkout that needs its initial Godot resource import, run this once.
+# & $env:GODOT_BIN --headless --path remake/game --editor --import --quit
+
+& pwsh -NoProfile -File (Join-Path $review 'runner/Rebuild.ps1') -Repo $repo
+$sample = 'village-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
+$seed = Join-Path $handoffs 'issue1834/slots/after-battle19-zh-CN.json'
+& pwsh -NoProfile -File ./local/issue1941/Play.ps1 -Task village -Language zh-CN -Sample $sample -Seed $seed
+$coldSeed = Join-Path $review "player-saves/$sample/search/sf2-opening/slot1.json"
+& pwsh -NoProfile -File ./local/issue1941/Play.ps1 -Task village-cold -Language zh-CN -Sample "$sample-cold" -Seed $coldSeed
+```
+
+The first process enters from Map68, collects the four village rewards, checks immediate
+repeats and saves after leaving the village. The second starts at the title, loads that save,
+checks F157/F158/F202/F221, and re-enters the village for the empty F202 chest. Both processes
+should exit 0. In `local/issue1941/runs/<sample>/`, `area158-result.json` records the upstairs
+grant and `area158-repeat-result.json` records 423/412. In the cold sample,
+`chest202-cold-result.json` records 403/408. Each launch writes to its own save namespace.
+
+The registered `handoffs/issue1941/HANDOFF.md` gives the other route modes, their seed slots, and
+the controlled full-pack sample. Archived candidate and earlier failed observations are in that
+handoff's `receipts` directory. Keep the handoff and the ignored candidate available through
+independent review.
+
+### Towns and docks
 
 For the towns in the prepared review checkout, run `./local/issue1759/play.ps1 town en` (Continue slot 2), `./local/issue1759/play.ps1 arrival en` (post-Battle09, slot 1) or `./local/issue1759/play.ps1 ribble zh-CN` (after the mayor, slot 1). Either language works at each entry. Add `-Observe -Run review` to replay the ordinary input checks in a separate namespace.
 
