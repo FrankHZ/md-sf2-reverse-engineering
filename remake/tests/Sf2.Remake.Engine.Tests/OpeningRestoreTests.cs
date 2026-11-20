@@ -13,6 +13,42 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class OpeningRestoreTests
 {
     [Theory]
+    [InlineData(false, 10)]
+    [InlineData(true, 15)]
+    public void VillageSaveRestoresTheResidentFromTheSelectedSetup(bool fairy, int residentSprite)
+    {
+        var (basis, data) = Fixture();
+        var party = Assert.IsType<SessionStarted>(GameSession.Restore(basis, data, RuleCompositions.Sf2()))
+            .Session.Current.Exploration!.Party;
+        var template = basis.Exploration!.Maps[new("map-57")];
+        var resident = new ExplorationEntityDefinition(new("entity-128"), new(5, 4), 2, 32, Sprite: 10);
+        var population = new ExplorationPopulation(1, 128, 0, []);
+        var map = new ExplorationMapDefinition(new("map-23"), template.Layout, template.Traversal, [resident], [],
+            setup: new(new("default"), [new(new("762"), new("later"))]), population: population,
+            setups: [new(new("later"), [resident with { Sprite = 15 }], [], null, null, population)]);
+        var definition = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([map], []));
+        int[] flags = fairy ? [762] : [];
+        var player = new FieldReturnAnchor(map.Map, new(4, 4), 1);
+        var world = MapTransfer.Build(map, new("entity-0"), player.Position, player.Facing, 32, party, flags);
+        var policy = basis.Persistence!;
+        var location = policy.Select(definition, player, flags, null);
+        var scene = Assert.IsType<SavedFieldScene>(policy.CaptureScene(definition, world, flags));
+        if (fairy)
+        {
+            var earlierMap = new ExplorationMapDefinition(map.Map, map.Layout, map.Traversal, [resident], [],
+                setup: map.Setup, population: population);
+            var earlierContent = new ScenarioDefinition(basis.Package, basis.Encounters.Values, exploration: new([earlierMap], []));
+            Assert.Equal("save-field-scene-context", Assert.Throws<BattleRuleException>(() =>
+                policy.Rebuild(earlierContent, location, party, flags, null, out _, scene: scene)).Code);
+        }
+        var restored = policy.Rebuild(definition, location, party, flags, null, out _, scene: scene);
+        Assert.Equal(player.Position, restored.PlayerEntity.Position);
+        Assert.Equal(residentSprite, restored.Entities[new("entity-128")].Sprite);
+        Assert.Equal("save-field-scene-context", Assert.Throws<BattleRuleException>(() =>
+            policy.Rebuild(definition, location, party, fairy ? [] : [762], null, out _, scene: scene)).Code);
+    }
+
+    [Theory]
     [InlineData(0, -1, true)]
     [InlineData(0, 519, true)]
     [InlineData(0, 420, false)]

@@ -81,9 +81,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
-        if (data.Map is "map-25" or "map-2" or "map-36" && data.FieldScene is null)
+        if (data.Map is "map-23" or "map-25" or "map-2" or "map-36" && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
-        if ((data.Recipe == "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
+        if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if (data.Recipe == "new-granseal-return" && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
@@ -171,6 +171,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("creed-mansion", player, "Creed's Mansion");
         if (!flags.Contains(530) && PacalonLocation(map.Value) is { } pacalon && content!.Traversal.IsWithinActiveArea(player.Position))
             return new(pacalon.Recipe, player, pacalon.Destination);
+        if (map.Value == "map-23" && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new("elven-village", player, "Elven Village");
         if (map.Value == "map-25" && content!.Traversal.IsWithinActiveArea(player.Position))
             return new("ketto", player, "Ketto");
         if (map.Value == "map-30" && content!.Traversal.IsWithinActiveArea(player.Position))
@@ -222,6 +224,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         world.Map.Value == "map-72" && flags.Contains(256) && definition.Exploration!.Programs.ContainsKey("cs-4ffda")
             ? Sf2FieldSceneRestore.Capture(definition, RaftRuntime.OnScroll(world, flags, null), definition.Exploration.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
+        world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
         world.Map.Value is "map-25" or "map-2" or "map-36" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
 
@@ -243,10 +246,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         }
         if (scene is not null && location.Anchor.Map.Value is "map-6" or "map-7")
             return Sf2NewGransealRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer);
-        if (scene is not null && location.Anchor.Map.Value is "map-25" or "map-2" or "map-36")
+        if (scene is not null && location.Anchor.Map.Value is "map-23" or "map-25" or "map-2" or "map-36")
         {
             var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
-            if (location.Recipe != (PacalonLocation(sourceMap.Map.Value)?.Recipe ?? "ketto") || scene.Setup != sourceMap.Setup?.DefaultSetup.Value)
+            var village = sourceMap.Map.Value == "map-23";
+            var recipe = village ? "elven-village" : PacalonLocation(sourceMap.Map.Value)?.Recipe ?? "ketto";
+            var setup = village ? sourceMap.SelectedSetup(flags) : sourceMap.Setup?.DefaultSetup;
+            if (location.Recipe != recipe || scene.Setup != setup?.Value ||
+                setup != sourceMap.Setup?.DefaultSetup && !sourceMap.Setups.ContainsKey(new(scene.Setup)))
                 throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
             var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
             enteredFlags = flags;

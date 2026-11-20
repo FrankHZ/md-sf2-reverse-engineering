@@ -102,9 +102,7 @@ Map30 entry now consumed by the [mine chapter](dwarven-mine-cannon.md), which ow
 F759–761, item custody and the ordinary return. Later North Cliff remains outside that boundary.
 No save or flag editing supplies this entry.
 
-Stage1 optional dispositions are explicit: Rick's post-Taros Hassan recruit, Fairy Woods/Battle44,
-later F22 offers and later F762 village population/services are not accepted natural journeys here.
-They stay with their existing source/optional owners. Current bounded Caravan formation, depot and
+The [post-Creed village visit](battle19-village.md#return-after-creed) follows a Fairy-bearing party back to the later residents and church. Rick's post-Taros Hassan recruit, Fairy Woods/Battle44 and later F22 offers have separate owners. Current bounded Caravan formation, depot and
 Item services remain available; this chapter adds their actual vehicle caller. Newly reachable
 mansion callbacks and reentry dialogues use the selected source programs and bilingual catalog;
 search adds no newly admitted item reward. Human art/experience acceptance, natural original timing
