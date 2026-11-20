@@ -49,14 +49,20 @@ the moved word and retains the original broken bit (bit 15). The depot stores id
 [Slot mutation routines](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/itemstats.asm#L180-L206) ·
 [Original depot contract](../../../docs/design/contracts/party/service-interactions.md#caravan-source-boundary)
 
-The original refresh initializes current ATT, DEF and packed AGI from earned bases and MOV from
-class data. It applies ATTACK to ATT, BOOST then SLOW to DEF and AGI, and STUN to MOV (−1)
-and AGI (−5) where present. The fractional deltas are separately floored from the applicable
+The original refresh copies the combatant's stored base ATT, DEF, packed AGI and MOV to
+their current fields. In particular, `InitializeCurrentStats` copies `MOV_BASE` to `MOV_CURRENT`.
+Class loading sets base MOV from the class row. Running Pimento can change the stored base and
+current MOV before a later refresh. The refresh applies ATTACK to ATT, BOOST then SLOW to DEF
+and AGI, and STUN to MOV (−1) and AGI (−5) where present. Floor each fractional delta separately from its
 base, including the packed AGI operand. Equipped effects follow in carried-slot order.
 Positive ATT, DEF and MOV effects saturate at 200. Quick Ring adds to the effective AGI low
 seven bits, saturates them at 127 and restores the effective bit 7. That is the bit left by
 the preceding operations, which may differ from the class's initial extra-turn bit. These
-operations preserve earned bases. [Pinned refresh and effect dispatch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm#L10-L164) ·
+operations preserve stored bases.
+[Pinned base-to-current copies](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm#L293-L304) ·
+[Pinned class load](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/newgame.asm#L111-L126) ·
+[Running Pimento effect](../../../docs/research/world/field-item-effects.md#confirmed-static-contract) ·
+[Pinned refresh and effect dispatch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm#L10-L164) ·
 [Pinned clamp wrappers](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/combatantstats_2.asm#L521-L629) ·
 [Controlled refresh and clamp observations](../../../docs/design/contracts/party/level-up.md#confirmed-current-and-derived-stat-refresh) ·
 [Packed AGI and timed stats](support-spell-status-design.md#when-the-stats-change)
@@ -94,6 +100,16 @@ existing controlled refresh evidence are sufficient for selecting these remake r
   AI estimates. Effective MOV feeds terrain-cost reachability. Effective numeric AGI and bit 7
   feed the next generated turn queue. An existing queue and cursor remain fixed.
   [Refresh and save operand](support-spell-status-design.md#implementation-decisions)
+- **Base MOV in the remake.** Today the actor reads its movement basis from `Definition.Move`.
+  Static ring equipment applies movement effects on top of that existing basis. When permanent
+  growth gains a stored movement basis, equipment refresh and Continue must use the restored
+  member's base MOV, including any legal permanent gain. For example, an admitted gain from 6
+  to 8 gives current MOV 10 with Running Ring and 8 after removal, including after cold
+  Continue with the ring worn and no STUN. Permanent growth owns the representation and save
+  binding. The promotion owner governs class loading.
+  [Permanent growth #1943](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1943) ·
+  [Current actor movement](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) ·
+  [Promotion class load](../application/church-promotion-design.md#what-changes-on-success)
 - **A reached battle position survives a gear change.** Original movement writes the chosen
   coordinates before its action menu. Equip returns to that menu. Back to movement restores the
   turn origin and builds a range again. In the remake, carry the existing validated movement
