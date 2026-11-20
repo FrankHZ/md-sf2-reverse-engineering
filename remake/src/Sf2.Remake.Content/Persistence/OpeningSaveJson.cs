@@ -22,6 +22,8 @@ public static class OpeningSaveJson
         TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { info =>
             { foreach (var property in info.Properties)
                 property.IsRequired = !(info.Type == typeof(OpeningSaveData) && property.Name is "names" or "raft" or "layer" or "depot" or "fieldScene" ||
+                    info.Type == typeof(BattleSaveWire.Actor) && property.Name == "lastRefreshCounters" ||
+                    info.Type == typeof(BattleSaveWire.Data) && property.Name == "hasClassTerms" ||
                     info.Type == typeof(BattleSaveWire.Progress) && property.Name == "classId" ||
                     info.Type == typeof(BattleSaveWire.Custody) && property.Name == "depot" ||
                     info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft" ||
@@ -72,7 +74,7 @@ public static class OpeningSaveJson
             OpeningSaveRecord field when field.FormatVersion is 1 or 3 => JsonSerializer.SerializeToUtf8Bytes(
                 new FieldRecord(field.Data.FieldScene is null ? field.FormatVersion : 3,
                     field.Slot, field.Sequence, field.SavedAt, field.Data), Options),
-            BattleSaveRecord battle when battle.FormatVersion is 2 or 4 => JsonSerializer.SerializeToUtf8Bytes(BattleSaveWire.Encode(battle), BattleOptions),
+            BattleSaveRecord battle when battle.FormatVersion is 2 or 4 or 5 => JsonSerializer.SerializeToUtf8Bytes(BattleSaveWire.Encode(battle), BattleOptions),
             _ => throw new SaveFormatException("save-version"),
         };
         byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(new Envelope(Convert.ToBase64String(payload),
@@ -105,9 +107,9 @@ public static class OpeningSaveJson
             if (versions.Length != 1) throw new SaveFormatException(versions.Length == 0 ? "save-malformed" : "save-duplicate-key");
             if (versions[0].Value.ValueKind != JsonValueKind.Number || !versions[0].Value.TryGetInt32(out int version))
                 throw new SaveFormatException("save-version");
-            if (version is not (1 or 2 or 3 or 4)) throw new SaveFormatException("save-version");
+            if (version is not (1 or 2 or 3 or 4 or 5)) throw new SaveFormatException("save-version");
             // An unsupported v2 kind is also an unavailable reader, never a corrupt older save.
-            if (version is 2 or 4)
+            if (version is 2 or 4 or 5)
             {
                 var kinds = root.EnumerateObject().Where(p => p.Name == "kind").ToArray();
                 if (kinds.Length != 1) throw new SaveFormatException(kinds.Length == 0 ? "save-malformed" : "save-duplicate-key");

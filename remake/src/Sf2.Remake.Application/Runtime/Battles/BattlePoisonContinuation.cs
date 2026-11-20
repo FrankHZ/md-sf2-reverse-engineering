@@ -43,6 +43,7 @@ internal static class BattlePoisonContinuation
                     SessionStopReason.PresentationWait), observations.AsReadOnly(), SessionStopReason.PresentationWait);
             }
             observations.Add(new(++sequence, revision, "after-turn", actor.Actor));
+            battle = BattleAfterTurnContinuation.Refresh(battle, actor.Actor);
             var finalize = new BattleSceneState(null, BattleScenePhase.PoisonFinalize, 0, new(sequence), poisonTurn: notice);
             return Finish(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null, finalize), current.Story,
                 SessionStopReason.SimulationWait), observations, rules);
@@ -53,7 +54,7 @@ internal static class BattlePoisonContinuation
         if (credit is null || credit.Ally is { } first && !current.Battle.GetActor(first).IsAlly)
             return BattleCommandDispatcher.Reject(current, "death-first-ally-context", "battle.firstAlly", true);
         observations.Add(new(++sequence, revision, "after-turn", actor.Actor));
-        var pending = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(current.Battle, null),
+        var pending = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(BattleAfterTurnContinuation.Refresh(current.Battle, actor.Actor), null),
             current.Story, SessionStopReason.SimulationWait);
         var waiting = BattleFieldDeathContinuation.Begin(pending,
             new(actor.Actor, actor.Position, credit, AfterTurn: true), new([actor.Actor]), observations);

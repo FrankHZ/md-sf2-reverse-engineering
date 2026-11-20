@@ -69,7 +69,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
                 .Select(unit => new StandbyOccupant<ActorRef>(unit.Actor, unit.Position!, unit.ActivationWord)).ToArray();
             var decision = AiStandbyRules.Decide(actor.Position, actor.Deployment.Position, primary, secondary,
                 source.PrimaryRegion, source.SecondaryRegion, (ushort)(current.ThinkingSeed >> 16), actor.AiMemory,
-                () => WeightedMovement.Build(Costs(), actor.Position.Y * 48 + actor.Position.X, actor.Definition.Move * 2),
+                () => WeightedMovement.Build(Costs(), actor.Position.Y * 48 + actor.Position.X, actor.Move * 2),
                 occupants, current.Definition.Width, current.Definition.Height);
             foreach (var roll in decision.Rolls)
                 effects.Add(new("thinking-rng", actorRef, Image(roll.Before), Image(roll.After), roll.Range, roll.Value));

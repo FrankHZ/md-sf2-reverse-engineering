@@ -63,7 +63,7 @@ internal static class BattleProgressionRules
         List<BattleEffect> effects = [];
         var after = rule.Credit(before, amount, effects);
         Unchanged(before, after);
-        Require(after.Progress == before.Progress && after.Attack == before.Attack && after.SourceLoadout == before.SourceLoadout);
+        Require(after.DirectAgility == before.DirectAgility && after.LastRefreshBits == before.LastRefreshBits && after.Progress == before.Progress && after.Attack == before.Attack && after.SourceLoadout == before.SourceLoadout);
         Require(after.Exp is not null && effects.Count == 1 && effects[0] == new BattleEffect("exp", before.Actor, before.Exp, after.Exp));
         return (after, effects.AsReadOnly());
     });
@@ -80,7 +80,9 @@ internal static class BattleProgressionRules
         uint seed = initial;
         var after = rule.Grow(before, ref seed, effects);
         Unchanged(before, after);
-        Require(after.Exp is not null && after.Level >= before.Level && after.MaxHp > 0 && after.Agility <= 127);
+        Require(after.DirectAgility == (after.Level == before.Level && before.DirectAgility) &&
+            after.LastRefreshBits == (after.Level > before.Level ? null : before.LastRefreshBits) &&
+            after.Exp is not null && after.Level >= before.Level && after.MaxHp > 0 && after.Agility <= 127);
         Require((before.SourceLoadout is null) == (after.SourceLoadout is null));
         if (before.SourceLoadout is { } loadout)
             Require(after.SourceLoadout!.Items.SequenceEqual(loadout.Items) && after.SourceLoadout.Spells.Count == loadout.Spells.Count);
@@ -91,8 +93,8 @@ internal static class BattleProgressionRules
         {
             ["exp-threshold"] = (before.Exp, after.Exp), ["level"] = (before.Level, after.Level),
             ["level-max-hp"] = (before.MaxHp, after.MaxHp), ["level-max-mp"] = (before.MaxMp, after.MaxMp),
-            ["level-base-attack"] = (before.BaseAttack, after.BaseAttack), ["level-defense"] = (before.Defense, after.Defense),
-            ["level-agility"] = (before.Agility, after.Agility),
+            ["level-base-attack"] = (before.BaseAttack, after.BaseAttack), ["level-defense"] = (before.BaseDefense, after.BaseDefense),
+            ["level-agility"] = (before.BaseAgility, after.BaseAgility),
         };
         var facts = effects.Where(effect => effect.RandomRange is null).ToArray();
         Require(facts.Select(effect => effect.Kind).Distinct().Count() == facts.Length);

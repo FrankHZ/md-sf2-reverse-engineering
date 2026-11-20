@@ -52,7 +52,7 @@ internal static class BattleUnitProjection
         return new(actor.Actor, actor.Position, actor.IsAlly, summary.Name,
             summary.NameIndex, summary.CustomName, summary.ClassId, summary.ClassName,
             summary.Hp, summary.MaxHp, summary.Mp, summary.MaxMp, summary.Level,
-            actor.IsAlly ? actor.Exp : null, Stat(actor.Attack), Stat(actor.Defense), Stat(actor.Agility), Stat(actor.Definition.Move),
+            actor.IsAlly ? actor.Exp : null, Stat(actor.Attack), Stat(actor.Defense), Stat(actor.Agility), Stat(actor.Move),
             Status(actor.Status), Array.AsReadOnly(actor.Spells.Select(spell => new PartySpell(spell,
                 PartyDetailsQuery.SpellName(definition, spell))).ToArray()),
             Array.AsReadOnly(Enumerable.Range(0, 4).Select(slot =>
@@ -73,7 +73,9 @@ internal static class BattleUnitProjection
         if ((word & 1) != 0) result.Add("stun");
         if ((word & 0xC0) != 0) result.Add("sleep");
         if ((word & 0x300) != 0) result.Add("silence");
-        if ((word & ~0x3C7) != 0) result.Add("Other status effect (details unavailable)");
+        if ((word & BattleStatCounters.Slow) != 0) result.Add("slow");
+        if ((word & BattleStatCounters.Boost) != 0) result.Add("boost");
+        if ((word & ~(0x3C7 | BattleStatCounters.Mask)) != 0) result.Add("Other status effect (details unavailable)");
         return result.AsReadOnly();
     }
 }

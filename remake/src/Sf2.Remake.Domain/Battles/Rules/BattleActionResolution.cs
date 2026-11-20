@@ -44,7 +44,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position && candidate.Facing == old.Facing &&
                 candidate.Kills == old.Kills && candidate.Defeats == old.Defeats && candidate.Attack == old.Attack &&
-                candidate.Status == old.Status && Equals(candidate.Progress, old.Progress) &&
+                candidate.Status == old.Status && candidate.LastRefreshBits == old.LastRefreshBits && candidate.DirectAgility == old.DirectAgility && Equals(candidate.Progress, old.Progress) &&
                 ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
             if (old.Actor != actorRef)
                 Require(candidate.LastTarget == old.LastTarget && candidate.AiMemory == old.AiMemory &&
@@ -74,7 +74,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                 Require(!before.Actors.Any(unit => unit.Hp > 0 && unit.Faction != actor.Faction &&
                     unit.Position == position));
         }
-        if (cost > actor.Definition.Move * 2)
+        if (cost > actor.Move * 2)
         {
             // The source descending-cost walker can retain an earlier direction bit and
             // travel farther than the destination's propagated cost. Admit that exact path.
@@ -82,10 +82,10 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             // and MOV always come from the authoritative battle.
             var grid = MovementGrid is null ? BattleMovement.Grid(before, actorRef) :
                 BattleTerrainRules.MovementGrid(before.Definition.Terrain, actor.Position!, actor.Definition.Mover,
-                    actor.Definition.Move, Enumerable.Range(0, MovementGrid.MovableGrid.Count)
+                    actor.Move, Enumerable.Range(0, MovementGrid.MovableGrid.Count)
                         .Where(index => MovementGrid.CostAtOffset(index) is null)
                         .Select(index => new MapPosition(index % 48, index / 48)));
-            Require(grid.CostAt(Destination) is { } destinationCost && destinationCost <= actor.Definition.Move * 2 &&
+            Require(grid.CostAt(Destination) is { } destinationCost && destinationCost <= actor.Move * 2 &&
                 Path.SequenceEqual(BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
                     Destination, before.Definition.Width, before.Definition.Height))));
         }
@@ -228,12 +228,14 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         {
             var old = before.Actors[index]; var candidate = Prepared.Actors[index];
             var afterDrops = inventory?.GetActor(old.Actor) ?? old;
-            var expectedLoadout = old.Actor == actor && consumedLoadout is not null ? consumedLoadout :
-                afterDrops.SourceLoadout;
+            bool consumedItem = old.Actor == actor && consumedLoadout is not null;
+            var expectedLoadout = consumedItem ? consumedLoadout : afterDrops.SourceLoadout;
             bool changedLoadout = !ReferenceEquals(expectedLoadout, old.SourceLoadout);
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
-                candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == old.Status && candidate.Facing == old.Facing &&
+                candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == old.Status &&
+                candidate.DirectAgility == (!consumedItem && afterDrops.DirectAgility) &&
+                candidate.LastRefreshBits == (consumedItem ? null : afterDrops.LastRefreshBits) && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
                 Equals(changedLoadout && candidate.Progress is { } progress
                     ? progress with { SourceLoadout = old.Progress?.SourceLoadout } : candidate.Progress, old.Progress) &&
@@ -505,29 +507,30 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     }
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
+        reaction.Kind is BattleReactionKind.Dodge or BattleReactionKind.Ineffective ? current :
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
             ? actor.With(hp: reaction.HpAfter, mp: Spell is null && AttackSpell is null && SupportSpell is null ? reaction.MpAfter : actor.Mp,
-                status: reaction.StatusWrite) : actor));
+                status: reaction.StatusWrite, refreshStats: true) : actor));
 
     internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>
         reaction.InflictedSleep is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
-            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
+            actor.Actor == reaction.Target ? actor.With(status: status, refreshStats: true) : actor));
 
     internal EngineBattleState ApplyStun(EngineBattleState current, BattleReaction reaction) =>
         reaction.InflictedStun is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
-            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
+            actor.Actor == reaction.Target ? actor.With(status: status, refreshStats: true) : actor));
 
     internal EngineBattleState ApplyPoison(EngineBattleState current, BattleReaction reaction) =>
         reaction.InflictedPoison is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
-            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
+            actor.Actor == reaction.Target ? actor.With(status: status, refreshStats: true) : actor));
 
     internal EngineBattleState ApplySilence(EngineBattleState current, BattleReaction reaction) =>
         reaction.InflictedSilence is not { } status ? current : current.With(actors: current.Actors.Select(actor =>
-            actor.Actor == reaction.Target ? actor.With(status: status) : actor));
+            actor.Actor == reaction.Target ? actor.With(status: status, refreshStats: true) : actor));
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
         AttackItemSlot.HasValue ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
-            ? actor.With(mp: (byte)Math.Max(0, actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost))) : actor));
+            ? actor.With(mp: (byte)Math.Max(0, actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)), refreshStats: true) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)
     {

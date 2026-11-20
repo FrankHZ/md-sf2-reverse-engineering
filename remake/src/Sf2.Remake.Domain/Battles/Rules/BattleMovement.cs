@@ -76,7 +76,7 @@ internal static class BattleMovement
         }
         var path = backwards.AsEnumerable().Reverse().ToArray();
         int actualCost = path.Skip(1).Sum(p => (int)BattleTerrainRules.MovementCost(terrain[Offset(p)], actor.Definition.Mover));
-        if (actualCost > destinationCost || actualCost > actor.Definition.Move * 2)
+        if (actualCost > destinationCost || actualCost > actor.Move * 2)
             throw new BattleRuleException("movement-path", "destination");
         return new(path, actualCost);
     }
@@ -105,7 +105,7 @@ internal static class BattleMovement
         var actor = battle.GetActor(actorRef);
         var enemies = battle.Actors.Where(a => a.Hp > 0 && a.Position is not null && a.Faction != actor.Faction);
         return BattleTerrainRules.MovementGrid(battle.Definition.Terrain, actor.Position!, actor.Definition.Mover,
-            actor.Definition.Move, enemies.Select(a => a.Position!));
+            actor.Move, enemies.Select(a => a.Position!));
     }
 
     internal static void RequireStop(EngineBattleState battle, ActorRef actor, MapPosition destination, WeightedMovementGrid? aiGrid = null)
@@ -113,7 +113,7 @@ internal static class BattleMovement
         if (aiGrid is null) _ = Preview(battle, actor, destination);
         else
         {
-            if (!battle.Definition.Contains(destination) || aiGrid.CostAt(destination) is not { } cost || cost > battle.GetActor(actor).Definition.Move * 2)
+            if (!battle.Definition.Contains(destination) || aiGrid.CostAt(destination) is not { } cost || cost > battle.GetActor(actor).Move * 2)
                 throw new BattleRuleException("ai-move-path", "ai.move.path", true);
             _ = MoveString(aiGrid, battle.GetActor(actor).Position!, destination, battle.Definition.Width, battle.Definition.Height);
         }

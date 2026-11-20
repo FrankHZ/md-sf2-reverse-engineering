@@ -35,7 +35,7 @@ public static class BattleEquipment
     internal static BattleActorState RemoveItem(BattleActorState actor, int slot, byte? initializedBaseAttack = null)
     {
         var loadout = BattleInventory.Remove(actor.SourceLoadout!, slot);
-        return actor.With(sourceLoadout: loadout, attack: actor.Definition.Equipment is null ? actor.Attack :
+        return actor.With(sourceLoadout: loadout, refreshStats: true, attack: actor.Definition.Equipment is null ? actor.Attack :
             (byte)Math.Min(200, (initializedBaseAttack ?? actor.BaseAttack) + Contribution(actor.Definition, loadout)));
     }
 
@@ -147,7 +147,7 @@ public static class BattleEquipment
     {
         var choice = Choices(actor).SingleOrDefault(choice => choice.Slot == slot)
             ?? throw new BattleRuleException("equipment-slot", "equipment.slot");
-        return actor.With(sourceLoadout: Equip(actor.Definition, actor.SourceLoadout!, slot), attack: choice.Attack);
+        return actor.With(sourceLoadout: Equip(actor.Definition, actor.SourceLoadout!, slot), attack: choice.Attack, refreshStats: true);
     }
 
     internal static BattleSourceLoadout Equip(BattleActorDefinition definition, BattleSourceLoadout loadout, int slot)

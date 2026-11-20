@@ -7,7 +7,7 @@ namespace Sf2.Remake.Domain.Battles;
 public sealed record SavedBattleActor(string Actor, MapPosition? Position, MapPosition DeploymentPosition,
     byte Facing, ushort Hp, byte Mp, byte? Exp, ushort? Kills, ushort? Defeats, ushort Status,
     bool Initialized, byte Attack, ushort? ActivationWord, byte AiMemory, byte? PrimaryOrder,
-    byte? SecondaryOrder, string? LastTarget, BattleActorProgress? Progress, BattleSourceLoadout? Loadout);
+    byte? SecondaryOrder, string? LastTarget, BattleActorProgress? Progress, BattleSourceLoadout? Loadout, ushort? LastRefreshCounters = null);
 public sealed record SavedBattleTurn(string? Actor, byte AlteredAgility);
 public sealed record SavedBattleOptions(byte Difficulty, bool AllyAutoBattle, bool OpponentControl,
     ushort? MissingCandidateAllyWord);
@@ -57,7 +57,8 @@ internal static class BattleContinuationValues
             actor.Actor.Value, actor.Position, actor.Deployment.Position, actor.Facing, actor.Hp, actor.Mp,
             actor.Exp, actor.Kills, actor.Defeats, actor.Status, actor.Initialized, actor.Attack,
             actor.ActivationWord, actor.AiMemory, actor.PrimaryOrder, actor.SecondaryOrder, actor.LastTarget?.Value,
-            Progress(actor.Progress), Loadout(actor.SourceLoadout))).ToArray()), battle.MainSeed, battle.ThinkingSeed,
+            Progress(actor.Progress), Loadout(actor.SourceLoadout),
+            actor.LastRefreshBits is { } bits ? (ushort)(bits & BattleStatCounters.Mask) : null)).ToArray()), battle.MainSeed, battle.ThinkingSeed,
             battle.Round, Array.AsReadOnly(battle.Queue.Select(t => new SavedBattleTurn(t.Actor?.Value, t.AlteredAgility)).ToArray()),
             battle.Cursor, battle.Gold.Value, new(policy.Difficulty, policy.AllyAutoBattle, policy.OpponentControl, policy.MissingCandidateAllyWord),
             battle.Regions is null ? null : new(Array.AsReadOnly(battle.Regions.Flags.ToArray()), battle.Regions.Tested),

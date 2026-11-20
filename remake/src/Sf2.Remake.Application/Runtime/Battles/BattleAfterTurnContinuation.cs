@@ -7,7 +7,7 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 // Pending source command operands, not another actor/turn state authority.
 internal sealed record StunTurnNotice(ActorRef Actor, ushort Before, ushort After);
 internal sealed record SleepTurnNotice(ActorRef Actor, ushort Before, ushort After, int Text);
-internal sealed record SilenceTurnNotice(ActorRef Actor, ushort Before, ushort After);
+internal sealed record CounterExpiryNotice(ActorRef Actor, ushort Before, ushort After);
 
 internal static class BattleAfterTurnContinuation
 {
@@ -60,18 +60,30 @@ internal static class BattleAfterTurnContinuation
                 new ActiveBattle(updatedBattle, null), current.Story, SessionStopReason.SimulationWait);
             return BattleAdvancer.Advance(CheckSleep(updated, stun.Actor, changes), changes, rules);
         }
-        if (scene.SilenceTurn is { } silence)
+        if (scene.CounterExpiry is { } expiry)
         {
-            var silenced = current.Battle.GetActor(silence.Actor);
-            if (silenced.Hp == 0 || silenced.Status != silence.Before)
-                return BattleCommandDispatcher.Reject(current, "silence-turn-context", "actor.status");
+            var unit = current.Battle.GetActor(expiry.Actor);
+            if (unit.Hp == 0 || unit.Status != expiry.Before)
+                return BattleCommandDispatcher.Reject(current, "counter-turn-context", "actor.status");
             long nextSequence = current.ObservationSequence;
             var updatedBattle = current.Battle.With(actors: current.Battle.Actors.Select(a =>
-                a.Actor == silence.Actor ? a.With(status: silence.After) : a));
-            List<SessionObservation> expired = [new(++nextSequence, current.Revision + 1, "silence-status", silence.Actor, silence.Before, silence.After)];
+                a.Actor == unit.Actor ? a.With(status: expiry.After) : a));
+            string effect = scene.Phase switch
+            {
+                BattleScenePhase.SlowExpiredMessage => "slow-status",
+                BattleScenePhase.BoostExpiredMessage => "boost-status",
+                _ => "silence-status",
+            };
+            List<SessionObservation> expired = [new(++nextSequence, current.Revision + 1, effect, unit.Actor, unit.Status, expiry.After)];
             var updated = new SessionSnapshot(current.SessionId, current.Revision + 1, nextSequence,
                 new ActiveBattle(updatedBattle, null), current.Story, SessionStopReason.SimulationWait);
-            return BattleAdvancer.Advance(AfterSilence(updated, silence.Actor, expired), expired, rules);
+            var next = scene.Phase switch
+            {
+                BattleScenePhase.SlowExpiredMessage => TickCounter(updated, unit.Actor, false, expired),
+                BattleScenePhase.BoostExpiredMessage => AfterCounters(updated, unit.Actor, expired),
+                _ => AfterSilence(updated, unit.Actor, expired),
+            };
+            return BattleAdvancer.Advance(next, expired, rules);
         }
         var notice = scene.SleepTurn!;
         var actor = current.Battle.GetActor(notice.Actor);
@@ -100,7 +112,7 @@ internal static class BattleAfterTurnContinuation
             observations.Add(new(++sequence, revision, "silence-turn-message", actor, Detail: "351"));
             return new(current.SessionId, revision, sequence, new ActiveBattle(battle, null,
                 new(null, BattleScenePhase.SilenceTurnMessage, 0, new(sequence),
-                    silenceTurn: new(actor, result.Before, result.After))), current.Story, SessionStopReason.PresentationWait);
+                    counterExpiry: new(actor, result.Before, result.After))), current.Story, SessionStopReason.PresentationWait);
         }
         battle = battle.With(actors: battle.Actors.Select(a => a.Actor == actor ? a.With(status: result.After) : a));
         observations.Add(new(++sequence, revision, "silence-status", actor, result.Before, result.After));
@@ -108,13 +120,48 @@ internal static class BattleAfterTurnContinuation
             SessionStopReason.SimulationWait), actor, observations);
     }
 
-    private static SessionSnapshot AfterSilence(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
+    private static SessionSnapshot AfterSilence(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations) =>
+        TickCounter(current, actor, true, observations);
+
+    private static SessionSnapshot TickCounter(SessionSnapshot current, ActorRef actor, bool slow, List<SessionObservation> observations)
+    {
+        var unit = current.Battle.GetActor(actor);
+        int mask = slow ? BattleStatCounters.Slow : BattleStatCounters.Boost;
+        int count = unit.Status & mask;
+        int step = mask / 3;
+        long sequence = current.ObservationSequence;
+        if (count == step)
+        {
+            var phase = slow ? BattleScenePhase.SlowExpiredMessage : BattleScenePhase.BoostExpiredMessage;
+            observations.Add(new(++sequence, current.Revision + 1, slow ? "slow-expired" : "boost-expired", actor,
+                Detail: slow ? "349" : "348"));
+            var scene = new BattleSceneState(null, phase, 0, new(sequence),
+                counterExpiry: new(actor, unit.Status, (ushort)(unit.Status - step)));
+            return new(current.SessionId, current.Revision + 1, sequence, new ActiveBattle(current.Battle, null, scene),
+                current.Story, SessionStopReason.PresentationWait);
+        }
+        if (count != 0)
+        {
+            ushort after = (ushort)(unit.Status - step);
+            var battle = current.Battle.With(actors: current.Battle.Actors.Select(a => a.Actor == actor ? a.With(status: after) : a));
+            observations.Add(new(++sequence, current.Revision, slow ? "slow-status" : "boost-status", actor, unit.Status, after));
+            current = new(current.SessionId, current.Revision, sequence, new ActiveBattle(battle, null), current.Story,
+                SessionStopReason.SimulationWait);
+        }
+        return slow ? TickCounter(current, actor, false, observations) : AfterCounters(current, actor, observations);
+    }
+
+    internal static EngineBattleState Refresh(EngineBattleState battle, ActorRef actor) =>
+        !battle.GetActor(actor).NeedsStatRefresh ? battle :
+            battle.With(actors: battle.Actors.Select(a => a.Actor == actor ? a.With(refreshStats: true) : a));
+
+    private static SessionSnapshot AfterCounters(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
     {
         if (current.Battle.Definition.Poison && PoisonTurnRules.Eligible(current.Battle.GetActor(actor)))
             return BattlePoisonContinuation.Begin(current, actor, observations);
         long sequence = current.ObservationSequence;
         observations.Add(new(++sequence, current.Revision, "after-turn", actor));
-        return new(current.SessionId, current.Revision, sequence, new ActiveBattle(BattleTurnFlow.ConsumeEntry(current.Battle), null),
+        return new(current.SessionId, current.Revision, sequence, new ActiveBattle(BattleTurnFlow.ConsumeEntry(Refresh(current.Battle, actor)), null),
             current.Story, SessionStopReason.SimulationWait);
     }
 }

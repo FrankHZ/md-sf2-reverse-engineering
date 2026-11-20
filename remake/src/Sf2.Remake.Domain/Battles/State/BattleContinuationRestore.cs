@@ -73,11 +73,14 @@ internal static class BattleContinuationRestore
             saved.Kills, saved.Defeats, saved.LastTarget is null ? null : new ActorRef(saved.LastTarget), saved.Attack,
             saved.Status, saved.ActivationWord, saved.AiMemory, BattleContinuationValues.Progress(saved.Progress),
             BattleContinuationValues.Loadout(saved.Loadout), retainDeadPosition: true,
-            primaryOrder: saved.PrimaryOrder, secondaryOrder: saved.SecondaryOrder, facing: saved.Facing, initialized: saved.Initialized);
+            primaryOrder: saved.PrimaryOrder, secondaryOrder: saved.SecondaryOrder, facing: saved.Facing, initialized: saved.Initialized,
+            appliedStatBits: saved.LastRefreshCounters is { } bits ? (ushort)(bits | (saved.Status & 1)) : null);
     }
 
     internal static void ValidateValues(SavedBattleActor saved, BattleActorDefinition definition)
     {
+        Require(BattleStatCounters.ValidSavedOperand(saved.Status, saved.LastRefreshCounters) &&
+            (saved.LastRefreshCounters is null || saved.Initialized), "stat-counters");
         var progress = saved.Progress;
         Require(saved.Facing <= 3 && saved.Hp <= (progress?.MaxHp ?? definition.MaxHp) &&
             saved.Mp <= (progress?.MaxMp ?? definition.MaxMp) && saved.Exp is null or <= 200 &&
