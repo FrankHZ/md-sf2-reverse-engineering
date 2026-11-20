@@ -12,8 +12,8 @@ from urllib.parse import quote, unquote, urlsplit
 
 from sf2tool.paths import REPO_ROOT
 from sf2tool.wiki_sync import (
+    DESIGN_MAP_TITLE,
     ENTRY_TITLES,
-    PILOT_MIRRORS,
     WIKI_BASE,
     apply_review,
     check_wiki,
@@ -25,8 +25,8 @@ from sf2tool.zh_translation import _heading_anchors
 REPOSITORY = "https://github.com/FrankHZ/md-sf2-reverse-engineering"
 MAPPING = "docs/operations/wiki-mirrors.tsv"
 INDEX = "docs/README.zh-CN.md"
-ROADMAP = "docs/design/documentation-roadmap.md"
-ROM_LEDGER = "docs/research/rom-block-ledger.md"
+DESIGN_ROOT = "docs/design/zh-CN/"
+DESIGN_MAP = DESIGN_ROOT + "design-map.md"
 
 
 class Source:
@@ -44,19 +44,19 @@ class Source:
         self.mirrors = self.mirror_mapping()
 
     def mirror_mapping(self) -> dict[str, tuple[str, str]]:
-        rows = PILOT_MIRRORS
-        if MAPPING in self.files:
-            reader = csv.reader(self.read(MAPPING).splitlines(), delimiter="\t")
-            if next(reader, []) != ["source", "title", "中文入口"]:
-                raise ValueError(f"invalid header in {MAPPING}")
-            rows = list(reader)
+        reader = csv.reader(self.read(MAPPING).splitlines(), delimiter="\t")
+        if next(reader, []) != ["source", "title", "中文入口"]:
+            raise ValueError(f"invalid header in {MAPPING}")
         result = {}
         titles = {title.casefold() for title in ENTRY_TITLES}
-        for path, title, label in rows:
+        for path, title, label in reader:
             if not (
-                path.startswith("docs/design/") and path.endswith(".md") and path in self.files
+                path.startswith(DESIGN_ROOT)
+                and path.endswith(".md")
+                and path in self.files
+                and path != DESIGN_MAP
             ):
-                raise ValueError(f"expected a tracked design document in {MAPPING}: {path}")
+                raise ValueError(f"expected a tracked Chinese design excerpt in {MAPPING}: {path}")
             if (
                 not re.fullmatch(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", title)
                 or re.fullmatch(r"CON|AUX|NUL|PRN|(?:COM|LPT)[0-9]", title, re.IGNORECASE)
@@ -85,19 +85,11 @@ class Source:
             "#" + fragment if fragment else ""
         )
 
-    def directory_link(self, path: str, label: str) -> str:
-        if git(REPO_ROOT, "cat-file", "-t", f"{self.commit}:{path}").strip() != "tree":
-            raise ValueError(f"missing source directory: {path}")
-        return f"[{label}]({REPOSITORY}/tree/{self.commit}/{path})"
-
-    def chinese_link(self, path: str, label: str) -> str:
-        mirror = path.replace("docs/design/", "docs/design/zh-CN/", 1)
-        if mirror in self.files:
-            return f"[{label}]({self.url(mirror)})"
-        return f"[{label}（主仓英文）]({self.url(path)})"
-
     def render_body(self, path: str) -> str:
-        # The two pilot bodies use inline Markdown destinations. Leave their prose intact.
+        titles = {path: title for path, (title, _) in self.mirrors.items()}
+        titles[DESIGN_MAP] = DESIGN_MAP_TITLE
+
+        # Preserve the reviewed design prose and resolve its inline Markdown destinations.
         def replace(match: re.Match[str]) -> str:
             prefix, target = match.groups()
             url = urlsplit(target)
@@ -110,8 +102,8 @@ class Source:
             resolved = self.url(dest, url.fragment, image=prefix.startswith("!"))
             if not url.path:
                 return match[0]  # same heading in the unchanged mirror body
-            if dest in self.mirrors and not prefix.startswith("!"):
-                resolved = f"{REPOSITORY}/wiki/{self.mirrors[dest][0]}"
+            if not prefix.startswith("!") and dest in titles:
+                resolved = f"{REPOSITORY}/wiki/{titles[dest]}"
                 if url.fragment:
                     resolved += "#" + url.fragment
             return f"{prefix}{resolved})"
@@ -119,71 +111,55 @@ class Source:
         return re.sub(r"(!?\[[^\]\n]*\]\()([^()\s]+)\)", replace, self.read(path))
 
 
+def repo_link(source: Source, path: str, label: str) -> str:
+    return f"[{label}]({source.url(path)})"
+
+
+def wiki_link(title: str, label: str) -> str:
+    return f"[{label}]({REPOSITORY}/wiki/{title})"
+
+
 def render(source: Source) -> dict[str, str]:
     def credit(path: str) -> str:
         return (
-            f"> 主仓源页 [{path}]({source.url(path)}) · "
+            f"> {repo_link(source, path, '主仓中文源页')} · "
             f"[{source.commit[:8]}]({REPOSITORY}/commit/{source.commit}) · "
             f"[反馈或纠错]({REPOSITORY}/issues/new)\n"
         )
 
-    index = f"[主仓中文文档索引]({source.url(INDEX)})"
-    rom_entry = ""
-    if ROM_LEDGER in source.files:
-        rom_entry = f"- [ROM 分块总表（主仓英文）]({source.url(ROM_LEDGER)})\n"
-    roadmap = source.chinese_link(ROADMAP, "设计路线图")
-    entries = []
-    design_entries = []
-    sidebar = []
-    for path, (title, label) in source.mirrors.items():
-        wiki_link = "[[" + title.replace("-", " ") + "]]"
-        entry = f"{source.chinese_link(path, label)} · {wiki_link}（英文镜像）\n"
-        layer = {"contracts": "Layer C 子系统合同：", "synthesis": "Layer B 跨系统综合："}.get(
-            path.split("/")[2], ""
+    def design_page(path: str) -> str:
+        english = path.replace(DESIGN_ROOT, "docs/design/", 1)
+        return (
+            credit(path)
+            + "\n"
+            + repo_link(source, english, "英文规范源 · English source")
+            + "\n\n"
+            + source.render_body(path)
         )
-        entries.append("- " + entry)
-        design_entries.append("- " + layer + entry)
-        sidebar.append(f"  - {wiki_link}\n")
-    navigation = "".join(entries)
-    directories = " · ".join(
-        (
-            source.directory_link("docs/design/zh-CN", "中文设计目录"),
-            source.directory_link("docs/design/zh-CN/contracts", "合同"),
-            source.directory_link("docs/design/zh-CN/synthesis", "设计综合"),
-            source.directory_link("docs/decisions", "ADR（主仓英文）"),
-        )
-    )
+
+    entries = "".join(f"- {wiki_link(title, label)}\n" for title, label in source.mirrors.values())
+    design_map = wiki_link(DESIGN_MAP_TITLE, "L0–L3 设计地图")
+    index = repo_link(source, INDEX, "主仓中文设计索引")
     pages = {
         "Home": (
-            "# Shining Force II Reverse Engineering Wiki（试点）\n\n"
+            "# Shining Force II 设计 Wiki\n\n"
             + credit(INDEX)
-            + "\n## 从这里开始\n\n"
-            f"- {roadmap} · [[Design Documentation]]\n"
-            f"{navigation}"
-            f"{rom_entry}"
-            f"- {index}\n\n"
-            "## 阅读边界\n\n"
-            "- **Confirmed**：由项目命令、测试或具名证据直接支持。\n"
-            "- **Inferred**：有较强支持，但尚未在所需边界独立复现。\n"
-            "- **Unknown**：明确保留的问题。\n\n"
-            "证据、合同注册、翻译和验证由主仓维护。请在主仓通过 PR 修订。\n"
+            + f"\n{design_map}连接愿景、玩法、各系统和具体规则。\n\n"
+            + entries
+            + f"\n{index} · "
+            + repo_link(source, "docs/design/design-map.md", "English design map")
+            + "\n"
         ),
         "_Sidebar": (
-            "## SF2 Wiki 试点\n\n- [[Home]]\n- [[Design Documentation]]\n"
-            f"{''.join(sidebar)}{rom_entry}\n"
-            f"{index} · {roadmap}\n\n" + credit(INDEX)
+            "## SF2 设计\n\n"
+            + f"- {wiki_link('Home', '首页')}\n- {design_map}\n"
+            + entries
+            + f"\n{index}\n\n"
+            + credit(INDEX)
         ),
-        "Design-Documentation": (
-            "# Design Documentation\n\n" + credit(ROADMAP) + "\n## 设计文档入口\n\n"
-            f"- {roadmap} · {source.chinese_link('docs/design/glossary.md', '术语表')}\n"
-            f"{''.join(design_entries)}"
-            f"- {index} · {directories}\n\n"
-            "主仓保存设计路径、证据关联、翻译索引和门禁。通过主仓 PR 修改后可重新生成镜像。\n"
-        ),
+        DESIGN_MAP_TITLE: design_page(DESIGN_MAP),
     }
-    for path, (title, _) in source.mirrors.items():
-        pages[title] = credit(path) + source.chinese_link(path, "阅读中文源页") + "\n\n"
-        pages[title] += source.render_body(path)
+    pages.update((title, design_page(path)) for path, (title, _) in source.mirrors.items())
     return pages
 
 

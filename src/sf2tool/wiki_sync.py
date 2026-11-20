@@ -11,19 +11,9 @@ import tempfile
 from pathlib import Path, PurePosixPath
 
 WIKI_BASE = "c027ddb07884c481cf06d20238065051d18ed093"
-ENTRY_TITLES = ("Home", "_Sidebar", "Design-Documentation")
-PILOT_MIRRORS = (
-    (
-        "docs/design/contracts/world/map-exploration.md",
-        "Map-Exploration-Contract",
-        "地图与探索合同",
-    ),
-    (
-        "docs/design/synthesis/milestones/map3-battle01-readiness.md",
-        "Map3-Battle01-Readiness",
-        "Map 3 至 Battle 01 就绪台账",
-    ),
-)
+DESIGN_MAP_TITLE = "Design-Documentation"
+ENTRY_TITLES = ("Home", "_Sidebar", DESIGN_MAP_TITLE)
+PILOT_BODY_TITLES = ("Map-Exploration-Contract", "Map3-Battle01-Readiness")
 SUBJECT = "Publish SF2 Wiki from "
 PAGE_SUFFIXES = {
     ".md",
@@ -70,7 +60,7 @@ def previous_pages(wiki: Path, base: str) -> set[str]:
     git(wiki, "merge-base", "--is-ancestor", WIKI_BASE, base)
     git(wiki, "merge-base", "--is-ancestor", base, "HEAD")
     if base == WIKI_BASE:
-        return {*ENTRY_TITLES, *(title for _, title, _ in PILOT_MIRRORS)}
+        return {*ENTRY_TITLES, *PILOT_BODY_TITLES}
     message = git(wiki, "show", "-s", "--format=%B", base)
     if not re.fullmatch(re.escape(SUBJECT) + "[0-9a-f]{40}", message.splitlines()[0]):
         raise ValueError("--base must identify the audited pilot or a reviewed publication")
