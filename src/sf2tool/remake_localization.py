@@ -139,10 +139,16 @@ def _topology(source: str, target: str) -> bool:
     )
 
 
-def _search_text_ids(world: dict) -> set[int]:
+def _field_text_ids(world: dict) -> set[int]:
     texts, pending = set(), set()
     for row in world["maps"]:
         for setup in (row, *row.get("setups", [])):
+            if row["id"] == "map-23":
+                pending.update(
+                    event["program"]["program"]
+                    for event in setup["events"]
+                    if event["kind"] == "interact" and event.get("program")
+                )
             for description in setup.get("search", {}).get("descriptions", []):
                 if "texts" in description:
                     texts.update(description["texts"])
@@ -225,7 +231,7 @@ def derive(args: argparse.Namespace) -> dict:
     }
     field_texts, field_items = set(), set()
     if args.scope == "current":
-        field_texts = _search_text_ids(world["world"])
+        field_texts = _field_text_ids(world["world"])
         if any(
             op["op"] == "caravan"
             for program in world["world"]["programs"]
