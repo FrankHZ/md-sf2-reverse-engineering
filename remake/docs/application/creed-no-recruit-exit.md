@@ -3,14 +3,15 @@
 **Confirmed:** For the settled post-consultation F784 room with four living, unjoined candidates
 in their initial positions, the original walking rules leave Bowie on the north side of the hall.
 Goliath and the four candidates occupy every crossing. The Fairy can follow and the Oddler caller
-has no F787 test. The player still needs a way to reach its tile. **Inferred:** The existing remake
-implements this physical restriction for the retained Fairy saves. **Unknown:** independent
-ordinary observations on the current remake head and natural timing on original hardware.
+has no F787 test. Ordinary remake inputs from the saved Fairy room
+met each of the five actors. From Eric's recruited save, eight south inputs reached the Oddler
+scene and eight more left the mansion. Both branches cold-restored with usable control.
+**Unknown:** natural original timing or a bypass outside this settled population.
 
 [Issue #1940](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1940) uses Standard
 rigor for this one route, under the [campaign agreement](remaining-campaign-risk-baseline.md).
 The comparison begins at ordinary Map33 return after consultation and covers the hall
-crossings, the south exit where reachable, and the next cold Continue. The [chapter](creed-recruitment.md) owns the already
+crossings, the south exit where reachable, and the next cold Continue. The [chapter](creed-recruitment.md) owns the
 accepted Fairy, offer, Oddler, departure and persistence behavior.
 
 ## Original room and walking rules
@@ -72,7 +73,7 @@ At that zone, clear F774 selects the earlier Goliath scene. Otherwise F785 set a
 run `cs_5B466`. Its normal return sets F786/F69 and clears F68. The south warp leads to
 Map67 (26,23) Up. These statements describe the caller and destination under their admission
 conditions. Histories with a prior join, changed HP, F22 or a different loaded room require
-their own actor/layout premises.
+their own actor and layout premises.
 
 ## Remake evidence and ordinary observation
 
@@ -91,33 +92,107 @@ before dispatching a door or zone. [Cold field-scene restore](../../src/Sf2.Rema
 restores the saved actors, following and changed words. A current-room flag change alone does
 not rebuild the actors. [CreedRecruitmentTests](../../tests/Sf2.Remake.Engine.Tests/CreedRecruitmentTests.cs)
 uses a zero-word layout and an interaction with entity129 to drive the Oddler surrogate. It
-checks flag and persistence behavior. The real evidence gap is the player's approach.
+checks flag and persistence behavior. The ordinary inputs below exercise the corresponding hall and zone.
 
-Use the #1876 handoff's ordinary English slots as read-only seeds in separate disposable
-namespaces. Use the current accepted adapter and one matching stable world, with ordinary
-headless input and settled state/projection/error reads. The following observations are pending.
+### Ordinary results
 
-1. Continue a copy of `fairy-en.json`. Tap Down four times, Left, Down, settling after each move.
-   At (16,14), tap Left, Down, Right separately. Record the player's origin/destination and each
-   occupant's physical slot, obstruction bit and current/destination. Then tap Up, Right twice,
-   Down to (18,14). Tap Down and Right separately. This sequence targets every crossing with ten
-   predicted moves and five predicted collisions. On the static prediction both pockets retain control, the five
-   attempts keep their origins, and the initial flag/membership/following state survives.
-   Save there, use product Quit and cold Continue. A changed outcome calls for tracing the first
-   differing input, tile or actor before changing production code.
-2. For a positive control, Continue a separate copy of `recruited-en.json`. Eric is already
-   joined and following, and Bowie is at (15,13) Down. Eight settled Down inputs along X15
-   target the zone, including the door at Y20. Release direction when the zone starts, advance
-   its dialogue and read F786/F69 set, F68 clear and F14/F787 retained. Read the returned player
-   position (the scene requests (15,23) Up), then walk Down to Y31. Save on Map67 (26,23) Up,
-   Quit, cold Continue and check ordinary control. If a no-choice probe actually crosses the
-   barrier, continue that branch through the same caller, exit and cold check with F14–17/F787
-   still clear. Keep the old failed search receipt.
+The #1938 runtime carries the accepted execution code at 34050ee4. It read the #1927 Pacalon
+package and separate copies of the two English #1876 slots. Each run used the existing Godot
+4.7.2 headless host, ordinary key press/release, and title Continue. The observer read settled
+player and actor coordinates, input readiness, logical view, presentation camera, dialogue,
+party lists and error fields. At both pockets the room camera reported (120,225) and tracked
+player slot 0. The headless camera actor projection was null.
 
-Each run reuses the existing roughly 100 MB world. Prior #1876 no-choice, chosen and cold receipt
-directories used about 170, 518 and 91 KiB respectively. Allow 5 MiB for the two branches'
-compact receipts and slot copies, separate from local host build/import output. No new world
-or media acquisition is needed. Stage one selects no production change. The chapter, capability
-row and campaign character/location/Creed-flag entries await the ordinary result and serialized
-ownership with #1939. **Unknown:** native behavior on the new head, other original histories,
-and any timing-dependent original bypass outside the settled walking premises.
+| Seed and ordinary input | Settled observation |
+| --- | --- |
+| Fairy at (17,9) Down. Down four, Left, Down. | Bowie walked through the (17,11) door into the west pocket at (16,14). |
+| Left, Down, Right, released separately at (16,14). | Bowie faced Eric14 (physical6), Randolf16 (7) and Goliath128 (3) in turn. Player position and destination stayed (16,14) on all three inputs. |
+| Up, Right twice, Down to (18,14). Then Down, Right. | Bowie faced Tyrin17 (8) and then Karna15 (9). His current and destination cells stayed (18,14). All five blocking actors were visible with bit 0x80 set, and their current and reserved cells matched the source positions. |
+| Save in the east pocket, Quit, cold Continue. | F762/F785/F68 stayed set, F786/F69/F787 and joined14–17 stayed clear. The entire decoded save data matched on immediate resave. Up reached (18,13). |
+| Recruited Eric at (15,13) Down. Down eight, acknowledge the text when offered. | Bowie crossed Eric's former cell and opened the Y20 door. The last input targeted (15,21). Texts 1932–1945 played in order. Control returned at (15,23) Up, with F786/F69/F14/F787 set and F68 clear. |
+| Down eight, Save on Devil's Tail, Quit, cold Continue. | The Y31 warp delivered Map67 (26,23) Up. The entire decoded save data matched on immediate resave. Down reached (26,24). |
+
+The four completed samples were `hall03`, `chosen01`, `cold-hall01` and `cold-chosen01`.
+Each had an empty observer issue, product Quit, native exit 0 and clear gameplay, presentation,
+audio and fallback errors. Save sequences advanced 93→94 in the hall and 94→95 outside.
+Native shutdown logged two ObjectDB instances in three runs and four in the Oddler run. The
+[lifecycle owner](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716) tracks
+this warning. Two preparation failures remain in the private receipts. An in-checkout save root
+was rejected at title in `hall01` (exit 2). In `hall02` the observer misspelled the case of the
+`Joined` field and logged script errors despite exit 0. The corrected hall run consumed the
+actual joined list. These failures and the older #1876 navigation failure are distinct.
+
+After [Rick's recruitment](hassan-rick-recruitment.md) merged at 0604b5d1, the two stable worlds'
+Map33 definitions and full program arrays compared equal. The historical roster reader and save
+recipe changed. Sample `current01` used the owning checkout's Debug adapter, the accepted #1939
+stable content and a copy of the revision-9 hall save. Title Continue, Save, Up to (18,13) and
+menu Quit passed with native exit 0. Comparing the resave added exactly the initialized unjoined
+ally12 record and changed recipe revision 9 to 10. The other nineteen records, room graph, layout,
+flags and all other decoded fields matched. This sample retained the two-instance shutdown warning.
+
+### Replay
+
+From the owning checkout, set `$creedSlots` to the registered #1876 handoff's `slots` directory.
+The retained headless observer accepts one of the four tasks below, a fresh sample name, and
+a read-only ordinary slot. Each launch creates its own external save namespace and copies the
+supplied file to Slot 1. Choose a different suffix for each replay. The accepted stable world,
+scene, catalog and runtime remain in their original handoffs.
+
+```powershell
+. ./local/private-inputs.ps1
+$creedSlots = Read-Host 'Absolute path to the registered issue1876/slots directory'
+$tag = [guid]::NewGuid().ToString('N').Substring(0,8)
+$saves = Join-Path (Split-Path -Parent $env:SF2_SHARED_INPUT_ROOT) 'save-validation/issue1940'
+$driver = './local/issue1940/Observe.ps1'
+& $driver hall "hall-$tag" (Join-Path $creedSlots 'fairy-en.json')
+& $driver chosen "chosen-$tag" (Join-Path $creedSlots 'recruited-en.json')
+& $driver cold-hall "cold-hall-$tag" "$saves/review-hall-$tag/sf2-opening/slot1.json"
+& $driver cold-chosen "cold-chosen-$tag" "$saves/review-chosen-$tag/sf2-opening/slot1.json"
+```
+
+For the post-Rick compatibility check, build the accepted Debug adapter in the owning checkout
+using the [locked SDK workflow](../development-and-verification.md#locked-net-workflow). With
+the retained observer and imported project, run this once using the hall save just produced:
+
+```powershell
+& $driver cold-hall "current-$tag" "$saves/review-hall-$tag/sf2-opening/slot1.json" -Current
+```
+
+A fresh checkout can also replay the table directly with the stable player. Run the following
+from its root in PowerShell with the same `$creedSlots`. Select one seed per namespace. Start
+at title → Continue → Slot 1, enter the keys in its row, use F10 → Save → Slot 1, confirm,
+return to game and use F10 → Quit. Relaunch with the same `$launch` arguments for cold Continue.
+To repeat with the other seed, run the block again and change `$seedName`.
+
+```powershell
+. ./local/private-inputs.ps1
+$seedName = 'fairy-en.json' # Second branch uses recruited-en.json.
+$bundle = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1938'
+$config = Get-Content -Raw -LiteralPath "$bundle/player-config.json" | ConvertFrom-Json -AsHashtable
+foreach ($name in $config.inputs.Keys) {
+    $value = $config.inputs[$name]
+    if (![IO.Path]::IsPathRooted($value)) { $value = Join-Path $bundle $value }
+    [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+}
+$run = 'creed-' + [guid]::NewGuid().ToString('N')
+$profileDir = Join-Path (Resolve-Path ./local).Path $run
+$env:APPDATA = "$profileDir/appdata"
+$env:LOCALAPPDATA = "$profileDir/localappdata"
+$env:TEMP = "$profileDir/temp"
+$env:TMP = $env:TEMP
+$env:SF2_SAVE_ROOT = Join-Path (Split-Path -Parent $env:SF2_SHARED_INPUT_ROOT) 'save-validation/issue1940'
+$env:SF2_SAVE_NAMESPACE = $run
+$slots = Join-Path $env:SF2_SAVE_ROOT "$run/sf2-opening"
+foreach ($dir in @($slots,$env:APPDATA,$env:LOCALAPPDATA,$env:TEMP)) {
+    [void][IO.Directory]::CreateDirectory($dir)
+}
+[IO.File]::Copy((Join-Path $creedSlots $seedName), "$slots/slot1.json", $false)
+$launch = @('--path', "$bundle/runtime/remake/game", '--log-file', "$profileDir/native.log",
+    '--', '--input-settings', "$bundle/settings-en.json")
+& $env:GODOT_BIN @launch
+```
+
+The four primary runs used about 374 KiB for receipts and disposable save files. The post-Rick
+check added 89 KiB, within the total 5 MiB estimate. Both worlds were reused in place. The original
+hardware/controller observation, other populations and timing-dependent bypasses remain
+**Unknown**. This investigation changes documentation only.
