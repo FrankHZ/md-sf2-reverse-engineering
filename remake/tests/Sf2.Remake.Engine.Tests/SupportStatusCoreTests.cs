@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
@@ -202,6 +203,67 @@ public sealed class SupportStatusCoreTests
         var error = Assert.Throws<SaveFormatException>(() =>
             OpeningSaveJson.WriteRecord(new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, invalid)));
         Assert.Equal("save-battle-stat-counters", error.Code);
+    }
+
+    [Theory]
+    [InlineData(false, 0x1000, 2)]
+    [InlineData(true, 0x0400, 4)]
+    public void RetainedFieldMemberCannotCarryBattleCountersIntoSaveOrContinue(bool classes, ushort counters, int version)
+    {
+        var (definition, entry) = BattleSaveFixture.Create();
+        var rules = RuleCompositions.Sf2();
+        var data = BattleSaveFixture.Capture(definition, entry) with { HasClassTerms = classes };
+        var record = new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, data);
+        var wire = OpeningSaveJson.ReadRecord(OpeningSaveJson.WriteRecord(record), 1);
+        Assert.Equal(version, wire.FormatVersion);
+        Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, wire, rules));
+
+        var player = data.Story.Player;
+        var retained = player.RetainedAllies.Select(a => a with { Status = (ushort)(a.Status | counters) }).ToArray();
+        var invalid = data with { Story = data.Story with { Player = player with { RetainedAllies = retained } } };
+        var result = GameSession.RestoreBattle(definition, invalid, rules);
+        Assert.Equal("save-battle-retained-status", Assert.IsType<SessionStartFailed>(result).Failure.Code);
+        var invalidRecord = new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, invalid);
+        Assert.Equal(version, invalidRecord.FormatVersion);
+        Assert.Equal("save-battle-retained-status", Assert.Throws<SaveFormatException>(() =>
+            OpeningSaveJson.WriteRecord(invalidRecord)).Code);
+
+        var story = entry.Story.Copy(null, fieldPlayer: entry.Story.FieldPlayer! with { RetainedAllies = retained });
+        var live = BattleSaveFixture.At(entry.Battle, story);
+        var captured = BattleSave.Capture(definition, live, rules, live.SessionId, live.Revision);
+        Assert.Null(captured.Data);
+        Assert.Equal("save-battle-retained-status", captured.Error);
+    }
+
+    [Fact]
+    public void DirectHighDefenseFeedsInspectionEstimateAndStrikeUntilStayRefreshesIt()
+    {
+        var session = EngineTestContent.Start("battle-equipment", doc =>
+        {
+            doc["actors"]![0]!["defense"] = 210;
+            doc["actors"]![1]!["attack"] = 220;
+        });
+        var target = session.Current.Selection!.Actor;
+        ActorRef attacker = new("guardian");
+        var physical = new Sf2PhysicalAction();
+        int Hit(int defense)
+        {
+            var battle = session.Current.Battle.With(mainSeed: 0x1234ABCD);
+            Assert.False(battle.GetActor(target).ExtraRoundAction);
+            Assert.Equal(defense, session.QueryBattleInspection(unit: target).Unit!.Defense);
+            Assert.Equal(220 - defense, physical.EstimateDamage(battle, attacker, target));
+            var action = BattleActionRules.Prepare(physical, battle, attacker, battle.GetActor(attacker).Position!,
+                new(BattleActionKind.Physical), target, new Sf2BattleProgressionRule());
+            var hit = action.Reactions.First();
+            Assert.Equal(BattleReactionKind.Damage, hit.Kind);
+            Assert.True(hit.Critical);
+            Assert.Equal(hit.Amount, battle.GetActor(target).Hp - action.ApplyReaction(action.Prepared, hit).GetActor(target).Hp);
+            return hit.Amount;
+        }
+        Assert.Equal(15, Hit(210));
+        EngineTestContent.Stay(session);
+        Assert.Equal(210, session.Current.Battle.GetActor(target).BaseDefense);
+        Assert.InRange(Hit(200), 24, 30);
     }
 
     [Fact]

@@ -63,7 +63,7 @@ internal static class BattleProgressionRules
         List<BattleEffect> effects = [];
         var after = rule.Credit(before, amount, effects);
         Unchanged(before, after);
-        Require(after.DirectAgility == before.DirectAgility && after.LastRefreshBits == before.LastRefreshBits && after.Progress == before.Progress && after.Attack == before.Attack && after.SourceLoadout == before.SourceLoadout);
+        Require(after.UsesInitialStats == before.UsesInitialStats && after.LastRefreshBits == before.LastRefreshBits && after.Progress == before.Progress && after.Attack == before.Attack && after.SourceLoadout == before.SourceLoadout);
         Require(after.Exp is not null && effects.Count == 1 && effects[0] == new BattleEffect("exp", before.Actor, before.Exp, after.Exp));
         return (after, effects.AsReadOnly());
     });
@@ -80,7 +80,7 @@ internal static class BattleProgressionRules
         uint seed = initial;
         var after = rule.Grow(before, ref seed, effects);
         Unchanged(before, after);
-        Require(after.DirectAgility == (after.Level == before.Level && before.DirectAgility) &&
+        Require(after.UsesInitialStats == (after.Level == before.Level && before.UsesInitialStats) &&
             after.LastRefreshBits == (after.Level > before.Level ? null : before.LastRefreshBits) &&
             after.Exp is not null && after.Level >= before.Level && after.MaxHp > 0 && after.Agility <= 127);
         Require((before.SourceLoadout is null) == (after.SourceLoadout is null));

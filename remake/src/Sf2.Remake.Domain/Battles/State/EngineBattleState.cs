@@ -129,7 +129,7 @@ public sealed class BattleActorState
         MapPosition? position, ushort? kills, ushort? defeats, ActorRef? lastTarget = null,
         byte? attack = null, ushort status = 0, ushort? activationWord = null, byte aiMemory = 0,
         BattleActorProgress? progress = null, BattleSourceLoadout? sourceLoadout = null, bool retainDeadPosition = false,
-        byte? primaryOrder = null, byte? secondaryOrder = null, byte facing = 3, bool initialized = true, ushort? appliedStatBits = null, bool directAgility = false)
+        byte? primaryOrder = null, byte? secondaryOrder = null, byte facing = 3, bool initialized = true, ushort? appliedStatBits = null, bool useInitialStats = false)
     { SourceLoadout = sourceLoadout ?? progress?.SourceLoadout ?? deployment.Definition.SourceLoadout;
         Initialized = initialized; Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 && !retainDeadPosition ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget;
@@ -140,9 +140,8 @@ public sealed class BattleActorState
         Facing = facing;
         Status = status;
         LastRefreshBits = appliedStatBits == (status & BattleStatCounters.StatBits) ? null : appliedStatBits;
-        // A direct-start scenario supplies its neutral current speed. Only packed values
-        // above 200 can differ from what the first real UpdateCombatantStats would produce.
-        DirectAgility = directAgility && AppliedStatBits == 0 && Definition.ExtraRoundAction && BaseAgility > 72;
+        // Direct starts can supply neutral current stats above the source refresh cap.
+        UsesInitialStats = useInitialStats && AppliedStatBits == 0 && (BaseDefense > 200 || PackedBaseAgility > 200);
         ActivationWord = activationWord; AiMemory = aiMemory;
         PrimaryOrder = primaryOrder ?? deployment.Initialization?.PrimaryOrder;
         SecondaryOrder = secondaryOrder ?? deployment.Initialization?.SecondaryOrder; }
@@ -164,11 +163,12 @@ public sealed class BattleActorState
     public byte BaseDefense => Progress?.Defense ?? Definition.Defense;
     public byte BaseAgility => Progress?.Agility ?? Definition.Agility;
     internal ushort? LastRefreshBits { get; }
-    internal bool DirectAgility { get; }
-    internal bool NeedsStatRefresh => DirectAgility || LastRefreshBits.HasValue;
+    internal bool UsesInitialStats { get; }
+    internal bool NeedsStatRefresh => UsesInitialStats || LastRefreshBits.HasValue;
     private ushort AppliedStatBits => LastRefreshBits ?? (ushort)(Status & BattleStatCounters.StatBits);
-    public byte Defense => BattleStatCounters.Defense(BaseDefense, AppliedStatBits);
-    private byte PackedAgility => DirectAgility ? (byte)(128 | BaseAgility) : BattleStatCounters.PackedAgility(BaseAgility, Definition.ExtraRoundAction, AppliedStatBits);
+    public byte Defense => UsesInitialStats ? BaseDefense : BattleStatCounters.Defense(BaseDefense, AppliedStatBits);
+    private byte PackedBaseAgility => (byte)(BaseAgility | (Definition.ExtraRoundAction ? 128 : 0));
+    private byte PackedAgility => UsesInitialStats ? PackedBaseAgility : BattleStatCounters.PackedAgility(PackedBaseAgility, AppliedStatBits);
     public byte Agility => (byte)(PackedAgility & 127);
     public bool ExtraRoundAction => (PackedAgility & 128) != 0;
     public byte Move => (byte)Math.Max(0, Definition.Move - (AppliedStatBits & 1));
@@ -197,7 +197,7 @@ public sealed class BattleActorState
             lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory,
             progress ?? Progress, sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout, retainDeadPosition: true,
             primaryOrder: primaryOrder ?? PrimaryOrder, secondaryOrder: secondaryOrder ?? SecondaryOrder, facing: facing ?? Facing, initialized: initialized ?? Initialized,
-            appliedStatBits: refreshStats ? null : AppliedStatBits, directAgility: !refreshStats && DirectAgility);
+            appliedStatBits: refreshStats ? null : AppliedStatBits, useInitialStats: !refreshStats && UsesInitialStats);
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,

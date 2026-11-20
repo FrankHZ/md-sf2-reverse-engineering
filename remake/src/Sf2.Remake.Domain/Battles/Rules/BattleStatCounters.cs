@@ -15,9 +15,8 @@ internal static class BattleStatCounters
     internal static byte Defense(byte basis, ushort applied) =>
         (byte)Math.Clamp(Math.Min(200, basis + Increase(basis, applied)) - Decrease(basis, applied), 0, 200);
 
-    internal static byte PackedAgility(byte agility, bool extraEntry, ushort applied)
+    internal static byte PackedAgility(byte basis, ushort applied)
     {
-        int basis = agility | (extraEntry ? 128 : 0);
         int boosted = (basis & 128) | Math.Min(127, (basis & 127) + Increase(basis, applied));
         int slowed = Math.Clamp(boosted - Decrease(basis, applied), 0, 200);
         return (byte)Math.Max(0, slowed - ((applied & 1) != 0 ? 5 : 0));

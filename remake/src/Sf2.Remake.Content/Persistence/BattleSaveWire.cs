@@ -66,6 +66,8 @@ internal static class BattleSaveWire
         // scalar contract here, before handing untrusted bytes to the typed validator.
         _ = new MapId(record.Data.Route.Map);
         _ = new MapId(record.Data.Story.EgressMap);
+        if (record.Data.Story.Player.RetainedAllies.Any(a => (a.Status & BattleStatCounters.Mask) != 0))
+            throw new SaveFormatException("save-battle-retained-status");
         bool timed = record.Data.Battle.Actors.Any(a => (a.Status & BattleStatCounters.Mask) != 0 || a.LastRefreshCounters.HasValue);
         if (timed != (record.FormatVersion == 5) || timed != record.Data.HasClassTerms.HasValue ||
             record.Data.Battle.Actors.Any(a => !BattleStatCounters.ValidSavedOperand(a.Status, a.LastRefreshCounters)))

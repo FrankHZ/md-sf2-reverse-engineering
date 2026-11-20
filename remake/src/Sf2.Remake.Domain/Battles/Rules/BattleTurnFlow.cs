@@ -19,7 +19,7 @@ internal static class BattleTurnFlow
                     ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
                 progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0),
                 initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition,
-                directAgility: start.NewBattle is null);
+                useInitialStats: start.NewBattle is null);
         });
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
             regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals, deathCredit: start.DeathCredit);

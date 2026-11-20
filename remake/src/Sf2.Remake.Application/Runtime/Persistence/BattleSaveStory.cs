@@ -105,6 +105,8 @@ internal static class BattleSaveStory
             roster.Keys.ToHashSet().SetEquals(battle.Actors.Where(a => a.IsAlly).Select(a => a.Actor).Concat(retained.Select(a => a.Actor))), "retained-roster");
         foreach (var ally in retained)
         {
+            // BattleEntry retains these field members outside the encounter's deployed actors.
+            Require((ally.Status & BattleStatCounters.Mask) == 0, "retained-status");
             var deployment = roster[ally.Actor].ResolveClass(ally.Progress?.ClassId);
             Require(ally.Initialized is not null && ally.ActivationWord is not null && ally.Exp is not null &&
                 ally.Kills is not null && ally.Defeats is not null && ally.PositionOverride is null && !ally.RetainDeadPosition, "retained-unknown");

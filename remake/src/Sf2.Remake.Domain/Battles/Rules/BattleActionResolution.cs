@@ -44,7 +44,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Position == old.Position && candidate.Facing == old.Facing &&
                 candidate.Kills == old.Kills && candidate.Defeats == old.Defeats && candidate.Attack == old.Attack &&
-                candidate.Status == old.Status && candidate.LastRefreshBits == old.LastRefreshBits && candidate.DirectAgility == old.DirectAgility && Equals(candidate.Progress, old.Progress) &&
+                candidate.Status == old.Status && candidate.LastRefreshBits == old.LastRefreshBits && candidate.UsesInitialStats == old.UsesInitialStats && Equals(candidate.Progress, old.Progress) &&
                 ReferenceEquals(candidate.SourceLoadout, old.SourceLoadout));
             if (old.Actor != actorRef)
                 Require(candidate.LastTarget == old.LastTarget && candidate.AiMemory == old.AiMemory &&
@@ -234,7 +234,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
                 candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == old.Status &&
-                candidate.DirectAgility == (!consumedItem && afterDrops.DirectAgility) &&
+                candidate.UsesInitialStats == (!consumedItem && afterDrops.UsesInitialStats) &&
                 candidate.LastRefreshBits == (consumedItem ? null : afterDrops.LastRefreshBits) && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
                 Equals(changedLoadout && candidate.Progress is { } progress
