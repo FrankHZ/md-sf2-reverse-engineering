@@ -156,6 +156,42 @@ public sealed class FieldSearchTests
         Assert.Equal(new[] { 423, 412 }, Search(session).Texts);
     }
 
+    [Fact]
+    public void UnmarkedItemPlacementRunsFirstDescriptionWithoutGrantingOrSettingReceipt()
+    {
+        var session = Session(marker: 0xC000, descriptions: [Description, new(Faced, false, [423, 412])]);
+        var before = session.Current.Exploration!;
+
+        var result = Search(session);
+
+        Assert.Equal(FieldSearchKind.Description, result.Kind);
+        Assert.Equal(Description.Texts, result.Texts);
+        Assert.Null(result.Receipt);
+        Assert.Empty(session.Current.Story.Flags);
+        Assert.Same(before.Party, session.Current.Exploration!.Party);
+        Assert.Same(before.Layout, session.Current.Exploration.Layout);
+        Close(session);
+    }
+
+    [Fact]
+    public void GenericSearchMarkerTakesPrecedenceOverDescriptionOnClaimAndRepeat()
+    {
+        var session = Session(marker: 0xDC18);
+
+        var grant = Search(session);
+        Assert.Equal(FieldSearchKind.Item, grant.Kind);
+        Assert.Equal(new[] { 423 }, grant.Texts);
+        Assert.Equal(150, grant.Receipt!.Flag);
+        Assert.Contains(150, session.Current.Story.Flags);
+
+        Close(session);
+        var party = session.Current.Exploration!.Party;
+        var repeat = Search(session);
+        Assert.Equal(FieldSearchKind.Empty, repeat.Kind);
+        Assert.Equal(new[] { 423, 412 }, repeat.Texts);
+        Assert.Same(party, session.Current.Exploration!.Party);
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void MissingSearchOrAnInputProgramDoesNotAdmitEvenEmptySearch(bool inputProgram)

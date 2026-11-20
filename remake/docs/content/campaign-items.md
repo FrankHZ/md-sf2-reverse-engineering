@@ -69,8 +69,8 @@ and [current Search selection](../../content/private/pre-voyage-opening.json):
 | Remake pickup evidence | Placements |
 | --- | --- |
 | Observed | Tower exterior Map40 F132 (private engine pickup/repeat), Ribble Map8 F145 (ordinary pickup/repeat), Fairy Cave Map32 F163 (Sarah held it in both runs), Pacalon Castle Map36 F176 (ordinary pickup to the first free joined pack, with cold save). [Tower](../application/opening-session-lifecycle.md#tower-exterior-search-admission) · [Ribble](../application/campaign-field-search.md#new-granseal-and-ribble) · [Fairy Cave](../application/fairy-cave.md#walk-search-and-return) · [Pacalon](../application/pacalon-first-visit.md#castle) |
-| Selected, ordinary pickup **Unknown** here | Galam Prison Map17 F206, quake Granseal Map4 F217, Grans overworld Map66 F213, eastern Parmecia Map70 F188 and Harpy Pond approach Map67 F214. Map67 is now selected. The earlier [Harpy Pond inventory](../application/campaign-field-search.md#map-and-setup-inventory) described the earlier package, when it was outside the selection. [Receipt index](campaign-flags.md#pickup-receipts-and-custody) |
-| Original rows outside current Search selection | Hassan Map9 F154 loose and F201 chest, and Elven Village Map23 F202 chest. Walking into those maps establishes visit only. No supported pickup or item-specific save at those placements. [Hassan](campaign-flags-parmecia.md#hassan-the-shrines-and-taros) · [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) |
+| Selected, ordinary pickup **Unknown** here | Galam Prison Map17 F206, quake Granseal Map4 F217, Grans overworld Map66 F213, eastern Parmecia Map70 F188 and Harpy Pond approach Map67 F214. Map67 is now selected. The archived Harpy Pond approach package covered walking and save continuity. [Receipt index](campaign-flags.md#pickup-receipts-and-custody) |
+| Ordinary pickup and retained receipts | Hassan Map9 F154 loose and F201 chest, and Elven Village Map23 F202 chest. The Hassan and overworld Save/Continue routes carry the items and receipts. [Search routes](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond) · [Hassan](campaign-flags-parmecia.md#hassan-the-shrines-and-taros) · [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) |
 
 ## Promotion supplies
 
@@ -90,8 +90,8 @@ boundary. Bowie’s ordinary HERO rite spends no item. Eligible special-item rou
 | --- | --- | --- |
 | **Warrior Pride** (119) | Map7 New Granseal Castle loose item (43,4), F143. WARR → BRN. [Pinned table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map07/8-other-items.asm) | Selected, with shared carry and persistence if Search succeeds. Ordinary pickup and a named holder/saved copy are **Unknown** here. [Castle Search selection](../application/campaign-field-search.md#map-and-setup-inventory) |
 | **Silver Tank** (120) | Map48 western cave chest (24,8), F146. ACHR → BRGN. [Cave source inventory](../application/battle25-north-cave.md#search-and-exits) | Selected in the western section. The Battle25 north-mouth visit exercised the Fairy Tear in a separate section. Silver Tank pickup, holder and item-specific cold save are **Unknown** here. [Cave observation](../application/battle25-north-cave.md#search-and-exits) |
-| **Secret Book** (121) | Map23 Elven Village loose item (52,2), F158. MAGE → SORC. Read the source Search owner for the actual marker/description precedence. [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) | Village entry is playable. Map23 lacks Search in this selection, so this grant and its carry/save route are unavailable. [Current selection](../../content/private/pre-voyage-opening.json) · [Village visit](../application/battle19-village.md#from-the-landing) |
-| **Vigor Ball** (122) | Map23 Elven Village chest (2,3), F221. PRST → MMNK. [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) | Village entry is playable. Map23 lacks Search in this selection, so this grant and its carry/save route are unavailable. [Current selection](../../content/private/pre-voyage-opening.json) · [Village visit](../application/battle19-village.md#from-the-landing) |
+| **Secret Book** (121) | Map23 Elven Village loose item (52,2), F158. MAGE → SORC. Read the source Search owner for the actual marker/description precedence. [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) | Ordinary Search grants F158 when facing the upstairs searchable marker. The receipt survives the overworld Save/Continue route. Special promotion remains open. [Search routes](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond) · [Special promotion #1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957) |
+| **Vigor Ball** (122) | Map23 Elven Village chest (2,3), F221. PRST → MMNK. [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) | Ordinary Search grants F221 and the overworld Save/Continue route retains its receipt. Special promotion remains open. [Search routes](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond) · [Special promotion #1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957) |
 | **Pegasus Wing** (118) | Map36 Pacalon Castle loose item (30,19), F175. KNTE → PGNT. [Original castle Search](../../../docs/research/chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md#nine-shared-descriptions-and-collection-records) | Ordinary Search places it in the first joined pack with space, repeat Search is empty, and cold Continue preserves the inventory and receipt. Pegasus promotion remains unimplemented. [Castle and cold saves](../application/pacalon-first-visit.md#castle) |
 
 ## Special equipment and attack items
@@ -137,15 +137,16 @@ and the chapter consumers supply the class and effect definitions below.
   `HEALIN` level 3 row describes single-target recovery up to 30 HP within range 0–1 for 0 MP.
   Battle Use in the remake spends the chosen holder's slot and preserves other items and receipt
   flags. Ordinary Field Use yields NoEffect and Caravan refuses. An ordinary Pacalon purchase,
-  Battle26 Use and bilingual cold Continue cover the selected slot and HP. The Map51 F159 pickup
-  remains outside the current Search selection. [Use and reproduction](profiles-and-trust.md#healing-drop-use) ·
-  [Map51 placement](../application/campaign-field-search.md#map-and-setup-inventory)
+  Battle26 Use and bilingual cold Continue cover the selected slot and HP. Ordinary F520 Map51
+  Search grants F159 and cold Continue preserves the receipt. [Use and reproduction](profiles-and-trust.md#healing-drop-use) ·
+  [Map51 Search](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond)
 - **Recovery and stat supplies** share the normal pack and receipt lifecycle. Check actual Use
   bindings before spending them. The remake has selected battle healing items and Antidote,
-  and distinct field no-effect recovery and Antidote paths. Fairy Powder (including Pacalon
-  F174), Fairy Tear (North Cave F168), Healing Rain (Creed F164), Brave Apple (Fairy Cave F161)
-  and other stat supplies can be selected or received in their owning chapters without a
-  corresponding Use effect here. The optional North Cave witness gave Fairy Tear to Bowie
+  and distinct field no-effect recovery and Antidote paths. Ordinary Search grants Running Pimento
+  (Hassan F153), Healing Water (Taros F155) and Fairy Powder (Elven Village F157). Other placements
+  include Pacalon Fairy Powder F174, North Cave Fairy Tear F168, Creed Healing Rain F164 and
+  Fairy Cave Brave Apple F161. Those items await their corresponding Use effects. The optional
+  North Cave witness gave Fairy Tear to Bowie
   with an empty repeat. Those handoff slots precede the pickup. The Battle15 F151 open/activation
   receipt is separate from Golem 143's Power Water drop bit 29. [Original item definitions](../../../docs/design/contracts/party/item-definition-data.md) ·
   [Remake Use bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs) ·
@@ -157,9 +158,10 @@ and the chapter consumers supply the class and effect definitions below.
 - **Ordinary weapons** follow the class- and loadout-specific Equip rules. This covers
   the Battle21 Broad Sword receipt (bit 7, Luke observed, full recipient loses the common drop).
   Original Battle14 has a Power Stick row (bit 5), but the base Master Mage holds an Iron Rod
-  and the current encounter has no matching drop binding. The Steel Sword placement at Map62
-  F150 is outside current Search. A displayed shop, map or enemy weapon name alone gives no
-  custody. [Original equipment and progress](../../../docs/design/synthesis/themes/progression-and-economy.md) ·
+  and the current encounter has no matching drop binding. Map62 Search grants Steel Sword with F150.
+  The equipped attack bonus remains subject to the existing class and Equip rules.
+  [Map62 Search](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond) ·
+  [Original equipment and progress](../../../docs/design/synthesis/themes/progression-and-economy.md) ·
   [Remake equipment](../capability-status.md#connected-battle-equipment-agreement) ·
   [Battle21](../application/battle21-devils-tail.md#held-items-and-battle-outcomes) ·
   [Battle14 source](../../../docs/research/chapters/southern-travel-creed/battle14-desert-encounter-and-outcomes.md) ·
