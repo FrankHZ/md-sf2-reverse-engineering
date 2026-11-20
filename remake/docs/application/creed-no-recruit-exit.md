@@ -115,9 +115,10 @@ player slot 0. The headless camera actor projection was null.
 The four completed samples were `hall03`, `chosen01`, `cold-hall01` and `cold-chosen01`.
 Each had an empty observer issue, product Quit, native exit 0 and clear gameplay, presentation,
 audio and fallback errors. Save sequences advanced 93→94 in the hall and 94→95 outside.
-Native shutdown logged two ObjectDB instances in three runs and four in the Oddler run. The
-[lifecycle owner](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716) tracks
-this warning. Two preparation failures remain in the private receipts. An in-checkout save root
+Shutdown logged two ObjectDB instances in three runs and four in the Oddler run. All four
+processes exited without an access violation. [Issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+tracks an intermittent exit access violation after Chinese Continue. Its relationship to the
+ObjectDB warning remains **Unknown**. Two earlier attempts failed during setup or observation. An in-checkout save root
 was rejected at title in `hall01` (exit 2). In `hall02` the observer misspelled the case of the
 `Joined` field and logged script errors despite exit 0. The corrected hall run consumed the
 actual joined list. These failures and the older #1876 navigation failure are distinct.
@@ -128,44 +129,20 @@ recipe changed. Sample `current01` used the owning checkout's Debug adapter, the
 stable content and a copy of the revision-9 hall save. Title Continue, Save, Up to (18,13) and
 menu Quit passed with native exit 0. Comparing the resave added exactly the initialized unjoined
 ally12 record and changed recipe revision 9 to 10. The other nineteen records, room graph, layout,
-flags and all other decoded fields matched. This sample retained the two-instance shutdown warning.
+flags and all other decoded fields matched. This process also logged two ObjectDB instances at shutdown and exited without an access violation.
 
 ### Replay
 
-From the owning checkout, set `$creedSlots` to the registered #1876 handoff's `slots` directory.
-The retained headless observer accepts one of the four tasks below, a fresh sample name, and
-a read-only ordinary slot. Each launch creates its own external save namespace and copies the
-supplied file to Slot 1. Choose a different suffix for each replay. The accepted stable world,
-scene, catalog and runtime remain in their original handoffs.
+From the root of a [configured checkout](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup),
+launch the #1938 stable player with a copy of one #1876 seed. At the title, choose Continue →
+Slot 1 and follow the [ordinary inputs](#ordinary-results) for that seed. Press F10 → Save →
+Slot 1, confirm, return to the game, then use F10 → Quit. For cold Continue, run
+`& $env:GODOT_BIN @launch` again in the same PowerShell session. For the second branch,
+change `$seedName` and run the whole block to create a fresh namespace.
 
 ```powershell
 . ./local/private-inputs.ps1
 $creedSlots = Read-Host 'Absolute path to the registered issue1876/slots directory'
-$tag = [guid]::NewGuid().ToString('N').Substring(0,8)
-$saves = Join-Path (Split-Path -Parent $env:SF2_SHARED_INPUT_ROOT) 'save-validation/issue1940'
-$driver = './local/issue1940/Observe.ps1'
-& $driver hall "hall-$tag" (Join-Path $creedSlots 'fairy-en.json')
-& $driver chosen "chosen-$tag" (Join-Path $creedSlots 'recruited-en.json')
-& $driver cold-hall "cold-hall-$tag" "$saves/review-hall-$tag/sf2-opening/slot1.json"
-& $driver cold-chosen "cold-chosen-$tag" "$saves/review-chosen-$tag/sf2-opening/slot1.json"
-```
-
-For the post-Rick compatibility check, build the accepted Debug adapter in the owning checkout
-using the [locked SDK workflow](../development-and-verification.md#locked-net-workflow). With
-the retained observer and imported project, run this once using the hall save just produced:
-
-```powershell
-& $driver cold-hall "current-$tag" "$saves/review-hall-$tag/sf2-opening/slot1.json" -Current
-```
-
-A fresh checkout can also replay the table directly with the stable player. Run the following
-from its root in PowerShell with the same `$creedSlots`. Select one seed per namespace. Start
-at title → Continue → Slot 1, enter the keys in its row, use F10 → Save → Slot 1, confirm,
-return to game and use F10 → Quit. Relaunch with the same `$launch` arguments for cold Continue.
-To repeat with the other seed, run the block again and change `$seedName`.
-
-```powershell
-. ./local/private-inputs.ps1
 $seedName = 'fairy-en.json' # Second branch uses recruited-en.json.
 $bundle = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1938'
 $config = Get-Content -Raw -LiteralPath "$bundle/player-config.json" | ConvertFrom-Json -AsHashtable
