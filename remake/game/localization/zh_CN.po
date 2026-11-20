@@ -1255,6 +1255,24 @@ msgstr "{0}处于沉默状态。已消耗MP，但法术没有效果。"
 msgid "battle.scene.silence-expired"
 msgstr "封魔效果结束。{0}可以再次施法。"
 
+msgid "battle.scene.agi-up"
+msgstr "{0}的敏捷增加{1}点。"
+
+msgid "battle.scene.agi-down"
+msgstr "{0}的敏捷降低{1}点。"
+
+msgid "battle.scene.def-up"
+msgstr "{0}的防御增加{1}点。"
+
+msgid "battle.scene.def-down"
+msgstr "{0}的防御降低{1}点。"
+
+msgid "battle.scene.slow-expired"
+msgstr "{0}的迟缓效果结束。"
+
+msgid "battle.scene.boost-expired"
+msgstr "{0}的强化效果结束。"
+
 #. Project-authored functional silence feedback.
 msgid "battle.status.silence"
 msgstr "沉默（{0}）"
@@ -1519,6 +1537,12 @@ msgstr "睡眠"
 
 msgid "battle.inspect.status.silence"
 msgstr "沉默"
+
+msgid "battle.inspect.status.slow"
+msgstr "迟缓"
+
+msgid "battle.inspect.status.boost"
+msgstr "强化"
 
 msgid "battle.inspect.status.unavailable"
 msgstr "其他状态效果（详情不可用）"

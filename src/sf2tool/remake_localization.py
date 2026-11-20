@@ -349,6 +349,11 @@ def derive(args: argparse.Namespace) -> dict:
         enemy for entry in world.get("encounters", []) for enemy in entry.get("repeatEnemies", [])
     }
     growth_classes = {row["classId"] for row in world["world"].get("growth", [])}
+    party_boost = args.scope == "current" and any(
+        spell["spell"] == "boost"
+        for growth in world["world"].get("growth", [])
+        for spell in growth["spells"]
+    )
     del world
     selected = []
     ranges = _PRE_VOYAGE_RANGES if args.scope == "pre-voyage" else _RANGES
@@ -416,7 +421,7 @@ def derive(args: argparse.Namespace) -> dict:
     if battle26:
         road_enemies.update({19, 72}.difference(name_ids["name.enemy"]))
     name_ids["name.enemy"] += tuple(sorted(road_enemies))
-    if northern_enemies:
+    if northern_enemies or party_boost:
         name_ids["name.spell"] += (3,)  # BOOST
     if northern_enemies or 81 in repeat_enemies:
         name_ids["name.spell"] += (1,)  # AURA

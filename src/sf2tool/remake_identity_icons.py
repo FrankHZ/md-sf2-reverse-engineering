@@ -154,7 +154,9 @@ def identity_assets(
     additions = sorted(field_items.difference(base_items))
     item_ids = base_items + additions
     spell_ids = [_equ(enums, "SPELL_" + code) for code in SPELLS]
-    extra_spells = [_equ(enums, "SPELL_AURA")] if 81 in repeat_enemies else []
+    extra_spells = [_equ(enums, "SPELL_BOOST"), _equ(enums, "SPELL_SLOW")]
+    if 81 in repeat_enemies:
+        extra_spells.append(_equ(enums, "SPELL_AURA"))
     spell_ids.extend(extra_spells)
     selections = [("item", i, i) for i in item_ids]
     selections += [("spell", i, i + 130) for i in spell_ids] + [("other", 128, 128)]

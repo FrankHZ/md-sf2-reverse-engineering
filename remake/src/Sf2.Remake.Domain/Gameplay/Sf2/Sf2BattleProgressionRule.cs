@@ -39,7 +39,10 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
         }
         List<PhysicalRoll> rolls = [];
         bool statusEffect = reactions.Any(reaction => reaction.Kind is BattleReactionKind.Status or BattleReactionKind.Ineffective);
-        int award = BattleRewards.Award(accumulated, (kind is BattleActionKind.Physical or BattleActionKind.AttackSpell or BattleActionKind.SupportSpell || statusEffect) && battle.Definition.Rewards?.HalvedExperience == true, ref seed, rolls);
+        bool halve = kind == BattleActionKind.SupportSpell
+            ? reactions.Any(r => battle.GetActor(r.Target).Faction != recipient.Faction)
+            : kind is BattleActionKind.Physical or BattleActionKind.AttackSpell || statusEffect;
+        int award = BattleRewards.Award(accumulated, halve && battle.Definition.Rewards?.HalvedExperience == true, ref seed, rolls);
         effects.AddRange(rolls.Select(roll => new BattleEffect("rng-" + roll.Purpose, recipient.Actor,
             roll.Before, roll.After, roll.Range, roll.Result)));
         return award;

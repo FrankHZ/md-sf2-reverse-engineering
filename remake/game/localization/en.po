@@ -1255,6 +1255,24 @@ msgstr "{0} is silenced. MP was spent, but the spell has no effect."
 msgid "battle.scene.silence-expired"
 msgstr "DISPEL expires. {0} can cast again."
 
+msgid "battle.scene.agi-up"
+msgstr "{0}'s agility increases by {1}."
+
+msgid "battle.scene.agi-down"
+msgstr "{0}'s agility decreases by {1}."
+
+msgid "battle.scene.def-up"
+msgstr "{0}'s defense increases by {1}."
+
+msgid "battle.scene.def-down"
+msgstr "{0}'s defense decreases by {1}."
+
+msgid "battle.scene.slow-expired"
+msgstr "SLOW wears off for {0}."
+
+msgid "battle.scene.boost-expired"
+msgstr "BOOST wears off for {0}."
+
 #. Project-authored functional silence feedback.
 msgid "battle.status.silence"
 msgstr "Silenced ({0})"
@@ -1519,6 +1537,12 @@ msgstr "Asleep"
 
 msgid "battle.inspect.status.silence"
 msgstr "Silenced"
+
+msgid "battle.inspect.status.slow"
+msgstr "Slowed"
+
+msgid "battle.inspect.status.boost"
+msgstr "Boosted"
 
 msgid "battle.inspect.status.unavailable"
 msgstr "Other status effect (details unavailable)"

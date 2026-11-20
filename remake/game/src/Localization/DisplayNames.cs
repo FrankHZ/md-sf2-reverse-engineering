@@ -65,7 +65,7 @@ internal static class DisplayNames
 
     internal static string InspectionStatus(IReadOnlyList<string> statuses) => statuses.Count == 0
         ? GameText.Get("battle.inspect.no-status") : string.Join(", ", statuses.Select(status =>
-            GameText.Get("battle.inspect.status." + (status is "curse" or "poison" or "stun" or "sleep" or "silence" ? status : "unavailable"))));
+            GameText.Get("battle.inspect.status." + (status is "curse" or "poison" or "stun" or "sleep" or "silence" or "slow" or "boost" ? status : "unavailable"))));
 
     internal static string BattleItem(SessionSnapshot current, int slot, string canonical)
     {
