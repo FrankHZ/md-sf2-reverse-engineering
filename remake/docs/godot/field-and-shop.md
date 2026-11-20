@@ -166,14 +166,22 @@ made just after Drop, the same merchant still listed one Mithril before purchase
 The checked inputs, trade rules and remaining coverage are in the
 [session owner](../application/session-and-programs.md#rare-stock-and-deals-repurchase).
 
-The local #1947 handoff retains `Play.ps1` and the ordinary-input `Deals.gd` observer. Run
-from the owned checkout with the existing Debug adapter and the registered private inputs.
-Use a fresh sample for each Trade, and reuse that sample for the two cold modes.
+The registered `handoffs/issue1947` entry stages the observer and its required #1955 helpers in
+the selected checkout. Load the worktree copy of the
+[private input configuration](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup)
+and build the Debug adapter as above. On a fresh Godot project or after a localization edit,
+import the resources once before running the observer. Run from the owned review checkout.
+Use a fresh sample for Trade, and reuse it for the two cold modes. Each mode keeps its reports in
+the selected checkout and its save copies in a disposable namespace outside the worktree.
 
 ```powershell
-& ./local/issue1947/Play.ps1 -Language zh-CN -Sample review01 -Mode trade
-& ./local/issue1947/Play.ps1 -Language zh-CN -Sample review01 -Mode cold-stock
-& ./local/issue1947/Play.ps1 -Language zh-CN -Sample review01 -Mode cold
+$repo = (Get-Location).Path
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1947/Review.ps1'
+& $review -Repo $repo -Mode prepare -Language zh-CN
+& $review -Repo $repo -Mode trade -Language zh-CN -Sample review01
+& $review -Repo $repo -Mode cold-stock -Language zh-CN -Sample review01
+& $review -Repo $repo -Mode cold -Language zh-CN -Sample review01
 ```
 
 The runner uses keyboard input, live state, UI projection and error output. It reuses the
