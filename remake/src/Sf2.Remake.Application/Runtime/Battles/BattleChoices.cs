@@ -133,10 +133,22 @@ internal static class BattleChoices
                 }
                 else HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
             }
+            if (admission.Item is { Effect: not HealingItemEffect.RestoreHp } recovery && (content is not null || requireContent))
+                RequireRecoveryItemContent(battle, actor, destination, recovery, target, content);
             if (admission.AttackItem is not null && (content is not null || requireContent))
                 RequireAttackItemContent(battle, actor, target, content);
             return patient;
         });
+    }
+
+    private static void RequireRecoveryItemContent(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        HealingItemDefinition item, ActorRef target, BattleSceneDefinition? content)
+    {
+        if (content is null || content.Encounter != battle.Definition.Encounter ||
+            !content.TryAllyVisual(battle.GetActor(actor), out var user) || !user.Sequences.ContainsKey("item") ||
+            HealingTargetRules.ResolveItem(battle, actor, destination, item, target)
+                .Any(recipient => !content.TryAllyVisual(recipient, out _)))
+            throw new BattleRuleException("recovery-item-scene-content", "battleScenes", true);
     }
 
     private static void RequireAttackItemContent(EngineBattleState battle, ActorRef actor, ActorRef target,

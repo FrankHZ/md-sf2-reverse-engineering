@@ -219,6 +219,12 @@ destroyed; fresh breakable equipment breaks on the owning random gate's zero res
 supply a universal player-facing break probability. See
 [item use and break routing](../../contracts/battle/battle-action-construction.md#item-use-and-break-routing).
 
+Healing Water and Healing Rain restore missing HP through the full-recovery operand. Water
+targets one ally, and Rain commits on the user and restores living placed allies in source
+slot order. Fairy Tear restores up to 20 MP to one ally. A valid Item commitment consumes its
+slot even when recovery is zero. The linked spell row supplies the effect while Item origin
+governs payment, custody and presentation. [Recovery consumables](../../../../remake/docs/domain/recovery-items-design.md)
+
 Give/equip/drop operate on custody and equipment state through their own branches. Equipped cursed
 items block give/drop and the exchange route. Transfer clears the local equipped bit before the
 add-item request; a full recipient inventory selects trading, completed Give selects STAY, and Drop

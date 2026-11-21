@@ -21,22 +21,30 @@ internal static class PrivateBattleActionBindings
     internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
     {
         // Retail POWDER rank 1 dispatches the poison-only DETOX effect.
-        foreach (var (id, code, effect, level, power, curesPoison) in new (byte, string, string, byte, ushort, bool)[]
-            { (0, "MEDICAL_HERB", "HEALIN", 1, 10, false), (1, "HEALING_SEED", "HEALIN", 2, 20, false),
-              (2, "HEALING_DROP", "HEALIN", 3, 30, false), (3, "ANTIDOTE", "DETOX", 1, 0, true),
-              (5, "FAIRY_POWDER", "POWDER", 1, 0, true) })
+        foreach (var (id, code, spellCode, level, power, mpCost, range, curesPoison, effect) in
+            new (byte, string, string, byte, ushort, byte, byte, bool, HealingItemEffect)[]
+        {
+            (0, "MEDICAL_HERB", "HEALIN", 1, 10, 0, 1, false, HealingItemEffect.RestoreHp),
+            (1, "HEALING_SEED", "HEALIN", 2, 20, 0, 1, false, HealingItemEffect.RestoreHp),
+            (2, "HEALING_DROP", "HEALIN", 3, 30, 0, 1, false, HealingItemEffect.RestoreHp),
+            (3, "ANTIDOTE", "DETOX", 1, 0, 3, 1, true, HealingItemEffect.RestoreHp),
+            (5, "FAIRY_POWDER", "POWDER", 1, 0, 0, 1, true, HealingItemEffect.RestoreHp),
+            (6, "HEALING_WATER", "HEAL", 4, 255, 20, 1, false, HealingItemEffect.FullHp),
+            (7, "FAIRY_TEAR", "G_TEAR", 2, 20, 0, 1, false, HealingItemEffect.RestoreMp),
+            (8, "HEALING_RAIN", "AURA", 4, 255, 20, 0, false, HealingItemEffect.FullPartyHp),
+        })
         {
             if (!definitions.Items.TryGetValue(id, out var item)) continue;
-            Require(item.Code == code && item.ItemTypeExpression == "CONSUMABLE" &&
-                item.UseSpell == effect && item.UseSpellLevel == level && item.EquipFlagsExpression == "NONE" &&
-                item.MinimumRange == 0 && item.MaximumRange == 1 &&
-                item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }), "source-supply-definition", "items", true);
-            Require(definitions.Spells.TryGetValue(new(effect.ToLowerInvariant(), level), out var spell) &&
-                spell.MpCost == (id == 3 ? 3 : 0) && spell.Radius == 0 && spell.Power == power &&
-                spell.MinimumRange == 0 && spell.MaximumRange == 1 && spell.PropertiesExpression ==
-                    (id == 3 ? "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" : "TYPE_HEAL|TARGET_TEAMMATES"),
+            Require(item.Code == code && item.ItemTypeExpression == (id == 8 ? "RARE|CONSUMABLE" : "CONSUMABLE") &&
+                item.UseSpell == spellCode && item.UseSpellLevel == level && item.EquipFlagsExpression == "NONE" &&
+                item.MinimumRange == 0 && item.MaximumRange == range &&
+                item.EquipEffects.All(e => e is { Type: "NONE", Parameter: 0 }), "source-supply-definition", "items", true);
+            Require(definitions.Spells.TryGetValue(new(spellCode.ToLowerInvariant(), level), out var spell) &&
+                spell.MpCost == mpCost && spell.Radius == 0 && spell.Power == power &&
+                spell.MinimumRange == 0 && spell.MaximumRange == range && spell.PropertiesExpression ==
+                    (mpCost > 0 ? "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" : "TYPE_HEAL|TARGET_TEAMMATES"),
                 "source-supply-effect", "items.useSpell", true);
-            yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, CuresPoison: curesPoison);
+            yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, curesPoison, effect);
         }
     }
 

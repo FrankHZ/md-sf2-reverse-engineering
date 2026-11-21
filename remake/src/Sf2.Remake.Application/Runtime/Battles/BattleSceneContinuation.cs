@@ -257,8 +257,9 @@ public sealed class BattleSceneState
     public IReadOnlyList<ActorRef> SupportTargets => SupportSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
-    public bool IsAura => Spell?.IsAura == true;
-    public IReadOnlyList<ActorRef> HealingTargets => Spell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
+    public bool IsAura => Spell?.IsAura == true || Item?.Effect == HealingItemEffect.FullPartyHp;
+    public IReadOnlyList<ActorRef> HealingTargets => Spell is null && !IsAura
+        ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public bool FriendlySupport => SupportSpell?.TargetsTeammates == true;
     public int SupportStatAmount
     {

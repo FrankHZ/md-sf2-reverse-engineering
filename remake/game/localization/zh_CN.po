@@ -170,6 +170,9 @@ msgid "battle.heal.action"
 msgstr "{0}施放{1}，等级 {2}。"
 
 #. Arguments: target name, recovered HP.
+msgid "battle.heal.mp-recovery"
+msgstr "{0}恢复了{1}点魔力。"
+
 msgid "battle.heal.recovery"
 msgstr "{0}恢复了{1}点生命。"
 
