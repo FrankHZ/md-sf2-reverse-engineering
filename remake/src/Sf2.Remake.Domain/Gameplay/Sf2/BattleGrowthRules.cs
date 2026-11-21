@@ -22,21 +22,32 @@ internal static class BattleGrowthRules
     {
         int total = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         if (total < 100) return actor.With(exp: (byte)total);
+        if (actor.Definition.Growth is not null && !PoisonTurnRules.SupportedPhysicalStatus(actor.Status))
+            throw new BattleRuleException("growth-status-refresh", "actor.status", true);
+        // Source bsc0F processes one threshold even when another 100 remains.
+        effects.Add(new("exp-threshold", actor.Actor, total, total - 100));
+        return LevelUp(actor.With(exp: (byte)(total - 100)), ref seed, effects, out _);
+    }
+
+    internal static BattleActorState LevelUp(BattleActorState actor, ref uint seed, List<BattleEffect> effects,
+        out int[] rawGains)
+    {
         var growth = actor.Definition.Growth ?? throw new BattleRuleException("level-up", "actor.growth", true);
-        if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status)) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
-        total -= 100; // Source bsc0F processes one threshold even when another 100 remains.
-        effects.Add(new("exp-threshold", actor.Actor, total + 100, total));
         if (actor.Level >= (growth.ClassId < 12 ? 40 : 99))
         {
             effects.Add(new("level-cap", actor.Actor, actor.Level, 255));
-            return actor.With(exp: (byte)total);
+            rawGains = [];
+            return actor;
         }
+        if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status)) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         int[] current = [actor.MaxHp, actor.MaxMp, actor.BaseAttack, actor.BaseDefense, actor.BaseAgility];
         int[] increased = new int[5];
+        rawGains = new int[5];
         string[] names = ["max-hp", "max-mp", "base-attack", "defense", "agility"];
         for (int i = 0; i < current.Length; i++)
         {
             int gain = Gain(growth.Stats[i], actor.Level, current[i], actor.Actor, ref seed, effects);
+            rawGains[i] = gain;
             increased[i] = i == 0 ? ClampWord(current[i], gain) : Math.Min(i == 4 ? 100 : 200, current[i] + gain);
             effects.Add(new("level-" + names[i], actor.Actor, current[i], increased[i]));
         }
@@ -70,10 +81,11 @@ internal static class BattleGrowthRules
             }
         }
         var progress = new BattleActorProgress(level, (ushort)increased[0], (byte)increased[1],
-            (byte)increased[2], (byte)increased[3], (byte)increased[4], known.AsReadOnly(), loadout, actor.Progress?.ClassId);
+            (byte)increased[2], (byte)increased[3], (byte)increased[4], known.AsReadOnly(), loadout, actor.Progress?.ClassId)
+        { BaseMove = actor.Progress?.BaseMove };
         effects.Add(new("level", actor.Actor, actor.Level, level));
-        // Maxima grow; current HP/MP do not heal. Reapply the admitted ATT-only equipment once.
-        return actor.With(exp: (byte)total, progress: progress, refreshStats: true,
+        // Maxima grow; current HP/MP do not heal. Refresh from the new bases.
+        return actor.With(progress: progress, refreshStats: true,
             attack: (byte)Math.Min(200, progress.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)));
     }
 

@@ -10,6 +10,9 @@ payment, mutation and save decisions for [#1943](https://github.com/FrankHZ/md-s
 Battle Item Use has its own spell/target/payment path. The scope also excludes Field Magic,
 new supplies or chapters, and wider class and spell admission.
 
+High rigor applies because the same spend changes carried resources, battle stats and two save
+paths. The acceptance below checks the transaction and its next consumers through existing slots.
+
 ## Original rules and evidence
 
 **Confirmed** for the pinned USA static paths below and for the individual runtime seams named in
@@ -101,8 +104,8 @@ timing, use reach and later refreshes reached by a particular story route.
 
 ## Remake decision and implementation boundary
 
-- **One command and result.** Extend the admitted `PrivateFieldPreparation` item table with the
-  seven typed effects. Resolve the holder, exact full word/slot and target with `FieldInventory`
+- **One command and result.** The admitted `PrivateFieldPreparation` item table binds all seven
+  effects. The shared transaction resolves the holder, exact full word/slot and target with `FieldInventory`
   from the current revision or Caravan wait token. Both callers use the same prepared result from
   `FieldRecovery`. Validate the class/growth and book resources before publishing. Compute with the
   party's local main-seed value using `BattleRandom.NextMain`, apply the target, then compact and
@@ -113,14 +116,14 @@ timing, use reach and later refreshes reached by a particular story route.
   `FieldCommands` and `CaravanItemService` to project the outcome and return through their menu
   waits. Reuse FieldActionView and CaravanServiceView with bilingual messages for stat amounts,
   no-effect and level/book results. Acknowledgement or repeat input cannot pay again.
-- **One level-up rule.** Extract the below-cap growth, book and refresh operation within
-  `BattleGrowthRules` for both the existing EXP threshold path and Apple. Apple clears EXP and
+- **One level-up rule.** The EXP threshold path and Apple share growth, book and refresh in
+  `BattleGrowthRules`. Apple clears EXP and
   calls it directly. Preserve the battle threshold's residual EXP, RNG and observation order with
   its existing caller. Return raw gain and spell-change operands for Apple feedback alongside the
   updated values. The remake resolves admitted ally/class pairs explicitly. A missing binding
   is unsupported before commit. A supported capped target gets the paid original no-level result.
   An unrelated ally's growth row is outside this slice even though the original scan can cross rows.
-- **One persisted base.** Add an optional absolute `BaseMove` to `BattleActorProgress`. An absent value
+- **One persisted base.** An optional absolute `BaseMove` lives in `BattleActorProgress`. An absent value
   resolves to the current class definition's MOV. Use the existing class-resolved actor and
   carried progress across Field, reserves, battle entry, return and save. An absolute base models
   the source byte and avoids rebasing an increment when class content changes. A class-only value
@@ -128,9 +131,10 @@ timing, use reach and later refreshes reached by a particular story route.
   give consumed items another state authority. Successful church promotion clears the override
   when setting the new class. All other progress copies, including ordinary LevelUp, carry it.
 - **Current values between refreshes.** Reuse the equipment/status stat projection for the
-  ordinary refreshed result and `PartyDetailsQuery` for display. Carry a small optional current
-  ATT/DEF/packed-AGI/MOV override in that same actor progress only for directly written components
-  whose values differ from the refreshed result. This represents the observed current bytes until
+  ordinary refreshed result and `PartyDetailsQuery` for display. `CurrentStats` carries the
+  DEF, packed AGI and MOV writes that differ from the refreshed result. For admitted static
+  ATT contributions, the clamped projection from the new base equals the direct current write.
+  This represents the observed current bytes until
   refresh and keeps neutral cases compact. A different-holder Quick Chicken on the stunned actor
   above is a test of this need. An immediate full refresh would change the result. Use these
   current values for the actual consumers, including field details and battle admission/turn
@@ -144,9 +148,9 @@ timing, use reach and later refreshes reached by a particular story route.
   `BattleSaveWire.Progress` (v2/v4/v5) for active and retained allies. Preserve their omission in
   older payloads and keep the existing class-version rules independent of growth. Resolve the
   old absent base only after resolving class, and default absent current overrides to the
-  normal projection. Validate explicit MOV 0–200, current ATT/DEF/MOV 0–200 and packed AGI with
+  normal projection. Validate explicit MOV 0–200, current DEF/MOV 0–200 and packed AGI with
   its numerical and flag semantics at field and battle entry/restore. Keep progress copy,
-  continuation equality and saved-attack consistency checks aware of these fields. Check
+  continuation equality aware of these fields. Check
   ordinary, previously promoted and reserve slots. Existing save identity and checksum rules
   apply. A save stores the applied values, remaining inventory and advanced seed, so Continue
   performs neither a draw nor an effect. Compatibility covers reading earlier slots with the
@@ -164,13 +168,13 @@ timing, use reach and later refreshes reached by a particular story route.
 [Battle wire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs) ·
 [Action atomicity](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md#provisional-selection-atomicity-and-stale-input)
 
-**Serial ownership.** Accept [#1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942)
-before editing Field/Caravan Use, localization or Content. Use the accepted
-[#1946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1946) refresh and projection
-design. Implement its ring slot first so #1943 extends one shared equipment/status refresh and
-one save/projection path. Confirm those writers have released the shared paths and redeclare
-exact implementation files from accepted main. Update the item index and capability trace when
-the effects actually ship. This design's only writes are this agreement and its navigation link.
+The implementation builds on the accepted Fairy Powder caller and static ring refresh.
+Later ordinary promotion destinations use the same class-versus-earned-stat boundary. Battle
+recovery consumables continue to use the existing live HP/MP fields.
+[#1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942) ·
+[#1946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1946) ·
+[Promotion families](../application/ordinary-promotion-classes.md#family-inventory-and-actual-consumers) ·
+[Battle recovery items](recovery-items-design.md)
 
 ## Acceptance and inputs
 
@@ -210,12 +214,64 @@ native evidence to ordinary input, running state, projection, errors and cold ro
 
 The retained sample field slots range from about 7 to 50 KiB. Budget up to 16 disposable copies at
 128 KiB and up to 2 MiB of compact observations, about 4 MiB before build output. Measure the first
-run and reuse the existing 101,760,092-byte world and registered scene resources. Expect only a few
-KiB of definition and message changes. If a content dependency requires rebuilding, make one
+run and reuse the registered world and scene resources. Expect only a few KiB of definition and
+message changes. If a content dependency requires rebuilding, make one
 checkout-local package for the affected selection and reuse it. No additional original runtime
 capture is needed for this design, and #1716 stays parked. Record any completed native exit failure
 separately from observed Save/Continue behavior.
 
-For this design PR, check the cited pinned paths, local links and two-file diff, run the clean-head
-planner and inspect public scope CI. Use the engine behavior gate, necessary adapter compile and
-bounded ordinary observations on the implementation PR.
+### Ordinary input observations
+
+**Confirmed in the remake.** Mount the built Debug adapter, registered `issue1966/content/package`
+world and scenes, and `issue1941/content/catalog-final` via the
+[Pacalon setup](../application/pacalon-first-visit.md#continue-after-worktree-cleanup). Use a fresh
+external player namespace for each read-only seed copy. Start through title Continue → slot 1.
+Field Use selects Item, holder, Use, slot, target and Confirm. Caravan Item → Use confirms on
+target selection. Dismiss the result, leave the menu and save at settled input.
+
+| Starting slot under the registered handoffs | Ordinary input and result |
+| --- | --- |
+| `issue1927/pacalon/slots/castle-en.json` | Cancel Bread's target selection, then confirm Jaha's third slot on fallen Kazin. HP 0→4, maximum HP 35→39. Use Chester's Honey on himself with maximum MP zero. It consumes the slot with no RNG draw. Sarah's self-Apple at PRST 40 consumes the slot and clears 88 EXP with the same level, seed and spellbook. Both ineffective confirmations identify item payment in their English feedback. |
+| `issue1849/slots/loot-zh-CN.json` | Use Sarah's Apple on Kazin. MAGE 24→25, EXP 44→0, HP/MP remain 32/48, and the packed MUDDLE word changes from 7 to 71. Chinese feedback reports the level, gains and rank increase. F161 remains set. |
+| `issue1927/pacalon/slots/departure-zh-CN.json` | Approach the visible Caravan on Map71. Choose Chester's fourth slot, cancel at the target list and reopen it. On Sarah, Honey raises current and maximum MP 56→59 with one main RNG draw. The Chinese result displays +3. Chester's pack changes from `[184,1,115,14]` to `[184,1,115,127]` and F170 stays set. |
+| `issue1941/player-saves/hassan-en-final/search/sf2-opening/slot1.json` | Use Sarah's Pimento on Bowie. Base/current MOV 6→8 with no item RNG draw. Open Bowie's Equip menu and confirm Unarmed. The sword becomes bare and MOV stays 8. Save at Hassan's church position with F153 set. |
+
+The ordinary runs establish consumption, feedback and control return for these items. Power Water,
+Protect Milk and Quick Chicken have their existing acquisition evidence and controlled engine Use
+cases. This pass did not find a registered short retained Use seed for them. The effect-specific
+ordinary Use observations remain **Unknown**. The new tests also cover direct-current stat
+retention versus real refresh, Pimento in the movement grid, an ordinary class load, and old field
+and battle formats including a retained ally. [Engine behavior cases](../../tests/Sf2.Remake.Engine.Tests/PermanentGrowthItemTests.cs)
+
+Fresh processes re-saved the entire same decoded `data` for the castle (sequence 5→6), cave
+(65→66) and Caravan return (6→7). All three reached the next field input. A Caravan rehearsal
+selected the wrong holder after returning to a remembered cursor and recorded a refusal. The
+corrected input verifies the holder, word and target wait before payment, and reads the actual
+growth result. Growth and cold-Continue runs exited 0. Some recorded ObjectDB shutdown
+warnings after reaching the functional check. [Paused shutdown follow-up #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+### Continue with producing scratch unavailable
+
+Take the external Hassan post-Unequip slot from the journey above. Temporarily move the entire
+producing `local/` aside, copy the machine configuration template into a fresh `local/`, and
+use the [registered Pacalon Continue setup and command](../application/pacalon-first-visit.md#continue-after-worktree-cleanup)
+with the Hassan slot as its seed and a fresh save namespace. The registered `Pacalon.gd` driver in
+`continue` mode saves immediately and takes a field movement input after dismissing the result.
+Use `python -X utf8` to decode the slot envelope's base64 `payload` and compare the entire
+`data` object against `immediate-resave-slot.json`. Check that `sequence` increases once and
+that the `loaded.json` and `after-continue.json` player positions differ with settled input.
+
+The two complete data objects matched. The record sequence moved 60→61, with base MOV 8,
+Bowie's `[71,1,61,123]` pack, and F153 retained. The next input moved from (8,9) to (7,9)
+on Map9 with no projected failure. Godot exited 0 with an ObjectDB shutdown warning. The
+mounted 101,835,469-byte world and 635,539-byte scene selection were reused without regeneration.
+The observed field save is about 50 KiB, within the existing budget.
+
+### Engine and adapter checks
+
+`uv run sf2 verify engine` completed 2,930 passes and 49 configured private-input skips.
+The initial focused run found `save-null-value` in
+`ChickenWritesLiveAgilityBeforeRefreshingOnlyTheHolder(selfUse: false)` and both variants of
+`BattleContinueKeepsMoveAndDirectValuesForDeployedAndRetainedMembers`. The codec now omits
+absent sparse components and the affected checks pass. The actual adapter built in Debug with
+zero warnings and errors before the cleanup check.

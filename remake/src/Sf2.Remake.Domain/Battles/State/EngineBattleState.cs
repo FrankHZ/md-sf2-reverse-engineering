@@ -162,16 +162,19 @@ public sealed class BattleActorState
     public byte BaseAttack => Progress?.BaseAttack ?? Definition.Equipment?.BaseAttack ?? (byte)(Definition.Attack - (Definition.Growth?.AttackBonus ?? 0));
     public byte BaseDefense => Progress?.Defense ?? Definition.Defense;
     public byte BaseAgility => Progress?.Agility ?? Definition.Agility;
+    public byte BaseMove => Progress?.BaseMove ?? Definition.Move;
     internal ushort? LastRefreshBits { get; }
     internal bool UsesInitialStats { get; }
-    internal bool NeedsStatRefresh => UsesInitialStats || LastRefreshBits.HasValue;
+    internal bool NeedsStatRefresh => UsesInitialStats || LastRefreshBits.HasValue || Progress?.CurrentStats is not null;
     private ushort AppliedStatBits => LastRefreshBits ?? (ushort)(Status & BattleStatCounters.StatBits);
-    public byte Defense => BattleEquipment.Defense(BaseDefense, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
+    public byte Defense => Progress?.CurrentStats?.Defense ??
+        BattleEquipment.Defense(BaseDefense, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
     private byte PackedBaseAgility => (byte)(BaseAgility | (Definition.ExtraRoundAction ? 128 : 0));
-    private byte PackedAgility => BattleEquipment.PackedAgility(PackedBaseAgility, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
+    internal byte PackedAgility => Progress?.CurrentStats?.PackedAgility ??
+        BattleEquipment.PackedAgility(PackedBaseAgility, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
     public byte Agility => (byte)(PackedAgility & 127);
     public bool ExtraRoundAction => (PackedAgility & 128) != 0;
-    public byte Move => BattleEquipment.Move(Definition.Move, AppliedStatBits, Definition, SourceLoadout);
+    public byte Move => Progress?.CurrentStats?.Move ?? BattleEquipment.Move(BaseMove, AppliedStatBits, Definition, SourceLoadout);
     public IReadOnlyList<SpellRef> Spells => Progress?.Spells ?? Definition.Spells;
     public BattleSourceLoadout? SourceLoadout { get; }
     public ushort Hp { get; }
@@ -192,12 +195,17 @@ public sealed class BattleActorState
         MapPosition? position = null, ushort? kills = null, ushort? defeats = null, ActorRef? lastTarget = null,
         byte? attack = null, ushort? status = null, ushort? activationWord = null, byte? aiMemory = null,
         BattleActorProgress? progress = null, BattleSourceLoadout? sourceLoadout = null, bool clearPosition = false,
-        byte? primaryOrder = null, byte? secondaryOrder = null, byte? facing = null, bool? initialized = null, bool refreshStats = false) =>
-        new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, clearPosition ? null : position ?? Position, kills ?? Kills, defeats ?? Defeats,
+        byte? primaryOrder = null, byte? secondaryOrder = null, byte? facing = null, bool? initialized = null, bool refreshStats = false)
+    {
+        var nextProgress = progress ?? Progress;
+        if (refreshStats && nextProgress?.CurrentStats is not null)
+            nextProgress = nextProgress with { CurrentStats = null };
+        return new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, clearPosition ? null : position ?? Position, kills ?? Kills, defeats ?? Defeats,
             lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory,
-            progress ?? Progress, sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout, retainDeadPosition: true,
+            nextProgress, sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout, retainDeadPosition: true,
             primaryOrder: primaryOrder ?? PrimaryOrder, secondaryOrder: secondaryOrder ?? SecondaryOrder, facing: facing ?? Facing, initialized: initialized ?? Initialized,
             appliedStatBits: refreshStats ? null : AppliedStatBits, useInitialStats: !refreshStats && UsesInitialStats);
+    }
 }
 
 public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition, BattleFaction Faction,

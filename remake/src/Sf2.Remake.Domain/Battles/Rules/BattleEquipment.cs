@@ -252,7 +252,7 @@ public static class BattleEquipment
                 ExpectedWord = sourceSlot is { } slot ? loadout.Items[slot] : null,
                 Defense = Defense(progress?.Defense ?? definition.Defense, status, definition, candidate),
                 Agility = (byte)(PackedAgility(agility, status, definition, candidate) & 127),
-                Move = Move(definition.Move, status, definition, candidate),
+                Move = Move(progress?.BaseMove ?? definition.Move, status, definition, candidate),
             };
         }
     }

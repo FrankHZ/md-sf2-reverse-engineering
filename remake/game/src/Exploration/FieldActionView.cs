@@ -215,9 +215,24 @@ internal sealed partial class FieldActionView : Control
         {
             var result = _submit(command, _choices.Revision);
             if (result.Failure is null && !result.Snapshot.CanWaitAtInput) { Hide(); return; }
+            var growth = result.Observations.Select(row => row.FieldGrowth).FirstOrDefault(growth => growth is not null);
             Message(result.Failure is { } failure ? () => GameText.Get("prepare.failure", Recovery(failure.Code), failure.Code, failure.Field, failure.Message) :
+                growth is not null ? () => GrowthMessage(growth) :
                 result.Observations.Any(row => row.Kind == "field-no-effect") ? () => GameText.Get("prepare.no-effect") : () => GameText.Get("prepare.done"), result.Failure is null);
         }, true), (() => GameText.Get("prepare.cancel"), Back, true)]);
+
+    internal static string GrowthMessage(FieldGrowthResult result)
+    {
+        if (result.NoEffect) return GameText.Get("prepare.growth.no-effect");
+        List<string> lines = [];
+        if (result.Level is { } level) lines.Add(GameText.Get("prepare.growth.level", level));
+        foreach (var gain in result.Gains)
+            lines.Add(GameText.Get("prepare.growth." + gain.Stat.ToString().ToLowerInvariant(), gain.Amount));
+        if (result.Learned is { } spell)
+            lines.Add(GameText.Get(spell.Level == 1 ? "prepare.growth.learned" : "prepare.growth.upgraded",
+                DisplayNames.Spell(spell, level: true)));
+        return string.Join("\n", lines);
+    }
 
     private static string Recovery(string code) => GameText.Get(code switch
     {

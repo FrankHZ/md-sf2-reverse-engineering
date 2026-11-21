@@ -87,7 +87,8 @@ internal static class BattleContinuationRestore
             saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && SilenceRules.Supported(saved.Status), "actor-range");
         if (progress is not null)
             Require(definition.Growth is not null && progress.Level is >= 1 and <= 99 && progress.MaxHp is > 0 and <= 200 &&
-                progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100, "progress");
+                progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100 &&
+                progress.ValidGrowthItemStats, "progress");
         Require(saved.Loadout is not null || definition.SourceLoadout is null && progress?.SourceLoadout is null, "loadout-unknown");
         if (saved.Loadout is { } loadout)
         {

@@ -11,7 +11,13 @@ public sealed record SaveCompatibility(string Profile, string Package, int Gamep
 public sealed record SavedAlly(string Actor, byte Class, ushort Hp, byte Mp, byte Exp, ushort Kills,
     ushort Defeats, ushort Status, ushort Activation, bool Initialized, bool Absent,
     byte Level, ushort MaxHp, byte MaxMp, byte BaseAttack, byte Defense, byte Agility,
-    IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells);
+    IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public byte? BaseMove { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public BattleCurrentStats? CurrentStats { get; init; }
+}
 public sealed record SavedDeal(byte Item, byte Count);
 public sealed record SavedMusic(string Cue, IReadOnlyList<string> Previous);
 // Native playback knowledge, like a presentation completion; not a request to change the music.

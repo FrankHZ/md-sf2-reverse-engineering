@@ -34,7 +34,8 @@ internal static class FieldItemEvents
     internal static ActiveSessionState Remove(ScenarioDefinition definition, SessionSnapshot current, byte item)
     {
         if (Find(definition, current, item) is not { } found) return current.Active;
-        var changed = FieldInventory.WithLoadout(found.Member, BattleInventory.Remove(FieldInventory.Loadout(found.Member), found.Slot));
+        var changed = FieldInventory.WithLoadout(found.Member,
+            BattleInventory.Remove(FieldInventory.Loadout(found.Member), found.Slot)).RefreshStats();
         var field = current.Exploration!;
         return new ActiveExploration(field.WithParty(FieldInventory.Replace(field.Party, [changed])));
     }

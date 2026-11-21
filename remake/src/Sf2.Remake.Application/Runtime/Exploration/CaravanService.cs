@@ -18,7 +18,10 @@ public sealed record CaravanWait(WaitToken Token, CaravanPhase Phase = CaravanPh
     CaravanAction? Action = null, int? Member = null, CaravanResult? Result = null,
     DepotAction? DepotAction = null, int? DepotIndex = null, byte? Item = null, string? DepotResult = null,
     CaravanItemAction? ItemAction = null, int? ItemSlot = null, ushort? ItemWord = null,
-    int? ItemTarget = null, string? ItemResult = null) : ProgramWait(Token);
+    int? ItemTarget = null, string? ItemResult = null) : ProgramWait(Token)
+{
+    public FieldGrowthResult? FieldGrowth { get; init; }
+}
 public abstract record CaravanCommand(WaitToken Wait) : SessionCommand;
 public sealed record ChooseCaravan(WaitToken Wait, CaravanAction Action) : CaravanCommand(Wait);
 public sealed record SelectCaravanMember(WaitToken Wait, int Member) : CaravanCommand(Wait);

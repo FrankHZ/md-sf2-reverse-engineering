@@ -105,7 +105,8 @@ internal static class BattleTurnFlow
                     "source-loadout", "start.actors.sourceLoadout");
             if (input.Progress is { } progress)
                 Require(actor.Growth is not null && progress.Level >= actor.Level && progress.Level <= 99 &&
-                    progress.MaxHp is > 0 and <= 200 && progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100,
+                    progress.MaxHp is > 0 and <= 200 && progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100 &&
+                    progress.ValidGrowthItemStats,
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");

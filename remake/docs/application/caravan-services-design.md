@@ -201,7 +201,11 @@ Caravan Use checks the source field-usable identity table separately from map ev
 Field NoEffect policies. Antidote clears poison, and Fairy Powder clears poison and paralysis.
 Each consumes the selected holder's slot even if the target has no relevant status, with distinct
 bilingual feedback. A missing or invalid target consumes nothing. Herbs, seeds and map-event items
-refuse without payment. Stat and level items remain unsupported. Shared Field validation distinguishes pack
+refuse without payment. The seven permanent growth consumables use the shared Field effect and
+payment rule, including paid no-effect and Apple's EXP reset. The Chinese Map71 Honey witness
+cancels target selection before retrying on an MP-capable member.
+[Growth effects and acceptance](../domain/permanent-growth-items-design.md#ordinary-input-observations)
+Shared Field validation distinguishes pack
 shape/known identities, the selected slot's operation admission, and actually equipped words.
 A carried Power Ring can be transferred or equipped. A valid worn ring leaves other admitted
 pack operations available, and a transferred or retrieved ring is bare. Unknown identities,
@@ -212,8 +216,9 @@ The [Pacalon Use observation](pacalon-first-visit.md#fairy-powder-use) exercises
 caller with a legally held Powder and a status-free target, then saves and cold-continues.
 
 All item changes reuse `FieldInventory.Replace` and `ExplorationState.WithParty`, retaining depot,
-OnceFlags/Deals, all other actor resources, RNG, active membership and story/transport continuity.
-No persistence format change is needed. Small actual-engine tests also cover ring-bearing donor/recipient packs, full exchanges, Drop and
+OnceFlags/Deals, unrelated actor resources, active membership and story/transport continuity.
+Growth effects publish their main RNG draws with the same transaction. Optional ally progress
+fields preserve growth in the existing save versions. Small actual-engine tests also cover ring-bearing donor/recipient packs, full exchanges, Drop and
 Antidote and Fairy Powder recovery under both callers, plus ring effect refusal and ordinary Field self-exchange.
 They distinguish the full self-Give
 rule from ordinary Field self-exchange, both exchange guards, supported and ineffective Antidote,

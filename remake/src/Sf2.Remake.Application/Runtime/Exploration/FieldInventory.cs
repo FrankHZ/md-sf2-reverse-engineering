@@ -144,7 +144,10 @@ internal static class FieldInventory
     }
 
     internal static BattleActorStartInput WithLoadout(PartyMemberDetails member, BattleSourceLoadout loadout) =>
-        member.Carried with { SourceLoadout = loadout, Progress = member.Carried.Progress is { } progress
+        WithLoadout(member.Carried, loadout);
+
+    internal static BattleActorStartInput WithLoadout(BattleActorStartInput actor, BattleSourceLoadout loadout) =>
+        actor with { SourceLoadout = loadout, Progress = actor.Progress is { } progress
             ? progress with { SourceLoadout = loadout } : null };
 
     internal static BattleStartInput Replace(BattleStartInput party, IEnumerable<BattleActorStartInput> changed, BattleItemCustody? custody = null, uint? gold = null)
@@ -207,7 +210,7 @@ internal static class FieldInventory
                 if (choice.ExpectedWord != equip.ExpectedWord ||
                     (equip.Slot == BattleEquipment.RemoveRingChoice || equip.ExpectedSourceSlot.HasValue) && choice.SourceSlot != equip.ExpectedSourceSlot)
                     throw new BattleRuleException("field-stale-item", "item.word");
-                return Replace(party, [WithLoadout(member, BattleEquipment.Equip(member.Deployment.Definition, loadout, choice.Slot))]);
+                return Replace(party, [WithLoadout(member, BattleEquipment.Equip(member.Deployment.Definition, loadout, choice.Slot)).RefreshStats()]);
             case FieldGive give:
                 var given = Slot(definition, member, give.Slot, give.ExpectedWord);
                 var target = Member(definition, current, give.Target, caller);
@@ -218,7 +221,7 @@ internal static class FieldInventory
                     if (give.ReturnSlot.HasValue || give.ExpectedReturnWord.HasValue)
                         throw new BattleRuleException("caravan-self-exchange", "target.items");
                     return Replace(party, [WithLoadout(member,
-                        BattleInventory.Add(BattleInventory.Remove(loadout, given.Slot), given.Word))]);
+                        BattleInventory.Add(BattleInventory.Remove(loadout, given.Slot), given.Word)).RefreshStats()]);
                 }
                 bool full = targetLoadout.Items.All(word => (word & 127) != 127);
                 if (full != give.ReturnSlot.HasValue || give.ReturnSlot.HasValue != give.ExpectedReturnWord.HasValue)
@@ -234,13 +237,13 @@ internal static class FieldInventory
                         if (ownReturn == given.Slot)
                         {
                             var words = own.Items.ToArray(); words[given.Slot] &= unchecked((ushort)~128);
-                            return Replace(party, [WithLoadout(member, new(words, own.Spells))]);
+                            return Replace(party, [WithLoadout(member, new(words, own.Spells)).RefreshStats()]);
                         }
                         own = BattleInventory.Add(BattleInventory.Remove(own, given.Slot), returned.Word);
                         own = BattleInventory.Remove(own, ownReturn > given.Slot ? ownReturn - 1 : ownReturn);
                     }
                     else own = BattleInventory.Remove(own, given.Slot);
-                    return Replace(party, [WithLoadout(member, BattleInventory.Add(own, given.Word))]);
+                    return Replace(party, [WithLoadout(member, BattleInventory.Add(own, given.Word)).RefreshStats()]);
                 }
                 var donor = BattleInventory.Remove(loadout, given.Slot);
                 if (give.ReturnSlot is { } returnSlot)
@@ -250,13 +253,15 @@ internal static class FieldInventory
                     donor = BattleInventory.Add(donor, returned.Word);
                 }
                 targetLoadout = BattleInventory.Add(targetLoadout, given.Word);
-                return Replace(party, [WithLoadout(member, donor), WithLoadout(target, targetLoadout)]);
+                var recipient = WithLoadout(target, targetLoadout);
+                return Replace(party, [WithLoadout(member, donor).RefreshStats(),
+                    give.ReturnSlot.HasValue ? recipient.RefreshStats() : recipient]);
             case FieldDrop drop:
                 var removed = Slot(definition, member, drop.Slot, drop.ExpectedWord);
                 var item = definition.FieldPreparation!.Items[(byte)(removed.Word & 127)];
                 if (!removed.CanDrop) throw new BattleRuleException("discard-unsellable", "item");
                 if (item.Rare && party.ItemCustody is null) throw new BattleRuleException("discard-custody-unavailable", "party.itemCustody", true);
-                return Replace(party, [WithLoadout(member, BattleInventory.Remove(loadout, drop.Slot))],
+                return Replace(party, [WithLoadout(member, BattleInventory.Remove(loadout, drop.Slot)).RefreshStats()],
                     item.Rare ? party.ItemCustody!.AddDeal(item.ItemId) : party.ItemCustody);
             default: throw new BattleRuleException("field-command-unsupported", "command", true);
         }

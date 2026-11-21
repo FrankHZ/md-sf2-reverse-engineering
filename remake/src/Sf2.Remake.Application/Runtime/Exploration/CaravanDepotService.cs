@@ -43,7 +43,7 @@ internal static class CaravanDepotService
                     _ = CaravanDepotQuery.Terms(definition, (byte)(selected.ExpectedWord & 127));
                     var deposited = CaravanInventory.Deposit(Loadout(member), custody, selected.Slot,
                         selected.ExpectedWord, CaravanDepotQuery.Cursed(definition, selected.ExpectedWord));
-                    party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(member, deposited.Pack)], deposited.Custody);
+                    party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(member, deposited.Pack).RefreshStats()], deposited.Custody);
                     next = next with { Phase = CaravanPhase.DepotResult, DepotResult = "deposited" };
                     break;
                 case SelectDepotItem selected when wait.Phase == CaravanPhase.DepotIndex:

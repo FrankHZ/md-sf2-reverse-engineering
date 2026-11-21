@@ -785,6 +785,36 @@ msgstr "已完成。"
 msgid "prepare.no-effect"
 msgstr "但是什么也没有发生。"
 
+msgid "prepare.growth.no-effect"
+msgstr "没有效果。道具已消耗。"
+
+msgid "prepare.growth.hp"
+msgstr "最大 HP 增加了 {0}。"
+
+msgid "prepare.growth.mp"
+msgstr "最大 MP 增加了 {0}。"
+
+msgid "prepare.growth.attack"
+msgstr "攻击增加了 {0}。"
+
+msgid "prepare.growth.defense"
+msgstr "防御增加了 {0}。"
+
+msgid "prepare.growth.agility"
+msgstr "敏捷增加了 {0}。"
+
+msgid "prepare.growth.move"
+msgstr "移动增加了 {0}。"
+
+msgid "prepare.growth.level"
+msgstr "升到了 {0} 级！"
+
+msgid "prepare.growth.learned"
+msgstr "学会了{0}！"
+
+msgid "prepare.growth.upgraded"
+msgstr "{0}升级了！"
+
 msgid "prepare.unavailable"
 msgstr "{0}\n整备不可用（{1}）。选择返回可回到成员画面。"
 
