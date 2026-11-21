@@ -156,9 +156,19 @@ func reader() -> void:
     await key(KEY_Q)
     geometry("SettingsWindow")
     var msg := find("SettingsMessage") as Label
-    var scroll := find("SettingsReading") as Control
+    var scroll := find("SettingsDetails") as ScrollContainer
     check(scroll.get_global_rect().size.x >= msg.get_global_rect().size.x and msg.get_line_count() >= 3 and
         (find("SettingsHint") as Label).get_theme_font_size("font_size") == 24, "720p wraps the binding review with fixed hint size")
+    var accept_rect := (find("Setting_accept") as Button).get_global_rect()
+    var back_rect := (find("Setting_back") as Button).get_global_rect()
+    var row_scroll: Variant = settings().scroll
+    await Nav.tap(self, "target")
+    check(scroll.scroll_vertical > 0 and not (find("SettingsDetailsHint") as Label).text.is_empty(),
+        "mapped read control reaches overflowing binding details")
+    check(settings().focus == "accept" and settings().scroll == row_scroll
+        and (find("Setting_accept") as Button).get_global_rect() == accept_rect
+        and (find("Setting_back") as Button).get_global_rect() == back_rect,
+        "reading details preserves rows, focus and Back")
     await confirm_review(); await to_root(); await go_setting("help")
     geometry("HelpWindow")
     check((find("HelpHint") as Label).get_theme_font_size("font_size") == 24,"720p reader keeps native help hint size")

@@ -1990,6 +1990,21 @@ msgstr "高清"
 msgid "ui.settings.graphics-coverage"
 msgstr "安装了高清素材的场景和物品会使用高清画面，其余使用原版。"
 
+msgid "ui.settings.battle-graphics"
+msgstr "HD 画面用于探索中有对应素材的场景和物品。战斗继续使用原版画面。"
+
+msgid "ui.settings.battle-language"
+msgstr "菜单会立即更新。部分已打开的结果消息会保留当前语言，直到关闭。"
+
+msgid "ui.settings.read-details"
+msgstr "{0}：阅读说明"
+
+msgid "ui.settings.battle-text"
+msgstr "文字显示模式从下一条消息起生效。文字速度也影响当前正在逐字显示的内容。"
+
+msgid "ui.settings.battle-auto-victory"
+msgstr "开启后，恢复游戏并到达可移动的玩家回合时，可能自动赢得当前战斗。"
+
 msgid "ui.settings.graphics-error"
 msgstr "无法准备画面资源。已保留先前画面和偏好。"
 

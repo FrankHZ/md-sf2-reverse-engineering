@@ -182,7 +182,7 @@ engineering acceptance; final raster, physical device access and human aesthetic
 | --- | --- |
 | Resume Game (initial selection) | Always safe; closes Menu and resumes only when no other host modal covers play. |
 | Journey / Save | Field uses `QuerySave`; admitted battle uses `QueryBattleSave` at settled player Movement/origin. Unsupported profiles, busy states and nonzero previews show their real reason without cancellation or queued save. The field shortcut and Church caller remain. Save confirmation Back returns slots; slots Back returns Menu. [Battle contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c). |
-| Journey / Settings | Existing `CanOpenSettings`: Witch menu or settled exploration outside other menus. No battle/story access is added. Settings/help retain draft, Apply and Back ownership; closing Settings returns Menu. |
+| Journey / Settings | Available at the Witch menu, in eligible exploration and through Menu over the mounted battle presenter. Settings/Help retain their draft, Apply and Back ownership. Closing Settings returns to the Menu row. [Battle setting effects](host-ui.md#settings-from-the-battle-system-menu). |
 | Session / New Game | Existing settled-field `CanWaitAtInput` and Party exclusion, followed by the existing replacement entry with Cancel selected, slot/name and final explicit Start/save confirmation. Cancel unwinds those existing pages to Menu. |
 | Session / Quit | Existing clean/dirty confirmation, Cancel initially selected; Cancel returns Menu. Window recovery retains its own Quit confirmation and returns to recovery first. |
 
@@ -543,9 +543,9 @@ awaiting independent review. The later [appearance notice](#authored-enemy-appea
 **Standard rigor**, bounded [#1650](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1650).
 Existing preference storage retains its consistency contract. The settled Movement → B inspection →
 empty-ground A/C → Options → Speed caller opens the existing SettingsHost/SettingsView transaction
-with only speed and ordinary hit/coin display. General Settings remains unavailable in battle,
-including through the system Menu. The query must still admit current inspection; active movement,
-scene, story, action and target stages gain no direct settings entry. Closing returns to the same
+with speed and ordinary hit/coin display. The query must still admit current inspection. The
+system Menu separately opens [general Settings over battle](host-ui.md#settings-from-the-battle-system-menu).
+Closing Speed returns to the same
 Options selection/cursor. The host pauses the battle/audio and reuses input release and focus barriers.
 No session command, revision, RNG, resource, progress slot or session replacement belongs to editing.
 
@@ -776,8 +776,8 @@ single-action rules are unchanged. No first-use persistence or automatic tutoria
 
 Long text wraps and uses the owning reader/scroll mechanism, with existing30px body/24px hints and
 1920×1080 logical design baseline. The cue may grow to retain a necessary reason or consequence. Help remains
-available through existing Witch menu or settled-field Settings, with full localized English/Chinese
-prose. Story/battle Menu does not make Settings/Help newly available. Screenshots are prohibited.
+available through shared Settings at the Witch menu, in settled field or through the system Menu
+in battle, with localized English and Chinese prose. Screenshots are prohibited.
 
 ### Finite implementation and acceptance boundary
 
@@ -835,7 +835,8 @@ Settings retains its draft, Defaults flag, message, selected Control help row an
 Back returns there without Apply, storage access or a gameplay command. Help pages cover exploration,
 dialogue/choices, battle and menus, including keyboard-only naming. Page labels explain context;
 a binding does not promise that its command is legal in every state. Existing visible disabled
-reasons remain authoritative. Active battle/story settings access is not added.
+reasons remain authoritative. The [battle host caller](host-ui.md#settings-from-the-battle-system-menu)
+uses the same Help and settings draft.
 
 Left/Right turn pages; Confirm also advances. Up/Down scroll the current page, including unusually
 long custom bindings. Fixed Previous/Next/Back controls also support deliberate pointer gestures.
@@ -1078,7 +1079,8 @@ BattleStatusCard translates low-HP/defeated suffixes for every shared caller. HP
 resources, numbers, colors and geometry remain unchanged. Global recovery uses actual snapshot
 Unsupported/Faulted/startup status; choice Unsupported remains cancellable. Code/field diagnostics
 stay visible. Give/Discard/Retreat and other dynamic result text remain outside M2d; diagnostic
-observation strings are not a claim of visible translation. Settings chooses language before battle.
+observation strings are not a claim of visible translation. Language Apply in the
+[battle system Menu](host-ui.md#settings-from-the-battle-system-menu) refreshes the current command surface.
 See the [finite native recipe](../verification/host.md#localized-battle-commands-targets-and-status).
 
 ## Localized battle transactions and retreat display

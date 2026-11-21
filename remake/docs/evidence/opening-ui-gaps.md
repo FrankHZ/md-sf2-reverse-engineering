@@ -116,7 +116,8 @@ from declared offsets. The user's exact version/screen remains **Unknown**.
 The [system-menu agreement](../godot/presentation.md#system-menu-agreement-1518) consolidates these
 into one160×56 Menu entry, shared by exploration and battle. Resume is default, Journey contains
 Save/Settings and Session contains New Game/Quit. Disabled actions explain the retained eligibility;
-Settings is still unavailable during battle/story and savepoints are not broadened. Existing
+This delivery kept the existing savepoints and Settings admission. Current battle Settings access
+is documented in the [host agreement](../godot/host-ui.md#settings-from-the-battle-system-menu). Existing
 replacement/quit confirmations and child Back semantics remain. Keyboard/pad mappings, old-v1
 collision/all-axis behavior, pointer isolation and paused recovery are bounded by the
 [finite observation](../verification/host.md#system-menu-observation). Its bounded engineering

@@ -12,6 +12,7 @@ internal sealed partial class SettingsView : Control
     internal string? Notice { get; init; }
     internal bool ReadOnly { get; init; }
     internal bool BattleOnly { get; init; }
+    internal bool BattleContext { get; init; }
     private InputSettings _draft = null!;
     private bool _reset;
     private ControlsHelpView? _help;
@@ -25,8 +26,8 @@ internal sealed partial class SettingsView : Control
     private PanelContainer _panel = null!;
     private VBoxContainer _column = null!;
     private HBoxContainer _footer = null!;
-    private ScrollContainer _scroll = null!;
-    private Label _title = null!, _message = null!, _hint = null!, _diagnostics = null!;
+    private ScrollContainer _scroll = null!, _details = null!;
+    private Label _title = null!, _message = null!, _hint = null!, _diagnostics = null!, _detailsHint = null!;
     private readonly List<Button> _buttons = [];
     private readonly MenuPointer _pointer = new();
     private static string T(string id, params object[] values) => GameText.Get(id, values);
@@ -47,8 +48,20 @@ internal sealed partial class SettingsView : Control
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled }; layout.AddChild(_scroll);
         _column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; _scroll.AddChild(_column);
         _column.AddThemeConstantOverride("separation", 8);
-        _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart }; _column.AddChild(_message);
-        _diagnostics = new Label { Name = "SettingsDiagnostics", AutowrapMode = TextServer.AutowrapMode.WordSmart }; _column.AddChild(_diagnostics);
+        // Fix the details area so its text and scroll range cannot move the choices or footer.
+        var detailsPane = new VBoxContainer { CustomMinimumSize = new(0, 168) };
+        layout.AddChild(detailsPane);
+        _details = new ScrollContainer { Name = "SettingsDetails", SizeFlagsVertical = SizeFlags.ExpandFill,
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        detailsPane.AddChild(_details);
+        var detailsText = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _details.AddChild(detailsText);
+        _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart }; detailsText.AddChild(_message);
+        _diagnostics = new Label { Name = "SettingsDiagnostics", AutowrapMode = TextServer.AutowrapMode.WordSmart }; detailsText.AddChild(_diagnostics);
+        _detailsHint = new Label { Name = "SettingsDetailsHint", CustomMinimumSize = new(0, 36) };
+        _detailsHint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
+        detailsPane.AddChild(_detailsHint);
+        _details.GetVScrollBar().VisibilityChanged += RefreshDetailsHint;
         _footer = new HBoxContainer { Name = "SettingsActions" }; layout.AddChild(_footer);
         _footer.AddThemeConstantOverride("separation", 12);
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
@@ -131,16 +144,28 @@ internal sealed partial class SettingsView : Control
         _title.Text = _page switch { Page.Root => T("ui.settings.title"), Page.Display => S("display"),
             Page.Assist => S("assist"), Page.Controls => S("input"), Page.Debug => S("debug"), Page.Battle => T("battle.speed.title"),
             Page.Actions => S("edit"), _ => S(_action) };
-        _message.Text = _status != "" ? _status : _page switch {
+        string message = _status != "" ? _status : _page switch {
             Page.Root => Notice ?? (IncompleteAction(_draft) is { } name ? S("required", S(name)) : ""),
-            Page.Display when _rows[_selected].Id == "graphics" => T("ui.settings.graphics-coverage"),
+            Page.Display when _rows[_selected].Id == "graphics" =>
+                T(BattleContext ? "ui.settings.battle-graphics" : "ui.settings.graphics-coverage"),
+            Page.Display when BattleContext && _rows[_selected].Id == "language" => T("ui.settings.battle-language"),
+            Page.Display when BattleContext && _rows[_selected].Id == "text" => T("ui.settings.battle-text"),
+            Page.Assist when BattleContext && _rows[_selected].Id == "guidance" => T("host.setting-description-10"),
+            Page.Debug when BattleContext && _rows[_selected].Id == "victory" => T("ui.settings.battle-auto-victory"),
             Page.Battle => Notice ?? T("battle.speed.mapping"), _ => EditorMessage() };
-        _message.Visible = _message.Text.Length != 0;
-        _diagnostics.Visible = _page == Page.Debug && Input.Settings.ShowDebugDiagnostics; _diagnostics.Text = GameText.Coverage;
+        bool diagnostics = _page == Page.Debug && Input.Settings.ShowDebugDiagnostics;
+        if (_message.Text != message || _diagnostics.Visible != diagnostics) _details.ScrollVertical = 0;
+        _message.Text = message;
+        _message.Visible = message.Length != 0;
+        _diagnostics.Visible = diagnostics; _diagnostics.Text = GameText.Coverage;
+        RefreshDetailsHint();
         _hint.Text = BattleOnly ? T("battle.speed.hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
                 Input.CompactHint(GameAction.Attack), Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel)) :
             T("ui.settings.hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
     }
+
+    private void RefreshDetailsHint() => _detailsHint.Text = _details.GetVScrollBar().Visible
+        ? T("ui.settings.read-details", Input.CompactHint(GameAction.Target)) : "";
 
     internal void RefreshInputHints()
     {
@@ -157,6 +182,12 @@ internal sealed partial class SettingsView : Control
         _pointer.Suspend();
         if (_help is not null) { _help.Handle(action); return; }
         if (action == GameAction.Cancel) { Back(); return; }
+        if (action == GameAction.Target && _details.GetVScrollBar() is { Visible: true } reading)
+        {
+            _details.ScrollVertical = reading.Value + reading.Page >= reading.MaxValue
+                ? 0 : _details.ScrollVertical + (int)_details.Size.Y - StoryTheme.BodySize;
+            return;
+        }
         if (action is GameAction.Up or GameAction.Down)
         {
             int step = action == GameAction.Up ? -1 : 1;
@@ -188,7 +219,11 @@ internal sealed partial class SettingsView : Control
         { _selected = hit; Paint(); }
         if (input is not InputEventMouseButton button) return;
         if (button.ButtonIndex is MouseButton.WheelDown or MouseButton.WheelUp)
-        { if (button.Pressed) _scroll.ScrollVertical += button.ButtonIndex == MouseButton.WheelDown ? 80 : -80; _pointer.Cancel(); return; }
+        {
+            var scroll = _details.GetGlobalRect().HasPoint(pos) ? _details : _scroll;
+            if (button.Pressed) scroll.ScrollVertical += button.ButtonIndex == MouseButton.WheelDown ? 80 : -80;
+            _pointer.Cancel(); return;
+        }
         bool back = button.ButtonIndex == MouseButton.Right;
         string? id = back ? "right-click" : hit < 0 ? null : _rows[hit].Id;
         if (_pointer.Read(button, id, back ? GetGlobalRect() : hit < 0 ? new() : Bounds(hit), _page) == null) return;

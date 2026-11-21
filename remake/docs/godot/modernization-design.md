@@ -592,8 +592,8 @@ persistence remain owned there. Those presets are not simulation multipliers and
 equivalence. Held 1.5× neither edits nor multiplies them: the first level (label 0) at 15 cps still
 reveals at 15 cps; the fourth (label 3) remains instant and still waits for any required fresh
 acknowledgement. Source textSettings and mandatory script/HEAL work are not rewritten to a different messageSpeed to accelerate them.
-General Settings remains unavailable during battle; the accepted inspection → Options → Speed
-caller pauses and disarms acceleration like its current host modal. Use existing Controls help
+Both system Menu → Settings and inspection → Options → Speed pause battle and disarm acceleration.
+Use existing Controls Help
 for the Shift hold and release/reset rule; no new permanent toolbar, visual language or settings row.
 
 ### Determinism, rhythm and staged implementation
