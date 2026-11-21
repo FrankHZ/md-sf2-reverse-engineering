@@ -120,11 +120,10 @@ items update existing Deals with saturation15. Cancellation and rejected command
 stores; later caller failure retains a committed transfer. Unknown custody remains unknown and
 refuses operations while still allowing the player to leave the submenu.
 
-Look reuses admitted names, item type, `floor(price*3/4)` valuation and actual supported weapon
-class eligibility. The observed Wooden Sword shows45 gold and Bowie/Luke eligibility in both
-languages. No sale is performed. Ring eligibility, Chirrup Sandals' special description and broader
-appraisal/equipment effects remain explicitly unsupported; absent price is
-shown as unknown. Carrying an admitted identity does not grant its Use or equipped effect.
+Look reuses admitted names, item type, `floor(price*3/4)` valuation and class eligibility for
+admitted weapons and stat rings. The Wooden Sword was appraised in both languages. The observed
+Power Ring shows 2,250 gold and the eligible joined members. An absent price is shown as unknown.
+Chirrup Sandals' special description has a separate owner. [Ring custody and appraisal](../domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input)
 
 Every custody reconstruction preserves Depot: `Mark`, `AddDeal`, battle start/action validation,
 continuation capture/equality/restore, field capture/restore and battle wire decode. New field-v1
@@ -192,8 +191,8 @@ Self-Give removes the selected slot then appends its word, even when the member'
 Add clears equipped and preserves the existing broken marker. Different-member Give checks both
 outgoing slots, compacts both packs and clears equipped on moved words. All initialized joined
 members, including reserves, are selectable. Cancelling target selection restarts the donor loop;
-cancelling exchange returns to target selection. Equip uses the existing admitted weapon/class
-choices. Drop requires confirmation, compacts the selected slot and retains the existing rare Deals
+cancelling exchange returns to target selection. Equip uses the class mask and separate weapon
+and stat ring choices. Drop requires confirmation, compacts the selected slot and retains the existing rare Deals
 saturation and unsellable rules. Known equipped cursed outgoing items refuse before broader
 unsupported-loadout checks, including both sides of exchange and unequipping. Selection/transaction
 failure preserves the snapshot; a later callback failure does not undo a committed item action.
@@ -204,12 +203,11 @@ Each consumes the selected holder's slot even if the target has no relevant stat
 bilingual feedback. A missing or invalid target consumes nothing. Herbs, seeds and map-event items
 refuse without payment. Stat and level items remain unsupported. Shared Field validation distinguishes pack
 shape/known identities, the selected slot's operation admission, and actually equipped words.
-An unselected, unequipped known Power Ring19 stays in the pack without blocking another admitted
-slot's Give/Drop/Use or a recipient transfer. Queries display that identity without granting its
-operations; its unsupported Use/equipment still refuses. Unknown identities, stale words, invalid
-packs and unsupported worn effects remain rejected. Equipment choices retain source slot indices
-and omit unsupported/broken choices without deleting their live words. Selected broken-weapon
-operations remain unsupported; no wider curse/ring/broken lifecycle is implemented.
+A carried Power Ring can be transferred or equipped. A valid worn ring leaves other admitted
+pack operations available, and a transferred or retrieved ring is bare. Unknown identities,
+stale words, invalid packs and unsupported worn effects still reject. Equipment choices retain
+source slot indices and omit unsupported or broken choices. Ring Use, durability, Repair and
+curses have separate owners. [Static ring rules](../domain/ring-equipment-design.md#custody-promotion-and-continue)
 The [Pacalon Use observation](pacalon-first-visit.md#fairy-powder-use) exercises an overworld Caravan
 caller with a legally held Powder and a status-free target, then saves and cold-continues.
 

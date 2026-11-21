@@ -34,7 +34,7 @@ public static class BattleGive
             if (word == 127) continue;
             if (word > 255 || !definition.Items.ContainsKey((byte)(word & 127)))
                 throw new BattleRuleException("give-item-unsupported", "actor.sourceLoadout", true);
-            if ((word & 128) != 0 && actor.Definition.Equipment?.Weapons.ContainsKey((byte)(word & 127)) != true)
+            if ((word & 128) != 0 && actor.Definition.Equipment?.ClassMask((byte)(word & 127)) is null)
                 throw new BattleRuleException("give-equipped-item", "actor.sourceLoadout", true);
         }
         if (actor.Definition.Equipment is not null)

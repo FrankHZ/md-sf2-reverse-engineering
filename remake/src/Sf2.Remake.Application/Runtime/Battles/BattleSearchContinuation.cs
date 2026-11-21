@@ -28,10 +28,20 @@ internal static class BattleSearchContinuation
         var selection = current.Selection!;
         var chest = Query(current) ?? throw new BattleRuleException("search-unavailable", "search");
         bool opened = current.Story.Flags.Contains(chest.Flag);
-        var result = BattleSearch.Prepare(current.Battle, selection.Actor, chest, opened, selection.Preview.Destination);
+        var atStop = selection.AtConfirmedStop(current.Battle);
+        var result = BattleSearch.Prepare(atStop, selection.Actor, chest, opened, selection.Preview.Destination);
         if (result.Kind != BattleSearchKind.Trap)
-            _ = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
+        {
+            _ = BattleChoices.Prepare(rules, atStop, selection.Actor, selection.Preview.Destination,
                 new(BattleActionKind.Stay), null);
+            // Search can leave the action menu open. Only the trap commits the stop here.
+            if (atStop != current.Battle)
+            {
+                var origin = current.Battle.GetActor(selection.Actor).Position;
+                result = result with { Battle = result.Battle.With(actors: result.Battle.Actors.Select(actor =>
+                    actor.Actor == selection.Actor ? actor.With(position: origin) : actor)) };
+            }
+        }
         bool claimed = !opened && result.Kind is not (BattleSearchKind.Full or BattleSearchKind.Occupied);
         var story = claimed ? current.Story.Copy(null, flags: current.Story.Flags.Append(chest.Flag).Order().ToArray()) : current.Story;
         long revision = current.Revision + 1, sequence = current.ObservationSequence;
@@ -72,7 +82,7 @@ internal static class BattleSearchContinuation
                     new(BattleActionKind.Physical), selection.Actor);
                 return BattleSceneContinuation.Begin(next, attack, [observation]);
             }
-            var action = BattleChoices.Prepare(rules, next.Battle, selection.Actor, selection.Preview.Destination,
+            var action = BattleChoices.Prepare(rules, selection.AtConfirmedStop(next.Battle), selection.Actor, selection.Preview.Destination,
                 new(BattleActionKind.Stay), null);
             List<SessionObservation> observations = [observation];
             return BattleAdvancer.Advance(BattleActionCommitter.Publish(next, action.Prepared, selection.Actor,

@@ -8,7 +8,10 @@ public sealed record PartyInventorySlot(int Slot, string? Name, bool? Empty, boo
 public sealed record PartySpell(SpellRef Spell, string? Name);
 public sealed record PartyMemberDetails(BattleActorStartInput Carried, BattleDeploymentDefinition? Deployment,
     ushort? MaxHp, byte? MaxMp, byte? Level, byte? Attack, byte? Defense, byte? Agility,
-    IReadOnlyList<PartySpell>? Spells, IReadOnlyList<PartyInventorySlot> Inventory);
+    IReadOnlyList<PartySpell>? Spells, IReadOnlyList<PartyInventorySlot> Inventory)
+{
+    public byte? Move { get; init; }
+}
 public sealed record PartyDetails(uint? Gold, IReadOnlyList<PartyMemberDetails> Members);
 
 // A read of carried field state, never a battle initializer or a command. In particular,
@@ -35,10 +38,21 @@ internal static class PartyDetailsQuery
             var progress = carried.Progress;
             var loadout = carried.SourceLoadout ?? progress?.SourceLoadout ?? actor?.SourceLoadout;
             byte? attack = actor is null ? null : BattleEquipment.Attack(actor, progress, loadout);
+            byte? defense = progress?.Defense ?? actor?.Defense;
+            byte? agility = progress?.Agility ?? actor?.Agility;
+            byte? move = actor?.Move;
+            if (actor is not null)
+            {
+                bool neutral = (carried.Status & BattleStatCounters.StatBits) == 0;
+                defense = BattleEquipment.Defense(defense!.Value, carried.Status, actor, loadout, initial: neutral);
+                byte packed = (byte)(agility!.Value | (actor.ExtraRoundAction ? 128 : 0));
+                agility = (byte)(BattleEquipment.PackedAgility(packed, carried.Status, actor, loadout, initial: neutral) & 127);
+                move = BattleEquipment.Move(actor.Move, carried.Status, actor, loadout);
+            }
             var spells = progress?.Spells ?? actor?.Spells;
             members.Add(new(carried, deployment, progress?.MaxHp ?? actor?.MaxHp,
                 progress?.MaxMp ?? actor?.MaxMp, progress?.Level ?? actor?.Level, attack,
-                progress?.Defense ?? actor?.Defense, progress?.Agility ?? actor?.Agility,
+                defense, agility,
                 spells?.Select(spell => new PartySpell(spell, SpellName(definition, spell))).ToArray(),
                 Enumerable.Range(0, 4).Select(slot =>
                 {
@@ -47,7 +61,7 @@ internal static class PartyDetailsQuery
                     return new PartyInventorySlot(slot, item == 127 ? null : ItemName(definition, encounter, actor, item),
                         item == 127, item != 127 && (word & 128) != 0, item != 127 && (word & 256) != 0,
                         item == 127 ? null : item);
-                }).ToArray()));
+                }).ToArray()) { Move = move });
         }
         return new(field.Party.Gold, members.AsReadOnly());
     }
@@ -59,7 +73,7 @@ internal static class PartyDetailsQuery
     internal static string? ItemName(ScenarioDefinition definition, BattleDefinition encounter, BattleActorDefinition? actor, byte item) =>
         definition.PrivateDefinitions?.Items.GetValueOrDefault(item)?.DisplayName ??
         definition.FieldPreparation?.Items.GetValueOrDefault(item)?.Name ??
-        actor?.Equipment?.Weapons.GetValueOrDefault(item)?.Name ??
+        actor?.Equipment?.Weapons.GetValueOrDefault(item)?.Name ?? actor?.Equipment?.Rings.GetValueOrDefault(item)?.Name ??
         encounter.HealingItems.GetValueOrDefault(item)?.Name ?? encounter.RetreatItems.GetValueOrDefault(item)?.Name ??
         encounter.ItemDrops?.Items.GetValueOrDefault(item)?.Name ?? encounter.Give?.Items.GetValueOrDefault(item) ??
         encounter.Discard?.Items.GetValueOrDefault(item)?.Name;

@@ -80,7 +80,8 @@ public sealed class FieldSearchTests
     {
         var basis = ConnectedBattleGiveTests.Source();
         var ring = new SourceItemDefinition(21, "QUICK_RING", "Quick Ring", "", "ALL", [], 0, 0, 0,
-            "RING|RARE|BREAKABLE", "NOTHING", "NOTHING", 1, []);
+            "RING|RARE|BREAKABLE", "NOTHING", "NOTHING", 1,
+            [new("INCREASE_AGI", 5), new("NONE", 0), new("NONE", 0)]);
         var source = new PrivateBattleDefinitions(basis.Encounter, [], basis.Classes.Values,
             basis.Items.Values.Append(ring), [], [], []);
         var session = Session(marker: 0x2C00, item: ring.Id, fieldItems: source);

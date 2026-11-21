@@ -13,7 +13,7 @@ public sealed class FieldServiceTests
     private static readonly ChurchDefinition Terms = new(10, 200, 200, 10, 20);
     private static GameSession Session(uint? gold = 100, ushort hp = 0, ushort status = 0,
         ushort secondHp = 100, ushort secondStatus = 0, byte level = 2, bool promoted = false, ushort maxHp = 250,
-        ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false)
+        ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false, bool power = false)
     {
         var original = FieldInventoryTests.Session().Current.Exploration!.Party;
         var source = FieldInventoryTests.Session().Definition.Encounters.Values.Single();
@@ -25,12 +25,13 @@ public sealed class FieldServiceTests
         });
         var book = currentLevel >= 22 ? new byte[] { 10, 13, 63, 63 } : [10, 63, 63, 63];
         var spells = book.Where(spell => spell != 63).Select(spell => new SpellRef(spell == 10 ? "egress" : "bolt", 1)).ToArray();
-        var loadout = new BattleSourceLoadout([armed ? (ushort)178 : (ushort)50, 127, 127, 127], book);
+        var loadout = new BattleSourceLoadout([armed ? (ushort)178 : (ushort)50, power ? (ushort)147 : (ushort)127, 127, 127], book);
         if (promotion)
         {
             var growth = new BattleGrowthDefinition(0, 0, Enumerable.Repeat(new StatGrowth(20, 20, []), 5).ToArray(),
                 [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
-            var equipment = new BattleEquipmentDefinition(20, [new(50, "Sword", 1 | 1u << 12, 5, 1, 1)]);
+            var equipment = new BattleEquipmentDefinition(20, [new(50, "Sword", 1 | 1u << 12, 5, 1, 1)],
+                rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5)]);
             deployments = deployments.Select(d => d.Actor != First ? d : d with {
                 Definition = d.Definition.WithGrowth(growth).WithEquipment(equipment),
                 RegularPromotion = new(d.Actor, BattleClassRule.Hero, 1, 42, 14, 28, 25, 24, false, 6, [],
@@ -74,12 +75,13 @@ public sealed class FieldServiceTests
     private static BattleActorStartInput Member(GameSession session, ActorRef actor) => session.Current.Exploration!.Party.Actors.Single(row => row.Actor == actor);
 
     [Theory]
-    [InlineData(19, false, 5)]
-    [InlineData(20, true, 0)]
-    [InlineData(31, false, 3)]
-    public void OrdinaryPromotionCarriesEarnedStateThroughConsentAndTheNextLevel(byte level, bool armed, ushort hp)
+    [InlineData(19, false, 5, false)]
+    [InlineData(20, true, 0, false)]
+    [InlineData(31, false, 3, false)]
+    [InlineData(20, true, 7, true)]
+    public void OrdinaryPromotionCarriesEarnedStateThroughConsentAndTheNextLevel(byte level, bool armed, ushort hp, bool power)
     {
-        var session = Session(hp: hp, currentLevel: level, promotion: true, armed: armed);
+        var session = Session(hp: hp, currentLevel: level, promotion: true, armed: armed, power: power);
         var before = session.Current.Exploration!.Party;
         Choose(session, ChurchAction.Promote);
         if (level < 20)
@@ -105,13 +107,18 @@ public sealed class FieldServiceTests
         Assert.DoesNotContain(First, after.ActiveAllies!);
         Assert.NotNull(Send(session, yes).Failure); Assert.Same(after, session.Current.Exploration.Party);
         var projected = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First);
-        Assert.Equal(armed ? 25 : 20, projected.Attack!.Value);
+        Assert.Equal((armed ? 25 : 20) + (power ? 5 : 0), projected.Attack!.Value);
         Assert.Equal(BattleClassRule.Hero, projected.Deployment!.Definition.ClassRule);
         var actor = new BattleActorState(projected.Deployment, hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
         uint seed = before.MainSeed;
         var grown = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(actor, 1, ref seed, []);
         Assert.Equal((byte)12, grown.Progress!.ClassId); Assert.Equal(2, grown.Level);
         Assert.Equal(hp, grown.Hp); Assert.Equal(member.Mp, grown.Mp);
+        if (power)
+        {
+            Assert.Equal((ushort)147, grown.SourceLoadout!.Items[1]);
+            Assert.Equal(grown.BaseAttack + 10, grown.Attack);
+        }
         Assert.Single(grown.Spells, spell => spell.Value == "bolt");
         Assert.Equal(new byte[] { 10, 13, 63, 63 }, grown.SourceLoadout!.Spells);
         Continue(session);

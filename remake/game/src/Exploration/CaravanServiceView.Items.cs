@@ -44,10 +44,8 @@ internal sealed partial class CaravanServiceView
                     }
                     foreach (var choice in choices.Equipment)
                     {
-                        ushort? word = choice.Slot == 4 ? null : loadout.Items[choice.Slot];
-                        string name = word is { } item ? DisplayNames.Item((byte)(item & 127), choice.Label) : GameText.Get("prepare.unarmed");
-                        _options.Add((GameText.Get("prepare.equipment-row", name, choice.Equipped ? GameText.Get("shop.equipped") : "", choice.Attack),
-                            new SelectCaravanItemSlot(wait.Token, choice.Slot, word), owner, true));
+                        _options.Add((DisplayNames.EquipmentRow(choice),
+                            new SelectCaravanItemSlot(wait.Token, choice.Slot, choice.ExpectedWord, choice.SourceSlot), owner, true));
                     }
                 }
                 else

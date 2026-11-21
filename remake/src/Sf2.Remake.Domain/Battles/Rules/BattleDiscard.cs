@@ -32,7 +32,7 @@ public static class BattleDiscard
             if (word == 127) continue;
             if (word > 255 || !definition.Items.TryGetValue((byte)(word & 127), out var item))
                 throw new BattleRuleException("discard-item-unsupported", "actor.items", true);
-            if ((word & 128) != 0 && actor.Definition.Equipment?.Weapons.ContainsKey(item.ItemId) != true)
+            if ((word & 128) != 0 && actor.Definition.Equipment?.ClassMask(item.ItemId) is null)
                 throw new BattleRuleException("discard-equipped-item", "actor.items", true);
             if (battle.Definition.ItemDrops?.Items.TryGetValue(item.ItemId, out var drop) == true && drop.Rare != item.Rare)
                 throw new BattleRuleException("discard-item-rarity", "battle.discard");

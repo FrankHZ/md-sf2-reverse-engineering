@@ -122,7 +122,7 @@ internal static class FieldInventory
         var selectable = new BattleSourceLoadout(loadout.Items.Select(word =>
             (word & 256) == 0 && definition.FieldPreparation!.Items.ContainsKey((byte)(word & 127))
                 ? word : (ushort)127), loadout.Spells);
-        return BattleEquipment.Choices(member.Deployment.Definition, BaseAttack(member), selectable);
+        return BattleEquipment.Choices(member.Deployment.Definition, BaseAttack(member), selectable, member.Carried.Progress, member.Carried.Status);
     }
 
     internal static byte BaseAttack(PartyMemberDetails member) => member.Carried.Progress?.BaseAttack ??
@@ -167,7 +167,7 @@ internal static class FieldInventory
         byte id = (byte)(word & 127);
         if (!definition.FieldPreparation!.Items.TryGetValue(id, out var item))
             throw new BattleRuleException("field-item-unsupported", "item.slot", true);
-        if ((word & 256) != 0 && member.Deployment!.Definition.Equipment?.Weapons.ContainsKey(id) == true)
+        if ((word & 256) != 0 && member.Deployment!.Definition.Equipment?.ClassMask(id) is not null)
             throw new BattleRuleException("equipment-broken", "item.slot", true);
         return new(slot, word, item.Name, !item.Unsellable, definition.FieldPreparation.Effect(id, null));
     }
@@ -204,7 +204,8 @@ internal static class FieldInventory
                     throw new BattleRuleException("equipment-unavailable", "actor.equipment", true);
                 var choice = EquipmentChoices(definition, member, loadout)
                     .SingleOrDefault(row => row.Slot == equip.Slot) ?? throw new BattleRuleException("equipment-slot", "equipment.slot");
-                if ((equip.Slot == 4 ? (ushort?)null : loadout.Items[equip.Slot]) != equip.ExpectedWord)
+                if (choice.ExpectedWord != equip.ExpectedWord ||
+                    (equip.Slot == BattleEquipment.RemoveRingChoice || equip.ExpectedSourceSlot.HasValue) && choice.SourceSlot != equip.ExpectedSourceSlot)
                     throw new BattleRuleException("field-stale-item", "item.word");
                 return Replace(party, [WithLoadout(member, BattleEquipment.Equip(member.Deployment.Definition, loadout, choice.Slot))]);
             case FieldGive give:

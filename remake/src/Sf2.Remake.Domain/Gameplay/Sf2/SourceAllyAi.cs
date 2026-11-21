@@ -24,12 +24,13 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             actor.Control != BattleControl.Automatic || !SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0 ||
             battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
-        // An ordinary unequipped herb or ring without an AI-use bit supplies no command. Other categories cannot
-        // silently fall through as failed HEAL/item/attack commands.
-        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(i => i is not (127 or 19 or 0)) ||
+        // Bare herbs and admitted static rings do not supply an AI item command.
+        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(word => word is not (127 or 19 or 0) &&
+                (word > 255 || actor.Definition.Equipment?.Rings.ContainsKey((byte)(word & 127)) != true)) ||
             loadout.Spells.Any(s => s != 63) || actor.Spells.Count != 0 ||
             actor.Definition.Physical is not { MinimumRange: 1, MaximumRange: 1 })
             throw new BattleRuleException("source-ally-action-categories", "actor.loadout", true);
+        if (actor.Definition.Equipment is not null) BattleEquipment.ValidateLoadout(actor.Definition, loadout);
         var slots = battle.Definition.Initialization?.SourceCombatants ??
             throw new BattleRuleException("source-ally-slot", "battle.sourceCombatants", true);
         if (!slots.Any(p => p.Key is >= 0 and < 30 && p.Value == actorRef))

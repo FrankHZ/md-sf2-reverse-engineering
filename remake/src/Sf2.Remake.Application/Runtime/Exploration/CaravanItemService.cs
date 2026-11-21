@@ -6,7 +6,7 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public enum CaravanItemAction { Use, Give, Equip, Drop }
 public sealed record ChooseCaravanItem(WaitToken Wait, CaravanItemAction Action) : CaravanCommand(Wait);
-public sealed record SelectCaravanItemSlot(WaitToken Wait, int Slot, ushort? ExpectedWord) : CaravanCommand(Wait);
+public sealed record SelectCaravanItemSlot(WaitToken Wait, int Slot, ushort? ExpectedWord, int? ExpectedSourceSlot = null) : CaravanCommand(Wait);
 
 public static class CaravanItemQuery
 {
@@ -42,7 +42,7 @@ internal static class CaravanItemService
                     next = next with { ItemSlot = selected.Slot, ItemWord = selected.ExpectedWord };
                     if (wait.ItemAction == CaravanItemAction.Equip)
                     {
-                        Apply(new FieldEquip(donor.Carried.Actor, selected.Slot, selected.ExpectedWord), "equipped");
+                        Apply(new FieldEquip(donor.Carried.Actor, selected.Slot, selected.ExpectedWord, selected.ExpectedSourceSlot), "equipped");
                         break;
                     }
                     if (selected.ExpectedWord is not { } expected)

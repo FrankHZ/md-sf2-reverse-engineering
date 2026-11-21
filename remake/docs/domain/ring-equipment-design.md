@@ -5,9 +5,9 @@ covers Power, Protect, Quick and Running Ring through first Pacalon and Battle26
 wear a ring and a weapon together, inspect the resulting stats, act with them, and move or remove
 either item through the supported menus. The same party and equipment must survive Continue.
 Movement selection, class rebind and save reconstruction share the same loadout, so a failure
-in any one of them can leave an otherwise legal party unable to act or resume. This is the
-implementation agreement proposed for review. The [capability trace](../capability-status.md#connected-battle-equipment-agreement)
-records current support.
+in any one of them can leave an otherwise legal party unable to act or resume. The
+[capability trace](../capability-status.md#connected-battle-equipment-agreement) records current
+support and [ordinary input acceptance](#implemented-behavior-and-ordinary-input).
 
 ## Original rules and evidence
 
@@ -145,9 +145,7 @@ The existing words and last-refresh operand suffice for Continue.
 
 ## Implementation order and ownership
 
-After independent design acceptance and [#1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942)
-release the shared paths, declare exact code ownership again from accepted main. Implement as one
-four-ring slice with the following dependency order.
+The four rings use three existing boundaries for content, rules and callers.
 
 1. Bind the four trusted item rows and masks in existing Content admission. Share the binding
    through `PrivateFieldPreparation` and actor loadout construction, including promotion and
@@ -187,14 +185,12 @@ for Chirrup Sandals and owns its pickup, footstep sound and special Depot descri
 ## Acceptance through Battle26
 
 - **Power. Confirmed** remake receipt and carry. Battle10 Witch 129, once bit 4, awarded Jaha
-  item 19. Start from the unchanged ring-bearing `issue1872` correction seed with Jaha's
-  `[161,19,127,127]` pack. His WARR class admits Short Axe (33) and Power Ring together.
-  Use Field and the Map26 Caravan service. Check both words and ATT +5, then complete Jaha's
-  ordinary axe attack in the next admitted encounter from a ring-bearing continuation.
-  The Map26 service route already continues to Battle23. An earlier ring-bearing Battle10
-  return can also witness automatic Peter at the next battle after a legal transfer in Field.
+  item 19. The registered first-Pacalon castle seed carries the same legitimate item on Jaha.
+  His WARR class admits Short Axe (33) and Power Ring together. Check both words and ATT +5 in
+  Field and the overworld Caravan, then use Relief to deploy him in Battle26. Peter's earlier
+  automatic turn is covered with a controlled equipped word in the engine.
   [Battle10 receipt](../application/new-granseal-east-shrine.md) ·
-  [Correction seed and commands](../application/caravan-services-design.md#current-item-implementation) ·
+  [Pacalon inputs](../application/pacalon-first-visit.md#continue-after-worktree-cleanup) ·
   [Axe row](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm#L353-L361)
 - **Protect. Confirmed** remake receipt. In the English Battle21 fight Gerhalt defeated Dark
   Madam 129 for item 20 under once bit 8, before defeat. From the registered `issue1854`
@@ -254,6 +250,49 @@ actual CI. Keep any completed shutdown result with its functional outcome and le
 [Inputs and observation budget](../application/church-promotion-design.md#inputs-commands-and-observation-budget) ·
 [Save modes](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
 
-This design slice is checked by comparing the cited pinned rows and callers, resolving
-document links and anchors, reviewing the two-path diff and inspecting the clean-head planner
-and PR scope checks. Implementation behavior will be accepted with the later code slice.
+## Implemented behavior and ordinary input
+
+The engine binds the four static effects from admitted item definitions. `RingEquipmentTests`
+covers mixed slot order, Power Ring damage estimation, Protect Ring with retained BOOST operands,
+Quick Ring and the next queue, and Running Ring at a confirmed stop after removal.
+The actual promotion test preserves a worn ring and weapon across class rebind and growth.
+The automatic-ally test accepts a worn Power Ring while choosing an ordinary physical action.
+
+- **Power Ring in Field and Caravan.** Continue the English `castle-en.json` from the registered
+  first-Pacalon handoff with the [current world and display package](../application/pacalon-first-visit.md#continue-after-worktree-cleanup).
+  Jaha starts with `[161,19,13,0]` and ATT 34. Open the member equipment menu, select Jaha's
+  Power Ring, cancel the confirmation, then reopen and confirm. The axe word is still 161 and
+  the ring word is 147. ATT is 39. A separate run removed the ring, re-equipped it, then gave
+  the worn ring to Kiwi. Jaha kept the axe and ATT 34. Kiwi received bare word 19.
+  Chinese equipment input displayed the ring name and projected stats and saved successfully.
+- **Power Ring in Battle26.** Continue from the English equipped field save and leave the
+  castle and town for Map71. Align with the visible Caravan and open its service. Deposit Jaha's
+  worn ring, Look at the stored identity and retrieve it to him. The value is 2,250 gold.
+  Retrieval produces `[161,13,0,19]`. Caravan Item Equip sets the last word to 147. Use Join
+  and Relief to deploy Jaha in the place of the fallen Kazin, then take the
+  [Ketto road to Battle26](../application/pacalon-first-visit.md#reproduction). Jaha's
+  axe attack targeted a Lesser Demon at range 1 and was dodged. His ATT was 39. His axe
+  was visible in the battle scene with the ring still worn. Save at settled Movement. A fresh Continue and immediate
+  re-save preserved the complete battle data. Ordinary EGRESS returned to usable Map36 input.
+- **Protect Ring in Battle21.** Continue the English `retry-en.json` from the registered
+  [Devil's Tail handoff](../application/battle21-devils-tail.md#held-items-and-battle-outcomes)
+  with the current package. Approach from the east, clear the enemies blocking the approach and
+  prioritize Dark Madam in slot 129 before the leader. In the observed path Peter defeated her
+  in round 10 and received bare word 20 under once bit 8. Save at the next settled Movement.
+  On Peter's next turn, confirm the stop, open Equip, select the ring and confirm. He remains
+  unarmed at range 1, DEF rises from 35 to 40 and his pack reads `[62,148,127,127]`. Return to
+  Movement and save. The worn ring and full battle data survived a fresh Continue and re-save.
+
+The field cold re-save retained all ally records, custody, flags, active party and gold. In the
+delayed re-save, wandering entity coordinates and the main seed advanced before the capture.
+The direct battle comparisons matched the whole decoded data. Quick and Running use
+controlled engine witnesses. Ordinary pickup and item-specific Continue remain **Unknown**
+for those two rings.
+
+For review, reuse the selected world, scene and language catalogs in the Pacalon recipe.
+Start from read-only registered slots, copy only the selected slot into a fresh external save
+namespace, and use ordinary title Continue, input and Save. Use the existing running state,
+input, projection and error readers. The Power and Protect post-equip battle slots are about
+41 and 37 KiB respectively. The stable world was reused. A Protect rehearsal ended with the
+known native finalizer failure after a receipt and an observer assertion. The corrected equip,
+save and cold re-save completed with exit 0. [Paused shutdown issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)

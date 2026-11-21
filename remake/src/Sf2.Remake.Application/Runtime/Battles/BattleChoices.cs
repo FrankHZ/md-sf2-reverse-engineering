@@ -149,8 +149,8 @@ internal static class BattleChoices
                 visual.IdleTicks <= 0 || visual.Frames.Count == 0 ||
                 !visual.Frames.All(content.Rasters.ContainsKey) || !visual.Sequences.ContainsKey("idle") ||
                 cast && !visual.Sequences.ContainsKey("cast")) return false;
-            ushort? equipped = member.SourceLoadout?.Items.FirstOrDefault(word => (word & 128) != 0 && (word & 127) != 127);
-            return equipped is null or 0 || visual.Item == (equipped.Value & 127);
+            byte? weapon = BattleEquipment.EquippedWeaponItem(member);
+            return weapon is null || visual.Item == weapon;
         }
         if (content.Encounter != battle.Definition.Encounter || !content.Rasters.ContainsKey(content.Background) ||
             !content.Rasters.ContainsKey(content.Ground) || !Visual(actor, true) || !Visual(target, false))
@@ -173,7 +173,7 @@ internal static class BattleChoices
         if (!current.HasBattleControl || selection is null)
             return new(current.SessionId, current.Revision, null, null, null, [],
                 new(SessionFailureKind.IllegalCommand, "not-player-control", "phase", "not player control"));
-        var battle = current.Battle;
+        var battle = selection.AtConfirmedStop(current.Battle);
         List<BattleActionChoice> options = [];
         foreach (var rule in rules.Actions)
         {

@@ -79,6 +79,22 @@ internal static class DisplayNames
     internal static string Action(BattleActionChoice choice, SessionSnapshot current) => choice.Empty ? GameText.Get("battle.empty") :
         choice.Action.Spell is { } spell ? Spell(spell, choice.Label, level: true) :
         choice.Action.ItemSlot is { } slot ? BattleItem(current, slot, choice.Label) : GameText.BattleActionLabel(choice);
-    internal static string Equipment(BattleEquipmentChoice choice, SessionSnapshot current) => choice.Slot == 4
-        ? GameText.Get("prepare.unarmed") : BattleItem(current, choice.Slot, choice.Label);
+    internal static string Equipment(BattleEquipmentChoice choice) => choice.Slot switch
+    {
+        BattleEquipment.UnarmedChoice => GameText.Get("prepare.unarmed"),
+        BattleEquipment.RemoveRingChoice => GameText.Get("prepare.remove-ring"),
+        _ => ItemWord(choice.ExpectedWord!.Value, choice.Label),
+    };
+
+    internal static string RingStats(BattleEquipmentChoice choice) =>
+        GameText.Get("prepare.ring-stats", choice.Attack, choice.Defense, choice.Agility, choice.Move);
+
+    internal static string EquipmentRow(BattleEquipmentChoice choice)
+    {
+        string name = Equipment(choice);
+        string equipped = choice.Equipped ? " · " + GameText.Get("party.equipped") : "";
+        return choice.Category == BattleEquipmentCategory.Ring
+            ? name + equipped + "    " + RingStats(choice)
+            : GameText.Get("prepare.equipment-row", name, equipped, choice.Attack);
+    }
 }

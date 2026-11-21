@@ -495,15 +495,17 @@ bonuses and presentation are example inputs, not newly confirmed original defini
 explicitly admit the existing free weapon transaction in connected Battles01–07. Trusted selected
 ordinary `WEAPON` records with ATT-only effects and ranges1–1,1–2 or2–2 supply class masks and
 contributions. Only supported unpromoted, physical, player allies with growth/loadout bindings opt in.
-Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Rings, curses, broken
-weapons, other effects and unsupported actor states cannot become legal equipment changes; no eligible
-weapon means no interaction. Connected Give and Drop have their separate agreements below.
+Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Power, Protect, Quick
+and Running Ring use a separate equipped category in the same four words on supported campaign
+allies. Current class, refresh and custody rules apply across Field, Caravan and battle. Curse,
+breakage and item Use remain separate capabilities. [Ring acceptance and limits](domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input)
+Connected Give and Drop have their separate agreements below.
 
 The existing command-menu equipment hint/default E (or installed binding) opens the localized slot
 preview. Cancel preserves authority; Confirm returns to the same ActionChoice/preview with no turn,
-HP/MP, gold, custody or RNG cost. Current slots drive later ATT/range and attacks. Committed words
-and current base stats pass through v2 battle record/codec restore, ordinary attack/victory and
-field return/save; no second inventory, save format or compatibility revision is introduced.
+HP/MP, gold, custody or RNG cost. Current slots drive ATT/DEF/AGI/MOV, and the weapon slot drives
+physical range. Committed equipment words and existing base stats pass through field and battle
+Continue in the same formats, including older bare-word records.
 The old guard began as the numerical opening restore binding in #1428, then field preparation reused
 it in #1429/#1533. Its restricted caller remains intact; product binding now opts in explicitly.
 

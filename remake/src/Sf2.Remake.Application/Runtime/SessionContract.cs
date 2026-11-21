@@ -76,6 +76,19 @@ public sealed class BattleSelection
     public ushort? ReturnWord { get; }
     public SpellRef? Spell { get; }
     public ActorRef? Target { get; }
+    // Confirm checks this preview against the movement grid. Gear can change at the
+    // action menu without moving the actor back to the turn origin.
+    internal bool StopExceedsCurrentMove(BattleActorState actor) =>
+        Stage != BattleSelectionStage.Movement && Preview.Cost > actor.Move * 2;
+
+    internal EngineBattleState AtConfirmedStop(EngineBattleState battle)
+    {
+        var actor = battle.GetActor(Actor);
+        if (!StopExceedsCurrentMove(actor)) return battle;
+        return battle.With(actors: battle.Actors.Select(member => member.Actor == Actor
+            ? member.With(position: Preview.Destination) : member));
+    }
+
     public BattleActionRef? ActionReference => Action switch
     {
         SessionAction.SupportSpell when Spell is { } support => new(BattleActionKind.SupportSpell, support),
