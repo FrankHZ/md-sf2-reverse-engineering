@@ -129,10 +129,12 @@ battle poison-cure reaction, ineffective draw, item consumption and EXP rules.
 
 Use the #1927 Pacalon handoff's matching castle or departure slot as a read-only seed. Confirm F174
 and item 5 in the live loadout after title Continue. Keep an external sample save namespace per
-journey. For current content, mount the registered [#1966 prepared world and scenes](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction)
-and the current Debug adapter. The shared older routes lack a required SLOW icon. One preparation
-from the existing package added four rasters, producing a 101,835,469-byte world and a 635,539-byte
-main scene file. The field slot copies are at most 50,178 bytes each.
+journey. Mount the current Debug adapter and the stable runtime at
+`handoffs/issue1966/content/package` under the registered shared input root. Use the display
+catalogs at `handoffs/issue1941/content/catalog-final`. The runtime includes the patched world,
+its relative encounter and audio inputs, and the SLOW and BOOST identity icons. The [#1966 preparation
+recipe](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) can rebuild
+it from the registered base if the published package is unavailable.
 
 | Ordinary caller | Reproduce from legitimate custody |
 | --- | --- |
@@ -164,6 +166,66 @@ combined and unrelated statuses. They check no-effect payment, other resources a
 rejection. `PoisonCureTests` observes the battle status write and later stun-turn processing separately.
 These tests and the ordinary remake observations leave original runtime timing and audiovisual
 behavior **Unknown**.
+
+### Continue after worktree cleanup
+
+With the producing `local/` temporarily unavailable, restore only the registered worktree
+configuration. Use the external English Powder-used slot at
+`handoffs/issue1942/player-saves/en-field-final/powder-review/sf2-opening/slot1.json` as the read-only
+seed. Give its copy a fresh external player namespace. Use a fresh ignored receipt directory
+for logs, temporary files and the Godot profile. [Fresh worktree setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup)
+
+The Pacalon observer's `continue` mode opens the title's slot picker, re-saves from settled input,
+then sends a movement input. Run the following from the owning checkout. Set absolute paths for
+a fresh `$sampleRoot` outside all worktrees and a fresh ignored `$receipt` directory.
+
+```powershell
+. ./local/private-inputs.ps1
+$handoffs = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs'
+$pacalon = Join-Path $handoffs 'issue1927/pacalon'
+$package = Join-Path $handoffs 'issue1966/content/package'
+$catalog = Join-Path $handoffs 'issue1941/content/catalog-final'
+$config = Get-Content -LiteralPath "$pacalon/player-config.json" -Raw | ConvertFrom-Json -AsHashtable
+foreach ($key in $config.inputs.Keys) {
+    $value = $config.inputs[$key]
+    if (![IO.Path]::IsPathFullyQualified($value)) { $value = Join-Path $pacalon $value }
+    [Environment]::SetEnvironmentVariable($key, $value, 'Process')
+}
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $catalog 'world.zh-CN.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $catalog 'entry.zh-CN.json'
+Get-ChildItem -LiteralPath "$handoffs/issue1955/drivers" -Directory |
+    Copy-Item -Destination ./local -Recurse
+$env:SF2_DESKTOP_MODE = 'continue'
+$env:SF2_REVIEW_LANGUAGE = 'en'
+$env:SF2_ROUTE_DIR = $receipt
+$env:SF2_SAVE_ROOT = $sampleRoot
+$env:SF2_SAVE_NAMESPACE = 'powder-review'
+$env:SF2_REVIEW_SLOT_PATH = Join-Path $sampleRoot 'powder-review/sf2-opening/slot1.json'
+$env:APPDATA = Join-Path $receipt 'appdata'
+$env:LOCALAPPDATA = Join-Path $receipt 'localappdata'
+$env:TEMP = Join-Path $receipt 'temp'
+$env:TMP = $env:TEMP
+foreach ($dir in @($receipt, $env:APPDATA, $env:LOCALAPPDATA, $env:TEMP,
+        [IO.Path]::GetDirectoryName($env:SF2_REVIEW_SLOT_PATH))) {
+    [void][IO.Directory]::CreateDirectory($dir)
+}
+$seed = Join-Path $handoffs 'issue1942/player-saves/en-field-final/powder-review/sf2-opening/slot1.json'
+[IO.File]::Copy($seed, $env:SF2_REVIEW_SLOT_PATH, $false)
+$game = (Resolve-Path -LiteralPath './remake/game').Path
+Push-Location -LiteralPath $game
+try {
+    & $env:GODOT_BIN --headless --fixed-fps 60 --audio-driver Dummy --resolution 1920x1080 `
+        --path $game --script "$pacalon/Pacalon.gd" --log-file "$receipt/native.log" `
+        -- --input-settings "$pacalon/settings-en.json"
+} finally { Pop-Location }
+```
+
+The clean-scratch run reached settled Map36 input and moved after dismissing the save result.
+Its `immediate-resave-slot.json` had identical complete decoded `data`, including F174 and
+Kazin's `[213,118,123,127]` pack. The record sequence advanced from 6 to 7. Godot exited 0 and
+logged an ObjectDB warning during shutdown.
 
 ## Reproduction
 
