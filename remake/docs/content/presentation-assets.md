@@ -209,6 +209,22 @@ producer started. The [first consumer inventory](asset-inventory.md#first-consum
 missing PLDN, cue and icon selections. The library stages present, already prepared assets.
 Those missing media entries require supplied, reviewed inputs before they can be admitted.
 
+### Sleep display name
+
+Select the prepared catalog alongside the assembled world for the zh-CN name of spell 9:
+
+```powershell
+$env:SF2_DISPLAY_CATALOG = Join-Path $root 'catalogs-v1/world.zh-CN.json'
+```
+
+The private publication adds `{"namespace":"name.spell","index":9,"text":"催眠"}` to the
+registered #1941 world display catalog. To reproduce it, read
+`handoffs/issue1941/content/catalog-final/world.zh-CN.json` beneath the shared input root, add
+that object to `names`, and serialize to a fresh UTF-8 file. Keep the existing source identity,
+texts and name rows. The production display reader admitted 189 names and the same 2,221 messages
+against the assembled world. Resolving spell 9 returned 催眠 in zh-CN with no fallback. This
+observation covers label selection. The icon pair and ordinary spell presentation remain open.
+
 ## Battle weapon operands
 
 `sf2tool.remake_battle_scene_content` preserves the selected animation's raw weapon frame/layer
