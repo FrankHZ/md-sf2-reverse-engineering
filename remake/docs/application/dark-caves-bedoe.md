@@ -25,35 +25,38 @@ On a separate continuation, rescuing the fairy set F711 before the Oddler event.
 
 ## Bedoe hatchling observation
 
-**Confirmed** in the remake with the registered #1966 runtime package. Ordinary English Continue
-from the #1797 `before-raft.json` slot starts at Map72 (43,47) with F722 and F799 set and F13,
-F723 and F724 clear. The party can backtrack through Polca and Mount Volcano and enter Bedoe
-at (12,30). Both hatchling-scene actors, lookups 152 and 153, are visible on the first visit and
-after leaving for the mountain and returning with F724 still clear.
+**Confirmed** in the remake. The registered #1797 `before-raft.json` slot begins at
+Map72 (43,47) with F722/F799 set and F13/F723/F724 clear. Ordinary English Continue can
+backtrack through Polca and Mount Volcano to Bedoe at (12,30). The first visit and an
+unrescued return both show actors 152 and 153.
 
-- **Flight.** Talk to the hatchling from (15,6) facing Right. The scene delivers texts 1680–1685,
-  restores field control and sets F723. Talk again from the same tile for just text 1685.
+- **Flight.** The initial observation used #1966. Talk from (15,6) facing Right delivers
+  texts 1680–1685, restores field control and sets F723. Repeat Talk delivers text 1685.
   F724 stays clear through both interactions.
-- **Rescue.** On a separate continuation, approach (6,22) after bypassing the trigger on the
-  first visit. Move Down onto the $1400 marker at (6,23) with F13, F723 and F724 clear.
-  The zone enters `cs-5779c`. The program moves Bowie to (5,22) and the hatchling to (6,10).
-  The sound presentation wait at compiled instruction 12 requests `SFX_JUMP` and stops with
-  `presentation-unavailable` / `audio-content-unavailable`. No rescue dialogue is delivered,
-  field control stays suspended and F724 stays clear.
+- **Rescue.** With the mounted priority package, move Down from (6,22) onto the $1400 marker
+  at (6,23). With F13/F723/F724 clear, the caller enters `cs-5779c`. The adapter starts
+  `SFX_JUMP_TIMER_D2` three times at the castle music's Timer B 210. Texts 1686–1689 follow.
+  F724 is clear at the last dialogue and set at ordinary input return, with Bowie at (5,22).
+  F723 stays clear. Actor 152 is hidden and the hatchling is visible at (16,6).
+- **Repeat and fresh entry.** Approach the same marker from (6,22) again. The step settles
+  at (6,23) without rescue dialogue. Leave for Mount Volcano and re-enter Bedoe. F724 remains
+  set, actor 152 is hidden and the hatchling is visible.
+- **Save and Continue.** Backtrack to the established raft-landing checkpoint at Map72
+  (43,47) and use ordinary Save. A new host continues that slot with F724 set and accepts
+  one Right movement to (44,47).
 
-The active package has no asset for `SFX_JUMP` (command 87). The adapter's
-[sound-slot selector](../../game/src/Audio/SessionAudio.cs) also has no classification for command
-87. The [source contract](../../../docs/design/synthesis/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)
-and the compiled caller distinguish F13 suppression, F724 repeat suppression and the fresh F724
-initializer's removal of actor 152. Ordinary rescue completion, post-rescue reentry and F724
-persistence through the existing raft-landing Save and cold Continue remain **Unknown**.
+The previous #1966 rescue run stopped at compiled instruction 12 with
+`presentation-unavailable` / `audio-content-unavailable`. The registered priority package
+supplies the reviewed command 87 recording. The shared audio adapter resolves the source
+name `SFX_JUMP` through the existing command/Timer B selector and groups the two active
+PSG slots, tone 3 and noise. Their source is the pinned driver's type-1 `sfx_17` row.
+Ordinary playback observations cover the mounted D2 recording and scene return.
+[Private audio package](../content/presentation-assets.md#bedoe-audio-package) · [Asset preparation #2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001)
+
+The F13/F724 guards, caller write and fresh population follow the
+[source contract](../../../docs/design/synthesis/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md).
 The [later Skreech offer](../../../docs/research/chapters/northern-travel-mitula/mitula-return-and-skreech-recruitment.md)
 is a separate F724 consumer.
-
-The registered #1738, #1939, #1941 and #1966 package audio tables and command-specific
-candidate folders contain no command 87 cue. The local asset repository's tracked audio paths
-and manifests also have no matching entry. The open rescue issue tracks consumer acceptance,
-and the private asset preparation issue tracks the missing cue. [Rescue #1950](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1950) · [Private audio prerequisite #2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001)
 
 **Confirmed in a controlled engine start.** Read the same package with `OpeningNewGameReader`
 and start Map10 at (6,22), facing Down, with the reader's starting party and F722/F799 supplied.
@@ -66,23 +69,25 @@ without a rescue call. These starts exercise the flag consumers with supplied st
 ### Reproduce the optional routes
 
 Load the [registered private configuration](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup).
-Use the existing Debug host and the [stable package and catalog selection](pacalon-first-visit.md#continue-after-worktree-cleanup)
-with a disposable external player namespace. Copy the registered
+Use the existing Debug host and the [registered Bedoe audio package](../content/presentation-assets.md#bedoe-audio-package)
+with a disposable external player namespace. Use the existing English input settings and
+[catalog selection](pacalon-first-visit.md#continue-after-worktree-cleanup). Copy the registered
 `handoffs/issue1797/before-raft.json` into its slot 1. Continue normally and step north into
 Polca. Leave Polca east at (31,6) and take the Mount Volcano entrance at (28,6).
 
-For the cleanup check, load the checkout configuration first and make the whole existing
-`local/` temporarily unavailable. Launch the same Debug build from `remake/game` with the
-registered package, catalog and seed copy, using an external save namespace and temporary
+For the original #1966 seed cleanup check, load the checkout configuration first and make the
+whole existing `local/` temporarily unavailable. Launch the existing Debug build from
+`remake/game` with the #1966 package, catalog and seed copy, using an external save namespace and temporary
 profile. Continue to Map72 (43,47), press Right once and inspect settled field input at (44,47).
 This completed with F64/F722/F799 carried, F13/F723/F724 clear, and the seed copy unchanged.
 The build uses the existing assembly under `remake/game/.godot/`; the run created no replacement
 `local/`. Restore the original scratch after the process exits.
 
-For rescue, walk one step north from the Bedoe entrance, leave south at (12,31), and return
-from the mountain. From (12,30), walk eight tiles north and six west to (6,22). Inspect the
-working map, flags and actors, then press Down once. Read the scene wait, cue and error from
-the running host before attempting any further input.
+For rescue, walk eight tiles north and six west from the Bedoe entrance at (12,30) to (6,22).
+Press Down once. Advance the four dialogue panels and inspect the audio starts, scene return
+and flags. From the return position, press Right then Down to repeat the marker. Leave south
+at (12,31) and re-enter from the mountain to inspect the fresh population. Backtrack through
+Polca to the raft-landing checkpoint for Save and cold Continue.
 
 For flight, use a fresh Continue from the same seed. In Bedoe use the internal transitions at
 (12,20), (45,12), (39,24), (2,46) and (39,55) in order. Approach the fourth transition

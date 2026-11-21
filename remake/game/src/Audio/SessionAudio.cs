@@ -242,12 +242,27 @@ internal sealed partial class SessionAudio : IDisposable
         catch (InvalidOperationException error) { Error = error.Message; }
     }
 
+    private int ResolveSourceEffect(string resource)
+    {
+        // Mounted SFX recordings carry a timer suffix while source programs can use the command name.
+        var commands = _assets.Where(pair => pair.Value.Command >= 65 &&
+                pair.Key == $"{resource}_TIMER_{pair.Value.TimerB:X2}")
+            .Select(pair => pair.Value.Command).Distinct().Take(2).ToArray();
+        return commands.Length switch
+        {
+            1 => commands[0],
+            0 => throw new InvalidOperationException("audio-content-unavailable"),
+            _ => throw new InvalidOperationException("audio-command-ambiguous"),
+        };
+    }
+
     internal void Play(string resource, bool remember = true)
     {
         if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
-        if (!_assets.TryGetValue(resource, out var audio)) throw new InvalidOperationException("audio-content-unavailable");
-        bool music = audio.Command < 65;
-        if (!music) { resource = Select(audio.Command); audio = _assets[resource]; }
+        int command = _assets.TryGetValue(resource, out var exact) ? exact.Command : ResolveSourceEffect(resource);
+        bool music = command < 65;
+        if (!music) resource = Select(command);
+        var audio = _assets[resource];
         if (_entrySuppressed) { SuppressEntryCue(resource, remember); return; }
         // The source suppresses identical music requests even when the finite track already ended.
         if (music && remember && MusicCue == resource) return;
@@ -431,6 +446,7 @@ internal sealed partial class SessionAudio : IDisposable
         66 or 67 or 69 or 70 or 72 or 73 or 74 or 76 or 79 or 100 or 102 => Slots.PsgTone3,
         77 or 112 => Slots.Ym4,
         81 or 82 or 83 or 84 or 116 or 117 or 118 => Slots.Ym6,
+        87 => Slots.PsgTone3 | Slots.PsgNoise,
         89 or 110 => Slots.PsgNoise,
         92 or 93 or 96 or 113 => Slots.Ym4 | Slots.Ym5,
         _ => throw new InvalidOperationException("sfx-slots-unavailable"),
