@@ -16,18 +16,26 @@ public sealed class FieldServiceTests
     private static GameSession Session(uint? gold = 100, ushort hp = 0, ushort status = 0,
         ushort secondHp = 100, ushort secondStatus = 0, byte level = 2, bool promoted = false, ushort maxHp = 250,
         ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false, bool power = false,
-        bool knight = false, bool wizard = false)
+        BattleClassRule sourceRule = BattleClassRule.UnpromotedSwordsman, byte warriorAxe = 33)
     {
         var original = FieldInventoryTests.Session().Current.Exploration!.Party;
         var source = FieldInventoryTests.Session().Definition.Encounters.Values.Single();
-        var sourceRule = knight ? BattleClassRule.UnpromotedKnight : wizard ? BattleClassRule.UnpromotedMage :
-            BattleClassRule.UnpromotedSwordsman;
-        byte[] book = knight ? [63, 63, 63, 63] : wizard
-            ? currentLevel >= 29 ? [139, 71, 6, 72] : [75, 76, 63, 63]
-            : currentLevel >= 22 ? [10, 13, 63, 63] : [10, 63, 63, 63];
-        byte baseClass = (byte)(knight ? 1 : wizard ? 3 : 0);
-        byte destination = (byte)(knight ? 13 : wizard ? 17 : 12);
-        byte weapon = wizard ? (byte)85 : (byte)50;
+        (byte baseClass, byte destination, string baseCode, string promotedCode, string title, byte move, string mover,
+            byte weapon, ushort? promotionItem) profile = sourceRule switch
+        {
+            BattleClassRule.UnpromotedKnight => (1, 13, "KNTE", "PLDN", "Paladin", 7, "CENTAUR", 50, 118),
+            BattleClassRule.UnpromotedWarrior => (2, 15, "WARR", "GLDT", "Gladiator", 5, "REGULAR", warriorAxe, 119),
+            BattleClassRule.UnpromotedMage => (3, 17, "MAGE", "WIZ", "Wizard", 5, "MAGE", 85, 121),
+            BattleClassRule.UnpromotedBirdman => (6, 23, "BDMN", "BDBT", "BirdBattler", 6, "FLYING", 58, null),
+            _ => (0, 12, "SDMN", "HERO", "Hero", 6, "REGULAR", 50, null),
+        };
+        var (baseClass, destination, baseCode, promotedCode, title, move, mover, weapon, promotionItem) = profile;
+        byte[] book = sourceRule switch
+        {
+            BattleClassRule.UnpromotedMage => currentLevel >= 29 ? [139, 71, 6, 72] : [75, 76, 63, 63],
+            BattleClassRule.UnpromotedSwordsman => currentLevel >= 22 ? [10, 13, 63, 63] : [10, 63, 63, 63],
+            _ => [63, 63, 63, 63],
+        };
         string SpellName(int id) => id switch
         {
             6 => "dispel", 7 => "muddle", 8 => "desoul", 10 => "egress", 11 => "blaze", 12 => "freeze", _ => "bolt",
@@ -35,31 +43,31 @@ public sealed class FieldServiceTests
         var spells = book.Where(spell => spell != 63)
             .SelectMany(spell => Enumerable.Range(1, 1 + (spell >> 6))
                 .Select(rank => new SpellRef(SpellName(spell & 63), (byte)rank))).ToArray();
+        byte attackBonus = weapon switch { 36 => 17, 58 => 8, _ => 5 };
         var loadout = new BattleSourceLoadout([(ushort)(weapon | (armed ? 128 : 0)),
-            power ? (ushort)147 : wizard ? (ushort)24 : (ushort)127, 127, 127], book);
+            power ? (ushort)147 : sourceRule == BattleClassRule.UnpromotedMage ? (ushort)24 : (ushort)127, 127, 127], book);
+        var initialLoadout = weapon == 50 ? null : new BattleSourceLoadout([weapon, 127, 127, 127], book);
         var deployments = source.Deployments.Select(row => row.Actor != First ? row : row with
         {
             Definition = new(row.Actor, promotion ? sourceRule : row.Definition.ClassRule, level, maxHp, row.Definition.MaxMp,
                 row.Definition.Attack, row.Definition.Defense, row.Definition.Agility, false, row.Definition.Move,
                 row.Definition.Spells, row.Definition.Physical! with { Promoted = promoted },
-                sourceLoadout: wizard ? loadout : row.Definition.SourceLoadout),
+                sourceLoadout: initialLoadout ?? row.Definition.SourceLoadout),
         });
         if (promotion)
         {
             var growth = new BattleGrowthDefinition(baseClass, 0, Enumerable.Repeat(new StatGrowth(20, 20, []), 5).ToArray(),
-                knight ? [] : [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
-            var equipment = new BattleEquipmentDefinition(20, [new(weapon, "Weapon", (1u << baseClass) | (1u << destination), 5, 1, 1)],
+                [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
+            var equipment = new BattleEquipmentDefinition(20, [new(weapon, "Weapon", (1u << baseClass) | (1u << destination), attackBonus, 1, 1)],
                 rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5),
                     new(24, "Black Ring", 1u << 17, RingStat.Attack, 0)]);
-            if (knight || wizard)
+            if (sourceRule != BattleClassRule.UnpromotedSwordsman)
             {
                 var fixture = source.WithDeployments(deployments);
-                string baseCode = knight ? "KNTE" : "MAGE", destinationCode = knight ? "PLDN" : "WIZ";
                 var classDefinitions = new PrivateBattleDefinitions(null!, [],
-                    [new(destination, destinationCode, knight ? "Paladin" : "Wizard", (byte)(knight ? 7 : 5), "NONE",
-                        knight ? "CENTAUR" : "MAGE", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
-                    [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + destinationCode, [baseCode, destinationCode], 1, 1, 0,
-                        "WEAPON", "NOTHING", "NOTHING", 0, [new("INCREASE_ATT", 5)])], [], [], []);
+                    [new(destination, promotedCode, title, move, "NONE", mover, "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
+                    [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + promotedCode, [baseCode, promotedCode], 1, 1, 0,
+                        "WEAPON", "NOTHING", "NOTHING", 0, [new("INCREASE_ATT", attackBonus)])], [], [], []);
                 var stats = Enumerable.Repeat(new { start = 20, projected = 20, curve = System.Array.Empty<int>() }, 5);
                 var rows = JsonSerializer.SerializeToElement(new[] { baseClass, destination }.Select(classId => new
                 {
@@ -103,8 +111,8 @@ public sealed class FieldServiceTests
         if (promotion)
             party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
                 Progress = a.Progress! with { ClassId = baseClass, SourceLoadout = loadout, Spells = spells, BaseMove = 8 } }
-                : (knight || wizard) && a.Actor == Second ? a with
-                    { SourceLoadout = new([wizard ? (ushort)121 : (ushort)118, 127, 127, 127], [63, 63, 63, 63]) } : a),
+                : a.Actor == Second && promotionItem is { } item ? a with
+                    { SourceLoadout = new([item, 127, 127, 127], [63, 63, 63, 63]) } : a),
                 party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, [Second], party.ItemCustody);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, [], party))).Session;
@@ -181,7 +189,8 @@ public sealed class FieldServiceTests
     [InlineData(false, true)]
     public void HeldSpecialItemRequiresItsOwnAnswerBeforeOrdinaryPromotion(bool acceptSpecial, bool acceptRegular)
     {
-        var session = Session(hp: 0, currentLevel: 20, promotion: true, armed: true, power: true, knight: true);
+        var session = Session(hp: 0, currentLevel: 20, promotion: true, armed: true, power: true,
+            sourceRule: BattleClassRule.UnpromotedKnight);
         var before = session.Current.Exploration!.Party;
         var beforeFlags = session.Current.Story.Flags.ToArray();
 
@@ -237,7 +246,8 @@ public sealed class FieldServiceTests
     [InlineData(29, new byte[] { 139, 71, 6, 72 })]
     public void WizardPromotionRetainsTheMembersBookAndRodAfterDecliningASeparateHoldersBook(byte level, byte[] book)
     {
-        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: true, wizard: true);
+        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: true,
+            sourceRule: BattleClassRule.UnpromotedMage);
         var prior = Member(session, First);
         var holder = Member(session, Second);
         var mage = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!.Definition;
@@ -271,6 +281,58 @@ public sealed class FieldServiceTests
         Assert.Equal(2, grown.Level);
         Assert.Equal(book, grown.SourceLoadout!.Spells);
         Assert.Equal(actor.Spells, grown.Spells);
+    }
+
+    [Theory]
+    [InlineData(BattleClassRule.UnpromotedWarrior, 21, 15, BattleClassRule.Gladiator, BattleMover.Regular, 5, 33, 3, 15, true)]
+    [InlineData(BattleClassRule.UnpromotedWarrior, 24, 15, BattleClassRule.Gladiator, BattleMover.Regular, 5, 36, 3, 15, true)]
+    [InlineData(BattleClassRule.UnpromotedBirdman, 23, 23, BattleClassRule.BirdBattler, BattleMover.Flying, 6, 58, 2, 0, false)]
+    public void RegularMeleePromotionKeepsWeaponAndEarnedStats(BattleClassRule source, byte level,
+        byte classId, BattleClassRule destination, BattleMover mover, byte move, byte weapon,
+        int forestCost, int forestProtection, bool warrior)
+    {
+        var session = Session(hp: warrior ? (ushort)27 : (ushort)0, currentLevel: level, promotion: true,
+            armed: true, power: warrior, sourceRule: source, warriorAxe: weapon);
+        var prior = Member(session, First);
+        var other = Member(session, Second);
+        Choose(session, ChurchAction.Promote);
+        var offer = Wait(session).Candidates!.Single(candidate => candidate.Member == First);
+        Assert.Equal(warrior ? new HeldPromotionItem(Second, 0, 119) : null, offer.SpecialItem);
+        Accept(session, new SelectPromotion(Wait(session).Token, offer));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        if (warrior)
+        {
+            Assert.Equal(ChurchPhase.Special, Wait(session).Phase);
+            Accept(session, new AnswerPromotion(Wait(session).Token, offer, false));
+        }
+        Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+
+        var member = Member(session, First);
+        Assert.Same(other, Member(session, Second));
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = classId, Level = 1, BaseMove = null } }, member);
+        var projection = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First);
+        var deployment = projection.Deployment!;
+        var physical = deployment.Definition;
+        Assert.Equal(destination, physical.ClassRule);
+        Assert.Equal(move, physical.Move);
+        Assert.Equal(mover, physical.Mover);
+        var forest = new BattleTerrain(TerrainSurface.Rough, TerrainProtection.Light);
+        Assert.Equal(forestCost, BattleTerrainRules.MovementCost(forest, mover));
+        Assert.Equal(forestProtection, BattleTerrainRules.LandEffect(forest, mover));
+        int weaponBonus = weapon switch { 36 => 17, 58 => 8, _ => 5 };
+        Assert.Equal(20 + weaponBonus + (warrior ? 5 : 0), projection.Attack!.Value);
+        Assert.Empty(physical.Spells);
+        var actor = new BattleActorState(deployment, member.Hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
+        Assert.Equal(weapon, BattleEquipment.EquippedWeaponItem(actor)!.Value);
+        uint seed = session.Current.Exploration!.Party.MainSeed;
+        var grown = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(actor, 1, ref seed, []);
+        Assert.Equal(2, grown.Level);
+        Assert.Equal(classId, grown.Progress!.ClassId);
+        Assert.Equal(member.Progress!.SourceLoadout!.Spells, grown.SourceLoadout!.Spells);
+        var unarmed = BattleEquipment.Equip(physical, grown.SourceLoadout, BattleEquipment.UnarmedChoice);
+        Assert.Equal(weapon, unarmed.Items[0]);
+        Assert.Equal(warrior ? 5 : 0, BattleEquipment.Contribution(physical, unarmed));
     }
 
     [Theory]

@@ -214,6 +214,10 @@ $token = [guid]::NewGuid().ToString('N')
 $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 & $run -Repo $repo -Operation Mount -Library $runtime -Family wiz `
     -Package "$progression/pldn-v1" -Upstream $pinnedSource -Destination "$progression/wiz-$token"
+
+# Add the three GLDT/BDBT progressions and appearances to the registered WIZ package.
+& $run -Repo $repo -Operation Mount -Library $runtime -Family melee `
+    -Package "$progression/wiz-v1" -Upstream $pinnedSource -Destination "$progression/melee-$token"
 ```
 
 Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
@@ -226,6 +230,11 @@ The WIZ mount selects already prepared Kazin and Tyrin walking and battle bodies
 the existing rod/stick layers and binds the two members' progression from `-Upstream`.
 Use the resulting `wiz-v1` for both locales. Ordinary Kazin was played through Battle26. Tyrin's
 promoted ordinary route remains **Unknown**. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
+
+The melee mount adds the prepared Jaha, Randolf and Luke bodies and walking sprites to the
+WIZ base and binds their member growth. It reuses the compatible axe and sword layers, including
+Broad Sword. Ordinary Jaha and Luke were played through Battle26. Randolf's promoted ordinary
+route remains **Unknown**. [Melee reproduction](../application/ordinary-promotion-classes.md#gladiator-and-bird-battler-ordinary-reproduction)
 
 Mount preserves the relative world, scene and entry dependencies, mounts any selected WAVs
 and publishes a fresh directory after checking closure. Select the result with the ordinary

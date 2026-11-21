@@ -20,29 +20,40 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         (compiler.upstream / sprites_path).read_text(encoding="utf-8"), "mapsprite"
     )
     promoted = {row["member"]: row["class"] for row in compiler.promotion_classes}
-    ordinary = {"SDMN": "HERO", "KNTE": "PLDN", "MAGE": "WIZ"}
+    ordinary = {
+        "SDMN": "HERO",
+        "KNTE": "PLDN",
+        "WARR": "GLDT",
+        "MAGE": "WIZ",
+        "BDMN": "BDBT",
+    }
+
+    def class_sprite(table_sprite, role):
+        # GetAllyMapsprite's offsets are relative to the member's table entry.
+        if role == compiler.equates["CLASS_HERO"] or role >= compiler.equates["CLASS_BDBT"]:
+            return table_sprite
+        if role == compiler.equates["CLASS_SDMN"]:
+            return table_sprite - 1
+        if role <= compiler.equates["CLASS_ACHR"]:
+            return table_sprite - 2
+        if role <= compiler.equates["CLASS_TORT"] or role & 1:
+            return table_sprite - 1
+        return table_sprite
+
     result = []
     for character in range(compiler.equates["COMBATANT_ALLIES_NUMBER"]):
         role = compiler.number("CLASS_" + classes[character])
-        sprite = compiler.number("MAPSPRITE_" + sprites[character])
-        if role == compiler.equates["CLASS_SDMN"]:
-            sprite -= 1
-        elif role != compiler.equates["CLASS_HERO"] and role < compiler.equates["CLASS_BDBT"]:
-            if compiler.equates["CLASS_BDMN"] <= role <= compiler.equates["CLASS_TORT"]:
-                sprite -= 1
-            elif role <= compiler.equates["CLASS_ACHR"]:
-                sprite -= 2
-            elif role & 1:
-                sprite -= 1
+        table_sprite = compiler.number("MAPSPRITE_" + sprites[character])
+        sprite = class_sprite(table_sprite, role)
         variant = {}
         if character in promoted:
             destination = promoted[character]
             if ordinary.get(classes[character]) != destination:
                 raise ValueError("unsupported promotion mapsprite")
+            promotion_class = compiler.number("CLASS_" + destination)
             variant = {
-                "promotionClass": compiler.number("CLASS_" + destination),
-                # For these paired classes, the regular promotion follows the base sprite.
-                "promotionSprite": sprite + 1,
+                "promotionClass": promotion_class,
+                "promotionSprite": class_sprite(table_sprite, promotion_class),
             }
         rohde = character == compiler.equates["ALLY_ROHDE"]
         result.append(
