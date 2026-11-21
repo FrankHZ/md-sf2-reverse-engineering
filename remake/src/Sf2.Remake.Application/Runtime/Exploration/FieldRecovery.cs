@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
@@ -14,7 +15,7 @@ public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, 
 internal static class FieldRecovery
 {
     internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command,
-        out FieldRecoveryEffect effect, out bool effective, out FieldGrowthResult? growth,
+        out FieldRecoveryEffect effect, out bool effective, out FieldGrowthResult? growth, out ushort clearedStatus,
         FieldItemCaller caller = FieldItemCaller.Field)
     {
         var member = FieldInventory.Member(definition, current, command.Member, caller);
@@ -43,6 +44,7 @@ internal static class FieldRecovery
         else throw new BattleRuleException("field-recovery-command", "command");
         effective = false;
         growth = null;
+        clearedStatus = 0;
         if (effect is FieldRecoveryEffect.NoEffect or FieldRecoveryEffect.MapEvent)
         {
             // A map event owns any removal, after its scene. An unmatched use is free.
@@ -58,6 +60,11 @@ internal static class FieldRecovery
         }
         var target = FieldInventory.Member(definition, current,
             targetRef ?? throw new BattleRuleException("field-recovery-target", "target"), caller);
+        if (spell is { Spell.Level: > 1, Effect: FieldRecoveryEffect.CurePoisonAndParalysis })
+        {
+            FieldInventory.RequireDetoxEquipment(definition, member);
+            if (target.Carried.Actor != member.Carried.Actor) FieldInventory.RequireDetoxEquipment(definition, target);
+        }
         uint seed = party.MainSeed;
         BattleActorStartInput changedTarget;
         if (item is not null && FieldGrowthItems.Admitted(effect))
@@ -67,11 +74,13 @@ internal static class FieldRecovery
         }
         else
         {
-            // Source status bits 1 and 0 are poison and paralysis respectively.
-            int cureMask = effect == FieldRecoveryEffect.CurePoisonAndParalysis ? 3 : 2;
-            changedTarget = target.Carried with { Status = (ushort)(target.Carried.Status & ~cureMask) };
-            effective = changedTarget.Status != target.Carried.Status;
-            if (effect == FieldRecoveryEffect.CurePoisonAndParalysis) changedTarget = changedTarget.RefreshStats();
+            ushort mask = effect == FieldRecoveryEffect.CurePoisonAndParalysis
+                ? PoisonCureRules.PoisonAndStun : PoisonCureRules.Poison;
+            clearedStatus = (ushort)(target.Carried.Status & mask);
+            changedTarget = target.Carried with { Status = (ushort)(target.Carried.Status & ~clearedStatus) };
+            effective = clearedStatus != 0;
+            if (spell is not null || effect == FieldRecoveryEffect.CurePoisonAndParalysis)
+                changedTarget = changedTarget.RefreshStats();
         }
         bool self = changedTarget.Actor == member.Carried.Actor;
         var changedMember = self ? changedTarget : member.Carried;

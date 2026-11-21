@@ -762,7 +762,7 @@ msgid "prepare.confirm-egress"
 msgstr "施放{0}，返回上次的休息点？消耗至多 {1} MP，MP 不足时也能使用。保留金币和进度。"
 
 msgid "prepare.confirm-cast"
-msgstr "施放{0}？消耗 {1} MP，即使目标没有中毒。"
+msgstr "施放{0}？即使目标没有可解除的异常状态，也会消耗 {1} MP。"
 
 msgid "prepare.drop-item"
 msgstr "丢弃哪件道具？"
@@ -1315,6 +1315,36 @@ msgstr "{0}的迟缓效果结束。"
 msgid "battle.scene.boost-expired"
 msgstr "{0}的强化效果结束。"
 
+msgid "battle.scene.att-up"
+msgstr "{0}的攻击提高了{1}点。"
+
+msgid "battle.scene.attack-expired"
+msgstr "{0}的攻击加成消失了。"
+
+msgid "battle.scene.item-damaged"
+msgstr "{0}损坏了。"
+
+msgid "battle.scene.item-destroyed"
+msgstr "{0}碎裂了。"
+
+msgid "battle.inspect.status.attack"
+msgstr "攻击提升"
+
+msgid "shop.repair-owner"
+msgstr "要修理谁的物品？"
+
+msgid "shop.confirm-repair"
+msgstr "花费{2}金币修理{1}的{0}吗？"
+
+msgid "shop.result.repaired"
+msgstr "物品已修好。"
+
+msgid "shop.result.undamaged"
+msgstr "这件物品没有损坏。"
+
+msgid "shop.result.equippedcurse"
+msgstr "无法修理仍穿戴着的诅咒装备。"
+
 #. Project-authored functional silence feedback.
 msgid "battle.status.silence"
 msgstr "沉默（{0}）"
@@ -1431,6 +1461,9 @@ msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回"
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "battle.scene.poison-cured"
 msgstr "{0} 的中毒已治愈。"
+
+msgid "name.spell.detox"
+msgstr "解毒"
 
 msgid "save.destination.battle07-return"
 msgstr "古代之塔，地震之后"

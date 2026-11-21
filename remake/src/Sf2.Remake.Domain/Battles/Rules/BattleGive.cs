@@ -32,7 +32,8 @@ public static class BattleGive
         foreach (ushort word in loadout.Items)
         {
             if (word == 127) continue;
-            if (word > 255 || !definition.Items.ContainsKey((byte)(word & 127)))
+            if (word > 511 || !definition.Items.ContainsKey((byte)(word & 127)) ||
+                ((word & BattleInventory.Broken) != 0 && !BattleEquipment.CanBeDamaged(actor.Definition, (byte)(word & 127))))
                 throw new BattleRuleException("give-item-unsupported", "actor.sourceLoadout", true);
             if ((word & 128) != 0 && actor.Definition.Equipment?.ClassMask((byte)(word & 127)) is null)
                 throw new BattleRuleException("give-equipped-item", "actor.sourceLoadout", true);
@@ -40,7 +41,7 @@ public static class BattleGive
         if (actor.Definition.Equipment is not null)
         {
             BattleEquipment.ValidateLoadout(actor.Definition, loadout);
-            if (actor.Attack != Math.Min(200, actor.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)))
+            if (actor.Attack != BattleEquipment.Attack(actor.Definition, actor.Progress, loadout, actor.AppliedStatBits))
                 throw new BattleRuleException("give-stats", "actor.attack");
         }
     }

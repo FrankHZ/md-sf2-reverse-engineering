@@ -30,7 +30,8 @@ public static class BattleDiscard
         {
             ushort word = loadout.Items[slot];
             if (word == 127) continue;
-            if (word > 255 || !definition.Items.TryGetValue((byte)(word & 127), out var item))
+            if (word > 511 || !definition.Items.TryGetValue((byte)(word & 127), out var item) ||
+                ((word & BattleInventory.Broken) != 0 && !BattleEquipment.CanBeDamaged(actor.Definition, item.ItemId)))
                 throw new BattleRuleException("discard-item-unsupported", "actor.items", true);
             if ((word & 128) != 0 && actor.Definition.Equipment?.ClassMask(item.ItemId) is null)
                 throw new BattleRuleException("discard-equipped-item", "actor.items", true);

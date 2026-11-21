@@ -14,6 +14,80 @@ The detailed inventory is `manifests/pre-voyage-asset-inventory.csv` in the loca
 
 The CSV has 7,040 rows for this pack. Shared art appears once per logical owner and frame. This is the pre-voyage demo inventory; the rest of the retail ROM has a different scope. The [presentation owner](presentation-assets.md) also identifies the bundled UI font, theme and public-resource policy. Code-drawn windows and text are outside the raster table.
 
+## Retail original preparation
+
+**High rigor.** Prepare the original private resources once for multiple campaign consumers.
+The fixed input is the registered 2 MiB USA ROM and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The local asset Git publication owns the
+reviewed bytes. The configured shared data root owns the working publication and assembled
+packages. Runtime reads ordinary world/scene/entry inputs. Gameplay admission, translation beyond
+the supplied name overlay, HD and public distribution have separate owners.
+
+The base inventory joins H2 contracts, pinned pointer tables, aliases, class/item references and
+the reviewed world/entry and asset manifest. Its 3,611 rows include distinct source IDs and
+consumer bindings. The separate 7,040-row demo table above describes a different selection.
+`manifests/retail-v1-coverage.csv` in the private asset Git adds the preparation status and
+selector alongside each base row. Use its `retail_status` column. The reviewed commit
+`52435b04f49a84a6a9ed4444620055a070648001` has 3,375 prepared rows, 32 command-menu bindings
+already present, 204 inapplicable slots, and zero missing or partial rows. Each family index
+identifies the ROM and source revision. Aliased slots refer to shared physical art.
+
+| Family | Prepared material and reuse |
+| --- | --- |
+| Field maps | All 79 descriptors with native atlases, 115 decoded indexed tilesets, 16 CRAM palettes, 77 shared blocksets and 77 shared layouts. The 19,771 block definitions and 315,392 layout words retain tile/cell flags. Area, foreground/roof, flag and step-copy records and tile animation operands are joined by map ID. |
+| Walking and portraits | 720 ordinary direction slots. 669 distinct physical strips carry both phases, with nine sentinel slots and the remaining aliases. 59 valid member/class bindings include ordinary and promoted field IDs, battle sprites and palettes. The six special/action streams retain native indexed tiles and the ten source pointers. The 56 portrait slots select 52 unique PNGs and retain eye/mouth tile mappings. Special-sprite dispatch, coordinate assembly and timed presentation still depend on the engine capability. |
+| Battle | Native-size transparent frames for 85 bodies with 163 palettes, plus the separate PLDN selection below. Both ally/enemy animation tables retain headers and frame/weapon operands. The 103 enemy species map to body/palette. 23 four-frame weapon tile banks, 42 two-color palettes and 84 item selectors retain the caller's body palette. All 30 ground and 30 backdrop pointers resolve to their physical variants. 23 spell containers, four invocation containers, status/transition graphics and Bolt sprite operands are available. Indexed effect tiles and control operands require the effect's original composition rule. No encounter matrix is generated. |
+| UI and entry | All 163 source icon slots have normal and highlighted art. The raw other-art slots keep their own identities. Only supported semantic keys are mounted. The nine UI tile groups and font have prepared images. Nine special-screen streams are decoded. Private title/witch resources include palette/layout/bubble operands and the six existing mounted entry rasters. |
+| Audio | The base world/entry and new WAV candidates jointly cover all 37 non-silent music commands and 56 SFX commands. The other 27 music slots select silent targets. New production supplied 18 music and 25 SFX candidates. Every new SFX records the controlled music timer context. The already admitted additional timer variants remain in the base package. Arbitrary caller/timer combinations and hardware waveform equality remain **Unknown**. |
+
+### First consumers
+
+| Consumer | Available selection | Remaining acceptance |
+| --- | --- | --- |
+| #1956 | Chester, Rick and Eric field sprites 6, 28 and 34 have three 48×24 two-phase strips each and the original portrait/speech operands. Their Battle26 PLDN sprite 13 palettes are 0, 1 and 3, with five body frames each and respectively seven, seven and six item bindings. Spear/javelin attacks select sequence 81. The base supplies Higins palette 2. Decimal music 25 (`19` hex) is a 433,106-sample-frame finite cue, Timer B `CE`. | The accepted Content reader requires the member's starting class to match the battle appearance class and rejects supplied promoted KNTE bindings at `scene-ally-member`. #1956 owns admission, the rite and music resumption. |
+| #1950 / #1962 | Decimal 87 JUMP has 15,142 sample frames under Castle Timer B `D2` from Bedoe Map10. Decimal 99 BLOAB has 8,440 under Town `CB`. The latter is a controlled field context. | Both WAVs are available. Their feature tickets own the missing `SessionAudio.SoundSlots` classifications, actual calls and natural trigger verification. |
+| #1967 | Both states for spell IDs 7 MUDDLE, 8 DESOUL and 9 SLEEP were read from the new field and Battle26 bindings. The prepared zh-CN catalog includes all three names. | Actual battle use and rule behavior belong to the consumer. |
+
+**Confirmed.** Offline assembly from the stable files yielded a 145-file, 294,283,435-byte
+priority package. The production opening reader admitted the three new field sprites, resolved all
+six icons to equal field/battle bytes, and admitted looping command 4 and finite 25, 87 and 99.
+A bounded Godot WASAPI playback of those four new admitted WAVs wrapped 4 with playback active
+and emitted exactly one Finished for each finite cue. The earlier Chester/Rick candidate reproduced
+the member-admission failure. The final `promotion-v1` candidate assembled all three appearances
+directly from private Git and the closed base. Only the Battle26 scene differs from the Chester/Rick
+candidate. Its six added Eric bindings resolve to five new body rasters and 24 reused weapon rasters.
+The user produced Eric's files after the initial automatic approval rejection recorded in #2001.
+Previously recorded original New Game and Continue observations and the four-object exit warning
+remain archived with the base.
+
+### Resource budget and observed pilot
+
+Run one family and one emulator at a time. Indexed graphics scale with unique resources, frames and
+actual palettes. Music uses 176,400 bytes/second for stereo PCM16 at 44.1 kHz. The visual pilot
+produced 326 icon states in 0.47 s. Maps took 5.25 s, 85 battle bodies 5.35 s, and the two-member
+PLDN scene preparation 4.83 s. The source listing is about 24 MB. A timed finite music 25 pilot
+took 6.73 s including source and library setup. Its 4,121,348-byte capture produced a 1,732,468-byte
+WAV. Worktree scratch measured 10,138,595 bytes after staging that pilot. Sampled Python/emulator
+working sets together peaked at 860,676,096 bytes, and the emulator peak was 853,745,664 bytes.
+Both the crop and source capture reproduced byte for byte. The first new loop 4 used
+42,685,004 capture bytes and 8,290,156 candidate WAV bytes. The first 43 successful native runs took about 398 seconds
+in total. The failed boundary and timed finite repeat took another 19 seconds. For the finite
+pilot, scratch plus its stable review copy occupied about 16 MB. The current reviewed library
+contains 2,239 files and 1,095,202,183 bytes including the retained source WAVs.
+
+The 18 music candidates use 196,874,396 runtime WAV bytes plus 775,395,168 source WAV bytes.
+The 25 sound candidates use 2,137,372 and 103,033,700 bytes respectively. Keep these separate from
+the visual budget. Music 15 initially lacked a whole-channel recurrence in the bounded check.
+A 30,000-frame capture with a wider observation window matched full channel records at frames
+4,154 and 7,969. The failed capture remains available locally. Loop boundaries establish driver
+state recurrence. Perceptual seam review and natural gameplay across every track remain **Unknown**.
+
+Allow 1 GiB headroom for a single visual or PLDN operation. On a fresh complete rebuild allow
+5 GiB for the working and stable publications before the additional private Git copy. Disk use
+depends on retained captures and package copies. Stop on input drift or a source/renderer
+disagreement. A failed family leaves the previous publication available.
+[Preparation, assembly and recovery commands](presentation-assets.md#prepare-and-mount-retail-resources)
+
 ## Map3 coverage and treatment
 
 The outdoor area is 51×32 cells. Two interior areas each measure 11×10. The exterior's roof/facade plane has a 32-row offset and can be copied, revealed or restored. The player package includes all 447 block definitions, including copy sources and the declaration absent from the initial layout. HD supplies separate textures to the existing layer renderer. Tile priority, camera clipping and actor occlusion continue to use the layout and its nine tile words. The source atlas alpha distinguishes transparent index zero from opaque black ink.

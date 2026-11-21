@@ -48,8 +48,8 @@ uses the actual child's rectangle for the full click gesture. Resize cancels an 
 
 Operation hints use 24px in the shop root, stock, recipient, sell-slot, quote and result pages.
 Previously the root wrote the keys into its 30px reason label. The field, item and shop root lists
-now give prose and controls separate wrapping labels in the existing scroll area. Repair's
-unavailable reason remains visible. Deals uses the same recipient and quote flow as Buy and shows
+now give prose and controls separate wrapping labels in the existing scroll area. Deals uses
+the same recipient and quote flow as Buy and shows
 localized empty stock with Back when its list is exhausted. Shop footer copy
 contains the actions available to the player. Item artwork and name resolution keep their existing
 display rules. [Production measurements](ui-scene-review.md#production-controls-audit)
@@ -76,7 +76,11 @@ its actual faced consumer and existing reader: meaningful line breaks, receipt/f
 Cancel dismissal and subsequent usable control are unchanged.
 
 The gameplay list and preparation pause field time and retain their host-menu exclusion. Services
-retain their actual wait owner. Repair remains unavailable.
+retain their actual wait owner. Repair opens member and held-slot selection with damage and
+worn indicators. Damaged Power and Protect Rings quote 750 gold. Confirm checks current
+funds and the selected slot, then charges and clears damage together. Cancel at the quote
+and dismissal after a result return to the member selection. Back at the member selection
+returns to the shop menu. [Ordinary New Granseal Repair and Continue](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
 
 ## Reproduce the bounded observations
 

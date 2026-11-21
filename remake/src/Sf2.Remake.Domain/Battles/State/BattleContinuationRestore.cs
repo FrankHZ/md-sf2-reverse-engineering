@@ -44,7 +44,9 @@ internal static class BattleContinuationRestore
         Require(saved.Position is null || InBoard(saved.Position, battle), "position");
         Require(saved.Initialized || deployment.Faction == BattleFaction.Enemy && deployment.Initialization?.SpawnMode is 2 or 3 &&
             saved.Hp == 0 && saved.Position is null, "initialization");
-        byte ordinaryAttack = BattleEquipment.Attack(deployment.Definition, saved.Progress, saved.Loadout);
+        ushort applied = saved.LastRefreshCounters ?? saved.Status;
+        Require(deployment.Faction == BattleFaction.Ally || (saved.Status & BattleStatCounters.Attack) == 0, "attack-status");
+        byte ordinaryAttack = BattleEquipment.Attack(deployment.Definition, saved.Progress, saved.Loadout, applied);
         if (deployment.Faction == BattleFaction.Enemy && saved.Initialized)
         {
             byte initializedAttack = BattleInitializationRules.EnemyAttack(deployment.Definition.Attack, 0);

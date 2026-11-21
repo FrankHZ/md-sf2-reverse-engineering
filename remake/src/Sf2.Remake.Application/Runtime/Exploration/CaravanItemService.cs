@@ -77,7 +77,7 @@ internal static class CaravanItemService
                     {
                         party = FieldRecovery.Prepare(definition, current,
                             new FieldUseItem(source.Carried.Actor, wait.ItemSlot!.Value, wait.ItemWord!.Value, target.Carried.Actor),
-                            out var effect, out bool effective, out var growth, FieldItemCaller.Caravan);
+                            out var effect, out bool effective, out var growth, out _, FieldItemCaller.Caravan);
                         string result = effective ? "cured" : "no-effect";
                         next = next with { Phase = CaravanPhase.ItemResult,
                             ItemResult = growth is not null ? "growth" :

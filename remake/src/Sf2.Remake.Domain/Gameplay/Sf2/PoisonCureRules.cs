@@ -2,9 +2,20 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-// Finite DETOX1/Antidote effect. Selection, payment and scene publication retain their owners.
+// Uncursed DETOX and its item callers share the packed status calculation.
 internal static class PoisonCureRules
 {
+    internal const ushort Poison = 2;
+    internal const ushort Stun = 1;
+    internal const ushort PoisonAndStun = Poison | Stun;
+
+    internal static ushort SpellMask(byte rank) => rank == 1 ? Poison : PoisonAndStun;
+
+    internal static void RequireUncursed(ushort status, string field)
+    {
+        if ((status & 4) != 0) throw new BattleRuleException("detox-curse-unsupported", field, true);
+    }
+
     internal static EngineBattleState PrepareIneffective(EngineBattleState battle, ActorRef actor,
         IReadOnlyList<BattleReaction> reactions, List<BattleEffect> effects)
     {
@@ -17,10 +28,11 @@ internal static class PoisonCureRules
         }
         return battle.With(mainSeed: seed);
     }
-    internal static BattleReaction Reaction(ActorRef actor, BattleActorState target, string action)
+    internal static BattleReaction Reaction(ActorRef actor, BattleActorState target, string action, ushort mask = Poison)
     {
-        bool cured = (target.Status & 2) != 0;
-        return new(actor, target.Actor, action, cured ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
-            target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: cured ? (ushort)(target.Status & ~2) : null);
+        ushort cleared = (ushort)(target.Status & mask);
+        return new(actor, target.Actor, action, cleared != 0 ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
+            target.Hp, target.Hp, target.Mp, target.Mp,
+            StatusWrite: cleared != 0 ? (ushort)(target.Status & ~cleared) : null, ClearedStatus: cleared);
     }
 }

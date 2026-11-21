@@ -21,7 +21,74 @@ Run `./local/issue1737/check-route.ps1 zh-CN` for an independent fresh-slot repl
 
 Peter's activation word remained 4 through Battle12 and arrival at the shrine. The Volcanon scene's zero AI selector cleared bit 2 on the existing party record. The scene caller then set F722 and F711. The king's affirmative answer set F799 on return. Initial Bedoe entry, the king's address and the audience separately set F719, F720 and F721.
 
-On a separate continuation, rescuing the fairy set F711 before the Oddler event. The winning main route left the fairy alone. An independent Battle12 leader defeat after the Polca resurrections returned to New Granseal (11,22) with 2,876 gold. F512, F712 and F714 remained clear. Refusing the king showed his refusal reply with F799 clear. Speaking to him again and accepting set F799. Bedoe's hatchling has a separate source condition and was not visited. F711 alone cannot distinguish fairy rescue from speaking to Volcanon. At the recorded Battle13 start, Sarah had the first player turn in round 1. Gerhalt was a player-controlled level 13 wolfman with 25 HP at (23,7), and Peter was player-controlled at (21,9). Chester and Slade remained dead. F715 and F413 were set, while F513, F716 and F718 were clear. A different movement or dialogue sequence can advance RNG and change the first actor. The field presentation and battle resources come from the local private package. Exact original presentation timing and hardware parity remain **Unknown**.
+On a separate continuation, rescuing the fairy set F711 before the Oddler event. The winning main route left the fairy alone. An independent Battle12 leader defeat after the Polca resurrections returned to New Granseal (11,22) with 2,876 gold. F512, F712 and F714 remained clear. Refusing the king showed his refusal reply with F799 clear. Speaking to him again and accepting set F799. F711 alone cannot distinguish fairy rescue from speaking to Volcanon. At the recorded Battle13 start, Sarah had the first player turn in round 1. Gerhalt was a player-controlled level 13 wolfman with 25 HP at (23,7), and Peter was player-controlled at (21,9). Chester and Slade remained dead. F715 and F413 were set, while F513, F716 and F718 were clear. A different movement or dialogue sequence can advance RNG and change the first actor. The field presentation and battle resources come from the local private package. Exact original presentation timing and hardware parity remain **Unknown**.
+
+## Bedoe hatchling observation
+
+**Confirmed** in the remake with the registered #1966 runtime package. Ordinary English Continue
+from the #1797 `before-raft.json` slot starts at Map72 (43,47) with F722 and F799 set and F13,
+F723 and F724 clear. The party can backtrack through Polca and Mount Volcano and enter Bedoe
+at (12,30). Both hatchling-scene actors, lookups 152 and 153, are visible on the first visit and
+after leaving for the mountain and returning with F724 still clear.
+
+- **Flight.** Talk to the hatchling from (15,6) facing Right. The scene delivers texts 1680–1685,
+  restores field control and sets F723. Talk again from the same tile for just text 1685.
+  F724 stays clear through both interactions.
+- **Rescue.** On a separate continuation, approach (6,22) after bypassing the trigger on the
+  first visit. Move Down onto the $1400 marker at (6,23) with F13, F723 and F724 clear.
+  The zone enters `cs-5779c`. The program moves Bowie to (5,22) and the hatchling to (6,10).
+  The sound presentation wait at compiled instruction 12 requests `SFX_JUMP` and stops with
+  `presentation-unavailable` / `audio-content-unavailable`. No rescue dialogue is delivered,
+  field control stays suspended and F724 stays clear.
+
+The active package has no asset for `SFX_JUMP` (command 87). The adapter's
+[sound-slot selector](../../game/src/Audio/SessionAudio.cs) also has no classification for command
+87. The [source contract](../../../docs/design/synthesis/chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)
+and the compiled caller distinguish F13 suppression, F724 repeat suppression and the fresh F724
+initializer's removal of actor 152. Ordinary rescue completion, post-rescue reentry and F724
+persistence through the existing raft-landing Save and cold Continue remain **Unknown**.
+The [later Skreech offer](../../../docs/research/chapters/northern-travel-mitula/mitula-return-and-skreech-recruitment.md)
+is a separate F724 consumer.
+
+The registered #1738, #1939, #1941 and #1966 package audio tables and command-specific
+candidate folders contain no command 87 cue. The local asset repository's tracked audio paths
+and manifests also have no matching entry. The open rescue issue tracks consumer acceptance,
+and the private asset preparation issue tracks the missing cue. [Rescue #1950](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1950) · [Private audio prerequisite #2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001)
+
+**Confirmed in a controlled engine start.** Read the same package with `OpeningNewGameReader`
+and start Map10 at (6,22), facing Down, with the reader's starting party and F722/F799 supplied.
+Submit one south `Move` and service simulation and pending `EntitySpriteReady` requests. With
+both guards clear, the first camera wait in `cs-5779c` retains control. With F13 supplied, actor
+152 is visible and the move settles at (6,23) without calling rescue or setting F724. With F724
+supplied instead, the fresh initializer hides actor 152 and the same move settles at (6,23)
+without a rescue call. These starts exercise the flag consumers with supplied state.
+
+### Reproduce the optional routes
+
+Load the [registered private configuration](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup).
+Use the existing Debug host and the [stable package and catalog selection](pacalon-first-visit.md#continue-after-worktree-cleanup)
+with a disposable external player namespace. Copy the registered
+`handoffs/issue1797/before-raft.json` into its slot 1. Continue normally and step north into
+Polca. Leave Polca east at (31,6) and take the Mount Volcano entrance at (28,6).
+
+For the cleanup check, load the checkout configuration first and make the whole existing
+`local/` temporarily unavailable. Launch the same Debug build from `remake/game` with the
+registered package, catalog and seed copy, using an external save namespace and temporary
+profile. Continue to Map72 (43,47), press Right once and inspect settled field input at (44,47).
+This completed with F64/F722/F799 carried, F13/F723/F724 clear, and the seed copy unchanged.
+The build uses the existing assembly under `remake/game/.godot/`; the run created no replacement
+`local/`. Restore the original scratch after the process exits.
+
+For rescue, walk one step north from the Bedoe entrance, leave south at (12,31), and return
+from the mountain. From (12,30), walk eight tiles north and six west to (6,22). Inspect the
+working map, flags and actors, then press Down once. Read the scene wait, cue and error from
+the running host before attempting any further input.
+
+For flight, use a fresh Continue from the same seed. In Bedoe use the internal transitions at
+(12,20), (45,12), (39,24), (2,46) and (39,55) in order. Approach the fourth transition
+from (3,47) via the lower stair. The last transition arrives at (15,6). Face the hatchling,
+Talk and advance the dialogue to field control, then Talk again. Read the text IDs, flags
+and restored input after each interaction.
 
 ## Source and reproduction
 

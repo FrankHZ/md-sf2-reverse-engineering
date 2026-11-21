@@ -44,6 +44,11 @@ internal static class DisplayNames
     internal static string ItemWord(ushort word, string canonical) => Item(word & 127, canonical);
     internal static string Spell(SpellRef spell, string? canonical = null, bool level = false)
     {
+        if (spell.Value == "detox")
+        {
+            string detox = GameText.Get("name.spell.detox");
+            return level ? $"{detox} {spell.Level}" : detox;
+        }
         var definition = _source?.PrivateDefinitions?.Spells.GetValueOrDefault(spell);
         string fallback = canonical ?? spell.Value.ToUpperInvariant();
         if (GameText.Language == "en" || _source?.PrivateDefinitions is null) return fallback;
@@ -65,7 +70,7 @@ internal static class DisplayNames
 
     internal static string InspectionStatus(IReadOnlyList<string> statuses) => statuses.Count == 0
         ? GameText.Get("battle.inspect.no-status") : string.Join(", ", statuses.Select(status =>
-            GameText.Get("battle.inspect.status." + (status is "curse" or "poison" or "stun" or "sleep" or "silence" or "slow" or "boost" ? status : "unavailable"))));
+            GameText.Get("battle.inspect.status." + (status is "curse" or "poison" or "stun" or "sleep" or "silence" or "slow" or "boost" or "attack" ? status : "unavailable"))));
 
     internal static string BattleItem(SessionSnapshot current, int slot, string canonical)
     {

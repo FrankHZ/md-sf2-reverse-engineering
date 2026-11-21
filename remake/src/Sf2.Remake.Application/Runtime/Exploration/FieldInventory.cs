@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
@@ -113,14 +114,24 @@ internal static class FieldInventory
             throw new BattleRuleException("field-equipped-item-unsupported", "actor.items", true);
     }
 
+    internal static void RequireDetoxEquipment(ScenarioDefinition definition, PartyMemberDetails member)
+    {
+        PoisonCureRules.RequireUncursed(member.Carried.Status, "member.status");
+        var loadout = Loadout(member);
+        if (loadout.Items.Any(word => (word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word)))
+            throw new BattleRuleException("detox-curse-unsupported", "member.items", true);
+        ValidateEquipped(member, loadout);
+    }
+
     private static IReadOnlyList<BattleEquipmentChoice> EquipmentChoices(ScenarioDefinition definition,
         PartyMemberDetails member, BattleSourceLoadout loadout)
     {
         if (member.Deployment!.Definition.Equipment is null)
             return [];
-        // Keep slot positions; omit unsupported or broken choices without removing their live words.
+        // Keep slot positions while excluding identities without field bindings.
         var selectable = new BattleSourceLoadout(loadout.Items.Select(word =>
-            (word & 256) == 0 && definition.FieldPreparation!.Items.ContainsKey((byte)(word & 127))
+            definition.FieldPreparation!.Items.ContainsKey((byte)(word & 127)) &&
+            ((word & BattleInventory.Broken) == 0 || BattleEquipment.CanBeDamaged(member.Deployment.Definition, (byte)(word & 127)))
                 ? word : (ushort)127), loadout.Spells);
         return BattleEquipment.Choices(member.Deployment.Definition, BaseAttack(member), selectable, member.Carried.Progress, member.Carried.Status);
     }
@@ -170,7 +181,8 @@ internal static class FieldInventory
         byte id = (byte)(word & 127);
         if (!definition.FieldPreparation!.Items.TryGetValue(id, out var item))
             throw new BattleRuleException("field-item-unsupported", "item.slot", true);
-        if ((word & 256) != 0 && member.Deployment!.Definition.Equipment?.ClassMask(id) is not null)
+        if ((word & BattleInventory.Broken) != 0 && member.Deployment!.Definition.Equipment?.ClassMask(id) is not null &&
+            !BattleEquipment.CanBeDamaged(member.Deployment.Definition, id))
             throw new BattleRuleException("equipment-broken", "item.slot", true);
         return new(slot, word, item.Name, !item.Unsellable, definition.FieldPreparation.Effect(id, null));
     }

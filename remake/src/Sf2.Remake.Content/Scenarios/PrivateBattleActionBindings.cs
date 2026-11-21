@@ -48,6 +48,19 @@ internal static class PrivateBattleActionBindings
         }
     }
 
+    internal static IEnumerable<SupportItemDefinition> SupportItems(PrivateBattleDefinitions definitions)
+    {
+        foreach (var (id, code, effect) in new (byte, string, string)[]
+            { (19, "POWER_RING", "ATTACK"), (20, "PROTECT_RING", "BOOST") })
+        {
+            if (!definitions.Items.TryGetValue(id, out var item)) continue;
+            Require(item.Code == code && item.ItemTypeExpression == "RING|RARE|BREAKABLE" &&
+                item.EquipFlagsExpression == "ALL" && item.UseSpell == effect && item.UseSpellLevel == 1,
+                "source-support-item", "items.useSpell", true);
+            yield return new(id, item.DisplayName, PrivateSupportSpellBindings.Read(definitions, new(effect.ToLowerInvariant(), 1)));
+        }
+    }
+
     internal static IEnumerable<AttackItemDefinition> AttackItems(PrivateBattleDefinitions definitions)
     {
         foreach (var row in new (byte Item, string Code, string Effect, byte BaseId, ushort Power,
@@ -75,10 +88,14 @@ internal static class PrivateBattleActionBindings
 
     internal static IEnumerable<HealingSpellDefinition> PoisonCure(PrivateBattleDefinitions definitions)
     {
-        if (!definitions.Spells.TryGetValue(new("detox", 1), out var spell)) yield break;
-        Require(spell is { BaseId: 2, Code: "DETOX", MpCost: 3, Radius: 0, Power: 0, MinimumRange: 0, MaximumRange: 1 } &&
-            spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE", "source-detox-definition", "spells.detox", true);
-        yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange, CuresPoison: true);
+        foreach (var (rank, cost, range) in new (byte Rank, byte Cost, byte Range)[] { (1, 3, 1), (2, 6, 2), (3, 10, 2) })
+        {
+            if (!definitions.Spells.TryGetValue(new("detox", rank), out var spell)) continue;
+            Require(spell is { BaseId: 2, Code: "DETOX", Radius: 0, Power: 0, MinimumRange: 0 } &&
+                spell.MpCost == cost && spell.MaximumRange == range &&
+                spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE", "source-detox-definition", "spells.detox", true);
+            yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange, CuresPoison: true);
+        }
     }
 
     internal static IEnumerable<RetreatItemDefinition> RetreatItems(PrivateBattleDefinitions definitions)

@@ -759,7 +759,7 @@ msgid "prepare.confirm-no-effect-spell"
 msgstr "Cast {0}? Nothing happens here; MP is kept."
 
 msgid "prepare.confirm-cast"
-msgstr "Cast {0}? Cost: {1} MP, including when there is no poison to cure."
+msgstr "Cast {0}? Cost: {1} MP, even when there is no ailment to cure."
 
 msgid "prepare.confirm-egress"
 msgstr "Cast {0} and return to your last refuge? Uses up to {1} MP, even when MP is low. Gold and progress are kept."
@@ -1315,6 +1315,36 @@ msgstr "SLOW wears off for {0}."
 msgid "battle.scene.boost-expired"
 msgstr "BOOST wears off for {0}."
 
+msgid "battle.scene.att-up"
+msgstr "{0} gains {1} attack."
+
+msgid "battle.scene.attack-expired"
+msgstr "The attack bonus wears off for {0}."
+
+msgid "battle.scene.item-damaged"
+msgstr "{0} is damaged."
+
+msgid "battle.scene.item-destroyed"
+msgstr "{0} breaks and is lost."
+
+msgid "battle.inspect.status.attack"
+msgstr "Attack up"
+
+msgid "shop.repair-owner"
+msgstr "Whose item will you repair?"
+
+msgid "shop.confirm-repair"
+msgstr "Repair {1}'s {0} for {2} gold?"
+
+msgid "shop.result.repaired"
+msgstr "The item has been repaired."
+
+msgid "shop.result.undamaged"
+msgstr "This item is undamaged."
+
+msgid "shop.result.equippedcurse"
+msgstr "The equipped cursed item cannot be repaired."
+
 #. Project-authored functional silence feedback.
 msgid "battle.status.silence"
 msgstr "Silenced ({0})"
@@ -1431,6 +1461,9 @@ msgstr "{0}/{1}: select · {2}: confirm · {3}: back"
 #. Finite shop/supply consumer; semantic arguments retained.
 msgid "battle.scene.poison-cured"
 msgstr "{0} is cured of poison."
+
+msgid "name.spell.detox"
+msgstr "DETOX"
 
 msgid "save.destination.battle07-return"
 msgstr "Ancient Tower, earthquake aftermath"

@@ -80,7 +80,9 @@ existing controlled refresh evidence are sufficient for selecting these remake r
   current class. Duplicate carried copies are selected by slot and expected word. Reject duplicate
   worn items of a category, worn unsupported items and equipped empty words before publishing.
   Bare supported carry identities continue to travel through existing custody rules. The remake's
-  existing normalized broken bit is `0x100`. Static ring admission covers intact words.
+  existing normalized broken bit is `0x100`. Power and Protect admit both intact and damaged
+  words. A damaged worn ring keeps its contribution and can still transfer or be equipped.
+  [Battle Use, damage, Repair and Continue](equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
 - **Equip and unequip.** Show eligible carried slots in pack order with an explicit category
   per choice. Preserve the existing weapon slot-4 **Unarmed** action and four-weapon menu behavior.
   Use a distinct **Remove ring** choice when a ring is worn, including with four eligible ring

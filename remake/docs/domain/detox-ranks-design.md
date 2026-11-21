@@ -1,6 +1,6 @@
 # DETOX 2 and 3 through first Pacalon
 
-**Proposed design, [#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965).**
+**Accepted design and uncursed implementation, [#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965).**
 Standard rigor covers a two-caller change with shared status, equipment, presentation and save
 dependencies. Deliver learned player DETOX 2 and 3 through ordinary Field and Battle Magic.
 Retain the current campaign boundary at first Pacalon and Battle26. Field, battle and cure from
@@ -148,12 +148,13 @@ DETOX 2/3 Save → Continue → return observation remains **Unknown**.
 
 ## Current remake reach and dependencies
 
-**Confirmed** in the accepted checkout and registered read-only saves. The pinned
+**Confirmed** in the remake and registered read-only saves. The pinned
 `data/stats/allies/stats/allystats01.asm` teaches PRST Sarah DETOX 1/2/3 at 4/13/33. The two
 `issue1955/slots/castle-*.json` Map36 saves both contain active PRST40 Sarah with packed byte
 130, the learned ceiling for ranks 1–3. Her MP is 59 in English and 56 in Chinese. The Chinese
-Battle26 road slot also has the packed entry, 56 MP and a placed Sarah. Only rank 1 currently
-binds in `PrivateFieldPreparation` and `PrivateBattleActionBindings.PoisonCure`. To reproduce,
+Battle26 road slot also has the packed entry, 56 MP and a placed Sarah.
+`PrivateFieldPreparation` and `PrivateBattleActionBindings.PoisonCure` bind the three ranks.
+Ranks 2 and 3 clear STUN and POISON on currently admitted uncursed states. To inspect these seeds,
 decode each slot envelope's base64 payload and verify its SHA-256 against the envelope. Read
 `data.allies` by `actor` and `data.activeAllies`, or `data.battle.actors` by `actorId`
 and its position and loadout. In both forms use `ally-1` for Sarah. Rank admission is keyed by
@@ -191,10 +192,9 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
    source rows. Extend the finite cure rule with explicit allowed and removed bits. Preserve the
    existing rank-1 and item masks, costs and custody. Test learn ceilings, usable rank/cost/range,
    valid no-effect commits and rejected input through the same query/confirmation owner.
-   `HealingTargetRules` currently checks faction, HP and position for the shared single-target
-   query and confirmation, while the neutral-bit check is specific to AURA centers. Apply the
-   source occupancy guard in the shared target owner so both Magic and item Use exclude a
-   positioned ally marked neutral. Preserve AURA's separate area membership rules. For unsupported
+   The accepted [recovery item implementation](recovery-items-design.md) put the source occupancy
+   guard in `HealingTargetRules`. Magic and item Use share it, and AURA has its separate area
+   membership rules. For unsupported
    cursed battle states or gear, reject on the existing explicit admission boundary before
    payment. Rank 3 supports its verified STUN/POISON subset on currently admitted targets.
    Full rank-3 completion remains open.
@@ -204,13 +204,12 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
    Battle uses one successful target reaction carrying the full word and removed bits, with
    distinct caster cost, ordered cure text, award and after-turn. Reuse the same reaction
    validation and refresh boundary as the current poison cure. Preserve any old applied operand
-   until its own real refresh. The pinned award skips the halving table for a same-side target.
-   The current `Sf2BattleProgressionRule` applies the halving flag to Healing and Item status
-   awards without checking the target's side. This observed source/implementation difference
-   brings the shared award correction into #1965. Gate halving on the actual target's faction
-   relative to the recipient for these status actions. DETOX 1/2/3, Antidote and battle Fairy
-   Powder use the same rule, with the existing 5/0 contribution, two range-16 award draws and
-   minimum 1 EXP.
+   until its own real refresh. The accepted recovery item implementation also corrected the
+   Healing and Item status award in `Sf2BattleProgressionRule` to check the actual target's side.
+   DETOX 1/2/3, Antidote and battle Fairy Powder share that calculation, with the 5/0 contribution,
+   two range-16 award draws and minimum 1 EXP. The same refresh reads the stored ATTACK and BOOST
+   counters when a reaction succeeds. A paid ineffective cast preserves the recipient's existing
+   last-refresh operand when the recipient is distinct from the caster.
 3. **Complete the equipped-curse branch with #1926.** Once shared custody, refresh and return/save
    semantics admit a worn cursed word, use the equipment operation to clear the equipped bit only on
    cursed definitions. Check the status/gear transition on the detached action before
@@ -221,9 +220,9 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
    removal, leave worn words alone. A real supported cursed target with no rank-eligible bits
    follows the normal no-effect branch.
 
-The first two steps form one playable slice. The third can land with the #1926 consumer or in
+The first two steps are implemented together. The third can land with the #1926 consumer or in
 a short dependent slice. Serialize the shared reaction, save, localization and campaign records
-with [#1944](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1944), #1952 and #1967.
+with upcoming work such as [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
 A finite direct engine case can express the original curse effect before natural availability.
 Content supplies rank terms; Domain owns the effect, target admission and result validation;
 Application publishes existing waits and party changes; Godot displays localized semantics and
@@ -318,7 +317,47 @@ and save receipts. Record any completed shutdown failure under the existing [#17
 boundary.
 
 For implementation, run `uv run sf2 verify engine` and `uv run sf2 verify adapter` where the
-presentation changes. Record the supported ranks and ordinary or controlled results in
+presentation changes. The supported ranks link from
 [gameplay rules](gameplay-rules.md), [campaign characters](../content/campaign-characters.md)
-and [capability status](../capability-status.md) when the implementation lands. This document
-uses direct source, content, scope and link checks and the docs-only CI path.
+and [capability status](../capability-status.md).
+
+## Ordinary input and cold Continue
+
+**Confirmed** in the remake using Godot 4.7.2 .NET and the registered game package.
+
+| Entry | Input and result |
+| --- | --- |
+| English Field, Map51 Harpy Pond return | Open Field → Magic, cycle to Sarah, choose the learned rank and select a joined recipient. Cancel at confirmation before the first cast. Rank 2 cured Bowie's poison (Sarah MP 53→47), rank 3 cured Sarah's own poison (47→37), then a clean-target rank 2 reported no effect and still paid (37→31). The result identified the rank and recipient. Both RNG words, HP and EXP were unchanged across each cast. |
+| Chinese Battle26, regular Movement | On Sarah's first two turns, accept her current tile, open Magic, select 解毒 2 and then 解毒 3, and target self. Cancel and reopen before each actual cast. Both ranks showed the selected spell icon and nominal MP. The clean-target scenes paid 56→50 and 50→40, respectively, and awarded 1 EXP each (40→42). Control passed to the next actor both times. |
+| Field and Battle Save → cold Continue | Fresh processes loaded the produced slots while the producing checkout's `local/` directory was detached. An immediate re-save preserved both complete decoded `data` objects with valid checksums, advancing sequences 62→63 and 7→8. Field resumed walking south on Map51. Battle took ordinary turns until Bowie's paid EGRESS, then regained usable Map36 field input. |
+| Battle19 STUN pilot | The registered repeat seed reached round 5 after four rounds of normal turns. No effective STUN cure was witnessed. Natural Battle cure in this suffix remains **Unknown**. |
+
+Use the private `issue1965-review` input driver with the registered SDK, Godot and
+`issue1966/content/package` inputs. From the implementation checkout set `$review` to that
+external review directory. Use fresh journey names; each cold mode reuses its producing
+journey's player slot. The driver sends ordinary keys and records current state, projection and
+errors. `-Detach` moves the producing local directory aside for cold startup and restores it on
+exit. The check compares entire decoded payloads separately from process exit.
+
+```powershell
+& "$review/Run.ps1" -Repo (Get-Location).Path -Mode field -Journey review-field -Language en
+& "$review/Run.ps1" -Repo (Get-Location).Path -Mode cold-field -Journey review-field -Language en -Detach
+& "$review/Run.ps1" -Repo (Get-Location).Path -Mode battle -Journey review-battle -Language zh-CN
+& "$review/Run.ps1" -Repo (Get-Location).Path -Mode cold-battle -Journey review-battle -Language zh-CN -Detach
+& "$review/Run.ps1" -Repo (Get-Location).Path -Mode pilot -Journey review-pilot -Language zh-CN
+```
+
+The five completed observation runs exited 0. The field cold run logged an ObjectDB leak warning
+after the functional checks. Early rehearsals exited 2 while selecting Sarah's roster entry or
+checking battle results. The retained Battle26 rehearsal also showed a duplicate Chinese rank
+label, corrected in the locale owner before the successful Battle26 run. The retained review
+directory including rehearsals is about 1.8 MB, with 13 save envelopes including backups and
+receipt copies, one above the planned count. The saves total about 299 KB. No world or scene
+package was generated.
+
+[Focused Battle cases](../../tests/Sf2.Remake.Engine.Tests/PoisonCureTests.cs) exercise a
+real reaction against STUN and POISON, including poison-before-stun feedback, and contrast it with
+paid no effect while ATTACK/BOOST have divergent last-applied values. They also check self-payment,
+silence, curse rejection, range and same-side EXP. [Focused Field cases](../../tests/Sf2.Remake.Engine.Tests/FieldRecoveryTests.cs)
+exercise fallen members, MP clamping, the no-effect refresh and curse rejection.
+Equipped-curse treatment remains open under [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).

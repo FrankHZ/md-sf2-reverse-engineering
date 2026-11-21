@@ -419,12 +419,12 @@ def build(
                 )
             )
         sequences = {}
-        # GetAllyAnimation specializes KNTE attacks for graphics SPEAR..JAVELIN.
-        throw_spear = (
-            side == "ally" and index == 2 and graphic is not None and 12 <= graphic[0] <= 13
-        )
+        # GetAllyAnimation selects class-specific throws for graphics SPEAR..JAVELIN.
+        attack = index
+        if side == "ally" and graphic is not None and 12 <= graphic[0] <= 13:
+            attack = {2: 80, 13: 81, 17: 82}.get(index, index)
         for purpose, animation in (
-            ("attack", 80 if throw_spear else index),
+            ("attack", attack),
             ("dodge", index + (40 if side == "ally" else 60)),
             ("idle", index),
         ):
