@@ -1,10 +1,12 @@
 # Hostile battle spells through Battle26
 
 [Issue #1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) owns the design for
-player MUDDLE 1/2, DESOUL 1/2 and SLEEP 1. Rigor is **Standard**. The learned Magic command crosses
-target admission, RNG, scene playback, turn ownership or death, and battle Save/Continue. Accept each
-implementation slice through its real consumers before enabling the ranks it owns. The campaign
-boundary is Battle26 and first Pacalon. Enemy acquisition of these casting decisions, future ranks,
+player MUDDLE 1/2, DESOUL 1/2 and SLEEP 1. Rigor is **High** under the issue agreement.
+MUDDLE changes AI control and targeting. DESOUL connects death, rewards and item custody to
+battle outcomes and return. Follow the [three implementation stages](#implementation-order-and-ownership)
+and their [acceptance criteria](#acceptance-and-bounded-inputs). Enable each rank only after its
+effect and required downstream consumers pass. The campaign boundary is Battle26 and first Pacalon.
+Enemy acquisition of these casting decisions, future ranks,
 Field and Caravan Magic, original audiovisual timing and later campaign travel are outside this design.
 [Campaign agreement](../application/remaining-campaign-risk-baseline.md) ·
 [Engine direction](../../../docs/decisions/0019-state-and-content-driven-remake-engine.md)
