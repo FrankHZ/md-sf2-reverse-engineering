@@ -92,6 +92,7 @@ observation limits. [Campaign feature trace](../../remake/docs/capability-status
   [Action code](../../remake/src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) ·
   [Capability status](../../remake/docs/capability-status.md#authored-aura-agreement) ·
   [Ordinary acceptance and limits](../../remake/docs/domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction)
+- **L3 DETOX ranks.** [Field and battle cures, cursed gear, refresh and Continue](../../remake/docs/domain/detox-ranks-design.md)
 - **Remaining design and work.** Scope other status families by actual target eligibility, resistance,
   payment and after-turn/return behavior. Keep DETOX ranks and hostile statuses under their own
   terms and legal consumers. [DETOX 2/3 #1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
