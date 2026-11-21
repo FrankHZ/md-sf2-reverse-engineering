@@ -152,12 +152,11 @@ A palette or sprite match from another member is insufficient class admission.
   [Hostile status #1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967)
 - **VICR.** Sarah at 40 retains HEAL 4, BLAST 4, SLOW 2 and DETOX 3. Karna at 28 retains
   HEAL 3, BLAST 3 and BOOST 1. Karna learns BOOST 2 at effective 30 and AURA 1 at 33.
-  The current healing action, AURA validation and healing EXP have PRST-only checks.
-  Extend these consumers together to the source healer classes required by this slice.
-  An ordinary promoted HEAL 1 or 3 on missing HP distinguishes its 5/4 power from PRST.
-  Also check full-recovery HEAL 4. Reuse BLAST 1–4, SLOW 1–2, DETOX 1, BOOST 1 and mounted
-  AURA ranks where available. Record the actual effect support of higher DETOX and BOOST 2
-  separately. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
+  VICR uses the shared healer eligibility and EXP rules. HEAL 1, HEAL 3 and mounted
+  AURA 1 apply 5/4 to the raw power before the missing-HP cap. HEAL 4 retains its
+  full-recovery sentinel. The existing Battle26 bindings supply BLAST 1–4, SLOW 1–2,
+  admitted DETOX 1–3 and BOOST 1. Karna learns BOOST 2 and AURA 1 through growth.
+  The BOOST 2 effect, higher campaign AURA ranks and DETOX 4 remain with their effect owners. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
   [Karna growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm) ·
   [Healing power and EXP](../../../docs/design/contracts/battle/spell-resolution.md) ·
   [DETOX #1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
@@ -185,7 +184,8 @@ A palette or sprite match from another member is insufficient class admission.
 
 **Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
 Chester, Rick and Eric, MAGE→WIZ for Kazin and Tyrin, WARR→GLDT for Jaha and Randolf,
-BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, and RNGR→BWNT for May. The three knights have their own growth,
+BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, RNGR→BWNT for May, and PRST→VICR for
+Sarah and Karna. The three knights have their own growth,
 map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
 each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
 use map sprites 12/43 and Battle26 sprite 21 palettes 2/1. Each admits the four mounted
@@ -194,7 +194,8 @@ rods/sticks. The two GLDT members use field sprites 9/40 and battle body 18 with
 axes or swords and Luke's newly legal Broad Sword. Elric and Janet use field sprites 31/46
 and battle body 31 palettes 0/1. May uses field sprite 21 and battle body 29 palette 0.
 Their mounted arrows, shells and Unarmed use the member's body animation with the independent
-weapon layer hidden. Earlier loaded encounters share the member bindings.
+weapon layer hidden. Sarah and Karna use field sprites 3/37 and battle body 25 palettes 1/2.
+Each VICR has four mounted rod/stick bindings and the matching healing cast sequence. Earlier loaded encounters share the member bindings.
 Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
 Chester, Rick, Tyrin and Randolf remain **Unknown**. The other destination pairs still
 need their own gameplay bindings and witnesses.
@@ -271,7 +272,7 @@ A candidate's presence in the package or an engine case is independent of ordina
 | WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. His promoted ordinary route remains **Unknown**. [WIZ reproduction](#wiz-ordinary-reproduction) |
 | GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's ordinary promoted route and a native Warrior Pride fallback remain **Unknown**. [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
 | SNIP, BWNT | Chinese Pacalon Elric and Janet kept Steel Arrow. Fallen May became BWNT, was raised and used Wooden Arrow. Battle26 exercised all three body variants, adjacent target rejection, Unarmed and 3-cell Assault Shell and Great Shot attacks. Cold Continue and EGRESS kept all three classes. A native Silver Tank fallback remains **Unknown**. [Ranged reproduction](#sniper-and-bow-knight-ordinary-reproduction) |
-| VICR | Sarah PRST 40 in both castles and Karna PRST 28 in Chinese. Use one promoted HEAL witness with partial HP, a smaller learned rank and actual award, plus a legal field/book/cold round trip. Preserve the differing books with the same implementation. |
+| VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Guardian Staff. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
 | WFBR, PHNX | Chinese Gerhalt WFMN 29 and Peter PHNK 31 in both castles. Compare the reachable movement cost/land effect against the preceding class, then observe the unarmed action and return. |
 | NINJ, MNST | Both castles have Slade THIF 12 and Kiwi TORT 15. An eligible retained witness remains **Unknown**. Start from a lawful pre-Pacalon save with higher levels if one is registered. Otherwise try a bounded Battle26 repeat from a castle copy. Raise Slade, then earn ordinary EXP to 20. The seed deficits are about 760 and 490 EXP respectively. Measure EXP per action and turns on one repeat and agree a finite budget before training both. Keep the native row **Unknown** if the pilot cannot supply an eligible journey within budget. Engine cases at valid levels cover weapon/ring, the first learned rank, resistance and both conversion branches independently. |
 
@@ -477,3 +478,50 @@ lookup. Both driver failures are retained. The Assault Shell run reached input a
 published its after-action slot before native teardown exited `0xC0000005`. Independent
 cold Continue compared complete battle data and completed EGRESS from that slot. Other
 successful exits may report ObjectDB teardown warnings. #1716 remains deferred.
+
+
+## Vicar ordinary reproduction
+
+Mount `vicar-v1` from the registered `derived/issue1956/ranged-v1`, the prepared retail
+library at commit `52435b04f49a84a6a9ed4444620055a070648001` and the pinned source metadata.
+The closed package has 145 files and 294,653,990 bytes, a 46,494-byte increase. It adds six
+prepared walking strips and six battle body frames. Eight member/weapon bindings reuse
+the four mounted rod/stick layers for each palette. The selected weapon banks use
+shared body palette slots 1 and 2. One package serves both locales.
+[Mount command and inputs](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+The fixed source defines VICR 19 with HEALER MOV 5, no innate resistance and Counter 1/16.
+Its zero-based attack-target ranks are 6 (Regular), 6 (Flying), 9 (Archer) and 26 (Mage).
+The healing rule multiplies the raw spell power by 5/4 before capping to missing HP and
+applies the full-recovery sentinel first. The existing ally healing contribution uses
+the caster's current source class and the target's maximum HP. [Class data](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[AI priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm) ·
+[Healing power and EXP](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-heal-1-subset)
+
+Start `sarah`, `karna` and `road` in one journey from a copy of the Chinese Pacalon
+castle slot, using `derived/issue1956/vicar-review/Boot.ps1`. Fork the Battle26 ready slot
+for `heal1`, `heal3` and `heal4`. Karna's physical `rod` witness starts from the
+HEAL 3 after-action slot. Run `battle-cold` for each action and continue the HEAL 4
+journey through `egress` and `field-return-cold`. The private handoff lists the exact
+seed names and checkpoints.
+
+| Boundary | Observed result |
+| --- | --- |
+| Church | Sarah PRST 40 and Karna PRST 28 became VICR 1 with 0 EXP. Sarah kept Short Rod, HEAL 4, DETOX 3, BLAST 4 and SLOW 2. Karna kept Guardian Staff, HEAL 3, BLAST 3 and BOOST 1. Both retained HP, MP and earned stats. The finite rite cue finished and Castle music resumed. |
+| Sarah HEAL 1 and HEAL 4 | HEAL 1 spent 3 MP and restored 18 HP (Bowie 17→35 of 60), earning 10 EXP. The full-recovery HEAL 4 fork spent 20 MP and restored all 43 missing HP (17→60), earning 17 EXP. Sarah projected field sprite 3 and body 25 palette 1 with Short Rod. |
+| Karna HEAL 3 and staff | HEAL 3 spent 10 MP and restored 37 HP (Bowie 18→55 of 60), earning 15 EXP. Karna projected field sprite 37 and body 25 palette 2 with Guardian Staff. The separate staff branch committed an adjacent Guardian Staff attack for 6 HP and returned to Movement. |
+| Persistence and return | The ready and post-action v4 cold saves reproduced all decoded battle data for HEAL 1, HEAL 3, HEAL 4 and Guardian Staff. EGRESS from the HEAL 4 branch returned to Map36. Field v3 cold Continue kept both Vicar cards, books and loadouts, including Sarah's 17 EXP. |
+| Vigor Ball | On the independent Chinese Elven Village Search history, Sarah PRST 37 carried the Vigor Ball in slot 3 (zero-based) with F221 set. Return by Caravan to Hassan, decline the special offer and confirm ordinary VICR. Sarah became VICR 1/0 with the same book and pack. Hassan Save and cold Continue preserved the held word and F221. |
+
+Karna's controlled VICR growth learns BOOST 2 at stored level 10 (effective 30) and
+AURA 1 at stored level 13 (effective 33). The controlled AURA 1 has range 0–3 and
+radius 1. It restores up to 18 HP per eligible recipient in source-slot order and
+uses the shared 25 EXP accumulator cap. Ordinary promoted acquisition and casting of
+AURA 1 remain **Unknown**. BOOST 2 learning preserves the packed rank. Its battle effect
+and campaign AURA 2–4 remain unbound.
+
+The first staff pilot ended in defeat before Karna could attack. The first Hassan route
+stopped at a blocked direct path. The accepted staff fork uses the retained HEAL 3 slot
+and the accepted Hassan route retraces the established Caravan crossing. Both failed
+runs are retained. Some successful native exits reported ObjectDB warnings. #1716
+remains deferred.

@@ -25,6 +25,7 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         "KNTE": "PLDN",
         "WARR": "GLDT",
         "MAGE": "WIZ",
+        "PRST": "VICR",
         "ACHR": "SNIP",
         "BDMN": "BDBT",
         "RNGR": "BWNT",

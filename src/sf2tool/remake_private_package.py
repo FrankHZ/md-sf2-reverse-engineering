@@ -227,6 +227,7 @@ def mount_retained_weapons(
     # uses body colors 1 and 2 ($0EEE and $0000) shared by both class palettes.
     rules = {
         "WIZ": (17, {85, 86, 87, 89}),
+        "VICR": (19, {85, 86, 87, 89}),
         "GLDT": (15, {33, 34, 35, 36}),
         "BDBT": (23, {57, 58, 59, 71}),
         "SNIP": (21, {45, 46, 47}),
@@ -299,7 +300,7 @@ def mount_retained_weapons(
             attack = prepared_ally_sequence(sprite, animations[sprite], draw_weapon)
             dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw_weapon)
             sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
-            if class_code == "WIZ":
+            if class_code in {"WIZ", "VICR"}:
                 sequences["cast"] = attack
             appearance = dict(
                 side="ally",
@@ -323,6 +324,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         "wiz": {4: "WIZ", 17: "WIZ"},
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
+        "vicar": {1: "VICR", 15: "VICR"},
     }
     selected = (
         permitted | (set(families) & retained_families.keys())
@@ -344,7 +346,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     )
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
         raise ValueError(
-            "select walking, icons, sfx, music, pldn, wiz, melee or ranged for this consumer"
+            "select walking, icons, sfx, music, pldn, wiz, melee, ranged or vicar for this consumer"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
