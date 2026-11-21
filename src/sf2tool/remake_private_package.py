@@ -220,11 +220,11 @@ def prepared_ally_sequence(index: int, rows: list[list[int]], draw_weapon: bool)
     )
 
 
-def mount_retained_weapons(
+def mount_ordinary_appearances(
     library: Path, world: dict, scene: dict, promotions: dict[int, str]
 ) -> None:
-    # These classes keep the mounted starter-family weapons. Each selected bank
-    # uses body colors 1 and 2 ($0EEE and $0000) shared by both class palettes.
+    # The selected independent weapon layers use body colors 1 and 2 ($0EEE
+    # and $0000) shared by both class palettes. None selects an unarmed body.
     rules = {
         "WIZ": (17, {85, 86, 87, 89}),
         "VICR": (19, {85, 86, 87, 89}),
@@ -232,6 +232,8 @@ def mount_retained_weapons(
         "BDBT": (23, {57, 58, 59, 71}),
         "SNIP": (21, {45, 46, 47}),
         "BWNT": (25, {45, 46, 47}),
+        "WFBR": (24, {None}),
+        "PHNX": (26, {None}),
     }
     # Additional source-legal weapons already mounted for another promoted member.
     # Arrows and shells use only the selected body animation (weapon selector FF).
@@ -250,6 +252,21 @@ def mount_retained_weapons(
     mount_walking(
         library / "walking", world, walking["sprites"], [row["sprite"] for row in variants.values()]
     )
+
+    portraits = {
+        walking["sprites"][variant["sprite"]]["portrait"]
+        for member, variant in variants.items()
+        if promotions[member] in {"WFBR", "PHNX"}
+    }
+    if portraits:
+        directory = library / "portraits"
+        mounted = world["presentation"]["portraits"]
+        prepared = {row["portrait"]: row for row in read_json(directory / "index.json")["records"]}
+        for portrait in sorted(portraits):
+            row = prepared[portrait]
+            existing = next((entry for entry in mounted if entry["portrait"] == portrait), None)
+            if existing is None:
+                mounted.append(dict(row, raster=installed_png(directory, row["raster"])))
 
     directory = library / "bodies"
     bodies = {
@@ -270,15 +287,16 @@ def mount_retained_weapons(
             frames.append(key)
 
         class_code = promotions[member]
+        base_items = rules[class_code][1]
         mounted_weapons = [
             row
             for row in scene["actors"]
             if row["side"] == "ally"
             and row["sprite"] == base_sprites[member]
             and member in row.get("members", [])
-            and row["item"] is not None
+            and (row["item"] is None) == (None in base_items)
         ]
-        if {row["item"] for row in mounted_weapons} != rules[class_code][1]:
+        if {row["item"] for row in mounted_weapons} != base_items:
             raise ValueError(f"base package lacks the supported {class_code} weapon layers")
         if class_code in promoted_weapons:
             donor, item_ids = promoted_weapons[class_code]
@@ -325,6 +343,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
         "vicar": {1: "VICR", 15: "VICR"},
+        "innate": {9: "WFBR", 7: "PHNX"},
     }
     selected = (
         permitted | (set(families) & retained_families.keys())
@@ -338,7 +357,9 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         for member, class_code in variants.items()
     }
     if retained_promotions and upstream is None:
-        raise ValueError("Mounting retained weapons requires the pinned -Upstream checkout")
+        raise ValueError(
+            "Mounting ordinary promotion metadata requires the pinned -Upstream checkout"
+        )
     parts = (
         ("pldn-party", "pldn-eric")
         if "pldn" in selected
@@ -346,7 +367,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     )
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
         raise ValueError(
-            "select walking, icons, sfx, music, pldn, wiz, melee, ranged or vicar for this consumer"
+            "select walking, icons, sfx, music, pldn, wiz, melee, ranged, vicar or innate"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -401,7 +422,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
                 if actor not in scene["actors"]:
                     scene["actors"].append(actor)
         if retained_promotions:
-            mount_retained_weapons(root, world["world"], scene, retained_promotions)
+            mount_ordinary_appearances(root, world["world"], scene, retained_promotions)
             promotions.update(retained_promotions)
         if upstream is not None and promotions:
             bind_ordinary_progression(world, upstream, promotions)

@@ -25,7 +25,7 @@ public sealed class SleepAndFlyingTests
         var tile = new BattleTerrain(surface, TerrainProtection.Heavy);
         Assert.Equal((sbyte)2, BattleTerrainRules.MovementCost(tile, BattleMover.Flying));
         Assert.Equal(256, Sf2PhysicalAction.LandMultiplier(tile, BattleMover.Flying));
-        Assert.Equal(205, Sf2PhysicalAction.LandMultiplier(tile, BattleMover.Hovering));
+        Assert.Equal(surface == TerrainSurface.Desert ? 256 : 205, Sf2PhysicalAction.LandMultiplier(tile, BattleMover.Hovering));
         if (surface == TerrainSurface.HighSky)
             Assert.Equal((sbyte)-1, BattleTerrainRules.MovementCost(tile, BattleMover.Hovering));
         Assert.Equal((sbyte)-1, BattleTerrainRules.MovementCost(new(TerrainSurface.Barrier, TerrainProtection.None), BattleMover.Flying));
