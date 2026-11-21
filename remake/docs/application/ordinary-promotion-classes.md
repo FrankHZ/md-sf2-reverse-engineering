@@ -212,9 +212,10 @@ new class combat rules in the preceding section are separate consumer gaps.
    loadouts. Compare class, packed words, live and last-applied counters, derived DEF/AGI and
    the next real refresh against uninterrupted play. Make the offer state distinguish initial
    consent, unavailable special, special decline, regular answer and back to selection. The
-   current special-item receipt blocks the regular branch even with an admitted destination.
-   With the Wing held, present that special branch explicitly, allow declining it into PLDN and leave the held word and F175
-   intact. Preserve the no-item regular path and the special acceptance boundary for
+   shared church flow supports these stages for an admitted ordinary destination. Declining
+   the special offer keeps the held word and its acquisition flag. PLDN's content bindings
+   and ordinary Pacalon witness remain open. Preserve the no-item regular path and the special
+   acceptance boundary for
    [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
 2. **WIZ and the first retained spell caster.** Reuse the admission path for Kazin and the legal
    Tyrin branch. Exercise rod and cast animation independently. Carry current-class item

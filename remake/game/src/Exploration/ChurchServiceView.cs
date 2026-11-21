@@ -73,6 +73,14 @@ internal sealed partial class ChurchServiceView : Control
                 var name = session.Definition.PrivateDefinitions?.Classes.GetValueOrDefault(offer.Destination!.Value)?.NameExpression.Trim('"');
                 return DisplayNames.Name("name.class", offer.Destination, name ?? GameText.Get("party.class-unavailable"));
             }
+            string Special(string key, PromotionOffer offer)
+            {
+                var item = offer.SpecialItem!;
+                var holder = members.Single(m => m.Carried.Actor == item.Holder);
+                var name = session.Definition.PrivateDefinitions?.Items.GetValueOrDefault((byte)(item.Word & 127))?.DisplayName;
+                return GameText.Get(key, PartyStatusView.MemberName(holder, session),
+                    DisplayNames.ItemWord(item.Word, name ?? GameText.Get("party.item-unavailable")));
+            }
             if (wait.Phase == ChurchPhase.AnotherService)
             {
                 _title.Text = GameText.Get("church.another");
@@ -85,11 +93,15 @@ internal sealed partial class ChurchServiceView : Control
                 foreach (var row in wait.Candidates!)
                     _options.Add(($"{Member(row)}  Lv {row.Level}", new SelectPromotion(wait.Token, row)));
             }
-            else if (wait.Phase is ChurchPhase.Consent or ChurchPhase.Regular)
+            else if (wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular)
             {
                 var row = wait.Candidate!;
-                _title.Text = wait.Consented ? GameText.Get("church.regular", Member(row), Destination(row)) :
-                    GameText.Get("church.consent", Member(row));
+                _title.Text = wait.Phase switch
+                {
+                    ChurchPhase.Special => Special("church.special-offer", row),
+                    ChurchPhase.Regular => GameText.Get("church.regular", Member(row), Destination(row)),
+                    _ => GameText.Get("church.consent", Member(row)),
+                };
                 _options.Add((GameText.Get("story.yes"), new AnswerPromotion(wait.Token, row, true)));
                 _options.Add((GameText.Get("story.no"), new AnswerPromotion(wait.Token, row, false)));
             }
@@ -100,9 +112,7 @@ internal sealed partial class ChurchServiceView : Control
                     ChurchResultKind.NoApplicableMember => GameText.Get("church.none"),
                     ChurchResultKind.NoPromotion => GameText.Get("church.no-promotion", Member(wait.Candidate!)),
                     ChurchResultKind.LowLevel => GameText.Get("church.low-level", Member(wait.Candidate!)),
-                    ChurchResultKind.SpecialUnavailable => GameText.Get("church.special-unavailable",
-                        PartyStatusView.MemberName(members.Single(m => m.Carried.Actor == wait.Candidate!.SpecialItem!.Holder), session),
-                        DisplayNames.ItemWord(wait.Candidate!.SpecialItem!.Word, session.Definition.PrivateDefinitions!.Items[(byte)wait.Candidate.SpecialItem.Word].DisplayName)),
+                    ChurchResultKind.SpecialUnavailable => Special("church.special-unavailable", wait.Candidate!),
                     ChurchResultKind.Unavailable => GameText.Get("church.promotion"),
                     ChurchResultKind.Promoted => GameText.Get("church.promoted", Member(wait.Candidate!), Destination(wait.Candidate!)),
                     ChurchResultKind.Declined => GameText.Get("church.declined"),
@@ -219,7 +229,7 @@ internal sealed partial class ChurchServiceView : Control
         if (action == GameAction.Cancel)
         {
             Choose(_wait.Phase == ChurchPhase.Members ? new CancelPromotion(_wait.Token) :
-                _wait.Phase is ChurchPhase.Consent or ChurchPhase.Regular ? new AnswerPromotion(_wait.Token, _wait.Candidate!, false) :
+                _wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular ? new AnswerPromotion(_wait.Token, _wait.Candidate!, false) :
                 _wait.Phase == ChurchPhase.Result ? new ContinueChurch(_wait.Token) : _wait.Offer is { } offer
                 ? new AnswerChurch(_wait.Token, offer, false) : new LeaveChurch(_wait.Token)); return;
         }

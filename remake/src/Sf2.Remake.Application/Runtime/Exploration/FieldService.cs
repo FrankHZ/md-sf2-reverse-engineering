@@ -7,7 +7,7 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public enum ChurchAction { Raise, Cure, Promote }
 public enum ChurchEffect { Raise, Poison, Stun }
-public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService }
+public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService, Special }
 public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid, LowLevel, NoPromotion, Unavailable, SpecialUnavailable, Promoted }
 public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null);
 public sealed record HeldPromotionItem(ActorRef Holder, int Slot, ushort Word);
@@ -19,6 +19,7 @@ public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, Ch
     public IReadOnlyList<PromotionOffer>? Candidates { get; init; }
     public PromotionOffer? Candidate { get; init; }
     public bool Consented { get; init; }
+    public bool DeclinedSpecial { get; init; }
     public bool LeavingPromotion { get; init; }
     public ChurchPhase Phase => LeavingPromotion ? ChurchPhase.AnotherService : (Result, Action, Candidate, Consented) switch
     {
@@ -26,6 +27,7 @@ public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, Ch
         (_, null, _, _) => ChurchPhase.Menu,
         (_, ChurchAction.Promote, null, _) => ChurchPhase.Members,
         (_, ChurchAction.Promote, _, false) => ChurchPhase.Consent,
+        (_, ChurchAction.Promote, { SpecialItem: not null }, true) when !DeclinedSpecial => ChurchPhase.Special,
         (_, ChurchAction.Promote, _, true) => ChurchPhase.Regular,
         _ => ChurchPhase.Offer,
     };
@@ -62,19 +64,28 @@ internal static class FieldService
                     kind = "church-promotion-members"; break;
                 case SelectPromotion select when wait.Phase == ChurchPhase.Members && wait.Candidates!.Contains(select.Candidate):
                     var choice = select.Candidate;
-                    next = next with { Candidate = choice, Consented = false,
+                    next = next with { Candidate = choice, Consented = false, DeclinedSpecial = false,
                         Result = !Sf2ClassRules.RegularBase(choice.Source) ? new(ChurchResultKind.NoPromotion) :
                             choice.Level < 20 ? new(ChurchResultKind.LowLevel) : null };
                     kind = "church-promotion-selection"; break;
-                case AnswerPromotion answer when wait.Phase is ChurchPhase.Consent or ChurchPhase.Regular &&
+                case AnswerPromotion answer when wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular &&
                         wait.Candidate == answer.Candidate:
                     var candidate = answer.Candidate;
                     if (!Candidates(definition, current).Contains(candidate))
                         throw new BattleRuleException("stale-promotion", "service.offer");
-                    if (!answer.Accept) next = next with { Candidate = null, Consented = false };
-                    else if (candidate.SpecialItem is not null || candidate.Destination is null)
-                        next = next with { Result = new(candidate.SpecialItem is not null ? ChurchResultKind.SpecialUnavailable : ChurchResultKind.Unavailable) };
-                    else if (!wait.Consented) next = next with { Consented = true };
+                    if (wait.Phase == ChurchPhase.Special)
+                    {
+                        next = answer.Accept
+                            ? next with { Result = new(ChurchResultKind.SpecialUnavailable) }
+                            : next with { DeclinedSpecial = true,
+                                Result = candidate.Destination is null ? new(ChurchResultKind.Unavailable) : null };
+                    }
+                    else if (!answer.Accept) next = next with { Candidate = null, Consented = false, DeclinedSpecial = false };
+                    else if (wait.Phase == ChurchPhase.Consent)
+                    {
+                        next = next with { Consented = true,
+                            Result = candidate.SpecialItem is null && candidate.Destination is null ? new(ChurchResultKind.Unavailable) : null };
+                    }
                     else
                     {
                         (field, party) = Promote(definition, current, field, candidate);
@@ -83,7 +94,7 @@ internal static class FieldService
                     kind = "church-promotion-answer"; break;
                 case ContinueChurch when wait.Phase == ChurchPhase.Result && wait.Action == ChurchAction.Promote &&
                         wait.Result!.Kind != ChurchResultKind.NoApplicableMember:
-                    next = next with { Candidates = Candidates(definition, current), Result = null, Candidate = null, Consented = false };
+                    next = next with { Candidates = Candidates(definition, current), Result = null, Candidate = null, Consented = false, DeclinedSpecial = false };
                     kind = "church-promotion-members"; break;
                 case CancelPromotion when wait.Phase == ChurchPhase.Members:
                 case ContinueChurch when wait.Action == ChurchAction.Promote && wait.Result?.Kind == ChurchResultKind.NoApplicableMember:
