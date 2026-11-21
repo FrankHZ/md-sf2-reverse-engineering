@@ -289,10 +289,107 @@ The direct battle comparisons matched the whole decoded data. Quick and Running 
 controlled engine witnesses. Ordinary pickup and item-specific Continue remain **Unknown**
 for those two rings.
 
-For review, reuse the selected world, scene and language catalogs in the Pacalon recipe.
-Start from read-only registered slots, copy only the selected slot into a fresh external save
-namespace, and use ordinary title Continue, input and Save. Use the existing running state,
-input, projection and error readers. The Power and Protect post-equip battle slots are about
-41 and 37 KiB respectively. The stable world was reused. A Protect rehearsal ended with the
-known native finalizer failure after a receipt and an observer assertion. The corrected equip,
-save and cold re-save completed with exit 0. [Paused shutdown issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+The Power and Protect post-equip battle slots are about 41 and 37 KiB respectively. A Protect
+rehearsal recorded the item receipt, then hit an observer assertion. The Godot process exited
+with `0xC0000005`. Its stack showed
+`Godot.NativeInterop.NativeFuncs.godotsharp_internal_object_get_associated_gchandle`,
+`Godot.GodotObject.Dispose`, and `Godot.GodotObject.Finalize`. The corrected Equip, Save and
+cold Continue completed with exit 0. [Paused shutdown issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+### Battle Continue after worktree cleanup
+
+Temporarily move the producing `local/` aside in the owning checkout. Capture the operator
+save root before loading the worktree configuration. Restore `local/private-inputs.ps1` from
+the registered template. Run the Pacalon setup block through its `Copy-Item` of the registered
+drivers into `./local`. This selects the stable `issue1966` world and scenes, the `issue1941`
+display catalogs, and `issue1927` controller settings. Reuse the built Debug adapter.
+[Fresh worktree setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup) ·
+[Pacalon setup](../application/pacalon-first-visit.md#continue-after-worktree-cleanup)
+
+Use the retained external English Battle26 slot from the ordinary Power Ring route above.
+The observer's `battle-continue` mode uses the title's Continue slot picker and re-saves from
+settled Movement. This scratch copy adds two ordinary Enter inputs, one to dismiss the save
+result and one to open Action Choice at the current stop.
+
+```powershell
+# Capture this before loading the worktree configuration.
+$operatorData = [Environment]::GetFolderPath('LocalApplicationData')
+# Run the linked configuration and Pacalon setup through the driver copy here.
+$seed = Join-Path $operatorData 'Sf2RingReview/issue1946/battlecold01/ring-review/sf2-opening/slot1.json'
+$sampleRoot = Join-Path $operatorData ('Sf2RingReview/issue1946/clean-' + [guid]::NewGuid().ToString('N'))
+$receipt = (New-Item -ItemType Directory -Path './local/issue1946-clean').FullName
+$driver = Get-Content -LiteralPath "$pacalon/Pacalon.gd" -Raw
+$anchor = ' write_json("result", {"issue": issue, "texts": text_ids})'
+$check = @'
+ if mode == "battle-continue" and issue == "":
+  await key(KEY_ENTER)
+  await settle("post-save")
+  var start = state()
+  await key(KEY_ENTER)
+  await ticks(6)
+  var next = state()
+  if start.get("stage") != "Movement" or next.get("stage") != "ActionChoice" or start.get("actor") != next.get("actor") or next.get("failure") != null:
+   issue = "ordinary input after settled re-save"
+  write_json("post-save-input", {"actor": next.get("actor"), "before": start.get("stage"), "after": next.get("stage"), "failure": next.get("failure")})
+'@
+if ([regex]::Matches($driver, [regex]::Escape($anchor)).Count -ne 1) { throw 'Pacalon driver result boundary changed' }
+Set-Content -LiteralPath "$receipt/Continue.gd" -Value ($driver.Replace($anchor, $check + [char]10 + $anchor)) -Encoding utf8
+$env:SF2_DESKTOP_MODE = 'battle-continue'
+$env:SF2_REVIEW_LANGUAGE = 'en'
+$env:SF2_ROUTE_DIR = $receipt
+$env:SF2_SAVE_ROOT = $sampleRoot
+$env:SF2_SAVE_NAMESPACE = 'ring-clean-review'
+$env:SF2_REVIEW_SLOT_PATH = Join-Path $sampleRoot 'ring-clean-review/sf2-opening/slot1.json'
+$env:APPDATA = Join-Path $receipt 'appdata'
+$env:LOCALAPPDATA = Join-Path $receipt 'localappdata'
+$env:TEMP = Join-Path $receipt 'temp'
+$env:TMP = $env:TEMP
+foreach ($dir in @($env:APPDATA, $env:LOCALAPPDATA, $env:TEMP, [IO.Path]::GetDirectoryName($env:SF2_REVIEW_SLOT_PATH))) {
+    [void][IO.Directory]::CreateDirectory($dir)
+}
+[IO.File]::Copy($seed, $env:SF2_REVIEW_SLOT_PATH, $false)
+$game = (Resolve-Path -LiteralPath './remake/game').Path
+Push-Location -LiteralPath $game
+try {
+    & $env:GODOT_BIN --headless --fixed-fps 60 --audio-driver Dummy --resolution 1920x1080 `
+        --path $game --script "$receipt/Continue.gd" --log-file "$receipt/native.log" `
+        -- --input-settings "$pacalon/settings-en.json"
+    $nativeExit = $LASTEXITCODE
+} finally { Pop-Location }
+if ($nativeExit -ne 0) { throw 'Godot ordinary Continue check failed' }
+```
+
+Compare the entire decoded `data` object and verify that the record sequence increments once.
+Check the worn words and ATT explicitly and read the next input's observed stage and failure.
+
+```powershell
+$env:SF2_RING_REVIEW_SEED = $seed
+@'
+import base64, json, os
+from pathlib import Path
+
+def load_record(path):
+    envelope = json.loads(path.read_text(encoding="utf-8-sig"))
+    return json.loads(base64.b64decode(envelope["payload"]))
+
+receipt = Path(os.environ["SF2_ROUTE_DIR"])
+before = load_record(Path(os.environ["SF2_RING_REVIEW_SEED"]))
+after = load_record(receipt / "immediate-resave-slot.json")
+assert after["sequence"] == before["sequence"] + 1
+assert before["data"] == after["data"]
+battle = after["data"]["battle"]
+assert battle["encounter"] == "battle-26"
+jaha = next(actor for actor in battle["actors"] if actor["actorId"] == "ally-3")
+assert jaha["loadout"]["value"]["items"] == [161, 13, 0, 147] and jaha["attack"] == 39
+entry = json.loads((receipt / "post-save-input.json").read_text(encoding="utf-8"))
+assert entry["before"] == "Movement" and entry["after"] == "ActionChoice" and entry["failure"] is None
+print(f"PASS sequence {before['sequence']} -> {after['sequence']}, complete battle data equal")
+print(f"PASS {battle['encounter']} Jaha attack {jaha['attack']} and both equipped words, input {entry['actor']} {entry['before']} -> {entry['after']}")
+'@ | python -X utf8 -
+if ($LASTEXITCODE -ne 0) { throw 'Decoded battle or input comparison failed' }
+```
+
+With the producing `local/` parked, Godot 4.7.2 Mono continued the Battle26 slot. Sequence 8
+advanced to 9 with identical complete battle data. Jaha retained `[161,13,0,147]` and ATT 39.
+Bowie (`ally-0`) advanced from Movement to Action Choice on the next input with no projected
+failure. Godot exited 0. The source slot and stable content remained read-only.
