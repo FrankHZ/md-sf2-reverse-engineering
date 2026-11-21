@@ -193,7 +193,8 @@ published versions are immutable. Restore damaged reviewed files from their priv
 or choose a fresh library destination.
 
 To regenerate coverage and assemble the supported first-consumer packages, select `$assetRoot`
-as the absolute path to the private asset Git checkout at the reviewed commit named in the
+as the absolute path to the private asset Git checkout and `$pinnedSource` as the absolute
+source checkout at the revisions named in the
 [asset inventory](asset-inventory.md#retail-original-preparation).
 
 ```powershell
@@ -205,19 +206,22 @@ $token = [guid]::NewGuid().ToString('N')
 # Current accepted readers can use these field, UI and audio additions now.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family walking,icons,music,sfx `
     -Command 4,25,87,99 -Destination "$root/priority-$token"
-# Assemble the complete PLDN candidate for #1956.
+# Assemble the PLDN package with growth and class-conditioned field sprites.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family All `
-    -Command 4,25,87,99 -Destination "$root/promotion-$token"
+    -Command 4,25,87,99 -Upstream $pinnedSource -Destination "$root/pldn-$token"
 ```
 
-Mount reads only the prepared family files and the closed base package. It preserves the relative
-world/scene/entry dependencies, adds selected WAVs using the existing runtime WAV convention and
-publishes a fresh directory after checking closure. Select those packages with the ordinary
+Mount without `-Upstream` uses the prepared family files and closed base package. The stable
+`promotion-v1` package records that assembly with the three PLDN appearances. When PLDN is
+selected, a supplied `-Upstream` adds growth and class-conditioned map sprite bindings from the
+pinned source tables. The resulting progression package admits Chester, Rick and Eric. It uses
+prepared media and needs no ROM, audio capture or production scratch. [PLDN reproduction](../application/ordinary-promotion-classes.md#pldn-ordinary-reproduction)
+
+Both modes preserve the relative world, scene and entry dependencies, mount the selected WAVs
+and publish a fresh directory after checking closure. Select the result with the ordinary
 environment variables above. `Mount -Family All` includes the first consumers' 25, 87 and 99 cues.
 Select other prepared cues with `-Command`. For new maps, bodies and effects, use the original ID
-in the family index to select its atlas, tile bank, frames, palette and operands. The stable
-`promotion-v1` package includes the three PLDN appearances. #1956 owns admission of the promoted
-member bindings, which the accepted Content reader rejects at `scene-ally-member`.
+in the family index to select its atlas, tile bank, frames, palette and operands.
 
 The closed-package template/deduplication experiment and its receipts remain reproducible at
 code commit `2097434ec68c2e709312c25adab7e638e9566ccd`. Direct ID-indexed production and
