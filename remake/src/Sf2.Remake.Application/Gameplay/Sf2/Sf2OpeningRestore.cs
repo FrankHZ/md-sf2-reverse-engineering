@@ -10,6 +10,15 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningRestorePolicy
 {
     private const string InitialRecipe = "new-game";
+    private const string YeelRecipe = "yeel-field";
+
+    private static MapSetupId? YeelSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)
+    {
+        var selected = map.SelectedSetup(flags);
+        if (flags.Contains(650))
+            return selected is { Value: "ms-map5-flag650" } && map.Setups.ContainsKey(selected) ? selected : null;
+        return selected == map.Setup?.DefaultSetup ? selected : null;
+    }
 
     private static (string Recipe, string Destination)? PacalonLocation(string map) => map switch
     {
@@ -81,7 +90,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
-        if (data.Map is "map-23" or "map-25" or "map-2" or "map-36" && data.FieldScene is null)
+        if (data.Map is "map-5" or "map-23" or "map-25" or "map-2" or "map-36" && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
@@ -105,7 +114,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
-            !(data.Recipe == "battle07-return" && data.EgressMap is "map-5" or "map-43" or "map-16"))
+            !(data.Recipe is "battle07-return" or YeelRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
@@ -147,6 +156,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
                 ? new("map3-joined", new(map, new(32, 13), 1), "Granseal, outside the church")
                 : new("map3-opening", new(map, new(56, 3), 3), "Granseal, home");
         }
+        if (map.Value == "map-5" && YeelSetup(content!, flags) is not null &&
+            content!.Traversal.IsWithinActiveArea(player.Position))
+            return new(YeelRecipe, player, "Yeel");
         if (map.Value == "map-57" && flags.Contains(501) && !flags.Contains(506) &&
             anchor is { Map.Value: "map-57", Facing: 3 })
             return new("battle01-return", anchor, "Ancient Tower, completed battle return");
@@ -224,6 +236,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         world.Map.Value == "map-72" && flags.Contains(256) && definition.Exploration!.Programs.ContainsKey("cs-4ffda")
             ? Sf2FieldSceneRestore.Capture(definition, RaftRuntime.OnScroll(world, flags, null), definition.Exploration.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
+        world.Map.Value == "map-5" ? Sf2FieldSceneRestore.Capture(definition, world,
+            YeelSetup(definition.Exploration!.Maps[world.Map], flags)!.Value) :
         world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
         world.Map.Value is "map-25" or "map-2" or "map-36" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value == "map-30" ? Sf2MineRestore.Capture(definition, world) : Sf2CreedRestore.Capture(definition, world, flags);
@@ -232,6 +246,15 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
+        if (location.Anchor.Map.Value == "map-5")
+        {
+            var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
+            if (scene is null || location.Recipe != YeelRecipe || scene.Setup != YeelSetup(sourceMap, flags)?.Value)
+                throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
+            var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
+            enteredFlags = flags;
+            return town;
+        }
         if (scene is not null && location.Anchor.Map.Value == "map-72")
         {
             var cliff = definition.Exploration!.Maps[location.Anchor.Map];

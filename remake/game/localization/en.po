@@ -1468,6 +1468,9 @@ msgstr "{0} is cured of poison."
 msgid "name.spell.detox"
 msgstr "DETOX"
 
+msgid "save.destination.yeel-field"
+msgstr "Yeel"
+
 msgid "save.destination.battle07-return"
 msgstr "Ancient Tower, earthquake aftermath"
 
