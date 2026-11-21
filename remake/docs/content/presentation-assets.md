@@ -250,6 +250,16 @@ selected, a supplied `-Upstream` adds growth and class-conditioned map sprite bi
 pinned source tables. The resulting progression package admits Chester, Rick and Eric. It uses
 prepared media and needs no ROM, audio capture or production scratch. [PLDN reproduction](../application/ordinary-promotion-classes.md#pldn-ordinary-reproduction)
 
+<a id="bedoe-audio-package"></a>
+
+For Bedoe rescue, select the registered `derived/issue2001/priority-v1` package under the
+shared input root. Use its `world.json`, `main-scenes.json` and `entry/entry.json` for
+`SF2_PRIVATE_EXPLORATION_CONTENT`, `SF2_PRIVATE_BATTLE_SCENE_CONTENT` and
+`SF2_PRIVATE_ENTRY_CONTENT`. Each JSON filename in `opening-inputs/` names its matching
+input variable without the extension. The package already has the D2 recording for command 87
+from `runtime/retail-v1/sfx/87` in the accepted private asset version. The existing Debug adapter
+resolves `SFX_JUMP` against this mounted cue. [Bedoe input and Save/Continue](../application/dark-caves-bedoe.md#reproduce-the-optional-routes)
+
 The WIZ mount selects already prepared Kazin and Tyrin walking and battle bodies, reuses
 the existing rod/stick layers and binds the two members' progression from `-Upstream`.
 Use the resulting `wiz-v1` for both locales. Ordinary Kazin was played through Battle26. Tyrin's rite has controlled coverage. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
