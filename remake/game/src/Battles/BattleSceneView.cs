@@ -112,7 +112,7 @@ internal sealed partial class BattleSceneView : Control
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 return;
             }
-            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsFieldDeath)
+            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !state.IsFieldDeath)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -191,10 +191,12 @@ internal sealed partial class BattleSceneView : Control
                 _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
-                    string sequence = state.Spell is not null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
+                    string sequence = state.Spell is not null || state.IsMonsterBreath ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
                     var animation = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences[sequence];
                     _animationIndex = animation.Index;
                     _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
+                    if (state.IsMonsterBreath)
+                        _attackSpell.Present(state, [Texture("kiwi-breath/tile-1"), Texture("kiwi-breath/tile-9")]);
                 }
                 if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Dodge")
                     _frames = (target.IsAlly ? _allyVisual! : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
@@ -276,7 +278,7 @@ internal sealed partial class BattleSceneView : Control
             if (_elapsed < 0.25) return null;
             _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        if (state.AttackSpell is not null && state.AttackItem is null)
+        if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath)
         {
             if (!_attackSpell.Advance(_elapsed)) return null;
             _completed = true;
@@ -370,6 +372,11 @@ internal sealed partial class BattleSceneView : Control
             node.Modulate = _settings.ReducedFlash || _logicalReaction % 2 == 0 ? Colors.White : new Color(0.2f,0.2f,0.2f,1);
         }
         else duration = 1.0 / 60;
+        if (state.IsMonsterBreath && state.Phase == BattleScenePhase.ActionAnimation)
+        {
+            duration = Math.Max(duration, 0.6);
+            _attackSpell.Advance(_elapsed);
+        }
         if (_elapsed < duration) return null;
         if (state.Phase == BattleScenePhase.End) _audio?.RestoreBattlefieldMusic();
         _completed = true;
@@ -487,6 +494,8 @@ internal sealed partial class BattleSceneView : Control
         }
         if (state.AttackSpell is { } attack)
         {
+            if (state.IsMonsterBreath && state.Phase == BattleScenePhase.ActionMessage)
+                return LocalizedMessage("battle.scene.flame-breath", ActorName(state.Actor));
             if (state.UsesAttackItem && state.Phase == BattleScenePhase.ActionMessage)
             {
                 var item = state.AttackItem;
@@ -660,17 +669,23 @@ internal sealed partial class BattleSceneView : Control
         // layer 2 precedes it (in front). Keep that per-frame distinction.
         _weapon.ZIndex = frame.Layer == 2 ? 3 : 1;
     }
-    private void Bind(Sprite2D node, string resource)
+    private Texture2D Texture(string resource)
     {
         var key = (Content!.Encounter, resource);
         if (!_textures.TryGetValue(key, out var texture))
         {
-            var raster = Content!.Rasters[resource]; using var image = new Image();
+            if (!Content!.Rasters.TryGetValue(resource, out var raster))
+                throw new InvalidOperationException("battle-scene-texture-unavailable");
+            using var image = new Image();
             if (image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok || image.GetWidth() != raster.Width || image.GetHeight() != raster.Height)
                 throw new InvalidOperationException("battle-scene-texture-invalid");
             texture = ImageTexture.CreateFromImage(image); _textures.Add(key, texture);
         }
-        node.Texture = texture; node.Scale = new(0.5f,0.5f);
+        return texture;
+    }
+    private void Bind(Sprite2D node, string resource)
+    {
+        node.Texture = Texture(resource); node.Scale = new(0.5f,0.5f);
         node.SetMeta("bound_resource", resource);
     }
     private Sprite2D Sprite(string name, Vector2 position)
@@ -707,6 +722,7 @@ internal sealed partial class BattleSceneView : Control
         suspended = _suspended,
         laser = _state?.Laser is not null ? _laser.Observe() : null,
         attackSpell = _state?.AttackSpell is not null && _state.AttackItem is null ? _attackSpell.Observe() : null,
+        monsterBreath = _state?.IsMonsterBreath == true,
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         suppressed = _state is { } messageState && Suppressed(messageState), suppressible = _state?.CanSuppressHitCoinMessage,
         requiresAcknowledgement = _state?.RequiresAcknowledgement,

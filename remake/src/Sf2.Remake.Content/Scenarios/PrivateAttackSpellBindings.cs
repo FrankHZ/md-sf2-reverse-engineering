@@ -34,12 +34,16 @@ internal static class PrivateAttackSpellBindings
                     ("RAIJIN", 1) => (28, 15, 18, 3, 2, AttackSpellElement.Neutral),
                     ("RAIJIN", 2) => (28, 18, 26, 3, 2, AttackSpellElement.Neutral),
                     ("RAIJIN", 3) => (28, 20, 58, 3, 0, AttackSpellElement.Neutral),
+                    ("KIWI", 1) => (41, 0, 28, 1, 0, AttackSpellElement.Fire),
+                    ("KIWI", 2) => (41, 0, 36, 1, 0, AttackSpellElement.Fire),
+                    ("KIWI", 3) => (41, 0, 45, 1, 0, AttackSpellElement.Fire),
+                    ("KIWI", 4) => (41, 0, 58, 1, 0, AttackSpellElement.Fire),
                     _ => null
                 };
             if (expected is not { } row) continue;
             Require(source.BaseId == row.Id && source.MpCost == row.Mp && source.Power == row.Power &&
                 source.MinimumRange == 1 && source.MaximumRange == row.Range && source.Radius == row.Radius &&
-                source.PropertiesExpression == (source.Code == "AQUA" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
+                source.PropertiesExpression == (source.Code is "AQUA" or "KIWI" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
                 "source-attack-spell", "spells", true);
             byte? animation = null;
             if (row.Element == AttackSpellElement.Neutral)
@@ -48,6 +52,12 @@ internal static class PrivateAttackSpellBindings
                 Require(source.AnimationExpression == $"{family}|VARIATION{source.Level + 1}",
                     "source-attack-animation", "spells.animation", true);
                 animation = (byte)((family == "BLAZE" ? 1 : 7) | source.Level << 5);
+            }
+            if (source.Code == "KIWI")
+            {
+                Require(source.AnimationExpression == "FLAME_BREATH|VARIATION3",
+                    "source-attack-animation", "spells.animation", true);
+                animation = 76;
             }
             yield return new(source.Spell, source.MpCost, source.Power, source.MinimumRange, source.MaximumRange,
                 source.Radius, row.Element, animation);

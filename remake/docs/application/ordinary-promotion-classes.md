@@ -170,12 +170,12 @@ A palette or sprite match from another member is insufficient class admission.
   and paid casts remain **Unknown**. [Slade growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats05.asm) ·
   [Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
   [Damage elements](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm)
-- **MNST.** Use the class-28 attack decision at its source position. It requests RNG(4)
-  on a physical attack, converts on zero and chooses KIWI ranks across stored levels
-  32/40/50. Keep the action outside Magic and the book, with no MP cost. Verify both
-  physical and converted results, RNG continuity and projection through the existing action
-  owner. The pinned record uses FIRE and the flame-breath presentation. Keep natural
-  conversion/timing claims bounded to the source and later observation.
+- **MNST.** A committed valid Attack draws RNG(4) before physical or spell resolution.
+  Zero converts to KIWI and the other values continue the physical strike with the advanced
+  seed. The four ranks use stored thresholds 32/40/50, FIRE and the shared promoted damage
+  calculation. KIWI is an innate result outside Magic, the book and MP payment.
+  The private scene plays its distinct cast sequence and prepared flame particles.
+  Ordinary eligibility and natural conversion remain **Unknown**.
   [Conversion gate](../../../docs/design/contracts/battle/battle-functions-control-flow.md#kiwi-conversion-gate) ·
   [Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm)
 
@@ -184,7 +184,8 @@ A palette or sprite match from another member is insufficient class admission.
 **Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
 Chester, Rick and Eric, MAGE→WIZ for Kazin and Tyrin, WARR→GLDT for Jaha and Randolf,
 BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, RNGR→BWNT for May, PRST→VICR for
-Sarah and Karna, WFMN→WFBR for Gerhalt, PHNK→PHNX for Peter and THIF→NINJ for Slade.
+Sarah and Karna, WFMN→WFBR for Gerhalt, PHNK→PHNX for Peter, THIF→NINJ for Slade and
+TORT→MNST for Kiwi.
 The three knights have their own growth,
 map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
 each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
@@ -199,10 +200,10 @@ Each VICR has four mounted rod/stick bindings and the matching healing cast sequ
 Gerhalt uses field sprite 23, portrait 49 and battle body 30 palette 0. Peter uses field
 sprite 19, portrait 48 and battle body 28 palette 0. Both use their own unarmed action.
 Slade uses field sprite 15, portrait 50 and battle body 26 palette 0. His unarmed and
-equipped sword scenes use the same member body. Earlier loaded encounters share the member bindings.
+equipped sword scenes use the same member body. Kiwi uses field sprite 17, portrait 51
+and unarmed battle body 27 palette 0. Earlier loaded encounters share the member bindings.
 Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
-Chester, Rick, Tyrin, Randolf and Slade remain **Unknown** in ordinary promotion play.
-MNST still needs its gameplay binding and witness.
+Chester, Rick, Tyrin, Randolf, Slade and Kiwi remain **Unknown** in ordinary promotion play.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -279,7 +280,7 @@ A candidate's presence in the package or an engine case is independent of ordina
 | VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Guardian Staff. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
 | WFBR, PHNX | Chinese Pacalon Gerhalt and Peter promoted and attacked unarmed in Battle26. Peter had 44 additional reachable destinations on his first turn. Both classes and portraits persisted through cold Continue and EGRESS. [Wolf Baron and Phoenix reproduction](#wolf-baron-and-phoenix-ordinary-reproduction) |
 | NINJ | Ordinary English Battle26 pilot reached THIF 12 with 43 EXP. Eligible ordinary promotion and learned casts remain **Unknown**. Controlled engine and native coverage exercises the rite, equipment and spells. [Ninja reproduction](#ninja-controlled-reproduction-and-ordinary-pilot) |
-| MNST | Both castles have Kiwi TORT 15. An eligible ordinary witness remains **Unknown**. The deficit is about 490 EXP. Start from a lawful higher-level history if one is registered. Budget any repeat using measured EXP before training. |
+| MNST | An ordinary Chinese Battle26 pilot reached TORT 15 with 19 EXP and stopped. Eligible ordinary promotion and natural flame conversion remain **Unknown**. Controlled rites and both Attack results use the admitted private class and presentation. [Monster reproduction](#monster-controlled-reproduction-and-ordinary-pilot) |
 
 Per family, at a normal church compare the authoritative progress/pack/flags/gold/seeds around
 the final Yes. Use current field sprite/portrait where projected, ordinary save and fresh title
@@ -642,3 +643,72 @@ first training observer counted empty turn-queue entries against its action budg
 and stopped before any turn. Its corrected continuation used the same ready slot.
 RAIJIN's pilot saved successfully and then exited with native code 0xC0000005. Its
 cold replay passed. Some other exits logged ObjectDB warnings. #1716 remains deferred.
+
+
+## Monster controlled reproduction and ordinary pilot
+
+Mount `monster-v1` from `derived/issue1956/ninja-v1`, the prepared retail library at
+`52435b04f49a84a6a9ed4444620055a070648001` and the pinned source metadata. The closed
+package has 145 files and 294,793,237 bytes, a 25,940-byte increase. It adds three
+walking strips, five body frames, portrait 51 and two 8×8 particles from the prepared
+Flame Breath sheet. The field strip's default portrait operand is 6. MNST uses the
+class-specific remap to 51. The source unarmed body uses palette 0, attack sequence
+27, dodge 67 and special cast sequence 84.
+[Mount command](../content/presentation-assets.md#prepare-and-mount-retail-resources) ·
+[Class-conditioned portraits](../../../docs/design/contracts/interface/portrait-window-state.md#allyclass-remap)
+
+MNST 28 changes STEALTH MOV 5 to HOVERING MOV 7. It gains major NEUTRAL, UNDEFINED1,
+UNDEFINED2 and STATUS resistance. Its regular prowess has 1/16 critical at a 25% bonus,
+1/32 double and 1/16 counter, compared with TORT's 1/32 counter. The zero-based target
+priority ranks are 31 (Regular), 19 (Flying), 31 (Archer) and 3 (Mage).
+[Class data](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[AI priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm)
+
+| Stored MNST level | KIWI rank | Raw power | Promoted power |
+| --- | ---: | ---: | ---: |
+| 1–31 | 1 | 28 | 35 |
+| 32–39 | 2 | 36 | 45 |
+| 40–49 | 3 | 45 | 56 |
+| 50–99 | 4 | 58 | 72 |
+
+The converted action keeps the committed adjacent target. All ranks are FIRE with range 1,
+radius 0 and MP 0. The conversion draw precedes the flame critical draw (1/16), the two
+variance draws and normal drop/reward handling. The shared damage rule applies promoted
+power before FIRE resistance. A physical result instead begins dodge/strike resolution
+from the advanced seed. Counter strikes do not visit the conversion gate again. KIWI
+uses FLAME_BREATH variant 3 (selector 76) and the source MNST body pose. The adapter
+plays a finite stream with prepared particle tiles 1 and 9 using the source palette.
+Exact original particle motion and timing remain **Unknown**.
+[Conversion and call order](../../../docs/design/contracts/battle/battle-functions-control-flow.md#kiwi-conversion-gate) ·
+[Critical dispatch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/castspell.asm) ·
+[Power adjustment](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/calculatespelldamage.asm) ·
+[Particle inputs](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/flamebreath.asm)
+
+The registered Chinese Pacalon castle starts Kiwi in reserve at TORT 15, 18 EXP and 9 HP.
+Caravan Relief replaced Luke. During one Battle26 repeat Kiwi took three actions,
+including one hit for 1 HP and 1 EXP. The usable Movement save in round 4 retained 9 HP
+and 19 EXP. The pilot stopped 481 EXP short of level 20 and did not establish a
+reliable route within two repeats. Ordinary eligible promotion and conversion remain
+**Unknown**. The measured pilot and its stopped slot are under
+`derived/issue1956/monster-review/ordinary-pilot`.
+
+
+The private handoff's controlled TORT 20 fixture starts from a copy of the Chinese
+Pacalon state and arranges eligibility. Normal church, Relief and Battle26 input
+produce the controlled pre-attack checkpoint. Two labeled forks change its main
+seed to select the two outcomes at the same adjacent enemy. The natural castle
+slot and the ordinary training receipts retain their original state.
+
+| Controlled boundary | Observed result |
+| --- | --- |
+| Rite and field | TORT 20 became MNST 1 with 0 EXP. Kiwi kept the 20 HP, zero MP, earned attributes, held Mithril, empty packed book and reserve membership. Cold Continue displayed portrait 51. Ordinary Relief then deployed him. |
+| Physical commit | A nonzero gate took the unarmed physical branch against the Lesser Demon at distance 1. Body 27 palette 0 played attack 27, caused 5 damage, gave 7 EXP and returned to Movement. |
+| Converted commit | A zero gate converted the same Attack and target to KIWI 1. Body 27 played special sequence 84 with visible prepared particles and selector 76. The critical hit did 39 damage and earned 48 EXP. The empty book and 0 MP remained, and control returned to Movement. |
+| Save and return | Both ready and post-action v4 cold saves matched the full decoded battle data. The breath save also cold-continued with the old producing local directory set aside. The breath branch returned to Map36 through EGRESS and field v3 Continue preserved MNST, the packed book and portrait. Only ambient field state and the main seed advanced during field re-save. |
+
+The first focused test compile exposed incorrect assertion types for nullable RNG and
+range results. The corrected focused run passed. The first cold proof stopped at
+startup when its save root was inside the worktree. The repeated cold proof used
+the existing external player-save namespace and passed. Completed native routes
+recorded ObjectDB warnings on some exits. #1716 remains deferred. PHNX's separate
+sound-wave playback is tracked independently from MNST in #1956.

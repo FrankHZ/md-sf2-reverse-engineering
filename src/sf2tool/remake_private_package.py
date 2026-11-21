@@ -17,10 +17,12 @@ from tempfile import TemporaryDirectory
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
 from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
+from sf2tool.remake_battle_scene_content import compose
 from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_exploration_content import _selected_growth
 from sf2tool.remake_exploration_programs import OriginalPrograms
 from sf2tool.remake_exploration_scene import ally_sprites
+from sf2tool.texture_extract import md_palette_color, write_png_rgba
 
 OPENING_INPUTS = (
     "SF2_PRIVATE_BATTLE01_DATA",
@@ -220,6 +222,29 @@ def prepared_ally_sequence(index: int, rows: list[list[int]], draw_weapon: bool)
     )
 
 
+def mount_monster_breath(directory: Path, scratch: Path, scene: dict) -> None:
+    record = next(
+        row
+        for row in read_json(directory / "index.json")["records"]
+        if row["family"] == "spell" and row["id"] == 1
+    )
+    tiles = (directory / record["tiles"]).read_bytes()
+    words = read_json(directory / "base-palette.json")
+    spell_colors = bytes.fromhex(record["palette"])
+    # LoadSpellTileset replaces these three colors in battlescene palette 3.
+    for index, slot in enumerate((9, 13, 14)):
+        words[slot] = int.from_bytes(spell_colors[2 * index : 2 * index + 2], "big")
+    palette = [md_palette_color(word) for word in words]
+    # graphic_FlameBreathParticle opens on tile 1 and alternates its bit-3 tile.
+    for tile in (1, 9):
+        leaf = f"kiwi-flame-{tile}.png"
+        write_png_rgba(scratch / leaf, 8, 8, compose(tiles, palette, 8, 8, [tile]))
+        key = f"kiwi-breath/tile-{tile}"
+        raster = installed_png(scratch, leaf)
+        if scene["rasters"].setdefault(key, raster) != raster:
+            raise ValueError(f"conflicting prepared flame particle {key}")
+
+
 def ninja_weapon_layers(scene: dict) -> list[dict]:
     # The selected sword banks use shared body palette colors 1 and 2.
     # Steel Sword shares Long Sword's weapon bank and color pair.
@@ -252,6 +277,7 @@ def mount_ordinary_appearances(
         "WFBR": (24, {None}),
         "PHNX": (26, {None}),
         "NINJ": (27, set()),
+        "MNST": (28, {None}),
     }
     # Additional source-legal weapons already mounted for another promoted member.
     # Arrows and shells use only the selected body animation (weapon selector FF).
@@ -267,6 +293,11 @@ def mount_ordinary_appearances(
     base_sprites = {
         row["member"]: row["battleSprite"] for row in walking["classes"] if row["slot"] == 0
     }
+    for member, variant in variants.items():
+        if promotions[member] == "MNST":
+            # GetAllyPortrait remaps MNST independently of the field sprite's default.
+            sprite = variant["sprite"]
+            walking["sprites"][sprite] = dict(walking["sprites"][sprite], portrait=51)
     mount_walking(
         library / "walking", world, walking["sprites"], [row["sprite"] for row in variants.values()]
     )
@@ -274,7 +305,7 @@ def mount_ordinary_appearances(
     portraits = {
         walking["sprites"][variant["sprite"]]["portrait"]
         for member, variant in variants.items()
-        if promotions[member] in {"WFBR", "PHNX", "NINJ"}
+        if promotions[member] in {"WFBR", "PHNX", "NINJ", "MNST"}
     }
     if portraits:
         directory = library / "portraits"
@@ -341,6 +372,8 @@ def mount_ordinary_appearances(
             sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
             if class_code in {"WIZ", "VICR", "NINJ"}:
                 sequences["cast"] = attack
+            if class_code == "MNST":
+                sequences["cast"] = prepared_ally_sequence(84, animations[84], False)
             appearance = dict(
                 side="ally",
                 sprite=sprite,
@@ -366,6 +399,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         "vicar": {1: "VICR", 15: "VICR"},
         "innate": {9: "WFBR", 7: "PHNX"},
         "ninja": {5: "NINJ"},
+        "monster": {6: "MNST"},
     }
     selected = (
         permitted | (set(families) & retained_families.keys())
@@ -389,7 +423,8 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     )
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
         raise ValueError(
-            "select walking, icons, sfx, music, pldn, wiz, melee, ranged, vicar, innate or ninja"
+            "select walking, icons, sfx, music, pldn, wiz, melee, "
+            "ranged, vicar, innate, ninja or monster"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -449,6 +484,8 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         if retained_promotions:
             mount_ordinary_appearances(root, world["world"], scene, retained_promotions)
             promotions.update(retained_promotions)
+        if "monster" in selected:
+            mount_monster_breath(root / "effects", Path(temp), scene)
         if upstream is not None and promotions:
             bind_ordinary_progression(world, upstream, promotions)
         for command in commands or (25, 87, 99):

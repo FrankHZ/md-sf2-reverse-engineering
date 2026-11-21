@@ -144,6 +144,20 @@ public sealed class TargetSelectionTests
     }
 
     [Theory]
+    [InlineData(BattleMover.Regular, 31)]
+    [InlineData(BattleMover.Flying, 19)]
+    [InlineData(BattleMover.Archer, 31)]
+    [InlineData(BattleMover.Mage, 3)]
+    public void MonsterTargetTiesFollowTheSourceClassAfterTortoise(BattleMover mover, int rank)
+    {
+        var monster = Sf2ClassRules.SourceClass(BattleClassRule.Monster);
+        var tortoise = Sf2ClassRules.SourceClass(BattleClassRule.UnpromotedTortoise);
+        var table = PhysicalTargetRules.Table(mover);
+        Assert.Equal(rank, PhysicalTargetRules.ClassRank(monster, table));
+        Assert.Equal(1, PhysicalTargetRules.Select([new(2, 16, monster), new(1, 16, tortoise)], table)!.Value.Index);
+    }
+
+    [Theory]
     [InlineData(0, 5, 1, 19)]
     [InlineData(2, 5, 2, 15)]
     [InlineData(3, 5, 1, 13)]

@@ -234,6 +234,10 @@ $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 # Add Slade's NINJ progression and appearances to the registered innate package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family ninja `
     -Package "$progression/innate-v1" -Upstream $pinnedSource -Destination "$progression/ninja-$token"
+
+# Add Kiwi's MNST progression and appearances to the registered Ninja package.
+& $run -Repo $repo -Operation Mount -Library $runtime -Family monster `
+    -Package "$progression/ninja-v1" -Upstream $pinnedSource -Destination "$progression/monster-$token"
 ```
 
 Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
@@ -269,6 +273,10 @@ The Ninja mount adds Slade's walking strips, portrait, body and spell icons to `
 It reuses the mounted sword layers and binds a separate unarmed row. The learned attack
 presentation selects the source flame or lightning variation in the current modern playback.
 [Ninja reproduction](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot)
+
+The Monster mount adds Kiwi's walking strips, remapped portrait, unarmed body and
+special cast sequence in `monster-v1`. It binds two particles from the prepared
+Flame Breath sheet using the source palette operands. [Monster reproduction](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot)
 
 Mount preserves the relative world, scene and entry dependencies, mounts any selected WAVs
 and publishes a fresh directory after checking closure. Select the result with the ordinary

@@ -260,6 +260,7 @@ public sealed class BattleSceneState
     public Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell => _action?.AttackSpell;
     public Sf2.Remake.Domain.Gameplay.Sf2.SupportSpellDefinition? SupportSpell => _action?.SupportSpell;
     public IReadOnlyList<ActorRef> SupportTargets => SupportSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
+    public bool IsMonsterBreath => AttackSpell?.IsMonsterBreath == true;
     public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
     public bool IsAura => Spell?.IsAura == true || Item?.Effect == HealingItemEffect.FullPartyHp;
@@ -425,7 +426,7 @@ internal static class BattleSceneContinuation
             case BattleScenePhase.Initialize: next = BattleScenePhase.ActionMessage; break;
             case BattleScenePhase.ActionMessage:
                 observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.ReactionTarget));
-                if (scene.Spell is not null || scene.AttackSpell is not null && !scene.UsesAttackItem || scene.SupportSpell is not null && scene.EquipmentItem is null || scene.IsSilencedCast)
+                if (scene.Spell is not null || scene.AttackSpell is not null && !scene.UsesAttackItem && !scene.IsMonsterBreath || scene.SupportSpell is not null && scene.EquipmentItem is null || scene.IsSilencedCast)
                 {
                     var caster = battle.GetActor(scene.Actor);
                     battle = scene.Action.ApplySpellCost(battle);
