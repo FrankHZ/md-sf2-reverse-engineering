@@ -13,27 +13,38 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleSaveProgressTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public void BattleContinueRestoresThePromotedDeployedOrRetainedMember(bool reserve, bool timed)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, true, true)]
+    public void BattleContinueRestoresThePromotedDeployedOrRetainedMember(bool reserve, bool timed, bool mixed)
     {
         var (basis, current) = BattleSaveFixture.Create();
         var saved = BattleSaveFixture.Capture(basis, current);
-        var actor = reserve ? saved.Story.Player.RetainedAllies.Single().Actor : current.Battle.Actors[0].Actor;
+        var retainedActor = saved.Story.Player.RetainedAllies.Single().Actor;
+        var deployedActor = current.Battle.Actors[0].Actor;
+        var actor = reserve ? retainedActor : deployedActor;
         var definition = basis;
         foreach (var encounter in basis.Encounters.Values)
             definition = Replace(definition, encounter.WithDeployments(encounter.Deployments.Select(d =>
-                d.Actor != actor ? d : d with { RegularPromotion = Hero(d.Definition) })));
-        BattleActorProgress Promoted(BattleActorProgress p) => p with { Level = 1, ClassId = 12,
+                mixed && d.Actor == deployedActor ? d with { RegularPromotion = Paladin(d.Definition) } :
+                d.Actor == actor || mixed && d.Actor == retainedActor ? d with { RegularPromotion = Hero(d.Definition) } : d)));
+        BattleActorProgress HeroProgress(BattleActorProgress p) => p with { Level = 1, ClassId = 12,
             Spells = [new("bolt", 1)], SourceLoadout = new(p.SourceLoadout!.Items, [13, 63, 63, 63]) };
-        var retained = saved.Story.Player.RetainedAllies.Select(a => a.Actor != actor ? a :
-            a with { Progress = Promoted(a.Progress!), SourceLoadout = Promoted(a.Progress!).SourceLoadout }).ToArray();
-        var actors = saved.Battle.Actors.Select(a => a.Actor != actor.Value ? a :
-            a with { Progress = Promoted(a.Progress!), Loadout = Promoted(a.Progress!).SourceLoadout }).ToArray();
+        var retained = saved.Story.Player.RetainedAllies.Select(a => a.Actor == actor || mixed
+            ? a with { Progress = HeroProgress(a.Progress!), SourceLoadout = HeroProgress(a.Progress!).SourceLoadout } : a).ToArray();
+        var actors = saved.Battle.Actors.Select(a =>
+        {
+            if (a.Actor != actor.Value) return a;
+            var progress = mixed ? a.Progress! with { Level = 1, ClassId = 13 } : HeroProgress(a.Progress!);
+            return a with { Progress = progress, Loadout = progress.SourceLoadout };
+        }).ToArray();
         if (timed)
-            actors = actors.Select(a => a.Actor == "enemy" ? a with { Status = 0x0C00, LastRefreshCounters = 0x0400 } : a).ToArray();
+        {
+            string target = mixed ? deployedActor.Value : "enemy";
+            actors = actors.Select(a => a.Actor == target ? a with { Status = 0x0C00, LastRefreshCounters = 0x0400 } : a).ToArray();
+        }
         saved = saved with { HasClassTerms = true, Battle = saved.Battle with { Actors = actors },
             Story = saved.Story with { Player = saved.Story.Player with { RetainedAllies = retained } } };
         var record = new Sf2.Remake.Content.Persistence.BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved);
@@ -45,8 +56,15 @@ public sealed class BattleSaveProgressTests
         Assert.True(recaptured.HasClassTerms);
         Assert.True(BattleContinuationValues.Same(saved.Battle, recaptured.Battle));
         Assert.True(BattleSaveStory.Same(saved.Story, recaptured.Story));
-        if (!reserve) Assert.Equal(BattleClassRule.Hero, session.Current.Battle.GetActor(actor).Definition.ClassRule);
+        if (!reserve)
+            Assert.Equal(mixed ? BattleClassRule.Paladin : BattleClassRule.Hero,
+                session.Current.Battle.GetActor(actor).Definition.ClassRule);
     }
+
+    private static BattleActorDefinition Paladin(BattleActorDefinition original) =>
+        new(original.Actor, BattleClassRule.Paladin, 1, original.MaxHp, original.MaxMp, original.Attack,
+            original.Defense, original.Agility, original.ExtraRoundAction, 7, [], original.Physical,
+            BattleMover.Centaur, original.SourceLoadout, original.Growth! with { ClassId = 13 }, original.Equipment);
 
     internal static BattleActorDefinition Hero(BattleActorDefinition original)
     {

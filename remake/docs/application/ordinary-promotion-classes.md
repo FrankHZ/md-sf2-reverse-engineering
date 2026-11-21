@@ -191,10 +191,10 @@ through battle growth, field and battle Continue and return. The only PLDN scene
 mounted in the Battle26 selection is 2 for starting PLDN Higins. His observed Javelin
 attack supplies a PLDN scene/range precedent. Chester, Rick and Eric need their own PLDN
 rows and assets. Other destination pairs above have pinned source rows without admitted
-destination content or ordinary promoted observations. The existing engine has the relevant
-mover categories, carried-state transition and save recipe. Its private class, growth,
-field and battle scene readers still include HERO-specific admission. Spell ranks and
-new class combat rules in the preceding section are separate consumer gaps.
+destination content or ordinary promoted observations. The growth and battle scene readers
+accept supplied actor/class rows for SDMN→HERO and KNTE→PLDN through the same finite mapping.
+Usable PLDN promotion still requires member-specific field and battle resources and an ordinary
+witness. Spell ranks and new class combat rules in the preceding section are separate gaps.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·

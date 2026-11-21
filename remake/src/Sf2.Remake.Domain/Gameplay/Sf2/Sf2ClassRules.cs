@@ -6,6 +6,13 @@ internal static class Sf2ClassRules
 {
     // The regular base section in promotions.asm contains SDMN through TORT in class order.
     internal static bool RegularBase(byte? sourceClass) => sourceClass is <= 11;
+    internal static BattleClassRule? OrdinaryDestination(byte? sourceClass) => sourceClass switch
+    {
+        0 => BattleClassRule.Hero,
+        1 => BattleClassRule.Paladin,
+        _ => null,
+    };
+
     internal static byte? PromotionItem(byte? sourceClass) => sourceClass switch
     {
         1 => 118, 2 => 119, 3 => 121, 4 => 122, 5 => 120, _ => null,

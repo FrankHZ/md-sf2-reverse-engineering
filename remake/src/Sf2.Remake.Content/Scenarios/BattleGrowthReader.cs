@@ -33,7 +33,9 @@ internal static class BattleGrowthReader
                 .Select(deployment => deployment.Definition).FirstOrDefault(actor => actor.Actor == reference);
             Require(actor is not null, "growth-actor", "world.growth.actor");
             byte classId = (byte)Number(row, "classId", 0, 31);
-            Require(Sf2ClassRules.SourceClass(actor!.ClassRule) == classId || !authored && actor.ClassRule == BattleClassRule.UnpromotedSwordsman && classId == 12, "growth-class", "world.growth.classId", true);
+            var initial = Sf2ClassRules.SourceClass(actor!.ClassRule);
+            Require(initial == classId || !authored && Sf2ClassRules.OrdinaryDestination(initial) is { } promotion &&
+                Sf2ClassRules.SourceClass(promotion) == classId, "growth-class", "world.growth.classId", true);
             Require(actor.SourceLoadout is not null, "growth-loadout", "world.growth.actor", true);
             if (authored)
             {
@@ -61,12 +63,14 @@ internal static class BattleGrowthReader
                     scenario.PrivateDefinitions!.Allies.TryGetValue((byte)member, out var ally))
                     physical = physical with { Critical = OpeningPartyInitialization.InitialCritical(value, ally.StartingLevel, physical.Critical) };
                 var bound = deployment with { Definition = baseline.WithGrowth(value, physical) };
-                if (authored || !growth.TryGetValue((deployment.Actor, 12), out var promoted)) return bound;
+                if (authored || Sf2ClassRules.OrdinaryDestination(initial) is not { } promotedRule ||
+                    Sf2ClassRules.SourceClass(promotedRule) is not { } promotedId ||
+                    !growth.TryGetValue((deployment.Actor, promotedId), out var promoted)) return bound;
                 var source = scenario.PrivateDefinitions!;
-                var destination = source.Classes[promoted.ClassId];
-                var prowess = PrivateBattleActionBindings.Physical(source, destination.ProwessExpression,
+                Require(source.Classes.TryGetValue(promotedId, out var destination), "growth-class-definition", "world.growth.classId", true);
+                var prowess = PrivateBattleActionBindings.Physical(source, destination!.ProwessExpression,
                     baseline.SourceLoadout!.Items, leader: physical!.Leader, gold: 0) with { Promoted = true };
-                return bound with { RegularPromotion = new(baseline.Actor, BattleClassRule.Hero, 1, baseline.MaxHp, baseline.MaxMp,
+                return bound with { RegularPromotion = new(baseline.Actor, promotedRule, 1, baseline.MaxHp, baseline.MaxMp,
                     baseline.Attack, baseline.Defense, baseline.Agility, baseline.ExtraRoundAction, destination.Movement, baseline.Spells,
                     prowess, PrivateBattleScenarioReader.Mover(destination.MovementType), baseline.SourceLoadout,
                     promoted with { RetainedSpells = value.Spells.Where(spell => spell.Level <= 40).ToArray() },

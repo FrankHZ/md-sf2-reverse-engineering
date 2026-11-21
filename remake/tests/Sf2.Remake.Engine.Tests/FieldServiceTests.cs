@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -35,12 +37,35 @@ public sealed class FieldServiceTests
                 knight ? [] : [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
             var equipment = new BattleEquipmentDefinition(20, [new(50, "Weapon", (1u << baseClass) | (1u << destination), 5, 1, 1)],
                 rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5)]);
-            deployments = deployments.Select(d => d.Actor != First ? d : d with {
-                Definition = d.Definition.WithGrowth(growth).WithEquipment(equipment),
-                RegularPromotion = new(d.Actor, knight ? BattleClassRule.Paladin : BattleClassRule.Hero,
-                    1, 42, 14, 28, 25, 24, false, knight ? (byte)7 : (byte)6, [],
-                    d.Definition.Physical! with { Promoted = true, Critical = PhysicalCriticalRule.Hero },
-                    sourceLoadout: loadout, growth: growth with { ClassId = destination, RetainedSpells = growth.Spells }, equipment: equipment) });
+            if (knight)
+            {
+                var fixture = source.WithDeployments(deployments);
+                var classDefinitions = new PrivateBattleDefinitions(null!, [],
+                    [new(13, "PLDN", "Paladin", 7, "NONE", "CENTAUR", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
+                    [new(50, "WEAPON", "Weapon", "Weapon", "KNTE|PLDN", ["KNTE", "PLDN"], 1, 1, 0,
+                        "WEAPON", "NOTHING", "NOTHING", 0, [new("INCREASE_ATT", 5)])], [], [], []);
+                var stats = Enumerable.Repeat(new { start = 20, projected = 20, curve = System.Array.Empty<int>() }, 5);
+                var rows = JsonSerializer.SerializeToElement(new[] { baseClass, destination }.Select(classId => new
+                {
+                    actor = First.Value, classId, stats, spells = System.Array.Empty<int>(),
+                }));
+                deployments = BattleGrowthReader.Bind(rows, new ScenarioDefinition("promotion-test", [fixture], classDefinitions))
+                    .Single().Deployments.Select(d => d.Actor != First ? d : d with
+                    {
+                        Definition = d.Definition.WithEquipment(equipment),
+                        RegularPromotion = d.RegularPromotion!.WithEquipment(equipment),
+                    });
+            }
+            else
+            {
+                deployments = deployments.Select(d => d.Actor != First ? d : d with
+                {
+                    Definition = d.Definition.WithGrowth(growth).WithEquipment(equipment),
+                    RegularPromotion = new(d.Actor, BattleClassRule.Hero, 1, 42, 14, 28, 25, 24, false, 6, [],
+                        d.Definition.Physical! with { Promoted = true, Critical = PhysicalCriticalRule.Hero },
+                        sourceLoadout: loadout, growth: growth with { ClassId = destination, RetainedSpells = growth.Spells }, equipment: equipment),
+                });
+            }
         }
         var battle = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height,
             source.Terrain, deployments, source.Spells.Values);
@@ -183,6 +208,7 @@ public sealed class FieldServiceTests
         Assert.DoesNotContain(First, after.ActiveAllies!);
         var projected = session.QueryPartyDetails()!.Members.Single(member => member.Carried.Actor == First);
         Assert.Equal(BattleClassRule.Paladin, projected.Deployment!.Definition.ClassRule);
+        Assert.Equal(BattleMover.Centaur, projected.Deployment.Definition.Mover);
         Assert.Equal(7, projected.Move!.Value);
         Assert.Equal(30, projected.Attack!.Value);
     }
