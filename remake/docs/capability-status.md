@@ -506,8 +506,11 @@ ordinary `WEAPON` records with ATT-only effects and ranges1–1,1–2 or2–2 su
 contributions. Only supported unpromoted, physical, player allies with growth/loadout bindings opt in.
 Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Power, Protect, Quick
 and Running Ring use a separate equipped category in the same four words on supported campaign
-allies. Current class, refresh and custody rules apply across Field, Caravan and battle. Curse,
-breakage and item Use remain separate capabilities. [Ring acceptance and limits](domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input)
+allies. Current class, refresh and custody rules apply across Field, Caravan and battle. Power
+and Protect admit battle Item Use, slot damage and destruction, merchant Repair and Continue.
+Black Ring curse and Use and Indra Staff remain separate capabilities.
+[Ring equipment](domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input) ·
+[Use, Repair and Continue](domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
 Connected Give and Drop have their separate agreements below.
 
 The existing command-menu equipment hint/default E (or installed binding) opens the localized slot

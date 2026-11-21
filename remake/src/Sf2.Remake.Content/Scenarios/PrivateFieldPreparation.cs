@@ -63,7 +63,8 @@ internal static class PrivateFieldPreparation
                 item.Code == code && item.ItemTypeExpression == kind &&
                 item.EquipEffects is [{ } primary, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] &&
                 primary.Type == effect && primary.Parameter == bonus, "source-static-ring", "field.items");
-            yield return new(id, item.DisplayName, uint.MaxValue, stat, bonus);
+            yield return new(id, item.DisplayName, uint.MaxValue, stat, bonus,
+                DamageOnUse: kind.EndsWith("|BREAKABLE", StringComparison.Ordinal) && item.UseSpell != "NOTHING");
         }
     }
 

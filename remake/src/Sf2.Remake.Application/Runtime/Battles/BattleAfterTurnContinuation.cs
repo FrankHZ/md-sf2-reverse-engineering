@@ -71,6 +71,7 @@ internal static class BattleAfterTurnContinuation
             string effect = scene.Phase switch
             {
                 BattleScenePhase.SlowExpiredMessage => "slow-status",
+                BattleScenePhase.AttackExpiredMessage => "attack-status",
                 BattleScenePhase.BoostExpiredMessage => "boost-status",
                 _ => "silence-status",
             };
@@ -79,7 +80,8 @@ internal static class BattleAfterTurnContinuation
                 new ActiveBattle(updatedBattle, null), current.Story, SessionStopReason.SimulationWait);
             var next = scene.Phase switch
             {
-                BattleScenePhase.SlowExpiredMessage => TickCounter(updated, unit.Actor, false, expired),
+                BattleScenePhase.SlowExpiredMessage => TickCounter(updated, unit.Actor, BattleScenePhase.AttackExpiredMessage, expired),
+                BattleScenePhase.AttackExpiredMessage => TickCounter(updated, unit.Actor, BattleScenePhase.BoostExpiredMessage, expired),
                 BattleScenePhase.BoostExpiredMessage => AfterCounters(updated, unit.Actor, expired),
                 _ => AfterSilence(updated, unit.Actor, expired),
             };
@@ -121,20 +123,24 @@ internal static class BattleAfterTurnContinuation
     }
 
     private static SessionSnapshot AfterSilence(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations) =>
-        TickCounter(current, actor, true, observations);
+        TickCounter(current, actor, BattleScenePhase.SlowExpiredMessage, observations);
 
-    private static SessionSnapshot TickCounter(SessionSnapshot current, ActorRef actor, bool slow, List<SessionObservation> observations)
+    private static SessionSnapshot TickCounter(SessionSnapshot current, ActorRef actor, BattleScenePhase phase, List<SessionObservation> observations)
     {
         var unit = current.Battle.GetActor(actor);
-        int mask = slow ? BattleStatCounters.Slow : BattleStatCounters.Boost;
+        var (mask, effect, text) = phase switch
+        {
+            BattleScenePhase.SlowExpiredMessage => (BattleStatCounters.Slow, "slow", "349"),
+            BattleScenePhase.AttackExpiredMessage => (BattleStatCounters.Attack, "attack", "350"),
+            BattleScenePhase.BoostExpiredMessage => (BattleStatCounters.Boost, "boost", "348"),
+            _ => throw new InvalidOperationException("Unknown stat counter."),
+        };
         int count = unit.Status & mask;
         int step = mask / 3;
         long sequence = current.ObservationSequence;
         if (count == step)
         {
-            var phase = slow ? BattleScenePhase.SlowExpiredMessage : BattleScenePhase.BoostExpiredMessage;
-            observations.Add(new(++sequence, current.Revision + 1, slow ? "slow-expired" : "boost-expired", actor,
-                Detail: slow ? "349" : "348"));
+            observations.Add(new(++sequence, current.Revision + 1, effect + "-expired", actor, Detail: text));
             var scene = new BattleSceneState(null, phase, 0, new(sequence),
                 counterExpiry: new(actor, unit.Status, (ushort)(unit.Status - step)));
             return new(current.SessionId, current.Revision + 1, sequence, new ActiveBattle(current.Battle, null, scene),
@@ -144,11 +150,16 @@ internal static class BattleAfterTurnContinuation
         {
             ushort after = (ushort)(unit.Status - step);
             var battle = current.Battle.With(actors: current.Battle.Actors.Select(a => a.Actor == actor ? a.With(status: after) : a));
-            observations.Add(new(++sequence, current.Revision, slow ? "slow-status" : "boost-status", actor, unit.Status, after));
+            observations.Add(new(++sequence, current.Revision, effect + "-status", actor, unit.Status, after));
             current = new(current.SessionId, current.Revision, sequence, new ActiveBattle(battle, null), current.Story,
                 SessionStopReason.SimulationWait);
         }
-        return slow ? TickCounter(current, actor, false, observations) : AfterCounters(current, actor, observations);
+        return phase switch
+        {
+            BattleScenePhase.SlowExpiredMessage => TickCounter(current, actor, BattleScenePhase.AttackExpiredMessage, observations),
+            BattleScenePhase.AttackExpiredMessage => TickCounter(current, actor, BattleScenePhase.BoostExpiredMessage, observations),
+            _ => AfterCounters(current, actor, observations),
+        };
     }
 
     internal static EngineBattleState Refresh(EngineBattleState battle, ActorRef actor) =>

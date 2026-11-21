@@ -48,6 +48,19 @@ internal static class PrivateBattleActionBindings
         }
     }
 
+    internal static IEnumerable<SupportItemDefinition> SupportItems(PrivateBattleDefinitions definitions)
+    {
+        foreach (var (id, code, effect) in new (byte, string, string)[]
+            { (19, "POWER_RING", "ATTACK"), (20, "PROTECT_RING", "BOOST") })
+        {
+            if (!definitions.Items.TryGetValue(id, out var item)) continue;
+            Require(item.Code == code && item.ItemTypeExpression == "RING|RARE|BREAKABLE" &&
+                item.EquipFlagsExpression == "ALL" && item.UseSpell == effect && item.UseSpellLevel == 1,
+                "source-support-item", "items.useSpell", true);
+            yield return new(id, item.DisplayName, PrivateSupportSpellBindings.Read(definitions, new(effect.ToLowerInvariant(), 1)));
+        }
+    }
+
     internal static IEnumerable<AttackItemDefinition> AttackItems(PrivateBattleDefinitions definitions)
     {
         foreach (var row in new (byte Item, string Code, string Effect, byte BaseId, ushort Power,

@@ -20,7 +20,7 @@ public sealed class RingEquipmentTests
     {
         var basis = ConnectedBattleEquipmentTests.Source();
         SourceItemDefinition Ring(byte id, string code, string kind, string stat, int amount) =>
-            new(id, code, code, "", "ALL", ["ALL"], 0, 0, 0, kind, "NOTHING", "NOTHING", 1,
+            new(id, code, code, "", "ALL", ["ALL"], 0, 0, 0, kind, id == 19 ? "ATTACK" : id == 20 ? "BOOST" : "NOTHING", id == 19 ? "ATTACK" : id == 20 ? "BOOST" : "NOTHING", 1,
                 [new(stat, amount), new("NONE", 0), new("NONE", 0)]);
         return new(basis.Encounter, [], basis.Classes.Values,
             [.. basis.Items.Values,
@@ -131,6 +131,26 @@ public sealed class RingEquipmentTests
         Assert.Equal(refreshed, actor.With(refreshStats: true).Defense);
         if (word == 148)
             Assert.Equal(55, BattleEquipment.Equip(actor, BattleEquipment.RemoveRingChoice).Defense);
+    }
+
+    [Theory]
+    [InlineData(0, null, 2)]
+    [InlineData(0xD000, (ushort)0x5000, 5)]
+    public void DamagedRingAndAppliedAttackSurviveColdContinue(ushort status, ushort? applied, int version)
+    {
+        var (definition, live) = WithPack([403, 178, 127, 127], status, applied);
+        var saved = BattleSaveFixture.Capture(definition, live);
+        var written = new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved);
+        Assert.Equal(version, written.FormatVersion);
+        var record = OpeningSaveJson.ReadRecord(OpeningSaveJson.WriteRecord(written), 1);
+        var cold = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, record, RuleCompositions.Sf2())).Session;
+        BattleSaveFixture.EqualBattle(live.Battle, cold.Current.Battle);
+        var worn = cold.Current.Battle.GetActor(Hero);
+        Assert.Equal(applied, worn.LastRefreshBits);
+        var bare = BattleEquipment.Equip(worn, BattleEquipment.RemoveRingChoice);
+        Assert.Equal((ushort)275, bare.SourceLoadout!.Items[0]);
+        Assert.Equal((ushort)403, BattleEquipment.Equip(bare, 0).SourceLoadout!.Items[0]);
+        Assert.Equal((ushort)275, BattleInventory.Add(new([127, 127, 127, 127], worn.SourceLoadout!.Spells), 403).Items[0]);
     }
 
     [Fact]

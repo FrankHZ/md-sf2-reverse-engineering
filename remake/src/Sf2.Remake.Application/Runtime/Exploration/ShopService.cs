@@ -5,9 +5,9 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public enum ShopAction { Buy, Sell, Deals }
+public enum ShopAction { Buy, Sell, Deals, Repair }
 public enum ShopPhase { Menu, Stock, Member, Slot, Confirm, Result }
-public enum ShopResult { Bought, Sold, Full, InsufficientGold, Unsellable, UnsupportedItem }
+public enum ShopResult { Bought, Sold, Full, InsufficientGold, Unsellable, UnsupportedItem, Repaired, Undamaged, EquippedCurse }
 public sealed record ShopOffer(ShopAction Action, ActorRef Member, byte Item, uint Price, int? Slot = null, ushort? Word = null);
 public sealed record ShopWait(WaitToken Token, ShopDefinition Definition, ShopPhase Phase = ShopPhase.Menu,
     ShopAction? Action = null, byte? Item = null, ActorRef? Member = null, ShopOffer? Offer = null,
@@ -49,21 +49,23 @@ internal static class ShopService
                 case ChooseShop choose when wait.Phase == ShopPhase.Menu && Enum.IsDefined(choose.Action):
                     if (choose.Action == ShopAction.Deals && custody is null)
                         throw new BattleRuleException("shop-custody-unavailable", "party.itemCustody", true);
-                    next = next with { Phase = choose.Action == ShopAction.Sell ? ShopPhase.Member : ShopPhase.Stock, Action = choose.Action }; break;
+                    next = next with { Phase = choose.Action is ShopAction.Sell or ShopAction.Repair ? ShopPhase.Member : ShopPhase.Stock, Action = choose.Action }; break;
                 case SelectShopItem item when wait.Phase == ShopPhase.Stock && wait.AvailableStock(custody).Contains(item.Item):
                     next = next with { Phase = ShopPhase.Member, Item = item.Item }; break;
                 case SelectShopMember member when wait.Phase == ShopPhase.Member:
                     var selected = Member(definition, current, member.Member);
                     _ = Loadout(selected);
-                    bool selling = wait.Action == ShopAction.Sell;
-                    next = next with { Member = member.Member, Phase = selling ? ShopPhase.Slot : ShopPhase.Confirm,
-                        Offer = selling ? null : Offer(wait, member.Member, wait.Item!.Value) }; break;
+                    bool heldItem = wait.Action is ShopAction.Sell or ShopAction.Repair;
+                    next = next with { Member = member.Member, Phase = heldItem ? ShopPhase.Slot : ShopPhase.Confirm,
+                        Offer = heldItem ? null : Offer(wait, member.Member, wait.Item!.Value) }; break;
                 case SelectShopSlot slot when wait.Phase == ShopPhase.Slot:
                     var loadout = Loadout(Member(definition, current, wait.Member!.Value));
                     if (slot.Slot < 0 || slot.Slot >= 4 || loadout.Items[slot.Slot] != slot.Word || (slot.Word & 127) == 127)
                         throw new BattleRuleException("shop-stale-slot", "item.slot");
                     byte id = (byte)(slot.Word & 127);
-                    if (SaleRefusal(wait.Definition.Items.GetValueOrDefault(id), slot.Word, custody) is { } refusal)
+                    var terms = wait.Definition.Items.GetValueOrDefault(id);
+                    var slotRefusal = wait.Action == ShopAction.Repair ? RepairRefusal(terms, slot.Word) : SaleRefusal(terms, slot.Word, custody);
+                    if (slotRefusal is { } refusal)
                         next = next with { Phase = ShopPhase.Result, Result = refusal };
                     else next = next with { Phase = ShopPhase.Confirm, Item = id, Offer = Offer(wait, wait.Member.Value, id, slot.Slot, slot.Word) };
                     break;
@@ -76,7 +78,7 @@ internal static class ShopService
                     var items = Loadout(owner);
                     uint gold = party.Gold ?? throw new BattleRuleException("service-gold-unavailable", "party.gold", true);
                     ShopResult result;
-                    if (offer.Action != ShopAction.Sell)
+                    if (offer.Action is ShopAction.Buy or ShopAction.Deals)
                     {
                         if (!wait.AvailableStock(custody).Contains(offer.Item)) throw new BattleRuleException("shop-stock", "item");
                         if (items.Items.All(word => (word & 127) != 127)) result = ShopResult.Full;
@@ -94,17 +96,36 @@ internal static class ShopService
                     {
                         if (offer.Slot is not { } index || index < 0 || index >= 4 || items.Items[index] != offer.Word)
                             throw new BattleRuleException("shop-stale-slot", "item.slot");
-                        var soldTerms = wait.Definition.Items[offer.Item];
-                        if (SaleRefusal(soldTerms, offer.Word!.Value, custody) is not null)
-                            throw new BattleRuleException("shop-item-unsupported", "item", true);
-                        party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, BattleInventory.Remove(items, index)).RefreshStats()],
-                            custody: soldTerms.Rare ? custody!.AddDeal(offer.Item) : custody,
-                            gold: BattleRewards.Gold(gold, offer.Price));
-                        result = ShopResult.Sold;
+                        var heldTerms = wait.Definition.Items[offer.Item];
+                        ushort word = items.Items[index];
+                        if ((word & 127) != offer.Item)
+                            throw new BattleRuleException("shop-stale-slot", "item.slot");
+                        if (offer.Action == ShopAction.Repair)
+                        {
+                            result = RepairRefusal(heldTerms, word) ?? (gold < offer.Price ? ShopResult.InsufficientGold :
+                                heldTerms.Cursed && (word & 128) != 0 ? ShopResult.EquippedCurse : ShopResult.Repaired);
+                            if (result == ShopResult.Repaired)
+                            {
+                                var repaired = BattleInventory.SetWord(items, index, (ushort)(word & ~BattleInventory.Broken));
+                                party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, repaired)], gold: gold - offer.Price);
+                            }
+                        }
+                        else
+                        {
+                            if (SaleRefusal(heldTerms, word, custody) is not null)
+                                throw new BattleRuleException("shop-item-unsupported", "item", true);
+                            party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, BattleInventory.Remove(items, index)).RefreshStats()],
+                                custody: heldTerms.Rare ? custody!.AddDeal(offer.Item) : custody,
+                                gold: BattleRewards.Gold(gold, offer.Price));
+                            result = ShopResult.Sold;
+                        }
                     }
                     next = next with { Phase = ShopPhase.Result, Result = result }; kind = "shop-" + result.ToString().ToLowerInvariant(); break;
                 case ContinueShop when wait.Phase == ShopPhase.Result:
-                    next = new(next.Token, wait.Definition); kind = "shop-continued"; break;
+                    next = wait.Action == ShopAction.Repair
+                        ? new(next.Token, wait.Definition, ShopPhase.Member, ShopAction.Repair)
+                        : new(next.Token, wait.Definition);
+                    kind = "shop-continued"; break;
                 case BackShop when wait.Phase != ShopPhase.Menu && wait.Phase != ShopPhase.Result:
                     next = Back(next); break;
                 case BackShop when wait.Phase == ShopPhase.Menu:
@@ -141,7 +162,20 @@ internal static class ShopService
     private static ShopOffer Offer(ShopWait wait, ActorRef member, byte item, int? slot = null, ushort? word = null)
     {
         if (!wait.Definition.Items.TryGetValue(item, out var terms)) throw new BattleRuleException("shop-item", "item");
-        return new(wait.Action!.Value, member, item, wait.Action == ShopAction.Sell ? (uint)terms.Price * 3 / 4 : terms.Price, slot, word);
+        uint price = wait.Action switch
+        {
+            ShopAction.Sell => (uint)terms.Price * 3 / 4,
+            ShopAction.Repair => (uint)terms.Price >> 2,
+            _ => terms.Price,
+        };
+        return new(wait.Action!.Value, member, item, price, slot, word);
+    }
+
+    private static ShopResult? RepairRefusal(ShopItem? item, ushort word)
+    {
+        if (item is null) return ShopResult.UnsupportedItem;
+        if ((word & BattleInventory.Broken) == 0) return ShopResult.Undamaged;
+        return item.Repairable ? null : ShopResult.UnsupportedItem;
     }
 
     private static ShopResult? SaleRefusal(ShopItem? item, ushort word, BattleItemCustody? custody)
@@ -155,8 +189,10 @@ internal static class ShopService
 
     private static ShopWait Back(ShopWait wait) => wait.Phase switch
     {
-        ShopPhase.Confirm => wait with { Phase = ShopPhase.Member, Member = null, Offer = null },
-        ShopPhase.Slot => wait with { Phase = ShopPhase.Member, Member = null },
+        ShopPhase.Confirm => wait with { Phase = ShopPhase.Member, Member = null, Offer = null,
+            Item = wait.Action == ShopAction.Repair ? null : wait.Item },
+        ShopPhase.Slot => wait with { Phase = ShopPhase.Member, Member = null,
+            Item = wait.Action == ShopAction.Repair ? null : wait.Item },
         ShopPhase.Member when wait.Action is ShopAction.Buy or ShopAction.Deals => wait with { Phase = ShopPhase.Stock, Item = null },
         _ => new(wait.Token, wait.Definition),
     };

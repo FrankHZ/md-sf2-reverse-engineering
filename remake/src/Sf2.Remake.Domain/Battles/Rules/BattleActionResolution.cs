@@ -125,12 +125,14 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
     HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null, ushort? CasterCostStatus = null,
-    AttackItemDefinition? AttackItem = null)
+    AttackItemDefinition? AttackItem = null, SupportItemUse? EquipmentUse = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
-        Require(CasterCostStatus == (SupportSpell is null ? (ushort?)null : before.GetActor(actor).Status));
+        Require(CasterCostStatus == (action.Kind == BattleActionKind.SupportSpell && SupportSpell is not null
+            ? before.GetActor(actor).Status : (ushort?)null));
+        Require(EquipmentUse?.Definition == admission.SupportItem && (EquipmentUse is null || action.Kind == BattleActionKind.Item));
         Require(AttackItem == admission.AttackItem && (AttackItem is null || action.Kind == BattleActionKind.Item));
         if (Silenced is { } blocked)
         {
@@ -140,7 +142,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 ConstructionEffects.Count == 0 && CompletionEffects.Count == 0 && Prepared.MainSeed == before.MainSeed);
             ValidateState(before, actor, destination); return;
         }
-        Require((action.Kind == BattleActionKind.SupportSpell) == (SupportSpell is not null));
+        Require((action.Kind == BattleActionKind.SupportSpell || EquipmentUse is not null) == (SupportSpell is not null));
         Require((action.Kind == BattleActionKind.PrismLaser) == (Laser is not null));
         Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
         bool usesDamageEffect = action.Kind == BattleActionKind.AttackSpell || AttackItem is not null;
@@ -183,6 +185,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                     (words[attackSlot] & 127) == attackItem.ItemId &&
                     before.Definition.AttackItems.TryGetValue(attackItem.ItemId, out var knownItem) && knownItem == attackItem);
                 ValidateAttackSpell(before, actor, destination, attackItem.Effect, attackTarget);
+                break;
+            case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } supportSlot &&
+                target is { } itemCenter && admission.SupportItem is { } supportItem:
+                Require(EquipmentUse?.Slot == supportSlot &&
+                    before.Definition.SupportItems.GetValueOrDefault(supportItem.ItemId) == supportItem);
+                ValidateSupport(before, actor, destination, supportItem.Effect, itemCenter);
                 break;
             case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } retreatSlot &&
                 target == actor && admission.RetreatItem is { } wing:
@@ -241,19 +249,19 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             var old = before.Actors[index]; var candidate = Prepared.Actors[index];
             var afterDrops = inventory?.GetActor(old.Actor) ?? old;
             if (statusWrites is not null && statusWrites.TryGetValue(old.Actor, out ushort word)) afterDrops = afterDrops.With(status: word);
-            bool consumedItem = old.Actor == actor && consumedLoadout is not null;
-            var expectedLoadout = consumedItem ? consumedLoadout : afterDrops.SourceLoadout;
+            if (old.Actor == actor && consumedLoadout is not null)
+                afterDrops = afterDrops.With(sourceLoadout: consumedLoadout, refreshStats: true);
+            var expectedLoadout = afterDrops.SourceLoadout;
             bool changedLoadout = !ReferenceEquals(expectedLoadout, old.SourceLoadout);
             Require(ReferenceEquals(candidate.Deployment, old.Deployment) && candidate.Hp == old.Hp && candidate.Initialized == old.Initialized &&
                 candidate.Mp == old.Mp && candidate.Exp == old.Exp && candidate.Kills == old.Kills && candidate.Defeats == old.Defeats &&
                 candidate.LastTarget == old.LastTarget && candidate.Attack == afterDrops.Attack && candidate.Status == afterDrops.Status &&
-                candidate.UsesInitialStats == (!consumedItem && afterDrops.UsesInitialStats) &&
-                candidate.LastRefreshBits == (consumedItem ? null : afterDrops.LastRefreshBits) && candidate.Facing == old.Facing &&
+                candidate.UsesInitialStats == afterDrops.UsesInitialStats &&
+                candidate.LastRefreshBits == afterDrops.LastRefreshBits && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
                 Equals(changedLoadout && candidate.Progress is { } progress
                     ? progress with { SourceLoadout = afterDrops.Progress?.SourceLoadout } : candidate.Progress,
-                    consumedItem && afterDrops.Progress?.CurrentStats is not null
-                        ? afterDrops.Progress with { CurrentStats = null } : afterDrops.Progress) &&
+                    afterDrops.Progress) &&
                 candidate.Position == (old.Actor == actor ? destination : old.Position));
             if (changedLoadout)
                 Require(candidate.SourceLoadout is { } loadout && loadout.Items.SequenceEqual(expectedLoadout!.Items) &&
@@ -523,16 +531,32 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             }
             bool success = spell.Resolve(target, Roll, out var word);
             if (word.HasValue) writes.Add(target.Actor, word.Value);
-            Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "support-spell" &&
+            Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == (EquipmentUse is null ? "support-spell" : "item-use") &&
                 reaction.Kind == (success ? BattleReactionKind.Status : BattleReactionKind.Ineffective) &&
                 reaction.HpBefore == target.Hp && reaction.HpAfter == target.Hp && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && !reaction.Critical && reaction.Amount == 0 &&
                 reaction.StatusWrite == (success ? word ?? (ushort)(target.Status | SilenceRules.Mask) : (ushort?)null) &&
                 reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
+        EngineBattleState? inventory = null;
+        if (EquipmentUse is { } use)
+        {
+            var owner = before.GetActor(actor);
+            Require(use.Slot >= 0 && use.Slot < owner.SourceLoadout!.Items.Count && owner.SourceLoadout.Items[use.Slot] == use.Word &&
+                (use.Word & 127) == use.Definition.ItemId);
+            if (writes.TryGetValue(actor, out ushort word)) owner = owner.With(status: word);
+            uint seed = cursor == 0 ? before.MainSeed : (uint)ConstructionEffects[cursor - 1].After!.Value;
+            List<BattleEffect> wearEffects = [];
+            var wear = SupportItemUse.Apply(use.Definition, use.Slot, owner, seed, wearEffects);
+            Require(wear.Use == use && ConstructionEffects.Skip(cursor).Take(wearEffects.Count).SequenceEqual(wearEffects));
+            cursor += wearEffects.Count;
+            inventory = before.With(actors: before.Actors.Select(a => a.Actor == actor ? wear.Owner : a));
+        }
         Require(ConstructionEffects.Skip(cursor).All(e => e.Actor == actor && e.Target is null &&
             e.Kind is "rng-exp-plus" or "rng-exp-minus"));
-        ValidateState(before, actor, destination, statusWrites: writes); ValidateReward(before, actor); ValidateRandom(before, _ => true);
+        ValidateState(before, actor, destination, inventory: inventory, statusWrites: writes);
+        ValidateReward(before, actor);
+        ValidateRandom(before, _ => true);
     }
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
@@ -558,7 +582,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             actor.Actor == reaction.Target ? actor.With(status: status, refreshStats: true) : actor));
 
     internal EngineBattleState ApplySpellCost(EngineBattleState current) =>
-        AttackItemSlot.HasValue ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
+        AttackItemSlot.HasValue || EquipmentUse is not null ? current : current.With(actors: current.Actors.Select(actor => actor.Actor == Actor
             ? actor.With(mp: (byte)Math.Max(0, actor.Mp - (Silenced?.MpCost ?? Spell?.MpCost ?? AttackSpell?.MpCost ?? SupportSpell!.MpCost)), status: CasterCostStatus, refreshStats: true) : actor));
 
     internal (EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects) ApplyReward(EngineBattleState current, IBattleProgressionRule rule)

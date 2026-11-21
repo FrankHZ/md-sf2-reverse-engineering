@@ -27,11 +27,13 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
     }
     private static bool Eligible(BattleActorState actor, BattleActorState target, SupportSpellDefinition spell) => (target.Faction == actor.Faction) == spell.TargetsTeammates &&
         target.Initialized && target.Hp > 0 && target.Position is not null && (target.ActivationWord & 8) != 8;
-    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action)
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
+        TargetChoices(battle, actor, battle.Definition.SupportSpells[action.Spell!.Value]);
+
+    internal static IReadOnlyList<ActorRef> TargetChoices(EngineBattleState battle, ActorRef actor, SupportSpellDefinition spell)
     {
         var caster = battle.GetActor(actor);
-        var spell = battle.Definition.SupportSpells[action.Spell!.Value];
-        return battle.Actors.Where(target => Eligible(caster, target, spell))
+        return battle.Actors.Where(target => Eligible(caster, target, spell) && (target.Actor != actor || spell.MinimumRange == 0))
             .OrderBy(target => target.ProcessingOrder).Select(target => target.Actor).ToArray();
     }
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
@@ -55,9 +57,14 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         return targets;
     }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? center, IBattleProgressionRule progression)
+        BattleActionRef action, ActorRef? center, IBattleProgressionRule progression) =>
+        PrepareEffect(battle, actor, destination, RequireAction(battle, actor, action).SupportSpell!, center, progression);
+
+    internal static BattleActionResolution PrepareEffect(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        SupportSpellDefinition spell, ActorRef? center, IBattleProgressionRule progression,
+        SupportItemDefinition? item = null, int? slot = null)
     {
-        var spell = RequireAction(battle, actor, action).SupportSpell!;
+        BattleMovement.RequireStop(battle, actor, destination);
         var targets = Targets(battle, actor, destination, spell, center ?? throw new BattleRuleException("support-spell-target", "target"));
         uint seed = battle.MainSeed; List<BattleEffect> effects = []; List<BattleReaction> reactions = [];
         Dictionary<ActorRef, ushort> writes = [];
@@ -72,18 +79,29 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
             }
             bool success = spell.Resolve(target, Roll, out var word);
             if (word.HasValue) writes.Add(target.Actor, word.Value);
-            reactions.Add(new(actor, target.Actor, "support-spell", success ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
+            reactions.Add(new(actor, target.Actor, item is null ? "support-spell" : "item-use", success ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
                 target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: success ? word ?? (ushort)(target.Status | SilenceRules.Mask) : null));
         }
         var caster = battle.GetActor(actor);
-        var award = caster.IsAlly ? BattleProgressionRules.Award(progression, battle.With(mainSeed: seed), caster, Kind, reactions)
+        var prepared = battle.With(actors: battle.Actors.Select(a =>
+        {
+            if (writes.TryGetValue(a.Actor, out ushort word)) a = a.With(status: word);
+            return a.Actor == actor ? a.With(position: destination) : a;
+        }));
+        SupportItemUse? equipmentUse = null;
+        if (item is not null)
+        {
+            var wear = SupportItemUse.Apply(item, slot!.Value, prepared.GetActor(actor), seed, effects);
+            equipmentUse = wear.Use;
+            seed = wear.Seed;
+            prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actor ? wear.Owner : a));
+        }
+        var award = caster.IsAlly ? BattleProgressionRules.Award(progression, battle.With(mainSeed: seed), caster,
+            BattleActionKind.SupportSpell, reactions)
             : (Amount: 0, Seed: seed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
         effects.AddRange(award.Effects);
-        return new(battle.With(mainSeed: award.Seed, actors: battle.Actors.Select(a =>
-            {
-                if (writes.TryGetValue(a.Actor, out ushort word)) a = a.With(status: word);
-                return a.Actor == actor ? a.With(position: destination) : a;
-            })),
-            actor, destination, reactions.AsReadOnly(), caster.IsAlly ? new(actor, award.Amount) : null, effects.AsReadOnly(), [], SupportSpell: spell, CasterCostStatus: caster.Status);
+        return new(prepared.With(mainSeed: award.Seed),
+            actor, destination, reactions.AsReadOnly(), caster.IsAlly ? new(actor, award.Amount) : null, effects.AsReadOnly(), [],
+            SupportSpell: spell, CasterCostStatus: item is null ? caster.Status : null, EquipmentUse: equipmentUse);
     }
 }

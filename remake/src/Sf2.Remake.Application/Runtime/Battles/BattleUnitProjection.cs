@@ -75,6 +75,7 @@ internal static class BattleUnitProjection
         if ((word & 0x300) != 0) result.Add("silence");
         if ((word & BattleStatCounters.Slow) != 0) result.Add("slow");
         if ((word & BattleStatCounters.Boost) != 0) result.Add("boost");
+        if ((word & BattleStatCounters.Attack) != 0) result.Add("attack");
         if ((word & ~(0x3C7 | BattleStatCounters.Mask)) != 0) result.Add("Other status effect (details unavailable)");
         return result.AsReadOnly();
     }
