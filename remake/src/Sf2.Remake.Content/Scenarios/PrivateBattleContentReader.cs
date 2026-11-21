@@ -91,9 +91,11 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
                 .SelectMany(word => definitions.Items[(byte)(word & 127)].EquipEffects)
                 .Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
         }).ToArray();
-        var presentation = scenes is null ? null : BattleSceneContentReader.Read(scenes, definitions);
-        return PrivateBattleScenarioReader.Assemble(definitions, start with { Allies = baselines },
-            campaign: true, bindRepeatEnemies: repeatEnemies is { Count: > 0 }, presentation: presentation);
+        var accepted = PrivateBattleScenarioReader.Assemble(definitions, start with { Allies = baselines },
+            campaign: true, bindRepeatEnemies: repeatEnemies is { Count: > 0 });
+        if (scenes is null) return accepted;
+        return new(new(accepted.Definition.Package, accepted.Definition.Encounters.Values, definitions,
+            battleScenes: BattleSceneContentReader.Read(scenes, definitions)), accepted.Start);
     }
 
     internal ExplorationReadAccepted Initialize(ExplorationReadAccepted admitted)

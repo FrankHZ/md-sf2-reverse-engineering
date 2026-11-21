@@ -27,9 +27,11 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
             var encounter = ((BattleEncounterReadAccepted)result).Definition;
             var start = ControlledBattleStartReader.Read(controlledStartPath);
             var definitions = PrivateBattleDefinitionReader.Read(staticPath, enemyPath, goldPath, encounter, start, fieldItems: fieldItems);
-            var presentation = battleSceneContentPath is null ? null : BattleSceneContentReader.Read(
-                battleSceneContentPath, definitions, start.Allies.Select(ally => ally.Id));
-            return Assemble(definitions, start, presentation: presentation);
+            var accepted = Assemble(definitions, start);
+            if (battleSceneContentPath is null) return accepted;
+            var scenes = BattleSceneContentReader.Read(battleSceneContentPath, definitions, start.Allies.Select(ally => ally.Id));
+            return new ScenarioReadAccepted(new(accepted.Definition.Package, accepted.Definition.Encounters.Values,
+                definitions, battleScenes: scenes), accepted.Start);
         }
         catch (AdmissionIssue issue) { return new ScenarioReadRejected(issue.Failure); }
         catch (PrivateBattleEncounterReader.EncounterReadException issue)
@@ -44,7 +46,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
     }
 
     internal static ScenarioReadAccepted Assemble(PrivateBattleDefinitions definitions, PrivateBattleStart start, bool campaign = false,
-        bool bindRepeatEnemies = false, BattleSceneDefinition? presentation = null)
+        bool bindRepeatEnemies = false)
     {
         var encounter = definitions.Encounter;
         Require(start.Battle == encounter.Battle.Id, "controlled-encounter", "start.battle");
@@ -136,7 +138,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
                 drops, drops.Select(drop => drop.ItemId).Distinct().Select(id => definitions.Items[id])
                     .Select(item => new EnemyDropItem(item.Id, item.DisplayName, item.ItemTypeExpression.Split('|').Contains("RARE")))),
-            poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions, presentation),
+            poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions),
             attackItems: PrivateBattleActionBindings.AttackItems(definitions),
             supportItems: PrivateBattleActionBindings.SupportItems(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy,
@@ -144,7 +146,7 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         // Product content is assembled before its ordinary before-battle program has run.
         // The actual battle entry still validates the routed policy through BattleTurnFlow.
         if (!campaign) BattleTurnFlow.ValidateStart(battle, inputStart);
-        return new(new("private-encounter", [battle], definitions, battleScenes: presentation), inputStart);
+        return new(new("private-encounter", [battle], definitions), inputStart);
     }
 
 

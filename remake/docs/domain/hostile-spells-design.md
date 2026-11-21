@@ -189,15 +189,14 @@ settled battle wire round trip restores an active sleep count and matches the ne
 RNG results. [Learned spell and save cases](../../tests/Sf2.Remake.Engine.Tests/SleepSpellTests.cs) ·
 [Existing sleep behavior](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs)
 
-**Confirmed** for the private binding condition. The selected battle scene supplies the mounted
-menu icon pair. When both spell-9 variants and the validated SLEEP 1 source row are present,
-the encounter binds SLEEP 1. The registered issue1966 package supplies the source row and sleep
-texts 306/338/354, with both SLEEP icon variants absent from its encounter scenes. The issue1941
-Chinese name catalog lacks spell ID 9 and would fall back to the canonical name. The existing
-generic support scene shows the sleep result once per successful target. Original icon supply
-and the localized name row are recorded in [#2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001).
+**Confirmed** for the current implementation boundary. SLEEP 1 is available in controlled
+authored scenarios. The generic support scene shows the sleep result once per successful
+target. Private campaign binding remains pending in #1967. The registered issue1966 package
+supplies the source row and sleep texts 306/338/354. Its encounter scenes lack both SLEEP
+menu icon variants, and the issue1941 Chinese catalog lacks the spell ID 9 name. Asset
+preparation belongs to [#2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001).
 Tyrin's ordinary learn-and-cast and native Continue after a spell-inflicted sleep remain **Unknown**.
-[Private support binding](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
+[Current private spell bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
 
 **Confirmed** ordinary compatibility on the unchanged published issue1966 zh-CN-learned01
 Battle26 slot. A disposable copy cold-continued in English with the registered issue1966 world
@@ -226,13 +225,13 @@ required consumers are admitted.
 1. **SLEEP and shared status admission.** The finite support effect uses
    [SupportSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SupportSpellDefinition.cs),
    [Sf2SupportSpellAction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) and
-   [PrivateSupportSpellBindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs).
+   [AuthoredScenarioPackageReader](../../src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs).
    It reuses the shared Magic selection, silence, area handling and DETOX's target-side award
    rule. [BattleActionResolution](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
    checks the ordered draws and reaction words. [SleepTurnRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SleepTurnRules.cs)
    and [BattleAfterTurnContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs)
-   consume the same word for spell and physical sleep. Ordinary private acceptance requires
-   the asset and legal input boundaries above.
+   consume the same word for spell and physical sleep. After #2001 supplies the presentation
+   inputs, #1967 owns explicit private rank binding and ordinary acceptance.
 2. **DESOUL 1 then 2.** Consume the accepted [#1944 attack and item split](offensive-items-design.md).
    Keep instant death on the learned spell path and preserve elemental attack-item resolution.
    Extend [AttackSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs),
