@@ -146,7 +146,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require((action.Kind == BattleActionKind.SupportSpell || EquipmentUse is not null) == (SupportSpell is not null));
         Require((action.Kind == BattleActionKind.PrismLaser) == (Laser is not null));
         Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
-        bool usesDamageEffect = action.Kind == BattleActionKind.AttackSpell || AttackItem is not null;
+        var conversion = action.Kind == BattleActionKind.Physical && target is { } physicalTarget
+            ? Sf2PhysicalAction.MonsterBreathRoll(before, actor, physicalTarget) : null;
+        if (conversion is not null) Require(ConstructionEffects.FirstOrDefault() == conversion);
+        Require(ConstructionEffects.Count(e => e.Kind == "rng-kiwi-conversion") == (conversion is null ? 0 : 1));
+        bool converts = conversion?.RandomValue == 0;
+        bool usesDamageEffect = action.Kind == BattleActionKind.AttackSpell || AttackItem is not null || converts;
         Require(usesDamageEffect || action.Kind == BattleActionKind.Physical || Reactions.All(reaction => reaction.Receipt is null));
         Require(usesDamageEffect == (AttackSpell is not null));
         switch (action.Kind)
@@ -177,7 +182,14 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 ValidateSupport(before, actor, destination, support, supportCenter);
                 break;
             case BattleActionKind.Physical when action.Spell is null && action.ItemSlot is null && target is { } victim:
-                ValidatePhysical(before, actor, destination, victim);
+                if (converts)
+                {
+                    var key = Sf2PhysicalAction.MonsterBreathSpell(before.GetActor(actor).Level);
+                    Require(before.Definition.AttackSpells.TryGetValue(key, out var breath) &&
+                        AttackSpell == breath && AttackItemSlot is null);
+                    ValidateAttackSpell(before, actor, destination, breath!, victim, firstDraw: 1);
+                }
+                else ValidatePhysical(before, actor, destination, victim);
                 break;
             case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } attackSlot &&
                 target is { } attackTarget && AttackItem is { } attackItem:
@@ -459,14 +471,14 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     }
 
     private void ValidateAttackSpell(EngineBattleState before, ActorRef actor, MapPosition destination,
-        AttackSpellDefinition spell, ActorRef center)
+        AttackSpellDefinition spell, ActorRef center, int firstDraw = 0)
     {
         var targets = Sf2AttackSpellAction.ResolveTargets(before, actor, destination, spell, center);
         Require(Spell is null && Item is null && AttackSpell == spell && CompletionEffects.Count == 0 &&
             Reactions.Count == targets.Count && Reactions.Count > 0 &&
             (before.GetActor(actor).IsAlly ? Reward is { Actor: var recipient } && recipient == actor : Reward is null));
         var inventory = before;
-        int cursor = 0;
+        int cursor = firstDraw;
         var taros = before.Definition.TarosEffectiveness;
         bool ineffective = taros?.IsTaros(targets[0]) == true;
         for (int i = 0; i < targets.Count; i++)

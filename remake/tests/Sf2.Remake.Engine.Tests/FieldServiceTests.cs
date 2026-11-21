@@ -35,6 +35,7 @@ public sealed class FieldServiceTests
             BattleClassRule.UnpromotedRanger => (8, 25, "RNGR", "BWNT", "BowKnight", 6, "CENTAUR_ARCHER", 47, null),
             BattleClassRule.UnpromotedPhoenix => (9, 26, "PHNK", "PHNX", "Phoenix", 7, "FLYING", 127, null),
             BattleClassRule.UnpromotedThief => (10, 27, "THIF", "NINJ", "Ninja", 7, "STEALTH", 103, null),
+            BattleClassRule.UnpromotedTortoise => (11, 28, "TORT", "MNST", "Monster", 7, "HOVERING", 127, null),
             _ => (0, 12, "SDMN", "HERO", "Hero", 6, "REGULAR", 50, null),
         };
         var (baseClass, destination, baseCode, promotedCode, title, move, mover, weapon, promotionItem) = profile;
@@ -59,6 +60,7 @@ public sealed class FieldServiceTests
         bool phoenix = sourceRule == BattleClassRule.UnpromotedPhoenix;
         byte attackBonus = weapon switch { 36 or 47 => 17, 58 => 8, 127 => 0, _ => 5 };
         bool ninja = sourceRule == BattleClassRule.UnpromotedThief;
+        bool monster = sourceRule == BattleClassRule.UnpromotedTortoise;
         var loadout = new BattleSourceLoadout([(ushort)(weapon | (armed ? 128 : 0)),
             power ? (ushort)147 : sourceRule == BattleClassRule.UnpromotedMage ? (ushort)24 : (ushort)127,
             ranged ? (ushort)50 : ninja ? (ushort)58 : (ushort)127, 127], book);
@@ -88,7 +90,8 @@ public sealed class FieldServiceTests
             {
                 var fixture = source.WithDeployments(deployments);
                 var classDefinitions = new PrivateBattleDefinitions(null!, [],
-                    [new(destination, promotedCode, title, move, phoenix ? "FIRE_MAJOR|STATUS_MAJOR" : "NONE", mover,
+                    [new(destination, promotedCode, title, move, phoenix ? "FIRE_MAJOR|STATUS_MAJOR" :
+                        monster ? "NEUTRAL_MAJOR|UNDEFINED1_MAJOR|UNDEFINED2_MAJOR|STATUS_MAJOR" : "NONE", mover,
                         ninja ? "CRITICAL150_1IN8|DOUBLE_1IN16|COUNTER_1IN8" :
                         sourceRule == BattleClassRule.UnpromotedWolfman ? "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8" :
                             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
@@ -142,12 +145,12 @@ public sealed class FieldServiceTests
         var definition = new ScenarioDefinition("service-behavior", [battle], exploration: world);
         var party = new BattleStartInput(battle.Encounter, original.Actors.Select(actor => actor.Actor == First
             ? actor with { Hp = hp, Status = status, Progress = currentLevel is { } attained
-                ? new(attained, 76, ninja ? (byte)0 : (byte)10, 20, 4, 60, [], actor.SourceLoadout) : null }
+                ? new(attained, 76, ninja || monster ? (byte)0 : (byte)10, 20, 4, 60, [], actor.SourceLoadout) : null }
             : actor.Actor == Second ? actor with { Hp = secondHp, Status = secondStatus } : actor),
             original.MainSeed, original.ThinkingSeed, gold, original.NewBattle, original.ActiveAllies, original.ItemCustody);
         if (promotion)
             party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
-                Mp = ninja ? (byte)0 : a.Mp,
+                Mp = ninja || monster ? (byte)0 : a.Mp,
                 Progress = a.Progress! with { ClassId = baseClass, SourceLoadout = loadout, Spells = spells, BaseMove = 8 } }
                 : a.Actor == Second && promotionItem is { } item ? a with
                     { SourceLoadout = new([item, 127, 127, 127], [63, 63, 63, 63]) } : a),
@@ -537,6 +540,36 @@ public sealed class FieldServiceTests
             Assert.Equal(new ushort[] { 103, 147, 186, 127 }, armed.SourceLoadout.Items);
         }
         Assert.Equal(6, armed.Spells.Count);
+    }
+
+    [Fact]
+    public void MonsterRiteKeepsEmptyBookAndUpdatesHoveringResistanceAndCounter()
+    {
+        var session = Session(hp: 9, currentLevel: 20, promotion: true, power: true,
+            sourceRule: BattleClassRule.UnpromotedTortoise);
+        var prior = Member(session, First);
+        Choose(session, ChurchAction.Promote);
+        var offer = Assert.Single(Wait(session).Candidates!, row => row.Member == First);
+        Accept(session, new SelectPromotion(Wait(session).Token, offer));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        var after = Member(session, First);
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with
+            { ClassId = 28, Level = 1, BaseMove = null } }, after);
+        var deployment = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
+        var actor = new BattleActorState(deployment, after.Hp, after.Mp, after.Exp, new(5, 5), 0, 0, progress: after.Progress);
+        Assert.Equal((BattleClassRule.Monster, BattleMover.Hovering, (byte)7),
+            (actor.Definition.ClassRule, actor.Definition.Mover, actor.Move));
+        Assert.Equal((ushort)0xAA00, actor.Definition.Resistance);
+        Assert.Equal((ushort)16, BattleEquipment.Physical(actor)!.Critical.CounterChanceDenominator);
+        Assert.Null(BattleEquipment.EquippedWeaponItem(actor));
+        Assert.Equal(5, BattleEquipment.Contribution(actor.Definition, actor.SourceLoadout));
+        Assert.Equal(new byte[] { 63, 63, 63, 63 }, actor.SourceLoadout!.Spells);
+        Assert.Empty(actor.Spells);
+        Assert.Equal(0, actor.MaxMp);
+        var water = new BattleTerrain(TerrainSurface.Water, TerrainProtection.None);
+        Assert.Equal((sbyte)2, BattleTerrainRules.MovementCost(water, actor.Definition.Mover));
+        Assert.Equal((sbyte)-1, BattleTerrainRules.MovementCost(water, BattleMover.Stealth));
     }
 
     [Theory]

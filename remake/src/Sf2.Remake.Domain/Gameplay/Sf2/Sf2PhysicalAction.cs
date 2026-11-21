@@ -80,6 +80,16 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         return target;
     }
 
+    internal static BattleEffect? MonsterBreathRoll(EngineBattleState battle, ActorRef actor, ActorRef target)
+    {
+        if (battle.GetActor(actor).Definition.ClassRule != BattleClassRule.Monster) return null;
+        var draw = BattleRandom.NextMain(battle.MainSeed, 4);
+        return new("rng-kiwi-conversion", actor, draw.Before, draw.After, draw.Range, draw.Value, target);
+    }
+
+    internal static SpellRef MonsterBreathSpell(byte level) =>
+        new("kiwi", level >= 50 ? (byte)4 : level >= 40 ? (byte)3 : level >= 32 ? (byte)2 : (byte)1);
+
     internal static BattleActionResolution Prepare(
         EngineBattleState current, ActorRef actorRef, MapPosition destination, ActorRef targetRef, IBattleProgressionRule progression)
     {
@@ -95,6 +105,19 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         var effects = new List<BattleEffect>();
         var reactions = new List<BattleReaction>();
         var inventory = current;
+        if (MonsterBreathRoll(current, actorRef, targetRef) is { } conversion)
+        {
+            effects.Add(conversion);
+            seed = checked((uint)conversion.After!.Value);
+            if (conversion.RandomValue == 0)
+            {
+                var spell = current.Definition.AttackSpells.GetValueOrDefault(MonsterBreathSpell(actor.Level))
+                    ?? throw new BattleRuleException("monster-breath-content", "spells.kiwi", true);
+                var breath = Sf2AttackSpellAction.PrepareDamage(current.With(mainSeed: seed),
+                    actorRef, destination, spell, targetRef, progression, itemSlot: null);
+                return breath with { ConstructionEffects = Array.AsReadOnly<BattleEffect>([conversion, .. breath.ConstructionEffects]) };
+            }
+        }
 
         bool ineffective = current.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         var first = Hit("physical-first", counter: false);

@@ -58,6 +58,8 @@ internal static class PrivateBattleDefinitionReader
         foreach (var row in enemies.SelectMany(row => row.Spells))
             for (byte level = 1; level <= row.Level; level++) AddSpell(row.Spell, level);
         foreach (var row in items) AddSpell(row.UseSpell, row.UseSpellLevel);
+        if (classes.Any(row => row.Id == 28))
+            for (byte level = 1; level <= 4; level++) AddSpell("KIWI", level);
         // Buying or finding an item supplies its source terms, without selecting its Use spell.
         if (fieldItems is not null)
             items = items.Concat(fieldItems.Where(id => !itemIds.Contains(id)).Select(id => Item(FindId(core, "items", id)))).ToArray();

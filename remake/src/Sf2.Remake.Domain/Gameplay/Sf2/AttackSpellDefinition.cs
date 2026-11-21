@@ -9,7 +9,9 @@ public sealed record AttackItemDefinition(byte ItemId, string Name, AttackSpellD
 public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort Power,
     byte MinimumRange, byte MaximumRange, byte Radius, AttackSpellElement Element, byte? SourceAnimationSelector = null)
 {
-    internal ushort CriticalRange => Spell.Value is "aqua" or "bolt" or "raijin" ? (ushort)8 : (ushort)32;
+    internal bool IsMonsterBreath => Spell.Value == "kiwi";
+    internal ushort CriticalRange => Spell.Value switch
+    { "aqua" or "bolt" or "raijin" => 8, "kiwi" => 16, _ => 32 };
 
     internal void RequireConsumableEffect()
     {

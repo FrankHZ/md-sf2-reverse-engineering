@@ -711,6 +711,7 @@ internal static partial class GameText
         ["field.search"] = 1,
         ["localization.fallback"] = 1,
         ["battle.scene.attack"] = 1,
+        ["battle.scene.flame-breath"] = 1,
         ["battle.scene.second"] = 1,
         ["battle.scene.counter"] = 1,
         ["battle.scene.item"] = 2,

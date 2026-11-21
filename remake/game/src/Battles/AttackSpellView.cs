@@ -11,8 +11,9 @@ internal sealed partial class AttackSpellView : Node2D
     private BattleSceneState? _scene;
     private double _elapsed;
     private int _drawCount;
-    internal void Present(BattleSceneState scene)
-    { _scene = scene; _elapsed = 0; Show(); QueueRedraw(); }
+    private IReadOnlyList<Texture2D>? _breath;
+    internal void Present(BattleSceneState scene, IReadOnlyList<Texture2D>? breath = null)
+    { _scene = scene; _breath = breath; _elapsed = 0; Show(); QueueRedraw(); }
     internal bool Advance(double elapsed)
     {
         _elapsed = elapsed; QueueRedraw();
@@ -25,6 +26,17 @@ internal sealed partial class AttackSpellView : Node2D
     {
         if (_scene?.AttackSpell is not { } spell) return;
         _drawCount++;
+        if (_breath is { } particles)
+        {
+            for (int particle = 0; particle < 8; particle++)
+            {
+                float travel = (float)(_elapsed - particle * 0.04) / 0.32f;
+                if (travel is < 0 or > 1) continue;
+                var position = new Vector2(156 - 112 * travel, 94 + (particle % 3 - 1) * travel * 10);
+                DrawTexture(particles[(int)(travel * 8) % particles.Count], position);
+            }
+            return;
+        }
         DrawRect(new Rect2(0, 44, 256, 122), new Color("18243a"));
         var fire = spell.Element == AttackSpellElement.Fire || (Selector & 31) == 1;
         var lightning = spell.Element == AttackSpellElement.Lightning || (Selector & 31) == 7;
@@ -65,6 +77,6 @@ internal sealed partial class AttackSpellView : Node2D
         visible = IsVisibleInTree(), drawCount = _drawCount, elapsed = _elapsed,
         element = _scene?.AttackSpell?.Element.ToString(), selector = Selector,
         variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
-        target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true
+        target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null
     };
 }

@@ -86,12 +86,16 @@ internal static class PrivateWorldEncounterReader
             .DistinctBy(row => row.Key).ToArray();
         var appearances = scenes.SelectMany(scene => (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>())
             .Select(pair => (pair.Key, pair.Value, scene.Rasters))).DistinctBy(row => row.Key).ToArray();
+        var breath = scenes.SelectMany(scene => scene.Rasters)
+            .Where(pair => pair.Key.StartsWith("kiwi-breath/", StringComparison.Ordinal))
+            .DistinctBy(pair => pair.Key).ToArray();
         var sprites = scenes.SelectMany(scene => scene.FieldDeath?.AllySprites ?? new Dictionary<int, int>())
             .Where(pair => source.Allies.ContainsKey((byte)pair.Key)).DistinctBy(pair => pair.Key)
             .ToDictionary(pair => pair.Key, pair => pair.Value);
         return scenes.Select(scene =>
         {
             var rasters = scene.Rasters.ToDictionary();
+            foreach (var pair in breath) rasters.TryAdd(pair.Key, pair.Value);
             var allies = scene.Allies.ToDictionary();
             var weapons = scene.Equipment!.ToDictionary();
             var actorVisuals = (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>()).ToDictionary();

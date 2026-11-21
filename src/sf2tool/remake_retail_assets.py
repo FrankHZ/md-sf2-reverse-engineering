@@ -565,13 +565,14 @@ def main():
             "vicar",
             "innate",
             "ninja",
+            "monster",
             "all",
         ),
         required=True,
     )
     parser.add_argument("--command", type=int, action="append", default=[])
     args = parser.parse_args()
-    if {"wiz", "melee", "ranged", "vicar", "innate", "ninja"}.intersection(
+    if {"wiz", "melee", "ranged", "vicar", "innate", "ninja", "monster"}.intersection(
         args.family
     ) and not args.mount:
         parser.error("ordinary promotion families select already prepared assets for --mount")

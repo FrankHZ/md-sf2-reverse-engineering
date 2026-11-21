@@ -8,7 +8,8 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
     public string Identity => "sf2-attack-spell";
     public BattleActionKind Kind => BattleActionKind.AttackSpell;
     public IReadOnlyList<BattleActionOffer> QueryActions(EngineBattleState battle, ActorRef actor) =>
-        battle.GetActor(actor).Spells.Where(battle.Definition.AttackSpells.ContainsKey)
+        battle.GetActor(actor).Spells.Where(key =>
+            battle.Definition.AttackSpells.TryGetValue(key, out var spell) && !spell.IsMonsterBreath)
             .Select(spell => new BattleActionOffer(new(Kind, spell), $"{spell.Value.ToUpperInvariant()} {spell.Level}")).ToArray();
 
     public BattleActionAdmission RequireAction(EngineBattleState battle, ActorRef actorRef, BattleActionRef action)
