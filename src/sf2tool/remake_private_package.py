@@ -17,7 +17,7 @@ from tempfile import TemporaryDirectory
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
 from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
-from sf2tool.remake_battle_scene_content import compose
+from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_exploration_content import _selected_growth
 from sf2tool.remake_exploration_programs import OriginalPrograms
@@ -222,11 +222,11 @@ def prepared_ally_sequence(index: int, rows: list[list[int]], draw_weapon: bool)
     )
 
 
-def mount_monster_breath(directory: Path, scratch: Path, scene: dict) -> None:
+def prepared_spell_tiles(directory: Path, tileset: int) -> tuple[bytes, list[tuple[int, int, int]]]:
     record = next(
         row
         for row in read_json(directory / "index.json")["records"]
-        if row["family"] == "spell" and row["id"] == 1
+        if row["family"] == "spell" and row["id"] == tileset
     )
     tiles = (directory / record["tiles"]).read_bytes()
     words = read_json(directory / "base-palette.json")
@@ -234,7 +234,11 @@ def mount_monster_breath(directory: Path, scratch: Path, scene: dict) -> None:
     # LoadSpellTileset replaces these three colors in battlescene palette 3.
     for index, slot in enumerate((9, 13, 14)):
         words[slot] = int.from_bytes(spell_colors[2 * index : 2 * index + 2], "big")
-    palette = [md_palette_color(word) for word in words]
+    return tiles, [md_palette_color(word) for word in words]
+
+
+def mount_monster_breath(directory: Path, scratch: Path, scene: dict) -> None:
+    tiles, palette = prepared_spell_tiles(directory, 1)
     # graphic_FlameBreathParticle opens on tile 1 and alternates its bit-3 tile.
     for tile in (1, 9):
         leaf = f"kiwi-flame-{tile}.png"
@@ -243,6 +247,23 @@ def mount_monster_breath(directory: Path, scratch: Path, scene: dict) -> None:
         raster = installed_png(scratch, leaf)
         if scene["rasters"].setdefault(key, raster) != raster:
             raise ValueError(f"conflicting prepared flame particle {key}")
+
+
+def mount_phoenix_waves(directory: Path, scratch: Path, scene: dict) -> None:
+    tiles, palette = prepared_spell_tiles(directory, 20)
+    layout = sprite_layout(4, 4)
+    for frame in range(4):
+        leaf = f"phoenix-wave-{frame}.png"
+        write_png_rgba(
+            scratch / leaf,
+            32,
+            32,
+            compose(tiles, palette, 32, 32, [frame * 16 + tile for tile in layout]),
+        )
+        key = f"phoenix-wave/frame-{frame}"
+        raster = installed_png(scratch, leaf)
+        if scene["rasters"].setdefault(key, raster) != raster:
+            raise ValueError(f"conflicting prepared sound wave {key}")
 
 
 def ninja_weapon_layers(scene: dict) -> list[dict]:
@@ -401,11 +422,8 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         "ninja": {5: "NINJ"},
         "monster": {6: "MNST"},
     }
-    selected = (
-        permitted | (set(families) & retained_families.keys())
-        if "all" in families
-        else set(families)
-    )
+    optional = retained_families.keys() | {"phoenix-wave"}
+    selected = permitted | (set(families) & optional) if "all" in families else set(families)
     retained_promotions = {
         member: class_code
         for family, variants in retained_families.items()
@@ -421,10 +439,10 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         if "pldn" in selected
         else tuple(part for part in ("pldn-party", "pldn-eric") if part in selected)
     )
-    if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
+    if not selected <= (permitted | {"pldn-party", "pldn-eric"} | optional):
         raise ValueError(
             "select walking, icons, sfx, music, pldn, wiz, melee, "
-            "ranged, vicar, innate, ninja or monster"
+            "ranged, vicar, innate, ninja, monster or phoenix-wave"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -486,6 +504,8 @@ def mount(root, base, destination, families, commands, *, upstream=None):
             promotions.update(retained_promotions)
         if "monster" in selected:
             mount_monster_breath(root / "effects", Path(temp), scene)
+        if "phoenix-wave" in selected:
+            mount_phoenix_waves(root / "effects", Path(temp), scene)
         if upstream is not None and promotions:
             bind_ordinary_progression(world, upstream, promotions)
         for command in commands or (25, 87, 99):

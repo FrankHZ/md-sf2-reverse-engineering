@@ -238,6 +238,10 @@ $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 # Add Kiwi's MNST progression and appearances to the registered Ninja package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family monster `
     -Package "$progression/ninja-v1" -Upstream $pinnedSource -Destination "$progression/monster-$token"
+
+# Add the prepared sound-wave overlay to the registered Monster package.
+& $run -Repo $repo -Operation Mount -Library $runtime -Family phoenix-wave `
+    -Package "$progression/monster-v1" -Destination "$progression/phoenix-wave-$token"
 ```
 
 Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
@@ -248,13 +252,12 @@ prepared media and needs no ROM, audio capture or production scratch. [PLDN repr
 
 The WIZ mount selects already prepared Kazin and Tyrin walking and battle bodies, reuses
 the existing rod/stick layers and binds the two members' progression from `-Upstream`.
-Use the resulting `wiz-v1` for both locales. Ordinary Kazin was played through Battle26. Tyrin's
-promoted ordinary route remains **Unknown**. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
+Use the resulting `wiz-v1` for both locales. Ordinary Kazin was played through Battle26. Tyrin's rite has controlled coverage. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
 
 The melee mount adds the prepared Jaha, Randolf and Luke bodies and walking sprites to the
 WIZ base and binds their member growth. It reuses the compatible axe and sword layers, including
-Broad Sword. Ordinary Jaha and Luke were played through Battle26. Randolf's promoted ordinary
-route remains **Unknown**. [Melee reproduction](../application/ordinary-promotion-classes.md#gladiator-and-bird-battler-ordinary-reproduction)
+Broad Sword. Ordinary Jaha and Luke were played through Battle26. Randolf's rite has
+controlled coverage. [Melee reproduction](../application/ordinary-promotion-classes.md#gladiator-and-bird-battler-ordinary-reproduction)
 
 The ranged mount adds the prepared Elric, Janet and May bodies, walking sprites and member
 growth. Items 45–50 select the promoted body animation with no independent weapon layer.
@@ -277,6 +280,12 @@ presentation selects the source flame or lightning variation in the current mode
 The Monster mount adds Kiwi's walking strips, remapped portrait, unarmed body and
 special cast sequence in `monster-v1`. It binds two particles from the prepared
 Flame Breath sheet using the source palette operands. [Monster reproduction](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot)
+
+The asset-only Phoenix wave mount adds four 32×32 scene rasters from the prepared 2,048-byte
+tileset 20, using its palette operands. It adds 1,424 bytes to the closed 145-file package.
+The package stages a single complete output before publication. The campaign scene reader shares
+the new rasters with earlier mounted encounters. Selector 61 plays the overlay when all four
+rasters are present. [Phoenix wave reproduction](../application/ordinary-promotion-classes.md#phoenix-sound-wave-playback)
 
 Mount preserves the relative world, scene and entry dependencies, mounts any selected WAVs
 and publishes a fresh directory after checking closure. Select the result with the ordinary
