@@ -1468,6 +1468,9 @@ msgstr "{0} 的中毒已治愈。"
 msgid "name.spell.detox"
 msgstr "解毒"
 
+msgid "save.destination.yeel-field"
+msgstr "Yeel"
+
 msgid "save.destination.battle07-return"
 msgstr "古代之塔，地震之后"
 

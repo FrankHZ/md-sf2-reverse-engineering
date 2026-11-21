@@ -84,7 +84,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
 | Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
-| Persistence/Continue | **Implemented, bounded:** selectable local save history, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. Four field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return and completed Battle07 Map58 aftermath. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
+| Persistence/Continue | **Implemented, bounded:** selectable local save history, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. The first field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return, completed Battle07 Map58 aftermath and settled Yeel Map5. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL. Antidote and DETOX1 cure poison with caller-specific payment. Fairy Powder clears poison and paralysis and spends the selected holder's slot. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
@@ -415,8 +415,17 @@ asks the selected profile for a recipe and validates its typed result using exis
   This adds the `battle07-return` recipe to the existing format, without changing revision4 party
   generation. The quake town and scene-only damaged-ship arrival are not save locations.
 
+- **Yeel settled visit:** the `yeel-field` recipe records the current active-area tile, facing
+  and layer. Use the default setup or a concrete F650 setup selected by the world. The visit
+  snapshot retains settled actors, aliases, follower relationships and the working layout.
+  Continue restores that visit without running setup init or Talk again. Fresh entry still
+  selects population normally. Church Record uses the selected Map5 church anchor for Egress
+  and commits F399 only with successful slot publication. The published Phoenix-wave world lacks
+  the F650 setup body, so that visit still rejects with `save-location-unavailable`. F530/F28
+  remain outside this recipe. See the [location coverage](pre-voyage-optional-locations.md#pre-voyage-save-coverage).
+
 These are implemented product recipes. Their acceptance includes
-ordinary legal variations within all three required boundaries: reordered optional conversations,
+ordinary legal variations within each admitted boundary: reordered optional conversations,
 refusal/retry, changed party resources/equipment, living/dead members, earned progress and different
 valid flags/landing tuples. Missing handling of such a state is an implementation defect or unfinished
 acceptance, not permission to disable it as “uncovered.” A genuinely unsupported later Map3 setup
@@ -471,6 +480,33 @@ that a new on-load side effect is reproduced: that change still needs an affecte
 when the slot/restart consumer is affected, the [bounded host observation](../verification/map3-commission-save.md).
 `QuerySave` still validates the detached restore before offering a slot; passing admission alone does
 not prove semantic equivalence to ordinary initialization. Keep that distinction in review.
+
+#### Yeel Save and Continue observation
+
+Use the registered `phoenix-wave-v1` world with its `opening-inputs`, title entry and main scene
+file. Load private selections through the existing [host workflow](../verification/map3-commission-save.md).
+Use a fresh test save root and the Debug adapter. A legal, controlled pre-session guide approach
+uses Map5(7,7), Up, speed 32, the membership and story flags from
+[`yeel-to-battle03-start.json`](../../reference/inputs/yeel-to-battle03-start.json) with F399 clear, and
+the initialized full-roster opening values. The existing `StartPreVoyageLocalizationObservation`
+entry admits this case. It does not establish natural reach.
+
+1. Save from the system menu, then cancel an overwrite and compare the slot bytes. Talk to the
+   guide and return to settled ordinary input with F72 set and F4 clear.
+2. Walk to the aboveground priest approach at (11,6), face Up, open Church and select Record.
+   Wait for the caller to return, then publish to a second slot.
+3. Use a fresh Godot process for each slot and select ordinary title Continue. Compare the full
+   saved progress and scene at attachment, including party, items, flags and the follower link.
+   Verify the Yeel slot label and the absence of a field/adapter error.
+4. With the first test slot's writer lock already taken, attempt a new Save. Check the storage
+   error and that the prior slot still has the same bytes.
+
+**Confirmed** in the default setup of the registered world. The existing publication lacks the
+Church Egress anchor. The selection check reads the anchor through `savepoints` from pinned
+`savePointMapCoordinates`, and `PreVoyageSaveTests` exercises the F399/Egress commit against an
+authored Church anchor, a complete synthetic replacement setup, and refusal during movement.
+Native verification of the new Egress metadata and the authentic F650 population requires a
+publication with those bindings.
 
 The SF2 recipe admits map-default ambient programs and an already-entered closed
 random-walk/wait/back-jump cycle on Map3. The completed messenger installs such a loop at a new

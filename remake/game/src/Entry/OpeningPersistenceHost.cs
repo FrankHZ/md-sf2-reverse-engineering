@@ -297,6 +297,7 @@ public sealed partial class GameRoot
         "ancient-hall" => GameText.Get("save.destination.ancient-hall"),
         "east-shrine" => GameText.Get("save.destination.east-shrine"),
         "parmecia-battle-return" => GameText.Get("save.destination.parmecia-battle-return"),
+        "yeel-field" => GameText.Get("save.destination.yeel-field"),
         "battle07-return" => GameText.Get("save.destination.battle07-return"),
         _ => GameText.Get("save.destination.unavailable"),
     };
