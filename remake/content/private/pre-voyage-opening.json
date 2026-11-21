@@ -82,7 +82,12 @@
     26
   ],
   "unavailableBattles": [31],
-  "promotionClasses": [{"member": 0, "class": "HERO"}],
+  "promotionClasses": [
+    {"member": 0, "class": "HERO"},
+    {"member": 2, "class": "PLDN"},
+    {"member": 12, "class": "PLDN"},
+    {"member": 14, "class": "PLDN"}
+  ],
   "growthClasses": [
     {
       "member": 0,

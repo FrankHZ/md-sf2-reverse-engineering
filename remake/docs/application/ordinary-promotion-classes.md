@@ -183,18 +183,16 @@ A palette or sprite match from another member is insufficient class admission.
   [Conversion gate](../../../docs/design/contracts/battle/battle-functions-control-flow.md#kiwi-conversion-gate) ·
   [Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm)
 
-### Accepted support before expansion
+### Admitted ordinary classes
 
-**Confirmed in the remake.** The accepted HERO package has base/start growth rows for IDs
-0–19 and one additional actor/class row, Bowie/HERO. Only Bowie completes the ordinary rite,
-through battle growth, field and battle Continue and return. The only PLDN scene palette
-mounted in the Battle26 selection is 2 for starting PLDN Higins. His observed Javelin
-attack supplies a PLDN scene/range precedent. Chester, Rick and Eric need their own PLDN
-rows and assets. Other destination pairs above have pinned source rows without admitted
-destination content or ordinary promoted observations. The existing engine has the relevant
-mover categories, carried-state transition and save recipe. Its private class, growth,
-field and battle scene readers still include HERO-specific admission. Spell ranks and
-new class combat rules in the preceding section are separate consumer gaps.
+**Confirmed in the remake.** The #1956 package admits SDMN→HERO for Bowie and KNTE→PLDN for
+Chester, Rick and Eric. The three knights have their own growth, map sprites 6/28/34 and Battle26
+sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows each for Chester and Rick and six for
+Eric. Unarmed projection uses the member's body with the weapon layer hidden. Campaign scene
+admission shares these member bindings with earlier loaded encounters. Higins keeps starting
+PLDN palette 2. Rohde keeps starting BRGN. Ordinary Eric and Bowie observations are below.
+Ordinary promoted Chester and Rick remain **Unknown**. Other destination pairs have source
+rows and still need their own gameplay bindings and witnesses.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -212,9 +210,9 @@ new class combat rules in the preceding section are separate consumer gaps.
    loadouts. Compare class, packed words, live and last-applied counters, derived DEF/AGI and
    the next real refresh against uninterrupted play. Make the offer state distinguish initial
    consent, unavailable special, special decline, regular answer and back to selection. The
-   current special-item receipt blocks the regular branch even with an admitted destination.
-   With the Wing held, present that special branch explicitly, allow declining it into PLDN and leave the held word and F175
-   intact. Preserve the no-item regular path and the special acceptance boundary for
+   shared church flow supports these stages for an admitted ordinary destination. The ordinary
+   Pacalon fallback preserves the exact held Wing word and F175. The unsupported special
+   acceptance path remains with
    [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
 2. **WIZ and the first retained spell caster.** Reuse the admission path for Kazin and the legal
    Tyrin branch. Exercise rod and cast animation independently. Carry current-class item
@@ -231,13 +229,13 @@ new class combat rules in the preceding section are separate consumer gaps.
    and the required ordinary witness land. If a needed change grows beyond the existing rule
    owner, give main-gate the dependency before taking that shared path.
 
-The first slice owns a single shared rite cue. Source `MUSIC_PROMOTION` is command 25 decimal.
-The current package's `audio-25-c6` refers to command 37 (hex 25). The mounted descriptor list
-has no command 25. Select one private non-looping cue using the existing audio pipeline, publish
-it once on a successful rite and resume the prior church/map music using the existing audio
-lifecycle. Check ordinary input through success, playback/return and member selection. Decline,
-unavailable and stale input emit no cue. Exact original timing across the whole rite remains
-**Unknown**. Keep the existing HERO action as a shared-cue regression case.
+The shared rite plays finite `MUSIC_PROMOTION` (decimal command 25, Timer B CE) once after
+final Yes. Godot observed one start, one Finished and the restart of Pacalon's `MUSIC_CASTLE`
+for both Eric and Bowie. The finite cue stays outside field-save music history and the adapter
+retains the prior music generation. Engine cases cover cancel, stale answers and the unavailable
+special branch. Packages without command 25 retain their previous playback. Exact timing
+of the original rite remains **Unknown**.
+[Audio lifetime observation](../verification/host.md#audio-resource-lifetime-observation) ·
 [Source cue and wait](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/church/churchactions_1.asm#L432-L479) ·
 [Mounted audio baseline](church-promotion-design.md#playable-hero-and-reproduction)
 
@@ -264,7 +262,7 @@ A candidate's presence in the package or an engine case is independent of ordina
 
 | Family | First ordinary witness or gap |
 | --- | --- |
-| PLDN | English Eric, KNTE 27 and fallen, with Steel Lance and Kazin's separate Wing. Refuse special, accept PLDN, check 210-gold Raise, save/continue, deploy and attack. Save once with PLDN in reserve to exercise the retained class wire path. On a copy, put Wing in depot with ordinary input to exercise the no-carried-item path. Check loan of Higins's carried Javelin and its 2-tile attack. Chester at 1 exercises level refusal. Rick is absent from both castle force lists. Use the registered #1939 Hassan 19 join and earn the next level in Battle17 for a bounded exact-20 witness. |
+| PLDN | English Eric covered special decline, fallen reserve promotion, Raise, Relief, both physical weapons and field/battle cold Continue. Chester level 1 was refused in Chinese. Rick is absent from the castle force lists and the registered Hassan/Battle17 journeys reach KNTE 19 and 10 EXP. Exact-level-20 native promotion remains **Unknown**. A separate Pacalon copy deposits the Wing before the ordinary offer. [PLDN reproduction](#pldn-ordinary-reproduction) |
 | WIZ | Living Chinese Kazin MAGE 29 gives retained high ranks and a paid BLAZE cast. English Kazin 27 is fallen and can be raised. Use the legal Battle26 Black Ring holder route only when checking #1926. Tyrin's initial Creed join was played. The corresponding promoted ordinary route remains **Unknown**. |
 | GLDT, SNIP, BWNT, BDBT | Jaha WARR 21 (both), Elric ACHR 22 and Janet ACHR 26 (Chinese), May RNGR 21 and fallen (both), Luke BDMN 23 English or 22 Chinese and fallen (both). Play one repeat per coherent group with active or reserve Relief, checking each new pose and legal attack. Randolf's ordinary Creed choice supplies a legal alternate recruit. The promoted continuation remains **Unknown**. |
 | VICR | Sarah PRST 40 in both castles and Karna PRST 28 in Chinese. Use one promoted HEAL witness with partial HP, a smaller learned rank and actual award, plus a legal field/book/cold round trip. Preserve the differing books with the same implementation. |
@@ -310,3 +308,48 @@ linear in selected variants and their legal weapon combinations. Select only leg
 action family, or a witness that would require replay beyond the supported campaign boundary.
 [HERO measured delta and inputs](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Package builder](../../../src/sf2tool/remake_battle_scene_content.py)
+
+## PLDN ordinary reproduction
+
+Use the registered `derived/issue1956/pldn-v1` package and its opening/entry files. It has
+145 files and 294,393,387 bytes. It mounts the accepted private library at commit
+`52435b04f49a84a6a9ed4444620055a070648001` over the registered `issue1966-original`
+package. The package adds three growth blocks and class-conditioned field sprite rows from
+the pinned source metadata. It is 18,327 bytes larger than the assembled asset-only
+`promotion-v1`. Assemble a fresh copy with the existing Mount mode and a pinned source
+checkout for progression tables.
+
+```powershell
+. ./local/private-inputs.ps1
+$root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
+$mount = @('--root', $runtime, '--base', (Join-Path $root 'issue1966-original'),
+    '--family', 'all', '--command', '4', '--command', '25', '--command', '87',
+    '--command', '99', '--upstream', $pinnedSource, '--mount', $freshPackage)
+uv run --locked python -m sf2tool.remake_retail_assets @mount
+```
+
+Select the reviewed library's `runtime/retail-v1` as `$runtime` and the source revision in
+[the asset owner](../content/asset-inventory.md#retail-original-preparation) as `$pinnedSource`.
+Use the English Pacalon castle slot, its own save copy and the ordinary title Continue.
+The driver and native receipts are registered under `derived/issue1956/review`. Its
+`Boot.ps1` takes an isolated checkout via `-Repo`, a new `-Sample` and a separate `-Journey`.
+The companion handoff lists the normal title Continue routes and seeds. The driver reads
+state, scene and persistence projections.
+
+| Boundary | Observed result |
+| --- | --- |
+| Church and custody | Put fallen Eric into reserve through Caravan Purge and join Higins to refill the formation. Return to Pacalon Castle and choose Eric, consent, decline the special offer for Kazin's Wing and confirm Paladin. The rite changes KNTE 27/83 to PLDN 1/0, preserves HP 0, earned bases 36/32/31, the empty book, equipped Steel Lance word 203 and 5,527 gold. Kazin retains the Wing in slot 2 (zero-based), with F175 set. |
+| Depot branch | On a separate English castle copy, deposit Kazin's Wing through Caravan and return to the priest. Eric proceeds to ordinary confirmation after consent. Saving retains the Wing in the depot and F175 set. |
+| Field Save and Raise | The v3 reserve slot cold-continues with the same allies, flags, formation, loadouts, gold and thinking seed. Four ambient residents advance position or facing, and the main seed advances before the next native Save. Declining the 210-gold Raise keeps Eric fallen. Paying yields 58 HP and 5,317 gold while he remains in reserve. |
+| Relief and physical actions | At the overworld Caravan, exchange active Slade for Eric. Enter the supported Battle26 repeat via Ketto. Eric projects centaur movement, MOV 7 and field sprite 34. Steel Lance attacks from one cell. On a separate ordinary fork, Give Higins's Javelin to Eric, Equip it and attack from two cells. Both render palette 3 with the matching weapon and return to battle Movement. The two v4 cold Continues reproduce their complete decoded battle data. |
+| Timed v5 and return | On a separate Relief branch also deploy Jaha. He uses his carried Power Ring on Eric. The v5 battle slot restores class 13, ATTACK `0xC000`, effective ATT 65 and packed state, with complete decoded data equality on cold re-save. Bowie casts EGRESS and returns to usable Map36. Cold v3 Continue after return preserves Eric's Paladin card and equipment. The controlled mixed v5 case checks divergent SLOW/ATTACK refresh operands and a retained HERO book. |
+| Chinese regression | On the registered Chinese castle history, Chester at KNTE 1 receives the localized level refusal with no rite cue. Bowie's HERO success on a separate copy plays the same finite cue and restarts `MUSIC_CASTLE`. |
+
+The first reserve pilot stopped in the Purge member list, the first Raise launch failed to
+parse its driver, and the first Relief selection targeted reserve Chester. Those driver
+failures are retained. One timed driver run was stopped before it exercised the intended
+action. In a later run three SLOW 2 attempts were resisted before defeat. The Power Ring run
+supplies the ordinary v5 witness. The Steel Lance run published both slots before its native
+quit exit `0xC0000005`. The Javelin, Power Ring, cold v5, EGRESS and cold field results were
+published independently. Some successful exits report ObjectDB teardown warnings. #1716
+remains deferred.

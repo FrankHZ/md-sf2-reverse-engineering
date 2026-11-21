@@ -2669,6 +2669,9 @@ msgstr "{0}还需要更多经验。"
 msgid "church.no-promotion"
 msgstr "{0}应当保留当前职业。"
 
+msgid "church.special-offer"
+msgstr "目前无法用{0}持有的{1}进行特殊转职。选择「否」可继续查看普通转职。"
+
 msgid "church.special-unavailable"
 msgstr "{0}持有{1}。目前尚不支持这项特殊转职。"
 

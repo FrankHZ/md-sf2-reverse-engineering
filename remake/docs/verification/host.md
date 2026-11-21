@@ -341,8 +341,8 @@ $nativeExit = $LASTEXITCODE
 immutable diagnostic definitions containing 8 kHz mono PCM16 silence: loop/finite music and finite
 commands67/83. It bypasses content admission explicitly; it is not a source-content or gameplay test.
 Four cycles observe music replacement/finite completion, natural effect completion, same-slot
-interruption and disjoint completion. Active disposal follows. It tracks IDs without holding
-resource references, bounds each release/completion at two seconds, and records thirteen compact
+interruption and disjoint completion. A finite command 25 then plays once and its Finished signal restarts the prior music with its original generation. Active disposal follows. It tracks IDs without holding
+resource references, bounds each release/completion at two seconds, and records compact
 samples. Every tracked release must invalidate its native IDs; disposed player nodes must also be
 gone. A failed predicate exits1 with its label and completed samples in the logs. A successful JSON
 does not override any stderr or later shutdown error.

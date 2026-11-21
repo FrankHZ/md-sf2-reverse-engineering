@@ -36,13 +36,15 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         variant = {}
         if character in promoted:
             destination = compiler.number("CLASS_" + promoted[character])
-            if (role, destination) != (
-                compiler.equates["CLASS_SDMN"], compiler.equates["CLASS_HERO"]
-            ):
+            soldier, hero = compiler.equates["CLASS_SDMN"], compiler.equates["CLASS_HERO"]
+            knight, paladin = compiler.equates["CLASS_KNTE"], compiler.equates["CLASS_PLDN"]
+            if (role, destination) not in ((soldier, hero), (knight, paladin)):
                 raise ValueError("unsupported promotion mapsprite")
             variant = {
                 "promotionClass": destination,
-                "promotionSprite": compiler.number("MAPSPRITE_" + sprites[character]),
+                # PLDN is the ordinary odd class in the source's paired class range.
+                "promotionSprite": compiler.number("MAPSPRITE_" + sprites[character])
+                - (destination == paladin),
             }
         rohde = character == compiler.equates["ALLY_ROHDE"]
         result.append(

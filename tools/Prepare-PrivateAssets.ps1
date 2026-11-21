@@ -39,6 +39,7 @@ try {
     } elseif ($Operation -eq 'Mount') {
         if (!$Destination) { throw 'Mount requires a fresh absolute -Destination' }
         $selection += @('--mount',$Destination)
+        if ($Upstream) { $selection += @('--upstream',$Upstream) }
     } else {
         if (!$Upstream) { $Upstream = Join-Path (Split-Path -Parent $env:SF2_SHARED_INPUT_ROOT) 'upstream/SF2DISASM' }
         if (!$Listing) { $Listing = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/upstream/SF2DISASM/build/sf2build-h1.lst' }

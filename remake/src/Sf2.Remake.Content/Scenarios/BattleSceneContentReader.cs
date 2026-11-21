@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
@@ -90,8 +91,9 @@ internal static class BattleSceneContentReader
                     var members = Array(row, "members").Select(value =>
                     {
                         Require(value.TryGetByte(out byte id) && definitions.Allies.TryGetValue(id, out var member) &&
-                            (member.ClassId == Sf2.Remake.Domain.Gameplay.Sf2.Sf2ClassRules.SourceClass(kind) ||
-                                kind == BattleClassRule.Hero && member.ClassId == 0 && definitions.Classes.ContainsKey(12)),
+                            Sf2ClassRules.SourceClass(kind) is { } classId &&
+                            (member.ClassId == classId || Sf2ClassRules.OrdinaryDestination(member.ClassId) == kind &&
+                                definitions.Classes.ContainsKey(classId)),
                             "scene-ally-member", "battleScenes.actors.members");
                         return new ActorRef("ally-" + id);
                     }).ToArray();

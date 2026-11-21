@@ -46,6 +46,14 @@ public partial class AudioLifetimeObservation : Node
                 await Until(() => _audio.Completions == before + 4, "disjoint natural tails");
                 await Released("interrupted-and-disjoint-finished", cycle);
             }
+            _audio.Play("loop");
+            _audio.BindMusic(17, "loop");
+            int beforeRite = _audio.Starts;
+            _audio.PlayPromotion();
+            Check(_audio.MusicCue == "rite" && _audio.MusicPlaying, "rite started");
+            await Until(() => _audio.MusicCue == "loop" && _audio.MusicPlaying, "background resumed");
+            Check(_audio.MusicGeneration == 17 && _audio.Starts == beforeRite + 2, "one rite and one return");
+            _samples.Add(new { label = "promotion-music-return", starts = _audio.Starts - beforeRite });
             int completions = _audio.Completions;
             _audio.Play("effect");
             _audio.Play("other");
@@ -115,7 +123,7 @@ public partial class AudioLifetimeObservation : Node
     {
         var audio = new Dictionary<string, ExplorationAudio>
         {
-            ["loop"] = Clip(1, true), ["finite"] = Clip(2, false),
+            ["loop"] = Clip(1, true), ["finite"] = Clip(2, false), ["rite"] = Clip(25, false),
             ["effect"] = Clip(67, false), ["other"] = Clip(83, false),
         };
         var visuals = new ExplorationVisuals(new Dictionary<MapId, ExplorationMapVisual>(),
@@ -128,5 +136,5 @@ public partial class AudioLifetimeObservation : Node
     private static ExplorationAudio Clip(int command, bool loop) =>
         (ExplorationAudio)Activator.CreateInstance(typeof(ExplorationAudio), BindingFlags.Instance | BindingFlags.NonPublic,
             null, [command, 204, 8000, 1, new byte[1600], "authored-silence", loop ? 0 : (int?)null,
-                loop ? 800 : (int?)null, null], null)!;
+                loop ? 800 : (int?)null, null, null], null)!;
 }

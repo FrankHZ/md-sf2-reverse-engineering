@@ -44,7 +44,7 @@ identifies the ROM and source revision. Aliased slots refer to shared physical a
 
 | Consumer | Available selection | Remaining acceptance |
 | --- | --- | --- |
-| #1956 | Chester, Rick and Eric field sprites 6, 28 and 34 have three 48×24 two-phase strips each and the original portrait/speech operands. Their Battle26 PLDN sprite 13 palettes are 0, 1 and 3, with five body frames each and respectively seven, seven and six item bindings. Spear/javelin attacks select sequence 81. The base supplies Higins palette 2. Decimal music 25 (`19` hex) is a 433,106-sample-frame finite cue, Timer B `CE`. | The accepted Content reader requires the member's starting class to match the battle appearance class and rejects supplied promoted KNTE bindings at `scene-ally-member`. #1956 owns admission, the rite and music resumption. |
+| #1956 | Chester, Rick and Eric field sprites 6, 28 and 34 have three 48×24 two-phase strips each and the original portrait/speech operands. Their Battle26 PLDN sprite 13 palettes are 0, 1 and 3, with five body frames each and respectively seven, seven and six item bindings. Spear/javelin attacks select sequence 81. The base supplies Higins palette 2. Decimal music 25 (`19` hex) is a 433,106-sample-frame finite cue, Timer B `CE`. | The progression mount and Content reader admit Chester, Rick and Eric as PLDN. Eric's ordinary promotion and Continue were observed. Eligible ordinary promotion for Chester and Rick remains **Unknown**. [PLDN admission and observations](../application/ordinary-promotion-classes.md#pldn-ordinary-reproduction) |
 | #1950 / #1962 | Decimal 87 JUMP has 15,142 sample frames under Castle Timer B `D2` from Bedoe Map10. Decimal 99 BLOAB has 8,440 under Town `CB`. The latter is a controlled field context. | Both WAVs are available. Their feature tickets own the missing `SessionAudio.SoundSlots` classifications, actual calls and natural trigger verification. |
 | #1967 | Both states for spell IDs 7 MUDDLE, 8 DESOUL and 9 SLEEP were read from the new field and Battle26 bindings. The prepared zh-CN catalog includes all three names. | Actual battle use and rule behavior belong to the consumer. |
 
@@ -53,7 +53,7 @@ priority package. The production opening reader admitted the three new field spr
 six icons to equal field/battle bytes, and admitted looping command 4 and finite 25, 87 and 99.
 A bounded Godot WASAPI playback of those four new admitted WAVs wrapped 4 with playback active
 and emitted exactly one Finished for each finite cue. The earlier Chester/Rick candidate reproduced
-the member-admission failure. The final `promotion-v1` candidate assembled all three appearances
+the member-admission failure. The asset-only `promotion-v1` package assembled all three appearances
 directly from private Git and the closed base. Only the Battle26 scene differs from the Chester/Rick
 candidate. Its six added Eric bindings resolve to five new body rasters and 24 reused weapon rasters.
 The user produced Eric's files after the initial automatic approval rejection recorded in #2001.

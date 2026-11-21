@@ -9,13 +9,18 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import wave
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
+from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
 from sf2tool.remake_command_menu import world_dependencies
+from sf2tool.remake_exploration_content import _selected_growth
+from sf2tool.remake_exploration_programs import OriginalPrograms
+from sf2tool.remake_exploration_scene import ally_sprites
 
 OPENING_INPUTS = (
     "SF2_PRIVATE_BATTLE01_DATA",
@@ -108,7 +113,78 @@ def installed_png(root, name):
     )
 
 
-def mount(root, base, destination, families, commands):
+def bind_pldn_progression(package: dict, upstream: Path, members: set[int]) -> None:
+    """Add gameplay metadata for the PLDN appearances already selected for this package."""
+    commit = subprocess.check_output(
+        ["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True
+    ).strip()
+    if commit != ACCEPTED_UPSTREAM_COMMIT or package["provenance"]["commit"] != commit:
+        raise ValueError("PLDN metadata needs the pinned upstream revision")
+
+    selection = read_json(repo_path("remake/content/private/pre-voyage-opening.json"))
+    selected = [
+        row
+        for row in selection["promotionClasses"]
+        if row["member"] in members and row["class"] == "PLDN"
+    ]
+    if {row["member"] for row in selected} != members:
+        raise ValueError("mounted PLDN member differs from campaign selection")
+    compiler = OriginalPrograms(
+        {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
+        upstream,
+        promotion_classes=tuple(selected),
+    )
+    # Only these parsers' actual dependencies belong to the existing world provenance.
+    compiler.sources = {"disasm/sf2enums.asm"}
+    variants = {
+        row["character"]: row for row in ally_sprites(compiler) if row["character"] in members
+    }
+    additions = _selected_growth(compiler, selected)
+
+    world = package["world"]
+    sprites = {row["sprite"] for row in world["presentation"]["sprites"]}
+    if any(row["promotionSprite"] not in sprites for row in variants.values()):
+        raise ValueError("PLDN progression requires its mounted walking sprites")
+    for row in additions:
+        key = row["actor"], row["classId"]
+        previous = next((r for r in world["growth"] if (r["actor"], r["classId"]) == key), None)
+        if previous is None:
+            world["growth"].append(row)
+        elif previous != row:
+            raise ValueError(f"conflicting PLDN growth: {key}")
+
+    def bind_population(population):
+        if population is None:
+            return
+        for appearance in population["allySprites"]:
+            if (variant := variants.get(appearance["character"])) is None:
+                continue
+            if appearance["sprite"] != variant["sprite"]:
+                raise ValueError("PLDN variant differs from the mounted base character")
+            for field in ("promotionClass", "promotionSprite"):
+                if appearance.setdefault(field, variant[field]) != variant[field]:
+                    raise ValueError("conflicting promotion sprite")
+
+    for row in world["maps"]:
+        bind_population(row.get("population"))
+        for setup in row.get("setups") or ():
+            bind_population(setup.get("population"))
+    for program in world["programs"]:
+        for instruction in program["instructions"]:
+            bind_population(instruction.get("population"))
+
+    sources = package["provenance"]["sources"]
+    existing = {row["path"] for row in sources}
+    for name in sorted(compiler.sources):
+        raw = (upstream / name).read_bytes()
+        pinned = subprocess.check_output(["git", "-C", str(upstream), "show", f"{commit}:{name}"])
+        if raw.replace(b"\r\n", b"\n") != pinned.replace(b"\r\n", b"\n"):
+            raise ValueError("selected pinned source has local changes: " + name)
+        if name not in existing:
+            sources.append({"path": name, "sha256": hashlib.sha256(raw).hexdigest().upper()})
+
+
+def mount(root, base, destination, families, commands, *, upstream=None):
     """Mount first-consumer operands into a new closed package; needs no production inputs."""
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
     selected = permitted if "all" in families else set(families)
@@ -161,6 +237,7 @@ def mount(root, base, destination, families, commands):
                     presentation["sprites"].append(row)
                 elif existing != row:
                     raise ValueError(f"conflicting field sprite {i}")
+        promoted_members = set()
         for part in parts:
             additions = read_json(root / part / "scene-additions.json")
             # A legacy weapon ID may select a different palette in another document.
@@ -174,8 +251,11 @@ def mount(root, base, destination, families, commands):
                 if scene["rasters"].setdefault(target, raster) != raster:
                     raise ValueError(f"conflicting PLDN raster {target}")
             for actor in additions["actors"]:
+                promoted_members.update(actor["members"])
                 if actor not in scene["actors"]:
                     scene["actors"].append(actor)
+        if upstream is not None and promoted_members:
+            bind_pldn_progression(world, upstream, promoted_members)
         for command in commands or (25, 87, 99):
             family = "music" if command <= 64 else "sfx"
             if family not in selected:
