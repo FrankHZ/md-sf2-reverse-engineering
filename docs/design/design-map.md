@@ -47,6 +47,7 @@ observation limits. [Campaign feature trace](../../remake/docs/capability-status
   [Equipment code](../../remake/src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs) ·
   [HERO evidence and limits](../../remake/docs/application/church-promotion-design.md#playable-hero-and-reproduction) ·
   [Connected equipment status](../../remake/docs/capability-status.md#connected-battle-equipment-agreement)
+- **L3 ordinary promotion classes.** [Current families, consumers and implementation order](../../remake/docs/application/ordinary-promotion-classes.md)
 - **L3 ring equipment design.** One weapon and one ring can be worn in the same pack. Current
   class determines eligibility. Static ring effects follow status refresh, and the weapon supplies
   physical range. The design specifies separate removal choices, custody, promotion and Continue
