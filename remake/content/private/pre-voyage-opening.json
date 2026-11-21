@@ -557,6 +557,7 @@
     "map-57": "world.map57.base-tileset-atlas"
   },
   "setups": {
+    "5": [650],
     "23": [
       762
     ],

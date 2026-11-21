@@ -528,8 +528,11 @@ prior Map3 Egress. Record commits F399 and Map5 Egress to the live session and t
 Two independent title Continue processes preserve their respective flags, Egress and scene.
 The previous `phoenix-wave-v1` observation covers the locked-slot write failure.
 `PreVoyageSaveTests` exercises a complete synthetic replacement setup and refusal during
-movement. No registered world in the checked #1956 and #2001 publications contains the
-concrete F650 body. Its actual population, Talk and cold-Continue acceptance remain open.
+movement. The tracked private selection requests flag 650 for Map5. In the registered
+canonical map import, the selected setup differs from the default in its entity and entity-event
+references. The published Church candidate still lacks that setup. A post-Hawel arrival with
+the changed residents, Talk, Search, Record and cold Continue remains unverified. Automatic
+approval review declined the local F650 package build before the importer started.
 
 The SF2 recipe admits map-default ambient programs and an already-entered closed
 random-walk/wait/back-jump cycle on Map3. The completed messenger installs such a loop at a new
