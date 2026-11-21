@@ -1963,38 +1963,31 @@ adds no physical-focus acceptance or production change.
 
 ### Battle movement range agreement
 
-**Current reproduction:** #1686 changes range opacity/rims and adds real action/effect range. The B8 geometry/alpha assertions below and `engine_movement_range_observation.gd` are historical at [the retained implementation](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_movement_range_observation.gd). Use the [current production observer](battle-interaction-baseline.md#direct-production-reproduction) for movement/undo, range, target and lifecycle UI. Original movement legality, clocks and source evidence are unchanged.
+During player Movement, the cyan board overlay shows every cell the active actor can traverse within
+its weighted budget, including a reachable living ally's cell and the actor's committed origin.
+An occupied cell still refuses confirmation. The pinned
+[navigation contract](../../../docs/design/contracts/battle/battlefield-navigation.md#player-movement-display-and-stopping)
+records the original grid and separate confirmation checks. Original range pixels and timing remain
+**Unknown**.
 
-Standard rigor applies to B8 / [#1395](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1395):
-a bounded read-only engine query and battlefield projection. The outcome is visible legal stopping
-tiles during player movement selection, retaining the accepted 1920×1080 world and 96px cells.
-Movement rules, world-click input, danger ranges, command animation and broader UI work are outside
-this agreement. [Host observation](../verification/host.md#battle-movement-range-observation) owns
-reproduction and its headless/windowed acceptance boundary.
+`GameSession.QueryBattleMovementRange` exposes immutable `ReachableCells` for drawing and
+`Destinations` for legal stops. `BattleMovement.Range` reads the existing mover, terrain, budget and
+enemy-blocked grid once and clips the result to the logical map bounds. It filters other living
+occupants out of stops and retains the existing path validation for stops. The query is read-only.
+Preview may cross a reachable ally. `RequireStop` continues to enforce occupancy when a position is
+confirmed or committed.
 
-`GameSession.QueryBattleMovementRange` returns immutable actor/origin/destination information only
-for a living player actor in Movement, including that actor's preview/return animation. Domain
-`BattleMovement.Destinations` builds the existing weighted mover/terrain/budget/enemy grid once,
-then reuses Preview's path validation with that grid. Living allies remain traversable but cannot
-be stops; enemies block traversal; the actor's own committed origin is included. Map bounds,
-impassable terrain and budget remain authoritative. Unexpected path-validation failures propagate;
-they are never silently relabeled as unreachable tiles. The query changes no session state, RNG,
-resources, revision or observation sequence.
+The range stays anchored to the committed position through player preview and return animation.
+Menus, lists, targeting, commitment, automatic movement, rounds, story, scenes, outcomes, retreat
+and field mode clear it. Back from actions restores it through return delivery. A new actor or
+session is queried from its current state.
 
-The origin is the committed actor position, independent of the provisional cursor and moving sprite.
-Action, equipment, list, target and commit stages have no range. Automatic movement, rounds, story,
-scenes, outcomes, retreat and field mode have no range. Cancel restores it from current state; next
-actor and rebuilt map/session presentation compute fresh information. No new cache or invalidation
-protocol is used. One grid plus bounded path checks runs when session state is presented, never per
-render frame; camera animation only transforms the retained drawing. Work is bounded by the existing
-48×48 movement grid and reachable paths, with no per-destination grid propagation.
-
-`BattleMovementRangeView` draws quiet cyan fill (alpha 0.20) with an edge (alpha 0.55) inside each legal
-96px cell, using the existing clipped board and camera transform. Ground is Z0; the range follows
-ground at Z0; actor sprites/labels remain Z1; original foreground walls remain Z2; selection/target
-marks remain Z3. Preserving foreground occlusion is part of acceptance. No new art, zoom, camera or
-menu geometry is introduced. Source-original range pixels, animation and hardware cadence remain
-**Unknown**; this is an accepted modern affordance, not an original presentation-parity claim.
+`BattleMovementRangeView` draws the reachable cells at the existing 96px scale with the #1686 cyan
+pulsing fill and rim. Ground and range are Z0 in board order, actors are Z1, original foreground is
+Z2, and selection and targeting marks are Z3. Action and effect drawing continues to read the live
+offer. Follow the [authored input and draw observation](battle-interaction-baseline.md#allied-traversal-range-2019)
+for #2019. The [older B8 observations](../verification/host.md#battle-movement-range-observation)
+retain the earlier geometry and stop-only drawing evidence.
 
 ### Battle selection and preview feedback (#1617)
 
@@ -2010,7 +2003,7 @@ gold treatment or supply exact original visuals.
 authored labels. `BattleSelectionView` draws one unfilled set of white corner brackets with a dark
 outline around the acting unit, following its actual interpolated position through preview and undo.
 The cue consumes the selected projected marker, not another gameplay position. At rest it identifies
-the provisional destination; no breadcrumb trail is drawn. The existing cyan legal-stop overlay
+the provisional destination; no breadcrumb trail is drawn. The cyan movement overlay
 remains based on the committed origin during Movement, and the separate cyan full-cell border
 identifies the accepted target during target/commit selection. Back clears that target border
 through the ordinary parent return; the acting-unit cue remains separate. The board/viewport clip

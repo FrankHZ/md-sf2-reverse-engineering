@@ -11,7 +11,7 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class BattleMovementQueryTests
 {
     [Fact]
-    public void WeightedRangeMatchesAuthoritativeStopsAndDoesNotMutateSession()
+    public void WeightedRangeMatchesPreviewAndKeepsStopsSeparateWithoutMutatingSession()
     {
         var session = Start();
         var before = session.Current;
@@ -21,18 +21,21 @@ public sealed class BattleMovementQueryTests
         Assert.Contains(new MapPosition(5, 3), first.Destinations); // forest costs 6 of budget 10
         Assert.DoesNotContain(new MapPosition(10, 3), first.Destinations);
         Assert.DoesNotContain(new MapPosition(3, 0), first.Destinations); // barrier
-        Assert.DoesNotContain(new MapPosition(3, 5), first.Destinations); // ally
+        Assert.Contains(new MapPosition(3, 5), first.ReachableCells); // ally
+        Assert.DoesNotContain(new MapPosition(3, 5), first.Destinations);
         Assert.Contains(new MapPosition(3, 6), first.Destinations); // through ally
         for (int y = 0; y < before.Battle.Definition.Height; y++)
             for (int x = 0; x < before.Battle.Definition.Width; x++)
             {
                 var position = new MapPosition(x, y);
-                var error = Record.Exception(() => BattleMovement.RequireStop(before.Battle, first.Actor, position));
-                Assert.Equal(error is null, first.Destinations.Contains(position));
+                var previewError = Record.Exception(() => BattleMovement.Preview(before.Battle, first.Actor, position));
+                Assert.Equal(previewError is null, first.ReachableCells.Contains(position));
+                var stopError = Record.Exception(() => BattleMovement.RequireStop(before.Battle, first.Actor, position));
+                Assert.Equal(stopError is null, first.Destinations.Contains(position));
             }
-        Assert.Equal(first.Destinations, session.QueryBattleMovementRange()!.Destinations);
+        Assert.Equal(first.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
         Assert.Same(before, session.Current); // includes revision, RNG, resources and observation sequence
-        Assert.Throws<NotSupportedException>(() => ((IList<MapPosition>)first.Destinations).Clear());
+        Assert.Throws<NotSupportedException>(() => ((IList<MapPosition>)first.ReachableCells).Clear());
     }
 
     [Fact]
@@ -47,7 +50,8 @@ public sealed class BattleMovementQueryTests
             placements[2]!["x"] = 1; placements[2]!["y"] = 3;
         });
         var range = session.QueryBattleMovementRange()!;
-        Assert.Equal(new[] { new MapPosition(2, 3), new(3, 3), new(5, 3), new(6, 3), new(7, 3), new(8, 3) }, range.Destinations);
+        Assert.Equal(Enumerable.Range(2, 7).Select(x => new MapPosition(x, 3)), range.ReachableCells);
+        Assert.Equal(range.ReachableCells.Where(p => p != new MapPosition(4, 3)), range.Destinations);
         Assert.Equal(10, BattleMovement.Preview(session.Current.Battle, range.Actor, new(8, 3)).Cost);
         Assert.Equal("occupied-destination", Assert.Throws<BattleRuleException>(() =>
             BattleMovement.RequireStop(session.Current.Battle, range.Actor, new(4, 3))).Code);
@@ -66,7 +70,7 @@ public sealed class BattleMovementQueryTests
             d["encounters"]![0]!["placements"]![0]!["y"] = y;
         });
         var range = session.QueryBattleMovementRange()!;
-        Assert.All(range.Destinations, p => Assert.True(p.X >= 0 && p.X < 48 && p.Y >= 0 && p.Y < 9 &&
+        Assert.All(range.ReachableCells, p => Assert.True(p.X >= 0 && p.X < 48 && p.Y >= 0 && p.Y < 9 &&
             Math.Abs(p.X - x) + Math.Abs(p.Y - y) <= 5));
         Assert.Contains(new MapPosition(x, y), range.Destinations);
         Assert.Contains(new MapPosition(x == 0 ? 5 : 42, y), range.Destinations);
@@ -80,17 +84,17 @@ public sealed class BattleMovementQueryTests
         var step = Accept(session, new Move(ExplorationDirection.East));
         Assert.Equal(original.Actor, session.QueryBattleMovementRange()!.Actor);
         Assert.Equal(original.Origin, session.QueryBattleMovementRange()!.Origin);
-        Assert.Equal(original.Destinations, session.QueryBattleMovementRange()!.Destinations);
+        Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
         FinishMovement(session, step);
-        Assert.Equal(original.Destinations, session.QueryBattleMovementRange()!.Destinations);
+        Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
         Accept(session, new Confirm());
         Assert.Null(session.QueryBattleMovementRange());
         var cancel = Accept(session, new Cancel());
         Assert.Equal(BattleMovementPurpose.Return, session.Current.BattleMovement!.Purpose);
-        Assert.Equal(original.Destinations, session.QueryBattleMovementRange()!.Destinations);
+        Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
         FinishMovement(session, cancel);
         Assert.Equal(original.Origin, session.QueryBattleMovementRange()!.Origin);
-        Assert.Equal(original.Destinations, session.QueryBattleMovementRange()!.Destinations);
+        Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
     }
 
     [Fact]
@@ -118,6 +122,7 @@ public sealed class BattleMovementQueryTests
         var next = session.QueryBattleMovementRange()!;
         Assert.NotEqual(first.Actor, next.Actor);
         Assert.Equal(session.Current.Battle.GetActor(next.Actor).Position, next.Origin);
+        Assert.Contains(first.Origin, next.ReachableCells);
         Assert.DoesNotContain(first.Origin, next.Destinations);
         Assert.Contains(next.Origin, next.Destinations);
         Assert.Contains(first.Origin, first.Destinations); // old immutable result remains stable

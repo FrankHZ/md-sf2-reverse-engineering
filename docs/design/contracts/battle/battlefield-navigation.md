@@ -88,6 +88,17 @@ skips dead combatants and unsigned coordinates outside `[0, 48)`. Setting occupa
 byte `0xFF` is never changed. Occupancy mutation is therefore a terrain-state transformation, not a
 separate proof of visible collision or path-preview behavior.
 
+### Player movement display and stopping
+
+**Confirmed static.** In the pinned US source, [`BuildMovementRangeGrid`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm)
+marks opposing occupancy before building the movement grid and restores the terrain afterward.
+[`ExecuteIndividualTurn`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/executeindividualturn.asm)
+passes that grid directly to [`CreatePulsatingBlocksForGrid`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_0.asm),
+which uses the sign of the movable-grid byte to choose tile treatment. This includes reachable cells
+occupied by allies. The separate [`@CheckPosition` confirmation](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm)
+checks other combatants' positions and refuses an occupied stop. Exact rendered appearance and timing
+remain **Unknown**.
+
 ## Weighted Propagation
 
 **Confirmed static and bounded runtime contract:** propagation uses a 64-byte stack frame as 32

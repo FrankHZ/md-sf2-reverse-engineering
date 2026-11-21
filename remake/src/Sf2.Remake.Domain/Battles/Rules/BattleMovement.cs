@@ -81,23 +81,30 @@ internal static class BattleMovement
         return new(path, actualCost);
     }
 
-    internal static IReadOnlyList<MapPosition> Destinations(EngineBattleState battle, ActorRef actorRef)
+    internal static IReadOnlyList<MapPosition> Destinations(EngineBattleState battle, ActorRef actorRef) =>
+        Range(battle, actorRef).Destinations;
+
+    internal static (IReadOnlyList<MapPosition> ReachableCells, IReadOnlyList<MapPosition> Destinations)
+        Range(EngineBattleState battle, ActorRef actorRef)
     {
         var grid = Grid(battle, actorRef);
         var occupied = battle.Actors.Where(a => a.Actor != actorRef && a.Hp > 0 && a.Position is not null)
             .Select(a => a.Position!).ToHashSet();
+        var reachableCells = new List<MapPosition>();
         var destinations = new List<MapPosition>();
         for (int y = 0; y < battle.Definition.Height; y++)
             for (int x = 0; x < battle.Definition.Width; x++)
             {
                 var position = new MapPosition(x, y);
-                if (grid.CostAt(position) is null || occupied.Contains(position)) continue;
+                if (grid.CostAt(position) is null) continue;
+                reachableCells.Add(position);
+                if (occupied.Contains(position)) continue;
                 // Reuse Preview's path-validity contract with this single propagated grid.
                 // Unexpected path failures remain visible rather than becoming hidden tiles.
                 _ = Preview(battle, actorRef, position, grid);
                 destinations.Add(position);
             }
-        return destinations.AsReadOnly();
+        return (reachableCells.AsReadOnly(), destinations.AsReadOnly());
     }
 
     internal static WeightedMovementGrid Grid(EngineBattleState battle, ActorRef actorRef)

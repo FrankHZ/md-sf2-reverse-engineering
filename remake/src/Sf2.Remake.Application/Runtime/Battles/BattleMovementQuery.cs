@@ -3,7 +3,8 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public sealed record BattleMovementRange(ActorRef Actor, MapPosition Origin, IReadOnlyList<MapPosition> Destinations);
+public sealed record BattleMovementRange(ActorRef Actor, MapPosition Origin,
+    IReadOnlyList<MapPosition> ReachableCells, IReadOnlyList<MapPosition> Destinations);
 
 internal static class BattleMovementQuery
 {
@@ -16,6 +17,7 @@ internal static class BattleMovementQuery
                 movement.Purpose is not (BattleMovementPurpose.Player or BattleMovementPurpose.Return))) return null;
         var actor = active.Battle.GetActor(selection.Actor);
         if (actor.Hp == 0 || actor.Control != BattleControl.Player || actor.Position is null) return null;
-        return new(selection.Actor, actor.Position, BattleMovement.Destinations(active.Battle, selection.Actor));
+        var (reachableCells, destinations) = BattleMovement.Range(active.Battle, selection.Actor);
+        return new(selection.Actor, actor.Position, reachableCells, destinations);
     }
 }
