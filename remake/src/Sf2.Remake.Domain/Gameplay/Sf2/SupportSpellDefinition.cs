@@ -11,27 +11,31 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
     {
         if ((Spell.Value, Spell.Level, MpCost, MinimumRange, MaximumRange, Radius) is not
             (("dispel", 1, 5, 1, 2, 1) or ("boost", 1, 2, 0, 1, 1) or
-             ("attack", 1, 7, 1, 3, 0) or ("slow", 1, 3, 1, 1, 1) or ("slow", 2, 6, 1, 2, 2)))
+             ("attack", 1, 7, 1, 3, 0) or ("slow", 1, 3, 1, 1, 1) or ("slow", 2, 6, 1, 2, 2) or
+             ("sleep", 1, 4, 1, 2, 1)))
             throw new BattleRuleException("support-spell-definition", "spells", true);
     }
 
     // The SLOW resistance gate precedes the word write. An active field then consumes
     // a second, always-failing effectiveness roll. BOOST skips the resistance gate.
-    internal bool Resolve(BattleActorState target, Func<string, int> roll, out ushort? constructionWord)
+    internal (ushort? ReactionWord, ushort? ConstructionWord) Resolve(BattleActorState target, Func<string, int> roll)
     {
-        constructionWord = null;
         int resistance = target.Definition.Resistance >> 14;
-        if (!ChangesStats) return roll("rng-dispel") >= (SilenceRules.HasSpells(target) ? 5 + resistance : 8);
-        if (!TargetsTeammates && roll("rng-slow") < (resistance == 0 ? 0 : 5 + resistance)) return false;
+        if (Spell.Value == "sleep")
+            return (roll("rng-sleep") >= 5 + resistance ? (ushort)(target.Status | 0xC0) : null, null);
+        if (!ChangesStats)
+            return (roll("rng-dispel") >= (SilenceRules.HasSpells(target) ? 5 + resistance : 8)
+                ? (ushort)(target.Status | SilenceRules.Mask) : null, null);
+        if (!TargetsTeammates && roll("rng-slow") < (resistance == 0 ? 0 : 5 + resistance)) return (null, null);
         ushort mask = Spell.Value switch
         {
             "boost" => BattleStatCounters.Boost,
             "attack" => BattleStatCounters.Attack,
             _ => BattleStatCounters.Slow,
         };
-        constructionWord = (ushort)(target.Status | mask);
-        if ((target.Status & mask) == 0) return true;
+        ushort word = (ushort)(target.Status | mask);
+        if ((target.Status & mask) == 0) return (word, word);
         roll($"rng-{Spell.Value}-recast");
-        return false;
+        return (null, word);
     }
 }
