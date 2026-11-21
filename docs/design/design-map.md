@@ -53,6 +53,7 @@ observation limits. [Campaign feature trace](../../remake/docs/capability-status
   physical range. The design specifies separate removal choices, custody, promotion and Continue
   for Power, Protect, Quick and Running Ring. [Ring equipment and acceptance](../../remake/docs/domain/ring-equipment-design.md)
 - **L3 permanent growth design.** [Field and Caravan growth items, Brave Apple, and persistence](../../remake/docs/domain/permanent-growth-items-design.md)
+- **L3 offensive consumables.** [Battle item targeting, damage, consumption and Continue](../../remake/docs/domain/offensive-items-design.md)
 - **Remaining design and work.** Use the rite owner to admit the next actor/class through its actual
   growth, equipment/book, appearance and save consumers. Static ring implementation and its ordinary
   witnesses precede the dependent Use, Repair, curse and Sandals work.
