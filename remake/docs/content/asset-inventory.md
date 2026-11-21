@@ -36,7 +36,7 @@ each raw family. Consumer rows may refer to the same source, such as normal and 
 | --- | --- | --- |
 | Maps, tiles, blocks, layout, foreground and palettes | 79 map headers, 115 tilesets, 16 palettes. Each map records five tileset slots, palette ID and block/layout/area/roof/animation references. The accepted canonical map import records 19,771 decoded block definitions and 315,392 layout words. Blocks stay map-local and foreground uses area/roof/copy rules. | `sf2 texture extract` and `sf2 texture map` are diagnostic producers with split H1 inputs. Runtime reuses prepared maps via `remake_exploration_content` and the selected world. The stable selection contains 50 map presentations. Full block-by-block output closure and dynamic plane observations remain open. |
 | Walking and portraits | 720 walking strip pointers with 669 non-sentinel physical payloads. Each ordinary strip carries two phases. Lateral mirror is a projection. Routed specials use their own table. Class rows retain the ally mapsprite base, with class adjustments owned by `GetAllyMapsprite`. 56 portrait pointers resolve to 52 payloads, including eye and mouth operands. | `sf2 texture assets` prepares ordinary sheets. The world carries selected strips, poses and portrait atlases. The source sentinel does not request an ordinary three-strip export. Complete special/action binding remains open. |
-| Battle bodies, weapons, terrain and effects | 86 body slots, 408 indexed frames and 167 sprite palettes. Ally class and enemy species map to a body/palette pair. Item ID maps to a weapon graphic/palette pair. Background and ground each have 30 slots with aliases. Separate animation tables, 23 spell containers, four invocation containers, status and transition resources own their sequences. | `remake_battle_scene_content` publishes selected battle scenes. It still couples extraction to a battle selection. The installed Battle26 scene is reusable as a whole. A deduplicated all-battle frame/sequence library and a detached assembly path remain open. Retain body, palette, item and animation variants independently of the map. |
+| Battle bodies, weapons, terrain and effects | 86 body slots, 408 indexed frames and 167 sprite palettes. Ally class and enemy species map to a body/palette pair. Item ID maps to a weapon graphic/palette pair. Background and ground each have 30 slots with aliases. Separate animation tables, 23 spell containers, four invocation containers, status and transition resources own their sequences. | `remake_battle_scene_content` publishes selected battle scenes. Prepared scenes now share identical frame/terrain/effect payloads across battle documents. The library preserves each bound body, palette, item and animation selection. Full retail coverage requires the missing prepared inputs. |
 | Interface, icons, title and witch | 163 assembled icon slots. Spell storage starts at 130 and includes other-art aliases. Selected icons apply the source highlight mask. Spell level is a text selection. Dedicated UI, special-screen and witch menu resources retain their source symbols. | `remake_command_menu`, `remake_entry_content` and the diagnostic `sf2 texture assets`/`misc` producers have different outputs. The stable world includes 32 mounted field/service command states and an entry with six named rasters. Modern panel chrome has its own [presentation owner](presentation-assets.md). |
 | Music and effects | 64 music command slots, 37 non-silent targets, 27 silent/alias slots and 56 finite SFX commands. Track music by command and finite SFX by reached `(command, Timer B)` variant. | [Audio capture and admission](../godot/audio.md#audio-boundary) owns the reviewed source intervals and PCM identity. The selected world/entry and existing asset manifest jointly include rows for 19 music and 31 SFX commands. Variant completeness and original waveform parity remain open. |
 
@@ -99,6 +99,30 @@ scenes and natural promotion path remain **Unknown**.
 
 Use the [private preparation commands](presentation-assets.md#reuse-a-closed-private-package) to
 reproduce the package without producing-worktree assets and to select it for later consumers.
+
+### Prepared library publication
+
+**Confirmed:** the selected closed package stages 10,651 resource bindings across eleven families,
+with 1,516 stored payload files. The 239,729,200-byte library includes 18,229,664 bytes of templates,
+bindings and passthrough package files. Shared UI accounts for 5,588 bindings and 233 payloads.
+Music accounts for 201,384,940 bytes and SFX for 9,284,756 bytes. The UI pilot took about 2.9 seconds.
+Resuming all families took 6.2 seconds and assembling from the library took 7.7 seconds.
+Reassembly yielded the same 141-file set, including 28 JSON documents equal by parsed value and
+113 remaining files equal by byte. That comparison took 1.03 seconds at 368 MiB peak working set.
+The UI-only library refused assembly before publishing a destination.
+
+**Confirmed** at the ordinary Content entry points using the library output. The opening reader
+admitted all 26 encounters, 50 maps, 146 sprites and 42 portraits. Battle26 resolved five frame
+references for the supplied PLDN sprite 13/palette 2, and the selected Stay and item icons resolved
+to valid rasters. The entry reader admitted six PNGs. World command 8 retained a loop and command
+19 remained finite. One prepared item icon resolved to one payload across 27 documents.
+This reader observation leaves the previous runtime receipts in place.
+
+The published version and code commit are recorded in the local asset repository's
+`manifests/prepared-library-v1.json`. Select the stable version and use the tracked
+[family staging and assembly commands](presentation-assets.md#assemble-from-the-prepared-resource-library).
+This publication covers the available package resources. The missing media and original
+waveform, raw layout/tile and complete animation variant coverage remain open.
 
 ## Map3 coverage and treatment
 

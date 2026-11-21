@@ -157,48 +157,57 @@ uv run --locked python -m sf2tool.remake_private_inventory --upstream $upstream 
     --catalog $catalog --output $inventory
 ```
 
-### User-run Eric candidate
+### Assemble from the prepared resource library
 
-Automatic approval on #1956 rejected the existing Battle26 scene producer's Eric-only pilot before
-process creation because it extracts character assets from the commercial ROM. The preparation
-ticket preserves that result. The pilot is a user-run candidate, with no producer output or
-candidate admission supplied by that attempt.
-
-Select the registered read-only `$upstream` at `c834c652b6862bc5679fd7f69a38a7093206efc6` and load
-the worktree configuration in the same PowerShell 7 process. The producer reads its required
-source and ROM spans directly. The pilot uses a fresh worktree-local directory. Allow up to 1 GiB
-of scratch for the first run and record time, private bytes and any failure before scaling. Actual
-extraction time and peak memory are **Unknown**. The code's current producer limits are listed in
-the [asset inventory](asset-inventory.md#first-consumers).
+`sf2tool.remake_private_library` stages resources from a reviewed, closed package. Select its
+source version explicitly when preparing and a fresh destination when assembling. Use PowerShell
+7 and the tracked [launcher](../../../tools/Prepare-PrivateAssets.ps1), with an absolute path to the
+checkout containing this revision. The launcher loads that checkout's private configuration.
+Production logic lives in Python. The stable library can outlive either checkout.
 
 ```powershell
-. ./local/private-inputs.ps1
-uv sync --locked
-if ($LASTEXITCODE) { throw 'Locked Python setup failed' }
-uv run --locked sf2 rom verify
-if ($LASTEXITCODE) { throw 'ROM identity check failed' }
-$rom = Join-Path $env:SF2_SHARED_INPUT_ROOT 'roms/sf2-us.bin'
-$pilot = Join-Path (Get-Location) ('local/issue2001/eric-' + [Guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -Path $pilot | Out-Null
-$selection = Get-Content -LiteralPath 'remake/content/private/pre-voyage-opening.json' -Raw |
-    ConvertFrom-Json -AsHashtable
-$selection.promotionClasses += @{ member = 14; class = 'PLDN' }
-$selectionPath = Join-Path $pilot 'selection.json'
-$selection | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $selectionPath -Encoding utf8
-uv run --locked python -m sf2tool.remake_battle_scene_content --rom $rom --upstream $upstream `
-    --battle 26 --output "$pilot/body" --campaign-selection $selectionPath
-if ($LASTEXITCODE) { throw 'Eric candidate production failed' }
+# $repo is the absolute checkout path. Load its local/private-inputs.ps1 to resolve the paths below.
+$launcher = Join-Path $repo 'tools/Prepare-PrivateAssets.ps1'
+$root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
+$prepared = Join-Path $root 'prepared-library-v1'
+$source = Join-Path $root 'issue1966-original'
+& $launcher -Repo $repo -Operation Prepare -Library $prepared -Package $source -Family All
+& $launcher -Repo $repo -Operation Status -Library $prepared
+& $launcher -Repo $repo -Operation Resolve -Library $prepared -Family UI `
+    -Id 'identity-icon.item.0.selected'
+$fresh = Join-Path $root ('assembled-' + [Guid]::NewGuid().ToString('N'))
+& $launcher -Repo $repo -Operation Assemble -Library $prepared -Destination $fresh
 ```
 
-Retain `candidate-report.json` and the complete candidate privately for review. The first review
-checks member 14, sprite 13, palette 3, the legal item/animation bindings and all raster references.
-A successful candidate does not automatically replace a Battle26 scene, add field sprite 34, or
-play command 25. Preserve the last working package until the new candidate passes those bounded
-consumer checks. Keep separate output directories for other families. `sf2 texture extract`,
-`map`, `assets` and `misc` use a verified split checkout prepared with the existing
-[H1 workflow](../../../docs/operations/local-private-inputs.md#maintained-consumers).
-`sf2tool.remake_audio` starts from a reviewed capture interval. Measured capture boundaries for
-25/87/99 are still required before that producer can run for those IDs.
+Choose one or more of `maps`, `walking`, `portraits`, `battle-bodies`, `battle-weapons`,
+`battle-terrain`, `battle-effects`, `ui`, `entry`, `music` and `sfx` in place of
+`All` to stage that subset. Resume remaining families against the same source and library.
+An existing family must compare equal before reuse. A different reviewed input needs a fresh
+library version. `Status` compares availability against the selected source's bindings.
+Consult the [retail inventory](asset-inventory.md#retail-original-preparation) for missing source
+IDs. `Resolve` returns the stored payload paths under the library and the document uses of each
+variant. Scene IDs with different bytes retain distinct variants. Resolve those through the
+document where the binding occurs.
+
+The library stores the map atlas and selected layout, area, block, palette and layout-event data
+by map ID. Walking strips use sprite and direction, portraits use portrait ID, and visual scene
+bindings use the existing raster identities. Assembly restores the associated actor and terrain
+selection and the authored gameplay metadata from the templates. UI and battle payloads that recur
+in other scenes share the same stored bytes. Existing embedded raster and PCM identities select
+the binary payloads, and externally stored audio retains its command/timer selection and WAV
+container. Entry PNGs retain their named locations. Existing HD fields pass through with the
+templates. The standard Content readers continue to authenticate the restored resource inputs.
+
+The default temporary budget is 1,024 MiB. Preparation checks free space against twice the selected
+source size. Assembly estimates the output from the referenced occurrences and includes base64
+expansion. A family publishes after it is staged. Assembly rejects an incomplete library and
+publishes only a complete directory. Use the ordinary environment selections above with
+`$fresh` as the package root. Successful assembly requires the library and configured code only.
+
+The previous Eric-only Battle26 candidate was rejected by automated approval in #1956 before the
+producer started. The [first consumer inventory](asset-inventory.md#first-consumers) records the
+missing PLDN, cue and icon selections. The library stages present, already prepared assets.
+Those missing media entries require supplied, reviewed inputs before they can be admitted.
 
 ## Battle weapon operands
 
