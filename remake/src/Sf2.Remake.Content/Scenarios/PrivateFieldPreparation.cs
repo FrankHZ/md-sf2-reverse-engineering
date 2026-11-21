@@ -87,7 +87,7 @@ internal static class PrivateFieldPreparation
         var itemEffects = FieldItems(source).Concat(eventItems.Select(id => KeyValuePair.Create(id, FieldRecoveryEffect.MapEvent)));
         var wingNoEffectMaps = wingMaps ?? [];
         return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) || rings.Contains(item.Id) ||
-                item.ItemTypeExpression == "CONSUMABLE" || item.Code is "MITHRIL" or "TAROS_SWORD" or "SHINING_BALL" or "BLACK_RING" ||
+                item.ItemTypeExpression == "CONSUMABLE" || item.Code is "MITHRIL" or "TAROS_SWORD" or "SHINING_BALL" or "HEALING_RAIN" or "BLACK_RING" ||
                 (item.Id != 127 && (pickupIds.Contains(item.Id) || eventItems.Contains(item.Id)))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
@@ -105,6 +105,9 @@ internal static class PrivateFieldPreparation
               (2, "HEALING_DROP", "HEALIN", 3, FieldRecoveryEffect.NoEffect),
               (3, "ANTIDOTE", "DETOX", 1, FieldRecoveryEffect.CurePoison),
               (5, "FAIRY_POWDER", "POWDER", 1, FieldRecoveryEffect.CurePoisonAndParalysis),
+              (6, "HEALING_WATER", "HEAL", 4, FieldRecoveryEffect.NoEffect),
+              (7, "FAIRY_TEAR", "G_TEAR", 2, FieldRecoveryEffect.NoEffect),
+              (8, "HEALING_RAIN", "AURA", 4, FieldRecoveryEffect.NoEffect),
               (9, "POWER_WATER", "POWER", 1, FieldRecoveryEffect.IncreaseAttack),
               (10, "PROTECT_MILK", "GUARD", 1, FieldRecoveryEffect.IncreaseDefense),
               (11, "QUICK_CHICKEN", "SPEED", 1, FieldRecoveryEffect.IncreaseAgility),
@@ -115,7 +118,7 @@ internal static class PrivateFieldPreparation
         {
             if (!source.Items.TryGetValue(id, out var item)) continue;
             Require(item.Code == code && item.UseSpell == useSpell && item.UseSpellLevel == level &&
-                item.ItemTypeExpression == "CONSUMABLE" && item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+                item.ItemTypeExpression == (id == 8 ? "RARE|CONSUMABLE" : "CONSUMABLE") && item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
                 "source-field-item", "field.items");
             yield return new(id, effect);
         }

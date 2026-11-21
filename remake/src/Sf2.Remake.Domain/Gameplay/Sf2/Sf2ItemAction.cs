@@ -51,7 +51,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         RequireAction(battle, actor, action) switch
         {
             { AttackItem: not null } => Sf2AttackSpellAction.TargetChoices(battle, actor),
-            { RetreatItem: not null } => [actor],
+            { RetreatItem: not null } or { Item.Effect: HealingItemEffect.FullPartyHp } => [actor],
             _ => HealingTargetRules.QueryTargets(battle, actor),
         };
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
@@ -63,7 +63,11 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             _ = Sf2AttackSpellAction.ResolveTargets(battle, actor, destination, attack.Effect, target);
             return battle.GetActor(target);
         }
-        if (admission.RetreatItem is null) return RequireTarget(battle, actor, destination, admission.Item!, target);
+        if (admission.Item is { } item)
+        {
+            _ = HealingTargetRules.ResolveItem(battle, actor, destination, item, target);
+            return battle.GetActor(target);
+        }
         BattleMovement.RequireStop(battle, actor, destination);
         if (target != actor) throw new BattleRuleException("invalid-retreat-target", "target");
         return battle.GetActor(actor);
@@ -106,22 +110,14 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         return definition;
     }
 
-    internal static BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor,
-        MapPosition destination, HealingItemDefinition item, ActorRef target) =>
-        HealingTargetRules.RequireTarget(battle, actor, destination,
-            item.MinimumRange, item.MaximumRange, target);
-
-    internal static BattleActionResolution Prepare(
+    private static BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, int slot, ActorRef targetRef, IBattleProgressionRule progression)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var item = RequireItem(battle, actorRef, slot);
         var actor = battle.GetActor(actorRef);
-        var target = RequireTarget(battle, actorRef, destination, item, targetRef);
-        int recovery = Math.Min(item.Power, target.MaxHp - target.Hp);
-        BattleReaction[] reactions = [item.CuresPoison ? PoisonCureRules.Reaction(actorRef, target, "item-use") :
-            new(actorRef, targetRef, "item-use", BattleReactionKind.Recovery,
-                target.Hp, (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery)];
+        var targets = HealingTargetRules.ResolveItem(battle, actorRef, destination, item, targetRef);
+        var reactions = targets.Select(target => Reaction(actorRef, item, target)).ToArray();
         List<BattleEffect> effects = [];
         var checkedBattle = item.CuresPoison ? PoisonCureRules.PrepareIneffective(battle, actorRef, reactions, effects) : battle;
         var award = BattleProgressionRules.Award(progression, checkedBattle, actor, BattleActionKind.Item, reactions);
@@ -134,5 +130,20 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
             ? consumedActor.With(position: destination) : a), mainSeed: award.Seed);
         return new(prepared, actorRef, destination, reactions, new(actorRef, award.Amount), effects.AsReadOnly(), [], item);
+    }
+
+    internal static BattleReaction Reaction(ActorRef actor, HealingItemDefinition item, BattleActorState target)
+    {
+        if (item.CuresPoison) return PoisonCureRules.Reaction(actor, target, "item-use");
+        int missingHp = target.MaxHp - target.Hp;
+        int hp = item.Effect switch
+        {
+            HealingItemEffect.FullHp or HealingItemEffect.FullPartyHp => missingHp,
+            HealingItemEffect.RestoreMp => 0,
+            _ => Math.Min(item.Power, missingHp),
+        };
+        int mp = item.Effect == HealingItemEffect.RestoreMp ? Math.Min(item.Power, target.MaxMp - target.Mp) : 0;
+        return new(actor, target.Actor, "item-use", BattleReactionKind.Recovery,
+            target.Hp, (ushort)(target.Hp + hp), target.Mp, (byte)(target.Mp + mp), Amount: hp + mp);
     }
 }

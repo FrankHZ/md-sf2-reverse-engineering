@@ -170,6 +170,9 @@ msgid "battle.heal.action"
 msgstr "{0} casts {1}, level {2}."
 
 #. Arguments: target name, recovered HP.
+msgid "battle.heal.mp-recovery"
+msgstr "{0} recovered {1} MP."
+
 msgid "battle.heal.recovery"
 msgstr "Recovery for {0}: {1} HP."
 

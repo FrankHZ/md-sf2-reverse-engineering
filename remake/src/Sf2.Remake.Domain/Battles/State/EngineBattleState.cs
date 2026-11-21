@@ -71,8 +71,10 @@ public sealed record BattleOutcomeDefinition(ActorRef Leader, ActorRef DefeatedG
     IReadOnlyDictionary<int, MapPosition>? DeathPositions = null);
 public enum BattleOutcomeKind { Victory, Defeat, Retreat }
 
+public enum HealingItemEffect { RestoreHp, FullHp, RestoreMp, FullPartyHp }
+
 public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Power, byte MinimumRange, byte MaximumRange,
-    bool CuresPoison = false);
+    bool CuresPoison = false, HealingItemEffect Effect = HealingItemEffect.RestoreHp);
 
 public sealed record RetreatSpellDefinition(SpellRef Spell, byte MpCost);
 

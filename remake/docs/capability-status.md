@@ -180,6 +180,12 @@ ordinary inputs cover slot consumption, bilingual feedback and cold battle Conti
 keeps the item with no effect. Caravan Use refuses it under the source usability policy.
 [Healing Drop source and reproduction](content/profiles-and-trust.md#healing-drop-use)
 
+Healing Water fills one ally's HP, Fairy Tear restores up to 20 MP, and Healing Rain fills
+living deployed allies' HP in source-slot order. Use consumes the selected slot in battle
+for 0 MP. Ordinary Field gives no effect, and Caravan refuses before target selection.
+Ketto and North Cave supplies were used in Battle26. The Creed chest supplied the Rain used
+in Battle22. [Recovery input, projection and Continue](domain/recovery-items-design.md#ordinary-input-observations)
+
 Deals/Repair, rare/broken sale support, higher DETOX and full Map16 remain Unsupported. The selected
 Battle03–07 story connection is described above. No Map16 save eligibility or natural original timing/reach is claimed. The current
 [service owner](application/session-and-programs.md#finite-galam-shop-transactions),

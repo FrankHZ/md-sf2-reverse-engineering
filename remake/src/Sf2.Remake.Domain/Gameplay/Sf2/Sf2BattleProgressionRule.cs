@@ -29,7 +29,8 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
                 if (kind == BattleActionKind.AttackSpell)
                     effects.Add(new("spell-exp-contribution", recipient.Actor, before, accumulated, Target: reaction.Target));
             }
-            else if (recipient.IsAlly && recipient.Definition.ClassRule == BattleClassRule.UnpromotedPriest)
+            else if (recipient.IsAlly && target.MaxHp > 0 &&
+                (recipient.Definition.Growth?.ClassId ?? Sf2ClassRules.SourceClass(recipient.Definition.ClassRule)) is 4 or 19 or 20)
             {
                 int before = accumulated;
                 accumulated = Math.Min(25, accumulated + HealingRules.Experience(reaction.Amount, target.MaxHp));
@@ -38,10 +39,8 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
             }
         }
         List<PhysicalRoll> rolls = [];
-        bool statusEffect = reactions.Any(reaction => reaction.Kind is BattleReactionKind.Status or BattleReactionKind.Ineffective);
-        bool halve = kind == BattleActionKind.SupportSpell
-            ? reactions.Any(r => battle.GetActor(r.Target).Faction != recipient.Faction)
-            : kind is BattleActionKind.Physical or BattleActionKind.AttackSpell || statusEffect;
+        bool halve = kind is BattleActionKind.Physical or BattleActionKind.AttackSpell ||
+            reactions.Any(r => battle.GetActor(r.Target).Faction != recipient.Faction);
         int award = BattleRewards.Award(accumulated, halve && battle.Definition.Rewards?.HalvedExperience == true, ref seed, rolls);
         effects.AddRange(rolls.Select(roll => new BattleEffect("rng-" + roll.Purpose, recipient.Actor,
             roll.Before, roll.After, roll.Range, roll.Result)));

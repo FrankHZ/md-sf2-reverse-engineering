@@ -382,22 +382,15 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     private void ValidateItem(EngineBattleState before, ActorRef actorRef, MapPosition destination,
         int slot, HealingItemDefinition item, ActorRef targetRef)
     {
-        var actor = before.GetActor(actorRef); var target = before.GetActor(targetRef);
+        var actor = before.GetActor(actorRef);
         var loadout = actor.SourceLoadout ?? throw new BattleRuleException("item-slot", "item.slot");
         Require(slot >= 0 && slot < loadout.Items.Count && (loadout.Items[slot] & 127) != 127 &&
             before.Definition.HealingItems.TryGetValue((byte)(loadout.Items[slot] & 127), out var admitted) && item == admitted &&
-            Item == item && Spell is null && Retreat is null && Reactions.Count == 1 && CompletionEffects.Count == 0);
+            Item == item && Spell is null && Retreat is null && CompletionEffects.Count == 0);
         var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
         ValidateState(before, actorRef, destination, new(items, loadout.Spells));
-        var reaction = Reactions[0];
-        Require(target.Hp > 0 && target.Faction == actor.Faction && target.Position is not null &&
-            BattleRange.Contains(destination, targetRef == actorRef ? destination : target.Position, item.MinimumRange, item.MaximumRange) &&
-            (item.CuresPoison ? reaction == PoisonCureRules.Reaction(actorRef, target, "item-use") :
-            reaction.Actor == actorRef && reaction.Target == targetRef && reaction.Action == "item-use" &&
-            reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
-            reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp && reaction.Amount == reaction.HpAfter - target.Hp &&
-            reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
-            reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null));
+        var targets = HealingTargetRules.ResolveItem(before, actorRef, destination, item, targetRef);
+        Require(Reactions.SequenceEqual(targets.Select(target => Sf2ItemAction.Reaction(actorRef, item, target))));
         ValidateReward(before, actorRef);
         ValidateRandom(before, effect => effect.Kind == "item-consumed"
             ? effect == new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)

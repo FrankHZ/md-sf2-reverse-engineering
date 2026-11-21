@@ -153,13 +153,13 @@ and the chapter consumers supply the class and effect definitions below.
   Chicken. Battle15 F151 records trap activation separately from Golem 143's Power Water drop bit
   29. Battle Use is outside the current growth support. [Growth rules and ordinary observations](../domain/permanent-growth-items-design.md#ordinary-input-observations) ·
   [Battle15 trap](../application/east-shrine-panel.md#optional-battle-chest)
-- **Advanced recovery supplies** include Healing Water (Taros F155), Fairy Tear (North Cave F168)
-  and Healing Rain (Creed F164). The optional North Cave witness gave Fairy Tear to Bowie with an
-  empty repeat. Those handoff slots precede the pickup. Use support follows the separate recovery
-  design. [Original item definitions](../../../docs/design/contracts/party/item-definition-data.md) ·
-  [Remake Use bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs) ·
-  [North Cave](../application/battle25-north-cave.md#search-and-exits) ·
-  [Advanced recovery #1948](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1948)
+- **Advanced recovery supplies** include Healing Water (Taros F155 or Ketto F171), Fairy Tear
+  (North Cave F168) and Healing Rain (Creed F164). In the connected witnesses Gerhalt received
+  the Ketto Water and North Cave Tear by Give and used both in Battle26. Kazin received the
+  Creed Rain by Give and used it in Battle22. Valid battle Use consumes the selected slot, even
+  on zero recovery. Field Use gives no effect and Caravan refuses. The receipt flags outlive the
+  consumed words. [Original item definitions](../../../docs/design/contracts/party/item-definition-data.md) ·
+  [Ordinary Use and cold Continue](../domain/recovery-items-design.md#ordinary-input-observations)
 - **Ordinary weapons** follow the class- and loadout-specific Equip rules. This covers
   the Battle21 Broad Sword receipt (bit 7, Luke observed, full recipient loses the common drop).
   Original Battle14 has a Power Stick row (bit 5), but the base Master Mage holds an Iron Rod

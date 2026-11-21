@@ -17,11 +17,12 @@ finite poison-removal algorithm from HP recovery within the existing friendly ac
 survive immutable definition copies. Healing Seed1 uses HEALIN2 power20, no variance or MP cost, and
 `min(20, missingHP)`; Herb0 and Wing4 keep their existing effects. Antidote3 delegates to DETOX1 without
 MP cost and consumes its selected compacting slot. DETOX1 uses learned-spell legality, MP3/range0–1,
-single living same-faction target; marked-spell silence still pays before its no-effect result.
+single living, positioned, non-neutral same-faction target. Marked-spell silence still pays before
+its no-effect result.
 `castspell.asm:spellEffect_Detox` clears poison bit2 and preserves every unrelated bit. An effective
 target contributes5 status EXP once; a clean target consumes the source threshold8 range8 ineffective
-draw and contributes0 before the common randomized/minimum EXP award. Status EXP respects the existing
-halved-experience battle flag. Neither case restores HP or clears stun/curse/sleep/silence. Payment,
+draw and contributes0 before the common randomized/minimum EXP award. Same-side status EXP bypasses
+the battle halving table. Neither case restores HP or clears stun/curse/sleep/silence. Payment,
 status reaction, notice and subsequent turn remain staged; DETOX uses no HEAL fairy. Antidote does not
 inherit the spell-only silence gate. Query/cancel, bad range/target, missing MP/accounting and stale
 input preserve the complete prior state. Higher DETOX levels and other cure/status families remain

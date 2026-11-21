@@ -9,7 +9,7 @@ internal static class HealingTargetRules
     {
         var faction = battle.GetActor(actor).Faction;
         return Array.AsReadOnly(battle.Actors.Where(target => target.Hp > 0 && target.Position is not null &&
-            target.Faction == faction).Select(target => target.Actor).ToArray());
+            (target.ActivationWord.GetValueOrDefault() & 8) == 0 && target.Faction == faction).Select(target => target.Actor).ToArray());
     }
 
     internal static BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
@@ -17,7 +17,8 @@ internal static class HealingTargetRules
     {
         var actor = battle.GetActor(actorRef);
         var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
-        if (target is null || target.Hp == 0 || target.Position is null || target.Faction != actor.Faction)
+        if (target is null || target.Hp == 0 || target.Position is null || (target.ActivationWord.GetValueOrDefault() & 8) != 0 ||
+            target.Faction != actor.Faction)
             throw new BattleRuleException("invalid-heal-target", "target");
         var targetPosition = targetRef == actorRef ? destination : target.Position!;
         if (!BattleRange.Contains(destination, targetPosition, minimumRange, maximumRange))
@@ -30,11 +31,10 @@ internal static class HealingTargetRules
     internal static BattleActorState RequireCenter(EngineBattleState battle, ActorRef actor,
         MapPosition destination, HealingSpellDefinition spell, ActorRef center)
     {
-        var target = RequireTarget(battle, actor, destination, spell.MinimumRange, spell.MaximumRange, center);
-        if (spell.IsAura && ((target.ActivationWord & 8) != 0 ||
+        if (spell.IsAura && (battle.Actors.Any(unit => unit.Actor == center && (unit.ActivationWord.GetValueOrDefault() & 8) != 0) ||
             spell.Targets == HealingTargets.AuraAllAllies && center != actor))
             throw new BattleRuleException("invalid-aura-center", "target");
-        return target;
+        return RequireTarget(battle, actor, destination, spell.MinimumRange, spell.MaximumRange, center);
     }
 
     internal static IReadOnlyList<BattleActorState> Resolve(EngineBattleState battle, ActorRef actor,
@@ -48,20 +48,33 @@ internal static class HealingTargetRules
             !(SilenceRules.Supported(caster.Status, battle.Definition.Poison) && (caster.Status & 0xC0) == 0))
             throw new BattleRuleException("aura-caster", "actor", true);
         var origin = center == actor ? destination : target.Position!;
-        // Admitted live states have unique, in-map occupancy. No raw-memory overlap emulation.
-        var actors = battle.Actors.ToDictionary(row => row.Actor);
-        var targets = battle.Definition.Initialization!.SourceCombatants.OrderBy(row => row.Key)
-            .Where(row => caster.IsAlly ? row.Key < 30 : row.Key >= 128).Select(row => actors[row.Value])
-            .Where(row => row.Hp > 0 && row.Position is not null &&
-                (spell.Targets == HealingTargets.AuraAllAllies || (row.ActivationWord & 8) == 0 &&
-                    BattleRange.Contains(origin, row.Actor == actor ? destination : row.Position!, 0, spell.Radius)))
-            .ToArray();
-        return targets;
+        var placed = PlacedSide(battle, caster);
+        return spell.Targets == HealingTargets.AuraAllAllies ? placed : placed.Where(row =>
+            (row.ActivationWord.GetValueOrDefault() & 8) == 0 &&
+            BattleRange.Contains(origin, row.Actor == actor ? destination : row.Position!, 0, spell.Radius)).ToArray();
     }
 
-    internal static void ValidateAura(BattleDefinition definition)
+    internal static IReadOnlyList<BattleActorState> ResolveItem(EngineBattleState battle, ActorRef actor,
+        MapPosition destination, HealingItemDefinition item, ActorRef center)
     {
-        if (!definition.Spells.Values.Any(s => s.IsAura)) return;
+        bool party = item.Effect == HealingItemEffect.FullPartyHp;
+        if (party && center != actor) throw new BattleRuleException("invalid-aura-center", "target");
+        var target = RequireTarget(battle, actor, destination, item.MinimumRange, item.MaximumRange, center);
+        if (!party) return [target];
+        ValidateAreaRoster(battle.Definition);
+        return PlacedSide(battle, target);
+    }
+
+    private static BattleActorState[] PlacedSide(EngineBattleState battle, BattleActorState center)
+    {
+        var actors = battle.Actors.ToDictionary(row => row.Actor);
+        return battle.Definition.Initialization!.SourceCombatants.OrderBy(row => row.Key)
+            .Where(row => center.IsAlly ? row.Key < 30 : row.Key >= 128).Select(row => actors[row.Value])
+            .Where(row => row.Hp > 0 && row.Position is not null).ToArray();
+    }
+
+    private static void ValidateAreaRoster(BattleDefinition definition)
+    {
         // bsc0B uses a signed delta; IncreaseAndClampWord also branches on the
         // sign of current HP + recovery. Keep this finite family in their common domain.
         if (definition.Deployments.Any(d => d.Definition.MaxHp is 0 or > 32767))
@@ -73,6 +86,12 @@ internal static class HealingTargetRules
                 !deployments.TryGetValue(row.Value, out var d) ||
                     !(d.Faction == BattleFaction.Ally ? row.Key is >= 0 and < 30 : row.Key is >= 128 and < 160)))
             throw new BattleRuleException("aura-source-slots", "initialization.sourceCombatants", true);
+    }
+
+    internal static void ValidateAura(BattleDefinition definition)
+    {
+        if (!definition.Spells.Values.Any(s => s.IsAura)) return;
+        ValidateAreaRoster(definition);
         foreach (var spell in definition.Spells.Values.Where(s => s.IsAura))
         {
             int level = spell.Spell.Level;
