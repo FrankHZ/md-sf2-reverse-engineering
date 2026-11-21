@@ -86,6 +86,55 @@ public sealed class AttackSpellTests
         Assert.Equal(2, action.AttackSpell!.MpCost);
     }
 
+    [Theory]
+    [InlineData("katon", 1, 6, 12, 2, 1, 32)]
+    [InlineData("katon", 2, 10, 16, 2, 1, 32)]
+    [InlineData("katon", 3, 12, 42, 2, 0, 32)]
+    [InlineData("raijin", 1, 15, 18, 3, 2, 8)]
+    [InlineData("raijin", 2, 18, 26, 3, 2, 8)]
+    [InlineData("raijin", 3, 20, 58, 3, 0, 8)]
+    public void NinjaSpellsUseNeutralResistanceAndTheirOwnTargetGeometry(string id, byte rank,
+        byte cost, ushort power, byte range, byte radius, ushort critical)
+    {
+        var battle = Battle(d =>
+        {
+            d["actors"]![0]!["classRule"] = "ordinary";
+            d["actors"]![0]!["physical"]!["promoted"] = true;
+            ((JsonArray)d["actors"]![0]!["spells"]!).Add(new JsonObject { ["id"] = id, ["level"] = rank });
+            ((JsonArray)d["spells"]!).Add(new JsonObject
+            {
+                ["id"] = id, ["level"] = rank, ["mpCost"] = cost, ["minimumRange"] = 1, ["maximumRange"] = range,
+                ["effect"] = new JsonObject { ["kind"] = "attack", ["power"] = power,
+                    ["radius"] = radius, ["element"] = "neutral" },
+            });
+            d["actors"]![3]!["resistance"] = 0x2C0; // major NEUTRAL and FIRE weakness
+            d["start"]!["actors"]![3]!["hp"] = 30;
+            d["encounters"]![0]!["placements"]![2]!["x"] = 5; // diagonal distance two from center
+        });
+        var action = Prepare(battle, id, rank);
+        var effect = action.AttackSpell!;
+        Assert.Equal((cost, range, radius), (effect.MpCost, effect.MaximumRange, effect.Radius));
+        var caster = battle.GetActor(Caster);
+        int promoted = power + power / 4;
+        Assert.Equal(promoted / 2, Sf2AttackSpellAction.PotentialDamage(caster, battle.GetActor(Center), effect));
+        Assert.Equal(power / 2, Sf2AttackSpellAction.PotentialDamage(caster, battle.GetActor(Center), effect, item: true));
+        Assert.Equal(radius == 2 ? new[] { Wing, Center } : [Center], action.Reactions.Select(r => r.Target));
+        Assert.All(action.ConstructionEffects.Where(e => e.Kind == "rng-spell-critical"),
+            draw => Assert.Equal(critical, draw.RandomRange));
+        var afterPayment = action.ApplySpellCost(action.Prepared);
+        Assert.Equal(20 - cost, afterPayment.GetActor(Caster).Mp);
+        var rule = new Sf2AttackSpellAction();
+        var selected = new BattleActionRef(BattleActionKind.AttackSpell, new(id, rank));
+        var underfunded = battle.With(actors: battle.Actors.Select(a => a.Actor == Caster ? a.With(mp: (byte)(cost - 1)) : a));
+        Assert.Equal("insufficient-mp", Assert.Throws<BattleRuleException>(() => rule.RequireAction(underfunded, Caster, selected)).Code);
+        MapPosition threeAway = new(1, 2);
+        if (range == 3)
+            Assert.Equal(Center, rule.RequireTarget(battle, Caster, threeAway, selected, Center).Actor);
+        else
+            Assert.Equal("target-range", Assert.Throws<BattleRuleException>(() =>
+                rule.RequireTarget(battle, Caster, threeAway, selected, Center)).Code);
+    }
+
     [Fact]
     public void RadiusUsesLiveOpponentsManhattanBoundaryAndSourceOrder()
     {

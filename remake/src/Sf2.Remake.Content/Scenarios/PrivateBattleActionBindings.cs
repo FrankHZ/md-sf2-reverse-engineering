@@ -144,6 +144,7 @@ internal static class PrivateBattleActionBindings
             "CRITICAL125_1IN16|DOUBLE_1IN16|COUNTER_1IN8" => PhysicalCriticalRule.Hero,
             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8" => PhysicalCriticalRule.WolfBaron,
             "CRITICAL125_1IN16|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.Thief,
+            "CRITICAL150_1IN8|DOUBLE_1IN16|COUNTER_1IN8" => PhysicalCriticalRule.Ninja,
             "CRITICAL150_1IN32|DOUBLE_1IN32|COUNTER_1IN16" => PhysicalCriticalRule.Cleric,
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN16" => PhysicalCriticalRule.OneIn32WithFrequentDoubleAndCounter,
             "CRITICAL150_1IN32|DOUBLE_1IN16|COUNTER_1IN32" => PhysicalCriticalRule.OneIn32WithFrequentDouble,

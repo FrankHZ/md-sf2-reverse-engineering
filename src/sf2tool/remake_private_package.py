@@ -220,6 +220,23 @@ def prepared_ally_sequence(index: int, rows: list[list[int]], draw_weapon: bool)
     )
 
 
+def ninja_weapon_layers(scene: dict) -> list[dict]:
+    # The selected sword banks use shared body palette colors 1 and 2.
+    # Steel Sword shares Long Sword's weapon bank and color pair.
+    hero_weapons = {
+        row["item"]: row["weaponFrames"]
+        for row in scene["actors"]
+        if row["side"] == "ally" and row["sprite"] == 24 and 0 in row.get("members", [])
+    }
+    layers = [{"item": None, "weaponFrames": []}]
+    for item in (57, 58, 59, 60, 62, 63, 64, 71):
+        donor = 59 if item == 60 else item
+        if not hero_weapons.get(donor):
+            raise ValueError(f"base package lacks Ninja sword layer {donor}")
+        layers.append({"item": item, "weaponFrames": hero_weapons[donor]})
+    return layers
+
+
 def mount_ordinary_appearances(
     library: Path, world: dict, scene: dict, promotions: dict[int, str]
 ) -> None:
@@ -234,6 +251,7 @@ def mount_ordinary_appearances(
         "BWNT": (25, {45, 46, 47}),
         "WFBR": (24, {None}),
         "PHNX": (26, {None}),
+        "NINJ": (27, set()),
     }
     # Additional source-legal weapons already mounted for another promoted member.
     # Arrows and shells use only the selected body animation (weapon selector FF).
@@ -256,7 +274,7 @@ def mount_ordinary_appearances(
     portraits = {
         walking["sprites"][variant["sprite"]]["portrait"]
         for member, variant in variants.items()
-        if promotions[member] in {"WFBR", "PHNX"}
+        if promotions[member] in {"WFBR", "PHNX", "NINJ"}
     }
     if portraits:
         directory = library / "portraits"
@@ -287,38 +305,41 @@ def mount_ordinary_appearances(
             frames.append(key)
 
         class_code = promotions[member]
-        base_items = rules[class_code][1]
-        mounted_weapons = [
-            row
-            for row in scene["actors"]
-            if row["side"] == "ally"
-            and row["sprite"] == base_sprites[member]
-            and member in row.get("members", [])
-            and (row["item"] is None) == (None in base_items)
-        ]
-        if {row["item"] for row in mounted_weapons} != base_items:
-            raise ValueError(f"base package lacks the supported {class_code} weapon layers")
-        if class_code in promoted_weapons:
-            donor, item_ids = promoted_weapons[class_code]
-            extra_weapons = [
+        if class_code == "NINJ":
+            mounted_weapons = ninja_weapon_layers(scene)
+        else:
+            base_items = rules[class_code][1]
+            mounted_weapons = [
                 row
                 for row in scene["actors"]
                 if row["side"] == "ally"
-                and donor in row.get("members", [])
-                and row["item"] in item_ids
+                and row["sprite"] == base_sprites[member]
+                and member in row.get("members", [])
+                and (row["item"] is None) == (None in base_items)
             ]
-            if {row["item"] for row in extra_weapons} != item_ids:
-                raise ValueError(
-                    f"base package lacks the promoted-only {class_code} weapon bindings"
-                )
-            mounted_weapons.extend(extra_weapons)
+            if {row["item"] for row in mounted_weapons} != base_items:
+                raise ValueError(f"base package lacks the supported {class_code} weapon layers")
+            if class_code in promoted_weapons:
+                donor, item_ids = promoted_weapons[class_code]
+                extra_weapons = [
+                    row
+                    for row in scene["actors"]
+                    if row["side"] == "ally"
+                    and donor in row.get("members", [])
+                    and row["item"] in item_ids
+                ]
+                if {row["item"] for row in extra_weapons} != item_ids:
+                    raise ValueError(
+                        f"base package lacks the promoted-only {class_code} weapon bindings"
+                    )
+                mounted_weapons.extend(extra_weapons)
         for row in mounted_weapons:
             # Use Item selects the ordinary animation. Dodge selects the second bank.
             draw_weapon = bool(row["weaponFrames"])
             attack = prepared_ally_sequence(sprite, animations[sprite], draw_weapon)
             dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw_weapon)
             sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
-            if class_code in {"WIZ", "VICR"}:
+            if class_code in {"WIZ", "VICR", "NINJ"}:
                 sequences["cast"] = attack
             appearance = dict(
                 side="ally",
@@ -344,6 +365,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
         "vicar": {1: "VICR", 15: "VICR"},
         "innate": {9: "WFBR", 7: "PHNX"},
+        "ninja": {5: "NINJ"},
     }
     selected = (
         permitted | (set(families) & retained_families.keys())
@@ -367,7 +389,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     )
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
         raise ValueError(
-            "select walking, icons, sfx, music, pldn, wiz, melee, ranged, vicar or innate"
+            "select walking, icons, sfx, music, pldn, wiz, melee, ranged, vicar, innate or ninja"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -393,9 +415,12 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         scene = read_json(scene_path)
         if scene["encounter"] != "battle-26":
             raise ValueError("Battle26 selection differs")
-        if "icons" in selected:
+        spell_icons = [7, 8, 9] if "icons" in selected else []
+        if "ninja" in selected:
+            spell_icons.extend((27, 28))
+        if spell_icons:
             images = read_json(root / "icons/identity-icons.json")
-            for i in (7, 8, 9):
+            for i in spell_icons:
                 for state in ("normal", "selected"):
                     name = f"identity-icon.spell.{i}.{state}"
                     for target in (presentation["identityIcons"], scene["rasters"]):

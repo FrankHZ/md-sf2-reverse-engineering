@@ -719,7 +719,7 @@ internal sealed partial class BattleSceneView : Control
         item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
         equipmentWear = _state?.Wear.ToString(),
         spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = _state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is not null ? (int?)null : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        spellAnimationSelector = _state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

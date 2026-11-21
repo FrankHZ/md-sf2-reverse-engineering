@@ -28,6 +28,12 @@ internal static class PrivateAttackSpellBindings
                     ("AQUA", 1) => (40, 0, 13, 3, 0, AttackSpellElement.Ice),
                     ("BLAST", 2) => (14, 5, 8, 2, 1, AttackSpellElement.Wind),
                     ("BLAST", 1) => (14, 2, 6, 1, 0, AttackSpellElement.Wind),
+                    ("KATON", 1) => (27, 6, 12, 2, 1, AttackSpellElement.Neutral),
+                    ("KATON", 2) => (27, 10, 16, 2, 1, AttackSpellElement.Neutral),
+                    ("KATON", 3) => (27, 12, 42, 2, 0, AttackSpellElement.Neutral),
+                    ("RAIJIN", 1) => (28, 15, 18, 3, 2, AttackSpellElement.Neutral),
+                    ("RAIJIN", 2) => (28, 18, 26, 3, 2, AttackSpellElement.Neutral),
+                    ("RAIJIN", 3) => (28, 20, 58, 3, 0, AttackSpellElement.Neutral),
                     _ => null
                 };
             if (expected is not { } row) continue;
@@ -35,8 +41,16 @@ internal static class PrivateAttackSpellBindings
                 source.MinimumRange == 1 && source.MaximumRange == row.Range && source.Radius == row.Radius &&
                 source.PropertiesExpression == (source.Code == "AQUA" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
                 "source-attack-spell", "spells", true);
+            byte? animation = null;
+            if (row.Element == AttackSpellElement.Neutral)
+            {
+                string family = source.Code == "KATON" ? "BLAZE" : "BOLT";
+                Require(source.AnimationExpression == $"{family}|VARIATION{source.Level + 1}",
+                    "source-attack-animation", "spells.animation", true);
+                animation = (byte)((family == "BLAZE" ? 1 : 7) | source.Level << 5);
+            }
             yield return new(source.Spell, source.MpCost, source.Power, source.MinimumRange, source.MaximumRange,
-                source.Radius, row.Element);
+                source.Radius, row.Element, animation);
         }
     }
 
