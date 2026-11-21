@@ -52,6 +52,7 @@ observation limits. [Campaign feature trace](../../remake/docs/capability-status
   class determines eligibility. Static ring effects follow status refresh, and the weapon supplies
   physical range. The design specifies separate removal choices, custody, promotion and Continue
   for Power, Protect, Quick and Running Ring. [Ring equipment and acceptance](../../remake/docs/domain/ring-equipment-design.md)
+- **L3 equipment Use and Repair.** [Battle effects, damage, merchant Repair and Continue](../../remake/docs/domain/equipment-use-repair-design.md)
 - **L3 permanent growth design.** [Field and Caravan growth items, Brave Apple, and persistence](../../remake/docs/domain/permanent-growth-items-design.md)
 - **L3 offensive consumables.** [Battle item targeting, damage, consumption and Continue](../../remake/docs/domain/offensive-items-design.md)
 - **L3 recovery consumables.** [Battle HP and MP recovery, item custody and Continue](../../remake/docs/domain/recovery-items-design.md)
