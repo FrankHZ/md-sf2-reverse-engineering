@@ -3,7 +3,7 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
-public enum FieldRecoveryEffect { NoEffect, CurePoison, Egress, MapEvent }
+public enum FieldRecoveryEffect { NoEffect, CurePoison, Egress, MapEvent, CurePoisonAndParalysis }
 public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, FieldRecoveryEffect Effect);
 
 // Field caller policies are admitted separately from battle recovery and its EXP/RNG rolls.
@@ -52,7 +52,9 @@ internal static class FieldRecovery
         }
         var target = FieldInventory.Member(definition, current,
             targetRef ?? throw new BattleRuleException("field-recovery-target", "target"), caller);
-        var changedTarget = target.Carried with { Status = (ushort)(target.Carried.Status & ~2) };
+        // Source status bits 1 and 0 are poison and paralysis respectively.
+        int cureMask = effect == FieldRecoveryEffect.CurePoisonAndParalysis ? 3 : 2;
+        var changedTarget = target.Carried with { Status = (ushort)(target.Carried.Status & ~cureMask) };
         effective = changedTarget.Status != target.Carried.Status;
         var changedMember = member.Carried;
         // ExecuteExplorationMagicMenu does not check MP. DecreaseCurrentMp clamps at zero.
@@ -69,8 +71,11 @@ internal static class FieldRecovery
         // Map-specific events and ordinary-field NoEffect policies are separate callers.
         if (item is not (3 or 5 or >= 9 and <= 15))
             throw new BattleRuleException("caravan-item-not-usable", "item");
-        if (item != 3 || capabilities.ItemEffects.GetValueOrDefault(item) != FieldRecoveryEffect.CurePoison)
-            throw new BattleRuleException("field-item-effect-unsupported", "item", true);
-        return FieldRecoveryEffect.CurePoison;
+        return (item, capabilities.ItemEffects.GetValueOrDefault(item)) switch
+        {
+            (3, FieldRecoveryEffect.CurePoison) => FieldRecoveryEffect.CurePoison,
+            (5, FieldRecoveryEffect.CurePoisonAndParalysis) => FieldRecoveryEffect.CurePoisonAndParalysis,
+            _ => throw new BattleRuleException("field-item-effect-unsupported", "item", true),
+        };
     }
 }

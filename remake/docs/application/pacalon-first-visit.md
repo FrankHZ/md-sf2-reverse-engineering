@@ -101,6 +101,132 @@ matched their immediate re-saves. Ordinary movement worked after Continue on
 the field. Both parties retained reserve Higins. Frayja stayed outside the
 party, and F810 and the collection flags survived the castle Continue.
 
+## Fairy Powder Use
+
+[#1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942) covers Powder carried in the
+existing campaign through Pacalon and Battle26. It uses the existing field, service, battle and
+save transactions. The field route retains current target selection, localized feedback and input
+return. The item can come from Search or a shop, and the command pays from the actual holder and slot.
+
+At pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, the Field and Caravan callers
+`mainactions.asm:@PickTarget` and `caravanactions_1.asm:caravanItemSubmenu_Use` check the target
+selection before calling `UseItemOnField`. Each invokes `RemoveItemBySlot` on the holder after the
+effect returns. In both callers item 5 reaches `CurePoisonAndParalysis`, which clears bits 1 and 0
+and updates stats even along the no-effect message path. In the remake, valid confirmation consumes
+one item and preserves HP, MP, unrelated status and custody. Cancel, missing target and stale slot
+leave the party unchanged. [Field item evidence](../../../docs/research/world/field-item-effects.md#confirmed-static-contract) ·
+[Caravan Use rules](caravan-services-design.md#current-item-implementation)
+
+Battle has its own source behavior. `itemdefs.asm` selects `POWDER` rank 1, and `spelldefs.asm`
+specifies 0 MP, teammate range 0–1 and radius 0. `castspell.asm:spellEffect_Detox` clears poison
+at that rank, leaving paralysis intact. `breakuseditem.asm:battlesceneScript_BreakUsedItem` removes
+the selected non-equipment slot even after ineffective resolution. The remake uses the existing
+battle poison-cure reaction, ineffective draw, item consumption and EXP rules.
+[Original item records](../../../docs/design/contracts/party/item-definition-data.md) ·
+[Remake battle binding](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs)
+
+### Ordinary input and controlled status checks
+
+Use the #1927 Pacalon handoff's matching castle or departure slot as a read-only seed. Confirm F174
+and item 5 in the live loadout after title Continue. Keep an external sample save namespace per
+journey. Mount the current Debug adapter and the stable runtime at
+`handoffs/issue1966/content/package` under the registered shared input root. Use the display
+catalogs at `handoffs/issue1941/content/catalog-final`. The runtime includes the patched world,
+its relative encounter and audio inputs, and the SLOW and BOOST identity icons. The [#1966 preparation
+recipe](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) can rebuild
+it from the registered base if the published package is unavailable.
+
+| Ordinary caller | Reproduce from legitimate custody |
+| --- | --- |
+| Field, English | Continue `castle-en.json` on Map36. Open Field Item, choose Kazin, then Use and his second slot. Back from the target list and from final confirmation, checking both return paths. Confirm against Bowie. The no-effect result spends item 5 and compacts `[213,5,118,123]` to `[213,118,123,127]`. |
+| Caravan, Chinese | Continue `departure-zh-CN.json` on Map71. Align with the visible Caravan and confirm the [overworld service entry](caravan-services-design.md#current-overworld-vehicle-entry). Choose Item, Use, Slade and his third slot. Cancel the target list, reopen the same slot and confirm Bowie. The Chinese result reports no poison or paralysis to cure and that 妖精粉 was consumed. The pack changes from `[231,0,5,118]` to `[231,0,118,127]`. |
+
+Dismiss each result and exit to settled field input, then use the ordinary Save slot and Quit.
+Start a fresh process and Continue from that same slot. Re-save and compare the entire decoded
+`data` object, including pack words, F174 and party resources. Both comparisons match with the
+record sequence advancing by one. All four runs exited 0. Some processes logged an ObjectDB
+warning during shutdown. The input, state, projected feedback and save observations completed.
+Both ordinary targets have status 0. The observed branches cover ownership,
+cancellation, ineffective confirmation, control, save and cold restore. Natural acquisition of
+the target ailments in these histories remains **Unknown**.
+
+For Battle26, start with a fresh copy of `castle-en.json`. Kazin is fallen. Use ordinary Field Give
+to exchange Powder for Sarah's Medical Herb in her third slot. Sarah receives Powder in her fourth
+slot. Follow the [Battle26 road](#reproduction), and on Sarah's first turn use Item on herself.
+Cancel at target selection once, then confirm. The ineffective result leaves HP 58, MP 59 and
+status 0. The pack remains `[214,15,123,5]` on cancel and becomes `[214,15,123,127]` on confirmation.
+The action gives 1 EXP in that run and returns to the next player's Movement. Save there and
+cold-continue. The complete decoded battle `data` matches after the fresh process re-save, and the
+record sequence advances by one. The Use process saved successfully and then exited with
+`0xC0000005` in `GodotObject.Finalize` after confirming ordinary Quit. The cold process exited 0 with
+an ObjectDB shutdown warning. [Shutdown issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+`FieldRecoveryTests` and `CaravanItemTests` separately use controlled poison-only, paralysis-only,
+combined and unrelated statuses. They check no-effect payment, other resources and invalid-target
+rejection. `PoisonCureTests` observes the battle status write and later stun-turn processing separately.
+These tests and the ordinary remake observations leave original runtime timing and audiovisual
+behavior **Unknown**.
+
+### Continue after worktree cleanup
+
+With the producing `local/` temporarily unavailable, restore only the registered worktree
+configuration. Use the external English Powder-used slot at
+`handoffs/issue1942/player-saves/en-field-final/powder-review/sf2-opening/slot1.json` as the read-only
+seed. Give its copy a fresh external player namespace. Use a fresh ignored receipt directory
+for logs, temporary files and the Godot profile. [Fresh worktree setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup)
+
+The Pacalon observer's `continue` mode opens the title's slot picker, re-saves from settled input,
+then sends a movement input. Run the following from the owning checkout. Set absolute paths for
+a fresh `$sampleRoot` outside all worktrees and a fresh ignored `$receipt` directory.
+
+```powershell
+. ./local/private-inputs.ps1
+$handoffs = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs'
+$pacalon = Join-Path $handoffs 'issue1927/pacalon'
+$package = Join-Path $handoffs 'issue1966/content/package'
+$catalog = Join-Path $handoffs 'issue1941/content/catalog-final'
+$config = Get-Content -LiteralPath "$pacalon/player-config.json" -Raw | ConvertFrom-Json -AsHashtable
+foreach ($key in $config.inputs.Keys) {
+    $value = $config.inputs[$key]
+    if (![IO.Path]::IsPathFullyQualified($value)) { $value = Join-Path $pacalon $value }
+    [Environment]::SetEnvironmentVariable($key, $value, 'Process')
+}
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $catalog 'world.zh-CN.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $catalog 'entry.zh-CN.json'
+Get-ChildItem -LiteralPath "$handoffs/issue1955/drivers" -Directory |
+    Copy-Item -Destination ./local -Recurse
+$env:SF2_DESKTOP_MODE = 'continue'
+$env:SF2_REVIEW_LANGUAGE = 'en'
+$env:SF2_ROUTE_DIR = $receipt
+$env:SF2_SAVE_ROOT = $sampleRoot
+$env:SF2_SAVE_NAMESPACE = 'powder-review'
+$env:SF2_REVIEW_SLOT_PATH = Join-Path $sampleRoot 'powder-review/sf2-opening/slot1.json'
+$env:APPDATA = Join-Path $receipt 'appdata'
+$env:LOCALAPPDATA = Join-Path $receipt 'localappdata'
+$env:TEMP = Join-Path $receipt 'temp'
+$env:TMP = $env:TEMP
+foreach ($dir in @($receipt, $env:APPDATA, $env:LOCALAPPDATA, $env:TEMP,
+        [IO.Path]::GetDirectoryName($env:SF2_REVIEW_SLOT_PATH))) {
+    [void][IO.Directory]::CreateDirectory($dir)
+}
+$seed = Join-Path $handoffs 'issue1942/player-saves/en-field-final/powder-review/sf2-opening/slot1.json'
+[IO.File]::Copy($seed, $env:SF2_REVIEW_SLOT_PATH, $false)
+$game = (Resolve-Path -LiteralPath './remake/game').Path
+Push-Location -LiteralPath $game
+try {
+    & $env:GODOT_BIN --headless --fixed-fps 60 --audio-driver Dummy --resolution 1920x1080 `
+        --path $game --script "$pacalon/Pacalon.gd" --log-file "$receipt/native.log" `
+        -- --input-settings "$pacalon/settings-en.json"
+} finally { Pop-Location }
+```
+
+The clean-scratch run reached settled Map36 input and moved after dismissing the save result.
+Its `immediate-resave-slot.json` had identical complete decoded `data`, including F174 and
+Kazin's `[213,118,123,127]` pack. The record sequence advanced from 6 to 7. Godot exited 0 and
+logged an ObjectDB warning during shutdown.
+
 ## Reproduction
 
 The private handoff is `issue1927/pacalon`. Use fresh sample names to preserve

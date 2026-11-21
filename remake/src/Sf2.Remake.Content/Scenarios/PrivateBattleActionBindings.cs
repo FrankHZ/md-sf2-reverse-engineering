@@ -19,9 +19,11 @@ internal static class PrivateBattleActionBindings
 
     internal static IEnumerable<HealingItemDefinition> HealingItems(PrivateBattleDefinitions definitions)
     {
-        foreach (var (id, code, effect, level, power) in new (byte, string, string, byte, ushort)[]
-            { (0, "MEDICAL_HERB", "HEALIN", 1, 10), (1, "HEALING_SEED", "HEALIN", 2, 20),
-              (2, "HEALING_DROP", "HEALIN", 3, 30), (3, "ANTIDOTE", "DETOX", 1, 0) })
+        // Retail POWDER rank 1 dispatches the poison-only DETOX effect.
+        foreach (var (id, code, effect, level, power, curesPoison) in new (byte, string, string, byte, ushort, bool)[]
+            { (0, "MEDICAL_HERB", "HEALIN", 1, 10, false), (1, "HEALING_SEED", "HEALIN", 2, 20, false),
+              (2, "HEALING_DROP", "HEALIN", 3, 30, false), (3, "ANTIDOTE", "DETOX", 1, 0, true),
+              (5, "FAIRY_POWDER", "POWDER", 1, 0, true) })
         {
             if (!definitions.Items.TryGetValue(id, out var item)) continue;
             Require(item.Code == code && item.ItemTypeExpression == "CONSUMABLE" &&
@@ -33,7 +35,7 @@ internal static class PrivateBattleActionBindings
                 spell.MinimumRange == 0 && spell.MaximumRange == 1 && spell.PropertiesExpression ==
                     (id == 3 ? "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" : "TYPE_HEAL|TARGET_TEAMMATES"),
                 "source-supply-effect", "items.useSpell", true);
-            yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, CuresPoison: id == 3);
+            yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, CuresPoison: curesPoison);
         }
     }
 

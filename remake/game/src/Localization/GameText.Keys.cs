@@ -796,6 +796,8 @@ internal static partial class GameText
         ["caravan.items.result.dropped"] = 0,
         ["caravan.items.result.cured"] = 0,
         ["caravan.items.result.no-effect"] = 0,
+        ["caravan.items.result.powder-cured"] = 0,
+        ["caravan.items.result.powder-no-effect"] = 0,
         ["caravan.title"] = 2,
         ["caravan.join"] = 0,
         ["caravan.purge"] = 0,

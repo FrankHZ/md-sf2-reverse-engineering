@@ -77,15 +77,18 @@ internal static class PrivateFieldPreparation
     }
     private static IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>> FieldItems(Application.Content.Scenarios.PrivateBattleDefinitions source)
     {
-        foreach (var (id, code, useSpell, level) in new (byte, string, string, byte)[]
-            { (0, "MEDICAL_HERB", "HEALIN", 1), (1, "HEALING_SEED", "HEALIN", 2),
-              (2, "HEALING_DROP", "HEALIN", 3), (3, "ANTIDOTE", "DETOX", 1) })
+        foreach (var (id, code, useSpell, level, effect) in new (byte, string, string, byte, FieldRecoveryEffect)[]
+            { (0, "MEDICAL_HERB", "HEALIN", 1, FieldRecoveryEffect.NoEffect),
+              (1, "HEALING_SEED", "HEALIN", 2, FieldRecoveryEffect.NoEffect),
+              (2, "HEALING_DROP", "HEALIN", 3, FieldRecoveryEffect.NoEffect),
+              (3, "ANTIDOTE", "DETOX", 1, FieldRecoveryEffect.CurePoison),
+              (5, "FAIRY_POWDER", "POWDER", 1, FieldRecoveryEffect.CurePoisonAndParalysis) })
         {
             if (!source.Items.TryGetValue(id, out var item)) continue;
             Require(item.Code == code && item.UseSpell == useSpell && item.UseSpellLevel == level &&
                 item.ItemTypeExpression == "CONSUMABLE" && item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
                 "source-field-item", "field.items");
-            yield return new(id, id == 3 ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.NoEffect);
+            yield return new(id, effect);
         }
     }
 }

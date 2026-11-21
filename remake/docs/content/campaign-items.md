@@ -140,19 +140,21 @@ and the chapter consumers supply the class and effect definitions below.
   Battle26 Use and bilingual cold Continue cover the selected slot and HP. Ordinary F520 Map51
   Search grants F159 and cold Continue preserves the receipt. [Use and reproduction](profiles-and-trust.md#healing-drop-use) ·
   [Map51 Search](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond)
-- **Recovery and stat supplies** share the normal pack and receipt lifecycle. Check actual Use
-  bindings before spending them. The remake has selected battle healing items and Antidote,
-  and distinct field no-effect recovery and Antidote paths. Ordinary Search grants Running Pimento
-  (Hassan F153), Healing Water (Taros F155) and Fairy Powder (Elven Village F157). Other placements
-  include Pacalon Fairy Powder F174, North Cave Fairy Tear F168, Creed Healing Rain F164 and
-  Fairy Cave Brave Apple F161. Those items await their corresponding Use effects. The optional
+- **Fairy Powder** (item 5) can be found through Elven Village Search (F157) and Pacalon Castle
+  Search (F174), and bought from admitted shop stock. Field and Caravan Use clear poison and paralysis.
+  Battle Use follows the retail rank-1 `POWDER` record and clears poison alone at range 0–1.
+  A confirmed valid target spends the selected holder's slot even when the effect finds no matching
+  status. [Caller rules and ordinary Pacalon verification](../application/pacalon-first-visit.md#fairy-powder-use) ·
+  [Caravan Item](../application/caravan-services-design.md#current-item-implementation)
+- **Other recovery and stat supplies** share the normal pack and receipt lifecycle. Ordinary Search
+  grants Running Pimento (Hassan F153) and Healing Water (Taros F155). Other placements include
+  North Cave Fairy Tear F168, Creed Healing Rain F164 and Fairy Cave Brave Apple F161.
+  Those items await their corresponding Use effects. The optional
   North Cave witness gave Fairy Tear to Bowie
   with an empty repeat. Those handoff slots precede the pickup. The Battle15 F151 open/activation
   receipt is separate from Golem 143's Power Water drop bit 29. [Original item definitions](../../../docs/design/contracts/party/item-definition-data.md) ·
   [Remake Use bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs) ·
-  [Caravan Item](../application/caravan-services-design.md#current-item-implementation) ·
   [North Cave](../application/battle25-north-cave.md#search-and-exits) · [Battle15 trap](../application/east-shrine-panel.md#optional-battle-chest) ·
-  [Fairy Powder #1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942) ·
   [Permanent growth supplies #1943](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1943) ·
   [Advanced recovery #1948](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1948)
 - **Ordinary weapons** follow the class- and loadout-specific Equip rules. This covers

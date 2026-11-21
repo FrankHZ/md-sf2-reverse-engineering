@@ -60,6 +60,42 @@ public sealed class FieldRecoveryTests
         Assert.Equal(before.Exploration.Party.ItemCustody, party.ItemCustody);
     }
 
+    [Theory]
+    [InlineData(0x0100, "field-no-effect")]
+    [InlineData(0x0101, "field-status-recovered")]
+    [InlineData(0x0102, "field-status-recovered")]
+    [InlineData(0x0103, "field-status-recovered")]
+    public void FairyPowderUsesTheSelectedHolderSlotAndClearsOnlyPoisonAndParalysis(ushort status, string observation)
+    {
+        var session = Session(carried: actor => actor.Actor == Giver ? actor with
+        {
+            SourceLoadout = new([3, 5, 3, 127], []),
+        } : actor.Actor == Recipient ? actor with { Hp = 15, Mp = 2, Status = status } : actor,
+            preparation: new([new(3, "Antidote", false, false), new(5, "Fairy Powder", false, false)],
+                [new(3, FieldRecoveryEffect.CurePoison), new(5, FieldRecoveryEffect.CurePoisonAndParalysis)]));
+        var before = session.Current;
+        var choice = Assert.Single(session.QueryFieldActions(Giver).Items, item => item.Slot == 1);
+        Assert.Equal(FieldRecoveryEffect.CurePoisonAndParalysis, choice.Use);
+        foreach (var command in new[] { new FieldUseItem(Giver, 1, 5),
+            new FieldUseItem(Giver, 1, 5, new("unknown")), new FieldUseItem(Giver, 0, 5, Recipient) })
+        {
+            Assert.NotNull(Send(session, command).Failure);
+            Assert.Same(before, session.Current);
+        }
+
+        var result = Accept(session, new FieldUseItem(Giver, choice.Slot, choice.Word, Recipient));
+        Assert.Equal(observation, Assert.Single(result.Observations).Kind);
+        var party = session.Current.Exploration!.Party;
+        var giver = party.Actors.Single(actor => actor.Actor == Giver);
+        var target = party.Actors.Single(actor => actor.Actor == Recipient);
+        Assert.Equal(new ushort[] { 3, 3, 127, 127 }, giver.SourceLoadout!.Items);
+        Assert.Equal(before.Exploration!.Party.Actors.Single(actor => actor.Actor == Recipient) with { Status = 0x0100 },
+            target);
+        Assert.Equal(before.Exploration.Party.Actors.Single(actor => actor.Actor == Giver).Mp, giver.Mp);
+        Assert.Same(before.Exploration.Party.ItemCustody, party.ItemCustody);
+        Assert.True(session.Current.CanWaitAtInput);
+    }
+
     [Fact]
     public void SelfCureKeepsBothCostAndStatusAndFullHpIsALegalStatusTarget()
     {

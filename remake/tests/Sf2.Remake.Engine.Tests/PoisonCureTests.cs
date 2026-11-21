@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Domain.Gameplay.Sf2;
@@ -126,6 +127,59 @@ public sealed class PoisonCureTests
         Assert.Equal((status & 2) != 0 ? BattleReactionKind.Status : BattleReactionKind.Ineffective, reaction.Kind);
         Assert.Equal((status & 2) != 0 ? (ushort?)(status & ~2) : null, reaction.StatusWrite);
         Assert.Equal(target.Hp, reaction.HpAfter); Assert.Equal(target.Mp, reaction.MpAfter);
+    }
+
+    [Theory]
+    [InlineData((ushort)3, true)]
+    [InlineData((ushort)1, false)]
+    public void RetailBattlePowderPaysForOnlyThePoisonEffect(ushort initialStatus, bool effective)
+    {
+        var document = Document("shop-supplies")["battle"]!.DeepClone();
+        var admitted = Assert.IsType<ScenarioReadAccepted>(Reader(document).Read());
+        var existing = Assert.Single(admitted.Definition.Encounters.Values);
+        var source = new PrivateBattleDefinitions(null!, [], [],
+            [new(5, "FAIRY_POWDER", "Fairy Powder", "", "NONE", [], 0, 1, 100,
+                "CONSUMABLE", "POWDER", "POWDER", 1, [new("NONE", 0)])],
+            [new(73, 33, "POWDER", "Powder", "POWDER", 1, 0, "NONE", "TYPE_HEAL|TARGET_TEAMMATES",
+                0, 1, 0, 0)], [], []);
+        var battle = new BattleDefinition(existing.Encounter, existing.Map, existing.Width, existing.Height, existing.Terrain,
+            existing.Deployments, existing.Spells.Values, existing.Rewards, outcome: existing.Outcome,
+            healingItems: PrivateBattleActionBindings.HealingItems(source), poison: existing.Poison);
+        var input = admitted.Start.WithResources(admitted.Start.Actors.Select(actor => actor.Actor == Friend
+            ? actor with { Status = initialStatus }
+            : actor.Actor == Medic ? actor with { SourceLoadout = new([3, 5, 0, 127], [63, 63, 63, 63]) } : actor),
+            admitted.Start.Gold);
+        var definition = new ScenarioDefinition(admitted.Definition.Package, [battle], battleStory: admitted.Definition.BattleStory);
+        var started = GameSession.Start(definition, input);
+        Assert.True(started is SessionStarted, started.ToString());
+        var session = ((SessionStarted)started).Session;
+        var before = session.Current.Battle;
+        Assert.Equal(Medic, session.Current.Selection!.Actor);
+
+        Accept(session, new Confirm());
+        Accept(session, new SelectItem(1));
+        Assert.NotNull(Send(session, new SelectTarget(new("dummy-a"))).Failure);
+        Accept(session, new Cancel());
+        Accept(session, new Cancel());
+        Assert.Same(before, session.Current.Battle);
+
+        Accept(session, new Confirm());
+        Accept(session, new SelectItem(1));
+        Accept(session, new SelectTarget(Friend));
+        var result = FinishBattleScenes(session, Accept(session, new Confirm()));
+        var after = session.Current.Battle;
+        var target = after.GetActor(Friend);
+        var holder = after.GetActor(Medic);
+        Assert.Equal(before.GetActor(Friend).Hp, target.Hp);
+        Assert.Equal(before.GetActor(Friend).Mp, target.Mp);
+        Assert.Equal(before.GetActor(Medic).Mp, holder.Mp);
+        Assert.Equal(new ushort[] { 3, 0, 127, 127 }, holder.SourceLoadout!.Items);
+        var cures = result.Observations.Where(row => row.Kind == "status" && row.Actor == Friend);
+        if (effective) Assert.Equal(1, Assert.Single(cures).After);
+        else Assert.Empty(cures);
+        var stunTurn = Assert.Single(result.Observations, row => row.Kind == "stun-status" && row.Actor == Friend);
+        Assert.Equal(1, stunTurn.Before);
+        Assert.True(session.Current.HasBattleControl);
     }
 
     [Fact]
