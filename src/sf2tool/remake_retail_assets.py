@@ -567,7 +567,7 @@ def main():
         print(json.dumps(prepared_coverage(args.inventory, args.root, args.base, output)))
         return
     if args.mount:
-        mount(args.root, args.base, args.mount, args.family, args.command)
+        mount(args.root, args.base, args.mount, args.family, args.command, upstream=args.upstream)
         return
     if not all((args.upstream, args.listing, args.inventory)):
         parser.error("production requires --upstream, --listing and --inventory")

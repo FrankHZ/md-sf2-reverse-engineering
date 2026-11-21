@@ -43,7 +43,11 @@ public sealed class BattleSaveProgressTests
         if (timed)
         {
             string target = mixed ? deployedActor.Value : "enemy";
-            actors = actors.Select(a => a.Actor == target ? a with { Status = 0x0C00, LastRefreshCounters = 0x0400 } : a).ToArray();
+            actors = actors.Select(a => a.Actor != target ? a : mixed ? a with
+            {
+                Status = 0xCC00, LastRefreshCounters = 0x8400,
+                Attack = (byte)(a.Attack + a.Progress!.BaseAttack * 2 / 8),
+            } : a with { Status = 0x0C00, LastRefreshCounters = 0x0400 }).ToArray();
         }
         saved = saved with { HasClassTerms = true, Battle = saved.Battle with { Actors = actors },
             Story = saved.Story with { Player = saved.Story.Player with { RetainedAllies = retained } } };
@@ -56,9 +60,19 @@ public sealed class BattleSaveProgressTests
         Assert.True(recaptured.HasClassTerms);
         Assert.True(BattleContinuationValues.Same(saved.Battle, recaptured.Battle));
         Assert.True(BattleSaveStory.Same(saved.Story, recaptured.Story));
-        if (!reserve)
-            Assert.Equal(mixed ? BattleClassRule.Paladin : BattleClassRule.Hero,
-                session.Current.Battle.GetActor(actor).Definition.ClassRule);
+        if (reserve) return;
+        var restored = session.Current.Battle.GetActor(actor);
+        Assert.Equal(mixed ? BattleClassRule.Paladin : BattleClassRule.Hero, restored.Definition.ClassRule);
+        if (!mixed) return;
+        Assert.Equal((ushort)0x8400, restored.LastRefreshBits);
+        Assert.Equal(restored.BaseAttack + restored.BaseAttack * 2 / 8, restored.Attack);
+        Assert.Equal(restored.BaseDefense - restored.BaseDefense / 8, restored.Defense);
+        Assert.Equal(restored.BaseAgility - restored.BaseAgility / 8, restored.Agility);
+        var refreshed = restored.With(refreshStats: true);
+        Assert.Null(refreshed.LastRefreshBits);
+        Assert.Equal(restored.BaseAttack + restored.BaseAttack * 3 / 8, refreshed.Attack);
+        Assert.Equal(restored.BaseDefense - restored.BaseDefense * 3 / 8, refreshed.Defense);
+        Assert.Equal(restored.BaseAgility - restored.BaseAgility * 3 / 8, refreshed.Agility);
     }
 
     private static BattleActorDefinition Paladin(BattleActorDefinition original) =>
