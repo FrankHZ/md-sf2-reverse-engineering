@@ -237,7 +237,12 @@ The current package's `audio-25-c6` refers to command 37 (hex 25). The mounted d
 has no command 25. Select one private non-looping cue using the existing audio pipeline, publish
 it once on a successful rite and resume the prior church/map music using the existing audio
 lifecycle. Check ordinary input through success, playback/return and member selection. Decline,
-unavailable and stale input emit no cue. Exact original timing across the whole rite remains
+unavailable and stale input emit no cue. The actual engine cases emit one success event on the final HERO or PLDN Yes. A headless Godot
+run with authored silence observed one command 25 playback and one restart of the original
+background cue at its prior music generation. The finite cue stays outside field-save music
+history. Packages without command 25 keep their previous playback. Reproduce with the
+[audio lifetime observation](../verification/host.md#audio-resource-lifetime-observation).
+The private WAV and ordinary Eric journey are still **Unknown**. Exact original timing across the whole rite remains
 **Unknown**. Keep the existing HERO action as a shared-cue regression case.
 [Source cue and wait](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/church/churchactions_1.asm#L432-L479) ·
 [Mounted audio baseline](church-promotion-design.md#playable-hero-and-reproduction)

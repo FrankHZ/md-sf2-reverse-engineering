@@ -27,6 +27,7 @@ internal sealed partial class SessionAudio : IDisposable
     private long _revision;
     private long _observedSequence;
     private long? _waitToken;
+    private (string Cue, long? Generation)? _returnAfterPromotion;
     private string? _battlefieldMusic;
     private int _sceneMusic;
     private bool _fading;
@@ -48,7 +49,18 @@ internal sealed partial class SessionAudio : IDisposable
         _owner = owner;
         _capture = ObservationCapture.Find(owner);
         owner.AddChild(_music);
-        _musicFinished = () => { if (_music.Playing || _entrySuppressed || _entryMusicConsumed) return; MusicFinished = true; Completions++; Record("finished", _music, MusicCue!); };
+        _musicFinished = () =>
+        {
+            if (_music.Playing || _entrySuppressed || _entryMusicConsumed) return;
+            MusicFinished = true; Completions++; Record("finished", _music, MusicCue!);
+            if (_returnAfterPromotion is not { } previous) return;
+            try
+            {
+                Play(previous.Cue, remember: false);
+                MusicGeneration = previous.Generation;
+            }
+            catch (InvalidOperationException error) { Error = error.Message; }
+        };
         _music.Finished += _musicFinished;
     }
 
@@ -134,9 +146,10 @@ internal sealed partial class SessionAudio : IDisposable
 
     internal Sf2.Remake.Application.Runtime.Persistence.ObserveFieldMusic? ObserveFieldHistory()
     {
-        if (Error is not null || _context is not { Battle: false } context || MusicCue is null ||
-            _history.Count == 0 || _history[0] != MusicCue) return null;
-        return new(context.Map, context.Area, new(MusicCue, Array.AsReadOnly(_history.Skip(1).Take(9).ToArray())));
+        var fieldCue = _returnAfterPromotion?.Cue ?? MusicCue;
+        if (Error is not null || _context is not { Battle: false } context || fieldCue is null ||
+            _history.Count == 0 || _history[0] != fieldCue) return null;
+        return new(context.Map, context.Area, new(fieldCue, Array.AsReadOnly(_history.Skip(1).Take(9).ToArray())));
     }
 
     internal Sf2.Remake.Application.Runtime.Persistence.ObserveBattleMusic? ObserveBattleHistory()
@@ -163,6 +176,7 @@ internal sealed partial class SessionAudio : IDisposable
                 if (_entrySuppressed) continue;
                 if (observation.Kind == "door-opened") Play(92);
                 else if (observation.Kind == "warp-started") Play(89);
+                else if (observation.Kind == "church-promoted") PlayPromotion();
                 else if (observation.Kind == "field-map-music-selected") _context = null;
             }
             _observedSequence = current.ObservationSequence;
@@ -209,6 +223,18 @@ internal sealed partial class SessionAudio : IDisposable
         if (command != 0) Play(Select(command));
     }
 
+    internal void PlayPromotion()
+    {
+        // Older packages can complete a rite without a recorded cue.
+        var cues = _assets.Where(pair => pair.Value.Command == 25).ToArray();
+        if (cues.Length == 0) return;
+        if (cues.Length != 1 || cues[0].Value.LoopBegin is not null || MusicCue is null)
+            throw new InvalidOperationException("promotion-music-binding");
+        var previous = _returnAfterPromotion ?? (MusicCue, MusicGeneration);
+        Play(cues[0].Key, remember: false);
+        _returnAfterPromotion = previous;
+    }
+
     internal void PlayEffect(int command)
     {
         if (Error is not null || _assets.Count == 0 || command == 0) return;
@@ -253,6 +279,7 @@ internal sealed partial class SessionAudio : IDisposable
         var player = voice?.Player ?? _music;
         if (music)
         {
+            _returnAfterPromotion = null;
             if (_fading) StopSharedEffects();
             _fading = false; _fadeProgress = 0;
             Stop(player, MusicCue);

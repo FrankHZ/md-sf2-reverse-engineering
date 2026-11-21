@@ -127,7 +127,7 @@ public sealed class FieldServiceTests
         Accept(session, new SelectPromotion(Wait(session).Token, row));
         Accept(session, new AnswerPromotion(Wait(session).Token, row, true));
         var yes = new AnswerPromotion(Wait(session).Token, row, true);
-        Accept(session, yes);
+        Assert.Single(Accept(session, yes).Observations, row => row.Kind == "church-promoted");
         var after = session.Current.Exploration.Party;
         var member = Member(session, First);
         var prior = before.Actors.Single(a => a.Actor == First);
@@ -175,7 +175,7 @@ public sealed class FieldServiceTests
         Assert.Equal(ChurchPhase.Special, Wait(session).Phase);
 
         var special = new AnswerPromotion(Wait(session).Token, candidate, acceptSpecial);
-        Accept(session, special);
+        Assert.DoesNotContain(Accept(session, special).Observations, row => row.Kind == "church-promoted");
         Assert.Same(before, session.Current.Exploration.Party);
         Assert.NotNull(Send(session, special).Failure);
         Assert.Same(before, session.Current.Exploration.Party);
@@ -187,7 +187,8 @@ public sealed class FieldServiceTests
         }
 
         Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
-        Accept(session, new AnswerPromotion(Wait(session).Token, candidate, acceptRegular));
+        var regular = Accept(session, new AnswerPromotion(Wait(session).Token, candidate, acceptRegular));
+        Assert.Equal(acceptRegular ? 1 : 0, regular.Observations.Count(row => row.Kind == "church-promoted"));
         if (!acceptRegular)
         {
             Assert.Equal(ChurchPhase.Members, Wait(session).Phase);

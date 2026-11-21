@@ -91,7 +91,8 @@ internal static class FieldService
                         (field, party) = Promote(definition, current, field, candidate);
                         next = next with { Result = new(ChurchResultKind.Promoted) };
                     }
-                    kind = "church-promotion-answer"; break;
+                    kind = next.Result?.Kind == ChurchResultKind.Promoted ? "church-promoted" : "church-promotion-answer";
+                    break;
                 case ContinueChurch when wait.Phase == ChurchPhase.Result && wait.Action == ChurchAction.Promote &&
                         wait.Result!.Kind != ChurchResultKind.NoApplicableMember:
                     next = next with { Candidates = Candidates(definition, current), Result = null, Candidate = null, Consented = false, DeclinedSpecial = false };
