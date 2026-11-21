@@ -94,7 +94,9 @@
     {"member": 10, "class": "BDBT"},
     {"member": 13, "class": "SNIP"},
     {"member": 18, "class": "SNIP"},
-    {"member": 8, "class": "BWNT"}
+    {"member": 8, "class": "BWNT"},
+    {"member": 1, "class": "VICR"},
+    {"member": 15, "class": "VICR"}
   ],
   "growthClasses": [
     {

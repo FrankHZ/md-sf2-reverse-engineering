@@ -117,6 +117,70 @@ public sealed class AuraHealingSessionTests
         Assert.InRange(aura.Reward!.Amount, 1, 25);
     }
 
+    [Theory]
+    [InlineData(1, 3, 18, 10)]
+    [InlineData(3, 10, 37, 10)]
+    [InlineData(4, 20, 590, 24)]
+    public void VicarHealUsesRawPowerBeforeMissingHpAndAwardsHealerExperience(
+        byte rank, byte cost, int recovery, int contribution)
+    {
+        var battle = VicarBattle();
+        var caster = battle.GetActor(Caster);
+        ActorRef target = new("f-far");
+        var destination = caster.Position!;
+        battle = battle.With(actors: battle.Actors.Select(a => a.Actor == target
+            ? a.With(position: new(destination.X, destination.Y + 1)) : a));
+        var patient = battle.GetActor(target);
+        var progression = new Sf2BattleProgressionRule();
+        var action = new Sf2HealingRule().Prepare(battle, Caster, destination, new("heal", rank), target, progression);
+
+        Assert.Equal(cost, action.Spell!.MpCost);
+        Assert.Equal(recovery, Assert.Single(action.Reactions).Amount);
+        Assert.Equal(contribution, Assert.Single(action.ConstructionEffects, e => e.Kind == "healing-exp-contribution").After);
+        var paid = action.ApplySpellCost(action.Prepared);
+        Assert.Equal(caster.Mp - cost, paid.GetActor(Caster).Mp);
+        var healed = action.ApplyReaction(paid, Assert.Single(action.Reactions));
+        Assert.Equal(patient.Hp + recovery, healed.GetActor(target).Hp);
+        var credited = action.CreditReward(healed, progression);
+        Assert.Equal(caster.Exp + action.Reward!.Amount, credited.Battle.GetActor(Caster).Exp);
+    }
+
+    [Fact]
+    public void VicarAuraUsesLegalCentersSourceOrderAndSharedExperienceCap()
+    {
+        var battle = VicarBattle();
+        var action = Prepare(battle, 1);
+        Assert.Equal(new[] { "a-edge", "b-center", "m-full", "z-priest" }, action.Reactions.Select(r => r.Target.Value));
+        Assert.Equal(new[] { 18, 10, 0, 18 }, action.Reactions.Select(r => r.Amount));
+        Assert.Equal(new long?[] { 10, 20, 25, 25 },
+            action.ConstructionEffects.Where(e => e.Kind == "healing-exp-contribution").Select(e => e.After));
+        Assert.Equal(7, action.Spell!.MpCost);
+        Assert.Throws<BattleRuleException>(() => Prepare(battle, 1, new("n-neutral")));
+    }
+
+    private static EngineBattleState VicarBattle()
+    {
+        var admitted = Admitted("aura-healing");
+        var original = admitted.Definition.Encounters.Values.Single();
+        HealingSpellDefinition[] heals =
+            [new(new("heal", 1), 3, 15, 0, 1), new(new("heal", 3), 10, 30, 0, 3), new(new("heal", 4), 20, 255, 0, 1)];
+        var deployments = original.Deployments.Select(row =>
+        {
+            if (row.Actor != Caster) return row;
+            var actor = row.Definition;
+            return row with
+            {
+                Definition = new(actor.Actor, BattleClassRule.Vicar, 13, actor.MaxHp, actor.MaxMp,
+                    actor.Attack, actor.Defense, actor.Agility, false, 5,
+                    heals.Select(heal => heal.Spell).Append(new("aura", 1)),
+                    new(PhysicalCriticalRule.BrassGunner, Promoted: true, Leader: false, Gold: 0), BattleMover.Healer),
+            };
+        });
+        var encounter = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height,
+            original.Terrain, deployments, original.Spells.Values.Concat(heals), original.Rewards, original.Initialization);
+        return BattleTurnFlow.Start(encounter, admitted.Start);
+    }
+
     [Fact]
     public void AuraWithBoundFairyUsesTheActualRecipientsInOrder()
     {

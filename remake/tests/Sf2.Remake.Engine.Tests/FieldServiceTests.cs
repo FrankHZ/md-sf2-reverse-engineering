@@ -26,6 +26,8 @@ public sealed class FieldServiceTests
             BattleClassRule.UnpromotedKnight => (1, 13, "KNTE", "PLDN", "Paladin", 7, "CENTAUR", 50, 118),
             BattleClassRule.UnpromotedWarrior => (2, 15, "WARR", "GLDT", "Gladiator", 5, "REGULAR", warriorAxe, 119),
             BattleClassRule.UnpromotedMage => (3, 17, "MAGE", "WIZ", "Wizard", 5, "MAGE", 85, 121),
+            BattleClassRule.UnpromotedPriest => (4, 19, "PRST", "VICR", "Vicar", 5, "HEALER",
+                (byte)(currentLevel >= 40 ? 86 : 89), null),
             BattleClassRule.UnpromotedArcher => (5, 21, "ACHR", "SNIP", "Sniper", 6, "ARCHER", 47, 120),
             BattleClassRule.UnpromotedBirdman => (6, 23, "BDMN", "BDBT", "BirdBattler", 6, "FLYING", 58, null),
             BattleClassRule.UnpromotedRanger => (8, 25, "RNGR", "BWNT", "BowKnight", 6, "CENTAUR_ARCHER", 47, null),
@@ -35,12 +37,14 @@ public sealed class FieldServiceTests
         byte[] book = sourceRule switch
         {
             BattleClassRule.UnpromotedMage => currentLevel >= 29 ? [139, 71, 6, 72] : [75, 76, 63, 63],
+            BattleClassRule.UnpromotedPriest => currentLevel >= 40 ? [192, 130, 206, 68] : [128, 142, 3, 63],
             BattleClassRule.UnpromotedSwordsman => currentLevel >= 22 ? [10, 13, 63, 63] : [10, 63, 63, 63],
             _ => [63, 63, 63, 63],
         };
         string SpellName(int id) => id switch
         {
-            6 => "dispel", 7 => "muddle", 8 => "desoul", 10 => "egress", 11 => "blaze", 12 => "freeze", _ => "bolt",
+            0 => "heal", 1 => "aura", 2 => "detox", 3 => "boost", 4 => "slow", 6 => "dispel",
+            7 => "muddle", 8 => "desoul", 10 => "egress", 11 => "blaze", 12 => "freeze", 14 => "blast", _ => "bolt",
         };
         var spells = book.Where(spell => spell != 63)
             .SelectMany(spell => Enumerable.Range(1, 1 + (spell >> 6))
@@ -77,10 +81,14 @@ public sealed class FieldServiceTests
                     [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + promotedCode, [baseCode, promotedCode], retainedRange, retainedRange, 0,
                         "WEAPON", "NOTHING", "NOTHING", 0, [new("INCREASE_ATT", attackBonus)])], [], [], []);
                 var stats = Enumerable.Repeat(new { start = 20, projected = 20, curve = System.Array.Empty<int>() }, 5);
+                var schedule = book.Where(packed => packed != 63)
+                    .Select(packed => new { packed, level = 22, spell = SpellName(packed & 63) });
+                if (sourceRule == BattleClassRule.UnpromotedPriest && currentLevel < 40)
+                    schedule = schedule.Append(new { packed = (byte)67, level = 30, spell = "boost" })
+                        .Append(new { packed = (byte)1, level = 33, spell = "aura" });
                 var rows = JsonSerializer.SerializeToElement(new[] { baseClass, destination }.Select(classId => new
                 {
-                    actor = First.Value, classId, stats, spells = book.Where(packed => packed != 63)
-                        .Select(packed => new { packed, level = 22, spell = SpellName(packed & 63) }),
+                    actor = First.Value, classId, stats, spells = schedule,
                 }));
                 deployments = BattleGrowthReader.Bind(rows, new ScenarioDefinition("promotion-test", [fixture], classDefinitions))
                     .Single().Deployments.Select(d => d.Actor != First ? d : d with
@@ -405,6 +413,48 @@ public sealed class FieldServiceTests
             Assert.Equal(maximum, range.MaximumRange);
             Assert.Equal(minimum == 1, BattleRange.Contains(new(5, 5), new(5, 6), range.MinimumRange, range.MaximumRange));
             Assert.Equal(maximum == 3, BattleRange.Contains(new(5, 5), new(6, 7), range.MinimumRange, range.MaximumRange));
+        }
+    }
+
+    [Theory]
+    [InlineData(40, 86, new byte[] { 192, 130, 206, 68 })]
+    [InlineData(28, 89, new byte[] { 128, 142, 3, 63 })]
+    public void VicarKeepsThePriestsCurrentBookAndLearnsFromTheMemberSchedule(byte level, byte rod, byte[] book)
+    {
+        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: true,
+            sourceRule: BattleClassRule.UnpromotedPriest);
+        var prior = Member(session, First);
+        Choose(session, ChurchAction.Promote);
+        var offer = Wait(session).Candidates!.Single(candidate => candidate.Member == First);
+        Accept(session, new SelectPromotion(Wait(session).Token, offer));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+
+        var member = Member(session, First);
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = 19, Level = 1, BaseMove = null } }, member);
+        Assert.Equal(book, member.Progress!.SourceLoadout!.Spells);
+        var deployment = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
+        Assert.Equal((BattleClassRule.Vicar, BattleMover.Healer, (byte)5),
+            (deployment.Definition.ClassRule, deployment.Definition.Mover, deployment.Definition.Move));
+        var actor = new BattleActorState(deployment, member.Hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
+        Assert.Equal(rod, BattleEquipment.EquippedWeaponItem(actor));
+        uint seed = session.Current.Exploration!.Party.MainSeed;
+        var grown = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(actor, 1, ref seed, []);
+        Assert.Equal(2, grown.Level);
+        Assert.Equal(book, grown.SourceLoadout!.Spells);
+
+        if (level == 28)
+        {
+            var beforeBoost = actor.With(progress: member.Progress with { Level = 9 });
+            var withBoost = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(beforeBoost, 1, ref seed, []);
+            Assert.Equal(10, withBoost.Level);
+            Assert.Equal(new byte[] { 128, 142, 67, 63 }, withBoost.SourceLoadout!.Spells);
+            var beforeAura = withBoost.With(exp: 99, progress: withBoost.Progress! with { Level = 12 });
+            var withAura = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(beforeAura, 1, ref seed, []);
+            Assert.Equal(13, withAura.Level);
+            Assert.Equal(new byte[] { 128, 142, 67, 1 }, withAura.SourceLoadout!.Spells);
+            Assert.Contains(new SpellRef("aura", 1), withAura.Spells);
         }
     }
 

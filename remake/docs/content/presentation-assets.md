@@ -222,6 +222,10 @@ $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 # Add the three SNIP/BWNT progressions and appearances to the registered melee package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family ranged `
     -Package "$progression/melee-v1" -Upstream $pinnedSource -Destination "$progression/ranged-$token"
+
+# Add the two VICR progressions and appearances to the registered ranged package.
+& $run -Repo $repo -Operation Mount -Library $runtime -Family vicar `
+    -Package "$progression/ranged-v1" -Upstream $pinnedSource -Destination "$progression/vicar-$token"
 ```
 
 Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
@@ -244,6 +248,10 @@ The ranged mount adds the prepared Elric, Janet and May bodies, walking sprites 
 growth. Items 45–50 select the promoted body animation with no independent weapon layer.
 This includes the retained arrows and promoted-only Robin Arrow, Assault Shell and Great Shot.
 [Ranged reproduction](../application/ordinary-promotion-classes.md#sniper-and-bow-knight-ordinary-reproduction)
+
+The Vicar mount adds the prepared Sarah and Karna walking sprites, bodies and growth.
+The existing rod/stick layers supply their attack, item and spell scenes. Ordinary
+healing and staff attack reused the mounted Battle26 resources. [Vicar reproduction](../application/ordinary-promotion-classes.md#vicar-ordinary-reproduction)
 
 Mount preserves the relative world, scene and entry dependencies, mounts any selected WAVs
 and publishes a fresh directory after checking closure. Select the result with the ordinary

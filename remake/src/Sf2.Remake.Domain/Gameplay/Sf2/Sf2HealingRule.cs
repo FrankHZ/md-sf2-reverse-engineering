@@ -26,7 +26,7 @@ internal sealed class Sf2HealingRule : IHealingRule
             PoisonCureRules.RequireUncursed(actor.Status, "actor.status");
         if (!spell.IsAura && spellRef.Level is < 1 or > 4)
             throw new BattleRuleException("healing-animation", "spell.level", true);
-        if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
+        if (actor.IsAlly ? !Sf2ClassRules.PlayerHealer(actor.Definition.ClassRule) :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
                 spellRef is not ({ Value: "heal", Level: >= 1 and <= 4 } or { Value: "aura", Level: 1 }) ||
                 !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
@@ -66,8 +66,9 @@ internal sealed class Sf2HealingRule : IHealingRule
         {
             if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal", PoisonCureRules.SpellMask(spellRef.Level));
             bool fullRecovery = spell.Targets == HealingTargets.AuraAllAllies || spell.Spell is { Value: "heal", Level: 4 } && spell.Power == 255;
-            // Authored healing supplies adjusted power; imported enemies carry the raw spell operand.
-            int power = fullRecovery ? target.MaxHp : actor.Deployment.SourceEnemy.HasValue ? actor.Definition.CastPower(spell.Power) : spell.Power;
+            // VICR and imported enemies use the raw source spell operand. Authored priest inputs supply adjusted power.
+            bool sourcePower = actor.Definition.ClassRule == BattleClassRule.Vicar || actor.Deployment.SourceEnemy.HasValue;
+            int power = fullRecovery ? target.MaxHp : sourcePower ? actor.Definition.CastPower(spell.Power) : spell.Power;
             int recovery = Math.Min(power, target.MaxHp - target.Hp);
             return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
                 (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);

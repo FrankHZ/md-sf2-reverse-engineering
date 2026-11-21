@@ -103,7 +103,7 @@ internal static class HealingTargetRules
         }
         if (definition.Deployments.Any(d => d.Definition.Spells.Any(s => definition.Spells.TryGetValue(s, out var spell) && spell.IsAura) &&
             (d.Faction == BattleFaction.Ally ? d.Control != BattleControl.Player || d.SourceAllyControl ||
-                d.Definition.ClassRule != BattleClassRule.UnpromotedPriest : d.SourceEnemy is null ||
+                !Sf2ClassRules.PlayerHealer(d.Definition.ClassRule) : d.SourceEnemy is null ||
                 d.Control != BattleControl.Automatic || d.Definition.ClassRule != BattleClassRule.Ordinary ||
                 d.Definition.Spells.Any(s => s.Value == "aura" && s.Level != 1))))
             throw new BattleRuleException("aura-caster", "placements", true);
