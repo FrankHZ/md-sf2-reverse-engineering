@@ -64,6 +64,23 @@ public sealed class TargetSelectionTests
     }
 
     [Theory]
+    [InlineData(BattleMover.Regular, 28, 10, 1)]
+    [InlineData(BattleMover.Flying, 11, 22, 0)]
+    [InlineData(BattleMover.Archer, 28, 2, 1)]
+    [InlineData(BattleMover.Mage, 6, 31, 0)]
+    public void PromotedMeleeTargetsUseTheAttackingMoversClassPriority(BattleMover mover,
+        int gladiatorRank, int birdBattlerRank, int selected)
+    {
+        var gladiator = Sf2ClassRules.SourceClass(BattleClassRule.Gladiator);
+        var birdBattler = Sf2ClassRules.SourceClass(BattleClassRule.BirdBattler);
+        var table = PhysicalTargetRules.Table(mover);
+        Assert.Equal(gladiatorRank, PhysicalTargetRules.ClassRank(gladiator, table));
+        Assert.Equal(birdBattlerRank, PhysicalTargetRules.ClassRank(birdBattler, table));
+        var choice = PhysicalTargetRules.Select([new(1, 16, gladiator), new(1, 16, birdBattler)], table);
+        Assert.Equal(selected, choice!.Value.Index);
+    }
+
+    [Theory]
     [InlineData(0, 5, 1, 19)]
     [InlineData(2, 5, 2, 15)]
     [InlineData(3, 5, 1, 13)]

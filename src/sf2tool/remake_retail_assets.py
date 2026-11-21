@@ -555,13 +555,13 @@ def main():
     parser.add_argument(
         "--family",
         action="append",
-        choices=(*FAMILIES, "pldn-party", "pldn-eric", "wiz", "all"),
+        choices=(*FAMILIES, "pldn-party", "pldn-eric", "wiz", "melee", "all"),
         required=True,
     )
     parser.add_argument("--command", type=int, action="append", default=[])
     args = parser.parse_args()
-    if "wiz" in args.family and not args.mount:
-        parser.error("wiz selects already prepared assets for --mount")
+    if {"wiz", "melee"}.intersection(args.family) and not args.mount:
+        parser.error("wiz and melee select already prepared assets for --mount")
     if args.coverage:
         if args.inventory is None:
             parser.error("coverage needs the base --inventory")

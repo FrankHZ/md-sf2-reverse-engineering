@@ -196,7 +196,7 @@ def mount_walking(directory: Path, world: dict, sprites: dict, selected) -> None
             raise ValueError(f"conflicting field sprite {sprite}")
 
 
-def wizard_scene_sequence(index: int, rows: list[list[int]]) -> dict:
+def prepared_ally_sequence(index: int, rows: list[list[int]]) -> dict:
     def signed(value):
         return value if value < 128 else value - 256
 
@@ -206,7 +206,7 @@ def wizard_scene_sequence(index: int, rows: list[list[int]]) -> dict:
     header, *frames = rows
     count, trigger, spell, terminate = header[:4]
     if count != len(frames):
-        raise ValueError("prepared wizard animation frame count differs")
+        raise ValueError("prepared ally animation frame count differs")
     return dict(
         index=index,
         trigger=trigger,
@@ -220,15 +220,27 @@ def wizard_scene_sequence(index: int, rows: list[list[int]]) -> dict:
     )
 
 
-def mount_wizards(library: Path, world: dict, scene: dict) -> dict[int, str]:
+def mount_retained_weapons(
+    library: Path, world: dict, scene: dict, promotions: dict[int, str]
+) -> None:
+    # These classes keep the mounted starter-family weapons. Each selected bank
+    # uses body colors 1 and 2 ($0EEE and $0000) shared by both class palettes.
+    rules = {
+        "WIZ": (17, {85, 86, 87, 89}),
+        "GLDT": (15, {33, 34, 35, 36}),
+        "BDBT": (23, {57, 58, 59, 71}),
+    }
     walking = read_json(library / "walking/index.json")["records"]
     variants = {
         row["member"]: row
         for row in walking["classes"]
-        if row["sourceClass"] == 17 and row["member"] in {4, 17}
+        if row["member"] in promotions and row["sourceClass"] == rules[promotions[row["member"]]][0]
     }
-    if variants.keys() != {4, 17}:
-        raise ValueError("prepared wizard appearances are incomplete")
+    if variants.keys() != promotions.keys():
+        raise ValueError("prepared promotion appearances are incomplete")
+    base_sprites = {
+        row["member"]: row["battleSprite"] for row in walking["classes"] if row["slot"] == 0
+    }
     mount_walking(
         library / "walking", world, walking["sprites"], [row["sprite"] for row in variants.values()]
     )
@@ -248,26 +260,43 @@ def mount_wizards(library: Path, world: dict, scene: dict) -> dict[int, str]:
             key = Path(path).with_suffix("").as_posix()
             raster = installed_png(directory, path)
             if scene["rasters"].setdefault(key, raster) != raster:
-                raise ValueError(f"conflicting prepared wizard body {key}")
+                raise ValueError(f"conflicting prepared promoted body {key}")
             frames.append(key)
 
-        # Cast and Use Item select the ordinary animation. Dodge selects the second bank.
-        attack = wizard_scene_sequence(sprite, animations[sprite])
-        dodge = wizard_scene_sequence(sprite + 40, animations[sprite + 40])
-        sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack, cast=attack)
-        # The admitted rods/sticks use body palette slots 1 and 2 plus their own colors.
-        # Both MAGE and WIZ palettes agree at those two slots. Reuse the mounted layers.
-        mage_rows = [
+        # Use Item selects the ordinary animation. Dodge selects the second bank.
+        attack = prepared_ally_sequence(sprite, animations[sprite])
+        dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40])
+        sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
+        class_code = promotions[member]
+        if class_code == "WIZ":
+            sequences["cast"] = attack
+        mounted_weapons = [
             row
             for row in scene["actors"]
             if row["side"] == "ally"
-            and row["sprite"] == 4
+            and row["sprite"] == base_sprites[member]
             and member in row.get("members", [])
             and row["item"] is not None
         ]
-        if {row["item"] for row in mage_rows} != {85, 86, 87, 89}:
-            raise ValueError("base package lacks the supported rod and stick layers")
-        for row in mage_rows:
+        if {row["item"] for row in mounted_weapons} != rules[class_code][1]:
+            raise ValueError(f"base package lacks the supported {class_code} weapon layers")
+        if class_code == "BDBT":
+            # Luke can equip his carried Broad Sword only after promotion.
+            broad_sword = next(
+                (
+                    row
+                    for row in scene["actors"]
+                    if row["side"] == "ally"
+                    and row["sprite"] == 24
+                    and row["item"] == 62
+                    and 0 in row.get("members", [])
+                ),
+                None,
+            )
+            if broad_sword is None:
+                raise ValueError("base package lacks the mounted Broad Sword layer")
+            mounted_weapons.append(broad_sword)
+        for row in mounted_weapons:
             appearance = dict(
                 side="ally",
                 sprite=sprite,
@@ -281,22 +310,35 @@ def mount_wizards(library: Path, world: dict, scene: dict) -> dict[int, str]:
             )
             if appearance not in scene["actors"]:
                 scene["actors"].append(appearance)
-    return dict.fromkeys(variants, "WIZ")
 
 
 def mount(root, base, destination, families, commands, *, upstream=None):
     """Mount first-consumer operands into a new closed package; needs no production inputs."""
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
-    selected = permitted | (set(families) & {"wiz"}) if "all" in families else set(families)
-    if "wiz" in selected and upstream is None:
-        raise ValueError("Mount -Family wiz requires the pinned -Upstream checkout")
+    retained_families = {
+        "wiz": {4: "WIZ", 17: "WIZ"},
+        "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
+    }
+    selected = (
+        permitted | (set(families) & retained_families.keys())
+        if "all" in families
+        else set(families)
+    )
+    retained_promotions = {
+        member: class_code
+        for family, variants in retained_families.items()
+        if family in selected
+        for member, class_code in variants.items()
+    }
+    if retained_promotions and upstream is None:
+        raise ValueError("Mount -Family wiz or melee requires the pinned -Upstream checkout")
     parts = (
         ("pldn-party", "pldn-eric")
         if "pldn" in selected
         else tuple(part for part in ("pldn-party", "pldn-eric") if part in selected)
     )
-    if not selected <= (permitted | {"pldn-party", "pldn-eric", "wiz"}):
-        raise ValueError("select walking, icons, sfx, music, pldn or wiz for this consumer")
+    if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
+        raise ValueError("select walking, icons, sfx, music, pldn, wiz or melee for this consumer")
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
         raise ValueError("select a fresh output outside input roots")
@@ -349,8 +391,9 @@ def mount(root, base, destination, families, commands, *, upstream=None):
                 promotions.update(dict.fromkeys(actor["members"], "PLDN"))
                 if actor not in scene["actors"]:
                     scene["actors"].append(actor)
-        if "wiz" in selected:
-            promotions.update(mount_wizards(root, world["world"], scene))
+        if retained_promotions:
+            mount_retained_weapons(root, world["world"], scene, retained_promotions)
+            promotions.update(retained_promotions)
         if upstream is not None and promotions:
             bind_ordinary_progression(world, upstream, promotions)
         for command in commands or (25, 87, 99):

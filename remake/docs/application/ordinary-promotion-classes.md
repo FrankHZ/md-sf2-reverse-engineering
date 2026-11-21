@@ -184,14 +184,18 @@ A palette or sprite match from another member is insufficient class admission.
 ### Admitted ordinary classes
 
 **Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
-Chester, Rick and Eric, and MAGE→WIZ for Kazin and Tyrin. The three knights have their own growth,
+Chester, Rick and Eric, MAGE→WIZ for Kazin and Tyrin, WARR→GLDT for Jaha and Randolf,
+and BDMN→BDBT for Luke. The three knights have their own growth,
 map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
 each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
 use map sprites 12/43 and Battle26 sprite 21 palettes 2/1. Each admits the four mounted
-rods/sticks. Unarmed projection uses the member's body with the weapon layer hidden. Earlier
-loaded encounters share the member bindings. Higins keeps starting PLDN palette 2 and Rohde
-keeps starting BRGN. Ordinary promoted Chester, Rick and Tyrin remain **Unknown**. The other
-destination pairs still need their own gameplay bindings and witnesses.
+rods/sticks. The two GLDT members use field sprites 9/40 and battle body 18 with palettes
+1/2. Luke uses field sprite 25 and battle body 14 palette 0. Their scenes admit the mounted
+axes or swords and Luke's newly legal Broad Sword. Unarmed projection uses the member's
+body with the weapon layer hidden. Earlier loaded encounters share the member bindings.
+Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
+Chester, Rick, Tyrin and Randolf remain **Unknown**. The other destination pairs still
+need their own gameplay bindings and witnesses.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -263,7 +267,8 @@ A candidate's presence in the package or an engine case is independent of ordina
 | --- | --- |
 | PLDN | English Eric covered special decline, fallen reserve promotion, Raise, Relief, both physical weapons and field/battle cold Continue. Chester level 1 was refused in Chinese. Rick is absent from the castle force lists and the registered Hassan/Battle17 journeys reach KNTE 19 and 10 EXP. Exact-level-20 native promotion remains **Unknown**. A separate Pacalon copy deposits the Wing before the ordinary offer. [PLDN reproduction](#pldn-ordinary-reproduction) |
 | WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. His promoted ordinary route remains **Unknown**. [WIZ reproduction](#wiz-ordinary-reproduction) |
-| GLDT, SNIP, BWNT, BDBT | Jaha WARR 21 (both), Elric ACHR 22 and Janet ACHR 26 (Chinese), May RNGR 21 and fallen (both), Luke BDMN 23 English or 22 Chinese and fallen (both). Play one repeat per coherent group with active or reserve Relief, checking each new pose and legal attack. Randolf's ordinary Creed choice supplies a legal alternate recruit. The promoted continuation remains **Unknown**. |
+| GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's ordinary promoted route and a native Warrior Pride fallback remain **Unknown**. [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
+| SNIP, BWNT | Elric ACHR 22 and Janet ACHR 26 (Chinese), May RNGR 21 and fallen (both). Use one bounded repeat for the ranged group, checking range, weapon layers, Relief if needed and cold Continue. Promoted continuation remains **Unknown**. |
 | VICR | Sarah PRST 40 in both castles and Karna PRST 28 in Chinese. Use one promoted HEAL witness with partial HP, a smaller learned rank and actual award, plus a legal field/book/cold round trip. Preserve the differing books with the same implementation. |
 | WFBR, PHNX | Chinese Gerhalt WFMN 29 and Peter PHNK 31 in both castles. Compare the reachable movement cost/land effect against the preceding class, then observe the unarmed action and return. |
 | NINJ, MNST | Both castles have Slade THIF 12 and Kiwi TORT 15. An eligible retained witness remains **Unknown**. Start from a lawful pre-Pacalon save with higher levels if one is registered. Otherwise try a bounded Battle26 repeat from a castle copy. Raise Slade, then earn ordinary EXP to 20. The seed deficits are about 760 and 490 EXP respectively. Measure EXP per action and turns on one repeat and agree a finite budget before training both. Keep the native row **Unknown** if the pilot cannot supply an eligible journey within budget. Engine cases at valid levels cover weapon/ring, the first learned rank, resistance and both conversion branches independently. |
@@ -381,3 +386,44 @@ The first native rod run reached an AI lookup error (`ai-target-class`). WIZ now
 source priority row. The next probe recorded a healing scene as a rod action. Its receipt is
 retained and the ordinary rerun identifies Kazin's committed strike and target. Successful
 native runs exited 0. Some reported ObjectDB teardown warnings. #1716 remains deferred.
+
+
+## Gladiator and Bird Battler ordinary reproduction
+
+Mount `melee-v1` from the registered `derived/issue1956/wiz-v1` and the prepared retail
+library at commit `52435b04f49a84a6a9ed4444620055a070648001`. The pinned source supplies
+the class and growth metadata. The closed package has 145 files and 294,525,207 bytes,
+an 83,431-byte increase. It adds nine prepared walking strips and 15 battle body frames.
+The 13 member/weapon rows reuse 36 distinct raster keys from the existing axe and sword
+layers, including Bowie's Broad Sword layer for Luke. Shared palette slots 1 and 2 were
+verified against the registered retail baseline. The same package serves both locales.
+[Mount command and private inputs](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+The source class, map sprite and battle appearance have separate lookups. GLDT is class 15
+with Regular MOV 5. BDBT is class 23 with Flying MOV 6. A rough tile with 15% land effect
+costs GLDT three half-move units and BDBT two. BDBT receives 0% land effect. The zero-based
+physical AI tie ranks for GLDT and BDBT are respectively 28/10 (Regular), 11/22 (Flying),
+28/2 (Archer) and 6/31 (Mage). The two GLDT members retain their distinct growth curves
+and all three keep empty spell books. [Class definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[Attack priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm) ·
+[Weapon eligibility](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm)
+
+Use the registered `derived/issue1956/melee-review/Boot.ps1` with an isolated checkout.
+Start the `jaha`, `luke`, `raise` and `road` modes in one journey from a copy of the
+English Pacalon castle slot. `road` cold-saves the field, exchanges Slade for Jaha and
+starts the supported Battle26 repeat. Fork the ready slot for `axe`, `sword`, `broad`
+and `bare`. Use `battle-cold` on the corresponding after-action slots. From the Broad
+Sword fork, run `egress` and `field-return-cold`. The private handoff gives the seed and
+receipt names.
+
+| Boundary | Observed result |
+| --- | --- |
+| Church and Raise | English Jaha WARR 21/88 became GLDT 1/0 in reserve. Active, fallen Luke BDMN 23/52 became BDBT 1/0 and stayed at 0 HP. The rites retained earned stats, packs and empty books. Declining Raise preserved Luke's HP and gold. Paying 210 gold gave Luke 40 HP and left 5,317 gold. The separate Chinese Jaha rite played the same finite cue and restored the Castle music. |
+| Relief and axe | Caravan Relief exchanged Slade for Jaha. In Battle26, Jaha projected field sprite 9 and battle body 18 palette 1. Equipping the carried Power Ring kept Short Axe equipped. The one-cell axe hit dealt 2 HP to the Lesser Demon and returned to Movement. |
+| Sword and Unarmed | Luke projected Flying MOV 6, field sprite 25 and battle body 14 palette 0. Separate adjacent attacks against the Lesser Demon used Middle Sword for 1 HP and Broad Sword for 13 HP. The Broad Sword fork equipped the carried sword after promotion and kept Middle Sword in the pack. A separate input selected Unarmed and kept both swords carried with no weapon layer. |
+| Persistence and return | The complete decoded battle v4 data matched at the ready and post-action cold checkpoints for the axe, both swords and Unarmed. Field v3 cold saves advanced only ambient field state and the main seed. Bowie used EGRESS from the Broad Sword fork and returned to Map36. Fresh Continue displayed both promoted classes and preserved the two packs and Luke's 16 EXP. |
+
+Controlled cases check the different terrain responses, weapon and ring contributions and
+the decline of a Warrior Pride held by another member. The registered Pacalon copies lack
+Warrior Pride. No ordinary promoted Randolf or native Warrior Pride fallback is claimed.
+Some successful Godot exits emitted ObjectDB warnings. #1716 remains deferred.

@@ -164,6 +164,8 @@ and the chapter consumers supply the class and effect definitions below.
   [Ordinary Use and cold Continue](../domain/recovery-items-design.md#ordinary-input-observations)
 - **Ordinary weapons** follow the class- and loadout-specific Equip rules. This covers
   the Battle21 Broad Sword receipt (bit 7, Luke observed, full recipient loses the common drop).
+  After BDMN→BDBT, Luke equipped his carried Broad Sword, attacked in Battle26 and kept it
+  equipped through cold Continue and EGRESS. [Ordinary melee promotion](../application/ordinary-promotion-classes.md#gladiator-and-bird-battler-ordinary-reproduction)
   Original Battle14 has a Power Stick row (bit 5), but the base Master Mage holds an Iron Rod
   and the current encounter has no matching drop binding. Map62 Search grants Steel Sword with F150.
   The equipped attack bonus remains subject to the existing class and Equip rules.
