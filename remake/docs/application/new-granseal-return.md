@@ -96,9 +96,8 @@ The current observations cover inventor, the F802 item shop, town route conversa
 royal callers. Existing Church, weapon shop and Search engines are reused. Other resident talks,
 weapon-counter transactions, church services and every optional Search are statically admitted but
 not all naturally observed here. Earlier mine optional1705–1710 limits remain unchanged. The castle headquarters warp at (19,2)
-retains its existing explicit unavailable frontier to the Tactical Base, tracked by the bounded
-[investigation/design Issue1898](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1898).
-It is not claimed as a playable optional destination by this return slice.
+still stops at an unavailable destination. The [Tactical Base visit design](tactical-base-design.md)
+owns the source route, missing bindings and proposed optional visit and return.
 
 Janet's actual ACHR sprite12 uses palette0; Elric's existing archer binding is not a substitute.
 Maintained ROM/source preparation generates her weapon45/46/47 bodies and field sprite45, mounted
