@@ -530,13 +530,13 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 Require(draw.Kind == kind && draw.Actor == actor && draw.Target == target.Actor && draw.RandomRange == 8 && draw.RandomValue.HasValue);
                 return draw.RandomValue!.Value;
             }
-            bool success = spell.Resolve(target, Roll, out var word);
-            if (word.HasValue) writes.Add(target.Actor, word.Value);
+            var (reactionWord, constructionWord) = spell.Resolve(target, Roll);
+            if (constructionWord.HasValue) writes.Add(target.Actor, constructionWord.Value);
             Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == (EquipmentUse is null ? "support-spell" : "item-use") &&
-                reaction.Kind == (success ? BattleReactionKind.Status : BattleReactionKind.Ineffective) &&
+                reaction.Kind == (reactionWord.HasValue ? BattleReactionKind.Status : BattleReactionKind.Ineffective) &&
                 reaction.HpBefore == target.Hp && reaction.HpAfter == target.Hp && reaction.MpBefore == target.Mp &&
                 reaction.MpAfter == target.Mp && !reaction.Critical && reaction.Amount == 0 &&
-                reaction.StatusWrite == (success ? word ?? (ushort)(target.Status | SilenceRules.Mask) : (ushort?)null) &&
+                reaction.StatusWrite == reactionWord &&
                 reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
         EngineBattleState? inventory = null;

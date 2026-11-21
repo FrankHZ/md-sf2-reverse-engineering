@@ -77,10 +77,11 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
                 effects.Add(new(kind, actor, draw.Before, draw.After, 8, draw.Value, target.Actor));
                 return draw.Value;
             }
-            bool success = spell.Resolve(target, Roll, out var word);
-            if (word.HasValue) writes.Add(target.Actor, word.Value);
-            reactions.Add(new(actor, target.Actor, item is null ? "support-spell" : "item-use", success ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
-                target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: success ? word ?? (ushort)(target.Status | SilenceRules.Mask) : null));
+            var (reactionWord, constructionWord) = spell.Resolve(target, Roll);
+            if (constructionWord.HasValue) writes.Add(target.Actor, constructionWord.Value);
+            reactions.Add(new(actor, target.Actor, item is null ? "support-spell" : "item-use",
+                reactionWord.HasValue ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
+                target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: reactionWord));
         }
         var caster = battle.GetActor(actor);
         var prepared = battle.With(actors: battle.Actors.Select(a =>

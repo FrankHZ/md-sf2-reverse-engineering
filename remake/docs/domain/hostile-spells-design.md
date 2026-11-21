@@ -177,15 +177,42 @@ The first victory can hand off Higins; a completed repeat follows its establishe
 Use the same outcome and field return for damage kills and spell kills. [Battle26 cleanup and return](../../../docs/research/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md) ·
 [Source death accounting][deaths] · [Remake Battle26 return](../application/battle26-higins.md)
 
+## SLEEP 1 implementation and evidence
+
+**Confirmed** in the remake engine. A learned SLEEP 1 uses Support Magic with the existing area
+selector, reaction refresh, silence, EXP and sleep turn flow. An authored level-25 mage reaches
+the action through normal engine commands. The case observes cancel, a paid cast, a successful
+reaction and the enemy's later skipped entry and wake. Controlled targets cover the four STATUS
+settings, a successful reapplication at the same count and a partial-count refill. The existing
+sleep-consuming physical tests cover dodge, counter and ordinary hit behavior. A separate
+settled battle wire round trip restores an active sleep count and matches the next queue and
+RNG results. [Learned spell and save cases](../../tests/Sf2.Remake.Engine.Tests/SleepSpellTests.cs) ·
+[Existing sleep behavior](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs)
+
+**Confirmed** for the current implementation boundary. SLEEP 1 is available in controlled
+authored scenarios. The generic support scene shows the sleep result once per successful
+target. Private campaign binding remains pending in #1967. The registered issue1966 package
+supplies the source row and sleep texts 306/338/354. Its encounter scenes lack both SLEEP
+menu icon variants, and the issue1941 Chinese catalog lacks the spell ID 9 name. Asset
+preparation belongs to [#2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001).
+Tyrin's ordinary learn-and-cast and native Continue after a spell-inflicted sleep remain **Unknown**.
+[Current private spell bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
+
+**Confirmed** ordinary compatibility on the unchanged published issue1966 zh-CN-learned01
+Battle26 slot. A disposable copy cold-continued in English with the registered issue1966 world
+and issue1941 catalogs. At round 6, Janet's Movement was usable, re-save advanced the sequence
+7→8 with identical decoded battle data, and Stay returned to Karna's Movement. The seed had
+zero active sleep counts. The tracked [Save observer](../../game/probes/engine_battle_save_observation.gd)
+ran with SF2_SAVE_CASE=shape using the Pacalon player-config inputs and issue1955 English settings
+under the [native save procedure](../verification/battle-save.md#method-and-reproduction).
+One 42,030-byte input slot and about 1.6 MB of state/input/projection receipts sufficed.
+Godot exited 0 with an ObjectDB shutdown warning. Historical Battle03 physical sleep separately
+observed a skipped turn and restored ordinary control. [Existing physical-sleep run](../verification/field-programs.md)
+
 ## Implementation order and ownership
 
-**Confirmed** in the current remake. Kazin's learned MUDDLE and DESOUL ranks can be retained
-without an action binding. The existing support bindings include DISPEL, BOOST and SLOW, and the
-attack bindings use elemental damage rules. The physical sleep lifecycle already exists through
-battle input and after-turn. None of these grants SLEEP 1 to a learned Magic command.
-[Current support binding](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs) ·
-[Current attack binding](../../src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs) ·
-[Existing sleep behavior](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs)
+Kazin's learned MUDDLE and DESOUL ranks can be retained without an action binding. Their
+implementation stages remain open. [Current attack binding](../../src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs)
 
 Use the finite effects on the existing learned-spell entries. Putting all three families on
 the damage path would conflate status EXP and instant death with modified damage. A parallel
@@ -195,17 +222,16 @@ existing rules and source-specific result operands. Keep class/learned-rank data
 and selection in the session. A binding only becomes available when both its effect and
 required consumers are admitted.
 
-1. **SLEEP and shared status admission.** Add one finite support effect in
+1. **SLEEP and shared status admission.** The finite support effect uses
    [SupportSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SupportSpellDefinition.cs),
    [Sf2SupportSpellAction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) and
-   [PrivateSupportSpellBindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs).
-   Reuse the shared Magic selection, silence and area handling. Make validation in
-   [BattleActionResolution](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
-   distinguish success, a successful repeat and ineffective feedback. Route the existing sleep
-   state through [SleepTurnRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SleepTurnRules.cs),
-   action/physical eligibility and [BattleAfterTurnContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs).
-   Compose the neutral-center and award changes with the DETOX owner. Verify current action
-   readers accept the legal stored word even when targeting a sleeping actor.
+   [AuthoredScenarioPackageReader](../../src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs).
+   It reuses the shared Magic selection, silence, area handling and DETOX's target-side award
+   rule. [BattleActionResolution](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
+   checks the ordered draws and reaction words. [SleepTurnRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SleepTurnRules.cs)
+   and [BattleAfterTurnContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs)
+   consume the same word for spell and physical sleep. After #2001 supplies the presentation
+   inputs, #1967 owns explicit private rank binding and ordinary acceptance.
 2. **DESOUL 1 then 2.** Consume the accepted [#1944 attack and item split](offensive-items-design.md).
    Keep instant death on the learned spell path and preserve elemental attack-item resolution.
    Extend [AttackSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs),
@@ -322,8 +348,8 @@ original captures, video, screenshots or frame traces. Observe the selected rank
 outcomes and errors from ordinary input at settled boundaries. If a rehearsed suffix requires
 a campaign replay, a search for favorable seeds or a new resource export, report the missing
 witness and its specific dependency before expanding the run. Any normal shutdown failure is
-a completed process result separate from observed save and return. No runtime was acquired
-for this design. [Existing package and observation budget](detox-ranks-design.md#acceptance-and-input-budget)
+a completed process result separate from observed save and return. The source design used
+static evidence and existing controlled runs. [Existing package and observation budget](detox-ranks-design.md#acceptance-and-input-budget)
 
 ## Evidence reproduction
 

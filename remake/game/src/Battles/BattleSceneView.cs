@@ -591,6 +591,8 @@ internal sealed partial class BattleSceneView : Control
                 "item-use" => LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(state.Item!.ItemId, state.Item.Name)),
                 "prism-laser" => LocalizedMessage("battle.scene.prism", ActorName(state.Actor)), _ => null,
             },
+            BattleScenePhase.ResultMessage when state.SupportSpell?.Spell.Value == "sleep" && state.ReactionKind == "Status" =>
+                LocalizedMessage("battle.scene.sleep", Target()),
             BattleScenePhase.ResultMessage when state.SupportSpell?.ChangesStats == true && state.ReactionKind == "Status" =>
                 LocalizedMessage(state.RaisesAttack ? "battle.scene.att-up" : state.FriendlySupport ? "battle.scene.agi-up" : "battle.scene.agi-down", Target(), state.SupportStatAmount),
             BattleScenePhase.SupportDefenseMessage =>
