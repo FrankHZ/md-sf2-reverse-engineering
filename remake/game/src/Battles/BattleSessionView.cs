@@ -134,6 +134,13 @@ public sealed partial class BattleSessionView : Control
         }
     }
 
+    internal void RefreshSettingsProjection()
+    {
+        // Inspection already refreshes through RefreshInputHints; Present would
+        // expose the covered battle command menu. Other views keep their wait tokens.
+        if (_result is not null && _startupFailure is null && !_inspection.Active) Present();
+    }
+
     public override void _EnterTree()
     {
         GetViewport().SizeChanged += Arrange;

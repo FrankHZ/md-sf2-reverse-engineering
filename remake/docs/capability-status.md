@@ -1197,13 +1197,20 @@ English/Chinese UI and installed-key-map acceptance; it is not a private source-
 
 ## Battle Speed and selective messages
 
+**Implemented [#2017](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2017):**
+the battle system Menu opens shared Settings and Help. Apply and Cancel return to Menu over the
+same selection or pending battle cue. Language and binding changes refresh the present battle UI.
+Graphics and guidance retain their exploration scope. Debug auto-win can act once resumed play
+admits it. [Setting effects](godot/host-ui.md#settings-from-the-battle-system-menu) ·
+[Native observation](verification/host.md#battle-system-settings-observation).
+
 **Implemented, bounded [#1650](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1650):**
 settled inspection empty-ground Options → Speed uses the existing host transaction/persistence,
 B rollback and A/C acceptance for speed and ordinary hit/coin display. Explicit modern presets0–3
 map to15/30/60 cps/instant; custom cps remains untouched until selected. Only ordinary noncritical
 physical damage text and coin text are optional; actual tokens still cross normal continuation.
-EXP/growth/items/status/story and all unmapped messages remain required. General battle Settings
-and Shift acceleration are not admitted. [Detailed owner](godot/presentation.md#battle-speed-and-selective-messages-1650),
+EXP/growth/items/status/story and all unmapped messages remain required. Shift acceleration stays
+separate from the reading speed. [Detailed owner](godot/presentation.md#battle-speed-and-selective-messages-1650),
 [message policy](godot/battle-scenes.md#selective-hitcoin-message-delivery-1650).
 
 Actual English/default and Chinese/remapped native input covers draft/return/focus, physical preference

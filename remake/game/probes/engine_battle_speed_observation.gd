@@ -21,7 +21,9 @@ func open_speed() -> bool:
         if not await cursor_to(3,2): return false
         await act("confirm")
     if not await inspect_page("Options"): return false
-    await act("right")
+    for step in range(4):
+        if state().inspection.optionIndex == 2: break
+        await act("down")
     await send_action("confirm",true); await frames(4)
     if not check(settings() != null and settings_state().battleOnly, "Speed opens the two-setting host draft"): return false
     await send_action("confirm",false)
@@ -106,7 +108,7 @@ func fight() -> bool:
                 var before := signature(s)
                 await act("menu")
                 var generic := host.find_child("SystemSettings",true,false)
-                if not check(generic != null and generic.disabled, "General Settings remains disabled during battle"): return false
+                if not check(generic != null and not generic.disabled, "Battle playback offers general Settings"): return false
                 await frames(8)
                 if not check(signature(state()) == before, "Host Menu pauses pending scene without RNG or token advance"): return false
                 await act("cancel")

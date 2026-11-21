@@ -33,8 +33,10 @@ Left/Right and the mouse wheel read long reasons without activating unavailable 
 Settings opens a 960px capped panel with four categories: Display & text, Gameplay aids,
 Controls, and Debug & diagnostics. Apply and Back/Close are the only top-level actions.
 Enter a category to edit values; Back restores its launching row and scroll. Left/Right changes
-a value or scrolls the reading area. Technical statistics appear only on the Debug page when
-enabled. Controls → Change controls and Controls → Help share the Settings draft. Help reads
+a value or scrolls the choices. A fixed-height area below the choices holds descriptions, errors
+and technical statistics. Use the displayed Read details binding or wheel over that area when
+text overflows. Reading details keeps the choice focus, scroll and action positions. Statistics
+appear on the Debug page when enabled. Controls → Change controls and Controls → Help share the Settings draft. Help reads
 installed bindings; only Apply publishes edits. See [changing controls](input-remapping.md)
 for capture, review, reset and refusal behavior. Battle Speed remains a separate two-row caller.
 
@@ -72,8 +74,8 @@ finished animation never establishes save eligibility.
 | Settled walking field, no Party/service/story owner | Preferences and help available. | Only an admitted finite recipe after stable player/followers, story, display and music checks. |
 | Moving field/followers | The existing menu-entry settlement runs first; no new timeout or settlement rule. | The same bounded settlement may admit Save; failure keeps its reason and no queued write. |
 | Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Busy state or missing recipe refuses Save. Church's explicit Save caller retains its own completed-parent return. |
-| Battle01–07 settled player Movement at the saved actor's origin | General Settings is unavailable. The separate settled inspection Options → Speed caller retains its existing two-row/read-only behavior. | Existing new-game provenance, encounter/return route, actor/queue, story and music predicates must all pass. |
-| Nonzero movement preview, movement delivery, ActionChoice, lists/targets, confirmations, action playback, enemy/round/outcome work | General Settings remains unavailable, with its existing reason. | Refused with the owning preview, selection, movement, story or busy reason. Resume does not undo or commit the retained choice. |
+| Battle01–07 settled player Movement at the saved actor's origin | Menu opens the shared Settings and Help. Settled inspection Options → Speed also keeps its two-row shortcut. | Existing new-game provenance, encounter/return route, actor/queue, story and music predicates must all pass. |
+| Nonzero movement preview, movement delivery, ActionChoice, lists/targets, confirmations, action playback, enemy/round/outcome work | Menu opens shared Settings while the battle presenter owns play. | Refused with the owning preview, selection, movement, story or busy reason. Resume does not undo or commit the retained choice. |
 | Unsupported/diagnostic start or field without a save recipe | Safe field preferences may still be available. | Existing profile/route/location refusal remains explicit. A controlled direct-battle start is not an ordinary saveable journey. |
 | Undersized client | Only restore/fullscreen/quit recovery owns input. | No automatic save; Cancel from Quit returns to recovery or the retained page after a supported resize. |
 
@@ -82,6 +84,27 @@ Battle07 `battle07-return` Map58 anchor, according to current content/persistenc
 First Map14 control is inside the [campaign demo frontier](../application/pre-voyage-campaign.md),
 not an added field-save recipe. Inspection remains read-only; explicit Save alone consumes the
 existing live music/capture path. Gameplay/progress never stores preferences.
+
+## Settings from the battle system Menu
+
+The battle view stays paused while Menu, Settings or Help owns input. Cancel discards the draft.
+Apply publishes the prepared preferences and returns to the same Settings row in Menu. Resume
+keeps the current battle phase, actor and candidate. Release held controls before using them in battle.
+Field-owned story and battle entry follow the existing field admission. The dedicated inspection
+Options → Speed shortcut keeps its own return to Options.
+
+| Setting | Effect after Apply during battle |
+| --- | --- |
+| Language | Refreshes the Menu, command and inspection projections and the current close-up message. Result lines already opened by Give, Discard, Search or Retreat keep their text until that line closes. Subsequent lines use the applied language where translated content exists. |
+| Text mode and speed | The display mode is chosen when a line opens. The new rate applies when gradual text resumes. Existing acknowledgement and presentation tokens stay in place. |
+| Reduced flash | Current battle presenters read the applied preference when projecting the selection or delivering cues. |
+| Help, controls and Confirm/Cancel convention | Help shows installed bindings. Apply switches bindings and refreshes hints. The activating input is consumed through its release, including when it no longer matches the installed map. |
+| Graphics and modern guidance | Apply saves these preferences for their exploration consumers. The Graphics row explains its field coverage. Battle artwork keeps its existing assets. |
+| Debug | Diagnostics follow the applied preference. Auto-win can act once play resumes and the existing player Movement rule admits it. The row explains this before Apply. |
+
+The existing read-only launch override supports viewing preferences and Help. The
+[native recipe](../verification/host.md#battle-system-settings-observation) uses an authored
+battle through the ordinary Godot host.
 
 ## Slot recovery and overwrite at 1080p
 
