@@ -1,6 +1,6 @@
 # Offensive consumables in battle
 
-**Proposed for [#1944](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1944).**
+**Implemented for [#1944](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1944).**
 Standard rigor applies because one action crosses battle selection, effect construction, custody,
 presentation and Continue. The player selects and consumes a held Shining Ball or Blizzard to
 damage an eligible enemy and returns to ordinary battle control. This design covers the connected
@@ -106,7 +106,9 @@ two items remain **Unknown**.
 [Save layout](../../../docs/design/contracts/system/save-system.md#confirmed-static-contract) ·
 [Battle resume boundary](../../../docs/design/contracts/battle/battle-control-lifecycle.md#resumed-battle)
 
-## Proposed remake boundary
+<a id="proposed-remake-boundary"></a>
+
+## Remake item action
 
 Keep `SelectItem(slot)` and the Item action through selection and validation. Bind a typed
 battle attack item to its item identity, display name and an existing `AttackSpellDefinition`
@@ -153,19 +155,18 @@ equipment with no consumption.
   [Settled Save](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleSave.cs) ·
   [Battle save wire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs)
 
-### Implementation handoff
+### Implementation owners
 
-These are proposed paths for the implementation slice after #1946 hands back the shared
-battle surfaces. The implementation owner should recheck the accepted ring landing path and
-declare ownership on that baseline.
+Item targeting and mutation use the accepted ring landing path. The existing movement
+confirmation and save formats carry the resulting state.
 
-| Responsibility | Exact candidate files |
+| Responsibility | Implementation surfaces |
 | --- | --- |
-| Definition and admission | [EngineBattleState.cs](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) for the item definition and registry, including definition copies. [IBattleActionRule.cs](../../src/Sf2.Remake.Domain/Battles/Rules/IBattleActionRule.cs), [Sf2ItemAction.cs](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) and [BattleChoices.cs](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) for the bounded Item admission, enemy choices and range. [BattleCommandDispatcher.cs](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) supplies the confirmed-stop and expected-word path. Change it only if the accepted path fails to cover Item. |
+| Definition and admission | [EngineBattleState.cs](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs) for the item definition and registry, including definition copies. [IBattleActionRule.cs](../../src/Sf2.Remake.Domain/Battles/Rules/IBattleActionRule.cs), [Sf2ItemAction.cs](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) and [BattleChoices.cs](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) for the bounded Item admission, enemy choices and range. [BattleCommandDispatcher.cs](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) supplies the confirmed-stop and expected-word path. |
 | Damage and inventory | [Sf2AttackSpellAction.cs](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) and [AttackSpellDefinition.cs](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs) for shared attack resolution and the item-only supported effect shape. [BattleActionResolution.cs](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) for validated origin, drop then removal, and the scene handoff. Pass the existing attack-damage reward kind to [Sf2BattleProgressionRule.cs](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2BattleProgressionRule.cs). |
 | Source binding | [PrivateBattleDefinitionReader.cs](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleDefinitionReader.cs) selects the two usable rows and their spell rows before building per-encounter definitions, including where the item is only carried in a predecessor or old save. [PrivateBattleActionBindings.cs](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs) validates the two item/effect joins and emits typed definitions. [PrivateBattleScenarioReader.cs](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleScenarioReader.cs) attaches them. The existing static-data input contains both rows and linked spell definitions. |
-| Scene and player projection | [BattleSceneContinuation.cs](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs) projects the resolved item and skips Magic cost. [BattleSceneView.cs](../../game/src/Battles/BattleSceneView.cs) uses the item gesture and localized identity and routes damage reactions. [BattleCommandMenu.cs](../../game/src/Battles/BattleCommandMenu.cs) and [BattleActionRangeView.cs](../../game/src/Battles/BattleActionRangeView.cs) are the existing input/range consumers. Change them only if the ordinary Item projection needs it. |
-| Behavior and documentation | Extend [AttackSpellSessionTests.cs](../../tests/Sf2.Remake.Engine.Tests/AttackSpellSessionTests.cs) where its setup fits, or use a focused `AttackItemSessionTests.cs` in the same project. Update this design, [gameplay rules](gameplay-rules.md), the affected [item rows](../content/campaign-items.md#special-equipment-and-attack-items), [Battle24 owner](../application/battle24-north-parmecia.md#observed-remake-play) and [campaign feature trace](../capability-status.md#campaign-feature-trace) with accepted results. |
+| Scene and player projection | [BattleSceneContinuation.cs](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs) projects the resolved item and skips Magic cost. [BattleSceneView.cs](../../game/src/Battles/BattleSceneView.cs) uses the item gesture and localized identity and routes damage reactions. [BattleCommandMenu.cs](../../game/src/Battles/BattleCommandMenu.cs) and [BattleActionRangeView.cs](../../game/src/Battles/BattleActionRangeView.cs) are the existing input/range consumers. |
+| Engine behavior | [AttackItemSessionTests.cs](../../tests/Sf2.Remake.Engine.Tests/AttackItemSessionTests.cs) covers Item-origin damage and EXP, refresh, the exact slot and ordered custody through actual session commands. |
 
 ## Retained acquisition and ordinary acceptance
 
@@ -201,41 +202,76 @@ Map38's later chest is outside the current campaign. The ordinary original acqui
 action remain **Unknown**.
 [Selected drop predicates](../../../docs/research/chapters/northern-travel-mitula/battle24-initialization-and-first-control.md#equipment-masked-items-and-independent-drops)
 
-1. Prefer the existing `handoffs/issue1955/receipts/zh-CN-road01/battle-ready-slot.json`.
-   This ordinary Battle26 Movement save has both holders alive and deployed. Peter has Ball in
-   slot 0 and 0 MP. Kazin has Blizzard in slot 2. It retains once bits 6 and 9. The
-   corresponding `en-road01/battle-ready-slot.json` has a living Peter with Blizzard in slot 0
-   and 0 MP. Use separate disposable copies from the shared root and the accepted
-   `issue1966/content/package` and `issue1941/content/catalog-final`. The on-disk inputs establish
-   custody and eligibility. The first legal approach on each actor's turn still needs observation.
-   [Registered setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup) ·
-   [Battle26 seed producer](support-spell-status-design.md#battle26-ordinary-input-and-reproduction)
-2. In one short Chinese journey, drive ordinary movement and Item on the two holders as they
-   reach a legal neighboring enemy. On Ball, Back from target choice, then reselect the same
-   slot and confirm. Capture cancel and commit results, localized item identity, cardinal range,
-   actor gesture, target damage, MP, EXP and exact pack change. Check ordinary next control
-   and Save/cold Continue after use. In English, use the retained Peter Blizzard seed for the
-   same item-name and control seam if needed to cover both catalogs through ordinary input.
-   Read live state, input, projection and errors through the existing observer with no screenshots.
-   Compare a settled re-save's gameplay data and accept the next normal command. Record any
-   completed exit failure with its process result and the independently observed save outcome.
-3. Use small engine cases for the expensive counterexamples. Check both item/element bindings
-   with a seeded critical/variance result, promotion without power scaling and damage EXP with
-   the effective level, and an active silenced zero-MP holder without a book. Check wrong
-   faction and diagonal/range/dead/neutral targets or a stale expected word for no mutation.
-   A duplicate in a non-selected slot and a qualifying kill with a full pack test selection and
-   drop-before-removal. For example, a Ball hit on a Fire-weak target uses power 20,
-   rises to 30 on a critical and deals 26 with variance draws 1 and 3 from range 4.
-   Against max HP 50 and a kill bracket of 40, that contributes 20 damage EXP.
-   Exercise the confirmed-stop contract with reduced MOV after equipment
-   change using the accepted ring owner. A lethal and nonlethal hit can share these cases.
-   Retain existing Magic, Taros, retreat and healing admission. Run the scoped engine and
-   adapter checks, the clean-head plan and actual applicable CI before implementation handoff.
+## Ordinary remake observations
 
-Reuse the measured 101,835,469-byte world and its existing media, name catalog and pinned static
-input. Expected generated world/media delta is zero bytes. The named field inputs are about
-6–9 KB each and battle starts about 42 KB each. Budget a few disposable input/output saves and
-a bounded handful of state/input/presentation receipts, about 1 MiB total apart from the normal
-incremental adapter build/import. Reassess if the shared scene cannot supply the existing item
-gesture or if the bounded ordinary turns fail to reach a useful target. A full chapter replay
-or a new extraction platform is outside this design.
+**Confirmed.** The Chinese journey started at Battle26 Movement from the retained `zh-CN-road01`
+slot. Peter canceled Shining Ball's target selection, then reselected the same slot through the
+Item menu. Back preserved the holder, live board, pack and both RNG streams. Each successful
+action targeted an adjacent enemy and published one consumption receipt. The Chinese journey
+used both items in one battle. The English seed supplied a separate Blizzard item presentation.
+
+| Language and holder | Item and zero-based slot | Target HP | Holder MP and EXP | Pack after use | Next player |
+| --- | --- | --- | --- | --- | --- |
+| Chinese Peter | Shining Ball, slot 0 | enemy-14, 38 → 20 | MP 0 → 0, EXP 3 → 4 | `[0,0,127,127]` | ally-18, round 1 |
+| Chinese Kazin | Blizzard, slot 2 | enemy-12, 40 → 12 | MP 55 → 55, EXP 5 → 6 | `[213,0,0,127]` | ally-9, round 2 |
+| English Peter | Blizzard, slot 0 | enemy-12, 40 → 10 | MP 0 → 0, EXP 29 → 30 | `[0,0,0,127]` | Bowie, round 1 |
+
+The projected action and damage messages used each language's item name. The actor played its
+item gesture, with item animation indexes 7 for Peter and 4 for Kazin in these scenes.
+The spell overlay selector was 0 and the damage scene had no MP payment phase.
+
+Save at the next battle Movement, then use Bowie's paid EGRESS from that journey to return to
+Map36 and save again. With the entire producing `local/` moved aside, fresh title Continue
+and immediate Save produced equal complete decoded `data` in battle (sequence 7 → 8) and
+field (8 → 9). The next input opened ally-9's Action Choice and moved the field party from
+(40,5) to (39,5). Both cold processes and the Chinese producer exited 0. The English producer
+completed Use, next control and Save before finalization exited with `0xC0000005`.
+The Chinese producer and cold battle emitted ObjectDB shutdown warnings.
+[Paused shutdown follow-up #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+### Reproduce with the retained inputs
+
+Restore the registered configuration into the owning checkout and use its existing Debug
+adapter. The local handoff scripts are under `LocalApplicationData/Sf2OffensiveReview/issue1944/driver`.
+Copy those scripts into the ignored `local/issue1944` directory. They reuse the registered
+Pacalon title, movement and Save driver, the unchanged `issue1966/content/package` and the
+`issue1941/content/catalog-final` display names. Each sample writes a new disposable player
+namespace and records live input, state, projection and errors.
+[Fresh worktree configuration](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup) ·
+[Registered Pacalon inputs](../application/pacalon-first-visit.md#continue-after-worktree-cleanup)
+
+```powershell
+$operator = [Environment]::GetFolderPath('LocalApplicationData')
+$review = Join-Path $operator 'Sf2OffensiveReview/issue1944'
+$sample = 'offensive-' + [guid]::NewGuid().ToString('N').Substring(0,8)
+pwsh -NoProfile -File ./local/issue1944/Play.ps1 -Mode attack-items -Language zh-CN -Sample $sample
+$journey = Join-Path $review $sample
+$battle = Join-Path $journey 'battle-after-use.json'
+$field = Join-Path $journey 'offensive-review/sf2-opening/slot1.json'
+pwsh -NoProfile -File ./local/issue1944/Play.ps1 -Mode battle-continue -Language zh-CN -Sample "$sample-battle" -Seed $battle
+pwsh -NoProfile -File ./local/issue1944/Play.ps1 -Mode continue -Language zh-CN -Sample "$sample-field" -Seed $field
+```
+
+For the cleanup check move the entire producing `local/` aside before the last two commands.
+Restore the ignored configuration from its registered template and the two driver files from
+the handoff into a fresh `local/`. Use the same built adapter. Compare each seed and
+`immediate-resave-slot.json` as complete decoded `data` and inspect `after-continue.json`.
+For the English seam use `-Language en` on a separate `attack-items` sample. The world and
+media were reused. The four successful functional samples wrote about 0.94 MiB of top-level
+receipts, scripts and save copies.
+
+### Engine behavior checks
+
+The focused cases exercise both elements with seeded damage and EXP, silenced zero-MP use by
+a promoted holder, real stat refresh on consumption, the duplicate/changed slot, ineligible
+targets, drop capacity before consumption and Running Ring removal after a confirmed stop.
+The maintained engine check passed 2,936 cases with 49 configured private-input skips.
+The Release adapter and the incremental Debug build passed. Early focused runs found invalid
+controlled test inputs and a pre-movement identity assertion. The native rehearsals exposed
+an input shortcut assumption and a wrong command selection before the observer verified the
+visible Item menu and the actual slot. Their results remain in the ignored handoff.
+[Offensive item engine cases](../../tests/Sf2.Remake.Engine.Tests/AttackItemSessionTests.cs)
+
+The original ordinary action, animation timing and original Suspend/Continue remain **Unknown**.
+The connected remake witness reaches the supported items and settled continuation through
+Battle26. The original field event and acquisition boundaries remain documented above.

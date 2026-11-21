@@ -111,7 +111,7 @@ internal sealed partial class BattleSceneView : Control
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 return;
             }
-            if (state.AttackSpell is not null && !state.IsFieldDeath)
+            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsFieldDeath)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -190,7 +190,8 @@ internal sealed partial class BattleSceneView : Control
                 _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
-                    var animation = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences[state.Spell is not null ? "cast" : state.Item is null ? "attack" : "item"];
+                    string sequence = state.Spell is not null ? "cast" : state.Item is not null || state.AttackItem is not null ? "item" : "attack";
+                    var animation = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences[sequence];
                     _animationIndex = animation.Index;
                     _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
                 }
@@ -274,7 +275,7 @@ internal sealed partial class BattleSceneView : Control
             if (_elapsed < 0.25) return null;
             _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        if (state.AttackSpell is not null)
+        if (state.AttackSpell is not null && state.AttackItem is null)
         {
             if (!_attackSpell.Advance(_elapsed)) return null;
             _completed = true;
@@ -484,7 +485,11 @@ internal sealed partial class BattleSceneView : Control
         if (state.AttackSpell is { } attack)
         {
             if (state.UsesAttackItem && state.Phase == BattleScenePhase.ActionMessage)
-                return LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(110, "Taros Sword"));
+            {
+                var item = state.AttackItem;
+                return LocalizedMessage("battle.scene.item", ActorName(state.Actor),
+                    DisplayNames.Item(item?.ItemId ?? 110, item?.Name ?? "Taros Sword"));
+            }
             if (state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
                 return LocalizedMessage("battle.spell.action", ActorName(state.Actor), DisplayNames.Spell(attack.Spell), attack.Spell.Level);
             if (SemanticMessage(state) is { } spellMessage) return spellMessage;
@@ -685,7 +690,7 @@ internal sealed partial class BattleSceneView : Control
         aura = _state is { IsAura: true, Healing: null } ? _aura.Observe() : null,
         suspended = _suspended,
         laser = _state?.Laser is not null ? _laser.Observe() : null,
-        attackSpell = _state?.AttackSpell is not null ? _attackSpell.Observe() : null,
+        attackSpell = _state?.AttackSpell is not null && _state.AttackItem is null ? _attackSpell.Observe() : null,
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         suppressed = _state is { } messageState && Suppressed(messageState), suppressible = _state?.CanSuppressHitCoinMessage,
         requiresAcknowledgement = _state?.RequiresAcknowledgement,
@@ -695,8 +700,9 @@ internal sealed partial class BattleSceneView : Control
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind, supportSpell = _state?.SupportSpell, silencedSpell = _state?.SilencedSpell,
         reactionAmount = _state?.Amount,
-        item = _state?.Item?.ItemId, spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = _state?.AttackSpell is not null ? (int?)null : _state is { IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        item = _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
+        spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
+        spellAnimationSelector = _state?.AttackItem is not null ? 0 : _state?.AttackSpell is not null ? (int?)null : _state is { IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

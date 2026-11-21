@@ -18,7 +18,8 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             byte id = (byte)(word & 127);
             bool empty = id == 127;
             string label = empty ? "Empty" : battle.Definition.HealingItems.TryGetValue(id, out var item)
-                ? item.Name : battle.Definition.RetreatItems.TryGetValue(id, out var wing) ? wing.Name : $"Item {id}";
+                ? item.Name : battle.Definition.RetreatItems.TryGetValue(id, out var wing) ? wing.Name :
+                battle.Definition.AttackItems.TryGetValue(id, out var attack) ? attack.Name : $"Item {id}";
             return new BattleActionOffer(new(Kind, ItemSlot: slot), label, empty);
         }).ToArray());
     }
@@ -33,17 +34,35 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         var items = owner.SourceLoadout?.Items;
         if (items is null || slot < 0 || slot >= items.Count)
             throw new BattleRuleException("item-slot", "item.slot");
-        if (battle.Definition.RetreatItems.TryGetValue((byte)(items[slot] & 127), out var wing))
+        ushort word = items[slot];
+        byte id = (byte)(word & 127);
+        if (battle.Definition.RetreatItems.TryGetValue(id, out var wing))
             return new(0, 0, RetreatItem: wing);
+        if (battle.Definition.AttackItems.TryGetValue(id, out var attack))
+        {
+            Sf2AttackSpellAction.RequireDamageActor(battle, owner);
+            attack.Effect.RequireConsumableEffect();
+            return new(attack.Effect.MinimumRange, attack.Effect.MaximumRange, AttackItem: attack);
+        }
         var item = RequireItem(battle, actor, slot);
         return new(item.MinimumRange, item.MaximumRange, Item: item);
     }
     public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
-        RequireAction(battle, actor, action).RetreatItem is not null ? [actor] : HealingTargetRules.QueryTargets(battle, actor);
+        RequireAction(battle, actor, action) switch
+        {
+            { AttackItem: not null } => Sf2AttackSpellAction.TargetChoices(battle, actor),
+            { RetreatItem: not null } => [actor],
+            _ => HealingTargetRules.QueryTargets(battle, actor),
+        };
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef target)
     {
         var admission = RequireAction(battle, actor, action);
+        if (admission.AttackItem is { } attack)
+        {
+            _ = Sf2AttackSpellAction.ResolveTargets(battle, actor, destination, attack.Effect, target);
+            return battle.GetActor(target);
+        }
         if (admission.RetreatItem is null) return RequireTarget(battle, actor, destination, admission.Item!, target);
         BattleMovement.RequireStop(battle, actor, destination);
         if (target != actor) throw new BattleRuleException("invalid-retreat-target", "target");
@@ -53,6 +72,9 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
     {
         var admission = RequireAction(battle, actor, action);
+        if (admission.AttackItem is { } attack)
+            return Sf2AttackSpellAction.PrepareDamage(battle, actor, destination, attack.Effect,
+                target, progression, action.ItemSlot, attack);
         if (admission.RetreatItem is { } wing)
         {
             _ = RequireTarget(battle, actor, destination, action,

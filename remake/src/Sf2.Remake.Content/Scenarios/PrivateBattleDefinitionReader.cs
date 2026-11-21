@@ -39,9 +39,10 @@ internal static class PrivateBattleDefinitionReader
             .Select(row => row.IdentityExpression).Distinct().Select(code => Enemy(FindCode(enemy, "enemies", code)))
             .Concat((repeatEnemies ?? []).Select(id => Enemy(FindId(enemy, "enemies", id)))).DistinctBy(row => row.Id).ToArray();
         var itemIds = start.Allies.SelectMany(row => row.Items).Select(word => (byte)(word & 127)).ToHashSet();
-        // Retain the bounded starting supplies, purchasable Healing Drop and tower Mithril
-        // before possession. These supplies need their Use definitions even after a late purchase or Continue.
+        // Retain shared supplies before possession so carried Use is available after
+        // drops, later purchases and Continue in any admitted encounter.
         foreach (string code in new[] { "MEDICAL_HERB", "HEALING_SEED", "HEALING_DROP", "ANTIDOTE", "ANGEL_WING", "MITHRIL",
+            "SHINING_BALL", "BLIZZARD",
             "SHORT_SWORD", "SHORT_SPEAR", "BRONZE_LANCE", "SHORT_AXE", "WOODEN_ROD", "SHORT_ROD", "SHORT_KNIFE" })
             itemIds.Add((byte)Number(FindCode(core, "items", code), "id", 0, 126));
         // A mounted world can supply Fairy Powder after the encounter catalog is built.

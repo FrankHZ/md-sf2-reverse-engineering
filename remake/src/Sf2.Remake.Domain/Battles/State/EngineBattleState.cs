@@ -237,8 +237,10 @@ public sealed class BattleDefinition
         IEnumerable<RetreatSpellDefinition>? retreatSpells = null, IEnumerable<RetreatItemDefinition>? retreatItems = null,
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
         EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null, IEnumerable<SupportSpellDefinition>? supportSpells = null, BattleSearchDefinition? search = null)
+        BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null, IEnumerable<SupportSpellDefinition>? supportSpells = null, BattleSearchDefinition? search = null,
+        IEnumerable<AttackItemDefinition>? attackItems = null)
     {
+        AttackItems = new ReadOnlyDictionary<byte, AttackItemDefinition>((attackItems ?? []).ToDictionary(item => item.ItemId));
         SupportSpells = new ReadOnlyDictionary<SpellRef, SupportSpellDefinition>((supportSpells ?? []).ToDictionary(s => s.Spell));
         AttackSpells = new ReadOnlyDictionary<SpellRef, AttackSpellDefinition>((attackSpells ?? []).ToDictionary(s => s.Spell));
         Search = search; Poison = poison; Discard = discard; Give = give; PrismLaser = prismLaser; TarosEffectiveness = tarosEffectiveness; LeaderCleanup = leaderCleanup; ItemDrops = itemDrops;
@@ -258,7 +260,7 @@ public sealed class BattleDefinition
         source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
         outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, retreatSpells ?? source.RetreatSpells.Values,
         retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, drops ?? source.ItemDrops, source.PrismLaser,
-        give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search) { }
+        give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search, source.AttackItems.Values) { }
     internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null) => new(this, outcome: outcome, retreatSpells: retreatSpells, retreatItems: retreatItems);
     internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
@@ -275,6 +277,7 @@ public sealed class BattleDefinition
     public IReadOnlyDictionary<SpellRef, AttackSpellDefinition> AttackSpells { get; }
     public IReadOnlyDictionary<SpellRef, SupportSpellDefinition> SupportSpells { get; }
     public IReadOnlyDictionary<byte, HealingItemDefinition> HealingItems { get; }
+    public IReadOnlyDictionary<byte, AttackItemDefinition> AttackItems { get; }
     public IReadOnlyDictionary<SpellRef, RetreatSpellDefinition> RetreatSpells { get; }
     public IReadOnlyDictionary<byte, RetreatItemDefinition> RetreatItems { get; }
     public BattleRewardDefinition? Rewards { get; }

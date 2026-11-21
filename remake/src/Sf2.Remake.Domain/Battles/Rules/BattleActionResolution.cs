@@ -124,12 +124,14 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
 internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorRef Actor,
     MapPosition Destination, IReadOnlyList<BattleReaction> Reactions, BattleActionReward? Reward,
     IReadOnlyList<BattleEffect> ConstructionEffects, IReadOnlyList<BattleEffect> CompletionEffects,
-    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null, ushort? CasterCostStatus = null)
+    HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null, ushort? CasterCostStatus = null,
+    AttackItemDefinition? AttackItem = null)
 {
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
         Require(CasterCostStatus == (SupportSpell is null ? (ushort?)null : before.GetActor(actor).Status));
+        Require(AttackItem == admission.AttackItem && (AttackItem is null || action.Kind == BattleActionKind.Item));
         if (Silenced is { } blocked)
         {
             Require(SilenceRules.Present(before.GetActor(actor).Status) && blocked.Action == action &&
@@ -141,8 +143,9 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require((action.Kind == BattleActionKind.SupportSpell) == (SupportSpell is not null));
         Require((action.Kind == BattleActionKind.PrismLaser) == (Laser is not null));
         Require(action.Kind is BattleActionKind.Retreat or BattleActionKind.Item || Retreat is null);
-        Require(action.Kind is BattleActionKind.Physical or BattleActionKind.AttackSpell || Reactions.All(reaction => reaction.Receipt is null));
-        Require((action.Kind == BattleActionKind.AttackSpell) == (AttackSpell is not null));
+        bool usesDamageEffect = action.Kind == BattleActionKind.AttackSpell || AttackItem is not null;
+        Require(usesDamageEffect || action.Kind == BattleActionKind.Physical || Reactions.All(reaction => reaction.Receipt is null));
+        Require(usesDamageEffect == (AttackSpell is not null));
         switch (action.Kind)
         {
             case BattleActionKind.PrismLaser when action == new BattleActionRef(BattleActionKind.PrismLaser):
@@ -172,6 +175,14 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 break;
             case BattleActionKind.Physical when action.Spell is null && action.ItemSlot is null && target is { } victim:
                 ValidatePhysical(before, actor, destination, victim);
+                break;
+            case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } attackSlot &&
+                target is { } attackTarget && AttackItem is { } attackItem:
+                var words = before.GetActor(actor).SourceLoadout!.Items;
+                Require(attackSlot == AttackItemSlot && attackSlot >= 0 && attackSlot < words.Count &&
+                    (words[attackSlot] & 127) == attackItem.ItemId &&
+                    before.Definition.AttackItems.TryGetValue(attackItem.ItemId, out var knownItem) && knownItem == attackItem);
+                ValidateAttackSpell(before, actor, destination, attackItem.Effect, attackTarget);
                 break;
             case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } retreatSlot &&
                 target == actor && admission.RetreatItem is { } wing:
@@ -460,7 +471,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         {
             var target = targets[i]; var reaction = Reactions[i];
             bool blocked = ineffective && taros!.IsTaros(target);
-            Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == "attack-spell" &&
+            Require(reaction.Actor == actor && reaction.Target == target.Actor &&
+                reaction.Action == (AttackItem is null ? "attack-spell" : "attack-item") &&
                 reaction.Kind == (blocked ? BattleReactionKind.Ineffective : BattleReactionKind.Damage) &&
                 reaction.HpBefore == target.Hp && (blocked ? reaction.Amount == 0 && !reaction.Critical : reaction.Amount >= 1) &&
                 reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
@@ -477,10 +489,22 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Require(reaction.Receipt == dropped.Receipt && ConstructionEffects.Skip(cursor).Take(dropped.Effects.Count).SequenceEqual(dropped.Effects));
             cursor += dropped.Effects.Count; inventory = dropped.Battle;
         }
+        BattleSourceLoadout? paidLoadout = null;
+        if (AttackItem is not null)
+        {
+            int slot = AttackItemSlot!.Value;
+            var holder = inventory.GetActor(actor);
+            Require(cursor < ConstructionEffects.Count &&
+                ConstructionEffects[cursor] == new BattleEffect("item-consumed", actor, holder.SourceLoadout!.Items[slot], slot));
+            cursor++;
+            var paid = BattleEquipment.RemoveItem(holder, slot);
+            paidLoadout = paid.SourceLoadout;
+            inventory = inventory.With(actors: inventory.Actors.Select(unit => unit.Actor == actor ? paid : unit));
+        }
         Require(ConstructionEffects.Skip(cursor).All(e => e.Actor == actor &&
             (e.Kind is "rng-exp-plus" or "rng-exp-minus" or "spell-exp-contribution" or "gold")));
         Require(before.GetActor(actor).IsAlly && Reactions.Any(r => r.HpAfter == 0) || Prepared.Gold == before.Gold);
-        ValidateState(before, actor, destination, allowGold: true, inventory: inventory);
+        ValidateState(before, actor, destination, paidLoadout, allowGold: true, inventory: inventory);
         ValidateReward(before, actor);
         ValidateRandom(before, _ => true);
     }

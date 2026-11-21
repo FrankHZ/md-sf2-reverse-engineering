@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
@@ -36,6 +37,31 @@ internal static class PrivateBattleActionBindings
                     (id == 3 ? "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" : "TYPE_HEAL|TARGET_TEAMMATES"),
                 "source-supply-effect", "items.useSpell", true);
             yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, CuresPoison: curesPoison);
+        }
+    }
+
+    internal static IEnumerable<AttackItemDefinition> AttackItems(PrivateBattleDefinitions definitions)
+    {
+        foreach (var row in new (byte Item, string Code, string Effect, byte BaseId, ushort Power,
+            AttackSpellElement Element, string Animation)[]
+        {
+            (16, "SHINING_BALL", "FBALL", 37, 20, AttackSpellElement.Fire, "BLAZE|VARIATION3"),
+            (17, "BLIZZARD", "BREZAD", 38, 33, AttackSpellElement.Ice, "FREEZE|VARIATION3"),
+        })
+        {
+            if (!definitions.Items.TryGetValue(row.Item, out var item)) continue;
+            Require(item.Code == row.Code && item.ItemTypeExpression == "RARE|CONSUMABLE" &&
+                item.EquipFlagsExpression == "NONE" && item.MinimumRange == 0 && item.MaximumRange == 1 &&
+                item.UseSpell == row.Effect && item.UseSpellLevel == 1 &&
+                item.EquipEffects.All(effect => effect is { Type: "NONE", Parameter: 0 }),
+                "source-attack-item", "items", true);
+            Require(definitions.Spells.TryGetValue(new(row.Effect.ToLowerInvariant(), 1), out var spell) &&
+                spell.BaseId == row.BaseId && spell.MpCost == 0 && spell.Power == row.Power &&
+                spell.MinimumRange == 1 && spell.MaximumRange == 1 && spell.Radius == 0 &&
+                spell.PropertiesExpression == "TYPE_ATTACK" && spell.AnimationExpression == row.Animation,
+                "source-attack-item-effect", "items.useSpell", true);
+            yield return new(item.Id, item.DisplayName, new(spell!.Spell, spell.MpCost, spell.Power,
+                spell.MinimumRange, spell.MaximumRange, spell.Radius, row.Element));
         }
     }
 

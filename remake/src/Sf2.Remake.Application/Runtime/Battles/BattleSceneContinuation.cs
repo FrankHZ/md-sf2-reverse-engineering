@@ -248,6 +248,7 @@ public sealed class BattleSceneState
     public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" : Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
     public bool UsesAttackItem => _action?.AttackItemSlot is not null;
+    public AttackItemDefinition? AttackItem => _action?.AttackItem;
     public HealingItemDefinition? Item => _action?.Item;
     public BattleItemReceipt? ItemReceipt => !HasReaction ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;

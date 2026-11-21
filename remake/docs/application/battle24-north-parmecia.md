@@ -18,6 +18,12 @@ On the English first victory, one enemy remained when the first Dark Bishop died
 
 Bowie carried Cannon (114) throughout and reserve Chester carried Dynamite (116). The Chinese and English packs retain their distinct slot order. The observed depot was empty. The English and Chinese cliff slots have 7,915 and 8,665 gold respectively. Mid-battle saves also continued at ordinary movement after drops and spell growth. Enemy drops set their own once flags. Two enemy herb slots share an item definition and retain separate drop flags. Original equipment initialization writes the difficulty-adjusted enemy base ATT before adding the weapon. Removing a carried item preserves that base. Learning a new spell rank preserves its family's inventory-slot order in both live choices and continuation data. These rules also apply to other eligible actors.
 
+The retained English and Chinese Battle24 action receipts identify the Blizzard drop and
+ordinary receipt from enemy slot 135. The cliff and corresponding cold slots retain it in
+Peter's English pack and Kazin's Chinese pack under once bit 9. Both saves supply later
+ordinary Battle26 consumable use through the existing custody path.
+[Receipt comparison and attack-item observations](../domain/offensive-items-design.md#retained-acquisition-and-ordinary-acceptance)
+
 ## Reproduction and remaining coverage
 
 Load the checkout's registered private configuration. In the private issue 1904 handoff, run `Rebuild.ps1 -Repo <checkout> -Output <fresh-external-directory>` to generate the selected world, battle, display catalogs and adapter. The input is the registered USA retail ROM with the project's pinned SF2DISASM revision. Generation is confined to one encounter plus the existing campaign world. The world payload is approximately 101 MB and has a 128 MiB publication limit. Historical samples, tool binaries and extracted content stay private.

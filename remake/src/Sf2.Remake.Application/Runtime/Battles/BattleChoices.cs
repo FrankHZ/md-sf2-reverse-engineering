@@ -71,7 +71,7 @@ internal static class BattleChoices
                 action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
                 action.Kind != BattleActionKind.Healing && admission.Spell is not null ||
                 action.Kind != BattleActionKind.Item && admission.Item is not null ||
-                action.Kind != BattleActionKind.Item && admission.RetreatItem is not null ||
+                action.Kind != BattleActionKind.Item && (admission.RetreatItem is not null || admission.AttackItem is not null) ||
                 action.Kind == BattleActionKind.Retreat && (admission.Retreat is not { } retreat ||
                     !battle.Definition.RetreatSpells.TryGetValue(action.Spell!.Value, out var knownRetreat) || retreat != knownRetreat ||
                     admission.MinimumRange != 0 || admission.MaximumRange != 0) ||
@@ -84,6 +84,10 @@ internal static class BattleChoices
     private static bool ValidItemAdmission(EngineBattleState battle, ActorRef actor, BattleActionRef action, BattleActionAdmission admission)
     {
         byte id = (byte)(battle.GetActor(actor).SourceLoadout!.Items[action.ItemSlot!.Value] & 127);
+        if (admission.AttackItem is { } attack)
+            return admission.Item is null && admission.RetreatItem is null && attack.ItemId == id &&
+                battle.Definition.AttackItems.TryGetValue(id, out var knownAttack) && attack == knownAttack &&
+                admission.MinimumRange == attack.Effect.MinimumRange && admission.MaximumRange == attack.Effect.MaximumRange;
         if (admission.RetreatItem is { } wing)
             return admission.Item is null && wing.ItemId == id &&
                 battle.Definition.RetreatItems.TryGetValue(id, out var known) && wing == known &&
@@ -129,8 +133,19 @@ internal static class BattleChoices
                 }
                 else HealingSceneCursor.RequireContent(battle, actor, target, content, requireContent);
             }
+            if (admission.AttackItem is not null && (content is not null || requireContent))
+                RequireAttackItemContent(battle, actor, target, content);
             return patient;
         });
+    }
+
+    private static void RequireAttackItemContent(EngineBattleState battle, ActorRef actor, ActorRef target,
+        BattleSceneDefinition? content)
+    {
+        if (content is null || content.Encounter != battle.Definition.Encounter ||
+            !content.TryAllyVisual(battle.GetActor(actor), out var user) || !user.Sequences.ContainsKey("item") ||
+            !content.Enemies.ContainsKey(target))
+            throw new BattleRuleException("attack-item-scene-content", "battleScenes", true);
     }
 
     // DETOX consumes ordinary cast/idle actors and scenery, never the HEAL fairy assets/cursor.
