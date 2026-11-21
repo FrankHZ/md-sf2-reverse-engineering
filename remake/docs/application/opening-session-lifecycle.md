@@ -483,9 +483,31 @@ not prove semantic equivalence to ordinary initialization. Keep that distinction
 
 #### Yeel Save and Continue observation
 
-Use the registered `phoenix-wave-v1` world with its `opening-inputs`, title entry and main scene
-file. Load private selections through the existing [host workflow](../verification/map3-commission-save.md).
-Use a fresh test save root and the Debug adapter. A legal, controlled pre-session guide approach
+Use the registered `derived/issue2022/church-anchor-v1` candidate under `SF2_SHARED_INPUT_ROOT`.
+It retains the `phoenix-wave-v1` world and relative inputs, with one Map5 `churchSavepoint` from the
+existing `savepoints(OriginalPrograms(...))` parser at the pinned source revision. The selection
+is in [`pre-voyage-opening.json`](../../content/private/pre-voyage-opening.json). The candidate adds
+71 bytes to the world file and shares the unchanged immutable package dependencies on the same
+volume. It was prepared directly in the stable root and has no producer-checkout dependencies.
+
+Load [the worktree input configuration](../../../docs/operations/local-private-inputs.md) and use
+the existing [host workflow](../verification/map3-commission-save.md) with a fresh test save root
+and the Debug adapter. Select the candidate's world, entry, and battle metadata together.
+
+```powershell
+. ./local/private-inputs.ps1
+$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2022/church-anchor-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+foreach ($name in @('SF2_PRIVATE_BATTLE01_DATA', 'SF2_PRIVATE_BATTLE01_SCENE',
+    'SF2_PRIVATE_BATTLE01_TERRAIN', 'SF2_PRIVATE_STATIC_DATA', 'SF2_PRIVATE_ENEMY_DATA',
+    'SF2_PRIVATE_ENEMY_GOLD')) {
+    [Environment]::SetEnvironmentVariable($name, (Join-Path $package "opening-inputs/$name.json"))
+}
+```
+
+A legal, controlled pre-session guide approach
 uses Map5(7,7), Up, speed 32, the membership and story flags from
 [`yeel-to-battle03-start.json`](../../reference/inputs/yeel-to-battle03-start.json) with F399 clear, and
 the initialized full-roster opening values. The existing `StartPreVoyageLocalizationObservation`
@@ -501,12 +523,13 @@ entry admits this case. It does not establish natural reach.
 4. With the first test slot's writer lock already taken, attempt a new Save. Check the storage
    error and that the prior slot still has the same bytes.
 
-**Confirmed** in the default setup of the registered world. The existing publication lacks the
-Church Egress anchor. The selection check reads the anchor through `savepoints` from pinned
-`savePointMapCoordinates`, and `PreVoyageSaveTests` exercises the F399/Egress commit against an
-authored Church anchor, a complete synthetic replacement setup, and refusal during movement.
-Native verification of the new Egress metadata and the authentic F650 population requires a
-publication with those bindings.
+**Confirmed** in the candidate's default setup. The ordinary slot retains F399 clear and the
+prior Map3 Egress. Record commits F399 and Map5 Egress to the live session and the second slot.
+Two independent title Continue processes preserve their respective flags, Egress and scene.
+The previous `phoenix-wave-v1` observation covers the locked-slot write failure.
+`PreVoyageSaveTests` exercises a complete synthetic replacement setup and refusal during
+movement. No registered world in the checked #1956 and #2001 publications contains the
+concrete F650 body. Its actual population, Talk and cold-Continue acceptance remain open.
 
 The SF2 recipe admits map-default ambient programs and an already-entered closed
 random-walk/wait/back-jump cycle on Map3. The completed messenger installs such a loop at a new
