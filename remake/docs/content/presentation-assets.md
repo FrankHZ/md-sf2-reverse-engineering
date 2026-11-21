@@ -178,13 +178,10 @@ $run = Join-Path $repo 'tools/Prepare-PrivateAssets.ps1'
 ```
 
 `All` verifies existing results and prepares missing families, including the three-member PLDN
-selection. For the current private publication, the remaining user operation is
-`& $run -Repo $repo -Operation Prepare -Family pldn-eric`. This calls the existing
-`remake_battle_scene_content` producer with Battle26 and Eric's PLDN selection, validates its
-five body frames and weapon attack indices, and publishes the selected rows in a fresh
-`pldn-eric` directory. The two-member pilot took about five seconds and under 1 GiB of available
-scratch. Allow one minute and 1 GiB headroom for the single-member operation on the observed host.
-The earlier Eric pilot's rejection and absence of output are recorded in #2001.
+selection. The reviewed private library includes the user-supplied `pldn-eric` family.
+Its index binds member 14 to palette 3 and its scene additions carry five body frames and six item
+bindings for Battle26. The two-member pilot took about five seconds. Allow 1 GiB of available
+scratch for a PLDN rebuild on the observed host.
 
 Choose `maps`, `walking`, `portraits`, `bodies`, `weapons`, `terrain`, `effects`, `icons`,
 `ui`, `entry`, `music`, `sfx` or `pldn` to prepare a single family. PLDN also exposes
@@ -195,15 +192,22 @@ individually. Retain a failure's named native scratch before retrying its comman
 published versions are immutable. Restore damaged reviewed files from their private Git version
 or choose a fresh library destination.
 
+To regenerate coverage and assemble the supported first-consumer packages, select `$assetRoot`
+as the absolute path to the private asset Git checkout at the reviewed commit named in the
+[asset inventory](asset-inventory.md#retail-original-preparation).
+
 ```powershell
 . (Join-Path $repo 'local/private-inputs.ps1')
 $root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
+$runtime = Join-Path $assetRoot 'runtime/retail-v1'
 $token = [guid]::NewGuid().ToString('N')
-& $run -Repo $repo -Operation Coverage -Destination "$root/coverage-$token.csv"
+& $run -Repo $repo -Operation Coverage -Library $runtime -Destination "$root/coverage-$token.csv"
 # Current accepted readers can use these field, UI and audio additions now.
-& $run -Repo $repo -Operation Mount -Family walking,icons,music,sfx -Command 4,25,87,99 -Destination "$root/priority-$token"
-# After preparing Eric, assemble all first-consumer operands for the promotion ticket.
-& $run -Repo $repo -Operation Mount -Family All -Destination "$root/promotion-$token"
+& $run -Repo $repo -Operation Mount -Library $runtime -Family walking,icons,music,sfx `
+    -Command 4,25,87,99 -Destination "$root/priority-$token"
+# Assemble the complete PLDN candidate for #1956.
+& $run -Repo $repo -Operation Mount -Library $runtime -Family All `
+    -Command 4,25,87,99 -Destination "$root/promotion-$token"
 ```
 
 Mount reads only the prepared family files and the closed base package. It preserves the relative
@@ -211,8 +215,9 @@ world/scene/entry dependencies, adds selected WAVs using the existing runtime WA
 publishes a fresh directory after checking closure. Select those packages with the ordinary
 environment variables above. `Mount -Family All` includes the first consumers' 25, 87 and 99 cues.
 Select other prepared cues with `-Command`. For new maps, bodies and effects, use the original ID
-in the family index to select its atlas, tile bank, frames, palette and operands. This keeps
-future story and class choices with the code that owns them.
+in the family index to select its atlas, tile bank, frames, palette and operands. The stable
+`promotion-v1` package includes the three PLDN appearances. #1956 owns admission of the promoted
+member bindings, which the accepted Content reader rejects at `scene-ally-member`.
 
 The closed-package template/deduplication experiment and its receipts remain reproducible at
 code commit `2097434ec68c2e709312c25adab7e638e9566ccd`. Direct ID-indexed production and
