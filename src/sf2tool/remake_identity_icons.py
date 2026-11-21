@@ -98,6 +98,7 @@ def identity_assets(
     *,
     field_items=(),
     repeat_enemies=(),
+    all_storage=False,
 ):
     source, commit, identity = _verified_source(
         rom, upstream, owner="identity-icons", listing_path=listing
@@ -160,6 +161,15 @@ def identity_assets(
     spell_ids.extend(extra_spells)
     selections = [("item", i, i) for i in item_ids]
     selections += [("spell", i, i + 130) for i in spell_ids] + [("other", 128, 128)]
+    if all_storage:
+        selections = []
+        for storage, (symbol, _) in enumerate(entries):
+            if symbol.startswith("SpellIcon"):
+                selections.append(("spell", storage - 130, storage))
+            elif symbol.startswith("ItemIcon") or storage == 127:
+                selections.append(("item", storage, storage))
+            else:
+                selections.append(("other", storage, storage))
     for family, semantic_id, storage in selections:
         symbol, path = entries[storage]
         if source.addresses[symbol] != base + storage * ICON_BYTES:
