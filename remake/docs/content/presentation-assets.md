@@ -230,6 +230,10 @@ $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 # Add the WFBR and PHNX progressions and appearances to the registered Vicar package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family innate `
     -Package "$progression/vicar-v1" -Upstream $pinnedSource -Destination "$progression/innate-$token"
+
+# Add Slade's NINJ progression and appearances to the registered innate package.
+& $run -Repo $repo -Operation Mount -Library $runtime -Family ninja `
+    -Package "$progression/innate-v1" -Upstream $pinnedSource -Destination "$progression/ninja-$token"
 ```
 
 Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
@@ -260,6 +264,11 @@ healing and staff attack reused the mounted Battle26 resources. [Vicar reproduct
 The innate mount adds Gerhalt and Peter's prepared walking strips, portraits and unarmed
 battle bodies, with their own growth and current-class field bindings in `innate-v1`.
 [Wolf Baron and Phoenix reproduction](../application/ordinary-promotion-classes.md#wolf-baron-and-phoenix-ordinary-reproduction)
+
+The Ninja mount adds Slade's walking strips, portrait, body and spell icons to `ninja-v1`.
+It reuses the mounted sword layers and binds a separate unarmed row. The learned attack
+presentation selects the source flame or lightning variation in the current modern playback.
+[Ninja reproduction](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot)
 
 Mount preserves the relative world, scene and entry dependencies, mounts any selected WAVs
 and publishes a fresh directory after checking closure. Select the result with the ordinary

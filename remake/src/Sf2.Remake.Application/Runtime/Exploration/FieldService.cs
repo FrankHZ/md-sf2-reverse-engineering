@@ -168,11 +168,12 @@ internal static class FieldService
     {
         var member = PartyDetailsQuery.Query(definition, current)!.Members.Single(m => m.Carried.Actor == candidate.Member);
         var destination = member.Deployment!.ResolveClass(candidate.Destination).Definition;
-        var loadout = FieldInventory.Loadout(member);
+        var loadout = PromotionLoadout(member, destination);
         if (!PoisonTurnRules.SupportedPhysicalStatus(member.Carried.Status) || member.Carried.Progress is not { } progress)
             throw new BattleRuleException("promotion-refresh", "party.progress", true);
         BattleEquipment.ValidateLoadout(destination, loadout);
-        var changed = member.Carried with { Exp = 0, Progress = progress with
+        var changed = member.Carried with { Exp = 0,
+            SourceLoadout = member.Carried.SourceLoadout is null ? null : loadout, Progress = progress with
             { ClassId = candidate.Destination, Level = 1, SourceLoadout = loadout, BaseMove = null, CurrentStats = null } };
         var party = FieldInventory.Replace(field.Party, [changed]);
         if (field.Population is { } population && member.Deployment.Initialization?.AllyPartyMember is { } memberIndex)
@@ -186,6 +187,16 @@ internal static class FieldService
                     SpriteRequest = checked(entity.SpriteRequest + 1) });
         }
         return (field, party);
+    }
+
+    private static BattleSourceLoadout PromotionLoadout(PartyMemberDetails member, BattleActorDefinition destination)
+    {
+        var loadout = FieldInventory.Loadout(member);
+        if (destination.ClassRule != BattleClassRule.Ninja) return loadout;
+        // The source rite removes the worn weapon independently of the ring and its slot.
+        int slot = BattleEquipment.EquippedSlot(member.Deployment!.Definition, loadout);
+        return slot == BattleEquipment.UnarmedChoice ? loadout :
+            BattleInventory.SetWord(loadout, slot, (ushort)(loadout.Items[slot] & ~0x80));
     }
 
     private static IReadOnlyList<PromotionOffer> Candidates(ScenarioDefinition definition, SessionSnapshot current)
@@ -203,7 +214,7 @@ internal static class FieldService
             var destination = m.Deployment?.RegularPromotion;
             if (destination is not null && definition.PrivateDefinitions is not null)
             {
-                var pack = FieldInventory.Loadout(m);
+                var pack = PromotionLoadout(m, destination);
                 int slot = BattleEquipment.EquippedSlot(destination, pack);
                 int itemId = slot == 4 ? -1 : pack.Items[slot] & 127;
                 var key = (m.Carried.Actor, destination.ClassRule, itemId);

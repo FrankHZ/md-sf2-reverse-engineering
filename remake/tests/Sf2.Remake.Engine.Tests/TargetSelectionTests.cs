@@ -130,6 +130,20 @@ public sealed class TargetSelectionTests
     }
 
     [Theory]
+    [InlineData(BattleMover.Regular, 14)]
+    [InlineData(BattleMover.Flying, 26)]
+    [InlineData(BattleMover.Archer, 14)]
+    [InlineData(BattleMover.Mage, 20)]
+    public void NinjaSharesTheSourceThreatOrderingButFollowsThief(BattleMover mover, int rank)
+    {
+        var ninja = Sf2ClassRules.SourceClass(BattleClassRule.Ninja);
+        var thief = Sf2ClassRules.SourceClass(BattleClassRule.UnpromotedThief);
+        var table = PhysicalTargetRules.Table(mover);
+        Assert.Equal(rank, PhysicalTargetRules.ClassRank(ninja, table));
+        Assert.Equal(1, PhysicalTargetRules.Select([new(2, 16, ninja), new(1, 16, thief)], table)!.Value.Index);
+    }
+
+    [Theory]
     [InlineData(0, 5, 1, 19)]
     [InlineData(2, 5, 2, 15)]
     [InlineData(3, 5, 1, 13)]

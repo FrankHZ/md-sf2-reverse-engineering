@@ -18,23 +18,34 @@ internal sealed partial class AttackSpellView : Node2D
         _elapsed = elapsed; QueueRedraw();
         return elapsed >= (_scene!.Phase is BattleScenePhase.ActionAnimation or BattleScenePhase.Reaction ? 0.6 : 0.2);
     }
+    private byte? Selector => _scene?.AttackSpell?.SourceAnimationSelector;
+    private int Variation => (Selector.GetValueOrDefault() >> 5) + 1;
+
     public override void _Draw()
     {
         if (_scene?.AttackSpell is not { } spell) return;
         _drawCount++;
         DrawRect(new Rect2(0, 44, 256, 122), new Color("18243a"));
-        var fire = spell.Element == AttackSpellElement.Fire;
+        var fire = spell.Element == AttackSpellElement.Fire || (Selector & 31) == 1;
+        var lightning = spell.Element == AttackSpellElement.Lightning || (Selector & 31) == 7;
         var color = new Color(fire ? "ff984d" : "9ce6e7");
         for (int i = 0; i < _scene.AttackTargets.Count; i++)
         {
             Vector2 position = new(128 + (i - (_scene.AttackTargets.Count - 1) / 2f) * 30, 112);
             float radius = 9 + 7 * (float)Math.Sin(Math.Min(1, _elapsed / 0.6) * Math.PI);
-            if (fire)
-                DrawColoredPolygon([position + new Vector2(0, -radius), position + new Vector2(radius / 2, radius / 2),
-                    position + new Vector2(-radius / 2, radius / 2)], color);
-            else if (spell.Element == AttackSpellElement.Lightning)
-                DrawPolyline([position + new Vector2(4, -2 * radius), position + new Vector2(-5, -2),
-                    position + new Vector2(4, -2), position + new Vector2(-4, radius)], new Color("ffe484"), 2);
+            if (fire || lightning)
+            {
+                for (int pulse = 0; pulse < Variation; pulse++)
+                {
+                    var center = position + new Vector2((pulse - (Variation - 1) / 2f) * 9, pulse % 2 * 5);
+                    if (fire)
+                        DrawColoredPolygon([center + new Vector2(0, -radius), center + new Vector2(radius / 2, radius / 2),
+                            center + new Vector2(-radius / 2, radius / 2)], color);
+                    else
+                        DrawPolyline([center + new Vector2(4, -2 * radius), center + new Vector2(-5, -2),
+                            center + new Vector2(4, -2), center + new Vector2(-4, radius)], new Color("ffe484"), 2);
+                }
+            }
             else if (spell.Spell.Value == "aqua")
                 for (int bubble = 0; bubble < 5; bubble++)
                 {
@@ -52,7 +63,8 @@ internal sealed partial class AttackSpellView : Node2D
     internal object Observe() => new
     {
         visible = IsVisibleInTree(), drawCount = _drawCount, elapsed = _elapsed,
-        element = _scene?.AttackSpell?.Element.ToString(), targets = _scene?.AttackTargets.Select(a => a.Value),
+        element = _scene?.AttackSpell?.Element.ToString(), selector = Selector,
+        variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
         target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true
     };
 }

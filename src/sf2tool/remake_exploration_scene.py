@@ -31,6 +31,7 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         "WFMN": "WFBR",
         "RNGR": "BWNT",
         "PHNK": "PHNX",
+        "THIF": "NINJ",
     }
 
     def class_sprite(table_sprite, role):

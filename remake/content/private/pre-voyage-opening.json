@@ -98,7 +98,8 @@
     {"member": 1, "class": "VICR"},
     {"member": 15, "class": "VICR"},
     {"member": 9, "class": "WFBR"},
-    {"member": 7, "class": "PHNX"}
+    {"member": 7, "class": "PHNX"},
+    {"member": 5, "class": "NINJ"}
   ],
   "growthClasses": [
     {

@@ -34,6 +34,7 @@ public sealed class FieldServiceTests
             BattleClassRule.UnpromotedWolfman => (7, 24, "WFMN", "WFBR", "WolfBaron", 5, "STEALTH", 127, null),
             BattleClassRule.UnpromotedRanger => (8, 25, "RNGR", "BWNT", "BowKnight", 6, "CENTAUR_ARCHER", 47, null),
             BattleClassRule.UnpromotedPhoenix => (9, 26, "PHNK", "PHNX", "Phoenix", 7, "FLYING", 127, null),
+            BattleClassRule.UnpromotedThief => (10, 27, "THIF", "NINJ", "Ninja", 7, "STEALTH", 103, null),
             _ => (0, 12, "SDMN", "HERO", "Hero", 6, "REGULAR", 50, null),
         };
         var (baseClass, destination, baseCode, promotedCode, title, move, mover, weapon, promotionItem) = profile;
@@ -57,9 +58,10 @@ public sealed class FieldServiceTests
         bool innate = weapon == 127;
         bool phoenix = sourceRule == BattleClassRule.UnpromotedPhoenix;
         byte attackBonus = weapon switch { 36 or 47 => 17, 58 => 8, 127 => 0, _ => 5 };
+        bool ninja = sourceRule == BattleClassRule.UnpromotedThief;
         var loadout = new BattleSourceLoadout([(ushort)(weapon | (armed ? 128 : 0)),
             power ? (ushort)147 : sourceRule == BattleClassRule.UnpromotedMage ? (ushort)24 : (ushort)127,
-            ranged ? (ushort)50 : (ushort)127, 127], book);
+            ranged ? (ushort)50 : ninja ? (ushort)58 : (ushort)127, 127], book);
         var initialLoadout = weapon == 50 ? null : new BattleSourceLoadout([weapon, 127, 127, 127], book);
         var deployments = source.Deployments.Select(row => row.Actor != First ? row : row with
         {
@@ -76,7 +78,8 @@ public sealed class FieldServiceTests
             var growth = new BattleGrowthDefinition(baseClass, 0, Enumerable.Repeat(new StatGrowth(20, 20, []), 5).ToArray(),
                 [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
             List<BattleWeaponDefinition> weapons = innate ? [] :
-                [new(weapon, "Weapon", (1u << baseClass) | (1u << destination), attackBonus, retainedRange, retainedRange)];
+                [new(weapon, "Weapon", (1u << baseClass) | (ninja ? 0 : 1u << destination), attackBonus, retainedRange, retainedRange)];
+            if (ninja) weapons.Add(new(58, "Middle Sword", 1u << destination, 8, 1, 1));
             if (ranged) weapons.Add(new(50, "Great Shot", (1u << 21) | (1u << 22) | (1u << 25), 29, 2, 3));
             var equipment = new BattleEquipmentDefinition(20, weapons,
                 rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5),
@@ -86,6 +89,7 @@ public sealed class FieldServiceTests
                 var fixture = source.WithDeployments(deployments);
                 var classDefinitions = new PrivateBattleDefinitions(null!, [],
                     [new(destination, promotedCode, title, move, phoenix ? "FIRE_MAJOR|STATUS_MAJOR" : "NONE", mover,
+                        ninja ? "CRITICAL150_1IN8|DOUBLE_1IN16|COUNTER_1IN8" :
                         sourceRule == BattleClassRule.UnpromotedWolfman ? "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8" :
                             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
                     innate ? [] : [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + promotedCode,
@@ -97,9 +101,15 @@ public sealed class FieldServiceTests
                 if (sourceRule == BattleClassRule.UnpromotedPriest && currentLevel < 40)
                     schedule = schedule.Append(new { packed = (byte)67, level = 30, spell = "boost" })
                         .Append(new { packed = (byte)1, level = 33, spell = "aura" });
+                var ninjaSchedule = new (int Level, byte Packed, string Spell)[]
+                {
+                    (24, 27, "katon"), (29, 91, "katon"), (34, 28, "raijin"),
+                    (39, 92, "raijin"), (45, 155, "katon"), (52, 156, "raijin"),
+                }.Select(row => new { packed = row.Packed, level = row.Level, spell = row.Spell });
                 var rows = JsonSerializer.SerializeToElement(new[] { baseClass, destination }.Select(classId => new
                 {
-                    actor = First.Value, classId, stats, spells = schedule,
+                    actor = First.Value, classId, stats,
+                    spells = ninja && classId == destination ? ninjaSchedule : schedule,
                 }));
                 deployments = BattleGrowthReader.Bind(rows, new ScenarioDefinition("promotion-test", [fixture], classDefinitions))
                     .Single().Deployments.Select(d => d.Actor != First ? d : d with
@@ -132,11 +142,12 @@ public sealed class FieldServiceTests
         var definition = new ScenarioDefinition("service-behavior", [battle], exploration: world);
         var party = new BattleStartInput(battle.Encounter, original.Actors.Select(actor => actor.Actor == First
             ? actor with { Hp = hp, Status = status, Progress = currentLevel is { } attained
-                ? new(attained, 76, 10, 20, 4, 60, [], actor.SourceLoadout) : null }
+                ? new(attained, 76, ninja ? (byte)0 : (byte)10, 20, 4, 60, [], actor.SourceLoadout) : null }
             : actor.Actor == Second ? actor with { Hp = secondHp, Status = secondStatus } : actor),
             original.MainSeed, original.ThinkingSeed, gold, original.NewBattle, original.ActiveAllies, original.ItemCustody);
         if (promotion)
             party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
+                Mp = ninja ? (byte)0 : a.Mp,
                 Progress = a.Progress! with { ClassId = baseClass, SourceLoadout = loadout, Spells = spells, BaseMove = 8 } }
                 : a.Actor == Second && promotionItem is { } item ? a with
                     { SourceLoadout = new([item, 127, 127, 127], [63, 63, 63, 63]) } : a),
@@ -467,6 +478,65 @@ public sealed class FieldServiceTests
             Assert.Equal(new byte[] { 128, 142, 67, 1 }, withAura.SourceLoadout!.Spells);
             Assert.Contains(new SpellRef("aura", 1), withAura.Spells);
         }
+    }
+
+    [Theory]
+    [InlineData(19, true)]
+    [InlineData(20, true)]
+    [InlineData(33, false)]
+    public void NinjaRiteClearsOnlyTheWornKnifeAndLearnsItsOwnSpellRanks(byte level, bool worn)
+    {
+        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: worn, power: true,
+            sourceRule: BattleClassRule.UnpromotedThief);
+        var prior = Member(session, First);
+        Choose(session, ChurchAction.Promote);
+        if (level < 20)
+        {
+            Assert.Equal(ChurchResultKind.NoApplicableMember, Wait(session).Result!.Kind);
+            Assert.Equal(prior, Member(session, First));
+            return;
+        }
+        var offer = Assert.Single(Wait(session).Candidates!, row => row.Member == First);
+        Accept(session, new SelectPromotion(Wait(session).Token, offer));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+
+        var member = Member(session, First);
+        var loadout = member.Progress!.SourceLoadout!;
+        Assert.Equal(new ushort[] { 103, 147, 58, 127 }, loadout.Items);
+        Assert.Equal(new byte[] { 63, 63, 63, 63 }, loadout.Spells);
+        Assert.Equal(prior with { Exp = 0, SourceLoadout = loadout, Progress = prior.Progress! with
+            { ClassId = 27, Level = 1, BaseMove = null, SourceLoadout = loadout } }, member);
+        var deployment = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
+        var actor = new BattleActorState(deployment, member.Hp, member.Mp, 99, new(5, 5), 0, 0, progress: member.Progress);
+        Assert.Equal((BattleClassRule.Ninja, BattleMover.Stealth, (byte)7),
+            (actor.Definition.ClassRule, actor.Definition.Mover, actor.Move));
+        Assert.Equal(0, actor.MaxMp);
+        Assert.Null(BattleEquipment.EquippedWeaponItem(actor));
+        Assert.Equal(5, BattleEquipment.Contribution(actor.Definition, loadout));
+        Assert.Throws<BattleRuleException>(() => BattleEquipment.Equip(actor, 0));
+        var armed = BattleEquipment.Equip(actor, 2);
+        Assert.Equal((byte)58, BattleEquipment.EquippedWeaponItem(armed));
+        Assert.Equal((ushort)147, armed.SourceLoadout!.Items[1]);
+        Assert.Equal(actor.BaseAttack + 5 + 8, armed.Attack);
+        var prowess = BattleEquipment.Physical(actor)!.Critical;
+        Assert.Equal(((ushort)8, 1, (ushort)16, (ushort)8),
+            (prowess.ChanceDenominator, prowess.DamageBonusShift, prowess.DoubleChanceDenominator, prowess.CounterChanceDenominator));
+
+        uint seed = 0;
+        byte[][] expected = [[27, 63, 63, 63], [91, 63, 63, 63], [91, 28, 63, 63],
+            [91, 92, 63, 63], [155, 92, 63, 63], [155, 156, 63, 63]];
+        byte[] thresholds = [4, 9, 14, 19, 25, 32];
+        for (int index = 0; index < thresholds.Length; index++)
+        {
+            var before = armed.With(exp: 99, progress: armed.Progress! with { Level = (byte)(thresholds[index] - 1) });
+            armed = BattleGrowthRules.Award(before, 1, ref seed, []);
+            Assert.Equal(thresholds[index], armed.Level);
+            Assert.Equal(expected[index], armed.SourceLoadout!.Spells);
+            Assert.Equal(new ushort[] { 103, 147, 186, 127 }, armed.SourceLoadout.Items);
+        }
+        Assert.Equal(6, armed.Spells.Count);
     }
 
     [Theory]

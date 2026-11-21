@@ -96,8 +96,8 @@ counter at 1/8. PHNX adds major FIRE/STATUS resistance. MNST adds major NEUTRAL,
 UNDEFINED1, UNDEFINED2 and STATUS resistance. Other destinations below have no class
 resistance. Use the pinned class and target-priority rows, including for enemies acting
 after the player's first move. Compare terrain cost and land effect through the chosen mover.
-The content parser binds the common destination prowess and WFBR's distinct counter
-combination. NINJ's distinct combination still needs admission and action coverage.
+The content parser binds the common destination prowess and the distinct WFBR and NINJ
+combinations.
 [Class bases](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
 [Growth selectors](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats) ·
 [Terrain table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/landeffectsettingsandmovecosts.asm) ·
@@ -163,12 +163,11 @@ A palette or sprite match from another member is insufficient class admission.
   [Support status](../domain/support-spell-status-design.md)
 - **NINJ.** KATON ranks 1/2/3 are learned at effective 24/29/45, RAIJIN at 34/39/52.
   These are both NEUTRAL damage with distinct costs, range, radius and animation variation
-  from the pinned records. Bind through the current attack-spell calculation, targeting,
-  playback and growth book. The current narrow effect validation needs expansion for both families and their neutral
-  resistance operand. Apply the same class power adjustment as for learned WIZ spells. Confirm
-  learning and a paid KATON 1 cast at or after stored level 4 when MP permits. Use small
-  behavior cases for the other thresholds and ranks. At the rite, THIF's empty book and
-  zero max MP stay as earned. Keep his current MP and the carried knife in its original slot. [Slade growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats05.asm) ·
+  from the pinned records. The current attack-spell calculation uses neutral resistance and
+  the same learned promoted power adjustment as WIZ. Engine cases cover all six ranks and
+  effective learning levels. At the rite, THIF's empty book and zero max MP stay as earned.
+  The carried knife remains in its original slot with its equip bit cleared. Ordinary acquisition
+  and paid casts remain **Unknown**. [Slade growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats05.asm) ·
   [Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
   [Damage elements](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm)
 - **MNST.** Use the class-28 attack decision at its source position. It requests RNG(4)
@@ -185,8 +184,8 @@ A palette or sprite match from another member is insufficient class admission.
 **Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
 Chester, Rick and Eric, MAGE→WIZ for Kazin and Tyrin, WARR→GLDT for Jaha and Randolf,
 BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, RNGR→BWNT for May, PRST→VICR for
-Sarah and Karna, WFMN→WFBR for Gerhalt and PHNK→PHNX for Peter. The three knights have
-their own growth,
+Sarah and Karna, WFMN→WFBR for Gerhalt, PHNK→PHNX for Peter and THIF→NINJ for Slade.
+The three knights have their own growth,
 map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
 each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
 use map sprites 12/43 and Battle26 sprite 21 palettes 2/1. Each admits the four mounted
@@ -199,10 +198,11 @@ weapon layer hidden. Sarah and Karna use field sprites 3/37 and battle body 25 p
 Each VICR has four mounted rod/stick bindings and the matching healing cast sequence.
 Gerhalt uses field sprite 23, portrait 49 and battle body 30 palette 0. Peter uses field
 sprite 19, portrait 48 and battle body 28 palette 0. Both use their own unarmed action.
-Earlier loaded encounters share the member bindings.
+Slade uses field sprite 15, portrait 50 and battle body 26 palette 0. His unarmed and
+equipped sword scenes use the same member body. Earlier loaded encounters share the member bindings.
 Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
-Chester, Rick, Tyrin and Randolf remain **Unknown**. NINJ and MNST still need their
-own gameplay bindings and witnesses.
+Chester, Rick, Tyrin, Randolf and Slade remain **Unknown** in ordinary promotion play.
+MNST still needs its gameplay binding and witness.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -278,7 +278,8 @@ A candidate's presence in the package or an engine case is independent of ordina
 | SNIP, BWNT | Chinese Pacalon Elric and Janet kept Steel Arrow. Fallen May became BWNT, was raised and used Wooden Arrow. Battle26 exercised all three body variants, adjacent target rejection, Unarmed and 3-cell Assault Shell and Great Shot attacks. Cold Continue and EGRESS kept all three classes. A native Silver Tank fallback remains **Unknown**. [Ranged reproduction](#sniper-and-bow-knight-ordinary-reproduction) |
 | VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Guardian Staff. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
 | WFBR, PHNX | Chinese Pacalon Gerhalt and Peter promoted and attacked unarmed in Battle26. Peter had 44 additional reachable destinations on his first turn. Both classes and portraits persisted through cold Continue and EGRESS. [Wolf Baron and Phoenix reproduction](#wolf-baron-and-phoenix-ordinary-reproduction) |
-| NINJ, MNST | Both castles have Slade THIF 12 and Kiwi TORT 15. An eligible retained witness remains **Unknown**. Start from a lawful pre-Pacalon save with higher levels if one is registered. Otherwise try a bounded Battle26 repeat from a castle copy. Raise Slade, then earn ordinary EXP to 20. The seed deficits are about 760 and 490 EXP respectively. Measure EXP per action and turns on one repeat and agree a finite budget before training both. Keep the native row **Unknown** if the pilot cannot supply an eligible journey within budget. Engine cases at valid levels cover weapon/ring, the first learned rank, resistance and both conversion branches independently. |
+| NINJ | Ordinary English Battle26 pilot reached THIF 12 with 43 EXP. Eligible ordinary promotion and learned casts remain **Unknown**. Controlled engine and native coverage exercises the rite, equipment and spells. [Ninja reproduction](#ninja-controlled-reproduction-and-ordinary-pilot) |
+| MNST | Both castles have Kiwi TORT 15. An eligible ordinary witness remains **Unknown**. The deficit is about 490 EXP. Start from a lawful higher-level history if one is registered. Budget any repeat using measured EXP before training. |
 
 Per family, at a normal church compare the authoritative progress/pack/flags/gold/seeds around
 the final Yes. Use current field sprite/portrait where projected, ordinary save and fresh title
@@ -574,3 +575,70 @@ as his attack before verifying an enemy target. The repeat required his committe
 target, active attack animation and a matching physical result. The failed pilot log
 is retained. Some successful Godot exits logged ObjectDB shutdown warnings. #1716
 remains deferred.
+
+
+## Ninja controlled reproduction and ordinary pilot
+
+Mount `ninja-v1` from the registered `derived/issue1956/innate-v1`, the prepared retail
+library at `52435b04f49a84a6a9ed4444620055a070648001` and the pinned source metadata.
+The closed package has 145 files and 294,767,297 bytes, a 64,573-byte increase. It adds
+three walking strips, six body frames, portrait 50 and both states of the two spell icons.
+Eight admitted sword rows reuse the existing sword layers. Steel Sword shares Long Sword's
+bank and color pair. The separate unarmed row has the same body 26 palette 0 and no weapon
+layer. Later rare and cursed swords retain their existing equipment boundaries.
+[Mount command](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+NINJ 27 changes REGULAR MOV 7 to STEALTH MOV 7. It has no class resistance and uses
+critical 1/8 at the 50% bonus, double 1/16 and counter 1/8. Its zero-based target
+priority ranks are 14 (Regular), 26 (Flying), 14 (Archer) and 20 (Mage). The source church
+rite clears the worn weapon's equip bit. The remake uses that resulting pack for both
+the candidate's appearance check and the commit. The ring stays worn and its stat
+contribution is recomputed from the saved base. [Class data](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[AI priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm) ·
+[Church weapon handling](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/church/churchactions_1.asm#L437-L459)
+
+| Spell | Stored level | MP | Range | Radius | Power | Animation selector |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| KATON 1 | 4 | 6 | 1–2 | 1 | 12 | 33 |
+| KATON 2 | 9 | 10 | 1–2 | 1 | 16 | 65 |
+| KATON 3 | 25 | 12 | 1–2 | 0 | 42 | 97 |
+| RAIJIN 1 | 14 | 15 | 1–3 | 2 | 18 | 39 |
+| RAIJIN 2 | 19 | 18 | 1–3 | 2 | 26 | 71 |
+| RAIJIN 3 | 32 | 20 | 1–3 | 0 | 58 | 103 |
+
+Both families use NEUTRAL resistance at shift 8. KATON dispatches Blaze's 1/32 spell
+critical and RAIJIN dispatches Bolt's 1/8. The existing modern effect playback uses the
+pinned flame or lightning selector and variation without changing the damage element.
+[Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
+[Spell effects dispatch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/castspell.asm) ·
+[Damage elements](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm)
+
+The ordinary English Pacalon pilot raised fallen THIF 12 Slade with 42 EXP and an
+equipped Short Knife. In one Battle26 repeat he moved and stayed in round 1, then
+attacked the Dark Sniper for 1 HP and earned 1 EXP in round 2. The Sniper defeated him
+in round 3. The saved battle returned to usable input with Slade at level 12, 43 EXP
+and 0 HP. The pilot then stopped. There were 757 EXP to the rite at that point, with
+300 more EXP after the rite to learn KATON 1, which costs 6 current MP. Growth increases
+the MP maximum without refilling it. No reliable two-repeat path met the training budget.
+Ordinary eligibility, promotion, learning and casting remain **Unknown**.
+
+
+The ordinary pilot inputs and stopped slot are registered under
+`derived/issue1956/ninja-review/ordinary-pilot`. Use the same handoff's separate
+`Boot.ps1` for controlled reproduction. The controlled THIF 20 and NINJ 19 fixtures
+arrange eligible state and the learned book independently of the recorded ordinary
+journey. They use the existing church, movement, action, Save and Continue commands.
+
+| Controlled boundary | Observed result |
+| --- | --- |
+| Rite and field | THIF 20 became NINJ 1/0. Short Knife changed from word 231 to bare 103 in slot 0. The Power Ring stayed worn as 147 in slot 1, Middle Sword stayed carried and the book remained empty. Slade's earned stats, 32 HP and 0 MP were retained. Cold Continue displayed portrait 50. |
+| Unarmed and sword | Separate Battle26 forks used body 26 palette 0 and sequence 26. The unarmed hit dealt 1 HP. Equipping Middle Sword gave ATT 43 from unarmed ATT 35 and preserved the worn Power Ring. The sword layer was visible and the hit dealt 6 HP. Both returned to Movement. |
+| Learned Magic | The separately arranged NINJ 19 used KATON 1 at distance 1 and RAIJIN 1 at distance 3. KATON spent 6 MP, caused 14 damage and displayed selector 33. RAIJIN spent 15 MP, caused 18 damage and displayed selector 39. Both presented NEUTRAL and returned to Movement. Controlled engine cases cover the other ranks, radius boundaries and insufficient MP. |
+| Persistence | The ready battle checkpoints and the post-action sword, KATON and RAIJIN v4 cold saves matched complete decoded battle data. RAIJIN cold Continue succeeded with the producer's old local directory unavailable. EGRESS from the KATON branch returned to Map36 with NINJ and the packed book. The two field v3 cold saves differed from their loaded slots only in ambient field state and the main seed. |
+
+The first controlled rite reported success but field Save rejected the old equipped
+knife word. The commit now changes the carried loadout and progress together. The
+first training observer counted empty turn-queue entries against its action budget
+and stopped before any turn. Its corrected continuation used the same ready slot.
+RAIJIN's pilot saved successfully and then exited with native code 0xC0000005. Its
+cold replay passed. Some other exits logged ObjectDB warnings. #1716 remains deferred.

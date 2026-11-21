@@ -18,6 +18,7 @@ internal static class Sf2ClassRules
         7 => BattleClassRule.WolfBaron,
         8 => BattleClassRule.BowKnight,
         9 => BattleClassRule.Phoenix,
+        10 => BattleClassRule.Ninja,
         _ => null,
     };
 
@@ -38,7 +39,7 @@ internal static class Sf2ClassRules
         BattleClassRule.UnpromotedThief => 10, BattleClassRule.UnpromotedTortoise => 11, BattleClassRule.Hero => 12, BattleClassRule.Paladin => 13,
         BattleClassRule.Gladiator => 15, BattleClassRule.Wizard => 17, BattleClassRule.Vicar => 19, BattleClassRule.Sniper => 21,
         BattleClassRule.BrassGunner => 22, BattleClassRule.BirdBattler => 23, BattleClassRule.WolfBaron => 24,
-        BattleClassRule.BowKnight => 25, BattleClassRule.Phoenix => 26, _ => null,
+        BattleClassRule.BowKnight => 25, BattleClassRule.Phoenix => 26, BattleClassRule.Ninja => 27, _ => null,
     };
 
 }
