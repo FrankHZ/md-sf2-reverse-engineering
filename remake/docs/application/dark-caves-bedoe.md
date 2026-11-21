@@ -50,6 +50,11 @@ persistence through the existing raft-landing Save and cold Continue remain **Un
 The [later Skreech offer](../../../docs/research/chapters/northern-travel-mitula/mitula-return-and-skreech-recruitment.md)
 is a separate F724 consumer.
 
+The registered #1738, #1939, #1941 and #1966 package audio tables and command-specific
+candidate folders contain no command 87 cue. The local asset repository's tracked audio paths
+and manifests also have no matching entry. The open rescue issue tracks consumer acceptance,
+and the private asset preparation issue tracks the missing cue. [Rescue #1950](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1950) · [Private audio prerequisite #2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001)
+
 **Confirmed in a controlled engine start.** Read the same package with `OpeningNewGameReader`
 and start Map10 at (6,22), facing Down, with the reader's starting party and F722/F799 supplied.
 Submit one south `Move` and service simulation and pending `EntitySpriteReady` requests. With
@@ -65,6 +70,14 @@ Use the existing Debug host and the [stable package and catalog selection](pacal
 with a disposable external player namespace. Copy the registered
 `handoffs/issue1797/before-raft.json` into its slot 1. Continue normally and step north into
 Polca. Leave Polca east at (31,6) and take the Mount Volcano entrance at (28,6).
+
+For the cleanup check, load the checkout configuration first and make the whole existing
+`local/` temporarily unavailable. Launch the same Debug build from `remake/game` with the
+registered package, catalog and seed copy, using an external save namespace and temporary
+profile. Continue to Map72 (43,47), press Right once and inspect settled field input at (44,47).
+This completed with F64/F722/F799 carried, F13/F723/F724 clear, and the seed copy unchanged.
+The build uses the existing assembly under `remake/game/.godot/`; the run created no replacement
+`local/`. Restore the original scratch after the process exits.
 
 For rescue, walk one step north from the Bedoe entrance, leave south at (12,31), and return
 from the mountain. From (12,30), walk eight tiles north and six west to (6,22). Inspect the
