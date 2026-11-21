@@ -61,10 +61,12 @@ field menu, from which the player resumes walking. The cast does not itself save
 compares live MP with the selected packed rank's cost before target selection. From the caster's
 chosen square, `battlefield/buildactionrangegrids.asm:BuildSpellRangeGrid` uses Manhattan range and
 teammate occupancy. `battlefield/populatetargetslist.asm:PopulateTargetsListForSpell` expands the
-center by radius zero. Select one living, positioned, non-neutral ally, including the caster at
-distance zero. Fallen, undeployed or reserve members have no battle target. Need for a cure does
-not gate targeting. Cancel before confirmation with both seeds, MP, position commitment and turn
-unchanged. Insufficient MP returns to the spell selector.
+center by radius zero. Both use the occupancy filter in
+`battlefield/buildtargetsarray.asm:BuildTargetsArray`, which skips the neutral activation bit
+even for an ally-side combatant. Select one living, positioned, non-neutral ally, including the
+caster at distance zero. Fallen, undeployed or reserve members have no battle target. Need for
+a cure does not gate targeting. Cancel before confirmation with both seeds, MP, position
+commitment and turn unchanged. Insufficient MP returns to the spell selector.
 
 In `battleactions/initbattlesceneproperties.asm`, the base spell supplies the silence property.
 `battleactions/createbattlesceneanimation.asm:battlesceneScript_PerformAnimation` emits one caster
@@ -87,6 +89,7 @@ from this spell. Separate growth and after-turn draws from effect and award draw
 draw on a cancel or a suppressed spell. End the action and run the existing caster after-turn
 and next-control flow. A cured ally does not take an extra turn or rebuild the current queue.
 [Pinned DETOX effect](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/castspell.asm#L123-L198) ·
+[Pinned EXP award](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/giveexpandgold.asm#L32-L73) ·
 [After-turn contract](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-after-turn-counter-transition-matrix)
 
 **Confirmed** at the controlled original Battle01 effect seam. The tracked
@@ -186,21 +189,28 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
 1. **Connect both Magic ranks for admitted uncursed states.** Reuse `FieldCast`, the joined-party
    query, the existing friendly battle spell and scene pipeline, and independently validated
    source rows. Extend the finite cure rule with explicit allowed and removed bits. Preserve the
-   existing rank-1 and item caller terms. Test learn ceilings, usable rank/cost/range, valid
-   no-effect commits and rejected input through the same query/confirmation owner. Audit the
-   shared healing target query for neutral source rows, including a friendly row with the neutral
-   activation bit. For unsupported cursed battle states or gear, reject on the existing explicit
-   admission boundary before payment. Rank 3 supports its verified STUN/POISON subset on currently
-   admitted targets. Full rank-3 completion remains open.
+   existing rank-1 and item masks, costs and custody. Test learn ceilings, usable rank/cost/range,
+   valid no-effect commits and rejected input through the same query/confirmation owner.
+   `HealingTargetRules` currently checks faction, HP and position for the shared single-target
+   query and confirmation, while the neutral-bit check is specific to AURA centers. Apply the
+   source occupancy guard in the shared target owner so both Magic and item Use exclude a
+   positioned ally marked neutral. Preserve AURA's separate area membership rules. For unsupported
+   cursed battle states or gear, reject on the existing explicit admission boundary before
+   payment. Rank 3 supports its verified STUN/POISON subset on currently admitted targets.
+   Full rank-3 completion remains open.
 2. **Publish caller-specific reactions.** Field commits payment, recipient and refreshed party
    record once, including self-target payment and no-effect refresh. Add the actual ordered
    removal result to the existing field observation so the view can format recipient notices.
    Battle uses one successful target reaction carrying the full word and removed bits, with
    distinct caster cost, ordered cure text, award and after-turn. Reuse the same reaction
    validation and refresh boundary as the current poison cure. Preserve any old applied operand
-   until its own real refresh. Use the same-side award branch for new learned ranks, including in
-   a halved-EXP encounter. The accepted rank-1/item status-award path currently uses that flag for
-   any status reaction. Keep any correction to their shipped behavior separately owned.
+   until its own real refresh. The pinned award skips the halving table for a same-side target.
+   The current `Sf2BattleProgressionRule` applies the halving flag to Healing and Item status
+   awards without checking the target's side. This observed source/implementation difference
+   brings the shared award correction into #1965. Gate halving on the actual target's faction
+   relative to the recipient for these status actions. DETOX 1/2/3, Antidote and battle Fairy
+   Powder use the same rule, with the existing 5/0 contribution, two range-16 award draws and
+   minimum 1 EXP.
 3. **Complete the equipped-curse branch with #1926.** Once shared custody, refresh and return/save
    semantics admit a worn cursed word, use the equipment operation to clear the equipped bit only on
    cursed definitions. Check the status/gear transition on the detached action before
@@ -221,6 +231,7 @@ the admitted DETOX cast assets. Render the chosen rank and MP in both menus and 
 DETOX actor/scenery bindings. HEAL fairy admission applies to HP healing.
 [Field recovery](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldRecovery.cs) ·
 [Battle cure](../../src/Sf2.Remake.Domain/Gameplay/Sf2/PoisonCureRules.cs) ·
+[Battle EXP award](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2BattleProgressionRule.cs) ·
 [Friendly target admission](../../src/Sf2.Remake.Domain/Gameplay/Sf2/HealingTargetRules.cs) ·
 [Battle reaction and payment](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
 [Battle action scene](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
@@ -253,6 +264,13 @@ target and resource state within those boundaries.
   STUN/POISON and BOOST/SLOW, including a non-caster with a failed-recast operand. Exercise the
   next legal movement or strike and next generated round. Test self-payment before cure and the
   distinction between the cured target and the caster's normal after-turn.
+- **Shared battle regressions.** In a halved-EXP encounter, use DETOX 1, Antidote and battle Fairy
+  Powder on a poisoned teammate with a seed that makes both award draws nonzero. Assert the
+  applied cure and 5 final EXP for each caller, plus both range-16 draws and the resulting seed.
+  Cover the clean-target minimum of 1 EXP and its preceding range-8 draw. Verify the shared
+  target query and confirmation exclude a living, positioned ally with the neutral activation
+  bit for Magic and item Use before any payment or draw. These cases use existing engine action
+  entry points within the acceptance budget below.
 - **Curse and storage.** At the equipped-curse boundary use a known class-legal target with an
   ordinary weapon and worn cursed ring. Check rank 2 leaves the ring worn and rank 3 clears only
   the cursed equipped bit. Vary bare duplicates, slot position, damage and mixed status.
