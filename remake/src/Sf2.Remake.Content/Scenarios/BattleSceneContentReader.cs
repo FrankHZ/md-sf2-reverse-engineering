@@ -82,10 +82,10 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 13 or 24, "scene-class", "battleScenes.actors", true);
+                Require(sprite is >= 0 and <= 13 or 21 or 24, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
-                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 11 => BattleClassRule.BrassGunner, 12 => BattleClassRule.UnpromotedArcher, 13 => BattleClassRule.Paladin, 24 => BattleClassRule.Hero, _ => BattleClassRule.UnpromotedBirdman };
+                    7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 11 => BattleClassRule.BrassGunner, 12 => BattleClassRule.UnpromotedArcher, 13 => BattleClassRule.Paladin, 21 => BattleClassRule.Wizard, 24 => BattleClassRule.Hero, _ => BattleClassRule.UnpromotedBirdman };
                 if (row.TryGetProperty("members", out _))
                 {
                     var members = Array(row, "members").Select(value =>
