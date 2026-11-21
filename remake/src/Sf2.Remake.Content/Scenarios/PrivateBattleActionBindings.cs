@@ -88,10 +88,14 @@ internal static class PrivateBattleActionBindings
 
     internal static IEnumerable<HealingSpellDefinition> PoisonCure(PrivateBattleDefinitions definitions)
     {
-        if (!definitions.Spells.TryGetValue(new("detox", 1), out var spell)) yield break;
-        Require(spell is { BaseId: 2, Code: "DETOX", MpCost: 3, Radius: 0, Power: 0, MinimumRange: 0, MaximumRange: 1 } &&
-            spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE", "source-detox-definition", "spells.detox", true);
-        yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange, CuresPoison: true);
+        foreach (var (rank, cost, range) in new (byte Rank, byte Cost, byte Range)[] { (1, 3, 1), (2, 6, 2), (3, 10, 2) })
+        {
+            if (!definitions.Spells.TryGetValue(new("detox", rank), out var spell)) continue;
+            Require(spell is { BaseId: 2, Code: "DETOX", Radius: 0, Power: 0, MinimumRange: 0 } &&
+                spell.MpCost == cost && spell.MaximumRange == range &&
+                spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE", "source-detox-definition", "spells.detox", true);
+            yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange, CuresPoison: true);
+        }
     }
 
     internal static IEnumerable<RetreatItemDefinition> RetreatItems(PrivateBattleDefinitions definitions)

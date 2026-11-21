@@ -19,9 +19,10 @@ internal static class FieldCommands
         {
             bool effective = false;
             FieldGrowthResult? growth = null;
+            ushort clearedStatus = 0;
             var effect = FieldRecoveryEffect.NoEffect;
             bool recovery = command is FieldUseItem or FieldCast;
-            var party = recovery ? FieldRecovery.Prepare(definition, current, command, out effect, out effective, out growth)
+            var party = recovery ? FieldRecovery.Prepare(definition, current, command, out effect, out effective, out growth, out clearedStatus)
                 : FieldInventory.Prepare(definition, current, command);
             if (effect == FieldRecoveryEffect.MapEvent && command is FieldUseItem use &&
                 FieldItemEvents.Match(current, (byte)(use.ExpectedWord & 127)) is { } entry)
@@ -40,7 +41,8 @@ internal static class FieldCommands
             string kind = growth is not null ? "field-growth-item" : recovery
                 ? effective ? "field-status-recovered" : "field-no-effect"
                 : command switch { FieldEquip => "field-equipped", FieldGive => "field-given", FieldDrop => "field-dropped", _ => "field-prepared" };
-            return new(snapshot, [new(sequence, revision, kind, command.Member, Target: growth?.Target) { FieldGrowth = growth }], snapshot.StopReason);
+            return new(snapshot, [new(sequence, revision, kind, command.Member, Target: growth?.Target ?? (command as FieldCast)?.Target)
+                { FieldGrowth = growth, FieldCuredStatus = command is FieldCast ? clearedStatus : (ushort)0 }], snapshot.StopReason);
         }
         catch (BattlePolicyFault error) { return ProgramRunner.Failure(current, [], error); }
         catch (BattleRuleException error)

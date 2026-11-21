@@ -193,7 +193,8 @@ internal sealed partial class FieldActionView : Control
             else if (spell.Effect == FieldRecoveryEffect.Egress)
                 Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-egress", DisplayNames.Spell(spell.Spell, spell.Name), spell.MpCost));
             else Targets("magic-target", () => GameText.Get("prepare.magic-target"), true, target => Confirm(new FieldCast(_member, spell.Spell, target),
-                () => GameText.Get("prepare.confirm-cast", DisplayNames.Spell(spell.Spell, spell.Name), spell.MpCost)));
+                () => GameText.Get("prepare.confirm-cast",
+                    GameText.Get("prepare.spell-row", DisplayNames.Spell(spell.Spell, spell.Name), spell.Spell.Level), spell.MpCost)));
         }), true)));
 
     private void Drop() => Items("drop-item", () => GameText.Get("prepare.drop-item"), item => DisplayNames.ItemWord(item.Word, item.Name) +
@@ -218,8 +219,21 @@ internal sealed partial class FieldActionView : Control
             var growth = result.Observations.Select(row => row.FieldGrowth).FirstOrDefault(growth => growth is not null);
             Message(result.Failure is { } failure ? () => GameText.Get("prepare.failure", Recovery(failure.Code), failure.Code, failure.Field, failure.Message) :
                 growth is not null ? () => GrowthMessage(growth) :
+                command is FieldCast { Spell.Value: "detox", Target: not null } cast ? () => CureMessage(cast, result.Observations.Single().FieldCuredStatus) :
                 result.Observations.Any(row => row.Kind == "field-no-effect") ? () => GameText.Get("prepare.no-effect") : () => GameText.Get("prepare.done"), result.Failure is null);
         }, true), (() => GameText.Get("prepare.cancel"), Back, true)]);
+
+    private string CureMessage(FieldCast cast, ushort cleared)
+    {
+        var members = _session.QueryPartyDetails()!.Members;
+        string Name(ActorRef actor) => PartyStatusView.MemberName(members.Single(member => member.Carried.Actor == actor), _session);
+        string target = Name(cast.Target!.Value);
+        List<string> lines = [GameText.Get("battle.heal.action", Name(cast.Member), DisplayNames.Spell(cast.Spell), cast.Spell.Level)];
+        if ((cleared & 1) != 0) lines.Add(GameText.Get("battle.scene.stun-cleared", target));
+        if ((cleared & 2) != 0) lines.Add(GameText.Get("battle.scene.poison-cured", target));
+        if (cleared == 0) lines.Add(GameText.Get("prepare.no-effect"));
+        return string.Join("\n", lines);
+    }
 
     internal static string GrowthMessage(FieldGrowthResult result)
     {

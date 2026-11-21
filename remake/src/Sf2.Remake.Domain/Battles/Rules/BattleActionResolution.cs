@@ -7,7 +7,8 @@ internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resourc
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
-    BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null, ushort? InflictedStun = null);
+    BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null, ushort? InflictedStun = null,
+    ushort ClearedStatus = 0);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
     MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false, BattleActionRef? ChosenAction = null)
@@ -422,12 +423,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i]; var reaction = Reactions[i];
-            Require(spell.CuresPoison ? reaction == PoisonCureRules.Reaction(actorRef, target, "heal") :
+            Require(spell.CuresPoison ? reaction == PoisonCureRules.Reaction(actorRef, target, "heal", PoisonCureRules.SpellMask(spell.Spell.Level)) :
                 reaction.Actor == actorRef && reaction.Target == target.Actor && reaction.Action == "heal" &&
                 reaction.Kind == BattleReactionKind.Recovery && !reaction.Critical && reaction.HpBefore == target.Hp &&
                 reaction.HpAfter >= target.Hp && reaction.HpAfter <= target.MaxHp &&
                 reaction.Amount == reaction.HpAfter - target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
-                reaction.StatusWrite is null && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
+                reaction.StatusWrite is null && reaction.ClearedStatus == 0 && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
         }
         // The source enemy HEAL level lookup can approve a cheaper packed key.
         // Its scripted MP reaction then clamps the actual selected cost at zero.

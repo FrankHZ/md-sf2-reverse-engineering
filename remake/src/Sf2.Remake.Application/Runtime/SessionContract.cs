@@ -193,6 +193,7 @@ public sealed record SessionObservation(long Sequence, long Revision, string Kin
     EntityWaitRelease? EntityWaitRelease = null, BattleTurnGeneration? TurnGeneration = null)
 {
     public FieldGrowthResult? FieldGrowth { get; init; }
+    public ushort FieldCuredStatus { get; init; }
 }
 public sealed record ProgramControlRead(Guid SessionId, long Sequence, long Revision,
     ProgramLocation Source, string Operation, ProgramLocation? Cursor,

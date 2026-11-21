@@ -601,6 +601,7 @@ internal sealed partial class BattleSceneView : Control
             BattleScenePhase.EquipmentWearMessage when state.EquipmentItem is { } item =>
                 LocalizedMessage(state.Wear == EquipmentWear.Damaged ? "battle.scene.item-damaged" : "battle.scene.item-destroyed",
                     DisplayNames.Item(item.ItemId, item.Name)),
+            _ when state.ShowsStunCure => LocalizedMessage("battle.scene.stun-cleared", Target()),
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {
                 "Status" => LocalizedMessage(state.Spell?.CuresPoison == true || state.Item?.CuresPoison == true ? "battle.scene.poison-cured" : "battle.scene.silence", Target()),

@@ -786,6 +786,7 @@ internal static partial class GameText
         ["battle.scene.wait"] = 1,
         ["battle.heal.action"] = 3,
         ["battle.spell.action"] = 3,
+        ["name.spell.detox"] = 0,
         ["battle.heal.recovery"] = 2,
         ["battle.heal.mp-recovery"] = 2,
         ["depot.title"] = 1,
