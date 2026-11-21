@@ -4,10 +4,19 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 // Damage operands are independent of healing, its target policy and fairy playback.
 public enum AttackSpellElement { Wind = 0, Lightning = 2, Ice = 4, Fire = 6 }
+public sealed record AttackItemDefinition(byte ItemId, string Name, AttackSpellDefinition Effect);
+
 public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort Power,
     byte MinimumRange, byte MaximumRange, byte Radius, AttackSpellElement Element)
 {
     internal ushort CriticalRange => Spell.Value is "aqua" or "bolt" ? (ushort)8 : (ushort)32;
+
+    internal void RequireConsumableEffect()
+    {
+        if (MpCost != 0 || MinimumRange != 1 || MaximumRange != 1 || Radius != 0 ||
+            Power is 0 or > 255 || !Enum.IsDefined(Element) || CriticalRange != 32)
+            throw new BattleRuleException("attack-item-effect", "item.useSpell", true);
+    }
 
     internal void RequireSupported(bool enemy = false)
     {

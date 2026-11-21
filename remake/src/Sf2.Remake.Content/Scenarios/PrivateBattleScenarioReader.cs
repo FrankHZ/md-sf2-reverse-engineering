@@ -138,7 +138,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
                 deployments.Where(d => d.Faction == BattleFaction.Enemy).ToDictionary(d => d.Actor, d => (byte)d.ProcessingOrder),
                 drops, drops.Select(drop => drop.ItemId).Distinct().Select(id => definitions.Items[id])
                     .Select(item => new EnemyDropItem(item.Id, item.DisplayName, item.ItemTypeExpression.Split('|').Contains("RARE")))),
-            poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions));
+            poison: encounter.Battle.Id >= 9, attackSpells: PrivateAttackSpellBindings.Spells(definitions), supportSpells: PrivateSupportSpellBindings.Spells(definitions),
+            attackItems: PrivateBattleActionBindings.AttackItems(definitions));
         var inputStart = new BattleStartInput(encounterId, actorInputs, start.MainSeed, start.ThinkingSeed, start.Gold, start.Policy,
             deathCredit: battle.Poison ? new BattleDeathCredit(null) : null);
         // Product content is assembled before its ordinary before-battle program has run.

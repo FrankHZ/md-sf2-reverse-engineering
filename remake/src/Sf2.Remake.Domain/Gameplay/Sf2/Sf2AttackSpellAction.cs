@@ -24,15 +24,20 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
             key.Value == "bolt" && !sword))
             throw new BattleRuleException("attack-spell-caster", "actor", true);
-        if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
+        RequireDamageActor(battle, actor);
+        if (!sword && actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
+        return new(spell.MinimumRange, spell.MaximumRange, AttackSpell: spell);
+    }
+
+    internal static void RequireDamageActor(EngineBattleState battle, BattleActorState actor)
+    {
+        if (!SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0)
             throw new BattleRuleException("attack-spell-status", "actor.status", true);
         if (actor.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "actor.physical", true);
         if (battle.Definition.Rewards is null)
             throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
         if (actor.IsAlly && actor.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
-        if (!sword && actor.Mp < spell.MpCost) throw new BattleRuleException("insufficient-mp", "actor.mp");
-        return new(spell.MinimumRange, spell.MaximumRange, AttackSpell: spell);
     }
 
     private static bool Eligible(BattleActorState actor, BattleActorState target) =>
@@ -40,6 +45,9 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         (target.ActivationWord & 8) != 8;
 
     public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
+        TargetChoices(battle, actor);
+
+    internal static IReadOnlyList<ActorRef> TargetChoices(EngineBattleState battle, ActorRef actor) =>
         battle.Actors.Where(target => Eligible(battle.GetActor(actor), target))
             .OrderBy(target => target.ProcessingOrder).Select(target => target.Actor).ToArray();
 
@@ -73,11 +81,19 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actorRef, MapPosition destination,
         BattleActionRef action, ActorRef? center, IBattleProgressionRule progression)
     {
-        BattleMovement.RequireStop(battle, actorRef, destination);
         var spell = RequireAction(battle, actorRef, action).AttackSpell!;
+        return PrepareDamage(battle, actorRef, destination, spell, center, progression, action.ItemSlot);
+    }
+
+    internal static BattleActionResolution PrepareDamage(EngineBattleState battle, ActorRef actorRef,
+        MapPosition destination, AttackSpellDefinition spell, ActorRef? center, IBattleProgressionRule progression,
+        int? itemSlot, AttackItemDefinition? consumable = null)
+    {
+        BattleMovement.RequireStop(battle, actorRef, destination);
         var actor = battle.GetActor(actorRef);
         var targets = ResolveTargets(battle, actorRef, destination, spell,
             center ?? throw new BattleRuleException("attack-spell-target", "target"));
+        string reactionAction = consumable is null ? "attack-spell" : "attack-item";
         uint seed = battle.MainSeed;
         var inventory = battle;
         List<BattleEffect> effects = [];
@@ -89,13 +105,13 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         bool ineffective = taros?.IsTaros(targets[0]) == true;
         foreach (var target in targets)
         {
-            int power = SpellPower(actor, spell, action.ItemSlot.HasValue);
+            int power = SpellPower(actor, spell, itemSlot.HasValue);
             int quarter = power / 4;
             int damage = ResistedDamage(target, spell, power);
             bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;
             if (ineffective && taros!.IsTaros(target))
             {
-                reactions.Add(new(actorRef, target.Actor, "attack-spell", BattleReactionKind.Ineffective,
+                reactions.Add(new(actorRef, target.Actor, reactionAction, BattleReactionKind.Ineffective,
                     target.Hp, target.Hp, target.Mp, target.Mp, false, 0, target.Status));
                 continue;
             }
@@ -115,18 +131,28 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), actorRef, target.Actor, hp == 0);
             inventory = dropped.Battle; seed = inventory.MainSeed;
             effects.AddRange(dropped.Effects);
-            reactions.Add(new(actorRef, target.Actor, "attack-spell", BattleReactionKind.Damage,
+            reactions.Add(new(actorRef, target.Actor, reactionAction, BattleReactionKind.Damage,
                 target.Hp, hp, target.Mp, target.Mp, critical, damage, target.Status, Receipt: dropped.Receipt));
         }
         BattleOutcomeSelection.RequireContinuing(battle, reactions);
-        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed), inventory.GetActor(actorRef), Kind, reactions)
+        if (consumable is not null)
+        {
+            // Drops see the pre-payment pack, including the slot this action will free.
+            int slot = itemSlot!.Value;
+            var holder = inventory.GetActor(actorRef);
+            effects.Add(new("item-consumed", actorRef, holder.SourceLoadout!.Items[slot], slot));
+            var paid = BattleEquipment.RemoveItem(holder, slot);
+            inventory = inventory.With(actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? paid : unit));
+        }
+        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
+            inventory.GetActor(actorRef), BattleActionKind.AttackSpell, reactions)
             : (Amount: 0, Seed: seed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
         effects.AddRange(award.Effects);
         if (gold != battle.Gold) effects.Add(new("gold", actorRef, battle.Gold, gold));
         var prepared = inventory.With(mainSeed: award.Seed, gold: gold,
             actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), actor.IsAlly ? new(actorRef, award.Amount) : null,
-            effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: action.ItemSlot);
+            effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: itemSlot, AttackItem: consumable);
 
         int Roll(ushort range, string purpose, ActorRef target)
         {

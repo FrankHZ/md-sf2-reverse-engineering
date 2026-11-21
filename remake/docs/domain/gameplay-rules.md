@@ -241,6 +241,17 @@ native inputs and resource limits. The [early enemy decision slice](#finite-earl
 adds BLAZE1/HEAL1; other damage families/ranks, silence,
 Kazin recruitment and full Battle03-07 story are outside this outcome.
 
+## Offensive battle consumables
+
+The Item menu binds Shining Ball and Blizzard from the held slot, with one adjacent opposing
+target. The shared damage rule supplies element resistance, critical and downward variance,
+damage EXP, kill credit, gold and ordered drop evaluation. Promotion affects EXP eligibility.
+The held effect uses its base power and skips MP, learned rank and silence cast checks.
+A lethal effect checks drop capacity before compacting the chosen slot. Consumption performs
+the existing stat refresh and the item scene returns through ordinary reaction, EXP and turn
+completion. Held copies remain ordinary custody in Field and Caravan.
+[Original rules and ordinary remake observations](offensive-items-design.md#ordinary-remake-observations)
+
 ## Opening field inventory and use
 
 The [Standard field-preparation agreement](../application/opening-session-lifecycle.md#implemented-field-preparation)
