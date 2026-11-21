@@ -35,14 +35,27 @@ The remake keeps the live class in `BattleActorProgress.ClassId`. Validate the l
 and all required operands before publishing the existing church transaction. Resolve that pair
 for subsequent field inspection and recovery, Caravan deployment, battle entry/AI targets, growth,
 and victory, defeat or EGRESS return. An unavailable binding must give an attributed reason.
-Save the live class in field formats 1/3 and changed-class battle format 4 for both deployed and
-retained members. Battle v2 continues to restore historical starting classes. At restore, validate
-the exact actor/class pair, the legal equipment loadout and the packed book. Books can contain
-base-class ranks learned past effective level 21 before the rite. Preserve the learned higher
-rank and the bound lower-rank actions. Reject spells outside the member's reachable lists
-and preserve valid learned ranks whose effects still lack support. Restore may resolve actions
-from the book without rewriting it. No additional save version is needed for these pairs.
+Field formats 1/3 carry the live class. For battle saves without timed status operands, keep v2
+for unchanged classes and v4 for changed classes. Use the accepted #1966 battle v5 when a
+deployed actor has a live SLOW/BOOST counter or a last-applied counter operand. The v5
+class-term flag controls class presence for deployed and retained progress. A changed-class
+party carries class IDs for both, as in v4. Deployed actors keep the packed status word
+and, where it diverges, the sparse `LastRefreshCounters` operand. Capture and restore
+reject SLOW/BOOST counters on retained members. These combinations use the existing
+versions and save owners.
+
+At restore, validate the exact actor/class pair, the legal packed loadout and the packed book.
+Reconstruct derived stats using the saved last-applied counters when present, or the stored
+counters otherwise, with equipped effects applied afterward. Preserve the live counters for
+the next turn. Only the next real refresh seam applies the then-current counters, including
+any preceding after-turn decrement. Compare the detached continuation before publication.
+Books can contain base-class ranks learned past effective level 21 before the rite. Preserve
+the learned higher rank and the bound lower-rank actions. Reject spells outside the member's
+reachable lists and preserve valid learned ranks whose effects still lack support. Restore may
+resolve actions from the book without rewriting it.
 [Commit and persistence](church-promotion-design.md#commit-and-refresh-boundary) ·
+[Battle save codec](battle-save-and-continue.md#implemented-versioned-codec-and-shared-storage-b) ·
+[Timed-status save and restore](../domain/support-spell-status-design.md#save-compatibility-and-recovery) ·
 [Book contract](../../../docs/design/contracts/party/spellbook-state.md)
 
 Raise reads the resolved current class and stored level. The source price is `10 × level + 200`
@@ -193,11 +206,14 @@ new class combat rules in the preceding section are separate consumer gaps.
    `promotionClasses` with finite mapped actor/destination rows. Reuse `RegularPromotion` and
    existing class resolution. Generalize private reader, stat and presentation joins to the
    admitted pair, preserving authored profiles and initial PLDN/BRGN. Include source AI target
-   lookups, equipment masks, and battle v2/v4 and field v1/v3 restore validation in the first
-   consumer review. Make the offer state distinguish initial consent, unavailable special, special
-   decline, regular answer and back to selection. The current special-item receipt blocks
-   the regular branch even with an admitted destination. With the Wing held, present that
-   special branch explicitly, allow declining it into PLDN and leave the held word and F175
+   lookups, equipment masks, and field v1/v3 and battle v2/v4/v5 restore in the first consumer
+   review. Exercise a v5 round trip at settled battle input with a promoted actor carrying
+   divergent SLOW/BOOST counters, a retained promoted member, and valid packed books and
+   loadouts. Compare class, packed words, live and last-applied counters, derived DEF/AGI and
+   the next real refresh against uninterrupted play. Make the offer state distinguish initial
+   consent, unavailable special, special decline, regular answer and back to selection. The
+   current special-item receipt blocks the regular branch even with an admitted destination.
+   With the Wing held, present that special branch explicitly, allow declining it into PLDN and leave the held word and F175
    intact. Preserve the no-item regular path and the special acceptance boundary for
    [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
 2. **WIZ and the first retained spell caster.** Reuse the admission path for Kazin and the legal
