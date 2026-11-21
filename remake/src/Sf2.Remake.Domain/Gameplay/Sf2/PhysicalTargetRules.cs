@@ -89,6 +89,7 @@ internal static class PhysicalTargetRules
         11 => table == PhysicalPriorityTable.Flying ? 18 : table == PhysicalPriorityTable.Mage ? 2 : 30,
         12 => table == PhysicalPriorityTable.Archer ? 12 : 1,
         13 => table == PhysicalPriorityTable.Mage ? 11 : table == PhysicalPriorityTable.Flying ? 16 : 23,
+        17 => table == PhysicalPriorityTable.Mage ? 22 : table == PhysicalPriorityTable.Archer ? 7 : 4,
         22 => table == PhysicalPriorityTable.Flying ? 31 : table == PhysicalPriorityTable.Mage ? 16 : 19,
         _ => throw new BattleRuleException("ai-target-class", "target.classRule", true),
     };

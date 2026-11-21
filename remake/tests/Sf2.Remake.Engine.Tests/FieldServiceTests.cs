@@ -16,38 +16,55 @@ public sealed class FieldServiceTests
     private static GameSession Session(uint? gold = 100, ushort hp = 0, ushort status = 0,
         ushort secondHp = 100, ushort secondStatus = 0, byte level = 2, bool promoted = false, ushort maxHp = 250,
         ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false, bool power = false,
-        bool knight = false)
+        bool knight = false, bool wizard = false)
     {
         var original = FieldInventoryTests.Session().Current.Exploration!.Party;
         var source = FieldInventoryTests.Session().Definition.Encounters.Values.Single();
+        var sourceRule = knight ? BattleClassRule.UnpromotedKnight : wizard ? BattleClassRule.UnpromotedMage :
+            BattleClassRule.UnpromotedSwordsman;
+        byte[] book = knight ? [63, 63, 63, 63] : wizard
+            ? currentLevel >= 29 ? [139, 71, 6, 72] : [75, 76, 63, 63]
+            : currentLevel >= 22 ? [10, 13, 63, 63] : [10, 63, 63, 63];
+        byte baseClass = (byte)(knight ? 1 : wizard ? 3 : 0);
+        byte destination = (byte)(knight ? 13 : wizard ? 17 : 12);
+        byte weapon = wizard ? (byte)85 : (byte)50;
+        string SpellName(int id) => id switch
+        {
+            6 => "dispel", 7 => "muddle", 8 => "desoul", 10 => "egress", 11 => "blaze", 12 => "freeze", _ => "bolt",
+        };
+        var spells = book.Where(spell => spell != 63)
+            .SelectMany(spell => Enumerable.Range(1, 1 + (spell >> 6))
+                .Select(rank => new SpellRef(SpellName(spell & 63), (byte)rank))).ToArray();
+        var loadout = new BattleSourceLoadout([(ushort)(weapon | (armed ? 128 : 0)),
+            power ? (ushort)147 : wizard ? (ushort)24 : (ushort)127, 127, 127], book);
         var deployments = source.Deployments.Select(row => row.Actor != First ? row : row with
         {
-            Definition = new(row.Actor, knight ? BattleClassRule.UnpromotedKnight : row.Definition.ClassRule, level, maxHp, row.Definition.MaxMp,
+            Definition = new(row.Actor, promotion ? sourceRule : row.Definition.ClassRule, level, maxHp, row.Definition.MaxMp,
                 row.Definition.Attack, row.Definition.Defense, row.Definition.Agility, false, row.Definition.Move,
-                row.Definition.Spells, row.Definition.Physical! with { Promoted = promoted }, sourceLoadout: row.Definition.SourceLoadout),
+                row.Definition.Spells, row.Definition.Physical! with { Promoted = promoted },
+                sourceLoadout: wizard ? loadout : row.Definition.SourceLoadout),
         });
-        byte[] book = knight ? [63, 63, 63, 63] : currentLevel >= 22 ? [10, 13, 63, 63] : [10, 63, 63, 63];
-        byte baseClass = knight ? (byte)1 : (byte)0;
-        byte destination = knight ? (byte)13 : (byte)12;
-        var spells = book.Where(spell => spell != 63).Select(spell => new SpellRef(spell == 10 ? "egress" : "bolt", 1)).ToArray();
-        var loadout = new BattleSourceLoadout([armed ? (ushort)178 : (ushort)50, power ? (ushort)147 : (ushort)127, 127, 127], book);
         if (promotion)
         {
             var growth = new BattleGrowthDefinition(baseClass, 0, Enumerable.Repeat(new StatGrowth(20, 20, []), 5).ToArray(),
                 knight ? [] : [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
-            var equipment = new BattleEquipmentDefinition(20, [new(50, "Weapon", (1u << baseClass) | (1u << destination), 5, 1, 1)],
-                rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5)]);
-            if (knight)
+            var equipment = new BattleEquipmentDefinition(20, [new(weapon, "Weapon", (1u << baseClass) | (1u << destination), 5, 1, 1)],
+                rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5),
+                    new(24, "Black Ring", 1u << 17, RingStat.Attack, 0)]);
+            if (knight || wizard)
             {
                 var fixture = source.WithDeployments(deployments);
+                string baseCode = knight ? "KNTE" : "MAGE", destinationCode = knight ? "PLDN" : "WIZ";
                 var classDefinitions = new PrivateBattleDefinitions(null!, [],
-                    [new(13, "PLDN", "Paladin", 7, "NONE", "CENTAUR", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
-                    [new(50, "WEAPON", "Weapon", "Weapon", "KNTE|PLDN", ["KNTE", "PLDN"], 1, 1, 0,
+                    [new(destination, destinationCode, knight ? "Paladin" : "Wizard", (byte)(knight ? 7 : 5), "NONE",
+                        knight ? "CENTAUR" : "MAGE", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
+                    [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + destinationCode, [baseCode, destinationCode], 1, 1, 0,
                         "WEAPON", "NOTHING", "NOTHING", 0, [new("INCREASE_ATT", 5)])], [], [], []);
                 var stats = Enumerable.Repeat(new { start = 20, projected = 20, curve = System.Array.Empty<int>() }, 5);
                 var rows = JsonSerializer.SerializeToElement(new[] { baseClass, destination }.Select(classId => new
                 {
-                    actor = First.Value, classId, stats, spells = System.Array.Empty<int>(),
+                    actor = First.Value, classId, stats, spells = book.Where(packed => packed != 63)
+                        .Select(packed => new { packed, level = 22, spell = SpellName(packed & 63) }),
                 }));
                 deployments = BattleGrowthReader.Bind(rows, new ScenarioDefinition("promotion-test", [fixture], classDefinitions))
                     .Single().Deployments.Select(d => d.Actor != First ? d : d with
@@ -86,7 +103,8 @@ public sealed class FieldServiceTests
         if (promotion)
             party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
                 Progress = a.Progress! with { ClassId = baseClass, SourceLoadout = loadout, Spells = spells, BaseMove = 8 } }
-                : knight && a.Actor == Second ? a with { SourceLoadout = new([118, 127, 127, 127], [63, 63, 63, 63]) } : a),
+                : (knight || wizard) && a.Actor == Second ? a with
+                    { SourceLoadout = new([wizard ? (ushort)121 : (ushort)118, 127, 127, 127], [63, 63, 63, 63]) } : a),
                 party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, [Second], party.ItemCustody);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, [], party))).Session;
@@ -212,6 +230,47 @@ public sealed class FieldServiceTests
         Assert.Equal(BattleMover.Centaur, projected.Deployment.Definition.Mover);
         Assert.Equal(7, projected.Move!.Value);
         Assert.Equal(30, projected.Attack!.Value);
+    }
+
+    [Theory]
+    [InlineData(24, new byte[] { 75, 76, 63, 63 })]
+    [InlineData(29, new byte[] { 139, 71, 6, 72 })]
+    public void WizardPromotionRetainsTheMembersBookAndRodAfterDecliningASeparateHoldersBook(byte level, byte[] book)
+    {
+        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: true, wizard: true);
+        var prior = Member(session, First);
+        var holder = Member(session, Second);
+        var mage = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!.Definition;
+        Assert.False(BattleEquipment.IsEligible(mage, 24));
+        Assert.Equal(10, mage.CastPower(10));
+
+        Choose(session, ChurchAction.Promote);
+        var offer = Wait(session).Candidates!.Single(c => c.Member == First);
+        Assert.Equal(new HeldPromotionItem(Second, 0, 121), offer.SpecialItem);
+        Accept(session, new SelectPromotion(Wait(session).Token, offer));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        Assert.Equal(ChurchPhase.Special, Wait(session).Phase);
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, false));
+        Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+
+        var member = Member(session, First);
+        Assert.Same(holder, Member(session, Second));
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = 17, Level = 1, BaseMove = null } }, member);
+        var deployment = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
+        var wizard = deployment.Definition;
+        Assert.Equal(BattleClassRule.Wizard, wizard.ClassRule);
+        Assert.Equal(BattleMover.Mage, wizard.Mover);
+        Assert.Equal(5, wizard.Move);
+        Assert.Equal(12, wizard.CastPower(10));
+        Assert.True(BattleEquipment.IsEligible(wizard, 24));
+        var actor = new BattleActorState(deployment, member.Hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
+        Assert.Equal((byte)85, BattleEquipment.EquippedWeaponItem(actor));
+        uint seed = session.Current.Exploration!.Party.MainSeed;
+        var grown = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(actor, 1, ref seed, []);
+        Assert.Equal(2, grown.Level);
+        Assert.Equal(book, grown.SourceLoadout!.Spells);
+        Assert.Equal(actor.Spells, grown.Spells);
     }
 
     [Theory]

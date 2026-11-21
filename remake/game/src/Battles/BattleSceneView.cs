@@ -642,7 +642,11 @@ internal sealed partial class BattleSceneView : Control
     private void SetFrame(bool ally, int frame)
     {
         var visual = ally ? _allyVisual! : _enemyVisual!;
-        var resource = visual.Frames[frame]; Bind(ally ? _ally : _enemy, resource);
+        var resource = visual.Frames[frame];
+        var body = ally ? _ally : _enemy;
+        Bind(body, resource);
+        // Prepared bodies can be supplied at native size. The scene uses logical pixels.
+        if (ally && body.Texture.GetWidth() == 96 && body.Texture.GetHeight() == 96) body.Scale = Vector2.One;
         if (ally) { _allyFrame = frame; _allyResource = resource; } else { _enemyFrame = frame; _enemyResource = resource; }
     }
     private void Weapon(BattleSceneWeaponFrame? frame, Vector2 offset)

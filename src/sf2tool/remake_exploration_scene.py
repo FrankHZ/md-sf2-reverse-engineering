@@ -20,6 +20,7 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         (compiler.upstream / sprites_path).read_text(encoding="utf-8"), "mapsprite"
     )
     promoted = {row["member"]: row["class"] for row in compiler.promotion_classes}
+    ordinary = {"SDMN": "HERO", "KNTE": "PLDN", "MAGE": "WIZ"}
     result = []
     for character in range(compiler.equates["COMBATANT_ALLIES_NUMBER"]):
         role = compiler.number("CLASS_" + classes[character])
@@ -35,16 +36,13 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
                 sprite -= 1
         variant = {}
         if character in promoted:
-            destination = compiler.number("CLASS_" + promoted[character])
-            soldier, hero = compiler.equates["CLASS_SDMN"], compiler.equates["CLASS_HERO"]
-            knight, paladin = compiler.equates["CLASS_KNTE"], compiler.equates["CLASS_PLDN"]
-            if (role, destination) not in ((soldier, hero), (knight, paladin)):
+            destination = promoted[character]
+            if ordinary.get(classes[character]) != destination:
                 raise ValueError("unsupported promotion mapsprite")
             variant = {
-                "promotionClass": destination,
-                # PLDN is the ordinary odd class in the source's paired class range.
-                "promotionSprite": compiler.number("MAPSPRITE_" + sprites[character])
-                - (destination == paladin),
+                "promotionClass": compiler.number("CLASS_" + destination),
+                # For these paired classes, the regular promotion follows the base sprite.
+                "promotionSprite": sprite + 1,
             }
         rohde = character == compiler.equates["ALLY_ROHDE"]
         result.append(

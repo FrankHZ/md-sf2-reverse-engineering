@@ -139,14 +139,12 @@ A palette or sprite match from another member is insufficient class admission.
   level 35 and MUDDLE/DESOUL effects need their own rank/action admission. Tyrin learns
   FREEZE 1–2 and BLAZE 1–2 by recruitment at 24, with SLEEP at effective 25, BOLT 1 at 28
   and later FREEZE/BOLT/BLAZE ranks. Preserve them per member and list unsupported ranks
-  explicitly. Kazin's retained BLAZE 2 or 3 is an ordinary first action. Confirm the same
-  packed book and rank choices after growth and cold Continue. A carried Black Ring becomes
-  class-legal for Equip and player Use, including Use while bare. Actual curse, BLAZE 2
-  from the item, breakage and repair remain with #1926 and #1952. Learned BLAZE is a separate
-  MP action. Resolve learned damage power from the current source class. The pinned promoted
-  BLAZE 2 calculation takes base power 10 to 12 before element resistance and RNG. Check
-  that adjustment on a learned cast and preserve the existing HERO witness's narrower
-  action claim. [Promoted damage calculation](../../../docs/design/contracts/battle/spell-resolution.md#1-resolve-base-power-and-caster-adjustment) ·
+  explicitly. WIZ resolves the Black Ring class mask. The ordinary ring interfaces and item
+  effects still depend on the supported item's own rules. Curse and BLAZE 2 from the ring
+  remain with #1926. Indra remains with #1952. Learned BLAZE is a separate MP action.
+  The pinned promoted BLAZE 2 calculation takes base power 10 to 12 before element
+  resistance and RNG. Item-origin damage uses the item's base power. Kazin's retained
+  book and paid cast were observed after promotion and cold Continue. [Promoted damage calculation](../../../docs/design/contracts/battle/spell-resolution.md#1-resolve-base-power-and-caster-adjustment) ·
   [Kazin growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats04.asm) ·
   [Tyrin growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats17.asm) ·
   [Current BOLT/HEAL/AURA and limits](church-promotion-design.md#current-battle-spells) ·
@@ -185,14 +183,15 @@ A palette or sprite match from another member is insufficient class admission.
 
 ### Admitted ordinary classes
 
-**Confirmed in the remake.** The #1956 package admits SDMN→HERO for Bowie and KNTE→PLDN for
-Chester, Rick and Eric. The three knights have their own growth, map sprites 6/28/34 and Battle26
-sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows each for Chester and Rick and six for
-Eric. Unarmed projection uses the member's body with the weapon layer hidden. Campaign scene
-admission shares these member bindings with earlier loaded encounters. Higins keeps starting
-PLDN palette 2. Rohde keeps starting BRGN. Ordinary Eric and Bowie observations are below.
-Ordinary promoted Chester and Rick remain **Unknown**. Other destination pairs have source
-rows and still need their own gameplay bindings and witnesses.
+**Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
+Chester, Rick and Eric, and MAGE→WIZ for Kazin and Tyrin. The three knights have their own growth,
+map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
+each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
+use map sprites 12/43 and Battle26 sprite 21 palettes 2/1. Each admits the four mounted
+rods/sticks. Unarmed projection uses the member's body with the weapon layer hidden. Earlier
+loaded encounters share the member bindings. Higins keeps starting PLDN palette 2 and Rohde
+keeps starting BRGN. Ordinary promoted Chester, Rick and Tyrin remain **Unknown**. The other
+destination pairs still need their own gameplay bindings and witnesses.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -263,7 +262,7 @@ A candidate's presence in the package or an engine case is independent of ordina
 | Family | First ordinary witness or gap |
 | --- | --- |
 | PLDN | English Eric covered special decline, fallen reserve promotion, Raise, Relief, both physical weapons and field/battle cold Continue. Chester level 1 was refused in Chinese. Rick is absent from the castle force lists and the registered Hassan/Battle17 journeys reach KNTE 19 and 10 EXP. Exact-level-20 native promotion remains **Unknown**. A separate Pacalon copy deposits the Wing before the ordinary offer. [PLDN reproduction](#pldn-ordinary-reproduction) |
-| WIZ | Living Chinese Kazin MAGE 29 gives retained high ranks and a paid BLAZE cast. English Kazin 27 is fallen and can be raised. Use the legal Battle26 Black Ring holder route only when checking #1926. Tyrin's initial Creed join was played. The corresponding promoted ordinary route remains **Unknown**. |
+| WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. His promoted ordinary route remains **Unknown**. [WIZ reproduction](#wiz-ordinary-reproduction) |
 | GLDT, SNIP, BWNT, BDBT | Jaha WARR 21 (both), Elric ACHR 22 and Janet ACHR 26 (Chinese), May RNGR 21 and fallen (both), Luke BDMN 23 English or 22 Chinese and fallen (both). Play one repeat per coherent group with active or reserve Relief, checking each new pose and legal attack. Randolf's ordinary Creed choice supplies a legal alternate recruit. The promoted continuation remains **Unknown**. |
 | VICR | Sarah PRST 40 in both castles and Karna PRST 28 in Chinese. Use one promoted HEAL witness with partial HP, a smaller learned rank and actual award, plus a legal field/book/cold round trip. Preserve the differing books with the same implementation. |
 | WFBR, PHNX | Chinese Gerhalt WFMN 29 and Peter PHNK 31 in both castles. Compare the reachable movement cost/land effect against the preceding class, then observe the unarmed action and return. |
@@ -353,3 +352,32 @@ supplies the ordinary v5 witness. The Steel Lance run published both slots befor
 quit exit `0xC0000005`. The Javelin, Power Ring, cold v5, EGRESS and cold field results were
 published independently. Some successful exits report ObjectDB teardown warnings. #1716
 remains deferred.
+
+
+## WIZ ordinary reproduction
+
+Use the registered `derived/issue1956/wiz-v1` package. It has 145 files and 294,441,776 bytes,
+a 48,389-byte increase over `pldn-v1`. The existing Mount consumes the reviewed retail library
+at commit `52435b04f49a84a6a9ed4444620055a070648001` and the pinned source metadata. It binds six
+walking strips and eight battle body frames, reuses 16 mounted weapon raster keys and adds two
+class growth rows. The admitted rods and sticks share the same body colors in both Mage and
+Wizard palettes. One package serves both locales. Allow 1 GiB of free disk for package assembly.
+[PowerShell entry and private asset inputs](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+Use `Boot.ps1` from the registered `derived/issue1956/wiz-review` handoff. It takes an isolated
+checkout via `-Repo`, a fresh `-Sample` and separate `-Journey`. Start with a copy of the Chinese
+Pacalon castle slot. Run `promote` and `road` in the same journey, then use the resulting
+`battle-ready-slot.json` in separate `rod` and `cast` journeys. Follow the cast with `cast-cold`,
+`egress` and `field-return-cold`. The handoff lists the precise seed and checkpoints.
+
+| Boundary | Observed result |
+| --- | --- |
+| Church and field v3 | Living Kazin MAGE 29/5 became WIZ 1/0. He kept HP 35, MP 55, earned bases 18/29/41, the equipped Wooden Rod and the four packed spell words. The finite command 25 played once and `MUSIC_CASTLE` resumed. No Secret Book was carried in this witness. Field cold Continue preserved the class, resources, book and equipment while the ambient field state and main seed advanced. |
+| Battle26 rod and cast | Kazin entered with MAGE terrain movement, MOV 5, field sprite 12 and battle sprite 21 palette 2. On separate forks he attacked with Wooden Rod and cast learned BLAZE 2 on the Lesser Demon. The rod hit for 1 HP. The cast took 6 MP, dealt 12 HP and awarded 15 EXP. Both actions returned to battle input. The cast left the packed BLAZE 3, MUDDLE 2, DISPEL 1 and DESOUL 2 ranks intact. |
+| Battle v4 and EGRESS | Complete decoded battle data matched on cold re-save at both the ready and post-cast checkpoints. Bowie cast EGRESS and returned to Map36. A fresh field v3 Continue retained Kazin's Wizard status, rod, spell book and 15 EXP. |
+| Tyrin and special fallback | Controlled engine cases use Kazin’s and Tyrin’s packed books and levels with a rod equipped and a Secret Book held elsewhere in the party. Declining the special branch preserves the held word. The Tyrin WIZ growth row retains his own learn schedule. A promoted Tyrin ordinary journey and Kazin's native Secret Book fallback remain **Unknown**. |
+
+The first native rod run reached an AI lookup error (`ai-target-class`). WIZ now uses its
+source priority row. The next probe recorded a healing scene as a rod action. Its receipt is
+retained and the ordinary rerun identifies Kazin's committed strike and target. Successful
+native runs exited 0. Some reported ObjectDB teardown warnings. #1716 remains deferred.

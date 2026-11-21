@@ -209,16 +209,26 @@ $token = [guid]::NewGuid().ToString('N')
 # Assemble the PLDN package with growth and class-conditioned field sprites.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family All `
     -Command 4,25,87,99 -Upstream $pinnedSource -Destination "$root/pldn-$token"
+
+# Add the two WIZ progressions and appearances to the registered PLDN package.
+$progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
+& $run -Repo $repo -Operation Mount -Library $runtime -Family wiz `
+    -Package "$progression/pldn-v1" -Upstream $pinnedSource -Destination "$progression/wiz-$token"
 ```
 
-Mount without `-Upstream` uses the prepared family files and closed base package. The stable
+Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
 `promotion-v1` package records that assembly with the three PLDN appearances. When PLDN is
 selected, a supplied `-Upstream` adds growth and class-conditioned map sprite bindings from the
 pinned source tables. The resulting progression package admits Chester, Rick and Eric. It uses
 prepared media and needs no ROM, audio capture or production scratch. [PLDN reproduction](../application/ordinary-promotion-classes.md#pldn-ordinary-reproduction)
 
-Both modes preserve the relative world, scene and entry dependencies, mount the selected WAVs
-and publish a fresh directory after checking closure. Select the result with the ordinary
+The WIZ mount selects already prepared Kazin and Tyrin walking and battle bodies, reuses
+the existing rod/stick layers and binds the two members' progression from `-Upstream`.
+Use the resulting `wiz-v1` for both locales. Ordinary Kazin was played through Battle26. Tyrin's
+promoted ordinary route remains **Unknown**. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
+
+Mount preserves the relative world, scene and entry dependencies, mounts any selected WAVs
+and publishes a fresh directory after checking closure. Select the result with the ordinary
 environment variables above. `Mount -Family All` includes the first consumers' 25, 87 and 99 cues.
 Select other prepared cues with `-Command`. For new maps, bodies and effects, use the original ID
 in the family index to select its atlas, tile bank, frames, palette and operands.
