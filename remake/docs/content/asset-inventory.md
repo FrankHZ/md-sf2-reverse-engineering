@@ -16,113 +16,73 @@ The CSV has 7,040 rows for this pack. Shared art appears once per logical owner 
 
 ## Retail original preparation
 
-**High rigor.** The scale of the retail source, several independent producers, and the existing
-world/scene admission limits require separate acceptance for the source inventory, candidate media,
-and a consumer-ready package. Use the registered 2 MiB USA ROM and SF2DISASM
-`c834c652b6862bc5679fd7f69a38a7093206efc6`. This work owns offline Original resources for later
-feature tickets. Story, rules, HD, localization work and release are outside the preparation scope.
+**High rigor.** Prepare the original private resources once for multiple campaign consumers.
+The fixed input is the registered 2 MiB USA ROM and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The local asset Git publication owns the
+reviewed bytes. The configured shared data root owns the working publication and assembled
+packages. Runtime reads ordinary world/scene/entry inputs. Gameplay admission, translation beyond
+the supplied name overlay, HD and public distribution have separate owners.
 
-`sf2tool.remake_private_inventory` reads pinned Git objects and accepted H2 metadata. It also inspects
-an explicitly selected package and asset Git manifest. The local asset repository's
-`manifests/retail-source-and-coverage.csv` records the source ID, shared payload symbol, source
-owner and selected package availability. `present` means the named selection contains that resource
-or binding. `missing` means it is absent from the inspected selection. `source-only` means the
-source ID is known and reusable output at the same granularity is unverified. `not-applicable`
-marks absent slots, sentinel or silent targets, and item weapons without a drawn overlay. Alias
-slots retain their referenced symbol. Count distinct payloads by source owner and symbol within
-each raw family. Consumer rows may refer to the same source, such as normal and highlighted icons.
+The base inventory joins H2 contracts, pinned pointer tables, aliases, class/item references and
+the reviewed world/entry and asset manifest. Its 3,611 rows include distinct source IDs and
+consumer bindings. The separate 7,040-row demo table above describes a different selection.
+`manifests/retail-v1-coverage.csv` in the private asset Git adds the actual preparation status and
+selector alongside each base row. Use its `retail_status` column. The current cut has 3,372
+prepared rows, 32 command-menu bindings already present, 204 inapplicable slots, one partial
+body and two missing references to the same member appearance. Every new family index identifies
+the ROM and source revision. Aliased slots refer to shared physical art.
 
-| Family | Retail source inventory and valid variants | Production and reuse boundary |
-| --- | --- | --- |
-| Maps, tiles, blocks, layout, foreground and palettes | 79 map headers, 115 tilesets, 16 palettes. Each map records five tileset slots, palette ID and block/layout/area/roof/animation references. The accepted canonical map import records 19,771 decoded block definitions and 315,392 layout words. Blocks stay map-local and foreground uses area/roof/copy rules. | `sf2 texture extract` and `sf2 texture map` are diagnostic producers with split H1 inputs. Runtime reuses prepared maps via `remake_exploration_content` and the selected world. The stable selection contains 50 map presentations. Full block-by-block output closure and dynamic plane observations remain open. |
-| Walking and portraits | 720 walking strip pointers with 669 non-sentinel physical payloads. Each ordinary strip carries two phases. Lateral mirror is a projection. Routed specials use their own table. Class rows retain the ally mapsprite base, with class adjustments owned by `GetAllyMapsprite`. 56 portrait pointers resolve to 52 payloads, including eye and mouth operands. | `sf2 texture assets` prepares ordinary sheets. The world carries selected strips, poses and portrait atlases. The source sentinel does not request an ordinary three-strip export. Complete special/action binding remains open. |
-| Battle bodies, weapons, terrain and effects | 86 body slots, 408 indexed frames and 167 sprite palettes. Ally class and enemy species map to a body/palette pair. Item ID maps to a weapon graphic/palette pair. Background and ground each have 30 slots with aliases. Separate animation tables, 23 spell containers, four invocation containers, status and transition resources own their sequences. | `remake_battle_scene_content` publishes selected battle scenes. Prepared scenes now share identical frame/terrain/effect payloads across battle documents. The library preserves each bound body, palette, item and animation selection. Full retail coverage requires the missing prepared inputs. |
-| Interface, icons, title and witch | 163 assembled icon slots. Spell storage starts at 130 and includes other-art aliases. Selected icons apply the source highlight mask. Spell level is a text selection. Dedicated UI, special-screen and witch menu resources retain their source symbols. | `remake_command_menu`, `remake_entry_content` and the diagnostic `sf2 texture assets`/`misc` producers have different outputs. The stable world includes 32 mounted field/service command states and an entry with six named rasters. Modern panel chrome has its own [presentation owner](presentation-assets.md). |
-| Music and effects | 64 music command slots, 37 non-silent targets, 27 silent/alias slots and 56 finite SFX commands. Track music by command and finite SFX by reached `(command, Timer B)` variant. | [Audio capture and admission](../godot/audio.md#audio-boundary) owns the reviewed source intervals and PCM identity. The selected world/entry and existing asset manifest jointly include rows for 19 music and 31 SFX commands. Variant completeness and original waveform parity remain open. |
-
-The current retail CSV covers resource IDs and source relationships at these grains. It does not
-enumerate each map cell, each battle frame/palette output, every possible audio timer context, or
-the full UI behavior surface. Every new family publication needs its own variant completeness check
-before feature tickets take it as a dependency.
+| Family | Prepared material and reuse |
+| --- | --- |
+| Field maps | All 79 descriptors with native atlases, 115 decoded indexed tilesets, 16 CRAM palettes, 77 shared blocksets and 77 shared layouts. The 19,771 block definitions and 315,392 layout words retain tile/cell flags. Area, foreground/roof, flag and step-copy records and tile animation operands are joined by map ID. |
+| Walking and portraits | 720 ordinary direction slots. 669 distinct physical strips carry both phases, with nine sentinel slots and the remaining aliases. 59 valid member/class bindings include ordinary and promoted field IDs, battle sprites and palettes. The six special/action streams retain native indexed tiles and the ten source pointers. The 56 portrait slots select 52 unique PNGs and retain eye/mouth tile mappings. Special-sprite dispatch, coordinate assembly and timed presentation still depend on the engine capability. |
+| Battle | Native-size transparent frames for 85 bodies with 163 palettes, plus the separate PLDN selection below. Both ally/enemy animation tables retain headers and frame/weapon operands. The 103 enemy species map to body/palette. 23 four-frame weapon tile banks, 42 two-color palettes and 84 item selectors retain the caller's body palette. All 30 ground and 30 backdrop pointers resolve to their physical variants. 23 spell containers, four invocation containers, status/transition graphics and Bolt sprite operands are available. Indexed effect tiles and control operands require the effect's original composition rule. No encounter matrix is generated. |
+| UI and entry | All 163 source icon slots have normal and highlighted art. The raw other-art slots keep their own identities. Only supported semantic keys are mounted. The nine UI tile groups and font have prepared images. Nine special-screen streams are decoded. Private title/witch resources include palette/layout/bubble operands and the six existing mounted entry rasters. |
+| Audio | The base world/entry and new WAV candidates jointly cover all 37 non-silent music commands and 56 SFX commands. The other 27 music slots select silent targets. New production supplied 18 music and 25 SFX candidates. Every new SFX records the controlled music timer context. The already admitted additional timer variants remain in the base package. Arbitrary caller/timer combinations and hardware waveform equality remain **Unknown**. |
 
 ### First consumers
 
-| Ticket | Selected source operand and observed availability | Remaining connection |
+| Consumer | Available selection | Remaining acceptance |
 | --- | --- | --- |
-| #1956 | PLDN class/sprite 13. Chester 2 uses field 6 and palette 0, Rick 12 uses 28 and palette 1, Eric 14 uses 34 and palette 3. Those six field/battle bindings are absent. Higins 19 already has field 48 and palette 2 with seven item bindings in Battle26. | Produce and admit the three missing appearances. The accepted field compiler currently admits Hero as its promotion variation. The current battle producer only selects the KNTE special-spear animation 80. Source `GetAllyAnimation` also has PLDN/PGNT cases 81/82. Candidate output needs review at those interfaces before publication. |
-| #1956 | `MUSIC_PROMOTION` is decimal 25, hex `19`, with source Timer B `CE` in `music25.asm`. `audio-25-c6` is decimal command 37. No selected 25 PCM was found. | Reviewed finite PCM and the promotion consumer's actual preceding-music restart. |
-| #1950 and #1962 | `SFX_JUMP` 87 (`57`) and `SFX_BLOAB` 99 (`63`) are absent from this selection. | Capture and verify the reached timer contexts. Their `SessionAudio.SoundSlots` classifications and gameplay callers remain with the consumer tickets. |
-| #1967 | MUDDLE 7, DESOUL 8 and SLEEP 9 have no normal or selected art in the chosen field and Battle26 selection. The #1941 zh-CN catalog supplies 7 and 8. The [supplemented catalog](presentation-assets.md#sleep-display-name) supplies 9. | Prepare the missing icon pairs. Learned magic admission remains independent of icon availability. |
+| #1956 | Chester, Rick and Eric field sprites 6, 28 and 34, each with three 48×24 two-phase strips and the original portrait/speech operands. Chester and Rick also have Battle26 PLDN sprite 13 palettes 0 and 1, five frames and seven item bindings each. Their spear/javelin attacks select sequence 81. The base supplies Higins palette 2. Decimal music 25 (`19` hex) is a 433,106-sample-frame finite cue, Timer B `CE`. | Eric's battle palette 3 is the single outstanding production step. The previous Eric-only approval rejection preceded process creation. The user-run family below invokes the existing scene producer. The current accepted Content reader rejects the two newly supplied promoted KNTE members at `scene-ally-member`. #1956 owns admission, the rite and music resumption. |
+| #1950 / #1962 | Decimal 87 JUMP has 15,142 sample frames under Castle Timer B `D2` from Bedoe Map10. Decimal 99 BLOAB has 8,440 under Town `CB`. The latter is a controlled field context. | Both WAVs are available. Their feature tickets own the missing `SessionAudio.SoundSlots` classifications, actual calls and natural trigger verification. |
+| #1967 | Both states for spell IDs 7 MUDDLE, 8 DESOUL and 9 SLEEP were read from the new field and Battle26 bindings. The prepared zh-CN catalog includes all three names. | Actual battle use and rule behavior belong to the consumer. |
 
-**Confirmed:** the registered #1738, #1939, #1941 and #1966 worlds also lacked these promoted field
-IDs, the priority icon pairs and audio commands 25/87/99. The three registered Battle26 scenes in
-that set had only Higins's PLDN binding. This is a bounded reuse search of four package selections.
+**Confirmed.** Offline assembly from the stable files yielded a 145-file, 294,283,435-byte
+priority package. The production opening reader admitted the three new field sprites, resolved all
+six icons to equal field/battle bytes, and admitted looping command 4 and finite 25, 87 and 99.
+A bounded Godot WASAPI playback of those four new admitted WAVs wrapped 4 with playback active
+and emitted exactly one Finished for each finite cue. The additional package with Chester/Rick
+battle rows reproduced the member-admission failure described above. Previously recorded original
+New Game and Continue observations and the four-object exit warning remain archived with the base.
 
 ### Resource budget and observed pilot
 
-Canonical input is 2 MiB plus pinned source and, where required, a retained 24 MB H1 listing.
-An indexed 4bpp tile buffer expands by 8× as RGBA. The 19,771 map blocks would occupy about
-43.5 MiB as independent native-size RGBA blocks, or 58 MiB with base64, before map layout data.
-The indexed battle frame corpus is about 2.2 MiB, about 17.3 MiB if rendered once per frame before
-applying palette variants. Per-frame color variants, scale buckets, PNG compression and JSON affect
-the final size. Budget a 1 GiB scratch ceiling and one family at a time for the initial visual
-pilots. Verify native size and lifetime before choosing a release budget. The existing 128 MiB
-world and 4 MiB battle-scene document ceilings still govern assembly.
+Run one family and one emulator at a time. Indexed graphics scale with unique resources, frames and
+actual palettes. Music uses 176,400 bytes/second for stereo PCM16 at 44.1 kHz. The visual pilot
+produced 326 icon states in 0.47 s. Maps took 5.25 s, 85 battle bodies 5.35 s, and the two-member
+PLDN scene preparation 4.83 s. The source listing is about 24 MB. A timed finite music 25 pilot
+took 6.73 s including source and library setup. Its 4,121,348-byte capture produced a 1,732,468-byte
+WAV. Worktree scratch measured 10,138,595 bytes after staging that pilot. Sampled Python/emulator
+working sets together peaked at 860,676,096 bytes, and the emulator peak was 853,745,664 bytes.
+Both the crop and source capture reproduced byte for byte. The first new loop 4 used
+42,685,004 capture bytes and 8,290,156 candidate WAV bytes. The first 43 successful native runs took about 398 seconds
+in total. The failed boundary and timed finite repeat took another 19 seconds. For the finite
+pilot, scratch plus its stable review copy occupied about 16 MB. The current reviewed library
+contains 2,237 files and 1,095,158,363 bytes including the retained source WAVs.
 
-Audio is separate from the visual budget. Stereo PCM16 at 44.1 kHz costs 176,400 bytes/second.
-At a planning ceiling of 180 seconds per non-silent music target and five seconds per SFX context,
-37 music targets would cost about 1.09 GiB and one context for each of the 56 effects about 47 MiB.
-Retaining both capture and runtime PCM plus a working derivative needs approximately 3.5 GiB.
-Two full cycles at the music ceiling take up to 3.7 hours at real time before setup or review.
-These are planning assumptions. Measure the first missing finite cue and loop separately. Replan
-if the duration bound or reached context count grows, and retain only reviewed required captures.
-No parallel emulator sessions or per-frame campaign capture are required.
+The 18 music candidates use 196,874,396 runtime WAV bytes plus 775,395,168 source WAV bytes.
+The 25 sound candidates use 2,137,372 and 103,033,700 bytes respectively. Keep these separate from
+the visual budget. Music 15 initially lacked a whole-channel recurrence in the bounded check.
+A 30,000-frame capture with a wider observation window matched full channel records at frames
+4,154 and 7,969. The failed capture remains available locally. Loop boundaries establish driver
+state recurrence. Perceptual seam review and natural gameplay across every track remain **Unknown**.
 
-**Confirmed:** a representative publication reused the registered #1966 world and Battle01 scene
-plus the existing #1857 entry/opening inputs. The closed package is 141 files and 284,132,227 bytes.
-Copy and direct byte comparison took about two seconds on the primary volume. A separate byte
-check of a copy rebuilt from the stable package took 0.64 seconds at 256 MiB peak working set.
-The inventory took 2.47 seconds at 257 MiB peak with the selected 102 MB world and pinned source.
-Assembly allocates at most one staged deliverable in addition to the supplied input. Its work is
-linear in bytes parsed/copied and the inventory visits the source ID tables once. No ROM decode was
-needed for this pilot. Extraction time/memory and missing media quality remain **Unknown**.
-
-**Confirmed** from the stable package in the configured Godot Debug adapter. Ordinary New Game
-mounted Map3 at (56,3). Six entry textures loaded. Original title command 28 finished once and the
-Witch command 10 wrapped from 35.393 s to 6.347 s while still playing on WASAPI. The process exited
-0 with empty stderr. A separate ordinary cold Continue mounted the retained Battle26 deployment
-with Higins class 13, level 7, 50 HP and Javelin, and read a live texture for field resource 48.
-The four Battle26 command icons were mounted, including the selected Stay raster. It exited 0
-with a four-ObjectDB-instance cleanup warning. The witness stopped at ActionChoice. It establishes
-deployment and mounted scene availability, while the three missing PLDN appearances, their attack
-scenes and natural promotion path remain **Unknown**.
-
-Use the [private preparation commands](presentation-assets.md#reuse-a-closed-private-package) to
-reproduce the package without producing-worktree assets and to select it for later consumers.
-
-### Prepared library publication
-
-**Confirmed:** the selected closed package stages 10,651 resource bindings across eleven families,
-with 1,516 stored payload files. The 239,729,200-byte library includes 18,229,664 bytes of templates,
-bindings and passthrough package files. Shared UI accounts for 5,588 bindings and 233 payloads.
-Music accounts for 201,384,940 bytes and SFX for 9,284,756 bytes. The UI pilot took about 2.9 seconds.
-Resuming all families took 6.2 seconds and assembling from the library took 7.7 seconds.
-Reassembly yielded the same 141-file set, including 28 JSON documents equal by parsed value and
-113 remaining files equal by byte. That comparison took 1.03 seconds at 368 MiB peak working set.
-The UI-only library refused assembly before publishing a destination.
-
-**Confirmed** at the ordinary Content entry points using the library output. The opening reader
-admitted all 26 encounters, 50 maps, 146 sprites and 42 portraits. Battle26 resolved five frame
-references for the supplied PLDN sprite 13/palette 2, and the selected Stay and item icons resolved
-to valid rasters. The entry reader admitted six PNGs. World command 8 retained a loop and command
-19 remained finite. One prepared item icon resolved to one payload across 27 documents.
-This reader observation leaves the previous runtime receipts in place.
-
-The published version and code commit are recorded in the local asset repository's
-`manifests/prepared-library-v1.json`. Select the stable version and use the tracked
-[family staging and assembly commands](presentation-assets.md#assemble-from-the-prepared-resource-library).
-This publication covers the available package resources. The missing media and original
-waveform, raw layout/tile and complete animation variant coverage remain open.
+Allow 1 GiB headroom for a single visual or PLDN operation. On a fresh complete rebuild allow
+5 GiB for the working and stable publications before the additional private Git copy. Disk use
+depends on retained captures and package copies. Stop on input drift or a source/renderer
+disagreement. A failed family leaves the previous publication available.
+[Preparation, assembly and recovery commands](presentation-assets.md#prepare-and-mount-retail-resources)
 
 ## Map3 coverage and treatment
 

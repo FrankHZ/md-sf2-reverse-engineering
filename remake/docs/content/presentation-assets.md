@@ -157,57 +157,67 @@ uv run --locked python -m sf2tool.remake_private_inventory --upstream $upstream 
     --catalog $catalog --output $inventory
 ```
 
-### Assemble from the prepared resource library
+### Prepare and mount retail resources
 
-`sf2tool.remake_private_library` stages resources from a reviewed, closed package. Select its
-source version explicitly when preparing and a fresh destination when assembling. Use PowerShell
-7 and the tracked [launcher](../../../tools/Prepare-PrivateAssets.ps1), with an absolute path to the
-checkout containing this revision. The launcher loads that checkout's private configuration.
-Production logic lives in Python. The stable library can outlive either checkout.
+Use the tracked PowerShell 7 launcher from any directory. Select a checkout containing this
+revision. Its checkout-local configuration selects the registered ROM, toolchains and shared data
+root. The source checkout and matching H1 listing are read-only. The launcher accepts explicit
+`-Upstream`, `-Listing`, `-Library` and `-Package` paths for installations with different layouts.
+The existing `issue1966-original` package and its retail source CSV are the baseline selections.
+The local-only asset Git records the reviewed version in `manifests/retail-v1.json`.
+`runtime/retail-v1` is directly selectable as `-Library` for Mount. Its matching
+`source/retail-v1` subtree holds the command captures and driver boundaries at the same relative
+family/command paths. For production recovery, copy both subtrees into a new registered derived
+library directory, retaining the file layout. The separately versioned base package still provides
+the existing campaign consumers and already admitted audio variants.
 
 ```powershell
-# $repo is the absolute checkout path. Load its local/private-inputs.ps1 to resolve the paths below.
-$launcher = Join-Path $repo 'tools/Prepare-PrivateAssets.ps1'
-$root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
-$prepared = Join-Path $root 'prepared-library-v1'
-$source = Join-Path $root 'issue1966-original'
-& $launcher -Repo $repo -Operation Prepare -Library $prepared -Package $source -Family All
-& $launcher -Repo $repo -Operation Status -Library $prepared
-& $launcher -Repo $repo -Operation Resolve -Library $prepared -Family UI `
-    -Id 'identity-icon.item.0.selected'
-$fresh = Join-Path $root ('assembled-' + [Guid]::NewGuid().ToString('N'))
-& $launcher -Repo $repo -Operation Assemble -Library $prepared -Destination $fresh
+$repo = (Get-Location).ProviderPath    # start here in the selected code checkout
+$run = Join-Path $repo 'tools/Prepare-PrivateAssets.ps1'
+& $run -Repo $repo -Operation Prepare -Family All
 ```
 
-Choose one or more of `maps`, `walking`, `portraits`, `battle-bodies`, `battle-weapons`,
-`battle-terrain`, `battle-effects`, `ui`, `entry`, `music` and `sfx` in place of
-`All` to stage that subset. Resume remaining families against the same source and library.
-An existing family must compare equal before reuse. A different reviewed input needs a fresh
-library version. `Status` compares availability against the selected source's bindings.
-Consult the [retail inventory](asset-inventory.md#retail-original-preparation) for missing source
-IDs. `Resolve` returns the stored payload paths under the library and the document uses of each
-variant. Scene IDs with different bytes retain distinct variants. Resolve those through the
-document where the binding occurs.
+`All` verifies existing results and prepares missing families, including the three-member PLDN
+selection. For the current private publication, the remaining user operation is
+`& $run -Repo $repo -Operation Prepare -Family pldn-eric`. This calls the existing
+`remake_battle_scene_content` producer with Battle26 and Eric's PLDN selection, validates its
+five body frames and weapon attack indices, and publishes the selected rows in a fresh
+`pldn-eric` directory. The two-member pilot took about five seconds and under 1 GiB of available
+scratch. Allow one minute and 1 GiB headroom for the single-member operation on the observed host.
+The earlier Eric pilot's rejection and absence of output are recorded in #2001.
 
-The library stores the map atlas and selected layout, area, block, palette and layout-event data
-by map ID. Walking strips use sprite and direction, portraits use portrait ID, and visual scene
-bindings use the existing raster identities. Assembly restores the associated actor and terrain
-selection and the authored gameplay metadata from the templates. UI and battle payloads that recur
-in other scenes share the same stored bytes. Existing embedded raster and PCM identities select
-the binary payloads, and externally stored audio retains its command/timer selection and WAV
-container. Entry PNGs retain their named locations. Existing HD fields pass through with the
-templates. The standard Content readers continue to authenticate the restored resource inputs.
+Choose `maps`, `walking`, `portraits`, `bodies`, `weapons`, `terrain`, `effects`, `icons`,
+`ui`, `entry`, `music`, `sfx` or `pldn` to prepare a single family. PLDN also exposes
+`pldn-party` (Chester and Rick) and `pldn-eric`. Audio supports a bounded selection such as
+`-Family sfx -Command 87,99`. A fresh run uses the pinned source inventory, the registered
+BizHawk/Genplus-gx installation and existing PCM producer. Completed commands publish
+individually. Retain a failure's named native scratch before retrying its command. Existing
+published versions are immutable. Restore damaged reviewed files from their private Git version
+or choose a fresh library destination.
 
-The default temporary budget is 1,024 MiB. Preparation checks free space against twice the selected
-source size. Assembly estimates the output from the referenced occurrences and includes base64
-expansion. A family publishes after it is staged. Assembly rejects an incomplete library and
-publishes only a complete directory. Use the ordinary environment selections above with
-`$fresh` as the package root. Successful assembly requires the library and configured code only.
+```powershell
+. (Join-Path $repo 'local/private-inputs.ps1')
+$root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
+$token = [guid]::NewGuid().ToString('N')
+& $run -Repo $repo -Operation Coverage -Destination "$root/coverage-$token.csv"
+# Current accepted readers can use these field, UI and audio additions now.
+& $run -Repo $repo -Operation Mount -Family walking,icons,music,sfx -Command 4,25,87,99 -Destination "$root/priority-$token"
+# After preparing Eric, assemble all first-consumer operands for the promotion ticket.
+& $run -Repo $repo -Operation Mount -Family All -Destination "$root/promotion-$token"
+```
 
-The previous Eric-only Battle26 candidate was rejected by automated approval in #1956 before the
-producer started. The [first consumer inventory](asset-inventory.md#first-consumers) records the
-missing PLDN, cue and icon selections. The library stages present, already prepared assets.
-Those missing media entries require supplied, reviewed inputs before they can be admitted.
+Mount reads only the prepared family files and the closed base package. It preserves the relative
+world/scene/entry dependencies, adds selected WAVs using the existing runtime WAV convention and
+publishes a fresh directory after checking closure. Select those packages with the ordinary
+environment variables above. `Mount -Family All` includes the first consumers' 25, 87 and 99 cues.
+Select other prepared cues with `-Command`. For new maps, bodies and effects, use the original ID
+in the family index to select its atlas, tile bank, frames, palette and operands. This keeps
+future story and class choices with the code that owns them.
+
+The closed-package template/deduplication experiment and its receipts remain reproducible at
+code commit `2097434ec68c2e709312c25adab7e638e9566ccd`. Direct ID-indexed production and
+the existing ordinary package files cover the demonstrated consumers without that intermediate
+representation. [Measured coverage and admission boundaries](asset-inventory.md#retail-original-preparation)
 
 ### Sleep display name
 
@@ -223,7 +233,7 @@ registered #1941 world display catalog. To reproduce it, read
 that object to `names`, and serialize to a fresh UTF-8 file. Keep the existing source identity,
 texts and name rows. The production display reader admitted 189 names and the same 2,221 messages
 against the assembled world. Resolving spell 9 returned 催眠 in zh-CN with no fallback. This
-observation covers label selection. The icon pair and ordinary spell presentation remain open.
+observation covers label selection. The retail publication supplies the icon pairs. Ordinary spell use remains with the consumer.
 
 ## Battle weapon operands
 

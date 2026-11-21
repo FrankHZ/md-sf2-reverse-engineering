@@ -366,6 +366,145 @@ def inventory(
     return rows
 
 
+def prepared_coverage(baseline, root, base, output):
+    """Join the source inventory to concrete prepared files without production inputs."""
+    records = {}
+    for path in root.glob("*/index.json"):
+        doc = read_json(path)
+        if doc["upstream"] != PIN:
+            raise ValueError("prepared family source revision differs")
+        for rel, size in doc["files"].items():
+            file = (path.parent / rel).resolve(strict=True)
+            if not file.is_relative_to(path.parent.resolve()) or file.stat().st_size != size:
+                raise ValueError(f"incomplete family: {path.parent.name}/{rel}")
+        records[path.parent.name] = doc["records"]
+    body = {(r["side"], r["sprite"], r["palette"]) for r in records.get("bodies", [])}
+    pl = {}
+    for part in ("pldn-party", "pldn-eric"):
+        if part in records:
+            scene = read_json(root / part / "scene-additions.json")
+            for r in scene["actors"]:
+                if not set(r["frames"] + r["weaponFrames"]) <= scene["rasters"].keys():
+                    raise ValueError("unresolved PLDN raster")
+                for member in r["members"]:
+                    pl[member] = part
+                body.add(("ally", r["sprite"], r["palette"]))
+    # The fixed base supplies the fourth PLDN palette and existing audio contexts.
+    world = read_json(base / "world.json")
+    field = world["world"]["presentation"]
+    old_scene = read_json(base / "inputs/battle26/battle-scenes.json")
+    for r in old_scene["actors"]:
+        if r["side"] == "ally" and r["sprite"] == 13:
+            body.add(("ally", 13, r["palette"]))
+            for member in r.get("members", []):
+                pl[member] = "issue1966-original/inputs/battle26"
+    old_audio = field["audio"] + read_json(base / "entry/entry.json")["presentation"]["audio"]
+    audio = {r["command"] for r in old_audio}
+    map_records = records.get("maps", {}).get("maps", [])
+    walking = records.get("walking", {})
+    classes = {(r["member"], r["slot"]): r for r in walking.get("classes", [])}
+    labels = {
+        (r["namespace"], r["index"])
+        for r in read_json(base.parent / "catalogs-v1/world.zh-CN.json")["names"]
+    }
+    present_icons = read_json(root / "icons/identity-icons.json") if "icons" in records else {}
+    families = {
+        "map": "maps",
+        "walk": "walking",
+        "portrait": "portraits",
+        "special-map-sprite": "walking",
+        "battle-weapon": "weapons",
+        "battle-ground": "terrain",
+        "battle-background": "terrain",
+        "battle-effect": "effects",
+        "battle-invocation": "effects",
+        "ui-tiles": "ui",
+        "special-screen": "ui",
+        "witch-menu": "ui",
+        "entry-mounted": "entry",
+        "icon-storage": "icons",
+    }
+
+    def location(row):
+        f, ident, sym = row["family"], row["id"], row["source_symbol"]
+        if row["status"] == "not-applicable":
+            return "not-applicable", ""
+        if f in ("music", "sfx"):
+            n = int(ident)
+            candidate = root / f / ident / "candidate.json"
+            if candidate.is_file():
+                asset = read_json(candidate)["asset"]
+                wav = candidate.parent / Path(asset["runtime"]["runtimePath"]).name
+                if asset["command"] != n or wav.stat().st_size != asset["runtime"]["byteLength"]:
+                    raise ValueError(f"audio candidate mismatch: {n}")
+                return "prepared", f"{f}/{ident}/candidate.json"
+            return ("prepared", "issue1966-original world/entry") if n in audio else ("missing", "")
+        if f == "icon-variant":
+            key = ident.split(":", 1)[1]
+            if sym.startswith("OtherIcon") and ".spell." in key:
+                return "not-applicable", "other-art storage slot"
+            return (
+                ("prepared", "icons/identity-icons.json#" + key)
+                if key in present_icons
+                else ("missing", "")
+            )
+        if f == "priority-display-name":
+            return (
+                ("prepared", "catalogs-v1/world.zh-CN.json")
+                if ("name.spell", int(ident)) in labels
+                else ("missing", "")
+            )
+        if f == "priority-pldn-battle":
+            return ("prepared", pl[int(ident)]) if int(ident) in pl else ("missing", "pldn-eric")
+        if f == "priority-pldn-field":
+            if walking and len(walking["sprites"][int(sym)]["directions"]) == 3:
+                return "prepared", "walking/index.json#sprite-" + sym
+            return "missing", ""
+        if f == "ui-mounted":
+            return row["status"], row["prepared_selection"]
+        if f == "battle-ally-class":
+            m, _, slot = ident.split(":")
+            v = classes.get((int(m), int(slot)))
+            if not v or ("ally", v["battleSprite"], v["battlePalette"]) not in body:
+                return "missing", ""
+            return "prepared", pl[int(m)] if v["battleSprite"] == 13 else "bodies/index.json"
+        if f == "battle-ally-body" and ident == "13":
+            return (
+                "prepared" if all(m in pl for m in (2, 12, 14, 19)) else "partial",
+                "PLDN member variants: " + ",".join(map(str, sorted(pl))),
+            )
+        if f.startswith(("battle-ally-", "battle-enemy-")):
+            folder = "bodies"
+        else:
+            folder = next(
+                (
+                    name
+                    for prefix, name in families.items()
+                    if f == prefix or f.startswith(prefix + "-")
+                ),
+                None,
+            )
+        if folder in records and (folder != "maps" or len(map_records) == 79):
+            return "prepared", folder + "/index.json"
+        return "missing", ""
+
+    with (
+        baseline.open(encoding="utf-8-sig", newline="") as src,
+        output.open("x", encoding="utf-8", newline="") as dst,
+    ):
+        reader = csv.DictReader(src)
+        writer = csv.DictWriter(
+            dst, fieldnames=[*reader.fieldnames, "retail_status", "retail_selection"]
+        )
+        writer.writeheader()
+        counts = Counter()
+        for row in reader:
+            state, selection = location(row)
+            counts[state] += 1
+            writer.writerow(dict(row, retail_status=state, retail_selection=selection))
+    return counts
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("upstream", "package", "asset-root", "catalog", "output"):
