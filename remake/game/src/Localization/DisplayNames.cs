@@ -44,6 +44,11 @@ internal static class DisplayNames
     internal static string ItemWord(ushort word, string canonical) => Item(word & 127, canonical);
     internal static string Spell(SpellRef spell, string? canonical = null, bool level = false)
     {
+        if (spell.Value == "detox")
+        {
+            string detox = GameText.Get("name.spell.detox");
+            return level ? $"{detox} {spell.Level}" : detox;
+        }
         var definition = _source?.PrivateDefinitions?.Spells.GetValueOrDefault(spell);
         string fallback = canonical ?? spell.Value.ToUpperInvariant();
         if (GameText.Language == "en" || _source?.PrivateDefinitions is null) return fallback;

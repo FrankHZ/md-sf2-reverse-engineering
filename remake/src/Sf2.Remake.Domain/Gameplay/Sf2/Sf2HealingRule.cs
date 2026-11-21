@@ -17,10 +17,13 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
-        if (spell.CuresPoison && (spellRef.Level != 1 || spell.IsAura || spell.Power != 0 || spell.Radius != 0))
+        if (spell.CuresPoison && (spellRef.Level != 1 && spellRef is not { Value: "detox", Level: 2 or 3 } ||
+            spell.IsAura || spell.Power != 0 || spell.Radius != 0))
             throw new BattleRuleException("poison-cure-definition", "spell", true);
         if (spell.CuresPoison && !actor.IsAlly)
             throw new BattleRuleException("enemy-poison-cure", "spell", true);
+        if (spell.CuresPoison && spellRef.Level > 1)
+            PoisonCureRules.RequireUncursed(actor.Status, "actor.status");
         if (!spell.IsAura && spellRef.Level is < 1 or > 4)
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.IsAlly ? actor.Definition.ClassRule != BattleClassRule.UnpromotedPriest :
@@ -45,8 +48,11 @@ internal sealed class Sf2HealingRule : IHealingRule
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
         MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef)
     {
-        _ = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
-        return battle.GetActor(targetRef);
+        var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
+        var target = spell.IsAura ? battle.GetActor(targetRef) : targets[0];
+        if (spell.CuresPoison && spell.Spell.Level > 1)
+            PoisonCureRules.RequireUncursed(target.Status, "target.status");
+        return target;
     }
     public BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef, IBattleProgressionRule progression)
@@ -54,10 +60,11 @@ internal sealed class Sf2HealingRule : IHealingRule
         BattleMovement.RequireStop(battle, actorRef, destination);
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
-        var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
+        var targets = spell.IsAura ? HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef)
+            : [RequireTarget(battle, actorRef, destination, spell, targetRef)];
         BattleReaction[] reactions = targets.Select(target =>
         {
-            if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal");
+            if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal", PoisonCureRules.SpellMask(spellRef.Level));
             bool fullRecovery = spell.Targets == HealingTargets.AuraAllAllies || spell.Spell is { Value: "heal", Level: 4 } && spell.Power == 255;
             // Authored healing supplies adjusted power; imported enemies carry the raw spell operand.
             int power = fullRecovery ? target.MaxHp : actor.Deployment.SourceEnemy.HasValue ? actor.Definition.CastPower(spell.Power) : spell.Power;

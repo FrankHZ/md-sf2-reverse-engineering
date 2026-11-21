@@ -13,15 +13,80 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class FieldRecoveryTests
 {
     private static readonly SpellRef Heal = new("heal", 1), Detox = new("detox", 1);
-    private static GameSession Recovery(byte mp = 7, ushort targetHp = 100, ushort targetStatus = 2, byte recoveryItem = 0)
+    private static readonly SpellRef Detox2 = new("detox", 2), Detox3 = new("detox", 3);
+    private static GameSession Recovery(byte mp = 7, ushort targetHp = 100, ushort targetStatus = 2, byte recoveryItem = 0,
+        bool higherRanks = false, ushort casterStatus = 0, ushort casterHp = 50)
     {
         var content = new FieldPreparationDefinition([new(recoveryItem, "Recovery item", false, false), new(3, "Antidote", false, false)],
             [new(recoveryItem, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison)],
-            [new(Heal, "Heal", 3, FieldRecoveryEffect.NoEffect), new(Detox, "Detox", 3, FieldRecoveryEffect.CurePoison)]);
+            [new(Heal, "Heal", 3, FieldRecoveryEffect.NoEffect), new(Detox, "Detox", 3, FieldRecoveryEffect.CurePoison),
+             new(Detox2, "Detox", 6, FieldRecoveryEffect.CurePoisonAndParalysis),
+             new(Detox3, "Detox", 10, FieldRecoveryEffect.CurePoisonAndParalysis)]);
         var loadout = new BattleSourceLoadout([recoveryItem, 3, 3, 127], []);
-        return Session(carried: actor => actor.Actor == Giver ? actor with { Hp = 50, Mp = mp,
-            SourceLoadout = loadout, Progress = new(2, 200, 10, 20, 4, 60, [Heal, Detox], loadout) }
+        return Session(carried: actor => actor.Actor == Giver ? actor with { Hp = casterHp, Mp = mp, Status = casterStatus,
+            SourceLoadout = loadout, Progress = new(2, 200, 10, 20, 4, 60, higherRanks ? [Heal, Detox, Detox2, Detox3] : [Heal, Detox], loadout)
+            { CurrentStats = higherRanks ? new(8, 20, 3) : null } }
             : actor.Actor == Recipient ? actor with { Hp = targetHp, Status = targetStatus } : actor, preparation: content);
+    }
+
+    [Theory]
+    [InlineData(2, 0x103, 3, 1)]
+    [InlineData(3, 0x101, 1, 0)]
+    [InlineData(3, 0x100, 0, 0)]
+    public void LearnedHigherFieldDetoxPaysOnceAndRefreshesSelfEvenWithoutAnAilment(
+        byte rank, ushort status, ushort cleared, byte remainingMp)
+    {
+        var session = Recovery(higherRanks: true, casterStatus: status, casterHp: 0);
+        var before = session.Current;
+        var spell = new SpellRef("detox", rank);
+        Assert.Contains(session.QueryFieldActions(Giver).Spells, choice => choice.Spell == spell && choice.MpCost == (rank == 2 ? 6 : 10));
+        Assert.Same(before, session.Current);
+
+        var result = Accept(session, new FieldCast(Giver, spell, Giver));
+        var observation = Assert.Single(result.Observations);
+        Assert.Equal(Giver, observation.Target);
+        Assert.Equal(cleared, observation.FieldCuredStatus);
+        Assert.Equal(cleared == 0 ? "field-no-effect" : "field-status-recovered", observation.Kind);
+        var party = session.Current.Exploration!.Party;
+        var after = party.Actors.Single(actor => actor.Actor == Giver);
+        Assert.Equal(remainingMp, after.Mp);
+        Assert.Equal((ushort)0x100, after.Status);
+        Assert.Equal(0, after.Hp);
+        Assert.Null(after.Progress!.CurrentStats);
+        var prior = before.Exploration!.Party;
+        Assert.Equal(prior.MainSeed, party.MainSeed);
+        Assert.Equal(prior.ThinkingSeed, party.ThinkingSeed);
+        Assert.Equal(prior.Actors.Single(actor => actor.Actor == Giver).Exp, after.Exp);
+        Assert.Equal(prior.Actors.Single(actor => actor.Actor == Giver).SourceLoadout, after.SourceLoadout);
+    }
+
+    [Fact]
+    public void HigherFieldDetoxAcceptsAFallenReserveAndRejectsAnUnlearnedRankOrCurse()
+    {
+        var unlearned = Recovery();
+        Assert.DoesNotContain(unlearned.QueryFieldActions(Giver).Spells, choice => choice.Spell == Detox2);
+        Assert.NotNull(Send(unlearned, new FieldCast(Giver, Detox2, Recipient)).Failure);
+
+        var cursed = Recovery(higherRanks: true, targetStatus: 6);
+        var before = cursed.Current;
+        Assert.Equal("detox-curse-unsupported", Send(cursed, new FieldCast(Giver, Detox3, Recipient)).Failure!.Code);
+        Assert.Same(before, cursed.Current);
+
+        var fallen = Recovery(higherRanks: true, targetHp: 0, targetStatus: 3);
+        var state = fallen.Current;
+        var world = state.Exploration!;
+        var original = world.Party;
+        var party = new BattleStartInput(original.Encounter, original.Actors, original.MainSeed, original.ThinkingSeed,
+            original.Gold, activeAllies: [Giver], itemCustody: original.ItemCustody);
+        var reserve = new SessionSnapshot(state.SessionId, state.Revision, state.ObservationSequence,
+            new ActiveExploration(world.WithParty(party)), state.Story, state.StopReason);
+        var result = FieldCommands.Submit(fallen.Definition, reserve, new FieldCast(Giver, Detox2, Recipient));
+        Assert.Null(result.Failure);
+        var resultParty = result.Snapshot.Exploration!.Party;
+        Assert.Equal(Giver, Assert.Single(resultParty.ActiveAllies!));
+        var cured = resultParty.Actors.Single(actor => actor.Actor == Recipient);
+        Assert.Equal(0, cured.Status);
+        Assert.Equal(0, cured.Hp);
     }
 
     [Theory]

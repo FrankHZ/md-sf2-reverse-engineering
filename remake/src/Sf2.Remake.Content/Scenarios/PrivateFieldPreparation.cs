@@ -92,10 +92,13 @@ internal static class PrivateFieldPreparation
                 (item.Id != 127 && (pickupIds.Contains(item.Id) || eventItems.Contains(item.Id)))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),
-                itemEffects, source.Spells.Values.Where(spell => spell.Code == "HEAL" || spell is { Code: "DETOX", Level: 1 } ||
+                itemEffects, source.Spells.Values.Where(spell => spell.Code == "HEAL" ||
                     egress is not null && spell is { Code: "EGRESS", Level: 1 })
                     .Select(spell => new FieldSpellChoice(spell.Spell, spell.DisplayName, spell.MpCost,
-                        spell.Code switch { "DETOX" => FieldRecoveryEffect.CurePoison, "EGRESS" => FieldRecoveryEffect.Egress, _ => FieldRecoveryEffect.NoEffect })),
+                        spell.Code == "EGRESS" ? FieldRecoveryEffect.Egress : FieldRecoveryEffect.NoEffect))
+                    .Concat(PrivateBattleActionBindings.PoisonCure(source).Select(cure =>
+                        new FieldSpellChoice(cure.Spell, source.Spells[cure.Spell].DisplayName, cure.MpCost,
+                            cure.Spell.Level == 1 ? FieldRecoveryEffect.CurePoison : FieldRecoveryEffect.CurePoisonAndParalysis))),
                 [new(4, FieldRecoveryEffect.NoEffect, wingNoEffectMaps.Select(id => new Sf2.Remake.Domain.Maps.MapId(id)).ToArray())], egress);
     }
     private static IEnumerable<KeyValuePair<byte, FieldRecoveryEffect>> FieldItems(Application.Content.Scenarios.PrivateBattleDefinitions source)

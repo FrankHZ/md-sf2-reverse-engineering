@@ -143,6 +143,8 @@ and the chapter consumers supply the class and effect definitions below.
 - **Fairy Powder** (item 5) can be found through Elven Village Search (F157) and Pacalon Castle
   Search (F174), and bought from admitted shop stock. Field and Caravan Use clear poison and paralysis.
   Battle Use follows the retail rank-1 `POWDER` record and clears poison alone at range 0–1.
+  Sarah’s learned DETOX 2/3 use their own spell costs and battle range and can clear paralysis
+  through Battle Magic. [Rank and caller rules](../domain/detox-ranks-design.md).
   A confirmed valid target spends the selected holder's slot even when the effect finds no matching
   status. [Caller rules and ordinary Pacalon verification](../application/pacalon-first-visit.md#fairy-powder-use) ·
   [Caravan Item](../application/caravan-services-design.md#current-item-implementation)

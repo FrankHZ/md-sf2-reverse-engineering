@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
@@ -111,6 +112,15 @@ internal static class FieldInventory
         }
         else if (loadout.Items.Any(word => (word & 128) != 0 && (word & 127) != 127))
             throw new BattleRuleException("field-equipped-item-unsupported", "actor.items", true);
+    }
+
+    internal static void RequireDetoxEquipment(ScenarioDefinition definition, PartyMemberDetails member)
+    {
+        PoisonCureRules.RequireUncursed(member.Carried.Status, "member.status");
+        var loadout = Loadout(member);
+        if (loadout.Items.Any(word => (word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word)))
+            throw new BattleRuleException("detox-curse-unsupported", "member.items", true);
+        ValidateEquipped(member, loadout);
     }
 
     private static IReadOnlyList<BattleEquipmentChoice> EquipmentChoices(ScenarioDefinition definition,

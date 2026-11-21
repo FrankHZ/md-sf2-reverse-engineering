@@ -25,10 +25,14 @@ draw and contributes0 before the common randomized/minimum EXP award. Same-side 
 the battle halving table. Neither case restores HP or clears stun/curse/sleep/silence. Payment,
 status reaction, notice and subsequent turn remain staged; DETOX uses no HEAL fairy. Antidote does not
 inherit the spell-only silence gate. Query/cancel, bad range/target, missing MP/accounting and stale
-input preserve the complete prior state. Higher DETOX levels and other cure/status families remain
-Unsupported. Enemy cure effects (including a `heal/1` authored alias) reject at both finite
+input preserve the complete prior state. Learned DETOX 2/3 use MP6/10 and range 0–2 to clear
+poison and stun on a single admitted teammate. Effective Battle casts refresh the recipient
+and award once per target. Field casts can target joined reserves or fallen members and
+clamp MP at zero, with refresh on both outcomes and no RNG or EXP. Equipped curse treatment
+is tracked separately. [Higher-rank rules and acceptance](detox-ranks-design.md).
+Enemy cure effects (including a `heal/1` authored alias) reject at both finite
 HEAL AI decision and spell admission before any automatic movement, payment, effect or RNG publication;
-this does not admit enemy DETOX. Field policies remain separate and unchanged.
+this does not admit enemy DETOX.
 
 **Confirmed static operands:** `data/stats/items/shopinventories.asm` stock1 has Short Sword, Short
 Spear, Bronze Lance, Short Axe, Wooden Rod, Short Rod and Short Knife; stock16 has Herb, Seed, Antidote,
