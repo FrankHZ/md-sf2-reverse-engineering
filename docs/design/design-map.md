@@ -96,7 +96,7 @@ observation limits. [Campaign feature trace](../../remake/docs/capability-status
 - **Remaining design and work.** Scope other status families by actual target eligibility, resistance,
   payment and after-turn/return behavior. Keep DETOX ranks and hostile statuses under their own
   terms and legal consumers. [DETOX 2/3 #1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
-  [MUDDLE, DESOUL and Tyrin SLEEP #1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) ·
+  [MUDDLE, DESOUL and Tyrin SLEEP design](../../remake/docs/domain/hostile-spells-design.md) ·
   [Shutdown follow-up #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
 
 ## Exploration services and Save/Continue
