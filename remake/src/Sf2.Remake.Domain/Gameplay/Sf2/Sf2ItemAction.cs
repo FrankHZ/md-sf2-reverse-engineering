@@ -120,16 +120,17 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         var reactions = targets.Select(target => Reaction(actorRef, item, target)).ToArray();
         List<BattleEffect> effects = [];
         var checkedBattle = item.CuresPoison ? PoisonCureRules.PrepareIneffective(battle, actorRef, reactions, effects) : battle;
-        var award = BattleProgressionRules.Award(progression, checkedBattle, actor, BattleActionKind.Item, reactions);
         var items = actor.SourceLoadout!.Items.ToList();
         ushort consumed = items[slot];
-        items.RemoveAt(slot); items.Add(127);
-        var consumedActor = actor.With(sourceLoadout: new(items, actor.SourceLoadout.Spells), refreshStats: true);
+        items.RemoveAt(slot);
+        items.Add(127);
+        var consumedActor = actor.With(position: destination, sourceLoadout: new(items, actor.SourceLoadout.Spells), refreshStats: true);
+        var paid = checkedBattle.With(actors: checkedBattle.Actors.Select(a => a.Actor == actorRef ? consumedActor : a));
         effects.Add(new("item-consumed", actorRef, consumed, slot));
+        var award = BattleProgressionRules.Award(progression, paid, consumedActor, BattleActionKind.Item, reactions);
         effects.AddRange(award.Effects);
-        var prepared = battle.With(actors: battle.Actors.Select(a => a.Actor == actorRef
-            ? consumedActor.With(position: destination) : a), mainSeed: award.Seed);
-        return new(prepared, actorRef, destination, reactions, new(actorRef, award.Amount), effects.AsReadOnly(), [], item);
+        return new(paid.With(mainSeed: award.Seed), actorRef, destination, reactions,
+            new(actorRef, award.Amount), effects.AsReadOnly(), [], item);
     }
 
     internal static BattleReaction Reaction(ActorRef actor, HealingItemDefinition item, BattleActorState target)
