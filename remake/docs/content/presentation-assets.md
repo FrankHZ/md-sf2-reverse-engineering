@@ -88,6 +88,118 @@ and mount API are not the current `SessionFailure` API. Missing or inconsistent 
 typed ContentError/UnsupportedCapability; actual delivery failure is AdapterError and cannot release
 a pending engine completion as success. See [private admission](profiles-and-trust.md#private-admission-layers).
 
+### Reuse a closed private package
+
+The retail preparation's private Git record is `manifests/retail-original-preparation.json` in the
+local-only asset repository. It identifies the stable package relative to the registered shared
+data root, the exact asset manifest version used by the inventory, and the retained observation
+selections. The payload remains under shared `derived/`, outside all replaceable worktrees.
+The stable `issue1966-original` directory contains the matching `world.json`, `main-scenes.json`,
+entry media and opening selectors. Encounter inputs and external WAV files keep their relative
+names. Selecting or copying this package requires no ROM or H1 tool. Keep the world and scene
+selection together. Save slots and locale catalogs use their existing independent selections.
+
+Run PowerShell 7 in the owning checkout. Bootstrap its private configuration as needed using
+[Local Private Inputs](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup).
+The following selects the registered handoff inputs for the first publication. A second command
+checks the complete file set and bytes. To copy only from the stable publication, change the four
+source selections to the same files/directories under `$stable` and select a new destination.
+
+```powershell
+. ./local/private-inputs.ps1
+uv sync --locked
+$handoffs = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs'
+$base = Join-Path $handoffs 'issue1966/content/package'
+$opening = Join-Path $handoffs 'issue1857'
+$stable = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/issue1966-original'
+$packageArgs = @('--world', "$base/world.json", '--scene', "$base/main-scenes.json",
+    '--entry', "$opening/entry/entry.json", '--opening-inputs', "$opening/inputs",
+    '--destination', $stable)
+if (!(Test-Path -LiteralPath $stable)) {
+    uv run --locked python -m sf2tool.remake_private_package @packageArgs
+    if ($LASTEXITCODE) { throw 'Package copy failed' }
+}
+uv run --locked python -m sf2tool.remake_private_package @packageArgs --check
+if ($LASTEXITCODE) { throw 'Package byte check failed' }
+```
+
+The packager reads the existing relative world dependencies and explicit entry/first-encounter
+inputs. It publishes a fresh directory after a direct comparison. `--check` compares an existing
+directory without mutating either copy. This verifies closure and preservation. The Content readers
+remain the authority for semantic admission. For launch, select the three documents from `$stable`
+and set the first-encounter environment variables from its six named opening files:
+
+```powershell
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = "$stable/world.json"
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = "$stable/main-scenes.json"
+$env:SF2_PRIVATE_ENTRY_CONTENT = "$stable/entry/entry.json"
+foreach ($file in Get-ChildItem -LiteralPath "$stable/opening-inputs" -Filter 'SF2_PRIVATE_*.json' -File) {
+    [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
+}
+```
+
+Repeat the [entry New Game witness](../godot/presentation.md#entry-confirmation-observation) with
+`SF2_ENTRY_CONFIRMATION_CASE=new` and a fresh external disposable save namespace. The private
+receipt directory retains the two short variants for the actual title/witch playback and the
+Battle26 Continue witness. The latter uses a disposable copy of `deployed-en.json` from the
+registered Battle26 review. Keep the real save untouched and inspect semantic state, raster
+selection, audio receipts, exit and stderr. No gameplay settings or save schema change is needed.
+
+Run the inventory when either base selection changes. `$upstream` selects the pinned read-only
+SF2DISASM checkout, and `$assetRoot` selects the existing private asset Git repository. Use the
+asset commit pinned in its preparation record. Keep the output CSV private.
+
+```powershell
+$catalog = Join-Path $handoffs 'issue1941/content/catalog-final/world.zh-CN.json'
+$inventory = Join-Path (Split-Path -Parent $stable) 'retail-inventory-next.csv'
+uv run --locked python -m sf2tool.remake_private_inventory --upstream $upstream --package $stable `
+    --asset-root $assetRoot --asset-commit e0259ccef943d47a565d2f86a0e2118e368d428f `
+    --catalog $catalog --output $inventory
+```
+
+### User-run Eric candidate
+
+Automatic approval on #1956 rejected the existing Battle26 scene producer's Eric-only pilot before
+process creation because it extracts character assets from the commercial ROM. The preparation
+ticket preserves that result. The pilot is a user-run candidate, with no producer output or
+candidate admission supplied by that attempt.
+
+Select the registered read-only `$upstream` at `c834c652b6862bc5679fd7f69a38a7093206efc6` and load
+the worktree configuration in the same PowerShell 7 process. The producer reads its required
+source and ROM spans directly. The pilot uses a fresh worktree-local directory. Allow up to 1 GiB
+of scratch for the first run and record time, private bytes and any failure before scaling. Actual
+extraction time and peak memory are **Unknown**. The code's current producer limits are listed in
+the [asset inventory](asset-inventory.md#first-consumers).
+
+```powershell
+. ./local/private-inputs.ps1
+uv sync --locked
+if ($LASTEXITCODE) { throw 'Locked Python setup failed' }
+uv run --locked sf2 rom verify
+if ($LASTEXITCODE) { throw 'ROM identity check failed' }
+$rom = Join-Path $env:SF2_SHARED_INPUT_ROOT 'roms/sf2-us.bin'
+$pilot = Join-Path (Get-Location) ('local/issue2001/eric-' + [Guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $pilot | Out-Null
+$selection = Get-Content -LiteralPath 'remake/content/private/pre-voyage-opening.json' -Raw |
+    ConvertFrom-Json -AsHashtable
+$selection.promotionClasses += @{ member = 14; class = 'PLDN' }
+$selectionPath = Join-Path $pilot 'selection.json'
+$selection | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $selectionPath -Encoding utf8
+uv run --locked python -m sf2tool.remake_battle_scene_content --rom $rom --upstream $upstream `
+    --battle 26 --output "$pilot/body" --campaign-selection $selectionPath
+if ($LASTEXITCODE) { throw 'Eric candidate production failed' }
+```
+
+Retain `candidate-report.json` and the complete candidate privately for review. The first review
+checks member 14, sprite 13, palette 3, the legal item/animation bindings and all raster references.
+A successful candidate does not automatically replace a Battle26 scene, add field sprite 34, or
+play command 25. Preserve the last working package until the new candidate passes those bounded
+consumer checks. Keep separate output directories for other families. `sf2 texture extract`,
+`map`, `assets` and `misc` use a verified split checkout prepared with the existing
+[H1 workflow](../../../docs/operations/local-private-inputs.md#maintained-consumers).
+`sf2tool.remake_audio` starts from a reviewed capture interval. Measured capture boundaries for
+25/87/99 are still required before that producer can run for those IDs.
+
 ## Battle weapon operands
 
 `sf2tool.remake_battle_scene_content` preserves the selected animation's raw weapon frame/layer

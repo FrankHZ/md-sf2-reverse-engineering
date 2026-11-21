@@ -14,6 +14,92 @@ The detailed inventory is `manifests/pre-voyage-asset-inventory.csv` in the loca
 
 The CSV has 7,040 rows for this pack. Shared art appears once per logical owner and frame. This is the pre-voyage demo inventory; the rest of the retail ROM has a different scope. The [presentation owner](presentation-assets.md) also identifies the bundled UI font, theme and public-resource policy. Code-drawn windows and text are outside the raster table.
 
+## Retail original preparation
+
+**High rigor.** The scale of the retail source, several independent producers, and the existing
+world/scene admission limits require separate acceptance for the source inventory, candidate media,
+and a consumer-ready package. Use the registered 2 MiB USA ROM and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. This work owns offline Original resources for later
+feature tickets. Story, rules, HD, localization work and release are outside the preparation scope.
+
+`sf2tool.remake_private_inventory` reads pinned Git objects and accepted H2 metadata. It also inspects
+an explicitly selected package and asset Git manifest. The local asset repository's
+`manifests/retail-source-and-coverage.csv` records the source ID, shared payload symbol, source
+owner and selected package availability. `present` means the named selection contains that resource
+or binding. `missing` means it is absent from the inspected selection. `source-only` means the
+source ID is known and reusable output at the same granularity is unverified. `not-applicable`
+marks absent slots, sentinel or silent targets, and item weapons without a drawn overlay. Alias
+slots retain their referenced symbol. Count distinct payloads by source owner and symbol within
+each raw family. Consumer rows may refer to the same source, such as normal and highlighted icons.
+
+| Family | Retail source inventory and valid variants | Production and reuse boundary |
+| --- | --- | --- |
+| Maps, tiles, blocks, layout, foreground and palettes | 79 map headers, 115 tilesets, 16 palettes. Each map records five tileset slots, palette ID and block/layout/area/roof/animation references. The accepted canonical map import records 19,771 decoded block definitions and 315,392 layout words. Blocks stay map-local and foreground uses area/roof/copy rules. | `sf2 texture extract` and `sf2 texture map` are diagnostic producers with split H1 inputs. Runtime reuses prepared maps via `remake_exploration_content` and the selected world. The stable selection contains 50 map presentations. Full block-by-block output closure and dynamic plane observations remain open. |
+| Walking and portraits | 720 walking strip pointers with 669 non-sentinel physical payloads. Each ordinary strip carries two phases. Lateral mirror is a projection. Routed specials use their own table. Class rows retain the ally mapsprite base, with class adjustments owned by `GetAllyMapsprite`. 56 portrait pointers resolve to 52 payloads, including eye and mouth operands. | `sf2 texture assets` prepares ordinary sheets. The world carries selected strips, poses and portrait atlases. The source sentinel does not request an ordinary three-strip export. Complete special/action binding remains open. |
+| Battle bodies, weapons, terrain and effects | 86 body slots, 408 indexed frames and 167 sprite palettes. Ally class and enemy species map to a body/palette pair. Item ID maps to a weapon graphic/palette pair. Background and ground each have 30 slots with aliases. Separate animation tables, 23 spell containers, four invocation containers, status and transition resources own their sequences. | `remake_battle_scene_content` publishes selected battle scenes. It still couples extraction to a battle selection. The installed Battle26 scene is reusable as a whole. A deduplicated all-battle frame/sequence library and a detached assembly path remain open. Retain body, palette, item and animation variants independently of the map. |
+| Interface, icons, title and witch | 163 assembled icon slots. Spell storage starts at 130 and includes other-art aliases. Selected icons apply the source highlight mask. Spell level is a text selection. Dedicated UI, special-screen and witch menu resources retain their source symbols. | `remake_command_menu`, `remake_entry_content` and the diagnostic `sf2 texture assets`/`misc` producers have different outputs. The stable world includes 32 mounted field/service command states and an entry with six named rasters. Modern panel chrome has its own [presentation owner](presentation-assets.md). |
+| Music and effects | 64 music command slots, 37 non-silent targets, 27 silent/alias slots and 56 finite SFX commands. Track music by command and finite SFX by reached `(command, Timer B)` variant. | [Audio capture and admission](../godot/audio.md#audio-boundary) owns the reviewed source intervals and PCM identity. The selected world/entry and existing asset manifest jointly include rows for 19 music and 31 SFX commands. Variant completeness and original waveform parity remain open. |
+
+The current retail CSV covers resource IDs and source relationships at these grains. It does not
+enumerate each map cell, each battle frame/palette output, every possible audio timer context, or
+the full UI behavior surface. Every new family publication needs its own variant completeness check
+before feature tickets take it as a dependency.
+
+### First consumers
+
+| Ticket | Selected source operand and observed availability | Remaining connection |
+| --- | --- | --- |
+| #1956 | PLDN class/sprite 13. Chester 2 uses field 6 and palette 0, Rick 12 uses 28 and palette 1, Eric 14 uses 34 and palette 3. Those six field/battle bindings are absent. Higins 19 already has field 48 and palette 2 with seven item bindings in Battle26. | Produce and admit the three missing appearances. The accepted field compiler currently admits Hero as its promotion variation. The current battle producer only selects the KNTE special-spear animation 80. Source `GetAllyAnimation` also has PLDN/PGNT cases 81/82. Candidate output needs review at those interfaces before publication. |
+| #1956 | `MUSIC_PROMOTION` is decimal 25, hex `19`, with source Timer B `CE` in `music25.asm`. `audio-25-c6` is decimal command 37. No selected 25 PCM was found. | Reviewed finite PCM and the promotion consumer's actual preceding-music restart. |
+| #1950 and #1962 | `SFX_JUMP` 87 (`57`) and `SFX_BLOAB` 99 (`63`) are absent from this selection. | Capture and verify the reached timer contexts. Their `SessionAudio.SoundSlots` classifications and gameplay callers remain with the consumer tickets. |
+| #1967 | MUDDLE 7, DESOUL 8 and SLEEP 9 have no normal or selected art in the chosen field and Battle26 selection. The inspected zh-CN catalog has 7 and 8 and lacks 9. | Prepare the missing icon pairs and name row. Learned magic admission remains independent of icon availability. |
+
+**Confirmed:** the registered #1738, #1939, #1941 and #1966 worlds also lacked these promoted field
+IDs, the priority icon pairs and audio commands 25/87/99. The three registered Battle26 scenes in
+that set had only Higins's PLDN binding. This is a bounded reuse search of four package selections.
+
+### Resource budget and observed pilot
+
+Canonical input is 2 MiB plus pinned source and, where required, a retained 24 MB H1 listing.
+An indexed 4bpp tile buffer expands by 8× as RGBA. The 19,771 map blocks would occupy about
+43.5 MiB as independent native-size RGBA blocks, or 58 MiB with base64, before map layout data.
+The indexed battle frame corpus is about 2.2 MiB, about 17.3 MiB if rendered once per frame before
+applying palette variants. Per-frame color variants, scale buckets, PNG compression and JSON affect
+the final size. Budget a 1 GiB scratch ceiling and one family at a time for the initial visual
+pilots. Verify native size and lifetime before choosing a release budget. The existing 128 MiB
+world and 4 MiB battle-scene document ceilings still govern assembly.
+
+Audio is separate from the visual budget. Stereo PCM16 at 44.1 kHz costs 176,400 bytes/second.
+At a planning ceiling of 180 seconds per non-silent music target and five seconds per SFX context,
+37 music targets would cost about 1.09 GiB and one context for each of the 56 effects about 47 MiB.
+Retaining both capture and runtime PCM plus a working derivative needs approximately 3.5 GiB.
+Two full cycles at the music ceiling take up to 3.7 hours at real time before setup or review.
+These are planning assumptions. Measure the first missing finite cue and loop separately. Replan
+if the duration bound or reached context count grows, and retain only reviewed required captures.
+No parallel emulator sessions or per-frame campaign capture are required.
+
+**Confirmed:** a representative publication reused the registered #1966 world and Battle01 scene
+plus the existing #1857 entry/opening inputs. The closed package is 141 files and 284,132,227 bytes.
+Copy and direct byte comparison took about two seconds on the primary volume. A separate byte
+check of a copy rebuilt from the stable package took 0.64 seconds at 256 MiB peak working set.
+The inventory took 2.47 seconds at 257 MiB peak with the selected 102 MB world and pinned source.
+Assembly allocates at most one staged deliverable in addition to the supplied input. Its work is
+linear in bytes parsed/copied and the inventory visits the source ID tables once. No ROM decode was
+needed for this pilot. Extraction time/memory and missing media quality remain **Unknown**.
+
+**Confirmed** from the stable package in the configured Godot Debug adapter. Ordinary New Game
+mounted Map3 at (56,3). Six entry textures loaded. Original title command 28 finished once and the
+Witch command 10 wrapped from 35.393 s to 6.347 s while still playing on WASAPI. The process exited
+0 with empty stderr. A separate ordinary cold Continue mounted the retained Battle26 deployment
+with Higins class 13, level 7, 50 HP and Javelin, and read a live texture for field resource 48.
+The four Battle26 command icons were mounted, including the selected Stay raster. It exited 0
+with a four-ObjectDB-instance cleanup warning. The witness stopped at ActionChoice. It establishes
+deployment and mounted scene availability, while the three missing PLDN appearances, their attack
+scenes and natural promotion path remain **Unknown**.
+
+Use the [private preparation commands](presentation-assets.md#reuse-a-closed-private-package) to
+reproduce the package without producing-worktree assets and to select it for later consumers.
+
 ## Map3 coverage and treatment
 
 The outdoor area is 51×32 cells. Two interior areas each measure 11×10. The exterior's roof/facade plane has a 32-row offset and can be copied, revealed or restored. The player package includes all 447 block definitions, including copy sources and the declaration absent from the initial layout. HD supplies separate textures to the existing layer renderer. Tile priority, camera clipping and actor occlusion continue to use the layout and its nine tile words. The source atlas alpha distinguishes transparent index zero from opaque black ink.
