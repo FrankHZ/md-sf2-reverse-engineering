@@ -166,12 +166,12 @@ public sealed class BattleActorState
     internal bool UsesInitialStats { get; }
     internal bool NeedsStatRefresh => UsesInitialStats || LastRefreshBits.HasValue;
     private ushort AppliedStatBits => LastRefreshBits ?? (ushort)(Status & BattleStatCounters.StatBits);
-    public byte Defense => UsesInitialStats ? BaseDefense : BattleStatCounters.Defense(BaseDefense, AppliedStatBits);
+    public byte Defense => BattleEquipment.Defense(BaseDefense, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
     private byte PackedBaseAgility => (byte)(BaseAgility | (Definition.ExtraRoundAction ? 128 : 0));
-    private byte PackedAgility => UsesInitialStats ? PackedBaseAgility : BattleStatCounters.PackedAgility(PackedBaseAgility, AppliedStatBits);
+    private byte PackedAgility => BattleEquipment.PackedAgility(PackedBaseAgility, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
     public byte Agility => (byte)(PackedAgility & 127);
     public bool ExtraRoundAction => (PackedAgility & 128) != 0;
-    public byte Move => (byte)Math.Max(0, Definition.Move - (AppliedStatBits & 1));
+    public byte Move => BattleEquipment.Move(Definition.Move, AppliedStatBits, Definition, SourceLoadout);
     public IReadOnlyList<SpellRef> Spells => Progress?.Spells ?? Definition.Spells;
     public BattleSourceLoadout? SourceLoadout { get; }
     public ushort Hp { get; }

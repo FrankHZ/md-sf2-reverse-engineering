@@ -9,7 +9,7 @@ namespace Sf2.Remake.Content.Scenarios;
 internal static class PrivateFieldPreparation
 {
     // Product binding only. Reuse admitted field carry identities, not their Use/Drop capabilities.
-    // BattleGive revalidates both live four-slot loadouts and ordinary equipped weapons.
+    // BattleGive revalidates both live four-slot loadouts and admitted equipped terms.
     internal static BattleDefinition Give(BattleDefinition battle, FieldPreparationDefinition preparation) =>
         battle.WithGive(new(preparation.Items.Values.Select(item => KeyValuePair.Create(item.ItemId, item.Name))));
 
@@ -21,6 +21,7 @@ internal static class PrivateFieldPreparation
     internal static BattleDefinition Equipment(BattleDefinition battle, PrivateBattleDefinitions source, bool allowBattleChanges = false)
     {
         var weapons = Weapons(source);
+        var rings = Rings(source).ToArray();
         return battle.WithDeployments(battle.Deployments.Select(row =>
         {
             if (row.Faction != BattleFaction.Ally || (!allowBattleChanges && row.Definition.Equipment is not null)) return row;
@@ -33,7 +34,8 @@ internal static class PrivateFieldPreparation
             int bonus = row.Definition.Growth?.AttackBonus ?? row.Definition.SourceLoadout?.Items
                 .Where(word => (word & 128) != 0).Sum(word => weapons.Single(item => item.ItemId == (word & 127)).AttackBonus) ?? 0;
             Require(row.Definition.Attack >= bonus, "source-base-attack", "actor.attack");
-            var definition = row.Definition.WithEquipment(new((byte)(row.Definition.Attack - bonus), weapons, allowChanges: allowBattleChanges));
+            var definition = row.Definition.WithEquipment(new((byte)(row.Definition.Attack - bonus), weapons,
+                allowChanges: allowBattleChanges, rings: rings));
             if (allowBattleChanges) BattleEquipment.ValidateLoadout(definition, definition.SourceLoadout);
             return row with { Definition = definition, RegularPromotion = row.RegularPromotion?.WithEquipment(definition.Equipment!) };
         }));
@@ -46,10 +48,30 @@ internal static class PrivateFieldPreparation
                 source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))
                     .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id))).ToArray();
     }
+    private static IEnumerable<BattleRingDefinition> Rings(PrivateBattleDefinitions source)
+    {
+        foreach (var (id, code, kind, effect, stat, bonus) in new (byte, string, string, string, RingStat, byte)[]
+        {
+            (19, "POWER_RING", "RING|RARE|BREAKABLE", "INCREASE_ATT", RingStat.Attack, 5),
+            (20, "PROTECT_RING", "RING|RARE|BREAKABLE", "INCREASE_DEF", RingStat.Defense, 5),
+            (21, "QUICK_RING", "RING|RARE|BREAKABLE", "INCREASE_AGI", RingStat.Agility, 5),
+            (22, "RUNNING_RING", "RING|RARE", "INCREASE_MOV", RingStat.Move, 2),
+        })
+        {
+            if (!source.Items.TryGetValue(id, out var item)) continue;
+            Require(item is { EquipFlagsExpression: "ALL", MinimumRange: 0, MaximumRange: 0 } &&
+                item.Code == code && item.ItemTypeExpression == kind &&
+                item.EquipEffects is [{ } primary, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] &&
+                primary.Type == effect && primary.Parameter == bonus, "source-static-ring", "field.items");
+            yield return new(id, item.DisplayName, uint.MaxValue, stat, bonus);
+        }
+    }
+
     internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, ExplorationDefinition? world = null, IEnumerable<string>? wingMaps = null,
         FieldEgressDefinition? egress = null)
     {
         var weapons = Weapons(source);
+        var rings = Rings(source).Select(ring => ring.ItemId).ToHashSet();
         // A selected reward needs a carry identity even when its equipment or Use effect is unsupported.
         var pickupIds = (world?.Maps.Values ?? []).SelectMany(map =>
                 map.Setups.Values.Select(setup => setup.Search).Append(map.Search))
@@ -64,8 +86,8 @@ internal static class PrivateFieldPreparation
             .Where(row => row.Kind == ExplorationEventKind.UseItem).Select(row => row.Item!.Value).ToHashSet();
         var itemEffects = FieldItems(source).Concat(eventItems.Select(id => KeyValuePair.Create(id, FieldRecoveryEffect.MapEvent)));
         var wingNoEffectMaps = wingMaps ?? [];
-        return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) ||
-                item.ItemTypeExpression == "CONSUMABLE" || item.Code is "MITHRIL" or "TAROS_SWORD" or "SHINING_BALL" or "PROTECT_RING" or "BLACK_RING" ||
+        return new(source.Items.Values.Where(item => weapons.Any(weapon => weapon.ItemId == item.Id) || rings.Contains(item.Id) ||
+                item.ItemTypeExpression == "CONSUMABLE" || item.Code is "MITHRIL" or "TAROS_SWORD" or "SHINING_BALL" or "BLACK_RING" ||
                 (item.Id != 127 && (pickupIds.Contains(item.Id) || eventItems.Contains(item.Id)))).Select(item => new BattleDiscardItem(item.Id, item.DisplayName,
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("RARE"),
                     item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries).Contains("UNSELLABLE"))),

@@ -182,9 +182,9 @@ internal sealed partial class BattleSceneView : Control
                 }
                 Bind(_background, background); Bind(_backgroundWrap, background); Bind(_ground, ground);
                 _allyFrame = _enemyFrame = 0;
-                var equipped = ally?.SourceLoadout?.Items.FirstOrDefault(item => (item & 128) != 0 && (item & 127) != 127);
-                _hasWeapon = equipped is > 0;
-                if (_hasWeapon && (equipped!.Value & 127) != _allyVisual!.Item) throw new InvalidOperationException("battle-scene-weapon-unavailable");
+                byte? weapon = ally is null ? null : BattleEquipment.EquippedWeaponItem(ally);
+                _hasWeapon = weapon.HasValue;
+                if (_hasWeapon && weapon != _allyVisual!.Item) throw new InvalidOperationException("battle-scene-weapon-unavailable");
                 if (ally is not null) SetFrame(true, 0); if (enemy is not null) SetFrame(false, 0);
                 Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, Vector2.Zero);
                 _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Hovering);

@@ -50,7 +50,7 @@ internal sealed partial class PartyDetailsPanel : Panel
         _inspectionActor = null; _member = member; _name.Text = name;
         _class.Text = DisplayNames.Class(member) + (member?.Carried.Absent == true ? " · " + GameText.Get("party.absent") : member?.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
         string[] values = [Number(member?.Level), Number(member?.Attack), Number(member?.Defense), Number(member?.Agility),
-            Number(member?.Carried.Exp), Number(member?.Deployment?.Definition.Move)];
+            Number(member?.Carried.Exp), Number(member?.Move)];
         for (int i = 0; i < values.Length; i++)
         { _stats[i].Title.Text = GameText.Get("party.stat." + _titles[i].ToLowerInvariant()); _stats[i].Value.Text = values[i]; }
         _magicTitle.Text = GameText.Get("party.magic"); _itemsTitle.Text = GameText.Get("party.items");

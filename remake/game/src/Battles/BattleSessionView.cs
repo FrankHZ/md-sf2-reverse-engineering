@@ -442,8 +442,12 @@ public sealed partial class BattleSessionView : Control
         var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
         _equipment = currentActor?.Definition.Equipment is null ? "" :
             GameText.Get("battle.equipment-current", _input.CompactHint(GameAction.Equipment),
-                equipmentChoices.FirstOrDefault(o => o.Equipped) is { } equipped ? DisplayNames.Equipment(equipped, _session.Current) : GameText.Get("prepare.unarmed"),
+                equipmentChoices.FirstOrDefault(o => o.Equipped && o.Category == BattleEquipmentCategory.Weapon) is { } equipped
+                    ? DisplayNames.Equipment(equipped) : GameText.Get("prepare.unarmed"),
                 currentActor.Attack, BattleEquipment.Physical(currentActor)!.MinimumRange, BattleEquipment.Physical(currentActor)!.MaximumRange);
+        if (equipmentChoices.FirstOrDefault(o => o.Equipped && o.Category == BattleEquipmentCategory.Ring) is { } wornRing)
+            _equipment += "\n" + DisplayNames.Equipment(wornRing) + " · " +
+                GameText.Get("prepare.ring-stats", currentActor!.Attack, currentActor.Defense, currentActor.Agility, currentActor.Move);
         _spells = selection is null ? "" : $"Spells ({_input.CompactHint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             choices.Spells.Select(option =>
                 DisplayNames.Spell(option.Spell, option.Label, level: true) + (option.Spell == selection.Spell ? " · selected" : "") +
@@ -463,8 +467,10 @@ public sealed partial class BattleSessionView : Control
         {
             int index = equipmentChoices.ToList().FindIndex(option => option.Slot == selection!.EquipmentSlot);
             _equipment = GameText.Get("battle.equipment-title") + "\n" + (index < 0 ? GameText.Get("battle.no-equipment") :
-                GameText.Get("battle.equipment-row", index + 1, equipmentChoices.Count, DisplayNames.Equipment(equipmentChoices[index], _session.Current),
+                GameText.Get("battle.equipment-row", index + 1, equipmentChoices.Count, DisplayNames.Equipment(equipmentChoices[index]),
                     equipmentChoices[index].Attack, equipmentChoices[index].MinimumRange, equipmentChoices[index].MaximumRange));
+            if (index >= 0 && equipmentChoices[index].Category == BattleEquipmentCategory.Ring)
+                _equipment += "\n" + DisplayNames.RingStats(equipmentChoices[index]);
             if (choices.EquipmentFailure is { } equipmentFailure)
                 _equipment += "\n" + GameText.BattleFailure(equipmentFailure);
             string fallback = GameText.Fallback("battle.", includeKey: true);
@@ -479,8 +485,8 @@ public sealed partial class BattleSessionView : Control
         bool hudVisible = !_menu.Visible && selection is not null;
         _hud.Present(hudVisible, auxiliary, false, _hudSubject, _help, lifetimeOpen: hudVisible);
         var selectedEquipment = equipmentChoices.FirstOrDefault(choice => choice.Slot == selection?.EquipmentSlot);
-        string? equipmentIdentity = !equipment || selectedEquipment is null ? null : selectedEquipment.Slot == 4
-            ? UI.IdentityIcons.Unarmed : UI.IdentityIcons.Item(currentActor!.SourceLoadout!.Items[selectedEquipment.Slot]);
+        string? equipmentIdentity = !equipment || selectedEquipment is null ? null : selectedEquipment.ExpectedWord is { } word
+            ? UI.IdentityIcons.Item(word) : UI.IdentityIcons.Unarmed;
         _equipmentIcon.Present(_menu.Icons, equipmentIdentity, true); _equipmentIcon.Position = new(24, 24); _equipmentIcon.Size = new(64, 96);
         int? givenWord = give ? choices.Give.Items.FirstOrDefault(item => item.Slot == selection?.ItemSlot)?.Word :
             discard ? choices.Discard.Items.FirstOrDefault(item => item.Slot == selection?.ItemSlot)?.Word : null;
@@ -593,7 +599,9 @@ public sealed partial class BattleSessionView : Control
             transactionIcon = _transactionIcon.Observe(), returnIcon = _returnIcon.Observe(),
             equipmentSlot = current?.Selection?.EquipmentSlot, equipmentText = _equipment, equipmentVisible = _hud.IsVisibleInTree() && current?.Selection?.Stage == BattleSelectionStage.EquipmentChoice,
             equipmentActors = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, baseAttack = a.BaseAttack,
-                attack = a.Attack, equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
+                attack = a.Attack, defense = a.Defense, agility = a.Agility, move = a.Move,
+                equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
+                equippedRingSlot = BattleEquipment.EquippedRingSlot(a.Definition, a.SourceLoadout),
                 minimumRange = BattleEquipment.Physical(a)?.MinimumRange, maximumRange = BattleEquipment.Physical(a)?.MaximumRange }),
             spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells,
             selection = current?.Selection,

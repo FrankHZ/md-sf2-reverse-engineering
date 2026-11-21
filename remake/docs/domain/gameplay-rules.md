@@ -482,12 +482,15 @@ the actual counterattacker. Profiles without mutable equipment retain their froz
 behavior. Neither repeated confirmation nor growth stacks the old bonus.
 
 Eligibility uses weapon type and the source class bit (`1 << classId`). Offers preserve carried slot
-order and duplicate identities. Zero eligible weapons yields no interaction; one to three eligible
-slots include Unarmed sentinel4; four eligible slots overwrite the source menu's Unarmed cell.
+order and duplicate identities. One to three eligible weapon slots include Unarmed sentinel 4.
+Four eligible weapons fill the source menu's Unarmed cell. An actor with only an eligible ring can
+open Equip to choose its ring.
 Selecting a slot clears only admitted weapon equipped bits and sets the chosen slot's bit128. No
 inventory removal, compaction, item transfer, other flags, resource payment, movement commit or turn
-consumption occurs. Broken weapons, equipped nonweapons, multiple equipped weapons, wrong-class
-initial equipment, unsupported classes/status/control and inconsistent live ATT reject explicitly.
+consumption occurs. Broken weapons, unsupported worn effects, multiple equipped weapons,
+wrong-class initial equipment, unsupported classes/status/control and inconsistent live ATT
+reject explicitly. The [static ring agreement](ring-equipment-design.md#remake-loadout-actions-and-stats)
+owns the independent ring choice, post-status stats and compatible Continue.
 
 **Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
 `disasm/`: `code/common/stats/itemstats.asm:GetEquippableWeapons/GetEquippableItemsByType`,

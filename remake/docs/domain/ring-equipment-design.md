@@ -5,9 +5,9 @@ covers Power, Protect, Quick and Running Ring through first Pacalon and Battle26
 wear a ring and a weapon together, inspect the resulting stats, act with them, and move or remove
 either item through the supported menus. The same party and equipment must survive Continue.
 Movement selection, class rebind and save reconstruction share the same loadout, so a failure
-in any one of them can leave an otherwise legal party unable to act or resume. This is the
-implementation agreement proposed for review. The [capability trace](../capability-status.md#connected-battle-equipment-agreement)
-records current support.
+in any one of them can leave an otherwise legal party unable to act or resume. The
+[capability trace](../capability-status.md#connected-battle-equipment-agreement) records current
+support and [ordinary input acceptance](#implemented-behavior-and-ordinary-input).
 
 ## Original rules and evidence
 
@@ -145,9 +145,7 @@ The existing words and last-refresh operand suffice for Continue.
 
 ## Implementation order and ownership
 
-After independent design acceptance and [#1942](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1942)
-release the shared paths, declare exact code ownership again from accepted main. Implement as one
-four-ring slice with the following dependency order.
+The four rings use three existing boundaries for content, rules and callers.
 
 1. Bind the four trusted item rows and masks in existing Content admission. Share the binding
    through `PrivateFieldPreparation` and actor loadout construction, including promotion and
@@ -187,14 +185,12 @@ for Chirrup Sandals and owns its pickup, footstep sound and special Depot descri
 ## Acceptance through Battle26
 
 - **Power. Confirmed** remake receipt and carry. Battle10 Witch 129, once bit 4, awarded Jaha
-  item 19. Start from the unchanged ring-bearing `issue1872` correction seed with Jaha's
-  `[161,19,127,127]` pack. His WARR class admits Short Axe (33) and Power Ring together.
-  Use Field and the Map26 Caravan service. Check both words and ATT +5, then complete Jaha's
-  ordinary axe attack in the next admitted encounter from a ring-bearing continuation.
-  The Map26 service route already continues to Battle23. An earlier ring-bearing Battle10
-  return can also witness automatic Peter at the next battle after a legal transfer in Field.
+  item 19. The registered first-Pacalon castle seed carries the same legitimate item on Jaha.
+  His WARR class admits Short Axe (33) and Power Ring together. Check both words and ATT +5 in
+  Field and the overworld Caravan, then use Relief to deploy him in Battle26. Peter's earlier
+  automatic turn is covered with a controlled equipped word in the engine.
   [Battle10 receipt](../application/new-granseal-east-shrine.md) ·
-  [Correction seed and commands](../application/caravan-services-design.md#current-item-implementation) ·
+  [Pacalon inputs](../application/pacalon-first-visit.md#continue-after-worktree-cleanup) ·
   [Axe row](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm#L353-L361)
 - **Protect. Confirmed** remake receipt. In the English Battle21 fight Gerhalt defeated Dark
   Madam 129 for item 20 under once bit 8, before defeat. From the registered `issue1854`
@@ -254,6 +250,146 @@ actual CI. Keep any completed shutdown result with its functional outcome and le
 [Inputs and observation budget](../application/church-promotion-design.md#inputs-commands-and-observation-budget) ·
 [Save modes](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
 
-This design slice is checked by comparing the cited pinned rows and callers, resolving
-document links and anchors, reviewing the two-path diff and inspecting the clean-head planner
-and PR scope checks. Implementation behavior will be accepted with the later code slice.
+## Implemented behavior and ordinary input
+
+The engine binds the four static effects from admitted item definitions. `RingEquipmentTests`
+covers mixed slot order, Power Ring damage estimation, Protect Ring with retained BOOST operands,
+Quick Ring and the next queue, and Running Ring at a confirmed stop after removal.
+The actual promotion test preserves a worn ring and weapon across class rebind and growth.
+The automatic-ally test accepts a worn Power Ring while choosing an ordinary physical action.
+
+- **Power Ring in Field and Caravan.** Continue the English `castle-en.json` from the registered
+  first-Pacalon handoff with the [current world and display package](../application/pacalon-first-visit.md#continue-after-worktree-cleanup).
+  Jaha starts with `[161,19,13,0]` and ATT 34. Open the member equipment menu, select Jaha's
+  Power Ring, cancel the confirmation, then reopen and confirm. The axe word is still 161 and
+  the ring word is 147. ATT is 39. A separate run removed the ring, re-equipped it, then gave
+  the worn ring to Kiwi. Jaha kept the axe and ATT 34. Kiwi received bare word 19.
+  Chinese equipment input displayed the ring name and projected stats and saved successfully.
+- **Power Ring in Battle26.** Continue from the English equipped field save and leave the
+  castle and town for Map71. Align with the visible Caravan and open its service. Deposit Jaha's
+  worn ring, Look at the stored identity and retrieve it to him. The value is 2,250 gold.
+  Retrieval produces `[161,13,0,19]`. Caravan Item Equip sets the last word to 147. Use Join
+  and Relief to deploy Jaha in the place of the fallen Kazin, then take the
+  [Ketto road to Battle26](../application/pacalon-first-visit.md#reproduction). Jaha's
+  axe attack targeted a Lesser Demon at range 1 and was dodged. His ATT was 39. His axe
+  was visible in the battle scene with the ring still worn. Save at settled Movement. A fresh Continue and immediate
+  re-save preserved the complete battle data. Ordinary EGRESS returned to usable Map36 input.
+- **Protect Ring in Battle21.** Continue the English `retry-en.json` from the registered
+  [Devil's Tail handoff](../application/battle21-devils-tail.md#held-items-and-battle-outcomes)
+  with the current package. Approach from the east, clear the enemies blocking the approach and
+  prioritize Dark Madam in slot 129 before the leader. In the observed path Peter defeated her
+  in round 10 and received bare word 20 under once bit 8. Save at the next settled Movement.
+  On Peter's next turn, confirm the stop, open Equip, select the ring and confirm. He remains
+  unarmed at range 1, DEF rises from 35 to 40 and his pack reads `[62,148,127,127]`. Return to
+  Movement and save. The worn ring and full battle data survived a fresh Continue and re-save.
+
+The field cold re-save retained all ally records, custody, flags, active party and gold. In the
+delayed re-save, wandering entity coordinates and the main seed advanced before the capture.
+The direct battle comparisons matched the whole decoded data. Quick and Running use
+controlled engine witnesses. Ordinary pickup and item-specific Continue remain **Unknown**
+for those two rings.
+
+The Power and Protect post-equip battle slots are about 41 and 37 KiB respectively. A Protect
+rehearsal recorded the item receipt, then hit an observer assertion. The Godot process exited
+with `0xC0000005`. Its stack showed
+`Godot.NativeInterop.NativeFuncs.godotsharp_internal_object_get_associated_gchandle`,
+`Godot.GodotObject.Dispose`, and `Godot.GodotObject.Finalize`. The corrected Equip, Save and
+cold Continue completed with exit 0. [Paused shutdown issue #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+### Battle Continue after worktree cleanup
+
+Temporarily move the producing `local/` aside in the owning checkout. Capture the operator
+save root before loading the worktree configuration. Restore `local/private-inputs.ps1` from
+the registered template. Run the Pacalon setup block through its `Copy-Item` of the registered
+drivers into `./local`. This selects the stable `issue1966` world and scenes, the `issue1941`
+display catalogs, and `issue1927` controller settings. Reuse the built Debug adapter.
+[Fresh worktree setup](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup) ·
+[Pacalon setup](../application/pacalon-first-visit.md#continue-after-worktree-cleanup)
+
+Use the retained external English Battle26 slot from the ordinary Power Ring route above.
+The observer's `battle-continue` mode uses the title's Continue slot picker and re-saves from
+settled Movement. This scratch copy adds two ordinary Enter inputs, one to dismiss the save
+result and one to open Action Choice at the current stop.
+
+```powershell
+# Capture this before loading the worktree configuration.
+$operatorData = [Environment]::GetFolderPath('LocalApplicationData')
+# Run the linked configuration and Pacalon setup through the driver copy here.
+$seed = Join-Path $operatorData 'Sf2RingReview/issue1946/battlecold01/ring-review/sf2-opening/slot1.json'
+$sampleRoot = Join-Path $operatorData ('Sf2RingReview/issue1946/clean-' + [guid]::NewGuid().ToString('N'))
+$receipt = (New-Item -ItemType Directory -Path './local/issue1946-clean').FullName
+$driver = Get-Content -LiteralPath "$pacalon/Pacalon.gd" -Raw
+$anchor = ' write_json("result", {"issue": issue, "texts": text_ids})'
+$check = @'
+ if mode == "battle-continue" and issue == "":
+  await key(KEY_ENTER)
+  await settle("post-save")
+  var start = state()
+  await key(KEY_ENTER)
+  await ticks(6)
+  var next = state()
+  if start.get("stage") != "Movement" or next.get("stage") != "ActionChoice" or start.get("actor") != next.get("actor") or next.get("failure") != null:
+   issue = "ordinary input after settled re-save"
+  write_json("post-save-input", {"actor": next.get("actor"), "before": start.get("stage"), "after": next.get("stage"), "failure": next.get("failure")})
+'@
+if ([regex]::Matches($driver, [regex]::Escape($anchor)).Count -ne 1) { throw 'Pacalon driver result boundary changed' }
+Set-Content -LiteralPath "$receipt/Continue.gd" -Value ($driver.Replace($anchor, $check + [char]10 + $anchor)) -Encoding utf8
+$env:SF2_DESKTOP_MODE = 'battle-continue'
+$env:SF2_REVIEW_LANGUAGE = 'en'
+$env:SF2_ROUTE_DIR = $receipt
+$env:SF2_SAVE_ROOT = $sampleRoot
+$env:SF2_SAVE_NAMESPACE = 'ring-clean-review'
+$env:SF2_REVIEW_SLOT_PATH = Join-Path $sampleRoot 'ring-clean-review/sf2-opening/slot1.json'
+$env:APPDATA = Join-Path $receipt 'appdata'
+$env:LOCALAPPDATA = Join-Path $receipt 'localappdata'
+$env:TEMP = Join-Path $receipt 'temp'
+$env:TMP = $env:TEMP
+foreach ($dir in @($env:APPDATA, $env:LOCALAPPDATA, $env:TEMP, [IO.Path]::GetDirectoryName($env:SF2_REVIEW_SLOT_PATH))) {
+    [void][IO.Directory]::CreateDirectory($dir)
+}
+[IO.File]::Copy($seed, $env:SF2_REVIEW_SLOT_PATH, $false)
+$game = (Resolve-Path -LiteralPath './remake/game').Path
+Push-Location -LiteralPath $game
+try {
+    & $env:GODOT_BIN --headless --fixed-fps 60 --audio-driver Dummy --resolution 1920x1080 `
+        --path $game --script "$receipt/Continue.gd" --log-file "$receipt/native.log" `
+        -- --input-settings "$pacalon/settings-en.json"
+    $nativeExit = $LASTEXITCODE
+} finally { Pop-Location }
+if ($nativeExit -ne 0) { throw 'Godot ordinary Continue check failed' }
+```
+
+Compare the entire decoded `data` object and verify that the record sequence increments once.
+Check the worn words and ATT explicitly and read the next input's observed stage and failure.
+
+```powershell
+$env:SF2_RING_REVIEW_SEED = $seed
+@'
+import base64, json, os
+from pathlib import Path
+
+def load_record(path):
+    envelope = json.loads(path.read_text(encoding="utf-8-sig"))
+    return json.loads(base64.b64decode(envelope["payload"]))
+
+receipt = Path(os.environ["SF2_ROUTE_DIR"])
+before = load_record(Path(os.environ["SF2_RING_REVIEW_SEED"]))
+after = load_record(receipt / "immediate-resave-slot.json")
+assert after["sequence"] == before["sequence"] + 1
+assert before["data"] == after["data"]
+battle = after["data"]["battle"]
+assert battle["encounter"] == "battle-26"
+jaha = next(actor for actor in battle["actors"] if actor["actorId"] == "ally-3")
+assert jaha["loadout"]["value"]["items"] == [161, 13, 0, 147] and jaha["attack"] == 39
+entry = json.loads((receipt / "post-save-input.json").read_text(encoding="utf-8"))
+assert entry["before"] == "Movement" and entry["after"] == "ActionChoice" and entry["failure"] is None
+print(f"PASS sequence {before['sequence']} -> {after['sequence']}, complete battle data equal")
+print(f"PASS {battle['encounter']} Jaha attack {jaha['attack']} and both equipped words, input {entry['actor']} {entry['before']} -> {entry['after']}")
+'@ | python -X utf8 -
+if ($LASTEXITCODE -ne 0) { throw 'Decoded battle or input comparison failed' }
+```
+
+With the producing `local/` parked, Godot 4.7.2 Mono continued the Battle26 slot. Sequence 8
+advanced to 9 with identical complete battle data. Jaha retained `[161,13,0,147]` and ATT 39.
+Bowie (`ally-0`) advanced from Movement to Action Choice on the next input with no projected
+failure. Godot exited 0. The source slot and stable content remained read-only.

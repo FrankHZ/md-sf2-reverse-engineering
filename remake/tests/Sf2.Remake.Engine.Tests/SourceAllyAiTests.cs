@@ -57,6 +57,22 @@ public sealed class SourceAllyAiTests
     }
 
     [Fact]
+    public void AutomaticAllyCanFightWithAnEquippedPowerRing()
+    {
+        var before = Initial();
+        var ally = before.GetActor(Ally);
+        var loadout = new BattleSourceLoadout([147, 127, 127, 127], [63, 63, 63, 63]);
+        var equipment = new BattleEquipmentDefinition(ally.Attack, [], allowChanges: false,
+            rings: [new(19, "Power Ring", uint.MaxValue, RingStat.Attack, 5)]);
+        var equipped = new BattleActorState(ally.Deployment with { Definition = ally.Definition.WithEquipment(equipment) },
+            ally.Hp, ally.Mp, ally.Exp, ally.Position, ally.Kills, ally.Defeats, sourceLoadout: loadout, activationWord: 4);
+        var result = Decide(before.With(actors: before.Actors.Select(a => a.Actor == Ally ? equipped : a)));
+        Assert.Equal(Sentry, result.Target);
+        Assert.Equal(ally.Attack + 5, result.Battle.GetActor(Ally).Attack);
+        Assert.DoesNotContain(result.Effects, effect => effect.Kind == "item-used");
+    }
+
+    [Fact]
     public void NoAttackRunsHealSupportMoveInOrderWithoutRandomDrawsAndApproachesOpponent()
     {
         var b = Initial(); b = b.With(actors: b.Actors.Select(a => a.Actor == Ally ? a.With(position: new(0, 0)) : a));

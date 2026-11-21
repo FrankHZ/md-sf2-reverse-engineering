@@ -15,10 +15,11 @@ internal static class BattleGiveSelection
         var selection = current.Selection!;
         try
         {
-            var items = BattleGive.Items(current.Battle, selection.Actor);
+            var battle = selection.AtConfirmedStop(current.Battle);
+            var items = BattleGive.Items(battle, selection.Actor);
             var targets = new List<ActorRef>();
-            foreach (var actor in current.Battle.Actors)
-                try { BattleGive.RequireTarget(current.Battle, selection.Actor, selection.Preview.Destination, actor.Actor); targets.Add(actor.Actor); }
+            foreach (var actor in battle.Actors)
+                try { BattleGive.RequireTarget(battle, selection.Actor, selection.Preview.Destination, actor.Actor); targets.Add(actor.Actor); }
                 catch (BattleRuleException) { }
             var returns = selection.Target is { } target && selection.Stage is
                 BattleSelectionStage.GiveExchangeChoice or BattleSelectionStage.GiveCommitReady &&
@@ -32,7 +33,7 @@ internal static class BattleGiveSelection
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command)
     {
         var selection = current.Selection!;
-        var battle = current.Battle;
+        var battle = selection.AtConfirmedStop(current.Battle);
         if (command is BeginGive && selection.Stage == BattleSelectionStage.ActionChoice)
         {
             var choices = Query(current);

@@ -28,11 +28,11 @@ public sealed record BattleSceneDefinition(string Encounter, string Background, 
 {
     public bool TryAllyVisual(BattleActorState actor, out BattleSceneActorVisual visual)
     {
-        ushort equipped = actor.SourceLoadout?.Items.FirstOrDefault(word => (word & 128) != 0 && (word & 127) != 127) ?? 0;
+        byte? weapon = BattleEquipment.EquippedWeaponItem(actor);
         if (AllyAppearances is not null && AllyAppearances.Keys.Any(key => key.Actor == actor.Actor && key.Class == actor.Definition.ClassRule))
-            return AllyAppearances.TryGetValue((actor.Actor, actor.Definition.ClassRule, equipped == 0 ? -1 : equipped & 127), out visual!);
-        if (Equipment is not null && equipped != 0)
-            return Equipment.TryGetValue((actor.Definition.ClassRule, equipped & 127), out visual!);
+            return AllyAppearances.TryGetValue((actor.Actor, actor.Definition.ClassRule, weapon is { } item ? item : -1), out visual!);
+        if (Equipment is not null && weapon is { } equipped)
+            return Equipment.TryGetValue((actor.Definition.ClassRule, equipped), out visual!);
         return Allies.TryGetValue(actor.Definition.ClassRule, out visual!);
     }
 }

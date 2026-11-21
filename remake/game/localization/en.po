@@ -698,6 +698,15 @@ msgstr "Back"
 msgid "prepare.unarmed"
 msgstr "Unarmed"
 
+msgid "prepare.remove-ring"
+msgstr "Remove ring"
+
+msgid "prepare.ring-stats"
+msgstr "ATT {0} · DEF {1} · AGI {2} · MOV {3}"
+
+msgid "prepare.confirm-ring"
+msgstr "{0}? {1}"
+
 msgid "prepare.equipment-row"
 msgstr "{0}{1}    ATT {2}"
 
@@ -2488,6 +2497,9 @@ msgstr "An equipped cursed item cannot be removed."
 
 msgid "depot.kind.weapon"
 msgstr "Weapon"
+
+msgid "depot.kind.ring"
+msgstr "Ring"
 
 msgid "depot.kind.consumable"
 msgstr "Consumable"

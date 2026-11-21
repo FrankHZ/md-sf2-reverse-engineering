@@ -49,16 +49,18 @@ internal static class BattleCommandDispatcher
                 case Cancel when selection.Stage == BattleSelectionStage.EquipmentChoice:
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "equipment-cancelled");
                 case Confirm when selection.Stage == BattleSelectionStage.EquipmentChoice:
-                    if (selection.EquipmentSlot is not { } equipmentSlot ||
-                        equipmentSlot < 4 && actor.SourceLoadout?.Items.ElementAtOrDefault(equipmentSlot) != selection.ItemWord)
+                    var chosen = BattleEquipment.Choices(actor).SingleOrDefault(option => option.Slot == selection.EquipmentSlot);
+                    if (chosen is null || chosen.SourceSlot != selection.ItemSlot || chosen.ExpectedWord != selection.ItemWord)
                         return Reject(current, "stale-equipment-selection", "equipment.slot");
-                    var equipped = BattleEquipment.Equip(actor, equipmentSlot);
+                    var equipped = BattleEquipment.Equip(actor, chosen.Slot);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice),
                         "equipment-confirmed", battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? equipped : a)));
                 case Cancel:
                     return BattleMovementContinuation.BeginPlayer(current,
                         new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!), BattleSelectionStage.Movement),
-                        BattleMovement.ReturnPath(battle, selection.Actor, selection.Preview.Destination), BattleMovementPurpose.Return, "selection-cancelled");
+                        selection.StopExceedsCurrentMove(actor) ? selection.Preview.Path.Reverse().ToArray() :
+                            BattleMovement.ReturnPath(battle, selection.Actor, selection.Preview.Destination),
+                        BattleMovementPurpose.Return, "selection-cancelled");
                 case Move move when selection.Stage == BattleSelectionStage.Movement:
                     var delta = move.Direction switch
                     {
@@ -94,7 +96,7 @@ internal static class BattleCommandDispatcher
                     return Select(choice.Action);
                 case SelectTarget target when selection.ActionReference is { } action &&
                     selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady:
-                    _ = BattleChoices.RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination,
+                    _ = BattleChoices.RequireTarget(rules, selection.AtConfirmedStop(battle), selection.Actor, selection.Preview.Destination,
                         action, target.Target, sceneContent, requireSceneContent);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady,
                         selection.Action, selection.Spell, target.Target, selection.ItemSlot, selection.ItemWord), "target-selected");
@@ -111,10 +113,10 @@ internal static class BattleCommandDispatcher
 
         SessionResult Equipment(int slot)
         {
-            if (!BattleEquipment.Choices(actor).Any(option => option.Slot == slot))
-                throw new BattleRuleException("equipment-slot", "equipment.slot");
+            var choice = BattleEquipment.Choices(actor).SingleOrDefault(option => option.Slot == slot)
+                ?? throw new BattleRuleException("equipment-slot", "equipment.slot");
             return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.EquipmentChoice,
-                itemWord: slot < 4 ? actor.SourceLoadout!.Items[slot] : null, equipmentSlot: slot), "equipment-preview");
+                itemSlot: choice.SourceSlot, itemWord: choice.ExpectedWord, equipmentSlot: slot), "equipment-preview");
         }
 
         bool CanSelect(BattleActionKind kind) => selection.Stage == BattleSelectionStage.ActionChoice ||
@@ -159,7 +161,7 @@ internal static class BattleCommandDispatcher
         if (selected.ItemSlot is { } slot && (selection.ItemWord is null ||
             current.Battle.GetActor(selection.Actor).SourceLoadout?.Items.ElementAtOrDefault(slot) != selection.ItemWord))
             return Reject(current, "stale-item-selection", "item.slot");
-        var action = BattleChoices.Prepare(rules, current.Battle, selection.Actor, selection.Preview.Destination,
+        var action = BattleChoices.Prepare(rules, selection.AtConfirmedStop(current.Battle), selection.Actor, selection.Preview.Destination,
             selected, selection.Target, sceneContent, requireSceneContent);
         if (action.Retreat is not null) return BattleRetreatContinuation.Begin(current, action);
         if (action.Reactions.Count > 0 || action.Silenced is not null)

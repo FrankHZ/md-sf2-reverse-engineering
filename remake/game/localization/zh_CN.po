@@ -698,6 +698,15 @@ msgstr "返回"
 msgid "prepare.unarmed"
 msgstr "空手"
 
+msgid "prepare.remove-ring"
+msgstr "卸下戒指"
+
+msgid "prepare.ring-stats"
+msgstr "攻击 {0} · 防御 {1} · 敏捷 {2} · 移动 {3}"
+
+msgid "prepare.confirm-ring"
+msgstr "{0}？{1}"
+
 msgid "prepare.equipment-row"
 msgstr "{0}{1}    攻击 {2}"
 
@@ -2488,6 +2497,9 @@ msgstr "无法取下已装备的诅咒物品。"
 
 msgid "depot.kind.weapon"
 msgstr "武器"
+
+msgid "depot.kind.ring"
+msgstr "戒指"
 
 msgid "depot.kind.consumable"
 msgstr "消耗品"

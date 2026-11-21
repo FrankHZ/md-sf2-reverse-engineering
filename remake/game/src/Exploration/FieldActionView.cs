@@ -124,8 +124,6 @@ internal sealed partial class FieldActionView : Control
             (() => GameText.Get("prepare.drop"), Drop, true), (() => GameText.Get("prepare.back"), Hide, true)]);
     }
 
-    private string EquipmentName(BattleEquipmentChoice choice) => choice.Slot == 4 ? GameText.Get("prepare.unarmed") :
-        DisplayNames.ItemWord(_choices.Items.Single(item => item.Slot == choice.Slot).Word, choice.Label);
     private void Equip()
     {
         _slotItems = Enumerable.Range(0, 4).Select(slot => _choices.Items.FirstOrDefault(item => item.Slot == slot)).ToArray();
@@ -134,14 +132,19 @@ internal sealed partial class FieldActionView : Control
             var item = _slotItems[slot]; var choice = _choices.Equipment.FirstOrDefault(row => row.Slot == slot);
             return ((Func<string>)(() => $"{slot + 1}. " + (item is null ? GameText.Get("party.empty") : choice is null ?
                 DisplayNames.ItemWord(item.Word, item.Name) + " · " + GameText.Get("field-menu.unavailable") :
-                GameText.Get("prepare.equipment-row", EquipmentName(choice), choice.Equipped ? " · " + GameText.Get("party.equipped") : "", choice.Attack))),
-                (Action)(() => { if (choice is null) Message(() => GameText.Get("field-menu.unavailable")); else Confirm(new FieldEquip(_member, slot, item!.Word),
-                    () => GameText.Get("prepare.confirm-equip", EquipmentName(choice), choice.Attack)); }), choice is not null);
+                DisplayNames.EquipmentRow(choice))),
+                (Action)(() => { if (choice is null) Message(() => GameText.Get("field-menu.unavailable")); else ConfirmChoice(choice); }),
+                choice is not null);
         }).ToList();
-        var unarmed = _choices.Equipment.FirstOrDefault(row => row.Slot == 4);
-        if (unarmed is not null) options.Add((() => GameText.Get("prepare.equipment-row", GameText.Get("prepare.unarmed"), "", unarmed.Attack),
-            () => Confirm(new FieldEquip(_member, 4, null), () => GameText.Get("prepare.confirm-equip", GameText.Get("prepare.unarmed"), unarmed.Attack)), true));
+        foreach (var choice in _choices.Equipment.Where(row => row.Slot >= BattleEquipment.UnarmedChoice))
+            options.Add((() => DisplayNames.EquipmentRow(choice), () => ConfirmChoice(choice), true));
         Menu("equipment", () => GameText.Get("prepare.equipment", _name), options);
+
+        void ConfirmChoice(BattleEquipmentChoice choice) =>
+            Confirm(new FieldEquip(_member, choice.Slot, choice.ExpectedWord, choice.SourceSlot), () =>
+                choice.Category == BattleEquipmentCategory.Ring
+                    ? GameText.Get("prepare.confirm-ring", DisplayNames.Equipment(choice), DisplayNames.RingStats(choice))
+                    : GameText.Get("prepare.confirm-equip", DisplayNames.Equipment(choice), choice.Attack));
     }
     private void Items(string stage, Func<string> title, Func<FieldInventoryChoice, string> label, Action<FieldInventoryChoice> choose, Func<FieldInventoryChoice, bool>? available = null)
     {
@@ -250,7 +253,8 @@ internal sealed partial class FieldActionView : Control
                 "magic" when i < _choices.Spells.Count => IdentityIcons.Spell(_session.Definition, _choices.Spells[i].Spell),
                 "use-item" or "give-item" or "drop-item" or "equipment" when i < _slotItems.Length => _slotItems[i] is { } item ? IdentityIcons.Item(item.Word) : null,
                 "exchange" when i < _exchangeItems.Count => IdentityIcons.Item(_exchangeItems[i].Word),
-                "equipment" when i == 4 => IdentityIcons.Unarmed,
+                "equipment" => _choices.Equipment.Where(option => option.Slot >= BattleEquipment.UnarmedChoice)
+                    .ElementAt(i - _slotItems.Length).ExpectedWord is { } word ? IdentityIcons.Item(word) : IdentityIcons.Unarmed,
                 _ => null,
             };
             string title = _titleText() + (_givingItem is not null && _stage is "give-target" or "exchange" or "confirm" ? "\n" + _givingItem : "");

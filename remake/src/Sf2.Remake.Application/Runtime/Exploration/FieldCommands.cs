@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Battles;
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public abstract record FieldCommand(ActorRef Member) : SessionCommand;
-public sealed record FieldEquip(ActorRef Member, int Slot, ushort? ExpectedWord) : FieldCommand(Member);
+public sealed record FieldEquip(ActorRef Member, int Slot, ushort? ExpectedWord, int? ExpectedSourceSlot = null) : FieldCommand(Member);
 public sealed record FieldGive(ActorRef Member, int Slot, ushort ExpectedWord, ActorRef Target,
     int? ReturnSlot = null, ushort? ExpectedReturnWord = null) : FieldCommand(Member);
 public sealed record FieldDrop(ActorRef Member, int Slot, ushort ExpectedWord) : FieldCommand(Member);
