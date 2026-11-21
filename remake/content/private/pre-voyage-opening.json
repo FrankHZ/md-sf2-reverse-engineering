@@ -91,7 +91,10 @@
     {"member": 17, "class": "WIZ"},
     {"member": 3, "class": "GLDT"},
     {"member": 16, "class": "GLDT"},
-    {"member": 10, "class": "BDBT"}
+    {"member": 10, "class": "BDBT"},
+    {"member": 13, "class": "SNIP"},
+    {"member": 18, "class": "SNIP"},
+    {"member": 8, "class": "BWNT"}
   ],
   "growthClasses": [
     {

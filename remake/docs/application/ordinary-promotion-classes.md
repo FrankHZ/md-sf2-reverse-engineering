@@ -185,14 +185,16 @@ A palette or sprite match from another member is insufficient class admission.
 
 **Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
 Chester, Rick and Eric, MAGE→WIZ for Kazin and Tyrin, WARR→GLDT for Jaha and Randolf,
-and BDMN→BDBT for Luke. The three knights have their own growth,
+BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, and RNGR→BWNT for May. The three knights have their own growth,
 map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
 each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
 use map sprites 12/43 and Battle26 sprite 21 palettes 2/1. Each admits the four mounted
 rods/sticks. The two GLDT members use field sprites 9/40 and battle body 18 with palettes
 1/2. Luke uses field sprite 25 and battle body 14 palette 0. Their scenes admit the mounted
-axes or swords and Luke's newly legal Broad Sword. Unarmed projection uses the member's
-body with the weapon layer hidden. Earlier loaded encounters share the member bindings.
+axes or swords and Luke's newly legal Broad Sword. Elric and Janet use field sprites 31/46
+and battle body 31 palettes 0/1. May uses field sprite 21 and battle body 29 palette 0.
+Their mounted arrows, shells and Unarmed use the member's body animation with the independent
+weapon layer hidden. Earlier loaded encounters share the member bindings.
 Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
 Chester, Rick, Tyrin and Randolf remain **Unknown**. The other destination pairs still
 need their own gameplay bindings and witnesses.
@@ -268,7 +270,7 @@ A candidate's presence in the package or an engine case is independent of ordina
 | PLDN | English Eric covered special decline, fallen reserve promotion, Raise, Relief, both physical weapons and field/battle cold Continue. Chester level 1 was refused in Chinese. Rick is absent from the castle force lists and the registered Hassan/Battle17 journeys reach KNTE 19 and 10 EXP. Exact-level-20 native promotion remains **Unknown**. A separate Pacalon copy deposits the Wing before the ordinary offer. [PLDN reproduction](#pldn-ordinary-reproduction) |
 | WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. His promoted ordinary route remains **Unknown**. [WIZ reproduction](#wiz-ordinary-reproduction) |
 | GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's ordinary promoted route and a native Warrior Pride fallback remain **Unknown**. [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
-| SNIP, BWNT | Elric ACHR 22 and Janet ACHR 26 (Chinese), May RNGR 21 and fallen (both). Use one bounded repeat for the ranged group, checking range, weapon layers, Relief if needed and cold Continue. Promoted continuation remains **Unknown**. |
+| SNIP, BWNT | Chinese Pacalon Elric and Janet kept Steel Arrow. Fallen May became BWNT, was raised and used Wooden Arrow. Battle26 exercised all three body variants, adjacent target rejection, Unarmed and 3-cell Assault Shell and Great Shot attacks. Cold Continue and EGRESS kept all three classes. A native Silver Tank fallback remains **Unknown**. [Ranged reproduction](#sniper-and-bow-knight-ordinary-reproduction) |
 | VICR | Sarah PRST 40 in both castles and Karna PRST 28 in Chinese. Use one promoted HEAL witness with partial HP, a smaller learned rank and actual award, plus a legal field/book/cold round trip. Preserve the differing books with the same implementation. |
 | WFBR, PHNX | Chinese Gerhalt WFMN 29 and Peter PHNK 31 in both castles. Compare the reachable movement cost/land effect against the preceding class, then observe the unarmed action and return. |
 | NINJ, MNST | Both castles have Slade THIF 12 and Kiwi TORT 15. An eligible retained witness remains **Unknown**. Start from a lawful pre-Pacalon save with higher levels if one is registered. Otherwise try a bounded Battle26 repeat from a castle copy. Raise Slade, then earn ordinary EXP to 20. The seed deficits are about 760 and 490 EXP respectively. Measure EXP per action and turns on one repeat and agree a finite budget before training both. Keep the native row **Unknown** if the pilot cannot supply an eligible journey within budget. Engine cases at valid levels cover weapon/ring, the first learned rank, resistance and both conversion branches independently. |
@@ -427,3 +429,51 @@ Controlled cases check the different terrain responses, weapon and ring contribu
 the decline of a Warrior Pride held by another member. The registered Pacalon copies lack
 Warrior Pride. No ordinary promoted Randolf or native Warrior Pride fallback is claimed.
 Some successful Godot exits emitted ObjectDB warnings. #1716 remains deferred.
+
+
+## Sniper and Bow Knight ordinary reproduction
+
+Mount `ranged-v1` from the registered `derived/issue1956/melee-v1`, the prepared retail
+library at commit `52435b04f49a84a6a9ed4444620055a070648001` and the pinned source metadata.
+The closed package has 145 files and 294,607,496 bytes, an 82,289-byte increase. It adds nine
+walking strips and fifteen battle body frames. All 18 member/weapon bindings use body-only
+animation. The source weapon selector is FF for Wooden, Iron, Steel and Robin Arrows, Assault
+Shell and Great Shot. One package serves both locales.
+[Weapon graphics table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/weapongraphics.asm) ·
+[Mount command and private inputs](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+SNIP is source class 21. ACHR's Archer MOV rises from 5 to 6. BWNT is source class 25 and
+keeps RNGR's Centaur Archer MOV 6. On a rough tile with 15% land effect, the two movement
+costs are three and five half-move units respectively. The zero-based AI class ranks
+SNIP/BWNT are 17/18 (Regular), 29/30 (Flying), 17/18 (Archer) and 18/17 (Mage).
+The retained Wooden, Iron and Steel Arrows use range 2–2. Robin Arrow, Assault Shell
+and Great Shot become legal and use 2–3. Selecting Unarmed preserves the carried ammunition
+and restores range 1–1. [Class definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[Attack priorities](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm) ·
+[Item masks and range](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm)
+
+
+Use the Chinese Pacalon castle slot and `derived/issue1956/ranged-review/Boot.ps1`.
+Run `elric`, `janet`, `may`, `raise` and `road` in one journey. May already has her
+formation flag, so Raise restores her live place. At the Caravan, give Rohde's Assault
+Shell to Elric. Fork the Battle26 ready slot for `elric-shot`, `janet-shot`, `may-shot`,
+`assault` and `bare`. Run `battle-cold` on the resulting slots. Continue the Assault Shell
+fork to `egress` and `field-return-cold`. The handoff lists the exact seed and receipt names.
+
+| Boundary | Observed result |
+| --- | --- |
+| Church and Raise | Elric ACHR 22 and Janet ACHR 26 became SNIP 1/0 and kept Steel Arrow. May RNGR 21 became BWNT 1/0 and stayed at 0 HP with Wooden Arrow. The rites preserved earned stats, packs and empty books. Raise for 210 gold restored 30 HP. |
+| Steel Arrow and Wooden Arrow | Elric and Janet dealt 4 and 6 HP at distance two. Their adjacent targets were disabled with `target-range`. May dealt 1 HP at distance two with Centaur Archer MOV 6. All three projected their promoted field sprite and battle body and returned to Movement. |
+| Assault Shell and Unarmed | Elric equipped the Assault Shell received from Rohde and dealt 14 HP at distance three. Janet removed her Steel Arrow and kept it carried. Unarmed dealt 1 HP at distance one. The scenes used the appropriate promoted bodies and hid the independent weapon layer. |
+| English Great Shot | On the separate English castle history, May was raised and received Rohde's carried Great Shot through Caravan Give. Equipped as BWNT, it dealt 23 HP at distance three with the same body-only presentation. Its ready and post-action v4 data matched on cold re-save. |
+| Persistence and return | Complete decoded v4 battle data matched on cold re-save at the ready and post-action checkpoints. Bowie used EGRESS after the Assault Shell fork and returned to Map36. Fresh field v3 Continue preserved the three promoted cards, books and packs. Elric retained his equipped Assault Shell and 17 EXP. Ambient field state and main seed advanced. |
+
+Controlled archer cases decline a Silver Tank held by another member and preserve its
+exact slot. Native Silver Tank fallback remains **Unknown**. BRGN special acceptance
+stays with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
+
+The first two road probes stopped at an unnecessary Relief request and an early Caravan
+lookup. Both driver failures are retained. The Assault Shell run reached input and
+published its after-action slot before native teardown exited `0xC0000005`. Independent
+cold Continue compared complete battle data and completed EGRESS from that slot. Other
+successful exits may report ObjectDB teardown warnings. #1716 remains deferred.

@@ -196,12 +196,12 @@ def mount_walking(directory: Path, world: dict, sprites: dict, selected) -> None
             raise ValueError(f"conflicting field sprite {sprite}")
 
 
-def prepared_ally_sequence(index: int, rows: list[list[int]]) -> dict:
+def prepared_ally_sequence(index: int, rows: list[list[int]], draw_weapon: bool) -> dict:
     def signed(value):
         return value if value < 128 else value - 256
 
     def weapon(frame, layer, x, y):
-        return dict(frame=frame, layer=layer, x=signed(x), y=signed(y))
+        return dict(frame=frame, layer=layer, x=signed(x), y=signed(y)) if draw_weapon else None
 
     header, *frames = rows
     count, trigger, spell, terminate = header[:4]
@@ -229,7 +229,12 @@ def mount_retained_weapons(
         "WIZ": (17, {85, 86, 87, 89}),
         "GLDT": (15, {33, 34, 35, 36}),
         "BDBT": (23, {57, 58, 59, 71}),
+        "SNIP": (21, {45, 46, 47}),
+        "BWNT": (25, {45, 46, 47}),
     }
+    # Additional source-legal weapons already mounted for another promoted member.
+    # Arrows and shells use only the selected body animation (weapon selector FF).
+    promoted_weapons = {"BDBT": (0, {62}), "SNIP": (11, {48, 49, 50}), "BWNT": (11, {48, 49, 50})}
     walking = read_json(library / "walking/index.json")["records"]
     variants = {
         row["member"]: row
@@ -263,13 +268,7 @@ def mount_retained_weapons(
                 raise ValueError(f"conflicting prepared promoted body {key}")
             frames.append(key)
 
-        # Use Item selects the ordinary animation. Dodge selects the second bank.
-        attack = prepared_ally_sequence(sprite, animations[sprite])
-        dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40])
-        sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
         class_code = promotions[member]
-        if class_code == "WIZ":
-            sequences["cast"] = attack
         mounted_weapons = [
             row
             for row in scene["actors"]
@@ -280,23 +279,28 @@ def mount_retained_weapons(
         ]
         if {row["item"] for row in mounted_weapons} != rules[class_code][1]:
             raise ValueError(f"base package lacks the supported {class_code} weapon layers")
-        if class_code == "BDBT":
-            # Luke can equip his carried Broad Sword only after promotion.
-            broad_sword = next(
-                (
-                    row
-                    for row in scene["actors"]
-                    if row["side"] == "ally"
-                    and row["sprite"] == 24
-                    and row["item"] == 62
-                    and 0 in row.get("members", [])
-                ),
-                None,
-            )
-            if broad_sword is None:
-                raise ValueError("base package lacks the mounted Broad Sword layer")
-            mounted_weapons.append(broad_sword)
+        if class_code in promoted_weapons:
+            donor, item_ids = promoted_weapons[class_code]
+            extra_weapons = [
+                row
+                for row in scene["actors"]
+                if row["side"] == "ally"
+                and donor in row.get("members", [])
+                and row["item"] in item_ids
+            ]
+            if {row["item"] for row in extra_weapons} != item_ids:
+                raise ValueError(
+                    f"base package lacks the promoted-only {class_code} weapon bindings"
+                )
+            mounted_weapons.extend(extra_weapons)
         for row in mounted_weapons:
+            # Use Item selects the ordinary animation. Dodge selects the second bank.
+            draw_weapon = bool(row["weaponFrames"])
+            attack = prepared_ally_sequence(sprite, animations[sprite], draw_weapon)
+            dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw_weapon)
+            sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
+            if class_code == "WIZ":
+                sequences["cast"] = attack
             appearance = dict(
                 side="ally",
                 sprite=sprite,
@@ -318,6 +322,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     retained_families = {
         "wiz": {4: "WIZ", 17: "WIZ"},
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
+        "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
     }
     selected = (
         permitted | (set(families) & retained_families.keys())
@@ -331,14 +336,16 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         for member, class_code in variants.items()
     }
     if retained_promotions and upstream is None:
-        raise ValueError("Mount -Family wiz or melee requires the pinned -Upstream checkout")
+        raise ValueError("Mounting retained weapons requires the pinned -Upstream checkout")
     parts = (
         ("pldn-party", "pldn-eric")
         if "pldn" in selected
         else tuple(part for part in ("pldn-party", "pldn-eric") if part in selected)
     )
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | retained_families.keys()):
-        raise ValueError("select walking, icons, sfx, music, pldn, wiz or melee for this consumer")
+        raise ValueError(
+            "select walking, icons, sfx, music, pldn, wiz, melee or ranged for this consumer"
+        )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
         raise ValueError("select a fresh output outside input roots")
