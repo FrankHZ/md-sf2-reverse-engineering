@@ -4,8 +4,9 @@ This High-rigor design for [#1952](https://github.com/FrankHZ/md-sf2-reverse-eng
 covers ordinary Battle Item → Use, the exact slot that survives or is destroyed, the merchant
 Repair transaction, and cold Continue. Action construction, stat refresh and persistence meet at
 the same loadout. A mismatch can lose gear, advance RNG, or charge gold without repairing the
-selected copy. Implementation is pending. The accepted [ring slots](ring-equipment-design.md),
-[status refresh](support-spell-status-design.md), [offensive item origin](offensive-items-design.md#proposed-remake-boundary),
+selected copy. Power Ring and Protect Ring have an implemented battle and Repair loop.
+Indra Staff remains gated on ordinary WIZ/VICR admission. The accepted [ring slots](ring-equipment-design.md),
+[status refresh](support-spell-status-design.md), [offensive item origin](offensive-items-design.md#remake-item-action),
 [promotion and rebind](../application/church-promotion-design.md), and
 [Deals and shop return](../godot/field-and-shop.md#hassan-deals-and-cold-continue) supply the dependencies.
 
@@ -148,9 +149,9 @@ The ordinary caller gates intact first and does not depend on that helper result
 **Inferred.** An out-of-turn ATTACK target at applied count 1 can be recast to stored count
 3 and still strike using count 1 until a real refresh. This follows the retained construction
 write and the same reaction boundary established for BOOST. A reward level-up or holder
-removal can refresh its own actor before the next turn. **Unknown** are a natural original
-ring damage → Repair → SRAM round trip and the equivalent remake journey, including a
-naturally divergent ATTACK Continue. Use the retained construction and stat-refresh evidence for the design.
+removal can refresh its own actor before the next turn. The natural original
+ring damage → Repair → SRAM round trip remains **Unknown**. See the remake observations
+below for the separate native and controlled boundaries.
 
 ## Remake decision and implementation order
 
@@ -195,12 +196,8 @@ naturally divergent ATTACK Continue. Use the retained construction and stat-refr
    Repair transaction can be shared first. An equipped/unequipped copy remains subject to
    the live class mask for Use. No future weapon, recruit or mainline segment is necessary.
 
-Steps 1–3 build one usable ring loop. Sequence the shared Item owner after the accepted
-common origin lands, or explicitly coordinate that small shared change with the pending
-offensive and recovery slices before editing. Keep one writer for selection/scene/save,
-catalogs and the shop. The Deals result and static rings are accepted dependencies.
-[#1943](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1943) has independent live
-ownership; implementation uses accepted main.
+Steps 1–3 use the accepted Item origin, static rings, Deals transaction, permanent growth,
+shared support awards and target centers. Step 4 remains a class-dependent follow-on.
 
 ### Persistence
 
@@ -308,5 +305,52 @@ save verification. [Stable setup and catalog route](../application/pacalon-first
 Implementation checks use `uv run sf2 verify engine`, `uv run sf2 verify adapter` for the
 changed views, and the ordinary suffix above. On a clean committed head use
 `uv run sf2 verify plan --base origin/main --head HEAD` and record exact-head CI.
-This design slice uses direct source, content, link and changed-path checks with the
-documentation-only public CI selection.
+The first implementation uses those checks, with affected engine tests in
+[`EquipmentItemTests.cs`](../../tests/Sf2.Remake.Engine.Tests/EquipmentItemTests.cs),
+[`RingEquipmentTests.cs`](../../tests/Sf2.Remake.Engine.Tests/RingEquipmentTests.cs) and
+[`ShopServiceTests.cs`](../../tests/Sf2.Remake.Engine.Tests/ShopServiceTests.cs).
+
+## Implemented ring loop and ordinary reproduction
+
+Register the [existing private game inputs](../application/pacalon-first-visit.md#continue-after-worktree-cleanup),
+use the `issue1966/content/package` world and scene handoff with the accepted bilingual catalogs,
+and copy one slot per attempt into an independent normal save namespace. Use the Battle26
+`hit01` and Battle21 `protectcold01` lineages from the
+[ring review](ring-equipment-design.md#implemented-behavior-and-ordinary-input). Read the running
+host's state, input, projection and errors. Drive the normal command, target and acknowledgement
+pages using the installed Confirm, Cancel and direction bindings.
+
+- **Power Battle26, English.** From `hit01`, advance to Jaha's round 3 turn. Open Item → Use
+  on his worn Power Ring and cancel at the target page before reopening and choosing Sarah.
+  The ordinary item scene applied ATTACK1, projected Sarah's ATT 69 and +17 change, and gave
+  Jaha 5 EXP. Jaha's MP held at 0 and the word stayed 147. The action returned to Movement.
+- **Protect Battle21, Chinese input.** From `protectcold01`, advance to Peter's round 11
+  turn. Use the worn ring on Peter and cancel/reopen before confirming the center. The
+  ordinary item scene displayed AGI +10, DEF +13 and equipment damage, with 5 EXP and
+  unchanged 0 MP. The first completed use changed slot 2 from 148 to 404. Save from
+  settled Movement. Fresh v5 Continue restored 404 in slot 2, BOOST `0x2000` and resolved
+  DEF 48 and AGI 35. The two histories used two intact actions in total. On a separate
+  copy of the damaged slot, Peter reused it in round 12. The recast's ineffective message
+  preceded the destruction message and 1 EXP. Slot 2 became 127 and play returned to
+  Movement. Keep the original damaged checkpoint for Repair.
+- **Repair, English and Chinese.** Cold Continue the damaged Battle21 slot and advance
+  through ordinary turns until Bowie can cast EGRESS. Arrive in New Granseal (Map 6), face
+  up at (16,11) and talk to the item merchant. Open Repair → Peter → slot 2. The quote is
+  750 gold. Cancel returns to member selection at 13,244 gold. Reopen and confirm, leaving
+  12,494 gold. Dismiss the result, Back out and leave to field control.
+- **Save and cold Continue.** New Granseal in this return has no settled save anchor. Exit
+  south via (20,31) to Map 73, board the Caravan at (55,61) and cross to Map 68. From
+  (55,61), take Down 6, Right 2, Down 2, Right 1, Down 2, Right 1, Down 17, Left 2 and
+  Down 1 to disembark at (57,27). Move left to (56,27) and use the host's Save → Save and
+  Quit. For fresh Continue, detach the producing scratch, load the copied repaired
+  slot with the registered inputs and driver dependencies, re-save, then move left.
+  The field record retained 12,494 gold, Peter's class 9 and pack `[62,148,127,127]`,
+  with the temporary effects cleared on EGRESS. English and Chinese Continue and
+  re-save prompts matched their launch languages. Each fresh process accepted ordinary
+  movement to (55,27). Re-saves preserved the allies, active roster, flags, Deals and Depot.
+
+The controlled engine tests cover destruction after the effect with no extra wear draw,
+last-applied ATTACK across v5 Continue, and Repair refusal/atomicity. A naturally divergent
+ATTACK Continue remains **Unknown**. This loop uses the installed assets and existing save
+formats. Indra Staff, Black Ring's curse/Use and ordinary class promotion keep their
+respective owners.

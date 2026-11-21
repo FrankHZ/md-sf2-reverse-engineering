@@ -92,7 +92,7 @@ internal sealed partial class ShopServiceView : Control
         {
             case ShopPhase.Menu:
                 Add("shop.buy", new ChooseShop(wait.Token, ShopAction.Buy)); Add("shop.sell", new ChooseShop(wait.Token, ShopAction.Sell));
-                Add("shop.repair", null);
+                Add("shop.repair", new ChooseShop(wait.Token, ShopAction.Repair));
                 Add("shop.deals", _session.Current.Exploration!.Party.ItemCustody is null
                     ? null : new ChooseShop(wait.Token, ShopAction.Deals));
                 Add("shop.leave", new BackShop(wait.Token)); break;
@@ -106,7 +106,12 @@ internal sealed partial class ShopServiceView : Control
                 if (_options.Count == 0) _title += "\n" + GameText.Get("shop.deals.empty");
                 break;
             case ShopPhase.Member:
-                _title += "\n" + GameText.Get(wait.Action == ShopAction.Sell ? "shop.seller" : "shop.recipient");
+                _title += "\n" + GameText.Get(wait.Action switch
+                {
+                    ShopAction.Sell => "shop.seller",
+                    ShopAction.Repair => "shop.repair-owner",
+                    _ => "shop.recipient",
+                });
                 if (wait.Item is { } itemId) _title += "\n" + GameText.Get("shop.stock", DisplayNames.Item(itemId, wait.Definition.Items[itemId].Name), wait.Definition.Items[itemId].Price);
                 foreach (var member in _session.QueryPartyDetails()!.Members)
                     _options.Add((PartyStatusView.MemberName(member, _session), new SelectShopMember(wait.Token, member.Carried.Actor)));
@@ -119,6 +124,7 @@ internal sealed partial class ShopServiceView : Control
                     ushort word = loadout.Items[slot]; byte id = (byte)(word & 127);
                     if (id == 127) { _options.Add(($"{slot + 1}. " + GameText.Get("party.empty"), null)); continue; }
                     string name = wait.Definition.Items.TryGetValue(id, out var item) ? DisplayNames.Item(id, item.Name) : GameText.Get("shop.unknown", id);
+                    if ((word & 256) != 0) name += " · " + GameText.Get("party.broken");
                     _options.Add((GameText.Get("shop.slot", slot + 1, name, (word & 128) != 0 ? GameText.Get("shop.equipped") : ""),
                         new SelectShopSlot(wait.Token, slot, word)));
                 }
@@ -127,12 +133,14 @@ internal sealed partial class ShopServiceView : Control
                 var offer = wait.Offer!;
                 var selected = _session.QueryPartyDetails()!.Members.Single(row => row.Carried.Actor == offer.Member);
                 bool selling = offer.Action == ShopAction.Sell;
-                _title += "\n" + GameText.Get(selling ? "shop.confirm-sell" : "shop.confirm-buy",
+                bool repairing = offer.Action == ShopAction.Repair;
+                _title += "\n" + GameText.Get(selling ? "shop.confirm-sell" : repairing ? "shop.confirm-repair" : "shop.confirm-buy",
                     DisplayNames.Item(offer.Item, wait.Definition.Items[offer.Item].Name), PartyStatusView.MemberName(selected, _session), offer.Price);
                 uint balance = _session.Current.Exploration!.Party.Gold ?? 0;
                 long after = selling ? Math.Min(9_999_999L, (long)balance + offer.Price) : (long)balance - offer.Price;
                 bool full = selected.Inventory.All(slot => slot.Empty == false);
-                string? refusal = selling ? null : full ? "full" : balance < offer.Price ? "insufficientgold" : null;
+                string? refusal = selling ? null : !repairing && full ? "full" : balance < offer.Price ? "insufficientgold" :
+                    repairing && (offer.Word.GetValueOrDefault() & 128) != 0 && wait.Definition.Items[offer.Item].Cursed ? "equippedcurse" : null;
                 _title += "\n" + GameText.Get("party.gold", balance.ToString()) + " → " + (refusal is null ? after : balance);
                 if (refusal is not null) _title += "\n" + GameText.Get("shop.result." + refusal);
                 Add("shop.confirm", new AnswerShop(wait.Token, offer, true)); Add("shop.back", new AnswerShop(wait.Token, offer, false)); break;

@@ -3,6 +3,15 @@ namespace Sf2.Remake.Domain.Battles;
 // The four source words are shared by field and battle; neither caller needs the other's state.
 internal static class BattleInventory
 {
+    internal const ushort Broken = 0x0100;
+
+    internal static BattleSourceLoadout SetWord(BattleSourceLoadout loadout, int slot, ushort word)
+    {
+        var words = loadout.Items.ToArray();
+        words[slot] = word;
+        return new(words, loadout.Spells);
+    }
+
     internal static BattleSourceLoadout Remove(BattleSourceLoadout loadout, int slot)
     {
         var words = loadout.Items.ToList();

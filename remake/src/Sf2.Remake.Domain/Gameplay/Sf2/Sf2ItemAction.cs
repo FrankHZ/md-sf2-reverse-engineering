@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Maps;
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 // useitem / ExecuteBattleaction_AngelWing / RemoveAndArrangeItems.
-// This bounded item family has no MP cost, promotion scaling or equipment-break roll.
+// The held slot supplies the effect and determines payment or equipment wear.
 internal sealed class Sf2ItemAction : IBattleActionRule
 {
     public string Identity => "sf2-item";
@@ -19,7 +19,8 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             bool empty = id == 127;
             string label = empty ? "Empty" : battle.Definition.HealingItems.TryGetValue(id, out var item)
                 ? item.Name : battle.Definition.RetreatItems.TryGetValue(id, out var wing) ? wing.Name :
-                battle.Definition.AttackItems.TryGetValue(id, out var attack) ? attack.Name : $"Item {id}";
+                battle.Definition.AttackItems.TryGetValue(id, out var attack) ? attack.Name :
+                battle.Definition.SupportItems.TryGetValue(id, out var support) ? support.Name : $"Item {id}";
             return new BattleActionOffer(new(Kind, ItemSlot: slot), label, empty);
         }).ToArray());
     }
@@ -44,6 +45,11 @@ internal sealed class Sf2ItemAction : IBattleActionRule
             attack.Effect.RequireConsumableEffect();
             return new(attack.Effect.MinimumRange, attack.Effect.MaximumRange, AttackItem: attack);
         }
+        if (battle.Definition.SupportItems.TryGetValue(id, out var support))
+        {
+            support.RequireOwner(battle, owner);
+            return new(support.Effect.MinimumRange, support.Effect.MaximumRange, SupportItem: support);
+        }
         var item = RequireItem(battle, actor, slot);
         return new(item.MinimumRange, item.MaximumRange, Item: item);
     }
@@ -51,6 +57,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         RequireAction(battle, actor, action) switch
         {
             { AttackItem: not null } => Sf2AttackSpellAction.TargetChoices(battle, actor),
+            { SupportItem: { } support } => Sf2SupportSpellAction.TargetChoices(battle, actor, support.Effect),
             { RetreatItem: not null } or { Item.Effect: HealingItemEffect.FullPartyHp } => [actor],
             _ => HealingTargetRules.QueryTargets(battle, actor),
         };
@@ -61,6 +68,11 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         if (admission.AttackItem is { } attack)
         {
             _ = Sf2AttackSpellAction.ResolveTargets(battle, actor, destination, attack.Effect, target);
+            return battle.GetActor(target);
+        }
+        if (admission.SupportItem is { } support)
+        {
+            _ = Sf2SupportSpellAction.Targets(battle, actor, destination, support.Effect, target);
             return battle.GetActor(target);
         }
         if (admission.Item is { } item)
@@ -79,6 +91,9 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         if (admission.AttackItem is { } attack)
             return Sf2AttackSpellAction.PrepareDamage(battle, actor, destination, attack.Effect,
                 target, progression, action.ItemSlot, attack);
+        if (admission.SupportItem is { } support)
+            return Sf2SupportSpellAction.PrepareEffect(battle, actor, destination, support.Effect, target,
+                progression, support, action.ItemSlot);
         if (admission.RetreatItem is { } wing)
         {
             _ = RequireTarget(battle, actor, destination, action,

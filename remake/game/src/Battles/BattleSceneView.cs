@@ -5,6 +5,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
@@ -103,7 +104,7 @@ internal sealed partial class BattleSceneView : Control
         try
         {
             _laser.Hide(); _aura.Hide(); _attackSpell.Hide();
-            if (state.SupportSpell is not null || state.IsSilencedCast)
+            if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -190,7 +191,7 @@ internal sealed partial class BattleSceneView : Control
                 _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
-                    string sequence = state.Spell is not null ? "cast" : state.Item is not null || state.AttackItem is not null ? "item" : "attack";
+                    string sequence = state.Spell is not null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
                     var animation = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences[sequence];
                     _animationIndex = animation.Index;
                     _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
@@ -270,7 +271,7 @@ internal sealed partial class BattleSceneView : Control
         {
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
         }
-        if (state.SupportSpell is not null || state.IsSilencedCast)
+        if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
         {
             if (_elapsed < 0.25) return null;
             _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
@@ -474,8 +475,10 @@ internal sealed partial class BattleSceneView : Control
             Error = GameText.Ready ? "display-operands" : "localization-resources";
             return "Message unavailable (" + Error + ").";
         }
-        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase is BattleScenePhase.SlowExpiredMessage or BattleScenePhase.BoostExpiredMessage or BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage or BattleScenePhase.StunMessage or BattleScenePhase.StunTurnMessage)
+        if (state.IsSilencedCast || state.SupportSpell is not null || state.IsSilenceTurn || state.Phase is BattleScenePhase.SlowExpiredMessage or BattleScenePhase.BoostExpiredMessage or BattleScenePhase.AttackExpiredMessage or BattleScenePhase.SilenceMessage or BattleScenePhase.PoisonMessage or BattleScenePhase.StunMessage or BattleScenePhase.StunTurnMessage)
         {
+            if (state.EquipmentItem is { } item && state.Phase == BattleScenePhase.ActionMessage)
+                return LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(item.ItemId, item.Name));
             var spell = state.SilencedSpell ?? state.SupportSpell?.Spell;
             if (spell is { } key && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
                 return LocalizedMessage("battle.spell.action", ActorName(state.Actor), DisplayNames.Spell(key), key.Level);
@@ -589,11 +592,15 @@ internal sealed partial class BattleSceneView : Control
                 "prism-laser" => LocalizedMessage("battle.scene.prism", ActorName(state.Actor)), _ => null,
             },
             BattleScenePhase.ResultMessage when state.SupportSpell?.ChangesStats == true && state.ReactionKind == "Status" =>
-                LocalizedMessage(state.FriendlySupport ? "battle.scene.agi-up" : "battle.scene.agi-down", Target(), state.SupportStatAmount),
+                LocalizedMessage(state.RaisesAttack ? "battle.scene.att-up" : state.FriendlySupport ? "battle.scene.agi-up" : "battle.scene.agi-down", Target(), state.SupportStatAmount),
             BattleScenePhase.SupportDefenseMessage =>
                 LocalizedMessage(state.FriendlySupport ? "battle.scene.def-up" : "battle.scene.def-down", Target(), state.SupportStatAmount),
             BattleScenePhase.SlowExpiredMessage => LocalizedMessage("battle.scene.slow-expired", Target()),
             BattleScenePhase.BoostExpiredMessage => LocalizedMessage("battle.scene.boost-expired", Target()),
+            BattleScenePhase.AttackExpiredMessage => LocalizedMessage("battle.scene.attack-expired", Target()),
+            BattleScenePhase.EquipmentWearMessage when state.EquipmentItem is { } item =>
+                LocalizedMessage(state.Wear == EquipmentWear.Damaged ? "battle.scene.item-damaged" : "battle.scene.item-destroyed",
+                    DisplayNames.Item(item.ItemId, item.Name)),
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {
                 "Status" => LocalizedMessage(state.Spell?.CuresPoison == true || state.Item?.CuresPoison == true ? "battle.scene.poison-cured" : "battle.scene.silence", Target()),
@@ -702,9 +709,10 @@ internal sealed partial class BattleSceneView : Control
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind, supportSpell = _state?.SupportSpell, silencedSpell = _state?.SilencedSpell,
         reactionAmount = _state?.Amount,
-        item = _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
+        item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
+        equipmentWear = _state?.Wear.ToString(),
         spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = _state?.AttackItem is not null ? 0 : _state?.AttackSpell is not null ? (int?)null : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
+        spellAnimationSelector = _state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is not null ? (int?)null : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null,
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

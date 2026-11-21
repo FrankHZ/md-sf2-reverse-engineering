@@ -26,7 +26,8 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
         // Bare herbs and admitted static rings do not supply an AI item command.
         if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(word => word is not (127 or 19 or 0) &&
-                (word > 255 || actor.Definition.Equipment?.Rings.ContainsKey((byte)(word & 127)) != true)) ||
+                (word > 511 || actor.Definition.Equipment?.Rings.ContainsKey((byte)(word & 127)) != true ||
+                 ((word & BattleInventory.Broken) != 0 && !BattleEquipment.CanBeDamaged(actor.Definition, (byte)(word & 127))))) ||
             loadout.Spells.Any(s => s != 63) || actor.Spells.Count != 0 ||
             actor.Definition.Physical is not { MinimumRange: 1, MaximumRange: 1 })
             throw new BattleRuleException("source-ally-action-categories", "actor.loadout", true);

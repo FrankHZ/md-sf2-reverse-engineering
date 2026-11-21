@@ -15,10 +15,15 @@ public sealed class ShopServiceTests
         new(56, "Other", 100), new(61, "Rare", 77, Rare: true), new(113, "Key", 100, Unsellable: true)]);
 
     internal static GameSession Session(uint? gold = 100, ushort[]? items = null, bool failedReturn = false,
-        BattleItemCustody? custody = null, ShopDefinition? terms = null)
+        BattleItemCustody? custody = null, ShopDefinition? terms = null, bool repairGear = false)
     {
         var original = FieldInventoryTests.Session();
         var battle = original.Definition.Encounters.Values.Single();
+        if (repairGear) battle = battle.WithDeployments(battle.Deployments.Select(row => row.Actor == Buyer
+            ? row with { Definition = row.Definition.WithEquipment(new(row.Definition.Equipment!.BaseAttack,
+                row.Definition.Equipment.Weapons.Values,
+                rings: [new(19, "Ring", uint.MaxValue, RingStat.Attack, 5, DamageOnUse: true)])) }
+            : row));
         var map = new ExplorationMapDefinition(new("market"), new(new ushort[WorkingMapLayout.WordCount]),
             new([new(0, 0, 63, 63)]), [new(new("trader"), new(2, 1), 3, 32)],
             [new(ExplorationEventKind.Interact, null, null, new("trader"), new("caller", 0))]);
@@ -142,6 +147,52 @@ public sealed class ShopServiceTests
         Accept(session, new SelectShopSlot(Wait(session).Token, 0, 178));
         Assert.Equal(ShopResult.UnsupportedItem, Wait(session).Result);
         Assert.Same(party, Party(session));
+    }
+
+    [Theory]
+    [InlineData(750u, 403, false, ShopResult.Repaired)]
+    [InlineData(750u, 275, true, ShopResult.Repaired)]
+    [InlineData(749u, 403, true, ShopResult.InsufficientGold)]
+    [InlineData(750u, 403, true, ShopResult.EquippedCurse)]
+    [InlineData(750u, 147, false, ShopResult.Undamaged)]
+    public void RepairChecksTheLiveWordAndCommitsOnlyPriceAndBrokenBit(
+        uint gold, ushort word, bool cursed, ShopResult expected)
+    {
+        var terms = new ShopDefinition([0], [Terms.Items[0], new(19, "Ring", 3000, Rare: true, Cursed: cursed, Repairable: true)]);
+        var session = Session(gold, [0, word, 19, 0], terms: terms, repairGear: true);
+        var before = Party(session);
+        var owner = Owner(session);
+        Choose(session, ShopAction.Repair);
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Assert.NotNull(Send(session, new SelectShopSlot(Wait(session).Token, 1, (ushort)(word ^ 256))).Failure);
+        Accept(session, new SelectShopSlot(Wait(session).Token, 1, word));
+        if (expected != ShopResult.Undamaged)
+        {
+            Assert.Equal(750u, Wait(session).Offer!.Price);
+            Pay(session, false);
+            Assert.Same(before, Party(session));
+            Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+            Accept(session, new SelectShopSlot(Wait(session).Token, 1, word));
+            var quoted = Wait(session);
+            Pay(session);
+            Assert.NotNull(Send(session, new AnswerShop(quoted.Token, quoted.Offer!, true)).Failure);
+        }
+        Assert.Equal(expected, Wait(session).Result);
+        if (expected == ShopResult.Repaired)
+        {
+            Assert.Equal(0u, Party(session).Gold);
+            Assert.Equal(new ushort[] { 0, (ushort)(word & ~256), 19, 0 }, Owner(session).SourceLoadout!.Items);
+            Assert.Equal(owner.Status, Owner(session).Status);
+            Assert.Equal(before.MainSeed, Party(session).MainSeed);
+            Assert.Same(before.ItemCustody, Party(session).ItemCustody);
+        }
+        else Assert.Same(before, Party(session));
+        Continue(session);
+        Assert.Equal(ShopPhase.Member, Wait(session).Phase);
+        Accept(session, new BackShop(Wait(session).Token));
+        Accept(session, new BackShop(Wait(session).Token));
+        Assert.True(session.Current.CanWaitAtInput);
+        Assert.Contains(999, session.Current.Story.Flags);
     }
 
     [Fact]

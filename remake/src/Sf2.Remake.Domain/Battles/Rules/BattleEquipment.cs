@@ -8,7 +8,7 @@ public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint Class
 
 public enum BattleEquipmentCategory { Weapon, Ring }
 internal enum RingStat { Attack, Defense, Agility, Move }
-internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat Stat, byte Bonus);
+internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat Stat, byte Bonus, bool DamageOnUse = false);
 
 public sealed class BattleEquipmentDefinition
 {
@@ -50,10 +50,21 @@ public static class BattleEquipment
     public const int RemoveRingChoice = 5;
 
     // Shared by battle construction and carried-party reads; explicit battle overrides stay with the caller.
-    public static byte Attack(BattleActorDefinition definition, BattleActorProgress? progress, BattleSourceLoadout? loadout) =>
-        progress is null && definition.Equipment is null ? definition.Attack :
-        (byte)Math.Min(200, (progress?.BaseAttack ?? definition.Equipment?.BaseAttack ??
-            (byte)(definition.Attack - (definition.Growth?.AttackBonus ?? 0))) + Contribution(definition, loadout));
+    public static byte Attack(BattleActorDefinition definition, BattleActorProgress? progress,
+        BattleSourceLoadout? loadout, ushort applied = 0)
+    {
+        if (progress is null && definition.Equipment is null && (applied & BattleStatCounters.Attack) == 0)
+            return definition.Attack;
+        byte basis = progress?.BaseAttack ?? definition.Equipment?.BaseAttack ??
+            (byte)(definition.Attack - (definition.Growth?.AttackBonus ?? 0));
+        return EffectiveAttack(basis, applied, definition, loadout);
+    }
+
+    private static byte EffectiveAttack(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
+        (byte)Math.Min(200, basis + BattleStatCounters.AttackBonus(basis, applied) + Contribution(definition, loadout));
+
+    internal static bool CanBeDamaged(BattleActorDefinition definition, byte item) =>
+        definition.Equipment?.Rings.GetValueOrDefault(item)?.DamageOnUse == true;
 
     internal static byte Defense(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout, bool initial = false)
     {
@@ -154,7 +165,8 @@ public static class BattleEquipment
             if (word > 511) throw new BattleRuleException("equipment-item-word", "actor.sourceLoadout");
             byte item = (byte)(word & 127);
             bool selected = (word & 128) != 0;
-            if ((word & 256) != 0 && (equipment.Weapons.ContainsKey(item) || selected && equipment.Rings.ContainsKey(item)))
+            if ((word & BattleInventory.Broken) != 0 && !CanBeDamaged(definition, item) &&
+                (equipment.Weapons.ContainsKey(item) || selected && equipment.Rings.ContainsKey(item)))
                 throw new BattleRuleException("equipment-broken", "actor.sourceLoadout", true);
             if (!selected) continue;
             if (equipment.ClassMask(item) is not { } mask)
@@ -192,7 +204,8 @@ public static class BattleEquipment
     internal static bool OrdinaryItem(BattleActorDefinition definition, ushort word, bool allowHerb) =>
         word == 127 || allowHerb && word == 0 ||
         word < 127 && definition.Equipment?.InertItems.Contains((byte)word) == true ||
-        (word & ~255) == 0 && definition.Equipment?.ClassMask((byte)(word & 127)) is not null;
+        word <= 511 && ((word & BattleInventory.Broken) == 0 || CanBeDamaged(definition, (byte)(word & 127))) &&
+        definition.Equipment?.ClassMask((byte)(word & 127)) is not null;
 
     internal static void RequireActor(BattleActorState actor)
     {
@@ -202,7 +215,7 @@ public static class BattleEquipment
         if (!actor.IsAlly || actor.Control != BattleControl.Player || actor.Hp == 0 || actor.Position is null ||
             !SilenceRules.Supported(actor.Status) || (actor.Status & 0xC1) != 0 || actor.Definition.Physical is null)
             throw new BattleRuleException("equipment-actor", "actor", true);
-        if (actor.Attack != Math.Min(200, actor.BaseAttack + Contribution(actor.Definition, actor.SourceLoadout)))
+        if (actor.Attack != Attack(actor.Definition, actor.Progress, actor.SourceLoadout, actor.AppliedStatBits))
             throw new BattleRuleException("equipment-stats", "actor.attack");
     }
 
@@ -224,7 +237,7 @@ public static class BattleEquipment
         {
             ushort word = loadout.Items[slot];
             byte id = (byte)(word & 127);
-            if ((word & 256) != 0 || !IsEligible(definition, id)) continue;
+            if (!IsEligible(definition, id) || ((word & BattleInventory.Broken) != 0 && !CanBeDamaged(definition, id))) continue;
             if (equipment.Weapons.TryGetValue(id, out var weapon))
             {
                 choices.Add(Choice(slot, slot, weapon.Name, Current(word), BattleEquipmentCategory.Weapon));
@@ -245,7 +258,7 @@ public static class BattleEquipment
             var candidate = Equip(definition, loadout, choice);
             var weapon = Weapon(definition, candidate);
             byte agility = (byte)((progress?.Agility ?? definition.Agility) | (definition.ExtraRoundAction ? 128 : 0));
-            return new(choice, label, equipped, (byte)Math.Min(200, baseAttack + Contribution(definition, candidate)),
+            return new(choice, label, equipped, EffectiveAttack(baseAttack, status, definition, candidate),
                 weapon?.MinimumRange ?? 1, weapon?.MaximumRange ?? 1)
             {
                 Category = category, SourceSlot = sourceSlot,

@@ -7,7 +7,7 @@ internal sealed record BattleActionOffer(BattleActionRef Action, string Label, b
 internal sealed record BattleActionAdmission(byte? MinimumRange = null, byte? MaximumRange = null,
     HealingSpellDefinition? Spell = null, HealingItemDefinition? Item = null, RetreatSpellDefinition? Retreat = null,
     RetreatItemDefinition? RetreatItem = null, AttackSpellDefinition? AttackSpell = null,
-    SupportSpellDefinition? SupportSpell = null, AttackItemDefinition? AttackItem = null);
+    SupportSpellDefinition? SupportSpell = null, AttackItemDefinition? AttackItem = null, SupportItemDefinition? SupportItem = null);
 
 // Queries are disposable and do not construct an action or consume either RNG stream.
 internal interface IBattleActionRule

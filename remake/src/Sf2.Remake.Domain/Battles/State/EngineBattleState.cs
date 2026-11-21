@@ -136,12 +136,12 @@ public sealed class BattleActorState
         Initialized = initialized; Deployment = deployment; Hp = hp; Mp = mp; Exp = exp; Position = hp == 0 && !retainDeadPosition ? null : position;
         Kills = kills; Defeats = defeats; LastTarget = lastTarget;
         Progress = progress is null ? null : progress with { SourceLoadout = SourceLoadout };
-        Attack = attack ?? BattleEquipment.Attack(Definition, progress, SourceLoadout);
         // PositionBattleEntities declares ordinary allies/enemies with facing3 (DOWN).
         if (facing > 3) throw new ArgumentOutOfRangeException(nameof(facing));
         Facing = facing;
         Status = status;
         LastRefreshBits = appliedStatBits == (status & BattleStatCounters.StatBits) ? null : appliedStatBits;
+        Attack = attack ?? BattleEquipment.Attack(Definition, Progress, SourceLoadout, AppliedStatBits);
         // Direct starts can supply neutral current stats above the source refresh cap.
         UsesInitialStats = useInitialStats && AppliedStatBits == 0 && (BaseDefense > 200 || PackedBaseAgility > 200);
         ActivationWord = activationWord; AiMemory = aiMemory;
@@ -168,7 +168,7 @@ public sealed class BattleActorState
     internal ushort? LastRefreshBits { get; }
     internal bool UsesInitialStats { get; }
     internal bool NeedsStatRefresh => UsesInitialStats || LastRefreshBits.HasValue || Progress?.CurrentStats is not null;
-    private ushort AppliedStatBits => LastRefreshBits ?? (ushort)(Status & BattleStatCounters.StatBits);
+    internal ushort AppliedStatBits => LastRefreshBits ?? (ushort)(Status & BattleStatCounters.StatBits);
     public byte Defense => Progress?.CurrentStats?.Defense ??
         BattleEquipment.Defense(BaseDefense, AppliedStatBits, Definition, SourceLoadout, UsesInitialStats);
     private byte PackedBaseAgility => (byte)(BaseAgility | (Definition.ExtraRoundAction ? 128 : 0));
@@ -202,9 +202,14 @@ public sealed class BattleActorState
         var nextProgress = progress ?? Progress;
         if (refreshStats && nextProgress?.CurrentStats is not null)
             nextProgress = nextProgress with { CurrentStats = null };
+        var nextLoadout = sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout;
+        ushort nextStatus = status ?? Status;
+        byte nextAttack = attack ?? Attack;
+        if (refreshStats && IsAlly && ((AppliedStatBits | nextStatus) & BattleStatCounters.Attack) != 0)
+            nextAttack = BattleEquipment.Attack(Definition, nextProgress, nextLoadout, nextStatus);
         return new(Deployment, hp ?? Hp, mp ?? Mp, exp ?? Exp, clearPosition ? null : position ?? Position, kills ?? Kills, defeats ?? Defeats,
-            lastTarget ?? LastTarget, attack ?? Attack, status ?? Status, activationWord ?? ActivationWord, aiMemory ?? AiMemory,
-            nextProgress, sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout, retainDeadPosition: true,
+            lastTarget ?? LastTarget, nextAttack, nextStatus, activationWord ?? ActivationWord, aiMemory ?? AiMemory,
+            nextProgress, nextLoadout, retainDeadPosition: true,
             primaryOrder: primaryOrder ?? PrimaryOrder, secondaryOrder: secondaryOrder ?? SecondaryOrder, facing: facing ?? Facing, initialized: initialized ?? Initialized,
             appliedStatBits: refreshStats ? null : AppliedStatBits, useInitialStats: !refreshStats && UsesInitialStats);
     }
@@ -240,8 +245,9 @@ public sealed class BattleDefinition
         TarosEffectiveness? tarosEffectiveness = null, LeaderCleanupDefinition? leaderCleanup = null,
         EnemyItemDropDefinition? itemDrops = null, PrismLaserDefinition? prismLaser = null, BattleGiveDefinition? give = null,
         BattleDiscardDefinition? discard = null, bool poison = false, IEnumerable<AttackSpellDefinition>? attackSpells = null, IEnumerable<SupportSpellDefinition>? supportSpells = null, BattleSearchDefinition? search = null,
-        IEnumerable<AttackItemDefinition>? attackItems = null)
+        IEnumerable<AttackItemDefinition>? attackItems = null, IEnumerable<SupportItemDefinition>? supportItems = null)
     {
+        SupportItems = new ReadOnlyDictionary<byte, SupportItemDefinition>((supportItems ?? []).ToDictionary(item => item.ItemId));
         AttackItems = new ReadOnlyDictionary<byte, AttackItemDefinition>((attackItems ?? []).ToDictionary(item => item.ItemId));
         SupportSpells = new ReadOnlyDictionary<SpellRef, SupportSpellDefinition>((supportSpells ?? []).ToDictionary(s => s.Spell));
         AttackSpells = new ReadOnlyDictionary<SpellRef, AttackSpellDefinition>((attackSpells ?? []).ToDictionary(s => s.Spell));
@@ -262,7 +268,7 @@ public sealed class BattleDefinition
         source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
         outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, retreatSpells ?? source.RetreatSpells.Values,
         retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, drops ?? source.ItemDrops, source.PrismLaser,
-        give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search, source.AttackItems.Values) { }
+        give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search, source.AttackItems.Values, source.SupportItems.Values) { }
     internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null) => new(this, outcome: outcome, retreatSpells: retreatSpells, retreatItems: retreatItems);
     internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
@@ -280,6 +286,7 @@ public sealed class BattleDefinition
     public IReadOnlyDictionary<SpellRef, SupportSpellDefinition> SupportSpells { get; }
     public IReadOnlyDictionary<byte, HealingItemDefinition> HealingItems { get; }
     public IReadOnlyDictionary<byte, AttackItemDefinition> AttackItems { get; }
+    public IReadOnlyDictionary<byte, SupportItemDefinition> SupportItems { get; }
     public IReadOnlyDictionary<SpellRef, RetreatSpellDefinition> RetreatSpells { get; }
     public IReadOnlyDictionary<byte, RetreatItemDefinition> RetreatItems { get; }
     public BattleRewardDefinition? Rewards { get; }

@@ -253,6 +253,16 @@ the existing stat refresh and the item scene returns through ordinary reaction, 
 completion. Held copies remain ordinary custody in Field and Caravan.
 [Original rules and ordinary remake observations](offensive-items-design.md#ordinary-remake-observations)
 
+## Power and Protect Ring Use
+
+Battle Item → Use prepares ATTACK1 for Power Ring and BOOST1 for Protect Ring from
+an eligible holder's actual slot. Both bypass MP and Silence. ATTACK uses its independent
+`0xC000` stored and last-applied counter operands. BOOST shares the friendly support action.
+After the targets are constructed, an intact item takes one wear draw. A damaged copy
+still applies its effect, then leaves that exact slot without entering Deals. Worn damaged
+rings retain their passives until removed. Shop Repair clears the broken bit in place.
+[Rules and ordinary observations](equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
+
 ## Opening field inventory and use
 
 The [Standard field-preparation agreement](../application/opening-session-lifecycle.md#implemented-field-preparation)

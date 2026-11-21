@@ -71,7 +71,7 @@ internal static class BattleChoices
                 action.Kind == BattleActionKind.Stay && (admission.MinimumRange is not null || admission.MaximumRange is not null) ||
                 action.Kind != BattleActionKind.Healing && admission.Spell is not null ||
                 action.Kind != BattleActionKind.Item && admission.Item is not null ||
-                action.Kind != BattleActionKind.Item && (admission.RetreatItem is not null || admission.AttackItem is not null) ||
+                action.Kind != BattleActionKind.Item && (admission.RetreatItem is not null || admission.AttackItem is not null || admission.SupportItem is not null) ||
                 action.Kind == BattleActionKind.Retreat && (admission.Retreat is not { } retreat ||
                     !battle.Definition.RetreatSpells.TryGetValue(action.Spell!.Value, out var knownRetreat) || retreat != knownRetreat ||
                     admission.MinimumRange != 0 || admission.MaximumRange != 0) ||
@@ -84,6 +84,10 @@ internal static class BattleChoices
     private static bool ValidItemAdmission(EngineBattleState battle, ActorRef actor, BattleActionRef action, BattleActionAdmission admission)
     {
         byte id = (byte)(battle.GetActor(actor).SourceLoadout!.Items[action.ItemSlot!.Value] & 127);
+        if (admission.SupportItem is { } support)
+            return admission.Item is null && admission.RetreatItem is null && admission.AttackItem is null &&
+                support.ItemId == id && battle.Definition.SupportItems.GetValueOrDefault(id) == support &&
+                admission.MinimumRange == support.Effect.MinimumRange && admission.MaximumRange == support.Effect.MaximumRange;
         if (admission.AttackItem is { } attack)
             return admission.Item is null && admission.RetreatItem is null && attack.ItemId == id &&
                 battle.Definition.AttackItems.TryGetValue(id, out var knownAttack) && attack == knownAttack &&
@@ -135,6 +139,9 @@ internal static class BattleChoices
             }
             if (admission.Item is { Effect: not HealingItemEffect.RestoreHp } recovery && (content is not null || requireContent))
                 RequireRecoveryItemContent(battle, actor, destination, recovery, target, content);
+            if (admission.SupportItem is { } support && (content is not null || requireContent))
+                RequireFriendlyItemContent(battle, actor,
+                    Sf2SupportSpellAction.Targets(battle, actor, destination, support.Effect, target), content);
             if (admission.AttackItem is not null && (content is not null || requireContent))
                 RequireAttackItemContent(battle, actor, target, content);
             return patient;
@@ -144,11 +151,17 @@ internal static class BattleChoices
     private static void RequireRecoveryItemContent(EngineBattleState battle, ActorRef actor, MapPosition destination,
         HealingItemDefinition item, ActorRef target, BattleSceneDefinition? content)
     {
+        RequireFriendlyItemContent(battle, actor, HealingTargetRules.ResolveItem(battle, actor, destination, item, target),
+            content, "recovery-item-scene-content");
+    }
+
+    private static void RequireFriendlyItemContent(EngineBattleState battle, ActorRef actor,
+        IReadOnlyList<BattleActorState> recipients, BattleSceneDefinition? content, string error = "equipment-item-scene-content")
+    {
         if (content is null || content.Encounter != battle.Definition.Encounter ||
             !content.TryAllyVisual(battle.GetActor(actor), out var user) || !user.Sequences.ContainsKey("item") ||
-            HealingTargetRules.ResolveItem(battle, actor, destination, item, target)
-                .Any(recipient => !content.TryAllyVisual(recipient, out _)))
-            throw new BattleRuleException("recovery-item-scene-content", "battleScenes", true);
+            recipients.Any(recipient => !content.TryAllyVisual(recipient, out _)))
+            throw new BattleRuleException(error, "battleScenes", true);
     }
 
     private static void RequireAttackItemContent(EngineBattleState battle, ActorRef actor, ActorRef target,
