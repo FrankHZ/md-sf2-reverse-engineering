@@ -204,6 +204,8 @@ For a chapter change that affects a flag writer, reader, lifetime or acceptance,
 
 When a newly reachable player state relies on a changed or separately admitted consumer, name its next ordinary use and the visible result or return required for acceptance. For example, after a new weapon can be bought and equipped, check its first use in a supported encounter. Compare the newly reachable class/weapon pairs with the encounter artwork; one live route can exercise a shared implementation. If a missing binding stops ordinary play, fix and verify it or link the blocker and keep that route marked blocked.
 
+For already covered prerequisites such as leveling or traversal, use an explicitly labeled, legal controlled state and exercise the changed behavior through its real consumer. Use a targeted natural route when reachability itself changes or is uncertain, for example a recruitment condition, story flag or route entrance. Record which evidence each result uses.
+
 Where similar inputs can preserve or transfer player control, check the cases that distinguish those outcomes. For example, an event tile that returns immediately should preserve a held direction; a scene that takes control should consume it. For a timing claim, observe the named transition (such as step completion to the next step) with a short input sequence. Reuse existing evidence for unchanged behavior. Record a newly requested feel or timing target as a product decision and retain the scope of earlier observations.
 
 ### Task Lifecycle

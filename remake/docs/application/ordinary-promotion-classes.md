@@ -166,8 +166,8 @@ A palette or sprite match from another member is insufficient class admission.
   from the pinned records. The current attack-spell calculation uses neutral resistance and
   the same learned promoted power adjustment as WIZ. Engine cases cover all six ranks and
   effective learning levels. At the rite, THIF's empty book and zero max MP stay as earned.
-  The carried knife remains in its original slot with its equip bit cleared. Ordinary acquisition
-  and paid casts remain **Unknown**. [Slade growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats05.asm) ·
+  The carried knife remains in its original slot with its equip bit cleared. Learned ranks
+  and paid casts are covered from separately labeled legal prerequisites. [Slade growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats05.asm) ·
   [Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
   [Damage elements](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm)
 - **MNST.** A committed valid Attack draws RNG(4) before physical or spell resolution.
@@ -175,7 +175,7 @@ A palette or sprite match from another member is insufficient class admission.
   seed. The four ranks use stored thresholds 32/40/50, FIRE and the shared promoted damage
   calculation. KIWI is an innate result outside Magic, the book and MP payment.
   The private scene plays its distinct cast sequence and prepared flame particles.
-  Ordinary eligibility and natural conversion remain **Unknown**.
+  The rite and both Attack branches are exercised from controlled prerequisites.
   [Conversion gate](../../../docs/design/contracts/battle/battle-functions-control-flow.md#kiwi-conversion-gate) ·
   [Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm)
 
@@ -199,11 +199,12 @@ weapon layer hidden. Sarah and Karna use field sprites 3/37 and battle body 25 p
 Each VICR has four mounted rod/stick bindings and the matching healing cast sequence.
 Gerhalt uses field sprite 23, portrait 49 and battle body 30 palette 0. Peter uses field
 sprite 19, portrait 48 and battle body 28 palette 0. Both use their own unarmed action.
+PHNX's packed selector 61 also plays the [separate sound-wave overlay](#phoenix-sound-wave-playback).
 Slade uses field sprite 15, portrait 50 and battle body 26 palette 0. His unarmed and
 equipped sword scenes use the same member body. Kiwi uses field sprite 17, portrait 51
 and unarmed battle body 27 palette 0. Earlier loaded encounters share the member bindings.
-Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
-Chester, Rick, Tyrin, Randolf, Slade and Kiwi remain **Unknown** in ordinary promotion play.
+Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Controlled promotion
+cases cover Chester, Rick, Tyrin, Randolf, Slade and Kiwi alongside the ordinary samples below.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -236,9 +237,9 @@ Chester, Rick, Tyrin, Randolf, Slade and Kiwi remain **Unknown** in ordinary pro
    admit the animation, including return to an earlier reachable encounter.
 4. **Innate and changed weapons.** Group WFBR/PHNX around unarmed projection, movement and
    class bases. Treat NINJ and MNST as independent work within #1956 because of their additional
-   action consumers. Keep the relevant row open until the learned damage or attack conversion
-   and the required ordinary witness land. If a needed change grows beyond the existing rule
-   owner, give main-gate the dependency before taking that shared path.
+   action consumers. Exercise each changed action through its actual consumer, including its
+   return to control. If a needed change grows beyond the existing rule owner, give main-gate
+   the dependency before taking that shared path.
 
 The shared rite plays finite `MUSIC_PROMOTION` (decimal command 25, Timer B CE) once after
 final Yes. Godot observed one start, one Finished and the restart of Pacalon's `MUSIC_CASTLE`
@@ -262,39 +263,37 @@ growth/loadout resolution and save contract across families.
 | Transaction, restore and projection | `FieldService.cs`, `PartyDetailsQuery.cs`, `CaravanRuntime.cs`, `BattleEntry.cs`, `OpeningRestore.cs`, `BattleRestore.cs`, `ChurchServiceView.cs` and the existing EN/zh-CN catalog and `SessionAudio` path. Restore and projection files need edits only where existing current-class resolution fails. |
 | Acceptance and publication | Target existing engine behavior projects and update the affected rows in this owner, [campaign characters](../content/campaign-characters.md), [campaign items](../content/campaign-items.md), and [capability status](../capability-status.md#campaign-feature-trace). Expose witnessed actions, unsupported effects and actual restorable appearances. Location/flag rows change only for changed callers or custody. |
 
-## Ordinary witnesses and cost
+## Ordinary and controlled evidence
 
 Decode copies of the registered `handoffs/issue1927/pacalon/slots/castle-en.json` and
 `castle-zh-CN.json` using the church owner's read-only procedure. The snapshots cost about
 50 KiB per envelope, ~37 KiB decoded, and include a full active formation. Use separate
 external player-save namespaces. Preserve the original slots and every completed failure.
-A candidate's presence in the package or an engine case is independent of ordinary reach.
+Use legal, labeled controlled states for covered prerequisites, including level attainment.
+Reserve ordinary route verification for changes or uncertainty in reachability itself. A
+controlled setup can prove the rite or a downstream consumer while leaving natural reach unsampled.
+[Acceptance policy](../../../docs/operations/github-project-governance.md#task-lifecycle)
 [Seed and save procedure](church-promotion-design.md#inputs-commands-and-observation-budget)
 
-| Family | First ordinary witness or gap |
+| Family | Observed behavior and evidence |
 | --- | --- |
-| PLDN | English Eric covered special decline, fallen reserve promotion, Raise, Relief, both physical weapons and field/battle cold Continue. Chester level 1 was refused in Chinese. Rick is absent from the castle force lists and the registered Hassan/Battle17 journeys reach KNTE 19 and 10 EXP. Exact-level-20 native promotion remains **Unknown**. A separate Pacalon copy deposits the Wing before the ordinary offer. [PLDN reproduction](#pldn-ordinary-reproduction) |
-| WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. His promoted ordinary route remains **Unknown**. [WIZ reproduction](#wiz-ordinary-reproduction) |
-| GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's ordinary promoted route and a native Warrior Pride fallback remain **Unknown**. [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
+| PLDN | English Eric covered special decline, fallen reserve promotion, Raise, Relief, both physical weapons and field/battle cold Continue. Chester level 1 was refused in Chinese. Rick is absent from the castle force lists and the registered Hassan/Battle17 journeys reach KNTE 19 and 10 EXP. Controlled cases cover eligibility at level 20 for all three knights. A separate Pacalon copy deposits the Wing before the ordinary offer. [PLDN reproduction](#pldn-ordinary-reproduction) |
+| WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. [WIZ reproduction](#wiz-ordinary-reproduction) |
+| GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's rite has controlled coverage. A native Warrior Pride fallback remains **Unknown**. [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
 | SNIP, BWNT | Chinese Pacalon Elric and Janet kept Steel Arrow. Fallen May became BWNT, was raised and used Wooden Arrow. Battle26 exercised all three body variants, adjacent target rejection, Unarmed and 3-cell Assault Shell and Great Shot attacks. Cold Continue and EGRESS kept all three classes. A native Silver Tank fallback remains **Unknown**. [Ranged reproduction](#sniper-and-bow-knight-ordinary-reproduction) |
 | VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Guardian Staff. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
-| WFBR, PHNX | Chinese Pacalon Gerhalt and Peter promoted and attacked unarmed in Battle26. Peter had 44 additional reachable destinations on his first turn. Both classes and portraits persisted through cold Continue and EGRESS. [Wolf Baron and Phoenix reproduction](#wolf-baron-and-phoenix-ordinary-reproduction) |
-| NINJ | Ordinary English Battle26 pilot reached THIF 12 with 43 EXP. Eligible ordinary promotion and learned casts remain **Unknown**. Controlled engine and native coverage exercises the rite, equipment and spells. [Ninja reproduction](#ninja-controlled-reproduction-and-ordinary-pilot) |
-| MNST | An ordinary Chinese Battle26 pilot reached TORT 15 with 19 EXP and stopped. Eligible ordinary promotion and natural flame conversion remain **Unknown**. Controlled rites and both Attack results use the admitted private class and presentation. [Monster reproduction](#monster-controlled-reproduction-and-ordinary-pilot) |
+| WFBR, PHNX | Chinese Pacalon Gerhalt and Peter promoted and attacked unarmed in Battle26. Peter had 44 additional reachable destinations on his first turn. Both classes and portraits persisted through cold Continue and EGRESS. Selector 61 also played its separate waves and returned to Movement. [Wolf Baron and Phoenix reproduction](#wolf-baron-and-phoenix-ordinary-reproduction) |
+| NINJ | Ordinary English Battle26 pilot reached THIF 12 with 43 EXP. Controlled engine and native coverage exercises the rite, equipment and learned casts. [Ninja reproduction](#ninja-controlled-reproduction-and-ordinary-pilot) |
+| MNST | An ordinary Chinese Battle26 pilot reached TORT 15 with 19 EXP and stopped. Controlled rites and both Attack results use the admitted private class and presentation. [Monster reproduction](#monster-controlled-reproduction-and-ordinary-pilot) |
 
-Per family, at a normal church compare the authoritative progress/pack/flags/gold/seeds around
-the final Yes. Use current field sprite/portrait where projected, ordinary save and fresh title
-Continue, then the Battle26 repeat or the bounded earlier recruit case above. Check move range
-and terrain, one differentiating action, class/rank growth and active/reserve exchange. Use
-a stable-input battle save and cold Continue, then EGRESS or victory and return to field
-control. Exercise the affected gameplay rules in small engine cases at levels 19, 20 and late,
-with a missing variant, stale answer, different legal equipment and old field/battle saves.
-Run `uv run sf2 verify engine`, the affected adapter build and clean-head planner for implementation.
-Observe activity using the existing input/state/projection/error surface. Use ordinary English
-and Simplified Chinese controls across the group where real seeds exist. Document the separate
-seed when reusing one history for UI coverage. Screenshots and whole-campaign runs are outside
-this slice. A native shutdown failure after a published slot and the functionality of that
-slot are distinct results. #1716 is deferred.
+Choose checks by the behavior that changes. At the rite, compare progress, pack, flags, gold
+and seeds around the final Yes. For a changed appearance or action, observe the real presentation
+and return to input from a stable save. Compare decoded battle data on cold Continue when
+persistence is affected. Small engine cases cover eligibility below and at level 20, later
+growth, cancel and stale answers, legal equipment differences and old save formats. Select
+affected engine cases, the adapter and the clean-head planner for implementation. Native
+observations use the existing input/state/projection/error surface. Retain functional save
+results and native shutdown results separately. #1716 is deferred.
 [Existing Godot and save reproduction](church-promotion-design.md#playable-hero-and-reproduction)
 
 The 17 new actor/class pairs add 17 growth blocks and class/presentation joins. At the mounted
@@ -389,7 +388,7 @@ Pacalon castle slot. Run `promote` and `road` in the same journey, then use the 
 | Church and field v3 | Living Kazin MAGE 29/5 became WIZ 1/0. He kept HP 35, MP 55, earned bases 18/29/41, the equipped Wooden Rod and the four packed spell words. The finite command 25 played once and `MUSIC_CASTLE` resumed. No Secret Book was carried in this witness. Field cold Continue preserved the class, resources, book and equipment while the ambient field state and main seed advanced. |
 | Battle26 rod and cast | Kazin entered with MAGE terrain movement, MOV 5, field sprite 12 and battle sprite 21 palette 2. On separate forks he attacked with Wooden Rod and cast learned BLAZE 2 on the Lesser Demon. The rod hit for 1 HP. The cast took 6 MP, dealt 12 HP and awarded 15 EXP. Both actions returned to battle input. The cast left the packed BLAZE 3, MUDDLE 2, DISPEL 1 and DESOUL 2 ranks intact. |
 | Battle v4 and EGRESS | Complete decoded battle data matched on cold re-save at both the ready and post-cast checkpoints. Bowie cast EGRESS and returned to Map36. A fresh field v3 Continue retained Kazin's Wizard status, rod, spell book and 15 EXP. |
-| Tyrin and special fallback | Controlled engine cases use Kazin’s and Tyrin’s packed books and levels with a rod equipped and a Secret Book held elsewhere in the party. Declining the special branch preserves the held word. The Tyrin WIZ growth row retains his own learn schedule. A promoted Tyrin ordinary journey and Kazin's native Secret Book fallback remain **Unknown**. |
+| Tyrin and special fallback | Controlled engine cases use Kazin’s and Tyrin’s packed books and levels with a rod equipped and a Secret Book held elsewhere in the party. Declining the special branch preserves the held word. The Tyrin WIZ growth row retains his own learn schedule. Kazin's native Secret Book fallback remains **Unknown**. |
 
 The first native rod run reached an AI lookup error (`ai-target-class`). WIZ now uses its
 source priority row. The next probe recorded a healing scene as a rod action. Its receipt is
@@ -552,9 +551,8 @@ ranks for WFBR/PHNX are 21/12 (Regular), 14/24 (Flying), 21/4 (Archer) and 13/29
 [Terrain table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/landeffectsettingsandmovecosts.asm) ·
 [AI priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm)
 
-The PHNX body animation retains the packed selector 61. The current physical scene plays
-the body frames. The separate original sound-wave scene effect has no physical playback
-binding. [Original phoenix effect](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/phoenixattack.asm)
+The PHNX physical scene plays the body frames and, with the prepared wave overlay,
+the separate effect selected by packed animation selector 61. [Sound-wave reproduction](#phoenix-sound-wave-playback)
 
 Start `gerhalt`, `peter`, `portraits` and `road` in one journey from the registered
 Chinese Pacalon castle slot. Use `derived/issue1956/innate-review/Boot.ps1` and the `innate-v1`
@@ -577,6 +575,39 @@ target, active attack animation and a matching physical result. The failed pilot
 is retained. Some successful Godot exits logged ObjectDB shutdown warnings. #1716
 remains deferred.
 
+
+## Phoenix sound-wave playback
+
+**Confirmed from the pinned source.** PHNX's physical body uses packed selector
+61 (Phoenix Attack 29 with variation 2). The setup tests the normalized variation
+bit and loads tileset 20 for the waves. Base PHNK selector 29 selects the cyclone
+variation. The four 4×4 tileset regions start at tile offsets 0, 16, 32 and 48.
+The wave update starts three staggered sprites, moves them left and changes the
+frame as each sprite ages. [Original setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/phoenixattack.asm) ·
+[Original wave update and frame table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/phoenixattack.asm)
+
+**Confirmed in the remake.** With all four prepared frames mounted, the selector
+starts a finite overlay on the final body frame. It follows the adapter's existing
+pause and visibility handling, disappears at the phase boundary, and releases the
+same continuation as the body animation. Saved rules and results are unaffected.
+Packages predating the wave mount retain body playback. Exact original presentation
+timing and pixels remain **Unknown**. The original per-wave `SFX_SPAWN` audio cue
+belongs to the [battle audio binding](../godot/audio.md).
+
+Use `derived/issue1956/phoenix-wave-review/Boot.ps1` and the `phoenix-wave-v1`
+package. Fork the existing ordinary Battle26 ready slot documented in the private
+handoff. Run `phoenix` for the wave and `wolf` for the selector control, each in a
+fresh save namespace. The standard battle action shows body 28, with active
+staggered waves through state projection. At one sample the wave frames were 1 and
+0 at X positions 123 and 153, both at Y 84. The result was 28 HP damage, the overlay
+was clear by ResultMessage, and battle Movement resumed. Gerhalt's body 30 dealt
+20 HP and displayed no waves. Both runs exited 0.
+
+Run `battle-cold` with the Phoenix action save. With the producing checkout's
+old `local` held aside, fresh title Continue and Save produced identical complete
+decoded v4 battle data. That data also matched the earlier body-only PHNX run.
+The Wolf Baron and cold runs exited 0 with ObjectDB shutdown warnings (four and
+two instances respectively). [Asset mount](../content/presentation-assets.md#prepare-and-mount-retail-resources)
 
 ## Ninja controlled reproduction and ordinary pilot
 
@@ -621,7 +652,8 @@ in round 3. The saved battle returned to usable input with Slade at level 12, 43
 and 0 HP. The pilot then stopped. There were 757 EXP to the rite at that point, with
 300 more EXP after the rite to learn KATON 1, which costs 6 current MP. Growth increases
 the MP maximum without refilling it. No reliable two-repeat path met the training budget.
-Ordinary eligibility, promotion, learning and casting remain **Unknown**.
+The stopped slot records this ordinary pilot; the following checks start from labeled
+controlled states.
 
 
 The ordinary pilot inputs and stopped slot are registered under
@@ -688,8 +720,7 @@ The registered Chinese Pacalon castle starts Kiwi in reserve at TORT 15, 18 EXP 
 Caravan Relief replaced Luke. During one Battle26 repeat Kiwi took three actions,
 including one hit for 1 HP and 1 EXP. The usable Movement save in round 4 retained 9 HP
 and 19 EXP. The pilot stopped 481 EXP short of level 20 and did not establish a
-reliable route within two repeats. Ordinary eligible promotion and conversion remain
-**Unknown**. The measured pilot and its stopped slot are under
+reliable route within two repeats. The measured pilot and its stopped slot are under
 `derived/issue1956/monster-review/ordinary-pilot`.
 
 
@@ -710,5 +741,20 @@ The first focused test compile exposed incorrect assertion types for nullable RN
 range results. The corrected focused run passed. The first cold proof stopped at
 startup when its save root was inside the worktree. The repeated cold proof used
 the existing external player-save namespace and passed. Completed native routes
-recorded ObjectDB warnings on some exits. #1716 remains deferred. PHNX's separate
-sound-wave playback is tracked independently from MNST in #1956.
+recorded ObjectDB warnings on some exits. #1716 remains deferred.
+
+## Adjacent action owners
+
+The current party's ordinary destinations, current-class consumers and supported
+actions are admitted. The linked action owners track the remaining boundaries.
+
+- Special church acceptance, destinations and material consumption remain with
+  [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
+- The Black Ring's curse, Cure and item-origin BLAZE 2 remain with
+  [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).
+- Packed spell learning and retention have their own coverage. Unsupported attack
+  and healing ranks, including BLAZE 4, later FREEZE/BOLT ranks and higher campaign
+  AURA ranks, stay with the [spell actions](church-promotion-design.md#current-battle-spells).
+  MUDDLE/DESOUL remain with [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
+  BOOST 2 and DETOX 4 remain with [support statuses](../domain/support-spell-status-design.md)
+  and [DETOX rank admission](../domain/detox-ranks-design.md), respectively.

@@ -20,6 +20,7 @@ internal sealed partial class BattleSceneView : Control
     private PrismLaserView _laser = null!;
     private AuraRecoveryView _aura = null!;
     private AttackSpellView _attackSpell = null!;
+    private PhoenixWaveView _phoenixWave = null!;
     private bool _suspended;
     private Node2D _canvas = null!;
     internal Control PresentationRoot { get; set; } = null!;
@@ -79,6 +80,7 @@ internal sealed partial class BattleSceneView : Control
         foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) { sprite.ZIndex = 3; sprite.Hide(); }
         _aura = new AuraRecoveryView { Name = "AuraRecovery", ZIndex = 4 }; _canvas.AddChild(_aura); _aura.Hide();
         _attackSpell = new AttackSpellView { Name = "AttackSpell", ZIndex = 4 }; _canvas.AddChild(_attackSpell); _attackSpell.Hide();
+        _phoenixWave = new PhoenixWaveView { Name = "PhoenixWave", ZIndex = 4 }; _canvas.AddChild(_phoenixWave);
         _laser = new PrismLaserView { Name = "PrismLaser", ZIndex = 4 }; _canvas.AddChild(_laser); _laser.Hide();
         Hide();
     }
@@ -95,7 +97,7 @@ internal sealed partial class BattleSceneView : Control
     internal void Present()
     {
         var state = _session.Current.BattleScene;
-        if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _attackSpell.Hide(); _state = null; return; }
+        if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _attackSpell.Hide(); _phoenixWave.Reset(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
         PresentStatus(state);
         if (_state?.Token != state.Token) _messagePanel.ResetReading();
@@ -103,7 +105,7 @@ internal sealed partial class BattleSceneView : Control
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
-            _laser.Hide(); _aura.Hide(); _attackSpell.Hide();
+            _laser.Hide(); _aura.Hide(); _attackSpell.Hide(); _phoenixWave.Reset();
             if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
@@ -197,6 +199,9 @@ internal sealed partial class BattleSceneView : Control
                     _frames = animation.Frames.Skip(actor.IsAlly ? 1 : 0).ToArray();
                     if (state.IsMonsterBreath)
                         _attackSpell.Present(state, [Texture("kiwi-breath/tile-1"), Texture("kiwi-breath/tile-9")]);
+                    if (_frames.Length != 0 && sequence == "attack" && animation.Spell == PhoenixWaveView.Selector &&
+                        PhoenixWaveView.Resources.All(Content!.Rasters.ContainsKey))
+                        _phoenixWave.Begin(PhoenixWaveView.Resources.Select(Texture).ToArray(), actor.IsAlly);
                 }
                 if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Dodge")
                     _frames = (target.IsAlly ? _allyVisual! : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
@@ -376,6 +381,13 @@ internal sealed partial class BattleSceneView : Control
         {
             duration = Math.Max(duration, 0.6);
             _attackSpell.Advance(_elapsed);
+        }
+        if (_phoenixWave.Active)
+        {
+            // The source trigger is on the last authored attack frame.
+            double start = duration - _frames[^1].Ticks / 60.0;
+            _phoenixWave.Advance(_elapsed - start);
+            duration = Math.Max(duration, start + PhoenixWaveView.Duration);
         }
         if (_elapsed < duration) return null;
         if (state.Phase == BattleScenePhase.End) _audio?.RestoreBattlefieldMusic();
@@ -723,6 +735,7 @@ internal sealed partial class BattleSceneView : Control
         laser = _state?.Laser is not null ? _laser.Observe() : null,
         attackSpell = _state?.AttackSpell is not null && _state.AttackItem is null ? _attackSpell.Observe() : null,
         monsterBreath = _state?.IsMonsterBreath == true,
+        phoenixWave = _phoenixWave.Observe(),
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         suppressed = _state is { } messageState && Suppressed(messageState), suppressible = _state?.CanSuppressHitCoinMessage,
         requiresAcknowledgement = _state?.RequiresAcknowledgement,
