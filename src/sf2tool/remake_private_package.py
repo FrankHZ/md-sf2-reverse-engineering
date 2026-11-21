@@ -113,22 +113,22 @@ def installed_png(root, name):
     )
 
 
-def bind_pldn_progression(package: dict, upstream: Path, members: set[int]) -> None:
-    """Add gameplay metadata for the PLDN appearances already selected for this package."""
+def bind_ordinary_progression(package: dict, upstream: Path, promotions: dict[int, str]) -> None:
+    """Add gameplay metadata for the ordinary appearances selected for this package."""
     commit = subprocess.check_output(
         ["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True
     ).strip()
     if commit != ACCEPTED_UPSTREAM_COMMIT or package["provenance"]["commit"] != commit:
-        raise ValueError("PLDN metadata needs the pinned upstream revision")
+        raise ValueError("Promotion metadata needs the pinned upstream revision")
 
     selection = read_json(repo_path("remake/content/private/pre-voyage-opening.json"))
     selected = [
         row
         for row in selection["promotionClasses"]
-        if row["member"] in members and row["class"] == "PLDN"
+        if promotions.get(row["member"]) == row["class"]
     ]
-    if {row["member"] for row in selected} != members:
-        raise ValueError("mounted PLDN member differs from campaign selection")
+    if {row["member"] for row in selected} != promotions.keys():
+        raise ValueError("mounted promotions differ from campaign selection")
     compiler = OriginalPrograms(
         {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
         upstream,
@@ -137,21 +137,21 @@ def bind_pldn_progression(package: dict, upstream: Path, members: set[int]) -> N
     # Only these parsers' actual dependencies belong to the existing world provenance.
     compiler.sources = {"disasm/sf2enums.asm"}
     variants = {
-        row["character"]: row for row in ally_sprites(compiler) if row["character"] in members
+        row["character"]: row for row in ally_sprites(compiler) if row["character"] in promotions
     }
     additions = _selected_growth(compiler, selected)
 
     world = package["world"]
     sprites = {row["sprite"] for row in world["presentation"]["sprites"]}
     if any(row["promotionSprite"] not in sprites for row in variants.values()):
-        raise ValueError("PLDN progression requires its mounted walking sprites")
+        raise ValueError("Promotion requires its mounted walking sprites")
     for row in additions:
         key = row["actor"], row["classId"]
         previous = next((r for r in world["growth"] if (r["actor"], r["classId"]) == key), None)
         if previous is None:
             world["growth"].append(row)
         elif previous != row:
-            raise ValueError(f"conflicting PLDN growth: {key}")
+            raise ValueError(f"conflicting promotion growth: {key}")
 
     def bind_population(population):
         if population is None:
@@ -160,7 +160,7 @@ def bind_pldn_progression(package: dict, upstream: Path, members: set[int]) -> N
             if (variant := variants.get(appearance["character"])) is None:
                 continue
             if appearance["sprite"] != variant["sprite"]:
-                raise ValueError("PLDN variant differs from the mounted base character")
+                raise ValueError("Promotion differs from the mounted base character")
             for field in ("promotionClass", "promotionSprite"):
                 if appearance.setdefault(field, variant[field]) != variant[field]:
                     raise ValueError("conflicting promotion sprite")
@@ -184,17 +184,119 @@ def bind_pldn_progression(package: dict, upstream: Path, members: set[int]) -> N
             sources.append({"path": name, "sha256": hashlib.sha256(raw).hexdigest().upper()})
 
 
+def mount_walking(directory: Path, world: dict, sprites: dict, selected) -> None:
+    mounted = world["presentation"]["sprites"]
+    for sprite in selected:
+        row = dict(sprites[sprite])
+        row["directions"] = [installed_png(directory, path) for path in row["directions"]]
+        existing = next((entry for entry in mounted if entry["sprite"] == sprite), None)
+        if existing is None:
+            mounted.append(row)
+        elif existing != row:
+            raise ValueError(f"conflicting field sprite {sprite}")
+
+
+def wizard_scene_sequence(index: int, rows: list[list[int]]) -> dict:
+    def signed(value):
+        return value if value < 128 else value - 256
+
+    def weapon(frame, layer, x, y):
+        return dict(frame=frame, layer=layer, x=signed(x), y=signed(y))
+
+    header, *frames = rows
+    count, trigger, spell, terminate = header[:4]
+    if count != len(frames):
+        raise ValueError("prepared wizard animation frame count differs")
+    return dict(
+        index=index,
+        trigger=trigger,
+        spell=spell,
+        terminate=terminate,
+        idleWeapon=weapon(*header[4:]),
+        frames=[
+            dict(frame=frame, ticks=ticks, x=signed(x), y=signed(y), weapon=weapon(*draw))
+            for frame, ticks, x, y, *draw in frames
+        ],
+    )
+
+
+def mount_wizards(library: Path, world: dict, scene: dict) -> dict[int, str]:
+    walking = read_json(library / "walking/index.json")["records"]
+    variants = {
+        row["member"]: row
+        for row in walking["classes"]
+        if row["sourceClass"] == 17 and row["member"] in {4, 17}
+    }
+    if variants.keys() != {4, 17}:
+        raise ValueError("prepared wizard appearances are incomplete")
+    mount_walking(
+        library / "walking", world, walking["sprites"], [row["sprite"] for row in variants.values()]
+    )
+
+    directory = library / "bodies"
+    bodies = {
+        (row["sprite"], row["palette"]): row
+        for row in read_json(directory / "index.json")["records"]
+        if row["side"] == "ally"
+    }
+    animations = read_json(directory / "ally-animations.json")
+    for member, variant in variants.items():
+        sprite, palette = variant["battleSprite"], variant["battlePalette"]
+        body = bodies[sprite, palette]
+        frames = []
+        for path in body["frames"]:
+            key = Path(path).with_suffix("").as_posix()
+            raster = installed_png(directory, path)
+            if scene["rasters"].setdefault(key, raster) != raster:
+                raise ValueError(f"conflicting prepared wizard body {key}")
+            frames.append(key)
+
+        # Cast and Use Item select the ordinary animation. Dodge selects the second bank.
+        attack = wizard_scene_sequence(sprite, animations[sprite])
+        dodge = wizard_scene_sequence(sprite + 40, animations[sprite + 40])
+        sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack, cast=attack)
+        # The admitted rods/sticks use body palette slots 1 and 2 plus their own colors.
+        # Both MAGE and WIZ palettes agree at those two slots. Reuse the mounted layers.
+        mage_rows = [
+            row
+            for row in scene["actors"]
+            if row["side"] == "ally"
+            and row["sprite"] == 4
+            and member in row.get("members", [])
+            and row["item"] is not None
+        ]
+        if {row["item"] for row in mage_rows} != {85, 86, 87, 89}:
+            raise ValueError("base package lacks the supported rod and stick layers")
+        for row in mage_rows:
+            appearance = dict(
+                side="ally",
+                sprite=sprite,
+                palette=palette,
+                members=[member],
+                item=row["item"],
+                frames=frames,
+                weaponFrames=row["weaponFrames"],
+                sequences=sequences,
+                idleTicks=body["idleTicks"],
+            )
+            if appearance not in scene["actors"]:
+                scene["actors"].append(appearance)
+    return dict.fromkeys(variants, "WIZ")
+
+
 def mount(root, base, destination, families, commands, *, upstream=None):
     """Mount first-consumer operands into a new closed package; needs no production inputs."""
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
-    selected = permitted if "all" in families else set(families)
+    selected = permitted | (set(families) & {"wiz"}) if "all" in families else set(families)
+    if "wiz" in selected and upstream is None:
+        raise ValueError("Mount -Family wiz requires the pinned -Upstream checkout")
     parts = (
         ("pldn-party", "pldn-eric")
         if "pldn" in selected
         else tuple(part for part in ("pldn-party", "pldn-eric") if part in selected)
     )
-    if not selected <= (permitted | {"pldn-party", "pldn-eric"}):
-        raise ValueError("select walking, icons, sfx, music or pldn for this consumer")
+    if not selected <= (permitted | {"pldn-party", "pldn-eric", "wiz"}):
+        raise ValueError("select walking, icons, sfx, music, pldn or wiz for this consumer")
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
         raise ValueError("select a fresh output outside input roots")
@@ -229,15 +331,8 @@ def mount(root, base, destination, families, commands, *, upstream=None):
                             raise ValueError(f"conflicting mounted {name}")
         if "walking" in selected:
             sprites = read_json(root / "walking/index.json")["records"]["sprites"]
-            for i in (6, 28, 34):
-                row = dict(sprites[i])
-                row["directions"] = [installed_png(root / "walking", p) for p in row["directions"]]
-                existing = next((r for r in presentation["sprites"] if r["sprite"] == i), None)
-                if existing is None:
-                    presentation["sprites"].append(row)
-                elif existing != row:
-                    raise ValueError(f"conflicting field sprite {i}")
-        promoted_members = set()
+            mount_walking(root / "walking", world["world"], sprites, (6, 28, 34))
+        promotions: dict[int, str] = {}
         for part in parts:
             additions = read_json(root / part / "scene-additions.json")
             # A legacy weapon ID may select a different palette in another document.
@@ -251,11 +346,13 @@ def mount(root, base, destination, families, commands, *, upstream=None):
                 if scene["rasters"].setdefault(target, raster) != raster:
                     raise ValueError(f"conflicting PLDN raster {target}")
             for actor in additions["actors"]:
-                promoted_members.update(actor["members"])
+                promotions.update(dict.fromkeys(actor["members"], "PLDN"))
                 if actor not in scene["actors"]:
                     scene["actors"].append(actor)
-        if upstream is not None and promoted_members:
-            bind_pldn_progression(world, upstream, promoted_members)
+        if "wiz" in selected:
+            promotions.update(mount_wizards(root, world["world"], scene))
+        if upstream is not None and promotions:
+            bind_ordinary_progression(world, upstream, promotions)
         for command in commands or (25, 87, 99):
             family = "music" if command <= 64 else "sfx"
             if family not in selected:

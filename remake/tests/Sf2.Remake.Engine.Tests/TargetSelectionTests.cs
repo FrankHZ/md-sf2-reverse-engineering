@@ -49,6 +49,21 @@ public sealed class TargetSelectionTests
     }
 
     [Theory]
+    [InlineData(BattleMover.Regular, 4)]
+    [InlineData(BattleMover.Flying, 4)]
+    [InlineData(BattleMover.Archer, 7)]
+    [InlineData(BattleMover.Mage, 22)]
+    public void WizardUsesItsOwnPriorityRowInLethalTies(BattleMover mover, int rank)
+    {
+        var wizard = Sf2ClassRules.SourceClass(BattleClassRule.Wizard);
+        var mage = Sf2ClassRules.SourceClass(BattleClassRule.UnpromotedMage);
+        var table = PhysicalTargetRules.Table(mover);
+        Assert.Equal(rank, PhysicalTargetRules.ClassRank(wizard, table));
+        var choice = PhysicalTargetRules.Select([new(2, 16, wizard), new(1, 16, mage)], table);
+        Assert.Equal(1, choice!.Value.Index);
+    }
+
+    [Theory]
     [InlineData(0, 5, 1, 19)]
     [InlineData(2, 5, 2, 15)]
     [InlineData(3, 5, 1, 13)]
