@@ -161,7 +161,7 @@ internal static class FieldService
             throw new BattleRuleException("promotion-refresh", "party.progress", true);
         BattleEquipment.ValidateLoadout(destination, loadout);
         var changed = member.Carried with { Exp = 0, Progress = progress with
-            { ClassId = candidate.Destination, Level = 1, SourceLoadout = loadout } };
+            { ClassId = candidate.Destination, Level = 1, SourceLoadout = loadout, BaseMove = null, CurrentStats = null } };
         var party = FieldInventory.Replace(field.Party, [changed]);
         if (field.Population is { } population && member.Deployment.Initialization?.AllyPartyMember is { } memberIndex)
         {

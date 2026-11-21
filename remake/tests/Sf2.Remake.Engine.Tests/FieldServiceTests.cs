@@ -56,7 +56,7 @@ public sealed class FieldServiceTests
             original.MainSeed, original.ThinkingSeed, gold, original.NewBattle, original.ActiveAllies, original.ItemCustody);
         if (promotion)
             party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
-                Progress = a.Progress! with { ClassId = 0, SourceLoadout = loadout, Spells = spells } } : a),
+                Progress = a.Progress! with { ClassId = 0, SourceLoadout = loadout, Spells = spells, BaseMove = 8 } } : a),
                 party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, [Second], party.ItemCustody);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, [], party))).Session;
@@ -101,7 +101,7 @@ public sealed class FieldServiceTests
         var after = session.Current.Exploration.Party;
         var member = Member(session, First);
         var prior = before.Actors.Single(a => a.Actor == First);
-        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = 12, Level = 1 } }, member);
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = 12, Level = 1, BaseMove = null } }, member);
         Assert.Equal(before.MainSeed, after.MainSeed); Assert.Equal(before.ThinkingSeed, after.ThinkingSeed);
         Assert.Equal(before.Gold, after.Gold); Assert.Same(before.ItemCustody, after.ItemCustody);
         Assert.DoesNotContain(First, after.ActiveAllies!);
@@ -109,6 +109,7 @@ public sealed class FieldServiceTests
         var projected = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First);
         Assert.Equal((armed ? 25 : 20) + (power ? 5 : 0), projected.Attack!.Value);
         Assert.Equal(BattleClassRule.Hero, projected.Deployment!.Definition.ClassRule);
+        Assert.Equal(6, projected.Move!.Value);
         var actor = new BattleActorState(projected.Deployment, hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
         uint seed = before.MainSeed;
         var grown = Sf2.Remake.Domain.Gameplay.Sf2.BattleGrowthRules.Award(actor, 1, ref seed, []);

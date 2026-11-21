@@ -146,16 +146,19 @@ and the chapter consumers supply the class and effect definitions below.
   A confirmed valid target spends the selected holder's slot even when the effect finds no matching
   status. [Caller rules and ordinary Pacalon verification](../application/pacalon-first-visit.md#fairy-powder-use) ·
   [Caravan Item](../application/caravan-services-design.md#current-item-implementation)
-- **Other recovery and stat supplies** share the normal pack and receipt lifecycle. Ordinary Search
-  grants Running Pimento (Hassan F153) and Healing Water (Taros F155). Other placements include
-  North Cave Fairy Tear F168, Creed Healing Rain F164 and Fairy Cave Brave Apple F161.
-  Those items await their corresponding Use effects. The optional
-  North Cave witness gave Fairy Tear to Bowie
-  with an empty repeat. Those handoff slots precede the pickup. The Battle15 F151 open/activation
-  receipt is separate from Golem 143's Power Water drop bit 29. [Original item definitions](../../../docs/design/contracts/party/item-definition-data.md) ·
+- **Permanent growth supplies** (9–15) use the selected pack slot in Field and Caravan. Ordinary
+  evidence covers Running Pimento (Hassan F153), Cheerful Bread (Pacalon F172), Bright Honey
+  (Ketto F170) and Brave Apple (Fairy Cave F161), including paid no-effect results and remembered
+  MOV and learned ranks. Controlled engine cases cover Use of Power Water, Protect Milk and Quick
+  Chicken. Battle15 F151 records trap activation separately from Golem 143's Power Water drop bit
+  29. Battle Use is outside the current growth support. [Growth rules and ordinary observations](../domain/permanent-growth-items-design.md#ordinary-input-observations) ·
+  [Battle15 trap](../application/east-shrine-panel.md#optional-battle-chest)
+- **Advanced recovery supplies** include Healing Water (Taros F155), Fairy Tear (North Cave F168)
+  and Healing Rain (Creed F164). The optional North Cave witness gave Fairy Tear to Bowie with an
+  empty repeat. Those handoff slots precede the pickup. Use support follows the separate recovery
+  design. [Original item definitions](../../../docs/design/contracts/party/item-definition-data.md) ·
   [Remake Use bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs) ·
-  [North Cave](../application/battle25-north-cave.md#search-and-exits) · [Battle15 trap](../application/east-shrine-panel.md#optional-battle-chest) ·
-  [Permanent growth supplies #1943](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1943) ·
+  [North Cave](../application/battle25-north-cave.md#search-and-exits) ·
   [Advanced recovery #1948](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1948)
 - **Ordinary weapons** follow the class- and loadout-specific Equip rules. This covers
   the Battle21 Broad Sword receipt (bit 7, Luke observed, full recipient loses the common drop).

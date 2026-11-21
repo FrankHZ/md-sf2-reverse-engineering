@@ -18,4 +18,15 @@ public sealed record BattleGrowthDefinition(byte ClassId, byte AttackBonus,
 
 public sealed record BattleActorProgress(byte Level, ushort MaxHp, byte MaxMp,
     byte BaseAttack, byte Defense, byte Agility, IReadOnlyList<SpellRef> Spells,
-    BattleSourceLoadout? SourceLoadout, byte? ClassId = null);
+    BattleSourceLoadout? SourceLoadout, byte? ClassId = null)
+{
+    public byte? BaseMove { get; init; }
+    public BattleCurrentStats? CurrentStats { get; init; }
+
+    internal bool ValidGrowthItemStats => BaseMove is null or <= 200 &&
+        CurrentStats?.Defense is null or <= 200 && CurrentStats?.Move is null or <= 200;
+}
+
+// A direct field stat write can differ from a fresh status/equipment calculation.
+// Only the changed components that would otherwise be lost need an override.
+public sealed record BattleCurrentStats(byte? Defense, byte? PackedAgility, byte? Move);

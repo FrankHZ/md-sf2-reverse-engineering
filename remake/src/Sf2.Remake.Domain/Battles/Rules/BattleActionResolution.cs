@@ -240,7 +240,9 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 candidate.LastRefreshBits == (consumedItem ? null : afterDrops.LastRefreshBits) && candidate.Facing == old.Facing &&
                 candidate.ActivationWord == old.ActivationWord && candidate.AiMemory == old.AiMemory &&
                 Equals(changedLoadout && candidate.Progress is { } progress
-                    ? progress with { SourceLoadout = old.Progress?.SourceLoadout } : candidate.Progress, old.Progress) &&
+                    ? progress with { SourceLoadout = afterDrops.Progress?.SourceLoadout } : candidate.Progress,
+                    consumedItem && afterDrops.Progress?.CurrentStats is not null
+                        ? afterDrops.Progress with { CurrentStats = null } : afterDrops.Progress) &&
                 candidate.Position == (old.Actor == actor ? destination : old.Position));
             if (changedLoadout)
                 Require(candidate.SourceLoadout is { } loadout && loadout.Items.SequenceEqual(expectedLoadout!.Items) &&

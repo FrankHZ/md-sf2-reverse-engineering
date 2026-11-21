@@ -97,7 +97,7 @@ internal static class ShopService
                         var soldTerms = wait.Definition.Items[offer.Item];
                         if (SaleRefusal(soldTerms, offer.Word!.Value, custody) is not null)
                             throw new BattleRuleException("shop-item-unsupported", "item", true);
-                        party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, BattleInventory.Remove(items, index))],
+                        party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(owner, BattleInventory.Remove(items, index)).RefreshStats()],
                             custody: soldTerms.Rare ? custody!.AddDeal(offer.Item) : custody,
                             gold: BattleRewards.Gold(gold, offer.Price));
                         result = ShopResult.Sold;

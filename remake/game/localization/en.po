@@ -785,6 +785,36 @@ msgstr "Done."
 msgid "prepare.no-effect"
 msgstr "But nothing happened."
 
+msgid "prepare.growth.no-effect"
+msgstr "No effect. The item was used."
+
+msgid "prepare.growth.hp"
+msgstr "Max HP increased by {0}."
+
+msgid "prepare.growth.mp"
+msgstr "Max MP increased by {0}."
+
+msgid "prepare.growth.attack"
+msgstr "Attack increased by {0}."
+
+msgid "prepare.growth.defense"
+msgstr "Defense increased by {0}."
+
+msgid "prepare.growth.agility"
+msgstr "Agility increased by {0}."
+
+msgid "prepare.growth.move"
+msgstr "Movement increased by {0}."
+
+msgid "prepare.growth.level"
+msgstr "Reached level {0}!"
+
+msgid "prepare.growth.learned"
+msgstr "Learned {0}!"
+
+msgid "prepare.growth.upgraded"
+msgstr "Upgraded {0}!"
+
 msgid "prepare.unavailable"
 msgstr "{0}\nPreparation unavailable ({1}). Back returns to the member screen."
 

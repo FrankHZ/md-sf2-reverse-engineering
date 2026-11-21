@@ -71,7 +71,8 @@ internal sealed partial class CaravanServiceView
                 Add("shop.back", new AnswerCaravan(wait.Token, false));
                 break;
             case CaravanPhase.ItemResult:
-                _title += "\n" + GameText.Get("caravan.items.result." + wait.ItemResult);
+                _title += "\n" + (wait.FieldGrowth is { } growth ? FieldActionView.GrowthMessage(growth) :
+                    GameText.Get("caravan.items.result." + wait.ItemResult));
                 Add("shop.continue", new ContinueCaravan(wait.Token));
                 break;
         }

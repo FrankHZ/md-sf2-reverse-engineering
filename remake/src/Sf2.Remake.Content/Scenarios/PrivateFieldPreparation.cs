@@ -104,7 +104,14 @@ internal static class PrivateFieldPreparation
               (1, "HEALING_SEED", "HEALIN", 2, FieldRecoveryEffect.NoEffect),
               (2, "HEALING_DROP", "HEALIN", 3, FieldRecoveryEffect.NoEffect),
               (3, "ANTIDOTE", "DETOX", 1, FieldRecoveryEffect.CurePoison),
-              (5, "FAIRY_POWDER", "POWDER", 1, FieldRecoveryEffect.CurePoisonAndParalysis) })
+              (5, "FAIRY_POWDER", "POWDER", 1, FieldRecoveryEffect.CurePoisonAndParalysis),
+              (9, "POWER_WATER", "POWER", 1, FieldRecoveryEffect.IncreaseAttack),
+              (10, "PROTECT_MILK", "GUARD", 1, FieldRecoveryEffect.IncreaseDefense),
+              (11, "QUICK_CHICKEN", "SPEED", 1, FieldRecoveryEffect.IncreaseAgility),
+              (12, "RUNNING_PIMENTO", "IDATEN", 1, FieldRecoveryEffect.IncreaseMove),
+              (13, "CHEERFUL_BREAD", "HEALTH", 1, FieldRecoveryEffect.IncreaseHp),
+              (14, "BRIGHT_HONEY", "HANNY", 1, FieldRecoveryEffect.IncreaseMp),
+              (15, "BRAVE_APPLE", "BRAVE", 1, FieldRecoveryEffect.LevelUp) })
         {
             if (!source.Items.TryGetValue(id, out var item)) continue;
             Require(item.Code == code && item.UseSpell == useSpell && item.UseSpellLevel == level &&

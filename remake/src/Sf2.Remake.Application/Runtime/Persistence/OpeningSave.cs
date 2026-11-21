@@ -123,7 +123,8 @@ internal static class OpeningSave
             return new SavedAlly(actor.Actor.Value, progress.ClassId ?? source.Growth.ClassId, actor.Hp, actor.Mp, actor.Exp.Value,
                 actor.Kills.Value, actor.Defeats.Value, actor.Status, actor.ActivationWord.Value, actor.Initialized.Value, actor.Absent,
                 progress.Level, progress.MaxHp, progress.MaxMp, progress.BaseAttack, progress.Defense, progress.Agility,
-                Array.AsReadOnly(loadout.Items.ToArray()), Array.AsReadOnly(loadout.Spells.ToArray()));
+                Array.AsReadOnly(loadout.Items.ToArray()), Array.AsReadOnly(loadout.Spells.ToArray()))
+            { BaseMove = progress.BaseMove, CurrentStats = progress.CurrentStats };
         }).ToArray();
         if (party.Gold is null || party.ItemCustody is null || party.ActiveAllies is null || party.NewBattle is null ||
             story.StepCounter is null || story.EgressMap is null || story.TextSettings is null)

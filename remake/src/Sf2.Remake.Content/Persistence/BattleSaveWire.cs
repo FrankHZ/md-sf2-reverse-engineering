@@ -36,7 +36,9 @@ internal static class BattleSaveWire
     internal sealed record Loadout(IReadOnlyList<ushort> Items, IReadOnlyList<byte> Spells);
     internal sealed record Progress(byte Level, ushort MaxHp, byte MaxMp, byte BaseAttack, byte Defense, byte Agility,
         IReadOnlyList<SpellRef> Spells, Presence<Loadout> SourceLoadout,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] byte? ClassId = null);
+          [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] byte? ClassId = null,
+          [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] byte? BaseMove = null,
+          [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BattleCurrentStats? CurrentStats = null);
     internal sealed record Retained(string Actor, ushort Hp, byte Mp, Presence<byte> Exp, Presence<ushort> Kills,
         Presence<ushort> Defeats, ushort Status, Presence<MapPosition> PositionOverride, Presence<Progress> Progress,
         Presence<Loadout> SourceLoadout, Presence<ushort> ActivationWord, Presence<bool> Initialized, bool Absent, bool RetainDeadPosition);
@@ -91,9 +93,10 @@ internal static class BattleSaveWire
     private static Loadout Encode(BattleSourceLoadout value) => new(value.Items, value.Spells);
     private static BattleSourceLoadout Decode(Loadout value) => new(value.Items, value.Spells);
     private static Progress Encode(BattleActorProgress p, bool classes) => new(p.Level, p.MaxHp, p.MaxMp, p.BaseAttack, p.Defense,
-        p.Agility, p.Spells, Optional(p.SourceLoadout, Encode), classes ? p.ClassId : null);
+         p.Agility, p.Spells, Optional(p.SourceLoadout, Encode), classes ? p.ClassId : null, p.BaseMove, p.CurrentStats);
     private static BattleActorProgress Decode(Progress p) => new(p.Level, p.MaxHp, p.MaxMp, p.BaseAttack, p.Defense,
-        p.Agility, p.Spells, Value(p.SourceLoadout, Decode), p.ClassId);
+         p.Agility, p.Spells, Value(p.SourceLoadout, Decode), p.ClassId)
+    { BaseMove = p.BaseMove, CurrentStats = p.CurrentStats };
     private static Axis Encode(LogicalViewAxis a) => new(a.Position, Optional(a.Destination), a.Speed);
     private static LogicalViewAxis Decode(Axis a) => new(a.Position, Value(a.Destination), a.Speed);
     private static Battle Encode(BattleContinuationData b, bool classes) => new(b.Encounter, b.Actors.Select(a => new Actor(a.Actor,

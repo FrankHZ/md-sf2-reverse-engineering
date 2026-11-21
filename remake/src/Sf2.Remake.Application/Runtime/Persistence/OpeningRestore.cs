@@ -98,7 +98,9 @@ internal static class OpeningRestore
         if (definition.Equipment is not null) BattleEquipment.ValidateLoadout(definition, loadout);
         Require(saved.Items.All(word => word <= 511), "save-item-word");
         var progress = new BattleActorProgress(saved.Level, saved.MaxHp, saved.MaxMp, saved.BaseAttack, saved.Defense,
-            saved.Agility, Array.AsReadOnly(spells.ToArray()), loadout, saved.Class);
+            saved.Agility, Array.AsReadOnly(spells.ToArray()), loadout, saved.Class)
+        { BaseMove = saved.BaseMove, CurrentStats = saved.CurrentStats };
+        Require(progress.ValidGrowthItemStats, "save-ally-range");
         return new(new(saved.Actor), saved.Hp, saved.Mp, saved.Exp, saved.Kills, saved.Defeats, saved.Status, null,
             progress, loadout, saved.Activation, saved.Initialized, saved.Absent);
     }

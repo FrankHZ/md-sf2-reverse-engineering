@@ -190,7 +190,10 @@ public sealed record SessionObservation(long Sequence, long Revision, string Kin
     ActorRef? Actor = null, long? Before = null, long? After = null,
     MapPosition? From = null, MapPosition? To = null, ushort? RandomRange = null, ushort? RandomValue = null,
     ActorRef? Target = null, string? Detail = null, EntityRef? Entity = null, ProgramLocation? Program = null,
-    EntityWaitRelease? EntityWaitRelease = null, BattleTurnGeneration? TurnGeneration = null);
+    EntityWaitRelease? EntityWaitRelease = null, BattleTurnGeneration? TurnGeneration = null)
+{
+    public FieldGrowthResult? FieldGrowth { get; init; }
+}
 public sealed record ProgramControlRead(Guid SessionId, long Sequence, long Revision,
     ProgramLocation Source, string Operation, ProgramLocation? Cursor,
     IReadOnlyList<ProgramLocation> CallersBefore, IReadOnlyList<ProgramLocation> Callers);

@@ -77,10 +77,12 @@ internal static class CaravanItemService
                     {
                         party = FieldRecovery.Prepare(definition, current,
                             new FieldUseItem(source.Carried.Actor, wait.ItemSlot!.Value, wait.ItemWord!.Value, target.Carried.Actor),
-                            out var effect, out bool effective, FieldItemCaller.Caravan);
+                            out var effect, out bool effective, out var growth, FieldItemCaller.Caravan);
                         string result = effective ? "cured" : "no-effect";
                         next = next with { Phase = CaravanPhase.ItemResult,
-                            ItemResult = effect == FieldRecoveryEffect.CurePoisonAndParalysis ? "powder-" + result : result };
+                            ItemResult = growth is not null ? "growth" :
+                                effect == FieldRecoveryEffect.CurePoisonAndParalysis ? "powder-" + result : result,
+                            FieldGrowth = growth };
                     }
                     else if (wait.ItemAction == CaravanItemAction.Give)
                     {

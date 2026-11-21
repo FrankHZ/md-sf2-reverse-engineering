@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Sf2.Remake.Application.Runtime.Persistence;
+using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Content.Persistence;
 
@@ -20,14 +21,20 @@ public static class OpeningSaveJson
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { info =>
-            { foreach (var property in info.Properties)
-                property.IsRequired = !(info.Type == typeof(OpeningSaveData) && property.Name is "names" or "raft" or "layer" or "depot" or "fieldScene" ||
-                    info.Type == typeof(BattleSaveWire.Actor) && property.Name == "lastRefreshCounters" ||
-                    info.Type == typeof(BattleSaveWire.Data) && property.Name == "hasClassTerms" ||
-                    info.Type == typeof(BattleSaveWire.Progress) && property.Name == "classId" ||
-                    info.Type == typeof(BattleSaveWire.Custody) && property.Name == "depot" ||
-                    info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft" ||
-                    info.Type == typeof(BattleSaveWire.Data) && property.Name == "enemyDefinitions");
+            {
+                bool sparseStats = info.Type == typeof(BattleCurrentStats);
+                foreach (var property in info.Properties)
+                {
+                    if (sparseStats) property.ShouldSerialize = (_, value) => value is not null;
+                    property.IsRequired = !(sparseStats || info.Type == typeof(OpeningSaveData) && property.Name is "names" or "raft" or "layer" or "depot" or "fieldScene" ||
+                        info.Type == typeof(BattleSaveWire.Actor) && property.Name == "lastRefreshCounters" ||
+                        info.Type == typeof(BattleSaveWire.Data) && property.Name == "hasClassTerms" ||
+                        info.Type == typeof(SavedAlly) && property.Name is "baseMove" or "currentStats" ||
+                        info.Type == typeof(BattleSaveWire.Progress) && property.Name is "classId" or "baseMove" or "currentStats" ||
+                        info.Type == typeof(BattleSaveWire.Custody) && property.Name == "depot" ||
+                        info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft" ||
+                        info.Type == typeof(BattleSaveWire.Data) && property.Name == "enemyDefinitions");
+                }
                 if (info.Kind == JsonTypeInfoKind.Object)
                 {
                     // Reject unknown members with a compatibility diagnostic, without depending on

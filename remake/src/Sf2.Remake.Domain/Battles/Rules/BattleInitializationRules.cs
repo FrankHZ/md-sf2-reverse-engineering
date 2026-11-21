@@ -93,13 +93,15 @@ internal static class BattleInitializationRules
             }
             bool heal = !actor.IsAlly || actor.Hp > 0 || actor.Deployment.Initialization?.AllyPartyMember is 7 or 28;
             bool placed = !actor.IsAlly || (heal && (start.ActiveAllies is null || start.ActiveAllies.Contains(actor.Actor)));
+            var progress = actor.Progress;
+            if (heal && progress?.CurrentStats is not null) progress = progress with { CurrentStats = null };
             return new BattleActorState(actor.Deployment,
                 heal ? actor.MaxHp : actor.Hp, heal ? actor.MaxMp : actor.Mp, actor.Exp, placed ? actor.Deployment.Position : null,
                 actor.Kills, actor.Defeats, attack: actor.IsAlly ? actor.Attack : actor.Definition.Equipment is null
                     ? EnemyAttack(actor.Definition.Attack, policy.Difficulty)
                     : (byte)Math.Min(200, EnemyAttack(actor.Definition.Attack, policy.Difficulty) + BattleEquipment.Contribution(actor.Definition, actor.SourceLoadout)),
                 status: actor.IsAlly && heal ? (ushort)(actor.Status & 7) : actor.Status,
-                activationWord: actor.IsAlly ? actor.ActivationWord : InitialActivationWord(actor.Deployment.Initialization!), progress: actor.Progress, sourceLoadout: actor.SourceLoadout);
+                activationWord: actor.IsAlly ? actor.ActivationWord : InitialActivationWord(actor.Deployment.Initialization!), progress: progress, sourceLoadout: actor.SourceLoadout);
         });
         return before.With(actors: actors, regions: new(new bool[16], 0));
     }

@@ -44,10 +44,12 @@ internal static class PartyDetailsQuery
             if (actor is not null)
             {
                 bool neutral = (carried.Status & BattleStatCounters.StatBits) == 0;
-                defense = BattleEquipment.Defense(defense!.Value, carried.Status, actor, loadout, initial: neutral);
+                defense = progress?.CurrentStats?.Defense ??
+                    BattleEquipment.Defense(defense!.Value, carried.Status, actor, loadout, initial: neutral);
                 byte packed = (byte)(agility!.Value | (actor.ExtraRoundAction ? 128 : 0));
-                agility = (byte)(BattleEquipment.PackedAgility(packed, carried.Status, actor, loadout, initial: neutral) & 127);
-                move = BattleEquipment.Move(actor.Move, carried.Status, actor, loadout);
+                agility = (byte)((progress?.CurrentStats?.PackedAgility ??
+                    BattleEquipment.PackedAgility(packed, carried.Status, actor, loadout, initial: neutral)) & 127);
+                move = progress?.CurrentStats?.Move ?? BattleEquipment.Move(progress?.BaseMove ?? actor.Move, carried.Status, actor, loadout);
             }
             var spells = progress?.Spells ?? actor?.Spells;
             members.Add(new(carried, deployment, progress?.MaxHp ?? actor?.MaxHp,
