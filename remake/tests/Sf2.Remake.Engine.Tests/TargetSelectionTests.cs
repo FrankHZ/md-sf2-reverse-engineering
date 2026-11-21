@@ -81,6 +81,23 @@ public sealed class TargetSelectionTests
     }
 
     [Theory]
+    [InlineData(BattleMover.Regular, 17, 18, 0)]
+    [InlineData(BattleMover.Flying, 29, 30, 0)]
+    [InlineData(BattleMover.Archer, 17, 18, 0)]
+    [InlineData(BattleMover.Mage, 18, 17, 1)]
+    public void PromotedRangedTargetsUseTheAttackingMoversClassPriority(BattleMover mover,
+        int sniperRank, int bowKnightRank, int selected)
+    {
+        var sniper = Sf2ClassRules.SourceClass(BattleClassRule.Sniper);
+        var bowKnight = Sf2ClassRules.SourceClass(BattleClassRule.BowKnight);
+        var table = PhysicalTargetRules.Table(mover);
+        Assert.Equal(sniperRank, PhysicalTargetRules.ClassRank(sniper, table));
+        Assert.Equal(bowKnightRank, PhysicalTargetRules.ClassRank(bowKnight, table));
+        var choice = PhysicalTargetRules.Select([new(1, 16, sniper), new(1, 16, bowKnight)], table);
+        Assert.Equal(selected, choice!.Value.Index);
+    }
+
+    [Theory]
     [InlineData(0, 5, 1, 19)]
     [InlineData(2, 5, 2, 15)]
     [InlineData(3, 5, 1, 13)]
