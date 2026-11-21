@@ -96,8 +96,8 @@ counter at 1/8. PHNX adds major FIRE/STATUS resistance. MNST adds major NEUTRAL,
 UNDEFINED1, UNDEFINED2 and STATUS resistance. Other destinations below have no class
 resistance. Use the pinned class and target-priority rows, including for enemies acting
 after the player's first move. Compare terrain cost and land effect through the chosen mover.
-The accepted content parser already binds the common destination prowess. WFBR and NINJ
-need their distinct combinations admitted and used by damage, double and counter selection.
+The content parser binds the common destination prowess and WFBR's distinct counter
+combination. NINJ's distinct combination still needs admission and action coverage.
 [Class bases](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
 [Growth selectors](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats) ·
 [Terrain table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/landeffectsettingsandmovecosts.asm) ·
@@ -184,8 +184,9 @@ A palette or sprite match from another member is insufficient class admission.
 
 **Confirmed in the remake.** The mounted campaign admits SDMN→HERO for Bowie, KNTE→PLDN for
 Chester, Rick and Eric, MAGE→WIZ for Kazin and Tyrin, WARR→GLDT for Jaha and Randolf,
-BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, RNGR→BWNT for May, and PRST→VICR for
-Sarah and Karna. The three knights have their own growth,
+BDMN→BDBT for Luke, ACHR→SNIP for Elric and Janet, RNGR→BWNT for May, PRST→VICR for
+Sarah and Karna, WFMN→WFBR for Gerhalt and PHNK→PHNX for Peter. The three knights have
+their own growth,
 map sprites 6/28/34 and Battle26 sprite 13 palettes 0/1/3. Battle26 mounts seven weapon rows
 each for Chester and Rick and six for Eric. The two mages inherit their own spell lists and
 use map sprites 12/43 and Battle26 sprite 21 palettes 2/1. Each admits the four mounted
@@ -195,10 +196,13 @@ axes or swords and Luke's newly legal Broad Sword. Elric and Janet use field spr
 and battle body 31 palettes 0/1. May uses field sprite 21 and battle body 29 palette 0.
 Their mounted arrows, shells and Unarmed use the member's body animation with the independent
 weapon layer hidden. Sarah and Karna use field sprites 3/37 and battle body 25 palettes 1/2.
-Each VICR has four mounted rod/stick bindings and the matching healing cast sequence. Earlier loaded encounters share the member bindings.
+Each VICR has four mounted rod/stick bindings and the matching healing cast sequence.
+Gerhalt uses field sprite 23, portrait 49 and battle body 30 palette 0. Peter uses field
+sprite 19, portrait 48 and battle body 28 palette 0. Both use their own unarmed action.
+Earlier loaded encounters share the member bindings.
 Higins keeps starting PLDN palette 2 and Rohde keeps starting BRGN. Ordinary promoted
-Chester, Rick, Tyrin and Randolf remain **Unknown**. The other destination pairs still
-need their own gameplay bindings and witnesses.
+Chester, Rick, Tyrin and Randolf remain **Unknown**. NINJ and MNST still need their
+own gameplay bindings and witnesses.
 [HERO witness](church-promotion-design.md#playable-hero-and-reproduction) ·
 [Higins witness](battle26-higins.md) ·
 [Growth binding](../../src/Sf2.Remake.Content/Scenarios/BattleGrowthReader.cs) ·
@@ -273,7 +277,7 @@ A candidate's presence in the package or an engine case is independent of ordina
 | GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's ordinary promoted route and a native Warrior Pride fallback remain **Unknown**. [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
 | SNIP, BWNT | Chinese Pacalon Elric and Janet kept Steel Arrow. Fallen May became BWNT, was raised and used Wooden Arrow. Battle26 exercised all three body variants, adjacent target rejection, Unarmed and 3-cell Assault Shell and Great Shot attacks. Cold Continue and EGRESS kept all three classes. A native Silver Tank fallback remains **Unknown**. [Ranged reproduction](#sniper-and-bow-knight-ordinary-reproduction) |
 | VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Guardian Staff. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
-| WFBR, PHNX | Chinese Gerhalt WFMN 29 and Peter PHNK 31 in both castles. Compare the reachable movement cost/land effect against the preceding class, then observe the unarmed action and return. |
+| WFBR, PHNX | Chinese Pacalon Gerhalt and Peter promoted and attacked unarmed in Battle26. Peter had 44 additional reachable destinations on his first turn. Both classes and portraits persisted through cold Continue and EGRESS. [Wolf Baron and Phoenix reproduction](#wolf-baron-and-phoenix-ordinary-reproduction) |
 | NINJ, MNST | Both castles have Slade THIF 12 and Kiwi TORT 15. An eligible retained witness remains **Unknown**. Start from a lawful pre-Pacalon save with higher levels if one is registered. Otherwise try a bounded Battle26 repeat from a castle copy. Raise Slade, then earn ordinary EXP to 20. The seed deficits are about 760 and 490 EXP respectively. Measure EXP per action and turns on one repeat and agree a finite budget before training both. Keep the native row **Unknown** if the pilot cannot supply an eligible journey within budget. Engine cases at valid levels cover weapon/ring, the first learned rank, resistance and both conversion branches independently. |
 
 Per family, at a normal church compare the authoritative progress/pack/flags/gold/seeds around
@@ -524,4 +528,49 @@ The first staff pilot ended in defeat before Karna could attack. The first Hassa
 stopped at a blocked direct path. The accepted staff fork uses the retained HEAL 3 slot
 and the accepted Hassan route retraces the established Caravan crossing. Both failed
 runs are retained. Some successful native exits reported ObjectDB warnings. #1716
+remains deferred.
+
+
+## Wolf Baron and Phoenix ordinary reproduction
+
+Mount the prepared retail library at commit
+`52435b04f49a84a6a9ed4444620055a070648001` over the registered
+`derived/issue1956/vicar-v1` base with the pinned source metadata. The closed `innate-v1`
+package has 145 files and 294,702,724 bytes, a 48,734-byte increase. It selects six walking
+strips, ten body frames and two portraits and binds two member growth rows. Each battle
+body uses its own palette 0 and no weapon layer. One package serves both locales.
+[Mount command](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+WFBR keeps STEALTH MOV 5 and changes counter odds from 1/32 to 1/8. PHNX moves from
+HOVERING MOV 6 to FLYING MOV 7 and gains major FIRE/STATUS resistance. FLYING crosses
+high sky and has zero land effect. HOVERING also has zero land effect on desert, while
+retaining the source protection on grass. The zero-based enemy attack-target priority
+ranks for WFBR/PHNX are 21/12 (Regular), 14/24 (Flying), 21/4 (Archer) and 13/29 (Mage).
+[Class data](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[Terrain table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/landeffectsettingsandmovecosts.asm) ·
+[AI priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm)
+
+The PHNX body animation retains the packed selector 61. The current physical scene plays
+the body frames. The separate original sound-wave scene effect has no physical playback
+binding. [Original phoenix effect](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/phoenixattack.asm)
+
+Start `gerhalt`, `peter`, `portraits` and `road` in one journey from the registered
+Chinese Pacalon castle slot. Use `derived/issue1956/innate-review/Boot.ps1` and the `innate-v1`
+package. Repeat `road` from the original castle slot for the unpromoted comparison.
+Fork both ready slots for `reach`, and the promoted slot for `wolf` and `phoenix`.
+The private handoff names the exact slots and the `battle-cold`, `egress` and
+`field-return-cold` steps.
+
+| Boundary | Observed result |
+| --- | --- |
+| Church and field | WFMN 29 and PHNK 31 each became level 1 with 0 EXP. Earned attributes, HP, MP, packed items and empty packed books persisted. Both stayed active. Each finite rite cue finished and Castle music resumed. Cold Continue displayed Gerhalt's portrait 49 and Peter's portrait 48. |
+| Movement | From (4,25) on Peter's first Battle26 turn, the real preview exposed 41 destinations at HOVERING MOV 6 and 85 at FLYING MOV 7, including (11,25) in the promoted set. All 41 preceding destinations remained available in this comparison. Distinct high-sky and land-effect behavior has controlled engine coverage. |
+| Gerhalt's attack | From one tile away he hit the Lesser Demon for 20 HP and gained 25 EXP. Body 30 palette 0 played attack sequence 30 with the weapon layer hidden. The battle returned to Movement. |
+| Peter's attack | From one tile away he first missed, then hit the Lesser Demon for 28 HP. His two attacks earned 36 EXP in total. Body 28 palette 0 played attack sequence 28 with the weapon layer hidden. The battle returned to Movement. |
+| Continue and return | Both Battle26 ready and post-action v4 cold saves matched the complete decoded battle data. EGRESS returned to Pacalon Map36 with both promoted classes. At both field v3 cold checkpoints, only ambient field scene state and the main seed advanced. Both portraits were visible after return. |
+
+The first Gerhalt pilot ended early because its driver counted an allied healing reaction
+as his attack before verifying an enemy target. The repeat required his committed
+target, active attack animation and a matching physical result. The failed pilot log
+is retained. Some successful Godot exits logged ObjectDB shutdown warnings. #1716
 remains deferred.

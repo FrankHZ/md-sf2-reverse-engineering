@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
 
@@ -30,7 +31,9 @@ public sealed class FieldServiceTests
                 (byte)(currentLevel >= 40 ? 86 : 89), null),
             BattleClassRule.UnpromotedArcher => (5, 21, "ACHR", "SNIP", "Sniper", 6, "ARCHER", 47, 120),
             BattleClassRule.UnpromotedBirdman => (6, 23, "BDMN", "BDBT", "BirdBattler", 6, "FLYING", 58, null),
+            BattleClassRule.UnpromotedWolfman => (7, 24, "WFMN", "WFBR", "WolfBaron", 5, "STEALTH", 127, null),
             BattleClassRule.UnpromotedRanger => (8, 25, "RNGR", "BWNT", "BowKnight", 6, "CENTAUR_ARCHER", 47, null),
+            BattleClassRule.UnpromotedPhoenix => (9, 26, "PHNK", "PHNX", "Phoenix", 7, "FLYING", 127, null),
             _ => (0, 12, "SDMN", "HERO", "Hero", 6, "REGULAR", 50, null),
         };
         var (baseClass, destination, baseCode, promotedCode, title, move, mover, weapon, promotionItem) = profile;
@@ -51,7 +54,9 @@ public sealed class FieldServiceTests
                 .Select(rank => new SpellRef(SpellName(spell & 63), (byte)rank))).ToArray();
         bool ranged = sourceRule is BattleClassRule.UnpromotedArcher or BattleClassRule.UnpromotedRanger;
         byte retainedRange = (byte)(ranged ? 2 : 1);
-        byte attackBonus = weapon switch { 36 or 47 => 17, 58 => 8, _ => 5 };
+        bool innate = weapon == 127;
+        bool phoenix = sourceRule == BattleClassRule.UnpromotedPhoenix;
+        byte attackBonus = weapon switch { 36 or 47 => 17, 58 => 8, 127 => 0, _ => 5 };
         var loadout = new BattleSourceLoadout([(ushort)(weapon | (armed ? 128 : 0)),
             power ? (ushort)147 : sourceRule == BattleClassRule.UnpromotedMage ? (ushort)24 : (ushort)127,
             ranged ? (ushort)50 : (ushort)127, 127], book);
@@ -59,15 +64,18 @@ public sealed class FieldServiceTests
         var deployments = source.Deployments.Select(row => row.Actor != First ? row : row with
         {
             Definition = new(row.Actor, promotion ? sourceRule : row.Definition.ClassRule, level, maxHp, row.Definition.MaxMp,
-                row.Definition.Attack, row.Definition.Defense, row.Definition.Agility, false, row.Definition.Move,
-                row.Definition.Spells, row.Definition.Physical! with { Promoted = promoted },
+                row.Definition.Attack, row.Definition.Defense, row.Definition.Agility, false,
+                innate ? (byte)(phoenix ? 6 : 5) : row.Definition.Move, row.Definition.Spells,
+                innate ? new(PhysicalCriticalRule.OneIn16WithQuarterBonus, promoted, false, 0) :
+                    row.Definition.Physical! with { Promoted = promoted },
+                mover: innate ? (phoenix ? BattleMover.Hovering : BattleMover.Stealth) : row.Definition.Mover,
                 sourceLoadout: initialLoadout ?? row.Definition.SourceLoadout),
         });
         if (promotion)
         {
             var growth = new BattleGrowthDefinition(baseClass, 0, Enumerable.Repeat(new StatGrowth(20, 20, []), 5).ToArray(),
                 [new(1, 10), new(22, 13)], new Dictionary<byte, SpellRef> { [10] = new("egress", 1), [13] = new("bolt", 1) });
-            List<BattleWeaponDefinition> weapons =
+            List<BattleWeaponDefinition> weapons = innate ? [] :
                 [new(weapon, "Weapon", (1u << baseClass) | (1u << destination), attackBonus, retainedRange, retainedRange)];
             if (ranged) weapons.Add(new(50, "Great Shot", (1u << 21) | (1u << 22) | (1u << 25), 29, 2, 3));
             var equipment = new BattleEquipmentDefinition(20, weapons,
@@ -77,9 +85,12 @@ public sealed class FieldServiceTests
             {
                 var fixture = source.WithDeployments(deployments);
                 var classDefinitions = new PrivateBattleDefinitions(null!, [],
-                    [new(destination, promotedCode, title, move, "NONE", mover, "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
-                    [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + promotedCode, [baseCode, promotedCode], retainedRange, retainedRange, 0,
-                        "WEAPON", "NOTHING", "NOTHING", 0, [new("INCREASE_ATT", attackBonus)])], [], [], []);
+                    [new(destination, promotedCode, title, move, phoenix ? "FIRE_MAJOR|STATUS_MAJOR" : "NONE", mover,
+                        sourceRule == BattleClassRule.UnpromotedWolfman ? "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8" :
+                            "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")],
+                    innate ? [] : [new(weapon, "WEAPON", "Weapon", "Weapon", baseCode + "|" + promotedCode,
+                        [baseCode, promotedCode], retainedRange, retainedRange, 0, "WEAPON", "NOTHING", "NOTHING", 0,
+                        [new("INCREASE_ATT", attackBonus)])], [], [], []);
                 var stats = Enumerable.Repeat(new { start = 20, projected = 20, curve = System.Array.Empty<int>() }, 5);
                 var schedule = book.Where(packed => packed != 63)
                     .Select(packed => new { packed, level = 22, spell = SpellName(packed & 63) });
@@ -456,6 +467,79 @@ public sealed class FieldServiceTests
             Assert.Equal(new byte[] { 128, 142, 67, 1 }, withAura.SourceLoadout!.Spells);
             Assert.Contains(new SpellRef("aura", 1), withAura.Spells);
         }
+    }
+
+    [Theory]
+    [InlineData(BattleClassRule.UnpromotedWolfman, BattleClassRule.WolfBaron, 29, 24, 5, 163u)]
+    [InlineData(BattleClassRule.UnpromotedPhoenix, BattleClassRule.Phoenix, 31, 26, 7, 189u)]
+    public void InnatePromotionChangesCounterAndMovementWhileRetainingUnarmedLoadout(
+        BattleClassRule source, BattleClassRule promotedClass, byte level, byte classId, byte move, uint counterSeed)
+    {
+        bool phoenix = source == BattleClassRule.UnpromotedPhoenix;
+        var session = Session(hp: 27, currentLevel: level, promotion: true, sourceRule: source, power: !phoenix);
+        var prior = Member(session, First);
+        var initial = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
+        Choose(session, ChurchAction.Promote);
+        var offer = Wait(session).Candidates!.Single(candidate => candidate.Member == First);
+        Accept(session, new SelectPromotion(Wait(session).Token, offer));
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
+        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+
+        var member = Member(session, First);
+        Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = classId, Level = 1, BaseMove = null } }, member);
+        var promoted = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
+        Assert.Equal(promotedClass, promoted.Definition.ClassRule);
+        Assert.Equal(phoenix ? BattleMover.Flying : BattleMover.Stealth, promoted.Definition.Mover);
+        Assert.Equal(move, promoted.Definition.Move);
+        var before = new BattleActorState(initial, prior.Hp, prior.Mp, prior.Exp, null, 0, 0, progress: prior.Progress);
+        var after = new BattleActorState(promoted, member.Hp, member.Mp, 99, null, 0, 0, progress: member.Progress);
+        Assert.Empty(after.Spells);
+        Assert.Null(BattleEquipment.EquippedWeaponItem(after));
+        var unarmed = BattleEquipment.Physical(after)!;
+        Assert.Equal(((byte)1, (byte)1), (unarmed.MinimumRange, unarmed.MaximumRange));
+        Assert.Equal((ushort)32, unarmed.Critical.DoubleChanceDenominator);
+        Assert.False(Counters(before, counterSeed));
+        Assert.True(Counters(after, counterSeed));
+
+        var grass = new BattleTerrain(TerrainSurface.Brush, TerrainProtection.Heavy);
+        var desert = new BattleTerrain(TerrainSurface.Desert, TerrainProtection.Heavy);
+        Assert.Equal((sbyte)2, BattleTerrainRules.MovementCost(grass, after.Definition.Mover));
+        Assert.Equal(phoenix ? 0 : 30, BattleTerrainRules.LandEffect(grass, after.Definition.Mover));
+        if (phoenix)
+        {
+            Assert.Equal(30, BattleTerrainRules.LandEffect(grass, before.Definition.Mover));
+            Assert.Equal(0, BattleTerrainRules.LandEffect(desert, before.Definition.Mover));
+            Assert.Equal(0, BattleTerrainRules.LandEffect(desert, after.Definition.Mover));
+            var terrain = Enumerable.Repeat(new BattleTerrain(TerrainSurface.Barrier, TerrainProtection.None), 48 * 48).ToArray();
+            for (int x = 5; x <= 12; x++) terrain[5 * 48 + x] = new(TerrainSurface.Open, TerrainProtection.None);
+            terrain[4 * 48 + 5] = new(TerrainSurface.HighSky, TerrainProtection.None);
+            MapPosition origin = new(5, 5), sky = new(5, 4), distant = new(12, 5);
+            var hovering = BattleTerrainRules.ReachableCells(terrain, origin, before.Definition.Mover, before.Definition.Move, []);
+            var flying = BattleTerrainRules.ReachableCells(terrain, origin, after.Definition.Mover, after.Definition.Move, []);
+            Assert.DoesNotContain(sky, hovering); Assert.Contains(sky, flying);
+            Assert.DoesNotContain(distant, hovering); Assert.Contains(distant, flying);
+            var blaze = new AttackSpellDefinition(new("blaze", 2), 6, 10, 1, 2, 1, AttackSpellElement.Fire);
+            Assert.Equal(10, Sf2AttackSpellAction.PotentialDamage(before, before, blaze));
+            Assert.Equal(5, Sf2AttackSpellAction.PotentialDamage(before, after, blaze));
+            var sleep = new SupportSpellDefinition(new("sleep", 1), 4, 1, 2, 1);
+            Assert.NotNull(sleep.Resolve(before, _ => 6).ReactionWord);
+            Assert.Null(sleep.Resolve(after, _ => 6).ReactionWord);
+            Assert.NotNull(sleep.Resolve(after, _ => 7).ReactionWord);
+        }
+        else
+        {
+            Assert.Equal((ushort)147, after.SourceLoadout!.Items[1]);
+            Assert.Equal(5, BattleEquipment.Contribution(after.Definition, after.SourceLoadout));
+        }
+        uint seed = session.Current.Exploration!.Party.MainSeed;
+        var grown = BattleGrowthRules.Award(after, 1, ref seed, []);
+        Assert.Equal(2, grown.Level);
+        Assert.Equal(classId, grown.Progress!.ClassId);
+
+        static bool Counters(BattleActorState defender, uint word) => PhysicalStrikeRules.Resolve(
+            30, 20, 60, 256, (word << 16) | 0x1234, 32, 16, 2,
+            counterRange: defender.Definition.Physical!.Critical.CounterChanceDenominator).CounterRolled;
     }
 
     [Theory]

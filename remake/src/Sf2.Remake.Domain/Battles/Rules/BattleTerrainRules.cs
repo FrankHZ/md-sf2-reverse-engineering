@@ -9,7 +9,7 @@ public static class BattleTerrainRules
     public static int LandEffect(BattleTerrain terrain, BattleMover mover)
     {
         if (!Enum.IsDefined(mover)) throw new BattleRuleException("movement-profile", "actor.mover", true);
-        if (mover == BattleMover.Flying) return 0;
+        if (mover == BattleMover.Flying || (mover == BattleMover.Hovering && terrain.Surface == TerrainSurface.Desert)) return 0;
         return terrain.Protection switch
         {
             TerrainProtection.None => 0, TerrainProtection.Light => 15, TerrainProtection.Heavy => 30,

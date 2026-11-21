@@ -113,6 +113,23 @@ public sealed class TargetSelectionTests
     }
 
     [Theory]
+    [InlineData(BattleMover.Regular, 21, 12, 1)]
+    [InlineData(BattleMover.Flying, 14, 24, 0)]
+    [InlineData(BattleMover.Archer, 21, 4, 1)]
+    [InlineData(BattleMover.Mage, 13, 29, 0)]
+    public void InnatePromotionTargetsUseTheAttackingMoversClassPriority(BattleMover mover,
+        int wolfRank, int phoenixRank, int selected)
+    {
+        var wolf = Sf2ClassRules.SourceClass(BattleClassRule.WolfBaron);
+        var phoenix = Sf2ClassRules.SourceClass(BattleClassRule.Phoenix);
+        var table = PhysicalTargetRules.Table(mover);
+        Assert.Equal(wolfRank, PhysicalTargetRules.ClassRank(wolf, table));
+        Assert.Equal(phoenixRank, PhysicalTargetRules.ClassRank(phoenix, table));
+        var choice = PhysicalTargetRules.Select([new(1, 16, wolf), new(1, 16, phoenix)], table);
+        Assert.Equal(selected, choice!.Value.Index);
+    }
+
+    [Theory]
     [InlineData(0, 5, 1, 19)]
     [InlineData(2, 5, 2, 15)]
     [InlineData(3, 5, 1, 13)]
