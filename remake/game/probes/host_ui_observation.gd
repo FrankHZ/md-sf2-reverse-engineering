@@ -87,7 +87,7 @@ func sample(label: String) -> void:
     for k in ["sessionId", "revision", "map", "stage", "actor", "wait", "failure", "scene", "canWaitAtInput", "canWaitForText", "textId", "mainSeed", "thinkingSeed"]:
         if s.has(k): row[k] = s[k]
     row.controls = []
-    for name_ in ["SystemMenuWindow", "SystemMenuReading", "SystemMenuHint", "SettingsWindow", "SettingsReading", "SettingsActions", "SettingsHint", "HelpWindow", "HelpScroll", "HelpHint", "SlotWindow", "SlotReading", "SlotHint"]:
+    for name_ in ["SystemMenuWindow", "SystemMenuReading", "SystemMenuHint", "SettingsWindow", "SettingsReading", "SettingsDetails", "SettingsActions", "SettingsHint", "HelpWindow", "HelpScroll", "HelpHint", "SlotWindow", "SlotReading", "SlotHint"]:
         var c := find(name_) as Control
         if c != null and c.is_visible_in_tree(): row.controls.append({"name": name_, "rect": rect(c.get_global_rect())})
     samples.append(row)
@@ -109,7 +109,7 @@ func geometry(panel_name: String) -> void:
     if panel == null: return
     var bounds := Rect2(Vector2.ZERO, root.get_visible_rect().size)
     check(bounds.grow(1).encloses(panel.get_global_rect()), panel_name + " within client")
-    for pair in [["SettingsReading", "SettingsActions"], ["SettingsActions", "SettingsHint"], ["HelpScroll", "HelpHint"], ["SlotReading", "SlotHint"], ["SystemMenuReading", "SystemMenuHint"]]:
+    for pair in [["SettingsReading", "SettingsDetails"], ["SettingsDetails", "SettingsActions"], ["SettingsActions", "SettingsHint"], ["HelpScroll", "HelpHint"], ["SlotReading", "SlotHint"], ["SystemMenuReading", "SystemMenuHint"]]:
         var a := find(pair[0]) as Control; var b := find(pair[1]) as Control
         if a != null and b != null and a.is_visible_in_tree() and b.is_visible_in_tree():
             check(not a.get_global_rect().intersects(b.get_global_rect()), str(pair) + " disjoint")
@@ -300,8 +300,7 @@ func battle_flow() -> void:
         await key(KEY_F10)
         var before := state(); await frames(15)
         check(state().revision == before.revision, phase + " paused")
-        check((find("SystemSettings") as Button).disabled, phase + " settings prohibited with reason")
-        check(not (find("ReasonSettings") as Label).text.is_empty(), phase + " settings reason visible")
+        check(not (find("SystemSettings") as Button).disabled, phase + " offers general Settings")
         check((find("SystemSave") as Button).disabled == (phase != "Movement"), phase + " exact save predicate")
         sample("battle-" + phase); geometry("SystemMenuWindow")
         await recover("SystemMenuWindow")

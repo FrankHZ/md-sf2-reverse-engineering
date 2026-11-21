@@ -102,15 +102,18 @@ public sealed partial class GameRoot
         _battle?.RefreshInputHints();
     }
 
+    private bool BattleSettingsAvailable => _entry is null && _systemMenu is not null && _session is { } session &&
+        SessionPresentationOwner.IsBattle(session.Current) && _battle?.IsVisibleInTree() == true;
+
     private bool CanOpenSettings => _input is not null && _settings is null && _slots is null && _nameEntry is null &&
-        (_entry?.CanOpenSettings == true || _entry is null && _exploration?.CanOpenHostMenu == true);
+        (_entry?.CanOpenSettings == true || _entry is null && (_exploration?.CanOpenHostMenu == true || BattleSettingsAvailable));
 
     private void ShowSettings()
     {
         if (!CanOpenSettings) return;
         _input!.DisarmMovement(); _input.DisarmWait();
         _settings = new SettingsView { Name = "SettingsView", Input = _input, Close = CloseSettings,
-            Apply = ApplySettings, ReadOnly = _settingsOverride, Notice = _settingsOverride ? GameText.Get("ui.settings.readonly") + (GameText.StartupError is null ? "" : "\n" + GameText.StartupError) : _settingsNotice is null ? null : _settingsNotice + "\n" + GameText.Get("ui.settings.storage") };
+            Apply = ApplySettings, BattleContext = BattleSettingsAvailable, ReadOnly = _settingsOverride, Notice = _settingsOverride ? GameText.Get("ui.settings.readonly") + (GameText.StartupError is null ? "" : "\n" + GameText.StartupError) : _settingsNotice is null ? null : _settingsNotice + "\n" + GameText.Get("ui.settings.storage") };
         _hostUi.AddChild(_settings); CoverSystemMenu(); ApplyHostPause(); DisarmInput();
     }
 
@@ -143,6 +146,7 @@ public sealed partial class GameRoot
         _settingsRelease = _settingsActivation;
         _input!.Apply(candidate, prepared); GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;
         _exploration?.PublishGraphics();
+        if (BattleSettingsAvailable) _battle!.RefreshSettingsProjection();
         _entry?.ConfigureHints(_input);
         RefreshSystemMenuLabels();
         return null;

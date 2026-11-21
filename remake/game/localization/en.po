@@ -1990,6 +1990,21 @@ msgstr "HD"
 msgid "ui.settings.graphics-coverage"
 msgstr "HD uses installed artwork for supported scenes and items. Other artwork uses Original."
 
+msgid "ui.settings.battle-graphics"
+msgstr "HD applies to supported artwork in exploration. Battle artwork stays Original."
+
+msgid "ui.settings.battle-language"
+msgstr "Menus update now. Some open result messages keep their language until they close."
+
+msgid "ui.settings.read-details"
+msgstr "{0}: Read details"
+
+msgid "ui.settings.battle-text"
+msgstr "Text mode applies to the next message. Text speed also affects gradual text already on screen."
+
+msgid "ui.settings.battle-auto-victory"
+msgstr "When enabled, auto-win can finish this battle after you resume and reach a player movement turn."
+
 msgid "ui.settings.graphics-error"
 msgstr "Graphics could not be prepared. Previous graphics and preferences are retained."
 

@@ -390,9 +390,10 @@ func occlusion_case() -> bool:
     await mouse(Vector2(100,300),true); await mouse(Vector2(100,300),false)
     if not expect(signature(state()) == initial and state().inspection.page == "Cursor","Host cover consumes press/release without battle mutation"): return false
     var settings_row := host.find_child("SystemSettings",true,false) as Button
-    if not expect(settings_row.disabled,"Battle keeps the existing host Settings restriction"): return false
+    if not expect(not settings_row.disabled,"Battle inspection offers general Settings through the host"): return false
     await click(control_rect(settings_row))
-    if not expect(host.find_child("SettingsView",true,false) == null and signature(state()) == initial,"Unavailable host control cannot act on the covered board"): return false
+    if not expect(host.find_child("SettingsView",true,false) != null and signature(state()) == initial,"Settings covers inspection without changing its query or battle"): return false
+    await act("cancel")
     await act("cancel")
     if not expect(state().inspection.page == "Cursor" and signature(state()) == initial,"Host Back restores unchanged inspection"): return false
     # A gesture started on the board cannot complete after a host modal takes ownership.

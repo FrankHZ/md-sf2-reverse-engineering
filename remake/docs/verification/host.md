@@ -2599,7 +2599,7 @@ Each native process has a 45-second wall limit; input is fixed60 at1920×1080. R
 `local/issue1471/field-01` APPDATA/LOCALAPPDATA/TEMP and fresh external `issue1478` save namespaces.
 Read-only English/Chinese settings derive from the existing `local/issue1408/keyboard-pointer.json`:
 keep ordinary keys, unbind only its already-unbound movement axes, select instant text and language.
-The user still chooses product language through settings before battle.
+This observer selects language before battle. The [battle Settings observation](#battle-system-settings-observation) also changes language during play.
 
 | Fresh case prefix | Existing input and bounded claim |
 | --- | --- |
@@ -2924,9 +2924,9 @@ observation methods and native geometry, without setters or manufactured gamepla
 | Case / fixture | Required finite observation |
 | --- | --- |
 | `field` | Existing #1517 initial priest seam using current #1441 world and Map3 party. Only one SystemMenuEntry is visible; F10 opens, Resume is selected. Settings and existing New Game replacement open, Cancel returns Menu; Quit defaults Cancel. Controlled-start Save remains disabled with an explanation. Party/Equipment and Party Cancel retain their own responsibilities. |
-| `physical` | Existing `progression-outcome-victory.json`, ordinary Confirm to player Movement. Same Menu/button geometry; Save/Settings/New Game disabled, no activation on click. Battle Confirm/Cancel continue their existing gameplay responsibility after resume. |
+| `physical` | Existing `progression-outcome-victory.json`, ordinary Confirm to player Movement. Same Menu/button geometry. Save and New Game remain disabled. Settings opens and Cancel restores Menu. Battle Confirm/Cancel continue their existing gameplay responsibility after resume. |
 | `product` | Copy #1443 route-01 slot1 read-only into the fresh issue1518 save namespace, then ordinary title→Witch→Continue. Restored product savepoint permits Save. Confirm-save Back→slots Back→Menu; cancel every write. Compare the disposable slot bytes with the original read-only source afterward. Never use the original namespace as writable output. |
-| `story` / `battleStory` | Existing #1393 `control.json` / authored `jaro-conversion.json` and ordinary #1481 adjustable text settings. Jaro uses ordinary Up twice, Stay and round progression to reach `story.kind=DialogueWait`. Open Menu at text, confirm all three conditional actions disabled, verify reveal/token/resources pause, Resume does not acknowledge, then accept fresh text input. |
+| `story` / `battleStory` | Existing #1393 `control.json` / authored `jaro-conversion.json` and ordinary #1481 adjustable text settings. Jaro uses ordinary Up twice, Stay and round progression to reach `story.kind=DialogueWait`. Open Menu at text and verify reveal/token/resources pause. The field case keeps all three conditional actions disabled. The battle case offers Settings while Save and New Game stay disabled. Resume does not acknowledge either line. Accept fresh text input. |
 | `prefs` | Fresh disposable ordinary preferences with explicit Menu=F9/RightX− and copied product slot. Help reports Menu; Help Back retains Settings; Language Apply refreshes Chinese Menu without session changes; Defaults/Apply restores English and preserves all custom Menu bindings. |
 | `bindings-*` | Existing authored battle plus version1 configs: default; old Attack=F10+RightX+ (Menu becomes F9+RightX−); old Up adds RightX±/RightY− so all eight signed axes are occupied (Menu keyboard only, no Guide, visible reason and working mouse); explicit Menu=F9+RightX−; swapped Confirm/Cancel; invalid explicit duplicate F10 (typed invalid-input-settings before session). Inspect actual InputMap, hints and injected input, not only JSON parsing. |
 
@@ -2956,6 +2956,44 @@ Historical #1491 engine1801PASS/6FAIL/1SKIP and school03 exit2 remain completed 
 not rerun or reclassified. Headless facts do not establish final raster, physical focus or human
 approval. Run affected `uv run sf2 verify adapter`, then obtain `verify plan` on the clean committed
 head and compare actual CI with that plan.
+
+### Battle system Settings observation
+
+Use the [ordinary Settings observer](../../game/probes/settings_battle_system_observation.gd) with
+[Stone Court](../../content/authored/stone-court.json), an authored setup with two legal adjacent
+targets. Build the Debug adapter and import the catalogs using the registered local configuration.
+Select a disposable `SF2_SAVE_ROOT` outside all checkouts and a fresh `issue2017-*` namespace.
+Keep output and Godot's writable runtime configuration in the owning checkout's ignored run folder.
+Use the ordinary preference store.
+
+```powershell
+$env:SF2_HOST_UI_CASE = 'transaction'
+$env:SF2_HOST_UI_OUTPUT = Join-Path $freshRun 'transaction.json'
+$package = (Resolve-Path 'remake/content/authored/stone-court.json').Path
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+  --path remake/game --script res://probes/settings_battle_system_observation.gd `
+  --log-file (Join-Path $freshRun 'transaction.log') -- --authored-package $package
+```
+
+- `transaction` visits the second target, opens shared Settings and Help, cancels a draft and applies
+  language, text, flash, graphics, guidance, diagnostics and Confirm changes. Read the real target
+  heading, hint and preferences. Compare selection, actor, turn, HP, MP, both seeds and action cue
+  while covered. The observer injects held controls and Godot focus notifications. Fresh mapped
+  Confirm enters an action message and a second Apply relocalizes it under the same wait token.
+  Within the Display page, the English and Chinese description toggles retain row and footer
+  rectangles and row scroll at the normal font size.
+- `restart` uses the same namespace in a fresh process. It reads installed preferences and both
+  the shared Settings return to inspection and the two-row Battle Speed Cancel/Apply return.
+- `auto-win` uses a separate fresh namespace. Apply at Movement preserves the paused state. Resume
+  admits the existing debug victory and leaves RNG unchanged.
+- `layout-error` uses a separate fresh namespace and changes its preference file after opening the
+  draft. Real Apply refusal stays readable in the reserved details pane while Apply, Back and row
+  geometry stay fixed. The [binding reader case](../godot/input-remapping.md#reproduce-the-installed-controls)
+  exercises independent scrolling of a long draft review at 720p.
+
+The observer reads state, input, projection and errors. It establishes the authored host behavior.
+Private campaign presentation, device drivers and native window focus transfer remain unobserved
+by these cases.
 
 ## Church and shared Save calibration
 

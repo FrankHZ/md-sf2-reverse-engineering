@@ -848,7 +848,8 @@ schema, new message system or engine-behavior test is required by this display-o
   non-equipment spell/item strings in observation are diagnostic projections, not another visible
   localized menu. The separate M2e boundary below covers Give/Discard/Retreat. Unapproved
   source terminology/dialogue and source-image lettering remain English; M2g below owns scene results.
-  Language is chosen through existing settings before battle; no mid-battle settings are added.
+  [Language Apply from the battle system Menu](../godot/host-ui.md#settings-from-the-battle-system-menu)
+  refreshes the current command/target projection and installed hints while keeping the selection.
 - Missing/invalid rows use the complete English template and existing key/reason/effective-locale
   diagnostics. Native geometry checks cover long fallback, low/zero HP, zero MP, equipment and
   target navigation, including canceled/rejected/committed choices and stable idle/redraw state.
