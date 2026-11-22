@@ -7,7 +7,7 @@ public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint Class
     byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0);
 
 public enum BattleEquipmentCategory { Weapon, Ring }
-internal enum RingStat { Attack, Defense, Agility, Move }
+public enum RingStat { Attack, Defense, Agility, Move }
 internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat? Stat, byte Bonus,
     bool DamageOnUse = false, int? MovementSound = null, string? DepotDescriptionKey = null);
 

@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -19,7 +20,9 @@ internal sealed partial class PartyDetailsPanel : Panel
     private readonly Label _magicTitle = Text("MagicTitle", 30), _itemsTitle = Text("ItemsTitle", 30);
     private readonly ScrollContainer _magic = Scroll("Magic"), _items = Scroll("Items");
     private readonly VBoxContainer _spells = new(), _inventory = new();
-    private readonly List<(HBoxContainer Row, Label Text, IdentityIcon Icon)> _spellRows = [], _itemRows = [];
+    private readonly List<(HBoxContainer Row, Label Text, IdentityIcon Icon, Label? Marker)> _spellRows = [], _itemRows = [];
+    private readonly ItemDescriptionView _description = new() { Visible = false };
+    internal int ItemSlot { get; private set; }
     private IdentityIcons _icons = null!;
     private ScenarioDefinition _definition = null!;
     internal void ConfigureIcons(IdentityIcons icons, ScenarioDefinition definition) { _icons = icons; _definition = definition; }
@@ -43,9 +46,10 @@ internal sealed partial class PartyDetailsPanel : Panel
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
         _magic.AddChild(_spells); _items.AddChild(_inventory);
+        AddChild(_description);
     }
 
-    internal void Present(PartyMemberDetails? member, string name)
+    internal void Present(PartyMemberDetails? member, string name, GameSession session)
     {
         _inspectionActor = null; _member = member; _name.Text = name;
         _class.Text = DisplayNames.Class(member) + (member?.Carried.Absent == true ? " · " + GameText.Get("party.absent") : member?.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
@@ -65,8 +69,13 @@ internal sealed partial class PartyDetailsPanel : Panel
         Rows(_spells, _spellRows, spells, member?.Spells?.Select(spell => IdentityIcons.Spell(_definition, spell.Spell)).ToArray() ?? []);
         Rows(_inventory, _itemRows, member?.Inventory.Select(slot => $"{slot.Slot + 1}. " +
             (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
-            (slot.Equipped ? "\n    " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")],
+            (slot.Equipped ? " · " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")],
             member?.Inventory.Select(slot => slot.ItemId is { } id ? IdentityIcons.Item(id) : null).ToArray() ?? []);
+        if (FieldLayout)
+        {
+            var slot = member?.Inventory.ElementAtOrDefault(ItemSlot);
+            _description.Present(FocusPane == 2 ? ItemDescriptions.Read(session, slot?.ItemId, member, slot?.Broken == true) : "");
+        }
         Arrange();
     }
 
@@ -96,24 +105,39 @@ internal sealed partial class PartyDetailsPanel : Panel
         Arrange();
     }
 
-    private void Rows(VBoxContainer column, List<(HBoxContainer Row, Label Text, IdentityIcon Icon)> labels, string[] rows, string?[] identities)
+    private void Rows(VBoxContainer column, List<(HBoxContainer Row, Label Text, IdentityIcon Icon, Label? Marker)> labels, string[] rows, string?[] identities)
     {
+        bool selectable = FieldLayout && labels == _itemRows;
         while (labels.Count < rows.Length)
         {
             var label = Text("Entry" + labels.Count, 28);
             label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, FieldLayout ? 80 : 56);
+            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, selectable ? 88 : FieldLayout ? 80 : 56);
             var row = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
             row.AddThemeConstantOverride("separation", 16);
             var icon = new IdentityIcon(FieldLayout ? 3 : 4);
             var iconCell = new Control { CustomMinimumSize = new(FieldLayout ? 48 : 64, FieldLayout ? 80 : 96), MouseFilter = MouseFilterEnum.Ignore };
+            Label? marker = null;
+            if (selectable)
+            {
+                marker = Text("Focus", 30);
+                marker.CustomMinimumSize = new(20, 0);
+                marker.AddThemeColorOverride("font_color", StoryTheme.Selected);
+                row.AddChild(marker);
+            }
             iconCell.AddChild(icon); row.AddChild(iconCell); row.AddChild(label);
-            column.AddChild(row); labels.Add((row, label, icon));
+            column.AddChild(row); labels.Add((row, label, icon, marker));
         }
         for (int i = 0; i < labels.Count; i++)
         {
             labels[i].Row.Visible = i < rows.Length;
-            labels[i].Icon.Present(_icons, i < identities.Length ? identities[i] : null, false);
+            bool focused = selectable && FocusPane == 2 && i == ItemSlot;
+            labels[i].Icon.Present(_icons, i < identities.Length ? identities[i] : null, focused);
+            if (labels[i].Marker is { } marker)
+            {
+                marker.Text = focused ? "›" : "";
+                labels[i].Text.Modulate = focused ? StoryTheme.Selected : Colors.White;
+            }
             if (i < rows.Length) labels[i].Text.Text = rows[i];
         }
     }
@@ -137,7 +161,9 @@ internal sealed partial class PartyDetailsPanel : Panel
         _magicTitle.Position = new(magicX, top - 54); _magicTitle.Size = new(magic, 44);
         _itemsTitle.Position = new(itemsX, top - 54); _itemsTitle.Size = new(items, 44);
         _magic.Position = new(magicX, top); _magic.Size = new(magic, Math.Max(80, Size.Y - top - 24));
-        _items.Position = new(itemsX, top); _items.Size = new(items, Math.Max(80, Size.Y - top - 24));
+        float descriptionTop = Size.Y - 24 - _description.ReadingHeight;
+        _items.Position = new(itemsX, top); _items.Size = new(items, Math.Max(80, descriptionTop - 24 - top));
+        _description.Position = new(itemsX, descriptionTop); _description.Size = new(items, _description.ReadingHeight);
         _magicTitle.Modulate = FocusPane == 1 ? StoryTheme.Selected : Colors.White;
         _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
     }
@@ -164,10 +190,34 @@ internal sealed partial class PartyDetailsPanel : Panel
         _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
     }
 
-    internal void ResetReading() { _magic.ScrollVertical = 0; _items.ScrollVertical = 0; }
+    internal void ResetReading(bool keepItemSlot = false)
+    {
+        _magic.ScrollVertical = 0;
+        if (keepItemSlot) return;
+        ItemSlot = 0;
+        _items.ScrollVertical = 0;
+    }
+
+    internal void SelectItemSlot(int slot)
+    {
+        if (_member is not { Inventory.Count: > 0 } member) return;
+        ItemSlot = (slot + member.Inventory.Count) % member.Inventory.Count;
+        _items.EnsureControlVisible(_itemRows[ItemSlot].Row);
+    }
+
+    internal (int Slot, Rect2 Rect) HitItem(Vector2 point)
+    {
+        if (!FieldLayout || !_items.GetGlobalRect().HasPoint(point)) return (-1, default);
+        int slot = _itemRows.FindIndex(row => row.Row.Visible && row.Row.GetGlobalRect().HasPoint(point));
+        return slot < 0 ? (-1, default) : (slot, _itemRows[slot].Row.GetGlobalRect().Intersection(_items.GetGlobalRect()));
+    }
     internal void ScrollFocused(int step) { if (FocusPane == 1) _magic.ScrollVertical += step; if (FocusPane == 2) _items.ScrollVertical += step; }
     internal void Wheel(Vector2 position, int step)
-    { if (_magic.GetGlobalRect().HasPoint(position)) _magic.ScrollVertical += step; if (_items.GetGlobalRect().HasPoint(position)) _items.ScrollVertical += step; }
+    {
+        if (FieldLayout && _description.Wheel(position, step)) return;
+        if (_magic.GetGlobalRect().HasPoint(position)) _magic.ScrollVertical += step;
+        if (_items.GetGlobalRect().HasPoint(position)) _items.ScrollVertical += step;
+    }
     internal object Card() => new { actor = _inspectionActor ?? _member?.Carried.Actor.Value, name = _name.Text, visible = IsVisibleInTree(),
         rect = BattleMapViewport.Rectangle(GetGlobalRect()), hp = _hp.Observe(), mp = _mp.Observe() };
     internal object Observe() => new { rect = BattleMapViewport.Rectangle(GetGlobalRect()), name = _name.Text,
@@ -176,8 +226,9 @@ internal sealed partial class PartyDetailsPanel : Panel
         stats = _stats.Select(pair => new { label = pair.Title.Text, value = pair.Value.Text,
             labelRect = BattleMapViewport.Rectangle(pair.Title.GetGlobalRect()), valueRect = BattleMapViewport.Rectangle(pair.Value.GetGlobalRect()) }),
         magic = List(_magic, _spells, _spellRows), items = List(_items, _inventory, _itemRows),
+        itemSlot = FieldLayout && FocusPane == 2 ? ItemSlot : (int?)null, description = FieldLayout ? _description.Observe() : null,
         hpVisible = _hp.IsVisibleInTree(), mpVisible = _mp.IsVisibleInTree() };
-    private static object List(ScrollContainer scroll, Control column, List<(HBoxContainer Row, Label Text, IdentityIcon Icon)> rows) => new
+    private static object List(ScrollContainer scroll, Control column, List<(HBoxContainer Row, Label Text, IdentityIcon Icon, Label? Marker)> rows) => new
     { rect = BattleMapViewport.Rectangle(scroll.GetGlobalRect()), scroll = scroll.ScrollVertical, height = column.Size.Y,
         entries = rows.Where(row => row.Row.Visible).Select(row => new { text = row.Text.Text,
             minimumHeight = row.Text.GetMinimumSize().Y,

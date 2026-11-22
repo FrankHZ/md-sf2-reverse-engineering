@@ -14,6 +14,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
+    private readonly UI.ItemDescriptionView _itemDescription = new() { ReadingHeight = 240, Visible = false };
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
@@ -79,7 +80,7 @@ internal sealed partial class BattleMenuLayout : Control
         _rows.AddThemeConstantOverride("separation", 8);
         AddChild(_detail);
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", DescriptionGap);
-        _detail.AddChild(column); column.AddChild(Heading); column.AddChild(Detail); column.AddChild(Help);
+        _detail.AddChild(column); column.AddChild(Heading); column.AddChild(Detail); column.AddChild(_itemDescription); column.AddChild(Help);
         column.AddChild(_navigation);
         foreach (var control in new[] { _previous, _next, _confirm, _back })
         {
@@ -163,10 +164,11 @@ internal sealed partial class BattleMenuLayout : Control
         Arrange(Size);
     }
 
-    internal void ShowCommandHint(bool compact)
+    internal void ShowCommandHint(bool compact, string? itemDescription)
     {
         _commandHint = compact;
-        Detail.Visible = !compact || !string.IsNullOrWhiteSpace(Detail.Text);
+        _itemDescription.Present(itemDescription);
+        Detail.Visible = itemDescription is null && (!compact || !string.IsNullOrWhiteSpace(Detail.Text));
         Help.Visible = true;
         _commandFooter = compact && Detail.Visible ? MeasureCommandFooter() : Vector2.Zero;
         Arrange(Size);
@@ -218,6 +220,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal bool Scroll(Vector2 position, int direction)
     {
+        if (_itemDescription.Wheel(position, direction * 80)) return true;
         if (!_list.IsVisibleInTree() || !_list.GetGlobalRect().HasPoint(position)) return false;
         _scroll.ScrollVertical += direction * 80;
         return true;
@@ -289,7 +292,7 @@ internal sealed partial class BattleMenuLayout : Control
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
         actorCard = Actor.Observe(), targetCard = Target.Observe(),
         heading = Heading.Text, detail = Detail.Text, help = Help.Text,
-        commandHint = _commandHint, helpVisible = Help.Visible,
+        commandHint = _commandHint, helpVisible = Help.Visible, itemDescription = _itemDescription.Observe(),
         descriptionLabels = new[] { Heading, Detail, Help }.Where(label => label.Visible).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),
         listVisible = _list.Visible, list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),

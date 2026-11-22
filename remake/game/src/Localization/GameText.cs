@@ -401,7 +401,11 @@ internal static partial class GameText
             BattleActionKind.Physical => Get("battle.command.attack"),
             BattleActionKind.Stay => Get("battle.command.stay"), _ => choice.Label,
         };
-    internal static string BattleFailure(SessionFailure failure, bool stopped = false)
+    internal static string BattleFailure(SessionFailure failure, bool stopped = false) =>
+        Get(stopped ? "battle.stopped" : "battle.unavailable", BattleRecovery(failure, stopped),
+            $"{failure.Kind}: {failure.Code} ({failure.Field})");
+
+    internal static string BattleRecovery(SessionFailure failure, bool stopped = false)
     {
         string recovery = stopped ? "stop" : failure.Code switch
         {
@@ -410,8 +414,7 @@ internal static partial class GameText
             "physical-definition" => "attack", "no-healing-target" or "no-action-target" => "target",
             _ => failure.Kind == SessionFailureKind.UnsupportedCapability ? "unsupported" : "general",
         };
-        return Get(stopped ? "battle.stopped" : "battle.unavailable", Get("battle.recovery." + recovery),
-            $"{failure.Kind}: {failure.Code} ({failure.Field})");
+        return Get("battle.recovery." + recovery);
     }
 
     internal static void Diagnose(string reason, string key)

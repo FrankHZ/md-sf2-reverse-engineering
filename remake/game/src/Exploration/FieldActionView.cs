@@ -274,6 +274,7 @@ internal sealed partial class FieldActionView : Control
         string hint = GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down), _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
         hint += "\n" + _input.CompactHint(GameAction.Left) + "/" + _input.CompactHint(GameAction.Right) + " · ↕";
         string fallback = GameText.Fallback("prepare.", true); if (fallback.Length > 0) hint += "\n" + fallback;
+        var party = _session.QueryPartyDetails();
         if (ItemOperations) _operations.Present(_input, _index, _titleText(), "", hint, "prepare.back");
         else
         {
@@ -287,10 +288,19 @@ internal sealed partial class FieldActionView : Control
                 _ => null,
             };
             string title = _titleText() + (_givingItem is not null && _stage is "give-target" or "exchange" or "confirm" ? "\n" + _givingItem : "");
+            ActorRef owner = _stage == "exchange" && _packActor is { } receiver ? receiver : _member;
+            ushort? word = _stage switch
+            {
+                "use-item" or "give-item" or "drop-item" or "equipment" => _slotItems.ElementAtOrDefault(_index)?.Word,
+                "exchange" => _exchangeItems.ElementAtOrDefault(_index)?.Word,
+                _ => null,
+            };
+            bool inspectItem = _stage is "use-item" or "give-item" or "drop-item" or "equipment" or "exchange";
+            string? description = inspectItem ? ItemDescriptions.Read(_session, word is null ? null : (byte)(word & 127),
+                party?.Members.FirstOrDefault(row => row.Carried.Actor == owner), broken: (word.GetValueOrDefault() & 256) != 0) : null;
             _page.Present(title, hint, _input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("prepare.back"),
-                _options.Select((option, i) => (option.Label(), Icon(i), option.Available)).ToArray(), _iconOwner, _index);
+                _options.Select((option, i) => (option.Label(), Icon(i), option.Available)).ToArray(), _iconOwner, _index, description: description);
         }
-        var party = _session.QueryPartyDetails();
         ActorRef actor = _stage.EndsWith("-target", StringComparison.Ordinal) && _index < _targets.Length ? _targets[_index] :
             _stage is "exchange" or "confirm" && _packActor is { } recipient ? recipient : _member;
         var member = party?.Members.FirstOrDefault(row => row.Carried.Actor == actor);
@@ -318,7 +328,7 @@ internal sealed partial class FieldActionView : Control
         { if (_pointer.Moved(motion) && hit >= 0 && !_requiresRelease) { _index = hit; Present(); } return; }
         if (input is not InputEventMouseButton button) return;
         if (button.Pressed && button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
-        { if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) { _pack.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; } if (ItemOperations) _operations.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); else _page.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
+        { if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) { _pack.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; } if (ItemOperations) _operations.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); else _page.Wheel(mouse.Position, button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
         back |= button.ButtonIndex == MouseButton.Right;
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(),
             back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : backRect : hit < 0 ? default : ItemOperations ? _operations.RowRect(hit) : _page.RowRect(hit), _generation);

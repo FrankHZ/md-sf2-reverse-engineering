@@ -248,7 +248,8 @@ internal sealed partial class BattleCommandMenu : Control
             _layout.Commands[i].Available = i == 3 && _choices.Search is not null ||
                 _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
         }
-        bool list = !moving && _page is Page.Magic or Page.Items;
+        bool itemPage = !moving && _page == Page.Items;
+        bool list = itemPage || !moving && _page == Page.Magic;
         var options = list ? Options() : [];
         if (list) _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
         _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list, options.Select(OptionIcon).ToArray());
@@ -278,7 +279,8 @@ internal sealed partial class BattleCommandMenu : Control
         }
         else if (_page == Page.Commit) description = GameText.Get(selection?.Stage == BattleSelectionStage.SearchCommitReady ? "battle.search-detail" : "battle.stay-detail");
         else if (_page == Page.Main && _command == 3 && _choices.Search is not null) description = GameText.Get("battle.search-detail");
-        else if (list) description = options.Length == 0 ? (_page == Page.Magic ? GameText.Get("battle.no-magic") : GameText.Get("battle.no-items")) : Describe(options[_row]);
+        else if (itemPage) description = options.Length == 0 ? GameText.Get("battle.no-items") : DescribeItem(options[_row], selection!.Actor);
+        else if (list) description = options.Length == 0 ? GameText.Get("battle.no-magic") : Describe(options[_row]);
         else
         {
             var offers = Options();
@@ -292,7 +294,7 @@ internal sealed partial class BattleCommandMenu : Control
         bool canConfirm = _page == Page.Commit || _page == Page.Target && SelectedAction()?.Targets.Any(target =>
             target.Actor == TargetCandidate && target.Enabled && selection?.Target == TargetCandidate) == true;
         _layout.ShowNavigation(!moving, _page == Page.Target, _page == Page.Commit, canConfirm);
-        _layout.ShowCommandHint(!moving && _page == Page.Main);
+        _layout.ShowCommandHint(!moving && _page == Page.Main, itemPage ? _layout.Detail.Text : null);
     }
 
     private string? OptionIcon(BattleActionChoice option) => _definition?.PrivateDefinitions is null ? null : option.Action.Spell is { } spell
@@ -320,6 +322,18 @@ internal sealed partial class BattleCommandMenu : Control
         if (option.Reason is { } reason) text += "\n" + Unavailable(reason);
         return text;
     }
+    private string DescribeItem(BattleActionChoice option, ActorRef actor)
+    {
+        var owner = _current!.Battle.GetActor(actor);
+        ushort word = owner.SourceLoadout!.Items[option.Action.ItemSlot!.Value];
+        var lines = new List<string>();
+        string effects = ItemDescriptions.Read(_definition!, _current, (byte)(word & 127), owner.Definition, (word & 256) != 0);
+        if (effects.Length > 0) lines.Add(effects);
+        if (option.MinimumRange is { } minimum) lines.Add(GameText.Get("battle.range", minimum, option.MaximumRange!));
+        if (option.Reason is { } reason) lines.Add(GameText.BattleRecovery(reason));
+        return string.Join("\n", lines);
+    }
+
     private static string Unavailable(SessionFailure reason) => GameText.BattleFailure(reason);
     internal void RefreshInputHints() { if (_current is not null) Refresh(); }
 

@@ -690,7 +690,7 @@ msgid "party.stat.move"
 msgstr "MOVE"
 
 msgid "party.hint"
-msgstr "{0}: Prepare · {1}/{2}: {3}   {4}: Focus   {5}/{6}: Close\nMouse: member selector / arrows · Wheel: scroll the open list"
+msgstr "{0}: Prepare · {1}/{2}: {3}   {4}: Focus   {5}/{6}: Close\nMouse: select a member or item slot · Wheel: scroll the open list"
 
 msgid "prepare.empty"
 msgstr "Nothing available · Back"
@@ -2617,6 +2617,90 @@ msgstr "Item"
 
 msgid "depot.description.chirrup-sandals"
 msgstr "These sandals make a chirping sound with every step."
+
+msgid "item-description.weapon"
+msgstr "When equipped: Attack +{0}. Attack range: {1}–{2}."
+
+msgid "item-description.equip.attack"
+msgstr "When equipped: Attack +{0}."
+
+msgid "item-description.equip.defense"
+msgstr "When equipped: Defense +{0}."
+
+msgid "item-description.equip.agility"
+msgstr "When equipped: Agility +{0}."
+
+msgid "item-description.equip.move"
+msgstr "When equipped: Move +{0}."
+
+msgid "item-description.movement-sound"
+msgstr "Chirps with each step while equipped."
+
+msgid "item-description.class"
+msgstr "This class cannot equip it."
+
+msgid "item-description.battle"
+msgstr "In battle: {0}"
+
+msgid "item-description.field"
+msgstr "In the field: {0}"
+
+msgid "item-description.damaged"
+msgstr "Damaged: battle use destroys it."
+
+msgid "item-description.hp"
+msgstr "Restores up to {0} HP to one ally."
+
+msgid "item-description.mp"
+msgstr "Restores up to {0} MP to one ally."
+
+msgid "item-description.full-hp"
+msgstr "Fully restores one ally’s HP."
+
+msgid "item-description.party-hp"
+msgstr "Fully restores HP to living allies on the battlefield."
+
+msgid "item-description.poison"
+msgstr "Cures poison."
+
+msgid "item-description.poison-paralysis"
+msgstr "Cures poison and paralysis."
+
+msgid "item-description.damage"
+msgstr "Damages one enemy."
+
+msgid "item-description.retreat"
+msgstr "Withdraws the party from battle."
+
+msgid "item-description.raise-attack"
+msgstr "Temporarily raises one ally’s Attack."
+
+msgid "item-description.raise-defense-agility"
+msgstr "Boosts nearby allies’ DEF/AGI."
+
+msgid "item-description.location"
+msgstr "Has an effect at specific locations."
+
+msgid "item-description.growth.attack"
+msgstr "Permanently raises Attack."
+
+msgid "item-description.growth.defense"
+msgstr "Permanently raises Defense."
+
+msgid "item-description.growth.agility"
+msgstr "Permanently raises Agility."
+
+msgid "item-description.growth.move"
+msgstr "Permanently raises Move."
+
+msgid "item-description.growth.hp"
+msgstr "Permanently raises maximum HP."
+
+msgid "item-description.growth.mp"
+msgstr "Raises maximum MP for an ally who has MP."
+
+msgid "item-description.level"
+msgstr "Raises one ally by one level."
 
 msgid "depot.value"
 msgstr "Sale value: {0} gold"

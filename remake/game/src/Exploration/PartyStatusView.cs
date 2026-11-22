@@ -128,7 +128,7 @@ internal sealed partial class PartyStatusView : Control
         var member = _count == 0 ? null : party.Members[_index];
         string name = member is null ? GameText.Get("party.unavailable") : MemberName(member, session);
         _selector.Text = GameText.Get("party.member") + $"   {(_count == 0 ? 0 : _index + 1)} / {_count}";
-        _details.Present(member, name);
+        _details.Present(member, name, session);
         _killsValue.Text = member?.Carried.Kills?.ToString() ?? GameText.Get("party.value-unavailable");
         _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? GameText.Get("party.value-unavailable");
         _killsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Kills is null ? 24 : 30);
@@ -205,7 +205,7 @@ internal sealed partial class PartyStatusView : Control
     }
 
     private void Select(int index)
-    { if (_count == 0) return; _index = (index + _count) % _count; _details.ResetReading(); _roster.EnsureControlVisible(_labels[_index]); }
+    { if (_count == 0) return; _index = (index + _count) % _count; _details.ResetReading(keepItemSlot: _details.FocusPane == 2); _roster.EnsureControlVisible(_labels[_index]); }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _actions.Suspend(); }
     private void Prepare()
     {
@@ -221,7 +221,9 @@ internal sealed partial class PartyStatusView : Control
         if (action == GameAction.Confirm) { Prepare(); return; }
         if (action == GameAction.Target) { _details.FocusPane = (_details.FocusPane + 1) % 3; }
         int step = action is GameAction.Left or GameAction.Up ? -1 : action is GameAction.Right or GameAction.Down ? 1 : 0;
-        if (_details.FocusPane != 0 && action is GameAction.Up or GameAction.Down) _details.ScrollFocused(step * 112);
+        if (action is GameAction.Up or GameAction.Down && _details.FocusPane == 2)
+            _details.SelectItemSlot(_details.ItemSlot + step);
+        else if (action is GameAction.Up or GameAction.Down && _details.FocusPane == 1) _details.ScrollFocused(step * 112);
         else if (step != 0) Select(_index + step);
         Present(session, input);
     }
@@ -250,6 +252,8 @@ internal sealed partial class PartyStatusView : Control
             if (_roster.GetGlobalRect().HasPoint(button.Position))
                 for (int i = 0; i < _count; i++)
                     if (_labels[i].GetGlobalRect().HasPoint(button.Position)) { id = i.ToString(); rect = _labels[i].GetGlobalRect(); break; }
+            if (id is null && _details.HitItem(button.Position) is { Slot: >= 0 } item)
+            { id = $"item:{item.Slot}"; rect = item.Rect; }
         }
         string? clicked = _pointer.Read(button, id, rect, (_index, _details.FocusPane, _roster.ScrollVertical));
         if (_requiresRelease || clicked is null) return;
@@ -257,6 +261,8 @@ internal sealed partial class PartyStatusView : Control
         if (clicked == "prepare") { Prepare(); return; }
         if (clicked == "selector") { _details.FocusPane = 0; }
         else if (clicked is "previous" or "next") Select(_index + (clicked == "previous" ? -1 : 1));
+        else if (clicked.StartsWith("item:", StringComparison.Ordinal))
+        { _details.FocusPane = 2; _details.SelectItemSlot(int.Parse(clicked.AsSpan(5))); }
         else { Select(int.Parse(clicked)); _details.FocusPane = 0; }
         Present(_session!, _input!);
     }
