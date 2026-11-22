@@ -154,13 +154,15 @@ Battle04 capture or a legitimate Battle04 Movement slot followed by victory or
 special defeat. Finish wake-up with a free joined slot, Search at the approach, and
 check the actual word, holder, F205 and empty repeat. The documented Map57 Battle01
 Continue is a fallback start if there is no later legal slot.
-Map16/17 field saves were outside the accepted Galam slice. Carry the bare word to a
-supported downstream Movement save or the observed settled Battle07 Map58 return and
-cold Continue. A first-Pacalon slot whose history skipped the pickup cannot establish
-that lineage. **Unknown:** actual normal pickup, recipient and item-specific persistence.
+The current remake uses ordinary v6 Save at a supported settled field visit. Once the
+pickup receipt is dismissed and walking control settles, the saved visit can be used
+for the cold Continue check. Compare the same holder, carried word, F205, and empty
+repeat Search after restoration. The existing committed-pickup observation covers
+Map42's Power Water; ordinary F205 pickup, recipient and cold Continue remain
+**Unknown**.
 [Observed Galam route](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control) ·
-[Battle save and Continue](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c) ·
-[Battle07 return](../application/pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration)
+[Unified settled field snapshots](../application/opening-session-lifecycle.md#unified-settled-field-snapshots) ·
+[Committed pickup observation](../application/pre-voyage-optional-locations.md#mechanism-observations-and-limits)
 
 **Confirmed (static consumers).** Item 126 is an all-class `RING|RARE`. `SetMoveSfx`
 at `$25790` checks the equipped ring and selects `SFX_BLOAB` (99). For field
