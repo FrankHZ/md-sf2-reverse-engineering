@@ -187,8 +187,12 @@ errors at settled control. The [controlled input entry point](../godot/objective
   The witness starts after the passage cutscene and checks item custody through the next ordinary transfer.
 
 The closed shore, open stair, east tower, passage receipt and trader/sign cases completed with
-native exit 0. The throne round trip completed before the same observation reached the treasury
-guard and stopped with `treasury stairs:no-live-layout-path`. The focused guard check confirmed
+native exit 0. The closed-shore interaction checks passed, and Godot reported
+`WARNING: 2 ObjectDB instances were leaked at exit` on stderr. A warning-free shutdown remains
+unverified for that case. The other successful cases had empty stderr.
+
+The throne round trip completed before the same observation reached the treasury guard and stopped
+with `treasury stairs:no-live-layout-path`. The focused guard check confirmed
 the intended refusal by ordinary input. Other retained attempts include `field-view-area` with
 F406 armed at the Map66 approach or return, a step into a solid neighbor on the east landing, an
 early trader read before visible text, a longer prison run's timeout, and an out-of-area
