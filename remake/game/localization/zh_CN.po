@@ -429,7 +429,13 @@ msgid "slot.title.default"
 msgstr "已保存的旅程"
 
 msgid "slot.matching"
-msgstr "需要匹配的内容／规则"
+msgstr "存档内容或规则不兼容"
+
+msgid "slot.unsupported"
+msgstr "不支持的存档格式"
+
+msgid "slot.damaged"
+msgstr "存档已损坏"
 
 msgid "slot.unreadable"
 msgstr "无法读取此槽位"
@@ -444,10 +450,10 @@ msgid "slot.primary-missing"
 msgstr "主存档缺失"
 
 msgid "slot.backup-review"
-msgstr "\n有可用备份，选择后可查看恢复选项"
+msgstr "\n有可恢复的备份"
 
-msgid "slot.backup"
-msgstr "\n存在备份"
+msgid "slot.backup-status"
+msgstr "备份 · {0}"
 
 msgid "save.destination.new-game"
 msgstr "Granseal，开场起点"
@@ -566,9 +572,6 @@ msgstr "下一页存档"
 msgid "save.error.changed"
 msgstr "此存档在选择后已更改。请重新打开列表，查看最新进度。"
 
-msgid "save.error.protected"
-msgstr "此槽位有无法读取的存档。请选择其他槽位，以保留主存档和备份。"
-
 msgid "save.error.read-only"
 msgstr "本次启动读取了只读存档。请使用 --save-output 重新启动，将进度保存到另一文件。"
 
@@ -576,10 +579,19 @@ msgid "save.error.seed-missing"
 msgstr "找不到启动时指定的存档文件。请检查路径后重新启动。"
 
 msgid "slot.status"
-msgstr "槽位 {0} · {1}{2}"
+msgstr "槽位 {0} · {1}"
+
+msgid "save.slot-protected"
+msgstr "{0}\n此槽位受保护。请选择其他槽位。"
+
+msgid "save.slot-recoverable"
+msgstr "{0}\n可从「继续游戏」恢复备份，或选择其他槽位。"
 
 msgid "save.overwrite"
 msgstr "覆盖槽位 {0}？原有的有效存档将成为备份。"
+
+msgid "save.overwrite-incompatible"
+msgstr "覆盖槽位 {0}？原存档的内容或规则不兼容。覆盖时会保留一份原存档。"
 
 msgid "save.confirm"
 msgstr "将当前进度保存到槽位 {0}？"
@@ -598,6 +610,9 @@ msgstr "{0}  •  返回：{1}"
 
 msgid "new.confirm"
 msgstr "以{0}开始普通难度的新旅程，保存到槽位 {1}？\n这份存档将从开场继续。被覆盖的有效存档会成为备份；新存档保存成功后，当前未保存的进度才会丢失。"
+
+msgid "new.confirm-incompatible"
+msgstr "以{0}开始普通难度的新旅程，保存到槽位 {1}？\n原存档的内容或规则不兼容。覆盖时会保留一份原存档；新存档保存成功后，当前未保存的进度才会丢失。"
 
 msgid "new.start"
 msgstr "开始并保存到槽位 {0}"

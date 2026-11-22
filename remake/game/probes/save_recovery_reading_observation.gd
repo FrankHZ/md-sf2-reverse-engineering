@@ -133,9 +133,9 @@ func run() -> void:
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames(8)
     await key(KEY_ENTER); await key(KEY_E)
     if not await open_continue(): finish(); return
-    var status := "主存档缺失" if missing_primary else "存档不可用"
-    check(status in slots().choices[0] and "有可用备份" in slots().choices[0], "slot 1 explains the primary and available backup")
-    check(("存档不可用" if stress else "空槽位") in slots().choices[1], "slot 2 status")
+    var status := "主存档缺失" if missing_primary else "存档已损坏"
+    check(status in slots().choices[0] and "有可恢复的备份" in slots().choices[0], "slot 1 explains the primary and available backup")
+    check(("存档已损坏" if stress else "空槽位") in slots().choices[1], "slot 2 status")
     await key(KEY_DOWN); await key(KEY_ENTER)
     if not await wait_slots("error"): finish(); return
     var error := "save-malformed" if stress else "save-slot-empty"
@@ -159,25 +159,23 @@ func run() -> void:
     while not state().get("canWaitAtInput", false) and Time.get_ticks_msec() < deadline: await frames(3)
     if not state().get("canWaitAtInput", false):
         check(false, "backup restores usable field"); finish(); return
-    var envelope: Dictionary = JSON.parse_string(backup.get_string_from_utf8())
-    var payload: Dictionary = JSON.parse_string(Marshalls.base64_to_utf8(envelope.payload))
-    var actual = normalized(restored.get("progress"))
-    check(actual == payload.data, "field at attach matches backup progress")
+    var baseline_path := OS.get_environment("SF2_HOST_UI_EXPECTED_PROGRESS")
+    var expected: Variant = JSON.parse_string(FileAccess.get_file_as_string(baseline_path))
+    var actual: Variant = restored.get("progress")
+    check(expected is Dictionary and actual == expected, "recovered field at attach matches ordinary Continue of the same record")
     check_files(true)
     await key(KEY_F10); await key(KEY_DOWN); await key(KEY_ENTER)
     if not await wait_slots("save-slots"): finish(); return
     if stress:
         await key(KEY_DOWN); await key(KEY_ENTER)
-        if not await wait_slots("confirm-save"): finish(); return
-        await key(KEY_DOWN); await key(KEY_ENTER)
         if not await wait_slots("error"): finish(); return
-        check("save-primary-invalid-use-recovery" in (find("SlotDetail") as Label).text and
-            slots().choices == ["返回"], "field refuses to publish over a corrupt primary")
+        check("save-malformed" in (find("SlotDetail") as Label).text and
+            slots().choices == ["返回", "新建存档（槽位 3）"], "damaged slot offers a fresh slot before confirmation")
         await inspect_page("field-error")
         await key(KEY_ENTER)
-        check(selected_menu() == "Save", "field failure Back returns to original Save row")
-        await key(KEY_ENTER)
         if not await wait_slots("save-slots"): finish(); return
+        check(slots().selected == 1, "field failure Back returns to the selected slot")
+        await key(KEY_UP)
     await key(KEY_ENTER)
     if not await wait_slots("confirm-save"): finish(); return
     check("覆盖槽位 1" in slots().message and "成为备份" in slots().message and slots().selected == 0
