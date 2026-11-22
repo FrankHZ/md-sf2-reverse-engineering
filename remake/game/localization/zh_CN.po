@@ -453,7 +453,7 @@ msgid "save.destination.map3-joined"
 msgstr "Granseal，教堂外"
 
 msgid "save.destination.granseal-field"
-msgstr "Granseal"
+msgstr "格兰希尔"
 
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower，战斗结束后的返回点"
