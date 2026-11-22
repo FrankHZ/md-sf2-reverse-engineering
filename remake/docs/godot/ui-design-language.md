@@ -2,15 +2,18 @@
 
 [Issue #1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616) uses this page as the
 remake's design system. The [scene review](ui-scene-review.md) applies it to the player journey.
-The [presentation agreement](presentation.md) records what runs today.
+The [presentation agreement](presentation.md) records what runs today. The proposed
+[#2064 battle composition](battle-ui-composition.md) applies the same panel language to
+exclusive battle focus, a freestanding diamond and one reading region per phase.
 
 **High rigor.** Shared controls and scene layouts affect the whole player journey. The user
 accepted the Godot review at its 1920×1080 design size. The ordinary pre-voyage game uses the reviewed scenes. Each gameplay or host caller still owns input, transactions and return.
 
-Use compact right-hand vertical lists for four-command menus in the field, Church, shop and
-battle. Keep each admitted original icon beside its localized name, visible before focus.
-Child lists replace the parent in the same column. In battle, layout A joins the acting unit's
-status to its command list. Layout B remains a comparison in the preview. The
+Production uses compact labeled lists in the field, Church, shop and battle. Keep each admitted
+original icon beside its localized name, visible before focus. Child lists replace the parent in
+the same column. Layout A joins the acting unit's status to its command list. Layout B remains a
+comparison in the preview. The proposed battle Main diamond preserves labeled commands and child
+lists, with separate reading bounds. The
 [scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its production
 consumer and the limits of its evidence.
 
@@ -54,8 +57,10 @@ In scope: existing entry, field, party/preparation, service, host and battle pre
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
-Remote services, a host Overview and predicted turn order remain outside the accepted design.
-[Modernization proposal](modernization-design.md)
+Remote services and an additional host Overview remain outside this design. The user requested an
+[actual current-round order readout](battle-ui-composition.md#current-round-order-2065).
+Its proposed placement reserves a quiet space under round/gold. Future rounds become known when
+the engine generates them. [Modernization proposal](modernization-design.md)
 
 ## Surfaces and hierarchy
 
@@ -171,6 +176,8 @@ target confirmation use their own existing pages.
 Use the mounted weapon, ring, recovery and action definitions for effects and numbers, and the
 current actor/slot for conditions such as class eligibility or damage. Distinguish field effects
 from battle effects. Keep descriptions short and localize complete phrases in the UI catalog.
+The proposed [selected spell reader](battle-ui-composition.md#selected-spell-descriptions) uses the
+same stable reading region and the admitted level and effect facts for its context.
 Names keep the existing name catalog. Where gameplay has no bound effect, leave the item prose
 blank. Depot, other battle menus, game rules, item data and save formats are outside this slice.
 
@@ -236,8 +243,10 @@ Choose the overall composition by what the player needs to see during each step.
 | Compare services and goods | Priest or merchant | Side list with labeled actions. A quote replaces the list. |
 | Decide on a battle action | Acting unit, candidate cell or target | Layout A puts the acting card above the right-hand list. The list yields to the target card and board during targeting. |
 
-Use the following battle geometry at the 1920×1080 design size. Keep the host Menu and
-the inspected subject clear at each supported viewport. Function-key tabs belong to the preview.
+The following geometry records production layout A at the 1920×1080 design size. The proposed
+[battle placement](battle-ui-composition.md#world-marks-and-panel-placement) governs the next
+migration. Keep the host Menu and the inspected subject clear at each supported viewport.
+Function-key tabs belong to the preview.
 
 | Phase | Components and placement |
 | --- | --- |
@@ -247,11 +256,11 @@ the inspected subject clear at each supported viewport. Function-key tabs belong
 | Free inspection | Keep the status card clear of the hovered cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
 | Action playback / outcome | The board command panel retires. Close-ups use the original ally/enemy window positions. Ordered reward and return messages use the reading frame. |
 
-In production, row placement follows the measured height of the acting card. Its HP and MP
-values currently use a different size and arrangement from design A. See the
-[decision-card comparison](ui-scene-review.md#9-remaining-differences-in-play). Measure the whole
-group against the host exclusion, the projected subject and the footer for long reasons and wide
-values. Move or grow the panel as a group when needed and preserve focus across a resize. Scroll or page overflow inside its owner.
+In production, row placement follows the measured height of the acting card. The
+[decision-card comparison](ui-scene-review.md#9-remaining-differences-in-play) records the
+admitted vitals size and arrangement. Measure the whole group against the host exclusion,
+the projected subject and the footer for long reasons and wide values. Move or grow the
+group when needed and preserve focus across a resize. Scroll or page overflow inside its owner.
 
 Entry uses its established Witch art and right-column reservation instead of this battle grid.
 Field dialogue keeps its stable top/bottom speaker avoidance. Church and Shop position their services beside the visible provider.
