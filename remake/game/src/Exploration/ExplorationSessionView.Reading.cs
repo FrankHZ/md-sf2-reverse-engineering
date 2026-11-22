@@ -18,7 +18,7 @@ public sealed partial class ExplorationSessionView
 
     private void ConfirmReading()
     {
-        if (_readingConfirmation is not null) return;
+        if (_readingConfirmation is not null || _session!.Current.NeedsFieldWindowService) return;
         bool revealed = TextRevealed;
         if (!revealed) RevealText();
         if (_dialogueView.Panel.MoreBelow)

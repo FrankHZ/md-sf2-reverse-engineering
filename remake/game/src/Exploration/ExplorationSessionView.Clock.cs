@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Input;
@@ -23,6 +24,38 @@ public sealed partial class ExplorationSessionView
         _input?.AllowAcceleration(false);
         _tickTime = 0; _resumeAutomatic = true;
     }
+
+    private void AdvanceProgramTime(double delta)
+    {
+        const double step = 1.0 / 60;
+        _tickTime += delta;
+        int ticks = (int)Math.Min(4, Math.Floor(_tickTime / step));
+        // Keep only a fractional step. Mandatory work remains pending in the session.
+        _tickTime %= step;
+        if (ticks == 0) return;
+
+        var token = _session!.Current.Story.Wait?.Token;
+        Send(new AdvanceSimulation(token, ticks));
+        var current = _session.Current;
+        if (_handedOff || token != current.Story.Wait?.Token || !NeedsTicks(current) ||
+            !current.NeedsFieldWindowService && (current.CanWaitAtInput || current.CanWaitForText || current.CanWaitForChoice))
+            _tickTime = 0;
+    }
+
+    private static bool NeedsTicks(SessionSnapshot current) =>
+        current.NeedsFieldWindowService || (current.Story.Wait switch
+        {
+            FieldSearchWait => false,
+            MusicWait music => !music.LogicalDone,
+            PresentationWait { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or
+                PresentationCueKind.SoundFade or PresentationCueKind.SoundCut } when current.Story.TextSettings is not null => false,
+            ChoiceWait { Work: { } choice } => choice.Automatic,
+            NodWait nod => !nod.LogicalDone,
+            FieldTextWait text => !text.LogicalDone,
+            FullFadeWait fade => !fade.LogicalDone,
+            _ => current.StopReason == SessionStopReason.SimulationWait ||
+                current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true,
+        });
 
     private double GameplayDelta(double delta)
     {

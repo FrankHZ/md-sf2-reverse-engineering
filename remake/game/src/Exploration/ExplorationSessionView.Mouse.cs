@@ -46,6 +46,7 @@ public sealed partial class ExplorationSessionView
         {
             if (input is not InputEventMouseButton searchButton) return;
             bool cancel = searchButton.ButtonIndex == MouseButton.Right;
+            if (!cancel && !_dialogueView.Panel.IsVisibleInTree()) return;
             var area = cancel ? GetViewportRect() : _dialogueView.Panel.GetGlobalRect();
             if (_choicePointer.Read(searchButton, area.HasPoint(searchButton.Position) ? "search" : null, area,
                 (_session.Current.SessionId, search.Token)) is not null && (cancel || !RevealText()))

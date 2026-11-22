@@ -233,10 +233,22 @@ internal static class ExplorationDispatcher
                 case AdvanceSimulation advance:
                     if (current.Story.Wait is ChoiceWait { Work: { Automatic: false } })
                         return Reject(current, "explicit-choice-input-required", "command");
-                    if (current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true } || current.CanWaitForText && !playerWait)
+                    if (!current.NeedsFieldWindowService &&
+                        (current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true } || current.CanWaitForText && !playerWait))
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
+                    if (current.Story.Wait is FieldSearchWait || current.NeedsFieldWindowService)
+                    {
+                        // Run the common view/window stage without an entity update or text poll.
+                        for (int tick = 0; tick < advance.Ticks && current.NeedsFieldWindowService; tick++)
+                        {
+                            var story = ExplorationTextRunner.AfterEntities(current.Exploration!, current.Story);
+                            current = ProgramRunner.Commit(current, current.Active, story.Copy(story.Cursor, story.Wait,
+                                simulationTick: checked(story.SimulationTick + 1)), observations, "field-window-service");
+                        }
+                        return ProgramRunner.Result(current, observations);
+                    }
                     if (current.Story.Wait is null && current.Story.Continuation is
                             ProgramContinuation.VictoryProgramFinished or ProgramContinuation.DefeatProgramFinished)
                         return ProgramRunner.Run(definition, current, observations, rules);
