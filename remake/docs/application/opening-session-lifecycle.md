@@ -80,8 +80,8 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
-| Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
-| Persistence/Continue | **Implemented, bounded:** selectable local save history, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. The first field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return, completed Battle07 Map58 aftermath, settled Granseal F506 and settled Yeel Map5. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
+| Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress. Title Continue attaches the saved visit from a settled field snapshot or reconstructs a supported older record. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [field snapshot attachment](#implemented-field-snapshot-cutover). |
+| Persistence/Continue | **Implemented, bounded:** ordinary field Save and Church Record write a unified v6 snapshot of the settled walking visit. Title Continue restores its live landing and keeps field v1/v3 readers. Selectable local save history, detached validation and explicit compatible-backup recovery are shared with battle saves. | #2049; [field cutover](#implemented-field-snapshot-cutover), [legacy readers and observations](#implemented-savepoint-boundary) and [battle eligibility and Continue](battle-save-and-continue.md#implemented-ordinary-host-boundary-c). Field capture excludes riding, unfinished work and actor work without an admitted binding. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL. Antidote and DETOX1 cure poison with caller-specific payment. Fairy Powder clears poison and paralysis and spends the selected holder's slot. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
@@ -783,22 +783,29 @@ slot directly. Use fresh identifiers for each run.
 
 ```powershell
 . ./local/private-inputs.ps1
-$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
-& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug -p:RestoreLockedMode=true
-if ($LASTEXITCODE -ne 0) { throw 'Debug adapter build failed' }
 $checkout = (Get-Location).Path
+Push-Location (Join-Path $checkout 'remake')
+try {
+    $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+    & $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug -p:RestoreLockedMode=true
+    if ($LASTEXITCODE -ne 0) { throw 'Debug adapter build failed' }
+}
+finally { Pop-Location }
 $tools = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2049/unified-field-v6'
 $runner = Join-Path $tools 'Run.ps1'
 $stamp = [guid]::NewGuid().ToString('N').Substring(0, 10)
 $reports = (New-Item -ItemType Directory -Path "local/issue2049-$stamp").FullName
 $space = "issue2049-$stamp"
-& $runner -Checkout $checkout -ReportRoot $reports -Case writer -Namespace "$space-kitchen"
-& $runner -Checkout $checkout -ReportRoot $reports -Case reader -Namespace "$space-kitchen"
-& $runner -Checkout $checkout -ReportRoot $reports -Case church -Namespace "$space-church"
+foreach ($case in 'writer', 'reader', 'church') {
+    $namespace = if ($case -eq 'church') { "$space-church" } else { "$space-kitchen" }
+    & pwsh -NoProfile -File $runner -Checkout $checkout -ReportRoot $reports -Case $case -Namespace $namespace
+    if ($LASTEXITCODE -ne 0) { throw "Field snapshot observation failed in $case" }
+}
 & (Join-Path $tools 'Prepare.ps1') -Checkout $checkout -NamespacePrefix $space -WriterNamespace "$space-kitchen"
 ```
 
 `Prepare.ps1` copies older controls and creates bounded failure witnesses in new disposable slots.
+Run each case in its own `pwsh -NoProfile -File` process and check its exit code.
 Use `Run.ps1 -Case` with `legacy`, `legacy-resave`, `legacy-battle`, `bootstrap`, `church-fail`,
 `recover`, `refuse`, `resource-live` or `delivered-music` against the matching namespace. Pass
 `-ExpectedError` for a refusal. Use `-Project` with the Debug adapter project built from the
