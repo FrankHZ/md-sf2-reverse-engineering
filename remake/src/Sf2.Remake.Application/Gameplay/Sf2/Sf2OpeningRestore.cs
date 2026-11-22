@@ -16,6 +16,10 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     private const string GalamRecipe = "galam-field";
     private const string GalamDefault = "ms-map16";
     private const string GalamAfterRally = "ms-map16-flag663";
+    private const string HawelRecipe = "hawel-field";
+    private const string HawelDefault = "ms-map43";
+    private const string HawelRevisit = "ms-map43-flag612";
+    private static readonly MapId HawelHouse = new("map-43");
     private static readonly FieldReturnAnchor GransealChurch = new(new("map-3"), new(32, 13), 1);
 
     private static ExplorationSetupDefinition? SettledGransealSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags) =>
@@ -42,15 +46,28 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     {
         // Setting F663 ends the rally without loading the alternate setup. Bind the body
         // actually used for Talk, Search and movement, including after a prior Continue.
-        if (AdmitsGalamSetup(source, flags, GalamDefault) &&
+        return LoadedSettledSetup(source, loaded, AdmitsGalamSetup(source, flags, GalamDefault) ? GalamDefault : null,
+            AdmitsGalamSetup(source, flags, GalamAfterRally) ? GalamAfterRally : null);
+    }
+
+    // F612 selects the next visit. The completed first visit still uses its loaded default body.
+    private static bool HasSettledHawelVisit(ExplorationMapDefinition map, IReadOnlyList<int> flags) =>
+        flags.Contains(4) && flags.Contains(612) && flags.Contains(650) && !flags.Contains(72) &&
+        map.Setup?.DefaultSetup.Value == HawelDefault && map.Population is not null &&
+        map.SelectedSetup(flags)?.Value == HawelRevisit && map.Setups.ContainsKey(new(HawelRevisit));
+
+    private static string LoadedSettledSetup(ExplorationMapDefinition source, ExplorationMapDefinition loaded,
+        string? defaultSetup, string? alternateSetup)
+    {
+        if (defaultSetup is not null &&
             Matches(source.Entities, source.Events, source.OnLoad, source.InputProgram, source.Population, source.Search))
-            return GalamDefault;
-        if (AdmitsGalamSetup(source, flags, GalamAfterRally))
+            return defaultSetup;
+        if (alternateSetup is not null)
         {
-            var alternate = source.Setups[new(GalamAfterRally)];
+            var alternate = source.Setups[new(alternateSetup)];
             if (Matches(alternate.Entities, alternate.Events, alternate.OnLoad, alternate.InputProgram,
                 alternate.Population, alternate.Search))
-                return GalamAfterRally;
+                return alternateSetup;
         }
         throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
 
@@ -131,6 +148,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public StoryState? RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story)
     {
+        // The house is an Egress refuge without a Church caller.
+        if (field.Map == HawelHouse) return null;
         var map = definition.Exploration!.Maps[field.Map];
         var point = map.ChurchSavepoint;
         if (field.Map == GransealChurch.Map && map.Setup?.FlagAlternatives.Any(row => row.Setup.Value == GransealSetup) == true)
@@ -147,7 +166,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
-        if ((data.Recipe == GransealRecipe || data.Map is "map-16" or "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
+        if ((data.Recipe == GransealRecipe || data.Map is "map-16" or "map-43" or "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
@@ -171,7 +190,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
-            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
+            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe or HawelRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
@@ -218,6 +237,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map == GalamChurch.Map && content!.Traversal.IsWithinActiveArea(player.Position) &&
             (AdmitsGalamSetup(content, flags, GalamDefault) || AdmitsGalamSetup(content, flags, GalamAfterRally)))
             return new(GalamRecipe, player, "Galam");
+        if (map == HawelHouse && HasSettledHawelVisit(content!, flags) && content!.Traversal.IsWithinActiveArea(player.Position))
+            return new(HawelRecipe, player, "Hawel's House");
         if (map.Value == "map-5" && YeelSetup(content!, flags) is not null &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new(YeelRecipe, player, "Yeel");
@@ -305,6 +326,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
                 ? Sf2FieldSceneRestore.Capture(definition, world, GransealSetup) :
         world.Map == GalamChurch.Map ? Sf2FieldSceneRestore.Capture(definition, world,
             LoadedGalamSetup(definition.Exploration!.Maps[world.Map], world.Definition, flags)) :
+        world.Map == HawelHouse ? Sf2FieldSceneRestore.Capture(definition, world,
+            LoadedSettledSetup(definition.Exploration!.Maps[world.Map], world.Definition, HawelDefault, HawelRevisit)) :
         world.Map.Value == "map-5" ? Sf2FieldSceneRestore.Capture(definition, world,
             YeelSetup(definition.Exploration!.Maps[world.Map], flags)!.Value) :
         world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
@@ -315,17 +338,24 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
-        if (location.Recipe is GransealRecipe or GalamRecipe)
+        if (location.Recipe is GransealRecipe or GalamRecipe or HawelRecipe)
         {
             var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
-            bool galam = location.Recipe == GalamRecipe;
-            if (scene is null || !(galam ? AdmitsGalamSetup(sourceMap, flags, scene.Setup)
-                : scene.Setup == SettledGransealSetup(sourceMap, flags)?.Id.Value))
+            if (scene is null || !(location.Recipe switch
+                {
+                    GalamRecipe => AdmitsGalamSetup(sourceMap, flags, scene.Setup),
+                    HawelRecipe => HasSettledHawelVisit(sourceMap, flags) && scene.Setup is HawelDefault or HawelRevisit,
+                    _ => scene.Setup == SettledGransealSetup(sourceMap, flags)?.Id.Value,
+                }))
                 throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
             var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
-            // Galam scripts retire resident records in-place. Both visits retain their
-            // complete physical cast, even when some actors are no longer addressable.
-            if (galam && town.Definition.Entities.Any(row => !town.AllEntities.Any(actor => actor.Entity == row.Entity)))
+            // Galam and Hawel retire actors in place and retain their physical records.
+            if (location.Recipe is GalamRecipe or HawelRecipe &&
+                town.Definition.Entities.Any(row => !town.AllEntities.Any(actor => actor.Entity == row.Entity)))
+                throw new BattleRuleException("save-field-scene-actor", "save.fieldScene");
+            if (location.Recipe == HawelRecipe && scene.Setup == HawelDefault &&
+                (!town.TryResolveEntity(new("entity-4"), out var kazin) || kazin.Entity.Value != "entity-4" ||
+                 kazin.Follower?.LeaderSlot != town.PlayerEntity.Slot))
                 throw new BattleRuleException("save-field-scene-actor", "save.fieldScene");
             var player = town.PlayerEntity;
             if ((player.Motion.FlagsA & 0x20) != 0 && EntityMotion.FieldObstructed(player.Motion.X, player.Motion.Y,

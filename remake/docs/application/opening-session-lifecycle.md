@@ -436,6 +436,12 @@ asks the selected profile for a recipe and validates its typed result using exis
   supplies both early setups. Worlds missing the selected F650 body still reject that visit. F530/F28
   remain outside this recipe. See the [location coverage](pre-voyage-optional-locations.md#pre-voyage-save-coverage).
 
+- **Hawel's house settled visit:** `hawel-field` retains the legal tile, facing and layer after
+  Kazin's recruitment and the house caller finish, and on quiet F612 revisits. The first completed
+  visit retains the default setup's live cast, Kazin's follow link and the changed layout. A fresh
+  revisit uses the F612 population and bindings. Ordinary Save preserves Egress and F399.
+  [Bounded observation](#hawel-house-save-and-continue-observation)
+
 These are implemented product recipes. Their acceptance includes
 ordinary legal variations within each admitted boundary: reordered optional conversations,
 refusal/retry, changed party resources/equipment, living/dead members, earned progress and different
@@ -467,8 +473,8 @@ can differ because this is a savepoint reload. This distinction must appear in p
 **Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
 within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
 admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
-Map3 F506 and Map16 are implemented. Each batch owns its capture, independent Continue and
-restart evidence. Map5 default/F650 and the anchored opening and tower outcome recipes also
+Map3 F506, Map16 and settled Map43 are implemented. Each batch owns its capture, independent
+Continue and restart evidence. Map5 default/F650 and the anchored opening and tower outcome recipes also
 have implemented recovery.
 
 **Confirmed implementation structure.**
@@ -477,9 +483,10 @@ recipe, captures detached progress and builds a restore candidate before offerin
 [`OpeningRestore.Build`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
 reselects the recipe from the record and validates the party, registers, content and landing.
 [`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
-default/F609 with anchors, F506 with its concrete scene, and Map16 with its loaded default or
-F663 scene. The [current world selection](../../content/private/pre-voyage-opening.json) includes
-both towns, their early setup bodies and their Church refuges.
+default/F609 with anchors, F506 with its concrete scene, Map16 with its loaded default or
+F663 scene, and Map43 with its loaded default or F612 scene. The [current world
+selection](../../content/private/pre-voyage-opening.json) includes these setup bodies and the
+two towns' Church refuges.
 
 Use one finite settled-visit recipe per town with the existing
 [`SavedFieldScene`](../../src/Sf2.Remake.Application/Runtime/Persistence/SavedFieldScene.cs) and
@@ -524,6 +531,16 @@ Talk and zone/warp events, Search, population and programs. Continue validates t
 that body's resident cast and restores the saved aliases and active slots. F663 admits the changed
 setup and the still-loaded default visit. F505 can retain either according to the actual route.
 F530 and F999 remain outside this early recipe.
+
+**Hawel's house.** The [pinned route research](../../../docs/research/chapters/grans-opening/battle03-to-battle04-content-route.md#hawel-house-content-and-caller-state)
+places F612/F650 after the default house program and distinguishes that visit from the empty
+authored resident list on F612 reentry. The default program retires the soldiers, parks Hawel,
+opens doors, joins Kazin, installs his follow link and sets F404. Save admits ordinary settled
+control with F4/F612/F650 set and F72 clear. It records the setup actually loaded, including
+retired actor records, aliases, follow links and layout changes. Continue validates the saved setup
+and actor population. Fresh reentry follows the ordinary F612 selector. Keep F36 and F404 at
+their saved values, independently of the scene's following state. The Map43 Egress tuple
+`(7,5)` Down is a refuge. Map43 exposes ordinary Save only.
 
 **Church Record and Egress.** The existing source-table import binds the Map3 `(32,13)` Up and
 Map16 `(27,7)` Up refuge bindings. Limit the new Record behavior to the admitted callers and phases,
@@ -800,6 +817,68 @@ checkout and `$target` to a fresh destination beside the registered package:
 ```powershell
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2034/granseal-f506-v1'
 uv run --locked python -X utf8 (Join-Path $handoff 'PublishWorld.py') $base $upstream $target
+```
+
+#### Hawel house Save and Continue observation
+
+[#2039](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2039) reuses
+`derived/issue2035/galam-town-v1`, including its matching entry, scenes and opening inputs.
+Map43 already carries both setup bodies, the diary, the two chests and the southern warp.
+The observation adds only short inputs, disposable slots and bounded state/input reports.
+The world and prepared assets are reused directly.
+
+The first controlled start uses Map66 `(6,6)` Up, after Battle03, with F72/F399 set,
+F4/F404/F612/F650 clear and four active members. Play the actual house arrival through the
+north warp. Dialogue refuses Save. Normal acknowledgements complete the sequence, joining
+Kazin once and selecting Map43 Egress. Ordinary Search from `(11,4)` Up opens the
+Antidote chest at `(11,3)`, adding one item and F135. The default visit's slot
+retains its opened layout, parked Hawel, retired soldiers and live Kazin follow link.
+
+A separate controlled post-Battle06 approach uses the same Map66 tile, with F506/F612/F650 set,
+F72/F404/F399 clear and six active members. The startup seam supplies Map3 Egress.
+The normal warp loads the F612 visit. It retains Kazin in the roster and uses the
+fresh population without his same-visit follow link. Save keeps the incoming Egress and
+F399. These controlled starts bound the observation to the exit, house and restart behavior.
+
+**Confirmed in the remake.** Independent title Continue processes compare the full saved progress at attachment, including
+members, items, receipts, gold, both RNG streams, flags, Egress, tile/facing/layer, setup,
+actor slots, aliases, links and layout. Both can read the diary from `(3,3)` Up. The
+default reader repeats Search without receiving another Antidote and takes the south exit
+to Battle04. The revisit reader takes the same exit to Map66 `(6,6)`. Disposable copies
+of older Yeel and Galam slots also restore. A checksum-valid default scene relabeled F612
+fails detached restore and leaves the original slot bytes intact.
+
+**Unknown:** Ordinary acquisition of the F136 chest on the sampled routes and original
+SRAM or hardware timing parity. Active story, recruitment, transactions and transitions
+remain outside the settled Save boundary.
+
+##### Reproduce the Map43 observation
+
+Load the [worktree inputs](../../../docs/operations/local-private-inputs.md) and build the
+owned Debug adapter as in [commission verification](../verification/map3-commission-save.md).
+The observer and the two controlled starts are in `handoffs/issue2039/hawel-save-v1`
+under the registered shared input root. Each case launches a fresh native process. The runner
+selects the accepted Galam input package and an external disposable namespace, and writes only
+bounded case reports to the selected worktree's ignored output.
+
+```powershell
+. ./local/private-inputs.ps1
+$repo = (Resolve-Path .).Path
+$runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2039/hawel-save-v1/Run.ps1'
+$run = [guid]::NewGuid().ToString('N').Substring(0, 12)
+$cases = [ordered]@{
+    default = @('default-writer', 'default-reader', 'corrupt')
+    revisit = @('revisit-writer', 'revisit-reader')
+    yeel = @('legacy-yeel')
+    galam = @('legacy-galam')
+}
+foreach ($group in $cases.Keys) {
+    $sample = Join-Path $repo "local/issue2039/$run-$group"
+    foreach ($case in $cases[$group]) {
+        & pwsh -NoProfile -File $runner -Checkout $repo -SampleRoot $sample -Case $case
+        if ($LASTEXITCODE -ne 0) { throw "Hawel native observation failed in $case" }
+    }
+}
 ```
 
 #### Yeel Save and Continue observation
