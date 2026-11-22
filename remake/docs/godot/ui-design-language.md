@@ -2,26 +2,26 @@
 
 [Issue #1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616) uses this page as the
 remake's design system. The [scene review](ui-scene-review.md) applies it to the player journey.
-The [presentation agreement](presentation.md) records what runs today. The proposed
-[#2064 battle composition](battle-ui-composition.md) applies the same panel language to
-exclusive battle focus, a freestanding diamond and one reading region per phase.
+The [presentation agreement](presentation.md) records what runs today. [#2079](battle-ui-composition.md)
+delivers the first slice of #2064, with phase-specific battle focus, one shared board cursor,
+a freestanding Main diamond and a fixed reader for the current decision.
 
 **High rigor.** Shared controls and scene layouts affect the whole player journey. The user
-accepted the Godot review at its 1920×1080 design size. The ordinary pre-voyage game uses the reviewed scenes. Each gameplay or host caller still owns input, transactions and return.
+accepted the Godot review at its 1920×1080 design size. Each gameplay or host caller owns its
+input, transactions and return.
 
-Production uses compact labeled lists in the field, Church, shop and battle. Keep each admitted
-original icon beside its localized name, visible before focus. Child lists replace the parent in
-the same column. Layout A joins the acting unit's status to its command list. Layout B remains a
-comparison in the preview. The proposed battle Main diamond preserves labeled commands and child
-lists, with separate reading bounds. The
-[scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its production
-consumer and the limits of its evidence.
+Field, Church and shop use compact labeled lists. Battle Main places four labeled directional
+slots between the measured acting card and the separate footer. Magic and Item replace the diamond
+with lists. Targeting moves focus to the board and replaces the acting card with the recipient
+card. Admitted icons keep their localized names visible before focus. The
+[scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its mounted
+consumer and evidence.
 
 ## Components
 
 | Component | Contents and states | When to use it |
 | --- | --- | --- |
-| Command item | Admitted original icon, persistent localized name, focus marker. Align an amount, level, MP cost or slot when it distinguishes offers. Unavailable items keep their name and status. | A choice in a list or bar. Entry and host actions can use text alone. |
+| Command item | Admitted original icon, persistent localized name, focus marker. Align an amount, level, MP cost or slot when it distinguishes offers. Unavailable items keep their name and status. | A choice in a list, bar or diamond slot. Entry and host actions can use text alone. |
 | Choice list or command bar | One ordered set of items. Up/Down moves focus in a vertical list, Left/Right in a horizontal bar. Confirm selects the focused offer. Retain the caller's initial choice. | Right-hand lists support commands, submenus and long labels. Horizontal choices suit an attached dialogue question. |
 | Contextual detail | Show a cost, consequence or actual refusal reason when the item leaves a question. A self-explanatory command needs only its label. | Beside the current collection. Allow for a long reason without displacing focus. |
 | Dialogue frame | Body, supplied portrait, choices only in a real choice phase, footer for mapped hints. | Greeting, story, Search and battle messages. Preserve each reader's reveal/page/acknowledge behavior. |
@@ -57,10 +57,11 @@ In scope: existing entry, field, party/preparation, service, host and battle pre
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
-Remote services and an additional host Overview remain outside this design. The user requested an
-[actual current-round order readout](battle-ui-composition.md#current-round-order-2065).
-Its proposed placement reserves a quiet space under round/gold. Future rounds become known when
-the engine generates them. [Modernization proposal](modernization-design.md)
+Remote services and an additional host Overview remain outside this design. The space below round/gold
+is reserved for the pending [current-round readout #2065](battle-ui-composition.md#current-round-order-2065).
+The [implementation handoff](battle-ui-composition.md#implementation-handoff) also tracks pending
+target press and Stay behavior (#2080), inspection movement (#2081), shared roster presentation
+(#2082), and spell descriptions (#2083).
 
 ## Surfaces and hierarchy
 
@@ -176,8 +177,8 @@ target confirmation use their own existing pages.
 Use the mounted weapon, ring, recovery and action definitions for effects and numbers, and the
 current actor/slot for conditions such as class eligibility or damage. Distinguish field effects
 from battle effects. Keep descriptions short and localize complete phrases in the UI catalog.
-The proposed [selected spell reader](battle-ui-composition.md#selected-spell-descriptions) uses the
-same stable reading region and the admitted level and effect facts for its context.
+The pending [spell descriptions #2083](battle-ui-composition.md#selected-spell-descriptions)
+will use the stable reading region and the admitted level and effect facts for their context.
 Names keep the existing name catalog. Where gameplay has no bound effect, leave the item prose
 blank. Depot, other battle menus, game rules, item data and save formats are outside this slice.
 
