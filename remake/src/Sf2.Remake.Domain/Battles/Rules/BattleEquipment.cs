@@ -4,7 +4,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 namespace Sf2.Remake.Domain.Battles;
 
 public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint ClassMask, byte AttackBonus,
-    byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0);
+    byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0, bool DamageOnUse = false);
 
 public enum BattleEquipmentCategory { Weapon, Ring }
 public enum RingStat { Attack, Defense, Agility, Move }
@@ -65,7 +65,8 @@ public static class BattleEquipment
         (byte)Math.Min(200, basis + BattleStatCounters.AttackBonus(basis, applied) + Contribution(definition, loadout));
 
     internal static bool CanBeDamaged(BattleActorDefinition definition, byte item) =>
-        definition.Equipment?.Rings.GetValueOrDefault(item)?.DamageOnUse == true;
+        definition.Equipment?.Rings.GetValueOrDefault(item)?.DamageOnUse == true ||
+        definition.Equipment?.Weapons.GetValueOrDefault(item)?.DamageOnUse == true;
 
     internal static byte Defense(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout, bool initial = false)
     {

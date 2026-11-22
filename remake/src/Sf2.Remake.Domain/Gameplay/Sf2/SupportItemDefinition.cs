@@ -7,7 +7,7 @@ public sealed record SupportItemDefinition(byte ItemId, string Name, SupportSpel
     internal void RequireOwner(EngineBattleState battle, BattleActorState owner)
     {
         Effect.RequireSupported();
-        if (!Effect.TargetsTeammates || !BattleEquipment.CanBeDamaged(owner.Definition, ItemId) ||
+        if (!(Effect.TargetsTeammates || Effect.AbsorbsMp) || !BattleEquipment.CanBeDamaged(owner.Definition, ItemId) ||
             !BattleEquipment.IsEligible(owner.Definition, ItemId))
             throw new BattleRuleException("equipment-use-class", "item.slot");
         BattleEquipment.ValidateLoadout(owner.Definition, owner.SourceLoadout);

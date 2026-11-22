@@ -140,8 +140,11 @@ internal static class BattleChoices
             if (admission.Item is { Effect: not HealingItemEffect.RestoreHp } recovery && (content is not null || requireContent))
                 RequireRecoveryItemContent(battle, actor, destination, recovery, target, content);
             if (admission.SupportItem is { } support && (content is not null || requireContent))
-                RequireFriendlyItemContent(battle, actor,
+            {
+                if (support.Effect.AbsorbsMp) RequireAttackItemContent(battle, actor, target, content);
+                else RequireFriendlyItemContent(battle, actor,
                     Sf2SupportSpellAction.Targets(battle, actor, destination, support.Effect, target), content);
+            }
             if (admission.AttackItem is not null && (content is not null || requireContent))
                 RequireAttackItemContent(battle, actor, target, content);
             return patient;

@@ -4,8 +4,8 @@ This High-rigor design for [#1952](https://github.com/FrankHZ/md-sf2-reverse-eng
 covers ordinary Battle Item → Use, the exact slot that survives or is destroyed, the merchant
 Repair transaction, and cold Continue. Action construction, stat refresh and persistence meet at
 the same loadout. A mismatch can lose gear, advance RNG, or charge gold without repairing the
-selected copy. Power Ring and Protect Ring have an implemented battle and Repair loop.
-Indra Staff remains gated on ordinary WIZ/VICR admission. The accepted [ring slots](ring-equipment-design.md),
+selected copy. Power Ring, Protect Ring and Indra Staff use the implemented battle and Repair loop.
+Indra Staff uses the admitted ordinary WIZ and VICR progression. The accepted [ring slots](ring-equipment-design.md),
 [status refresh](support-spell-status-design.md), [offensive item origin](offensive-items-design.md#remake-item-action),
 [promotion and rebind](../application/church-promotion-design.md), and
 [Deals and shop return](../godot/field-and-shop.md#hassan-deals-and-cold-continue) supply the dependencies.
@@ -31,7 +31,7 @@ and turn fixtures give the ROM, emulator and controlled boundaries for those obs
 | Quick Ring (21), Running Ring (22), Chirrup Sandals (126) | Source `NOTHING` Use. Quick's BREAKABLE flag supplies no effect or reachable damage roll. | Retain ordinary Use refusal. Sandals acquisition and audio belong to [#1962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1962). |
 | Taros Sword (110) | Battle18 enemy BOLT 2 and potential rare drop. Mask NONE refuses player Use even from an intact bare slot. Enemy Use bypasses ally breakage. | Preserve the accepted Taros path and player refusal. |
 | Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Neither retained Pacalon party has such a class. | [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) owns admission, curse and BLAZE 2. It can consume the common slot-damage operation when admitted. |
-| Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | Class-dependent follow-on within this frontier. Current shop stock and bare possession alone establish no Equip or Use. Rebase onto an accepted WIZ or VICR ordinary consumer from [#1956](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1956) before binding its weapon or effect. |
+| Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | The remake admits Equip and battle Use from WIZ/VICR. The source mask also retains SORC, which has no playable class path in this slice. |
 
 The reached shop/drop/grant join yields three scoped player effects including the conditional
 Indra Staff, plus Black Ring under its own issue. Later rows include the White Ring and Demon Rod
@@ -64,7 +64,7 @@ the confirmed movement stop, and source processing order. [Menu slot return](htt
 | --- | --- | --- |
 | ATTACK 1 | Living teammate at distance 1–3, radius 0. The holder cannot self-center. | Write ATTACK bits `0xC000` before checking the previous ATTACK counter. Fresh target succeeds without an effect draw, with one full-word reaction and +5 status EXP contribution. An active target consumes one range-8 draw against threshold 8 and always fails the reaction. The write survives. The current ATT still uses its previous applied counter until that target refreshes. |
 | BOOST 1 | Teammate or self center at distance 0–1, radius 1 diamond around that center. A neighboring teammate can be outside center range. | Same construction and per-target recast behavior using BOOST's separate `0x3000`. Reuse the existing BOOST support effect, including fresh and failed targets in sorted order. The item does not enter the Magic book. |
-| SPOIT 1 | One living opponent at distance 1–2, radius 0. | Roll range 3 then add 3. Drain the lesser of that amount and the target's current MP. The recipient's MP gain is capped at its own max MP. Target then user react, preserving status; zero MP still takes the draw, reactions and +5 status EXP contribution. There is no HP damage, power scaling or status resistance gate in this effect. Implement only with the admitted Indra consumer. |
+| SPOIT 1 | One living opponent at distance 1–2, radius 0. | Roll range 3 then add 3. Drain the lesser of that amount and the target's current MP. The recipient's MP gain is capped at its own max MP. Target then user react, preserving status; zero MP still takes the draw, reactions and +5 status EXP contribution. There is no HP damage, power scaling or status resistance gate in this effect. Bound to Indra Item Use. |
 
 **Confirmed.** ATTACK's magnitude is `floor(base ATT × applied counter / 8)`. It uses earned
 base before weapon and ring contributions and the live ATT cap. For base 41, weapon +10,
@@ -190,21 +190,22 @@ below for the separate native and controlled boundaries.
    identity-only Depot and rare Discard custody rules where used. Audit unrelated slots in
    each selector so one damaged word cannot disable acting, swapping or using a different
    item with the same pack.
-4. **Indra consumer.** After an accepted ordinary WIZ/VICR route, admit the single weapon
-   record and its MP-transfer effect with the same origin, damage and Repair. Test capped
-   recipient MP, empty enemy MP, range/refusal and 800 gold repair. A class-independent
-   Repair transaction can be shared first. An equipped/unequipped copy remains subject to
-   the live class mask for Use. No future weapon, recruit or mainline segment is necessary.
+4. **Indra consumer.** Use the accepted WIZ/VICR progression and bind the single weapon
+   and its MP-transfer effect. Share Item admission, target centers, wear and Repair.
+   Carry the ordered MP reactions through the existing scene and status EXP, including
+   an empty enemy or a full recipient. Equip and Use check the live class mask. Repair
+   uses the existing held-slot transaction at 800 gold.
 
-Steps 1–3 use the accepted Item origin, static rings, Deals transaction, permanent growth,
-shared support awards and target centers. Step 4 remains a class-dependent follow-on.
+The ring and staff slices use the accepted Item origin, Deals transaction, permanent
+growth, shared support awards and target centers.
 
 ### Persistence
 
 Retain the remake's existing normalized bit `0x0100` for broken. Original upper bits
 are translated at import. The four words remain the pack authority. A worn Power Ring
 changes 147 → 403 → 147 across damage and Repair, or is removed on broken reuse.
-A worn Protect Ring changes 148 → 404 → 148. Normalize any source import at its boundary;
+A worn Protect Ring changes 148 → 404 → 148. A worn Indra Staff uses 220 → 476 → 220.
+Bare Indra uses 92 or 348. Normalize any source import at its boundary;
 do not persist an extra wear field. Keep legacy bare and worn words byte-for-byte, and
 preserve existing invalid-word bounds. Widen the equipment-specific validator only for
 admitted breakable gear and its legal equipped forms. No AI-only flags enter ally words.
@@ -352,5 +353,66 @@ pages using the installed Confirm, Cancel and direction bindings.
 The controlled engine tests cover destruction after the effect with no extra wear draw,
 last-applied ATTACK across v5 Continue, and Repair refusal/atomicity. A naturally divergent
 ATTACK Continue remains **Unknown**. This loop uses the installed assets and existing save
-formats. Indra Staff, Black Ring's curse/Use and ordinary class promotion keep their
-respective owners.
+formats. Black Ring's curse/Use and ordinary class promotion keep their respective owners.
+
+## Indra Staff reproduction
+
+Use the registered `derived/issue1952/indra-v1` package and the existing English/Chinese
+catalog and input settings. Take the WIZ field seed
+`derived/issue1956/wiz-review/receipts/kazin-rite01/promoted-slot.json`. Start via title
+Continue in a fresh save namespace. This reuses the accepted promotion and leaves its
+source slot untouched. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$inputs = $env:SF2_SHARED_INPUT_ROOT
+$package = Join-Path $inputs 'derived/issue1952/indra-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
+Get-ChildItem -LiteralPath (Join-Path $package 'opening-inputs') -Filter '*.json' -File |
+    ForEach-Object { [Environment]::SetEnvironmentVariable($_.BaseName, $_.FullName, 'Process') }
+```
+
+Use the [private launcher and settings route](../application/pacalon-first-visit.md#continue-after-worktree-cleanup)
+for the remaining registered inputs, Debug host and separate writable slot. Select the
+Indra package paths above after the base input settings. The package mount adds four
+prepared weapon rasters and eight appearance rows to the 1,654,870-byte Battle26 scene.
+The resulting scene is 1,669,930 bytes. Other package files stay identical. The observed
+slot copies total about 270 KiB. [Mount command and prepared inputs](../content/presentation-assets.md#prepare-and-mount-retail-resources)
+
+1. Leave the castle south via (20,31). Face up at (9,10) in Pacalon town to speak to the
+   weapon merchant. Sell one of Kazin's Herbs to free a slot, then Buy Indra Staff for
+   him. The quote is 3,200 and the resulting pack is `[213,17,0,92]`. The English stock
+   selection shows the MP-absorption description.
+2. Take the [Ketto repeat route](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
+   into Battle26 and save at Movement. In the observed suffix Sarah and the other
+   allies hold near the starting area and Kazin advances north. On his round 2 turn,
+   use Equip at the legal stop (7,22). The worn word is 220, physical range is 1,
+   and ATT is 43. Choose Item → Indra Staff, cancel the target selection, reopen
+   and confirm enemy-12 one tile away. The English scene displays WIZ body 21 palette 2
+   and the staff. The enemy's MP goes 11 → 8. Kazin is already at his maximum of 55,
+   and the message reports the 3 MP removed. The first intact use naturally damages
+   the staff to 476, awards 5 EXP and returns to Movement.
+3. Save at Movement and cold Continue in a fresh process. Re-save and compare the
+   decoded v4 data. The observed data matched completely, including 476 and the enemy's
+   current MP. Use a separate copy of the pre-repair slot to repeat Item → Indra Staff
+   on the next Kazin turn. The Chinese scene showed enemy-13 MP 38 → 34, followed by
+   the destruction message. The slot becomes 127, Kazin's unarmed body remains visible,
+   ATT falls to 18, and the action returns to Movement.
+4. On the Repair copy, advance to Bowie's normal EGRESS and return to Map36. The
+   field v6 record still contains the worn damaged word. Return to the same Pacalon
+   merchant, choose Repair → Kazin → slot 4, cancel the 800-gold quote once, then
+   confirm it. The Chinese shop projected 5,914 → 5,114 and the repaired word 220.
+   Leave, take the north warp at (19,0) to the castle, save and quit. Fresh Chinese
+   Continue and re-save retained WIZ, the complete party packs, gold, formation and
+   custody. A subsequent move crossed back into town.
+
+The [engine tests](../../tests/Sf2.Remake.Engine.Tests/EquipmentItemTests.cs) cover bare
+and worn legality, unpromoted refusal, cancellation, ordered MP reactions for a capped
+caster and empty target, one damage draw and exact-slot destruction with no wear draw.
+The [shop engine test](../../tests/Sf2.Remake.Engine.Tests/ShopServiceTests.cs) covers
+the 800-gold transaction at exact funds with a duplicate staff. Battle Use was
+observed on WIZ. VICR has controlled engine coverage, and SORC is a retained source
+mask bit. Other SPOIT equipment and a learned Magic action are outside this admission.

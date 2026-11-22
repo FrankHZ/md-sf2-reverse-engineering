@@ -42,11 +42,14 @@ internal static class PrivateFieldPreparation
     }
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)
     {
-        return source.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" || item is { Code: "ACHILLES_SWORD", ItemTypeExpression: "WEAPON|RARE" }) &&
+        return source.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" ||
+            item is { Code: "ACHILLES_SWORD", ItemTypeExpression: "WEAPON|RARE" } || PrivateBattleActionBindings.IsIndraStaff(item)) &&
             PrivateBattleActionBindings.HasSupportedWeaponEffects(item))
-            .Select(item => PrivateBattleActionBindings.Weapon(item,
-                source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))
-                    .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id))).ToArray();
+            .Select(item => PrivateBattleActionBindings.IsIndraStaff(item)
+                ? PrivateBattleActionBindings.Weapon(item, 1u << 17 | 1u << 18 | 1u << 19) with { DamageOnUse = true }
+                : PrivateBattleActionBindings.Weapon(item,
+                    source.Classes.Values.Where(allowed => allowed.Id < 32 && item.EquipFlags.Contains(allowed.Code))
+                        .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id))).ToArray();
     }
     private static IEnumerable<BattleRingDefinition> Rings(PrivateBattleDefinitions source)
     {

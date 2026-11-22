@@ -141,7 +141,8 @@ A palette or sprite match from another member is insufficient class admission.
   and later FREEZE/BOLT/BLAZE ranks. Preserve them per member and list unsupported ranks
   explicitly. WIZ resolves the Black Ring class mask. The ordinary ring interfaces and item
   effects still depend on the supported item's own rules. Curse and BLAZE 2 from the ring
-  remain with #1926. Indra remains with #1952. Learned BLAZE is a separate MP action.
+  remain with #1926. Indra's weapon layer and MP-absorption Use are mounted separately.
+  Learned BLAZE spends MP. [Indra Staff](../domain/equipment-use-repair-design.md#indra-staff-reproduction)
   The pinned promoted BLAZE 2 calculation takes base power 10 to 12 before element
   resistance and RNG. Item-origin damage uses the item's base power. Kazin's retained
   book and paid cast were observed after promotion and cold Continue. [Promoted damage calculation](../../../docs/design/contracts/battle/spell-resolution.md#1-resolve-base-power-and-caster-adjustment) ·

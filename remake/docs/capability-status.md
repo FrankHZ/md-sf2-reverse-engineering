@@ -563,7 +563,9 @@ v6 Continue and removal are confirmed. Battle05 plays the default for another
 ally on entry. After battle Continue, Bowie plays the override. The controlled post-Taros
 service visit confirms ordinary Depot deposit, bilingual appraisal and retrieval to Bowie.
 [Sandals route and limits](content/special-equipment-reach.md#remake-controls-and-reproduction)
-Black Ring curse and Use and Indra Staff remain separate capabilities.
+Indra Staff admits WIZ/VICR weapon Equip, SPOIT1 Item Use, wear, 800-gold Repair and existing
+save/restore. Black Ring curse and Use remain with #1926.
+[Indra Staff](domain/equipment-use-repair-design.md#indra-staff-reproduction)
 [Ring equipment](domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input) ·
 [Use, Repair and Continue](domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
 Connected Give and Drop have their separate agreements below.

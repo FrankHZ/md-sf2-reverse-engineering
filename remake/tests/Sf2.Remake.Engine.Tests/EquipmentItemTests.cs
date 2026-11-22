@@ -11,26 +11,33 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class EquipmentItemTests
 {
-    private static SessionSnapshot At(ushort[] words, ushort targetStatus = 0, uint seed = 0, uint classMask = uint.MaxValue)
+    private static SessionSnapshot At(ushort[] words, ushort targetStatus = 0, uint seed = 0, uint classMask = uint.MaxValue,
+        BattleClassRule? staffClass = null, byte casterMp = 0, byte? enemyMp = null, bool halve = true)
     {
-        var basis = Battle(doc => doc["encounters"]![0]!["rewards"]!["halvedExperience"] = true);
-        var equipment = new BattleEquipmentDefinition(10, [], rings:
+        var basis = Battle(doc => doc["encounters"]![0]!["rewards"]!["halvedExperience"] = halve);
+        var equipment = new BattleEquipmentDefinition(10,
+            [new(92, "Indra Staff", 1u << 17 | 1u << 18 | 1u << 19, 25, 1, 1, DamageOnUse: true)], rings:
             [new(19, "Attack Ring", classMask, RingStat.Attack, 5, DamageOnUse: true),
              new(20, "Defense Ring", classMask, RingStat.Defense, 5, DamageOnUse: true),
              new(21, "Quick Ring", uint.MaxValue, RingStat.Agility, 5)]);
         var deployments = basis.Definition.Deployments.Select(row => row.Actor == Mage
-            ? row with { Definition = row.Definition.WithEquipment(equipment) } : row).ToArray();
+            ? row with { Definition = staffClass is { } selected
+                ? new(Mage, selected, 5, 30, 20, 10, 5, 100, false, 5, [], equipment: equipment)
+                : row.Definition.WithEquipment(equipment) }
+            : row).ToArray();
         var old = basis.Definition;
         var definition = new BattleDefinition(old.Encounter, old.Map, old.Width, old.Height, old.Terrain,
             deployments, old.Spells.Values, old.Rewards, old.Initialization, old.Outcome, attackSpells: old.AttackSpells.Values,
             supportSpells: old.SupportSpells.Values, supportItems:
             [new(19, "Attack Ring", new(new("attack", 1), 7, 1, 3, 0)),
-             new(20, "Defense Ring", new(new("boost", 1), 2, 0, 1, 1))]);
+             new(20, "Defense Ring", new(new("boost", 1), 2, 0, 1, 1)),
+             new(92, "Indra Staff", new(new("spoit", 1), 0, 1, 2, 0))]);
         var original = basis.GetActor(Mage);
-        var owner = new BattleActorState(deployments.Single(row => row.Actor == Mage), original.Hp, 0, 0,
+        var owner = new BattleActorState(deployments.Single(row => row.Actor == Mage), original.Hp, casterMp, 0,
             original.Position, 0, 0, sourceLoadout: new(words, [63, 63, 63, 63]), status: 0x200, activationWord: 0);
         var battle = new EngineBattleState(definition, basis.Actors.Select(actor => actor.Actor == Mage ? owner :
-            actor.Actor == Priest ? actor.With(status: targetStatus, refreshStats: true) : actor),
+            actor.Actor == Priest ? actor.With(status: targetStatus, refreshStats: true) :
+            actor.Actor == Smoke ? actor.With(mp: enemyMp) : actor),
             seed, basis.ThinkingSeed, basis.Round, [new(Mage, 100), new(Priest, 60)], 0, 10, basis.StartPolicy, basis.Regions,
             itemCustody: new([4], new Dictionary<byte, byte> { [19] = 1 }));
         return BattleSaveFixture.At(battle, new StoryState([]));
@@ -89,6 +96,76 @@ public sealed class EquipmentItemTests
         Assert.Equal(0, current.Battle.GetActor(Mage).Mp);
         Assert.Equal(13, current.Battle.GetActor(Priest).Attack);
         Assert.True(current.HasBattleControl);
+    }
+
+    [Theory]
+    [InlineData(5, 19, 220, 5, 20, 476, BattleClassRule.Wizard)]
+    [InlineData(2, 0, 92, 2, 2, 348, BattleClassRule.Vicar)]
+    [InlineData(0, 20, 476, 0, 20, 92, BattleClassRule.Wizard)]
+    public void IndraConstructsOrderedMpReactionsBeforeWearAndReturnsToControl(
+        byte enemyMp, byte casterMp, ushort word, int drained, byte gained, ushort firstWord, BattleClassRule staffClass)
+    {
+        const uint seed = 0x0DA20000; // RNG(3) = 2, next RNG(4) = 0.
+        var start = At([word, 92, 127, 127], seed: seed, staffClass: staffClass,
+            casterMp: casterMp, enemyMp: enemyMp, halve: false);
+        var actionChoice = Accept(start, new Confirm());
+        var targetChoice = Accept(actionChoice, new SelectItem(0));
+        var invalid = Send(targetChoice, new SelectTarget(Priest));
+        Assert.NotNull(invalid.Failure);
+        Assert.Same(targetChoice, invalid.Snapshot);
+        Assert.Empty(invalid.Observations);
+        Assert.Same(start.Battle, Accept(targetChoice, new ReturnToBattleActions()).Battle);
+        var result = Send(Accept(targetChoice, new SelectTarget(Smoke)), new Confirm());
+        Assert.Null(result.Failure);
+
+        string[] draws = word == 476
+            ? ["rng-mp-absorb", "rng-exp-plus", "rng-exp-minus"]
+            : ["rng-mp-absorb", "rng-item-wear", "rng-exp-plus", "rng-exp-minus"];
+        Assert.Equal(draws, result.Observations.Where(row => row.RandomRange.HasValue).Select(row => row.Kind));
+        Assert.Equal((ushort?)3, result.Observations.First(row => row.Kind == "rng-mp-absorb").RandomRange);
+        var current = result.Snapshot;
+        Assert.Equal(enemyMp, current.Battle.GetActor(Smoke).Mp);
+        Assert.Equal(casterMp, current.Battle.GetActor(Mage).Mp);
+        Assert.Equal(firstWord, current.Battle.GetActor(Mage).SourceLoadout!.Items[0]);
+        Assert.Equal(word == 476 ? 127 : 92, current.Battle.GetActor(Mage).SourceLoadout!.Items[1]);
+        Assert.Equal(word == 220 ? 35 : 10, current.Battle.GetActor(Mage).Attack);
+        Assert.Same(start.Battle.ItemCustody, current.Battle.ItemCustody);
+        var plus = result.Observations.Single(row => row.Kind == "rng-exp-plus").RandomValue;
+        var minus = result.Observations.Single(row => row.Kind == "rng-exp-minus").RandomValue;
+
+        List<(ActorRef? Target, int Amount)> reactions = [];
+        int steps = 0;
+        while (current.BattleScene is { } scene)
+        {
+            Assert.True(steps++ < 30);
+            Assert.NotEqual(BattleScenePhase.SpellCost, scene.Phase);
+            if (scene.Phase == BattleScenePhase.Reaction)
+            {
+                reactions.Add((scene.Target, scene.Amount));
+                Assert.Equal(0x200, current.Battle.GetActor(Mage).Status);
+            }
+            var advanced = BattleSceneContinuation.Submit(current, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
+                new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.Null(advanced.Failure);
+            current = advanced.Snapshot;
+        }
+        Assert.Equal(new (ActorRef?, int)[] { (Smoke, drained), (Mage, drained) }, reactions);
+        Assert.Equal(enemyMp - drained, current.Battle.GetActor(Smoke).Mp);
+        Assert.Equal(gained, current.Battle.GetActor(Mage).Mp);
+        Assert.Equal((byte?)Math.Max(1, 5 + (plus == 0 ? 1 : 0) - (minus == 0 ? 1 : 0)), current.Battle.GetActor(Mage).Exp);
+        Assert.True(current.HasBattleControl);
+    }
+
+    [Fact]
+    public void IndraIsCarriedButCannotBeUsedOrEquippedBeforePromotion()
+    {
+        var start = At([92, 127, 127, 127]);
+        var current = Accept(start, new Confirm());
+        var fail = Send(current, new SelectItem(0));
+        Assert.NotNull(fail.Failure);
+        Assert.Same(current, fail.Snapshot);
+        Assert.Empty(fail.Observations);
+        Assert.DoesNotContain(BattleEquipment.Choices(start.Battle.GetActor(Mage)), choice => choice.Slot == 0);
     }
 
     [Fact]

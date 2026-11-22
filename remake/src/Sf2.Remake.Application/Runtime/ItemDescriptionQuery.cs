@@ -24,10 +24,11 @@ public static class ItemDescriptionQuery
             equipment = encounter?.Deployments.Select(row => row.Definition.Equipment)
                 .FirstOrDefault(candidate => candidate?.ClassMask(item) is not null);
         var ring = equipment?.Rings.GetValueOrDefault(item);
-        return new(equipment?.Weapons.GetValueOrDefault(item), ring?.Stat, ring?.Bonus ?? 0,
+        var weapon = equipment?.Weapons.GetValueOrDefault(item);
+        return new(weapon, ring?.Stat, ring?.Bonus ?? 0,
             ring?.MovementSound is not null,
             holder?.Equipment?.ClassMask(item) is null ? null : BattleEquipment.IsEligible(holder, item),
-            ring?.DamageOnUse == true,
+            ring?.DamageOnUse == true || weapon?.DamageOnUse == true,
             field is null || snapshot.Mode != SessionMode.Exploration ? null : definition.FieldPreparation?.Effect(item, field.Map),
             encounter?.HealingItems.GetValueOrDefault(item), encounter?.AttackItems.GetValueOrDefault(item),
             encounter?.SupportItems.GetValueOrDefault(item), encounter?.RetreatItems.ContainsKey(item) == true);

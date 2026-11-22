@@ -77,7 +77,8 @@ Cancel dismissal and subsequent usable control are unchanged.
 
 The gameplay list and preparation pause field time and retain their host-menu exclusion. Services
 retain their actual wait owner. Repair opens member and held-slot selection with damage and
-worn indicators. Damaged Power and Protect Rings quote 750 gold. Confirm checks current
+worn indicators. Damaged Power and Protect Rings quote 750 gold. Indra Staff quotes 800.
+Confirm checks current
 funds and the selected slot, then charges and clears damage together. Cancel at the quote
 and dismissal after a result return to the member selection. Back at the member selection
 returns to the shop menu. [Ordinary New Granseal Repair and Continue](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
