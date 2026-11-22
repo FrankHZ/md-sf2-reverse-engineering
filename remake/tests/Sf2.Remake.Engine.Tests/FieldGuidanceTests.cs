@@ -10,23 +10,18 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class FieldGuidanceTests
 {
     // Different map, progress bits, companion and text prove the query consumes content.
-    private static readonly FieldGuidanceAnchor Exit = new(new(5, 1), new(4, 1), new("outside"), new(2, 3), "door");
     private static FieldGuidanceRule Rule(int[]? required = null, int[]? forbidden = null) =>
         new(new("harbor"), new("day"), required ?? [91], forbidden ?? [92, 93], new("ferryman"), "objective", 7,
-            "destination", "next-exit", Exit);
+            "destination", "next-exit");
 
     private static (ScenarioDefinition Definition, SessionSnapshot Snapshot) Sample(int[] flags, bool follower = true,
-        bool blocked = false, bool bound = true, string setup = "day")
+        string setup = "day")
     {
         var session = Start("harbor-arrival");
         var before = session.Current;
         var field = before.Exploration!;
-        var old = field.Definition;
-        var words = Enumerable.Repeat((ushort)0, WorkingMapLayout.WordCount).ToArray();
-        if (blocked) words[1 * 64 + 4] = 0xC000;
-        var layout = new WorkingMapLayout(words);
-        var map = new ExplorationMapDefinition(new("harbor"), layout, new([new(0, 0, 7, 7)]), [],
-            bound ? [new(ExplorationEventKind.Warp, 5, 1, null, null, new("outside"), new(2, 3))] : [],
+        var layout = new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]);
+        var map = new ExplorationMapDefinition(new("harbor"), layout, new([new(0, 0, 7, 7)]), [], [],
             setup: new(new(setup), []));
         var entities = field.AllEntities.Select(e => e.Entity == new EntityRef("ferryman")
             ? e with { Follower = follower ? new(field.PlayerEntity.Slot, 0, 0) : null } : e);
@@ -49,29 +44,19 @@ public sealed class FieldGuidanceTests
         Assert.Equal(expected, guidance is not null);
         if (guidance is null) return;
         Assert.Equal(current.SessionId, guidance.SessionId); Assert.Equal(current.Revision, guidance.Revision);
-        Assert.Equal("objective", guidance.ObjectiveKey); Assert.Equal(7, guidance.Companion); Assert.Equal(Exit, guidance.Anchor);
-        Assert.Equal("destination", guidance.DestinationKey);
-    }
-
-    [Theory]
-    [InlineData(false, false)] [InlineData(true, true)]
-    public void MissingOrBlockedLocalEntranceRetainsKnownDestinationWithoutMarker(bool blocked, bool bound)
-    {
-        var (definition, current) = Sample([91], blocked: blocked, bound: bound);
-        var guidance = Assert.IsType<FieldGuidance>(FieldGuidanceQuery.Query(definition, current));
-        Assert.Null(guidance.Anchor); Assert.Equal("destination", guidance.DestinationKey);
-        Assert.Equal("guidance.route-unavailable", guidance.RouteKey);
+        Assert.Equal("objective", guidance.ObjectiveKey); Assert.Equal(7, guidance.Companion);
+        Assert.Equal("destination", guidance.DestinationKey); Assert.Equal("next-exit", guidance.RouteKey);
     }
 
     [Fact]
     public void IncompleteLegCannotBorrowTheCompletedLegAndAmbiguityCannotChooseFirst()
     {
         var (definition, current) = Sample([91]);
-        definition.Exploration!.Guidance = [Rule(forbidden: [92, 93, 94]) with { Anchor = null, RouteKey = "unavailable" }, Rule([91, 94])];
+        definition.Exploration!.Guidance = [Rule(forbidden: [92, 93, 94]) with { RouteKey = "unavailable" }, Rule([91, 94])];
         var first = FieldGuidanceQuery.Query(definition, current)!;
-        Assert.Null(first.Anchor); Assert.Equal("unavailable", first.RouteKey);
+        Assert.Equal("unavailable", first.RouteKey);
         var completed = current.WithStory(new([91, 94], portraitWindow: new ClosedPortraitWindow()));
-        Assert.Equal(Exit, FieldGuidanceQuery.Query(definition, completed)!.Anchor);
+        Assert.Equal("next-exit", FieldGuidanceQuery.Query(definition, completed)!.RouteKey);
         definition.Exploration.Guidance = [Rule(), Rule()];
         Assert.Null(FieldGuidanceQuery.Query(definition, current));
     }

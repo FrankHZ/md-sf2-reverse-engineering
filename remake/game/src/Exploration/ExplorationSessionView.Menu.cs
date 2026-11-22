@@ -66,6 +66,6 @@ public sealed partial class ExplorationSessionView
         _guidance.Present(_session, guidance, WorldViewport, _session.Current.Exploration,
             !_partyStatus.Open && !_battleMounted && !MenuEntryPending &&
             !_handedOff && !_battleHandoffPending && PresentationFailure is null && CanProcess(),
-            _fieldMenu.OccupiedRect, !_fieldMenuActive);
+            _fieldMenu.OccupiedRect);
     }
 }
