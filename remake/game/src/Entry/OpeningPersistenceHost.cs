@@ -24,7 +24,7 @@ public sealed partial class GameRoot
     private bool SeedOnly => _seedFile is not null && _outputFile is null;
     private sealed record HostSaveOffer(Guid SessionId, long Revision, string Destination, string? Error);
 
-    private HostSaveOffer SaveOffer(bool previewMusic = false)
+    private HostSaveOffer SaveOffer(bool previewMusic = false, bool church = false)
     {
         if (_session!.Current.Active is ActiveBattle)
         {
@@ -32,7 +32,7 @@ public sealed partial class GameRoot
             return new(offer.SessionId, offer.Revision, offer.Location is { } location
                 ? BattleDestination(_session.Definition, _session.Current.Story.Names, location.Encounter, location.Round, location.Actor) : "", offer.Error);
         }
-        var field = _session.QuerySave();
+        var field = church ? _session.QueryChurchSave() : _session.QuerySave();
         return new(field.SessionId, field.Revision, field.Location is { } target ? SavedDestination(target.Recipe) : "", field.Error);
     }
 
@@ -230,7 +230,7 @@ public sealed partial class GameRoot
         if (ObserveSaveMusic() is { } musicError) { SaveError(musicError); return; }
         try
         {
-            var offer = SaveOffer();
+            var offer = SaveOffer(church: church);
             if (offer.Error is { } error) { SaveError(error); return; }
             var store = Store(_session.Definition);
             await ShowHistory(store, _session.Definition, "save-slots",
@@ -270,6 +270,7 @@ public sealed partial class GameRoot
         "new-game" => GameText.Get("save.destination.new-game"),
         "map3-opening" => GameText.Get("save.destination.map3-opening"),
         "map3-joined" => GameText.Get("save.destination.map3-joined"),
+        "granseal-field" => GameText.Get("save.destination.granseal-field"),
         "battle01-return" => GameText.Get("save.destination.battle01-return"),
         "new-granseal-castle" => GameText.Get("save.destination.new-granseal-castle"),
         "ribble-welcome" => GameText.Get("save.destination.ribble-welcome"),

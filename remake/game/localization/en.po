@@ -452,6 +452,9 @@ msgstr "Granseal, home"
 msgid "save.destination.map3-joined"
 msgstr "Granseal, outside the church"
 
+msgid "save.destination.granseal-field"
+msgstr "Granseal"
+
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower, completed battle return"
 
@@ -474,7 +477,7 @@ msgid "new.uncertain"
 msgstr "The new save may already exist. Check Continue before starting again. Your current session is still paused."
 
 msgid "save.error.location"
-msgstr "Save after returning to a supported location: opening Granseal or the settled first battle return."
+msgstr "Return to a supported location to save."
 
 msgid "save.error.profile"
 msgstr "Saving is unavailable in this game. Your existing saves have been kept."

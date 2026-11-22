@@ -452,6 +452,9 @@ msgstr "Granseal，家中"
 msgid "save.destination.map3-joined"
 msgstr "Granseal，教堂外"
 
+msgid "save.destination.granseal-field"
+msgstr "格兰希尔"
+
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower，战斗结束后的返回点"
 
@@ -474,7 +477,7 @@ msgid "new.uncertain"
 msgstr "新存档可能已经写入。请先到读档界面检查，再决定是否重新开始。当前游戏仍暂停。"
 
 msgid "save.error.location"
-msgstr "请回到支持的地点再保存：开场的Granseal，或首场战斗结束后的返回点。"
+msgstr "请回到支持存档的地点。"
 
 msgid "save.error.profile"
 msgstr "本次游戏无法保存。已有存档已保留。"

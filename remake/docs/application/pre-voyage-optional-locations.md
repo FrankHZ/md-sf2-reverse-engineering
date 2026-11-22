@@ -141,29 +141,29 @@ placements and descriptions. Report unsupported actions at their actual caller o
 [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029) owns the remaining
 save gaps at existing stable locations. The [field selector](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs)
 confirms the recipe gaps. The [save lifecycle](opening-session-lifecycle.md#planned-pre-voyage-settled-visits)
-owns the proposed restoration and Church publication contract. New Save, Record and cold
-Continue outcomes still need implementation evidence.
+owns the restoration and Church publication contract. Each new location requires its own Save
+and cold Continue observation, with Record where a real priest is admitted.
 
 **Confirmed coverage.** Map3 default/F609 retain their anchored recipes. The completed Battle01
 Map57 and Battle07 Map58 returns retain their separate anchor gates. Default and F650 Yeel use the
-settled-visit recipe. Ordinary Save and Church Record cold-continue, and Record commits F399
-and Map5 Egress on successful publication. [Yeel acceptance](opening-session-lifecycle.md#yeel-save-and-continue-observation)
+settled-visit recipe. F506 Granseal has a separate settled-visit recipe. Ordinary Save preserves
+the incoming Egress and F399. Church Record publishes the town refuge and F399 after slot
+readback. [Granseal acceptance](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) ·
+[Yeel acceptance](opening-session-lifecycle.md#yeel-save-and-continue-observation)
 
 ### Ordered implementation batches
 
-Start with Granseal, then use its accepted scene handling for Galam. Dispatch the remaining batches
+Use Granseal's settled scene handling for Galam. Dispatch the remaining batches
 in order, deferring a batch if its prerequisite has a concrete unresolved failure. Each batch uses
 the [shared acceptance](#save-batch-acceptance). Save-only batches preserve the incoming
 Church/Egress state.
 
-1. **Granseal F506, Map3.** Enter through the ordinary post-Battle06 route. Add a finite visit Save
-   recipe, the source Church Record binding for its real caller and a localized destination.
-   Capture the F506 layout and the actual Kiwi population and follow state. Cold-continue before
-   the choice or after a settled refusal and reach the same offer. Cold-continue the completed named
-   join with unchanged F6, F38 as applicable and the saved follower. Leave and reenter to verify
-   joined Kiwi retirement without another join. Exercise Record with the Map3 refuge separate from
-   the saved tile. Leave F543, naming/choice in progress, quake Map4 and non-town visits outside this
-   recipe.
+1. **Granseal F506, Map3 (implemented).** The finite visit recipe saves the changed layout, actor
+   aliases and Kiwi's current follow state. Cold Continue restores the offer after a refusal and
+   preserves the completed named join. Ordinary exit and reentry retire the resident. Record uses
+   the Map3 refuge and the slot keeps the settled visit's tile. F543, active naming and choices,
+   quake Map4 and non-town visits stay outside this recipe.
+   [Observation and private inputs](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation)
 2. **Galam town, Map16.** Use the ordinary prison-to-town or admitted battle return/visit. Add
    Save and Church Record for settled default, same-visit post-rally and fresh F663 town, including
    Battle05 completion F505. Bind the live setup, Map16 Church anchor and localized destination.
