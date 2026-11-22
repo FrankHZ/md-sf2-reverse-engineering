@@ -455,6 +455,9 @@ msgstr "Granseal, outside the church"
 msgid "save.destination.granseal-field"
 msgstr "Granseal"
 
+msgid "save.destination.galam-field"
+msgstr "Galam"
+
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower, completed battle return"
 

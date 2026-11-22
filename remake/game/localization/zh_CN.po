@@ -455,6 +455,9 @@ msgstr "Granseal，教堂外"
 msgid "save.destination.granseal-field"
 msgstr "格兰希尔"
 
+msgid "save.destination.galam-field"
+msgstr "加拉姆"
+
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower，战斗结束后的返回点"
 
