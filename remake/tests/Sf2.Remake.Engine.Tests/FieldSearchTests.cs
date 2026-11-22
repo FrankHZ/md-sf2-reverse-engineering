@@ -95,7 +95,7 @@ public sealed class FieldSearchTests
         var search = Assert.IsType<FieldSearchWait>(acquired.Story.Wait);
         Assert.Equal(FieldSearchKind.Item, search.Result.Kind);
         Assert.Contains(150, acquired.Story.Flags);
-        Assert.True(acquired.NeedsFieldSearchCameraService);
+        Assert.True(acquired.NeedsFieldWindowService);
         Assert.False(acquired.HasOrdinaryFieldTime);
 
         var first = Advance(acquired, 1);
@@ -108,7 +108,7 @@ public sealed class FieldSearchTests
 
         var visible = Advance(first, 4);
         Assert.False(visible.Story.LogicalView!.HideWindows);
-        Assert.False(visible.NeedsFieldSearchCameraService);
+        Assert.False(visible.NeedsFieldWindowService);
         Assert.Equal(acquired.Story.SimulationTick + (alreadyAtDestination ? 1 : 2), visible.Story.SimulationTick);
         Assert.Same(acquired.Active, visible.Active);
         Assert.Same(search, visible.Story.Wait);
@@ -121,7 +121,7 @@ public sealed class FieldSearchTests
         Assert.Null(repeated.Failure);
         Assert.Equal(FieldSearchKind.Empty, Assert.IsType<FieldSearchWait>(repeated.Snapshot.Story.Wait).Result.Kind);
         Assert.Same(acquired.Exploration!.Party, repeated.Snapshot.Exploration!.Party);
-        Assert.False(repeated.Snapshot.NeedsFieldSearchCameraService);
+        Assert.False(repeated.Snapshot.NeedsFieldWindowService);
 
         SessionSnapshot Advance(SessionSnapshot snapshot, int ticks)
         {

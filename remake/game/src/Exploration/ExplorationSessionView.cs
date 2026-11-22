@@ -186,7 +186,7 @@ public sealed partial class ExplorationSessionView : Control
     }
 
     private bool TextRevealed => _dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount();
-    private bool CanSubmitWait => _session is { } session &&
+    private bool CanSubmitWait => _session is { } session && !session.Current.NeedsFieldWindowService &&
         (session.Current.CanWaitAtInput || session.Current.CanWaitForText && TextRevealed || session.Current.CanWaitForChoice && !_choiceRequiresRelease);
 
     internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
@@ -285,11 +285,18 @@ public sealed partial class ExplorationSessionView : Control
         }
         if (_session.Current.Story.Wait is FieldTextWait { InterruptibleDelay: true } delay && _input.TextDelayInputHeld)
         { InterruptDelay(delay); return; }
+        if (_session.Current.NeedsFieldWindowService)
+        {
+            _readingConfirmation = null;
+            if (_waitingAtInput) CancelFieldWait();
+            AdvanceProgramTime(gameplayDelta);
+            return;
+        }
         if (ContinueReadingConfirmation()) return;
         WaitToken? deliveryToken = _session.Current.Story.Wait switch
         {
             W1TextWait { Revealed: false } delivery => delivery.Token,
-            FieldTextWait { Revealed: false } delivery => delivery.Token,
+            FieldTextWait { Revealed: false } delivery when _dialogueView.Panel.IsVisibleInTree() => delivery.Token,
             _ => null,
         };
         if (deliveryToken is { } deliveredToken && TextRevealed && !_dialogueView.Panel.MoreBelow)
@@ -318,35 +325,9 @@ public sealed partial class ExplorationSessionView : Control
             return;
         }
         if (_waitingAtInput) CancelFieldWait();
-        if (NeedsTicks(_session.Current))
-        {
-            const double tickDuration = 1.0 / 60;
-            _tickTime += gameplayDelta;
-            int ticks = (int)Math.Min(4, Math.Floor(_tickTime / tickDuration));
-            // Keep only a fractional step. Mandatory work remains pending in the
-            // session, but a slow callback cannot leave a catch-up burst behind.
-            _tickTime %= tickDuration;
-            if (ticks > 0)
-            {
-                var token = _session.Current.Story.Wait?.Token;
-                Send(new AdvanceSimulation(_session.Current.Story.Wait?.Token, ticks));
-                if (_handedOff || token != _session.Current.Story.Wait?.Token || _session.Current.CanWaitAtInput || _session.Current.CanWaitForText || _session.Current.CanWaitForChoice || !NeedsTicks(_session.Current)) _tickTime = 0;
-            }
-        }
+        if (NeedsTicks(_session.Current)) AdvanceProgramTime(gameplayDelta);
         else _tickTime = 0;
     }
-
-    private static bool NeedsTicks(SessionSnapshot current) =>
-        current.Story.Wait is FieldSearchWait ? current.NeedsFieldSearchCameraService :
-        current.Story.Wait is MusicWait music ? !music.LogicalDone :
-        current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
-            { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade or PresentationCueKind.SoundCut } ? false :
-        current.Story.Wait is ChoiceWait { Work: { } choice } ? choice.Automatic :
-        current.Story.Wait is NodWait nod ? !nod.LogicalDone :
-        current.Story.Wait is FieldTextWait text ? !text.LogicalDone :
-        current.Story.Wait is FullFadeWait fade ? !fade.LogicalDone :
-            current.StopReason == SessionStopReason.SimulationWait ||
-            current.Exploration?.AllEntities.Any(entity => entity.Busy || entity.Follower is not null) == true;
 
     internal void HandleAction(GameAction action, bool repeating = false)
     {

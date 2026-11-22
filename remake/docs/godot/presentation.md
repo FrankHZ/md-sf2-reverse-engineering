@@ -1390,7 +1390,9 @@ This is an explicit modern latency choice: logical entity/window/portrait work, 
 poll still execute in their original order. It does not synthesize completion or shorten a service.
 An explicit `{D1}` pause retains ordinary elapsed-time service. CLEAR replaces the projection and
 cancels old intent even when the token is unchanged. No intent crosses another token, choice,
-map/battle ownership, focus loss, hiding, modal suspension or failure. Subsequent close, movement,
+map/battle ownership, focus loss, hiding, modal suspension or failure. When camera suppression
+persists at a logically complete field span, the [window handoff](../application/session-and-programs.md#field-windows-hidden-at-input)
+finishes before delivery or a new reading intent. Subsequent close, movement,
 audio and script waits retain their existing authorities and elapsed/delivery boundaries.
 
 **Confirmed (bounded host witness):** an authored no-portrait ordinary dialogue on the previous

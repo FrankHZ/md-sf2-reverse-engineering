@@ -154,7 +154,8 @@ public sealed class SessionSnapshot
         Story.ScriptWarp is null && !Story.BattleRequest && Story.TextWindow is ClosedTextWindow &&
         Story.PortraitWindow is not OpenPortraitWindow &&
         (Story.Wait is null || Story.Wait is EntityWait { AfterMotion: null } move && move.Entity == field.World.Player);
-    public bool NeedsFieldSearchCameraService => Story.Wait is FieldSearchWait &&
+
+    public bool NeedsFieldWindowService => Story.Wait is (FieldSearchWait or FieldTextWait { LogicalDone: true }) &&
         Story.TextSettings is not null && Story.LogicalView is { HideWindows: true };
 
     // Transient entry readiness is independent of save recipes and discardable ambient scripts.

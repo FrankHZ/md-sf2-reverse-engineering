@@ -233,20 +233,19 @@ internal static class ExplorationDispatcher
                 case AdvanceSimulation advance:
                     if (current.Story.Wait is ChoiceWait { Work: { Automatic: false } })
                         return Reject(current, "explicit-choice-input-required", "command");
-                    if (current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true } || current.CanWaitForText && !playerWait)
+                    if (!current.NeedsFieldWindowService &&
+                        (current.Story.Wait is W1TextWait or FieldTextWait { LogicalDone: true } || current.CanWaitForText && !playerWait))
                         return Reject(current, "explicit-text-wait-required", "command");
                     if (advance.Ticks is < 1 or > 600 || advance.Wait != current.Story.Wait?.Token)
                         return Reject(current, "stale-or-wrong-wait", "wait");
-                    if (current.Story.Wait is FieldSearchWait)
+                    if (current.Story.Wait is FieldSearchWait || current.NeedsFieldWindowService)
                     {
-                        // The result already owns input and custody. Finish the camera's
-                        // window suppression without resuming ordinary world service.
-                        for (int tick = 0; tick < advance.Ticks && current.NeedsFieldSearchCameraService; tick++)
+                        // Run the common view/window stage without an entity update or text poll.
+                        for (int tick = 0; tick < advance.Ticks && current.NeedsFieldWindowService; tick++)
                         {
-                            var story = current.Story;
-                            var view = ExplorationViewRunner.Tick(current.Exploration!, story.LogicalView!, story.TextSettings!);
+                            var story = ExplorationTextRunner.AfterEntities(current.Exploration!, current.Story);
                             current = ProgramRunner.Commit(current, current.Active, story.Copy(story.Cursor, story.Wait,
-                                logicalView: view, simulationTick: checked(story.SimulationTick + 1)), observations, "search-camera-service");
+                                simulationTick: checked(story.SimulationTick + 1)), observations, "field-window-service");
                         }
                         return ProgramRunner.Result(current, observations);
                     }

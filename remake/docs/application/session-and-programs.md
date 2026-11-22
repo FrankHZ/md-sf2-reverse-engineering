@@ -119,7 +119,7 @@ do not reseed, split RNG, normalize NPCs or revive a full-route golden to hide t
 | Field input / committed ordinary movement | Continue the existing enabled field service, including autonomous NPCs and follower follow-up decisions, not only already-started translations. Input-ready does not mean persistent-ready. |
 | System/party/settings/save modal | Pause world and ordinary sprite progression after the bounded entry procedure below where applicable. No time debt or world updates behind a mounted modal. This full modal freeze is a modern policy; the original field menu leaves some other VInt services registered. |
 | OS focus loss, hidden view, tree pause, window recovery, failure | Suspend immediately, even during pending menu settlement; disarm input and pending host intent. Focus return requires fresh input, no catch-up. Never defer a real OS pause to finish saving. |
-| Search result | Service the logical camera while it suppresses the feedback window. Stop on the first visible step and keep the same result token and frozen field state. [Search handoff](#search-feedback-after-movement). |
+| Hidden Search result or logically complete field text | Service the logical camera and window geometry until the window is visible. Keep the same token, cursor and frozen field state. [Window handoff](#field-windows-hidden-at-input). |
 | Text reveal, W1/plain/field text input, choice, Church/Shop | No new automatic ordinary opportunities. Keep each existing mandatory-work, delivery, token, explicit poll and acknowledgement contract. Slow reading/rendering adds no gameplay steps. Explicit ordinary-dialogue Confirm may schedule existing mandatory text work under the [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm). Church Save may request ordinary settlement only after its genuine caller return. |
 | Script waits, finite music, warp/load/fade, scene/battle handoff | Yield ordinary scheduling; existing owners run their required work or wait for delivery. Keep the modern finite-music logical-end plus actual-completion gates and sound-before-entity service order. No audio-duration-derived field ticks and no extension into battle choice/turn time. |
 
@@ -127,6 +127,40 @@ Extending automatic neutral time to text/choice input is a separate bounded foll
 caller's enable flags and input-first versus service-first accepting poll, token occurrence and
 reveal/delivery boundary before changing that consumer. This implementation removes V from ordinary
 exploration, not from every current diagnostic or text wait, and makes no whole-game time claim.
+
+### Field windows hidden at input
+
+A `FieldSearchWait` or logically complete `FieldTextWait` keeps its input token while
+`HideWindows` is true. The focused exploration clock submits `AdvanceSimulation` against that
+token. The engine runs the common view and window stage on the current field, including the
+post-scroll geometry refresh that consumes `WindowFixPending`. It stops on the first unhidden
+step. Entity updates, portrait RNG, text polls, the script cursor, and Search custody stay paused
+during the handoff. The visible window resumes its ordinary delivery and explicit input rules.
+Hidden Confirm creates no reading intent. Battle-entry skip retains its own delivery and input
+authority. [Ordinary reading policy](../godot/presentation.md#ordinary-dialogue-confirm).
+
+**Confirmed (field playtest):** Map17's repeated stairs warning stopped at text 948, instruction 1
+of `byte-5241e`. The player was stationary at (43,9), the revealed span was awaiting input, and
+`HideWindows` and `WindowFixPending` were set. AX/BX remained at 15904 toward 15744 at speed 32.
+The same revision persisted across two samples 45 seconds apart.
+[Incident and original branch provenance](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2066#issuecomment-7086190558).
+
+**Confirmed (controlled Godot):** Use the `harbor-arrival` authored package with a flat 31 × 31
+Quay, a layer-0 view with unit parallax, and the ordinary test font mapping (256 symbols at index
+1, 80 advances of 6). Start the traveler at (5,5), with message speed 2, mouth control and view
+speed 0. An entry program targets the camera at (8,0), then shows two explicit speakerless text
+spans 100 and 101 with one glyph and W1 each. Close the window, restore the traveler as the camera
+target and end the program. On the previous build the first span reached input and stayed hidden
+for 200 frames. The corrected build settles both planes at 3072, fixes the window, and keeps the
+first text pending even after a Confirm during suppression. Two fresh ordinary Confirms advance
+to the second visible text and return to field input.
+
+The private Map17 route starts at (54,9) in the prison corridor with F661 set and F662 clear.
+Hold Left to the stairs, then confirm the tunnel-opening dialogue as each span becomes ready.
+The event sets F662 and returns control. Hold Left again to enter the real warning with the
+camera still scrolling. Texts 948 and 951 both become visible and take separate Confirms before
+returning control on Map17. In this controlled approach the camera had settled by the first text
+input. The authored case exercises the later hidden-input boundary.
 
 ### Menu entry, capture and restoration
 
@@ -2148,14 +2182,10 @@ and [metadata admission](../content/profiles-and-trust.md#opening-search-admissi
 
 ### Search feedback after movement
 
-Search can commit as soon as the player is ready for field input. The logical camera can still
-hold the window hidden, including for one service after its final position is reached.
-While that flag is set, the Search token admits camera-only `AdvanceSimulation` on the existing
-focused exploration clock. The same view runner advances both planes and recomputes the window flag.
-The first unhidden tick ends automatic service. The field, scripts and custody stay paused through
-those ticks and through reading. Confirm and left-click use the visible panel. Cancel can close
-the result even during the camera handoff. A dismissal consumes the existing token and returns to
-ordinary field input.
+Search can commit as soon as the player is ready for field input. The
+[window handoff](#field-windows-hidden-at-input) can still own one service after the camera reaches
+its destination. Confirm and left-click use the visible panel. Cancel can close the result even
+during the handoff. A dismissal consumes the existing token and returns to ordinary field input.
 
 **Confirmed** in a bounded Map43 F612 revisit on the published `derived/issue2035/galam-town-v1`
 world, matching entry, scenes and opening inputs. Use the existing
