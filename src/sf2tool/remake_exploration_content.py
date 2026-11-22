@@ -137,6 +137,42 @@ def _selected_growth(
     return result
 
 
+def checked_canonical(canonical_path, upstream):
+    canonical = load_json(canonical_path)
+    manifest = load_json(MANIFEST)
+    if hashlib.sha256(_canonical_bytes(canonical)).hexdigest().upper() != manifest["outputSha256"]:
+        raise ValueError("registered canonical input identity mismatch")
+    expected_commit = canonical["upstream"]["commit"]
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=upstream, capture_output=True, text=True, check=True
+    )
+    if completed.stdout.strip() != expected_commit:
+        raise ValueError("pinned source commit mismatch")
+    return canonical
+
+
+def map_compiler(canonical, upstream, selection, event_maps):
+    compiler = OriginalPrograms(
+        canonical,
+        upstream,
+        selection["controlledEntitySpeed"],
+        selection["maps"],
+        tuple(selection.get("promotionClasses", [])),
+    )
+    for selected in event_maps:
+        folder = upstream / f"disasm/data/maps/entries/map{selected:02d}/mapsetups"
+        for path in sorted(folder.glob("*.asm")):
+            if path.name.startswith(
+                ("s2_entityevents", "s3_zoneevents", "s6_initfunction", "scripts", "pointertable")
+            ):
+                compiler.register_file(path.relative_to(upstream).as_posix())
+    for symbol in selection.get("unavailablePrograms", []):
+        source = "disasm/" + compiler.raw[symbol]["path"]
+        compiler.sources.add(source)
+        compiler.frontier(symbol, f"{source}:{symbol}")
+    return compiler
+
+
 def prepare(
     canonical_path: Path,
     upstream: Path,
@@ -158,31 +194,10 @@ def prepare(
         or output.is_relative_to(upstream.resolve())
     ):
         raise ValueError("output must be ignored scratch distinct from read-only inputs")
-    canonical = load_json(canonical_path)
-    manifest = load_json(MANIFEST)
-    if hashlib.sha256(_canonical_bytes(canonical)).hexdigest().upper() != manifest["outputSha256"]:
-        raise ValueError("registered canonical input identity mismatch")
+    canonical = checked_canonical(canonical_path, upstream)
     expected_commit = canonical["upstream"]["commit"]
-    completed = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=upstream, capture_output=True, text=True, check=True
-    )
-    if completed.stdout.strip() != expected_commit:
-        raise ValueError("pinned source commit mismatch")
     selection = load_json(selection_path)
-    compiler = OriginalPrograms(
-        canonical,
-        upstream,
-        selection["controlledEntitySpeed"],
-        selection["maps"],
-        tuple(selection.get("promotionClasses", [])),
-    )
-    for selected in selection.get("eventMaps", []):
-        folder = upstream / f"disasm/data/maps/entries/map{selected:02d}/mapsetups"
-        for path in sorted(folder.glob("*.asm")):
-            if path.name.startswith(
-                ("s2_entityevents", "s3_zoneevents", "s6_initfunction", "scripts", "pointertable")
-            ):
-                compiler.register_file(path.relative_to(upstream).as_posix())
+    compiler = map_compiler(canonical, upstream, selection, selection.get("eventMaps", []))
     for source in selection["additionalProgramSources"]:
         compiler.raw[source["symbol"]] = {
             "id": source["symbol"],

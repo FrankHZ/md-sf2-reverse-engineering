@@ -550,7 +550,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("root", "base"):
         parser.add_argument("--" + name, type=Path, required=True)
-    for name in ("upstream", "listing", "inventory", "mount", "coverage"):
+    for name in ("upstream", "listing", "inventory", "mount", "coverage", "canonical"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument(
         "--family",
@@ -567,6 +567,7 @@ def main():
             "ninja",
             "monster",
             "phoenix-wave",
+            "south-shrine",
             "all",
         ),
         required=True,
@@ -582,8 +583,9 @@ def main():
         "ninja",
         "monster",
         "phoenix-wave",
+        "south-shrine",
     }.intersection(args.family) and not args.mount:
-        parser.error("ordinary promotion families select already prepared assets for --mount")
+        parser.error("this family selects already prepared assets for --mount")
     if args.coverage:
         if args.inventory is None:
             parser.error("coverage needs the base --inventory")
@@ -591,7 +593,15 @@ def main():
         print(json.dumps(prepared_coverage(args.inventory, args.root, args.base, output)))
         return
     if args.mount:
-        mount(args.root, args.base, args.mount, args.family, args.command, upstream=args.upstream)
+        mount(
+            args.root,
+            args.base,
+            args.mount,
+            args.family,
+            args.command,
+            upstream=args.upstream,
+            canonical_path=args.canonical,
+        )
         return
     if not all((args.upstream, args.listing, args.inventory)):
         parser.error("production requires --upstream, --listing and --inventory")

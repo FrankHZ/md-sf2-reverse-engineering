@@ -19,7 +19,8 @@ from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
 from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies
-from sf2tool.remake_exploration_content import _selected_growth
+from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
+from sf2tool.remake_exploration_maps import compile_maps
 from sf2tool.remake_exploration_programs import OriginalPrograms
 from sf2tool.remake_exploration_scene import ally_sprites
 from sf2tool.texture_extract import md_palette_color, write_png_rgba
@@ -175,9 +176,14 @@ def bind_ordinary_progression(package: dict, upstream: Path, promotions: dict[in
         for instruction in program["instructions"]:
             bind_population(instruction.get("population"))
 
+    include_sources(package, upstream, compiler.sources)
+
+
+def include_sources(package, upstream, paths):
+    commit = package["provenance"]["commit"]
     sources = package["provenance"]["sources"]
     existing = {row["path"] for row in sources}
-    for name in sorted(compiler.sources):
+    for name in sorted(paths):
         raw = (upstream / name).read_bytes()
         pinned = subprocess.check_output(["git", "-C", str(upstream), "show", f"{commit}:{name}"])
         if raw.replace(b"\r\n", b"\n") != pinned.replace(b"\r\n", b"\n"):
@@ -410,7 +416,124 @@ def mount_ordinary_appearances(
                 scene["actors"].append(appearance)
 
 
-def mount(root, base, destination, families, commands, *, upstream=None):
+def mount_south_shrine(package, library, upstream, canonical_path):
+    """Extend a mounted Grans world without regenerating its encounters, setups or artwork."""
+    selection = read_json(repo_path("remake/content/private/pre-voyage-opening.json"))
+    canonical = checked_canonical(canonical_path, upstream)
+    directory = library / "maps"
+    prepared = read_json(directory / "index.json")
+    provenance = package["provenance"]
+    if (
+        canonical["upstream"]["commit"] != provenance["commit"]
+        or prepared["upstream"] != provenance["commit"]
+        or canonical["romSha256"] != provenance["romSha256"]
+        or prepared["rom"] != provenance["romSha256"]
+    ):
+        raise ValueError("shrine inputs differ from the mounted campaign provenance")
+    sound = read_json(library / "music/9/candidate.json")["asset"]
+    expected = selection["runtimeWavCues"]["MUSIC_INTRO"]
+    if (
+        sound["cue"] != "MUSIC_INTRO"
+        or sound["command"] != 9
+        or sound["timerB"] != expected["timerB"]
+        or sound["runtime"]["sha256"] != expected["wavSha256"]
+        or any(sound["runtime"][key] != expected[key] for key in ("loopBegin", "loopEnd"))
+    ):
+        raise ValueError("prepared shrine cue differs from the selected WAV")
+    world = package["world"]
+    old_maps = {row["id"]: row for row in world["maps"]}
+    if any(f"map-{i}" in old_maps for i in (41, 42)):
+        raise ValueError("shrine maps already mounted")
+
+    compiler = map_compiler(canonical, upstream, selection, [41, 42])
+    additions = compile_maps(compiler, canonical, selection, {}, only_maps=[41, 42])
+    visual = world["presentation"]
+    by_id = {row["id"]: row for row in prepared["records"]["maps"]}
+    blocks = {row["id"]: row["blocks"] for row in canonical["resources"]["blocksets"]}
+    for map_row in additions:
+        index = int(map_row["id"][4:])
+        row = by_id[index]
+        atlas = installed_png(directory, row["atlas"])
+        palette = prepared["records"]["palettes"][str(row["palette"])]
+        map_row["basePalette"] = {"color2": palette[2], "color3": palette[3]}
+        compiler.sources.add(f"disasm/data/maps/entries/map{index:02d}/00-tilesets.asm")
+        refs = canonical["maps"][index]["references"]
+        if (row["blocks"], row["layout"]) != (refs["blockset"] + ".json", refs["layout"] + ".json"):
+            raise ValueError("prepared shrine block or layout reference differs")
+        words = read_json(directory / row["layout"])
+        tiles = blocks[refs["blockset"]]
+        if words != [word for line in map_row["layout"] for word in line] or tiles != read_json(
+            directory / row["blocks"]
+        ):
+            raise ValueError(f"prepared map {index} differs from the canonical import")
+        music = [area["defaultMusic"] for area in row["areas"]]
+        # These source commands retain their identity in PlayMapMusic.
+        if not set(music) <= {
+            compiler.number(name) for name in ("MUSIC_INTRO", "MUSIC_WITCH", "MUSIC_SHRINE")
+        }:
+            raise ValueError("unexpected shrine area music")
+        visual["maps"].append(
+            {
+                "map": map_row["id"],
+                "music": [{"field": m, "battle": m} for m in music],
+                "atlas": atlas,
+                "scale": 1,
+                "blocks": tiles,
+            }
+        )
+    world["maps"].extend(additions)
+    new_programs = list(compiler.programs.values())
+    if {p["id"] for p in new_programs} & {p["id"] for p in world["programs"]}:
+        raise ValueError("shrine programs would replace mounted behavior")
+    world["programs"].extend(new_programs)
+
+    # Replace only the former frontier at each matching source warp. Keep live Map66
+    # battle routes, setup overrides and all other event priorities from the base.
+    warp_selection = {**selection, "eventMaps": [], "searchMaps": []}
+    incoming = compile_maps(compiler, canonical, warp_selection, {}, only_maps=[66])[0]["events"]
+    events = old_maps["map-66"]["events"]
+    for warp in (e for e in incoming if e.get("map") == "map-41"):
+        (index,) = (
+            i
+            for i, e in enumerate(events)
+            if e["kind"] == "warp-frontier" and (e["x"], e["y"]) == (warp["x"], warp["y"])
+        )
+        obsolete = events[index]["program"]["program"]
+        events[index] = warp
+        world["programs"].remove(next(p for p in world["programs"] if p["id"] == obsolete))
+    compiler.sources.add("disasm/data/graphics/maps/mappalettes/entries.asm")
+    include_sources(package, upstream, compiler.sources)
+    provenance["controlledBoundary"] += (
+        " Includes the early southern shrine exterior, entrance hall and lower chamber."
+    )
+
+    return {
+        placement["itemWord"] & 127
+        for row in additions
+        for table in ("chests", "otherItems")
+        for placement in row["search"][table]
+        if placement["itemWord"] is not None
+    }
+
+
+def bind_field_item_icons(presentation, library, dest, scenes, items):
+    # The field and encounter readers validate item identity even for late placements.
+    images = read_json(library / "icons/identity-icons.json")
+    keys = sorted(
+        f"identity-icon.item.{item}.{state}" for item in items for state in ("normal", "selected")
+    )
+    for key in keys:
+        presentation["identityIcons"].setdefault(key, images[key])
+    for relative in scenes:
+        path = dest / relative
+        chapter = read_json(path)
+        missing = set(keys) - chapter["rasters"].keys()
+        if missing and any(k.startswith("identity-icon.") for k in chapter["rasters"]):
+            chapter["rasters"].update((key, images[key]) for key in sorted(missing))
+            path.write_text(json.dumps(chapter, separators=(",", ":")), encoding="utf-8")
+
+
+def mount(root, base, destination, families, commands, *, upstream=None, canonical_path=None):
     """Mount first-consumer operands into a new closed package; needs no production inputs."""
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
     retained_families = {
@@ -422,8 +545,11 @@ def mount(root, base, destination, families, commands, *, upstream=None):
         "ninja": {5: "NINJ"},
         "monster": {6: "MNST"},
     }
-    optional = retained_families.keys() | {"phoenix-wave"}
+    optional = retained_families.keys() | {"phoenix-wave", "south-shrine"}
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
+    shrine = "south-shrine" in selected
+    if shrine and (upstream is None or canonical_path is None):
+        raise ValueError("south-shrine needs --canonical and --upstream")
     retained_promotions = {
         member: class_code
         for family, variants in retained_families.items()
@@ -442,7 +568,7 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | optional):
         raise ValueError(
             "select walking, icons, sfx, music, pldn, wiz, melee, "
-            "ranged, vicar, innate, ninja, monster or phoenix-wave"
+            "ranged, vicar, innate, ninja, monster, phoenix-wave or south-shrine"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -456,11 +582,23 @@ def mount(root, base, destination, families, commands, *, upstream=None):
     )
     with TemporaryDirectory(dir=destination.parent) as temp:
         dest = Path(temp) / "package"
+        world = read_json(base / "world.json")
+        scenes = {Path("main-scenes.json")} | {
+            Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
+        }
         for rel, source in files.items():
+            if rel == Path("world.json"):
+                continue
             target = dest / rel
             target.parent.mkdir(parents=True, exist_ok=True)
+            if selected == {"south-shrine"} and rel not in scenes:
+                # Immutable external battle/audio/entry inputs. Rewritten scenes get private files.
+                try:
+                    os.link(source, target)
+                    continue
+                except OSError:
+                    pass  # Different storage volumes require a real copy.
             shutil.copyfile(source, target)
-        world = read_json(dest / "world.json")
         presentation = world["world"]["presentation"]
         scene_path = dest / "inputs/battle26/battle-scenes.json"
         if scene_path.relative_to(dest) not in files:
@@ -508,9 +646,12 @@ def mount(root, base, destination, families, commands, *, upstream=None):
             mount_phoenix_waves(root / "effects", Path(temp), scene)
         if upstream is not None and promotions:
             bind_ordinary_progression(world, upstream, promotions)
-        for command in commands or (25, 87, 99):
+        mounted_commands = list(commands or (25, 87, 99))
+        if shrine and 9 not in mounted_commands:
+            mounted_commands.append(9)
+        for command in mounted_commands:
             family = "music" if command <= 64 else "sfx"
-            if family not in selected:
+            if family not in selected and not (shrine and command == 9):
                 continue
             directory = root / family / str(command)
             if not directory.is_dir():
@@ -545,9 +686,11 @@ def mount(root, base, destination, families, commands, *, upstream=None):
             )
             target = dest / f"audio-{command:02x}-{timer:02x}" / leaf
             target.parent.mkdir(exist_ok=True)
-            if target.exists() and target.read_bytes() != wav.read_bytes():
-                raise ValueError(f"conflicting WAV {command}")
-            shutil.copyfile(wav, target)
+            if target.exists():
+                if target.read_bytes() != wav.read_bytes():
+                    raise ValueError(f"conflicting WAV {command}")
+            else:
+                shutil.copyfile(wav, target)
             existing = next(
                 (
                     r
@@ -561,7 +704,12 @@ def mount(root, base, destination, families, commands, *, upstream=None):
             elif existing != row:
                 raise ValueError(f"conflicting audio binding {command}")
         scene_path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
+        if shrine:
+            items = mount_south_shrine(world, root, upstream, canonical_path)
+            bind_field_item_icons(presentation, root, dest, scenes, items)
         (dest / "world.json").write_text(json.dumps(world, separators=(",", ":")), encoding="utf-8")
+        if shrine and (dest / "world.json").stat().st_size > 128 * 1024 * 1024:
+            raise ValueError("world exceeds the private reader limit")
         package_files(
             dest / "world.json",
             dest / "main-scenes.json",

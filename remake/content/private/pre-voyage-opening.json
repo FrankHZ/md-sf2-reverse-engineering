@@ -9,6 +9,8 @@
     40,
     57,
     66,
+    41,
+    42,
     5,
     43,
     17,
@@ -213,7 +215,7 @@
     "26": 25
   },
   "controlledEntitySpeed": 32,
-  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance, post-Fairy village return and church, and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; includes the initial four-way recruitment choice, Fairy receipt, Oddler staying and ordinary mansion departure; the later F22 offers have controlled coverage only. Includes Map30 Fairy recovery, full-pack refusal, Cannon retry, digging and live/fresh mine return; Includes the New Granseal return audience, Astral following, inventor/Dynamite gift and Janet recruitment through the ordinary town exit; Battle24 connects the northern road to its ordinary battle outcomes and the North Cliff blast, Rohde recruitment and entry into North Cave, Battle25 and its northern field exit. Ketto admits its resident callbacks, relocation, shops, church, Search and return to North Parmecia. Battle26 outside Ketto includes the Geshp confrontation, Higins rescue and return to North Parmecia. Drought-state Pacalon town and castle include their residents, services, search, first centaur scene and return to the Map71 departure.",
+  "controlledBoundary": "Polca raft travel through South Parmecia and Battle16 to Hassan, the Southeast Desert encounter, the eastern shrine through Battle15 and the Wooden Panel, the Ribble tree and Sword through Rohde following in Hassan, and the western road through Battle17 to the Taros Shrine, Battle18 and first Caravan acquisition. Includes the independent Elven Village entrance, post-Fairy village return and church, and first Battle19 field return, and the west scroll into Devil's Tail through the Harpy Pond rescue and Elric's passage to Fairy Cave, then Battle21 and its first Devil's Tail return, the separate Creed mansion entrance and first Goliath scene with F774-set reentry. Desktop Kingdom permission, Chessboard Battle22 and its outcome returns. Cotton Balloon acquisition and descent to Floor World, residents, ring scene and cave approach; Willard Burrow exploration, Battle23 and its outcome returns; includes Creed restoration, the complete Evil Spirit consultation and the ordinary return to the mansion; includes the initial four-way recruitment choice, Fairy receipt, Oddler staying and ordinary mansion departure; the later F22 offers have controlled coverage only. Includes Map30 Fairy recovery, full-pack refusal, Cannon retry, digging and live/fresh mine return; Includes the New Granseal return audience, Astral following, inventor/Dynamite gift and Janet recruitment through the ordinary town exit; Battle24 connects the northern road to its ordinary battle outcomes and the North Cliff blast, Rohde recruitment and entry into North Cave, Battle25 and its northern field exit. Ketto admits its resident callbacks, relocation, shops, church, Search and return to North Parmecia. Battle26 outside Ketto includes the Geshp confrontation, Higins rescue and return to North Parmecia. Drought-state Pacalon town and castle include their residents, services, search, first centaur scene and return to the Map71 departure. Includes the early southern shrine exterior, entrance hall and lower chamber.",
   "additionalProgramSources": [
     {
       "symbol": "cs_53EF4",
@@ -360,6 +362,7 @@
       "path": "data/battles/entries/battle26/cs_afterbattle.asm"
     }
   ],
+  "unavailablePrograms": ["cs_5F4AE", "cs_5FE9A", "cs_5FF06"],
   "programs": [
     "cs_513D6",
     "cs_5145C",
@@ -389,6 +392,8 @@
     21,
     40,
     66,
+    41,
+    42,
     5,
     43,
     17,
@@ -433,6 +438,12 @@
   ],
   "presentationManifestSha256": "C3951D26CE7E05996584A959AC9177A79DC6FF933F249B3766651B337A36326E",
   "runtimeWavCues": {
+    "MUSIC_INTRO": {
+      "timerB": 196,
+      "wavSha256": "15243D34BA568EE748A5D8ADE97B7270D76B5C21D36144E76CC824505034115B",
+      "loopBegin": 2747343,
+      "loopEnd": 4807261
+    },
     "MUSIC_WITCH": {
       "timerB": 193,
       "wavSha256": "9D95BB53B3B20044D7D8C054063C9FB7EA30E9CDC0CF93125F57E1CDBC0DB69E",
@@ -697,6 +708,8 @@
     40,
     57,
     66,
+    41,
+    42,
     5,
     43,
     17,
@@ -740,6 +753,7 @@
   ],
   "basePalettes": true,
   "audioCues": [
+    "MUSIC_INTRO",
     "MUSIC_WITCH",
     "MUSIC_TOWN",
     "MUSIC_JOIN",

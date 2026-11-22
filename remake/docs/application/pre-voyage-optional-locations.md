@@ -97,9 +97,9 @@ print("PASS: early shrine and ascent marker controls")
 
 | Source connection | Earliest pre-voyage assessment and remake disposition |
 | --- | --- |
-| **Southern Devil's Head entrance** · Map66 (33,43), row 8 → Map41 (23,14) Up | **Confirmed** static from the southern Grans component, including from Granseal's west-return seed (29,32) and the drawbridge return with F611. A walk can approach from (33,44). The trigger is `$D19F`. The remake currently declares this warp as unavailable and lacks Map41. **Inferred** match for the user's south-cave report. The player's exact tile is **Unknown**. |
+| **Southern Devil's Head entrance** · Map66 (33,43), row 8 → Map41 (23,14) Up | **Confirmed** static from the southern Grans component, including from Granseal's west-return seed (29,32) and the drawbridge return with F611. A walk can approach from (33,44). The trigger is `$D19F`. The southern entrance is playable in the [shrine publication](#play-the-southern-shrine). **Inferred** match for the user's south-cave report. The player's exact tile is **Unknown**. |
 | **Map41 shrine exterior** · eastern area X17–29/Y0–15 | **Confirmed** static. Both south exits (23,15)/(24,15) return to Map66 (33,44) Down. Approach (23,4) from (23,5). The closed-looking `$C43D` door invokes `OpenDoor`, whose one-cell copy from (30,0) installs `$100D`. The same attempted step queues Map42 (7,14) Up. No story flag or key gates this door. The setup has no NPC or chest. There is no early special description at this door. The Map41 head description and ground weapon are in the separate western area. |
-| **Map42 Jewel Cave / Force Sword Shrine** · entry hall and lower chamber | **Confirmed** static. The entrance hall's (7,15) returns to Map41 (23,5) Down. Its (2,9) CURRENT stair reaches (19,17). The lower chamber's (19,16) returns to (2,8). Search the chest at (19,24) from (19,23) Down or (20,24) Left. The `$D801` chest grants Power Water, F133. Map42 has no ordinary NPC. F999 clear makes the (19,21) zone return without attraction, so its F901 copy is absent. At (26,18) the base `$C058` cell has no warp marker. It blocks the sword room and its extraction Search. The Evil Axe row F198 likewise lacks its chest marker at (4,3) until the F901 copy. The unused X15–32/Y0–12 area has no entry in this route. The remake lacks Map42, the stairs and F133. |
+| **Map42 Jewel Cave / Force Sword Shrine** · entry hall and lower chamber | **Confirmed** static. The entrance hall's (7,15) returns to Map41 (23,5) Down. Its (2,9) CURRENT stair reaches (19,17). The lower chamber's (19,16) returns to (2,8). Search the chest at (19,24) from (19,23) Down or (20,24) Left. The `$D801` chest grants Power Water, F133. Map42 has no ordinary NPC. F999 clear makes the (19,21) zone return without attraction, so its F901 copy is absent. At (26,18) the base `$C058` cell has no warp marker. It blocks the sword room and its extraction Search. The Evil Axe row F198 likewise lacks its chest marker at (4,3) until the F901 copy. The unused X15–32/Y0–12 area has no entry in this route. Both early areas, the stairs and F133 are playable in the shrine publication. |
 | **Central Devil's Head entrance** · Map66 (35,28), row 7 → Map41 (6,14) Up | **Confirmed** static exclusion. F508 clear gives `$0141` and no warp. The Map66 F508 copy adds the `$11C6` marker after Battle08, even though the player can walk near the tile earlier. Do not enable the western area in the demo. Its (6,15) returns to Map66 (36,28). When that area is later reachable, the head at (6,7) offers Search from (6,8) and the `$DC45` Evil Lance placement (6,5) can be faced. F930 controls the head replacement and access to Map28, with the Force Sword Use caller owning the opening. Neither the lance nor the statue interaction belongs to the early shrine exterior. |
 | **North Grans and Magic Tunnel Hub** · Map66 (40,7), row 0 and Y0 scroll row 9 | **Confirmed** static exclusion. The southern field seeded by Granseal/drawbridge and the north-Yeel/Hawel component reach neither row. F611 changes the drawbridge approach but does not join these components to the northern ones. Galam's north return (32,4) on Map66 would reach Y0 at X27–37, but Map16's (45,7)/(46,7) gate cells block that return until F999. Map66 (40,8) is a different component with the Map63 portal and a Y0 marker at X57. The ground-legal Battle02/03/06 return controls also exclude the north row and its connected landings. Leave Map77's Dwarven Village/Prism/Roft routes and Map63's paired portals/Claude/Map50 branch outside the opening. The Map63 entrance area would return at (37,58) → Map66 (40,8) and reach the pair (37,40) ↔ (17,2) if supplied a later arrival. The Claude/Map50 part is separate. |
 | **Ancient Tower Ascent** · Map60 Y26 row 22 → Map56 | **Confirmed** static exclusion. The F506-clear Map57 stair row has no active marker. With F506 set, the (7,4) marker reaches Map60 (53,1). Portal pairs at the 61/62,10 → 13/14,2, 1/2,7 → 1/2,29, 13/14,30 → 38,3 and 45/46,8 → 21/22,35 seams lead to Map58 at Y51. The (3,53) row toward the other Map60 component reads `$0129` with F999 clear. F999 adds that portal, changes the lower layout and substitutes Map59 for Map58. Do not join the later (39,26)/(47,19)/(53,17) chain, Map56's priest/upper ascent or Map59 to the pre-voyage return. |
@@ -127,7 +127,7 @@ placements and descriptions. Report unsupported actions at their actual caller o
 | **New Game to commission**, Map3 Granseal | Bowie's home and CURRENT stairs, town houses, school and CURRENT classroom stairs, talk to the residents, messenger Yes/No/retry, Church, F600 castle admission and F603 west-exit guard. School herb F128. Shop empty chest F220 has a marker but its valid faced tile is occupied in the default setup. Default fixed entity 137 at (45,22) separates the town from the otherwise marked dock exits. F609 changes that approach and F506 later opens the cell and changes population for Kiwi. | Opening dialogue, Church and cold Continue, school Search, and the F506 Kiwi refusal/revisit/join have play evidence. F609/F506 Church and both supply/weapon Shop callers are selected. Existing [opening branch inventory](../content/opening-branch-inventory.md) and [Kiwi visit](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) own the intent. Ask each shop only on an eligible setup. F220 is no additional reward. |
 | **Opening, first return, and post-Galam castle**, Maps19/20/21 | Map19 approach, courtyard, storeroom F129–131 chests, west and east lower rooms; Map20 west stair room, king's bedroom, upper royal room and both east tower levels through the Map19 east landing. Map21 guard and exit to tower exterior. Keep separate the F501, F609, F506 and applicable F507 setup changes, bedroom invite/refusal then departure/exorcism, and castle quake warnings. | The rooms and stairs are connected in the selected layout, including the diagonal CURRENT routes. Talk/Search tables and three chest rows are present. Retain the accepted bedroom-cast rule. F507 Map19 is selected and Map21 has no active source-zone marker. **Unknown** ordinary first/revisit control of all optional room approaches with the legal cast, especially transitions around the shared east landing and before/after the exorcism. Use the [castle and stair observations](pre-voyage-campaign.md#same-map-walking-party-arrival) and [opening Search owner](../content/opening-branch-inventory.md#search-surfaces). |
 | **Tower exterior, return, second descent**, Maps40/57/60/58 | The exterior links the castle and antechamber and permits F132 Mithril. Map40 F506 Lemon approach, F507 default restoration, Map57 first battle/return and F506 stair opening, Map60 connected early chain and Map58 return. Map60/58 have no interaction cast or placements to add; preserve party and exit through the actual connected stairs on the quake return. | Existing main route and controlled exterior Search. Keep the two existing stable battle-return recipes distinct. Later Map60 frontiers remain behind the conditions above. [Tower route](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) · [Exterior Search](opening-session-lifecycle.md#tower-exterior-search-admission). |
-| **Open Grans after the commission**, Map66 | Granseal and south Yeel connect through the southern/main component, with Mithril F213, the south shrine and the south end of the Galam drawbridge. Yeel north exit connects the separate Hawel/woods component and reverse Yeel north entrance. Battle02, the marked Battle03 request, Hawel's F404 request and the Battle06 outcome keep their own admission. Battle02 can return on an enclosed tile. | Battle routes, conditional repeat and field EGRESS have existing play evidence. The F213 marker and approach from (30,45) are **Confirmed** static and selected. The southern shrine is the confirmed unresolved ordinary destination. A legal return from the enclosed Battle02 tile uses the existing recovery route. [Enclosed return](pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress). |
+| **Open Grans after the commission**, Map66 | Granseal and south Yeel connect through the southern/main component, with Mithril F213, the south shrine and the south end of the Galam drawbridge. Yeel north exit connects the separate Hawel/woods component and reverse Yeel north entrance. Battle02, the marked Battle03 request, Hawel's F404 request and the Battle06 outcome keep their own admission. Battle02 can return on an enclosed tile. | Battle routes, conditional repeat and field EGRESS have existing play evidence. The F213 marker and approach from (30,45) are **Confirmed** static and selected. The [southern shrine visit](#play-the-southern-shrine) reaches the lower chamber and returns to this field. A legal return from the enclosed Battle02 tile uses the existing recovery route. [Enclosed return](pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress). |
 | **Yeel before and after Hawel**, Map5 | Both town exits, houses and tavern, bookshelf/room descriptions, aboveground Church, Healing Seed F134, Kazin guiding/F72 and the F650 residents/dialogue after the house scene. F650 changes the entity and Talk tables while retaining Search and Church. | Default input, Kazin introduction and Church Record are observed. **Confirmed** in the published F650 world: a fresh arrival shows the changed residents, one speaks its replacement dialogue, and Kazin stays in the party with the guide flag clear. The aboveground Church records the visit. Search awards the seed once and retains F134 across cold Continue, exit and re-entry. The F530/F28 setups and piano/underground sequence are late. [Pinned F650 setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map05/mapsetups/pointertable_650.asm) · [#2022 Save and Continue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2022). |
 | **Hawel**, Map43 | House rooms, story, bookshelf diary, well, F135 Antidote and F136 Healing Drop chests, south return (6,6) to Map66. Default scene and F612 quiet revisit. The init has no F503 or F72 predicate. | Recruitment, diary and F612 repeat/exit observed, chest rows selected. **Unknown** ordinary acquisition of each chest on the settled route and carrying both into the next legal return. Existing Search suffices unless a specific approach/receipt fails. [Existing observations](pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment). |
 | **Galam first prison escape**, Map17 | F660 wake-up, F661 doors, north-stair attempt/displacement and F662 shortcut, passage with F206 Mithril, ladder and cellar, kitchen and maid. The Search marker for F205 Chirrup Sandals can be faced from the first prison-control section. F505 selects the altered return population/zone table and F663 owns the door reconstruction. | Escape, maid and kitchen stairs observed. F205/F206 selected. **Inferred** F205 approach with the live cast and F206 approach just after the passage scene settles. **Unknown** ordinary acquisition/carry. Keep Chirrup Sandals Equip/footstep behavior with [#1962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1962). Door/cutscene behavior should not be replaced with a bare set of progression flags. [Prison source and lifecycle](../../../docs/research/chapters/grans-opening/battle04-to-battle05-content-route.md) · [Equipment reach](../content/special-equipment-reach.md#chirrup-sandals). |
@@ -251,9 +251,79 @@ Record requires a real caller.
   controls after failure. Reuse the accepted storage evidence for wider atomicity and recovery.
   [Storage and restart](../verification/host.md#opening-save-and-continue) · [Church failure witness](../verification/host.md#church-and-shared-save-calibration)
 
+## Play the southern shrine
+
+The `derived/issue2020/south-shrine-v1` publication extends the Yeel F650 world at gameplay
+revision 4. Map66's southern warp uses the existing fresh-load rule. The Map41 door changes
+the working marker before dispatch, and the two Map42 stairs use the current-map transfer.
+Search commits the item, F133 and opened chest together. Map41/42 use ordinary field control.
+The next supported Granseal or Yeel savepoint owns persistence. The source's F508, F999,
+F901 and F930 conditions retain their original positions. Late head-opening, attraction and
+sword-extraction scripts have explicit frontiers at their own calls.
+
+**Confirmed in the remake.** A four-member party continued a compatible Granseal slot from the
+preceding Yeel F650 world. Its controlled pre-session input used the post-Battle02 membership
+and flags in [the field start](../../reference/inputs/yeel-to-battle03-start.json), four
+occupied slots per member, the members' weapons and Medical Herbs in the spare slots.
+The prior-world session saved at the supported church approach. Run the following inputs with a
+copy of that slot, or prepare the same legal field and inventory conditions before starting.
+
+1. Leave Granseal west. Walk from Map66 (33,44) onto (33,43). From Map41 (23,5) press Up into
+   the closed door. At Map42 (7,14) walk to (2,9) and descend to (19,17).
+2. Cross (19,21) with F999 and F901 clear. The attraction does not start. From (26,19) press Up
+   against the blocked sword-room entrance. The Evil Axe location at (4,3) has no chest marker.
+3. At (19,23) face Down and Search. With all four packs full the chest stays closed, F133 stays
+   clear and the packs retain their contents. Open Party, choose Drop, confirm one Medical Herb,
+   then Search again. Bowie receives Power Water (item 9). A second Search preserves custody.
+4. Take (19,16) back to (2,8), leave the hall at (7,15), and return through (23,15).
+   Enter the shrine again and take (24,15). Both south exits land at Map66 (33,44).
+   Walk onto (35,28) with F508 clear and remain on Map66. Return through (30,32) to Granseal
+   and use system Save. Continue in a fresh process. F133, member order and every member's
+   item slots match the saved record. Bowie's pack holds his weapon, two herbs and Power Water.
+5. A separate byte-identical copy of the preceding publication's six-member F650 Yeel slot
+   continued at Map5. Leave through the **south** village exit, take the Map66 southern entrance,
+   open the door and descend. The six-member party and F650 survive to the lower chamber.
+   The original's [member lists](caravan-services-design.md#evidence-and-the-first-consumers) scan active flags
+   by member ID. The two runs exercise different legal memberships in that order.
+
+### Rebuild and select the private inputs
+
+Load the [worktree configuration](../../../docs/operations/local-private-inputs.md). Set
+`$upstream` to the registered c834c652 checkout and `$fresh` to a **new absolute directory**
+under worktree `local/` or the registered shared `derived/`. Use the existing prepared library
+and canonical map import. The producer writes its closed package after validating the source
+and binding missing resources.
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --locked python -m sf2tool.remake_retail_assets --family south-shrine --mount $fresh `
+  --root (Join-Path $derived 'issue2001/retail-v1') --upstream $upstream `
+  --canonical (Join-Path $derived 'canonical-map-import.json') `
+  --base (Join-Path $derived 'issue2022/yeel-f650-v1')
+```
+
+For ordinary play, use [the existing world/scene/entry and six opening-input selections](opening-session-lifecycle.md#yeel-save-and-continue-observation)
+with `$package = Join-Path $derived 'issue2020/south-shrine-v1'`. Use the owned Debug adapter and
+an external disposable save namespace for observation.
+
+The prepared Map41 and Map42 atlases are 11,022 and 12,500 bytes. The command 9/C4
+`MUSIC_INTRO` WAV adds 19,229,088 bytes outside the world. Item IDs 44 and 84 remain in the
+source placement tables behind their early gates. Admission requires their normal and selected
+icon bindings in the field and the 26 mounted encounter scenes. Power Water's icons were already
+bound. The world grew by 105,737 bytes to 102,142,413 bytes, below the 128 MiB reader limit.
+The 146-file package retains 118 dependencies byte for byte. It preserves the preceding package's
+[Map23 F762 limitation](../content/campaign-locations.md#find-a-place).
+
+The first candidate failed admission with `identity-icon-binding` before those four icon keys
+were mounted. Early observer attempts tried a blocked western approach to (26,18) and a
+checkout-local save root. The successful cases used the southern approach and an external
+disposable root. Cold Continue compared numeric flags at the JSON wire type. Godot emitted its
+two-object shutdown warning on the cold and legacy reads. Both exited successfully.
+
 ## Implementation order and acceptance
 
-1. **South shrine first.** Select Map41/42 and their early Search content through the existing
+1. **Southern shrine** ([implemented visit](#play-the-southern-shrine)). Select Map41/42 and their early Search content through the existing
    private package producer. Admit the Map66 row 8 route, Map41 step-copy door and all return rows
    needed by the two early areas of Map42. Use the existing door/marker order, `Preserve` stair
    transfer, fresh-load reconstruction and item receipts. A later row can remain owned by the
