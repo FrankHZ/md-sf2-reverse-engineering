@@ -61,14 +61,7 @@ internal sealed record SettledFieldSnapshot(SaveCompatibility Compatibility, Fie
     private static SettledFieldSnapshot Read(ScenarioDefinition definition, SessionSnapshot current, SessionRules rules)
     {
         var story = current.Story;
-        // These predicates cover script/caller stacks, service and input waits, and
-        // transfer/admission/outcome ownership. OutcomeReturn can remain after completion.
-        Require(current.CanWaitAtInput && current.HasOrdinaryFieldTime && story.DefeatedScene is null &&
-            story.PortraitWindow is ClosedPortraitWindow && !story.Typewriting &&
-            story.LogicalText is { Open: false, Moving: false } &&
-            story.LogicalView is { Scrolling: false } &&
-            story.Display is { Visibility: FullFadeVisibility.BaseRestored } display &&
-            display.Base == display.Current && display.Colors?.IsSettled(story.SimulationTick) != false, "busy");
+        Require(HasStableControl(current), "busy");
         var visit = FieldVisitSnapshot.Capture(current);
         var world = current.Exploration!;
         var party = world.Party;
@@ -79,6 +72,19 @@ internal sealed record SettledFieldSnapshot(SaveCompatibility Compatibility, Fie
             party.Actors.All(actor => actor.PositionOverride is null && !actor.RetainDeadPosition), "party-control");
         return new(OpeningSave.FieldCompatibility(definition, rules), visit, FieldPartySnapshot.Capture(definition, party),
             SettledFieldRegisters.Capture(definition, current));
+    }
+
+    internal static bool HasStableControl(SessionSnapshot current)
+    {
+        var story = current.Story;
+        // These predicates cover script/caller stacks, service and input waits, and
+        // transfer/admission/outcome ownership. OutcomeReturn can remain after completion.
+        return current.CanWaitAtInput && current.HasOrdinaryFieldTime && story.DefeatedScene is null &&
+            story.PortraitWindow is ClosedPortraitWindow && !story.Typewriting &&
+            story.LogicalText is { Open: false, Moving: false } &&
+            story.LogicalView is { Scrolling: false } &&
+            story.Display is { Visibility: FullFadeVisibility.BaseRestored } display &&
+            display.Base == display.Current && display.Colors?.IsSettled(story.SimulationTick) != false;
     }
 
     internal static void Require(bool condition, string operand)

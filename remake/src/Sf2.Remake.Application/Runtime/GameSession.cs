@@ -48,6 +48,48 @@ public sealed class GameSession
             before.ObservationSequence, before.Active, story, before.StopReason);
     }
 
+    public FieldSnapshotOffer QueryFieldSnapshot(bool church = false)
+    {
+        var before = Current;
+        var candidate = church ? ChurchSaveCandidate(before) : before;
+        if (candidate is null) return new(before.SessionId, before.Revision, null, "save-location-unavailable");
+        var capture = CaptureField(candidate, candidate.SessionId, candidate.Revision);
+        return new(before.SessionId, before.Revision, capture.Data?.Landing, capture.Error);
+    }
+
+    public FieldSnapshotCapture CaptureFieldSnapshot(Guid session, long revision) => CaptureField(Current, session, revision);
+
+    public FieldSnapshotCapture RecordChurchSnapshot(Guid session, long revision, Func<FieldSnapshotData, bool> publish)
+    {
+        var before = Current;
+        if (before.SessionId != session || before.Revision != revision) return new(null, "save-stale-revision");
+        var candidate = ChurchSaveCandidate(before);
+        if (candidate is null) return new(null, "save-location-unavailable");
+        var capture = CaptureField(candidate, session, candidate.Revision);
+        if (capture.Data is { } data && publish(data)) _current = candidate;
+        return capture;
+    }
+
+    private FieldSnapshotCapture CaptureField(SessionSnapshot snapshot, Guid session, long revision)
+    {
+        var result = SettledFieldSnapshot.Capture(Definition, snapshot, Rules, session, revision);
+        return new(result.Data is { } data ? new(data) : null, result.Error);
+    }
+
+    public static SessionStartOutcome RestoreField(ScenarioDefinition definition, FieldSnapshotData data, SessionRules rules)
+    {
+        try
+        {
+            var result = data.Snapshot.Build(definition, rules);
+            return new SessionStarted(new GameSession(definition, result.Snapshot, rules), result);
+        }
+        catch (BattleRuleException error)
+        {
+            return new SessionStartFailed(new(SessionFailureKind.ContentError, error.Code, error.Field,
+                "Cannot restore this field visit: " + error.Code));
+        }
+    }
+
     public BattleSaveAvailability QueryBattleSave(ObserveBattleMusic? observedMusic = null) =>
         BattleSave.Query(Definition, Current, Rules, observedMusic);
     public BattleSaveCapture CaptureBattleSave(Guid session, long revision) => BattleSave.Capture(Definition, Current, Rules, session, revision);

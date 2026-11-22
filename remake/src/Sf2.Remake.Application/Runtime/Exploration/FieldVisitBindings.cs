@@ -117,18 +117,36 @@ internal sealed class FieldVisitBindings(ExplorationDefinition content)
         if (actor.ActionSource is CaravanFollowerActions)
             return program.Actions.OfType<FollowPhysical>().All(follow => slots.Contains(follow.Slot));
 
-        // The admitted wandering template performs only local configuration before
-        // entering its closed random-walk/wait/jump cycle. A different story prefix
-        // must finish before its subsequent ambient loop is eligible.
+        // The content reader appends Stop after a final backward jump. It is
+        // unreachable in a continuing resident loop and is not a saved cursor.
         if (actor.ActionSource is not (InitialEntityActions or ProgramEntityActions)) return false;
-        int loop = program.Actions.Count - 3;
-        if (loop < 0 || program.Actions[loop] is not RandomWalkEntity ||
-            program.Actions[loop + 1] is not WaitEntityTicks ||
-            program.Actions[loop + 2] is not JumpEntityAction jump || jump.Instruction != loop) return false;
+        var actions = program.Actions;
+        int end = actions.Count - (actions[^1] is StopEntityActions ? 2 : 1);
+        if (end < 2 || cursor > end ||
+            actions[end] is not JumpEntityAction { Instruction: >= 0 } jump || jump.Instruction >= end) return false;
+        int loop = jump.Instruction;
+        var cycle = actions.Skip(loop).Take(end - loop).ToArray();
+        if (!(cycle is [RandomWalkEntity, WaitEntityTicks] || IsClosedPatrol(cycle))) return false;
         if (actor.WaitingForMotion || actor.Motion.IsMoving)
-            return actor.WaitingForMotion && cursor == loop + 1;
-        return cursor >= loop || program.Actions.Take(loop).All(action => action is
+            return actor.WaitingForMotion && cursor > loop &&
+                actions[cursor - 1] is RandomWalkEntity or MoveEntityRelative { Wait: true };
+        // Prefix work with story or presentation effects must have completed.
+        return cursor >= loop || actions.Take(loop).All(action => action is
             WaitEntityTicks or SetEntitySpeed or SetEntityAcceleration or ChangeEntityFlags or FaceEntity);
+    }
+
+    private static bool IsClosedPatrol(IReadOnlyList<EntityAction> cycle)
+    {
+        if (cycle.Count % 2 != 0) return false;
+        long x = 0, y = 0;
+        for (int i = 0; i < cycle.Count; i += 2)
+        {
+            if (cycle[i] is not MoveEntityRelative { Wait: true } move || cycle[i + 1] is not WaitEntityTicks)
+                return false;
+            x += move.X;
+            y += move.Y;
+        }
+        return x == 0 && y == 0;
     }
 
     private EntityActionProgram? ZoneActions(ZoneEntityActions source)
