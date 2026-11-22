@@ -21,7 +21,7 @@ internal sealed partial class PartyDetailsPanel : Panel
     private readonly ScrollContainer _magic = Scroll("Magic"), _items = Scroll("Items");
     private readonly VBoxContainer _spells = new(), _inventory = new();
     private readonly List<(HBoxContainer Row, Label Text, IdentityIcon Icon, Label? Marker)> _spellRows = [], _itemRows = [];
-    private readonly ItemDescriptionView _description = new();
+    private readonly ItemDescriptionView _description = new() { Visible = false };
     internal int ItemSlot { get; private set; }
     private IdentityIcons _icons = null!;
     private ScenarioDefinition _definition = null!;
@@ -46,7 +46,7 @@ internal sealed partial class PartyDetailsPanel : Panel
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
         _magic.AddChild(_spells); _items.AddChild(_inventory);
-        if (FieldLayout) AddChild(_description);
+        AddChild(_description);
     }
 
     internal void Present(PartyMemberDetails? member, string name, GameSession session)
