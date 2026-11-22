@@ -10,9 +10,11 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 // Shared settled-scene mechanics. Each SF2 consumer admits its own context/population.
 internal static class Sf2FieldSceneRestore
 {
+    internal const string VoidSetup = "ms-void";
+
     internal static bool MatchesLoadedSetup(ExplorationMapDefinition source, ExplorationMapDefinition loaded, string setup)
     {
-        if (setup == source.Setup?.DefaultSetup.Value)
+        if (setup == source.Setup?.DefaultSetup.Value || setup == VoidSetup && source.Setup is null)
             return Matches(source.Entities, source.Events, source.OnLoad, source.InputProgram, source.Population, source.Search);
         return source.Setups.TryGetValue(new(setup), out var body) &&
             Matches(body.Entities, body.Events, body.OnLoad, body.InputProgram, body.Population, body.Search);

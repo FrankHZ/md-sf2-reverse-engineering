@@ -108,7 +108,7 @@ success is not all-branch closure. The bounded inspection is of these selected m
 | F600-clear direct castle approach / `cs_51454` | The old blanket `moveNextToPlayer` gap is stale: [compiler](../../../src/sf2tool/remake_exploration_programs.py) emits move/waits/facing; [ProgramRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) executes `MoveEntityNextToPlayer`. **Confirmed bounded remake observation:** #1423 direct-castle input reaches the existing movement consumer and returns; its [inventory](../content/opening-branch-inventory.md) retains original reach limits. No fabricated F600 or duplicate opcode is needed. |
 | Map19 castle and Map20 palace/Astral revisit | First/repeat visits, refusal/re-prompt and follower variants have bounded acceptance in [session programs](session-and-programs.md#castle-palace-astral-and-tower). Settled control in the admitted rooms supports ordinary Save and [cold Continue](#granseal-castle-save-and-continue-observation). Other NPC branches and unadmitted setups retain their separate coverage. |
 | Map21 guard, tower and Battle01 | Accepted conditional guard and battle admission remain authoritative. The field-save path rejects during guard motion, entry or combat; it never completes the program or sets unlock flags. Battle Save uses the [implemented separate path](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) at settled player Movement, not during entry, motion or an action. |
-| Map57 victory / Map3 defeat | Usable returns are implemented. Map57 F506 layout-copy remains a guarded frontier; reject that unsupported restore phase. Map3 defeat retains unlock, halves gold and restores the leader under the existing outcome policy. Loading must not run either outcome again. |
+| Map57 victory / Map3 defeat | Both outcome returns are implemented. F506 opens the separate [settled tower visit](#tower-save-and-continue-observation) on Map57. Map3 defeat retains unlock, halves gold and restores the leader under the existing outcome policy. Loading must not run either outcome again. |
 | Open warps beyond this endpoint | Preparation retains warp rows and fails at unadmitted destinations/setups. The [branch inventory](../content/opening-branch-inventory.md#ordinary-warps-and-future-boundaries) identifies future rows, opening obstructions and unavailable preflight before committed transfer. Silently accepting Unsupported as a no-op is forbidden. Later campaign admission remains outside #1418. |
 
 This is an accurate gap disposition, not a claim that all reachable NPCs were exercised. The [bounded inventory](../content/opening-branch-inventory.md) enumerates the offered
@@ -447,6 +447,13 @@ asks the selected profile for a recipe and validates its typed result using exis
   completed choices, receipts and royal follow links. Normal Save preserves Egress and F399.
   [Bounded observation](#granseal-castle-save-and-continue-observation)
 
+- **Settled ancient tower visits:** `tower-field` captures the current position and loaded scene
+  on Map40, the F506-open Map57 staircase, the first five linked Map60 areas, and the Map58
+  aftermath under F506/F507/F74/F640 with F407 clear. F999 is excluded. New captures prefer this
+  recipe in its admitted areas. Continue selects either older completed-return recipe when the
+  slot names it and its original anchor and flags are valid. Ordinary Save leaves Egress and
+  F399 as received. [Bounded observation](#tower-save-and-continue-observation)
+
 These are implemented product recipes. Their acceptance includes
 ordinary legal variations within each admitted boundary: reordered optional conversations,
 refusal/retry, changed party resources/equipment, living/dead members, earned progress and different
@@ -478,7 +485,7 @@ can differ because this is a savepoint reload. This distinction must appear in p
 **Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
 within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
 admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
-Map3 F506, Map16, settled Map43 and the old castle rooms are implemented. Each batch owns its capture, independent
+Map3 F506, Map16, settled Map43, the old castle rooms and the early tower route are implemented. Each batch owns its capture, independent
 Continue and restart evidence. Map5 default/F650 and the anchored opening and tower outcome recipes also
 have implemented recovery.
 
@@ -489,8 +496,8 @@ recipe, captures detached progress and builds a restore candidate before offerin
 reselects the recipe from the record and validates the party, registers, content and landing.
 [`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
 default/F609 with anchors, F506 with its concrete scene, Map16 with its loaded default or
-F663 scene, Map43 with its loaded default or F612 scene, and Maps19/20/21 with their loaded
-castle and palace scenes. The [current world
+F663 scene, Map43 with its loaded default or F612 scene, Maps19/20/21 with their loaded
+castle and palace scenes, and Map40/57/60/58 through [the tower policy](#tower-save-and-continue-observation). The [current world
 selection](../../content/private/pre-voyage-opening.json) includes these setup bodies and the
 two towns' Church refuges.
 
@@ -966,6 +973,80 @@ foreach ($group in 'opening','upper','commission','occupied','royal','tower','le
     foreach ($case in $cases) {
         & pwsh -NoProfile -File $runner -Checkout $repo -SampleRoot $sample -Case $case
         if ($LASTEXITCODE -ne 0) { throw "Castle observation failed in $case" }
+    }
+}
+```
+
+#### Tower Save and Continue observation
+
+**Confirmed in the remake.** Standard batch 5 of #2029 covers only settled tower traversal.
+Map40 captures the loaded default or F506 Lemon setup. F507 selects the default on fresh entry.
+Map57, Map60 and Map58 bind their declared population, handlers and layout with the void setup
+identity. Map57 requires F506's two-block copy and F401 clear. Map60 admits the first five
+connected area records. F407 can be armed on the descent and must be clear on the Map58
+aftermath. The saved visit includes physical followers separately from the force. Setup entry
+bits, closed dialogue progress, take-once receipts and Egress/F399 survive attachment. Active
+story, queued transfer, battle entry or outcome and F999 frontiers are outside this recipe. Map56
+owns the Ancient Tower Ascent refuge. Ordinary tower Save has no Church Record caller.
+
+| Controlled writer via the field menu | Input in the fresh Continue process |
+| --- | --- |
+| Map40 F506 at (14,14), before and after Talk to Lemon. | Before-Talk resumes with Lemon present and accepts the real interaction. Completed Talk stays closed, with the prone pose and saved text cursor. The force is unchanged. |
+| Map40 F506 at (15,7), facing the Mithril tile (15,6). | The first Search sets F132 and grants one Mithril. Repeating Search after Continue retains the receipt and item count. |
+| Map57 (7,5) with the open staircase. | The copied marker and physical followers survive. Up reaches Map60 (53,1). |
+| Map60 (61,9) in the early descent. | Down takes the same-map portal to (13,2) with the same physical allocation. |
+| Map58 (13,36) with the royal train. | Down takes the normal exit to Map60 (8,52). Up returns to Map58. Astral, king and minister remain separate from force membership. Resources and casualties carry through the regular transfer. |
+| Map40 F507 at (4,30) with the default cast. | Right hits the working-layout wall. Down exits to Map21 (9,2), and Up returns to the default exterior. |
+
+The bounded observer uses ordinary Save and independent title Continue with equal full captured
+gameplay data at attachment. A checksum-valid mismatched setup was rejected and both disposable
+slot files stayed byte-identical. Scene-free v1 controls exercise the Battle01 and Battle07
+completed-return readers. They use controlled progress and the existing recipe/anchor gates.
+Saving again at a now-admitted Battle07 return selects the current visit. The compatible Hawel
+slot is an unchanged prior capture. The observer reads the native camera, player layer, restored
+layout and errors without image capture.
+
+The pinned SF2DISASM commit is `c834c652b6862bc5679fd7f69a38a7093206efc6`. The source setup table selects Map40's F506 body and F507 default.
+`ms_map40_InitFunction` and `cs_53FE0` own the exterior init and Lemon behavior. The
+Map57 F506 copy and Map60 warp tables own the entered layout and stair connections.
+`table_Followers` and the Battle07 return own the F74 physical train. These observations use the
+existing admitted world. **Unknown** remains exhaustive optional Talk and every legal landing
+on the connected route, original timing and SRAM parity.
+[Source tower route](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md) ·
+[Original Battle07 return](../../../docs/research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md) ·
+[Map60 frontier](pre-voyage-optional-locations.md#southern-shrine-and-excluded-connections)
+
+##### Reproduce the tower observations
+
+Build the Debug adapter under the [locked SDK environment](../development-and-verification.md#locked-net-workflow).
+The runner selects the registered `derived/issue2035/galam-town-v1` world and its bundled
+presentation, entry and battle inputs directly. It writes reports under the
+checkout and slots to new `issue2043-*` namespaces under registered `derived/disposable-saves`.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug
+if ($LASTEXITCODE -ne 0) { throw 'Tower adapter build failed' }
+$repo = (Resolve-Path .).Path
+$runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2043/tower-save-v1/Run.ps1'
+$run = [guid]::NewGuid().ToString('N').Substring(0, 12)
+$groups = [ordered]@{
+    lemon = 'lemon-writer', 'lemon-before', 'lemon-after'
+    receipt = 'receipt-writer', 'receipt-reader'
+    stair = 'stair-writer', 'stair-reader', 'corrupt'
+    portal = 'portal-writer', 'portal-reader'
+    royal = 'royal-writer', 'royal-reader'
+    default = 'default-writer', 'default-reader'
+    'legacy-b01' = 'legacy-b01'
+    'legacy-b07' = 'legacy-b07'
+    'legacy-hawel' = 'legacy-hawel'
+}
+foreach ($group in $groups.GetEnumerator()) {
+    $sample = Join-Path $repo "local/issue2043/$run-$($group.Key)"
+    foreach ($case in $group.Value) {
+        & pwsh -NoProfile -File $runner -Checkout $repo -SampleRoot $sample -Case $case
+        if ($LASTEXITCODE -ne 0) { throw "Tower observation failed in $case" }
     }
 }
 ```

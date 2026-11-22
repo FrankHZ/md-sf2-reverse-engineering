@@ -21,8 +21,12 @@ public sealed class PreVoyageSaveTests
             onLoad: new("dangerous-onload", 0),
             population: new(30, 128, 0, [new(74, 31, 31), new(74, 30, 30), new(74, 159, 59)]),
             basePalette: basis.BasePalette, viewAreas: basis.ViewAreas);
+        var visuals = old.Visuals! with
+        {
+            Sprites = new[] { 0, 30, 31, 59 }.ToDictionary(id => id, id => new ExplorationSpriteVisual(id, [], null, 0)),
+        };
         var world = new ExplorationDefinition(old.Maps.Values.Append(map), old.Programs.Values,
-            provenance: old.Provenance, partyFlags: old.PartyFlags, visuals: old.Visuals);
+            provenance: old.Provenance, partyFlags: old.PartyFlags, visuals: visuals);
         var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world)
             { Persistence = new Sf2OpeningRestore() };
         return (definition, data with { Recipe = "battle07-return", Map = "map-58", X = 13, Y = 35, Facing = 3,
@@ -43,7 +47,13 @@ public sealed class PreVoyageSaveTests
         Assert.Equal(0, session.Current.Exploration.Party.Actors.Single(a => a.Actor.Value == "ally-1").Hp);
         var captured = session.CaptureSave(session.Current.SessionId, session.Current.Revision);
         Assert.Null(captured.Error);
-        var bytes = OpeningSaveJson.Write(new(1, 1, 1, DateTimeOffset.UnixEpoch, captured.Data!));
+        var currentVisit = Assert.IsType<OpeningSaveData>(captured.Data);
+        Assert.Equal("tower-field", currentVisit.Recipe);
+        Assert.Equal("ms-void", currentVisit.FieldScene!.Setup);
+        Assert.Equal(data.ActiveAllies, currentVisit.ActiveAllies);
+        Assert.All(new[] { "entity-31", "entity-30", "entity-159" }, id =>
+            Assert.Contains(currentVisit.FieldScene.Actors, actor => actor.Entity == id && actor.LeaderSlot >= 0));
+        var bytes = OpeningSaveJson.Write(new(1, 1, 1, DateTimeOffset.UnixEpoch, currentVisit));
         var decoded = OpeningSaveJson.Read(bytes, 1).Data;
         var again = Assert.IsType<SessionStarted>(GameSession.Restore(definition, decoded, session.Rules)).Session;
         var recaptured = again.CaptureSave(again.Current.SessionId, again.Current.Revision);

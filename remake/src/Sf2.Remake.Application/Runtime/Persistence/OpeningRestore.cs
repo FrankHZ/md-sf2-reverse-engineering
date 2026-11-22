@@ -55,7 +55,7 @@ internal static class OpeningRestore
             _ = rules.Bind(definition.Encounters.Values, actors);
             return ExplorationDispatcher.Start(definition, initial, rules);
         }
-        var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor);
+        var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor, data.Recipe);
         Require(location.Recipe == data.Recipe && location.Anchor == anchor, "save-recipe");
         var raft = data.Raft?.Restore(definition.Exploration);
         var world = definition.Persistence.Rebuild(definition, location, party, data.Flags, raft, out var flags, data.Layer, data.FieldScene);
