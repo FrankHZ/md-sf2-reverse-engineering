@@ -273,6 +273,7 @@ public sealed partial class GameRoot
         "granseal-field" => GameText.Get("save.destination.granseal-field"),
         "galam-field" => GameText.Get("save.destination.galam-field"),
         "hawel-field" => GameText.Get("save.destination.hawel-field"),
+        "granseal-castle" => GameText.Get("save.destination.granseal-castle"),
         "battle01-return" => GameText.Get("save.destination.battle01-return"),
         "new-granseal-castle" => GameText.Get("save.destination.new-granseal-castle"),
         "ribble-welcome" => GameText.Get("save.destination.ribble-welcome"),

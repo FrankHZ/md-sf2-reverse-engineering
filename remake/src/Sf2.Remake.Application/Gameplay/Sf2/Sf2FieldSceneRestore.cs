@@ -10,6 +10,27 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 // Shared settled-scene mechanics. Each SF2 consumer admits its own context/population.
 internal static class Sf2FieldSceneRestore
 {
+    internal static bool MatchesLoadedSetup(ExplorationMapDefinition source, ExplorationMapDefinition loaded, string setup)
+    {
+        if (setup == source.Setup?.DefaultSetup.Value)
+            return Matches(source.Entities, source.Events, source.OnLoad, source.InputProgram, source.Population, source.Search);
+        return source.Setups.TryGetValue(new(setup), out var body) &&
+            Matches(body.Entities, body.Events, body.OnLoad, body.InputProgram, body.Population, body.Search);
+
+        bool Matches(IReadOnlyList<ExplorationEntityDefinition> entities, IReadOnlyList<ExplorationEvent> events,
+            ProgramLocation? onLoad, ProgramLocation? input, ExplorationPopulation? population, FieldSearchDefinition? search) =>
+            loaded.OnLoad == onLoad && loaded.InputProgram == input && loaded.Population == population &&
+            loaded.Search == search && loaded.Entities.SequenceEqual(entities) && loaded.Events.SequenceEqual(events);
+    }
+
+    internal static void RequireUnoccupiedLanding(ExplorationState world)
+    {
+        var player = world.PlayerEntity;
+        if ((player.Motion.FlagsA & 0x20) != 0 && EntityMotion.FieldObstructed(player.Motion.X, player.Motion.Y,
+            world.AllEntities.Where(actor => actor.Visible && actor.Slot != player.Slot).Select(actor => actor.Motion)))
+            throw new BattleRuleException("save-anchor-occupied", "save.anchor");
+    }
+
     internal static SavedFieldScene Capture(ScenarioDefinition definition, ExplorationState world, string setup)
     {
         var source = definition.Exploration!.Maps[world.Map];

@@ -461,6 +461,9 @@ msgstr "Galam"
 msgid "save.destination.hawel-field"
 msgstr "Hawel's House"
 
+msgid "save.destination.granseal-castle"
+msgstr "Granseal Castle"
+
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower, completed battle return"
 
