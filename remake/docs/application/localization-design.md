@@ -1012,6 +1012,15 @@ semantic judgments remain **Inferred**, with three ambiguous rows and human typo
 still **Unknown**. The21 admitted semantic-preservation candidates are existing Search descriptions
 whose default projection already preserves their breaks.
 
+## Fixed names in Modern guidance
+
+The Simplified Chinese `guidance.*` rows and the Yeel Continue slot label use the spellings in the
+accepted full-text corpus and its terminology lookups. The fixed names are 哈维尔 (Hawel), 耶尔 (Yeel),
+格兰希尔 (Granseal), 阿斯特拉尔 (Astral) and 加拉姆 (Galam). 古代之塔 (Ancient Tower) and 古代神殿
+(Ancient Shrine) retain their adopted forms. The PO catalog composes these spellings into the
+authored UI text. The [current guidance owner](../godot/objective-guidance.md#ui-language-and-persistence)
+describes dynamic companion projection and locale refresh.
+
 ## Font, layout and delivery
 
 M1 bundles Noto Sans CJK SC Regular through StoryTheme for Simplified Chinese and the required
