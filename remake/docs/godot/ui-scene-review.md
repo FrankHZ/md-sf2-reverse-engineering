@@ -299,7 +299,10 @@ action flow; it does not turn Party Status into a battle command sheet.
 
 The [Party agreement](presentation.md#party-details-agreement) and
 [field preparation owner](../application/opening-session-lifecycle.md#implemented-field-preparation)
-retain the detailed capabilities. Apply the same labeled-list treatment to Use/Give/Equip/Drop
+retain the detailed capabilities. The proposed
+[shared member presentation](battle-ui-composition.md#read-only-inspection-and-the-member-view)
+brings the battle roster to the same selection, scrolling and detail treatment while keeping
+Prepare with its field caller. Apply the same labeled-list treatment to Use/Give/Equip/Drop
 and the admitted item/recipient/return slots. Distinct copies of an item keep their slot identity
 when focus moves or Back restores a choice.
 
@@ -390,6 +393,12 @@ The current user slot and backup must never be a design-validation fixture.
 
 ## 8. Battle: one complete decision, then its consequences
 
+The diagram and phase descriptions below record the production layout and its accepted boundaries.
+The proposed [battle composition](battle-ui-composition.md#phase-focus-and-return) governs the
+next migration, including the freestanding Main diamond, one board focus, stable readers and
+phase-local input. See its [implementation handoff](battle-ui-composition.md#implementation-handoff)
+for the slices and acceptance.
+
 The [battle feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
 owns gameplay and source evidence. Use **layout A** on the command board. Place the acting
 unit and HP/MP at the head of the right-hand panel. The four commands form a vertical list.
@@ -417,7 +426,7 @@ chosen level or command. Close-up windows follow the separate playback layout be
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
 | Movement | Acting card plus quiet round/gold; legal range and current preview/cursor on the board. The player's attention stays on the proposed cell. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
-| Main action | Four labeled command items in the right column beneath the acting unit's vitals. Show a detail only for a cost, consequence or refusal. At a registered faced chest, the fourth item becomes Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). Its authored text fallback remains available. | Disabled focus is inspectable and cannot commit. Long reason grows/pages the detail group. Back returns to movement and undoes the preview through the current Cancel contract. Stay retains explicit confirmation. |
+| Main action | Four labeled command items in the right column beneath the acting unit's vitals. Show a detail only for a cost, consequence or refusal. At a registered faced chest, the fourth item becomes Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). Its authored text fallback remains available. | Disabled focus is inspectable and cannot commit. Long reason grows/pages the detail group. Back returns to movement and undoes the preview through the current Cancel contract. Production asks for a second Stay confirmation. The [proposed direct Stay](battle-ui-composition.md#fresh-target-input-and-direct-stay) commits on selection. |
 | Spell / item list | List replaces the command rows; selected offer shows actual spell level/cost or item/slot. Acting card remains; no stale target card. | Rows include actual unavailable reasons, scroll and retain focus. Confirm enters only an enabled offer. Back restores the same command focus with no resource/RNG change. |
 | Target / affected area | Replace the command panel with the selected recipient's card. Keep action reach and the effect cursor on the board. Show target cycling, Confirm and Back in the footer. | Clicking an empty, defeated, wrong-side or out-of-range cell cannot confirm an earlier valid target. Long name uses the card policy; detail uses reading space. Back returns to the spell/item list or main action and clears provisional target through the existing return command. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
@@ -434,7 +443,10 @@ holds it at 60.5%. The original varies the tile
 palette during its pulse.
 
 Up/Left selects the previous eligible combatant and Down/Right the next, wrapping within the action's living, in-range
-target list. Hover previews a candidate from that list. A complete left-click on the same legal unit commits the action. A single candidate stays selected. With none,
+target list. Production can repeat directional cycling while held. The proposed
+[fresh target input](battle-ui-composition.md#fresh-target-input-and-direct-stay) cycles once per
+press. Hover previews a candidate from that list. A complete left-click on the same legal unit
+commits the action. A single candidate stays selected. With none,
 show the reason and Back. Returning to the command menu allows the player to reconsider the move.
 [Original grid construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
 and [target input](../../../docs/research/battle/battle-functions.md#confirmed-player-control-state-machine).
@@ -464,8 +476,9 @@ use the same labeled command items with each option's original art. Identify the
 The whole-board Map has room for its unit list and legend. Only disclosed unit/terrain facts
 appear. Movement Cancel finishes the real undo before inspection opens at the origin. Action-menu
 Cancel returns to Movement first. On another unit, closing details restores the cursor. Map returns
-to Options, then cursor. `Member` restores its selected roster row. Battle Quit uses its existing save eligibility and return flow. The optional host Overview and a
-predicted action-order strip remain outside this design.
+to Options, then cursor. `Member` restores its selected roster row. Battle Quit uses its existing save eligibility and return flow. The proposed [inspection range and roster changes](battle-ui-composition.md#read-only-inspection-and-the-member-view)
+preserve these callers. The [#2065 readout](battle-ui-composition.md#current-round-order-2065)
+uses the generated current-round queue in the normal decision layout.
 
 ### Presentation, outcome and usable return
 
@@ -552,14 +565,17 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   reviewed 32×32 four-corner sprite to actual targeting and inspection, centered at nearest4×
   on a96px cell. Old private packages and public authored content retain their fallback. Native
   input/pixel/geometry checks cover the bounded consumer; foreground human appearance remains
-  **Unknown**. Acting-unit brackets and area effects retain their separate meanings.
+  **Unknown**. Production still draws the separate moving-actor brackets. The proposed
+  [single world cursor](battle-ui-composition.md#world-marks-and-panel-placement) replaces
+  those brackets while retaining the original target/inspection asset and area semantics.
   [Publication owner](battle-scenes.md#original-target-and-inspection-cursor-publication) ·
   [#1694](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1694)
 - **Human review.** Physical pad use, release after switching desktop focus, fullscreen/DPI fit
   and reading comfort in the ordinary game remain **Unknown**. The most useful checks are whether
   focus returns to the intended row and whether a player can read the next action after a long
-  choice or battle result. Optional destination guidance, shorter hints and predicted turn order
-  retain their separate design scope. [Human review](../verification/host.md#later-physical-focus-human-checklist-1456) ·
+  choice or battle result. Text guidance and contextual hints retain their own design owners.
+  Review the [actual queue](battle-ui-composition.md#current-round-order-2065) as part of the
+  battle decision layout when #2065 is implemented. [Human review](../verification/host.md#later-physical-focus-human-checklist-1456) ·
   [Optional guidance](modernization-design.md#optional-objective-and-destination-guidance-1578) ·
   [Context hints](presentation.md#minimal-contextual-hints-1544)
 
