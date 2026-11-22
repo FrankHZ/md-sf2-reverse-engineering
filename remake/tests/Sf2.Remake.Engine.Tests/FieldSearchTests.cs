@@ -75,6 +75,63 @@ public sealed class FieldSearchTests
         Assert.Same(after, session.Current.Exploration.Party);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SearchServicesCameraThroughWindowUnhideAndThenPauses(bool alreadyAtDestination)
+    {
+        var session = Session(item: 0);
+        var before = session.Current;
+        int foregroundOffset = 15 * 384;
+        var area = new ExplorationViewArea(0, 0, 16, 14, 0, 15, 0, 0, 256, 256, 256, 256, 0, 0, 0, 0, 0);
+        var view = new LogicalView(area, before.Exploration!.PlayerEntity.Slot,
+            alreadyAtDestination ? new(0) : new(24, 0, 24), new(foregroundOffset),
+            alreadyAtDestination ? new(0) : new(24, 0, 24), new(0), HideWindows: true);
+        before = before.WithStory(before.Story.Copy(null, textSettings: new(2, 0, 0), logicalView: view));
+
+        var opened = FieldSearch.Submit(session.Definition, before, new Search(), session.Rules);
+        Assert.Null(opened.Failure);
+        var acquired = opened.Snapshot;
+        var search = Assert.IsType<FieldSearchWait>(acquired.Story.Wait);
+        Assert.Equal(FieldSearchKind.Item, search.Result.Kind);
+        Assert.Contains(150, acquired.Story.Flags);
+        Assert.True(acquired.NeedsFieldSearchCameraService);
+        Assert.False(acquired.HasOrdinaryFieldTime);
+
+        var first = Advance(acquired, 1);
+        Assert.Same(search, first.Story.Wait);
+        Assert.Equal(0, first.Story.LogicalView!.AX.Position);
+        Assert.Equal(0, first.Story.LogicalView.BX.Position);
+        Assert.Equal(foregroundOffset, first.Story.LogicalView.AY.Position);
+        Assert.False(first.Story.LogicalView.Scrolling);
+        Assert.Equal(!alreadyAtDestination, first.Story.LogicalView.HideWindows);
+
+        var visible = Advance(first, 4);
+        Assert.False(visible.Story.LogicalView!.HideWindows);
+        Assert.False(visible.NeedsFieldSearchCameraService);
+        Assert.Equal(acquired.Story.SimulationTick + (alreadyAtDestination ? 1 : 2), visible.Story.SimulationTick);
+        Assert.Same(acquired.Active, visible.Active);
+        Assert.Same(search, visible.Story.Wait);
+        Assert.Same(visible, Advance(visible, 4));
+
+        var closed = ExplorationDispatcher.Submit(session.Definition, visible, new Acknowledge(search.Token), session.Rules);
+        Assert.Null(closed.Failure);
+        Assert.True(closed.Snapshot.CanWaitAtInput);
+        var repeated = FieldSearch.Submit(session.Definition, closed.Snapshot, new Search(), session.Rules);
+        Assert.Null(repeated.Failure);
+        Assert.Equal(FieldSearchKind.Empty, Assert.IsType<FieldSearchWait>(repeated.Snapshot.Story.Wait).Result.Kind);
+        Assert.Same(acquired.Exploration!.Party, repeated.Snapshot.Exploration!.Party);
+        Assert.False(repeated.Snapshot.NeedsFieldSearchCameraService);
+
+        SessionSnapshot Advance(SessionSnapshot snapshot, int ticks)
+        {
+            var result = ExplorationDispatcher.Submit(session.Definition, snapshot,
+                new AdvanceSimulation(search.Token, ticks), session.Rules);
+            Assert.Null(result.Failure);
+            return result.Snapshot;
+        }
+    }
+
     [Fact]
     public void SelectedPickupGrantsCarryAndGiveWithoutAdmittingAnUnrelatedItemOrUseEffect()
     {

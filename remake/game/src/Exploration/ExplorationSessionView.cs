@@ -337,7 +337,7 @@ public sealed partial class ExplorationSessionView : Control
     }
 
     private static bool NeedsTicks(SessionSnapshot current) =>
-        current.Story.Wait is FieldSearchWait ? false :
+        current.Story.Wait is FieldSearchWait ? current.NeedsFieldSearchCameraService :
         current.Story.Wait is MusicWait music ? !music.LogicalDone :
         current.Story.TextSettings is not null && current.Story.Wait is PresentationWait
             { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or PresentationCueKind.SoundFade or PresentationCueKind.SoundCut } ? false :
@@ -437,7 +437,8 @@ public sealed partial class ExplorationSessionView : Control
         }
         else if (current.Story.Wait is FieldSearchWait search)
         {
-            if (action == GameAction.Cancel || action == GameAction.Confirm && !RevealText()) command = new Acknowledge(search.Token);
+            if (action == GameAction.Cancel || action == GameAction.Confirm &&
+                _dialogueView.Panel.IsVisibleInTree() && !RevealText()) command = new Acknowledge(search.Token);
         }
         else if (current.Story.Wait is DialogueWait)
         {

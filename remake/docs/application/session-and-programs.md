@@ -119,7 +119,8 @@ do not reseed, split RNG, normalize NPCs or revive a full-route golden to hide t
 | Field input / committed ordinary movement | Continue the existing enabled field service, including autonomous NPCs and follower follow-up decisions, not only already-started translations. Input-ready does not mean persistent-ready. |
 | System/party/settings/save modal | Pause world and ordinary sprite progression after the bounded entry procedure below where applicable. No time debt or world updates behind a mounted modal. This full modal freeze is a modern policy; the original field menu leaves some other VInt services registered. |
 | OS focus loss, hidden view, tree pause, window recovery, failure | Suspend immediately, even during pending menu settlement; disarm input and pending host intent. Focus return requires fresh input, no catch-up. Never defer a real OS pause to finish saving. |
-| Text reveal, W1/plain/field text input, choice, Search result, Church/Shop | No new automatic ordinary opportunities. Keep each existing mandatory-work, delivery, token, explicit poll and acknowledgement contract. Slow reading/rendering adds no gameplay steps. Explicit ordinary-dialogue Confirm may schedule existing mandatory text work under the [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm). Church Save may request ordinary settlement only after its genuine caller return. |
+| Search result | Service the logical camera while it suppresses the feedback window. Stop on the first visible step and keep the same result token and frozen field state. [Search handoff](#search-feedback-after-movement). |
+| Text reveal, W1/plain/field text input, choice, Church/Shop | No new automatic ordinary opportunities. Keep each existing mandatory-work, delivery, token, explicit poll and acknowledgement contract. Slow reading/rendering adds no gameplay steps. Explicit ordinary-dialogue Confirm may schedule existing mandatory text work under the [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm). Church Save may request ordinary settlement only after its genuine caller return. |
 | Script waits, finite music, warp/load/fade, scene/battle handoff | Yield ordinary scheduling; existing owners run their required work or wait for delivery. Keep the modern finite-music logical-end plus actual-completion gates and sound-before-entity service order. No audio-duration-derived field ticks and no extension into battle choice/turn time. |
 
 Extending automatic neutral time to text/choice input is a separate bounded follow-up: review each
@@ -2144,6 +2145,37 @@ and rejected commands cannot claim a placement. Successful grants/empty chest op
 party, source placement flag and chest block together. Layout reconstruction uses the same source
 flags already persisted by savepoints. [Opening policy](opening-session-lifecycle.md#implemented-opening-search)
 and [metadata admission](../content/profiles-and-trust.md#opening-search-admission) own the bounded domain.
+
+### Search feedback after movement
+
+Search can commit as soon as the player is ready for field input. The logical camera can still
+hold the window hidden, including for one service after its final position is reached.
+While that flag is set, the Search token admits camera-only `AdvanceSimulation` on the existing
+focused exploration clock. The same view runner advances both planes and recomputes the window flag.
+The first unhidden tick ends automatic service. The field, scripts and custody stay paused through
+those ticks and through reading. Confirm and left-click use the visible panel. Cancel can close
+the result even during the camera handoff. A dismissal consumes the existing token and returns to
+ordinary field input.
+
+**Confirmed** in a bounded Map43 F612 revisit on the published `derived/issue2035/galam-town-v1`
+world, matching entry, scenes and opening inputs. Use the existing
+`StartPreVoyageLocalizationObservation` startup seam with player `entity-0`, tile (11,7), West
+(facing 3), speed 24, and flags F0/F32/F612/F650. In the ordinary Godot host, hold Left through
+the second step, release late in that step and immediately press Confirm at the first input-ready
+frame at (9,7). For the held-direction description, press and hold Up against the blocked diary
+tile at (9,6) before pressing Confirm. The baseline stopped at tick 37 for the next 12 frames,
+with AX/BX at 2016 heading to 1920 and the panel hidden. The corrected empty and description
+cases both reached 1920 and unhid the panel at tick 42 with the same Search token. The native
+draw kept the configured foreground offset and the window could be confirmed. An early Confirm
+left the hidden result pending. For the settled pickup, continue Right twice, Up twice, Right,
+then Up to (12,4). Face Up and search for Healing Drop. F136, the item and opened chest committed
+together. Cancel followed by ordinary Confirm produced empty feedback with the same inventory.
+The cases use a 1920 × 1080 headless viewport and ordinary key edges. Focus and timing here refer
+to this controlled adapter run. The precise physical keystroke sequence at the original playtest
+incident remains **Inferred**. [Incident](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456#issuecomment-7085808707)
+· [Fix and verification](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2066).
+
+### Other field handoffs
 
 A declared unavailable warp is checked before movement/facing, entity service, fade or transfer.
 Its dismissible result leaves the field playable. The opening church event similarly reports its
