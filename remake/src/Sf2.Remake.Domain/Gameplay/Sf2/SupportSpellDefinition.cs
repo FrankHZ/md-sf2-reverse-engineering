@@ -5,6 +5,7 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte MinimumRange, byte MaximumRange, byte Radius)
 {
     public bool TargetsTeammates => Spell.Value is "boost" or "attack";
+    public bool AbsorbsMp => Spell.Value == "spoit";
     public bool ChangesStats => Spell.Value is "boost" or "slow" or "attack";
 
     internal void RequireSupported()
@@ -12,8 +13,20 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
         if ((Spell.Value, Spell.Level, MpCost, MinimumRange, MaximumRange, Radius) is not
             (("dispel", 1, 5, 1, 2, 1) or ("boost", 1, 2, 0, 1, 1) or
              ("attack", 1, 7, 1, 3, 0) or ("slow", 1, 3, 1, 1, 1) or ("slow", 2, 6, 1, 2, 2) or
-             ("sleep", 1, 4, 1, 2, 1)))
+             ("sleep", 1, 4, 1, 2, 1) or ("spoit", 1, 0, 1, 2, 0)))
             throw new BattleRuleException("support-spell-definition", "spells", true);
+    }
+
+    internal static BattleReaction[] MpTransfer(BattleActorState caster, BattleActorState target, int roll)
+    {
+        int drained = Math.Min(3 + roll, target.Mp);
+        return
+        [
+            new(caster.Actor, target.Actor, "item-use", BattleReactionKind.Resource,
+                target.Hp, target.Hp, target.Mp, (byte)(target.Mp - drained), Amount: drained),
+            new(caster.Actor, caster.Actor, "item-use", BattleReactionKind.Resource,
+                caster.Hp, caster.Hp, caster.Mp, (byte)Math.Min(caster.MaxMp, caster.Mp + drained), Amount: drained),
+        ];
     }
 
     // The SLOW resistance gate precedes the word write. An active field then consumes

@@ -272,6 +272,61 @@ def mount_phoenix_waves(directory: Path, scratch: Path, scene: dict) -> None:
             raise ValueError(f"conflicting prepared sound wave {key}")
 
 
+def mount_indra_staff(library: Path, scratch: Path, scene: dict) -> None:
+    directory = library / "weapons"
+    index = read_json(directory / "index.json")["records"]
+    sprite, palette = index["items"]["92"]
+    if (sprite, palette) != (16, 31):
+        raise ValueError("Indra Staff requires the pinned Guardian Staff graphics selector")
+    data = (directory / f"weapon-{sprite}.4bpp").read_bytes()
+    if len(data) != 8192 or any(
+        (byte >> 4 not in (0, 1, 2, 14, 15) or byte & 15 not in (0, 1, 2, 14, 15)) for byte in data
+    ):
+        raise ValueError("Indra Staff requires the shared body colors and two weapon colors")
+    colors = [md_palette_color(0)] * 16
+    colors[1] = md_palette_color(0x0EEE)
+    colors[14:16] = [md_palette_color(color) for color in index["palettes"][palette]]
+    frames = []
+    layout = sprite_layout(8, 8)
+    for frame in range(4):
+        key = f"weapon92/frame{frame}"
+        leaf = f"indra-staff-{frame}.png"
+        write_png_rgba(
+            scratch / leaf,
+            64,
+            64,
+            compose(data[frame * 2048 : (frame + 1) * 2048], colors, 64, 64, layout),
+        )
+        raster = installed_png(scratch, leaf)
+        if scene["rasters"].setdefault(key, raster) != raster:
+            raise ValueError(f"conflicting Indra Staff raster {key}")
+        frames.append(key)
+
+    animations = read_json(library / "bodies/ally-animations.json")
+    for member, body, palette in ((1, 25, 1), (4, 21, 2), (15, 25, 2), (17, 21, 1)):
+        (donor,) = (
+            row
+            for row in scene["actors"]
+            if row["side"] == "ally"
+            and row["sprite"] == body
+            and row["palette"] == palette
+            and member in row.get("members", [])
+            and row["item"] == 89
+        )
+        # The selected copy can break while worn, leaving this same member unarmed.
+        for item, layers in ((92, frames), (None, [])):
+            attack = prepared_ally_sequence(body, animations[body], bool(layers))
+            dodge = prepared_ally_sequence(body + 40, animations[body + 40], bool(layers))
+            row = dict(
+                donor,
+                item=item,
+                weaponFrames=layers,
+                sequences=dict(idle=attack, attack=attack, dodge=dodge, item=attack, cast=attack),
+            )
+            if row not in scene["actors"]:
+                scene["actors"].append(row)
+
+
 def ninja_weapon_layers(scene: dict) -> list[dict]:
     # The selected sword banks use shared body palette colors 1 and 2.
     # Steel Sword shares Long Sword's weapon bank and color pair.
@@ -545,7 +600,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "ninja": {5: "NINJ"},
         "monster": {6: "MNST"},
     }
-    optional = retained_families.keys() | {"phoenix-wave", "south-shrine"}
+    optional = retained_families.keys() | {"phoenix-wave", "south-shrine", "indra"}
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
     shrine = "south-shrine" in selected
     if shrine and (upstream is None or canonical_path is None):
@@ -568,7 +623,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | optional):
         raise ValueError(
             "select walking, icons, sfx, music, pldn, wiz, melee, "
-            "ranged, vicar, innate, ninja, monster, phoenix-wave or south-shrine"
+            "ranged, vicar, innate, ninja, monster, phoenix-wave, indra or south-shrine"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -586,12 +641,16 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         scenes = {Path("main-scenes.json")} | {
             Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
         }
+        indra_only = selected == {"indra"}
+        battle26_scene = Path("inputs/battle26/battle-scenes.json")
         for rel, source in files.items():
-            if rel == Path("world.json"):
+            if rel == Path("world.json") and not indra_only:
                 continue
             target = dest / rel
             target.parent.mkdir(parents=True, exist_ok=True)
-            if selected == {"south-shrine"} and rel not in scenes:
+            if (selected == {"south-shrine"} and rel not in scenes) or (
+                indra_only and rel != battle26_scene
+            ):
                 # Immutable external battle/audio/entry inputs. Rewritten scenes get private files.
                 try:
                     os.link(source, target)
@@ -600,7 +659,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                     pass  # Different storage volumes require a real copy.
             shutil.copyfile(source, target)
         presentation = world["world"]["presentation"]
-        scene_path = dest / "inputs/battle26/battle-scenes.json"
+        scene_path = dest / battle26_scene
         if scene_path.relative_to(dest) not in files:
             raise ValueError("selected package has no expected Battle26 consumer")
         scene = read_json(scene_path)
@@ -640,6 +699,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         if retained_promotions:
             mount_ordinary_appearances(root, world["world"], scene, retained_promotions)
             promotions.update(retained_promotions)
+        if "indra" in selected:
+            mount_indra_staff(root, Path(temp), scene)
         if "monster" in selected:
             mount_monster_breath(root / "effects", Path(temp), scene)
         if "phoenix-wave" in selected:
@@ -707,7 +768,10 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         if shrine:
             items = mount_south_shrine(world, root, upstream, canonical_path)
             bind_field_item_icons(presentation, root, dest, scenes, items)
-        (dest / "world.json").write_text(json.dumps(world, separators=(",", ":")), encoding="utf-8")
+        if not indra_only:
+            (dest / "world.json").write_text(
+                json.dumps(world, separators=(",", ":")), encoding="utf-8"
+            )
         if shrine and (dest / "world.json").stat().st_size > 128 * 1024 * 1024:
             raise ValueError("world exceeds the private reader limit")
         package_files(

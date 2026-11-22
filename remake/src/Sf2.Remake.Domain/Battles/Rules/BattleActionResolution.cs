@@ -528,21 +528,21 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     {
         var targets = Sf2SupportSpellAction.Targets(before, actor, destination, spell, center);
         Require(SupportSpell == spell && Spell is null && AttackSpell is null && Item is null &&
-            CompletionEffects.Count == 0 && Reactions.Count == targets.Count && Reactions.Count > 0 &&
+            CompletionEffects.Count == 0 && Reactions.Count == (spell.AbsorbsMp ? 2 : targets.Count) && Reactions.Count > 0 &&
             (before.GetActor(actor).IsAlly ? Reward is { Actor: var recipient } && recipient == actor : Reward is null));
         int cursor = 0;
         Dictionary<ActorRef, ushort> writes = [];
-        for (int i = 0; i < targets.Count; i++)
+        if (spell.AbsorbsMp)
+        {
+            Require(EquipmentUse is not null && targets.Count == 1);
+            var target = targets[0];
+            int roll = TakeRoll(target.Actor, "rng-mp-absorb", 3);
+            Require(Reactions.SequenceEqual(SupportSpellDefinition.MpTransfer(before.GetActor(actor), target, roll)));
+        }
+        else for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i]; var reaction = Reactions[i];
-            int Roll(string kind)
-            {
-                Require(cursor < ConstructionEffects.Count);
-                var draw = ConstructionEffects[cursor++];
-                Require(draw.Kind == kind && draw.Actor == actor && draw.Target == target.Actor && draw.RandomRange == 8 && draw.RandomValue.HasValue);
-                return draw.RandomValue!.Value;
-            }
-            var (reactionWord, constructionWord) = spell.Resolve(target, Roll);
+            var (reactionWord, constructionWord) = spell.Resolve(target, kind => TakeRoll(target.Actor, kind, 8));
             if (constructionWord.HasValue) writes.Add(target.Actor, constructionWord.Value);
             Require(reaction.Actor == actor && reaction.Target == target.Actor && reaction.Action == (EquipmentUse is null ? "support-spell" : "item-use") &&
                 reaction.Kind == (reactionWord.HasValue ? BattleReactionKind.Status : BattleReactionKind.Ineffective) &&
@@ -570,12 +570,22 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         ValidateState(before, actor, destination, inventory: inventory, statusWrites: writes);
         ValidateReward(before, actor);
         ValidateRandom(before, _ => true);
+
+        int TakeRoll(ActorRef target, string kind, int range)
+        {
+            Require(cursor < ConstructionEffects.Count);
+            var draw = ConstructionEffects[cursor++];
+            Require(draw.Kind == kind && draw.Actor == actor && draw.Target == target &&
+                draw.RandomRange == range && draw.RandomValue.HasValue);
+            return draw.RandomValue!.Value;
+        }
     }
 
     internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
         reaction.Kind is BattleReactionKind.Dodge or BattleReactionKind.Ineffective ? current :
         current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
-            ? actor.With(hp: reaction.HpAfter, mp: Spell is null && AttackSpell is null && SupportSpell is null ? reaction.MpAfter : actor.Mp,
+            ? reaction.Kind == BattleReactionKind.Resource ? actor.With(mp: reaction.MpAfter)
+            : actor.With(hp: reaction.HpAfter, mp: Spell is null && AttackSpell is null && SupportSpell is null ? reaction.MpAfter : actor.Mp,
                 status: reaction.StatusWrite, refreshStats: true) : actor));
 
     internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>

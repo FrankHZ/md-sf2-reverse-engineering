@@ -16,7 +16,9 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
                 kind is BattleActionKind.Healing or BattleActionKind.Item && reaction.Kind is BattleReactionKind.Status or BattleReactionKind.Ineffective)
             {
                 int before = accumulated;
-                if (reaction.Kind == BattleReactionKind.Status) accumulated = Math.Min(49, accumulated + 5);
+                if (reaction.Kind == BattleReactionKind.Status ||
+                    reaction.Kind == BattleReactionKind.Resource && target.Faction != recipient.Faction)
+                    accumulated = Math.Min(49, accumulated + 5);
                 if (kind == BattleActionKind.Healing)
                     effects.Add(new("healing-exp-contribution", recipient.Actor, before, accumulated, Target: reaction.Target));
             }

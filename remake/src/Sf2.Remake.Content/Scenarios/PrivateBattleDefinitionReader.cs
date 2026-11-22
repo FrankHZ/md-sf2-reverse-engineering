@@ -47,6 +47,7 @@ internal static class PrivateBattleDefinitionReader
             itemIds.Add((byte)Number(FindCode(core, "items", code), "id", 0, 126));
         // A mounted world can supply Fairy Powder after the encounter catalog is built.
         if (fieldItems?.Contains((byte)5) == true) itemIds.Add(5);
+        if (fieldItems?.Contains((byte)92) == true) itemIds.Add(92);
         foreach (var row in enemies.SelectMany(row => row.Items)) itemIds.Add((byte)Number(FindCode(core, "items", row.Item), "id", 0, 127));
         foreach (var row in encounter.Placements)
             itemIds.Add((byte)Number(FindCode(core, "items", row.ItemExpression.Split('|')[0]), "id", 0, 127));

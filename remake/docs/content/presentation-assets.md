@@ -242,7 +242,17 @@ $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 # Add the prepared sound-wave overlay to the registered Monster package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family phoenix-wave `
     -Package "$progression/monster-v1" -Destination "$progression/phoenix-wave-$token"
+
+# Bind Indra Staff and the after-break unarmed appearances for WIZ and VICR.
+$equipment = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1952'
+& $run -Repo $repo -Operation Mount -Library $runtime -Family indra `
+    -Package "$progression/phoenix-wave-v1" -Destination "$equipment/indra-$token"
 ```
+
+The Indra mount consumes the already prepared weapon bank 16 and palette 31. It adds four
+weapon frames and the armed and unarmed entries for Kazin, Tyrin, Sarah and Karna to
+Battle26's scene, which supplies actor appearances to earlier encounters. The other package
+files are carried unchanged. [Indra Staff reproduction](../domain/equipment-use-repair-design.md#indra-staff-reproduction)
 
 Asset-only Mount without `-Upstream` uses the prepared family files and closed base package. The stable
 `promotion-v1` package records that assembly with the three PLDN appearances. When PLDN is

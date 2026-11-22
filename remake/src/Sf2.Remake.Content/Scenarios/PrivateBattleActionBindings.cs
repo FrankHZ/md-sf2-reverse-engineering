@@ -59,7 +59,20 @@ internal static class PrivateBattleActionBindings
                 "source-support-item", "items.useSpell", true);
             yield return new(id, item.DisplayName, PrivateSupportSpellBindings.Read(definitions, new(effect.ToLowerInvariant(), 1)));
         }
+        if (!definitions.Items.TryGetValue(92, out var staff)) yield break;
+        Require(IsIndraStaff(staff), "source-indra-staff", "items.useSpell", true);
+        Require(definitions.Spells.TryGetValue(new("spoit", 1), out var drain) &&
+            drain is { BaseId: 15, Code: "SPOIT", Level: 1, MpCost: 0, Power: 10, MinimumRange: 1, MaximumRange: 2,
+                Radius: 0, PropertiesExpression: "TYPE_SPECIAL", AnimationExpression: "ABSORB" },
+            "source-indra-effect", "items.useSpell", true);
+        yield return new(staff.Id, staff.DisplayName, new(drain!.Spell, drain.MpCost, drain.MinimumRange, drain.MaximumRange, drain.Radius));
     }
+
+    internal static bool IsIndraStaff(SourceItemDefinition item) =>
+        item is { Id: 92, Code: "INDRA_STAFF", ItemTypeExpression: "WEAPON|BREAKABLE",
+            EquipFlagsExpression: "WIZ|SORC|VICR", UseSpell: "SPOIT", UseSpellLevel: 1,
+            Price: 3200, MinimumRange: 1, MaximumRange: 1,
+            EquipEffects: [{ Type: "INCREASE_ATT", Parameter: 25 }, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] };
 
     internal static IEnumerable<AttackItemDefinition> AttackItems(PrivateBattleDefinitions definitions)
     {

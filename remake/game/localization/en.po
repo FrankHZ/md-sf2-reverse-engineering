@@ -1345,6 +1345,9 @@ msgstr "{0} gains {1} attack."
 msgid "battle.scene.attack-expired"
 msgstr "The attack bonus wears off for {0}."
 
+msgid "battle.scene.mp-absorbed"
+msgstr "{0} absorbed {1} MP."
+
 msgid "battle.scene.item-damaged"
 msgstr "{0} is damaged."
 
@@ -2674,6 +2677,9 @@ msgstr "Withdraws the party from battle."
 
 msgid "item-description.raise-attack"
 msgstr "Temporarily raises one ally’s Attack."
+
+msgid "item-description.absorb-mp"
+msgstr "Absorbs MP from one enemy within 2 tiles."
 
 msgid "item-description.raise-defense-agility"
 msgstr "Boosts nearby allies’ DEF/AGI."

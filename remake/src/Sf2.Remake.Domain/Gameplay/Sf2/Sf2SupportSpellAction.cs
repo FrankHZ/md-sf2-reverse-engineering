@@ -17,6 +17,7 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
             throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.SupportSpells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
         spell.RequireSupported();
+        if (spell.AbsorbsMp) throw new BattleRuleException("spell-effect", "spell", true);
         if (actor.Hp == 0 || actor.Position is null || !SilenceRules.Supported(actor.Status, battle.Definition.Poison) ||
             (actor.Status & 0xC0) != 0 || (!actor.IsAlly && actor.Control != BattleControl.Automatic))
             throw new BattleRuleException("support-spell-caster", "actor", true);
@@ -68,7 +69,16 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         var targets = Targets(battle, actor, destination, spell, center ?? throw new BattleRuleException("support-spell-target", "target"));
         uint seed = battle.MainSeed; List<BattleEffect> effects = []; List<BattleReaction> reactions = [];
         Dictionary<ActorRef, ushort> writes = [];
-        foreach (var target in targets)
+        var caster = battle.GetActor(actor);
+        if (spell.AbsorbsMp)
+        {
+            var target = targets.Single();
+            var draw = BattleRandom.NextMain(seed, 3);
+            seed = draw.After;
+            effects.Add(new("rng-mp-absorb", actor, draw.Before, draw.After, 3, draw.Value, target.Actor));
+            reactions.AddRange(SupportSpellDefinition.MpTransfer(caster, target, draw.Value));
+        }
+        else foreach (var target in targets)
         {
             int Roll(string kind)
             {
@@ -83,7 +93,6 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
                 reactionWord.HasValue ? BattleReactionKind.Status : BattleReactionKind.Ineffective,
                 target.Hp, target.Hp, target.Mp, target.Mp, StatusWrite: reactionWord));
         }
-        var caster = battle.GetActor(actor);
         var prepared = battle.With(actors: battle.Actors.Select(a =>
         {
             if (writes.TryGetValue(a.Actor, out ushort word)) a = a.With(status: word);

@@ -567,6 +567,7 @@ def main():
             "ninja",
             "monster",
             "phoenix-wave",
+            "indra",
             "south-shrine",
             "all",
         ),
@@ -583,6 +584,7 @@ def main():
         "ninja",
         "monster",
         "phoenix-wave",
+        "indra",
         "south-shrine",
     }.intersection(args.family) and not args.mount:
         parser.error("this family selects already prepared assets for --mount")

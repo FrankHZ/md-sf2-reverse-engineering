@@ -21,7 +21,7 @@ public sealed class ShopServiceTests
         var battle = original.Definition.Encounters.Values.Single();
         if (repairGear) battle = battle.WithDeployments(battle.Deployments.Select(row => row.Actor == Buyer
             ? row with { Definition = row.Definition.WithEquipment(new(row.Definition.Equipment!.BaseAttack,
-                row.Definition.Equipment.Weapons.Values,
+                row.Definition.Equipment.Weapons.Values.Append(new(92, "Indra Staff", uint.MaxValue, 25, 1, 1, DamageOnUse: true)),
                 rings: [new(19, "Ring", uint.MaxValue, RingStat.Attack, 5, DamageOnUse: true)])) }
             : row));
         var map = new ExplorationMapDefinition(new("market"), new(new ushort[WorkingMapLayout.WordCount]),
@@ -193,6 +193,21 @@ public sealed class ShopServiceTests
         Accept(session, new BackShop(Wait(session).Token));
         Assert.True(session.Current.CanWaitAtInput);
         Assert.Contains(999, session.Current.Story.Flags);
+    }
+
+    [Fact]
+    public void IndraRepairQuotes800AndClearsOnlyTheSelectedWeaponsDamage()
+    {
+        var terms = new ShopDefinition([92], [new(92, "Indra Staff", 3200, Repairable: true)]);
+        var session = Session(800, [92, 476, 0, 0], terms: terms, repairGear: true);
+        Choose(session, ShopAction.Repair);
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Accept(session, new SelectShopSlot(Wait(session).Token, 1, 476));
+        Assert.Equal(800u, Wait(session).Offer!.Price);
+        Pay(session);
+        Assert.Equal(ShopResult.Repaired, Wait(session).Result);
+        Assert.Equal(0u, Party(session).Gold);
+        Assert.Equal(new ushort[] { 92, 220, 0, 0 }, Owner(session).SourceLoadout!.Items);
     }
 
     [Fact]

@@ -254,12 +254,14 @@ public sealed class BattleSceneState
     public SupportItemDefinition? EquipmentItem => _action?.EquipmentUse?.Definition;
     public EquipmentWear Wear => _action?.EquipmentUse?.Wear ?? EquipmentWear.None;
     public bool RaisesAttack => SupportSpell?.Spell.Value == "attack";
+    public bool AbsorbsMp => SupportSpell?.AbsorbsMp == true;
     public HealingItemDefinition? Item => _action?.Item;
     public BattleItemReceipt? ItemReceipt => !HasReaction ? null : Reaction.Receipt;
     public HealingSpellDefinition? Spell => _action?.Spell;
     public Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell => _action?.AttackSpell;
     public Sf2.Remake.Domain.Gameplay.Sf2.SupportSpellDefinition? SupportSpell => _action?.SupportSpell;
-    public IReadOnlyList<ActorRef> SupportTargets => SupportSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
+    public IReadOnlyList<ActorRef> SupportTargets => SupportSpell is null ? [] :
+        AbsorbsMp ? [Action.Reactions[0].Target] : Action.Reactions.Select(r => r.Target).ToArray();
     public bool IsMonsterBreath => AttackSpell?.IsMonsterBreath == true;
     public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
@@ -278,7 +280,7 @@ public sealed class BattleSceneState
             return basis * 3 / 8;
         }
     }
-    public bool SwitchesAlly => (Item is not null || Spell is not null || EquipmentItem is not null) && Actor != Target;
+    public bool SwitchesAlly => (Item is not null || Spell is not null || EquipmentItem is not null && !AbsorbsMp) && Actor != Target;
     // Recovery switches caster/recipient on their actual faction's single scene side.
     private ActorRef RecoveryDisplayed => (IsAura || EquipmentItem is not null) && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
         ? Action.Reactions[ReactionIndex - 1].Target
@@ -293,7 +295,7 @@ public sealed class BattleSceneState
     public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : Item is not null || Spell is not null || FriendlySupport
         ? !Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
-        : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
+        : AbsorbsMp ? Action.Reactions[0].Target : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
     public bool Critical => HasReaction && Reaction.Critical;
     public int HpChange => !HasReaction ? 0 : Reaction.HpAfter - Reaction.HpBefore;
     public int MpChange => !HasReaction ? 0 : Reaction.MpAfter - Reaction.MpBefore;
@@ -469,6 +471,10 @@ internal static class BattleSceneContinuation
                 foreach (var effect in playback.Effects) observations.Add(Observe(effect, ++sequence, revision));
                 motion = Array.AsReadOnly(playback.Motion.Select(offset => new BattleSceneOffset(offset.X, offset.Y)).ToArray());
                 next = BattleScenePhase.Reaction;
+                break;
+            case BattleScenePhase.Reaction when scene.AbsorbsMp && index == 0:
+                index++;
+                next = BattleScenePhase.TargetEnter;
                 break;
             case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
             case BattleScenePhase.ResultMessage when scene.Reaction.ClearedStatus == PoisonCureRules.PoisonAndStun:

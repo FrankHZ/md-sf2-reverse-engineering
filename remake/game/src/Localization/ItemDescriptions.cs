@@ -53,6 +53,7 @@ internal static class ItemDescriptions
         {
             "attack" => GameText.Get("item-description.raise-attack"),
             "boost" => GameText.Get("item-description.raise-defense-agility"),
+            "spoit" => GameText.Get("item-description.absorb-mp"),
             _ => "",
         };
     }
