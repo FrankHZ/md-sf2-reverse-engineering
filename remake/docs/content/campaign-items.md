@@ -69,7 +69,8 @@ and [current Search selection](../../content/private/pre-voyage-opening.json):
 | Remake pickup evidence | Placements |
 | --- | --- |
 | Observed | Galam Prison Map17 F206 (ordinary pickup to Bowie, empty repeat and carry through the cellar ladder), Tower exterior Map40 F132 (private engine pickup/repeat), Ribble Map8 F145 (ordinary pickup/repeat), Fairy Cave Map32 F163 (Sarah held it in both runs), Pacalon Castle Map36 F176 (ordinary pickup to the first free joined pack, with cold save). [Galam](../application/pre-voyage-optional-locations.md#galam-optional-exploration) · [Tower](../application/opening-session-lifecycle.md#tower-exterior-search-admission) · [Ribble](../application/campaign-field-search.md#new-granseal-and-ribble) · [Fairy Cave](../application/fairy-cave.md#walk-search-and-return) · [Pacalon](../application/pacalon-first-visit.md#castle) |
-| Selected, ordinary pickup **Unknown** here | Quake Granseal Map4 F217, Grans overworld Map66 F213, eastern Parmecia Map70 F188 and Harpy Pond approach Map67 F214. Map67 is now selected. The archived Harpy Pond approach package covered walking and save continuity. [Receipt index](campaign-flags.md#pickup-receipts-and-custody) |
+| Confirmed marker, approach and placement | Quake Granseal Map4 F217 and Grans overworld Map66 F213 use the shared loose-item grant. A full pack leaves the receipt clear. Individual ordinary pickup remains **Unknown**. [Search audit](../application/pre-voyage-optional-locations.md#granseal-and-outlying-interactions) |
+| Selected, ordinary pickup **Unknown** here | Eastern Parmecia Map70 F188 and Harpy Pond approach Map67 F214. Map67 is now selected. The archived Harpy Pond approach package covered walking and save continuity. [Receipt index](campaign-flags.md#pickup-receipts-and-custody) |
 | Ordinary pickup and retained receipts | Hassan Map9 F154 loose and F201 chest, and Elven Village Map23 F202 chest. The Hassan and overworld Save/Continue routes carry the items and receipts. [Search routes](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond) · [Hassan](campaign-flags-parmecia.md#hassan-the-shrines-and-taros) · [Elven Village items](../../../docs/research/chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md#four-item-rows-and-immediate-inventoryflag-consumers) |
 
 ## Promotion supplies
@@ -139,7 +140,9 @@ and the chapter consumers supply the class and effect definitions below.
   Battle Use in the remake spends the chosen holder's slot and preserves other items and receipt
   flags. Ordinary Field Use yields NoEffect and Caravan refuses. An ordinary Pacalon purchase,
   Battle26 Use and bilingual cold Continue cover the selected slot and HP. Ordinary F520 Map51
-  Search grants F159 and cold Continue preserves the receipt. [Use and reproduction](profiles-and-trust.md#healing-drop-use) ·
+  Search grants F159 and cold Continue preserves the receipt. Hawel's Map43 F136 uses the common
+  chest grant on default and F612. Its marker and faced approach are confirmed statically.
+  [Hawel Search](../application/pre-voyage-optional-locations.md#granseal-and-outlying-interactions) · [Use and reproduction](profiles-and-trust.md#healing-drop-use) ·
   [Map51 Search](../application/campaign-field-search.md#hassan-the-shrines-elven-village-and-harpy-pond)
 - **Fairy Powder** (item 5) can be found through Elven Village Search (F157) and Pacalon Castle
   Search (F174), and bought from admitted shop stock. Field and Caravan Use clear poison and paralysis.
