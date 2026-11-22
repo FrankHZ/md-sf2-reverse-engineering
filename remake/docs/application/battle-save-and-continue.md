@@ -96,7 +96,7 @@ continuation, later campaign content and arbitrary saves remain outside admissio
 
 ### Shared snapshot boundary
 
-The [field snapshot design](opening-session-lifecycle.md#unified-settled-field-snapshots) uses the
+The [field snapshot path](opening-session-lifecycle.md#unified-settled-field-snapshots) uses the
 same durable recovery policy as battle. Both modes capture one stable revision, validate admitted
 content and reconstruct detached state before attachment. They share the strict envelope, slot
 publication and readback, knownness rules for carried progress and the title history. Reuse the
@@ -117,8 +117,7 @@ register.
 
 The field cutover requires no battle wire change. Keep battle v2/v4/v5 and their existing
 compatibility, class/timed-counter and historical roster readers. `BattleRestore.Build` checks
-`OpeningSave.FieldCompatibility` today, so the field's new wire version must avoid a shared
-recipe revision bump. Keep the battle return route, retained allies, and legacy `SaveAnchor`
+`OpeningSave.FieldCompatibility` today, so field v6 preserves the shared recipe revision. Keep the battle return route, retained allies, and legacy `SaveAnchor`
 readable even after new field capture stops selecting completed-return recipes.
 
 ## Continuing across historical opening rosters
@@ -196,7 +195,7 @@ and sorted; duplicate deal identities reject before their constructor could norm
 
 The existing base64/SHA-256 envelope checks the exact decoded payload bytes. The 1 MiB encoded-file
 and depth32 limits, duplicate/unknown/missing-key rejection and UTC/slot/positive-sequence header
-checks apply to all three versions. After envelope/checksum validation, the untyped top-level version
+checks also apply to [field v6](opening-session-lifecycle.md#reader-and-writer-cutover). After envelope/checksum validation, the untyped top-level version
 and v2 kind are classified before typed payload binding or null/key inspection of that payload.
 Unknown versions/kinds produce `save-version`/`save-kind`, even with unfamiliar/null payload data;
 they do not become a malformed old payload eligible for downgrade. Invalid JSON or excessive depth
@@ -208,8 +207,8 @@ content: its `initializeParty:false` path calls the existing `PrivateBattleConte
 not growth initialization. No battle entry, AI, round generation or route program runs. The payload
 selects no input file or rule implementation. Failed admission returns no mountable session.
 
-[LocalSaveStore](../../game/src/Persistence/LocalSaveStore.cs) accepts the same two typed variants
-and a record validator. Both use one slot lock, sequence calculation, same-directory temp,
+[LocalSaveStore](../../game/src/Persistence/LocalSaveStore.cs) accepts legacy field, settled field
+and battle records with one validator. All use one slot lock, sequence calculation, same-directory temp,
 WriteThrough/flush, validated temp readback, atomic Move/Replace and validated final readback.
 Readbacks also compare exact bytes, in addition to sequence; this is an inexpensive transaction
 check. Recovery rereads the selected pair under the lock and uses the validated backup bytes.
@@ -221,7 +220,7 @@ attempted returns `save-publication-uncertain`, including failed final validatio
 published; callers must inspect the slot before deciding on a later operation, never retry or exit
 as though the attempt certainly failed. Only the operation's own unpublished temp is disposable.
 
-`OpeningPersistenceHost` consumes both typed variants. The shared recovery decision still forbids
+`OpeningPersistenceHost` consumes these typed records. The shared recovery decision still forbids
 downgrade behind unsupported versions/kinds or semantic/content rejection. Valid battle records
 use their own labels and restore path; they are never converted to v1 field progress.
 
@@ -278,8 +277,8 @@ admission or lifecycle repair is included; #1716 remains separate. Main-gate own
 
 `OpeningSaveJson.Write`/`WriteRecord` now emit **field version3 whenever `FieldScene` is populated**,
 including when the caller supplies an in-memory v1 record. V3 has the same field header/order and
-typed data as v1, with `formatVersion: 3`; no battle `kind` is added. The maintained reader/restore
-accepts field v1/v3 and battle v2/v4/v5. Previously accepted Creed scene-bearing v1 files still restore
+typed data as v1, with `formatVersion: 3`; no battle `kind` is added. The pre-cutover reader accepts field v1/v3 and battle v2/v4/v5. The current reader also
+accepts [field v6](opening-session-lifecycle.md#reader-and-writer-cutover). Previously accepted Creed scene-bearing v1 files still restore
 normally without rewriting. Scene-free outside/mine writes remain v1 and omit `fieldScene` through
 `WhenWritingNull`; an explicit null is a constructed input, not their normal writer output.
 

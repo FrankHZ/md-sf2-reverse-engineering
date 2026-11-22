@@ -54,17 +54,12 @@ internal static class Sf2FieldSceneRestore
 
     internal static ExplorationState Rebuild(ScenarioDefinition definition, SaveLocation location, BattleStartInput party,
         IReadOnlyList<int> flags, SavedFieldScene scene, out IReadOnlyList<int> enteredFlags, byte layer,
-        IReadOnlyList<AddMapEntity>? allocations = null)
+        StoryProgram? allocationProgram = null)
     {
         var anchor = location.Anchor;
         var source = definition.Exploration!.Maps[anchor.Map];
-        var setup = source.Setups.TryGetValue(new(scene.Setup), out var variant) ? variant :
-            new ExplorationSetupDefinition(new(scene.Setup), source.Entities, source.Events, source.OnLoad,
-                source.InputProgram, source.Population ?? throw new BattleRuleException("save-field-scene-population", "save.fieldScene"), source.Search);
-        var map = new ExplorationMapDefinition(source.Map, source.Layout, source.Traversal, setup.Entities,
-            setup.Events, setup.OnLoad, source.Battle, setup.InputProgram, population: setup.Population,
-            layoutEvents: source.LayoutEvents, overlays: source.OverlayOffsets, entryFlags: source.EntryFlags,
-            basePalette: source.BasePalette, viewAreas: source.ViewAreas, battles: source.Battles, search: setup.Search);
+        var map = source.BindSetup(scene.Setup == VoidSetup && source.Setup is null ? source.Body.Setup : new(scene.Setup));
+        var population = map.Population ?? throw new BattleRuleException("save-field-scene-population", "save.fieldScene");
         Require(scene.Actors is { Count: > 0 and <= 49 } && scene.Aliases is { Count: <= 64 } &&
             scene.CurrentEntities is { Count: > 0 and <= 49 } && scene.Layout is { Count: <= 4096 }, "save-field-scene-shape");
         var slots = scene.Actors.Select(actor => actor.Slot).ToHashSet();
@@ -75,10 +70,10 @@ internal static class Sf2FieldSceneRestore
             (number is >= 0 and < 32 or >= 128 and < 160) && id == "entity-" + number;
         Require(scene.Aliases.All(pair => Reference(pair.Key) && slots.Contains(pair.Value)) &&
             scene.Aliases.GetValueOrDefault("entity-0", -1) == 0 && scene.Actors.All(actor => Reference(actor.Entity)), "save-field-scene-alias");
-        var identities = setup.Entities.Select(row => row.Entity.Value)
-            .Concat(setup.Population.Followers.Select(row => "entity-" + row.Character))
-            .Concat((allocations ?? []).Select(row => row.Entity.Value)).Append("entity-0").ToHashSet();
-        Require(scene.Actors.All(actor => identities.Contains(actor.Entity)), "save-field-scene-actor");
+        var residents = map.Entities.Select((row, index) => (row, index)).ToLookup(pair => pair.row.Entity);
+        var allocations = (allocationProgram?.Instructions ?? []).Select((instruction, index) => (instruction, index))
+            .Where(pair => pair.instruction is AddMapEntity).ToLookup(pair => ((AddMapEntity)pair.instruction).Entity);
+        var followers = population.Followers.ToLookup(row => SceneEntities.Reference(row.Character));
         var player = scene.Actors.Single(actor => actor.Slot == 0);
         Require(player.Entity == "entity-0" && player.X == anchor.Position.X * 384 && player.Y == anchor.Position.Y * 384 &&
             player.Facing == anchor.Facing && player.Layer == layer && player.Visible && player.LeaderSlot == -1, "save-field-scene-player");
@@ -99,14 +94,33 @@ internal static class Sf2FieldSceneRestore
                 X = actor.X, Y = actor.Y, XDestination = actor.X, YDestination = actor.Y,
                 YSpeed = actor.SpeedY, FlagsA = actor.FlagsA, FlagsB = actor.FlagsB, Layer = actor.Layer,
             };
-            // Completed scene actions remain completed. Only a source resident's ordinary
-            // ambient action restarts, and never over a follower, hidden or parked actor.
-            var ambient = actor.LeaderSlot == -1 && actor.Visible && actor.X < 63 * 384 && actor.Y < 63 * 384
-                ? setup.Entities.FirstOrDefault(row => row.Entity.Value == actor.Entity)?.Actions : null;
-            return new ExplorationEntity(new(actor.Entity), motion, actor.Visible, ambient, Slot: actor.Slot,
+            var entity = new EntityRef(actor.Entity);
+            var resident = residents[entity].ToArray();
+            var follower = followers[entity].ToArray();
+            var allocated = allocations[entity].ToArray();
+            Require(actor.Slot == 0 || resident.Length + follower.Length + allocated.Length > 0, "save-field-scene-actor");
+            // Bind the reconstruction we can prove. If the old record is ambiguous, it remains
+            // readable but cannot present an invented origin for the next Save.
+            FieldEntityOrigin? origin = actor.Slot == 0 ? new PlayerEntityOrigin() :
+                (resident.Length, follower.Length, allocated.Length) switch
+                {
+                    (1, 0, 0) => new ResidentEntityOrigin(resident[0].index),
+                    (0, 1, 0) => new FollowerEntityOrigin(follower[0].Character),
+                    (0, 0, 1) => new AllocatedEntityOrigin(new(allocationProgram!.Id, allocated[0].index)),
+                    _ => null,
+                };
+            // Keep the old reader's reconstructed ambient program. Its phase begins here;
+            // historic current-action cursors do not exist in this wire format.
+            var ambient = actor.LeaderSlot == -1 && actor.Visible && actor.X < 63 * 384 && actor.Y < 63 * 384 && resident.Length != 0
+                ? resident[0].row.Actions : null;
+            return new ExplorationEntity(entity, motion, actor.Visible, ambient, Slot: actor.Slot,
                 Sprite: actor.Sprite, Follower: actor.LeaderSlot == -1 ? null :
                     new(actor.LeaderSlot, actor.OffsetX, actor.OffsetY, actor.WaitForDestination),
-                Priority: actor.Priority, RenderSize: actor.RenderSize);
+                Priority: actor.Priority, RenderSize: actor.RenderSize)
+            {
+                Origin = origin,
+                ActionSource = ambient is null ? null : new InitialEntityActions(),
+            };
         }).ToArray();
         // An invalid graph cannot be consumed by following, even if its actors are hidden.
         foreach (var actor in scene.Actors)
@@ -125,7 +139,7 @@ internal static class Sf2FieldSceneRestore
         enteredFlags = Array.AsReadOnly(entered.Order().ToArray());
         var world = new ExplorationState(map, layout, new("entity-0"), entities, party,
             aliases: scene.Aliases.ToDictionary(pair => new EntityRef(pair.Key), pair => pair.Value),
-            population: setup.Population, currentEntities: scene.CurrentEntities);
+            population: population, currentEntities: scene.CurrentEntities);
         Require(map.Traversal.IsWithinActiveArea(anchor.Position) &&
             FieldLayout.Word(world, world.PlayerEntity.Motion, anchor.Position.X, anchor.Position.Y) < 0xC000,
             "save-anchor-unusable");

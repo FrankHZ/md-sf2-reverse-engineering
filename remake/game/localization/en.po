@@ -9,6 +9,12 @@ msgstr "Save and return"
 msgid "save.and-quit"
 msgstr "Save and Quit"
 
+msgid "save.field-location"
+msgstr "Map {0} · ({1}, {2})"
+
+msgid "save.error.music-phase"
+msgstr "A music cue is still in progress. Return to play and try saving again after it finishes."
+
 msgid "save.battle-location"
 msgstr "Battle {0} · Round {1} · {2}"
 
@@ -540,7 +546,7 @@ msgid "save.details"
 msgstr "Details: {0}"
 
 msgid "save.offer"
-msgstr "Save current progress. Continue returns to {0}.\nNPC positions and music restart; your party and earned progress are preserved."
+msgstr "Save current progress. Continue returns to this visit at {0}."
 
 msgid "slot.record"
 msgstr "Slot {0} · {1}\n{2} · {3} UTC"
@@ -1294,7 +1300,7 @@ msgid "system.no-pad"
 msgstr "All stick directions are already assigned. Use keyboard / mouse for Menu, or edit the bindings file to free a pad input."
 
 msgid "system.save-reason"
-msgstr "Finish movement and story events, then try again at a save point."
+msgstr "Save is available on walkable ground after movement and story events settle."
 
 #. Arguments: caster name, spell identity, level.
 msgid "battle.scene.flame-breath"

@@ -9,6 +9,12 @@ msgstr "保存并返回游戏"
 msgid "save.and-quit"
 msgstr "保存并退出"
 
+msgid "save.field-location"
+msgstr "地图 {0} ·（{1}，{2}）"
+
+msgid "save.error.music-phase"
+msgstr "音乐仍在播放。请返回游戏，等音乐播放完毕后再存档。"
+
 msgid "save.battle-location"
 msgstr "战斗 {0} · 第 {1} 回合 · {2}"
 
@@ -540,7 +546,7 @@ msgid "save.details"
 msgstr "详情：{0}"
 
 msgid "save.offer"
-msgstr "保存当前进度，继续游戏将返回{0}。\nNPC 位置和音乐会重新开始，队伍与已获得的进度将保留。"
+msgstr "保存当前进度。继续游戏将返回当前场景的{0}。"
 
 msgid "slot.record"
 msgstr "槽位 {0} · {1}\n{2} · {3} UTC"
@@ -1294,7 +1300,7 @@ msgid "system.no-pad"
 msgstr "摇杆方向均已分配。请用键盘／鼠标进入菜单，或编辑按键配置，为菜单分配手柄输入。"
 
 msgid "system.save-reason"
-msgstr "请在可存档地点结束移动和剧情后再试。"
+msgstr "请在可步行的地面上结束移动和剧情后再试。"
 
 #. Arguments: caster name, spell identity, level.
 msgid "battle.scene.flame-breath"

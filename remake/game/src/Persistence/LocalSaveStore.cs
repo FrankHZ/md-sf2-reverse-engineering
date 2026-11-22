@@ -87,6 +87,8 @@ internal sealed class LocalSaveStore
 
     internal SlotWrite Write(int slot, SlotRead seen, OpeningSaveData data) =>
         Publish(slot, seen, new OpeningSaveRecord(1, slot, 1, DateTimeOffset.UtcNow, data));
+    internal SlotWrite Write(int slot, SlotRead seen, FieldSnapshotData data) =>
+        Publish(slot, seen, new FieldSnapshotRecord(slot, 1, DateTimeOffset.UtcNow, data));
     internal SlotWrite Write(int slot, SlotRead seen, BattleSaveData data) =>
         Publish(slot, seen, new BattleSaveRecord(slot, 1, DateTimeOffset.UtcNow, data));
     internal SlotWrite Recover(int slot, SlotRead seen) => Publish(slot, seen, null);

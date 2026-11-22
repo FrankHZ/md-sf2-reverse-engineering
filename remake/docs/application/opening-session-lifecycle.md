@@ -18,11 +18,10 @@ that same party. Existing Battle02/Yeel consumers are shared-state regression de
 an extension of this endpoint. The [capability matrix](../capability-status.md) owns delivered
 behavior; [UI gaps](../evidence/opening-ui-gaps.md) owns presentation acceptance.
 
-Use **manually selected local slots**. Field Save and Church Record use the implemented location
-recipes. Continue restores an older anchored record at its recorded landing and a scene-bearing
-record at its admitted position. Settled castle, palace and tower visits have bounded support.
-The [settled field snapshot design](#unified-settled-field-snapshots) defines the replacement for
-regional capture and keeps the older records readable.
+Use **manually selected local slots**. Field Save and Church Record capture the
+[settled field snapshot](#unified-settled-field-snapshots). Continue restores v6 at the physical
+player's saved location. Older anchored and scene-bearing records keep their admitted legacy
+landings.
 
 This persistence policy is a remake choice and does not reconstruct original SRAM. The
 [save-system contract](../../../docs/design/contracts/system/save-system.md) confirms two logical
@@ -31,7 +30,7 @@ player save UX Unknown at that earlier bounded evidence surface. The accepted
 [battle interaction baseline](../godot/battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
 separately confirms original USA battle Quit/save. The authorized remake battle Save/Continue
 [battle persistence owner](battle-save-and-continue.md) owns the implemented stable battle commit
-and fresh-process boundary; this document continues to own field recipes. No arbitrary story/battle snapshot,
+and fresh-process boundary. This document owns the field snapshot and legacy recipes. No arbitrary story/battle snapshot,
 autosave, cloud save, SRAM import,
 copy/delete UI, migration framework, whole-party naming, promotion or Battle03 ending is promised here.
 New Game selects a slot and writes only after final confirmation, including explicit occupied-slot
@@ -354,19 +353,19 @@ not a second mutable session and not `SessionSnapshot` serialization.
 | --- | --- |
 | Ally resources/progression | Field `Party.Actors` / active battle actors; persist every supported retained ally's ID, current HP/MP, EXP, kills/defeats, status, initialization/absence, attained level/base growth/maxima and learned spells. Persist current class if mutable in admitted content; otherwise bind its immutable class identity. Never regenerate attained growth on load. |
 | Equipment/inventory | Carried `SourceLoadout` and progression; persist all four complete item words and spellbook consistency. Recompute derived attack/movement from admitted rules; validate against class/equipment limits. No separate UI inventory copy. |
-| Flags/membership/following | `Story.Flags` plus content party mapping; persist flags and any authoritative non-flag membership/order for authored packages. Rebuild `PartyLists`; validate rather than overwrite inconsistent `ActiveAllies`. Follower selection/order survives, physical allocation/offsets restart by map recipe. |
+| Flags/membership/following | `Story.Flags` plus content party mapping; persist flags and any authoritative non-flag membership/order for authored packages. Rebuild `PartyLists`; validate rather than overwrite inconsistent `ActiveAllies`. The settled visit owns physical slots, follower links and follow phase. |
 | Gold/Deals/receipts | Party gold and `ItemCustody` are authoritative. Persist current amounts, once-flags and Deals counts. Add field receipt keys to their owning state when #1423 implements acquisition; keep the key namespace separate. Pending transaction state is never saveable. |
-| Map/position/geometry | Content owns base layout/population/setup and restoration recipe. Persist map, selected supported phase/recipe ID, safe landing anchor, and durable event flags/receipts. Do not persist whole layout, NPC script PCs or source RAM. Doors/roof copies and ambient positions reset as a map reload; persistent layout effects must be reproducible from saved flags/recipe. |
+| Map/position/geometry | Content owns the base layout and definitions. The snapshot binds the loaded body and population, live player and actors, layout differences, active roof backing and supported ambient cursors. Legacy recipes reconstruct their recorded anchors and scenes. |
 | RNG and world counters | Persist both live seeds and supported step counter/battle-request state (request must be false). Preserve EgressMap and any future gameplay counter actually read after restoration. Reject unknown required counters; do not confuse wall-clock time with simulation state. |
 | Story execution | Cursor, callers, waits, event caller, warp, battle entry/outcome and skip must be absent at save. No tokens/continuations serialized. Persist text cursor or other scalar semantic registers if subsequent programs read them without assignment; clear only under a documented recipe invariant. |
-| Logical display/audio | Close windows; reconstruct logical view, base/restored palette, player/follower sprite requests and required text settings from admitted map and saved semantic settings. Preserve current music cue and known previous-cue history where later music instructions consume it; start a fresh playback generation at step0. Reject unknown required history. No audio position or completion token is resumed. |
+| Logical display/audio | Close windows; reconstruct logical view, base/restored palette, player/follower sprite requests and required text settings from admitted map and saved semantic settings. Preserve current music cue and known previous-cue history where later music instructions consume it; bind a fresh generation. Retain logical phase and completion permission for admitted finite cues. Native attachment uses the available PCM delivery boundary. |
 | Host/presentation | New session ID/revision/observation sequence, input release barrier, menu focus, camera smoothing, nodes/textures/PCM handles and caches. Never persist resources, services, private paths or completion receipts. Settings persistence remains separate from game progress. |
 
 ### Eligibility and restoration recipes
 
-This describes the current writer and the reconstruction semantics retained for its records.
-[#2045](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2045) supersedes region-by-region
-expansion of this mechanism.
+These recipes describe the retained readers for field v1/v3. Ordinary Save uses the
+[settled snapshot](#unified-settled-field-snapshots). The historical New Game bootstrap and the
+anchored and scene-bearing readers keep their own reconstruction rules.
 
 Application exposes a query returning allowed/typed reason and a capture operation that rechecks
 the same session ID/revision. `CanWaitAtInput` alone is insufficient. Field capture requires the
@@ -487,41 +486,32 @@ can differ because this is a savepoint reload. This distinction must appear in p
 **High rigor.** [#2045](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2045) adopts
 one snapshot policy for saving the current stable visit. The risk is a successful-looking Continue
 that changes the next interaction, random draw, return or payment. This design uses the accepted
-code at `2cf93119` and the existing observations below. The implemented recipes remain in use
-until the new reader and writer are accepted. The ordinary playable campaign and admitted content
-bound the implementation. Adding a map using already supported mechanics should need ordinary
+code at `2cf93119` and the existing observations below. The recipes retain legacy reader
+ownership. The ordinary playable campaign and admitted content bound the implementation. Adding a map using already supported mechanics should need ordinary
 content admission only. Arbitrary mid-script suspension, new campaign admission, original SRAM
 and host lifecycle #1716 remain outside this scope.
 
 #### Confirmed capture, restore and attachment path
 
-1. `GameRoot.RequestFieldEntry` enters the ordinary clock's bounded settlement
-   (`ExplorationSessionView.BeginMenuEntry` / `CheckMenuEntry`). It freezes on successful menu
-   entry, or reports transition, interruption or exhaustion after at most 120 services. Those
-   services are real gameplay before capture. In Application, `OpeningSave.Query` checks
-   `RequireStable`, chooses `IOpeningRestorePolicy.Select`, clones `OpeningSaveData` with
-   `CaptureValues` and calls `OpeningRestore.Build` as admission. `Capture` rechecks the
-   session ID and revision. Query and capture consume no simulation.
-2. `OpeningPersistenceHost.ConfirmSave` sends field or battle data to `LocalSaveStore.Publish`.
-   `OpeningSaveJson` emits scene-free field v1 or scene-bearing field v3, and reads accepted
-   field v1/v3 and battle v2/v4/v5. The store validates both the candidate and actual encoded
-   readbacks. `SaveRecordRestore.Restore` dispatches a detached reconstruction against
-   `OpeningRestoreReader`'s configured definitions. The file cannot choose a package path.
-3. `OpeningRestore.Build` validates values and roster, calls `InitialStart` for the pre-on-load
-   New Game checkpoint, and otherwise sends the saved recipe through `Select` and `Rebuild`.
-   `Sf2OpeningRestore` routes to anchor rebuild or to scene restore with regional guards.
-   `Sf2FieldSceneRestore` reconstructs local state, then the outer builder creates a fresh
-   PlayerInput session. The scene-free rebuild runs entry flag and layout writes and synthesizes
-   population effects. Scene restore uses a saved cast and layout differences, with legacy
-   defaults and exceptions described below.
-4. `OpeningPersistenceHost.RestoreRecord` sets the restoration path for `GameRoot.MountSession`.
-   The host prepares candidate audio and restores cue/history before releasing the old session.
-   Battle also pre-attaches a disabled view and checks startup errors. Field view attachment is
-   later via `ShowExploration` / `ExplorationSessionView.Begin`. Check any required field projection
-   binding before releasing an old session during the new cutover. A detached PlayerInput result
-   alone establishes neither resource attachment nor functional next input.
+1. `GameRoot.RequestFieldEntry` gives unfinished movement and sprite readiness up to 120 ordinary
+   services. Successful entry holds gameplay while the host observes current music and offers a
+   revision. `GameSession.QueryFieldSnapshot` checks settled control and constructs a detached
+   control. `CaptureFieldSnapshot` rechecks session identity and revision. Both calls leave gameplay
+   clocks and RNG untouched.
+2. `OpeningPersistenceHost.ConfirmSave` sends the snapshot to `LocalSaveStore.Publish`.
+   `OpeningSaveJson` encodes field v6 and continues to read field v1/v3 and battle v2/v4/v5 within
+   the same envelope. Configured content owns all bindings. The store validates the candidate,
+   serialized temporary file and published readback.
+3. `SaveRecordRestore` binds v6 to `SettledFieldSnapshot.Build`. It resolves the saved map/setup,
+   population and action source references, reconstructs the player, carried progress and semantic
+   registers, and compares the reconstructed values. Existing v1/v3 records still use
+   `OpeningRestore.Build`. The New Game bootstrap runs ordinary on-load.
+4. `GameRoot.MountSession` prepares restored field audio and a disabled, hidden exploration view.
+   The view resolves the camera and loads the initial map planes and visible sprite resources
+   through the ordinary renderer. Successful preparation allows explicit backup publication
+   where requested, then the host adopts the prepared field and releases the previous session.
 
-See [Application capture](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs),
+See [Application capture](../../src/Sf2.Remake.Application/Runtime/Persistence/SettledFieldSnapshot.cs),
 [detached build](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs),
 [scene restore](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2FieldSceneRestore.cs),
 [codec](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs),
@@ -574,9 +564,8 @@ active roof stores its record ordinal and saved-under words. Reconstruction bind
 these values without running entry, population allocation, flag writes, chest/step copies, roof
 activation or rewards. A later walking step can restore the backed-up words.
 
-The physical visit supplies the map and actors for the
-[settled field candidate](#implemented-settled-field-candidate). Existing Save and Continue
-commands still use their legacy readers and writer.
+The physical visit supplies the map and actors for live field Save and v6 Continue
+through the [settled field candidate](#implemented-settled-field-candidate).
 
 Use `uv run sf2 verify engine` for [Galam Talk](../../tests/Sf2.Remake.Engine.Tests/GalamSaveTests.cs),
 [castle dynamics and follower motion](../../tests/Sf2.Remake.Engine.Tests/CastleSaveTests.cs),
@@ -598,9 +587,11 @@ and the configured legacy defeat fallback. Active battle return, transfer and se
 release control first. Completed outcome anchors drop out of the field candidate.
 
 The [action binder](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldVisitBindings.cs)
-admits the closed random-walk/wait/jump cycle from a bound resident or story installation, the
-configuration-only prefix of that cycle and the engine-owned Caravan walking follower program
-with its physical leaders. The wandering template emitted by `walking_actions` has a timer,
+admits closed random-walk and closed relative patrol cycles from a bound resident or story
+installation. A relative patrol alternates awaited moves and waits, returns to its starting
+offset and jumps back to the start of the cycle. The reader's appended stop is unreachable after
+the closing jump. Configuration-only prefixes and the engine-owned Caravan walking follower
+program with its physical leaders are also admitted. The wandering template emitted by `walking_actions` has a timer,
 speed, acceleration and flag prefix. A story prefix with other effects must complete before the
 closed cycle qualifies. Cursor, timer, destination, travel, velocity and seeds continue together.
 The action service uses physical X, so an invisible actor inside the active range can still move
@@ -629,8 +620,8 @@ idle and following, next receipt text, completed custody/join without replay and
 command. They refuse a real in-flight grant, Church service and warp, pending battle/outcome
 ownership and stale identity or revision. Victory controls move after detached reconstruction
 and preserve the refuge and actual landing even when the prior return anchor differs.
-Slot encoding, the ordinary writer, Church publication, legacy bootstrap and cold attachment
-remain part of the next slice.
+The [cutover controls](#implemented-field-snapshot-cutover) exercise these values through numbered
+files and fresh host attachment.
 
 #### Eligibility and return semantics
 
@@ -692,33 +683,24 @@ remain part of the next slice.
 
 #### Reader and writer cutover
 
-Ship one new top-level field format (next unused version is 6 at the audited baseline), with
-explicit required scene operands. An expanded v3 can be classified as corruption by older readers.
-Reuse the checksum envelope, strict key/presence checks, 1 MiB and depth32 bounds, pins and semantic
-identity checks. Use existing gameplay and rule revisions for content semantics. Keep the shared
-field compatibility revision used by `BattleRestore` and historical roster binding independent
-of the new wire shape. Do not bump it for this cutover. A content change requiring a new revision
-still follows its own compatibility boundary.
+Ordinary field Save writes v6 with a required exact visit, party and register record. Required
+operands must be present. Declared optional operands use key absence. Source references use
+closed tags with only the operands for that tag. The codec reuses the checksum envelope, strict
+keys, 1 MiB and depth32 bounds. The shared compatibility revisions still govern content, rules
+and historical roster expansion.
 
-Land the additional reader and detached validation before replacing normal field writes. Accept
-v1 (including historical nameless and accepted scene-bearing files), v3 and current battle v2/v4/v5
-with the current compatibility rules, including the explicitly supported historical roster
-upgrades. Old anchor slots still land at their recorded anchors. Old town/castle/tower slots use the
-legacy scene builder with its original limitations. Reading never upgrades slot bytes. An explicit
-new Save after playing an old slot captures the current reconstructed visit. Use fresh numbered
-slots during initial rollout and for any progress that must remain readable with the old binary.
-Retain an untouched compatible older slot for rollback. After overwrite, the retired build must
-classify the new primary as `save-version` and forbid backup promotion or overwrite, even with a
-readable backup. A restored session cannot export missing historical visit details or downgrade to
-an old recipe. Keep the separate initial New Game record and battle writing behavior.
+Continue reads v1 (including historical nameless and scene-bearing shapes), v3 and battle
+v2/v4/v5 with their existing compatibility. The v1 New Game bootstrap remains the pre-on-load
+checkpoint. The legacy scene reader binds the selected historical body, its resident and follower
+rows, and unique allocation instruction references already admitted by the old recipe. The old
+record establishes the starting state of this reconstructed visit. Where the old shape cannot
+establish a unique origin, Continue can play the reconstruction and new Save reports the missing
+binding. Legacy reads preserve the selected file bytes.
 
-Keep one publication path. Validate live revision and selected file version, serialize to a
-same-directory temp, validate its bytes and reconstruction, atomically publish and verify final
-readback. Confirm required field attachment before replacing a live session. `SlotRead.CanRecover`
-continues to distinguish explicit recovery of a missing/structurally corrupt primary from version,
-shape and semantic/content refusal. Preserve known-good backup bytes and the uncertain-publication
-inspection path. No migration pass, second backup scheme or additional digest is required.
-[Storage and rollback contract](battle-save-and-continue.md#future-shape-protection-and-binary-rollback)
+All formats share validated atomic publication and readback. Roll out using fresh numbered slots
+and keep an untouched compatible older slot. The pre-cutover binary classifies a v6 primary as
+`save-version` even when the backup is an older compatible record. It refuses promotion and writes
+to that occupied slot. See the [storage and rollback contract](battle-save-and-continue.md#future-shape-protection-and-binary-rollback).
 
 #### Mechanism implementation and acceptance
 
@@ -757,22 +739,82 @@ behavior controls where their fixtures match. A new roof test must leave the roo
 the exposed underlying words. A round-trip check of the overlaid words alone would pass the
 wrong reconstruction.
 
-**Unknown.** Cold host attachment and native playback/projection after restore remain to be
-measured. Engine controls cover the admitted continuing action families and bounded successor
-inputs above. Other serviced action families require an identified continuing owner and a
-successor control before admission. Original standing cadence/SRAM behavior and unsupported
-content remain open.
-This source audit uses existing restart observations only. Run focused engine behavior checks,
-adapter build and short native state/input/error observations when implementing the affected
-mechanism. Use one compatible configured world and a disposable slot pair at a time. Copy and
-compare at most one 4,096-word field layout plus a roof's bounded backing, the live cast and
-carried progress. Validate real encoded size at cutover against the existing slot cap. The
-admission work follows snapshot size and references into already loaded content.
+Use one configured world and one disposable slot pair at a time. The admission work follows
+the bounded working layout, roof backing, physical cast and carried progress, with references
+into already admitted content. Other serviced action families require an identified continuing
+owner and a successor control before admission. Original standing cadence and SRAM parity remain
+**Unknown**.
 
-### Implemented savepoint boundary
+#### Implemented field snapshot cutover
 
-`GameSession.QuerySave` and revision-checked `CaptureSave` export detached progress; neither services
-the world nor changes its seeds. `OpeningRestoreReader` admits immutable definitions through the
+**Confirmed in the remake.** [#2049](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2049)
+covers ordinary Save and a fresh title Continue at Map17 (18,4), facing west, from the published
+controlled kitchen start. The pre-cutover binary
+refuses ordinary Save in this kitchen visit. V6 binds the actual body, Slade's physical following
+and the residents, including the closed patrol of slot 12. Continue binds the native map camera,
+returns to that pose and accepts the next Left input through the ordinary warp to Map16. The
+encoded Map17 record is 19,030 bytes. The native Record and ordinary Save in Galam produce
+52,206 and 52,202 bytes. The decoded payloads nest six containers deep, within the shared depth32
+and 1 MiB encoded-file bounds.
+
+| Control | Result |
+| --- | --- |
+| Genuine Galam Church Record | Facing and speaking to the priest opens the real service. Record offers the settled visit at (27,7), publishes Map16 Egress and F399, and returns to control. A subsequent ordinary Save preserves those registers. The kitchen Save preserves Map3 and clear F399. |
+| Definite publication failure | A disposable lock path that is a directory refuses Record. The selected primary and backup retain their bytes and the live refuge and F399 keep their earlier values. |
+| Corrupt and unavailable primary | Explicit confirmation promotes a healthy v6 backup for structural corruption. Content identity, unsupported version and unknown field refusals leave both copies unchanged. |
+| Initial field attachment | A checksum-valid missing required sprite rejects before adoption. The live previous session retains control and accepts movement after closing the panel. Both files keep their original bytes. |
+| Native cue delivery | An already delivered finite cue stays silent with its fresh bound generation and retains completion eligibility. The host reports `restore-music-phase` for a pending finite phase that has advanced. The logical service step does not specify a native PCM offset. This is an explicit Save and Continue limit. |
+| Retained readers | Title Continue reads anchored Map3 and both tower returns, a controlled scene-bearing v1 Yeel file, v3 town/castle/tower files and a v2 battle. The historical Map3 roster extends deterministically. A new Save from the restored castle writes v6 to another slot and leaves the older primary byte-identical. Existing engine controls cover battle v4/v5 promoted and timed stat continuation. |
+| Pre-cutover protection | The adapter at `c62a53ef567c98e2e69e87532dcee7e9eddd38b8` opens the same configured world. A v6 primary beside a readable v3 backup shows `save-version`. Both Continue and a separate ordinary Save attempt leave both files byte-identical. |
+
+Use `uv run sf2 verify engine` and `uv run sf2 verify adapter`. The
+[settled field engine cases](../../tests/Sf2.Remake.Engine.Tests/SettledFieldSnapshotTests.cs)
+compare the next services and movement from the decoded v6 result, including RNG, hidden random
+walk, relative patrol and idle actor behavior. Existing battle controls live in
+[BattleSaveReturnTests](../../tests/Sf2.Remake.Engine.Tests/BattleSaveReturnTests.cs) and
+[BattleSaveProgressTests](../../tests/Sf2.Remake.Engine.Tests/BattleSaveProgressTests.cs).
+
+For the native control, build the Debug Godot adapter using the
+[locked SDK environment](../development-and-verification.md#locked-net-workflow). The published
+runner selects the existing `derived/issue2035/galam-town-v1` definitions, entry, scenes and opening
+inputs. It stages only the alternate startup descriptor in the checkout's ignored output and
+runs headless with the Dummy audio driver. The cold reader uses the published inputs and numbered
+slot directly. Use fresh identifiers for each run.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug -p:RestoreLockedMode=true
+if ($LASTEXITCODE -ne 0) { throw 'Debug adapter build failed' }
+$checkout = (Get-Location).Path
+$tools = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2049/unified-field-v6'
+$runner = Join-Path $tools 'Run.ps1'
+$stamp = [guid]::NewGuid().ToString('N').Substring(0, 10)
+$reports = (New-Item -ItemType Directory -Path "local/issue2049-$stamp").FullName
+$space = "issue2049-$stamp"
+& $runner -Checkout $checkout -ReportRoot $reports -Case writer -Namespace "$space-kitchen"
+& $runner -Checkout $checkout -ReportRoot $reports -Case reader -Namespace "$space-kitchen"
+& $runner -Checkout $checkout -ReportRoot $reports -Case church -Namespace "$space-church"
+& (Join-Path $tools 'Prepare.ps1') -Checkout $checkout -NamespacePrefix $space -WriterNamespace "$space-kitchen"
+```
+
+`Prepare.ps1` copies older controls and creates bounded failure witnesses in new disposable slots.
+Use `Run.ps1 -Case` with `legacy`, `legacy-resave`, `legacy-battle`, `bootstrap`, `church-fail`,
+`recover`, `refuse`, `resource-live` or `delivered-music` against the matching namespace. Pass
+`-ExpectedError` for a refusal. Use `-Project` with the Debug adapter project built from the
+pre-cutover commit for `refuse` and `old-overwrite` on the rollback pair. The published handoff
+records the completed checks and process results.
+
+<a id="implemented-savepoint-boundary"></a>
+
+### Implemented legacy savepoint boundary
+
+The older observations below use their original wire and recipe assertions. Reproduce those
+writer observations at their recorded revision, or at the pre-cutover revision when no other
+revision is specified. Use the current cutover controls for v6.
+
+Legacy compatibility controls use `GameSession.QuerySave` and revision-checked `CaptureSave` to
+produce their earlier progress shape without servicing the world or changing seeds. `OpeningRestoreReader` admits immutable definitions through the
 same private Content readers without invoking new-game party initialization. `OpeningRestore`
 validates the DTO, delegates location semantics to `Sf2OpeningRestore`, rebuilds through the existing
 map allocator/layout helpers and publishes a fresh session only after success. Ordinary settled
@@ -1339,9 +1381,9 @@ receipts remain outside this implementation.
 The [gameplay window agreement](../godot/presentation.md#gameplay-save-and-quit-windows-1450)
 uses the same SaveSlotView for field Save, Church Save, overwrite/result/error, backup and Quit.
 Gameplay retains the paused scene beneath a translucent scrim and a centered shared-style window;
-entry retains its Witch-safe arrangement. Slots show the saved character, the known recipe's
-readable destination and UTC timestamp, without promising exact-position or elapsed-time recovery.
-Unknown recipe labels remain unavailable. A backup's presence alone never promises recovery:
+entry retains its Witch-safe arrangement. Slots show the saved character, destination and UTC
+timestamp. V6 takes the display map and coordinates from the saved physical player. Old slots use
+their recipe destination labels. A backup's presence alone never promises recovery:
 only Continue labels it as an offered action, using the same existing compatibility/storage/music
 exclusions as the recovery consumer. Save and New Game describe backup presence without that action.
 Readable refusal/storage/uncertain-publication messages keep full diagnostic codes secondary.
@@ -1460,14 +1502,10 @@ to a 100 MiB total new-output budget, with sequential native runs and no duplica
 
 ## Format, compatibility and local storage
 
-The current field record uses explicit JSON with format version, slot, sequence number,
-display timestamp, content profile/package and gameplay revision, rule identity/revision,
-recipe revision and the owned party/world values above. It emits v1 for scene-free writes
-and v3 for scene-bearing writes. The [snapshot cutover](#reader-and-writer-cutover) adds a
-new field version with a required scene. The host maps a selected package ID to an
-already configured source; saved data cannot select a path, assembly, executable rule or trust root.
-Content still enforces existing pinned private provenance. Save files containing private gameplay
-state remain local and untracked, with no resource/export attachment to Issues or PRs.
+The [v6 field record](#reader-and-writer-cutover) includes the slot/sequence and UTC timestamp,
+content/rule identity and the detached scene values. The host resolves the selected package
+through its configured content source. Existing pinned provenance applies to every restore.
+Private save files remain local and untracked.
 
 Wrap the payload with an integrity digest over its exact stored UTF-8 bytes and verify it before
 semantic admission. This checksum detects accidental in-range data damage that JSON/range checks
@@ -1499,8 +1537,8 @@ dependency. Add only the storage boundary needed to return typed results; avoid 
 save manifest database or generalized transaction framework. Parsing bounds: 1 MiB per slot,
 bounded depth32, no duplicate/unknown fields, duplicate actor/receipt keys, invalid ranges, dangling
 IDs or incompatible membership/loadouts. Limits are initial engineering bounds, not gameplay facts;
-raise only with a measured legitimate record. A compact opening save should be tens of KiB, not the
-roughly 128 MiB private world export. CPU/memory are O(saved actors + flags + receipts), not O(assets).
+raise only with a measured legitimate record. Admission is bounded by the saved actors, flags, registers and layout words. It reuses already
+admitted content.
 
 Use an explicitly configured absolute save root outside removable worktrees, with a per-checkout
 namespace by default; no source-root/cwd inference, C-drive fallback, cache copying or shared mutable

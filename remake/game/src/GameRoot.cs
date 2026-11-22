@@ -206,17 +206,18 @@ public sealed partial class GameRoot : Node
         DisarmInput();
     }
 
-    private void BeginSource(IScenarioSource source)
+    private async void BeginSource(IScenarioSource source)
     {
         if (!EnsureWindowSupport()) { _windowStartup = () => BeginSource(source); return; }
         var outcome = GameSession.Start(source, Sf2.Remake.Application.Gameplay.RuleCompositions.ForGame());
         if (outcome is SessionStartFailed failed) { Fail(failed.Failure); return; }
         var started = (SessionStarted)outcome;
         if (started.Result.Failure is { } startFailure) { Fail(startFailure); return; }
-        MountSession(started);
+        await MountSession(started);
     }
 
-    private void MountSession(SessionStarted started, SessionAudio? preparedAudio = null)
+    private async Task MountSession(SessionStarted started, SessionAudio? preparedAudio = null,
+        bool restoring = false, bool settledField = false, Func<Task<Persistence.SlotWrite>>? recover = null)
     {
         GameText.Bind(started.Session.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
         SessionAudio? candidateAudio = preparedAudio;
@@ -225,18 +226,21 @@ public sealed partial class GameRoot : Node
             candidateAudio = new SessionAudio(this, candidateDefinition);
             if (candidateAudio.Error is { } error)
             {
-                candidateAudio.Dispose(); Fail(error, "Selected private audio content is unavailable."); return;
+                candidateAudio.Dispose();
+                if (restoring) SaveError(error);
+                else Fail(error, "Selected private audio content is unavailable.");
+                return;
             }
         }
-        if (_restoring && candidateAudio is not null)
+        if (restoring && candidateAudio is not null)
         {
-            candidateAudio.Restore(started.Result.Snapshot);
+            candidateAudio.Restore(started.Result, settledField);
             if (candidateAudio.Error is { } restoreAudioError)
             { candidateAudio.Dispose(); SaveError(restoreAudioError); return; }
             candidateAudio.SetPaused(true);
         }
         BattleSessionView? preparedBattle = null;
-        if (_restoring && SessionPresentationOwner.IsBattle(started.Result.Snapshot))
+        if (restoring && SessionPresentationOwner.IsBattle(started.Result.Snapshot))
         {
             // Build the actual battle resources while the previous session is still owned.
             // Attach only projects this already restored player boundary; it never advances it.
@@ -254,16 +258,47 @@ public sealed partial class GameRoot : Node
                 SaveError(error.Message); return;
             }
         }
-        // Admission and required audio preparation succeed before the old owner is released.
-        // A failed replacement leaves the old session paused behind the cancellable entry.
+        var view = preparedBattle ?? new BattleSessionView();
+        ExplorationSessionView? preparedField = null;
+        if (settledField)
+        {
+            preparedField = CreateField(new());
+            preparedField.ProcessMode = ProcessModeEnum.Disabled;
+            preparedField.Hide();
+            AddChild(preparedField);
+            try
+            {
+                BeginField(preparedField, started.Result, returning: false, candidateAudio!, preparing: true);
+                if (preparedField.PrepareSettledAttachment() is { } error) throw new InvalidOperationException(error);
+            }
+            catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
+            {
+                DisposeCandidate();
+                SaveError(error.Message);
+                return;
+            }
+        }
+        if (recover is not null)
+        {
+            // An explicit backup promotion waits for the same attachment preflight as Continue.
+            bool published = false;
+            try
+            {
+                var result = await recover();
+                if (!result.Success) { SaveError(result.Error!); return; }
+                published = true;
+            }
+            finally { if (!published) DisposeCandidate(); }
+        }
+        // Only the validated candidate can release the current session.
         ReleaseSession();
         CloseEntry();
         CloseSavePanel();
         _session = started.Session;
         _audio = candidateAudio;
-        var view = preparedBattle ?? new BattleSessionView { WorldViewport = _worldViewport };
         view.Name = "BattleSessionView";
-        if (preparedBattle is not null) _worldViewport = preparedBattle.WorldViewport;
+        _worldViewport = preparedField?.WorldViewport ?? preparedBattle?.WorldViewport ?? _worldViewport;
+        view.WorldViewport = _worldViewport;
         _battle = view;
         view.RequestSpeed = ShowBattleSpeed;
         view.RequestQuit = ShowBattleQuit;
@@ -277,7 +312,17 @@ public sealed partial class GameRoot : Node
         }
         view.LeaveBattle = result => ShowExploration(result, returning: true);
         if (SessionPresentationOwner.IsBattle(started.Result.Snapshot)) EnterBattle(started.Result);
-        else { view.Hide(); ShowExploration(started.Result, returning: false); }
+        else
+        {
+            view.Hide();
+            if (preparedField is null) ShowExploration(started.Result, returning: false);
+            else
+            {
+                _exploration = preparedField;
+                preparedField.Show();
+                preparedField.PublishAttachment();
+            }
+        }
         _menuButton = new Button { Name = "SystemMenuEntry", Text = GameText.Get("system.entry"), AnchorLeft = 1, AnchorRight = 1,
             OffsetLeft = -UI.StoryTheme.GameplayInset - 160, OffsetRight = -UI.StoryTheme.GameplayInset,
             OffsetTop = UI.StoryTheme.GameplayInset, OffsetBottom = UI.StoryTheme.GameplayInset + UI.StoryTheme.MenuHeight,
@@ -297,15 +342,29 @@ public sealed partial class GameRoot : Node
             }
             view.Attach(started.Session, result);
         }
+        ExplorationSessionView CreateField(WorldViewportLayout viewport) => new()
+        {
+            Name = "ExplorationSessionView", WorldViewport = viewport,
+            RequestServiceSave = () => RequestFieldEntry(() => ShowSettledSave(church: true)),
+        };
         void ShowExploration(SessionResult initial, bool returning)
         {
-            var exploration = new ExplorationSessionView { Name = "ExplorationSessionView", WorldViewport = _worldViewport,
-                RequestServiceSave = () => RequestFieldEntry(() => ShowSettledSave(church: true)) };
+            var exploration = CreateField(_worldViewport);
             _exploration = exploration; AddChild(exploration);
+            BeginField(exploration, initial, returning, _audio!);
+        }
+        void BeginField(ExplorationSessionView exploration, SessionResult initial, bool returning, SessionAudio audio, bool preparing = false)
+        {
             if (returning) { view.Reparent(exploration, false); exploration.MoveChild(view, 0); }
-            exploration.Begin(started.Session, initial, _input!, _audio!, EnterBattle,
+            exploration.Begin(started.Session, initial, _input!, audio, EnterBattle,
                 result => { view.Reparent(exploration, false); view.Attach(started.Session, result); },
-                returning ? () => { view.Reparent(this, false); view.Hide(); } : null);
+                returning ? () => { view.Reparent(this, false); view.Hide(); } : null, preparing);
+        }
+        void DisposeCandidate()
+        {
+            if (preparedField is not null && GodotObject.IsInstanceValid(preparedField)) preparedField.Free();
+            if (GodotObject.IsInstanceValid(view)) view.Free();
+            candidateAudio?.Dispose();
         }
     }
 
@@ -337,12 +396,15 @@ public sealed partial class GameRoot : Node
         // Inspection Menu entry is pure, but Save must be reachable before its real
         // music observation is published. Validate that live observation only for the offer.
         var save = SaveOffer(previewMusic: _battle?.Inspecting == true);
-        string saveReason = save.Error is "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion"
-            ? Explain(save.Error) : GameText.Get("system.save-reason");
-        if (_session!.Current.Active is ActiveBattle && save.Error is { } battleError) saveReason = Explain(battleError);
+        string saveReason = save.Error switch
+        {
+            null => "",
+            "field-visit-mode" => GameText.Get("system.save-reason"),
+            var code => Explain(code),
+        };
         _systemMenu.Present(save.Error is null && _fieldEntryFailure is null,
             _fieldEntryFailure is { } error ? Explain(error) : save.Error is null ? "" : saveReason, CanOpenSettings,
-            _session.Current.CanWaitAtInput && _exploration?.PartyMenuOpen != true,
+            _session!.Current.CanWaitAtInput && _exploration?.PartyMenuOpen != true,
             ShowSave, ShowSettings, ShowEntry, RequestQuit);
     }
     private void CoverSystemMenu() { _systemMenu?.SuspendPointer(); _systemMenu?.Hide(); }

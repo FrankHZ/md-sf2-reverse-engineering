@@ -3,8 +3,10 @@ using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
 using Sf2.Remake.Content.Persistence;
+using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.GodotAdapter.Entry;
 using Sf2.Remake.GodotAdapter.Persistence;
 
@@ -15,7 +17,6 @@ public sealed partial class GameRoot
     private SaveSlotView? _slots;
     private Guid? _savedSession;
     private long _savedRevision = -1;
-    private bool _restoring;
     private bool _saveNeedsInspection;
     private bool _battleSaveCaller;
     private int _saveSelection;
@@ -32,8 +33,15 @@ public sealed partial class GameRoot
             return new(offer.SessionId, offer.Revision, offer.Location is { } location
                 ? BattleDestination(_session.Definition, _session.Current.Story.Names, location.Encounter, location.Round, location.Actor) : "", offer.Error);
         }
-        var field = church ? _session.QueryChurchSave() : _session.QuerySave();
-        return new(field.SessionId, field.Revision, field.Location is { } target ? SavedDestination(target.Recipe) : "", field.Error);
+        var field = FieldOffer(church);
+        return new(field.SessionId, field.Revision, field.Landing is { } landing ? FieldDestination(landing) : "", field.Error);
+    }
+
+    private FieldSnapshotOffer FieldOffer(bool church)
+    {
+        var offer = _session!.QueryFieldSnapshot(church);
+        return offer.Allowed && !SessionAudio.CanRestoreFieldMusic(_session.Current.Story.Music)
+            ? offer with { Error = "restore-music-phase" } : offer;
     }
 
     private string? ObserveSaveMusic()
@@ -48,10 +56,10 @@ public sealed partial class GameRoot
     {
         var offer = _session is null ? null : SaveOffer();
         object? progress = offer is not { Error: null } ? null : _session!.Current.Active is ActiveBattle
-            ? _session.CaptureBattleSave(offer.SessionId, offer.Revision).Data : _session.CaptureSave(offer.SessionId, offer.Revision).Data;
+            ? _session.CaptureBattleSave(offer.SessionId, offer.Revision).Data : _session.CaptureFieldSnapshot(offer.SessionId, offer.Revision).Data;
         var world = _session?.Current.Exploration;
         object? availability = _session is null ? null : _session.Current.Active is ActiveBattle
-            ? _session.QueryBattleSave() : _session.QuerySave();
+            ? _session.QueryBattleSave() : FieldOffer(church: false);
         return System.Text.Json.JsonSerializer.Serialize(new { sessionId = _session?.Current.SessionId,
             revision = _session?.Current.Revision, names = _session?.Current.Story.Names, availability, progress, panel = _slots?.State,
             entityWork = world?.AllEntities.Where(entity => entity.Visible && entity.Actions is not null && !entity.IsScriptIdle)
@@ -182,11 +190,13 @@ public sealed partial class GameRoot
         "save-seed-missing" => GameText.Get("save.error.seed-missing"),
         "save-location-unavailable" => GameText.Get("save.error.location"),
         "save-profile-unavailable" or "save-battle-profile-unavailable" or "save-battle-route-unavailable" => GameText.Get("save.error.profile"),
-        "save-incompatible" or "save-version" or "save-kind" or "save-shape" or "save-player-layer" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
+        "field-snapshot-incompatible" or "save-incompatible" or "save-version" or "save-kind" or "save-shape" or "save-player-layer" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
         "save-publication-uncertain" => GameText.Get("save.error.uncertain"),
         "save-storage-unavailable" => GameText.Get("save.error.storage"),
         "save-slot-empty" => GameText.Get("save.error.empty"),
-        "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion" =>
+        "restore-music-phase" => GameText.Get("save.error.music-phase"),
+        "field-snapshot-busy" or "field-visit-action-pending" or "field-visit-sprite-pending" or
+            "save-busy" or "save-player-unsettled" or "save-entity-unsettled" or "save-story-motion" =>
             GameText.Get("save.error.busy"),
         "save-stale-revision" => GameText.Get("save.error.stale"),
         "save-battle-cancel-movement" => GameText.Get("save.error.battle-preview"),
@@ -246,13 +256,16 @@ public sealed partial class GameRoot
         if (read.Primary is OpeningSaveRecord record)
             return GameText.Get("slot.record", slot, DisplayNames.Member(definition, record.Data.Names, 0),
                 SavedDestination(record.Data.Recipe), SavedTime(record));
+        if (read.Primary is FieldSnapshotRecord snapshot)
+            return GameText.Get("slot.record", slot, DisplayNames.Member(definition, snapshot.Data.Names, 0),
+                FieldDestination(snapshot.Data.Landing), SavedTime(snapshot));
         if (read.Primary is BattleSaveRecord battle)
             return GameText.Get("slot.record", slot, DisplayNames.Member(definition, battle.Data.Story.Names, 0),
                 BattleDestination(definition, battle.Data.Story.Names, battle.Data.Battle.Encounter, battle.Data.Battle.Round,
                     battle.Data.Battle.Queue[battle.Data.Battle.Cursor].Actor!), SavedTime(battle));
         string status = read.Error switch
         {
-            "save-incompatible" or "save-version" or "save-kind" or "save-shape" => GameText.Get("slot.matching"),
+            "field-snapshot-incompatible" or "save-incompatible" or "save-version" or "save-kind" or "save-shape" => GameText.Get("slot.matching"),
             "save-storage-unavailable" => GameText.Get("slot.unreadable"),
             not null => GameText.Get("slot.unavailable"),
             _ when read.BackupError is not null => GameText.Get("slot.unreadable"),
@@ -263,6 +276,13 @@ public sealed partial class GameRoot
     }
 
     private static bool CanRecover(SlotRead read) => read.CanRecover;
+
+    private static string FieldDestination(FieldReturnAnchor landing)
+    {
+        string map = landing.Map.Value;
+        return GameText.Get("save.field-location", map.StartsWith("map-", StringComparison.Ordinal) ? map[4..] : map,
+            landing.Position.X, landing.Position.Y);
+    }
 
     // Display names for the existing finite recipes, not a new savepoint selection policy.
     private static string SavedDestination(string recipe) => recipe switch
@@ -342,11 +362,11 @@ public sealed partial class GameRoot
                     if (church)
                     {
                         SlotWrite? written = null;
-                        var recorded = session.RecordChurchSave(offer.SessionId, offer.Revision,
+                        var recorded = session.RecordChurchSnapshot(offer.SessionId, offer.Revision,
                             data => (written = store.Write(slot, existing, data)).Success);
                         return written ?? new SlotWrite(false, recorded.Error);
                     }
-                    var field = session.CaptureSave(offer.SessionId, offer.Revision);
+                    var field = session.CaptureFieldSnapshot(offer.SessionId, offer.Revision);
                     return field.Data is { } progress ? store.Write(slot, existing, progress) : new SlotWrite(false, field.Error);
                 }, publishing: true, publicationObserved: written =>
                 { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
@@ -407,20 +427,10 @@ public sealed partial class GameRoot
             {
                 _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery-record", Label(slot,
                     new(read.Previous, new(null, null)), definition)),
-                    (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.recover"), async () =>
-                    {
-                        if (_entryLoading || !EnsureWindowSupport()) return;
-                        try
-                        {
-                            var recovery = await LoadEntry(() => store.Recover(slot, read), publishing: true,
-                                publicationObserved: written =>
-                                { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
-                            if (recovery.Record is null) SaveError(recovery.Error!);
-                            else RestoreRecord(recovery.Record, definition);
-                        }
-                        catch (OperationCanceledException) { }
-                        catch (ArgumentException error) { SaveError(error.Message); }
-                    }));
+                    (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.recover"), () =>
+                        RestoreRecord(backup, definition, () => LoadEntry(() => store.Recover(slot, read), publishing: true,
+                            publicationObserved: written =>
+                            { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; }))));
                 _slots.ShowDetail(GameText.Get("save.details", read.Error ?? GameText.Get("slot.primary-missing")));
                 return;
             }
@@ -430,7 +440,7 @@ public sealed partial class GameRoot
         catch (ArgumentException error) { SaveError(error.Message); }
     }
 
-    private async void RestoreRecord(SaveRecord saved, ScenarioDefinition definition)
+    private async void RestoreRecord(SaveRecord saved, ScenarioDefinition definition, Func<Task<SlotWrite>>? recover = null)
     {
         try
         {
@@ -439,9 +449,8 @@ public sealed partial class GameRoot
             if (result is SessionStartFailed failed) { SaveError(failed.Failure.Code); return; }
             // The admitted initial recipe runs ordinary on-load and starts fresh-map playback.
             // Settled savepoints instead restore their saved music/history generation.
-            _restoring = saved is not OpeningSaveRecord { Data.Recipe: "new-game" };
-            try { MountSession((SessionStarted)result); }
-            finally { _restoring = false; }
+            await MountSession((SessionStarted)result, restoring: saved is not OpeningSaveRecord { Data.Recipe: "new-game" },
+                settledField: saved is FieldSnapshotRecord, recover: recover);
             if (_session?.Current.SessionId == ((SessionStarted)result).Session.Current.SessionId)
             { _savedSession = _session.Current.SessionId; _savedRevision = _session.Current.Revision; }
         }

@@ -123,14 +123,37 @@ internal sealed partial class SessionAudio : IDisposable
         if (cue is not null) Record("stopped", player, cue);
     }
 
-    internal void Restore(SessionSnapshot snapshot)
+    // The logical service clock is not a native PCM offset. An in-flight finite
+    // cue with an advanced phase cannot be resumed with the available playback data.
+    internal static bool CanRestoreFieldMusic(MusicProgress? music) =>
+        music is not { HistoryBound: true, EndStep: not null, Step: > 0, ActualDone: false, DeliverySkipped: false };
+
+    internal void Restore(SessionResult result, bool settledField)
     {
-        var music = snapshot.Story.Music;
+        var music = result.Snapshot.Story.Music;
         try
         {
+            if (settledField && !CanRestoreFieldMusic(music))
+            {
+                Error = "restore-music-phase";
+                return;
+            }
+            if (settledField && music is null)
+            {
+                Observe(result); // Bind the ordinary implicit map cue.
+                return;
+            }
             if (music is null) throw new InvalidOperationException("restore-music-required");
-            // Prepare the new playback and its logical history before replacing the old host session.
-            Play(music.Cue, remember: false);
+            // A delivered finite cue remains silent with its completed generation.
+            if (settledField && music is { EndStep: not null } and ({ ActualDone: true } or { DeliverySkipped: true }))
+            {
+                var cue = _assets[music.Cue];
+                if (cue.LoopBegin is not null) throw new InvalidOperationException("finite-music-required");
+                MusicCue = music.Cue;
+                TimerB = cue.TimerB;
+                MusicFinished = true;
+            }
+            else Play(music.Cue, remember: false);
             _history.Clear(); _history.Add(music.Cue); _history.AddRange(music.Previous);
             _context = (music.Map, music.Area, music.Battle);
             BindMusic(music.Generation, music.Cue);

@@ -26,7 +26,7 @@ internal static class Sf2NewGransealRestore
         ValidatePopulation(definition, location.Anchor.Map.Value, scene.Setup);
         var allocations = location.Anchor.Map.Value == "map-6" && flags.Contains(806) &&
             definition.Exploration!.Programs.TryGetValue("cs-55288", out var janet)
-                ? janet.Instructions.OfType<AddMapEntity>().ToArray() : [];
+                ? janet : null;
         return Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out enteredFlags, layer, allocations);
     }
 

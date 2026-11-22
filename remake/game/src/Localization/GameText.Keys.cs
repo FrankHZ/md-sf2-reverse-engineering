@@ -244,6 +244,8 @@ internal static partial class GameText
         ["battle.search-occupied"] = 1,
         ["save.and-return"] = 0,
         ["save.and-quit"] = 0,
+        ["save.field-location"] = 3,
+        ["save.error.music-phase"] = 0,
         ["save.battle-location"] = 3,
         ["save.battle-offer"] = 1,
         ["save.recovery-record"] = 1,
