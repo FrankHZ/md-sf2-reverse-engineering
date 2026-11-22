@@ -112,6 +112,30 @@ public static class MapBlockCopyActionReducer
     private const ushort ShowFlag = 0x0800;
     private const ushort HideFlag = 0x0C00;
 
+    public static MapBlockCopyLifecycleResult? ActivateOnLoad(
+        WorkingMapLayout layout,
+        MapBlockCopyLifecycleState lifecycleState,
+        MapViewUpdateState updateState,
+        int targetX,
+        int targetY,
+        MapBlockCopyActionTable actionTable)
+    {
+        // The target is in fixed-point map units in the packed plane's coordinates.
+        const int unitsPerCell = 384;
+        for (int index = 0; index < actionTable.Records.Count; index++)
+        {
+            var mutation = actionTable.Records[index].Mutation;
+            if (targetX < mutation.DestinationX * unitsPerCell ||
+                targetY < mutation.DestinationY * unitsPerCell ||
+                targetX > (mutation.DestinationX + mutation.Width - 1) * unitsPerCell ||
+                targetY > (mutation.DestinationY + mutation.Height - 1) * unitsPerCell)
+                continue;
+
+            return MapBlockCopyLifecycleReducer.Activate(layout, lifecycleState, updateState, index + 1, mutation);
+        }
+        return null;
+    }
+
     public static MapBlockCopyActionResult Apply(
         WorkingMapLayout layout,
         MapBlockCopyLifecycleState lifecycleState,

@@ -223,14 +223,7 @@ internal static class MapEventDispatcher
     {
         if (world.Definition.LayoutEvents is not { } events) return world;
         int x = target.Motion.X + offset.X * 384, y = target.Motion.Y + offset.Y * 384;
-        for (int index = 0; index < events.Roofs.Records.Count; index++)
-        {
-            var mutation = events.Roofs.Records[index].Mutation;
-            if (x < mutation.DestinationX * 384 || y < mutation.DestinationY * 384 ||
-                x > (mutation.DestinationX + mutation.Width - 1) * 384 || y > (mutation.DestinationY + mutation.Height - 1) * 384) continue;
-            var result = MapBlockCopyLifecycleReducer.Activate(world.Layout, world.RoofState, new(false, false), index + 1, mutation);
-            return world.WithLayout(result.Layout, result.LifecycleState);
-        }
-        return world;
+        var result = MapBlockCopyActionReducer.ActivateOnLoad(world.Layout, world.RoofState, new(false, false), x, y, events.Roofs);
+        return result is null ? world : world.WithLayout(result.Layout, result.LifecycleState);
     }
 }
