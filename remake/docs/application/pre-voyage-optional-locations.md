@@ -138,13 +138,10 @@ placements and descriptions. Report unsupported actions at their actual caller o
 
 ## Pre-voyage save coverage
 
-[#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029) tracks save coverage.
-The [settled field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots)
-supersedes the regional save queue. Ordinary Save uses supported live state, including a confirmed
-cold Continue at the Galam kitchen visit. The earlier observations record regional reader
-coverage and playable witness limits.
+Ordinary Save uses the [settled field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots)
+for supported live visits. The earlier observations below record legacy reader coverage.
 
-| Location | Delivered coverage and limits |
+| Location | Legacy coverage and limits |
 | --- | --- |
 | Granseal Map3 default/F609 and completed Battle01/07 returns | Map3 uses its opening or church anchor. `battle01-return` and `battle07-return` keep the recorded outcome anchor under their existing flag/landing gates. [Implemented field recipes](opening-session-lifecycle.md#eligibility-and-restoration-recipes) |
 | Yeel Map5 default/F650 | Cold Continue retains the loaded visit, live population, follower links, Healing Seed receipt and Church Egress. F530/F28 and worlds without the F650 body remain outside the recipe. [Yeel observation](opening-session-lifecycle.md#yeel-save-and-continue-observation) |
@@ -160,19 +157,52 @@ establish a Church caller. [Church and Egress decisions](opening-session-lifecyc
 
 <a id="remaining-save-coverage"></a>
 
-### Location observations and limits
+### Mechanism observations and limits
 
-| Visit | Evidence to retain when evaluating the shared mechanism |
-| --- | --- |
-| Maps17/18 Galam interiors and drawbridge | F505 palace return, F661/F662 doors and F663 reentry copies, F611 closed/open bridge, a reachable receipt and the physical follow state after prison staging. Ordinary stable control and snapshot continuation at those visits remain unverified. |
-| Map66 open Grans | Southern and north-Yeel/Hawel components, F213, movement/step counter, live followers and battle request. The enclosed Battle02 landing remains on its existing EGRESS recovery path. |
-| Map4 and Map44 quake town and docks | F624 completion, six layout copies, parked guards, royal followers and F217/F139/F140 receipts. Earlier and F507 dock setups, CURRENT stairs and the F640 substitution remain gameplay binding checks. A settled captain refusal and an active boarding transition exercise different save boundaries. |
-| Map41/42 southern shrine | The existing [played route](#play-the-southern-shrine) supplies same-map stairs and F133. Cold Save/Continue in those rooms remains unobserved. |
+[#2053](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2053) uses the High recovery
+contract and the existing private packages. The witnesses use ordinary save input, a different
+process for title Continue, and a subsequent ordinary input. Controlled positions and progress
+establish the current state, with natural reach limited to the linked play observations.
 
-The [mechanism acceptance](opening-session-lifecycle.md#implemented-field-snapshot-cutover)
-covers supported recovery mechanisms with representative visits. Unadmitted setups, new location
-content, Battle27+ and #1716 stay with their existing owners.
+| Mechanism | Representatives and result | Observation limit |
+| --- | --- | --- |
+| Loaded body, working cells and next transfer | **Confirmed.** Native v6 Continue at the F611 drawbridge upper landing approach (42,55) takes Left to the same-map stair destination (2,8). On the F507 dock setup at (1,25), Continue takes Left to fresh post-quake Map4 with F624. The earlier [kitchen cutover](opening-session-lifecycle.md#implemented-field-snapshot-cutover) covers the Galam interior return. Engine controls cover same-visit F663 versus fresh entry, changed working cells and roof backing. | Closed bridge turnaround, optional upper guard and palace-room interactions remain **Unknown** as ordinary route witnesses. A new setup still needs admitted bindings. |
+| Physical state and ambient work | **Confirmed.** Earlier Galam and castle controls preserve resident slots, retirement, following and bound ambient work. The post-voyage pond spot check exercises walking Caravan context and the stationary facing/refresh/timer cycle. Engine comparison covers the next sprite request and wait. | Riding and pending sprite delivery remain outside the save boundary. |
+| Committed pickup and pending ownership | **Confirmed.** Map42 Search at (19,23) grants one Power Water and sets F133. Save is unavailable during its receipt. After dismissal, v6 Continue at the chest preserves custody and repeat Search grants no second item. [Prior southern shrine route](#play-the-southern-shrine) covers full-pack retry and its ordinary entries/exits. The engine rejects unsettled transfer and battle ownership. | F205/F206 Galam receipts, F217 quake-town grant and arbitrary interrupted scripts remain outside the sampled observations. |
+| Open-field movement, encounter and return context | The southern Map66 and separate north-Yeel/Hawel component use the same step and transfer mechanisms. [Settled field and battle return controls](opening-session-lifecycle.md#implemented-settled-field-candidate) compare signed step counter, next movement after victory, current landing and independent Egress. Battle01–07 use existing [battle evidence](battle-save-and-continue.md#implemented-ordinary-host-boundary-c). | No new Map66-specific cold restart, F213 grant or enclosed Battle02 recovery observation. The enclosed cell uses existing EGRESS recovery. |
+| Post-voyage field and battle spot check | **Confirmed.** Cold v6 Continue at the Harpy Pond bank (10,9) retains the walking follower cast, prior victory progress, 13,264 gold and the parked raft berth. Left enters Battle20 through the confrontation. Ordinary battle Save writes v2. Cold Continue retains the player turn, RNG words, route and refuge. Stay advances to Bowie, who casts EGRESS for 8 MP and returns to Map6 with the carried gold and unfinished encounter. The battle primary keeps its bytes through Continue and play. | The witness covers one carried party and the Egress branch. Victory, defeat and retry have their existing [Battle20 observations](battle20-elric.md#leave-return-and-win). |
 
+### Reproduce the mechanism checks
+
+Use the [locked Debug adapter workflow](../development-and-verification.md#locked-net-workflow)
+and the registered `handoffs/issue2053/snapshot-mechanisms` driver. The driver reads the #2035
+published world and selects isolated disposable save namespaces and headless Dummy audio. It
+stages only the controlled approaches or a copy of the #1847 pond slot. Each invocation launches
+a separate native process. From the configured checkout root:
+
+```powershell
+. ./local/private-inputs.ps1
+$runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2053/snapshot-mechanisms/Run.ps1'
+$checkout = (Get-Location).Path
+$stamp = [guid]::NewGuid().ToString('N').Substring(0, 10)
+$reports = (New-Item -ItemType Directory -Path "local/issue2053-$stamp").FullName
+foreach ($visit in 'bridge', 'shrine', 'dock', 'pond') {
+    $namespace = "issue2053-$stamp-$visit"
+    $seed = @()
+    if ($visit -eq 'pond') { $seed = @('-PublishedSlot', 'pond-zh-CN.json') }
+    & pwsh -NoProfile -File $runner -Checkout $checkout -ReportRoot $reports -Case "$visit-write" -Namespace $namespace @seed
+    if ($LASTEXITCODE -ne 0) { throw "$visit Save failed" }
+    & pwsh -NoProfile -File $runner -Checkout $checkout -ReportRoot $reports -Case "$visit-read" -Namespace $namespace
+    if ($LASTEXITCODE -ne 0) { throw "$visit field Continue failed" }
+}
+& pwsh -NoProfile -File $runner -Checkout $checkout -ReportRoot $reports -Case battle-read -Namespace $namespace
+if ($LASTEXITCODE -ne 0) { throw 'Battle20 Continue failed' }
+```
+
+Slot 1 starts from a copied older record for the pond case. The ordinary field writer publishes
+v6 to slot 2 there. Left after cold Continue leads to Battle20, whose ordinary Save publishes
+slot 3. The pre-voyage cases use slot 1 and their controlled starts. See the published handoff
+for process results and preserved failures.
 
 ## Play the southern shrine
 
@@ -180,7 +210,7 @@ The `derived/issue2020/south-shrine-v1` publication extends the Yeel F650 world 
 revision 4. Map66's southern warp uses the existing fresh-load rule. The Map41 door changes
 the working marker before dispatch, and the two Map42 stairs use the current-map transfer.
 Search commits the item, F133 and opened chest together. Map41/42 use ordinary field control.
-The next supported Granseal or Yeel savepoint owns persistence. The source's F508, F999,
+Settled v6 Save and cold Continue are confirmed in the lower chamber. The source's F508, F999,
 F901 and F930 conditions retain their original positions. Late head-opening, attraction and
 sword-extraction scripts have explicit frontiers at their own calls.
 
