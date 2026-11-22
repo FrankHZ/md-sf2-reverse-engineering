@@ -86,7 +86,7 @@ exhaustion or transition leaves a paused menu with a readable Save-unavailable r
 Settled Yeel visits use the [same Save and Continue boundary](application/opening-session-lifecycle.md#implemented-savepoint-boundary).
 Continue restores the live population and follower links in the default and post-Hawel F650
 setups. The published world retains the Healing Seed receipt and Church Egress across restart. [Pre-voyage save coverage](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
-records the remaining location gaps.
+tracks the planned Granseal F506 and Galam Save/Record batches and the remaining location gaps.
 Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.
