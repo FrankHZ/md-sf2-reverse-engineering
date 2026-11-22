@@ -450,6 +450,100 @@ and semantic input/poll sequence must agree in gameplay results. Comparison with
 is limited to persistent resources/progress: NPC phases, elapsed music and subsequent draw timing
 can differ because this is a savepoint reload. This distinction must appear in player help and tests.
 
+### Planned pre-voyage settled visits
+
+**Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
+within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
+admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
+Start with Map3 F506, then Map16. Each batch owns its capture, independent Continue and restart
+evidence. Map5 default/F650 and the anchored opening and tower outcome recipes are already delivered.
+
+**Confirmed implementation structure.**
+[`OpeningSave.Query`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs) selects a
+recipe, captures detached progress and builds a restore candidate before offering a slot.
+[`OpeningRestore.Build`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
+reselects the recipe from the record and validates the party, registers, content and landing.
+[`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
+default/F609 but rejects the selected F506 setup. It has no Map16 field recipe. The [current world
+selection](../../content/private/pre-voyage-opening.json) includes both towns and their early setup
+bodies. Its Church checkpoint selection omits Maps3 and 16. A working priest menu or battle-return
+landing alone supplies neither a field recipe nor the Church publication binding.
+
+Use one finite settled-visit recipe per town with the existing
+[`SavedFieldScene`](../../src/Sf2.Remake.Application/Runtime/Persistence/SavedFieldScene.cs) and
+[`Sf2FieldSceneRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2FieldSceneRestore.cs). The
+recipe admits the live setup and records the current legal tile, facing and layer. Preserve actor
+slots and aliases, visibility, placement, active entities, follower links, and the working layout as
+differences from the admitted base. Resolve actor identities and the visit's Talk, Search, zone and
+warp bindings against admitted content. Retain saved story flags, including visit-local bits, and
+existing party, names, full item words, receipt flags, gold, custody, step counter, RNG, cue/history
+and Egress fields. Restore roof/view projections and restart only safe ambient work. Revalidate
+resource, graph and landing constraints, including legal layer and occupancy, in the detached
+candidate. Continue constructs the saved visit without setup init, battle return, payment, healing,
+recruitment or item grant. Ordinary exit and reentry use the normal map and script consumers.
+
+Preserve the three distinct return values. The save landing is the admitted visit position for these
+recipes. The persistent Egress register is the refuge selected by gameplay or Church. The transient
+previous-map/outcome return belongs to the active transfer or encounter. A later exit uses its real
+warp and a later battle derives its own return. Leave existing Map57/58 outcome anchors under their
+current recipes.
+
+**Granseal first.** Admit early `ms-map3-flag506` only with its concrete setup body. The [Kiwi source
+and route](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md)
+distinguish two F506 layout copies, F6 membership, capacity-dependent F38 and the same-visit follower
+created by the completed join script. The same-visit follower and a fresh joined visit with Kiwi
+retired have the same durable membership. A flag-only rebuild would drop that distinction. Use the
+live scene record for both, preserving Kiwi's name, roster and physical follow state independently.
+Validate his actor against the setup and the existing join/follow program's admitted operands if an
+additional identity is needed. Keep existing Map3 default/F609 anchored records and their restore
+behavior. Reject F543, unclassified/missing bodies and later quake substitution.
+
+**Galam second.** Map16 selects default or F663, while F505 prevents reissuing Battle05 and
+selects the adjoining Map17 variant. F664 governs guard 145 retirement on fresh entry. The [rally
+source](../../../docs/research/chapters/grans-opening/battle04-to-battle05-content-route.md#conditional-captivity-and-escape-content)
+and [victory
+return](../../../docs/research/chapters/grans-opening/battle05-to-battle06-content-route.md)
+distinguish a default visit with its army, that visit after `cs_51F88` hides the army and sets F663,
+and a fresh F663 visit with a different cast. Map16 Talk reads the [loaded definition's
+events](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationInteractionQuery.cs). Copying
+Yeel's setup-equals-fresh-selector check would relabel the settled post-rally default cast as F663,
+rejecting retired actor identities still in the scene or binding the wrong interaction table. Use the existing scene
+`Setup` field for the actual admitted visit definition. Resolve the loaded setup from its content
+binding and allow the bounded default/F663 visit transition on capture/read when the rally has
+completed. Validate the saved record against that visit's cast and event data. A flag-compatible
+setup string alone does not admit arbitrary actor identities or a later setup. No generic dispatch or
+scene-format change is required by this mismatch.
+
+**Church Record and Egress.** Use the existing source-table import for the Map3 `(32,13)` Up and
+Map16 `(27,7)` Up refuge bindings. Limit the new Record behavior to the admitted callers and phases,
+preserving earlier Map3 behavior and existing early defeat/retreat tuples. Require the matching
+refuge binding before offering the new Record behavior. After the actual Church program and portrait close, Record uses the same eligibility, destination preview and confirmation as
+menu Save. `GameSession.RecordChurchSave` validates a candidate containing F399 and the selected
+Church Egress register and commits it to the live session only after successful slot
+publication/readback. The record retains the current legal visit tile, which can differ from the
+Church refuge. Ordinary Save preserves the incoming Egress and F399 values. Cancel, stale
+confirmation and a definite publication failure keep the old slot and live F399/Egress. Reuse the
+existing uncertain-publication inspection path. Field EGRESS retains its walking/overworld, F399 and
+F64/F640 guards. Battle Egress and defeat retain their own route selection. See the [pinned anchor
+table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/global/savepointmapcoords.asm)
+and [`FindEgress`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs).
+
+**Implementation boundary.** Keep admission, required scene and rebuild consistent in the SF2
+persistence owner. Use existing v3 scene records and preserve compatibility identity for the additive
+recipes. Keep older scene-free records on their existing builders and avoid silently falling back
+when a new recipe's scene is missing or mismatched. Bind the localized Save/Continue destination in
+the existing host catalog. Reuse existing settled-input checks for movement, sprite/follower
+readiness, dialogue/windows, quake/fade, pending warp/battle and in-flight item, receipt and service
+work. Unknown required music/accounting or unusable scene/landing remains a typed refusal before
+publication. Inspect the real scene for any unsupported persistent operand before extending the
+shared mechanism. Add a focused engine assertion where the current tests miss a gameplay regression,
+and run the affected adapter compile and short native observations at implementation.
+
+**Unknown at this design boundary.** The existing route observations establish the named visits and
+interactions. Cold recovery, ambient restart, exact in-visit aliases and post-load inputs for the
+proposed recipes need the bounded acceptance in the linked batches. Use the concrete missing setup,
+actor identity, layout effect, projection or register to route any failure to its owner.
+
 ### Implemented savepoint boundary
 
 `GameSession.QuerySave` and revision-checked `CaptureSave` export detached progress; neither services
