@@ -107,12 +107,14 @@ Battle01/07 return slots still land at their recorded outcome anchors. Text, cho
 battle work retain their time owners. Follower convergence is bounded. Original standing cadence
 remains unknown and revision-based Quit may warn after animation-only time.
 
-**Implemented physical boundary, High.** The
-[detached field visit](application/opening-session-lifecycle.md#implemented-physical-visit-boundary)
-rebuilds the exact loaded body, retained population, physical cast, aliases, layout and roof backing.
-Engine controls compare the next Talk, movement and transfer. Ambient and service continuation
-and the slot/host cutover are pending. Current field and battle records use their existing readers
-and writers. The [coverage table](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
+**Implemented detached field candidate, High.** The
+[settled field snapshot](application/opening-session-lifecycle.md#implemented-settled-field-candidate)
+reconstructs the exact loaded visit, cast, layout and roof backing with bound ambient actions,
+RNG, follower scheduling and the registers consumed by the next field input. Engine controls
+compare ordinary successor ticks, receipt text and movement after a finished battle outcome.
+Admission checks current control and supports settled walking, including a parked raft berth.
+Current slots use their existing readers and writers. Codec, slot and native Continue integration
+remain pending. The [coverage table](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
 tracks delivered visits and remaining gaps. Regional recipe dispatch is paused.
 
 ## Battle continuation state

@@ -24,12 +24,13 @@ internal sealed record FieldVisitSnapshot(FieldMapBody Body, FieldPopulationSour
             { TravelMode: FieldTravelMode.Walking, Quake: 0, Definition.HasBattleSceneArea: false } world)
             throw new BattleRuleException("field-visit-mode", "fieldVisit");
 
+        var slots = world.AllEntities.Select(entity => entity.Slot).ToHashSet();
         var actors = world.AllEntities.Select(entity =>
         {
             Require(entity.Origin is not null, "actor-origin");
             Require(!entity.WaitingForSprite, "sprite-pending");
             Require((entity.Actions is null) == (entity.ActionSource is null), "action-origin");
-            Require(entity.Actions is null || entity.IsScriptIdle || entity.Motion.X >= 0x7000, "action-pending");
+            Require(FieldVisitBindings.IsSettledAction(entity, slots), "action-pending");
             return new FieldVisitActor(entity.Entity, entity.Slot, entity.Origin!, entity.Motion,
                 entity.Follower, entity.ActionSource, entity.ActionCursor, entity.WaitingForMotion,
                 entity.Visible, entity.Sprite, entity.SharedSpriteSlot, entity.RenderSize, entity.Priority,
@@ -74,14 +75,14 @@ internal sealed record FieldVisitSnapshot(FieldMapBody Body, FieldPopulationSour
             Require(actor.Origin is not RaftEntityOrigin || actor.Sprite == RaftRuntime.Sprite, "raft");
             var actions = actor.ActionSource is { } source
                 ? bindings.Actions(source, initial, Player, actor.Entity, actor.Slot) : null;
-            Require(actions is null || actor.ActionCursor >= 0 && actor.ActionCursor < actions.Actions.Count &&
-                (actions.Actions[actor.ActionCursor] is IdleEntityAction || actor.Motion.X >= 0x7000), "action-pending");
-            return new ExplorationEntity(actor.Entity, actor.Motion, actor.Visible, actions, actor.ActionCursor,
+            var entity = new ExplorationEntity(actor.Entity, actor.Motion, actor.Visible, actions, actor.ActionCursor,
                 actor.WaitingForMotion, actor.Slot, actor.Sprite, actor.Follower, Priority: actor.Priority,
                 RenderSize: actor.RenderSize, ShadowRemovedAt: actor.Shadowless ? 0 : null, SharedSpriteSlot: actor.SharedSpriteSlot)
             {
                 Origin = actor.Origin, ActionSource = actor.ActionSource,
             };
+            Require(FieldVisitBindings.IsSettledAction(entity, slots), "action-pending");
+            return entity;
         }).ToDictionary(actor => actor.Slot);
         ValidateFollowers(entities);
         Require(population is not null || Aliases.All(pair => entities[pair.Value].Entity == pair.Key), "aliases");
@@ -100,6 +101,19 @@ internal sealed record FieldVisitSnapshot(FieldMapBody Body, FieldPopulationSour
         ValidateLanding(world);
         return world;
     }
+
+    internal bool SameValues(FieldVisitSnapshot other) =>
+        this == (other with { Actors = Actors, Aliases = Aliases, CurrentEntities = CurrentEntities,
+            Layout = Layout, Roof = Roof, Graphics = Graphics }) &&
+        Actors.SequenceEqual(other.Actors) && SameBindings(Aliases, other.Aliases) &&
+        CurrentEntities.SequenceEqual(other.CurrentEntities) && Layout.SequenceEqual(other.Layout) &&
+        (Roof is null ? other.Roof is null : other.Roof is { } roof && Roof.RecordOrdinal == roof.RecordOrdinal &&
+            Roof.SavedWords.SequenceEqual(roof.SavedWords)) && SameBindings(Graphics, other.Graphics);
+
+    internal static bool SameBindings<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> left, IReadOnlyDictionary<TKey, TValue> right)
+        where TKey : notnull =>
+        left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out var value) &&
+            EqualityComparer<TValue>.Default.Equals(pair.Value, value));
 
     private WorkingMapLayout RebuildLayout(ExplorationMapDefinition map)
     {

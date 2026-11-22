@@ -574,11 +574,9 @@ active roof stores its record ordinal and saved-under words. Reconstruction bind
 these values without running entry, population allocation, flag writes, chest/step copies, roof
 activation or rewards. A later walking step can restore the backed-up words.
 
-The reconstruction boundary returns physical exploration state for a walking visit. It binds
-installed idle and dormant action records and refuses serviced non-idle programs. The next slice
-owns ambient admission and phase, story/service registers and the complete settled-save policy.
-Following cutover work owns legacy-to-snapshot bootstrap, disk publication and field attachment.
-The existing Save and Continue commands still use their legacy readers and writer.
+The physical visit supplies the map and actors for the
+[settled field candidate](#implemented-settled-field-candidate). Existing Save and Continue
+commands still use their legacy readers and writer.
 
 Use `uv run sf2 verify engine` for [Galam Talk](../../tests/Sf2.Remake.Engine.Tests/GalamSaveTests.cs),
 [castle dynamics and follower motion](../../tests/Sf2.Remake.Engine.Tests/CastleSaveTests.cs),
@@ -586,6 +584,53 @@ Use `uv run sf2 verify engine` for [Galam Talk](../../tests/Sf2.Remake.Engine.Te
 [transfers, sparse raft and roof exit](../../tests/Sf2.Remake.Engine.Tests/FieldVisitSnapshotTests.cs).
 These controlled engine visits take an ordinary successor with equivalent story controls and verify
 physical or interaction results. Legacy field commands have their own controls in the same project.
+
+#### Implemented settled field candidate
+
+**Confirmed (engine).** [SettledFieldSnapshot](../../src/Sf2.Remake.Application/Runtime/Persistence/SettledFieldSnapshot.cs)
+offers the current session and revision, checks them again for capture and rebuilds a detached
+PlayerInput candidate using exact content compatibility. Capture and rebuild apply the ordinary
+control predicates, physical landing and readiness checks. They compare recaptured values and the
+live action stream against its producer binding. These calls run no program, tick, service or
+publication. Regional recipes still own existing records. The current player supplies the Continue
+position, while the independent Egress register resolves against admitted Church or route refuges
+and the configured legacy defeat fallback. Active battle return, transfer and service owners must
+release control first. Completed outcome anchors drop out of the field candidate.
+
+The [action binder](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldVisitBindings.cs)
+admits the closed random-walk/wait/jump cycle from a bound resident or story installation, the
+configuration-only prefix of that cycle and the engine-owned Caravan walking follower program
+with its physical leaders. The wandering template emitted by `walking_actions` has a timer,
+speed, acceleration and flag prefix. A story prefix with other effects must complete before the
+closed cycle qualifies. Cursor, timer, destination, travel, velocity and seeds continue together.
+The action service uses physical X, so an invisible actor inside the active range can still move
+or draw RNG. Retired off-map records retain their bound dormant phase and aliases or removals.
+Terminal idle stays installed and takes its own timer service. A missing program leaves the
+generic follower scheduler eligible. Unfinished actor motion without a supported continuing
+owner, pending sprite readiness and unbound serviced work refuse capture.
+
+| Settled value | Producer and next consumer |
+| --- | --- |
+| Party progress and story registers | The shared carried-value checks reconstruct admitted classes, spells, equipment, roster, active order and custody. `JoinPartyMember` can publish a counted list before its conditional active bit. The candidate preserves counted lists and validates active order from flags and membership. It retains completed item receipt, dialogue item, speaker, text cursor/settings and names for later text commands. A receipt can survive after its owning grant/caller has completed. |
+| Field service and view | Ordinary dispatch reads the nullable entity-service register. The next window pass can read the retained fix bit. The loaded view area and autoscroll, follow and plane phase bind to the stored map body. Closed text geometry is recreated when the next window opens. `ProgramRunner` restores player view ownership on field input. |
+| Appearance and clocks | Both RNG streams, signed step count and logical simulation tick survive, along with the active base palette and fade period. A completed color remap retains both lookups because a later color restore reads the previous copy. The palette transition and sprite acknowledgements receive fresh presentation bookkeeping. The high byte read by gameplay comes from ThinkingSeed. The last text-poll diagnostic copy is omitted. |
+| Music | The current cue and ordered history survive. A bound finite cue retains logical clock and completion eligibility used by the sound helper, with a fresh generation. An untimed cue has no consumer of its former timing registers. The implicit map default stays implicit. The detached boundary carries no playback handles, sample offsets or delivery waits. |
+
+The accepted mode is walking, including visits with a raft berth and the supported local physical
+record. Raft and Caravan riding, the enclosed Battle02 recovery cell, pending motion without a
+bound continuation, arbitrary interpreter suspension and unfinished view, resource or color work
+remain outside this boundary. Existing Egress behavior continues to handle the recovery cell.
+
+Run `uv run sf2 verify engine` for
+[settled field successor controls](../../tests/Sf2.Remake.Engine.Tests/SettledFieldSnapshotTests.cs)
+and [battle return controls](../../tests/Sf2.Remake.Engine.Tests/BattleSaveReturnTests.cs). The
+controls compare subsequent ordinary RNG and motion in ambient wait and movement phases, retained
+idle and following, next receipt text, completed custody/join without replay and a second color
+command. They refuse a real in-flight grant, Church service and warp, pending battle/outcome
+ownership and stale identity or revision. Victory controls move after detached reconstruction
+and preserve the refuge and actual landing even when the prior return anchor differs.
+Slot encoding, the ordinary writer, Church publication, legacy bootstrap and cold attachment
+remain part of the next slice.
 
 #### Eligibility and return semantics
 
@@ -712,12 +757,11 @@ behavior controls where their fixtures match. A new roof test must leave the roo
 the exposed underlying words. A round-trip check of the overlaid words alone would pass the
 wrong reconstruction.
 
-**Unknown.** Actual continuation parity for ambient phase and cold host attachment
-remains to be measured. Reversible roof backing and a sparse local raft in a walking visit
-have passed detached engine comparisons. The admitted action producers that can
-leave an unbound active program or an altered view/color state at PlayerInput need a producer audit
-in slices 1–2. Where a presentation operand is never read again, establish the invariant before
-omitting it. Original standing cadence/SRAM behavior and unsupported content remain open.
+**Unknown.** Cold host attachment and native playback/projection after restore remain to be
+measured. Engine controls cover the admitted continuing action families and bounded successor
+inputs above. Other serviced action families require an identified continuing owner and a
+successor control before admission. Original standing cadence/SRAM behavior and unsupported
+content remain open.
 This source audit uses existing restart observations only. Run focused engine behavior checks,
 adapter build and short native state/input/error observations when implementing the affected
 mechanism. Use one compatible configured world and a disposable slot pair at a time. Copy and

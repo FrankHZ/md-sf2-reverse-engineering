@@ -57,6 +57,10 @@ public sealed class BattleSaveReturnTests
         var (basis, original) = BattleSaveFixture.Create();
         var encounter = original.Battle.Definition.WithOutcome(original.Battle.Definition.Outcome!, retreatItems: [new(115, "Angel Wing")]);
         var world = basis.Exploration!;
+        var sprites = new[] { 0, 1, RaftRuntime.Sprite }.ToDictionary(sprite => sprite,
+            sprite => new ExplorationSpriteVisual(sprite, [], null, 0));
+        world = new(world.Maps.Values, world.Programs.Values, provenance: world.Provenance,
+            partyFlags: world.PartyFlags, visuals: world.Visuals! with { Sprites = sprites });
         if (authoredPlayer)
         {
             var maps = world.Maps.Values.Select(m => new ExplorationMapDefinition(m.Map, m.Layout, m.Traversal,
@@ -122,6 +126,43 @@ public sealed class BattleSaveReturnTests
         Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-0").Status);
         Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-1").Hp);
         Assert.Null(resumed.Story.EnteringBattle); Assert.Null(resumed.Story.FieldPlayer);
+        if (kind == BattleOutcomeKind.Victory)
+        {
+            var rules = RuleCompositions.Sf2();
+            Assert.NotNull(resumed.Story.OutcomeReturn);
+            Assert.NotNull(resumed.Story.SaveAnchor);
+            var visit = SettledFieldSnapshotTests.Capture(definition, resumed);
+            var detached = visit.Build(definition, rules).Snapshot;
+            Assert.Null(detached.Story.OutcomeReturn);
+            Assert.Null(detached.Story.SaveAnchor);
+            Assert.Equal(resumed.Story.EgressMap, detached.Story.EgressMap);
+            Assert.Equal(berth, detached.Story.Raft);
+
+            SessionSnapshot East(SessionSnapshot start)
+            {
+                var result = ExplorationDispatcher.Submit(definition, start, new Move(ExplorationDirection.East), rules);
+                Assert.Null(result.Failure);
+                for (int tick = 0; tick < 40 && !result.Snapshot.CanWaitAtInput; tick++)
+                {
+                    result = ExplorationDispatcher.Submit(definition, result.Snapshot,
+                        new AdvanceSimulation(result.Snapshot.Story.Wait?.Token), rules);
+                    Assert.Null(result.Failure);
+                }
+                Assert.True(result.Snapshot.CanWaitAtInput);
+                return result.Snapshot;
+            }
+
+            var moved = East(resumed);
+            var replay = East(detached);
+            Assert.Equal(new MapPosition(resumed.Exploration.PlayerEntity.Position.X + 1,
+                resumed.Exploration.PlayerEntity.Position.Y), replay.Exploration!.PlayerEntity.Position);
+            Assert.Equal(moved.Exploration!.PlayerEntity.Motion, replay.Exploration.PlayerEntity.Motion);
+            Assert.Equal(moved.Story.StepCounter, replay.Story.StepCounter);
+            Assert.Equal(moved.Exploration.Party.Gold, replay.Exploration.Party.Gold);
+            var later = SettledFieldSnapshotTests.Capture(definition, moved).Build(definition, rules).Snapshot;
+            Assert.NotEqual(moved.Story.SaveAnchor!.Position, later.Exploration!.PlayerEntity.Position);
+            Assert.Equal(moved.Exploration.PlayerEntity.Position, later.Exploration.PlayerEntity.Position);
+        }
         if (authoredPlayer)
         {
             Assert.Equal(new EntityRef("authored-player"), resumed.Exploration.Player);
