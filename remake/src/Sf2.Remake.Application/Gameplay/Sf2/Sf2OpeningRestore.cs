@@ -385,7 +385,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             if (location.Recipe != "north-parmecia" || scene.Setup != cliff.Setup?.DefaultSetup.Value || !flags.Contains(256))
                 throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
             var allocations = flags.Contains(750) && definition.Exploration.Programs.TryGetValue("cs-4ffda", out var blast)
-                ? blast.Instructions.OfType<AddMapEntity>().ToArray() : [];
+                ? blast : null;
             var loaded = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer, allocations);
             // Continue the saved encounter visit. A fresh map transfer owns the temporary reset.
             enteredFlags = flags;
@@ -406,12 +406,12 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             enteredFlags = flags;
             // The live merchant finished in idle. Reinstalling eas_Init here would reset his speed.
             if (sourceMap.Map.Value == "map-25" && flags.Contains(800) && town.TryResolveEntity(new("entity-133"), out var merchant))
-                town = town.WithEntity(merchant with { Actions = null });
+                town = town.WithEntity(merchant with { Actions = null, ActionSource = null });
             // The completed castle scene leaves the centaur idle at speed 8. A fresh visit
             // with the same flag still starts his original ambient script at speed 32.
             if (sourceMap.Map.Value == "map-36" && flags.Contains(810) &&
                 town.TryResolveEntity(new("entity-131"), out var centaur) && centaur.Motion.XSpeed == 8)
-                town = town.WithEntity(centaur with { Actions = null });
+                town = town.WithEntity(centaur with { Actions = null, ActionSource = null });
             return town;
         }
         if (scene is not null && location.Anchor.Map.Value == "map-30")

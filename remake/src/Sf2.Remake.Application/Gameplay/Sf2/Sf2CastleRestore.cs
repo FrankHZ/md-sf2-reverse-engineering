@@ -49,7 +49,7 @@ internal static class Sf2CastleRestore
         // F610 skips that arrival on fresh entry. Its extra physical slots belong to the script.
         var procession = scene.Setup == "ms-map19-flag609" && flags.Contains(610) &&
             definition.Exploration.Programs.TryGetValue("cs-53176", out var commission)
-            ? commission.Instructions.OfType<AddMapEntity>().ToArray() : [];
+            ? commission : null;
         var world = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer, procession);
         if (world.Definition.Entities.Any(row => !world.AllEntities.Any(actor => actor.Entity == row.Entity)))
             throw new BattleRuleException("save-field-scene-actor", "save.fieldScene");

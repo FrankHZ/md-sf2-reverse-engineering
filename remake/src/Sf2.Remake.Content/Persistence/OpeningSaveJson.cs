@@ -35,20 +35,38 @@ public static class OpeningSaveJson
                         info.Type == typeof(BattleSaveWire.Story) && property.Name == "raft" ||
                         info.Type == typeof(BattleSaveWire.Data) && property.Name == "enemyDefinitions");
                 }
-                if (info.Kind == JsonTypeInfoKind.Object)
-                {
-                    // Reject unknown members with a compatibility diagnostic, without depending on
-                    // JsonException message text. The extension dictionary is never populated.
-                    info.UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip;
-                    var unknown = info.CreateJsonPropertyInfo(typeof(Dictionary<string, JsonElement>), "unknown");
-                    unknown.IsExtensionData = true;
-                    unknown.Get = _ => null;
-                    unknown.Set = (_, _) => throw new SaveFormatException("save-shape");
-                    info.Properties.Add(unknown);
-                } } } },
+                RejectUnknownMembers(info);
+            } } },
         MaxDepth = 32,
     };
     private static readonly JsonSerializerOptions BattleOptions = CreateBattleOptions();
+    private static readonly JsonSerializerOptions SnapshotOptions = CreateSnapshotOptions();
+
+    private static void RejectUnknownMembers(JsonTypeInfo info)
+    {
+        if (info.Kind != JsonTypeInfoKind.Object) return;
+        // Reject unknown members as a compatibility failure, without binding by exception message.
+        info.UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip;
+        var unknown = info.CreateJsonPropertyInfo(typeof(Dictionary<string, JsonElement>), "unknown");
+        unknown.IsExtensionData = true;
+        unknown.Get = _ => null;
+        unknown.Set = (_, _) => throw new SaveFormatException("save-shape");
+        info.Properties.Add(unknown);
+    }
+
+    private static JsonSerializerOptions CreateSnapshotOptions()
+    {
+        var options = new JsonSerializerOptions(Options)
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { FieldSnapshotWire.Configure, RejectUnknownMembers } },
+        };
+        options.Converters.Add(new BattlePositionConverter());
+        options.Converters.Add(new FieldSnapshotWire.MapConverter());
+        options.Converters.Add(new FieldSnapshotWire.SetupConverter());
+        options.Converters.Add(new FieldSnapshotWire.EntityConverter());
+        return options;
+    }
 
     private static JsonSerializerOptions CreateBattleOptions()
     {
@@ -81,6 +99,7 @@ public static class OpeningSaveJson
             OpeningSaveRecord field when field.FormatVersion is 1 or 3 => JsonSerializer.SerializeToUtf8Bytes(
                 new FieldRecord(field.Data.FieldScene is null ? field.FormatVersion : 3,
                     field.Slot, field.Sequence, field.SavedAt, field.Data), Options),
+            FieldSnapshotRecord snapshot => JsonSerializer.SerializeToUtf8Bytes(FieldSnapshotWire.Encode(snapshot), SnapshotOptions),
             BattleSaveRecord battle when battle.FormatVersion is 2 or 4 or 5 => JsonSerializer.SerializeToUtf8Bytes(BattleSaveWire.Encode(battle), BattleOptions),
             _ => throw new SaveFormatException("save-version"),
         };
@@ -114,7 +133,7 @@ public static class OpeningSaveJson
             if (versions.Length != 1) throw new SaveFormatException(versions.Length == 0 ? "save-malformed" : "save-duplicate-key");
             if (versions[0].Value.ValueKind != JsonValueKind.Number || !versions[0].Value.TryGetInt32(out int version))
                 throw new SaveFormatException("save-version");
-            if (version is not (1 or 2 or 3 or 4 or 5)) throw new SaveFormatException("save-version");
+            if (version is not (1 or 2 or 3 or 4 or 5 or FieldSnapshotRecord.CurrentVersion)) throw new SaveFormatException("save-version");
             // An unsupported v2 kind is also an unavailable reader, never a corrupt older save.
             if (version is 2 or 4 or 5)
             {
@@ -123,9 +142,12 @@ public static class OpeningSaveJson
                 if (kinds[0].Value.ValueKind != JsonValueKind.String || kinds[0].Value.GetString() != "battle-player-input")
                     throw new SaveFormatException("save-kind");
             }
-            SaveRecord record = version is 1 or 3
-                ? Bind<OpeningSaveRecord>(payload, Options)
-                : BattleSaveWire.Decode(Bind<BattleSaveWire.Record>(payload, BattleOptions));
+            SaveRecord record = version switch
+            {
+                1 or 3 => Bind<OpeningSaveRecord>(payload, Options),
+                FieldSnapshotRecord.CurrentVersion => FieldSnapshotWire.Decode(Bind<FieldSnapshotWire.Record>(payload, SnapshotOptions)),
+                _ => BattleSaveWire.Decode(Bind<BattleSaveWire.Record>(payload, BattleOptions)),
+            };
             if (record.Slot <= 0 || slot.HasValue && record.Slot != slot || record.Sequence < 1 || record.SavedAt.Offset != TimeSpan.Zero)
                 throw new SaveFormatException("save-header");
             return record;

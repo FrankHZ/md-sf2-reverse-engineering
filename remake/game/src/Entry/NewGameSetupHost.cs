@@ -117,7 +117,7 @@ public sealed partial class GameRoot
                 return;
             }
             var audio = _preparedAudio; _preparedAudio = null; _preparedNewGame = null; _newSlotSeen = null;
-            MountSession(prepared.Started, audio);
+            await MountSession(prepared.Started, audio);
             _savedSession = _session!.Current.SessionId; _savedRevision = _session.Current.Revision;
         }
         catch (ArgumentException error) { NewGameError(error.Message); }

@@ -395,7 +395,17 @@ internal sealed partial class ExplorationPresentation : IDisposable
         { Error = error.Message; }
     }
 
-    internal bool Draw(ExplorationState world, SessionSnapshot current)
+    internal void PrepareSettledField(SessionSnapshot current)
+    {
+        if (Error is not null) return;
+        var world = current.Exploration!;
+        _palette.Project(current.Story.Display?.Colors, current.Story.SimulationTick);
+        _spriteGraphics = world.SpriteGraphics;
+        UpdateCamera(0, current);
+        if (Error is null && !Draw(world, current, prepare: true)) Error = "map-visual-binding";
+    }
+
+    internal bool Draw(ExplorationState world, SessionSnapshot current, bool prepare = false)
     {
         if (_layoutRegion is not null)
         {
@@ -437,7 +447,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             // using its screen rectangle exposes packed rooms beyond this area.
             _screen = _viewport.ScreenAt(actorOrigin);
             var backdrop = world.Layout.BlankBlockZero ? Colors.Black : new Color(0.03f, 0.04f, 0.06f);
-            _owner.DrawRect(_screen, backdrop);
+            if (!prepare) _owner.DrawRect(_screen, backdrop);
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
             {
@@ -451,9 +461,14 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var areaCells = new Rect2I((Vector2I)(_viewport.Bounds.Position / 24), (Vector2I)(_viewport.Bounds.Size / 24));
             var backgroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.BackgroundX ?? 0, view?.Area.BackgroundY ?? 0), areaCells.Size);
             var foregroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.ForegroundX ?? offset.X, view?.Area.ForegroundY ?? offset.Y), areaCells.Size);
-            var backgroundDraw = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0);
+            var backgroundDraw = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0, prepare: prepare);
             LayerDraw? foregroundDraw = view is not null && hasForeground
-                ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, false, 1) : null;
+                ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, false, 1, prepare: prepare) : null;
+            if (prepare)
+            {
+                foreach (var entity in world.AllEntities.Where(entity => entity.Visible)) _ = Sprite(entity, false, world.Map);
+                return true;
+            }
             List<object>? actors = _observeCamera ? [] : null;
             List<(ExplorationEntity Entity, ImageTexture Texture, bool Lowered)>? drawnActors = Streaming ? [] : null;
             List<object>? occlusionDraws = _observeCamera ? [] : null;
@@ -723,7 +738,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
     }
 
     private LayerDraw? DrawLayer(ExplorationState world, ExplorationMapVisual visual, Rect2I bounds, Vector2 origin, MapOverlayOffset offset,
-        bool overlay, bool? highPriority, int pass, (EntityRef Entity, Rect2 Bounds, IReadOnlyList<Rect2> Ink)? actor = null)
+        bool overlay, bool? highPriority, int pass, (EntityRef Entity, Rect2 Bounds, IReadOnlyList<Rect2> Ink)? actor = null, bool prepare = false)
     {
         int left = (int)Math.Floor(origin.X / 24), top = (int)Math.Floor(origin.Y / 24);
         int draws = 0;
@@ -743,6 +758,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 var rectangle = new Rect2((new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
                 if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
                 var texture = Block(visual, block, world.Layout, sourceX, sourceY, bounds);
+                if (prepare) continue;
                 // Reuse the existing block resource; split its nine tile regions by the
                 // retained VDP priority bit instead of lifting an entire plane above actors.
                 int count = highPriority is null ? 1 : 9;

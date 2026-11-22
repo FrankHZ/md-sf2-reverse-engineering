@@ -187,14 +187,14 @@ public sealed partial class ExplorationSessionView : Control
         (session.Current.CanWaitAtInput || session.Current.CanWaitForText && TextRevealed || session.Current.CanWaitForChoice && !_choiceRequiresRelease);
 
     internal void Begin(GameSession session, SessionResult result, GameInput input, SessionAudio audio, Action<SessionResult> enterBattle,
-        Action<SessionResult> prepareBattle, Action? releaseBattle = null)
+        Action<SessionResult> prepareBattle, Action? releaseBattle = null, bool preparing = false)
     {
         _session = session; _result = result; _input = input; _enterBattle = enterBattle; _churchSaveRequested = false;
         if (releaseBattle is not null) _returnFeedback.Begin(result);
         _movementHold.Clear(input);
         if (session.Current.Story.Display?.Visibility == Sf2.Remake.Application.Content.Scenarios.FullFadeVisibility.Black)
             Modulate = Colors.Black;
-        PublishResult("attach");
+        if (!preparing) PublishAttachment();
         _audio = audio; audio.Observe(result);
         _releaseBattle = releaseBattle;
         _battleMounted = releaseBattle is not null;
@@ -209,6 +209,14 @@ public sealed partial class ExplorationSessionView : Control
         _presentation.DialoguePanel = _dialogueView.Panel;
         TextureFilter = TextureFilterEnum.Nearest;
         Present();
+    }
+
+    internal void PublishAttachment() => PublishResult("attach");
+
+    internal string? PrepareSettledAttachment()
+    {
+        _presentation!.PrepareSettledField(_session!.Current);
+        return PresentationFailure?.Message;
     }
 
     public override void _Process(double delta)

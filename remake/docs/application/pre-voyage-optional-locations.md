@@ -139,9 +139,10 @@ placements and descriptions. Report unsupported actions at their actual caller o
 ## Pre-voyage save coverage
 
 [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029) tracks save coverage.
-The [settled field snapshot design](opening-session-lifecycle.md#unified-settled-field-snapshots)
-replaces the regional implementation order. The current writer still uses the existing recipes.
-The table records delivered coverage and gaps for the location audit.
+The [settled field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots)
+supersedes the regional save queue. Ordinary Save uses supported live state, including a confirmed
+cold Continue at the Galam kitchen visit. The earlier observations record regional reader
+coverage and playable witness limits.
 
 | Location | Delivered coverage and limits |
 | --- | --- |
@@ -157,19 +158,20 @@ Ordinary Save preserves the incoming Egress and F399. Where the accepted Record 
 them, it commits those values with successful publication. A source refuge row alone does not
 establish a Church caller. [Church and Egress decisions](opening-session-lifecycle.md#eligibility-and-return-semantics)
 
-### Remaining save coverage
+<a id="remaining-save-coverage"></a>
+
+### Location observations and limits
 
 | Visit | Evidence to retain when evaluating the shared mechanism |
 | --- | --- |
 | Maps17/18 Galam interiors and drawbridge | F505 palace return, F661/F662 doors and F663 reentry copies, F611 closed/open bridge, a reachable receipt and the physical follow state after prison staging. Ordinary stable control and snapshot continuation at those visits remain unverified. |
 | Map66 open Grans | Southern and north-Yeel/Hawel components, F213, movement/step counter, live followers and battle request. The enclosed Battle02 landing remains on its existing EGRESS recovery path. |
 | Map4 and Map44 quake town and docks | F624 completion, six layout copies, parked guards, royal followers and F217/F139/F140 receipts. Earlier and F507 dock setups, CURRENT stairs and the F640 substitution remain gameplay binding checks. A settled captain refusal and an active boarding transition exercise different save boundaries. |
-| Map41/42 southern shrine | The existing [played route](#play-the-southern-shrine) supplies same-map stairs and F133. Save/Continue there still needs the shared snapshot mechanism. |
+| Map41/42 southern shrine | The existing [played route](#play-the-southern-shrine) supplies same-map stairs and F133. Cold Save/Continue in those rooms remains unobserved. |
 
-These rows are coverage gaps and candidate controls for the shared acceptance. The
-[implementation slices](opening-session-lifecycle.md#mechanism-implementation-and-acceptance)
-select distinct recovery mechanisms instead of requiring a restart observation for every location.
-Unadmitted setups, new location content, Battle27+ and #1716 stay with their existing owners.
+The [mechanism acceptance](opening-session-lifecycle.md#implemented-field-snapshot-cutover)
+covers supported recovery mechanisms with representative visits. Unadmitted setups, new location
+content, Battle27+ and #1716 stay with their existing owners.
 
 
 ## Play the southern shrine

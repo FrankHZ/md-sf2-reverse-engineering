@@ -57,13 +57,7 @@ internal static class OpeningSave
             story.Display is not { Visibility: FullFadeVisibility.BaseRestored } display || display.Base != display.Current)
             throw new BattleRuleException("save-busy", "save.boundary");
         var world = current.Exploration!;
-        var player = world.PlayerEntity;
-        if (world.Quake != 0 || world.TravelMode != FieldTravelMode.Walking ||
-            player.Motion.X % 384 != 0 || player.Motion.Y % 384 != 0 ||
-            !world.Definition.Traversal.IsWithinActiveArea(player.Position) ||
-            FieldLayout.Word(world, player.Motion, player.Position.X, player.Position.Y) is not < 0xC000)
-            throw new BattleRuleException("save-player-unsettled", "save.boundary");
-        if (player.Motion.Layer is not (0 or 2)) throw new BattleRuleException("save-player-layer", "save.boundary");
+        RequireLanding(world);
         foreach (var entity in world.AllEntities.Where(entity => entity.Visible))
         {
             if (entity.WaitingForSprite || entity.Follower is not null && (entity.Motion.IsMoving || entity.WaitingForMotion))
@@ -75,12 +69,25 @@ internal static class OpeningSave
         }
     }
 
+    private static void RequireLanding(ExplorationState world)
+    {
+        var player = world.PlayerEntity;
+        if (world.Quake != 0 || world.TravelMode != FieldTravelMode.Walking ||
+            player.Motion.X % 384 != 0 || player.Motion.Y % 384 != 0 ||
+            !world.Definition.Traversal.IsWithinActiveArea(player.Position) ||
+            FieldLayout.Word(world, player.Motion, player.Position.X, player.Position.Y) is not < 0xC000)
+            throw new BattleRuleException("save-player-unsettled", "save.boundary");
+        if (player.Motion.Layer is not (0 or 2)) throw new BattleRuleException("save-player-layer", "save.boundary");
+    }
+
     internal static SessionResult ObserveMusic(ScenarioDefinition definition, SessionSnapshot current, ObserveFieldMusic observed)
     {
         try
         {
-            RequireStable(definition, current);
+            if (!SettledFieldSnapshot.HasStableControl(current))
+                throw new BattleRuleException("save-busy", "save.boundary");
             var world = current.Exploration!;
+            RequireLanding(world);
             int area = ExplorationViewContext.Require(world, current.Story.LogicalView).Area;
             var visuals = definition.Exploration!.Visuals;
             if (observed.Map != world.Map || observed.Area != area || observed.Music.Previous.Count > 9 || visuals is null ||

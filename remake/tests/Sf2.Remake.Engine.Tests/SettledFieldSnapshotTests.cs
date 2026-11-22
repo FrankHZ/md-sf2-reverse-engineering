@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
+using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -17,6 +18,7 @@ public sealed class SettledFieldSnapshotTests
     private static readonly MapId Refuge = new("refuge");
     private static readonly EntityRef Player = new("walker");
     private static readonly EntityRef Wanderer = new("wanderer");
+    private static readonly EntityRef Patrol = new("patrol");
     private static readonly EntityRef Merchant = new("merchant");
     private static readonly EntityRef Companion = new("companion");
 
@@ -26,7 +28,9 @@ public sealed class SettledFieldSnapshotTests
     public void TheNextOrdinaryServicesContinueAHiddenWanderersPhaseAndClosedIdle(bool inMotion)
     {
         var loop = new EntityActionProgram([new FaceEntity(2), new RandomWalkEntity(new(20, 20), 2),
-            new WaitEntityTicks(3), new JumpEntityAction(1)]);
+            new WaitEntityTicks(3), new JumpEntityAction(1), new StopEntityActions()]);
+        var patrol = new EntityActionProgram([new MoveEntityRelative(0, 1), new WaitEntityTicks(3),
+            new MoveEntityRelative(0, -1), new WaitEntityTicks(3), new JumpEntityAction(0), new StopEntityActions()]);
         List<StoryInstruction> enter = [
             new StartEntityMotion(Merchant, new([new IdleEntityAction()]), false),
             new FollowEntity(Companion, Player, -24, 0), new ParkRaft(new(Visit, new(41, 41))),
@@ -35,7 +39,8 @@ public sealed class SettledFieldSnapshotTests
         enter.Add(new EndProgram());
         var session = Start(
             [new(Wanderer, new(20, 20), 0, 96, Actions: inMotion ? null : loop, Visible: false),
-                new(Merchant, new(30, 30), 0, 32, Actions: loop), new(Companion, new(4, 4), 0, 32)],
+                new(Merchant, new(30, 30), 0, 32, Actions: loop), new(Companion, new(4, 4), 0, 32),
+                new(Patrol, new(40, 40), 0, 32, Actions: patrol)],
             [new("enter", enter)]);
         var before = session.Current;
         for (int i = 0; i < 12; i++)
@@ -56,13 +61,17 @@ public sealed class SettledFieldSnapshotTests
         Assert.Null(before.Exploration.Entities[Companion].Actions);
         Assert.NotNull(before.Exploration.Entities[Companion].Follower);
 
-        var detached = Capture(session.Definition, before).Build(session.Definition, Rules).Snapshot;
+        var record = new FieldSnapshotRecord(1, 1, DateTimeOffset.UnixEpoch, new(Capture(session.Definition, before)));
+        var bytes = OpeningSaveJson.WriteRecord(record);
+        var saved = Assert.IsType<FieldSnapshotRecord>(OpeningSaveJson.ReadRecord(bytes, 1));
+        var detached = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(session.Definition, saved, Rules)).Result.Snapshot;
         Assert.Equal(before.Story.Raft, detached.Story.Raft);
         Assert.Equal(before.Story.SimulationTick, detached.Story.SimulationTick);
         Assert.Equal(Refuge, detached.Story.EgressMap);
         Assert.Equal(Visit, detached.Exploration!.Map);
         var control = before;
         uint initialSeed = control.Exploration!.Party.MainSeed;
+        var patrolMotion = control.Exploration.Entities[Patrol].Motion;
         for (int i = 0; i < 10; i++)
         {
             control = Submit(session, control, new WaitAtInput());
@@ -70,6 +79,7 @@ public sealed class SettledFieldSnapshotTests
             EqualNext(control, detached);
         }
         Assert.NotEqual(initialSeed, control.Exploration!.Party.MainSeed);
+        Assert.NotEqual(patrolMotion, control.Exploration.Entities[Patrol].Motion);
         foreach (var direction in new[] { ExplorationDirection.East, ExplorationDirection.East, ExplorationDirection.South })
         {
             control = FieldVisitSnapshotTests.Perform(session, control, new Move(direction));
