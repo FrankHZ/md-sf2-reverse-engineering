@@ -126,7 +126,7 @@ placements and descriptions. Report unsupported actions at their actual caller o
 | --- | --- | --- |
 | **New Game to commission**, Map3 Granseal | Bowie's home and CURRENT stairs, town houses, school and CURRENT classroom stairs, talk to the residents, messenger Yes/No/retry, Church, F600 castle admission and F603 west-exit guard. School herb F128. Shop empty chest F220 has a marker but its valid faced tile is occupied in the default setup. Default fixed entity 137 at (45,22) separates the town from the otherwise marked dock exits. F609 changes that approach and F506 later opens the cell and changes population for Kiwi. | Opening dialogue, Church and cold Continue, school Search, and the F506 Kiwi refusal/revisit/join have play evidence. F609/F506 Church and both supply/weapon Shop callers are selected. Existing [opening branch inventory](../content/opening-branch-inventory.md) and [Kiwi visit](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) own the intent. Ask each shop only on an eligible setup. F220 is no additional reward. |
 | **Opening, first return, commission and post-Galam castle**, Maps19/20/21 | Map19 approach, courtyard, storeroom F129–131 chests, west and east lower rooms. Map20 west stair room, king's bedroom, upper royal room and both east tower levels through the Map19 east landing. Map21 guard and exit to tower exterior. | Save and cold Continue retain the loaded scene. F130, the upper east stairs and landing, the commission cast, the F506/F507 royal chains and the guard-room exit have bounded observations. **Unknown** ordinary control at every optional room approach around the exorcism and east landing. [Castle Save and Continue](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) · [Opening Search](../content/opening-branch-inventory.md#search-surfaces) |
-| **Tower exterior, return, second descent**, Maps40/57/60/58 | The exterior links the castle and antechamber and permits F132 Mithril. Map40 F506 Lemon approach, F507 default restoration, Map57 first battle/return and F506 stair opening, Map60 connected early chain and Map58 return. Map60/58 have no interaction cast or placements to add; preserve party and exit through the actual connected stairs on the quake return. | Existing main route and controlled exterior Search. Keep the two existing stable battle-return recipes distinct. Later Map60 frontiers remain behind the conditions above. [Tower route](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) · [Exterior Search](opening-session-lifecycle.md#tower-exterior-search-admission). |
+| **Tower exterior, return, second descent**, Maps40/57/60/58 | The exterior links the castle and antechamber and permits F132 Mithril. Map40 F506 Lemon approach, F507 default restoration, Map57 first battle/return and F506 stair opening, Map60 connected early chain and Map58 return. Map60/58 have no interaction cast or placements to add; preserve party and exit through the actual connected stairs on the quake return. | Existing main route and controlled exterior Search. Settled traversal has its own Save and cold Continue recipe alongside the two completed-return readers. Later Map60 frontiers remain behind the conditions above. [Tower route](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) · [Exterior Search](opening-session-lifecycle.md#tower-exterior-search-admission). |
 | **Open Grans after the commission**, Map66 | Granseal and south Yeel connect through the southern/main component, with Mithril F213, the south shrine and the south end of the Galam drawbridge. Yeel north exit connects the separate Hawel/woods component and reverse Yeel north entrance. Battle02, the marked Battle03 request, Hawel's F404 request and the Battle06 outcome keep their own admission. Battle02 can return on an enclosed tile. | Battle routes, conditional repeat and field EGRESS have existing play evidence. The F213 marker and approach from (30,45) are **Confirmed** static and selected. The [southern shrine visit](#play-the-southern-shrine) reaches the lower chamber and returns to this field. A legal return from the enclosed Battle02 tile uses the existing recovery route. [Enclosed return](pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress). |
 | **Yeel before and after Hawel**, Map5 | Both town exits, houses and tavern, bookshelf/room descriptions, aboveground Church, Healing Seed F134, Kazin guiding/F72 and the F650 residents/dialogue after the house scene. F650 changes the entity and Talk tables while retaining Search and Church. | Default input, Kazin introduction and Church Record are observed. **Confirmed** in the published F650 world: a fresh arrival shows the changed residents, one speaks its replacement dialogue, and Kazin stays in the party with the guide flag clear. The aboveground Church records the visit. Search awards the seed once and retains F134 across cold Continue, exit and re-entry. The F530/F28 setups and piano/underground sequence are late. [Pinned F650 setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map05/mapsetups/pointertable_650.asm) · [#2022 Save and Continue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2022). |
 | **Hawel**, Map43 | House rooms, story, bookshelf diary, well, F135 Antidote and F136 Healing Drop chests, south return (6,6) to Map66. Default scene and F612 quiet revisit. The init has no F503 or F72 predicate. | Recruitment, diary, F612 repeat/exit and ordinary F135 acquisition are observed. Continue keeps the one Antidote receipt. Ordinary acquisition of F136 remains **Unknown**. Both settled visits support Save and cold Continue. [Campaign route](pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment) · [Save observation](opening-session-lifecycle.md#hawel-house-save-and-continue-observation). |
@@ -147,13 +147,14 @@ and cold Continue observation, with Record where a real priest is admitted.
 **Confirmed coverage.** Map3 default/F609 retain their anchored recipes. The completed Battle01
 Map57 and Battle07 Map58 returns retain their separate anchor gates. Default and F650 Yeel use the
 settled-visit recipe. F506 Granseal, early Map16 Galam, the completed default and F612 Map43
-visits, and the admitted Maps19/20/21 castle rooms have settled-visit recipes.
+visits, the admitted Maps19/20/21 castle rooms and the early tower route have settled-visit recipes.
 Ordinary Save preserves the incoming Egress and F399. Church Record publishes the town refuge and F399 after slot
 readback. [Granseal acceptance](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) ·
 [Yeel acceptance](opening-session-lifecycle.md#yeel-save-and-continue-observation) ·
 [Galam acceptance](opening-session-lifecycle.md#galam-town-save-and-continue-observation) ·
 [Hawel acceptance](opening-session-lifecycle.md#hawel-house-save-and-continue-observation) ·
-[Castle acceptance](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation)
+[Castle acceptance](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) ·
+[Tower acceptance](opening-session-lifecycle.md#tower-save-and-continue-observation)
 
 ### Ordered implementation batches
 
@@ -187,14 +188,13 @@ Church/Egress state.
    Unadmitted rooms, active guard/exorcism and Battle01 admission in progress remain outside
    the settled recipe.
    [Observation and private inputs](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation)
-5. **Tower traversal, Maps40/57/60/58.** Save only for settled exterior control, the F506-open
-   Map57 staircase, the connected early Map60 descent and reachable Map58 return area. Use the
-   accepted tower route and reverse. Bind its setup, layout and royal followers through the
-   settled-visit mechanism, retaining F132 and the F506 stair copies. Keep current Map57/58
-   completed-outcome recipes under their existing gates. Check Lemon's before/after interaction,
-   a legal F132 receipt, the Map57 stair and a Map60/Map58 portal after cold Continue. Exclude
-   active battle/admission/outcome and the F999 frontiers, Map59 and Map56. The source Ancient Tower
-   Ascent refuge belongs to Map56.
+5. **Tower traversal, Maps40/57/60/58 (implemented).** Save covers settled exterior control,
+   the F506-open Map57 staircase, the first five connected Map60 areas and the Map58 aftermath.
+   Cold Continue retains the live setup, F132, the F506 stair copies and the physical royal
+   followers. The prior completed-outcome recipes remain readable under their anchor gates.
+   Active battle/admission/outcome, the F999 frontiers, Map59 and Map56 remain outside this batch.
+   The source Ancient Tower Ascent refuge belongs to Map56.
+   [Observation and private inputs](opening-session-lifecycle.md#tower-save-and-continue-observation)
 6. **Galam interiors and drawbridge, Maps17/18.** Save only. Consume batch 2 and prove ordinary
    reach from the F505 palace return and on the closed/open F611 bridge visits. Retain the actual
    F661/F662 door/shortcut effects, F663 reentry copies and F611 layout. Cold-continue the F505

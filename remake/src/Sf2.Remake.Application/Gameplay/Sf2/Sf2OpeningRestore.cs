@@ -133,8 +133,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public StoryState? RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story)
     {
-        // The house and the old castle rooms have no Church caller.
-        if (field.Map == HawelHouse || Sf2CastleRestore.Contains(field.Map)) return null;
+        // These settled visits have no Church caller.
+        if (field.Map == HawelHouse || Sf2CastleRestore.Contains(field.Map) || Sf2TowerRestore.Contains(field.Map)) return null;
         var map = definition.Exploration!.Maps[field.Map];
         var point = map.ChurchSavepoint;
         if (field.Map == GransealChurch.Map && map.Setup?.FlagAlternatives.Any(row => row.Setup.Value == GransealSetup) == true)
@@ -153,7 +153,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     {
         if ((data.Recipe == GransealRecipe || data.Map is "map-16" or "map-43" or "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
-        if (data.Recipe == Sf2CastleRestore.Recipe && data.FieldScene is null)
+        if (data.Recipe is Sf2CastleRestore.Recipe or Sf2TowerRestore.Recipe && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
@@ -177,7 +177,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
-            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe or HawelRecipe or Sf2CastleRestore.Recipe &&
+            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe or HawelRecipe or Sf2CastleRestore.Recipe or Sf2TowerRestore.Recipe &&
                 data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
@@ -203,7 +203,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         return false;
     }
 
-    public SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags, FieldReturnAnchor? anchor)
+    public SaveLocation Select(ScenarioDefinition definition, FieldReturnAnchor player, IReadOnlyList<int> flags,
+        FieldReturnAnchor? anchor, string? savedRecipe = null)
     {
         var map = player.Map;
         if (!definition.Exploration!.Maps.TryGetValue(map, out var content)) Fail();
@@ -233,6 +234,11 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (map.Value == "map-5" && YeelSetup(content!, flags) is not null &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new(YeelRecipe, player, "Yeel");
+        // New field captures prefer the live visit. Continue still admits the original
+        // completed-return recipes using their own flags and saved anchors.
+        if (savedRecipe is null or Sf2TowerRestore.Recipe &&
+            Sf2TowerRestore.SettledSetup(content!, player.Position, flags) is not null)
+            return new(Sf2TowerRestore.Recipe, player, "Ancient Tower");
         if (map.Value == "map-57" && flags.Contains(501) && !flags.Contains(506) &&
             anchor is { Map.Value: "map-57", Facing: 3 })
             return new("battle01-return", anchor, "Ancient Tower, completed battle return");
@@ -320,6 +326,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         world.Map == HawelHouse ? Sf2FieldSceneRestore.Capture(definition, world,
             LoadedSettledSetup(definition.Exploration!.Maps[world.Map], world.Definition, HawelDefault, HawelRevisit)) :
         Sf2CastleRestore.Contains(world.Map) ? Sf2CastleRestore.Capture(definition, world, flags) :
+        Sf2TowerRestore.Contains(world.Map) ? Sf2TowerRestore.Capture(definition, world, flags) :
         world.Map.Value == "map-5" ? Sf2FieldSceneRestore.Capture(definition, world,
             YeelSetup(definition.Exploration!.Maps[world.Map], flags)!.Value) :
         world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
@@ -334,6 +341,11 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         {
             enteredFlags = flags;
             return Sf2CastleRestore.Rebuild(definition, location, party, flags, scene, layer);
+        }
+        if (location.Recipe == Sf2TowerRestore.Recipe)
+        {
+            enteredFlags = flags;
+            return Sf2TowerRestore.Rebuild(definition, location, party, flags, scene, layer);
         }
         if (location.Recipe is GransealRecipe or GalamRecipe or HawelRecipe)
         {
