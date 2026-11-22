@@ -26,8 +26,16 @@ internal sealed partial class BattleInspectionView
         }
         else land = LandValue(query?.Land?.Percent);
         _hover.Present(query?.Unit, marker is null ? GameText.Get("battle.inspect.empty") : UnitName(marker), land, _cursor);
-        var cell = _map.CellRect(_cursor);
-        _hover.Position = new(cell.GetCenter().X >= GetViewportRect().Size.X - 650 ? 32 : GetViewportRect().Size.X - 592, 238);
+        ArrangeHover(_map.CellRect(_cursor));
+    }
+    internal void ArrangeHover(Rect2 cell)
+    {
+        if (!Active || _page != "Cursor" || !_hover.IsVisibleInTree()) return;
+        float right = GetViewportRect().Size.X - UI.StoryTheme.GameplayInset - _hover.Size.X;
+        var position = new Vector2(right, UI.StoryTheme.BelowMenu);
+        if (new Rect2(position, _hover.Size).Intersects(cell.Grow(16)))
+            position.X = UI.StoryTheme.GameplayInset;
+        _hover.Position = position;
     }
     private static string LandValue(int? percent) => percent is { } value ? GameText.Get("battle.inspect.land-percent", value) : "—";
     private bool CursorUiCovers(Vector2 position) => _hint.GetGlobalRect().HasPoint(position) ||

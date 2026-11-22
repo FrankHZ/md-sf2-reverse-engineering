@@ -13,7 +13,6 @@ func header_geometry(label: String) -> bool:
     var card: Dictionary = layout.targetCard if layout.targetCard.visible else layout.actorCard
     samples.append({"label":label,"menu":s.menu,"stage":s.stage,"window":[root.size.x,root.size.y]})
     if not expect(card.visible and card.decisionHeader and inside(card.rect),label+": decision-only live header fits"): return false
-    if not expect(within(card.rect,layout.decisionGroup) and inside(layout.decisionGroup),label+": header belongs to the single decision frame"): return false
     if not expect(card.nameVisibleLines == card.nameLines and card.nameLines <= 2,label+": actual full name fits measured lines"): return false
     if vitals_case == "wide" and not expect(card.name.length() >= 55 and card.hp.maximum == 30000,label+": real prelaunch long-name/wide-vital selection"): return false
     for vital in [card.hp,card.mp]:
@@ -27,13 +26,12 @@ func header_geometry(label: String) -> bool:
             and card.hp.valueRect.x+card.hp.valueRect.width <= card.mp.valueRect.x,label+": parallel separate HP/MP columns"): return false
     if not expect(card.rect.x == layout.description.x and card.rect.width == layout.description.width and disjoint(card.rect,layout.description),
             label+": header and footer form one measured column"): return false
-    if layout.commandList.visible:
-        if not expect(card.rect.x == layout.commandPanel.x and card.rect.width == layout.commandPanel.width
-                and card.rect.y+card.rect.height <= layout.commandPanel.y and within(layout.commandPanel,layout.decisionGroup),label+": layout A header/commands align in one frame without overlap"): return false
+    if layout.diamond.visible:
+        if not expect(card.rect.x == layout.diamond.rect.x and card.rect.width == layout.diamond.rect.width
+                and disjoint(card.rect,layout.diamond.rect),label+": card clears the freestanding diamond"): return false
     if layout.listVisible and not expect(card.rect.x == layout.list.x and card.rect.width == layout.list.width
-            and card.rect.y+card.rect.height <= layout.list.y and within(layout.list,layout.decisionGroup),label+": magic list replaces rows in the same frame"): return false
-    for row in layout.descriptionLabels:
-        if not expect(within(row.rect,layout.description),label+": full description/hints contained"): return false
+            and disjoint(card.rect,layout.list),label+": list replaces diamond below the card"): return false
+    if not expect(within(layout.reader.rect,layout.description),label+": text scrolls inside the reader"): return false
     for row in layout.navigation:
         if row.visible and not expect(within(row.rect,layout.description),label+": target controls contained"): return false
     if not expect(inside(layout.description),label+": actual footer fits viewport"): return false
@@ -54,9 +52,7 @@ func decision_vitals() -> bool:
     if not await header_geometry("main"): return false
     if not await host_cover(): return false
     var baseline := resources(state())
-    for i in range(4):
-        if state().menu.command == 1: break
-        await act("down")
+    await act("left")
     await act("confirm")
     if not expect(state().menu.page == "Magic","Actual Magic list opens"): return false
     if not await header_geometry("magic-list"): return false

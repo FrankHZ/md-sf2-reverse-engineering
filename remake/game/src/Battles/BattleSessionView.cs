@@ -44,6 +44,7 @@ public sealed partial class BattleSessionView : Control
     internal string? StartupError => _startupFailure?.Code;
     private bool _started;
     private bool _inputSuspended;
+    private bool _hostCovered;
     private void SuspendInput() { _inputSuspended = true; _boardPointer.Suspend(); SuspendPacing(); ClearNavigation(); _menu?.SuspendPointer(); _inspection?.SuspendPointer(); }
     private void ResumeInput() { _inputSuspended = false; SuspendPacing(); }
     private string _title = "";
@@ -89,7 +90,7 @@ public sealed partial class BattleSessionView : Control
         MouseFilter = MouseFilterEnum.Ignore;
         _map = new BattleMapViewport { Name = "MapViewport", WorldViewport = WorldViewport };
         _map.SubjectChanged = rectangle =>
-        { _hudSubject = rectangle; _menu?.GetNodeOrNull<BattleMenuLayout>("Layout")?.AvoidSubject(rectangle); };
+        { _hudSubject = rectangle; _menu?.AvoidSubject(rectangle); _inspection?.ArrangeHover(rectangle); };
         AddChild(_map);
         var ui = UI.PresentationCanvas.Mount(this, "BattleUi", UI.PresentationCanvas.Battle);
         ui.AddChild(_hud); _hud.AddChild(_equipmentIcon); _hud.AddChild(_transactionIcon); _hud.AddChild(_returnIcon); _hud.Choices.Hide();
@@ -136,8 +137,7 @@ public sealed partial class BattleSessionView : Control
 
     internal void RefreshSettingsProjection()
     {
-        // Inspection already refreshes through RefreshInputHints; Present would
-        // expose the covered battle command menu. Other views keep their wait tokens.
+        // Inspection refreshes through RefreshInputHints. Playback retains its wait token.
         if (_result is not null && _startupFailure is null && !_inspection.Active) Present();
     }
 
@@ -164,6 +164,10 @@ public sealed partial class BattleSessionView : Control
         _map.Position = Vector2.Zero;
         _map.Size = size;
         _menu?.Arrange(size);
+        _inspection?.RefreshInputHints();
+        _scene?.RefreshGeometry();
+        _hud.Arrange();
+        if (_feedback?.IsVisibleInTree() == true) _feedback.Arrange(size);
     }
 
     internal void Begin(IScenarioSource source)
@@ -233,6 +237,7 @@ public sealed partial class BattleSessionView : Control
         _status = $"{failure.Kind}: {failure.Code} ({failure.Field})\n{failure.Message}";
         _feedback.Text.Text = GameText.BattleFailure(failure, stopped: true);
         _feedback.Arrange(GetViewportRect().Size);
+        _feedback.Visible = !_hostCovered;
     }
 
     // Keep only the battlefield beneath the field-owned after/return effects.
@@ -240,6 +245,7 @@ public sealed partial class BattleSessionView : Control
     {
         SuspendPacing();
         ClearNavigation(); RetireInspection();
+        _map.ClearDecision();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
         _appearance.Hide(); _give.Hide(); _discard.Hide(); _search.Hide(); _feedback.Hide();
@@ -421,8 +427,28 @@ public sealed partial class BattleSessionView : Control
         CompleteInspectionEntry();
     }
 
+    private void SetHostCovered(bool covered)
+    {
+        _hostCovered = covered;
+        if (_session is null || _result is null || _result.Snapshot.Mode == SessionMode.Exploration) return;
+        if (covered)
+        {
+            _boardPointer.Suspend();
+            _menu.Hide(); _hud.Hide(); _feedback.Hide();
+            _inspection.Hide();
+            _map.ClearDecision();
+        }
+        else if (_startupFailure is not null) _feedback.Show();
+        else if (_inspection.Active)
+        {
+            _inspection.Show();
+            _inspection.RefreshInputHints();
+        }
+        else Present(refreshPlayback: false);
+    }
+
     private WaitToken? _movementSoundToken;
-    private void Present()
+    private void Present(bool refreshPlayback = true)
     {
         if (_session!.Current.BattleMovement is { } movement)
         {
@@ -431,30 +457,21 @@ public sealed partial class BattleSessionView : Control
             if (_movementSoundToken != movement.Token)
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(movement.SoundOverride ?? 79); }
         }
+        var current = _session.Current;
         var choices = _session.QueryBattleChoices();
-        _menu.Present(_session.Current, choices, _result!.Failure, _input, _session.QueryBattleActingStatus());
-        Arrange();
-        var projection = BattleSnapshotProjection.Project(_result, _menu.Visible ? _menu.TargetCandidate : _targetCandidate, _session.Definition.Origin, _session.QueryBattleMovementRange(), _session.ActiveBattleScenes);
+        // The acting-status query admits only live player decisions, including the
+        // real preview and undo steps. Cover and inspection supersede that decision.
+        var acting = !_inspection.Active ? _session.QueryBattleActingStatus() : null;
+        _menu.Present(current, choices, _result!.Failure, _input, _hostCovered ? null : acting);
+        var selection = current.Selection;
+        bool movementFocus = _menu.Visible && (selection?.Stage == BattleSelectionStage.Movement || current.BattleMovement is not null);
+        var candidate = _menu.Targeting ? _menu.TargetCandidate : null;
+        var projection = BattleSnapshotProjection.Project(_result, candidate, _session.Definition.Origin,
+            movementFocus ? _session.QueryBattleMovementRange() : null, _session.ActiveBattleScenes);
         _title = projection.Title;
         _status = projection.Status;
-        _feedback.Text.Text = projection.Status;
-        _feedback.Arrange(GetViewportRect().Size);
-        _feedback.Visible = (_result.Failure is { } failure &&
-            (failure.Kind != SessionFailureKind.IllegalCommand || !_menu.Visible)) || (!_menu.Visible && _session.Current.Selection is null &&
-            _session.Current.BattleScene is null && _session.Current.BattleRound is null &&
-            _session.Current.BattleRetreat is null && _session.Current.BattleGive is null && _session.Current.BattleDiscard is null && _session.Current.BattleSearch is null);
         _roster = projection.Roster;
-        var selection = _session.Current.Selection;
         var equipmentChoices = choices.Equipment;
-        var currentActor = selection is null ? null : _session.Current.Battle.GetActor(selection.Actor);
-        _equipment = currentActor?.Definition.Equipment is null ? "" :
-            GameText.Get("battle.equipment-current", _input.CompactHint(GameAction.Equipment),
-                equipmentChoices.FirstOrDefault(o => o.Equipped && o.Category == BattleEquipmentCategory.Weapon) is { } equipped
-                    ? DisplayNames.Equipment(equipped) : GameText.Get("prepare.unarmed"),
-                currentActor.Attack, BattleEquipment.Physical(currentActor)!.MinimumRange, BattleEquipment.Physical(currentActor)!.MaximumRange);
-        if (equipmentChoices.FirstOrDefault(o => o.Equipped && o.Category == BattleEquipmentCategory.Ring) is { } wornRing)
-            _equipment += "\n" + DisplayNames.Equipment(wornRing) + " · " +
-                GameText.Get("prepare.ring-stats", currentActor!.Attack, currentActor.Defense, currentActor.Agility, currentActor.Move);
         _spells = selection is null ? "" : $"Spells ({_input.CompactHint(GameAction.Spell)} to cycle):\n" + string.Join("\n",
             choices.Spells.Select(option =>
                 DisplayNames.Spell(option.Spell, option.Label, level: true) + (option.Spell == selection.Spell ? " · selected" : "") +
@@ -464,12 +481,13 @@ public sealed partial class BattleSessionView : Control
                 (option.Slot == selection.ItemSlot ? " · selected" : "") +
                 (option.Enabled || option.Empty ? "" : $" · unavailable: {option.Reason!.Code}")));
         _giveMenu = BattleGiveView.Menu(_session, choices.Give);
-        _give.Present();
+        if (refreshPlayback) _give.Present();
         _discardMenu = BattleDiscardView.Menu(_session, choices.Discard);
-        _discard.Present(); _search.Present();
+        if (refreshPlayback) { _discard.Present(); _search.Present(); }
         bool give = BattleGiveView.Selecting(selection?.Stage), discard = BattleDiscardView.Selecting(selection?.Stage);
         bool equipment = selection?.Stage == BattleSelectionStage.EquipmentChoice;
         bool auxiliary = give || discard || equipment;
+        _equipment = "";
         if (equipment)
         {
             int index = equipmentChoices.ToList().FindIndex(option => option.Slot == selection!.EquipmentSlot);
@@ -486,11 +504,19 @@ public sealed partial class BattleSessionView : Control
         _help = AuxiliaryHint(give, auxiliary);
         // One readable current choice; directions still visit every typed offer. Reuse story reading
         // before Confirm rather than requiring a mouse wheel to reach long choice text.
-        string body = _status + "\n\n" + (give ? _giveMenu : discard ? _discardMenu : equipment ? _equipment :
-            _equipment + "\n" + _spells + "\n" + _items);
+        string body = give ? _giveMenu : discard ? _discardMenu : _equipment;
+        if (auxiliary && acting is { } actor)
+            body = DisplayNames.InspectionName(actor.Unit.Ally, actor.Unit.NameIndex, actor.Unit.Name, actor.Unit.CustomName) + "\n" + body;
+        if (auxiliary && _result.Failure is not null) body += "\n" + _status;
         if (_hud.Body.Text != body) { _hud.Body.Text = body; _hud.ResetReading(); }
-        bool hudVisible = !_menu.Visible && selection is not null;
-        _hud.Present(hudVisible, auxiliary, false, _hudSubject, _help, lifetimeOpen: hudVisible);
+        bool hudVisible = !_hostCovered && acting is not null && auxiliary;
+        _hud.Present(hudVisible, hudVisible, false, _hudSubject, _help,
+            lifetimeOpen: auxiliary && _hostCovered || hudVisible);
+        _feedback.Text.Text = _status;
+        _feedback.Visible = !_hostCovered && !_inspection.Active && !_menu.Visible && !hudVisible &&
+            (_result.Failure is not null || current.BattleResult is not null && current.BattleScene is null &&
+                current.BattleRound is null && current.BattleRetreat is null);
+        if (_feedback.Visible) _feedback.Arrange(GetViewportRect().Size);
         var selectedEquipment = equipmentChoices.FirstOrDefault(choice => choice.Slot == selection?.EquipmentSlot);
         string? equipmentIdentity = !equipment || selectedEquipment is null ? null : selectedEquipment.ExpectedWord is { } word
             ? UI.IdentityIcons.Item(word) : UI.IdentityIcons.Unarmed;
@@ -503,15 +529,20 @@ public sealed partial class BattleSessionView : Control
         _returnIcon.Present(_menu.Icons, returnedWord is { } returned ? UI.IdentityIcons.Item(returned) : null, true);
         _transactionIcon.Position = new(24, 24); _returnIcon.Position = new(120, 24);
         _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help);
-        _map.Present(projection, _session.Current, _menu.Visible ? _menu.TargetCandidate : _targetCandidate);
-        _map.PreviewAction(_menu.PreviewAction, _session.Current, _menu.TargetCandidate, _input.Settings.ReducedFlash);
-        // Map children have their own Z priorities; a later sibling's black backdrop
-        // cannot occlude them. Full close-ups own rendering, while field notices/deaths keep the map.
-        _map.Visible = _session.Current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };
-        _story.Present();
-        _scene.Present();
-        _retreat.Present();
-        _appearance.Present();
+        if (!_inspection.Active)
+        {
+            _map.Present(projection, current, movementFocus, candidate);
+            _map.PreviewAction(_menu.PreviewAction, current, candidate, _input.Settings.ReducedFlash);
+        }
+        // A close-up owns the art canvas. Field death and notices retain the board.
+        _map.Visible = current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };
+        if (refreshPlayback)
+        {
+            _story.Present();
+            _scene.Present();
+            _retreat.Present();
+            _appearance.Present();
+        }
         if (_scene.Error is { } error) FailStartup(new(SessionFailureKind.AdapterError, error, "battleScene", "Battle scene playback is unavailable."));
     }
 

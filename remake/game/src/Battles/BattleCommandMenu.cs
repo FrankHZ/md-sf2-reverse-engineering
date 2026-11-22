@@ -30,11 +30,11 @@ internal sealed partial class BattleCommandMenu : Control
     // TargetChoice and CommitReady share this navigation page; choosing a different
     // target must not create a new mode or restart the directional repeat clock.
     internal string NavigationPage => _page.ToString();
-    internal BattleActionChoice? PreviewAction => !Visible || _current?.Selection?.Stage == BattleSelectionStage.Movement ? null :
-        _page == Page.Target ? SelectedAction() : _page == Page.Main && _command == 0 ? Options().FirstOrDefault() :
-        _page is Page.Magic or Page.Items ? Options().ElementAtOrDefault(_row) : null;
-    internal bool Targeting => Visible && _page == Page.Target;
-    internal bool Covers(Vector2 p) => _layout.Covers(p);
+    internal BattleActionChoice? PreviewAction => Targeting && SelectedAction() is { Enabled: true } offer ? offer : null;
+    internal bool Targeting => Visible && _page == Page.Target && !_moving;
+    internal bool Covers(Vector2 point) => _layout.Covers(point);
+    internal void AvoidSubject(Rect2 rectangle) => _layout.AvoidSubject(rectangle);
+    private bool _moving;
     internal bool BoardTarget(ActorRef? actor, bool commit)
     {
         if (!Targeting) return false;
@@ -128,9 +128,9 @@ internal sealed partial class BattleCommandMenu : Control
                 option.Action.Kind == BattleActionKind.Physical && option.Enabled &&
                 option.Targets.Any(target => target.Enabled)) ? 0 : 3;
         _actor = selection?.Actor;
-        Visible = current.BattleScene is null && current.BattleRetreat is null && current.BattleGive is null &&
-            current.BattleDiscard is null && current.BattleSearch is null && current.BattleRound is null && selection?.Stage is
-                BattleSelectionStage.Movement or BattleSelectionStage.ActionChoice or BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady or BattleSelectionStage.SearchCommitReady;
+        _moving = selection?.Stage == BattleSelectionStage.Movement || current.BattleMovement is not null;
+        Visible = actingStatus is not null && (_moving || selection?.Stage is
+            BattleSelectionStage.ActionChoice or BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady or BattleSelectionStage.SearchCommitReady);
         if (selection?.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)
             _page = selection.ActionReference?.Kind == BattleActionKind.Stay ? Page.Commit : Page.Target;
         if (selection?.Stage == BattleSelectionStage.SearchCommitReady) _page = Page.Commit;
@@ -160,7 +160,7 @@ internal sealed partial class BattleCommandMenu : Control
         {
             int next = action switch
             {
-                GameAction.Up => (_command + 3) % 4, GameAction.Down => (_command + 1) % 4,
+                GameAction.Up => 0, GameAction.Left => 1, GameAction.Right => 2, GameAction.Down => 3,
                 GameAction.Attack => 0, GameAction.Spell => 1, GameAction.Item => 2, GameAction.Stay => 3, _ => -1,
             };
             if (next >= 0) _command = next;
@@ -234,9 +234,12 @@ internal sealed partial class BattleCommandMenu : Control
     {
         if (_current is null || _choices is null) return;
         var selection = _current.Selection;
-        bool moving = selection?.Stage == BattleSelectionStage.Movement;
-        _layout.Actor.PresentActing(_actingStatus);
-        var candidate = !moving && _page == Page.Target && TargetCandidate is { } targetRef
+        bool moving = _moving;
+        bool targetPage = Targeting;
+        bool mainPage = Visible && !moving && _page == Page.Main;
+        _layout.Actor.PresentActing(targetPage ? null : _actingStatus);
+        var candidate = targetPage && TargetCandidate is { } targetRef &&
+            SelectedAction()?.Targets.Any(target => target.Actor == targetRef && target.Enabled) == true
             ? _current.Battle.GetActor(targetRef) : null;
         _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, _current!.Story), GameText.Get("battle.target"));
         _layout.Context.Text = GameText.Get("battle.context", _current.Battle.Round, _current.Battle.Gold?.ToString() ?? "—");
@@ -253,7 +256,6 @@ internal sealed partial class BattleCommandMenu : Control
         var options = list ? Options() : [];
         if (list) _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
         _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list, options.Select(OptionIcon).ToArray());
-        _layout.ShowCommands(selection is not null && !moving && _page == Page.Main);
         _layout.Heading.Text = moving ? GameText.Get("battle.position") : _page switch
         {
             Page.Magic => GameText.Get("battle.magic"), Page.Items => GameText.Get("battle.items"), Page.Target => GameText.Get("battle.choose-target"),
@@ -263,7 +265,7 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.Help.Text = moving ? GameText.Get("battle.move-help", confirm) :
             _page == Page.Target ? GameText.Get("battle.target-help", KeyHint(GameAction.Target), confirm, cancel) :
             (list ? GameText.Get("battle.choice-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") :
-                _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") : "") +
+                _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Left)}/{KeyHint(GameAction.Right)}/{KeyHint(GameAction.Down)}") : "") +
                 GameText.Get("battle.confirm-help", confirm, cancel);
         if (!moving && _page == Page.Target && _input.KeyboardMouseHints)
             _layout.Help.Text += "\n" + GameText.Get("battle.pointer-target-help");
@@ -274,7 +276,7 @@ internal sealed partial class BattleCommandMenu : Control
         else if (_page == Page.Target && SelectedAction() is { } selected)
         {
             var target = selected.Targets.FirstOrDefault(target => target.Actor == TargetCandidate);
-            description = $"{OptionLabel(selected)}\n{(target is null ? GameText.Get("battle.no-target") : BattleCharacterNames.Resolve(_current.Battle.GetActor(target.Actor), _content, _current.Story))}";
+            description = OptionLabel(selected) + (target is null ? "\n" + GameText.Get("battle.no-target") : "");
             if (target?.Reason is { } reason) description += "\n" + Unavailable(reason);
         }
         else if (_page == Page.Commit) description = GameText.Get(selection?.Stage == BattleSelectionStage.SearchCommitReady ? "battle.search-detail" : "battle.stay-detail");
@@ -287,14 +289,14 @@ internal sealed partial class BattleCommandMenu : Control
             description = offers.Length == 0 ? GameText.Get(_command == 1 ? "battle.no-magic" : _command == 2 ? "battle.no-items" : "battle.no-target") :
                 !offers.Any(option => option.Enabled) && offers[0].Reason is { } reason ? Unavailable(reason) : "";
         }
-        if (_choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
-        if (_failure is not null) description += "\n" + Unavailable(_failure);
+        if (!_moving && _choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
+        if (_failure is { } failure && failure != _choices.Failure) description += "\n" + Unavailable(failure);
         string fallback = GameText.Fallback("battle.", includeKey: true);
-        _layout.Detail.Text = description + (fallback.Length == 0 ? "" : "\n" + fallback);
+        _layout.PresentDetail(description + (fallback.Length == 0 ? "" : "\n" + fallback));
         bool canConfirm = _page == Page.Commit || _page == Page.Target && SelectedAction()?.Targets.Any(target =>
             target.Actor == TargetCandidate && target.Enabled && selection?.Target == TargetCandidate) == true;
         _layout.ShowNavigation(!moving, _page == Page.Target, _page == Page.Commit, canConfirm);
-        _layout.ShowCommandHint(!moving && _page == Page.Main, itemPage ? _layout.Detail.Text : null);
+        _layout.ShowDecision(targetPage, mainPage, moving || mainPage || list || targetPage);
     }
 
     private string? OptionIcon(BattleActionChoice option) => _definition?.PrivateDefinitions is null ? null : option.Action.Spell is { } spell

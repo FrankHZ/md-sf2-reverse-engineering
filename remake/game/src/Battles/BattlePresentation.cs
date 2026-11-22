@@ -8,7 +8,7 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, bool Selected, string Text, int? Facing = null, bool DeathEffect = false, bool Targeted = false);
+internal sealed record BattleActorMarker(ActorRef Actor, MapPosition Position, bool Ally, string Text, int? Facing = null, bool DeathEffect = false);
 internal sealed record BattlePresentation(string Title, string Status, string Roster,
     IReadOnlyList<BattleActorMarker> Markers, IReadOnlyList<MapPosition> Preview, IReadOnlyList<MapPosition> Focus,
     BattleMovementState? Movement, BattleMovementRange? MovementRange);
@@ -41,11 +41,10 @@ internal static class BattleSnapshotProjection
             : snapshot.BattleMovement?.Actor == actor.Actor ? snapshot.BattleMovement.From
             : selection?.Actor == actor.Actor ? selection.Preview.Destination : actor.Position!;
         var markers = battle.Actors.Where(a => BattleVisibility.OnBoard(snapshot, a)).Select(a => new BattleActorMarker(
-            a.Actor, Position(a), a.IsAlly, a.Actor == selection?.Actor,
+            a.Actor, Position(a), a.IsAlly,
             $"{BattleCharacterNames.Resolve(a, names, snapshot.Story)}\n{a.Hp}/{a.MaxHp}",
             death?.DeadActors.Contains(a.Actor) == true ? death.FieldFacing : Entity(a)?.Motion.Facing ?? a.Facing,
-            death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit,
-            selection?.Target == a.Actor && selection.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)).ToArray();
+            death?.DeadActors.Contains(a.Actor) == true && death.Phase == Sf2.Remake.Application.Runtime.Battles.BattleScenePhase.FieldExit)).ToArray();
         string Status(BattleActorState a) => (a.Status & 0x300) == 0 ? "" : " · " + GameText.Get("battle.status.silence", (a.Status & 0x300) >> 8);
         string roster = string.Join("\n", battle.Actors.Select(a =>
             $"{BattleCharacterNames.Resolve(a, names, snapshot.Story)}: HP {a.Hp}/{a.MaxHp}  MP {a.Mp}/{a.MaxMp}  EXP {a.Exp?.ToString() ?? "Unknown"}  KILLS {a.Kills?.ToString() ?? "Unknown"}  DEFEATS {a.Defeats?.ToString() ?? "Unknown"}{Status(a)}"));

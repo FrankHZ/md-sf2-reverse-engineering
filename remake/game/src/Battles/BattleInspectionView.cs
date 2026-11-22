@@ -189,7 +189,8 @@ internal sealed partial class BattleInspectionView : Control
     private void Project()
     {
         if (_snapshot is null) return;
-        _map.Inspect(_cursor, !_pointerFocus); _pointer.ReleaseIfNeutral();
+        _map.Inspect(_cursor, !_pointerFocus, _page == "Cursor" && IsVisibleInTree());
+        _pointer.ReleaseIfNeutral();
         _options.Visible = _page == "Options"; _hint.Visible = _page != "Options";
         var size = GetViewportRect().Size;
         _details.Visible = _page is "Full" or "MemberFull"; _roster.Visible = _page == "Members"; _overview.Visible = _page == "Map";

@@ -167,17 +167,20 @@ func battle_case() -> bool:
     if not expect(state().actor == "ally-1", "Actual turn schedule reaches learned-spell actor"): return false
     await act("confirm"); await frames(4)
     var opened := record("battle-actions")
-    if route == "remapped" and not expect("U/J" in opened.menu.layout.help and "Q" in opened.menu.layout.help,
+    if route == "remapped" and not expect("U/" in opened.menu.layout.help and "/J" in opened.menu.layout.help and "Q" in opened.menu.layout.help,
             "Battle hints use installed custom bindings"): return false
     if not expect(opened.stage == "ActionChoice","Real action boundary"): return false
-    if not list_geometry(opened.menu.layout.commandList,true): return false
-    for window in [Vector2i(2560,1440),Vector2i(1920,1080)]:
+    for window in [Vector2i(1920,1080),Vector2i(2560,1440),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
         var s := record("battle-resize-"+str(window))
-        if not list_geometry(s.menu.layout.commandList,true): return false
-        if not expect(inside(s.menu.layout.actor) and inside(s.menu.layout.description)
-                and s.menu.layout.actor.y+s.menu.layout.actor.height <= s.menu.layout.commandPanel.y,
-                "Acting vitals head command column; refusal/help fit"): return false
+        var layout: Dictionary = s.menu.layout
+        if not expect(layout.diamond.visible and layout.commands.size() == 4,"Four visible command slots"): return false
+        for slot in layout.commands:
+            if not expect(slot.visible and inside(slot.rect) and inside(slot.caption) and not slot.label.is_empty(),
+                "Full slot and caption fit"): return false
+        if not expect(inside(layout.actor) and inside(layout.description) and
+            layout.actor.y+layout.actor.height <= layout.diamond.rect.y,
+            "Acting vitals head command column; refusal/help fit"): return false
     var baseline := resources(opened)
     var guide := InputEventJoypadButton.new(); guide.device = 3; guide.button_index = JOY_BUTTON_GUIDE
     for pressed in [true,false]:
@@ -188,22 +191,19 @@ func battle_case() -> bool:
     var motion := InputEventMouseMotion.new(); motion.position = Vector2(80,80); motion.relative = Vector2(15,0)
     Input.parse_input_event(motion); await frames(3)
     if not expect(state().menu.layout.help == opened.menu.layout.help and resources(state()) == baseline,"mouse restores current keyboard cues"): return false
-    var first: Dictionary = state().menu.layout.commandList.rows[0].rect
-    await mouse(Vector2(first.x+200,first.y+40),true)
+    var first: Dictionary = state().menu.layout.commands[0].rect
+    await mouse(Vector2(first.x+48,first.y+48),true)
     root.size = Vector2i(2560,1440); await frames(4)
     root.size = Vector2i(1920,1080); await frames(4)
-    await mouse(Vector2(first.x+200,first.y+40),false)
+    await mouse(Vector2(first.x+48,first.y+48),false)
     if not expect(state().menu.page == "Main" and state().revision == opened.revision,
             "Relayout cancels incomplete command click"): return false
-    # Starting focus is engine-dependent. Walk to Magic with real Up/Down.
-    for i in range(4):
-        if state().menu.command == 1: break
-        await act("down")
+    await act("left")
     await act("confirm"); await frames(4)
     var magic := record("magic-child")
-    if not expect(magic.menu.page == "Magic" and not magic.menu.layout.commandList.visible,"Child replaces command rows"): return false
-    if not expect(abs(magic.menu.layout.list.x-opened.menu.layout.commandPanel.x) < 1
-            and abs(magic.menu.layout.list.y-opened.menu.layout.commandPanel.y) < 1,"Child list keeps parent origin"): return false
+    if not expect(magic.menu.page == "Magic" and not magic.menu.layout.diamond.visible,"Child replaces diamond"): return false
+    if not expect(abs(magic.menu.layout.list.x-opened.menu.layout.diamond.rect.x) < 1
+            and abs(magic.menu.layout.list.y-opened.menu.layout.diamond.rect.y) < 1,"Child list keeps parent origin"): return false
     if not expect(magic.menu.layout.rows.size() > 0,"Learned spells replace rows"): return false
     if magic.menu.layout.rows.size() > 0:
         var action: int = state().menu.row
@@ -218,7 +218,7 @@ func battle_case() -> bool:
             if not expect(state().menu.page == "Magic" and state().menu.row == action,"Target Back restores selected spell"): return false
     await act("cancel")
     if not expect(state().menu.page == "Main" and state().menu.command == 1,"Child Back restores Magic command"): return false
-    await click(state().menu.layout.commandList.rows[2].rect)
+    await click(state().menu.layout.commands[2].caption)
     if not expect(state().menu.page == "Items","Pointer label opens actual Item list"): return false
     await act("cancel")
     if not expect(state().menu.page == "Main" and state().menu.command == 2,"Item Back retains parent"): return false
@@ -248,7 +248,7 @@ func search_case() -> bool:
     if not await settled(): return false
     await act("confirm"); await frames(3)
     var before := record("faced-chest-search")
-    var row: Dictionary = before.menu.layout.commandList.rows[3]
+    var row: Dictionary = before.menu.layout.commands[3]
     if not expect(before.battleChoices.Search.Flag == 701 and row.enabled and row.label in ["Search","调查"]
             and row.art.resource == null,"Real faced chest substitutes labeled text Search without borrowing Stay art"): return false
     for i in range(4):

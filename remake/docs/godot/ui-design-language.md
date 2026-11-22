@@ -2,26 +2,26 @@
 
 [Issue #1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616) uses this page as the
 remake's design system. The [scene review](ui-scene-review.md) applies it to the player journey.
-The [presentation agreement](presentation.md) records what runs today. The proposed
-[#2064 battle composition](battle-ui-composition.md) applies the same panel language to
-exclusive battle focus, a freestanding diamond and one reading region per phase.
+The [presentation agreement](presentation.md) records what runs today. [#2079](battle-ui-composition.md)
+delivers the first slice of #2064, with phase-specific battle focus, one shared board cursor,
+a freestanding Main diamond and a fixed reader for the current decision.
 
 **High rigor.** Shared controls and scene layouts affect the whole player journey. The user
-accepted the Godot review at its 1920×1080 design size. The ordinary pre-voyage game uses the reviewed scenes. Each gameplay or host caller still owns input, transactions and return.
+accepted the Godot review at its 1920×1080 design size. Each gameplay or host caller owns its
+input, transactions and return.
 
-Production uses compact labeled lists in the field, Church, shop and battle. Keep each admitted
-original icon beside its localized name, visible before focus. Child lists replace the parent in
-the same column. Layout A joins the acting unit's status to its command list. Layout B remains a
-comparison in the preview. The proposed battle Main diamond preserves labeled commands and child
-lists, with separate reading bounds. The
-[scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its production
-consumer and the limits of its evidence.
+Field, Church and shop use compact labeled lists. Battle Main places four labeled directional
+slots between the measured acting card and the separate footer. Magic and Item replace the diamond
+with lists. Targeting moves focus to the board and replaces the acting card with the recipient
+card. Admitted icons keep their localized names visible before focus. The
+[scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its mounted
+consumer and evidence.
 
 ## Components
 
 | Component | Contents and states | When to use it |
 | --- | --- | --- |
-| Command item | Admitted original icon, persistent localized name, focus marker. Align an amount, level, MP cost or slot when it distinguishes offers. Unavailable items keep their name and status. | A choice in a list or bar. Entry and host actions can use text alone. |
+| Command item | Admitted original icon, persistent localized name, focus marker. Align an amount, level, MP cost or slot when it distinguishes offers. Unavailable items keep their name and status. | A choice in a list, bar or diamond slot. Entry and host actions can use text alone. |
 | Choice list or command bar | One ordered set of items. Up/Down moves focus in a vertical list, Left/Right in a horizontal bar. Confirm selects the focused offer. Retain the caller's initial choice. | Right-hand lists support commands, submenus and long labels. Horizontal choices suit an attached dialogue question. |
 | Contextual detail | Show a cost, consequence or actual refusal reason when the item leaves a question. A self-explanatory command needs only its label. | Beside the current collection. Allow for a long reason without displacing focus. |
 | Dialogue frame | Body, supplied portrait, choices only in a real choice phase, footer for mapped hints. | Greeting, story, Search and battle messages. Preserve each reader's reveal/page/acknowledge behavior. |
@@ -36,8 +36,8 @@ prices and transaction state.
 **Confirmed — accepted implementation/source structure:**
 [StoryTheme](../../game/src/UI/StoryTheme.cs) supplies blue/gold reading panels, 30px body,
 24px hints, selected `ffe19a` and unavailable `8e9bab`. Entry and host actions use the square
-journey theme. Field, Church, shop and battle use labeled right-hand lists with nearest 3×
-command art where mounted. Up/Down scans rows. The [Church agreement](ui-scene-review.md#10-production-church-and-battle-command-lists)
+journey theme. Field, Church and shop use labeled lists with nearest 3× command art where mounted.
+Battle Main uses freestanding labeled 4× diamond slots. Magic and Item retain labeled rows. The [Church agreement](ui-scene-review.md#10-production-church-and-battle-command-lists)
 and [field and shop owner](field-and-shop.md#current-composition) identify the actual consumers.
 The [display contract](display-composition-contract.md) owns the world and UI layers.
 
@@ -57,10 +57,11 @@ In scope: existing entry, field, party/preparation, service, host and battle pre
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
-Remote services and an additional host Overview remain outside this design. The user requested an
-[actual current-round order readout](battle-ui-composition.md#current-round-order-2065).
-Its proposed placement reserves a quiet space under round/gold. Future rounds become known when
-the engine generates them. [Modernization proposal](modernization-design.md)
+Remote services and an additional host Overview remain outside this design. The space below round/gold
+is reserved for the pending [current-round readout #2065](battle-ui-composition.md#current-round-order-2065).
+The [implementation handoff](battle-ui-composition.md#implementation-handoff) also tracks pending
+target press and Stay behavior (#2080), inspection movement (#2081), shared roster presentation
+(#2082), and spell descriptions (#2083).
 
 ## Surfaces and hierarchy
 
@@ -176,8 +177,8 @@ target confirmation use their own existing pages.
 Use the mounted weapon, ring, recovery and action definitions for effects and numbers, and the
 current actor/slot for conditions such as class eligibility or damage. Distinguish field effects
 from battle effects. Keep descriptions short and localize complete phrases in the UI catalog.
-The proposed [selected spell reader](battle-ui-composition.md#selected-spell-descriptions) uses the
-same stable reading region and the admitted level and effect facts for its context.
+The pending [spell descriptions #2083](battle-ui-composition.md#selected-spell-descriptions)
+will use the stable reading region and the admitted level and effect facts for their context.
 Names keep the existing name catalog. Where gameplay has no bound effect, leave the item prose
 blank. Depot, other battle menus, game rules, item data and save formats are outside this slice.
 
@@ -241,26 +242,22 @@ Choose the overall composition by what the player needs to see during each step.
 | Meet someone, then choose | Witch artwork keeps its full rectangle | Right-column greeting gives way to actions. |
 | Read while watching the world | Speaker or searched object | Stable top/bottom reading frame with optional portrait and choices. |
 | Compare services and goods | Priest or merchant | Side list with labeled actions. A quote replaces the list. |
-| Decide on a battle action | Acting unit, candidate cell or target | Layout A puts the acting card above the right-hand list. The list yields to the target card and board during targeting. |
+| Decide on a battle action | Acting unit, candidate cell or target | The acting card heads the diamond or child list. The recipient card and board take over during targeting. |
 
-The following geometry records production layout A at the 1920×1080 design size. The proposed
-[battle placement](battle-ui-composition.md#world-marks-and-panel-placement) governs the next
-migration. Keep the host Menu and the inspected subject clear at each supported viewport.
-Function-key tabs belong to the preview.
+The [battle composition](battle-ui-composition.md#world-marks-and-panel-placement) defines the
+battle grid at 1920×1080. Keep the host Menu and the projected subject clear on the fitted smaller
+canvas and larger native viewports.
 
 | Phase | Components and placement |
 | --- | --- |
-| Movement | Keep round information quiet at the upper left. Draw reachable movement cells below the units, including cells occupied by allies that the actor can pass through. Confirming a legal stop opens commands. |
-| Command and spell/item list | Layout A uses a 560px-wide right panel with the first command row at (1312,312). The acting unit's identity and HP/MP head the panel. Use 36px values above two 232×28px gauges. Align child rows to the same origin and size the panel to its contents. |
-| Choose a target | Keep reach on the board. The right card shows the selected recipient and their vitals. Put cycle, Confirm and Back in the footer. Return to the previous command or spell level. |
-| Free inspection | Keep the status card clear of the hovered cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
-| Action playback / outcome | The board command panel retires. Close-ups use the original ally/enemy window positions. Ordered reward and return messages use the reading frame. |
+| Movement | Quiet round/gold and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
+| Main and spell/item lists | A measured acting card heads the 560px decision column. Main uses four labeled diamond slots outside the blue reader. Magic and Item replace them with scrollable rows. The fixed footer contains descriptions, refusals and the mapped actions. |
+| Choose a target | The selected recipient takes the card. The cursor denotes the legal candidate, with one reach and effect field. Back retains the previous command, spell level or item slot. |
+| Free inspection | One hover card clears the cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
+| Action playback and outcome | Decision windows retire. Actual close-up participants and their messages own the scene. Resize refreshes the art, cards and reader around the retained delivery state. |
 
-In production, row placement follows the measured height of the acting card. The
-[decision-card comparison](ui-scene-review.md#9-remaining-differences-in-play) records the
-admitted vitals size and arrangement. Measure the whole group against the host exclusion,
-the projected subject and the footer for long reasons and wide values. Move or grow the
-group when needed and preserve focus across a resize. Scroll or page overflow inside its owner.
+At supported sizes, move the card and footer together when the preferred column would cover the
+subject. Wide values can expand the measured card and long text scrolls inside the reserved reader.
 
 Entry uses its established Witch art and right-column reservation instead of this battle grid.
 Field dialogue keeps its stable top/bottom speaker avoidance. Church and Shop position their services beside the visible provider.

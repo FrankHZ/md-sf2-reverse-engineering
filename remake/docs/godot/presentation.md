@@ -1993,6 +1993,10 @@ retain the earlier geometry and stop-only drawing evidence.
 
 ### Battle selection and preview feedback (#1617)
 
+The [#2079 phase composition](battle-ui-composition.md#world-marks-and-panel-placement) supersedes
+the independent bracket and cyan target outline described below. The original evidence and #1617's
+removal of actor tint and preview-path stripes retain their scope.
+
 **Standard rigor.** This bounded presentation change removes the selected actor's gold modulation and
 the gold underline at every preview-path cell. It preserves the accepted 96px scale, legal movement
 query, actual segment delivery, target selection, input boundary and accessibility. Inspection

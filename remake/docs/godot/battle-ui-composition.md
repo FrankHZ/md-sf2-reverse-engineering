@@ -1,41 +1,27 @@
 # Battle UI composition
 
-[Issue #2064](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2064) defines a **High**
-rigor design slice. Several presenters can paint different phases of the same decision, and a
-misrouted input can commit an action. This page specifies the proposed battle composition and the
-implementation boundaries. The [feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
-records delivered behavior. Design acceptance belongs to main-gate. The player reviews the composed
-experience in [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
+[Issue #2064](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2064) accepted the
+**High** rigor design. Several presenters consumed the same battle decision independently, and
+misrouted input could commit an action. [Issue #2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079)
+implements phase visibility, board marks, decision layout and geometry-only close-up resize.
+The [feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
+records current behavior. [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456)
+owns the player's review of the composed experience.
 
-The scope is the mounted battle UI and the roster and spell reading surfaces it shares with field
-preparation. Use the existing admitted encounters and same scene, action, movement, transaction,
-continuation and save contracts. Keep the original source findings separate from the remake design.
-In particular, the new inspection range and the queue strip are remake features.
+## Scope agreement
 
-## Why the presenters overlap
+Use the mounted battle presenters and existing canvas, input, movement, action, transaction and
+save contracts. The session selects the visible phase. The map owns spatial marks. The command
+and inspection controls own their local focus and rectangles. Short controlled input routes supply
+native acceptance. The implementation handoff links later slices for target edges and direct Stay,
+inspection movement, the roster, spell descriptions and the queue. Original-game evidence and
+intentional remake features retain their separate provenance.
 
-**Confirmed, remake source.** The session projects its selected actor independently of the menu
-page. The map presents that actor through `BattleSelectionView`, places the target through a
-separate sprite or fallback rectangle, and owns a second cursor for inspection. It calls both range
-views. Action reach can begin while browsing Attack, Magic or Item. Inspection hides ranges and the
-target cursor in `Inspect`, leaves the actor cue on its own lifetime, and calls `Inspect` even on
-its subordinate pages. The command layout, auxiliary HUD, inspection and close-up each have their
-own card, prompt and visibility logic. These paths explain how marks with different meanings can
-coexist. The origin of each line in the player's report remains **Unknown**. The removed gold path
-underline or sprite tint has no verified regression here.
-[Map projection](../../game/src/Battles/BattleMapViewport.cs) ·
-[Session presentation](../../game/src/Battles/BattleSessionView.cs) ·
-[Inspection](../../game/src/Battles/BattleInspectionView.cs) ·
-[#1616 feedback](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616#issuecomment-7085667332)
-
-Keeping a distinct actor bracket and tuning its color or opacity would preserve the separate
-lifetimes and fallback styles. Rebuilding the turn UI as a single modal or introducing a common
-scene graph would also displace the existing input, transaction and playback owners. Use a smaller
-change. Let `BattleSessionView` derive the visible phase from the live session and its current
-command or inspection page, and let the existing presenters render only the surfaces for that phase.
-Keep layout authority local and use the admitted source cursor style for spatial focus. The
-[display contract](display-composition-contract.md#battle-board-and-close-up-composition) already
-supplies the canvas and world ordering.
+**Confirmed, pre-#2079 remake source.** The acting bracket, target cursor or rectangle and
+inspection cursor had independent lifetimes. Main and the child lists could paint action reach
+while the acting bracket was still visible. Inspection subpages retained a visible board cursor.
+The origin of each line in the [player report](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616#issuecomment-7085667332)
+remains **Unknown**.
 
 ## Phase, focus and return
 
@@ -50,27 +36,24 @@ Visibility and hit testing change together.
 | --- | --- | --- | --- |
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints, queue and board selection marks are hidden. |
 | Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round/gold, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
-| Main action | One focused command in the freestanding diamond | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the lower Stay/Search slot. Direction changes focus, Confirm chooses, and mapped shortcuts still choose their existing command. Main Back returns through the real movement undo. Ordinary Stay selects and commits here. |
+| Main action | One focused command in the freestanding diamond | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the lower Stay/Search slot. Direction changes focus, Confirm chooses, and mapped shortcuts still choose their existing command. Main Back returns through the real movement undo. Stay uses a separate confirmation until [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080). |
 | Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Child rows replace the diamond. Scrolling keeps focus visible. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
-| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Fresh directions cycle once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An empty candidate set gives Back and the reason. Back clears target state and restores the same command or item/spell row. |
+| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Directions cycle the live candidates. Fresh-edge handling is [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080). Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An empty candidate set gives Back and the reason. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
-| Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one inspection hint and, for a disclosed living unit, its movement field from its actual position | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
+| Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one inspection hint. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) owns the movement field for a disclosed living unit | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One applicable hint and data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
 | Enemy action, close-up, field notice/death, result or battle exit | Actual delivered action or current message/return prompt | Playback cards for the actual participants, message reader, board only when owned by the continuation | Existing completion token and acknowledgement. All decision surfaces and board marks retire. Rebuild from live control after delivery. Field return uses field chrome. A failure shows once at its owning view. |
 | Host Menu, Save, Speed or recovery cover | Host/modal's current choice or reader | Only the permitted covered backdrop | Suspend battle gestures, holds and pacing using existing ownership. Restore the same eligible caller, with its current layout and fresh input after release. A resize while covered may recompute geometry. |
 
 ## World marks and panel placement
 
-Replace the independent modern moving-actor bracket retained by [#1694](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1694)
-with the same board-owned single-cell cursor used for targeting and inspection. Retain the
-[published 32×32 asset](battle-scenes.md#original-target-and-inspection-cursor-publication)
-and its nearest 4× placement centered on 96px cells (16px overhang per side). Reuse the cursor
-consumer and one board-aligned authored pixel fallback for public or older private packages. Retire
-the separate cyan target rectangle and the actor-bracket draw node once all three roles use that
-consumer. Keep `FollowMovement`'s behavior for the player cursor, camera targeting and clipping in
-the map. On inspection page changes, clear the mark without discarding the retained cell or moving
-the camera. Command and panel pages express focus in their own controls. Keep actor colors and
-source foreground priority.
+One board-owned cell cursor serves Movement, Target and inspection Cursor. It draws the
+[published 32×32 asset](battle-scenes.md#original-target-and-inspection-cursor-publication) at
+nearest 4× centered on 96px cells, with 16px overhang per side. Public and older private packages
+use the same board-aligned authored pixel corners. The movement cursor follows the displayed actor
+through preview and undo. Subordinate inspection pages hide the mark and retain the inspected cell
+and camera. Command and panel pages express focus in their own controls. Actor colors and source
+foreground priority are preserved.
 
 Reuse the board-local movement and action drawing owners. Only one field may be visible, below
 units and source foreground, using a pixel-aligned tile motif that leaves terrain readable.
@@ -93,9 +76,7 @@ child list below the measured card. Use one independent reading/footer region be
 and keep Back and Confirm fixed within their phase. The main four source slots are Up Attack,
 Left Magic, Right Item, Down Stay/Search. Reuse `DiamondCommandButton` and
 `DiamondMenuGeometry` from the existing diamond surfaces, keep labels visible next to their
-slots, and keep the controls outside the blue reading frame. This replaces battle Main's
-accepted vertical rows. Keep the modern list for Magic and Item and leave other scene layouts
-with their existing owners. A blocked command can show its refusal in the same reader.
+slots, and keep the controls outside the blue reading frame. Magic and Item retain their lists. A blocked command can show its refusal in the same reader.
 
 Reserve the footer's reading bounds on page entry from the available viewport and keep them
 stable across offers. Long rows and descriptions wrap and scroll within their own bounds without moving
@@ -119,6 +100,8 @@ bounds, including a paused cover. Keep the same participants, phase, token, reve
 elapsed delivery. [Close-up resize finding](display-composition-contract.md#findings-and-minimum-remedies)
 
 ## Read-only inspection and the member view
+
+Pending implementation under [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) and [#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082).
 
 Resolve hover from `BattleInspectionQuery`'s disclosed unit at the cursor. The session query for
 that actor's range uses the same settled-origin/session/revision guard and admission as the rest of
@@ -151,6 +134,8 @@ a disclosed enemy stays a separate entry into the shared details panel.
 [Field roster and details](../../game/src/Exploration/PartyStatusView.cs)
 
 ## Fresh target input and direct Stay
+
+Pending implementation under [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080).
 
 `BattleSessionView.Navigation` currently classifies `CommitReady` as `TargetChoice` and
 arms the same 120ms repeat used by non-movement pages. Use the actual Target page, independent of engine staging, to route target direction events through
@@ -187,6 +172,8 @@ transaction confirmation and acknowledgement keep their own paths.
 [Dispatcher](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs)
 
 ## Selected spell descriptions
+
+Pending implementation under [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083).
 
 Reuse the fixed-height reader from `ItemDescriptionView` in battle Magic and field Prepare Magic.
 Use one typed spell-description projection and localized formatter for both, keyed by exact
@@ -248,11 +235,11 @@ before each implementation. The following are principal owners and distinct acce
 
 | Slice | Player behavior and principal owners | Acceptance and risk |
 | --- | --- | --- |
-| 1. Board focus and decision layout | One cursor/field/card owner per phase, freestanding command diamond, stable child and footer regions, auxiliary and close-up retirement. `BattleSessionView`, `BattleMapViewport`, range/cursor views, `BattleCommandMenu`/`BattleMenuLayout`, `BattleInspectionView`, `BattleSceneView`. | Short real Move → command → Attack/Magic/item target → Back → Movement and inspection/options/return. Include a rejected mouse target, ally crossing, multi-target and field delivery. Inspect visible/hit rectangles, focus, map clipping and errors in both languages, at supported minimum/1080p/larger wide viewport, with wide values/long text and Reduced Flash. Verify private source cursor and public fallback. Resize a retained close-up token while paused and check art/card positions and unchanged delivery on return. |
-| 2. Target edges and ordinary Stay | One selection per fresh direction, one gesture to Stay, continuous Movement. `BattleSessionView.Navigation`, `BattleCommandMenu`, current `GameInput` release tracking and `BattleCommandDispatcher`. | Keyboard and pad/d-pad or stick single target and multiple targets for physical, Magic and Item. Compare hold, neutral/repress, fast taps, menu/move → target with inherited direction, target Back/reentry, host cover, and continued held movement. Origin and moved Stay commit once on key/pad/click. Exercise next actor or after-turn delivery while holding Confirm. Search and Give/Drop confirmations, refusal and backwards routes still work. |
-| 3. Inspect movement and share member presentation | One true movement field under the inspected unit and the same recognizable roster/detail experience in battle and exploration. `BattleInspectionQuery`, `BattleMovementQuery`, `GameSession`, `BattleInspectionView`, `PartyStatusView`, `PartyDetailsPanel` and shared roster surface. | Ally → enemy with another mover/terrain → empty, ally-through versus legal stop, detail/Map/Members/host transitions and cursor exit. Verify displayed facts and read-only state/seed equality. Compare long names, defeated/absent/not initialized, roster size and selection/scroll after Back with active Prepare in field only. |
-| 4. Describe spells by level and context | Actual MP/effect/targets/range and current reason in the shared reader. `BattleChoices`, field recovery/choice owners, `BattleCommandMenu`/`BattleMenuLayout`, `FieldActionView`, reader and PO catalogs. | Compare two levels, a multi-target effect, self or EGRESS, lack of MP/Silence/unavailable content, legal field recovery and field-limited effect. Focus or scroll changes do not spend MP or move the rows/footer. Confirm/cancel still use their existing action path and restore the chosen row. |
-| 5. Show the actual queue (#2065) | Current and next scheduled actors in the reserved left stack. Read projection beside `BattleAdvancer`/`BattleTurnFlow`. Render through the battle HUD/layout and document in the feature trace. | Compare the next actual eligible actor, repeated slots, same names, status skips and changes, dead/unplaced entries, sentinel and empty remainder, new round and cold Continue. Verify hide/show by phase and equality of seeds, resources and queue after repeated projection and cover/return. |
+| 1. [#2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079) Board focus and decision layout | One cursor/field/card owner per phase, freestanding command diamond, stable child and footer regions, auxiliary and close-up retirement. `BattleSessionView`, `BattleMapViewport`, range/cursor views, `BattleCommandMenu`/`BattleMenuLayout`, `BattleInspectionView`, `BattleSceneView`. | Short real Move → command → Attack/Magic/item target → Back → Movement and inspection/options/return. Include a rejected mouse target, ally crossing, multi-target and field delivery. Inspect visible/hit rectangles, focus, map clipping and errors in both languages, at supported minimum/1080p/larger wide viewport, with wide values/long text and Reduced Flash. Verify private source cursor and public fallback. Resize a retained close-up token while paused and check art/card positions and unchanged delivery on return. |
+| 2. [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080) Target edges and ordinary Stay | One selection per fresh direction, one gesture to Stay, continuous Movement. `BattleSessionView.Navigation`, `BattleCommandMenu`, current `GameInput` release tracking and `BattleCommandDispatcher`. | Keyboard and pad/d-pad or stick single target and multiple targets for physical, Magic and Item. Compare hold, neutral/repress, fast taps, menu/move → target with inherited direction, target Back/reentry, host cover, and continued held movement. Origin and moved Stay commit once on key/pad/click. Exercise next actor or after-turn delivery while holding Confirm. Search and Give/Drop confirmations, refusal and backwards routes still work. |
+| 3. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) Inspect movement and share member presentation ([#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082)) | One true movement field under the inspected unit and the same recognizable roster/detail experience in battle and exploration. `BattleInspectionQuery`, `BattleMovementQuery`, `GameSession`, `BattleInspectionView`, `PartyStatusView`, `PartyDetailsPanel` and shared roster surface. | Ally → enemy with another mover/terrain → empty, ally-through versus legal stop, detail/Map/Members/host transitions and cursor exit. Verify displayed facts and read-only state/seed equality. Compare long names, defeated/absent/not initialized, roster size and selection/scroll after Back with active Prepare in field only. |
+| 4. [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083) Describe spells by level and context | Actual MP/effect/targets/range and current reason in the shared reader. `BattleChoices`, field recovery/choice owners, `BattleCommandMenu`/`BattleMenuLayout`, `FieldActionView`, reader and PO catalogs. | Compare two levels, a multi-target effect, self or EGRESS, lack of MP/Silence/unavailable content, legal field recovery and field-limited effect. Focus or scroll changes do not spend MP or move the rows/footer. Confirm/cancel still use their existing action path and restore the chosen row. |
+| 5. [#2065](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2065) Show the actual queue | Current and next scheduled actors in the reserved left stack. Read projection beside `BattleAdvancer`/`BattleTurnFlow`. Render through the battle HUD/layout and document in the feature trace. | Compare the next actual eligible actor, repeated slots, same names, status skips and changes, dead/unplaced entries, sentinel and empty remainder, new round and cold Continue. Verify hide/show by phase and equality of seeds, resources and queue after repeated projection and cover/return. |
 
 [#2068](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2068) owns formal BLAZE
 playback assets and shares the playback writer only as needed. [#2071](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2071)
@@ -261,11 +248,62 @@ owns special dialogue portraits, [#2073](https://github.com/FrankHZ/md-sf2-rever
 owns story wait/Confirm, and [#2062](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2062)
 owns pickup glints. Schedule shared-path work around those owners.
 
-For implementation use short controlled states through the ordinary presenters and actual
-input, state, geometry and errors, including the needed source/private or public asset selection.
-Use engine unit coverage only for changed real behavior. Engineering acceptance uses the
-state, input, geometry and error observations above. Human readability, device feel and visual
-approval stay with #1456.
-This design uses direct document, reference and scope checks. Original pulse parity, natural
-source reach beyond the linked evidence and native observations of the proposed changes remain
-**Unknown**.
+## Reproduce slice 1
+
+Use the [locked SDK workflow](../development-and-verification.md#locked-net-workflow), the registered
+Godot installation and a fresh checkout-local output directory. Load `local/private-inputs.ps1`
+in the command process, create its checkout-local TEMP directory if needed and set
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`. Run `uv run sf2 verify adapter` from repository root.
+Build Debug from `remake/` with `& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore`.
+
+Run the [cursor observation](../../game/probes/engine_battle_cursor_observation.gd) with fresh
+APPDATA, LOCALAPPDATA and TEMP/TMP, a disposable `SF2_SAVE_ROOT` and a unique `SF2_SAVE_NAMESPACE`.
+Set `SF2_VIEWPORT_OUTPUT` to a fresh absolute report path and `SF2_INSPECTION_ROUTE=keyboard`.
+Use UTF-8 input settings with `formatVersion` 1, `confirmCancel` standard, `textMode` instant,
+`charactersPerSecond` 24 and empty `bindings`.
+
+| Case | Selection before launch |
+| --- | --- |
+| Private Battle01 | Select the registered `derived/issue2035/galam-town-v1` world, entry, main-scenes and six opening files as described in the [publication owner](../content/presentation-assets.md#final-publication-and-ordinary-selection). Set `SF2_DEMO_BATTLE_CASE=private`, `SF2_CURSOR_ORIGINAL=1` and `SF2_CURSOR_SHA256` to the decoded identity in [cursor publication](battle-scenes.md#source-and-publication). Set `language` to en and `reducedFlash` to false. Set `SF2_COMPACT_START` to the controlled start below. Use 1920×1080. |
+| Public long text and wide vitals | Set `SF2_DEMO_BATTLE_CASE=public`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Set `language` to zh-CN and `reducedFlash` to true. Copy `remake/content/authored/attack-spells.json` to run scratch. Change the mage maximum HP to 30,000 and initial HP to 29,999. Rename its actor ID, start actor reference and encounter placement reference to `very-long-controlled-mage-name-for-wrap-and-five-digit-vitals`. Keep its physical movement type. Widen the terrain to the left by eight cells, extending the barrier on the top and bottom rows and inserting eight open cells after the left barrier of each interior row. Shift every placement eight cells right to exercise right-edge target clearance. Pass that copy as the authored package. The observer extends one localized help string before mounting the host. Use 1600×900. |
+| Public area completion | Set `SF2_DEMO_BATTLE_CASE=area`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Use English and Reduced Flash and select the unchanged `attack-spells.json` at 1920×1080. |
+
+The private controlled start declares the active lineup. Save it under the checkout's ignored
+`local/` as UTF-8 JSON.
+
+```json
+{
+  "start": {
+    "battle": "battle-1",
+    "activeAllies": ["ally-0", "ally-1", "ally-2"],
+    "actors": [
+      {"actor": "ally-0", "hp": 6, "position": {"x": 9, "y": 14}},
+      {"actor": "ally-1", "position": {"x": 8, "y": 14}},
+      {"actor": "ally-2", "hp": 0},
+      {"actor": "enemy-0", "hp": 1, "position": {"x": 8, "y": 13}}
+    ]
+  }
+}
+```
+
+Run from `remake/` with absolute settings and log paths. Set `$packageArguments` to an empty
+array for Battle01 or `@('--authored-package', $packagePath)` for either public case.
+
+```powershell
+& $env:GODOT_BIN --headless --path game --audio-driver Dummy --max-fps 120 --resolution $resolution `
+    --log-file $nativeLog --script res://probes/engine_battle_cursor_observation.gd -- `
+    --input-settings $settings @packageArguments
+```
+
+Use the observer's 50-second deadline and a 55-second wall bound. Require exit 0, `passed:true`,
+empty failures and unavailable lists, and inspect stderr.
+
+The source-art route uses actual preview and undo, cardinal Main focus, a full caption click,
+HEAL/Attack/Item Target and Back, a rejected board cell, and a complete legal attack click.
+The inspection route covers both map edges, Details, Options and host cover. The private route
+checks native wide relayout and a paused close-up resize with stable delivery. The public routes
+cover the fitted 1600×900 canvas, authored corners, wide vital values, long text scroll with fixed
+navigation, Reduced Flash, and ordered BLAZE2 recipients with one MP payment.
+
+Human readability, device feel and visual approval stay with #1456. Original pulse parity and
+natural source reach beyond the linked evidence remain **Unknown**.

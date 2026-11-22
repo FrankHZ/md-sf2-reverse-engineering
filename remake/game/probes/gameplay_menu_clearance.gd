@@ -109,7 +109,7 @@ func battle() -> bool:
     if not await enter_battle(): return false
     if not await wait_for(func(_s):return board().settled,"camera settles"): return false
     if not await inspect_map(): return false
-    await act("confirm"); await act("down")
+    await act("confirm"); await act("left")
     var layout := view.find_child("CommandMenu",true,false).get_node("Layout")
     await frames(8)
     var footer := layout.get_node("DescriptionPanel")
@@ -117,21 +117,21 @@ func battle() -> bool:
     for window in [Vector2i(1920,1080),Vector2i(2560,1440),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
         if not await wait_for(func(_s):return board().settled,"decision camera after resize"): return false
-        measure("decision",[layout.get_node("ActorCard"),layout.get_node("DecisionGroup"),footer,back],
+        measure("decision",[layout.get_node("ActorCard"),layout.get_node("Commands"),footer,back],
             [footer.find_child("Detail",true,false),footer.find_child("Help",true,false),back])
         var actor_cell := Rect2(cell_point(state().previewX,state().previewY) - Vector2(48,48),Vector2(96,96))
         samples[-1].actorCell = str(actor_cell); samples[-1].cameraSettled = board().settled
         if not expect(not footer.get_global_rect().intersects(actor_cell),"Reason clears the acting unit"): return false
-        if not expect(state().menu.layout.commandList.rows[1].selected,"Magic row remains selected"): return false
+        if not expect(state().menu.layout.commands[1].selected,"Magic slot remains selected"): return false
         if window.y == 1440 and not expect(footer.size.x == layout.get_node("ActorCard").size.x,
                 "Long reason uses normal column when height permits"): return false
     await click(control_rect(back))
     if not expect(state().stage == "Movement","Clicking footer Back restores movement"): return false
-    await act("confirm"); await act("down")
+    await act("confirm"); await act("left")
     var main: Dictionary = state().menu.layout
     if not await cover(false): return false
-    await click(main.commandList.rows[0].rect)
-    if not expect(state().menu.page == "Target","Click on Attack row opens targets"): return false
+    await click(main.commands[0].caption)
+    if not expect(state().menu.page == "Target","Click on Attack caption opens targets"): return false
     measure("target",[layout.get_node("TargetCard"),layout.get_node("DescriptionPanel"),layout.find_child("Navigation",true,false)])
     if not await cover(true): return false
     if not expect(state().menu.page == "Target","Host Back restores targeting"): return false

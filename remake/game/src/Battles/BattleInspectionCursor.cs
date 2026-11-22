@@ -29,10 +29,18 @@ internal sealed partial class BattleInspectionCursor : Control
     {
         _draws++;
         if (_texture is not null) { DrawTextureRect(_texture, ArtRect, false); return; }
-        DrawRect(new Rect2(4, 4, 88, 88), Colors.Black, false, 7);
-        DrawRect(new Rect2(4, 4, 88, 88), Colors.Cyan, false, 3);
-        DrawLine(new(40, 48), new(56, 48), Colors.White, 2);
-        DrawLine(new(48, 40), new(48, 56), Colors.White, 2);
+        // Authored 4px steps match the board's native pixel grid.
+        foreach (var corner in new[] { new Vector2(4, 4), new(92, 4), new(4, 92), new(92, 92) })
+        {
+            var sign = (new Vector2(48, 48) - corner).Sign();
+            var bar = new Vector2(sign.X * 24, sign.Y * 8);
+            var leg = new Vector2(sign.X * 8, sign.Y * 24);
+            DrawRect(new Rect2(corner, bar).Abs(), new Color("18202b"));
+            DrawRect(new Rect2(corner, leg).Abs(), new Color("18202b"));
+            var inset = corner + sign * 4;
+            DrawRect(new Rect2(inset, new Vector2(sign.X * 16, sign.Y * 4)).Abs(), new Color("e9f9fb"));
+            DrawRect(new Rect2(inset, new Vector2(sign.X * 4, sign.Y * 16)).Abs(), new Color("e9f9fb"));
+        }
     }
     internal object Observe() => new { visible = IsVisibleInTree(), resource = Original ? Resource : null,
         mode = Original ? "original-single-cell" : "authored-fallback", sha256 = _sha256,
