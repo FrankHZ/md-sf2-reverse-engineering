@@ -150,7 +150,7 @@ internal sealed partial class SettingsView : Control
                 T(BattleContext ? "ui.settings.battle-graphics" : "ui.settings.graphics-coverage"),
             Page.Display when BattleContext && _rows[_selected].Id == "language" => T("ui.settings.battle-language"),
             Page.Display when BattleContext && _rows[_selected].Id == "text" => T("ui.settings.battle-text"),
-            Page.Assist when BattleContext && _rows[_selected].Id == "guidance" => T("host.setting-description-10"),
+            Page.Assist when _rows[_selected].Id == "guidance" => T("host.setting-description-10"),
             Page.Debug when BattleContext && _rows[_selected].Id == "victory" => T("ui.settings.battle-auto-victory"),
             Page.Battle => Notice ?? T("battle.speed.mapping"), _ => EditorMessage() };
         bool diagnostics = _page == Page.Debug && Input.Settings.ShowDebugDiagnostics;

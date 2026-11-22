@@ -2066,7 +2066,7 @@ msgid "ui.settings.guidance"
 msgstr "现代引导：{0}"
 
 msgid "host.setting-description-10"
-msgstr "在探索玩法菜单中显示当前目标，并在地图上显示已知目的地。应用后同时生效。"
+msgstr "显示当前目标、已知入口和未领取道具的闪光提示。"
 
 msgid "guidance.start-day"
 msgstr "开始新的一天。"

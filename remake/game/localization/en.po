@@ -2066,7 +2066,7 @@ msgid "ui.settings.guidance"
 msgstr "Modern guidance: {0}"
 
 msgid "host.setting-description-10"
-msgstr "Shows the current objective in the field menu and known destinations in the world. Apply changes both together."
+msgstr "Shows objectives, known entrances and glints on unclaimed items."
 
 msgid "guidance.start-day"
 msgstr "Start your day."

@@ -116,14 +116,18 @@ public sealed class FieldSearchTests
     {
         var session = Session((ushort)marker, leader: [0, 0, 0, 0], second: [0, 0, 0, 0]);
         var party = session.Current.Exploration!.Party; var layout = session.Current.Exploration.Layout;
+        Assert.Equal(Faced, Assert.Single(session.QueryUnclaimedFieldItems()));
         Assert.Equal(FieldSearchKind.Full, Search(session).Kind);
         Assert.Same(party, session.Current.Exploration.Party); Assert.Same(layout, session.Current.Exploration.Layout);
         Assert.DoesNotContain(150, session.Current.Story.Flags);
         Close(session);
+        Assert.Equal(Faced, Assert.Single(session.QueryUnclaimedFieldItems()));
         Assert.Null(Send(session, new FieldDrop(FieldInventoryTests.Giver, 0, 0)).Failure);
         Assert.Equal(FieldSearchKind.Item, Search(session).Kind);
         Assert.Contains(150, session.Current.Story.Flags);
-        Close(session); Assert.Equal(FieldSearchKind.Empty, Search(session).Kind);
+        Close(session);
+        Assert.Empty(session.QueryUnclaimedFieldItems());
+        Assert.Equal(FieldSearchKind.Empty, Search(session).Kind);
     }
 
     [Fact]

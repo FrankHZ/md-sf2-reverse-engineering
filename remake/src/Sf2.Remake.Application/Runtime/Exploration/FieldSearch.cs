@@ -18,6 +18,66 @@ internal static class FieldSearch
         current.Exploration is { Definition.Search: not null, Definition.InputProgram: null } &&
         current.Story.Warp is null && current.Story.ScriptWarp is null && !current.Story.BattleRequest;
 
+    internal static IReadOnlyList<MapPosition> QueryUnclaimedItems(ScenarioDefinition definition, SessionSnapshot current)
+    {
+        if (!current.HasOrdinaryFieldTime ||
+            current.Exploration is not { Definition.Search: { } search, Definition.InputProgram: null } world ||
+            definition.FieldPreparation is not { } preparation) return [];
+        var player = world.PlayerEntity;
+        if (current.Story.LogicalView is { } view && view.TargetSlot != player.Slot) return [];
+        var area = world.Definition.Traversal.SelectActiveArea(player.Position)?.Area;
+        if (area is null) return [];
+
+        var origin = player.Position;
+        var offset = FieldLayout.Offset(world, player.Motion);
+        bool Clear(int x, int y) => x >= area.MinimumX && x <= area.MaximumX &&
+            y >= area.MinimumY && y <= area.MaximumY &&
+            !OriginalMapTraversal.IsBlocked(world.Layout, new(x, y), offset.X, offset.Y);
+        return search.Chests.Concat(search.OtherItems).Where(placement =>
+        {
+            var position = placement.Position;
+            if (!area.Contains(position) || current.Story.Flags.Contains(placement.Flag) ||
+                placement.ItemWord is not { } word || (word & 127) == 127 || !preparation.Items.ContainsKey((byte)(word & 127)))
+                return false;
+            int marker = Marker(world, position);
+            if (ItemText(marker) is null || Placement(search, position, marker) != placement) return false;
+            // The pickup cell itself can be solid (e.g. a chest or bookshelf).
+            return VisibleApproach(origin, position.X - 1, position.Y, Clear) ||
+                VisibleApproach(origin, position.X + 1, position.Y, Clear) ||
+                VisibleApproach(origin, position.X, position.Y - 1, Clear) ||
+                VisibleApproach(origin, position.X, position.Y + 1, Clear);
+        }).Select(placement => placement.Position).ToArray();
+    }
+
+    private static bool VisibleApproach(MapPosition origin, int x, int y, Func<int, int, bool> clear)
+    {
+        if (!clear(x, y)) return false;
+        int fromX = origin.X, fromY = origin.Y;
+        int dx = Math.Abs(x - fromX), dy = Math.Abs(y - fromY);
+        int stepX = Math.Sign(x - fromX), stepY = Math.Sign(y - fromY);
+        int crossingsX = 0, crossingsY = 0;
+        while (fromX != x || fromY != y)
+        {
+            // Visit every crossed cell, including both sides of an exact corner.
+            int crossing = (2 * crossingsX + 1) * dy - (2 * crossingsY + 1) * dx;
+            if (crossing == 0 && (!clear(fromX + stepX, fromY) || !clear(fromX, fromY + stepY))) return false;
+            if (crossing <= 0) { fromX += stepX; crossingsX++; }
+            if (crossing >= 0) { fromY += stepY; crossingsY++; }
+            if (!clear(fromX, fromY)) return false;
+        }
+        return true;
+    }
+
+    private static int Marker(ExplorationState world, MapPosition position) => world.Layout[position.X, position.Y] & 0x3C00;
+
+    private static int? ItemText(int marker) => marker switch
+    {
+        0x1800 => 403, 0x2C00 => 404, 0x3000 => 405, 0x3400 => 427, 0x1C00 => 423, _ => null,
+    };
+
+    private static FieldItemPlacement? Placement(FieldSearchDefinition search, MapPosition position, int marker) =>
+        (marker == 0x1800 ? search.Chests : search.OtherItems).FirstOrDefault(row => row.Position == position);
+
     internal static SessionResult Submit(ScenarioDefinition definition, SessionSnapshot current, Search command, SessionRules rules)
     {
         try
@@ -32,10 +92,9 @@ internal static class FieldSearch
             var position = new MapPosition((target.Motion.X + offset.Item1) / 384, (target.Motion.Y + offset.Item2) / 384);
             if (position.X is < 0 or >= 64 || position.Y is < 0 or >= 64)
                 throw new BattleRuleException("search-bounds", "search");
-            int marker = world.Layout[position.X, position.Y] & 0x3C00;
+            int marker = Marker(world, position);
             bool chest = marker == 0x1800;
-            int[]? prefix = marker switch { 0x1800 => [403], 0x2C00 => [404], 0x3000 => [405], 0x3400 => [427], 0x1C00 => [423], _ => null };
-            if (prefix is null)
+            if (ItemText(marker) is not { } itemText)
             {
                 var description = search.Descriptions.FirstOrDefault(row => row.Position == position && (!row.MenuOnly || command.FromMenu));
                 if (description?.Program is { } program)
@@ -48,7 +107,7 @@ internal static class FieldSearch
                 return Feedback(current, new(description is null ? command.FromMenu ? FieldSearchKind.Empty : FieldSearchKind.Unhandled : FieldSearchKind.Description,
                     description?.Texts ?? (command.FromMenu ? [423, 412] : [])));
             }
-            var placement = (chest ? search.Chests : search.OtherItems).FirstOrDefault(row => row.Position == position);
+            var placement = Placement(search, position, marker);
             bool repeated = placement is not null && current.Story.Flags.Contains(placement.Flag);
             ushort? word = repeated ? (ushort)127 : placement?.ItemWord ?? (placement?.Gold is null ? (ushort)127 : null);
             var receipt = placement is null ? null : new FieldItemReceipt(world.Map, position, placement.Flag, chest);
@@ -69,20 +128,20 @@ internal static class FieldSearch
                     if (FieldInventory.Loadout(member).Items.Any(value => (value & 127) == 127)) { recipient = member; break; }
                 }
                 if (recipient is null)
-                    return Feedback(current, new(FieldSearchKind.Full, prefix, receipt, ItemWord: item,
+                    return Feedback(current, new(FieldSearchKind.Full, [itemText], receipt, ItemWord: item,
                         ItemName: itemDefinition!.Name));
                 party = FieldInventory.Replace(party, [FieldInventory.WithLoadout(recipient,
                     BattleInventory.Add(FieldInventory.Loadout(recipient), item))]);
-                result = new(FieldSearchKind.Item, prefix, receipt, recipient.Carried.Actor, item,
+                result = new(FieldSearchKind.Item, [itemText], receipt, recipient.Carried.Actor, item,
                     ItemName: itemDefinition!.Name);
             }
             else if (!repeated && placement?.Gold is { } gold)
             {
                 if (party.Gold is null) throw new BattleRuleException("search-gold-unknown", "party.gold", true);
                 party = FieldInventory.Replace(party, [], gold: (uint)Math.Min(999999UL, (ulong)party.Gold.Value + gold));
-                result = new(FieldSearchKind.Gold, prefix, receipt, Gold: gold);
+                result = new(FieldSearchKind.Gold, [itemText], receipt, Gold: gold);
             }
-            else result = new(FieldSearchKind.Empty, [.. prefix, marker switch { 0x1800 => 408, 0x2C00 => 409, 0x3000 => 410, _ => 412 }], receipt);
+            else result = new(FieldSearchKind.Empty, [itemText, marker switch { 0x1800 => 408, 0x2C00 => 409, 0x3000 => 410, _ => 412 }], receipt);
             if (placement is not null) flags = flags.Append(placement.Flag).Distinct().Order().ToArray();
             world = world.WithParty(party);
             if (chest && placement is not null) world = world.WithLayout(SetChest(world.Layout, position, search.OpenChest));

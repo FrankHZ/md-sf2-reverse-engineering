@@ -139,6 +139,14 @@ The bound profile's responsibility order is:
 | Low-priority entity repair | After drawing that actor, repaint high-priority B then A pixels only under its transformed opaque ink. Do not repaint its transparent rectangle: that would erase earlier high-priority actors. |
 | Pose and image | Direction/animation half, `FlagsB & 3` orientation, render size, gesture/head shift, mirror and effect change the ink or destination. Ordering cannot correct the wrong sprite or anchor. |
 
+Field pickup glints sit immediately after the main plane's low tiles. The active view selects B
+for layer zero and A for nonzero. The remaining plane and high-priority tiles and actors can
+cover the mark through their existing passes and texture alpha. The unbound fallback draws the
+mark between the full background and the actor/foreground passes. Require the whole mark to
+fit the legal screen clip. [Pickup eligibility and preferences](objective-guidance.md#field-pickup-glints)
+own the separate Search and control checks. The mark has no canvas, node or input target of its
+own.
+
 The [bound camera contract](../../../docs/design/contracts/world/map-exploration.md#bound-field-camera-lifecycle)
 owns source operands; the [actual visibility-coordinate agreement](presentation.md#scene-visibility-coordinates-1589)
 owns modern clipping. `cameraProjection.legalScreen` uses actual main-plane/actor coordinates;
