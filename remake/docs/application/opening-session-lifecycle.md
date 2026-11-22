@@ -420,8 +420,8 @@ asks the selected profile for a recipe and validates its typed result using exis
   snapshot retains settled actors, aliases, follower relationships and the working layout.
   Continue restores that visit without running setup init or Talk again. Fresh entry still
   selects population normally. Church Record uses the selected Map5 church anchor for Egress
-  and commits F399 only with successful slot publication. The published Phoenix-wave world lacks
-  the F650 setup body, so that visit still rejects with `save-location-unavailable`. F530/F28
+  and commits F399 only with successful slot publication. The published `yeel-f650-v1` world
+  supplies both early setups. Worlds missing the selected F650 body still reject that visit. F530/F28
   remain outside this recipe. See the [location coverage](pre-voyage-optional-locations.md#pre-voyage-save-coverage).
 
 These are implemented product recipes. Their acceptance includes
@@ -483,12 +483,11 @@ not prove semantic equivalence to ordinary initialization. Keep that distinction
 
 #### Yeel Save and Continue observation
 
-Use the registered `derived/issue2022/church-anchor-v1` candidate under `SF2_SHARED_INPUT_ROOT`.
-It retains the `phoenix-wave-v1` world and relative inputs, with one Map5 `churchSavepoint` from the
-existing `savepoints(OriginalPrograms(...))` parser at the pinned source revision. The selection
-is in [`pre-voyage-opening.json`](../../content/private/pre-voyage-opening.json). The candidate adds
-71 bytes to the world file and shares the unchanged immutable package dependencies on the same
-volume. It was prepared directly in the stable root and has no producer-checkout dependencies.
+Use the published `derived/issue2022/yeel-f650-v1` under `SF2_SHARED_INPUT_ROOT`. The world
+is 102,036,676 bytes and shares all 144 unchanged dependencies with `church-anchor-v1`.
+Its [private selection](../../content/private/pre-voyage-opening.json) includes the Map5 Church
+anchor and `ms-map5-flag650`. The variant changes the entities and Talk bindings while retaining
+the default Search table. All 20 program definitions referenced transitively by the setup resolve.
 
 Load [the worktree input configuration](../../../docs/operations/local-private-inputs.md) and use
 the existing [host workflow](../verification/map3-commission-save.md) with a fresh test save root
@@ -496,7 +495,7 @@ and the Debug adapter. Select the candidate's world, entry, and battle metadata 
 
 ```powershell
 . ./local/private-inputs.ps1
-$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2022/church-anchor-v1'
+$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2022/yeel-f650-v1'
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
 $env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
@@ -523,16 +522,54 @@ entry admits this case. It does not establish natural reach.
 4. With the first test slot's writer lock already taken, attempt a new Save. Check the storage
    error and that the prior slot still has the same bytes.
 
-**Confirmed** in the candidate's default setup. The ordinary slot retains F399 clear and the
+**Confirmed** in the preceding `church-anchor-v1` default setup. The ordinary slot retains F399 clear and the
 prior Map3 Egress. Record commits F399 and Map5 Egress to the live session and the second slot.
 Two independent title Continue processes preserve their respective flags, Egress and scene.
 The previous `phoenix-wave-v1` observation covers the locked-slot write failure.
 `PreVoyageSaveTests` exercises a complete synthetic replacement setup and refusal during
-movement. The tracked private selection requests flag 650 for Map5. In the registered
-canonical map import, the selected setup differs from the default in its entity and entity-event
-references. The published Church candidate still lacks that setup. A post-Hawel arrival with
-the changed residents, Talk, Search, Record and cold Continue remains unverified. Automatic
-approval review declined the local F650 package build before the importer started.
+movement.
+
+**Confirmed in the published F650 world.** The controlled pre-session approach begins at
+Map66(19,24), facing Up, after Battle06 and before Kiwi or the royal followers. It selects
+six active members including Kazin and Slade, F612/F650 and F506 set, F72/F404/F134/F399
+clear. The observer uses initialized roster values and the startup seam’s Map3 Egress.
+This samples a legal revisit stage. On the first departure from Hawel, F404 still requests
+Battle04; that departure is covered by the [campaign route](pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment).
+
+- Ordinary Up enters south Yeel. All 15 residents appear, with no village Kazin. From (8,7)
+  facing Up, Talk to resident 140 displays the replacement sequence 807–809 and leaves the
+  party unchanged. Kazin retains one active membership and one party record.
+- Search at (24,26) grants one Healing Seed and sets F134. Ordinary Save at (8,7) keeps the
+  prior Egress and F399 clear. Church Record through resident 141 saves at (11,5), sets
+  F399 and selects the Map5 Egress anchor. The ordinary slot survives Record unchanged.
+- Separate title Continue processes match the entire saved progress at attachment, including
+  item custody, membership, flags, setup, actors, aliases, follower links and working layout.
+  A further Continue leaves through the north exit and enters again from Map66(18,22).
+  The replacement residents return and Search cannot award the collected seed again.
+  A copied default-setup Church slot from the preceding world also restores its original
+  scene and Kazin guide link on the F650-capable world.
+
+Run the short headless observation with the existing Debug project and the stable private
+launcher. Use a fresh sample root outside every checkout. Each call starts and exits its
+own Godot process. Only the writer uses a controlled start file under the target checkout.
+
+```powershell
+$repo = (Resolve-Path .).Path
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2022/yeel-revisit-v1/Run.ps1'
+$sample = Join-Path $env:SF2_SHARED_INPUT_ROOT (
+    'tmp/sf2-yeel-' + [guid]::NewGuid().ToString('N'))
+foreach ($case in 'writer','ordinary','record','return','legacy') {
+    $root = if ($case -eq 'legacy') { "$sample-legacy" } else { $sample }
+    & $runner -Checkout $repo -SampleRoot $root -Case $case
+    if ($LASTEXITCODE) { throw "Yeel observation failed in $case" }
+}
+```
+
+The launcher's `accepted-sample` directory retains the two F650 slots and native receipts.
+A reader-only check can use `-SampleRoot` pointing at that directory and `-Case record`.
+The legacy case copies the two registered default-setup slots into its own fresh namespace.
 
 The SF2 recipe admits map-default ambient programs and an already-entered closed
 random-walk/wait/back-jump cycle on Map3. The completed messenger installs such a loop at a new

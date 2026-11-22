@@ -78,8 +78,8 @@ exhaustion or transition leaves a paused menu with a readable Save-unavailable r
 [contract](application/session-and-programs.md#ordinary-exploration-clock-and-save-boundary) and
 [verification](development-and-verification.md#ordinary-clock-and-save-entry) own the exact limits.
 Settled Yeel visits use the [same Save and Continue boundary](application/opening-session-lifecycle.md#implemented-savepoint-boundary).
-The recipe restores the live population and follower links. The private importer selects the
-post-Hawel F650 setup. Its body is absent from the published Church candidate. [Pre-voyage save coverage](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
+Continue restores the live population and follower links in the default and post-Hawel F650
+setups. The published world retains the Healing Seed receipt and Church Egress across restart. [Pre-voyage save coverage](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
 records the remaining location gaps.
 Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
