@@ -18,13 +18,11 @@ that same party. Existing Battle02/Yeel consumers are shared-state regression de
 an extension of this endpoint. The [capability matrix](../capability-status.md) owns delivered
 behavior; [UI gaps](../evidence/opening-ui-gaps.md) owns presentation acceptance.
 
-Use **manually selected local slots and savepoint restoration**, initially for the
-supported Map3 phases and settled Battle01 return on Map57. Save is explicit from a field menu;
-Continue chooses a slot. A save records progress now, but loading relocates to the declared safe
-anchor and rebuilds ambient NPCs/doors/camera. Show that destination before saving. It neither
-rolls the party back to arrival nor promises exact position, NPC phase or uninterrupted RNG results.
-Castle/palace/tower interiors initially explain “Save after returning to a supported location.”
-They remain playable. Adding a save location requires its own bounded reconstruction acceptance.
+Use **manually selected local slots**. Field Save and Church Record use the implemented location
+recipes. Continue restores an older anchored record at its recorded landing and a scene-bearing
+record at its admitted position. Settled castle, palace and tower visits have bounded support.
+The [settled field snapshot design](#unified-settled-field-snapshots) defines the replacement for
+regional capture and keeps the older records readable.
 
 This persistence policy is a remake choice and does not reconstruct original SRAM. The
 [save-system contract](../../../docs/design/contracts/system/save-system.md) confirms two logical
@@ -366,6 +364,10 @@ not a second mutable session and not `SessionSnapshot` serialization.
 
 ### Eligibility and restoration recipes
 
+This describes the current writer and the reconstruction semantics retained for its records.
+[#2045](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2045) supersedes region-by-region
+expansion of this mechanism.
+
 Application exposes a query returning allowed/typed reason and a capture operation that rechecks
 the same session ID/revision. `CanWaitAtInput` alone is insufficient. Field capture requires the
 following; [battle capture](battle-save-and-continue.md#implemented-domainapplication-boundary-a)
@@ -480,125 +482,215 @@ and semantic input/poll sequence must agree in gameplay results. Comparison with
 is limited to persistent resources/progress: NPC phases, elapsed music and subsequent draw timing
 can differ because this is a savepoint reload. This distinction must appear in player help and tests.
 
-### Planned pre-voyage settled visits
+### Unified settled field snapshots
 
-**Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
-within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
-admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
-Map3 F506, Map16, settled Map43, the old castle rooms and the early tower route are implemented. Each batch owns its capture, independent
-Continue and restart evidence. Map5 default/F650 and the anchored opening and tower outcome recipes also
-have implemented recovery.
+**High rigor.** [#2045](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2045) adopts
+one snapshot policy for saving the current stable visit. The risk is a successful-looking Continue
+that changes the next interaction, random draw, return or payment. This design uses the accepted
+code at `2cf93119` and the existing observations below. The implemented recipes remain in use
+until the new reader and writer are accepted. The ordinary playable campaign and admitted content
+bound the implementation. Adding a map using already supported mechanics should need ordinary
+content admission only. Arbitrary mid-script suspension, new campaign admission, original SRAM
+and host lifecycle #1716 remain outside this scope.
 
-**Confirmed implementation structure.**
-[`OpeningSave.Query`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs) selects a
-recipe, captures detached progress and builds a restore candidate before offering a slot.
-[`OpeningRestore.Build`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
-reselects the recipe from the record and validates the party, registers, content and landing.
-[`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
-default/F609 with anchors, F506 with its concrete scene, Map16 with its loaded default or
-F663 scene, Map43 with its loaded default or F612 scene, Maps19/20/21 with their loaded
-castle and palace scenes, and Map40/57/60/58 through [the tower policy](#tower-save-and-continue-observation). The [current world
-selection](../../content/private/pre-voyage-opening.json) includes these setup bodies and the
-two towns' Church refuges.
+#### Confirmed capture, restore and attachment path
 
-Use a finite settled-visit recipe for each admitted location group with the existing
-[`SavedFieldScene`](../../src/Sf2.Remake.Application/Runtime/Persistence/SavedFieldScene.cs) and
-[`Sf2FieldSceneRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2FieldSceneRestore.cs). The
-recipe admits the live setup and records the current legal tile, facing and layer. Preserve actor
-slots and aliases, visibility, placement, active entities, follower links, and the working layout as
-differences from the admitted base. Resolve actor identities and the visit's Talk, Search, zone and
-warp bindings against admitted content. Retain saved story flags, including visit-local bits, and
-existing party, names, full item words, receipt flags, gold, custody, step counter, RNG, cue/history
-and Egress fields. Restore roof/view projections and restart only safe ambient work. Revalidate
-resource, graph and landing constraints, including legal layer and occupancy, in the detached
-candidate. Continue constructs the saved visit without setup init, battle return, payment, healing,
-recruitment or item grant. Ordinary exit and reentry use the normal map and script consumers.
+1. `GameRoot.RequestFieldEntry` enters the ordinary clock's bounded settlement
+   (`ExplorationSessionView.BeginMenuEntry` / `CheckMenuEntry`). It freezes on successful menu
+   entry, or reports transition, interruption or exhaustion after at most 120 services. Those
+   services are real gameplay before capture. In Application, `OpeningSave.Query` checks
+   `RequireStable`, chooses `IOpeningRestorePolicy.Select`, clones `OpeningSaveData` with
+   `CaptureValues` and calls `OpeningRestore.Build` as admission. `Capture` rechecks the
+   session ID and revision. Query and capture consume no simulation.
+2. `OpeningPersistenceHost.ConfirmSave` sends field or battle data to `LocalSaveStore.Publish`.
+   `OpeningSaveJson` emits scene-free field v1 or scene-bearing field v3, and reads accepted
+   field v1/v3 and battle v2/v4/v5. The store validates both the candidate and actual encoded
+   readbacks. `SaveRecordRestore.Restore` dispatches a detached reconstruction against
+   `OpeningRestoreReader`'s configured definitions. The file cannot choose a package path.
+3. `OpeningRestore.Build` validates values and roster, calls `InitialStart` for the pre-on-load
+   New Game checkpoint, and otherwise sends the saved recipe through `Select` and `Rebuild`.
+   `Sf2OpeningRestore` routes to anchor rebuild or to scene restore with regional guards.
+   `Sf2FieldSceneRestore` reconstructs local state, then the outer builder creates a fresh
+   PlayerInput session. The scene-free rebuild runs entry flag and layout writes and synthesizes
+   population effects. Scene restore uses a saved cast and layout differences, with legacy
+   defaults and exceptions described below.
+4. `OpeningPersistenceHost.RestoreRecord` sets the restoration path for `GameRoot.MountSession`.
+   The host prepares candidate audio and restores cue/history before releasing the old session.
+   Battle also pre-attaches a disabled view and checks startup errors. Field view attachment is
+   later via `ShowExploration` / `ExplorationSessionView.Begin`. Check any required field projection
+   binding before releasing an old session during the new cutover. A detached PlayerInput result
+   alone establishes neither resource attachment nor functional next input.
 
-Preserve the three distinct return values. The save landing is the admitted visit position for these
-recipes. The persistent Egress register is the refuge selected by gameplay or Church. The transient
-previous-map/outcome return belongs to the active transfer or encounter. A later exit uses its real
-warp and a later battle derives its own return. Leave existing Map57/58 outcome anchors under their
-current recipes.
+See [Application capture](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs),
+[detached build](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs),
+[scene restore](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2FieldSceneRestore.cs),
+[codec](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs),
+[slot store](../../game/src/Persistence/LocalSaveStore.cs) and
+[host entry](../../game/src/Entry/OpeningPersistenceHost.cs).
 
-**Granseal.** The delivered batch admits early `ms-map3-flag506` only with its concrete setup body. The [Kiwi source
-and route](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md)
-distinguish two F506 layout copies, F6 membership, capacity-dependent F38 and the same-visit follower
-created by the completed join script. The same-visit follower and a fresh joined visit with Kiwi
-retired have the same durable membership. A flag-only rebuild would drop that distinction. The
-live scene record keeps Kiwi's name, roster and physical follow state independently. His actor
-belongs to the existing setup population. Default/F609 use their anchored records. F543,
-unclassified or missing bodies, and the quake substitution remain outside the settled recipe.
+#### Snapshot operands and counterexamples
 
-**Galam.** Map16 selects default or F663, while F505 prevents reissuing Battle05 and
-selects the adjoining Map17 variant. F664 governs guard 145 retirement on fresh entry. The [rally
-source](../../../docs/research/chapters/grans-opening/battle04-to-battle05-content-route.md#conditional-captivity-and-escape-content)
-and [victory
-return](../../../docs/research/chapters/grans-opening/battle05-to-battle06-content-route.md)
-distinguish a default visit with its army, that visit after `cs_51F88` hides the army and sets F663,
-and a fresh F663 visit with a different cast. Map16 Talk reads the [loaded definition's
-events](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationInteractionQuery.cs). Copying
-Yeel's setup-equals-fresh-selector check would relabel the settled post-rally default cast as F663,
-rejecting retired actor identities still in the scene or binding the wrong interaction table. The scene
-`Setup` field identifies the admitted visit. Capture matches the live definition to its entities,
-Talk and zone/warp events, Search, population and programs. Continue validates the record against
-that body's resident cast and restores the saved aliases and active slots. F663 admits the changed
-setup and the still-loaded default visit. F505 can retain either according to the actual route.
-F530 and F999 remain outside this early recipe.
+The middle column is **Confirmed** by the named remake producers and readers. The right column is
+the proposed value contract. Examples from delivered routes are linked to their bounded observations.
 
-**Hawel's house.** The [pinned route research](../../../docs/research/chapters/grans-opening/battle03-to-battle04-content-route.md#hawel-house-content-and-caller-state)
-places F612/F650 after the default house program and distinguishes that visit from the empty
-authored resident list on F612 reentry. The default program retires the soldiers, parks Hawel,
-opens doors, joins Kazin, installs his follow link and sets F404. Save admits ordinary settled
-control with F4/F612/F650 set and F72 clear. It records the setup actually loaded, including
-retired actor records, aliases, follow links and layout changes. Continue validates the saved setup
-and actor population. Fresh reentry follows the ordinary F612 selector. Keep F36 and F404 at
-their saved values, independently of the scene's following state. The Map43 Egress tuple
-`(7,5)` Down is a refuge. Map43 exposes ordinary Save only.
+| State | Current capture/restore and the gap | Proposed settled snapshot |
+| --- | --- | --- |
+| Content and loaded field bindings | `SaveCompatibility` carries profile/package, gameplay, rule/recipe revisions and pinned provenance. `SavedFieldScene.Setup` is supplied by individual recipes. `MatchesLoadedSetup` compares bodies, and Mine/New Granseal/Creed infer setup from entity lists alone. `Sf2FieldSceneRestore.Rebuild` accepts a default body fallback for unmatched setup IDs if the caller lets one through. Its manually constructed map omits `Caravan` and `ChurchSavepoint`. On the [Galam post-rally visit](#galam-town-save-and-continue-observation), F663 is set with default Talk/zone bindings and retired slots still loaded. A fresh F663 entry uses a different body. `MapTransfer.Scroll` can also change map bindings while retaining the previous cast. | Record the actual map and loaded body at selection/load. Resolve default, named variant or map without a selector strictly against configured content. Keep map/setup bindings distinct from the provenance of retained population if a scroll or `SceneEntities.Reload` changes only one. Bind traversal/view areas, input, Talk, Search, zones, warps, layout events, palette and vehicle capability via the same pure binding used by ordinary load. |
+| Position and legal control | Field `Map/X/Y/Facing/Layer` sometimes comes from a legacy anchor. Scene-bearing rows duplicate the player pose and compare it at rebuild. `FieldLayout.Word` reads the current layer through the area offset. `RequireUnoccupiedLanding` only runs on some paths. The Battle02 enclosed return is a blocked cell with a recovery action, despite ordinary input being available. [Enclosed return](pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress) | Use the saved player's physical pose as the Continue landing and derive any display tuple from it. Check area, aligned position, supported layer, collision and occupancy through the live traversal/actor rules. Preserve legal follower overlap. Under the present legal-ground gate, keep the enclosed return's existing EGRESS recovery. Keep secondary-layer addressing and the active area distinct from camera smoothing. |
+| Working layout and roof | `SavedFieldScene.Layout` is a sparse difference against source words, including copied cells. `Rebuild` applies it and then calls `RoofOnLoad` with an inactive roof. `MapBlockCopyLifecycleReducer.Activate` backs up the current destination words, and `Restore` writes that backup. Saving under an active roof therefore can back up the already-overlaid words on Continue, or lose the active record if its activation position no longer matches. Flags alone also lose same-visit door/step copies. [Layout reducer](../../src/Sf2.Remake.Domain/Maps/MapBlockCopyLifecycle.cs) | Apply saved differences once. Store active roof record identity and its saved-under words when present. Derive and validate its bounds/count against the bound roof row. Use the exact working words and backing when later movement restores the roof. Derive overlay offsets and redraw requests from content and current area. |
+| Physical cast, aliases and vehicle state | Scene rows save identity, slot, X/Y/facing/layer, flags/speeds, visibility, sprite/size/priority and follower leader/offsets/wait rule. Aliases and ordered `CurrentEntities` are saved independently. Current restore assumes dense 0-based slots and identities from current setup/followers plus recipe-supplied allocations. The [castle commission](#granseal-castle-save-and-continue-observation) retains retired `cs-53176` slots after F610, while fresh F610 entry never allocates them. `SceneEntities.Add` computes next slot from aliases and may reuse a physical slot. `RaftRuntime.Declare` can create sparse slot 31 with `entity-159`. Map72 capture currently strips the local raft before rebuilding it from the berth. | Preserve physical slots, player binding, real aliases (zero versus removed), ordered current list and follow graph. Validate profile-specific allocation ranges, unique occupied slots and cycle-free links. Keep source `entity-0`/slot 0 for source populations, with authored player IDs and sparse slots where their producers support them. Bind resident/follower/dynamic identities to their admitted population or actual allocation site, via a content instruction reference or existing engine-owned allocation role. Validate references without running allocation. Persist the berth as the durable state for other maps and the actual local record when present. Attach without declaring it a second time. |
+| Entity motion, actions and appearance | `Sf2FieldSceneRestore` sets all destinations to the stored coordinates, drops velocity/travel, acceleration, animation counter and wait timer, and guesses a resident action program by identity. `OpeningSave.RequireStable` sees only visible entities and `CanDiscardEntityProgram` accepts an equal program on another resident or the messenger's loop. `EntityActionRunner.Tick` services physical X below `0x7000` and `RandomWalkEntity` consumes MainSeed. Starting the loop again can change the very next draw. Ketto's idle merchant and Pacalon's idle speed-8 centaur require explicit suppressions today. `FollowerMotion.Tick` treats `Actions == null` differently from installed idle. `SharedSpriteSlot`, `SpriteGraphics`, global `SpriteSize` and completed shadow suppression are absent from scene DTOs. | Preserve no-action versus quiescent idle, and allow only admitted continuing ambient sources with content-bound action origin and validated cursor/timer, plus motion state read on the next step. Keep destination/velocity/travel for an ordinary ambient actor in motion, and retain acceleration where the next movement reads it. Preserve semantic appearance operands read by attachment or later commands, including static frame selection, shared graphics and size. Reissue local sprite readiness instead of writing request counters or handles. Reject required work without a bounded binding. |
+| Party, receipts and field registers | `OpeningSave.CaptureValues` carries class, attained/derived-stat inputs, current stats, HP/MP, status, level/EXP, kills/defeats, activation/init/absence, all item/spell words, active order, names, gold, once bits, Deals and depot. `OpeningRestore.Ally` validates class/resources/equipment and reconstructs spells. `MapPartyMembership.Rebuild` uses flags and checks active order. Story flags include earned field pickups and completed choice/join effects. `Story.ItemReceipt` and `DialogueItem` are separate text operands. `ProgramRunner` grants custody before the receipt text and subsequent flag writes. The presence of a retained receipt alone also cannot prove an open transaction. | Reuse carried values, knownness/range checks and roster identity checks. Keep settled flags and custody unmodified by entry or reward code. Rebuild derived party lists and stats consistently. Keep encounter identity and the effective new-battle options. The connected outcome constructs fresh carry without queue, battle visuals or death credit. Preserve any settled receipt, item or speaker register with a later reader before assignment. Gate on active transaction ownership, including grant with caller/receipt still pending. Do not use an item word as a surrogate once flag or a joined flag as a follower link. |
+| Clock, RNG, display and music | Both seeds, signed `StepCounter`, text cursor/settings, fade period and cue/history survive. `MapTransfer.Apply` would subtract from the step counter on entry. `ExplorationTextRunner.Initialize` resets logical windows/view and clears `EntityServices`. `ExplorationDispatcher` reads `EntityServices` when deciding which services run. `WindowFixPending` affects a later window pass. `PaletteColorTransition.Request` reads `SimulationTick` relative to its prior mapping. The field rebuild resets these registers/relationships; battle already saves some of them. | Save both RNG streams, counter and live semantic service/text operands. Compare the first ordinary service or input after Continue under the same logical command/tick sequence. Hold the boundary at closed windows, settled view and settled display. Derive ordinary camera/view from area and actor when equivalent, retain bound target or completed color mapping when read later, and refuse an unrepresented live transition. Express relative deadlines as relative counters if needed. Rebuild playback at step zero only for admitted looping cues with known history and no required completion. Derive the debug RNG byte from ThinkingSeed. Reset host pacing debt, input release, smoothing, observations, session ID and tokens. |
 
-**Granseal Castle.** The supported loaded setup bodies are the default, F501, F609 and F506
-for Maps19/20/21, plus Map19 F507. Map20/21 still select F506 during the applicable F507 return.
-The F501 exorcism queues a real transfer to Map19 after writing F609. Its reset canvas is active
-story work. On the new map, the F609 arrival script `cs-53176` allocates and retires a procession
-before the caller writes F610. A completed same-visit record can contain those retired slots.
-A fresh F610 entry skips that script. Bind the actual loaded bodies' resident list, interactions,
-zones, warps, Search and programs. [Castle and tower source](../../../docs/research/chapters/grans-opening/map3-castle-battle-unlock.md)
+**Inferred recommendation.** Extend the existing detached field scene and shared progress
+validation into one field value contract. Capture actual binding/provenance at its normal producers
+and admit exact references at restore. Compare reconstructed semantic operands against capture,
+then take the next normal input or tick in representative controls. A checksum-valid DTO and
+`CanWaitAtInput` alone would miss the roof and ambient counterexamples. Reuse the current
+bounded scene/layout/party structures, position once, explicit knownness and the existing store.
+An entry replay would require reverse-engineering which effects to undo and cannot distinguish the
+two F663 visits. Dumping `SessionSnapshot` or serializing interpreter actions would bind files to
+runtime object graphs, waits and resources and extend suspension beyond the stable boundary.
+Saving only more variants of `SavedFieldScene` through `Select` keeps the same need to author
+reconstruction exceptions on every map.
 
-Keep the default visit's bedroom invitation, refusal, actor retirement and departure as actually
-committed. The CURRENT stair pairs retain the live Map20 visit. A real cross-map exit uses ordinary
-reentry and the destination setup. Preserve F129–131 Search receipts and current working layout.
-Map19 F506's F620/F621 programs leave moved or retired actors and may install the king and minister
-in their live resident slots. F83 only supplies separate followers at fresh entry. Map19 F507
-uses the three royal follower slots and separate F622/F623 warning gates. Keep the physical
-links, aliases and story flags independently of the force roster. F543/F982 and unbound
-setups are outside this recipe. Busy guard, choices, exorcism, quake, warps and battle admission
-remain subject to the settled-input gate. The three maps expose ordinary Save.
-[Occupied castle source](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md#granseal-content-recruitment-and-followers)
-· [Stair observations](pre-voyage-campaign.md#same-map-walking-party-arrival)
+#### Eligibility and return semantics
 
-**Church Record and Egress.** The existing source-table import binds the Map3 `(32,13)` Up and
-Map16 `(27,7)` Up refuge bindings. Limit the new Record behavior to the admitted callers and phases,
-preserving earlier Map3 behavior and existing early defeat/retreat tuples. Require the matching
-refuge binding before offering the new Record behavior. After the actual Church program and portrait close, Record uses the same eligibility, destination preview and confirmation as
-menu Save. `GameSession.RecordChurchSave` validates a candidate containing F399 and the selected
-Church Egress register and commits it to the live session only after successful slot
-publication/readback. The record retains the current legal visit tile, which can differ from the
-Church refuge. Ordinary Save preserves the incoming Egress and F399 values. Cancel, stale
-confirmation and a definite publication failure keep the old slot and live F399/Egress. Reuse the
-existing uncertain-publication inspection path. Field EGRESS retains its walking/overworld, F399 and
-F64/F640 guards. Battle Egress and defeat retain their own route selection. See the [pinned anchor
-table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/global/savepointmapcoords.asm)
-and [`FindEgress`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs).
+- **Field input.** Require `CanWaitAtInput` and the applicable stable mode, with no fault, caller,
+  interpreter continuation, selection, active text/choice/portrait, script or ordinary warp,
+  battle request, entry skip or outcome handoff. A player or following actor with pending
+  commanded motion/readiness waits for the existing bounded ordinary settlement. A moving NPC
+  controlled by a supported ambient program can continue from its bound phase. Installed story
+  actions may survive as completed pose or idle state, or as positively identified ongoing ambient
+  work. Unsettled scripted motion, fade/quake, sprite/graphics completion and layout/view
+  transactions reject. An active roof with a complete backing is settled state.
+- **Transactions.** Reading a system or slot menu selection never advances a service transaction.
+  Dialogue, naming, Search receipts, Church/Shop/Caravan actions, field item confirmation and
+  battle entry/outcome can wait for input while they still own work. Require those owners to finish
+  or cancel. A completed purchase, join or reward is already in flags/custody/actors. A partially
+  processed grant or payment still has a caller or completion owner. Classify by those operands
+  rather than by the presence of an old receipt, a story flag, an arbitrary slot count or an NPC
+  being out of frame. Query and capture never tick, spend, heal, poll waits or run a program.
+- **Travel and unsupported values.** Initial cutover preserves settled walking and existing
+  berth-bearing walking visits. Current `RequireStable` rejects riding. Stable riding is a
+  mode/operand gap, including the current vehicle marker, parked slots, follow or terminal idle
+  and next boarding/landing rules. Admit it only after its mode contract round-trips, using the
+  same scene path. Return a typed reason while a required mode, action origin or live binding
+  cannot be represented. The direction does not widen the admitted content frontier.
+- **Continue position.** Use the saved scene player. `Story.SaveAnchor` written by the finished
+  outcome in `ProgramRunner` serves old `battle01-return`/`battle07-return` capture, and survives
+  in old battle payloads. Its earlier landing can differ from the actual current field position.
+  The new field writer has no need to synthesize or consume it.
+- **Egress refuge.** Preserve the independent `Story.EgressMap` and F399. Validate known
+  references by the admitted refuge/route data used by `FindEgress`, including real non-Church
+  refuges (Map43), and keep admitted legacy Map0 as a register value with its existing defeat
+  fallback, never a fabricated general fallback. A Church refuge row alone is insufficient
+  evidence that the visit offers Record. Use the actual Church caller and its admitted refuge or
+  existing no-op Record behavior. `RecordChurchSave` writes a candidate with the selected refuge
+  and F399 and publishes that story revision only after successful readback. Cancel, stale
+  confirmation and definite failures leave live progress and slot bytes intact. An uncertain
+  publication requires inspection. `FieldEgress.Begin` keeps its walking/capability and
+  F399/F64/F640 guards. Battle Egress/defeat keep their fixed/live, fallback and special destinations.
+- **Transfer and outcome.** `MapTransfer.Apply` writes `ReturnAnchor` as previous-map bookkeeping;
+  current ordinary command dispatch has no reader that needs it after settled field load.
+  `BattleOutcome` and `ProgramRunner`'s `ReturnBattleMap` use the active `OutcomeReturn` and
+  battle route. Reconstruct that route in the battle variant. Reject the active field handoff and
+  omit stale outcome operands once it finishes. Continue runs neither ordinary entry nor the
+  battle outcome. The next ordinary exit or stair still uses its normal warp and load mode.
+  CURRENT stairs retain the scene via `FollowerMotion.Arrive`. A fresh entry selects population,
+  applies entry flags and runs destination init according to the normal load path. The initial
+  New Game slot is the explicit pre-on-load bootstrap. It continues to start the opening once from initialized values.
 
-**Implementation boundary.** Keep admission, required scene and rebuild consistent in the SF2
-persistence owner. Use existing v3 scene records and preserve compatibility identity for the additive
-recipes. Keep older scene-free records on their existing builders and avoid silently falling back
-when a new recipe's scene is missing or mismatched. Bind the localized Save/Continue destination in
-the existing host catalog. Reuse existing settled-input checks for movement, sprite/follower
-readiness, dialogue/windows, quake/fade, pending warp/battle and in-flight item, receipt and service
-work. Unknown required music/accounting or unusable scene/landing remains a typed refusal before
-publication. Inspect the real scene for any unsupported persistent operand before extending the
-shared mechanism. Add a focused engine assertion where the current tests miss a gameplay regression,
-and run the affected adapter compile and short native observations at implementation.
+#### Disposition of regional rules
+
+| Current rule or branch | New writer and reader disposition |
+| --- | --- |
+| `Select` recipe and location flags, including Map3 default/F609, Battle01/07 returns, Granseal F506, Galam, Hawel, castle, tower and every later branch through Pacalon | Remove from new capture and snapshot restore. Current-area legality, bound content and completed work are checked once. Keep existing gates, relocated anchors and descriptions for their old records. Current maps with missing or unsupported content still fail at the affected binding or operation. |
+| `ValidateRegisters` scene and Egress combinations, `CaptureScene` map dispatch and specialized `Rebuild` branches (`Sf2CastleRestore`, `Sf2TowerRestore`, `Sf2NewGransealRestore`, `Sf2MineRestore`, `Sf2CreedRestore` and inline cases) | Scene requirement is intrinsic to the new format. Retain legacy shape/rebuild checks only on old records, including alternate-setup acceptance, old Egress combinations, tower area/F999 gates and Map57 flag-copy equality. Generic content binding replaces setup-name/flag whitelists and validates setup bodies, actual geometry/layers and resource IDs. Existing recipe policy must not be called by the new reader to decide if a scene is legal. |
+| `Rebuild` reconstructs Sarah/Jaha, the Hassan cast, Taros/Floor World/Creed positions or a Polca raft boarding probe. Other branches require Hawel's specific follower or suppress Ketto/Pacalon resident actions. `CanDiscardEntityProgram` has a Map3 messenger exception. | These are historical reconstruction workarounds. Live state supplies poses, identity, follower links, berth and action phase. Require a valid general graph/allocation/binding. Keep the actual entry, movement and boarding rules with their gameplay owners. Preserve captured scene actions by their real origin, including the messenger's post-installation loop. |
+| `SceneEntities.Add` and regional `AddMapEntity` scans for the castle procession, North Cliff blast and Janet | Keep the 49-record source cap, alias selection/slot replacement, and special vehicle slot rules at their owning producers. Resolve the captured grant of a slot by its admitted instruction/engine role. Retain regional scans only when needed to reconstruct or validate old records. An arbitrary entity ID from a different program is insufficient. |
+| Town-specific Church gates in `RecordAtChurch`, and legacy location labels in `SavedDestination` | Carry the Church selection through the real service return and bind the refuge and existing Record effects in the service/content contract. Earlier no-op Record and bound priest callers still have their accepted effect. Keep named route/refuge rules in SF2 gameplay. New labels use bound map/place information with the actual landing when needed. Legacy labels remain tied to their original semantics. |
+| F603/F506/F663/F612/F609/F610, F407/F507/F640/F999, later battle flags and overloaded travel/entry bits | Continue carries the exact settled values. Fresh entry, true scene gates, map substitution, event bits, receipt checks, recoveries and battle-route consequences stay with their owners. For example, F407 still starts the tower encounter, F640 still substitutes quake town on travel and gates Egress, and F611 still controls the bridge layout. These flags no longer describe which regional save reconstruction to run. |
+
+#### Reader and writer cutover
+
+Ship one new top-level field format (next unused version is 6 at the audited baseline), with
+explicit required scene operands. An expanded v3 can be classified as corruption by older readers.
+Reuse the checksum envelope, strict key/presence checks, 1 MiB and depth32 bounds, pins and semantic
+identity checks. Use existing gameplay and rule revisions for content semantics. Keep the shared
+field compatibility revision used by `BattleRestore` and historical roster binding independent
+of the new wire shape. Do not bump it for this cutover. A content change requiring a new revision
+still follows its own compatibility boundary.
+
+Land the additional reader and detached validation before replacing normal field writes. Accept
+v1 (including historical nameless and accepted scene-bearing files), v3 and current battle v2/v4/v5
+with the current compatibility rules, including the explicitly supported historical roster
+upgrades. Old anchor slots still land at their recorded anchors. Old town/castle/tower slots use the
+legacy scene builder with its original limitations. Reading never upgrades slot bytes. An explicit
+new Save after playing an old slot captures the current reconstructed visit. Use fresh numbered
+slots during initial rollout and for any progress that must remain readable with the old binary.
+Retain an untouched compatible older slot for rollback. After overwrite, the retired build must
+classify the new primary as `save-version` and forbid backup promotion or overwrite, even with a
+readable backup. A restored session cannot export missing historical visit details or downgrade to
+an old recipe. Keep the separate initial New Game record and battle writing behavior.
+
+Keep one publication path. Validate live revision and selected file version, serialize to a
+same-directory temp, validate its bytes and reconstruction, atomically publish and verify final
+readback. Confirm required field attachment before replacing a live session. `SlotRead.CanRecover`
+continues to distinguish explicit recovery of a missing/structurally corrupt primary from version,
+shape and semantic/content refusal. Preserve known-good backup bytes and the uncertain-publication
+inspection path. No migration pass, second backup scheme or additional digest is required.
+[Storage and rollback contract](battle-save-and-continue.md#future-shape-protection-and-binary-rollback)
+
+#### Mechanism implementation and acceptance
+
+These slices require separate implementation authorization and use the existing High recovery
+contract. Keep player-owned slots, content and processes out of the acceptance setup.
+
+1. **Exact visit binding and physical state.** Carry loaded binding and allocation provenance
+   through normal load, scroll, scene-entity changes and action installation. Reuse map/setup
+   binding and field layout/slot validation in a detached candidate. Assert same-visit Galam with
+   F663 and fresh reentry, one dynamic allocation/retirement plus follower chain from the castle,
+   secondary layer, one active roof which restores different saved-under words, a CURRENT stair
+   and one fresh transfer. Include a retained-population scroll or sparse raft slot in a walking
+   visit. Compare actual next movement or interaction as well as payload values.
+2. **Stability, registers and next work.** Bind the admitted ambient program instead of restarting
+   it. Compare the next ordinary ticks and RNG for an actor in a wait or move. Distinguish stopped
+   merchant/idle from the original resident program and generic follower scheduling. Exercise
+   moved or hidden actors, one committed pickup/join and an interrupted current grant/service,
+   pending warp/battle and stale confirmation. Admit only modes with a legal checked successor.
+   Finish each extra vehicle mode with a short walking → riding → stable Continue → landing
+   control before enabling its capture. Define completion/normalization at the real owners for
+   any register that can be read across settled input. Reuse the battle restore's compare-after-
+   reconstruction pattern and a finished outcome → field snapshot → normal movement control.
+3. **Disk reader then writer/host cutover.** Check accepted v1 anchored Map3 and both tower returns,
+   representative named scene v1/v3 (town and castle/tower), historical roster binding and
+   battle v2/v4/v5 with matching content. Confirm new reader round-trip and next input before
+   enabling new writes. Check actual Save and independent title Continue at a legal visit that was
+   previously outside the whitelist. Exercise genuine Church Record, ordinary Save preserving its
+   refuge, definite publication failure, corruption with explicit recovery, and incompatible
+   version/content/shape refusal with unchanged slot bytes. Check pre-cutover binary refusal using
+   a new primary with an older valid backup. Compare current actor/input, next action and a real
+   battle or temporary-map return through the existing host observations. Check field resource
+   failure using the existing detached attach pattern where the new boundary can fail.
+
+Reuse `GalamSaveTests`, `CastleSaveTests`, `LayeredFieldSaveTests` and `TowerSaveTests` as bounded
+behavior controls where their fixtures match. A new roof test must leave the roof and compare
+the exposed underlying words. A round-trip check of the overlaid words alone would pass the
+wrong reconstruction.
+
+**Unknown.** Actual continuation parity for ambient phase, reversible roof backing and sparse
+vehicle scenes after a cold mount remains to be measured. The admitted action producers that can
+leave an unbound active program or an altered view/color state at PlayerInput need a producer audit
+in slices 1–2. Where a presentation operand is never read again, establish the invariant before
+omitting it. Original standing cadence/SRAM behavior and unsupported content remain open.
+This source audit uses existing restart observations only. Run focused engine behavior checks,
+adapter build and short native state/input/error observations when implementing the affected
+mechanism. Use one compatible configured world and a disposable slot pair at a time. Copy and
+compare at most one 4,096-word field layout plus a roof's bounded backing, the live cast and
+carried progress. Validate real encoded size at cutover against the existing slot cap. The
+admission work follows snapshot size and references into already loaded content.
 
 ### Implemented savepoint boundary
 
@@ -620,17 +712,11 @@ F506 uses the separate settled-visit recipe and requires its matching scene and 
 F543 and unclassified setup families remain unsupported. The additive recipe retains the save
 format, recipe revision and gameplay revision.
 
-**Recovery authoring rule:** when changing a setup selector, entry flag, population/follower rule,
-discardable entity program or on-load initialization, classify its recovery family and run one small
-capture → restore → continued-play case for each distinct reconstruction behavior. Equivalent dialogue
-branches can share that case. Add a case when persistent effects or reconstruction differ; individual
-dialogue lines do not need separate save tests. `Map3SaveSetupTests` exercises actual admitted setup
-families, Jaha before/after joining, selected ambient versus unfinished story work, progress roundtrip
-and explicit refusals. It requires new selector families to be classified. It cannot automatically prove
-that a new on-load side effect is reproduced: that change still needs an affected behavior assertion and,
-when the slot/restart consumer is affected, the [bounded host observation](../verification/map3-commission-save.md).
-`QuerySave` still validates the detached restore before offering a slot; passing admission alone does
-not prove semantic equivalence to ordinary initialization. Keep that distinction in review.
+`Map3SaveSetupTests` exercises the delivered setup families, Jaha before and after joining,
+selected ambient and unfinished story work, progress roundtrip and explicit refusals. Paired
+[host observations](../verification/map3-commission-save.md) cover the accepted restart boundary.
+Preserve those legacy reader contracts while introducing
+[acceptance for each distinct recovery mechanism](#mechanism-implementation-and-acceptance).
 
 #### Granseal F506 Save and Continue observation
 
@@ -1297,9 +1383,11 @@ to a 100 MiB total new-output budget, with sequential native runs and no duplica
 
 ## Format, compatibility and local storage
 
-Use a small explicit version1 JSON record: format version, slot, sequence number, save timestamp for
-display only, content profile/package and gameplay revision, rule-composition identity/revision,
-recipe revision, then the owned party/world values above. The host maps a selected package ID to an
+The current field record uses explicit JSON with format version, slot, sequence number,
+display timestamp, content profile/package and gameplay revision, rule identity/revision,
+recipe revision and the owned party/world values above. It emits v1 for scene-free writes
+and v3 for scene-bearing writes. The [snapshot cutover](#reader-and-writer-cutover) adds a
+new field version with a required scene. The host maps a selected package ID to an
 already configured source; saved data cannot select a path, assembly, executable rule or trust root.
 Content still enforces existing pinned private provenance. Save files containing private gameplay
 state remain local and untracked, with no resource/export attachment to Issues or PRs.
@@ -1311,14 +1399,13 @@ encoding and existing SHA-256 support, without a canonicalization library or sig
 whole file before parsing; duplicate payload/checksum keys reject. A checksum-valid but semantically
 invalid record still rejects at ordinary domain/content validation.
 
-Compatibility is exact for format, gameplay-content revision, rule revision and recipe revision.
-Use explicit revisions maintained with semantic changes, plus the existing private provenance identity;
-do not add a hash of the entire asset export or Git commit as a universal compatibility gate. Same ID
-alone is insufficient. Pure portrait/UI/audio-encoding changes can retain gameplay compatibility if
-logical cues/resources remain valid. Changed stats/program meaning/receipt IDs require a new gameplay
-revision. Unknown versions or identities reject with “This save needs the matching content/rules”; no
-best-effort load, inferred migration or fallback to a new game. Future formats require a separately
-reviewed migration only if a real retained save needs one.
+Require an admitted format and matching gameplay-content, rule and pinned provenance identity.
+The [historical roster policy](battle-save-and-continue.md#continuing-across-historical-opening-rosters)
+owns the explicit recipe revision exceptions. Semantic changes use the existing revision fields.
+Pure portrait/UI/audio encoding changes may retain gameplay compatibility when logical
+cues/resources remain valid. Changed stats, program meaning or receipt IDs require a new
+gameplay revision. Unsupported versions or identities report that matching content or rules are
+required. Keep existing slot bytes available for a compatible reader.
 
 The private opening selection declares its gameplay revision. Existing four-member worlds use
 revision 1 and five-member worlds use revision 2. The current six-member world uses revision 3:

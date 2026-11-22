@@ -94,6 +94,29 @@ Entering a region script invalidates music history. `BattleSaveRegionTests` subm
 next round without replaying the region. Unknown history still rejects. Finite music/interpreter
 continuation, later campaign content and arbitrary saves remain outside admission.
 
+### Shared snapshot boundary
+
+The [field snapshot design](opening-session-lifecycle.md#unified-settled-field-snapshots) uses the
+same durable recovery policy as battle. Both modes capture one stable revision, validate admitted
+content and reconstruct detached state before attachment. They share the strict envelope, slot
+publication and readback, knownness rules for carried progress and the title history. Reuse the
+compare-after-reconstruction approach of `BattleRestore.Build` in the new field path.
+
+`BattleSave.RequireStable` specifically requires the current queued actor at the committed origin,
+an empty Movement selection and completed prior work. Its route context stays live in
+`SavedBattleStory` and the map/ordinal in `SavedBattleRoute`. Queue/cursor, tactics/regions, timed
+stats, death credit and battlefield visual slots belong to `BattleContinuationData`. The next legal
+battle input consumes this state. The field visit instead owns working map cells, the loaded
+bindings, physical cast and ambient work. Preserve each typed payload with its corresponding
+boundary. Use a short victory or paid retreat suffix to verify the normal transition between
+them, including exact field capture once control returns.
+
+The field cutover requires no battle wire change. Keep battle v2/v4/v5 and their existing
+compatibility, class/timed-counter and historical roster readers. `BattleRestore.Build` checks
+`OpeningSave.FieldCompatibility` today, so the field's new wire version must avoid a shared
+recipe revision bump. Keep the battle return route, retained allies, and legacy `SaveAnchor`
+readable even after new field capture stops selecting completed-return recipes.
+
 ## Continuing across historical opening rosters
 
 Gameplay revision 4 of the private SF2 opening uses `Compatibility.RecipeRevision` for the
@@ -252,7 +275,7 @@ admission or lifecycle repair is included; #1716 remains separate. Main-gate own
 `OpeningSaveJson.Write`/`WriteRecord` now emit **field version3 whenever `FieldScene` is populated**,
 including when the caller supplies an in-memory v1 record. V3 has the same field header/order and
 typed data as v1, with `formatVersion: 3`; no battle `kind` is added. The maintained reader/restore
-accepts v1, battle-v2 and field-v3. Previously accepted Creed scene-bearing v1 files still restore
+accepts field v1/v3 and battle v2/v4/v5. Previously accepted Creed scene-bearing v1 files still restore
 normally without rewriting. Scene-free outside/mine writes remain v1 and omit `fieldScene` through
 `WhenWritingNull`; an explicit null is a constructed input, not their normal writer output.
 
