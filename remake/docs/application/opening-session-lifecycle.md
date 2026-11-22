@@ -921,7 +921,7 @@ RNG, names, F399/Egress, tile/facing/layer and the loaded setup, layout and phys
 
 | Controlled writer and loaded setup | Input after independent Continue |
 | --- | --- |
-| Map19 default storeroom at `(9,11)` Up. Search opens the adjacent Medical Herb chest and commits F130. | Repeating Search yields no second herb. Down is blocked by the storeroom wall. |
+| Map19 default storeroom at `(9,11)` Up. Search opens the adjacent Angel Wing chest and commits F130. | Repeating Search yields no second Angel Wing. Down is blocked by the storeroom wall. |
 | Map20 F501 east landing approach at `(38,41)`. Up then Right takes the diagonal CURRENT stairs to `(39,53)`. The completed bedroom/approach flags stay in the record. | The upper wall blocks Right. Left then Right takes the reverse stairs to `(39,39)`. The real east exit reaches Map19 `(35,7)`. |
 | Map19 F609 arrival at `(29,8)`. Save refuses at the commission choice. Accepting commits F89/F610 and leaves retired procession slots. | Ordinary input retains the same visit, with the scene allocations retired and their aliases removed. |
 | Map19 F506 at `(29,16)`. Step into the F620 departure zone and reach the independent F621 request. Save the completed F620/F621/F83 state. | The king and minister follow in their original resident slots for entities 130 and 129. Repeating the request keeps that chain and the force membership. A separate engine case exercises fresh entry with F83 and the declared follower entities 30 and 159. |
