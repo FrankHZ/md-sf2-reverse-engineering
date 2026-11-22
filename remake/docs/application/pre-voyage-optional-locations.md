@@ -141,6 +141,8 @@ placements and descriptions. Report unsupported actions at their actual caller o
 Compare the settled, playable states above with the [field selector](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs)
 and [save contract](opening-session-lifecycle.md#eligibility-and-restoration-recipes). This inventory
 checks configured recovery coverage. It does not classify the player's original refusal or replay the route.
+[#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029) tracks the remaining
+save gaps at existing stable locations, including F506 Granseal and Galam.
 
 | Settled location | Save coverage and remaining decision |
 | --- | --- |
