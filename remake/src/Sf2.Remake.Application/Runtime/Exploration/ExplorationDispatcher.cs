@@ -359,6 +359,10 @@ internal static class ExplorationDispatcher
                                 ? new EntityWait(fieldMove.Token, tickResult.World.Player, field.Event?.Program) : null,
                                 simulationTick: checked(story.SimulationTick + 1));
                             current = ProgramRunner.Commit(current, active, story, observations, "simulation-tick");
+                            if (field.Moved && tickResult.World.TravelMode == FieldTravelMode.Walking &&
+                                PartyDetailsQuery.LeaderMovementSound(definition, tickResult.World.Party) is { } stepSound)
+                                current = ProgramRunner.Commit(current, active, story, observations, "entity-sound",
+                                    stepSound.ToString(System.Globalization.CultureInfo.InvariantCulture));
                             if (field.VehicleEvent == 5)
                             {
                                 var motion = tickResult.World.PlayerEntity.Motion;

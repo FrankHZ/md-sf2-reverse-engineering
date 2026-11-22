@@ -2615,6 +2615,9 @@ msgstr "Consumable"
 msgid "depot.kind.other"
 msgstr "Item"
 
+msgid "depot.description.chirrup-sandals"
+msgstr "These sandals make a chirping sound with every step."
+
 msgid "depot.value"
 msgstr "Sale value: {0} gold"
 

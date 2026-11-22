@@ -66,6 +66,15 @@ internal static class PrivateFieldPreparation
             yield return new(id, item.DisplayName, uint.MaxValue, stat, bonus,
                 DamageOnUse: kind.EndsWith("|BREAKABLE", StringComparison.Ordinal) && item.UseSpell != "NOTHING");
         }
+        if (source.Items.TryGetValue(126, out var sandals))
+        {
+            Require(sandals is { Code: "CHIRRUP_SANDALS", EquipFlagsExpression: "ALL", ItemTypeExpression: "RING|RARE",
+                MinimumRange: 0, MaximumRange: 0, UseSpell: "NOTHING",
+                EquipEffects: [{ Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] },
+                "source-sound-ring", "field.items");
+            yield return new(sandals.Id, sandals.DisplayName, uint.MaxValue, null, 0, MovementSound: 99,
+                DepotDescriptionKey: "depot.description.chirrup-sandals");
+        }
     }
 
     internal static FieldPreparationDefinition Read(PrivateBattleDefinitions source, ExplorationDefinition? world = null, IEnumerable<string>? wingMaps = null,

@@ -10,7 +10,7 @@ observation. The [campaign item index](campaign-items.md) owns item lifecycles.
 | --- | --- | --- |
 | Evil Knuckles, Map5 F197 | **Confirmed** closed in early Yeel. The late piano opens the usable entrance to the chest area. | Late Grans return. A selected early chest row supplies a carry identity. The later equip caller depends on MMNK and cursed-weapon rules. |
 | Evil Shot, Map16 F200 | **Confirmed** closed to ordinary walking from the audited early entrances. The later north gate or northern overworld approach reaches the search area. | Late Grans return. Rohde's current BRGN class would qualify once a legitimate copy reaches him. |
-| Chirrup Sandals, Map17 F205 | **Inferred** ordinary pickup at first prison control. The initial room has a clear approach and the faced item marker. | Current-campaign Search candidate. Ordinary pickup and custody need a bounded witness. Ring Equip, footsteps and the Depot description each have an unbound consumer. |
+| Chirrup Sandals, Map17 F205 | **Inferred** ordinary pickup in the original at first prison control. The initial room has a clear approach and the faced item marker. | **Confirmed** ordinary Search, Bowie custody, Equip, field audio, v6 Continue and removal from the admitted prison checkpoint. Battle05 inherits the worn ring and selects the mover's cue. Ordinary Depot input deposits, describes and returns that same acquisition from a controlled post-Taros service checkpoint. |
 
 ## Source and layout
 
@@ -149,35 +149,87 @@ and F505 places a resident at the alternate approach (56,5).
 [Pinned F205 table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map17/8-other-items.asm) ·
 [Pinned F505 population](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map17/mapsetups/s1_entities_505.asm)
 
-**Inferred (ordinary Search in the original and selected remake).** Start from the
-Battle04 capture or a legitimate Battle04 Movement slot followed by victory or
-special defeat. Finish wake-up with a free joined slot, Search at the approach, and
-check the actual word, holder, F205 and empty repeat. The documented Map57 Battle01
-Continue is a fallback start if there is no later legal slot.
-Map16/17 field saves were outside the accepted Galam slice. Carry the bare word to a
-supported downstream Movement save or the observed settled Battle07 Map58 return and
-cold Continue. A first-Pacalon slot whose history skipped the pickup cannot establish
-that lineage. **Unknown:** actual normal pickup, recipient and item-specific persistence.
-[Observed Galam route](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control) ·
-[Battle save and Continue](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c) ·
-[Battle07 return](../application/pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration)
+**Inferred (ordinary Search in the original).** The first prison room offers a free
+approach when the joined party has room. The original's actual pickup and SRAM
+round trip are **Unknown**.
 
 **Confirmed (static consumers).** Item 126 is an all-class `RING|RARE`. `SetMoveSfx`
 at `$25790` checks the equipped ring and selects `SFX_BLOAB` (99). For field
 movement, `ExplorationLoop` calls it for Bowie at `loc_2586A` before the next wait.
 Battle movement uses the acting combatant. The Caravan appraisal picks a stored item
 then checks `DisplaySpecialCaravanDescription` before the ordinary type description.
-Its table at `$228A2` gives item 126 a two-message entry. After legitimate pickup, use
-Bowie for a field Equip and step check. A separate legal carry after Taros can exercise
-Deposit → Look → retrieval as soon as appraisal supports the item, independently of
-Equip. **Unknown:** audible original behavior along these routes and remake item-specific
-Equip, sound and appraisal behavior. #1946 supplies the ring slot and currently covers
-four stat rings. The Sandals effects need explicit follow-up ownership.
+Its table at `$228A2` gives item 126 a two-message entry. Audible original behavior
+along the route remains **Unknown**.
 [Original movement sound contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md) ·
 [Pinned special appraisal table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/specialcaravandescriptions.asm) ·
 [Battle movement audio](../godot/battle-scenes.md) ·
 [Remake Depot boundary](../application/caravan-services-design.md#current-depot-implementation) ·
 [Ring slot #1946](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1946)
+
+#### Remake controls and reproduction
+
+This Standard slice uses the existing High-rigor custody and settled field save contracts.
+The admitted ring has an optional movement cue and Depot description. The item has no
+stat or range contribution and no Use action. Ordinary field walking reads the live
+leader loadout. Battle segments read the moving combatant and use command 79 in the
+absence of a cue override. Removing or transferring the worn item clears its cue without
+changing the weapon. Depot Look uses the stored identity and the English or Simplified
+Chinese appraisal note.
+
+**Confirmed in the remake.** With the registered [Galam content and cue](presentation-assets.md#galam-sandals-audio-package),
+use the [admitted prison checkpoint](../godot/objective-guidance.md#verification-and-direct-replay)
+at (59,5) and ordinary input in a fresh disposable slot namespace. The checkpoint
+begins after the wake-up, with a free slot and F205 clear.
+
+1. Tap Up, Left, Left and Search the faced tile at (57,4). The ordinary receipt grants
+   bare word 126 in Bowie's third slot and commits F205. Close it and repeat Search for
+   an empty response with the same pack.
+2. Open Item, choose Bowie and Equip the sandals. The live pack changes from
+   `[199, 0, 126, 127]` to `[199, 0, 254, 127]`. Step Right, then Left. The
+   adapter audio receipts show one command-99 start per step with no audio error.
+3. Use ordinary Save from settled walking at (57,4). In a new process Continue the v6
+   slot and compare the pose, F205 and worn word. A step Right still plays 99. Use
+   Remove ring and step Left. The pack returns to its bare word and no command 99 is
+   delivered. A repeat Search stays empty.
+4. On a separate Continue of the worn field slot, take the ordinary doors, warning,
+   passage, kitchen exit, rally and guard route to Battle05. Save from the first
+   settled Movement turn. The default step by ally 4 plays command 79. Cold Continue
+   the battle v2 slot, verify Bowie's worn word and use Stay at the other allied
+   turns. Bowie's step plays one command 99 with no audio error. Stop after that
+   step. [Prison escape and Battle05 entry](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
+
+`RingEquipmentTests` exercises battle movement selection and verifies that another
+wearer's ring has no effect on ordinary field walking. The authored Depot transaction
+deposits the bare word, appraises the selected entry without changing custody and
+retrieves one bare copy. Natural reach from Battle04 into the wake-up and from the
+early pickup to the later Map26 visit remain **Unknown** for this witness.
+[Settled field Save and Continue](../application/opening-session-lifecycle.md#unified-settled-field-snapshots)
+
+#### Controlled Depot UI
+
+**Confirmed in the remake.** Use the same registered Galam world and the accepted
+Map26 service-return checkpoint at (11,36), facing Up. The service visit, campaign
+flags and other party members come from the registered `handoffs/issue1870/slots/service-en.json`.
+To reproduce the controlled prerequisite, validate both source envelopes and decode
+the v6 record from step 3 and the service's v1 record. In a fresh disposable input,
+replace the service record's complete `data.allies` entry for `ally-0` with that member's
+unchanged `data.party.allies` entry from the v6 record. Carry F205 from that record
+into the service flags. Encode the copied service record using the normal
+[save envelope](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs).
+The scoped composition retains the ordinary acquisition and isolates the post-Taros
+service consumer from campaign traversal. Both source slots are read-only.
+
+1. Continue the composed input. Talk to the Map26 service NPC and open Depot.
+   Deposit the worn sandals from Bowie's third slot. His pack becomes
+   `[199, 0, 127, 127]` and the Depot holds exactly one identity 126.
+2. Look at that entry in English. Leave the service, change Language to Simplified
+   Chinese in ordinary Settings, then talk to the same NPC and Look again. The
+   appraisal shows the step-sound note in both languages. Both reads preserve the
+   same stored item and the holder's pack in one live session.
+3. Retrieve the stored item to Bowie and leave the service. His pack is
+   `[199, 0, 126, 127]` and the Depot is empty. Ordinary walking control resumes
+   with the equipped weapon and the bare sandals. The witness has no gameplay,
+   service or presentation failure. [Accepted Map26 service entry](../application/caravan-services-design.md#current-formation-implementation)
 
 ## Reproduce the static boundary
 

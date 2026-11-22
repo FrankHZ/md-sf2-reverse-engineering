@@ -121,9 +121,12 @@ stores; later caller failure retains a committed transfer. Unknown custody remai
 refuses operations while still allowing the player to leave the submenu.
 
 Look reuses admitted names, item type, `floor(price*3/4)` valuation and class eligibility for
-admitted weapons and stat rings. The Wooden Sword was appraised in both languages. The observed
+admitted weapons and rings. The Wooden Sword was appraised in both languages. The observed
 Power Ring shows 2,250 gold and the eligible joined members. An absent price is shown as unknown.
-Chirrup Sandals' special description has a separate owner. [Ring custody and appraisal](../domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input)
+Chirrup Sandals use an authored bilingual note explaining their step sound. The stored item
+selects the note. Ordinary Deposit, English and Simplified Chinese Look, and retrieval to Bowie
+were observed from the controlled Map26 service checkpoint with the real prison acquisition. [Ring custody and appraisal](../domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input) ·
+[Sandals Depot reproduction](../content/special-equipment-reach.md#controlled-depot-ui)
 
 Every custody reconstruction preserves Depot: `Mark`, `AddDeal`, battle start/action validation,
 continuation capture/equality/restore, field capture/restore and battle wire decode. New field-v1

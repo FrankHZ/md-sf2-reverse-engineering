@@ -62,6 +62,8 @@ internal sealed partial class CaravanServiceView
             case CaravanPhase.DepotLook:
                 var appraisal = CaravanDepotQuery.Look(_session.Definition, _session.Current, wait.Item!.Value);
                 _title += "\n" + ItemName(appraisal.Item) + " · " + GameText.Get("depot.kind." + appraisal.Kind);
+                if (appraisal.DescriptionKey is { } description)
+                    _title += "\n" + GameText.Get(description);
                 _title += "\n" + GameText.Get("depot.value", appraisal.SaleValue?.ToString() ?? "?");
                 if (appraisal.Eligible is { } eligible)
                     _title += "\n" + GameText.Get("depot.eligible", eligible.Count == 0 ? GameText.Get("depot.none") :

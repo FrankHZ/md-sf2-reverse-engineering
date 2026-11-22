@@ -8,7 +8,8 @@ public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint Class
 
 public enum BattleEquipmentCategory { Weapon, Ring }
 internal enum RingStat { Attack, Defense, Agility, Move }
-internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat Stat, byte Bonus, bool DamageOnUse = false);
+internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat? Stat, byte Bonus,
+    bool DamageOnUse = false, int? MovementSound = null, string? DepotDescriptionKey = null);
 
 public sealed class BattleEquipmentDefinition
 {
@@ -132,10 +133,15 @@ public static class BattleEquipment
         return slot == UnarmedChoice ? null : definition.Equipment!.Weapons[(byte)(loadout!.Items[slot] & 127)];
     }
 
+    private static BattleRingDefinition? Ring(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
+        EquippedRingSlot(definition, loadout) is { } slot
+            ? definition.Equipment!.Rings[(byte)(loadout!.Items[slot] & 127)] : null;
+
+    internal static int? MovementSound(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
+        Ring(definition, loadout)?.MovementSound;
+
     private static int RingBonus(BattleActorDefinition definition, BattleSourceLoadout? loadout, RingStat stat) =>
-        EquippedRingSlot(definition, loadout) is { } slot &&
-        definition.Equipment!.Rings[(byte)(loadout!.Items[slot] & 127)] is { } ring && ring.Stat == stat
-            ? ring.Bonus : 0;
+        Ring(definition, loadout) is { } ring && ring.Stat == stat ? ring.Bonus : 0;
 
     internal static int Contribution(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
         definition.Equipment is null ? definition.Growth?.AttackBonus ?? 0 :
