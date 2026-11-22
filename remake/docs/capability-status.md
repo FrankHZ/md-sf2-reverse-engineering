@@ -69,6 +69,12 @@ Start with the player's action. For battle turns, inspection, actions and outcom
 
 When a chapter adds a reachable map or changes its setup, follow the affected feature to its detailed inventory. Record which optional callers or placements become available, what was checked in source or compiled content, what was exercised through ordinary input, and any remaining gap. A shared rule can reuse existing evidence; a new caller needs its own disposition.
 
+## Modern guidance names
+
+The [pre-voyage guidance panel and entrance aid](godot/objective-guidance.md#ui-language-and-persistence)
+show fixed names from the selected English or Simplified Chinese catalog and resolve custom companion
+names from the session. The Yeel Continue slot uses the same localized place name as the field guidance.
+
 ## Ordinary field time and save entry
 
 Focused ordinary exploration advances without V, including standing animation, followers and enabled

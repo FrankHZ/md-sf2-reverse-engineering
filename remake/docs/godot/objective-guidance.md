@@ -134,11 +134,13 @@ remains a menu-closed world aid; root menus hide that marker. Host, dialogue, Se
 services, battle and window recovery hide all guidance. Off hides the panel in both root-menu states.
 The world remains at96px cells; no objective click moves an actor or camera.
 
-English/zh-CN use existing catalogs and optional companion display-name projection. Copy without a
-companion has zero name operands. Proper names retain the pilot’s canonical UI spellings; no new
-proper-name approval is implied. Adopted story terms distinguish Ancient Tower / 古代之塔 from Ancient
-Shrine / 古代神殿. The arity dictionary is in `GameText.Keys.cs`; catalog loading/formatting stays in
-`GameText.cs`, keeping both responsibilities below the source-size boundary.
+The English and Simplified Chinese catalogs own the authored objective, destination, next action and
+entrance text. The [localization agreement](../application/localization-design.md#fixed-names-in-modern-guidance)
+owns the spelling source. When a rule supplies a companion, `DisplayNames.Member` resolves its
+display name and honors player-entered names. Copy without a companion has zero name operands.
+Applying the language preference refreshes the current field projection. Continue recomputes it
+from restored field state with the currently applied language. `GameText.Keys.cs` owns placeholder
+arity and `GameText.cs` loads and formats catalog text.
 
 ## Verification and direct replay
 
@@ -148,6 +150,25 @@ variants, packed rooms, optional-member independence, detours, defeat/EGRESS fla
 genuine withholding and boarding cleanup. These are engine query behavior, not observer tests.
 Run `uv run sf2 verify engine`, affected `uv run sf2 verify adapter`, and the clean committed planner.
 Keep completed failures and rerun only affected owning tests plus newly invalidated checks.
+
+For a catalog-only change, compare every `guidance.*` key used by `PrivateFieldGuidance` and the
+adapter against both PO catalogs. Compare placeholder counts and indices. Include
+`save.destination.yeel-field` in the bilingual check.
+
+For the Yeel name and Continue check, use the [default-setup guide approach and private input
+selection](../application/opening-session-lifecycle.md#yeel-save-and-continue-observation) in a fresh
+save namespace. Supply `start.names` with a seven-character custom `ally-4` name. With English
+applied, observe the initial Hawel goal, then Talk to the guide and verify the changed goal at F72.
+Apply Simplified Chinese in field Settings and verify that the current objective, destination and
+next action reflect the new locale and retain the exact custom name. Save at the settled field
+boundary. Start a fresh process and open title Continue. Verify the Chinese Yeel slot label and
+the same guidance and companion name after attachment. Compare the saved progress at attachment
+and check for field and adapter errors.
+
+**Confirmed:** a controlled default-setup Yeel visit changed the English objective after the
+guide caller. Applying Simplified Chinese refreshed the same session with a custom companion
+name. Fresh-process Continue showed 耶尔 on the slot and restored the localized goal, companion
+name and complete saved progress at attachment.
 
 The representative native observer is
 `res://probes/engine_pre_voyage_guidance_observation.gd`. It uses the existing host, actual native
