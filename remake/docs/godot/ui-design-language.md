@@ -174,7 +174,7 @@ the inspected subject clear at each supported viewport. Function-key tabs belong
 
 | Phase | Components and placement |
 | --- | --- |
-| Movement | Keep round information quiet at the upper left. Draw legal stops below the units. Confirming a stop opens commands. |
+| Movement | Keep round information quiet at the upper left. Draw reachable movement cells below the units, including cells occupied by allies that the actor can pass through. Confirming a legal stop opens commands. |
 | Command and spell/item list | Layout A uses a 560px-wide right panel with the first command row at (1312,312). The acting unit's identity and HP/MP head the panel. Use 36px values above two 232×28px gauges. Align child rows to the same origin and size the panel to its contents. |
 | Choose a target | Keep reach on the board. The right card shows the selected recipient and their vitals. Put cycle, Confirm and Back in the footer. Return to the previous command or spell level. |
 | Free inspection | Keep the status card clear of the hovered cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |

@@ -27,12 +27,13 @@ internal sealed partial class BattleMovementRangeView : Node2D
         if (_range is null) return;
         _draws++;
         _drawn = _range;
-        foreach (var tile in _range.Destinations)
+        foreach (var tile in _range.ReachableCells)
             BattleActionRangeView.Tile(this, tile, new("78e9f3"), Alpha);
     }
     internal object Observe() => new
     {
         visible = IsVisibleInTree(), actor = _range?.Actor.Value, origin = _range?.Origin,
+        reachableCells = _range?.ReachableCells, drawnReachableCells = _drawn?.ReachableCells,
         destinations = _range?.Destinations, drawnDestinations = _drawn?.Destinations, z = ZIndex, draws = _draws,
         cellSize = WorldViewportLayout.CellSize, fillAlpha = Alpha, edgeAlpha = 0.9f, steady = Steady,
         globalOrigin = BattleMapViewport.Rectangle(new Rect2(ToGlobal(Vector2.Zero), Vector2.Zero)),

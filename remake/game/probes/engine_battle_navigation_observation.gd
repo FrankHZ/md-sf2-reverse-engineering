@@ -92,7 +92,7 @@ func restart() -> void:
         var result: Dictionary = JSON.parse_string(json)
         if result.boundary == "submit": submissions += 1)
     events.clear()
-    for action in ["up", "right", "down", "left", "confirm", "cancel", "menu", "accelerate", "equipment", "give", "discard"]:
+    for action in ["up", "right", "down", "left", "confirm", "cancel", "menu", "accelerate", "equipment", "give", "discard", "spell"]:
         var mapped := InputMap.action_get_events("sf2_" + action)
         for e in mapped:
             if route == "pad" and e is InputEventJoypadButton or route == "axis" and e is InputEventJoypadMotion:
@@ -362,6 +362,59 @@ func auxiliary_checks(kind: String) -> void:
     check(state().stage == "ActionChoice" and state().inventories == initial.inventories and state().mainSeed == initial.mainSeed and
         state().thinkingSeed == initial.thinkingSeed, "Auxiliary Back preserves resources/RNG and returns to actions")
 
+func range_projection(label: String) -> Dictionary:
+    var board: Node = view.get_node("MapViewport")
+    var terrain: Dictionary = JSON.parse_string(board.call("ReadTerrainJson"))
+    samples.append({"label": label, "movementRange": terrain.movementRange, "actionRange": terrain.actionRange})
+    return terrain
+
+func traversal_range_checks() -> void:
+    await restart()
+    var initial := state("corridor-origin")
+    var shown := range_projection("corridor-range")
+    var movement: Dictionary = shown.movementRange
+    var expected: Array = []
+    for x in range(2, 9): expected.append({"X": float(x), "Y": 3.0})
+    check(initial.stage == "Movement" and initial.previewX == 3 and initial.previewY == 3
+        and movement.visible and movement.draws > 0 and movement.drawnReachableCells == expected
+        and movement.reachableCells == expected, "Draw includes ally and tiles beyond it, excluding enemy, barriers and over-budget cells")
+    check(movement.destinations == expected.filter(func(p): return p.X != 4.0)
+        and not shown.actionRange.visible, "Legal stops omit the ally and action range stays hidden in Movement")
+
+    await tap("right")
+    await settle()
+    var ally := state("preview-on-ally")
+    for i in 20: await process_frame
+    check(ally.previewX == 4 and ally.previewY == 3 and same_position(ally, state())
+        and submissions == ally.submissions, "Releasing Right on the ally stops further preview steps")
+    await tap("confirm")
+    var refusal := state("occupied-confirm")
+    check(refusal.failure == "occupied-destination" and refusal.stage == "Movement"
+        and refusal.actor == initial.actor and same_position(ally, refusal) and refusal.revision == ally.revision,
+        "Confirm on the ally refuses without committing")
+    check(range_projection("range-after-refusal").movementRange.drawnReachableCells == expected,
+        "The drawn range stays anchored through preview and refusal")
+
+    await tap("right")
+    await settle()
+    var beyond := state("preview-beyond-ally")
+    check(beyond.previewX == 5 and beyond.previewY == 3 and beyond.failure == null,
+        "Fresh Right can continue through the ally")
+    await tap("confirm")
+    check(state("valid-confirm").stage == "ActionChoice" and not range_projection("range-in-actions").movementRange.visible,
+        "Confirm on the empty cell opens actions and hides movement range")
+    await tap("spell")
+    var spell := range_projection("spell-reach")
+    check(state("spell-list").menu.page == "Magic" and not spell.movementRange.visible and spell.actionRange.visible
+        and spell.actionRange.reach == expected.slice(2, 5), "Magic shows its own one-tile reach from the provisional stop")
+    await tap("cancel")
+    await tap("cancel")
+    await settle()
+    var restored := range_projection("range-after-back")
+    check(same_position(initial, state("back-at-origin")) and state().stage == "Movement"
+        and restored.movementRange.visible and restored.movementRange.drawnReachableCells == expected
+        and not restored.actionRange.visible, "Back restores the original movement drawing after return")
+
 func run() -> void:
     root.size = Vector2i(1920, 1080)
     var auxiliary := OS.get_environment("SF2_BATTLE_NAVIGATION_AUX")
@@ -369,6 +422,8 @@ func run() -> void:
         await movement_checks()
         await movement_checks(true)
         await movement_menu()
+    elif auxiliary == "traversal-range":
+        await traversal_range_checks()
     elif auxiliary.is_empty():
         await movement_checks()
         await menu_checks()
