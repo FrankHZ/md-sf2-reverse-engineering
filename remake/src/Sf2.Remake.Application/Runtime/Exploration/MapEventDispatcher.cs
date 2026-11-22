@@ -59,7 +59,7 @@ internal static class MapEventDispatcher
         if (motion is not null)
         {
             world = world.WithEntity(player with { Motion = motion,
-                Actions = new EntityActionProgram([new StopEntityActions()]), ActionCursor = 0, WaitingForMotion = true });
+                Actions = FieldStepActions.Program, ActionSource = new FieldStepActions(), ActionCursor = 0, WaitingForMotion = true });
             reached ??= world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Step &&
                 Matches(entry, destination!, Word(destination!), flags));
         }
@@ -146,8 +146,10 @@ internal static class MapEventDispatcher
         var actions = entry.SourceInit ?? throw new Sf2.Remake.Domain.Battles.BattleRuleException("zone-init", "event.actions", true);
         // ApplyInitActscript writes the script pointer after the producing pass. Preserve
         // physical motion and its timer; the init stream runs in subsequent entity service.
+        int index = Enumerable.Range(0, world.Definition.Events.Count)
+            .FirstOrDefault(i => ReferenceEquals(world.Definition.Events[i], entry), -1);
         world = world.WithEntity(world.PlayerEntity with { Actions = actions, ActionCursor = 0,
-            WaitingForMotion = false, Follower = null });
+            ActionSource = new ZoneEntityActions(world.Definition.Body, index), WaitingForMotion = false, Follower = null });
         return ProgramRunner.Commit(current, new ActiveExploration(world), current.Story.Copy(entry.Program,
             eventCaller: new ZoneEventContext(), entityServices: entityServices), observations, "zone-entered");
     }

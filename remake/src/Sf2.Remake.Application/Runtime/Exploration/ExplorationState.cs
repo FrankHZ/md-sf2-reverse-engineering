@@ -232,6 +232,8 @@ public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motio
     long SpriteRequest = 0, long SpriteReady = 0, bool WaitingForSprite = false, bool Priority = false, ushort RenderSize = 24, long? ShadowRemovedAt = null,
     int? SharedSpriteSlot = null)
 {
+    internal FieldEntityOrigin? Origin { get; init; }
+    internal FieldActionSource? ActionSource { get; init; }
     public int SpriteSlot => SharedSpriteSlot ?? Slot;
     public MapPosition Position => new(Motion.X / 384, Motion.Y / 384);
     public bool IsScriptIdle => Actions is { } program && ActionCursor >= 0 &&
@@ -247,12 +249,14 @@ public sealed class ExplorationState
         IReadOnlyDictionary<EntityRef, int>? aliases = null, MapBlockCopyLifecycleState? roofState = null,
         ExplorationPopulation? population = null, byte quake = 0,
         FieldTravelMode travelMode = FieldTravelMode.Walking, IReadOnlyList<int>? currentEntities = null,
-        IReadOnlyDictionary<int, string>? spriteGraphics = null)
+        IReadOnlyDictionary<int, FieldSpriteGraphic>? spriteGraphics = null, FieldPopulationSource? populationSource = null)
     {
         Definition = definition; Layout = layout; Player = player; Party = party; SpriteSize = spriteSize; RoofState = roofState ?? MapBlockCopyLifecycleState.Inactive;
-        Population = population ?? definition.Population;
+        Population = populationSource is null ? population ?? definition.Population : population;
+        PopulationSource = populationSource ?? new MapPopulationSource(definition.Body);
         Quake = quake; TravelMode = travelMode;
-        SpriteGraphics = new ReadOnlyDictionary<int, string>((spriteGraphics ?? new Dictionary<int, string>()).ToDictionary());
+        GraphicBindings = new ReadOnlyDictionary<int, FieldSpriteGraphic>((spriteGraphics ?? new Dictionary<int, FieldSpriteGraphic>()).ToDictionary());
+        SpriteGraphics = new ReadOnlyDictionary<int, string>(GraphicBindings.ToDictionary(pair => pair.Key, pair => pair.Value.Resource));
         CurrentEntities = Array.AsReadOnly((currentEntities ?? definition.Caravan?.CurrentEntities ?? []).ToArray());
         AllEntities = Array.AsReadOnly(entities.Select((entity, index) => entity.Slot < 0 ? entity with { Slot = index } : entity)
             .OrderBy(entity => entity.Slot).ToArray());
@@ -263,6 +267,7 @@ public sealed class ExplorationState
     }
     public ExplorationMapDefinition Definition { get; }
     public ExplorationPopulation? Population { get; }
+    internal FieldPopulationSource PopulationSource { get; }
     public MapId Map => Definition.Map;
     public WorkingMapLayout Layout { get; }
     public MapBlockCopyLifecycleState RoofState { get; }
@@ -277,13 +282,14 @@ public sealed class ExplorationState
     public FieldTravelMode TravelMode { get; }
     public IReadOnlyList<int> CurrentEntities { get; }
     public IReadOnlyDictionary<int, string> SpriteGraphics { get; }
-    internal ExplorationState WithSpriteGraphics(int slot, string resource) => new(Definition, Layout, Player,
+    internal IReadOnlyDictionary<int, FieldSpriteGraphic> GraphicBindings { get; }
+    internal ExplorationState WithSpriteGraphics(int slot, string resource, ProgramLocation source) => new(Definition, Layout, Player,
         AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities,
-        SpriteGraphics.Where(pair => pair.Key != slot).Append(new(slot, resource)).ToDictionary());
-    internal ExplorationState WithTravelMode(FieldTravelMode mode) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, mode, CurrentEntities, SpriteGraphics);
+        GraphicBindings.Where(pair => pair.Key != slot).Append(new(slot, new(resource, source))).ToDictionary(), PopulationSource);
+    internal ExplorationState WithTravelMode(FieldTravelMode mode) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, Quake, mode, CurrentEntities, GraphicBindings, PopulationSource);
     internal ExplorationState WithFollower(ExplorationEntity entity) => new(Definition, Layout, Player,
         AllEntities.Select(row => row.Slot == entity.Slot ? entity : row), Party, SpriteSize, Aliases, RoofState,
-        Population, Quake, TravelMode, CurrentEntities.Contains(entity.Slot) ? CurrentEntities : CurrentEntities.Append(entity.Slot).ToArray(), SpriteGraphics);
+        Population, Quake, TravelMode, CurrentEntities.Contains(entity.Slot) ? CurrentEntities : CurrentEntities.Append(entity.Slot).ToArray(), GraphicBindings, PopulationSource);
     public ExplorationEntity PlayerEntity => Entities[Player];
     public bool TryResolveEntity(EntityRef reference, out ExplorationEntity entity)
     {
@@ -303,11 +309,11 @@ public sealed class ExplorationState
         }
         return Entities.TryGetValue(reference, out entity!);
     }
-    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities, SpriteGraphics);
+    internal ExplorationState WithEntities(IEnumerable<ExplorationEntity> entities, ushort? spriteSize = null) => new(Definition, Layout, Player, entities, Party, spriteSize ?? SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities, GraphicBindings, PopulationSource);
     internal ExplorationState WithLayout(WorkingMapLayout layout, MapBlockCopyLifecycleState? roofState = null) =>
-        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake, TravelMode, CurrentEntities, SpriteGraphics);
-    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities, SpriteGraphics);
-    internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount, TravelMode, CurrentEntities, SpriteGraphics);
+        new(Definition, layout, Player, AllEntities, Party, SpriteSize, Aliases, roofState ?? RoofState, Population, Quake, TravelMode, CurrentEntities, GraphicBindings, PopulationSource);
+    internal ExplorationState WithParty(BattleStartInput party) => new(Definition, Layout, Player, AllEntities, party, SpriteSize, Aliases, RoofState, Population, Quake, TravelMode, CurrentEntities, GraphicBindings, PopulationSource);
+    internal ExplorationState WithQuake(byte amount) => new(Definition, Layout, Player, AllEntities, Party, SpriteSize, Aliases, RoofState, Population, amount, TravelMode, CurrentEntities, GraphicBindings, PopulationSource);
     internal ExplorationState MoveOffMap(EntityRef reference)
     {
         if (!TryResolveEntity(reference, out var entity)) throw new BattleRuleException("missing-entity", "program.entity", true);
@@ -332,7 +338,7 @@ public sealed class ExplorationState
             Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } };
         // For source populations an absent reference represents FF, distinct from a fresh zero mapping.
         return new(Definition, Layout, Player, AllEntities.Select(row => row.Slot == hidden.Slot ? hidden : row), Party, SpriteSize,
-            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population, Quake, TravelMode, CurrentEntities.Where(slot => slot != hidden.Slot).ToArray(), SpriteGraphics);
+            Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population, Quake, TravelMode, CurrentEntities.Where(slot => slot != hidden.Slot).ToArray(), GraphicBindings, PopulationSource);
     }
     internal ExplorationState WithEntity(ExplorationEntity entity) =>
         WithEntities(AllEntities.Select(current => current.Slot == entity.Slot ? entity : current));

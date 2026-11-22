@@ -27,7 +27,7 @@ internal static class CaravanRuntime
         world.CurrentEntities.Skip((world.Population is null ? 0 : 1) + (skipCaravan ? 1 : 0));
 
     internal static (ActiveSessionState Active, StoryState Story) Execute(ScenarioDefinition definition, SessionSnapshot current,
-        VehicleInstruction instruction, StoryState next, WaitToken token)
+        VehicleInstruction instruction, ProgramLocation source, StoryState next, WaitToken token)
     {
         var world = current.Exploration ?? throw new BattleRuleException("caravan-field", "program", true);
         switch (instruction)
@@ -57,7 +57,7 @@ internal static class CaravanRuntime
                 foreach (int slot in FollowerSlots(world, followers.SkipCaravan))
                 {
                     var actor = Physical(world, slot);
-                    world = world.WithEntity(actor with { Actions = followers.Actions, ActionCursor = 0,
+                    world = world.WithEntity(actor with { Actions = followers.Actions, ActionSource = new ProgramEntityActions(source), ActionCursor = 0,
                         WaitingForMotion = false, Follower = null });
                 }
                 break;
@@ -111,7 +111,8 @@ internal static class CaravanRuntime
         {
             var actor = Physical(world, index + 1);
             world = world.WithEntity(!overworld || world.Population is null
-                ? actor with { Actions = CaravanPrograms.Follower(index, overworld), ActionCursor = 0, WaitingForMotion = false, Follower = null }
+                ? actor with { Actions = CaravanPrograms.Follower(index, overworld), ActionSource = new CaravanFollowerActions(index, overworld),
+                    ActionCursor = 0, WaitingForMotion = false, Follower = null }
                 : InstallPopulationFollower(actor, index, overworld));
         }
         return world;
@@ -157,7 +158,7 @@ internal static class CaravanRuntime
         var warp = warpTile ? world.Definition.Events.FirstOrDefault(entry => entry.Kind == ExplorationEventKind.Warp &&
             MapEventDispatcher.Matches(entry, candidate, word, flags)) : null;
         var motion = EntityMotion.Start(player.Motion, (short)(candidate.X * 384), (short)(candidate.Y * 384), [])!;
-        return (world.WithEntity(player with { Motion = motion, Actions = new([new StopEntityActions()]),
+        return (world.WithEntity(player with { Motion = motion, Actions = FieldStepActions.Program, ActionSource = new FieldStepActions(),
             ActionCursor = 0, WaitingForMotion = true }), new(true, false, warp));
     }
 

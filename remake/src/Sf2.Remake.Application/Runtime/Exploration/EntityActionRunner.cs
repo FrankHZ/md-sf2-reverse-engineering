@@ -167,7 +167,7 @@ internal static class EntityActionRunner
                     case UnsupportedEntityAction unsupported:
                         throw new BattleRuleException("entity-action", unsupported.Source + ":" + unsupported.Opcode, true);
                     case StopEntityActions:
-                        entity = entity with { Actions = null, ActionCursor = 0, WaitingForMotion = false };
+                        entity = entity with { Actions = null, ActionSource = null, ActionCursor = 0, WaitingForMotion = false };
                         break;
                     default: throw new BattleRuleException("entity-action", "entity.actions", true);
                 }
