@@ -138,116 +138,39 @@ placements and descriptions. Report unsupported actions at their actual caller o
 
 ## Pre-voyage save coverage
 
-[#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029) owns the remaining
-save gaps at existing stable locations. The [field selector](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs)
-confirms the recipe gaps. The [save lifecycle](opening-session-lifecycle.md#planned-pre-voyage-settled-visits)
-owns the restoration and Church publication contract. Each new location requires its own Save
-and cold Continue observation, with Record where a real priest is admitted.
+[#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029) tracks save coverage.
+The [settled field snapshot design](opening-session-lifecycle.md#unified-settled-field-snapshots)
+replaces the regional implementation order. The current writer still uses the existing recipes.
+The table records delivered coverage and gaps for the location audit.
 
-**Confirmed coverage.** Map3 default/F609 retain their anchored recipes. The completed Battle01
-Map57 and Battle07 Map58 returns retain their separate anchor gates. Default and F650 Yeel use the
-settled-visit recipe. F506 Granseal, early Map16 Galam, the completed default and F612 Map43
-visits, the admitted Maps19/20/21 castle rooms and the early tower route have settled-visit recipes.
-Ordinary Save preserves the incoming Egress and F399. Church Record publishes the town refuge and F399 after slot
-readback. [Granseal acceptance](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) ·
-[Yeel acceptance](opening-session-lifecycle.md#yeel-save-and-continue-observation) ·
-[Galam acceptance](opening-session-lifecycle.md#galam-town-save-and-continue-observation) ·
-[Hawel acceptance](opening-session-lifecycle.md#hawel-house-save-and-continue-observation) ·
-[Castle acceptance](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) ·
-[Tower acceptance](opening-session-lifecycle.md#tower-save-and-continue-observation)
+| Location | Delivered coverage and limits |
+| --- | --- |
+| Granseal Map3 default/F609 and completed Battle01/07 returns | Map3 uses its opening or church anchor. `battle01-return` and `battle07-return` keep the recorded outcome anchor under their existing flag/landing gates. [Implemented field recipes](opening-session-lifecycle.md#eligibility-and-restoration-recipes) |
+| Yeel Map5 default/F650 | Cold Continue retains the loaded visit, live population, follower links, Healing Seed receipt and Church Egress. F530/F28 and worlds without the F650 body remain outside the recipe. [Yeel observation](opening-session-lifecycle.md#yeel-save-and-continue-observation) |
+| Granseal Map3 F506 | Retains the current layout and Kiwi's settled refusal or named join/follow state. Ordinary reentry retires the joined resident. Church Record uses the Map3 refuge. F543 and the quake substitution remain outside the recipe. [Granseal observation](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) |
+| Early Galam Map16 | Covers default, same-visit post-rally, fresh F663 and settled F505. Both priests bind the Map16 refuge. F530/F999 and active rally/guard/battle work remain outside the recipe. [Galam observation](opening-session-lifecycle.md#galam-town-save-and-continue-observation) |
+| Hawel's house Map43 | Covers the completed default visit with Kazin following and the quiet F612 revisit. Keeps the diary, observed F135 receipt and ordinary exit. Map43's `(7,5)` Down refuge has no Church caller. [Hawel observation](opening-session-lifecycle.md#hawel-house-save-and-continue-observation) |
+| Granseal Castle Maps19/20/21 | Covers the admitted settled default, F501, F609, F506 and Map19 F507 visits, including the loaded cast, royal links, receipt and CURRENT stairs. Ordinary control at some optional approaches around the exorcism and east landing remains **Unknown**. [Castle observation](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) |
+| Ancient Tower Maps40/57/60/58 | Covers settled exterior control, the F506-open Map57 stairs, first five linked Map60 areas and settled Map58 aftermath. Retains F132, stair copies and physical royal followers. Later F999 frontiers, Map59 and Map56 remain outside the recipe. The Ascent refuge belongs to Map56. [Tower observation](opening-session-lifecycle.md#tower-save-and-continue-observation) |
 
-### Ordered implementation batches
+Ordinary Save preserves the incoming Egress and F399. Where the accepted Record flow changes
+them, it commits those values with successful publication. A source refuge row alone does not
+establish a Church caller. [Church and Egress decisions](opening-session-lifecycle.md#eligibility-and-return-semantics)
 
-Dispatch the remaining batches in order, deferring a batch if its prerequisite has a concrete
-unresolved failure. Each batch uses
-the [shared acceptance](#save-batch-acceptance). Save-only batches preserve the incoming
-Church/Egress state.
+### Remaining save coverage
 
-1. **Granseal F506, Map3 (implemented).** The finite visit recipe saves the changed layout, actor
-   aliases and Kiwi's current follow state. Cold Continue restores the offer after a refusal and
-   preserves the completed named join. Ordinary exit and reentry retire the resident. Record uses
-   the Map3 refuge and the slot keeps the settled visit's tile. F543, active naming and choices,
-   quake Map4 and non-town visits stay outside this recipe.
-   [Observation and private inputs](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation)
-2. **Galam town, Map16 (implemented).** Save and cold Continue cover the default visit,
-   same-visit post-rally, fresh F663 population and settled F505 return. Continue keeps the
-   actual cast, layout and Slade's follow or roster state. Record uses the Map16 refuge from
-   either admitted priest. F530/F999, active rally/guard/battle work, Map17 and Map18 stay outside
-   this recipe. [Observation and private inputs](opening-session-lifecycle.md#galam-town-save-and-continue-observation)
-3. **Quiet Hawel visits, Map43 (implemented).** Save covers the completed default visit and
-   the F612 revisit. Cold Continue retains the loaded cast, Kazin's membership and actual
-   following, the diary and the observed F135 receipt. Each restored visit can take its normal
-   south exit, including the Battle04 handoff when armed. Save preserves F399 and Egress.
-   Map43's `(7,5)` Down refuge has no Church caller. Active story, recruitment and battle
-   handoff remain outside the recipe.
-   [Observation and private inputs](opening-session-lifecycle.md#hawel-house-save-and-continue-observation)
-4. **Castle and palace rooms, Maps19/20/21 (implemented).** Ordinary Save covers settled
-   default, F501, F609 and F506 setups, including the Map19 F507 royal return. Continue keeps
-   the actual loaded cast, scene and physical follow chain alongside progress, chest
-   receipts and the incoming Church/Egress state. Current-map stairs retain the visit.
-   Unadmitted rooms, active guard/exorcism and Battle01 admission in progress remain outside
-   the settled recipe.
-   [Observation and private inputs](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation)
-5. **Tower traversal, Maps40/57/60/58 (implemented).** Save covers settled exterior control,
-   the F506-open Map57 staircase, the first five connected Map60 areas and the Map58 aftermath.
-   Cold Continue retains the live setup, F132, the F506 stair copies and the physical royal
-   followers. The prior completed-outcome recipes remain readable under their anchor gates.
-   Active battle/admission/outcome, the F999 frontiers, Map59 and Map56 remain outside this batch.
-   The source Ancient Tower Ascent refuge belongs to Map56.
-   [Observation and private inputs](opening-session-lifecycle.md#tower-save-and-continue-observation)
-6. **Galam interiors and drawbridge, Maps17/18.** Save only. Consume batch 2 and prove ordinary
-   reach from the F505 palace return and on the closed/open F611 bridge visits. Retain the actual
-   F661/F662 door/shortcut effects, F663 reentry copies and F611 layout. Cold-continue the F505
-   room and admitted bridge visits, then use the real stairs and exits and check a reachable
-   F137/F138 or F205/F206 receipt. Include a settled early prison visit only after verifying its
-   corresponding doors, four-companion or F73 Slade follow state, and next legal movement without
-   wake-up replay. Exclude active wake-up, passage staging, battle requests, F530 and the F999
-   gate.
-7. **Open Grans, Map66.** Save only on settled legal walking ground in the known southern and
-   north-Yeel/Hawel components. Consume the town/house return checks above. Scope the recipe to
-   admitted pre-voyage phase and traversal data. Retain follower state, F213, route flags, counters,
-   RNG and incoming Egress. Cold-continue a position in each component and take real town/house
-   transitions. Check an eligible F213 receipt and one applicable battle-request boundary.
-   Keep the enclosed Battle02 return on its existing recovery route until the party reaches
-   admitted ground. Reject pending battle/warp and leave northern/late areas, vehicles and the
-   southern shrine with their existing owners.
-8. **Quake town and docks, Maps4/44.** Save only in F640 quake town after F624 settles and in
-   ordinary F609/F506 pre-quake and F507 departure dock visits. Use the completed tower/castle
-   return or the applicable earlier dock corridor. Retain six quake layout copies, parked guards,
-   royal followers, F217 and shared F139/F140 dock receipts. Save the actual dock setup and keep
-   CURRENT stairs and the F640 return substitution. Cold-continue Map4, walk the real crack-safe
-   exit and return west to Map4. Cold-continue earlier and F507 dock visits, including the captain's
-   settled No/cancel, legal hold/deck stairs and a one-time receipt. Confirm Yes starts the existing
-   sequence once and refuses capture while it controls the scene. Exclude active quake/boarding,
-   Map73 handoff and Map14 cabin. Map4's source refuge supplies no active Church caller.
+| Visit | Evidence to retain when evaluating the shared mechanism |
+| --- | --- |
+| Maps17/18 Galam interiors and drawbridge | F505 palace return, F661/F662 doors and F663 reentry copies, F611 closed/open bridge, a reachable receipt and the physical follow state after prison staging. Ordinary stable control and snapshot continuation at those visits remain unverified. |
+| Map66 open Grans | Southern and north-Yeel/Hawel components, F213, movement/step counter, live followers and battle request. The enclosed Battle02 landing remains on its existing EGRESS recovery path. |
+| Map4 and Map44 quake town and docks | F624 completion, six layout copies, parked guards, royal followers and F217/F139/F140 receipts. Earlier and F507 dock setups, CURRENT stairs and the F640 substitution remain gameplay binding checks. A settled captain refusal and an active boarding transition exercise different save boundaries. |
+| Map41/42 southern shrine | The existing [played route](#play-the-southern-shrine) supplies same-map stairs and F133. Save/Continue there still needs the shared snapshot mechanism. |
 
-Map41/42 new location content stays with [#2020](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2020).
-Yeel F650 closure stays with [#2022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2022).
-Battle27+ and #1716 are outside these batches. The
-[source anchor table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/global/savepointmapcoords.asm)
-provides refuge coordinates. A field Continue recipe requires its own admitted landing and Church
-Record requires a real caller.
+These rows are coverage gaps and candidate controls for the shared acceptance. The
+[implementation slices](opening-session-lifecycle.md#mechanism-implementation-and-acceptance)
+select distinct recovery mechanisms instead of requiring a restart observation for every location.
+Unadmitted setups, new location content, Battle27+ and #1716 stay with their existing owners.
 
-### Save batch acceptance
-
-- Start from a compatible copied slot or controlled legal predecessor with initialized party
-  values. Enter through ordinary input. Use the actual Save entry and, where offered, talk to the
-  priest and choose Record after the normal service return. Inspect the preview and confirm
-  the slot. Use existing native input, state, projection and error observations. Keep inputs short.
-- Exit the writer. Use independent title Continue processes for the new ordinary and Record slots,
-  with no controlled start on the reader. Compare recorded progress and scene, then take the batch's
-  next ordinary input and exit or reentry. Check Record's committed F399/Egress values and the
-  refuge binding separately from the Continue landing.
-- Load a previously compatible slot in each candidate. Use the default/F609 Map3 anchored and
-  Yeel v3 cases across the town batches. Prefer an adjacent legacy recipe for the other batches.
-  If shared wire or compatibility handling changes, also load a representative existing battle
-  slot. These recipes keep their landing and accept the next ordinary input.
-- Seed an occupied disposable slot and compare primary and backup bytes after cancel or a
-  representative typed refusal. Check stale/busy capture and missing or mismatched required scene
-  admission at the affected boundary. Exercise the Church publication failure in both town batches
-  with the existing disposable-slot method. Compare live F399/Egress and verify usable field
-  controls after failure. Reuse the accepted storage evidence for wider atomicity and recovery.
-  [Storage and restart](../verification/host.md#opening-save-and-continue) · [Church failure witness](../verification/host.md#church-and-shared-save-calibration)
 
 ## Play the southern shrine
 

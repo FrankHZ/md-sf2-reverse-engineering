@@ -101,9 +101,19 @@ The saved visit keeps Kazin's real follow link, the diary, F135 and the original
 supports ordinary Save and cold Continue in the settled Maps19/20/21 visits. The saved scene
 keeps the loaded cast, completed choices, a storeroom receipt and the royal links separately
 from force membership. The restored upper room still uses the real CURRENT stairs.
-Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
-original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
-warn even after animation-only time.
+Settled [Ancient Tower visits](application/opening-session-lifecycle.md#tower-save-and-continue-observation)
+keep their loaded layout and cast through cold Continue in the admitted early areas. The older
+Battle01/07 return slots still land at their recorded outcome anchors. Text, choice, script and
+battle work retain their time owners. Follower convergence is bounded. Original standing cadence
+remains unknown and revision-based Quit may warn after animation-only time.
+
+**Designed, pending implementation.** The
+[settled field snapshot](application/opening-session-lifecycle.md#unified-settled-field-snapshots)
+will restore the live visit through one stable-input path. It retains the loaded setup, physical
+cast and layout, and preserves the separate Church refuge and normal transfer rules. New records
+need the snapshot reader. Current field and battle records keep their accepted readers. The
+[coverage table](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage) tracks
+delivered visits and remaining gaps. Regional recipe dispatch is paused.
 
 ## Battle continuation state
 
@@ -115,8 +125,9 @@ entry or replay awards. Actual engine behavior covers subsequent AI/actions/roun
 payments/once events and focused victory/defeat/Angel Wing returns, including the existing field v1
 save consumer. The [battle persistence agreement](application/battle-save-and-continue.md#implemented-domainapplication-boundary-a)
 owns admission, reproduction and the seven-encounter private profile's explicit known-context limit.
-The shared strict v1/v2 codec/store and ordinary system-menu Save/return, Save and Quit and title
-Continue are implemented for this boundary across the seven admitted encounters. Actual native
+The shared strict codec/store and ordinary system-menu Save/return, Save and Quit and title
+Continue are implemented for this boundary. The initial native observations cover seven encounters.
+The current battle formats are v2/v4/v5. Actual native
 restart compares complete saved semantics and both seeds before first input, then matched AI/round
 results; focused victory/defeat and admitted Battle02 Egress keep usable v1 field returns.
 The [native verification owner](verification/battle-save.md) distinguishes controlled preconditions,
@@ -221,7 +232,8 @@ Ketto and North Cave supplies were used in Battle26. The Creed chest supplied th
 in Battle22. [Recovery input, projection and Continue](domain/recovery-items-design.md#ordinary-input-observations)
 
 Deals/Repair, rare/broken sale support and full Map16 remain Unsupported for this caller. The selected
-Battle03–07 story connection is described above. No Map16 save eligibility or natural original timing/reach is claimed. The current
+Battle03–07 story connection is described above. The [Map16 acceptance](application/opening-session-lifecycle.md#galam-town-save-and-continue-observation)
+owns the subsequently delivered save boundary. Original timing and natural reach remain open. The current
 [service owner](application/session-and-programs.md#finite-galam-shop-transactions),
 [private boundary](content/profiles-and-trust.md#finite-galam-shop-admission),
 [rules/source](domain/gameplay-rules.md#finite-purchased-supplies-and-detox1) and
