@@ -10,7 +10,7 @@ observation. The [campaign item index](campaign-items.md) owns item lifecycles.
 | --- | --- | --- |
 | Evil Knuckles, Map5 F197 | **Confirmed** closed in early Yeel. The late piano opens the usable entrance to the chest area. | Late Grans return. A selected early chest row supplies a carry identity. The later equip caller depends on MMNK and cursed-weapon rules. |
 | Evil Shot, Map16 F200 | **Confirmed** closed to ordinary walking from the audited early entrances. The later north gate or northern overworld approach reaches the search area. | Late Grans return. Rohde's current BRGN class would qualify once a legitimate copy reaches him. |
-| Chirrup Sandals, Map17 F205 | **Inferred** ordinary pickup in the original at first prison control. The initial room has a clear approach and the faced item marker. | **Confirmed** ordinary Search, Bowie custody, Equip, field audio, v6 Continue and removal from the admitted prison checkpoint. Battle cue selection and Depot custody/appraisal have engine coverage. |
+| Chirrup Sandals, Map17 F205 | **Inferred** ordinary pickup in the original at first prison control. The initial room has a clear approach and the faced item marker. | **Confirmed** ordinary Search, Bowie custody, Equip, field audio, v6 Continue and removal from the admitted prison checkpoint. Battle05 inherits the worn ring and selects the mover's cue. Depot custody and appraisal have engine coverage. |
 
 ## Source and layout
 
@@ -191,6 +191,12 @@ begins after the wake-up, with a free slot and F205 clear.
    slot and compare the pose, F205 and worn word. A step Right still plays 99. Use
    Remove ring and step Left. The pack returns to its bare word and no command 99 is
    delivered. A repeat Search stays empty.
+4. On a separate Continue of the worn field slot, take the ordinary doors, warning,
+   passage, kitchen exit, rally and guard route to Battle05. Save from the first
+   settled Movement turn. The default step by ally 4 plays command 79. Cold Continue
+   the battle v2 slot, verify Bowie's worn word and use Stay at the other allied
+   turns. Bowie's step plays one command 99 with no audio error. Stop after that
+   step. [Prison escape and Battle05 entry](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
 
 `RingEquipmentTests` exercises battle movement selection and verifies that another
 wearer's ring has no effect on ordinary field walking. The authored Depot transaction
