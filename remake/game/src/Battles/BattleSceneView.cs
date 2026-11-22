@@ -97,6 +97,7 @@ internal sealed partial class BattleSceneView : Control
     internal void Present()
     {
         var state = _session.Current.BattleScene;
+        ArrangeCanvas();
         if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _attackSpell.Hide(); _phoenixWave.Reset(); _state = null; return; }
         if (state.IsFieldDeath) Hide(); else Show();
         PresentStatus(state);
@@ -221,7 +222,14 @@ internal sealed partial class BattleSceneView : Control
         catch (InvalidOperationException error) { Error = error.Message; }
     }
 
-    // Reading is real-time delivery. It cannot add mandatory HEAL work or RNG.
+    internal void RefreshGeometry()
+    {
+        if (_state is not { IsFieldDeath: false } state) return;
+        ArrangeCanvas();
+        _messagePanel.Arrange();
+        ArrangeStatus(state);
+    }
+
     private void ArrangeCanvas()
     {
         var viewport = GetViewportRect().Size;
@@ -233,7 +241,6 @@ internal sealed partial class BattleSceneView : Control
     {
         if (_state is not { RequiresAcknowledgement: true } state || Error is not null || _completed ||
             _suspended || !IsVisibleInTree() || !CanProcess() || Suppressed(state)) return null;
-        ArrangeCanvas();
         RefreshMessageHint(state);
         _revealed += delta * _settings.CharactersPerSecond;
         if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
@@ -257,7 +264,6 @@ internal sealed partial class BattleSceneView : Control
             _completed = true;
             return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        ArrangeCanvas();
         RefreshMessageHint(state);
         _elapsed += delta;
         if (Suppressed(state))
@@ -470,17 +476,22 @@ internal sealed partial class BattleSceneView : Control
         string role = state.FriendlySupport && actor.Actor != state.Actor ? "battle.target" : "battle.acting";
         _actorCard.Present(actor, ActorName(actor.Actor), GameText.Get(role));
         _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), GameText.Get("battle.target"));
-        Vector2 Place(BattleActorState unit, Vector2 size)
+        ArrangeStatus(state);
+    }
+
+    private void ArrangeStatus(BattleSceneState state)
+    {
+        Vector2 Place(ActorRef unit, Vector2 size)
         {
-            bool recoveryTarget = (state.Spell is not null || state.Item is not null || state.FriendlySupport) && unit.Actor != state.Actor;
+            bool recoveryTarget = (state.Spell is not null || state.Item is not null || state.FriendlySupport) && unit != state.Actor;
+            bool ally = _session.Current.Battle.GetActor(unit).IsAlly;
             float bottom = _messagePanel.IsVisibleInTree() ? _messagePanel.Position.Y : GetViewportRect().Size.Y - 32;
-            if (unit.IsAlly && !recoveryTarget)
+            if (ally && !recoveryTarget)
                 return new(GetViewportRect().Size.X - StoryTheme.GameplayInset - size.X, StoryTheme.BelowMenu);
-            return new(StoryTheme.GameplayInset, unit.IsAlly ? StoryTheme.GameplayInset : MathF.Max(32, bottom - size.Y - 16));
+            return new(StoryTheme.GameplayInset, ally ? StoryTheme.GameplayInset : MathF.Max(32, bottom - size.Y - 16));
         }
-        _actorCard.Position = Place(actor, _actorCard.RequestedSize); _actorCard.Size = _actorCard.RequestedSize;
-        if (target is not null) _targetCard.Position = Place(target, _targetCard.RequestedSize);
-        _targetCard.Size = _targetCard.RequestedSize;
+        if (_actorCard.Actor is { } actor) _actorCard.Position = Place(actor, _actorCard.RequestedSize);
+        if (_targetCard.Actor is { } target) _targetCard.Position = Place(target, _targetCard.RequestedSize);
     }
 
     private string Message(BattleSceneState state)
@@ -745,6 +756,7 @@ internal sealed partial class BattleSceneView : Control
             step = field.FieldStep, facing = field.FieldFacing, delay = field.FieldDelay } : null,
         elapsed = _elapsed, completed = _completed, animationIndex = _animationIndex, frameIndex = _frameIndex, reactionState = _logicalReaction,
         displayedAlly = _state?.DisplayedAlly?.Value, displayedEnemy = _state?.DisplayedEnemy?.Value,
+        canvas = BattleMapViewport.Rectangle(new Rect2(_canvas.Position, _canvas.Scale * new Vector2(256, 224))),
         enemyVisible = _enemy.Visible, actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind, supportSpell = _state?.SupportSpell, silencedSpell = _state?.SilencedSpell,
         reactionAmount = _state?.Amount,
         item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,

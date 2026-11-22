@@ -24,19 +24,17 @@ func feedback(label: String, expect_range: bool) -> bool:
     await frames(2)
     var s := sample(label)
     var b: Dictionary = samples[-1].board
-    var cue: Dictionary = b.selection
+    var cue: Dictionary = b.cellCursor
     if not check(b.cellSize == 96 and b.scale == 1 and b.clip, "Retained 96px clipped board"): return false
-    if not check(cue.visible and cue.actor == s.actor and cue.draws > 0 and cue.z == 3,
-            label + ": actual selected actor cue drawn above terrain"): return false
-    if not check(is_equal_approx(cue.rect.width, 96) and is_equal_approx(cue.rect.height, 96) and cue.stroke == "ffffffff"
-            and cue.outlineWidth > cue.strokeWidth and cue.inset > cue.outlineWidth / 2,
-            label + ": steady inset white brackets with contrasting outline"): return false
-    if not check(s.previewNodes == 1 and b.children.filter(func(n): return n.name == "Selection").size() == 1
-            and b.children.filter(func(n): return n.z == 3).size() == 1 + b.targets.size(),
-            label + ": one actor cue, no path breadcrumb nodes"): return false
-    var actor: Dictionary = s.actors.filter(func(a): return a.id == s.actor)[0]
-    if not check(is_equal_approx(cue.rect.x, actor.nodeX - 2) and is_equal_approx(cue.rect.y, actor.nodeY - 4),
-            label + ": cue follows the actual actor projection"): return false
+    if not check(b.children.filter(func(n): return n.name == "CellCursor").size() == 1 and cue.z == 3,
+            label + ": one shared cursor above terrain"): return false
+    if not check(s.previewNodes == (1 if expect_range else 0) and
+        cue.visible == (expect_range or s.menu.page == "Target"),label+": cursor follows decision lifetime"): return false
+    if expect_range:
+        var actor: Dictionary = s.actors.filter(func(a): return a.id == s.actor)[0]
+        if not check(b.cursorRole == "Movement" and cue.draws > 0 and cue.rect.width == 96 and cue.rect.height == 96 and
+            is_equal_approx(cue.rect.x,b.board.x+actor.nodeX-2) and is_equal_approx(cue.rect.y,b.board.y+actor.nodeY-4),
+            label + ": cursor follows the actual actor projection"): return false
     for a in s.actors:
         if a.sprite != null and a.sprite.visible:
             if not check(a.sprite.modulate == "ffffffff" and a.sprite.texturePresent,
@@ -108,11 +106,11 @@ func run() -> void:
     if not await feedback("cancel-restored", true): return
     if not check(state().previewX == initial.previewX and state().previewY == initial.previewY
             and same_resources(initial,state()), "Cancel restores origin without resource or RNG effects"): return
-    var stable_cue: Dictionary = board().selection
+    var stable_cue: Dictionary = board().cellCursor
     var idle_revision = state().revision
     await create_timer(0.7).timeout
-    if not check(board().selection.rect == stable_cue.rect and board().selection.visible
-            and board().selection.stroke == stable_cue.stroke and state().revision == idle_revision,
+    if not check(board().cellCursor.rect == stable_cue.rect and board().cellCursor.visible
+            and board().cellCursor.drawn == stable_cue.drawn and state().revision == idle_revision,
             "Idle cue stays visible and steady without additional logical progress"): return
     # Try one direction until the ordinary range guard rejects; keep the last accepted endpoint.
     var rejected := false
@@ -153,13 +151,15 @@ func run() -> void:
     if not check(first.candidate != second.candidate and second.target == second.candidate,
             "Actual accepted target switches"): return
     var target_actor: Dictionary = second.actors.filter(func(a): return a.id == second.target)[0]
-    var target_cell := Rect2(target_actor.nodeX-2, target_actor.nodeY-4, 96, 96)
-    if not check(board().targets.size() == 4 and board().targets.all(func(t): return t.z == 3 \
-            and target_cell.encloses(Rect2(t.rect.x,t.rect.y,t.rect.width,t.rect.height))),
-            "Cyan target border follows only the selected target"): return
+    var terrain := board()
+    var cursor: Dictionary = terrain.cellCursor.rect
+    if not check(terrain.cursorRole == "Target" and
+        is_equal_approx(cursor.x,terrain.board.x+target_actor.nodeX-2) and
+        is_equal_approx(cursor.y,terrain.board.y+target_actor.nodeY-4),
+        "Shared target cursor follows only the selected target"): return
     await tap(KEY_ESCAPE)
     if not await feedback("target-back", false): return
-    if not check(state().menu.page == parent_page and board().targets.is_empty(), "Target Back clears target border and returns to list"): return
+    if not check(state().menu.page == parent_page and not board().cellCursor.visible, "Target Back clears target cursor and returns to list"): return
     await tap(KEY_ESCAPE)
     await tap(KEY_ESCAPE)
     if not await settled(): return

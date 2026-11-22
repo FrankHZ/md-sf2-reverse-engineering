@@ -13,7 +13,7 @@ internal sealed partial class BattleMovementRangeView : Node2D
     private int _draws;
     internal bool Steady { get; set; }
     private double _pulse;
-    private float Alpha => Steady ? 0.605f : 0.605f + 0.075f * MathF.Sin((float)(_pulse * Math.Tau / 1.2));
+    private float Alpha => Steady ? 0.29f : 0.29f + 0.045f * MathF.Sin((float)(_pulse * Math.Tau / 1.2));
     public override void _Process(double delta)
     { if (IsVisibleInTree() && !Steady) { _pulse += delta; QueueRedraw(); } }
     internal void Present(BattleMovementRange? range)
@@ -27,8 +27,9 @@ internal sealed partial class BattleMovementRangeView : Node2D
         if (_range is null) return;
         _draws++;
         _drawn = _range;
+        var stops = _range.Destinations.ToHashSet();
         foreach (var tile in _range.ReachableCells)
-            BattleActionRangeView.Tile(this, tile, new("78e9f3"), Alpha);
+            BattleActionRangeView.Tile(this, tile, new("78e9f3"), stops.Contains(tile) ? Alpha : 0);
     }
     internal object Observe() => new
     {

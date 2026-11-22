@@ -233,40 +233,40 @@ func battle_flow(is_zh: bool) -> void:
     if not check(menu.page == "Items" and menu.layout.rows.size() == 4, "four battle item slots"):
         return
     var layout: Dictionary = menu.layout
-    description("battle weapon", layout.itemDescription, layout.description,
+    description("battle weapon", layout.reader, layout.description,
         [layout.list, layout.actor], "装备后" if is_zh else "When equipped")
     await press(KEY_DOWN)
     var ring: Dictionary = read().menu.layout
-    description("battle damaged ring", ring.itemDescription, ring.description,
+    description("battle damaged ring", ring.reader, ring.description,
         [ring.list, ring.actor], "道具会消失" if is_zh else "destroys it")
-    check(ring.itemDescription.rect == layout.itemDescription.rect and ring.navigation == layout.navigation,
+    check(ring.reader.rect == layout.reader.rect and ring.navigation == layout.navigation,
         "the long equipment description retains its panel and navigation")
     await press(KEY_DOWN)
     var item: Dictionary = read().menu.layout
-    description("battle Herb", item.itemDescription, item.description,
+    description("battle Herb", item.reader, item.description,
         [item.list, item.actor], "10 点 HP" if is_zh else "10 HP")
     check(item.list == layout.list and item.rowRects == layout.rowRects and item.scroll == layout.scroll and
-        item.itemDescription.rect == layout.itemDescription.rect and item.navigation == layout.navigation,
+        item.reader.rect == layout.reader.rect and item.navigation == layout.navigation,
         "Battle Item rows, Back, scroll and reading bounds are fixed")
     await press(KEY_F10)
     var system := host.find_child("SystemMenuView", true, false) as Control
-    var reading := view.find_child("CommandMenu", true, false).find_child("ItemDescription", true, false)
+    var reading := view.find_child("CommandMenu", true, false).find_child("ReadingArea", true, false)
     if check(system != null and system.is_visible_in_tree(), "system Menu covers the open Item page"):
         check(canvas_layer(system) > canvas_layer(reading), "host system prompt draws above item descriptions")
         await press(KEY_DOWN)
         check(read().menu.row == 2 and battle_resources(read()) == baseline, "covered item list has no input")
         await press(KEY_ESCAPE)
-        check(read().menu.row == 2 and read().menu.layout.itemDescription.rect == item.itemDescription.rect,
+        check(read().menu.row == 2 and read().menu.layout.reader.rect == item.reader.rect,
             "Resume restores item focus and layout")
     await press(KEY_ENTER)
     if check(read().menu.page == "Target", "Item Confirm enters real target choice"):
-        check(not read().menu.layout.itemDescription.visible, "target confirmation has its own controls")
+        check(read().menu.layout.reader.text != item.reader.text, "target reader replaces selected-offer prose")
         await press(KEY_ESCAPE)
         check(read().menu.page == "Items" and read().menu.row == 2 and
-            read().menu.layout.itemDescription.text == item.itemDescription.text, "target Back restores item focus")
+            read().menu.layout.reader.text == item.reader.text, "target Back restores item focus")
     await press(KEY_DOWN)
     var empty: Dictionary = read().menu.layout
-    description("battle empty", empty.itemDescription, empty.description, [empty.list, empty.actor],
+    description("battle empty", empty.reader, empty.description, [empty.list, empty.actor],
         "栏" if is_zh else "slot is empty")
     await press(KEY_ENTER)
     check(read().menu.page == "Items" and battle_resources(read()) == baseline, "empty slot submits no gameplay")

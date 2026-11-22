@@ -7,22 +7,27 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // Product UI geometry uses physical window units, independent of map tiles and source pixels.
 internal sealed partial class BattleMenuLayout : Control
 {
-    private const int PanelInset = 16, DescriptionGap = 9;
+    private const int PanelInset = 16, Gap = 12;
     internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true, DecisionHeader = true };
     internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true, DecisionHeader = true };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Detail = Text("Detail", 30);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
-    private readonly UI.ItemDescriptionView _itemDescription = new() { ReadingHeight = 240, Visible = false };
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
-    private readonly Panel _commandsPanel = new() { Name = "CommandsPanel", MouseFilter = MouseFilterEnum.Ignore };
-    private readonly Panel _group = new() { Name = "DecisionGroup", MouseFilter = MouseFilterEnum.Ignore };
-    private UI.CompactCommandList _commandList = null!;
-    internal readonly UI.DiamondCommandButton[] Commands = [new("Attack", "battle.command.attack", "command-menu"), new("Magic", "battle.command.magic", "command-menu"),
-        new("Item", "battle.command.item", "command-menu"), new("Stay", "battle.command.stay", "command-menu")];
+    private readonly Control _diamond = new() { Name = "Commands", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly Label[] _captions = [Text("AttackCaption", 24), Text("MagicCaption", 24), Text("ItemCaption", 24), Text("StayCaption", 24)];
+    internal readonly UI.DiamondCommandButton[] Commands = [
+        new("Attack", "battle.command.attack", "command-menu") { CaptionBeside = true },
+        new("Magic", "battle.command.magic", "command-menu") { CaptionBeside = true },
+        new("Item", "battle.command.item", "command-menu") { CaptionBeside = true },
+        new("Stay", "battle.command.stay", "command-menu") { CaptionBeside = true },
+    ];
+    private readonly ScrollContainer _reading = new() { Name = "ReadingArea", MouseFilter = MouseFilterEnum.Ignore,
+        HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None,
+        SizeFlagsVertical = SizeFlags.ExpandFill };
     private readonly PanelContainer _context = Frame("ContextPanel");
     private readonly PanelContainer _detail = Frame("DescriptionPanel");
     private readonly PanelContainer _list = Frame("ChoicePanel");
@@ -35,14 +40,17 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly UI.IdentityIcons Icons = new();
     private string[] _labels = [];
     private int _selected;
-    private Vector2 _descriptionSize;
-    private Vector2 _contextSize;
-    private bool _commandHint;
-    private Vector2 _commandFooter; // Natural reading width and height at the command-column width.
     private Rect2 _subject;
+    private bool _targeting, _decisionContext;
+    private float _diamondWidth;
+    private bool _canConfirm;
     internal Action InvalidatePointer { get; set; } = () => { };
-    internal bool Covers(Vector2 p) => new Control[] { _group, Actor, Target, _context, _commandsPanel, _list, _detail }
-        .Any(c => c.IsVisibleInTree() && c.GetGlobalRect().HasPoint(p));
+    internal bool Covers(Vector2 point) =>
+        Covers(Actor, point) || Covers(Target, point) || Covers(_context, point) || Covers(_list, point) ||
+        Covers(_detail, point) || HitCommand(point).Id is not null;
+
+    private static bool Covers(Control control, Vector2 point) =>
+        control.IsVisibleInTree() && control.GetGlobalRect().HasPoint(point);
 
     internal void AvoidSubject(Rect2 rectangle)
     {
@@ -63,25 +71,27 @@ internal sealed partial class BattleMenuLayout : Control
         var insets = (StyleBoxFlat)Theme.GetStylebox("panel", "PanelContainer").Duplicate();
         insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = PanelInset;
         foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
-        var contentStyle = (StyleBoxFlat)insets.Duplicate();
-        contentStyle.BgColor = Colors.Transparent; contentStyle.ShadowSize = 0;
-        contentStyle.BorderWidthLeft = contentStyle.BorderWidthRight = contentStyle.BorderWidthTop = contentStyle.BorderWidthBottom = 0;
-        _list.AddThemeStyleboxOverride("panel", contentStyle);
-        _commandsPanel.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
         MouseFilter = MouseFilterEnum.Ignore;
-        AddChild(_group);
         AddChild(Actor); AddChild(Target);
         AddChild(_context); _context.AddChild(Context);
-        _commandList = new(Commands) { Name = "Commands", InvalidatePointer = () => InvalidatePointer() };
-        AddChild(_commandsPanel); _commandsPanel.AddChild(_commandList);
-        _commandsPanel.ItemRectChanged += () => InvalidatePointer();
+        AddChild(_diamond);
+        for (int i = 0; i < Commands.Length; i++)
+        {
+            _diamond.AddChild(Commands[i]); _diamond.AddChild(_captions[i]);
+            Commands[i].ItemRectChanged += () => InvalidatePointer();
+            _captions[i].ItemRectChanged += () => InvalidatePointer();
+        }
         AddChild(_list); _list.AddChild(_scroll); _scroll.AddChild(_rows);
         _scroll.GetVScrollBar().FocusMode = FocusModeEnum.None;
         _rows.AddThemeConstantOverride("separation", 8);
         AddChild(_detail);
-        var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; column.AddThemeConstantOverride("separation", DescriptionGap);
-        _detail.AddChild(column); column.AddChild(Heading); column.AddChild(Detail); column.AddChild(_itemDescription); column.AddChild(Help);
-        column.AddChild(_navigation);
+        var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        column.AddThemeConstantOverride("separation", Gap);
+        _detail.AddChild(column); column.AddChild(_reading); column.AddChild(_navigation);
+        var text = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        text.AddThemeConstantOverride("separation", 8);
+        _reading.AddChild(text); text.AddChild(Heading); text.AddChild(Detail); text.AddChild(Help);
+        _reading.GetVScrollBar().FocusMode = FocusModeEnum.None;
         foreach (var control in new[] { _previous, _next, _confirm, _back })
         {
             control.CustomMinimumSize = new(0, 44);
@@ -89,11 +99,8 @@ internal sealed partial class BattleMenuLayout : Control
             _navigation.AddChild(control);
             control.ItemRectChanged += () => InvalidatePointer();
         }
-
-        // Wrapped text can shrink after a container sort. Reapply the requested size then;
-        // otherwise Control retains the earlier (possibly very tall) minimum-size clamp.
-        _detail.MinimumSizeChanged += () => Arrange(Size);
-        _context.MinimumSizeChanged += () => _context.Size = _contextSize;
+        Actor.MinimumSizeChanged += () => Arrange(Size);
+        Target.MinimumSizeChanged += () => Arrange(Size);
         _list.Hide();
     }
 
@@ -102,7 +109,6 @@ internal sealed partial class BattleMenuLayout : Control
     public override void _Process(double delta)
     {
         if (!IsVisibleInTree()) return;
-        Arrange(Size);
         foreach (var command in Commands) command.AdvanceFocus(delta);
     }
 
@@ -114,83 +120,86 @@ internal sealed partial class BattleMenuLayout : Control
     internal void Arrange(Vector2 size)
     {
         Size = size;
-        const float margin = UI.StoryTheme.GameplayInset, inset = PanelInset;
-        var header = Target.Visible ? Target : Actor;
-        float width = Mathf.Min(Mathf.Max(560, header.RequestedSize.X), size.X - margin * 2);
-        float right = size.X - margin - width;
-        // Layout A: live acting vitals head the same right-hand command column.
-        // Child offers replace the root rows at the same origin; the board remains independent.
-        Actor.Visible = !Target.Visible;
-        Actor.Position = new(right, UI.StoryTheme.BelowMenu); Actor.Size = new(Mathf.Max(width, Actor.RequestedSize.X), Actor.RequestedSize.Y);
-        if (Actor.Size.X > width) Actor.Position = new(size.X - margin - Actor.Size.X, UI.StoryTheme.BelowMenu);
-        Target.Position = new(size.X - margin - Mathf.Max(width, Target.RequestedSize.X), UI.StoryTheme.BelowMenu);
-        Target.Size = new(Mathf.Max(width, Target.RequestedSize.X), Target.RequestedSize.Y);
-        _contextSize = new(300, 110); _context.Position = new(margin, 96); _context.Size = _contextSize;
-        float rowsTop = Actor.Position.Y + Actor.Size.Y + 8;
-        _commandList.Position = new(inset, inset); _commandList.Arrange(width - inset * 2);
-        _commandsPanel.Position = new(right, rowsTop);
-        _commandsPanel.Size = new(width, _commandList.RequestedHeight + inset * 2);
-        _list.Position = new(right, rowsTop);
-        // Root commands keep fixed hit regions. Let a long refusal use the remaining
-        // reading width below them so its mapped actions still fit at native 1080p.
-        float footerWidth = width;
-        if (_commandsPanel.Visible && rowsTop + _commandsPanel.Size.Y + 12 + _commandFooter.Y > size.Y - margin)
-            footerWidth = Mathf.Max(width, Mathf.Min(_commandFooter.X, Mathf.Min(1440, size.X - margin * 2)));
-        _descriptionSize = new(footerWidth, 0);
-        SetTextWidths();
-        float descriptionHeight = _detail.GetCombinedMinimumSize().Y;
-        // Short lists need only their actual rows. Longer lists keep the existing scroll
-        // consumer and reserve measured space for the full current reason and mapped footer.
-        float availableRows = size.Y - margin - rowsTop - 12 - descriptionHeight;
-        _list.Size = new(width, Mathf.Max(112, Mathf.Min(availableRows,
-            Mathf.Min(_commandsPanel.Size.Y, _rows.GetCombinedMinimumSize().Y + inset * 2))));
-        _group.Position = new(right, header.Position.Y);
-        float groupBottom = _commandsPanel.Visible ? _commandsPanel.Position.Y + _commandsPanel.Size.Y :
-            _list.Visible ? _list.Position.Y + _list.Size.Y : header.Position.Y + header.Size.Y;
-        _group.Size = new(width, groupBottom - _group.Position.Y);
-        float detailTop = _commandsPanel.Visible ? _commandsPanel.Position.Y + _commandsPanel.Size.Y + 12 :
-            _list.Visible ? _list.Position.Y + _list.Size.Y + 12 :
-            Target.Visible ? Target.Position.Y + Target.Size.Y + 12 : rowsTop;
-        _descriptionSize = new(footerWidth, descriptionHeight);
-        _detail.Position = new(size.X - margin - footerWidth, detailTop); _detail.Size = _descriptionSize;
-        SetTextWidths();
-    }
-
-    internal void ShowCommands(bool visible)
-    {
-        _commandsPanel.Visible = visible;
-        _commandList.Present(Commands.Select(command => command.Caption +
-            (command.Available ? "" : GameText.Get("battle.unavailable-tag"))).ToArray());
-        Arrange(Size);
-    }
-
-    internal void ShowCommandHint(bool compact, string? itemDescription)
-    {
-        _commandHint = compact;
-        _itemDescription.Present(itemDescription);
-        Detail.Visible = itemDescription is null && (!compact || !string.IsNullOrWhiteSpace(Detail.Text));
-        Help.Visible = true;
-        _commandFooter = compact && Detail.Visible ? MeasureCommandFooter() : Vector2.Zero;
-        Arrange(Size);
-    }
-
-    private Vector2 MeasureCommandFooter()
-    {
-        // Measure the normal column without resizing any live hit region during a press.
-        float inner = _commandsPanel.Size.X - 2 * PanelInset;
-        float height = 2 * PanelInset + _navigation.GetMinimumSize().Y + 3 * DescriptionGap;
-        float readingWidth = inner;
-        foreach (var label in new[] { Heading, Detail, Help })
+        float margin = UI.StoryTheme.GameplayInset, top = UI.StoryTheme.BelowMenu;
+        var card = _targeting ? Target : Actor;
+        float width = Mathf.Max(560, card.Visible ? card.RequestedSize.X : 0);
+        width = Mathf.Min(width, size.X - margin * 2);
+        float height = card.Visible ? Mathf.Max(card.RequestedSize.Y, card.GetCombinedMinimumSize().Y) : 0;
+        float right = size.X - margin - width, bottom = size.Y - margin;
+        float controlsTop = top + (card.Visible ? height + Gap : 0);
+        // Allocate the reader once per phase and viewport. The selected offer can
+        // change its scroll content without moving the controls or the footer.
+        float footerHeight = _list.Visible ? 304 : _diamond.Visible ? 260 : _targeting ? 280 : 228;
+        float detailTop = bottom - footerHeight;
+        var protection = _subject.HasArea() ? _subject.Grow(16) : default;
+        bool alternate = protection.HasArea() && new Rect2(right, top, width, bottom - top).Intersects(protection);
+        float x = alternate ? margin : right;
+        if (card.Visible)
         {
-            using var paragraph = new TextParagraph { Width = inner, BreakFlags = TextServer.LineBreakFlag.Mandatory |
-                TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive };
-            var font = label.GetThemeFont("font");
-            int fontSize = label.GetThemeFontSize("font_size");
-            paragraph.AddString(label.Text, font, fontSize);
-            height += paragraph.GetSize().Y + (paragraph.GetLineCount() - 1) * label.GetThemeConstant("line_spacing");
-            readingWidth = Mathf.Max(readingWidth, label.Text.Split('\n').Max(line => font.GetStringSize(line, fontSize: fontSize).X));
+            card.Position = new(x, top);
+            card.Size = new(width, height);
         }
-        return new(2 * PanelInset + Mathf.Ceil(readingWidth), height);
+        // Round/gold owns the upper left. The space below is reserved for #2065.
+        _context.Size = new(300, 68);
+        _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
+        _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
+        _diamond.Position = new(x, controlsTop);
+        if (_diamond.Visible && _diamondWidth != width) ArrangeDiamond(width);
+        _list.Position = new(x, controlsTop);
+        _list.Size = new(width, Mathf.Max(0, detailTop - controlsTop - Gap));
+        _detail.Position = new(x, detailTop);
+        _detail.Size = new(width, footerHeight);
+        foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, width - 164), -1);
+    }
+
+    private void ArrangeDiamond(float width)
+    {
+        // The helper owns the four square locations. Center their group in the
+        // column, leaving label space at the outside edges.
+        _diamondWidth = width;
+        UI.DiamondMenuGeometry.Arrange(_diamond, Commands);
+        _diamond.Size = new(width, UI.DiamondMenuGeometry.Size.Y);
+        var offset = new Vector2((width - UI.DiamondMenuGeometry.Size.X) / 2, 0).Round();
+        for (int i = 0; i < Commands.Length; i++)
+        {
+            var button = Commands[i];
+            button.Position += offset;
+            var caption = _captions[i];
+            float x = i == 1 ? 0 : button.Position.X + button.Size.X + 8;
+            float captionWidth = i == 1 ? button.Position.X - 8 : width - x;
+            caption.HorizontalAlignment = i == 1 ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            caption.VerticalAlignment = VerticalAlignment.Center;
+            const int captionHeight = 48;
+            // Keep the top and bottom captions out of the neighboring side slots' hit area.
+            float y = button.Position.Y + (i == 0 ? 8 : i == 3 ? button.Size.Y - captionHeight - 8 :
+                (button.Size.Y - captionHeight) / 2);
+            caption.Position = new(x, y);
+            caption.Size = new(captionWidth, captionHeight);
+        }
+    }
+
+    internal void ShowDecision(bool target, bool main, bool context)
+    {
+        _targeting = target;
+        _decisionContext = context;
+        _diamond.Visible = main;
+        for (int i = 0; i < Commands.Length; i++)
+        {
+            var command = Commands[i];
+            _captions[i].Text = command.Caption;
+            _captions[i].Modulate = command.Selected ? UI.StoryTheme.Selected :
+                command.Available ? Colors.White : UI.StoryTheme.Unavailable;
+        }
+        Heading.Visible = !main;
+        Help.Visible = true;
+        Arrange(Size);
+    }
+
+    internal void PresentDetail(string text)
+    {
+        if (Detail.Text != text) _reading.ScrollVertical = 0;
+        Detail.Text = text;
+        Detail.Visible = !string.IsNullOrWhiteSpace(text);
     }
 
     internal void ShowNavigation(bool visible, bool target, bool commit, bool canConfirm)
@@ -198,6 +207,7 @@ internal sealed partial class BattleMenuLayout : Control
         _previous.Text = GameText.Get("battle.previous"); _next.Text = GameText.Get("battle.next");
         _confirm.Text = GameText.Get("battle.confirm"); _back.Text = GameText.Get("battle.back");
         _navigation.Visible = visible;
+        _canConfirm = canConfirm;
         _previous.Visible = _next.Visible = target;
         _confirm.Visible = target || commit;
         _confirm.AddThemeColorOverride("font_color", canConfirm ? UI.StoryTheme.Selected : UI.StoryTheme.Unavailable);
@@ -206,9 +216,9 @@ internal sealed partial class BattleMenuLayout : Control
     internal (string? Id, Rect2 Rect) Hit(Vector2 position)
     {
         foreach (var control in new[] { _previous, _next, _confirm, _back })
-            if (control.IsVisibleInTree() && control.GetGlobalRect().HasPoint(position)) return (control.Name.ToString(), control.GetGlobalRect());
-        var command = _commandList.Hit(position);
-        if (command.Index >= 0) return ($"command:{command.Index}", command.Rect);
+            if ((control != _confirm || _canConfirm) && Covers(control, position)) return (control.Name.ToString(), control.GetGlobalRect());
+        var command = HitCommand(position);
+        if (command.Id is not null) return command;
         if (_list.IsVisibleInTree() && _scroll.GetGlobalRect().HasPoint(position))
             for (int i = 0; i < _rowLabels.Count; i++)
             {
@@ -218,24 +228,23 @@ internal sealed partial class BattleMenuLayout : Control
         return (null, default);
     }
 
-    internal bool Scroll(Vector2 position, int direction)
+    private (string? Id, Rect2 Rect) HitCommand(Vector2 position)
     {
-        if (_itemDescription.Wheel(position, direction * 80)) return true;
-        if (!_list.IsVisibleInTree() || !_list.GetGlobalRect().HasPoint(position)) return false;
-        _scroll.ScrollVertical += direction * 80;
-        return true;
+        if (!_diamond.IsVisibleInTree()) return (null, default);
+        for (int i = 0; i < Commands.Length; i++)
+        {
+            if (Covers(Commands[i], position)) return ($"command:{i}", Commands[i].GetGlobalRect());
+            if (Covers(_captions[i], position)) return ($"command:{i}", _captions[i].GetGlobalRect());
+        }
+        return (null, default);
     }
 
-    private void SetTextWidths()
+    internal bool Scroll(Vector2 position, int direction)
     {
-        Context.CustomMaximumSize = new(Mathf.Max(1, _contextSize.X - 28), -1);
-        foreach (var label in new[] { Heading, Detail, Help })
-        {
-            float width = Mathf.Max(1, _descriptionSize.X - 32);
-            label.CustomMinimumSize = new(width, 0);
-            label.CustomMaximumSize = new(width, -1);
-        }
-        foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, _list.Size.X - 48 - 108), -1);
+        var region = Covers(_reading, position) ? _reading : Covers(_scroll, position) ? _scroll : null;
+        if (region is null) return false;
+        region.ScrollVertical += direction * 80;
+        return true;
     }
 
     internal void ShowRows(string[] labels, bool[] enabled, int selected, bool visible, string?[] identities)
@@ -273,8 +282,6 @@ internal sealed partial class BattleMenuLayout : Control
             if (enabled[i] && i != selected) _rowLabels[i].RemoveThemeColorOverride("font_color");
             else _rowLabels[i].AddThemeColorOverride("font_color", !enabled[i] ? UI.StoryTheme.Unavailable : UI.StoryTheme.Selected);
         }
-        SetTextWidths();
-        Arrange(Size);
         _selected = selected;
         if (changed && visible && _rowLabels.Count > selected && selected >= 0) Callable.From(ScrollToSelection).CallDeferred();
     }
@@ -286,25 +293,30 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal object Observe() => new
     {
-        decisionGroup = BattleMapViewport.Rectangle(_group.GetGlobalRect()),
-        commandList = _commandList.Observe(), commandPanel = BattleMapViewport.Rectangle(_commandsPanel.GetGlobalRect()),
+        diamond = new { visible = _diamond.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_diamond.GetGlobalRect()) },
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
+        descriptionVisible = _detail.IsVisibleInTree(),
+        reader = new { rect = BattleMapViewport.Rectangle(_reading.GetGlobalRect()), scroll = _reading.ScrollVertical,
+            visible = Detail.IsVisibleInTree(), text = Detail.Text, fontSize = Detail.GetThemeFontSize("font_size"),
+            minimumHeight = Detail.GetMinimumSize().Y,
+            maximum = _reading.GetVScrollBar().MaxValue - _reading.GetVScrollBar().Page },
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
-        actorCard = Actor.Observe(), targetCard = Target.Observe(),
-        heading = Heading.Text, detail = Detail.Text, help = Help.Text,
-        commandHint = _commandHint, helpVisible = Help.Visible, itemDescription = _itemDescription.Observe(),
-        descriptionLabels = new[] { Heading, Detail, Help }.Where(label => label.Visible).Select(label => new { text = label.Text,
+        contextVisible = _context.IsVisibleInTree(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
+        heading = Heading.Text, detail = Detail.Text, help = Help.Text, helpVisible = Help.IsVisibleInTree(),
+        descriptionLabels = new[] { Heading, Detail, Help }.Where(label => label.IsVisibleInTree()).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),
-        listVisible = _list.Visible, list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
+        listVisible = _list.IsVisibleInTree(), list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
         rows = _rowLabels.Select(label => label.Text).ToArray(), selectedRow = _selected,
-        rowRects = _rowLabels.Select(label => BattleMapViewport.Rectangle(label.GetGlobalRect())).ToArray(),
+        rowRects = _rowControls.Select(row => BattleMapViewport.Rectangle(row.GetGlobalRect().Intersection(_scroll.GetGlobalRect()))).ToArray(),
         iconMode = Icons.Mounted ? "bound" : "unmounted-text",
         icons = _rowIcons.Select(icon => icon.Observe()).ToArray(),
         scroll = _scroll.ScrollVertical,
         navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
-            visible = control.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
-        commands = Commands.Select(button => new { id = button.Identity, label = button.Caption, selected = button.Selected, enabled = button.Available,
-            rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), art = button.ObserveArt() }).ToArray(),
+            visible = control.IsVisibleInTree(), enabled = control != _confirm || _canConfirm, rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
+        commands = Commands.Select((button, index) => new { id = button.Identity, label = _captions[index].Text,
+            visible = button.IsVisibleInTree(), selected = button.Selected, enabled = button.Available,
+            rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), caption = BattleMapViewport.Rectangle(_captions[index].GetGlobalRect()),
+            art = button.ObserveArt() }).ToArray(),
     };
 
     // Field/battle handoff reparents this same view. Retain its borrowed textures until

@@ -14,15 +14,18 @@ internal sealed partial class BattleActionRangeView : Node2D
     private bool _steady;
     private double _pulse;
     private int _draws;
+    internal void Clear() { _reach = []; _effect = []; Hide(); QueueRedraw(); }
+
     internal void Present(BattleActionChoice? offer, SessionSnapshot current, ActorRef? candidate, bool steady)
     {
-        _reach = []; _effect = []; _steady = steady;
+        _steady = steady;
         if (offer is { MinimumRange: { } min, MaximumRange: { } max } && current.Selection is { } selection)
         {
             var definition = current.Battle.Definition;
             var origin = selection.Preview.Destination;
             var cells = Enumerable.Range(0, definition.Height).SelectMany(y =>
                 Enumerable.Range(0, definition.Width).Select(x => new MapPosition(x, y))).ToArray();
+            _effect = [];
             _reach = cells.Where(p => Distance(origin, p) >= min && Distance(origin, p) <= max &&
                 definition.Terrain[p.Y * 48 + p.X].Surface != TerrainSurface.Barrier).ToArray();
             if (candidate is { } id && offer.Targets.Any(t => t.Enabled && t.Actor == id))
@@ -41,6 +44,7 @@ internal sealed partial class BattleActionRangeView : Node2D
                     cells.Where(p => Distance(center, p) <= radius).ToArray();
             }
         }
+        else { Clear(); return; }
         Visible = _reach.Length > 0 || _effect.Length > 0; QueueRedraw();
     }
     private static int Distance(MapPosition a, MapPosition b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
@@ -49,16 +53,22 @@ internal sealed partial class BattleActionRangeView : Node2D
     internal static void Tile(CanvasItem view, MapPosition cell, Color color, float alpha)
     {
         var rect = new Rect2(new Vector2(cell.X, cell.Y) * WorldViewportLayout.CellSize + new Vector2(2, 2), new Vector2(92, 92));
-        view.DrawRect(rect, new Color(color, alpha));
+        if (alpha > 0) view.DrawRect(rect, new Color(color, alpha));
         view.DrawRect(rect, new Color("18202b"), false, 6);
         view.DrawRect(rect.Grow(-2), new Color(color, 0.9f), false, 2);
     }
-    private float Alpha => _steady ? 0.605f : 0.605f + 0.075f * MathF.Sin((float)(_pulse * Math.Tau / 1.2));
+    private float Alpha => _steady ? 0.29f : 0.29f + 0.045f * MathF.Sin((float)(_pulse * Math.Tau / 1.2));
     public override void _Draw()
     {
         _draws++;
+        var reach = _reach.ToHashSet();
         foreach (var p in _reach) Tile(this, p, new("ffda7a"), Alpha);
-        foreach (var p in _effect) Tile(this, p, Colors.White, 0.28f);
+        foreach (var p in _effect.Distinct())
+        {
+            if (!reach.Contains(p)) Tile(this, p, new("ffda7a"), 0);
+            var cell = new Vector2(p.X, p.Y) * WorldViewportLayout.CellSize;
+            DrawRect(new Rect2(cell + new Vector2(12, 12), new Vector2(72, 72)), new Color("fff3c88c"));
+        }
     }
     internal object Observe() => new { visible = IsVisibleInTree(), reach = _reach, effect = _effect,
         fillAlpha = Alpha, steady = _steady, draws = _draws, z = ZIndex };

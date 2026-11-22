@@ -581,6 +581,11 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
 
 ## 10. Production Church and battle command lists
 
+The [#2079 battle composition](battle-ui-composition.md#phase-focus-and-return) supersedes the
+earlier Battle Main rows. Church and Inspection Options retain the list geometry documented here.
+The [current battle observation](battle-ui-composition.md#reproduce-slice-1) covers the shared
+cursor, diamond and fixed reader.
+
 **High rigor, bounded migration:** the shared design remains the agreement; this implementation
 changes the existing Church and battle command presenters, their input focus and directly used
 icon projection. It adds no gameplay/session authority or preview examples to the product.

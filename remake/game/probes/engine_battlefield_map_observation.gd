@@ -63,15 +63,16 @@ func map_read(label: String, s: Dictionary) -> Dictionary:
         var x: float = s.previewX if s.actor == actor.id and s.previewX != null else rows[0].x
         var y: float = s.previewY if s.actor == actor.id and s.previewY != null else rows[0].y
         _check(is_equal_approx(actor.x,(x+0.5)*terrain.cellSize) and is_equal_approx(actor.y,(y+0.5)*terrain.cellSize),label+":actor/cell alignment "+actor.id)
-    _check(terrain.previewZ.all(func(z): return z == 3),label+":preview above terrain and actors")
-    if s.get("target") != null and s.stage in ["TargetChoice","CommitReady"]:
-        var selected: Dictionary = s.actors.filter(func(a): return a.id == s.target)[0]
-        var tx: float = s.previewX if s.target == s.actor else selected.x
-        var ty: float = s.previewY if s.target == s.actor else selected.y
-        _check(terrain.targets.size() == 4 and terrain.targets.all(func(n): return n.z == 3),label+":accepted target outline")
-        _check(is_equal_approx(terrain.targets[0].rect.x,tx*terrain.cellSize+1) and is_equal_approx(terrain.targets[0].rect.y,ty*terrain.cellSize+1),label+":target/cell alignment")
+    _check(terrain.cellCursor.z == 3,label+": shared cursor uses board focus layer")
+    if s.get("candidate") != null and s.menu.page == "Target":
+        var selected: Dictionary = s.actors.filter(func(a): return a.id == s.candidate)[0]
+        var tx: float = s.previewX if s.candidate == s.actor else selected.x
+        var ty: float = s.previewY if s.candidate == s.actor else selected.y
+        _check(terrain.cursorRole == "Target" and terrain.cellCursor.visible,label+": accepted target cursor")
+        _check(is_equal_approx(terrain.cellCursor.rect.x,terrain.board.x+tx*terrain.cellSize)
+            and is_equal_approx(terrain.cellCursor.rect.y,terrain.board.y+ty*terrain.cellSize),label+": target/cell alignment")
     else:
-        _check(terrain.targets.is_empty(),label+":no stale target outline")
+        _check(terrain.cursorRole != "Target",label+": no stale target cursor")
     if s.get("previewRect") != null: _check(s.previewInsideMap,label+":preview framed")
     return terrain
 

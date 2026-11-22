@@ -41,7 +41,9 @@ public sealed partial class BattleSessionView
 
     public override void _Notification(int what)
     {
-        if (what == NotificationPaused || what == NotificationUnpaused ||
+        if (what == NotificationDisabled) SetHostCovered(true);
+        if (what == NotificationEnabled) SetHostCovered(false);
+        if (what == NotificationPaused || what == NotificationDisabled || what == NotificationEnabled || what == NotificationUnpaused ||
             what == NotificationVisibilityChanged && !IsVisibleInTree())
         { ClearNavigation(); SuspendPacing(); }
     }

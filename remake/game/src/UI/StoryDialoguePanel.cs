@@ -46,8 +46,9 @@ internal sealed partial class StoryDialoguePanel : Control
         Arrange();
     }
     public override void _Process(double delta) { if (IsVisibleInTree()) Arrange(); }
-    private void Arrange()
+    internal void Arrange()
     {
+        if (!IsVisibleInTree()) return;
         var region = LayoutRegion ?? new Rect2(Vector2.Zero, GetViewportRect().Size);
         Vector2 viewport = region.Size;
         float inset = LayoutRegion is null ? 32 : 0;

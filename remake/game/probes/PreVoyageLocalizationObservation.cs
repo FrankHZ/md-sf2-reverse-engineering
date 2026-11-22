@@ -33,13 +33,16 @@ public sealed partial class GameRoot
             var inputs = seed.Actors.Select(actor => old.Party.Actors.FirstOrDefault(ally => ally.Actor == actor.Actor) ?? actor).ToArray();
             var policy = new NewBattleStartPolicy("localization-observation", "controlled-consumer", "Not natural reach.",
                 0, true, true, true, false, false, null);
+            // Campaign encounter definitions can contain undeployed reserve actors.
+            var activeAllies = start.TryGetProperty("activeAllies", out var lineup)
+                ? lineup.EnumerateArray().Select(id => new ActorRef(id.GetString()!)).ToArray() : null;
             var initialized = GameSession.Start(admitted.Definition, new BattleStartInput(seed.Encounter, inputs,
-                old.Party.MainSeed, old.Party.ThinkingSeed, 60, policy, itemCustody: old.Party.ItemCustody));
+                old.Party.MainSeed, old.Party.ThinkingSeed, 60, policy, activeAllies, itemCustody: old.Party.ItemCustody));
             if (initialized is SessionStartFailed failure) return failure.Failure.Code;
             var baseline = ((SessionStarted)initialized).Session.Current.Battle;
             inputs = baseline.Actors.Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp,
-                actor.Exp ?? 0, actor.Kills ?? 0, actor.Defeats ?? 0, actor.Status, null, actor.Progress, actor.SourceLoadout,
-                actor.ActivationWord, actor.Initialized)).ToArray();
+                actor.Exp ?? 0, actor.Kills ?? 0, actor.Defeats ?? 0, actor.Status, activeAllies is null ? null : actor.Position, actor.Progress, actor.SourceLoadout,
+                actor.ActivationWord, actor.Initialized, Absent: activeAllies is not null && actor.Position is null)).ToArray();
             if (start.TryGetProperty("actors", out var overrides))
                 foreach (var row in overrides.EnumerateArray())
                 {

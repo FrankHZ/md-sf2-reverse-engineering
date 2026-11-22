@@ -110,14 +110,14 @@ and human visual acceptance. The table records content coverage through Battle13
 **Confirmed bounded remake, #1694:** the ordinary Battle01 scene and world-referenced
 Battles02–07 can publish `battle-cursor.single-cell` through the existing named-raster dictionary.
 `BattleInspectionCursor` renders that same admitted original image for F8 inspection and F4's
-selected physical, HEAL or item recipient. Production never reads a preview file. The separate
+selected physical, HEAL or item recipient. [#2079](battle-ui-composition.md#world-marks-and-panel-placement)
+uses one mounted cursor for Movement, Target and inspection Cursor. The separate
 private library's modern `hud.tactical-selection-cursor` remains a distinct SVG-derived asset;
 this preparation does not promote or change that repository.
 
 **Standard scope:** one optional presentation resource, unchanged gameplay/content/save identities,
 existing publication and ordinary input selection. No new acquisition, asset platform, mouse walking
-or larger original-radius artwork. `BattleSelectionView` retains the modern acting-unit cue;
-`BattleActionRangeView` retains actual reach and affected cells, including multi-target effects.
+or larger original-radius artwork. `BattleActionRangeView` retains actual reach and affected cells, including multi-target effects.
 The single-cell image denotes only the current center/recipient.
 
 ### Source and publication
@@ -155,8 +155,7 @@ explains additive menu options. All seven selected scenes receive identical curs
 `provenance.json.targetCursor` records ROM/source/range/palette/layout/pixel identity.
 An existing conflicting cursor namespace rejects before output creation. Runtime admits whole
 absence for old packages, or exactly one32×32 `battle-cursor.single-cell`; wrong names/shapes reject
-with `scene-target-cursor`. Public authored and old private packages retain their existing cyan
-inspection frame/cross and four-edge target outline. Declared invalid artwork cannot claim fallback
+with `scene-target-cursor`. Public authored and old private packages use the shared authored pixel corners. Declared invalid artwork cannot claim fallback
 success. No save format or gameplay revision changes.
 
 ### Placement and bounded acceptance
@@ -164,27 +163,13 @@ success. No save format or gameplay revision changes.
 Nearest4× drawing occupies128×128px centered on a96×96px cell, overhanging16px per side.
 The cursor borrows no hit area; existing board/world clipping and actual UI input ownership apply.
 Invalid or canceled targeting clears it. Inspection hides decision ranges; Back restores Movement.
-Playback retires targeting. A host/detail cover preserves the underlying cursor and session rather
-than letting covered pointer input retarget a unit.
+Playback retires targeting. Host/detail cover clears the visible cursor and preserves the retained cell and session for Back.
 
-[`engine_battle_cursor_observation.gd`](../../game/probes/engine_battle_cursor_observation.gd)
-reuses the production root, current input bindings and existing controlled-admission observer.
-After a protected adapter/Debug build, set `SF2_COMPACT_START` to an ignored prelaunch input,
-`SF2_CURSOR_ORIGINAL=1`, `SF2_CURSOR_SHA256` to the decoded identity above,
-`SF2_VIEWPORT_OUTPUT` to a fresh report and `SF2_INSPECTION_ROUTE=keyboard` or `pad`:
+The [current native recipe](battle-ui-composition.md#reproduce-slice-1) uses the mounted production
+cursor for controlled Battle01 and public authored content. It reads the source raster identity,
+art bounds, draw state, clipping and lifecycle through real input. The prior publication verified
+older private package absence and newly published art at the same boundary.
 
-```powershell
-& $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 --resolution 1920x1080 --script res://probes/engine_battle_cursor_observation.gd -- --input-settings $settings
-```
-
-The private controlled Battle01 start places ally0 at(8,14), HP6; ally1 at(9,14); ally2 HP0;
-enemy0 at(8,13), HP1. Other values come from ordinary full-world admission. The observer uses real
-input for physical, Medical Herb and HEAL selection, target cycling, invalid clicks, Back,
-1080p/1440p resize, both map edges, details/host cover and subsequent actual attack/turn delivery.
-Normal keyboard and Reduced Flash/pad pass. Old full private selection passes with
-`SF2_CURSOR_ORIGINAL=0`; public `attack-spells.json` with `SF2_DEMO_BATTLE_CASE=public` and no
-controlled start checks its target/inspection fallback. `area` and `aura` run the existing actual
-BLAZE2/AURA4 consumers, preserving affected cells, ordered results and one cost.
 Direct ordinary content admission checks all seven scenes, old absence and name/shape refusals.
 Ordinary title Continue restores an isolated copy of a prior-package battle save at its exact
 queued actor without changing either saved payload.

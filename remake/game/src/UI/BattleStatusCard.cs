@@ -18,6 +18,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
     private BattleVitalGauge _hp = null!, _mp = null!;
     private BattleDecisionVitals _decision = null!;
     private ActorRef? _actor;
+    internal ActorRef? Actor => _actor;
     private float _compactHeight = 148;
     private float _decisionHeight = 164, _nameWidth = CardSize.X;
 
@@ -27,9 +28,6 @@ internal sealed partial class BattleStatusCard : PanelContainer
         if (DecisionHeader)
         {
             var style = (StyleBoxFlat)GetThemeStylebox("panel").Duplicate();
-            // The decision presenter owns the one outer frame around header and command rows.
-            style.BgColor = Colors.Transparent; style.ShadowSize = 0;
-            style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 0;
             style.ContentMarginLeft = style.ContentMarginRight = style.ContentMarginTop = style.ContentMarginBottom = 16;
             AddThemeStyleboxOverride("panel", style);
         }
@@ -44,7 +42,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         else { _hp = new("HP"); _mp = new("MP"); column.AddChild(_hp); column.AddChild(_mp); }
         // A hidden wrapped label initially measures at width 1. Reset the requested
         // frame when native sorting publishes the real minimum (also on actor changes).
-        MinimumSizeChanged += () => Size = RequestedSize;
+        if (!DecisionHeader) MinimumSizeChanged += () => Size = RequestedSize;
         Size = RequestedSize;
     }
 

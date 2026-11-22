@@ -176,7 +176,7 @@ func real_returns() -> bool:
         var b := board()
         if base.mapWidth*96 <= 1920 and not check(is_equal_approx(b.board.x,(1920-base.mapWidth*96)/2.0),"Small board stays centered horizontally"): return false
         if base.mapHeight*96 <= 1080 and not check(is_equal_approx(b.board.y,(1080-base.mapHeight*96)/2.0),"Small board stays centered vertically"): return false
-        if not check(b.cellSize == 96 and b.scale == 1 and b.clip and b.inspectionCursor.visible,
+        if not check(b.cellSize == 96 and b.scale == 1 and b.clip and b.cursorRole == "Inspection" and b.cellCursor.visible,
                 "Cursor uses retained clipped 96px board at edge"): return false
         if not check(b.visibleLocal.x >= 0 and b.visibleLocal.y >= 0
                 and b.visibleLocal.x+b.visibleLocal.width <= base.mapWidth*96+0.01

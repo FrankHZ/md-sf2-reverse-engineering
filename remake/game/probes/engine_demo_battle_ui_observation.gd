@@ -49,9 +49,9 @@ func read_geometry(label: String) -> bool:
     var m: Dictionary = s.menu.layout
     samples.append({"label":label,"menu":s.menu,"board":board(),"inspection":s.inspection})
     if not s.menu.visible: return true
-    if not expect(inside(m.description) and inside(m.actor) and inside(m.targetCard.rect),label+": decision windows fit"): return false
-    for r in m.descriptionLabels:
-        if not expect(within(r.rect,m.description),label+": full detail/hints contained"): return false
+    if not expect(inside(m.description) and within(m.reader.rect,m.description),label+": bounded reader fits"): return false
+    for card in [m.actorCard,m.targetCard]:
+        if card.visible and not expect(inside(card.rect),label+": visible card fits"): return false
     return true
 
 func inspect_case() -> bool:
@@ -247,7 +247,7 @@ func decision_case() -> bool:
     if not expect(state().actor == "ally-1","Real turn schedule reaches Sarah"): return false
     await act("confirm"); await act("spell"); await frames(3)
     if not await read_geometry("learned-magic-offer"): return false
-    if not expect(board().actionRange.reach.size() > 0,"Highlighted actual HEAL offer draws reach before target"): return false
+    if not expect(not board().actionRange.visible,"Magic list leaves the board clear until Target"): return false
     await act("confirm")
     var heal_before := resources(state())
     await act("cancel")

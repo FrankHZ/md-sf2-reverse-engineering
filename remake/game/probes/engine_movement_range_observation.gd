@@ -37,9 +37,9 @@ func visible_geometry(label: String) -> bool:
         "Actual range draw uses exact eligible cells"): return false
     if not check(r.globalOrigin.x == t.board.x and r.globalOrigin.y == t.board.y and r.cellSize == 96,
         "Range inherits board camera transform"): return false
-    if not check(r.fillAlpha > 0 and r.fillAlpha < 0.3 and r.edgeAlpha > r.fillAlpha,
+    if not check(r.fillAlpha > 0 and r.fillAlpha < 0.35 and r.edgeAlpha > r.fillAlpha,
         "Quiet translucent fill with legible edge"): return false
-    if not check(t.previewZ.size() == 1 and t.previewZ[0] == 3 and t.actors.all(func(a): return a.z == 1), "Actor/path ordering"): return false
+    if not check(t.cursorRole == "Movement" and t.cellCursor.visible and t.cellCursor.z == 3 and t.actors.all(func(a): return a.z == 1), "Actor/path ordering"): return false
     var names: Array = t.children.map(func(c): return c.name)
     var index: int = names.find("MovementRange")
     if not check(index > 0, "Range is attached after terrain"): return false
