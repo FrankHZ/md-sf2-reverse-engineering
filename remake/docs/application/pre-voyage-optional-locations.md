@@ -117,23 +117,23 @@ and [Yeel equipment reach](../content/special-equipment-reach.md#evil-knuckles).
 
 ## Selected locations and interactions
 
-These are the existing map and interaction owners to carry into the expanded acceptance. A
-receipt tagged as selected still needs a faced marker, approach and admitted capacity. The
+A Search receipt requires a faced marker, an accessible approach and inventory capacity. The
 [Search inventory](campaign-field-search.md#map-and-setup-inventory) records the compiled
-placements and descriptions. Report unsupported actions at their actual caller or service.
+placements and descriptions. The Galam and Granseal reviews below give the specific source,
+binding and ordinary-input evidence.
 
-| Phase and place | Accessible branches and setup changes | Remake coverage and remaining work |
+| Phase and place | Accessible branches and setup changes | Remake coverage |
 | --- | --- | --- |
-| **New Game to commission**, Map3 Granseal | Bowie's home and CURRENT stairs, town houses, school and CURRENT classroom stairs, talk to the residents, messenger Yes/No/retry, Church, F600 castle admission and F603 west-exit guard. School herb F128. Shop empty chest F220 has a marker but its valid faced tile is occupied in the default setup. Default fixed entity 137 at (45,22) separates the town from the otherwise marked dock exits. F609 changes that approach and F506 later opens the cell and changes population for Kiwi. | Opening dialogue, Church and cold Continue, school Search, and the F506 Kiwi refusal/revisit/join have play evidence. F609/F506 Church and both supply/weapon Shop callers are selected. Existing [opening branch inventory](../content/opening-branch-inventory.md) and [Kiwi visit](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) own the intent. Ask each shop only on an eligible setup. F220 is no additional reward. |
-| **Opening, first return, commission and post-Galam castle**, Maps19/20/21 | Map19 approach, courtyard, storeroom F129–131 chests, west and east lower rooms. Map20 west stair room, king's bedroom, upper royal room and both east tower levels through the Map19 east landing. Map21 guard and exit to tower exterior. | Save and cold Continue retain the loaded scene. F130, the upper east stairs and landing, the commission cast, the F506/F507 royal chains and the guard-room exit have bounded observations. **Unknown** ordinary control at every optional room approach around the exorcism and east landing. [Castle Save and Continue](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) · [Opening Search](../content/opening-branch-inventory.md#search-surfaces) |
-| **Tower exterior, return, second descent**, Maps40/57/60/58 | The exterior links the castle and antechamber and permits F132 Mithril. Map40 F506 Lemon approach, F507 default restoration, Map57 first battle/return and F506 stair opening, Map60 connected early chain and Map58 return. Map60/58 have no interaction cast or placements to add; preserve party and exit through the actual connected stairs on the quake return. | Existing main route and controlled exterior Search. Settled traversal has its own Save and cold Continue recipe alongside the two completed-return readers. Later Map60 frontiers remain behind the conditions above. [Tower route](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) · [Exterior Search](opening-session-lifecycle.md#tower-exterior-search-admission). |
-| **Open Grans after the commission**, Map66 | Granseal and south Yeel connect through the southern/main component, with Mithril F213, the south shrine and the south end of the Galam drawbridge. Yeel north exit connects the separate Hawel/woods component and reverse Yeel north entrance. Battle02, the marked Battle03 request, Hawel's F404 request and the Battle06 outcome keep their own admission. Battle02 can return on an enclosed tile. | Battle routes, conditional repeat and field EGRESS have existing play evidence. The F213 marker and approach from (30,45) are **Confirmed** static and selected. The [southern shrine visit](#play-the-southern-shrine) reaches the lower chamber and returns to this field. A legal return from the enclosed Battle02 tile uses the existing recovery route. [Enclosed return](pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress). |
+| **Opening, commission and occupied town**, Map3 Granseal | Home and school CURRENT stairs, town houses and their doors, residents, messenger Yes/No/retry, Church, F600 castle admission and F603 west-exit guard. F609 and F506 change the cast and dock approach; F506 opens Kiwi's cell. | Opening dialogue, Church, school Search F128, F609 shops and F506 Kiwi refusal/revisit/join have play evidence. F506 uses the same two Shop bodies. F220 is an empty chest whose facing square remains occupied. [Town audit](#granseal-and-outlying-interactions) · [Kiwi visit](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) |
+| **Opening, exorcism, commission and return**, Maps19/20/21 | Map19 courtyard, armory, guard quarters, storeroom chests and west/east lower rooms. Map20 west stairs, royal rooms and east tower. Map21 guard and tower-exterior exit. | F609 armory and both lower-room returns have ordinary-input checks. F130, royal and east CURRENT stairs, the commission, F506/F507 royal chains and guard-room exit retain their accepted observations. [Castle audit](#granseal-and-outlying-interactions) · [Castle Save and Continue](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) |
+| **Tower exterior, return, second descent**, Maps40/57/60/58 | The exterior links the castle and antechamber and permits F132 Mithril. Map40 F506 Lemon approach, F507 default restoration, Map57 first battle/return and F506 stair opening, Map60 connected early chain and Map58 return. Map60/58 have no interaction cast or placements to add; preserve party and exit through the actual connected stairs on the quake return. | Existing main route and controlled exterior Search. Settled traversal uses v6 Save and Continue. The completed-return anchors apply to their legacy slots. Later Map60 frontiers remain behind the conditions above. [Tower route](pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration) · [Exterior Search](opening-session-lifecycle.md#tower-exterior-search-admission). |
+| **Open Grans after the commission**, Map66 | Granseal and south Yeel connect through the southern/main component, with Mithril F213, the south shrine and the south end of the Galam drawbridge. Yeel north exit connects the separate Hawel/woods component and reverse Yeel north entrance. Battle02, the marked Battle03 request, Hawel's F404 request and the Battle06 outcome keep their own admission. Battle02 can return on an enclosed tile. | Battle routes, conditional repeat and field EGRESS have existing play evidence. F213's loose placement and southern facing approach are **Confirmed** static. [Search comparison](#granseal-and-outlying-interactions) The [southern shrine visit](#play-the-southern-shrine) reaches the lower chamber and returns to this field. A legal return from the enclosed Battle02 tile uses the existing recovery route. [Enclosed return](pre-voyage-campaign.md#enclosed-battle02-return-and-field-egress). |
 | **Yeel before and after Hawel**, Map5 | Both town exits, houses and tavern, bookshelf/room descriptions, aboveground Church, Healing Seed F134, Kazin guiding/F72 and the F650 residents/dialogue after the house scene. F650 changes the entity and Talk tables while retaining Search and Church. | Default input, Kazin introduction and Church Record are observed. **Confirmed** in the published F650 world: a fresh arrival shows the changed residents, one speaks its replacement dialogue, and Kazin stays in the party with the guide flag clear. The aboveground Church records the visit. Search awards the seed once and retains F134 across cold Continue, exit and re-entry. The F530/F28 setups and piano/underground sequence are late. [Pinned F650 setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map05/mapsetups/pointertable_650.asm) · [#2022 Save and Continue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2022). |
-| **Hawel**, Map43 | House rooms, story, bookshelf diary, well, F135 Antidote and F136 Healing Drop chests, south return (6,6) to Map66. Default scene and F612 quiet revisit. The init has no F503 or F72 predicate. | Recruitment, diary, F612 repeat/exit and ordinary F135 acquisition are observed. Continue keeps the one Antidote receipt. Ordinary acquisition of F136 remains **Unknown**. Both settled visits support Save and cold Continue. [Campaign route](pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment) · [Save observation](opening-session-lifecycle.md#hawel-house-save-and-continue-observation). |
+| **Hawel**, Map43 | House rooms, story, bookshelf diary, well, F135 Antidote and F136 Healing Drop chests, south return (6,6) to Map66. Default scene and F612 quiet revisit. The init has no F503 or F72 predicate. | Recruitment, diary, F612 repeat/exit and ordinary F135 acquisition are observed. Continue keeps the one Antidote receipt. The shared F136 chest binding and legal facing approach are **Confirmed** static. [Search comparison](#granseal-and-outlying-interactions) [Campaign route](pre-voyage-campaign.md#ordinary-hawel-house-and-kazin-recruitment) · [Save observation](opening-session-lifecycle.md#hawel-house-save-and-continue-observation). |
 | **Galam first prison escape**, Map17 | F660 wake-up, F661 doors, F662 shortcut and F73 passage staging. F505 changes population and zone dispatch; F663 reconstructs prison doors. | Escape, maid and kitchen stairs have ordinary play evidence. F205 sandals and F206 Mithril each have pickup, custody and empty-repeat observations. [Galam audit](#galam-optional-exploration) · [F205 controls](../content/special-equipment-reach.md#remake-controls-and-reproduction) |
 | **Galam town and palace rooms**, Maps16/17 | The throne and royal rooms, guarded treasury vestibule, east gate tower, town residents and services have distinct entry, population or Search conditions. | Ordinary post-Battle05 input reaches and returns from the royal rooms and both east tower landings. The fixed treasury guard keeps the two chests out of early reach. F207 has pickup evidence and F208 has a separate confirmed marker and legal facing tile. [Galam audit](#galam-optional-exploration) |
 | **Galam drawbridge**, Map18 | The south shore can be visited with F611 clear. F611 opens the town connection and the upper CURRENT stair. | Ordinary input enters and returns at the south shore with either F611 value. The open visit reaches the upper guard, sign and dialogue-only trader. [Galam audit](#galam-optional-exploration) |
-| **Earthquake and departure**, Maps4/44 | F640 changes the Granseal arrival to Map4. First quake, F624 reconstruction, bookshelf and F217 Mithril are accessible on the surviving streets. Three east exits reach Map44. F609 and F506 offer a pre-quake dock visit with their own casts. The deck and lower hold connect by CURRENT stairs. Keep F507 cast, captain No/cancel/Yes, return west through the active town substitution, and F139/F140 shared Search receipts. | Ordinary quake return and docks/ship Search are already covered, including repeat and full-pack control. Map44's retained malformed default handler has no `$1400` marker in either active base area and the map's flag/step tables are empty. The reachable lower hold, ordinary departure and known Search actions do not need its handler. **Unknown** ordinary F217 grant and optional F506/F507 Talk beyond the named departure inputs. [Docks source](../../../docs/research/chapters/grans-opening/earthquake-town-through-docks-departure.md#selected-zone-table-anomaly) · [Search acceptance](campaign-field-search.md#docks-and-damaged-ship). |
+| **Earthquake and departure**, Maps4/44 | F640 selects Map4. F624 reconstructs the quake layout on reentry. F217 and shelf descriptions remain on the surviving streets. The dock setups change their cast and access to the CURRENT hold stairs. | F609 hold/barrel Search and F507 captain No/cancel/Yes are observed. Ordinary F507 input reaches the queue, where fixed residents block the gangplank. The dock west exit follows the active town substitution. The retained malformed zone handler has no active $1400 marker and these routes use other callers. [Dock and Search audit](#granseal-and-outlying-interactions) · [Departure owner](pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) |
 | **Departure handoff**, Maps73/14 | Captain Yes commits departure. Map73 init carries the story to the first stable Map14 below-deck state. The subsequent plank prompt, deck and short Battle08 boundary share the same party and receipts. Map14's copied F139/F140 records have no live item marker. The F458 nonvictory Church and later land connection have their own campaign owner. | Existing departure and first stable control are regression boundaries. Retain NPC/crew dialogue and blocked inventory/menu while the story controls movement. Do not duplicate dock rewards or add arbitrary cabin saves. [Voyage owner](pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) · [Plank and deck](map14-plank-deck.md#play-and-review). |
 
 ## Galam optional exploration
@@ -202,6 +202,76 @@ the staged inputs above.
 Settled field Save and Continue use the existing v6 snapshot to record the loaded setup, actors,
 working layout and committed custody. [Snapshot mechanism checks](#remaining-save-coverage)
 
+## Granseal and outlying interactions
+
+[Issue #2059](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2059) uses Standard
+rigor within the High pre-voyage agreement. The comparison covers default and early alternate
+setups, the incoming and outgoing room requests, the residents' selected handlers, and the
+working-layout conditions for the named Search rewards. It consumes the #2035 publication
+and the accepted Galam, Yeel, shrine and campaign observations.
+
+| Question | Source and published remake |
+| --- | --- |
+| Map3 houses, school and shops | **Confirmed** static. The six step copies cover Bowie's home, three town houses, the Church and school. The home and classroom transfers use CURRENT in both directions. Default, F609 and F506 keep the house connections, Search data and their own casts. The only legal facing cell for F220 is (7,18), occupied by a fixed merchant in all three setups. The row carries item 127 (empty). Default offers Church and has no Shop call. F609 and F506 each select the two shared Shop bodies and the Church body, with different NPC IDs. The opening dock approach has the fixed blocker at (45,22). F609 removes that obstruction by cast replacement. F506 additionally applies the separate cell-door copy. [Opening interactions](../content/opening-branch-inventory.md#offered-branches-and-consumers) · [Shop stock and inputs](../content/profiles-and-trust.md#ordinary-campaign-shops) |
+| Map19 doors, chests and lower rooms | **Confirmed** static. The armory and guard-quarters steps at (15,17) and (16,28) copy the open tile from (41,0). The west and east lower-room doors at (19,15) and (35,15) have their own direct warp markers and reverse rows in Map20. The storeroom has three separate $D801 chest markers and different receipt rows F129–131. **Confirmed** from a controlled settled F609 visit. Ordinary input opens the armory door and returns from each lower room. F130 has the accepted pickup and repeat observation. [Castle recovery](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) |
+| Castle floors and staged residents | **Confirmed** static. The diagonal west stair at Map19 (6,2) leads to Map20 (6,37). The separate Map20 (3,36) stair connects the Map21 guard room in both directions. The royal stairs link the two Map20 rooms with CURRENT. The separate Map19 east landing links two Map20 approaches, with the upper east stair using CURRENT. Fresh Map19/20/21 visit selection uses the default, F501, F609 or F506 setup as progress allows. F507 replaces Map19's setup and selects the shared presentation tail on Maps20/21 while those two floors retain F506's empty fixed cast. The royal followers have separate flag bindings. Pre-commission Astral and guard behavior keeps its accepted conditions. [Guard and royal input](pre-voyage-campaign.md#castle-bedroom-cast-after-astral-leaves) · [Tower return](../../../docs/research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md) |
+| Map44 dock visits and evacuation queue | **Confirmed** static. F609 supplies five residents, F506 one roaming worker and F507 thirteen fixed residents with ten explicit Talk bindings. The three (12–14,11) CURRENT boarding markers are free of fixed blockers on the F609/F506 setups. F507 stations an obstructing resident on each. The source movement controller checks actor obstruction before reading the warp marker. **Confirmed** with ordinary F506/F507 input. F506 selects the worker on entry from town. A separate facing approach reaches his Talk and returns through the west exit to Map3. In F507, the middle route blocks movement at (13,12), and Talk reaches the queued resident and returns to the same tile with unchanged flags, inventory and gold. The west exit follows F640 to rebuilt Map4; pre-quake it returns to Map3. The F609 hold and barrels and the F507 captain's No/cancel/Yes branches have accepted evidence. [Source dispatch and cast](../../../docs/research/chapters/grans-opening/earthquake-town-through-docks-departure.md#boarding-records-and-actual-entity-interaction) · [Docks and damaged ship](campaign-field-search.md#docks-and-damaged-ship) |
+
+| Search receipt | Confirmed source and remake binding |
+| --- | --- |
+| F136 · Map43 Healing Drop | Chest (12,3), $D801, faced Up from (12,4). Default and F612 share Search. The settled post-house visit and quiet return lead past the adjacent F135 chest, which already has ordinary grant evidence. |
+| F213 · Map66 Mithril | Loose item (30,44), $DDA1, faced Up from (30,45) in the southern component. F611 changes the drawbridge entry cell and leaves this marker in place. |
+| F217 · Map4 Mithril | Loose item (35,6), $DC57, faced Up from (35,7) on the surviving street. F640 selects Map4 on the incoming Granseal request. The initial quake's changing copies and F624 reconstruction end at X34 on that side and preserve the marker and southern approach. The neighboring shelves use descriptions. |
+
+The three placements bind existing item identities and independent receipt flags. The
+[Search consumer](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldSearch.cs) uses the
+faced working marker to select the chest or loose table. It gives the item to the first eligible
+joined pack and commits the receipt with the grant. A full pack leaves the placement available.
+Repeat Search gives no second item. Description Search leaves inventory and receipt flags intact.
+Map14 retains the copied F139/F140 records without matching markers.
+
+### Reproduce the Granseal checks
+
+Load the registered private-input script and run `uv run --locked sf2 rom verify`. Compare the
+pinned source's `data/maps/mapsetups.asm`, map-specific pointer tables, doors, warps, populations,
+Talk handlers and placement tables to `world.maps` and `world.programs` in the #2035
+`galam-town-v1` publication. Use the decoder in [Source and method](#source-and-method). The
+Map3/4/19/20/21/43/44/66 base arrays matched the decoded ROM. All selected variants retain the
+base Search table. For F624, check both the source init copy destinations and the fresh flag
+copies. Marker admission uses the working word masked with $3C00. For the F507 crowd, compare
+the three warp coordinates directly to the selected fixed entities and to the field controller's
+obstruction check.
+
+The short native checks used Godot 4.7.2 .NET and the retained Debug build from
+`73b25797fe6c828a3c0f166d99aeb55248c60093`. The following accepted #2057 changes factor marker
+lookups and add guidance glints. The movement, Talk and transfer code for these checks is the same.
+Load the #2035 world, entry, scenes and opening inputs together. Use a fresh worktree-local save
+root, [controlled start](../godot/objective-guidance.md#verification-and-direct-replay), ordinary
+input and live state/projection views.
+
+- **Castle.** Use the #2053 dock prerequisite, with F507/F624/F640 clear and F609/F610 set.
+  Stage the Map19 armory approach at (15,18) Up. Step Up, read the copied $080B working cell,
+  and step Down. Walk through the west and east lower-room doors from the courtyard and return
+  through each room's own exit.
+- **F506 docks.** Use the #2035 `egress-writer.json` post-Battle06 party and flags at Map3
+  (49,24) Right. Enter east to the single-worker cast. To isolate the ambient timing, start
+  the same visit at the reachable Map44 (10,24) Up. Talk while the worker is within reach.
+  Dismiss text 626, walk west through (0,25) and confirm the Map3 return.
+- **F507 docks.** Use the #2053 dock prerequisite with F74 and the earlier victory/progress flags,
+  at Map4 (49,24) Right with F624/F640 held. Enter east. Walk to (13,12), press Up and Talk to
+  entity135; its program presents text 1005. Dismiss and take the west exit to active Map4.
+
+
+The castle, focused F506 Talk/return and F507 queue/return witnesses completed 11, 6 and 10
+checks respectively with exit 0 and empty stderr. Earlier F506 attempts confirmed entry before
+an ambient actor obstructed the observer's first approach or moved out of its facing range.
+The first ended with a no-path assertion and `WARNING: 2 ObjectDB instances were leaked at exit`. Two later
+attempts hit the observer time bound. The captured missed Talk fell through to ordinary Search
+with the worker outside the interaction range. The short focused approach resolves the Talk
+binding. An earlier castle check read the copied door correctly but asserted an empty marker
+instead of the source's $080B. The local observations retain those results and the initial
+observer parse failures.
+
 ## Pre-voyage save coverage
 
 Ordinary Save uses the [settled field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots)
@@ -210,12 +280,12 @@ for supported live visits. The earlier observations below record legacy reader c
 | Location | Legacy coverage and limits |
 | --- | --- |
 | Granseal Map3 default/F609 and completed Battle01/07 returns | Map3 uses its opening or church anchor. `battle01-return` and `battle07-return` keep the recorded outcome anchor under their existing flag/landing gates. [Implemented field recipes](opening-session-lifecycle.md#eligibility-and-restoration-recipes) |
-| Yeel Map5 default/F650 | Cold Continue retains the loaded visit, live population, follower links, Healing Seed receipt and Church Egress. F530/F28 and worlds without the F650 body remain outside the recipe. [Yeel observation](opening-session-lifecycle.md#yeel-save-and-continue-observation) |
-| Granseal Map3 F506 | Retains the current layout and Kiwi's settled refusal or named join/follow state. Ordinary reentry retires the joined resident. Church Record uses the Map3 refuge. F543 and the quake substitution remain outside the recipe. [Granseal observation](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) |
+| Yeel Map5 default/F650 | Observed cold Continue retains the loaded visit, live population, follower links, Healing Seed receipt and Church Egress. Later F530/F28 have their own setup boundary. [Yeel observation](opening-session-lifecycle.md#yeel-save-and-continue-observation) |
+| Granseal Map3 F506 | Retains the current layout and Kiwi's settled refusal or named join/follow state. Ordinary reentry retires the joined resident. Church Record uses the Map3 refuge. The F543 cast and quake substitution follow their own entry rules. [Granseal observation](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) |
 | Early Galam Map16 | Legacy observations cover default, same-visit post-rally, fresh F663 and settled F505. Both priests bind the Map16 refuge. Ordinary Save now uses the settled v6 snapshot for the loaded visit. [Galam observation](opening-session-lifecycle.md#galam-town-save-and-continue-observation) |
 | Hawel's house Map43 | Covers the completed default visit with Kazin following and the quiet F612 revisit. Keeps the diary, observed F135 receipt and ordinary exit. Map43's `(7,5)` Down refuge has no Church caller. [Hawel observation](opening-session-lifecycle.md#hawel-house-save-and-continue-observation) |
-| Granseal Castle Maps19/20/21 | Covers the admitted settled default, F501, F609, F506 and Map19 F507 visits, including the loaded cast, royal links, receipt and CURRENT stairs. Ordinary control at some optional approaches around the exorcism and east landing remains **Unknown**. [Castle observation](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) |
-| Ancient Tower Maps40/57/60/58 | Covers settled exterior control, the F506-open Map57 stairs, first five linked Map60 areas and settled Map58 aftermath. Retains F132, stair copies and physical royal followers. Later F999 frontiers, Map59 and Map56 remain outside the recipe. The Ascent refuge belongs to Map56. [Tower observation](opening-session-lifecycle.md#tower-save-and-continue-observation) |
+| Granseal Castle Maps19/20/21 | Covers the admitted settled default, F501, F609, F506 and Map19 F507 visits, including the loaded cast, royal links, receipt and CURRENT stairs. [Castle observation](opening-session-lifecycle.md#granseal-castle-save-and-continue-observation) |
+| Ancient Tower Maps40/57/60/58 | Covers settled exterior control, the F506-open Map57 stairs, first five linked Map60 areas and settled Map58 aftermath. Retains F132, stair copies and physical royal followers. Actual later F999 frontiers, Map59 and Map56 follow their own entry rules. The Ascent refuge belongs to Map56. [Tower observation](opening-session-lifecycle.md#tower-save-and-continue-observation) |
 
 Ordinary Save preserves the incoming Egress and F399. Where the accepted Record flow changes
 them, it commits those values with successful publication. A source refuge row alone does not
@@ -342,46 +412,15 @@ two-object shutdown warning on the cold and legacy reads. Both exited successful
 
 ## Implementation order and acceptance
 
-1. **Southern shrine** ([implemented visit](#play-the-southern-shrine)). Select Map41/42 and their early Search content through the existing
-   private package producer. Admit the Map66 row 8 route, Map41 step-copy door and all return rows
-   needed by the two early areas of Map42. Use the existing door/marker order, `Preserve` stair
-   transfer, fresh-load reconstruction and item receipts. A later row can remain owned by the
-   source's existing marker/copy prerequisites. Preserve the hard boundary for unadmitted later
-   scripts or maps at their own callers. Prove both Map41 south exits and the round trip from
-   Map66, including a blocked-valued warp trigger. Try Search before/after the Power Water grant,
-   on a full pack and after making room. Walk the F999/F901-clear gate and check the Evil Axe
-   absence and no attraction/extraction. Check F508-clear (35,28) remains an ordinary tile.
-   Keep changed membership/order through the actual transfers and carry F133 through the
-   next already supported Save and cold Continue. A previous compatible slot can Continue and
-   take the new route. Keep the existing gameplay/recipe identity unless the save owner proves
-   a change is required.
-2. **Existing interiors and service closure.** Use the named Unknowns in the table for small
-   walking/interaction checks through the admitted content. The [Galam audit](#galam-optional-exploration)
-   covers its named entrances, exclusions and transactions. Pair Hawel and Yeel around the post-house
-   branch. Pair castle rooms, tower return and quake/docks around their actual setups. Check
-   opened rooms, valid Search approaches, absent rewards from locked or unmarked cells, resident
-   dialogue and service entry/return. A selected room that works needs only its observation.
-   Assign a concrete failure to its content or service owner. Use the existing Shop and Church
-   contracts for actual offered actions, including eligible promotion/repair and empty/ineligible
-   outcomes where available. Separate item use/equip gaps from receipt acquisition and respect
-   the existing item/service issues. Give the feature trace and campaign flag/item indexes the
-   accepted user-visible changes after the owners integrate their slices.
+The [southern shrine](#play-the-southern-shrine) closed the missing early Map41/42 route and F133
+transaction. The [Galam](#galam-optional-exploration) and [Granseal](#granseal-and-outlying-interactions)
+reviews checked the remaining selected rooms, residents, gates and item bindings for #2020. The
+review found no unresolved pre-voyage optional exploration defect in that agreed scope. It supports
+closing #2020 after independent review. The early inaccessible treasury, evacuation hold,
+Yeel underground, northern routes and upper tower follow their named source gates.
 
-For an implementation group, begin from valid staged state or a copied compatible slot. Check
-ordinary input at the real incoming transition, the relevant interior interactions, outward
-transition, expected flags/custody/party or refusal, and the next legal persisted state. Inspect
-input, state, projection and errors in a short owned Godot observation. Use affected engine
-behavior tests and the adapter compile where code changes. A source-reach ambiguity can warrant
-a short original input check at that exact seam. A controlled legal prerequisite is enough to
-exercise walking, inventory or an eligible service. No leveling grind, long route replays,
-screenshots, arbitrary save locations, extra capture infrastructure or Battle27+ work.
-
-Reuse the [#2001 prepared library](../content/asset-inventory.md#retail-original-preparation).
-The first group is two map payloads, 8,192 base layout words, their tables and the already
-prepared music, atlas and item families. The raw layout alone is 16 KiB, and the serialized
-layout and table delta is expected to be well below 1 MiB before presentation. Read the existing
-atlas/cue sizes before mounting, count only missing bindings and verify headroom under the
-128 MiB world limit. A ~102 MB input leaves ~32 MB decimal headroom before the new presentation
-data. Use one owned incremental candidate. Rebudget if a required new family or the existing
-world limit changes the estimate. Keep publication and compatibility proof in the implementation
-slice and all generated bytes local.
+**Unknown:** individual ordinary acquisition of F136/F208/F213/F217, every resident and repeat
+line in every phase, and a single natural run from New Game through departure that exercises all
+admitted choices and visits. The static comparisons and controlled inputs substantiate the
+specific connections and consumers above. The [#1456 human playthrough](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456)
+retains its independent experience acceptance.

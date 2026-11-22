@@ -21,16 +21,14 @@ regression. Later story flags and the later playable campaign keep their respect
 Use **High** rigor for this area of the campaign. A route can cross different map IDs, distinct
 areas packed into the same map, live door copies, setup replacement, one-time receipts and saved
 party state. The smallest useful implementation group follows that dependency chain from entry
-to normal return. [Location coverage](pre-voyage-optional-locations.md) records the source-gated
-closure, current gaps, named Unknowns and implementation order. Start with the southern Devil's
-Head exterior and both pre-voyage Jewel Cave sections. Reuse the existing field, Search and
-private asset consumers.
+to normal return. [Location coverage](pre-voyage-optional-locations.md) records the accepted
+southern shrine visit, optional-location audits and retained observation limits.
 
-Each group exercises ordinary entry, interior interaction or source refusal, return and a
-compatible old slot through Continue. Use legitimate controlled prerequisites and short inputs.
-Save eligibility and restoration for existing places belong to
-[#2022](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2022). This agreement does
-not add arbitrary field savepoints. Battle27+ and late story openings stay outside this scope.
+Use legitimate controlled prerequisites and short inputs when a distinct gate or caller
+needs ordinary-input evidence. Static checks suffice for equivalent residents and rewards
+with verified bindings and a shared consumer. [Unified v6 Save and Continue](opening-session-lifecycle.md#unified-settled-field-snapshots)
+owns settled visits. An optional-exploration change needs persistence verification when it
+changes the snapshot boundary. Battle27+ and later story openings stay outside this agreement.
 
 ## Castle bedroom cast after Astral leaves
 
