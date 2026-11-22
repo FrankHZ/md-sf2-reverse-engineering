@@ -12,13 +12,24 @@ public enum BattleMovementPurpose { Player, Return, Automatic }
 public sealed class BattleMovementState
 {
     internal BattleMovementState(ActorRef actor, IReadOnlyList<MapPosition> path, int segment,
-        WaitToken token, BattleMovementPurpose purpose, ActorRef? target = null, BattleActionRef? chosenAction = null)
-    { Actor = actor; Path = path; Segment = segment; Token = token; Purpose = purpose; Target = target; ChosenAction = chosenAction; }
+        WaitToken token, BattleMovementPurpose purpose, ActorRef? target = null, BattleActionRef? chosenAction = null,
+        int? soundOverride = null)
+    {
+        Actor = actor;
+        Path = path;
+        Segment = segment;
+        Token = token;
+        Purpose = purpose;
+        Target = target;
+        ChosenAction = chosenAction;
+        SoundOverride = soundOverride;
+    }
     public ActorRef Actor { get; }
     public IReadOnlyList<MapPosition> Path { get; }
     public int Segment { get; }
     public WaitToken Token { get; }
     public BattleMovementPurpose Purpose { get; }
+    public int? SoundOverride { get; }
     public MapPosition From => Path[Segment];
     public MapPosition To => Path[Segment + 1];
     public int Facing => To.X > From.X ? 0 : To.Y < From.Y ? 1 : To.X < From.X ? 2 : 3;
@@ -39,7 +50,9 @@ internal static class BattleMovementContinuation
         {
             observations.Add(new(++sequence, revision, "battle-movement-segment-started", next.Actor,
                 From: path[0], To: path[1], Detail: purpose.ToString()));
-            movement = new(next.Actor, path, 0, new(sequence), purpose);
+            var actor = current.Battle.GetActor(next.Actor);
+            movement = new(next.Actor, path, 0, new(sequence), purpose,
+                soundOverride: BattleEquipment.MovementSound(actor.Definition, actor.SourceLoadout));
         }
         return Result(current, current.Battle, next, movement, revision, sequence, observations);
     }
@@ -63,8 +76,10 @@ internal static class BattleMovementContinuation
             return FinishAutomatic(decided, actor, action.Destination, action.Target, action.ChosenAction, observations, rules);
         observations.Add(new(++sequence, revision, "battle-movement-segment-started", actor,
             From: action.Path[0], To: action.Path[1], Detail: BattleMovementPurpose.Automatic.ToString()));
+        var moving = action.Battle.GetActor(actor);
         return Result(current, action.Battle, null, new(actor, action.Path, 0, new(sequence),
-            BattleMovementPurpose.Automatic, action.Target, action.ChosenAction), revision, sequence, observations);
+            BattleMovementPurpose.Automatic, action.Target, action.ChosenAction,
+            BattleEquipment.MovementSound(moving.Definition, moving.SourceLoadout)), revision, sequence, observations);
     }
 
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command) =>
@@ -90,7 +105,8 @@ internal static class BattleMovementContinuation
             observations.Add(new(++sequence, revision, "battle-movement-segment-started", movement.Actor,
                 From: movement.Path[next], To: movement.Path[next + 1], Detail: movement.Purpose.ToString()));
             return Result(current, delivered, current.Selection, new(movement.Actor, movement.Path,
-                next, new(sequence), movement.Purpose, movement.Target, movement.ChosenAction), revision, sequence, observations);
+                next, new(sequence), movement.Purpose, movement.Target, movement.ChosenAction, movement.SoundOverride),
+                revision, sequence, observations);
         }
         observations.Add(new(++sequence, revision, "battle-movement-finished", movement.Actor,
             From: movement.Path[0], To: movement.To, Detail: movement.Purpose.ToString()));

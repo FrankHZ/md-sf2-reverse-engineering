@@ -2615,6 +2615,9 @@ msgstr "消耗品"
 msgid "depot.kind.other"
 msgstr "物品"
 
+msgid "depot.description.chirrup-sandals"
+msgstr "穿上这双凉鞋，走路时每一步都会发出啾啾声。"
+
 msgid "depot.value"
 msgstr "估价：{0}金币"
 

@@ -558,6 +558,10 @@ Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Power
 and Running Ring use a separate equipped category in the same four words on supported campaign
 allies. Current class, refresh and custody rules apply across Field, Caravan and battle. Power
 and Protect admit battle Item Use, slot damage and destruction, merchant Repair and Continue.
+Chirrup Sandals use that ring slot for movement audio, with no stat bonus or Use.
+From the admitted prison checkpoint, ordinary Search, field Equip, movement sound,
+v6 Continue and removal are confirmed. Battle selection and Depot appraisals have
+engine coverage. [Sandals route and limits](content/special-equipment-reach.md#remake-controls-and-reproduction)
 Black Ring curse and Use and Indra Staff remain separate capabilities.
 [Ring equipment](domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input) ·
 [Use, Repair and Continue](domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)

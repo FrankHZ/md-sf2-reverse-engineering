@@ -817,6 +817,7 @@ internal static partial class GameText
         ["depot.kind.ring"] = 0,
         ["depot.kind.consumable"] = 0,
         ["depot.kind.other"] = 0,
+        ["depot.description.chirrup-sandals"] = 0,
         ["depot.value"] = 1,
         ["depot.eligible"] = 1,
         ["depot.none"] = 0,

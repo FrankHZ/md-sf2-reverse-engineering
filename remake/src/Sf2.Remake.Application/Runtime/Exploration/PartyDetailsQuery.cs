@@ -18,6 +18,19 @@ public sealed record PartyDetails(uint? Gold, IReadOnlyList<PartyMemberDetails> 
 // death/absence does not erase retained resources, and an absent loadout is not four empty slots.
 internal static class PartyDetailsQuery
 {
+    internal static int? LeaderMovementSound(ScenarioDefinition definition, BattleStartInput party)
+    {
+        static bool IsLeader(BattleDeploymentDefinition row) =>
+            row.Faction == BattleFaction.Ally && row.Initialization?.AllyPartyMember == 0;
+
+        var leader = definition.Encounters.GetValueOrDefault(party.Encounter)?.Deployments.FirstOrDefault(IsLeader) ??
+            definition.Encounters.Values.SelectMany(encounter => encounter.Deployments).FirstOrDefault(IsLeader);
+        if (leader is null || party.Actors.FirstOrDefault(row => row.Actor == leader.Actor) is not { Initialized: not false } carried)
+            return null;
+        var actor = leader.ResolveClass(carried.Progress?.ClassId).Definition;
+        return BattleEquipment.MovementSound(actor, carried.SourceLoadout ?? carried.Progress?.SourceLoadout ?? actor.SourceLoadout);
+    }
+
     internal static PartyDetails? Query(ScenarioDefinition definition, SessionSnapshot current)
     {
         if (current.Mode != SessionMode.Exploration || current.Exploration is not { } field) return null;

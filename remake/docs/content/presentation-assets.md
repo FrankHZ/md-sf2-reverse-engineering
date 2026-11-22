@@ -260,6 +260,15 @@ input variable without the extension. The package already has the D2 recording f
 from `runtime/retail-v1/sfx/87` in the accepted private asset version. The existing Debug adapter
 resolves `SFX_JUMP` against this mounted cue. [Bedoe input and Save/Continue](../application/dark-caves-bedoe.md#reproduce-the-optional-routes)
 
+<a id="galam-sandals-audio-package"></a>
+
+The registered `derived/issue2035/galam-town-v1` package includes the CB recording
+for command 99 from the accepted retail asset publication. Select its world, scene,
+entry and opening inputs with the normal Galam launcher configuration. Session audio
+uses PSG tone 3 for command 99. In the pinned driver, `sfx_23` has one active
+pointer in that slot. [Galam selection variables](../application/opening-session-lifecycle.md#reproduce-the-map16-observation) ·
+[Actual equipment and audio observation](special-equipment-reach.md#remake-controls-and-reproduction)
+
 The WIZ mount selects already prepared Kazin and Tyrin walking and battle bodies, reuses
 the existing rod/stick layers and binds the two members' progression from `-Upstream`.
 Use the resulting `wiz-v1` for both locales. Ordinary Kazin was played through Battle26. Tyrin's rite has controlled coverage. [WIZ reproduction](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)

@@ -943,8 +943,9 @@ audio policy; modern segment duration need not equal PCM duration.
   control/temporary land-effect coordinate updates; `battlefield/buildmovestringfunctions.asm`
   supplies `BuildCancelMoveString`, and `battlefunctions/executeindividualturn.asm` selects the
   control boundary. `battlefunctions/setmovesfx.asm:SetMoveSfx` (`0x25790..0x257C0`) selects79 in battle, except an
-  equipped Chirrup Sandals ring (`0x7E`) selects99. Existing private ATT-only weapon admission
-  excludes rings; arbitrary loadouts and99 are outside this consumer.
+  equipped Chirrup Sandals ring (`0x7E`) selects99. The remake resolves the cue from
+  the moving actor's live equipment when the movement route starts and delivers one cue
+  per segment. Command79 remains the default. [Equipped movement and field audio](../content/special-equipment-reach.md#remake-controls-and-reproduction)
 - `code/gameflow/battle/battleloop_1.asm` clears `PLAYER_TYPE`; `SetControlledEntityActScript` in
   `code/common/scripting/entity/entityfunctions_2.asm` therefore selects the ordinary controlled
   character script. `data/scripting/entity/eas_main.asm` runs `ac_checkMapBlockCopy`,

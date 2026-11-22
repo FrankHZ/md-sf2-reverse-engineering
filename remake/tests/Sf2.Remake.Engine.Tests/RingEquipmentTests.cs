@@ -3,6 +3,7 @@ using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
@@ -27,7 +28,106 @@ public sealed class RingEquipmentTests
              Ring(19, "POWER_RING", "RING|RARE|BREAKABLE", "INCREASE_ATT", 5),
              Ring(20, "PROTECT_RING", "RING|RARE|BREAKABLE", "INCREASE_DEF", 5),
              Ring(21, "QUICK_RING", "RING|RARE|BREAKABLE", "INCREASE_AGI", 5),
-             Ring(22, "RUNNING_RING", "RING|RARE", "INCREASE_MOV", 2)], [], [], []);
+             Ring(22, "RUNNING_RING", "RING|RARE", "INCREASE_MOV", 2),
+             Ring(126, "CHIRRUP_SANDALS", "RING|RARE", "NONE", 0)], [], [], []);
+    }
+
+    [Fact]
+    public void MovingActorUsesTheirWornSoundRingWithoutChangingWeaponOrStats()
+    {
+        var (_, initial) = WithPack([178, 126, 127, 127]);
+        var actor = initial.Battle.GetActor(Hero);
+        var equipped = BattleEquipment.Equip(actor, 1);
+        Assert.Equal(new ushort[] { 178, 254, 127, 127 }, equipped.SourceLoadout!.Items);
+        Assert.Equal((actor.Attack, actor.Defense, actor.Agility, actor.Move, BattleEquipment.Physical(actor)),
+            (equipped.Attack, equipped.Defense, equipped.Agility, equipped.Move, BattleEquipment.Physical(equipped)));
+
+        int? StepSound(BattleActorState moving)
+        {
+            var battle = initial.Battle.With(actors: initial.Battle.Actors.Select(row => row.Actor == Hero ? moving : row));
+            return BattleCommandDispatcher.Submit(BattleSaveFixture.At(battle, initial.Story),
+                new Move(ExplorationDirection.East)).Snapshot.BattleMovement!.SoundOverride;
+        }
+
+        Assert.Null(StepSound(actor));
+        Assert.Equal(99, StepSound(equipped));
+        Assert.Null(StepSound(BattleEquipment.Equip(equipped, BattleEquipment.RemoveRingChoice)));
+    }
+
+    [Fact]
+    public void OnlyLeaderEquipmentChangesOrdinaryFieldSteps()
+    {
+        var (_, initial) = WithPack([178, 126, 127, 127]);
+        var battle = initial.Battle.Definition;
+        var leader = initial.Battle.GetActor(Hero);
+        var hero = battle.Deployments.Single(row => row.Actor == Hero);
+        var companion = new ActorRef("friend");
+        // The leader fixture defines party slot zero. A distinct allied actor carries the same ring.
+        var friend = hero with
+        {
+            Definition = new(companion, hero.Definition.ClassRule, 1, 20, 5, 6, 4, 6, false, 6, [],
+                sourceLoadout: new([254, 127, 127, 127], [63, 63, 63, 63]), equipment: hero.Definition.Equipment),
+            Initialization = hero.Initialization! with { AllyPartyMember = 1 },
+        };
+        battle = battle.WithDeployments([hero, friend]);
+        EntityRef keeper = new("keeper");
+        var map = new ExplorationMapDefinition(new("sample-field"), new(new ushort[WorkingMapLayout.WordCount]),
+            new([new(0, 0, 63, 63)]), [new(keeper, new(5, 1), 2, 32)],
+            [new(ExplorationEventKind.Interact, null, null, keeper, new("depot", 0))]);
+        var world = new ExplorationDefinition([map], [new("depot", [new OpenCaravan(), new EndProgram()])],
+            partyFlags: new(20, 0, 32, 12));
+        var definition = new ScenarioDefinition("field-footsteps", [battle], exploration: world)
+            { FieldPreparation = PrivateFieldPreparation.Read(Source()) };
+        var party = new BattleStartInput(battle.Encounter,
+            [new(Hero, leader.Hp, leader.Mp, null, null, null, 0, null, leader.Progress, leader.SourceLoadout),
+             new(companion, 10, 0, null, null, null, 0, null)], 0, 0, 0,
+            itemCustody: new([], new Dictionary<byte, byte>()));
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
+            new ExplorationStartInput(map.Map, new("player"), new(1, 1), 0, 32, [0, 1, 32, 33, 70], party))).Session;
+
+        void Step(bool sounds)
+        {
+            var result = EngineTestContent.Accept(session, new Move(ExplorationDirection.East));
+            var cues = result.Observations.Where(row => row.Kind == "entity-sound").Select(row => row.Detail).ToList();
+            for (int i = 0; !session.Current.CanWaitAtInput; i++)
+            {
+                Assert.True(i < 32);
+                result = EngineTestContent.Accept(session, new AdvanceSimulation(session.Current.Story.Wait?.Token));
+                cues.AddRange(result.Observations.Where(row => row.Kind == "entity-sound").Select(row => row.Detail));
+            }
+            Assert.Equal(sounds ? new[] { "99" } : [], cues);
+        }
+
+        Step(false);
+        Assert.Null(session.QueryFieldActions(Hero).Items.Single(row => row.Word == 126).Use);
+        EngineTestContent.Accept(session, new FieldEquip(Hero, 1, 126));
+        Step(true);
+        EngineTestContent.Accept(session, new FieldEquip(Hero, BattleEquipment.RemoveRingChoice, 254, ExpectedSourceSlot: 1));
+        Step(false);
+        WaitToken DepotWait() => Assert.IsType<CaravanWait>(session.Current.Story.Wait).Token;
+        EngineTestContent.Accept(session, new Interact(keeper));
+        EngineTestContent.Accept(session, new ChooseCaravan(DepotWait(), CaravanAction.Depot));
+        EngineTestContent.Accept(session, new ChooseDepot(DepotWait(), DepotAction.Deposit));
+        EngineTestContent.Accept(session, new SelectCaravanMember(DepotWait(), 0));
+        EngineTestContent.Accept(session, new SelectDepotSlot(DepotWait(), 1, 126));
+        Assert.Equal(new byte[] { 126 }, session.Current.Exploration!.Party.ItemCustody!.Depot);
+        EngineTestContent.Accept(session, new ContinueCaravan(DepotWait()));
+        EngineTestContent.Accept(session, new BackCaravan(DepotWait()));
+        EngineTestContent.Accept(session, new ChooseDepot(DepotWait(), DepotAction.Look));
+        var stored = session.Current.Exploration.Party;
+        EngineTestContent.Accept(session, new SelectDepotItem(DepotWait(), 0, 126));
+        var look = Assert.IsType<CaravanWait>(session.Current.Story.Wait);
+        Assert.Equal(CaravanPhase.DepotLook, look.Phase);
+        Assert.Same(stored, session.Current.Exploration.Party);
+        Assert.Equal("depot.description.chirrup-sandals", CaravanDepotQuery.Look(definition, session.Current, look.Item!.Value).DescriptionKey);
+        Assert.Null(CaravanDepotQuery.Look(definition, session.Current, 19).DescriptionKey);
+        EngineTestContent.Accept(session, new ContinueCaravan(DepotWait()));
+        EngineTestContent.Accept(session, new BackCaravan(DepotWait()));
+        EngineTestContent.Accept(session, new ChooseDepot(DepotWait(), DepotAction.Derive));
+        EngineTestContent.Accept(session, new SelectDepotItem(DepotWait(), 0, 126));
+        EngineTestContent.Accept(session, new SelectCaravanMember(DepotWait(), 0));
+        Assert.Empty(session.Current.Exploration.Party.ItemCustody!.Depot);
+        Assert.Equal(new ushort[] { 178, 126, 127, 127 }, session.Current.Exploration.Party.Actors[0].SourceLoadout!.Items);
     }
 
     private static (ScenarioDefinition Definition, SessionSnapshot Current) WithPack(ushort[] words, ushort status = 0,
