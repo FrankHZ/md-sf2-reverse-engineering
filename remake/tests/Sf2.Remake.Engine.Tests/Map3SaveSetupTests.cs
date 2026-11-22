@@ -26,13 +26,13 @@ public sealed class Map3SaveSetupTests
         var initial = Assert.IsType<SessionStarted>(GameSession.Start(reader)).Session;
         var saved = initial.CaptureSave(initial.Current.SessionId, initial.Current.Revision).Data!;
         var map = initial.Definition.Exploration!.Maps[new("map-3")];
-        var families = new Dictionary<string, bool> { ["ms-map3"] = true, ["ms-map3-flag609"] = true,
-            ["ms-map3-flag506"] = false, ["ms-map3-flag543"] = false };
+        var families = new Dictionary<string, string?> { ["ms-map3"] = null, ["ms-map3-flag609"] = null,
+            ["ms-map3-flag506"] = "save-recipe", ["ms-map3-flag543"] = "save-location-unavailable" };
         var cases = new[] { (Flag: (int?)null, Setup: map.Setup!.DefaultSetup) }.Concat(
             map.Setup.FlagAlternatives.Select(variant => (Flag: (int?)int.Parse(variant.Flag.Value), Setup: variant.Setup)));
         foreach (var phase in cases)
         {
-            Assert.True(families.TryGetValue(phase.Setup.Value, out bool supported),
+            Assert.True(families.TryGetValue(phase.Setup.Value, out string? anchoredSaveFailure),
                 "Classify new Map3 setup recovery before changing the save boundary: " + phase.Setup);
             foreach (bool joinedJaha in new[] { false, true })
             {
@@ -41,9 +41,9 @@ public sealed class Map3SaveSetupTests
                 var data = saved with { Recipe = "map3-joined", X = 32, Y = 13, Facing = 1, Flags = flags,
                     ActiveAllies = joinedJaha ? ["ally-0", "ally-1", "ally-2", "ally-3"] : ["ally-0", "ally-1", "ally-2"] };
                 var result = GameSession.Restore(initial.Definition, data, initial.Rules);
-                if (!supported)
+                if (anchoredSaveFailure is not null)
                 {
-                    Assert.Equal("save-location-unavailable", Assert.IsType<SessionStartFailed>(result).Failure.Code);
+                    Assert.Equal(anchoredSaveFailure, Assert.IsType<SessionStartFailed>(result).Failure.Code);
                     continue;
                 }
                 var session = Assert.IsType<SessionStarted>(result).Session;
@@ -62,7 +62,7 @@ public sealed class Map3SaveSetupTests
         }
     }
 
-    private static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joinedJaha = false)
+    private static (ScenarioDefinition Definition, OpeningSaveData Data) Fixture(bool joinedJaha = false, bool includeChurch = false, bool includeF506 = true)
     {
         var (original, data) = OpeningRestoreTests.Fixture(true);
         var old = original.Exploration!;
@@ -70,16 +70,25 @@ public sealed class Map3SaveSetupTests
         ExplorationEntityDefinition Npc(string id, int x, int sprite) => new(new(id), new(x, 10), 1, 32, Sprite: sprite,
             Actions: new([new WaitEntityTicks(9), new JumpEntityAction(0)]));
         var population = basis.Population! with { NonAllyStart = 142 };
+        var setups = new List<ExplorationSetupDefinition> {
+            new(new("ms-map3-flag609"), [Npc("entity-3", 1, 3), Npc("entity-142", 2, 195)], [],
+                new("dangerous-onload", 0), null, population)
+        };
+        if (includeF506)
+            setups.Add(new(new("ms-map3-flag506"), [Npc("entity-6", 3, 6)], [], null, null, population));
         var map = new ExplorationMapDefinition(basis.Map, basis.Layout, basis.Traversal, basis.Entities, basis.Events,
             onLoad: basis.OnLoad, population: population, entryFlags: [new(256, false), new(260, false)],
             basePalette: basis.BasePalette, viewAreas: basis.ViewAreas,
             setup: new(new("ms-map3"), [new(new("609"), new("ms-map3-flag609")),
-                new(new("506"), new("ms-map3-flag506")), new(new("700"), new("future-setup"))]),
-            setups: [new(new("ms-map3-flag609"), [Npc("entity-3", 1, 3), Npc("entity-142", 2, 195)], [],
-                new("dangerous-onload", 0), null, population),
-                new(new("ms-map3-flag506"), [Npc("entity-6", 3, 6)], [], null, null, population)]);
+                new(new("506"), new("ms-map3-flag506")), new(new("543"), new("ms-map3-flag543")),
+                new(new("700"), new("future-setup"))]), setups: setups)
+            { ChurchSavepoint = includeChurch ? new(basis.Map, new(32, 13), 1) : null };
+        var visuals = old.Visuals! with
+        {
+            Sprites = new[] { 0, 1, 6 }.ToDictionary(id => id, id => new ExplorationSpriteVisual(id, [], null, 0))
+        };
         var world = new ExplorationDefinition([map], old.Programs.Values, provenance: old.Provenance,
-            partyFlags: old.PartyFlags, visuals: old.Visuals);
+            partyFlags: old.PartyFlags, visuals: visuals);
         var ally = original.Encounters.Values.First().Deployments.First().Definition;
         var jaha = new BattleDeploymentDefinition(new(new("ally-3"), ally.ClassRule, ally.Level, ally.MaxHp, ally.MaxMp,
             ally.Attack, ally.Defense, ally.Agility, false, ally.Move, [], sourceLoadout: ally.SourceLoadout, growth: ally.Growth),
@@ -123,7 +132,7 @@ public sealed class Map3SaveSetupTests
     }
 
     [Theory]
-    [InlineData(506)] [InlineData(700)]
+    [InlineData(543)] [InlineData(700)]
     public void LaterAndUnknownSelectedSetupsRemainUnavailableEvenWithCommissionFlags(int flag)
     {
         var (definition, data) = Fixture();
@@ -140,6 +149,73 @@ public sealed class Map3SaveSetupTests
             data with { Flags = data.Flags.Except([603]).ToArray(), Recipe = "map3-opening", X = 56, Y = 3, Facing = 3 },
             RuleCompositions.Sf2()));
         Assert.Equal("save-location-unavailable", failed.Failure.Code);
+    }
+
+    [Fact]
+    public void SettledGransealKeepsTheSavedTileSeparateFromThePublishedChurchRefuge()
+    {
+        var session = StartSettledGranseal(includeChurch: true);
+        var before = session.Current;
+        var capture = session.CaptureSave(before.SessionId, before.Revision);
+        Assert.Null(capture.Error);
+        var ordinary = Assert.IsType<OpeningSaveData>(capture.Data);
+        Assert.Equal("map-16", ordinary.EgressMap);
+        Assert.DoesNotContain(399, ordinary.Flags);
+
+        var offer = session.QueryChurchSave();
+        Assert.True(offer.Allowed);
+        Assert.Equal(before.Revision, offer.Revision);
+        Assert.Equal(new MapPosition(31, 13), offer.Location!.Anchor.Position);
+        Assert.Equal("save-stale-revision", session.RecordChurchSave(offer.SessionId, offer.Revision - 1,
+            _ => throw new InvalidOperationException("Stale Record reached publication")).Error);
+        Assert.Null(session.RecordChurchSave(offer.SessionId, offer.Revision, _ => false).Error);
+        Assert.Same(before, session.Current);
+
+        var recorded = Assert.IsType<OpeningSaveData>(
+            session.RecordChurchSave(offer.SessionId, offer.Revision, _ => true).Data);
+        byte[] Bytes(OpeningSaveData value) => OpeningSaveJson.Write(new(1, 1, 1, DateTimeOffset.UnixEpoch, value));
+        Assert.Equal(Bytes(ordinary with { EgressMap = "map-3", Flags = recorded.Flags }), Bytes(recorded));
+        Assert.Contains(399, session.Current.Story.Flags);
+        Assert.Equal(new FieldReturnAnchor(new("map-3"), new(32, 13), 1),
+            Sf2OutcomeReturnPolicy.FindEgress(session.Definition, session.Current.Story.EgressMap!));
+        var resumed = Assert.IsType<SessionStarted>(GameSession.Restore(session.Definition, recorded, session.Rules)).Session;
+        Assert.Equal(new MapPosition(31, 13), resumed.Current.Exploration!.PlayerEntity.Position);
+        Assert.True(resumed.Current.CanWaitAtInput);
+        Assert.Null(EngineTestContent.Send(resumed, new Move(ExplorationDirection.South)).Failure);
+    }
+
+    [Fact]
+    public void SettledGransealOrdinarySaveNeedsItsSceneAndOnlyRecordNeedsTheChurchBinding()
+    {
+        var session = StartSettledGranseal(includeChurch: false);
+        var before = session.Current;
+        Assert.Equal("save-location-unavailable", session.QueryChurchSave().Error);
+        Assert.Equal("save-location-unavailable", session.RecordChurchSave(before.SessionId, before.Revision,
+            _ => throw new InvalidOperationException("Unbound Record reached publication")).Error);
+        Assert.Same(before, session.Current);
+        var capture = session.CaptureSave(before.SessionId, before.Revision);
+        Assert.Null(capture.Error);
+        var data = Assert.IsType<OpeningSaveData>(capture.Data);
+        var cases = new[] {
+            (session.Definition, data with { FieldScene = null }, "save-field-scene-required"),
+            (session.Definition, data with { FieldScene = data.FieldScene! with { Setup = "ms-map3-flag609" } },
+                "save-field-scene-context"),
+            (Fixture(includeF506: false).Definition, data, "save-location-unavailable"),
+            (session.Definition, data with { Flags = data.Flags.Append(640).ToArray() }, "save-location-unavailable"),
+        };
+        foreach (var (definition, record, code) in cases)
+            Assert.Equal(code, Assert.IsType<SessionStartFailed>(GameSession.Restore(definition, record, session.Rules)).Failure.Code);
+    }
+
+    private static GameSession StartSettledGranseal(bool includeChurch)
+    {
+        var (definition, data) = Fixture(includeChurch: includeChurch);
+        var rules = RuleCompositions.Sf2();
+        var baseline = Assert.IsType<SessionStarted>(GameSession.Restore(definition, data, rules)).Session.Current;
+        var start = new ExplorationStartInput(new("map-3"), new("entity-0"), new(31, 13), 2, 32,
+            baseline.Story.Flags.Append(506), baseline.Exploration!.Party, display: baseline.Story.Display,
+            textSettings: baseline.Story.TextSettings, stepCounter: data.StepCounter, egressMap: new("map-16"));
+        return Assert.IsType<SessionStarted>(GameSession.Start(definition, start, rules)).Session;
     }
 
     [Fact]

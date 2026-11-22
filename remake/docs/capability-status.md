@@ -87,7 +87,10 @@ exhaustion or transition leaves a paused menu with a readable Save-unavailable r
 Settled Yeel visits use the [same Save and Continue boundary](application/opening-session-lifecycle.md#implemented-savepoint-boundary).
 Continue restores the live population and follower links in the default and post-Hawel F650
 setups. The published world retains the Healing Seed receipt and Church Egress across restart. [Pre-voyage save coverage](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
-tracks the planned Granseal F506 and Galam Save/Record batches and the remaining location gaps.
+includes [Granseal F506](application/opening-session-lifecycle.md#granseal-f506-save-and-continue-observation).
+Cold Continue retains Kiwi's settled refusal or named join and same-visit follower. Ordinary
+reentry retires the actor. The F506 priest publishes the Map3 refuge through Record. Galam is
+the next Save/Record batch.
 Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.

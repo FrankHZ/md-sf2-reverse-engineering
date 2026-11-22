@@ -11,6 +11,13 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 {
     private const string InitialRecipe = "new-game";
     private const string YeelRecipe = "yeel-field";
+    private const string GransealRecipe = "granseal-field";
+    private const string GransealSetup = "ms-map3-flag506";
+    private static readonly FieldReturnAnchor GransealChurch = new(new("map-3"), new(32, 13), 1);
+
+    private static ExplorationSetupDefinition? SettledGransealSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags) =>
+        !flags.Contains(640) && map.SelectedSetup(flags) is { Value: GransealSetup } selected &&
+        map.Setups.TryGetValue(selected, out var setup) ? setup : null;
 
     private static MapSetupId? YeelSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)
     {
@@ -81,16 +88,24 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             stepCounter: 0, egressMap: new(data.EgressMap)) { Names = data.Names };
     }
 
-    public StoryState RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story)
+    public StoryState? RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story)
     {
-        if (definition.Exploration!.Maps[field.Map].ChurchSavepoint is not { } point) return story;
+        var map = definition.Exploration!.Maps[field.Map];
+        var point = map.ChurchSavepoint;
+        if (field.Map == GransealChurch.Map && map.Setup?.FlagAlternatives.Any(row => row.Setup.Value == GransealSetup) == true)
+        {
+            // The source refuge also serves earlier battle returns. Only this visit changes Record.
+            if (SettledGransealSetup(map, story.Flags) is null) return story;
+            if (point != GransealChurch) return null;
+        }
+        if (point is null) return story;
         return story.Copy(story.Cursor, story.Wait, flags: story.Flags.Append(399).Distinct().Order().ToArray(),
             egressMap: point.Map);
     }
 
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
-        if (data.Map is "map-5" or "map-23" or "map-25" or "map-2" or "map-36" && data.FieldScene is null)
+        if ((data.Recipe == GransealRecipe || data.Map is "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
@@ -114,7 +129,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
-            !(data.Recipe is "battle07-return" or YeelRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
+            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
@@ -148,12 +163,14 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new("new-granseal-return", player, "New Granseal, return journey");
         if (map.Value == "map-3")
         {
+            if (SettledGransealSetup(content!, flags) is not null && content!.Traversal.IsWithinActiveArea(player.Position))
+                return new(GransealRecipe, player, "Granseal");
             var selected = content!.SelectedSetup(flags);
             if (selected != content.Setup?.DefaultSetup &&
                 !(selected?.Value == "ms-map3-flag609" && flags.Contains(603)))
                 Fail();
             return flags.Contains(603)
-                ? new("map3-joined", new(map, new(32, 13), 1), "Granseal, outside the church")
+                ? new("map3-joined", GransealChurch, "Granseal, outside the church")
                 : new("map3-opening", new(map, new(56, 3), 3), "Granseal, home");
         }
         if (map.Value == "map-5" && YeelSetup(content!, flags) is not null &&
@@ -236,6 +253,11 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         world.Map.Value == "map-72" && flags.Contains(256) && definition.Exploration!.Programs.ContainsKey("cs-4ffda")
             ? Sf2FieldSceneRestore.Capture(definition, RaftRuntime.OnScroll(world, flags, null), definition.Exploration.Maps[world.Map].Setup!.DefaultSetup.Value) :
         world.Map.Value is "map-6" or "map-7" && flags.Contains(802) ? Sf2NewGransealRestore.Capture(definition, world) :
+        world.Map == GransealChurch.Map &&
+            SettledGransealSetup(definition.Exploration!.Maps[world.Map], flags) is { } granseal &&
+            world.Definition.OnLoad == granseal.OnLoad && world.Definition.Entities.SequenceEqual(granseal.Entities) &&
+            world.Definition.Events.SequenceEqual(granseal.Events)
+                ? Sf2FieldSceneRestore.Capture(definition, world, GransealSetup) :
         world.Map.Value == "map-5" ? Sf2FieldSceneRestore.Capture(definition, world,
             YeelSetup(definition.Exploration!.Maps[world.Map], flags)!.Value) :
         world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
@@ -246,6 +268,19 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
+        if (location.Recipe == GransealRecipe)
+        {
+            var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
+            if (scene is null || scene.Setup != SettledGransealSetup(sourceMap, flags)?.Id.Value)
+                throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
+            var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
+            var player = town.PlayerEntity;
+            if ((player.Motion.FlagsA & 0x20) != 0 && EntityMotion.FieldObstructed(player.Motion.X, player.Motion.Y,
+                town.AllEntities.Where(actor => actor.Visible && actor.Slot != player.Slot).Select(actor => actor.Motion)))
+                throw new BattleRuleException("save-anchor-occupied", "save.anchor");
+            enteredFlags = flags;
+            return town;
+        }
         if (location.Anchor.Map.Value == "map-5")
         {
             var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];

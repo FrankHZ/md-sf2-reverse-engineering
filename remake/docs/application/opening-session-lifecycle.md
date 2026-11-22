@@ -84,7 +84,7 @@ Implemented, standalone-only, missing integration, missing behavior and Unknown 
 | Surface | Current state and owner | Closure disposition |
 | --- | --- | --- |
 | Entry/initialization | **Implemented:** ordinary title/New Game uses admitted static ally starts, growth and complete fresh progress; Continue reconstructs supported field savepoints. Explicit authored/controlled entries remain diagnostic. | #1420/#1421; [content/start boundary](../content/profiles-and-trust.md#opening-new-game-admission), [native entry](../verification/host.md#opening-new-game-observation) and [restart](../verification/host.md#opening-save-and-continue). |
-| Persistence/Continue | **Implemented, bounded:** selectable local save history, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. The first field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return, completed Battle07 Map58 aftermath and settled Yeel Map5. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
+| Persistence/Continue | **Implemented, bounded:** selectable local save history, detached capture, strict disk/restore admission, title Continue and explicit compatible-backup recovery. The first field savepoint recipes cover pre-messenger Map3, joined/ordinary-defeat Map3, completed Battle01 Map57 return, completed Battle07 Map58 aftermath, settled Granseal F506 and settled Yeel Map5. The same slots also support settled player Movement battle saves in Battles01–07. | #1421; [field implementation boundary](#implemented-savepoint-boundary) and [restart verification](../verification/host.md#opening-save-and-continue). The separate [implemented battle persistence owner](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) and [native verification](../verification/battle-save.md) own battle eligibility and fresh-process Continue at the saved actor's turn. Other interiors, arbitrary story/animation suspend, autosave, migration and original SRAM parity remain outside this delivered scope. |
 | Walk/Talk/party inspection | Implemented in the connected route: semantic movement/interaction and read-only roster/details. [PartyDetailsQuery](../../src/Sf2.Remake.Application/Runtime/Exploration/PartyDetailsQuery.cs) projects carried state; absent loadout/accounting stays unknown. | Keep the same authority. A readable unknown label is acceptable for optional presentation metadata, not for gold/EXP needed to transact or save. |
 | Equip/Give/Drop | **Implemented, bounded:** Party Status → Prepare changes the carried party through revision-checked field commands, shared equipment/word rules and existing custody. | #1422; [field boundary](#implemented-field-preparation). Source class/slot legality, full-pack exchange and confirmed Drop are explicit; private battle command capabilities stay separate. |
 | Field Use/magic | **Implemented, bounded:** original NoEffect for Medical Herb/Healing Seed and HEAL. Antidote and DETOX1 cure poison with caller-specific payment. Fairy Powder clears poison and paralysis and spends the selected holder's slot. | [Field policy](#implemented-field-preparation). The earlier “field HP recovery” wording was a planning assumption, corrected from the pinned field caller; no modern healing deviation or battle EXP/RNG is introduced. |
@@ -415,6 +415,12 @@ asks the selected profile for a recipe and validates its typed result using exis
   This adds the `battle07-return` recipe to the existing format, without changing revision4 party
   generation. The quake town and scene-only damaged-ship arrival are not save locations.
 
+- **Granseal F506 settled visit:** the `granseal-field` recipe retains the current legal tile,
+  facing and layer, the actual actor/alias tables, follower links and working-layout differences.
+  Continue restores the visit with the selected Talk, Search and warp bindings. A named Kiwi can
+  still follow on that visit. Fresh entry retires his resident actor while retaining his membership.
+  Church Record requires the imported Map3 refuge. See [the bounded observation](#granseal-f506-save-and-continue-observation).
+
 - **Yeel settled visit:** the `yeel-field` recipe records the current active-area tile, facing
   and layer. Use the default setup or a concrete F650 setup selected by the world. The visit
   snapshot retains settled actors, aliases, follower relationships and the working layout.
@@ -455,8 +461,9 @@ can differ because this is a savepoint reload. This distinction must appear in p
 **Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
 within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
 admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
-Start with Map3 F506, then Map16. Each batch owns its capture, independent Continue and restart
-evidence. Map5 default/F650 and the anchored opening and tower outcome recipes are already delivered.
+Map3 F506 is implemented. Map16 is the next batch. Each batch owns its capture, independent
+Continue and restart evidence. Map5 default/F650 and the anchored opening and tower outcome
+recipes are already delivered.
 
 **Confirmed implementation structure.**
 [`OpeningSave.Query`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs) selects a
@@ -464,10 +471,10 @@ recipe, captures detached progress and builds a restore candidate before offerin
 [`OpeningRestore.Build`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
 reselects the recipe from the record and validates the party, registers, content and landing.
 [`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
-default/F609 but rejects the selected F506 setup. It has no Map16 field recipe. The [current world
+default/F609 with anchors and F506 with its concrete scene. The [current world
 selection](../../content/private/pre-voyage-opening.json) includes both towns and their early setup
-bodies. Its Church checkpoint selection omits Maps3 and 16. A working priest menu or battle-return
-landing alone supplies neither a field recipe nor the Church publication binding.
+bodies. Map3 has an imported Church refuge. Map16 still needs its field recipe and Church
+publication binding.
 
 Use one finite settled-visit recipe per town with the existing
 [`SavedFieldScene`](../../src/Sf2.Remake.Application/Runtime/Persistence/SavedFieldScene.cs) and
@@ -488,15 +495,14 @@ previous-map/outcome return belongs to the active transfer or encounter. A later
 warp and a later battle derives its own return. Leave existing Map57/58 outcome anchors under their
 current recipes.
 
-**Granseal first.** Admit early `ms-map3-flag506` only with its concrete setup body. The [Kiwi source
+**Granseal.** The delivered batch admits early `ms-map3-flag506` only with its concrete setup body. The [Kiwi source
 and route](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md)
 distinguish two F506 layout copies, F6 membership, capacity-dependent F38 and the same-visit follower
 created by the completed join script. The same-visit follower and a fresh joined visit with Kiwi
-retired have the same durable membership. A flag-only rebuild would drop that distinction. Use the
-live scene record for both, preserving Kiwi's name, roster and physical follow state independently.
-Validate his actor against the setup and the existing join/follow program's admitted operands if an
-additional identity is needed. Keep existing Map3 default/F609 anchored records and their restore
-behavior. Reject F543, unclassified/missing bodies and later quake substitution.
+retired have the same durable membership. A flag-only rebuild would drop that distinction. The
+live scene record keeps Kiwi's name, roster and physical follow state independently. His actor
+belongs to the existing setup population. Default/F609 use their anchored records. F543,
+unclassified or missing bodies, and the quake substitution remain outside the settled recipe.
 
 **Galam second.** Map16 selects default or F663, while F505 prevents reissuing Battle05 and
 selects the adjoining Map17 variant. F664 governs guard 145 retirement on fresh entry. The [rally
@@ -539,10 +545,10 @@ publication. Inspect the real scene for any unsupported persistent operand befor
 shared mechanism. Add a focused engine assertion where the current tests miss a gameplay regression,
 and run the affected adapter compile and short native observations at implementation.
 
-**Unknown at this design boundary.** The existing route observations establish the named visits and
-interactions. Cold recovery, ambient restart, exact in-visit aliases and post-load inputs for the
-proposed recipes need the bounded acceptance in the linked batches. Use the concrete missing setup,
-actor identity, layout effect, projection or register to route any failure to its owner.
+**Unknown for Map16.** Existing route observations establish the visits and interactions. Its cold
+recovery, ambient restart, in-visit aliases and post-load inputs need the bounded acceptance in
+batch 2. Use the concrete missing setup, actor identity, layout effect, projection or register
+to route a failure to its owner.
 
 ### Implemented savepoint boundary
 
@@ -560,8 +566,9 @@ Up, after F603. Selection uses the same `ExplorationMapDefinition.SelectedSetup`
 map allocation. Reconstruction selects that setup before entry-flag/layout/population work. Default
 Sarah/messenger initialization belongs only to the default setup; F609 instead retires Jaha after
 F3. It keeps the F609 NPC at entity142. No on-load dialogue, healing, join or reward is replayed.
-F506, F543 and unclassified setup families remain unsupported. No save-format, recipe revision or
-gameplay revision change is needed: existing default-setup records keep their meaning.
+F506 uses the separate settled-visit recipe and requires its matching scene and setup body.
+F543 and unclassified setup families remain unsupported. The additive recipe retains the save
+format, recipe revision and gameplay revision.
 
 **Recovery authoring rule:** when changing a setup selector, entry flag, population/follower rule,
 discardable entity program or on-load initialization, classify its recovery family and run one small
@@ -574,6 +581,137 @@ that a new on-load side effect is reproduced: that change still needs an affecte
 when the slot/restart consumer is affected, the [bounded host observation](../verification/map3-commission-save.md).
 `QuerySave` still validates the detached restore before offering a slot; passing admission alone does
 not prove semantic equivalence to ordinary initialization. Keep that distinction in review.
+
+#### Granseal F506 Save and Continue observation
+
+[Issue #2034](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2034) uses the settled
+field recipe above in the High-rigor recovery contract. Select the published
+`derived/issue2034/granseal-f506-v1` world with its matching entry, scenes and opening inputs.
+The publication extends `derived/issue2020/south-shrine-v1` at the same package identity and
+gameplay revision 4. Its only world change is the imported Map3 Church refuge. The 102,142,485-byte
+world fits the 128 MiB reader limit and shares all 145 unchanged files. The bounded rebuild reads
+a package inventory and one world at a time, with a 1.5 GiB working-memory budget and one
+approximately 98 MiB output. Same-volume links reuse the accepted dependencies.
+
+**Confirmed in the remake.** Use the controlled post-Battle06 predecessor at Map66 (30,45), Up,
+with six initialized active members and F399 clear. The normal Search at (30,44) grants one Mithril
+and sets F213. Ordinary movement through Map66 (30,32) selects Map3 F506. The writer saves before
+talking to Kiwi at (37,22), cancels an occupied overwrite, declines the choice, and saves again.
+Separate title Continue processes restore the two visits and reach the offer. The refusal reader
+then enters the name SHELL and publishes a third slot. A fresh reader preserves F6/F38, the name,
+one joined party record and the in-visit follow link. Walking out west and reentering retires the
+joined resident. Captured progress at attachment compares the full party and item words, receipt,
+flags, gold, both RNG registers, music, actor slots/aliases, active entities and layout differences.
+
+The priest across the counter at (32,13), Up, opens the actual Church service. Record uses the
+common slot confirmation. Holding the disposable slot's writer lock gives `save-storage-unavailable`
+and preserves both files and live F399/Egress. After walking away and returning, Record to a new
+slot commits F399 and Map3 Egress. The separate title reader consumes that Egress in the ordinary
+field Magic menu after exiting to Map66. This priest approach coincides with the refuge.
+`Map3SaveSetupTests` separately exercises a non-refuge Continue tile and a different incoming
+Map16 register. Its stale confirmation cannot reach publication. Older copied default and F609
+Map3 records still restore their anchored landings, and a copied Yeel F650 record retains the
+settled scene. Each accepts ordinary movement.
+
+All nine native processes exited successfully. Six logged ObjectDB shutdown warnings. The Record
+writer reported six objects and the other warning cases reported two. The two host observation
+decisions that matter are to wait for camera settlement and to compare saved flags as numbers
+after JSON decoding. Initial observer failures and native logs are retained with the handoff.
+
+**Unknown:** original timing and SRAM parity, and native save/replay of other Granseal branches
+or setups. The controlled start begins after Battle06 and the input coverage ends at field movement
+and Egress. Other Church services and Battle07 retain their own observation owners.
+
+##### Reproduce the F506 observation
+
+Load the [worktree inputs](../../../docs/operations/local-private-inputs.md) and build the Debug
+adapter as in [commission verification](../verification/map3-commission-save.md).
+The stable private observer and compatible disposable source copies are under
+`handoffs/issue2034/granseal-f506-v1` in the configured shared input root. Each invocation starts
+and exits one headless Godot process with isolated app data. Only `writer` supplies a controlled
+start. The restart cases use Witch Continue.
+
+```powershell
+$repo = (Resolve-Path .).Path
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2034/granseal-f506-v1/Run.ps1'
+$sample = Join-Path $env:SF2_SHARED_INPUT_ROOT ('tmp/sf2-granseal-' + [guid]::NewGuid().ToString('N'))
+foreach ($case in 'writer','before','refusal','join','record-writer','record-reader',
+    'legacy-default','legacy-f609','legacy-yeel') {
+    $destination = if ($case.StartsWith('legacy-')) { "$sample-$case" } else { $sample }
+    $held = $null
+    try {
+        if ($case -eq 'record-writer') {
+            $lock = Join-Path $sample 'saves/issue2034-granseal/sf2-opening/slot1.lock'
+            $held = [IO.File]::Open($lock, 'Open', 'ReadWrite', 'None')
+        }
+        & pwsh -NoProfile -File $runner -Checkout $repo -SampleRoot $destination -Case $case
+        if ($LASTEXITCODE -ne 0) { throw "Native F506 observation failed in $case" }
+    }
+    finally { if ($held) { $held.Dispose() } }
+}
+```
+
+##### Rebuild the Church binding
+
+Load the same input configuration. Use the accepted south-shrine publication, a read-only pinned
+`c834c652` upstream checkout in `$upstream` and a **fresh** absolute `$target` on the same volume
+under the registered shared `derived/` root. The full private importer uses the corresponding
+`churchSavepointMaps` selection for new imports.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2020/south-shrine-v1'
+@'
+from pathlib import Path
+from tempfile import TemporaryDirectory
+import json
+import os
+import sys
+
+from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
+from sf2tool.remake_exploration_battles import savepoints
+from sf2tool.remake_exploration_programs import OriginalPrograms
+from sf2tool.remake_private_package import include_sources, package_files, private_output, read_json
+
+base, upstream, requested = map(Path, sys.argv[1:])
+target = private_output(requested)
+if target.exists() or target.is_relative_to(base.resolve()):
+    raise ValueError("select a fresh destination outside the base package")
+world_path = base / "world.json"
+files = package_files(world_path, base / "main-scenes.json", base / "entry/entry.json", base / "opening-inputs")
+package = read_json(world_path)
+if package["provenance"]["commit"] != ACCEPTED_UPSTREAM_COMMIT:
+    raise ValueError("expected a campaign package from the pinned source")
+compiler = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}}, upstream)
+selection = read_json(Path("remake/content/private/pre-voyage-opening.json"))
+anchors = savepoints(compiler)
+include_sources(package, upstream, {"disasm/sf2enums.asm", "disasm/data/maps/global/savepointmapcoords.asm"})
+(town,) = (row for row in package["world"]["maps"] if row["id"] == "map-3")
+if 3 not in selection["churchSavepointMaps"] or "churchSavepoint" in town:
+    raise ValueError("expected Map3 to receive a new selected Church binding")
+town["churchSavepoint"] = anchors[3]
+target.parent.mkdir(parents=True, exist_ok=True)
+with TemporaryDirectory(dir=target.parent) as scratch:
+    staged = Path(scratch) / "package"
+    staged.mkdir()
+    for name, source in files.items():
+        if name == Path("world.json"):
+            continue
+        path = staged / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        os.link(source, path)
+    output = staged / "world.json"
+    with output.open("w", encoding="utf-8", newline="\n") as stream:
+        json.dump(package, stream, separators=(",", ":"))
+    size = output.stat().st_size
+    if size > 128 * 1024 * 1024:
+        raise ValueError("world exceeds the private reader limit")
+    staged.rename(target)
+print({"worldBytes": size, "unchangedDependencies": len(files) - 1, "church": anchors[3]})
+'@ | uv run --locked python -X utf8 - $base $upstream $target
+```
 
 #### Yeel Save and Continue observation
 

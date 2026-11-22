@@ -533,6 +533,7 @@ internal static partial class GameText
         ["save.destination.new-game"] = 0,
         ["save.destination.map3-opening"] = 0,
         ["save.destination.map3-joined"] = 0,
+        ["save.destination.granseal-field"] = 0,
         ["save.destination.battle01-return"] = 0,
         ["save.destination.battle07-return"] = 0,
         ["save.destination.yeel-field"] = 0,

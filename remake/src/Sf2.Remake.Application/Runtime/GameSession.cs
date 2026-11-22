@@ -17,21 +17,35 @@ public sealed class GameSession
     public static PreparedNewGame PrepareNewGame(IScenarioSource source, NewGameOptions options, SessionRules rules) =>
         OpeningNewGame.Prepare(source, options, rules);
     public SaveAvailability QuerySave() => OpeningSave.Query(Definition, Current, Rules);
+
+    public SaveAvailability QueryChurchSave()
+    {
+        var before = Current;
+        var candidate = ChurchSaveCandidate(before);
+        return candidate is null
+            ? new(before.SessionId, before.Revision, null, "save-location-unavailable")
+            : OpeningSave.Query(Definition, candidate, Rules) with { Revision = before.Revision };
+    }
+
     public SaveCapture CaptureSave(Guid session, long revision) => OpeningSave.Capture(Definition, Current, Rules, session, revision);
     public SaveCapture RecordChurchSave(Guid session, long revision, Func<OpeningSaveData, bool> publish)
     {
         var before = Current;
         if (before.SessionId != session || before.Revision != revision) return new(null, "save-stale-revision");
-        var candidate = before;
-        if (before.Exploration is { } field && Definition.Persistence is { } policy)
-        {
-            var story = policy.RecordAtChurch(Definition, field, before.Story);
-            if (story != before.Story)
-                candidate = new(session, revision + 1, before.ObservationSequence, before.Active, story, before.StopReason);
-        }
+        var candidate = ChurchSaveCandidate(before);
+        if (candidate is null) return new(null, "save-location-unavailable");
         var capture = OpeningSave.Capture(Definition, candidate, Rules, session, candidate.Revision);
         if (capture.Data is { } data && publish(data)) _current = candidate;
         return capture;
+    }
+
+    private SessionSnapshot? ChurchSaveCandidate(SessionSnapshot before)
+    {
+        if (before.Exploration is not { } field || Definition.Persistence is not { } policy) return before;
+        var story = policy.RecordAtChurch(Definition, field, before.Story);
+        if (story is null) return null;
+        return story == before.Story ? before : new(before.SessionId, before.Revision + 1,
+            before.ObservationSequence, before.Active, story, before.StopReason);
     }
 
     public BattleSaveAvailability QueryBattleSave(ObserveBattleMusic? observedMusic = null) =>
