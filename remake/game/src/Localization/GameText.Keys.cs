@@ -536,6 +536,7 @@ internal static partial class GameText
         ["save.destination.granseal-field"] = 0,
         ["save.destination.galam-field"] = 0,
         ["save.destination.hawel-field"] = 0,
+        ["save.destination.granseal-castle"] = 0,
         ["save.destination.battle01-return"] = 0,
         ["save.destination.battle07-return"] = 0,
         ["save.destination.yeel-field"] = 0,

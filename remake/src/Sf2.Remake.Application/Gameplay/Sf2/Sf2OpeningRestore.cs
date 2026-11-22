@@ -57,25 +57,10 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         map.SelectedSetup(flags)?.Value == HawelRevisit && map.Setups.ContainsKey(new(HawelRevisit));
 
     private static string LoadedSettledSetup(ExplorationMapDefinition source, ExplorationMapDefinition loaded,
-        string? defaultSetup, string? alternateSetup)
-    {
-        if (defaultSetup is not null &&
-            Matches(source.Entities, source.Events, source.OnLoad, source.InputProgram, source.Population, source.Search))
-            return defaultSetup;
-        if (alternateSetup is not null)
-        {
-            var alternate = source.Setups[new(alternateSetup)];
-            if (Matches(alternate.Entities, alternate.Events, alternate.OnLoad, alternate.InputProgram,
-                alternate.Population, alternate.Search))
-                return alternateSetup;
-        }
+        string? defaultSetup, string? alternateSetup) =>
+        defaultSetup is not null && Sf2FieldSceneRestore.MatchesLoadedSetup(source, loaded, defaultSetup) ? defaultSetup :
+        alternateSetup is not null && Sf2FieldSceneRestore.MatchesLoadedSetup(source, loaded, alternateSetup) ? alternateSetup :
         throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
-
-        bool Matches(IReadOnlyList<ExplorationEntityDefinition> entities, IReadOnlyList<ExplorationEvent> events,
-            ProgramLocation? onLoad, ProgramLocation? input, ExplorationPopulation? population, FieldSearchDefinition? search) =>
-            loaded.OnLoad == onLoad && loaded.InputProgram == input && loaded.Population == population &&
-            loaded.Search == search && loaded.Entities.SequenceEqual(entities) && loaded.Events.SequenceEqual(events);
-    }
 
     private static MapSetupId? YeelSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)
     {
@@ -148,8 +133,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public StoryState? RecordAtChurch(ScenarioDefinition definition, ExplorationState field, StoryState story)
     {
-        // The house is an Egress refuge without a Church caller.
-        if (field.Map == HawelHouse) return null;
+        // The house and the old castle rooms have no Church caller.
+        if (field.Map == HawelHouse || Sf2CastleRestore.Contains(field.Map)) return null;
         var map = definition.Exploration!.Maps[field.Map];
         var point = map.ChurchSavepoint;
         if (field.Map == GransealChurch.Map && map.Setup?.FlagAlternatives.Any(row => row.Setup.Value == GransealSetup) == true)
@@ -167,6 +152,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
         if ((data.Recipe == GransealRecipe || data.Map is "map-16" or "map-43" or "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
+            throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
+        if (data.Recipe == Sf2CastleRestore.Recipe && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
@@ -190,7 +177,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
-            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe or HawelRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
+            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe or HawelRecipe or Sf2CastleRestore.Recipe &&
+                data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
@@ -239,6 +227,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             return new(GalamRecipe, player, "Galam");
         if (map == HawelHouse && HasSettledHawelVisit(content!, flags) && content!.Traversal.IsWithinActiveArea(player.Position))
             return new(HawelRecipe, player, "Hawel's House");
+        if (Sf2CastleRestore.Contains(map) && Sf2CastleRestore.SettledSetup(content!, flags) is not null &&
+            content!.Traversal.IsWithinActiveArea(player.Position))
+            return new(Sf2CastleRestore.Recipe, player, "Granseal Castle");
         if (map.Value == "map-5" && YeelSetup(content!, flags) is not null &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new(YeelRecipe, player, "Yeel");
@@ -328,6 +319,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             LoadedGalamSetup(definition.Exploration!.Maps[world.Map], world.Definition, flags)) :
         world.Map == HawelHouse ? Sf2FieldSceneRestore.Capture(definition, world,
             LoadedSettledSetup(definition.Exploration!.Maps[world.Map], world.Definition, HawelDefault, HawelRevisit)) :
+        Sf2CastleRestore.Contains(world.Map) ? Sf2CastleRestore.Capture(definition, world, flags) :
         world.Map.Value == "map-5" ? Sf2FieldSceneRestore.Capture(definition, world,
             YeelSetup(definition.Exploration!.Maps[world.Map], flags)!.Value) :
         world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
@@ -338,6 +330,11 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
+        if (location.Recipe == Sf2CastleRestore.Recipe)
+        {
+            enteredFlags = flags;
+            return Sf2CastleRestore.Rebuild(definition, location, party, flags, scene, layer);
+        }
         if (location.Recipe is GransealRecipe or GalamRecipe or HawelRecipe)
         {
             var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
@@ -357,10 +354,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
                 (!town.TryResolveEntity(new("entity-4"), out var kazin) || kazin.Entity.Value != "entity-4" ||
                  kazin.Follower?.LeaderSlot != town.PlayerEntity.Slot))
                 throw new BattleRuleException("save-field-scene-actor", "save.fieldScene");
-            var player = town.PlayerEntity;
-            if ((player.Motion.FlagsA & 0x20) != 0 && EntityMotion.FieldObstructed(player.Motion.X, player.Motion.Y,
-                town.AllEntities.Where(actor => actor.Visible && actor.Slot != player.Slot).Select(actor => actor.Motion)))
-                throw new BattleRuleException("save-anchor-occupied", "save.anchor");
+            Sf2FieldSceneRestore.RequireUnoccupiedLanding(town);
             enteredFlags = flags;
             return town;
         }

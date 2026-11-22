@@ -106,7 +106,7 @@ success is not all-branch closure. The bounded inspection is of these selected m
 | Map3 house, Sarah, school stairs, Zone7, messenger and Zone8 | Connected programs and joins exist. Save anchors must distinguish pre-messenger and F603-set phases; no reload may replay JOIN or grant starting items. |
 | Map3 optional NPCs/default events, descriptions and two item placements | Source table inventory is established; natural optionality/reach of every branch is **Unknown**. Lowered ordinary dialogue and typed Search are connected. ChurchMenu uses the typed service consumer and returns through its actual handler. The [branch inventory](../content/opening-branch-inventory.md) separates executable consumers, future boundaries and original Unknowns. |
 | F600-clear direct castle approach / `cs_51454` | The old blanket `moveNextToPlayer` gap is stale: [compiler](../../../src/sf2tool/remake_exploration_programs.py) emits move/waits/facing; [ProgramRunner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs) executes `MoveEntityNextToPlayer`. **Confirmed bounded remake observation:** #1423 direct-castle input reaches the existing movement consumer and returns; its [inventory](../content/opening-branch-inventory.md) retains original reach limits. No fabricated F600 or duplicate opcode is needed. |
-| Map19 castle and Map20 palace/Astral revisit | First/repeat visits, refusal/re-prompt and follower variants have bounded acceptance in [session programs](session-and-programs.md#castle-palace-astral-and-tower). Other NPC branches/alternate map setups are not promoted to accepted by that group. Interior save is deferred, not disabled traversal. |
+| Map19 castle and Map20 palace/Astral revisit | First/repeat visits, refusal/re-prompt and follower variants have bounded acceptance in [session programs](session-and-programs.md#castle-palace-astral-and-tower). Settled control in the admitted rooms supports ordinary Save and [cold Continue](#granseal-castle-save-and-continue-observation). Other NPC branches and unadmitted setups retain their separate coverage. |
 | Map21 guard, tower and Battle01 | Accepted conditional guard and battle admission remain authoritative. The field-save path rejects during guard motion, entry or combat; it never completes the program or sets unlock flags. Battle Save uses the [implemented separate path](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) at settled player Movement, not during entry, motion or an action. |
 | Map57 victory / Map3 defeat | Usable returns are implemented. Map57 F506 layout-copy remains a guarded frontier; reject that unsupported restore phase. Map3 defeat retains unlock, halves gold and restores the leader under the existing outcome policy. Loading must not run either outcome again. |
 | Open warps beyond this endpoint | Preparation retains warp rows and fails at unadmitted destinations/setups. The [branch inventory](../content/opening-branch-inventory.md#ordinary-warps-and-future-boundaries) identifies future rows, opening obstructions and unavailable preflight before committed transfer. Silently accepting Unsupported as a no-op is forbidden. Later campaign admission remains outside #1418. |
@@ -442,6 +442,11 @@ asks the selected profile for a recipe and validates its typed result using exis
   revisit uses the F612 population and bindings. Ordinary Save preserves Egress and F399.
   [Bounded observation](#hawel-house-save-and-continue-observation)
 
+- **Granseal Castle settled rooms:** `granseal-castle` keeps the current tile, facing, layer,
+  setup bindings, working layout, and physical actor state across Maps19/20/21. It retains
+  completed choices, receipts and royal follow links. Normal Save preserves Egress and F399.
+  [Bounded observation](#granseal-castle-save-and-continue-observation)
+
 These are implemented product recipes. Their acceptance includes
 ordinary legal variations within each admitted boundary: reordered optional conversations,
 refusal/retry, changed party resources/equipment, living/dead members, earned progress and different
@@ -473,7 +478,7 @@ can differ because this is a savepoint reload. This distinction must appear in p
 **Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
 within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
 admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
-Map3 F506, Map16 and settled Map43 are implemented. Each batch owns its capture, independent
+Map3 F506, Map16, settled Map43 and the old castle rooms are implemented. Each batch owns its capture, independent
 Continue and restart evidence. Map5 default/F650 and the anchored opening and tower outcome recipes also
 have implemented recovery.
 
@@ -484,11 +489,12 @@ recipe, captures detached progress and builds a restore candidate before offerin
 reselects the recipe from the record and validates the party, registers, content and landing.
 [`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
 default/F609 with anchors, F506 with its concrete scene, Map16 with its loaded default or
-F663 scene, and Map43 with its loaded default or F612 scene. The [current world
+F663 scene, Map43 with its loaded default or F612 scene, and Maps19/20/21 with their loaded
+castle and palace scenes. The [current world
 selection](../../content/private/pre-voyage-opening.json) includes these setup bodies and the
 two towns' Church refuges.
 
-Use one finite settled-visit recipe per town with the existing
+Use a finite settled-visit recipe for each admitted location group with the existing
 [`SavedFieldScene`](../../src/Sf2.Remake.Application/Runtime/Persistence/SavedFieldScene.cs) and
 [`Sf2FieldSceneRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2FieldSceneRestore.cs). The
 recipe admits the live setup and records the current legal tile, facing and layer. Preserve actor
@@ -541,6 +547,26 @@ retired actor records, aliases, follow links and layout changes. Continue valida
 and actor population. Fresh reentry follows the ordinary F612 selector. Keep F36 and F404 at
 their saved values, independently of the scene's following state. The Map43 Egress tuple
 `(7,5)` Down is a refuge. Map43 exposes ordinary Save only.
+
+**Granseal Castle.** The supported loaded setup bodies are the default, F501, F609 and F506
+for Maps19/20/21, plus Map19 F507. Map20/21 still select F506 during the applicable F507 return.
+The F501 exorcism queues a real transfer to Map19 after writing F609. Its reset canvas is active
+story work. On the new map, the F609 arrival script `cs-53176` allocates and retires a procession
+before the caller writes F610. A completed same-visit record can contain those retired slots.
+A fresh F610 entry skips that script. Bind the actual loaded bodies' resident list, interactions,
+zones, warps, Search and programs. [Castle and tower source](../../../docs/research/chapters/grans-opening/map3-castle-battle-unlock.md)
+
+Keep the default visit's bedroom invitation, refusal, actor retirement and departure as actually
+committed. The CURRENT stair pairs retain the live Map20 visit. A real cross-map exit uses ordinary
+reentry and the destination setup. Preserve F129–131 Search receipts and current working layout.
+Map19 F506's F620/F621 programs leave moved or retired actors and may install the king and minister
+in their live resident slots. F83 only supplies separate followers at fresh entry. Map19 F507
+uses the three royal follower slots and separate F622/F623 warning gates. Keep the physical
+links, aliases and story flags independently of the force roster. F543/F982 and unbound
+setups are outside this recipe. Busy guard, choices, exorcism, quake, warps and battle admission
+remain subject to the settled-input gate. The three maps expose ordinary Save.
+[Occupied castle source](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md#granseal-content-recruitment-and-followers)
+· [Stair observations](pre-voyage-campaign.md#same-map-walking-party-arrival)
 
 **Church Record and Egress.** The existing source-table import binds the Map3 `(32,13)` Up and
 Map16 `(27,7)` Up refuge bindings. Limit the new Record behavior to the admitted callers and phases,
@@ -877,6 +903,69 @@ foreach ($group in $cases.Keys) {
     foreach ($case in $cases[$group]) {
         & pwsh -NoProfile -File $runner -Checkout $repo -SampleRoot $sample -Case $case
         if ($LASTEXITCODE -ne 0) { throw "Hawel native observation failed in $case" }
+    }
+}
+```
+
+#### Granseal Castle Save and Continue observation
+
+[#2041](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2041) uses
+`derived/issue2035/galam-town-v1` and its matching entry, scenes and opening inputs directly.
+Each writer begins at a controlled field
+or arrival boundary with stage-appropriate flags. Ordinary acknowledgements, choices, keys and
+menu confirmation produce the slot. Each reader independently starts at the title and selects
+Continue. The observer compares the entire progress record at attachment, including resources,
+RNG, names, F399/Egress, tile/facing/layer and the loaded setup, layout and physical slots.
+
+**Confirmed in the remake.**
+
+| Controlled writer and loaded setup | Input after independent Continue |
+| --- | --- |
+| Map19 default storeroom at `(9,11)` Up. Search opens the adjacent Angel Wing chest and commits F130. | Repeating Search yields no second Angel Wing. Down is blocked by the storeroom wall. |
+| Map20 F501 east landing approach at `(38,41)`. Up then Right takes the diagonal CURRENT stairs to `(39,53)`. The completed bedroom/approach flags stay in the record. | The upper wall blocks Right. Left then Right takes the reverse stairs to `(39,39)`. The real east exit reaches Map19 `(35,7)`. |
+| Map19 F609 arrival at `(29,8)`. Save refuses at the commission choice. Accepting commits F89/F610 and leaves retired procession slots. | Ordinary input retains the same visit, with the scene allocations retired and their aliases removed. |
+| Map19 F506 at `(29,16)`. Step into the F620 departure zone and reach the independent F621 request. Save the completed F620/F621/F83 state. | The king and minister follow in their original resident slots for entities 130 and 129. Repeating the request keeps that chain and the force membership. A separate engine case exercises fresh entry with F83 and the declared follower entities 30 and 159. |
+| Map19 F507 at `(16,6)` Up. Step into the F622 warning. Save is refused during dialogue. Walk to `(25,13)` through the separate F623 warning and save. | Astral, the king and the minister follow in physical slots separate from the force. Reentering both warning zones leaves the text cursor and roster intact. |
+| Map21 F609 guard room at `(4,16)` Left. | Left takes its real exit to Map20 `(3,36)`. |
+
+An older Hawel slot continued from a disposable copy. A checksum-valid mismatched castle setup
+was rejected without mounting a session or modifying either disposable slot. See
+[`CastleSaveTests`](../../tests/Sf2.Remake.Engine.Tests/CastleSaveTests.cs) for engine cases covering
+payload reconstruction, physical following, entry flags, busy input and mismatched or missing setup.
+The headless reader observes the current collision layer and camera binding. Earlier royal readers
+logged a Godot Mono finalizer error during shutdown after the gameplay assertions passed. The
+bounded runner now frees its host and services the tree before exiting. Raw logs and the completed
+observer failures are retained with the private handoff. [Existing teardown evidence](../verification/map3-commission-save.md#later-finalizer-faults-and-ordinary-quit)
+
+**Unknown:** ordinary runtime traversal and optional Talk at every room approach, individual
+F129/F131 receipts on these routes, and original SRAM or hardware parity. The prior main route
+owns the whole Battle01 handoff, both F622/F623 warning programs and the royal route out of the
+castle. [Opening route](session-and-programs.md#castle-palace-astral-and-tower) ·
+[Royal route](pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control)
+
+##### Reproduce the castle observations
+
+Load the [worktree inputs](../../../docs/operations/local-private-inputs.md) and build the owned
+Debug adapter. The registered `handoffs/issue2041/granseal-castle-save-v1` holds the bounded runner,
+starts and older-slot witness. The runner uses the accepted Galam package, worktree-local reports
+and a fresh external disposable namespace per group. It submits key input headlessly and retains
+state and native process reports.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug
+if ($LASTEXITCODE -ne 0) { throw 'Castle adapter build failed' }
+$repo = (Resolve-Path .).Path
+$runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2041/granseal-castle-save-v1/Run.ps1'
+$run = [guid]::NewGuid().ToString('N').Substring(0, 12)
+foreach ($group in 'opening','upper','commission','occupied','royal','tower','legacy') {
+    $sample = Join-Path $repo "local/issue2041/$run-$group"
+    $cases = if ($group -eq 'legacy') { 'legacy-hawel' } else { "$group-writer", "$group-reader" }
+    if ($group -eq 'opening') { $cases += 'corrupt' }
+    foreach ($case in $cases) {
+        & pwsh -NoProfile -File $runner -Checkout $repo -SampleRoot $sample -Case $case
+        if ($LASTEXITCODE -ne 0) { throw "Castle observation failed in $case" }
     }
 }
 ```

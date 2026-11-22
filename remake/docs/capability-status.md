@@ -96,6 +96,10 @@ retired guard on an F505 return. Either priest publishes the Map16 refuge throug
 [Hawel's house](application/opening-session-lifecycle.md#hawel-house-save-and-continue-observation)
 supports ordinary Save and cold Continue for the first completed scene and the F612 revisit.
 The saved visit keeps Kazin's real follow link, the diary, F135 and the original exit.
+[Granseal Castle](application/opening-session-lifecycle.md#granseal-castle-save-and-continue-observation)
+supports ordinary Save and cold Continue in the settled Maps19/20/21 visits. The saved scene
+keeps the loaded cast, completed choices, a storeroom receipt and the royal links separately
+from force membership. The restored upper room still uses the real CURRENT stairs.
 Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.

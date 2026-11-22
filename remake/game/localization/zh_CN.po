@@ -461,6 +461,9 @@ msgstr "加拉姆"
 msgid "save.destination.hawel-field"
 msgstr "哈维尔的家"
 
+msgid "save.destination.granseal-castle"
+msgstr "格兰希尔城堡"
+
 msgid "save.destination.battle01-return"
 msgstr "Ancient Tower，战斗结束后的返回点"
 
