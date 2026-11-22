@@ -558,8 +558,8 @@ $repo = (Resolve-Path .).Path
 . ./local/private-inputs.ps1
 $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 $runner = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2022/yeel-revisit-v1/Run.ps1'
-$sample = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) (
-    'Temp/sf2-yeel-' + [guid]::NewGuid().ToString('N'))
+$sample = Join-Path $env:SF2_SHARED_INPUT_ROOT (
+    'tmp/sf2-yeel-' + [guid]::NewGuid().ToString('N'))
 foreach ($case in 'writer','ordinary','record','return','legacy') {
     $root = if ($case -eq 'legacy') { "$sample-legacy" } else { $sample }
     & $runner -Checkout $repo -SampleRoot $root -Case $case
