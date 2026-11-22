@@ -126,13 +126,23 @@ internal sealed class FieldVisitBindings(ExplorationDefinition content)
             actions[end] is not JumpEntityAction { Instruction: >= 0 } jump || jump.Instruction >= end) return false;
         int loop = jump.Instruction;
         var cycle = actions.Skip(loop).Take(end - loop).ToArray();
-        if (!(cycle is [RandomWalkEntity, WaitEntityTicks] || IsClosedPatrol(cycle))) return false;
+        if (!(cycle is [RandomWalkEntity, WaitEntityTicks] || IsClosedPatrol(cycle) || IsFacingCycle(cycle))) return false;
         if (actor.WaitingForMotion || actor.Motion.IsMoving)
             return actor.WaitingForMotion && cursor > loop &&
                 actions[cursor - 1] is RandomWalkEntity or MoveEntityRelative { Wait: true };
         // Prefix work with story or presentation effects must have completed.
         return cursor >= loop || actions.Take(loop).All(action => action is
             WaitEntityTicks or SetEntitySpeed or SetEntityAcceleration or ChangeEntityFlags or FaceEntity);
+    }
+
+    private static bool IsFacingCycle(IReadOnlyList<EntityAction> cycle)
+    {
+        if (cycle.Count % 3 != 0) return false;
+        for (int i = 0; i < cycle.Count; i += 3)
+            if (cycle[i] is not FaceEntity || cycle[i + 1] is not RefreshEntitySprite ||
+                cycle[i + 2] is not WaitEntityTicks)
+                return false;
+        return true;
     }
 
     private static bool IsClosedPatrol(IReadOnlyList<EntityAction> cycle)

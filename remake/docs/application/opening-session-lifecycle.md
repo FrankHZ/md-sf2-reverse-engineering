@@ -589,8 +589,10 @@ release control first. Completed outcome anchors drop out of the field candidate
 The [action binder](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldVisitBindings.cs)
 admits closed random-walk and closed relative patrol cycles from a bound resident or story
 installation. A relative patrol alternates awaited moves and waits, returns to its starting
-offset and jumps back to the start of the cycle. The reader's appended stop is unreachable after
-the closing jump. Configuration-only prefixes and the engine-owned Caravan walking follower
+offset and jumps back to the start of the cycle. A stationary facing cycle repeats facing, sprite
+refresh and timed wait. It can save after the sprite owner releases the current request. The next
+refresh receives a new request in the restored session. The reader's appended stop is unreachable
+after the closing jump. Configuration-only prefixes and the engine-owned Caravan walking follower
 program with its physical leaders are also admitted. The wandering template emitted by `walking_actions` has a timer,
 speed, acceleration and flag prefix. A story prefix with other effects must complete before the
 closed cycle qualifies. Cursor, timer, destination, travel, velocity and seeds continue together.
@@ -770,7 +772,9 @@ and 1 MiB encoded-file bounds.
 Use `uv run sf2 verify engine` and `uv run sf2 verify adapter`. The
 [settled field engine cases](../../tests/Sf2.Remake.Engine.Tests/SettledFieldSnapshotTests.cs)
 compare the next services and movement from the decoded v6 result, including RNG, hidden random
-walk, relative patrol and idle actor behavior. Existing battle controls live in
+walk, relative patrol and idle actor behavior. The facing-cycle case refuses a live sprite request,
+restores its acknowledged wait phase and compares the next facing, refresh and timer service.
+Existing battle controls live in
 [BattleSaveReturnTests](../../tests/Sf2.Remake.Engine.Tests/BattleSaveReturnTests.cs) and
 [BattleSaveProgressTests](../../tests/Sf2.Remake.Engine.Tests/BattleSaveProgressTests.cs).
 
@@ -811,6 +815,15 @@ Use `Run.ps1 -Case` with `legacy`, `legacy-resave`, `legacy-battle`, `bootstrap`
 `-ExpectedError` for a refusal. Use `-Project` with the Debug adapter project built from the
 pre-cutover commit for `refuse` and `old-overwrite` on the rollback pair. The published handoff
 records the completed checks and process results.
+
+#### Mechanism coverage across visits
+
+[#2053](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2053) checks the shared
+recovery contract through a small set of distinguishing visits. The
+[mechanism matrix](pre-voyage-optional-locations.md#remaining-save-coverage) identifies the
+representatives, reused evidence, and observations still open. The resident facing-cycle change
+uses the same action binding, saved cursor and timer as other settled ambient work. V6 and the
+older reader formats retain their existing versions.
 
 <a id="implemented-savepoint-boundary"></a>
 

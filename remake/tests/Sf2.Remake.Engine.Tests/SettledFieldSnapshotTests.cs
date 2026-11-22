@@ -91,6 +91,46 @@ public sealed class SettledFieldSnapshotTests
     }
 
     [Fact]
+    public void FacingCycleResumesItsTimerAndIssuesTheNextSpriteRequest()
+    {
+        var cycle = new EntityActionProgram([
+            new ChangeEntityFlags(false, 0x20, 0),
+            new FaceEntity(1), new RefreshEntitySprite("resident-look"), new WaitEntityTicks(3),
+            new FaceEntity(3), new RefreshEntitySprite("resident-look"), new WaitEntityTicks(3),
+            new JumpEntityAction(1), new StopEntityActions(),
+        ]);
+        var session = Start([new(Wanderer, new(20, 20), 0, 32, Actions: cycle)], []);
+        var pending = Submit(session, session.Current, new WaitAtInput());
+        var actor = pending.Exploration!.Entities[Wanderer];
+        Assert.True(actor.WaitingForSprite);
+        Refuse(session, pending, "field-visit-sprite-pending");
+        var acknowledged = Submit(session, pending, new EntitySpriteReady(actor.Slot, actor.SpriteRequest));
+        var live = Submit(session, acknowledged, new WaitAtInput());
+        Assert.Equal(1, live.Exploration!.Entities[Wanderer].Motion.WaitTimer);
+
+        var restored = Capture(session.Definition, live).Build(session.Definition, Rules).Snapshot;
+        for (int tick = 0; tick < 3; tick++)
+        {
+            live = Submit(session, live, new WaitAtInput());
+            restored = Submit(session, restored, new WaitAtInput());
+            EqualNext(live, restored);
+        }
+        SessionSnapshot FinishRefresh(SessionSnapshot atNextFacing)
+        {
+            var next = atNextFacing.Exploration!.Entities[Wanderer];
+            Assert.Equal(3, next.Motion.Facing);
+            Assert.True(next.WaitingForSprite);
+            Assert.NotEqual(next.SpriteRequest, next.SpriteReady);
+            var ready = Submit(session, atNextFacing, new EntitySpriteReady(next.Slot, next.SpriteRequest));
+            var waiting = Submit(session, ready, new WaitAtInput());
+            Assert.False(waiting.Exploration!.Entities[Wanderer].WaitingForSprite);
+            Assert.Equal(1, waiting.Exploration.Entities[Wanderer].Motion.WaitTimer);
+            return waiting;
+        }
+        EqualNext(FinishRefresh(live), FinishRefresh(restored));
+    }
+
+    [Fact]
     public void CompletedGrantAndJoinKeepTheirReceiptAndDoNotReplayOnTheNextVisitInput()
     {
         var session = Start([], [
