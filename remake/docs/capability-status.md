@@ -93,6 +93,9 @@ reentry retires the actor. The F506 priest publishes the Map3 refuge through Rec
 Map16](application/opening-session-lifecycle.md#galam-town-save-and-continue-observation) restores
 the actual default or F663 cast, including the army's retirement on the same visit and the
 retired guard on an F505 return. Either priest publishes the Map16 refuge through Record.
+[Hawel's house](application/opening-session-lifecycle.md#hawel-house-save-and-continue-observation)
+supports ordinary Save and cold Continue for the first completed scene and the F612 revisit.
+The saved visit keeps Kazin's real follow link, the diary, F135 and the original exit.
 Text/choice/script/battle consumers retain their existing time owners. Universal follower convergence,
 original standing cadence and save-anywhere remain outside this capability; revision-based Quit may
 warn even after animation-only time.
