@@ -20,8 +20,14 @@ for implemented actions and their acceptance.
 | Returning or loading | [Local exit, CURRENT, scroll, fresh entry, battle outcomes, Church Save and cold Continue](#return-and-continue) |
 
 The [tracked selection](../../content/private/pre-voyage-opening.json) has **50 distinct map IDs**
-in `maps`, including scene and encounter maps. Of those, 25 IDs have explicit additional
-`setups` entries and 42 appear in `searchMaps`. The Map IDs column assigns each selected ID
+in `maps`, including scene and encounter maps. Of those, 27 IDs have additional
+`setups` entries and 47 appear in `searchMaps`. In the
+[Yeel F650 publication](../application/opening-session-lifecycle.md#yeel-save-and-continue-observation),
+all 50 map IDs and all 47 Search definitions are present. Only 26 maps have compiled
+replacement setups. Map23 declares its F762 selector but lacks the corresponding
+`ms-map23-flag762` definition and Church savepoint in that publication. The
+[Elven Village observation](../application/battle19-village.md#return-after-creed)
+uses its chapter package. The Map IDs column assigns each selected ID
 to one row and names the pending Grans expansion. Shared maps and areas are cross-referenced
 wherever they serve another route.
 The IDs are decimal. This count measures the package selection. The location rows identify
