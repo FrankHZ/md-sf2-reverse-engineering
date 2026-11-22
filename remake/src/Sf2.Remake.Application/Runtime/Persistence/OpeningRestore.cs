@@ -13,46 +13,20 @@ internal static class OpeningRestore
         Require(data.Depot is { Count: <= 64 } && data.Depot.All(item => item < 127), "save-depot");
         Require(data.Layer is 0 or 2, "save-player-layer");
         definition.Persistence!.ValidateRegisters(data, definition.Exploration);
-        Require(data.Allies is { Count: > 0 and <= 30 } && data.Flags is { Count: <= 65536 } &&
-            data.ActiveAllies is { Count: > 0 and <= 12 } && data.OnceFlags is { Count: <= 30 } && data.Deals is { Count: <= 127 }, "save-shape");
-        Require(data.Flags.All(flag => flag is >= 0 and <= 65535) && data.Flags.Distinct().Count() == data.Flags.Count &&
-            data.ActiveAllies.Distinct().Count() == data.ActiveAllies.Count && data.Allies.Select(a => a.Actor).Distinct().Count() == data.Allies.Count &&
-            data.OnceFlags.All(flag => flag <= 29) && data.OnceFlags.Distinct().Count() == data.OnceFlags.Count &&
-            data.Deals.All(deal => deal.Item < 127 && deal.Count <= 15) && data.Deals.Select(d => d.Item).Distinct().Count() == data.Deals.Count, "save-duplicates-or-range");
-        Require(data.Gold <= 999999 && data.TextCursor is >= 0 and <= 65535 && data.FadePeriod > 0 && data.Difficulty <= 3 &&
+        Require(data.TextCursor is >= 0 and <= 65535 && data.FadePeriod > 0 &&
             data.TextSettings is { MessageSpeed: <= 3, ViewSpeed: 0 } &&
             data.X is >= 0 and < 64 && data.Y is >= 0 and < 64 && data.Facing <= 7, "save-range");
-        Require(definition.Encounters.ContainsKey(data.Encounter), "save-encounter");
-        if (definition.PrivateDefinitions is { } source)
-            Require(data.Allies.SelectMany(actor => actor.Items).All(word => source.Items.ContainsKey((byte)(word & 127))) &&
-                data.Deals.All(deal => source.Items.ContainsKey(deal.Item)) && data.Depot.All(source.Items.ContainsKey), "save-item-identity");
-        var deployments = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
-            .Where(row => row.Faction == BattleFaction.Ally).GroupBy(row => row.Actor).ToDictionary(group => group.Key, group => group.First());
-        Require(data.Names is { Count: <= 30 } && data.Names.All(pair => deployments.ContainsKey(new(pair.Key)) &&
-            pair.Value is { Length: > 0 } && NewGameName.Error(pair.Value) is null), "save-name");
-        var savedActors = data.Allies.Select(actor => new ActorRef(actor.Actor)).ToHashSet();
-        Require(savedActors.IsSubsetOf(deployments.Keys), "save-roster");
-        var actors = data.Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].ResolveClass(saved.Class).Definition)).ToList();
-        actors.AddRange(definition.Persistence.RestoreRoster(definition, data, expected, deployments, savedActors));
-        var layout = definition.Exploration!.PartyFlags ?? throw new BattleRuleException("save-membership-unavailable", "save.party");
-        var lists = MapPartyMembership.Rebuild(data.Flags, layout);
-        var members = deployments.Values.Where(row => row.Initialization?.AllyPartyMember is not null)
-            .ToDictionary(row => row.Initialization!.AllyPartyMember!.Value, row => row.Actor.Value);
-        Require(lists.Active.All(members.ContainsKey) && lists.Joined.All(members.ContainsKey) &&
-            lists.Active.Select(member => members[member]).SequenceEqual(data.ActiveAllies), "save-membership");
-        Require(data.Allies.Where(actor => data.ActiveAllies.Contains(actor.Actor)).All(actor => !actor.Absent), "save-active-absence");
-        Require(data.Allies.Single(actor => actor.Actor == members[0]) is { Hp: > 0, Absent: false, Initialized: true }, "save-leader");
-        var party = new BattleStartInput(data.Encounter, actors, data.MainSeed, data.ThinkingSeed, data.Gold,
-            new("opening-new-game", "source-initialization", "", data.Difficulty, false, true, true,
-                data.AllyAutoBattle, data.OpponentControl, null) { Origin = BattleStartOrigin.NewGame },
-            data.ActiveAllies.Select(id => new ActorRef(id)), new(data.OnceFlags, data.Deals.ToDictionary(deal => deal.Item, deal => deal.Count), data.Depot));
+        var carry = new FieldPartySnapshot(data.Encounter, data.Allies, data.ActiveAllies, data.MainSeed,
+            data.ThinkingSeed, data.Gold, data.OnceFlags, data.Deals, data.Depot, data.Difficulty,
+            data.AllyAutoBattle, data.OpponentControl);
+        var (party, lists) = carry.Rebuild(definition, data.Flags, data.Names, data, expected);
         var anchor = new FieldReturnAnchor(new(data.Map), new(data.X, data.Y), data.Facing);
         var visuals = definition.Exploration!.Visuals;
         Require(data.Music is { Previous.Count: <= 9 } && visuals is not null &&
             data.Music.Previous.Prepend(data.Music.Cue).All(cue => cue is not null && visuals.Audio.TryGetValue(cue, out var audio) && audio.Command < 65), "save-music-resource");
         if (definition.Persistence.InitialStart(definition, data, party) is { } initial)
         {
-            _ = rules.Bind(definition.Encounters.Values, actors);
+            _ = rules.Bind(definition.Encounters.Values, party.Actors);
             return ExplorationDispatcher.Start(definition, initial, rules);
         }
         var location = definition.Persistence!.Select(definition, anchor, data.Flags, anchor, data.Recipe);
@@ -64,46 +38,16 @@ internal static class OpeningRestore
         var music = new MusicProgress(1, data.Music.Cue, Array.AsReadOnly(data.Music.Previous.ToArray()), anchor.Map, area,
             visuals!.Audio[data.Music.Cue].ModernEndStep);
         var palette = world.Definition.BasePalette!;
-        var story = new StoryState(flags, textCursor: data.TextCursor, partyLists: MapPartyMembership.Rebuild(flags, layout),
+        var story = new StoryState(flags, textCursor: data.TextCursor, partyLists: flags == data.Flags ? lists : MapPartyMembership.Rebuild(flags, definition.Exploration!.PartyFlags!),
             display: new(data.FadePeriod, palette, palette, FullFadeVisibility.BaseRestored), textSettings: data.TextSettings,
             stepCounter: data.StepCounter, egressMap: new(data.EgressMap), music: music, saveAnchor: anchor, names: data.Names, raft: raft);
         story = ExplorationTextRunner.Initialize(world, story);
-        _ = rules.Bind(definition.Encounters.Values, actors);
+        _ = rules.Bind(definition.Encounters.Values, party.Actors);
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story, SessionStopReason.PlayerInput);
         Require(snapshot.CanWaitAtInput, "save-restore-boundary");
         return new(snapshot, Array.Empty<SessionObservation>(), SessionStopReason.PlayerInput);
     }
 
-    private static BattleActorStartInput Ally(SavedAlly saved, BattleActorDefinition definition)
-    {
-        var growth = definition.Growth;
-        Require(growth is not null && saved.Class == growth.ClassId && saved.Level is >= 1 and <= 99 &&
-            saved.MaxHp is > 0 and <= 200 && saved.MaxMp <= 200 && saved.BaseAttack <= 200 && saved.Defense <= 200 && saved.Agility <= 100 &&
-            saved.Hp <= saved.MaxHp && saved.Mp <= saved.MaxMp && saved.Exp <= 200 && saved.Kills <= 9999 && saved.Defeats <= 9999 &&
-            saved.Initialized && saved.Items is { Count: 4 } && saved.Spells is { Count: 4 }, "save-ally-range");
-        Require(saved.Items.All(word => (word & 127) == 127 || definition.SourceLoadout is not null) &&
-            saved.Spells.Where(value => value != 63).Select(value => value & 63).Distinct().Count() == saved.Spells.Count(value => value != 63), "save-loadout");
-        var spells = new List<SpellRef>();
-        foreach (byte packed in saved.Spells.Where(value => value != 63))
-        {
-            Require(growth!.CanKnow(packed, saved.Level), "save-learned-spell");
-            for (int rank = 0; rank <= packed >> 6; rank++)
-            {
-                Require(growth.SpellDefinitions.TryGetValue((byte)((packed & 63) | rank << 6), out var spell), "save-spell-resource");
-                spells.Add(spell);
-            }
-        }
-        var loadout = new BattleSourceLoadout(saved.Items, saved.Spells);
-        // Equipment's numerical accessor validates its supported equipped state where definitions admit it.
-        if (definition.Equipment is not null) BattleEquipment.ValidateLoadout(definition, loadout);
-        Require(saved.Items.All(word => word <= 511), "save-item-word");
-        var progress = new BattleActorProgress(saved.Level, saved.MaxHp, saved.MaxMp, saved.BaseAttack, saved.Defense,
-            saved.Agility, Array.AsReadOnly(spells.ToArray()), loadout, saved.Class)
-        { BaseMove = saved.BaseMove, CurrentStats = saved.CurrentStats };
-        Require(progress.ValidGrowthItemStats, "save-ally-range");
-        return new(new(saved.Actor), saved.Hp, saved.Mp, saved.Exp, saved.Kills, saved.Defeats, saved.Status, null,
-            progress, loadout, saved.Activation, saved.Initialized, saved.Absent);
-    }
     private static void Require(bool valid, string code)
     { if (!valid) throw new BattleRuleException(code, "save"); }
 }

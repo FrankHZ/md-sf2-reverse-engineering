@@ -112,38 +112,23 @@ internal static class OpeningSave
         var world = current.Exploration!;
         var party = world.Party;
         var story = current.Story;
-        var actors = party.Actors.Select(actor =>
-        {
-            var progress = actor.Progress;
-            var loadout = actor.SourceLoadout ?? progress?.SourceLoadout;
-            var source = definition.Encounters.Values.SelectMany(e => e.Deployments).FirstOrDefault(row => row.Actor == actor.Actor)?.Definition;
-            if (progress is null || loadout is null || source?.Growth is null || actor.Exp is null ||
-                actor.Kills is null || actor.Defeats is null || actor.ActivationWord is null || actor.Initialized is null)
-                throw new BattleRuleException("save-party-unknown", "save.allies");
-            return new SavedAlly(actor.Actor.Value, progress.ClassId ?? source.Growth.ClassId, actor.Hp, actor.Mp, actor.Exp.Value,
-                actor.Kills.Value, actor.Defeats.Value, actor.Status, actor.ActivationWord.Value, actor.Initialized.Value, actor.Absent,
-                progress.Level, progress.MaxHp, progress.MaxMp, progress.BaseAttack, progress.Defense, progress.Agility,
-                Array.AsReadOnly(loadout.Items.ToArray()), Array.AsReadOnly(loadout.Spells.ToArray()))
-            { BaseMove = progress.BaseMove, CurrentStats = progress.CurrentStats };
-        }).ToArray();
-        if (party.Gold is null || party.ItemCustody is null || party.ActiveAllies is null || party.NewBattle is null ||
-            story.StepCounter is null || story.EgressMap is null || story.TextSettings is null)
+        var carry = FieldPartySnapshot.Capture(definition, party);
+        if (story.StepCounter is null || story.EgressMap is null || story.TextSettings is null)
             throw new BattleRuleException("save-progress-unknown", "save.party");
         var music = Music(definition, current);
         var anchor = location.Anchor;
         return new(FieldCompatibility(definition, rules), location.Recipe, anchor.Map.Value, anchor.Position.X, anchor.Position.Y,
-            anchor.Facing, party.Encounter, Array.AsReadOnly(actors), Array.AsReadOnly(party.ActiveAllies.Select(actor => actor.Value).ToArray()),
-            party.MainSeed, party.ThinkingSeed, party.Gold.Value, Array.AsReadOnly(party.ItemCustody.OnceFlags.ToArray()),
-            Array.AsReadOnly(party.ItemCustody.Deals.Select(pair => new SavedDeal(pair.Key, pair.Value)).ToArray()),
+            anchor.Facing, carry.Encounter, carry.Allies, carry.ActiveAllies,
+            carry.MainSeed, carry.ThinkingSeed, carry.Gold, carry.OnceFlags, carry.Deals,
             Array.AsReadOnly(story.Flags.ToArray()), story.StepCounter.Value, story.EgressMap.Value, story.TextCursor,
-            story.TextSettings with { }, story.Display!.Period, music, party.NewBattle.Difficulty,
-            party.NewBattle.AllyAutoBattle, party.NewBattle.OpponentControl)
-            { Depot = Array.AsReadOnly(party.ItemCustody.Depot.ToArray()), Layer = world.PlayerEntity.Motion.Layer, Raft = SavedRaft.Capture(story.Raft),
+            story.TextSettings with { }, story.Display!.Period, music, carry.Difficulty,
+            carry.AllyAutoBattle, carry.OpponentControl)
+            { Depot = carry.Depot, Layer = world.PlayerEntity.Motion.Layer, Raft = SavedRaft.Capture(story.Raft),
                 FieldScene = definition.Persistence!.CaptureScene(definition, world, story.Flags),
                 Names = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(story.Names.ToDictionary(pair => pair.Key, pair => pair.Value)) };
     }
 
-    private static SavedMusic Music(ScenarioDefinition definition, SessionSnapshot current)
+    internal static SavedMusic Music(ScenarioDefinition definition, SessionSnapshot current)
     {
         var world = current.Exploration!;
         int area = ExplorationViewContext.Require(world, current.Story.LogicalView).Area;

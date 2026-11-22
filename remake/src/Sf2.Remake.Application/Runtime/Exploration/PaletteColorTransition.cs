@@ -37,6 +37,16 @@ public sealed class PaletteColorTransition
         return new([.. target], current, tick);
     }
 
+    internal bool IsSettled(long tick) => tick - StartedAt >= 32;
+
+    // The next restore-colors command reads the previous lookup even after
+    // interpolation finishes. Keep both lookups and rebase the finished phase.
+    internal (IReadOnlyList<ushort> Current, IReadOnlyList<ushort> Previous) SettledColors =>
+        (Array.AsReadOnly(_base), Array.AsReadOnly(_copy));
+
+    internal static PaletteColorTransition RestoreSettled(IReadOnlyList<ushort> current,
+        IReadOnlyList<ushort> previous, long tick) => new(current.ToArray(), previous.ToArray(), tick - 32);
+
     // LaunchFading cancels the interpolation; DuplicatePalettes publishes BASE.
     public PaletteColorTransition SnapToBase(long tick) => new([.. _base], [.. _base], tick - 32);
 }

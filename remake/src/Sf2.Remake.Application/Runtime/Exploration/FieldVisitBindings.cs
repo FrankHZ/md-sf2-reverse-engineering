@@ -104,6 +104,33 @@ internal sealed class FieldVisitBindings(ExplorationDefinition content)
             _ => null,
         }) ?? throw new BattleRuleException("field-visit-action-origin", "fieldVisit.actors");
 
+    internal static bool IsSettledAction(ExplorationEntity actor, IReadOnlySet<int> slots)
+    {
+        // The movement/action loop checks physical X, independently of visibility and aliases.
+        if (actor.Actions is not { } program) return actor.Motion.X >= 0x7000 || !actor.Motion.IsMoving;
+        int cursor = actor.ActionCursor;
+        if (cursor < 0 || cursor >= program.Actions.Count) return false;
+        if (actor.Motion.X >= 0x7000) return true;
+        if (actor.IsScriptIdle) return !actor.Motion.IsMoving;
+
+        // The ordinary vehicle landing producer installs these even in walking mode.
+        if (actor.ActionSource is CaravanFollowerActions)
+            return program.Actions.OfType<FollowPhysical>().All(follow => slots.Contains(follow.Slot));
+
+        // The admitted wandering template performs only local configuration before
+        // entering its closed random-walk/wait/jump cycle. A different story prefix
+        // must finish before its subsequent ambient loop is eligible.
+        if (actor.ActionSource is not (InitialEntityActions or ProgramEntityActions)) return false;
+        int loop = program.Actions.Count - 3;
+        if (loop < 0 || program.Actions[loop] is not RandomWalkEntity ||
+            program.Actions[loop + 1] is not WaitEntityTicks ||
+            program.Actions[loop + 2] is not JumpEntityAction jump || jump.Instruction != loop) return false;
+        if (actor.WaitingForMotion || actor.Motion.IsMoving)
+            return actor.WaitingForMotion && cursor == loop + 1;
+        return cursor >= loop || program.Actions.Take(loop).All(action => action is
+            WaitEntityTicks or SetEntitySpeed or SetEntityAcceleration or ChangeEntityFlags or FaceEntity);
+    }
+
     private EntityActionProgram? ZoneActions(ZoneEntityActions source)
     {
         var events = Map(source.Body).Events;

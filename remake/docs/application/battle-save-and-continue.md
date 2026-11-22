@@ -107,9 +107,13 @@ an empty Movement selection and completed prior work. Its route context stays li
 `SavedBattleStory` and the map/ordinal in `SavedBattleRoute`. Queue/cursor, tactics/regions, timed
 stats, death credit and battlefield visual slots belong to `BattleContinuationData`. The next legal
 battle input consumes this state. The field visit instead owns working map cells, the loaded
-bindings, physical cast and ambient work. Preserve each typed payload with its corresponding
-boundary. Use a short victory or paid retreat suffix to verify the normal transition between
-them, including exact field capture once control returns.
+bindings, physical cast and ambient work. The
+[settled field candidate](opening-session-lifecycle.md#implemented-settled-field-candidate)
+admits the visit after outcome control returns. The
+[engine victory controls](../../tests/Sf2.Remake.Engine.Tests/BattleSaveReturnTests.cs) compare
+the next ordinary movement after detaching the returned visit, including berth-bearing walking,
+and verify the current landing remains independent of the prior return anchor and the Egress
+register.
 
 The field cutover requires no battle wire change. Keep battle v2/v4/v5 and their existing
 compatibility, class/timed-counter and historical roster readers. `BattleRestore.Build` checks
