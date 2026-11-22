@@ -150,6 +150,73 @@ that skip disabled focus still need an inline reason. Keep tutorials that teach 
 operation; omit descriptions of the implementation. See the [scene-by-scene examples](ui-scene-review.md#player-facing-copy)
 and [mapped input hints](presentation.md#minimal-contextual-hints-1544).
 
+## Selected item descriptions
+
+[Issue #2023](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2023)
+is a Standard slice within the shared design. It covers field Party inventory and preparation
+item/equipment lists, merchant stock and held-item selection, and the battle Item command page.
+The selected item gets a fixed reading area below its collection, with the shared 30px body face,
+word wrapping and space reserved even for empty slots or items without admitted facts. The rows,
+reading area and mapped actions have separate bounds. Selection can scroll a row into view.
+Changing its prose cannot change row, list or footer geometry. The same layout fits the existing
+1920×1080 design canvas at smaller supported window sizes.
+
+Party inventory uses Up/Down to inspect slots when that pane has focus and Left/Right to change
+members. A complete inventory row click also inspects a slot. In field preparation and the shop,
+the description follows the existing choice, including unavailable rows. In battle the acting
+card and choice rows retain their position and the description shares the existing footer frame.
+Range and actual refusal reasons stay readable beside the item effect, and quotes, results and
+target confirmation use their own existing pages.
+
+Use the mounted weapon, ring, recovery and action definitions for effects and numbers, and the
+current actor/slot for conditions such as class eligibility or damage. Distinguish field effects
+from battle effects. Keep descriptions short and localize complete phrases in the UI catalog.
+Names keep the existing name catalog. Where gameplay has no bound effect, leave the item prose
+blank. Depot, other battle menus, game rules, item data and save formats are outside this slice.
+
+### Observe the selected item pages
+
+Build Debug and load the registered local inputs as in the
+[locked .NET workflow](../development-and-verification.md#locked-net-workflow). Use the existing
+[Map16 package selectors](../application/opening-session-lifecycle.md#reproduce-the-map16-observation)
+for the world, scene, entry and opening inputs. Run each case once in English at 1920×1080 and once
+in Chinese at 1600×900. Use fresh checkout-local APPDATA, LOCALAPPDATA, TEMP/TMP and output, with
+a fresh namespace under the registered disposable save root for each process.
+
+| Case | Controlled start and ordinary input |
+| --- | --- |
+| `party` | Copy the `start` document from `handoffs/issue2035/galam-town-v1/return-writer.json` to checkout-local scratch. Set its position to (35,26) and facing to 1. Open Member from the field list, Tab twice to Items, click slot 2, choose slot 3, and change holder with Right. Open Prepare → Equip, examine the first two slots and Cancel all the way back. |
+| `shop` | Use the same approach for the F663 Galam item counter. Talk, browse Herb and Seed, change recipient and decline the purchase quote. Return to the same stock row. Browse Sell and Repair slot selections for the first two holders and Leave. |
+| `battle` | Prepare the disposable Battle02 record below. Continue it at the title, confirm movement in place and open Item. Browse the equipped weapon, damaged ring, Herb and empty slot. Cover Item with the host Menu, Resume, open the Herb target page, then Cancel to Item, actions and Movement. |
+
+For the controlled battle pack, read the existing `issue2049-stable-battle2/sf2-opening/slot1.json`
+under the disposable save root. Decode the envelope's base64 `payload` as UTF-8 JSON. In
+`data.battle.actors`, select `actorId=ally-1`, the saved queue owner. In both
+`loadout.value.items` and `progress.value.sourceLoadout.value.items`, replace
+`[214,15,0,123]` with `[214,276,0,127]`. The second word is a bare damaged Protect Ring.
+Retain the recorded class, equipped weapon and actor stats. Serialize the payload as UTF-8 JSON,
+base64-encode those bytes and compute their SHA-256 for the envelope's existing `sha256` field.
+Write the envelope to slot 1 in the fresh namespace only. This controlled starting pack permits
+a long description and an empty slot in the same selection without performing a Use.
+
+Set `SF2_ITEM_DESCRIPTION_CASE`, `SF2_ITEM_DESCRIPTION_LANGUAGE` (`en` or `zh-CN`),
+`SF2_ITEM_DESCRIPTION_RESOLUTION` (`1920x1080` or `1600x900`) and
+`SF2_ITEM_DESCRIPTION_OUTPUT` to a fresh ignored report. For the two field cases select the
+checkout-local start with `SF2_ITEM_DESCRIPTION_START`. Use an input settings file with
+`formatVersion=1`, the matching `language`, `textMode="instant"` and the default mappings.
+Launch with the isolated runtime selections above.
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --quit-after 3600 `
+    --path remake/game --script res://probes/engine_item_description_observation.gd `
+    --log-file $nativeLog -- --input-settings $settings
+```
+
+The [native observer](../../game/probes/engine_item_description_observation.gd) reads the running
+host's current selection, contents, 30px font, wrapped minimum height, layout and scroll state.
+It compares live packs, gold and flags and checks the disposable battle file after Continue.
+Native window-manager behavior and human reading comfort remain **Unknown**.
+
 ## Layout that preserves the world
 
 The [desktop window policy](presentation.md#window-support-and-recovery-1455) fits the 1920×1080

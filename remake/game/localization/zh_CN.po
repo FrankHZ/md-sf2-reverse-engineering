@@ -690,7 +690,7 @@ msgid "party.stat.move"
 msgstr "移动"
 
 msgid "party.hint"
-msgstr "{0}：整备 · {1}/{2}：{3}   {4}：切换区域   {5}/{6}：关闭\n鼠标：选择成员／前后切换 · 滚轮：滚动当前列表"
+msgstr "{0}：整备 · {1}/{2}：{3}   {4}：切换区域   {5}/{6}：关闭\n鼠标：选择成员或道具栏位 · 滚轮：滚动当前列表"
 
 msgid "prepare.empty"
 msgstr "没有可选内容 · 返回"
@@ -2617,6 +2617,90 @@ msgstr "物品"
 
 msgid "depot.description.chirrup-sandals"
 msgstr "穿上这双凉鞋，走路时每一步都会发出啾啾声。"
+
+msgid "item-description.weapon"
+msgstr "装备后：攻击 +{0}。攻击距离：{1}–{2}。"
+
+msgid "item-description.equip.attack"
+msgstr "装备后：攻击 +{0}。"
+
+msgid "item-description.equip.defense"
+msgstr "装备后：防御 +{0}。"
+
+msgid "item-description.equip.agility"
+msgstr "装备后：敏捷 +{0}。"
+
+msgid "item-description.equip.move"
+msgstr "装备后：移动 +{0}。"
+
+msgid "item-description.movement-sound"
+msgstr "装备后，走路时会发出啾啾声。"
+
+msgid "item-description.class"
+msgstr "当前职业无法装备。"
+
+msgid "item-description.battle"
+msgstr "战斗中：{0}"
+
+msgid "item-description.field"
+msgstr "探索时：{0}"
+
+msgid "item-description.damaged"
+msgstr "损坏时在战斗中使用，道具会消失。"
+
+msgid "item-description.hp"
+msgstr "恢复一名队友最多 {0} 点 HP。"
+
+msgid "item-description.mp"
+msgstr "恢复一名队友最多 {0} 点 MP。"
+
+msgid "item-description.full-hp"
+msgstr "完全恢复一名队友的 HP。"
+
+msgid "item-description.party-hp"
+msgstr "完全恢复战场上存活队友的 HP。"
+
+msgid "item-description.poison"
+msgstr "解除中毒。"
+
+msgid "item-description.poison-paralysis"
+msgstr "解除中毒和麻痹。"
+
+msgid "item-description.damage"
+msgstr "对一名敌人造成伤害。"
+
+msgid "item-description.retreat"
+msgstr "使队伍撤离战斗。"
+
+msgid "item-description.raise-attack"
+msgstr "暂时提升一名队友的攻击。"
+
+msgid "item-description.raise-defense-agility"
+msgstr "暂时提升范围内队友的防御和敏捷。"
+
+msgid "item-description.location"
+msgstr "在特定地点使用才有效。"
+
+msgid "item-description.growth.attack"
+msgstr "永久提升攻击。"
+
+msgid "item-description.growth.defense"
+msgstr "永久提升防御。"
+
+msgid "item-description.growth.agility"
+msgstr "永久提升敏捷。"
+
+msgid "item-description.growth.move"
+msgstr "永久提升移动。"
+
+msgid "item-description.growth.hp"
+msgstr "永久提升 HP 上限。"
+
+msgid "item-description.growth.mp"
+msgstr "提升有 MP 的队友的 MP 上限。"
+
+msgid "item-description.level"
+msgstr "使一名队友提升一级。"
 
 msgid "depot.value"
 msgstr "估价：{0}金币"

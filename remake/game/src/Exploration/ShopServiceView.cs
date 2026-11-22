@@ -71,14 +71,26 @@ internal sealed partial class ShopServiceView : Control
             _error ?? "";
         _hint = GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         _hint += "\n" + input.CompactHint(GameAction.Left) + "/" + input.CompactHint(GameAction.Right) + " · ↕";
-        if (IsMenu) _services.Present(input, _index, _title, reason, _hint,
-            "shop.leave", _options.Take(4).Select(option => _assetError is null && option.Command is not null).ToArray());
-        else _page.Present(reason.Length == 0 ? _title : _title + "\n" + reason, _hint, input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("shop.back"),
-            _options.Select((option, i) => (option.Text, _identities[i], option.Command is not null)).ToArray(), _icons, _index);
         var members = session.QueryPartyDetails()!.Members;
         ActorRef? actor = wait.Offer?.Member ?? wait.Member;
-        if (wait.Phase == ShopPhase.Member && _options[_index].Command is SelectShopMember memberChoice) actor = memberChoice.Member;
+        var focused = _options.ElementAtOrDefault(_index).Command;
+        if (focused is SelectShopMember memberChoice) actor = memberChoice.Member;
         var member = members.FirstOrDefault(row => row.Carried.Actor == actor);
+        if (IsMenu) _services.Present(input, _index, _title, reason, _hint,
+            "shop.leave", _options.Take(4).Select(option => _assetError is null && option.Command is not null).ToArray());
+        else
+        {
+            byte? item = focused is SelectShopItem stock ? stock.Item :
+                wait.Phase == ShopPhase.Slot ? member?.Inventory.ElementAtOrDefault(_index)?.ItemId :
+                wait.Phase == ShopPhase.Member ? wait.Item : null;
+            bool broken = focused is SelectShopSlot slot && (slot.Word & 256) != 0;
+            bool inspectItem = wait.Phase is ShopPhase.Stock or ShopPhase.Slot ||
+                wait.Phase == ShopPhase.Member && wait.Item.HasValue;
+            _page.Present(reason.Length == 0 ? _title : _title + "\n" + reason, _hint,
+                input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("shop.back"),
+                _options.Select((option, i) => (option.Text, _identities[i], option.Command is not null)).ToArray(), _icons, _index,
+                description: inspectItem ? ItemDescriptions.Read(session, item, member, broken) : null);
+        }
         _pack.Visible = member is not null && wait.Phase is ShopPhase.Member or ShopPhase.Slot or ShopPhase.Confirm;
         if (_pack.Visible) _pack.Present(member!, PartyStatusView.MemberName(member!, session), _icons, _page.Position);
     }
@@ -189,7 +201,7 @@ internal sealed partial class ShopServiceView : Control
         { if (_pointer.Moved(motion) && !_release && (hit >= 0 || IsMenu && back)) { _index = back ? 4 : hit; _error = null; Present(_session, _input, _submit); } return; }
         if (input is not InputEventMouseButton button) return;
         if (button.Pressed && button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
-        { if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) { _pack.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; } if (IsMenu) _services.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); else _page.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
+        { if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) { _pack.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; } if (IsMenu) _services.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); else _page.Wheel(mouse.Position, button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
         back |= button.ButtonIndex == MouseButton.Right;
         Rect2 rect = back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : backRect : hit < 0 ? default : IsMenu ? _services.RowRect(hit) : _page.RowRect(hit);
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(), rect, _wait.Token);
