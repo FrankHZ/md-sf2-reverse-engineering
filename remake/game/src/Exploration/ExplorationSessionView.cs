@@ -148,6 +148,9 @@ public sealed partial class ExplorationSessionView : Control
     public override void _Notification(int what)
     {
         if (what == NotificationPaused || what == NotificationUnpaused) SuspendClock();
+        if (what == NotificationPaused || what == NotificationUnpaused ||
+            what == NotificationDisabled || what == NotificationEnabled)
+            QueueRedraw();
     }
 
     private void SuspendClock()
@@ -580,7 +583,10 @@ public sealed partial class ExplorationSessionView : Control
         if (_lastWorld is not { } world) return;
         _presentation?.ObserveResources(HasConnections(ResourceDrawSignal) && ObservationCapture.Find(this)?.IsAccepting() != false);
         _presentation?.ObserveCamera(_legacyCamera || HasConnections(ResourceDrawSignal) || HasConnections(FactsSignal));
-        if (_presentation?.Draw(world, _session!.Current) == true)
+        var pickups = _input.Settings.ModernGuidance && CanProcess() && !PartyMenuOpen && !MenuEntryPending &&
+            !_battleMounted && !_handedOff && !_battleHandoffPending && PresentationFailure is null
+            ? _session!.QueryUnclaimedFieldItems() : [];
+        if (_presentation?.Draw(world, _session!.Current, pickups) == true)
         {
             if (HasConnections(ResourceDrawSignal)) EmitSignal(ResourceDrawSignal);
             return;
@@ -602,6 +608,8 @@ public sealed partial class ExplorationSessionView : Control
                     ? new Color(0.12f, 0.34f, 0.55f) : (world.Layout[x, y] & 0x3C00) == 0x1400
                     ? new Color(0.3f, 0.55f, 0.25f) : blocked ? new Color(0.12f, 0.17f, 0.22f) : new Color(0.24f, 0.33f, 0.32f));
             }
+        if (PresentationFailure is null)
+            _presentation?.DrawPickupGlints(pickups, WorldViewport.Origin, screen);
         _authoredDraws.Clear();
         foreach (var entity in world.AllEntities)
         {
@@ -824,6 +832,7 @@ public sealed partial class ExplorationSessionView : Control
             entityWait = current?.Story.Wait as EntityWait,
             presentationWait = current?.Story.Wait as PresentationWait, presentationCue = _presentation?.CueProjection,
             cameraProjection = resources ? _presentation?.CameraProjection : _presentation?.CameraCompactProjection,
+            pickupGlints = _presentation?.PickupGlintProjection,
             portraitResourceProjection = _presentation?.PortraitResourceProjection,
             textSettings = current?.Story.TextSettings, w1 = current?.Story.Wait as W1TextWait,
             randomSeedCopy = current?.CurrentRandomSeedCopy, lastTextSeedCopy = current?.Story.RandomSeedCopy,

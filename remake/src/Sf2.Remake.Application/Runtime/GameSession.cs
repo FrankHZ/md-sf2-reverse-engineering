@@ -3,6 +3,7 @@ using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.Application.Runtime.Persistence;
 
 namespace Sf2.Remake.Application.Runtime;
@@ -127,6 +128,7 @@ public sealed class GameSession
         }
     }
     public bool CanSearch => FieldSearch.Available(Current);
+    public IReadOnlyList<MapPosition> QueryUnclaimedFieldItems() => FieldSearch.QueryUnclaimedItems(Definition, Current);
     public EntityRef? QueryExplorationInteraction() => ExplorationInteractionQuery.Query(Current, Definition);
     public FieldGuidance? QueryFieldGuidance() => FieldGuidanceQuery.Query(Definition, Current);
     public PartyDetails? QueryPartyDetails() => PartyDetailsQuery.Query(Definition, Current);

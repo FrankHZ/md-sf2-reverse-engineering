@@ -176,7 +176,7 @@ internal static partial class GameText
         ["host.setting-description-11"] = "Shows text loading status and catalog counts in Settings. Off by default. Apply saves the choice; errors remain visible either way.",
         ["ui.settings.auto-victory"] = "Debug: auto-win battles: {0}",
         ["host.setting-description-12"] = "Automatically wins at the first available battle turn. Story scenes and field return play normally. Skipped actions give no combat rewards.",
-        ["host.setting-description-10"] = "Shows the current objective in the field menu and known destinations in the world. Apply changes both together.",
+        ["host.setting-description-10"] = "Shows objectives, known entrances and glints on unclaimed items.",
         ["ui.settings.text"] = "Text: {0}",
         ["ui.settings.instant"] = "Instant",
         ["ui.settings.gradual"] = "Gradual",

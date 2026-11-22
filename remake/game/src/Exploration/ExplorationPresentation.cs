@@ -405,8 +405,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (Error is null && !Draw(world, current, prepare: true)) Error = "map-visual-binding";
     }
 
-    internal bool Draw(ExplorationState world, SessionSnapshot current, bool prepare = false)
+    internal bool Draw(ExplorationState world, SessionSnapshot current,
+        IReadOnlyList<MapPosition>? pickups = null, bool prepare = false)
     {
+        PickupGlintProjection = null;
         if (_layoutRegion is not null)
         {
             _layoutUses = [];
@@ -462,8 +464,11 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var backgroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.BackgroundX ?? 0, view?.Area.BackgroundY ?? 0), areaCells.Size);
             var foregroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.ForegroundX ?? offset.X, view?.Area.ForegroundY ?? offset.Y), areaCells.Size);
             var backgroundDraw = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0, prepare: prepare);
+            bool pickupsOnA = hasForeground && view is { Area.Layer: not 0 };
+            if (!prepare && !pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, background, _screen);
             LayerDraw? foregroundDraw = view is not null && hasForeground
                 ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, false, 1, prepare: prepare) : null;
+            if (!prepare && pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, foreground, _screen);
             if (prepare)
             {
                 foreach (var entity in world.AllEntities.Where(entity => entity.Visible)) _ = Sprite(entity, false, world.Map);

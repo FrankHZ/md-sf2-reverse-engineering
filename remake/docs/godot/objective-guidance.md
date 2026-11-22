@@ -142,6 +142,52 @@ Applying the language preference refreshes the current field projection. Continu
 from restored field state with the currently applied language. `GameText.Keys.cs` owns placeholder
 arity and `GameText.cs` loads and formats catalog text.
 
+## Field pickup glints
+
+**Standard scope ([#2024](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2024)).**
+Modern guidance also marks unclaimed field items, including hidden Search items. The existing
+default-On preference controls both aids. Assist gives the selected row a short description in
+English and Chinese. Reduced flash holds the same small mark steady. Pickup and ordinary Search
+remain independent of the preference.
+
+Read the selected map's Search placements, working item markers and existing receipt flags.
+An item that the party cannot carry yet still qualifies. Empty placements, gold-only rewards and
+description callbacks have no item glint. Use the current traversal area, a clear local sightline
+to a walkable side from which Search could face the object, and the field draw clip. The sightline
+checks collision cells because distinct rooms or locked passages can share an area rectangle.
+It does not route around blockers or follow warps. [World draw order](display-composition-contract.md#field-world-priority-is-not-one-number)
+owns foreground occlusion. Show the aid only in ordinary field control with the menus closed.
+
+Acceptance uses the same acquisition and receipt through success, Full and repeat, plus a bounded
+check of closed space, foreground, settings and Save/Continue. The admitted world and saved
+progress provide all inputs. There is no additional discovery or pickup record.
+
+### Pickup observation
+
+Use the owned Godot .NET Debug project, default English keyboard controls, and
+`res://probes/engine_field_pickup_glints_observation.gd`. Select `derived/issue2035/galam-town-v1`
+with its world, entry, main-scenes and six opening inputs as in the
+[ordinary field launcher](../application/opening-session-lifecycle.md#yeel-save-and-continue-observation).
+Select a new external `issue2024-*` save namespace and a fresh ignored `SF2_HOST_UI_OUTPUT`
+for each process. Use the [worktree configuration](../../../docs/operations/local-private-inputs.md)
+and worktree-local TEMP, APPDATA and LOCALAPPDATA. The headless command uses `--path remake/game
+--audio-driver Dummy --max-fps 120 --resolution 1920x1080 --script` followed by the probe.
+The observer reads the running draw commands and session. It frees its mounted host before exit.
+
+| `SF2_HOST_UI_CASE` | Controlled prerequisite and ordinary observation |
+| --- | --- |
+| `shrine` | Prepare slot 1 from the accepted #2053 Map42 v6 shrine slot at (19,23), facing Down. Use the registered `handoffs/issue2053/snapshot-mechanisms` shrine writer to regenerate the source if needed. On a detached copy, remove F133 and layout delta index1555 to restore the base closed chest. Replace the granted item9 and the empty slots of the five joined members with item0. Keep the UTC save header and recalculate the normal save envelope. Title Continue admits the result. Observe the post-Apply Off and Reduced flash policies and hidden marks under field commands and Search feedback. Search with Full leaves the same packs and closed chest. Drop one herb, Search for item9/F133, repeat empty, then save into slot 2. |
+| `continue` | New process in the same namespace, with no controlled start. Title Continue slot 2 preserves exactly one Power Water and F133, with no glint. Repeat Search and climb the CURRENT stair to (2,8). With F901 clear, (4,3) in the hall lacks its item marker. Exit to Map41 and check the new projection. |
+| `foreground` | Copy the #2035 `before-writer.json` controlled input under worktree `local/` and select it via `SF2_HOST_UI_START`. Set Map17 (59,5), Up. The hidden F205 mark appears in the prison area. Up, Left, Left and Search grant item126 and clear the mark. |
+| `wall` | Likewise use #2035 `return-writer.json` at Map16 (32,23), Right. An in-frame working wall at (33,23) blocks the view of the marked chests at (34–35,23). |
+| `docks` | Use the #2053 `dock-write.json` start at Map44 (27,7), Up. The A-plane mark appears on the deck barrel, the separate hold mark is absent, and Search grants item11/F139. |
+| `hold-foreground` | Use the same dock start at (59,9), Left. The B-plane mark's upper stroke intersects the later high-priority A-plane draw for block201 at source cell (58,22). Atlas alpha at block pixel (12,12) is opaque. Compare the bounded layout draw projection and this pixel in the mounted block definition. |
+
+**Confirmed in the remake** at these controlled boundaries. The sightline uses current collision
+cells and does not claim that walking to every marked point will succeed through moving actors
+or scripted movement. Ordinary item acquisition, eligible save locations and later map admission
+keep their existing owners. These draws provide no evidence about original-game rendering or timing.
+
 ## Verification and direct replay
 
 `FieldGuidanceTests` retains generic read-only/ambiguity/anchor/follower behavior.
