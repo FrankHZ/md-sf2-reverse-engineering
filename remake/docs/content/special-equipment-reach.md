@@ -10,7 +10,7 @@ observation. The [campaign item index](campaign-items.md) owns item lifecycles.
 | --- | --- | --- |
 | Evil Knuckles, Map5 F197 | **Confirmed** closed in early Yeel. The late piano opens the usable entrance to the chest area. | Late Grans return. A selected early chest row supplies a carry identity. The later equip caller depends on MMNK and cursed-weapon rules. |
 | Evil Shot, Map16 F200 | **Confirmed** closed to ordinary walking from the audited early entrances. The later north gate or northern overworld approach reaches the search area. | Late Grans return. Rohde's current BRGN class would qualify once a legitimate copy reaches him. |
-| Chirrup Sandals, Map17 F205 | **Inferred** ordinary pickup in the original at first prison control. The initial room has a clear approach and the faced item marker. | **Confirmed** ordinary Search, Bowie custody, Equip, field audio, v6 Continue and removal from the admitted prison checkpoint. Battle05 inherits the worn ring and selects the mover's cue. Depot custody and appraisal have engine coverage. |
+| Chirrup Sandals, Map17 F205 | **Inferred** ordinary pickup in the original at first prison control. The initial room has a clear approach and the faced item marker. | **Confirmed** ordinary Search, Bowie custody, Equip, field audio, v6 Continue and removal from the admitted prison checkpoint. Battle05 inherits the worn ring and selects the mover's cue. Ordinary Depot input deposits, describes and returns that same acquisition from a controlled post-Taros service checkpoint. |
 
 ## Source and layout
 
@@ -201,9 +201,35 @@ begins after the wake-up, with a free slot and F205 clear.
 `RingEquipmentTests` exercises battle movement selection and verifies that another
 wearer's ring has no effect on ordinary field walking. The authored Depot transaction
 deposits the bare word, appraises the selected entry without changing custody and
-retrieves one bare copy. The natural Battle04-to-wake prefix and post-Taros Depot UI
-with genuine carry remain **Unknown** for this witness.
+retrieves one bare copy. Natural reach from Battle04 into the wake-up and from the
+early pickup to the later Map26 visit remain **Unknown** for this witness.
 [Settled field Save and Continue](../application/opening-session-lifecycle.md#unified-settled-field-snapshots)
+
+#### Controlled Depot UI
+
+**Confirmed in the remake.** Use the same registered Galam world and the accepted
+Map26 service-return checkpoint at (11,36), facing Up. The service visit, campaign
+flags and other party members come from the registered `handoffs/issue1870/slots/service-en.json`.
+To reproduce the controlled prerequisite, validate both source envelopes and decode
+the v6 record from step 3 and the service's v1 record. In a fresh disposable input,
+replace the service record's complete `data.allies` entry for `ally-0` with that member's
+unchanged `data.party.allies` entry from the v6 record. Carry F205 from that record
+into the service flags. Encode the copied service record using the normal
+[save envelope](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs).
+The scoped composition retains the ordinary acquisition and isolates the post-Taros
+service consumer from campaign traversal. Both source slots are read-only.
+
+1. Continue the composed input. Talk to the Map26 service NPC and open Depot.
+   Deposit the worn sandals from Bowie's third slot. His pack becomes
+   `[199, 0, 127, 127]` and the Depot holds exactly one identity 126.
+2. Look at that entry in English. Leave the service, change Language to Simplified
+   Chinese in ordinary Settings, then talk to the same NPC and Look again. The
+   appraisal shows the step-sound note in both languages. Both reads preserve the
+   same stored item and the holder's pack in one live session.
+3. Retrieve the stored item to Bowie and leave the service. His pack is
+   `[199, 0, 126, 127]` and the Depot is empty. Ordinary walking control resumes
+   with the equipped weapon and the bare sandals. The witness has no gameplay,
+   service or presentation failure. [Accepted Map26 service entry](../application/caravan-services-design.md#current-formation-implementation)
 
 ## Reproduce the static boundary
 
