@@ -13,11 +13,52 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
     private const string YeelRecipe = "yeel-field";
     private const string GransealRecipe = "granseal-field";
     private const string GransealSetup = "ms-map3-flag506";
+    private const string GalamRecipe = "galam-field";
+    private const string GalamDefault = "ms-map16";
+    private const string GalamAfterRally = "ms-map16-flag663";
     private static readonly FieldReturnAnchor GransealChurch = new(new("map-3"), new(32, 13), 1);
 
     private static ExplorationSetupDefinition? SettledGransealSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags) =>
         !flags.Contains(640) && map.SelectedSetup(flags) is { Value: GransealSetup } selected &&
         map.Setups.TryGetValue(selected, out var setup) ? setup : null;
+
+    private static readonly FieldReturnAnchor GalamChurch = new(new("map-16"), new(27, 7), 1);
+
+    private static bool AdmitsGalamSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags, string setup)
+    {
+        if (flags.Contains(530) || flags.Contains(999) || map.Setup?.DefaultSetup.Value != GalamDefault)
+            return false;
+        return map.SelectedSetup(flags)?.Value switch
+        {
+            GalamDefault => setup == GalamDefault && map.Population is not null,
+            GalamAfterRally when map.Setups.ContainsKey(new(GalamAfterRally)) =>
+                setup == GalamAfterRally || setup == GalamDefault && map.Population is not null,
+            _ => false,
+        };
+    }
+
+    private static string LoadedGalamSetup(ExplorationMapDefinition source, ExplorationMapDefinition loaded,
+        IReadOnlyList<int> flags)
+    {
+        // Setting F663 ends the rally without loading the alternate setup. Bind the body
+        // actually used for Talk, Search and movement, including after a prior Continue.
+        if (AdmitsGalamSetup(source, flags, GalamDefault) &&
+            Matches(source.Entities, source.Events, source.OnLoad, source.InputProgram, source.Population, source.Search))
+            return GalamDefault;
+        if (AdmitsGalamSetup(source, flags, GalamAfterRally))
+        {
+            var alternate = source.Setups[new(GalamAfterRally)];
+            if (Matches(alternate.Entities, alternate.Events, alternate.OnLoad, alternate.InputProgram,
+                alternate.Population, alternate.Search))
+                return GalamAfterRally;
+        }
+        throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
+
+        bool Matches(IReadOnlyList<ExplorationEntityDefinition> entities, IReadOnlyList<ExplorationEvent> events,
+            ProgramLocation? onLoad, ProgramLocation? input, ExplorationPopulation? population, FieldSearchDefinition? search) =>
+            loaded.OnLoad == onLoad && loaded.InputProgram == input && loaded.Population == population &&
+            loaded.Search == search && loaded.Entities.SequenceEqual(entities) && loaded.Events.SequenceEqual(events);
+    }
 
     private static MapSetupId? YeelSetup(ExplorationMapDefinition map, IReadOnlyList<int> flags)
     {
@@ -98,6 +139,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             if (SettledGransealSetup(map, story.Flags) is null) return story;
             if (point != GransealChurch) return null;
         }
+        if (field.Map == GalamChurch.Map && point != GalamChurch) return null;
         if (point is null) return story;
         return story.Copy(story.Cursor, story.Wait, flags: story.Flags.Append(399).Distinct().Order().ToArray(),
             egressMap: point.Map);
@@ -105,7 +147,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
 
     public void ValidateRegisters(OpeningSaveData data, ExplorationDefinition? world = null)
     {
-        if ((data.Recipe == GransealRecipe || data.Map is "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
+        if ((data.Recipe == GransealRecipe || data.Map is "map-16" or "map-5" or "map-23" or "map-25" or "map-2" or "map-36") && data.FieldScene is null)
             throw new BattleRuleException("save-field-scene-required", "save.fieldScene");
         if ((data.Recipe is "elven-village" or "ketto" || PacalonLocation(data.Map)?.Recipe == data.Recipe) && data.EgressMap is "map-6" or "map-8" or "map-9" or "map-10" or "map-13") return;
         if (data.Recipe == "new-granseal-return" && data.Map is "map-6" or "map-7" && data.FieldScene is null)
@@ -129,7 +171,7 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         if (data.Recipe == "parmecia-battle-return" && data.Map == "map-70" && data.Flags.Contains(514) &&
             data.EgressMap is "map-9" or "map-10" or "map-13") return;
         if (data.EgressMap is not ("map-0" or "map-3") &&
-            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
+            !(data.Recipe is "battle07-return" or YeelRecipe or GransealRecipe or GalamRecipe && data.EgressMap is "map-5" or "map-43" or "map-16"))
             throw new BattleRuleException("save-egress-map", "save.egressMap");
     }
 
@@ -173,6 +215,9 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
                 ? new("map3-joined", GransealChurch, "Granseal, outside the church")
                 : new("map3-opening", new(map, new(56, 3), 3), "Granseal, home");
         }
+        if (map == GalamChurch.Map && content!.Traversal.IsWithinActiveArea(player.Position) &&
+            (AdmitsGalamSetup(content, flags, GalamDefault) || AdmitsGalamSetup(content, flags, GalamAfterRally)))
+            return new(GalamRecipe, player, "Galam");
         if (map.Value == "map-5" && YeelSetup(content!, flags) is not null &&
             content!.Traversal.IsWithinActiveArea(player.Position))
             return new(YeelRecipe, player, "Yeel");
@@ -258,6 +303,8 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
             world.Definition.OnLoad == granseal.OnLoad && world.Definition.Entities.SequenceEqual(granseal.Entities) &&
             world.Definition.Events.SequenceEqual(granseal.Events)
                 ? Sf2FieldSceneRestore.Capture(definition, world, GransealSetup) :
+        world.Map == GalamChurch.Map ? Sf2FieldSceneRestore.Capture(definition, world,
+            LoadedGalamSetup(definition.Exploration!.Maps[world.Map], world.Definition, flags)) :
         world.Map.Value == "map-5" ? Sf2FieldSceneRestore.Capture(definition, world,
             YeelSetup(definition.Exploration!.Maps[world.Map], flags)!.Value) :
         world.Map.Value == "map-23" ? Sf2FieldSceneRestore.Capture(definition, world, definition.Exploration!.Maps[world.Map].SelectedSetup(flags)!.Value) :
@@ -268,12 +315,18 @@ internal sealed class Sf2OpeningRestore(int fieldRecipeRevision = 1) : IOpeningR
         IReadOnlyList<int> flags, RaftBerth? raft, out IReadOnlyList<int> enteredFlags, byte layer = 0,
         SavedFieldScene? scene = null)
     {
-        if (location.Recipe == GransealRecipe)
+        if (location.Recipe is GransealRecipe or GalamRecipe)
         {
             var sourceMap = definition.Exploration!.Maps[location.Anchor.Map];
-            if (scene is null || scene.Setup != SettledGransealSetup(sourceMap, flags)?.Id.Value)
+            bool galam = location.Recipe == GalamRecipe;
+            if (scene is null || !(galam ? AdmitsGalamSetup(sourceMap, flags, scene.Setup)
+                : scene.Setup == SettledGransealSetup(sourceMap, flags)?.Id.Value))
                 throw new BattleRuleException("save-field-scene-context", "save.fieldScene");
             var town = Sf2FieldSceneRestore.Rebuild(definition, location, party, flags, scene, out _, layer);
+            // Galam scripts retire resident records in-place. Both visits retain their
+            // complete physical cast, even when some actors are no longer addressable.
+            if (galam && town.Definition.Entities.Any(row => !town.AllEntities.Any(actor => actor.Entity == row.Entity)))
+                throw new BattleRuleException("save-field-scene-actor", "save.fieldScene");
             var player = town.PlayerEntity;
             if ((player.Motion.FlagsA & 0x20) != 0 && EntityMotion.FieldObstructed(player.Motion.X, player.Motion.Y,
                 town.AllEntities.Where(actor => actor.Visible && actor.Slot != player.Slot).Select(actor => actor.Motion)))

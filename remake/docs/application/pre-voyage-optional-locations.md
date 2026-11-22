@@ -146,15 +146,17 @@ and cold Continue observation, with Record where a real priest is admitted.
 
 **Confirmed coverage.** Map3 default/F609 retain their anchored recipes. The completed Battle01
 Map57 and Battle07 Map58 returns retain their separate anchor gates. Default and F650 Yeel use the
-settled-visit recipe. F506 Granseal has a separate settled-visit recipe. Ordinary Save preserves
+settled-visit recipe. F506 Granseal and the early Map16 Galam visits have separate settled-visit
+recipes. Ordinary Save preserves
 the incoming Egress and F399. Church Record publishes the town refuge and F399 after slot
 readback. [Granseal acceptance](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) ·
-[Yeel acceptance](opening-session-lifecycle.md#yeel-save-and-continue-observation)
+[Yeel acceptance](opening-session-lifecycle.md#yeel-save-and-continue-observation) ·
+[Galam acceptance](opening-session-lifecycle.md#galam-town-save-and-continue-observation)
 
 ### Ordered implementation batches
 
-Use Granseal's settled scene handling for Galam. Dispatch the remaining batches
-in order, deferring a batch if its prerequisite has a concrete unresolved failure. Each batch uses
+Dispatch the remaining batches in order, deferring a batch if its prerequisite has a concrete
+unresolved failure. Each batch uses
 the [shared acceptance](#save-batch-acceptance). Save-only batches preserve the incoming
 Church/Egress state.
 
@@ -164,16 +166,11 @@ Church/Egress state.
    the Map3 refuge and the slot keeps the settled visit's tile. F543, active naming and choices,
    quake Map4 and non-town visits stay outside this recipe.
    [Observation and private inputs](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation)
-2. **Galam town, Map16.** Use the ordinary prison-to-town or admitted battle return/visit. Add
-   Save and Church Record for settled default, same-visit post-rally and fresh F663 town, including
-   Battle05 completion F505. Bind the live setup, Map16 Church anchor and localized destination.
-   Preserve F663/F664, the actual cast and events, F505 and Slade's flag/follower/roster state.
-   Verify legitimate early Egress values. Cold-continue before the rally and trigger it once. Save
-   after the rally settles and Continue on the same visit, then leave and reenter to verify the
-   alternate population. From the F505 return, verify guard retirement, one reachable F207/F208
-   receipt and the completed guard crossing. Use the actual priest in both admitted populations
-   and check the published Egress tuple through the existing return consumer. Exclude active
-   rally/guard/battle work, late F530/F999, Map17 rooms and Map18 bridge.
+2. **Galam town, Map16 (implemented).** Save and cold Continue cover the default visit,
+   same-visit post-rally, fresh F663 population and settled F505 return. Continue keeps the
+   actual cast, layout and Slade's follow or roster state. Record uses the Map16 refuge from
+   either admitted priest. F530/F999, active rally/guard/battle work, Map17 and Map18 stay outside
+   this recipe. [Observation and private inputs](opening-session-lifecycle.md#galam-town-save-and-continue-observation)
 3. **Quiet Hawel visit, Map43 F612.** Save only after the completed house sequence and on the
    concrete F612 revisit. Check the live first-completed cast against the reentry cast and bind
    each through the settled recipe as needed. Preserve F4/F36 as applicable, cleared F72,

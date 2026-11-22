@@ -509,7 +509,8 @@ the completed Battle07 Map58 aftermath recipe above.
 Save/Quit and Continue must round-trip a legal point with this selection. Restore verifies package,
 member identities, membership flags, gear, resources and the egress register. New egress values
 require explicit admission independent of location eligibility. Battle suspend, arbitrary field
-saves, Map16/17 save recipes and high-level promotion are outside this delivery.
+saves and high-level promotion are outside this delivery. The later
+[Map16 save recipe](opening-session-lifecycle.md#galam-town-save-and-continue-observation) has its own scope.
 
 ## Preparing the ordinary selection
 
@@ -733,7 +734,9 @@ Behavior verification uses `BattleEndPositionTests`, `GalamSceneOperationsTests`
 `BattleSceneEquipmentTests`, `BattleRetreatTests`, `Battle02OutcomeTests`,
 `BattleOutcomeProgramTests`, `ExplorationMusicTests`, the existing raw-text/warp and New Game/restore
 tests, plus the actual Content/adapter build. Shop cancellation, full-inventory and insufficient-gold
-transaction guarantees retain their existing behavior tests. Map16/17 saves, Battle06 outcomes,
+transaction guarantees retain their existing behavior tests. Settled Map16 save coverage has its
+[own observation](opening-session-lifecycle.md#galam-town-save-and-continue-observation).
+Map17 saves, Battle06 outcomes,
 later F530 content, later spell families and original timing remain outside this boundary.
 
 The completed defeated scene also owns field-death presentation poses. The retained ordinary

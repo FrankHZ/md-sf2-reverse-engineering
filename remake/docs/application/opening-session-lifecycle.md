@@ -421,6 +421,12 @@ asks the selected profile for a recipe and validates its typed result using exis
   still follow on that visit. Fresh entry retires his resident actor while retaining his membership.
   Church Record requires the imported Map3 refuge. See [the bounded observation](#granseal-f506-save-and-continue-observation).
 
+- **Galam town settled visit:** the `galam-field` recipe retains the actual Map16 setup,
+  legal tile, facing, layer, physical cast, aliases and layout. Continue preserves a default
+  visit after the rally, even when F663 is set. An ordinary reentry selects the changed
+  population. F505 preserves the completed guard and join state. Both priest callers use the
+  imported Map16 refuge for Record. [Bounded observation](#galam-town-save-and-continue-observation)
+
 - **Yeel settled visit:** the `yeel-field` recipe records the current active-area tile, facing
   and layer. Use the default setup or a concrete F650 setup selected by the world. The visit
   snapshot retains settled actors, aliases, follower relationships and the working layout.
@@ -461,9 +467,9 @@ can differ because this is a savepoint reload. This distinction must appear in p
 **Standard design scope** for [#2029](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2029),
 within the High-rigor recovery contract above. Extend ordinary Save and Church Record to the
 admitted, settled visits in the [ordered batches](pre-voyage-optional-locations.md#ordered-implementation-batches).
-Map3 F506 is implemented. Map16 is the next batch. Each batch owns its capture, independent
-Continue and restart evidence. Map5 default/F650 and the anchored opening and tower outcome
-recipes are already delivered.
+Map3 F506 and Map16 are implemented. Each batch owns its capture, independent Continue and
+restart evidence. Map5 default/F650 and the anchored opening and tower outcome recipes also
+have implemented recovery.
 
 **Confirmed implementation structure.**
 [`OpeningSave.Query`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs) selects a
@@ -471,10 +477,9 @@ recipe, captures detached progress and builds a restore candidate before offerin
 [`OpeningRestore.Build`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs)
 reselects the recipe from the record and validates the party, registers, content and landing.
 [`Sf2OpeningRestore`](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OpeningRestore.cs) admits Map3
-default/F609 with anchors and F506 with its concrete scene. The [current world
-selection](../../content/private/pre-voyage-opening.json) includes both towns and their early setup
-bodies. Map3 has an imported Church refuge. Map16 still needs its field recipe and Church
-publication binding.
+default/F609 with anchors, F506 with its concrete scene, and Map16 with its loaded default or
+F663 scene. The [current world selection](../../content/private/pre-voyage-opening.json) includes
+both towns, their early setup bodies and their Church refuges.
 
 Use one finite settled-visit recipe per town with the existing
 [`SavedFieldScene`](../../src/Sf2.Remake.Application/Runtime/Persistence/SavedFieldScene.cs) and
@@ -504,7 +509,7 @@ live scene record keeps Kiwi's name, roster and physical follow state independen
 belongs to the existing setup population. Default/F609 use their anchored records. F543,
 unclassified or missing bodies, and the quake substitution remain outside the settled recipe.
 
-**Galam second.** Map16 selects default or F663, while F505 prevents reissuing Battle05 and
+**Galam.** Map16 selects default or F663, while F505 prevents reissuing Battle05 and
 selects the adjoining Map17 variant. F664 governs guard 145 retirement on fresh entry. The [rally
 source](../../../docs/research/chapters/grans-opening/battle04-to-battle05-content-route.md#conditional-captivity-and-escape-content)
 and [victory
@@ -513,14 +518,14 @@ distinguish a default visit with its army, that visit after `cs_51F88` hides the
 and a fresh F663 visit with a different cast. Map16 Talk reads the [loaded definition's
 events](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationInteractionQuery.cs). Copying
 Yeel's setup-equals-fresh-selector check would relabel the settled post-rally default cast as F663,
-rejecting retired actor identities still in the scene or binding the wrong interaction table. Use the existing scene
-`Setup` field for the actual admitted visit definition. Resolve the loaded setup from its content
-binding and allow the bounded default/F663 visit transition on capture/read when the rally has
-completed. Validate the saved record against that visit's cast and event data. A flag-compatible
-setup string alone does not admit arbitrary actor identities or a later setup. No generic dispatch or
-scene-format change is required by this mismatch.
+rejecting retired actor identities still in the scene or binding the wrong interaction table. The scene
+`Setup` field identifies the admitted visit. Capture matches the live definition to its entities,
+Talk and zone/warp events, Search, population and programs. Continue validates the record against
+that body's resident cast and restores the saved aliases and active slots. F663 admits the changed
+setup and the still-loaded default visit. F505 can retain either according to the actual route.
+F530 and F999 remain outside this early recipe.
 
-**Church Record and Egress.** Use the existing source-table import for the Map3 `(32,13)` Up and
+**Church Record and Egress.** The existing source-table import binds the Map3 `(32,13)` Up and
 Map16 `(27,7)` Up refuge bindings. Limit the new Record behavior to the admitted callers and phases,
 preserving earlier Map3 behavior and existing early defeat/retreat tuples. Require the matching
 refuge binding before offering the new Record behavior. After the actual Church program and portrait close, Record uses the same eligibility, destination preview and confirmation as
@@ -544,11 +549,6 @@ work. Unknown required music/accounting or unusable scene/landing remains a type
 publication. Inspect the real scene for any unsupported persistent operand before extending the
 shared mechanism. Add a focused engine assertion where the current tests miss a gameplay regression,
 and run the affected adapter compile and short native observations at implementation.
-
-**Unknown for Map16.** Existing route observations establish the visits and interactions. Its cold
-recovery, ambient restart, in-visit aliases and post-load inputs need the bounded acceptance in
-batch 2. Use the concrete missing setup, actor identity, layout effect, projection or register
-to route a failure to its owner.
 
 ### Implemented savepoint boundary
 
@@ -711,6 +711,95 @@ with TemporaryDirectory(dir=target.parent) as scratch:
     staged.rename(target)
 print({"worldBytes": size, "unchangedDependencies": len(files) - 1, "church": anchors[3]})
 '@ | uv run --locked python -X utf8 - $base $upstream $target
+```
+
+#### Galam town Save and Continue observation
+
+[Issue #2035](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2035) uses the
+existing High-rigor recovery contract, with a finite Map16 implementation. Select the published
+`derived/issue2035/galam-town-v1` world with its matching entry, battle scenes and opening inputs.
+It extends `derived/issue2034/granseal-f506-v1` at the same package identity and gameplay revision.
+The 102,142,557-byte world adds the selected Map16 Church binding and reuses 145 unchanged inputs.
+The rebuild reads one package inventory and a 98 MiB world, with the same 1.5 GiB working-memory
+budget as the Granseal publication and same-volume links for the other files. The imported
+`(27,7)`, Up tuple equals the existing Battle05/06/07 Egress tuple.
+
+**Confirmed in the remake.** The controlled kitchen predecessor starts on the walking side of
+the diagonal stairs after the prison escape with F73 set. Ordinary input enters Map16. A cold
+Continue of the pre-rally slot reaches the rally and completes it once. Saving the resulting
+visit and loading it in a separate process keeps the hidden army, the removed aliases and the
+default priest. The reverse kitchen warp loads the F663 residents and their priest. The captured
+progress comparison at attachment includes full party/item words, names, flags, both RNG
+registers, Egress, layout differences, actor slots, aliases and follow links.
+
+The controlled settled Battle05 return uses Map16 `(16,18)`, Down, with F505/F663/F664,
+one active Slade, and F73/F405 clear. Ordinary walking after Continue crosses the completed guard
+zone. Search at the F207 chest adds one Healing Herb. A repeat Search leaves that count unchanged,
+and the next slot retains F207. Actual default and F663 priests open Church Record, which reaches
+the normal slot confirmation after dialogue closes. Save preserves the incoming F399/Egress.
+Confirmed Record publishes F399 and Map16 Egress. Cancel and a held writer lock preserve existing
+slot bytes and the incoming church registers. The lock failure keeps both primary and backup and
+returns walking control. The unit behavior tests cover stale confirmation and a Record whose
+Continue tile differs from its refuge.
+
+Independent title processes read both priests' records, the F505 record containing F207, and
+disposable copies of the older Map3 default/F609 and Yeel F650 saves. A post-Battle06 F663 revisit
+provides the open route to field Egress. Its cold Record reader walks through Map18 to Map66 and
+uses the normal field Magic command to return to Map16 `(27,7)`, Up. The earlier visit's path to
+the drawbridge encounters the Battle05 guard. The existing early battle outcome tuples govern
+that route.
+
+**Unknown:** Original SRAM and timing parity, plus recovery for unadmitted setup families and
+Maps17/18. Busy rally, guard and battle sequences stay outside this recipe. The controlled
+predecessors establish restart and next-input behavior after their declared flags and progress.
+
+##### Reproduce the Map16 observation
+
+Load the [worktree inputs](../../../docs/operations/local-private-inputs.md), select the published
+package and build the Debug adapter as in [commission verification](../verification/map3-commission-save.md).
+The observer, controlled inputs and package publisher are under `handoffs/issue2035/galam-town-v1`
+in the configured shared input root. The publisher takes the accepted F506 package, the pinned
+`c834c652` upstream checkout and a fresh registered derived destination. It uses the existing
+Church selection and source-table importer. From the owning checkout:
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$repo = (Resolve-Path .).Path
+$handoff = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2035/galam-town-v1'
+$saveRoot = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/disposable-saves'
+$run = [guid]::NewGuid().ToString('N').Substring(0, 12)
+$cases = [ordered]@{
+    pre = @('before-writer', 'before-reader', 'rally-reader', 'default-record-reader', 'rally-record-reader')
+    return = @('return-writer', 'return-reader', 'return-record-failure', 'return-record-reader')
+    egress = @('egress-writer', 'egress-reader')
+    legacy1 = @('legacy-default')
+    legacy2 = @('legacy-f609')
+    legacy3 = @('legacy-yeel')
+}
+foreach ($group in $cases.Keys) {
+    $sample = Join-Path $repo "local/issue2035/$run-$group"
+    foreach ($case in $cases[$group]) {
+        $held = $null
+        try {
+            if ($case -eq 'return-record-failure') {
+                $lock = Join-Path $saveRoot "issue2035-$run-$group/sf2-opening/slot1.lock"
+                $held = [IO.File]::Open($lock, 'Open', 'ReadWrite', 'None')
+            }
+            & pwsh -NoProfile -File (Join-Path $handoff 'Run.ps1') -Checkout $repo -SampleRoot $sample -Case $case
+            if ($LASTEXITCODE -ne 0) { throw "Galam native observation failed in $case" }
+        }
+        finally { if ($held) { $held.Dispose() } }
+    }
+}
+```
+
+To rebuild the additional binding from the same inputs, set `$upstream` to the read-only pinned
+checkout and `$target` to a fresh destination beside the registered package:
+
+```powershell
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2034/granseal-f506-v1'
+uv run --locked python -X utf8 (Join-Path $handoff 'PublishWorld.py') $base $upstream $target
 ```
 
 #### Yeel Save and Continue observation
