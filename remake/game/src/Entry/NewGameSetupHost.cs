@@ -52,7 +52,7 @@ public sealed partial class GameRoot
 
     private void ChooseNewSlot(int slot, SlotRead seen)
     {
-        _newSlot = slot; _newSlotSeen = seen; _saveSelection = _slots!.SelectedIndex; ShowName();
+        _newSlot = slot; _newSlotSeen = seen; ShowName();
     }
     private void ShowName()
     {
@@ -71,7 +71,9 @@ public sealed partial class GameRoot
     private void ConfirmNewGame()
     {
         _slots!.Show(); _slots.Cancel = ShowName;
-        _slots.ShowChoices("confirm-new-game", GameText.Get("new.confirm", _nameDraft.Length == 0 ? GameText.Get("name.default-value", DisplayNames.DefaultMember(0)) : _nameDraft, _newSlot),
+        string name = _nameDraft.Length == 0 ? GameText.Get("name.default-value", DisplayNames.DefaultMember(0)) : _nameDraft;
+        string message = GameText.Get(_newSlotSeen!.HasIncompatiblePrimary ? "new.confirm-incompatible" : "new.confirm", name, _newSlot);
+        _slots.ShowChoices("confirm-new-game", message,
             (GameText.Get("entry.back"), ShowName), (GameText.Get("new.start", _newSlot), CommitNewGame));
         DisarmInput();
     }
@@ -128,7 +130,7 @@ public sealed partial class GameRoot
     private void NewGameError(string error)
     {
         _slots!.Show(); _slots.Cancel = CancelNewGame;
-        bool review = error is "save-record-changed" or "save-backup-unreadable" or "save-seed-read-only" or "save-primary-invalid-use-recovery";
+        bool review = error is "save-record-changed" or "save-seed-read-only";
         _slots.ShowChoices("new-game-error", review ? Explain(error) : GameText.Get("new.error", error),
             (GameText.Get("entry.back"), ShowNewSlots), (GameText.Get("entry.retry"), _newSlotSeen is null || _newMainSeed is null || review ? ShowNewSlots : CommitNewGame), (GameText.Get("entry.cancel"), CancelNewGame));
         if (review) _slots.ShowDetail(GameText.Get("save.details", error));

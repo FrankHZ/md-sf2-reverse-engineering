@@ -17,7 +17,13 @@ internal sealed record SlotRead(SaveFile Main, SaveFile Previous)
     internal SaveRecord? Backup => Previous.Record;
     internal string? Error => Main.Error;
     internal string? BackupError => Previous.Error;
-    internal bool CanRecover => Primary is null && Backup is not null && Error is null or
+    internal bool HasIncompatiblePrimary => IsIncompatible(Error);
+    internal string? WriteError => Error is not null && !HasIncompatiblePrimary ? Error : BackupError;
+    internal bool CanRecover => Primary is null && Backup is not null && (Error is null || IsCorrupt(Error));
+
+    internal static bool IsIncompatible(string? error) =>
+        error is "save-incompatible" or "field-snapshot-incompatible" or "save-battle-incompatible";
+    internal static bool IsCorrupt(string? error) => error is
         "save-size" or "save-malformed" or "save-empty" or "save-checksum" or "save-header" or
         "save-null-value" or "save-duplicate-key" or "save-presence" or "save-battle-custody";
     internal bool Matches(SlotRead other) => Main.Matches(other.Main) && Previous.Matches(other.Previous);
@@ -114,8 +120,7 @@ internal sealed class LocalSaveStore
             }
             else
             {
-                if (current.Error is not null) return new(false, "save-primary-invalid-use-recovery");
-                if (current.BackupError is not null) return new(false, "save-backup-unreadable");
+                if (current.WriteError is { } blocked) return new(false, blocked);
                 if (_validate(candidate) is { } invalid) return new(false, invalid);
                 long sequence = checked(Math.Max(current.Primary?.Sequence ?? 0, current.Backup?.Sequence ?? 0) + 1);
                 bytes = OpeningSaveJson.WriteRecord(candidate with { Sequence = sequence });
@@ -129,11 +134,16 @@ internal sealed class LocalSaveStore
             if (reread.Record is null || !bytes.AsSpan().SequenceEqual(reread.Bytes)) return new(false, reread.Error ?? "save-readback");
             // The slot lock serializes cooperating writers. Recheck the actual publication operands
             // after validation; another application can still replace a path between OS calls.
+            // A known incompatibility can be replaced after confirmation. Keep its bytes
+            // outside the rotating backup, so future saves neither reject nor erase them.
+            string? displaced = candidate is null ? null : current.HasIncompatiblePrimary
+                ? PathFor(slot, $"incompatible-{Guid.NewGuid():N}") : backup;
             CheckPath(_directory);
             RejectLink(primary); RejectLink(backup); RejectLink(temporary);
+            if (displaced is not null && displaced != backup) RejectLink(displaced);
             attempted = true;
             if (current.Primary is not null || current.Error is not null)
-                File.Replace(temporary, primary, candidate is null ? null : backup);
+                File.Replace(temporary, primary, displaced);
             else File.Move(temporary, primary);
             temporary = null;
             var committed = ReadFile(primary, expectedSlot, _validate);

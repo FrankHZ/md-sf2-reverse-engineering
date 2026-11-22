@@ -130,10 +130,18 @@ public sealed partial class GameRoot
         var page = await LoadEntry(() => store.ReadPage(_historyPage));
         _historyPage = page.Index;
         var choices = new List<(string, Action)>();
+        (string Label, Action Choose)? create = !continuing && page.NewSlot is int fresh
+            ? (GameText.Get("slot.create", fresh), () => choose(fresh, new(new(null, null), new(null, null)))) : null;
         foreach (var (slot, read) in page.Rows)
-            choices.Add((Label(slot, read, definition, continuing), () => choose(slot, read)));
-        if (!continuing && page.NewSlot is int fresh)
-            choices.Add((GameText.Get("slot.create", fresh), () => choose(fresh, new(new(null, null), new(null, null)))));
+            choices.Add((Label(slot, read, definition, continuing), () =>
+            {
+                _saveSelection = _slots!.SelectedIndex;
+                if (!continuing && read.WriteError is { } blocked)
+                    ShowBlockedWrite(read, blocked, BackToHistory, create);
+                else choose(slot, read);
+            }));
+        if (create is { } freshChoice)
+            choices.Add((freshChoice.Label, () => { _saveSelection = _slots!.SelectedIndex; freshChoice.Choose(); }));
         if (page.Index > 0) choices.Add((GameText.Get("slot.previous"), () => ChangePage(-1)));
         if (page.Index + 1 < page.Count) choices.Add((GameText.Get("slot.next"), () => ChangePage(1)));
         choices.Add((GameText.Get("entry.cancel"), cancel));
@@ -142,14 +150,32 @@ public sealed partial class GameRoot
         _slots.ShowChoices(state, heading, choices.ToArray());
         _slots.Select(Math.Clamp(_saveSelection, 0, choices.Count - 1));
 
-        async void ChangePage(int direction)
+        void ChangePage(int direction)
         {
             if (_entryLoading) return;
             _historyPage += direction; _saveSelection = 0;
+            BackToHistory();
+        }
+        async void BackToHistory()
+        {
+            if (_entryLoading) return;
             try { await ShowHistory(store, definition, state, message, choose, cancel, continuing); }
             catch (ArgumentException error) { SaveError(error.Message); }
             catch (OperationCanceledException) { }
         }
+    }
+
+    private void ShowBlockedWrite(SlotRead read, string blocked, Action back, (string, Action)? create)
+    {
+        bool backupBlocks = read.Error is null || read.HasIncompatiblePrimary;
+        string reason = SlotStatus(blocked);
+        if (backupBlocks) reason = GameText.Get("slot.backup-status", reason);
+        string message = GameText.Get(read.CanRecover ? "save.slot-recoverable" : "save.slot-protected", reason);
+        var backChoice = (GameText.Get("entry.back"), back);
+        _slots!.Cancel = back;
+        _slots.ShowChoices("error", message, create is { } fresh ? [backChoice, fresh] : [backChoice]);
+        _slots.ShowDetail(GameText.Get("save.details", blocked));
+        DisarmInput();
     }
 
     private void OpenSavePanel(bool overEntry = false)
@@ -186,11 +212,12 @@ public sealed partial class GameRoot
     {
         "save-record-changed" => GameText.Get("save.error.changed"),
         "save-seed-read-only" => GameText.Get("save.error.read-only"),
-        "save-backup-unreadable" or "save-primary-invalid-use-recovery" => GameText.Get("save.error.protected"),
         "save-seed-missing" => GameText.Get("save.error.seed-missing"),
         "save-location-unavailable" => GameText.Get("save.error.location"),
         "save-profile-unavailable" or "save-battle-profile-unavailable" or "save-battle-route-unavailable" => GameText.Get("save.error.profile"),
-        "field-snapshot-incompatible" or "save-incompatible" or "save-version" or "save-kind" or "save-shape" or "save-player-layer" or "save-battle-incompatible" or "save-battle-recipe-version" => GameText.Get("save.error.compatibility"),
+        var incompatible when SlotRead.IsIncompatible(incompatible) => GameText.Get("save.error.compatibility"),
+        "save-version" or "save-kind" or "save-shape" or "save-battle-recipe-version" => GameText.Get("slot.unsupported"),
+        var corrupt when SlotRead.IsCorrupt(corrupt) => GameText.Get("slot.damaged"),
         "save-publication-uncertain" => GameText.Get("save.error.uncertain"),
         "save-storage-unavailable" => GameText.Get("save.error.storage"),
         "save-slot-empty" => GameText.Get("save.error.empty"),
@@ -253,29 +280,35 @@ public sealed partial class GameRoot
 
     private static string Label(int slot, SlotRead read, ScenarioDefinition definition, bool forContinue = false)
     {
-        if (read.Primary is OpeningSaveRecord record)
-            return GameText.Get("slot.record", slot, DisplayNames.Member(definition, record.Data.Names, 0),
-                SavedDestination(record.Data.Recipe), SavedTime(record));
-        if (read.Primary is FieldSnapshotRecord snapshot)
-            return GameText.Get("slot.record", slot, DisplayNames.Member(definition, snapshot.Data.Names, 0),
-                FieldDestination(snapshot.Data.Landing), SavedTime(snapshot));
-        if (read.Primary is BattleSaveRecord battle)
-            return GameText.Get("slot.record", slot, DisplayNames.Member(definition, battle.Data.Story.Names, 0),
-                BattleDestination(definition, battle.Data.Story.Names, battle.Data.Battle.Encounter, battle.Data.Battle.Round,
-                    battle.Data.Battle.Queue[battle.Data.Battle.Cursor].Actor!), SavedTime(battle));
-        string status = read.Error switch
+        string label = read.Primary switch
         {
-            "field-snapshot-incompatible" or "save-incompatible" or "save-version" or "save-kind" or "save-shape" => GameText.Get("slot.matching"),
-            "save-storage-unavailable" => GameText.Get("slot.unreadable"),
-            not null => GameText.Get("slot.unavailable"),
-            _ when read.BackupError is not null => GameText.Get("slot.unreadable"),
-            _ => read.Backup is null ? GameText.Get("slot.empty") : GameText.Get("slot.primary-missing"),
+            OpeningSaveRecord record => GameText.Get("slot.record", slot,
+                DisplayNames.Member(definition, record.Data.Names, 0), SavedDestination(record.Data.Recipe), SavedTime(record)),
+            FieldSnapshotRecord snapshot => GameText.Get("slot.record", slot,
+                DisplayNames.Member(definition, snapshot.Data.Names, 0), FieldDestination(snapshot.Data.Landing), SavedTime(snapshot)),
+            BattleSaveRecord battle => GameText.Get("slot.record", slot,
+                DisplayNames.Member(definition, battle.Data.Story.Names, 0),
+                BattleDestination(definition, battle.Data.Story.Names, battle.Data.Battle.Encounter, battle.Data.Battle.Round,
+                    battle.Data.Battle.Queue[battle.Data.Battle.Cursor].Actor!), SavedTime(battle)),
+            _ => GameText.Get("slot.status", slot, SlotStatus(read.Error ?? (read.Backup is not null || read.BackupError is not null
+                ? "save-primary-missing" : null))),
         };
-        return GameText.Get("slot.status", slot, status, read.Backup is null ? "" : forContinue && CanRecover(read)
-            ? GameText.Get("slot.backup-review") : GameText.Get("slot.backup"));
+        if (read.CanRecover) return label + GameText.Get("slot.backup-review");
+        if (read.BackupError is { } backupError && (!forContinue || read.Primary is null))
+            return label + " · " + GameText.Get("slot.backup-status", SlotStatus(backupError));
+        return label;
     }
 
-    private static bool CanRecover(SlotRead read) => read.CanRecover;
+    private static string SlotStatus(string? error) => error switch
+    {
+        var incompatible when SlotRead.IsIncompatible(incompatible) => GameText.Get("slot.matching"),
+        "save-version" or "save-kind" or "save-shape" or "save-battle-recipe-version" => GameText.Get("slot.unsupported"),
+        var corrupt when SlotRead.IsCorrupt(corrupt) => GameText.Get("slot.damaged"),
+        "save-storage-unavailable" => GameText.Get("slot.unreadable"),
+        "save-primary-missing" => GameText.Get("slot.primary-missing"),
+        null => GameText.Get("slot.empty"),
+        _ => GameText.Get("slot.unavailable"),
+    };
 
     private static string FieldDestination(FieldReturnAnchor landing)
     {
@@ -339,10 +372,10 @@ public sealed partial class GameRoot
 
     private void ConfirmSave(int slot, SlotRead existing, LocalSaveStore store, HostSaveOffer offer, bool church)
     {
-        _saveSelection = _slots!.SelectedIndex;
         _slots!.Cancel = BackToSave;
-        _slots.ShowChoices("confirm-save", existing.Primary is not null ? GameText.Get("save.overwrite", slot)
-            : GameText.Get("save.confirm", slot), (GameText.Get("entry.cancel"), BackToSave),
+        string message = GameText.Get(existing.HasIncompatiblePrimary ? "save.overwrite-incompatible"
+            : existing.Primary is not null ? "save.overwrite" : "save.confirm", slot);
+        _slots.ShowChoices("confirm-save", message, (GameText.Get("entry.cancel"), BackToSave),
             (GameText.Get("save.and-return"), () => PublishSave(false)), (GameText.Get("save.and-quit"), () => PublishSave(true)));
 
         void BackToSave() { ShowSettledSave(church); }
@@ -423,7 +456,7 @@ public sealed partial class GameRoot
             var read = await LoadEntry(() => store.Read(slot));
             if (!read.Matches(seen)) { SaveError("save-record-changed"); return; }
             if (read.Primary is { } primary) { RestoreRecord(primary, definition); return; }
-            if (read.Backup is { } backup && CanRecover(read))
+            if (read.Backup is { } backup && read.CanRecover)
             {
                 _slots!.ShowChoices("recover-backup", GameText.Get("save.recovery-record", Label(slot,
                     new(read.Previous, new(null, null)), definition)),
@@ -434,7 +467,15 @@ public sealed partial class GameRoot
                 _slots.ShowDetail(GameText.Get("save.details", read.Error ?? GameText.Get("slot.primary-missing")));
                 return;
             }
-            SaveError(read.Error ?? read.BackupError ?? "save-slot-empty");
+            if (read.BackupError is { } backupError && read.Error is null)
+            {
+                _slots!.Cancel = CloseSavePanel;
+                _slots.ShowChoices("error", GameText.Get("slot.backup-status", SlotStatus(backupError)),
+                    (GameText.Get("entry.back"), CloseSavePanel));
+                _slots.ShowDetail(GameText.Get("save.details", backupError));
+                return;
+            }
+            SaveError(read.Error ?? "save-slot-empty");
         }
         catch (OperationCanceledException) { }
         catch (ArgumentException error) { SaveError(error.Message); }

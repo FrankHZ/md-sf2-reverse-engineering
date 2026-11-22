@@ -429,7 +429,13 @@ msgid "slot.title.default"
 msgstr "Saved journeys"
 
 msgid "slot.matching"
-msgstr "Needs matching content / rules"
+msgstr "Incompatible content or rules"
+
+msgid "slot.unsupported"
+msgstr "Unsupported save format"
+
+msgid "slot.damaged"
+msgstr "Damaged save"
 
 msgid "slot.unreadable"
 msgstr "Cannot read this slot"
@@ -444,10 +450,10 @@ msgid "slot.primary-missing"
 msgstr "Primary missing"
 
 msgid "slot.backup-review"
-msgstr "\nBackup available — choose to review recovery"
+msgstr "\nRecoverable backup"
 
-msgid "slot.backup"
-msgstr "\nBackup present"
+msgid "slot.backup-status"
+msgstr "Backup · {0}"
 
 msgid "save.destination.new-game"
 msgstr "Granseal, beginning of the opening"
@@ -566,9 +572,6 @@ msgstr "More saves"
 msgid "save.error.changed"
 msgstr "This save changed after you selected it. Open the list again to review the latest progress."
 
-msgid "save.error.protected"
-msgstr "This slot contains a file that cannot be read. Choose a different slot to keep both files."
-
 msgid "save.error.read-only"
 msgstr "This launch opened a read-only save. Relaunch with --save-output to save progress to a separate file."
 
@@ -576,10 +579,19 @@ msgid "save.error.seed-missing"
 msgstr "The save file selected at launch could not be found. Check the path and relaunch."
 
 msgid "slot.status"
-msgstr "Slot {0} · {1}{2}"
+msgstr "Slot {0} · {1}"
+
+msgid "save.slot-protected"
+msgstr "{0}\nThis slot is protected. Choose another slot."
+
+msgid "save.slot-recoverable"
+msgstr "{0}\nRecover the backup from Continue, or choose another slot."
 
 msgid "save.overwrite"
 msgstr "Overwrite Slot {0}? The previous valid save becomes its backup."
+
+msgid "save.overwrite-incompatible"
+msgstr "Overwrite Slot {0}? This save uses incompatible content or rules. A copy of the old save will be kept."
 
 msgid "save.confirm"
 msgstr "Save current progress to Slot {0}?"
@@ -598,6 +610,9 @@ msgstr "{0} • Back: {1}"
 
 msgid "new.confirm"
 msgstr "Start as {0} in Slot {1}? Normal difficulty.\nYour first save resumes at the opening. If you overwrite a valid save, it becomes the backup. Unsaved progress is lost only after the new save succeeds."
+
+msgid "new.confirm-incompatible"
+msgstr "Start as {0} in Slot {1}? Normal difficulty.\nThis save uses incompatible content or rules. A copy of the old save will be kept. Unsaved progress is lost only after the new save succeeds."
 
 msgid "new.start"
 msgstr "Start and save to Slot {0}"

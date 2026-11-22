@@ -120,7 +120,7 @@ consequence stays at 30px and names the slot and what becomes its backup.
 | Continue → corrupt slot 1 with valid backup | The Chinese backup offer occupied four lines. The primary detail showed `save-malformed`. Cancel returned to the Witch menu with both files byte-identical. Reopening and explicitly choosing Recover repaired the primary from the backup, preserved the backup bytes and attached its full saved field progress. |
 | Continue → corrupt or missing primary, valid backup, long Chinese detail | The detail retained the actual primary failure. The deliberately extended 24px text wrapped to 12 lines. The bundled font supplied every glyph. Scrolling the 612×631 reading region reached the final translation notice and returned to the first line. Both 612×76 buttons stayed fully visible above the footer. |
 | Continue → empty slot or corrupt slot without backup | An empty slot showed `save-slot-empty`. The invalid slot showed `save-malformed`. Each offered Back and returned to the Witch. The invalid primary remained intact. |
-| Restored Ribble field → Menu → Save | Attempting to publish over the invalid slot displayed `save-primary-invalid-use-recovery`. Back restored the Save row. The occupied valid slot displayed its overwrite consequence and all three actions. Cancel returned to that slot, Back restored Save, then Back returned to walking. A fresh Down input moved the leader one tile. |
+| Restored Ribble field → Menu → Save | The corrupt slot displays its `save-malformed` reason with Back and Create a New Save. Back returns to the selected slot. The occupied valid slot displays its overwrite consequence and all three actions. Cancel returns to that slot, Back restores Save, then Back returns to walking. A fresh Down input moves the leader one tile. |
 
 Run the [slot reading observation](../../game/probes/save_recovery_reading_observation.gd)
 with the existing Debug adapter, matched product content, default bindings and instant zh-CN text.
@@ -133,13 +133,17 @@ For `corrupt-stress`, prepare the same damaged primary and put that byte in `slo
 no slot 2 backup. For `missing-stress`, omit the slot 1 primary and use the same invalid slot 2.
 Both stress cases extend `save.details` and remove `slot.matching` from the in-memory Chinese
 translation, exercising the actual fallback notice. The `corrupt` case uses the shipped catalog.
-Set the case, namespace, isolated app data/TEMP and a fresh ignored output path before
-each headless launch.
+Put the exact backup bytes in slot 1 as a healthy primary in a separate disposable namespace.
+Continue it normally with the same configuration and capture `ReadPersistenceObservationJson`'s
+`progress` object at the on-attach boundary, using `host_ui_observation.gd`'s `observe_node`.
+Keep the object in a local JSON file for the recovered-attachment comparison. Set the case,
+namespace, isolated app data/TEMP and a fresh ignored output path before each headless launch.
 
 ```powershell
 $env:SF2_HOST_UI_CASE = $case  # corrupt, corrupt-stress or missing-stress
 $env:SF2_SAVE_NAMESPACE = $freshValidationNamespace
 $env:SF2_HOST_UI_OUTPUT = Join-Path $runRoot 'native.json'
+$env:SF2_HOST_UI_EXPECTED_PROGRESS = $healthyContinueProgress
 & $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
     --path remake/game --script res://probes/save_recovery_reading_observation.gd `
     --log-file (Join-Path $runRoot 'godot.log')
@@ -148,9 +152,43 @@ $env:SF2_HOST_UI_OUTPUT = Join-Path $runRoot 'native.json'
 The native JSON records shaped label bounds, line counts, action rectangles and outcomes.
 The direct byte comparison includes the untouched second slot. The original 20px projection put
 the primary detail after the actions. An early full-progress comparison used an older recipe-2
-Ribble record that recaptures at revision 4 with two additional allies. The current-recipe fixture
-keeps the complete comparison. The headless runs retain the known two-instance ObjectDB exit
-warning. Physical display/DPI reading comfort remains **Unknown**.
+Ribble record that recaptures at revision 4 with two additional allies. The current-recipe fixture compares complete progress between two attachment observations.
+The disk check compares exact bytes separately. The headless runs retain the known two-instance
+ObjectDB exit warning. Physical display/DPI reading comfort remains **Unknown**.
+
+### Incompatible and protected slots
+
+**Confirmed** in short headless sessions on the production host. Continue, New Game and field
+Save showed the slot and file diagnostics below. Cancel and writer-lock failure kept the files
+byte-identical. Explicit recovery left the compatible backup intact. An ordinary Save after the
+incompatible overwrite preserved the old primary copy through normal backup rotation.
+
+Use the registered Galam town world with its paired entry, scene and opening inputs, the Debug
+adapter and a fresh disposable save namespace. Use instant text in English or Simplified Chinese.
+Create one v1 `new-game` record through ordinary Witch New Game and keep it as the seed. To build
+the cases below, copy that record, set the header slot to the destination number, and recompute
+the envelope checksum after editing the decoded payload. For damage, write the single UTF-8
+byte `{` in the synthetic primary. Run with the existing
+[host input observer](../../game/probes/host_ui_observation.gd) helpers or drive the same input
+sequence by hand.
+
+| Slot | Primary / backup | Expected selection |
+| --- | --- | --- |
+| 1 | Gameplay revision 1 / matching seed | Continue reports `save-incompatible` and has Back. New Game and Save show the incompatible overwrite consequence with Cancel selected. |
+| 2 | Absent / absent | Continue shows Empty and Back. New Game and Save can select it. |
+| 3 | Format version 99 / matching seed | Continue reports `save-version` with Back. Write entry also offers a fresh numbered slot. |
+| 4 | Damaged / gameplay revision 1 | Continue and write entry report `save-malformed`. Write entry offers Back and a fresh numbered slot. |
+| 5 | Damaged / matching seed | Continue offers explicit Recover Backup, with Cancel first. Recovery restores playable progress and replaces only the primary with the exact backup bytes. |
+| 6 | Matching seed / format version 99 | Continue can load the primary. Write entry shows the backup's diagnostic and a fresh-slot action. |
+
+Use the registered controlled Galam `return-writer` start copied into worktree-local scratch
+to reach a settled field without replaying the route. Open F10 → Save. Compare primary and backup
+bytes before and after canceling slot 1. Confirm an overwrite and compare the displaced file to
+the original primary byte-for-byte. Save to slot 1 again and check that the displaced copy
+survives ordinary backup rotation. In a fresh copy, put a directory at `slot1.lock` to force an
+early storage failure. Confirm the overwrite and verify the storage diagnostic and unmodified
+primary and backup. For the New Game path, choose Create a New Save from the format error,
+check the name entry, cancel, then overwrite slot 1 through the final Start confirmation.
 
 ## Reproduction and finite evidence
 

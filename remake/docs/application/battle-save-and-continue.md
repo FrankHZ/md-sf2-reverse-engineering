@@ -214,7 +214,7 @@ Readbacks also compare exact bytes, in addition to sequence; this is an inexpens
 check. Recovery rereads the selected pair under the lock and uses the validated backup bytes.
 `SlotRead.CanRecover` is shared by store and host: only missing or structurally corrupt primary
 permits explicit repair from a valid backup. Semantic/content rejection, unknown versions/kinds
-and unavailable readers preserve both files and forbid downgrade. Repair preserves the good backup
+and unavailable readers cannot trigger backup recovery. Repair preserves the good backup
 byte-for-byte. No operation promotes an interrupted `.tmp` residue. A failure after publication is
 attempted returns `save-publication-uncertain`, including failed final validation after bytes were
 published; callers must inspect the slot before deciding on a later operation, never retry or exit
@@ -237,7 +237,7 @@ and decodes only the selected page. A write checks the observed primary and back
 lock, validates the candidate, flushes and verifies a sibling temp, then atomically publishes and
 verifies the installed record. The comparison uses bounded original bytes and presence/error
 status. An oversized corrupt file is identified by length and modification time for recovery.
-Any unreadable backup blocks normal publication. The directory scan rejects linked children.
+Any unreadable or incompatible backup blocks publication. The directory scan rejects linked children.
 Each actual open checks its ancestor chain and leaf, and replacement rechecks its named operands
 after validation. The lock coordinates participating writers. A process that replaces a path
 between filesystem calls is outside this guarantee. Write latency was not measured.
@@ -249,6 +249,31 @@ With output selected, New Game, Save and subsequent Continue use that file and s
 `.bak` and `.lock` suffixes. Seed and writable names must be distinct, outside the player
 namespace. Settings retain their existing location or explicit read-only override. An unavailable
 seed produces its read/compatibility diagnostic.
+
+#### Overwriting an incompatible primary
+
+**Standard rigor.** [#2063](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2063)
+covers the slot selection, confirmation and file protection shared by Save, Record and New Game.
+Continue distinguishes a content/rule mismatch, unsupported format, damage and an unreadable file.
+It offers recovery only when the existing store can repair the primary from a compatible backup.
+Save and New Game show the source diagnostic and offer a fresh numbered slot immediately when the
+selected pair blocks publication.
+
+A primary that decodes successfully and fails the explicit compatibility check
+(`save-incompatible`, `field-snapshot-incompatible` or `save-battle-incompatible`) can be
+overwritten after the usual confirmation. The confirmation explains the mismatch and preservation
+of the old save. Under the existing lock, the same atomic replacement puts the previous primary at
+`slot<N>.incompatible-<id>` beside the slot (or appends `.incompatible-<id>` to an explicit output).
+This preserves its exact bytes and the existing backup. Subsequent saves rotate the ordinary
+`.bak` sidecar. These copies are outside slot discovery and recovery. To open a preserved copy,
+copy it to a separate scratch file and use `--load-save` with the matching build and content.
+Automatic migration and an in-game archive browser are outside this slice.
+
+Unknown versions, kinds, shapes and other rejected primaries retain the write protection. An
+incompatible or unreadable backup also retains its protection. Cancel leaves both files intact.
+A failed pre-publication write leaves both files intact. A failure during or after replacement
+retains the existing uncertain-publication result. See the
+[slot input and file checks](../godot/host-ui.md#incompatible-and-protected-slots).
 
 **Confirmed in disposable storage.** The private review bundle is `handoffs/issue1903` under
 the registered shared-input root. Its handoff gives the runnable host, input selections, commands
@@ -627,9 +652,10 @@ Do not duplicate the filesystem transaction in a battle-specific store.
 | Process interruption | Before publication: last good primary wins; leftover temp is never Continue input. After publication: validate actual primary; if missing/corrupt offer the compatible backup explicitly. Do not infer commit from temp/mtime alone. No universal disk-controller/power-loss guarantee is claimed. |
 | Corrupt primary, valid compatible backup | Show backup kind/destination/actor/time and require explicit recovery. Reuse Recover's temp/replace path preserving backup bytes; never rotate corrupt primary over the last good backup. |
 | Primary or backup changed since selection | Refuse stale publication or recovery under the writer lock. Keep both files and require a fresh selection. |
-| Readable primary and checksum-valid future backup | Refuse Save with `save-backup-unreadable`. Continue can still load the readable primary. |
+| Readable primary and checksum-valid future backup | Refuse Save and show the backup's `save-version` diagnostic. Continue can still load the readable primary. |
 | Supported version with a constructed unknown numeric or null-valued member | Both variants report `save-shape`. Explicit recovery keeps the original primary and backup bytes. A truncated primary still repairs from the valid backup. |
-| Incompatible/future-version/unknown-shape primary or unavailable required content | Preserve files and report matching build/content required. Do not silently load an older backup, downgrade to field return, restart battle, delete a slot or overwrite it to unblock Save. Retain current recovery exclusions. |
+| Known content/rule mismatch in a decoded primary | Continue explains the mismatch. A confirmed write keeps the previous primary's exact bytes in a sibling copy and preserves the existing backup. |
+| Unknown-version/kind/shape primary or unavailable required content | Preserve files and report the primary diagnostic. Choose a different slot. |
 | Existing v1 field/new-game save, including absent names | Continue through unchanged v1 semantics; do not reinterpret it as a battle or rewrite on read. Scene-free new field saves stay v1; populated scene writes use protected field-v3. |
 | Old executable sees v2 primary | It rejects the unsupported record; supported new code can still read the prior v1 backup. The existing reader deserializes v1 before checking version, so a differently shaped v2 can report `save-malformed` and expose old backup recovery instead of `save-version`. Do not use that old recovery to overwrite v2 during rollback. Preserve user-owned bytes locally before operator-directed rollback; no automatic downgrade. New version dispatch must classify unsupported versions before typed payload parsing. |
 
