@@ -555,6 +555,38 @@ runtime object graphs, waits and resources and extend suspension beyond the stab
 Saving only more variants of `SavedFieldScene` through `Select` keeps the same need to author
 reconstruction exceptions on every map.
 
+#### Implemented physical visit boundary
+
+**Confirmed (engine).** Ordinary loading records the exact map and setup body. CURRENT placement
+retains it, a fresh transfer selects a new body, and a scroll or entity reload can change one
+binding while retaining the other. [The shared map binder](../../src/Sf2.Remake.Application/Content/Scenarios/ExplorationDefinition.cs)
+resolves the stored body without flags and supplies the ordinary traversal, view, event, Search,
+palette, Church and vehicle definitions. Map, explicit scene-population and allocation references
+resolve against the admitted definitions. Entity action installs record the resident, allocation,
+story instruction, zone row or engine producer that supplied the program.
+
+[Physical capture and reconstruction](../../src/Sf2.Remake.Application/Runtime/Persistence/FieldVisitSnapshot.cs)
+carry the player binding, raw physical motion and animation, sparse slots, retained and retired
+actors, alias values and removals, current-list order, follower links, sprite sharing and graphics,
+global and per-actor size, priority and completed shadow removal. A local raft record and the
+durable berth remain distinct. The working layout stores differences from the loaded body and an
+active roof stores its record ordinal and saved-under words. Reconstruction binds and validates
+these values without running entry, population allocation, flag writes, chest/step copies, roof
+activation or rewards. A later walking step can restore the backed-up words.
+
+The reconstruction boundary returns physical exploration state for a walking visit. It binds
+installed idle and dormant action records and refuses serviced non-idle programs. The next slice
+owns ambient admission and phase, story/service registers and the complete settled-save policy.
+Following cutover work owns legacy-to-snapshot bootstrap, disk publication and field attachment.
+The existing Save and Continue commands still use their legacy readers and writer.
+
+Use `uv run sf2 verify engine` for [Galam Talk](../../tests/Sf2.Remake.Engine.Tests/GalamSaveTests.cs),
+[castle dynamics and follower motion](../../tests/Sf2.Remake.Engine.Tests/CastleSaveTests.cs),
+[secondary-layer steps](../../tests/Sf2.Remake.Engine.Tests/LayeredFieldSaveTests.cs) and
+[transfers, sparse raft and roof exit](../../tests/Sf2.Remake.Engine.Tests/FieldVisitSnapshotTests.cs).
+These controlled engine visits take an ordinary successor with equivalent story controls and verify
+physical or interaction results. Legacy field commands have their own controls in the same project.
+
 #### Eligibility and return semantics
 
 - **Field input.** Require `CanWaitAtInput` and the applicable stable mode, with no fault, caller,
@@ -680,8 +712,9 @@ behavior controls where their fixtures match. A new roof test must leave the roo
 the exposed underlying words. A round-trip check of the overlaid words alone would pass the
 wrong reconstruction.
 
-**Unknown.** Actual continuation parity for ambient phase, reversible roof backing and sparse
-vehicle scenes after a cold mount remains to be measured. The admitted action producers that can
+**Unknown.** Actual continuation parity for ambient phase and cold host attachment
+remains to be measured. Reversible roof backing and a sparse local raft in a walking visit
+have passed detached engine comparisons. The admitted action producers that can
 leave an unbound active program or an altered view/color state at PlayerInput need a producer audit
 in slices 1–2. Where a presentation operand is never read again, establish the invariant before
 omitting it. Original standing cadence/SRAM behavior and unsupported content remain open.

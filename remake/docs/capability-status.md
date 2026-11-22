@@ -107,13 +107,13 @@ Battle01/07 return slots still land at their recorded outcome anchors. Text, cho
 battle work retain their time owners. Follower convergence is bounded. Original standing cadence
 remains unknown and revision-based Quit may warn after animation-only time.
 
-**Designed, pending implementation.** The
-[settled field snapshot](application/opening-session-lifecycle.md#unified-settled-field-snapshots)
-will restore the live visit through one stable-input path. It retains the loaded setup, physical
-cast and layout, and preserves the separate Church refuge and normal transfer rules. New records
-need the snapshot reader. Current field and battle records keep their accepted readers. The
-[coverage table](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage) tracks
-delivered visits and remaining gaps. Regional recipe dispatch is paused.
+**Implemented physical boundary, High.** The
+[detached field visit](application/opening-session-lifecycle.md#implemented-physical-visit-boundary)
+rebuilds the exact loaded body, retained population, physical cast, aliases, layout and roof backing.
+Engine controls compare the next Talk, movement and transfer. Ambient and service continuation
+and the slot/host cutover are pending. Current field and battle records use their existing readers
+and writers. The [coverage table](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
+tracks delivered visits and remaining gaps. Regional recipe dispatch is paused.
 
 ## Battle continuation state
 

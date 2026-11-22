@@ -27,14 +27,14 @@ internal static class FollowerMotion
                 XVelocity = 0, YVelocity = 0, XTravel = 0, YTravel = 0, WaitTimer = 0,
                 Facing = entity.Slot == world.PlayerEntity.Slot ? facing : entity.Motion.Facing,
             },
-            Actions = null, ActionCursor = 0, WaitingForMotion = false,
+            Actions = null, ActionSource = null, ActionCursor = 0, WaitingForMotion = false,
         }));
     }
 
     // AddFollower installs a copy of eas_Follower1 with a physical leader slot and pixel offsets.
     internal static ExplorationEntity Install(ExplorationEntity entity, int leaderSlot, int x, int y, bool waitForDestination = true) => entity with
     {
-        Follower = new(leaderSlot, x, y, waitForDestination), Actions = null, ActionCursor = 0, WaitingForMotion = false,
+        Follower = new(leaderSlot, x, y, waitForDestination), Actions = null, ActionSource = null, ActionCursor = 0, WaitingForMotion = false,
         Motion = entity.Motion with { XSpeed = 32, YSpeed = 32, XAcceleration = 0, YAcceleration = 0,
             FlagsA = (byte)((entity.Motion.FlagsA & 0x10) | 0x60), WaitTimer = 0 },
     };

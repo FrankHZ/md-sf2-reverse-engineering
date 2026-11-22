@@ -8,9 +8,9 @@ internal static class RaftRuntime
 {
     internal const string Boarding = "raft-boarding";
     internal const string Landing = "raft-landing";
-    private const int Slot = 31;
-    private const int Sprite = 61;
-    private static readonly EntityRef FollowerD = new("entity-159");
+    internal const int Slot = 31;
+    internal const int Sprite = 61;
+    internal static readonly EntityRef FollowerD = new("entity-159");
 
     internal static ExplorationState Declare(ExplorationState world, IReadOnlyList<int> flags, RaftBerth? berth)
     {
@@ -20,7 +20,7 @@ internal static class RaftRuntime
             world = world.WithEntities(world.AllEntities.Select(actor => actor.Slot == 0
                 ? actor with { Sprite = Sprite }
                 : world.CurrentEntities.Contains(actor.Slot)
-                    ? actor with { Motion = OffMap(actor.Motion), Follower = null, Actions = null }
+                    ? actor with { Motion = OffMap(actor.Motion), Follower = null, Actions = null, ActionSource = null }
                     : actor));
             motion = OffMap(world.PlayerEntity.Motion) with { Facing = 2, FlagsA = 0 };
         }
@@ -32,11 +32,11 @@ internal static class RaftRuntime
         if (world.AllEntities.Any(e => e.Slot == Slot))
             throw new BattleRuleException("raft-slot-occupied", "map.population", true);
         var actor = new ExplorationEntity(FollowerD, motion,
-            true, Slot: Slot, Sprite: Sprite);
+            true, Slot: Slot, Sprite: Sprite) { Origin = new RaftEntityOrigin() };
         var aliases = world.Aliases.ToDictionary();
         aliases[FollowerD] = Slot;
         return new(world.Definition, world.Layout, world.Player, world.AllEntities.Append(actor), world.Party,
-            world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities);
+            world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities, populationSource: world.PopulationSource);
     }
 
     internal static ExplorationState OnScroll(ExplorationState world, IReadOnlyList<int> flags, RaftBerth? berth)
@@ -48,7 +48,7 @@ internal static class RaftRuntime
             if (world.Population is not null) aliases[FollowerD] = 0; else aliases.Remove(FollowerD);
             var entities = world.AllEntities.Where(entity => entity != raft);
             world = new(world.Definition, world.Layout, world.Player, entities, world.Party, world.SpriteSize,
-                aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities);
+                aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities, populationSource: world.PopulationSource);
         }
         return Declare(world, flags, berth);
     }

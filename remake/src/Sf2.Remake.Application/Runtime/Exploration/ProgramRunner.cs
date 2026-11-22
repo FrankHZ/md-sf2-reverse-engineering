@@ -94,7 +94,7 @@ internal static class ProgramRunner
                         (player.Actions is not null || player.Follower is not null || player.WaitingForMotion))
                         current = new(current.SessionId, current.Revision, current.ObservationSequence,
                             new ActiveExploration(world.WithEntity(player with
-                                { Actions = null, ActionCursor = 0, Follower = null, WaitingForMotion = false })),
+                                { Actions = null, ActionSource = null, ActionCursor = 0, Follower = null, WaitingForMotion = false })),
                             current.Story, current.StopReason);
                     if (current.Story.LogicalView is { } view && current.Exploration is { } field)
                         current = current.WithStory(current.Story.Copy(null,
@@ -155,7 +155,7 @@ internal static class ProgramRunner
                         story = story.Copy(story.Cursor, new ChurchWait(token, church.Definition));
                         break;
                     case VehicleInstruction vehicle:
-                        (active, story) = CaravanRuntime.Execute(definition, current, vehicle, story, token);
+                        (active, story) = CaravanRuntime.Execute(definition, current, vehicle, cursor, story, token);
                         break;
                     case ConvertBattleActor convert:
                         current = BattleStoryOperations.Convert(current, convert, observations);
@@ -355,17 +355,19 @@ internal static class ProgramRunner
                         var list = definition.Exploration!.Maps[reloadList.Map];
                         var main = live.PlayerEntity;
                         active = new ActiveExploration(SceneEntities.Reload(live,
-                            new(list.Population!, main.Position, main.Motion.Facing, reloadList.Setup is null ? list.Entities : list.Setups[reloadList.Setup].Entities), story.Flags, token.Value));
+                            new(list.Population!, main.Position, main.Motion.Facing, reloadList.Setup is null ? list.Entities : list.Setups[reloadList.Setup].Entities),
+                            story.Flags, token.Value, new ProgramPopulationSource(cursor)));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case LoadSetupEntities setupEntities:
                         var sourceMap = definition.Exploration!.Maps[current.Exploration!.Map].SelectSetup(story.Flags);
                         var population = sourceMap.Population ?? throw new BattleRuleException("missing-map-population", "program.entities", true);
                         active = new ActiveExploration(SceneEntities.Reload(current.Exploration,
-                            new(population, setupEntities.Position, setupEntities.Facing, sourceMap.Entities), story.Flags, token.Value));
+                            new(population, setupEntities.Position, setupEntities.Facing, sourceMap.Entities), story.Flags, token.Value,
+                            new MapPopulationSource(sourceMap.Body)));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case LoadSceneEntities load:
                         CaravanRuntime.RequireOrdinaryMapOperation(current.Exploration!);
-                        active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value));
+                        active = new ActiveExploration(SceneEntities.Reload(current.Exploration!, load, story.Flags, token.Value, new ProgramPopulationSource(cursor)));
                         story = current.Story.Copy(cursor, new EntitySetSpriteWait(token)); break;
                     case OpenPortrait portrait:
                         EntityRef? portraitActor = portrait.UseEventSpeaker
@@ -585,7 +587,7 @@ internal static class ProgramRunner
                         foreach (var owner in graphicsWorld.AllEntities.Where(entity => entity.SpriteSlot == graphics.Slot))
                             if (owner.Sprite is not { } ownerSprite || definition.Exploration!.Visuals?.Sprites.GetValueOrDefault(ownerSprite)?.Graphics?.ContainsKey(graphics.Resource) != true)
                                 throw new BattleRuleException("shared-sprite-graphics-binding", "program.resource", true);
-                        active = new ActiveExploration(graphicsWorld.WithSpriteGraphics(graphics.Slot, graphics.Resource));
+                        active = new ActiveExploration(graphicsWorld.WithSpriteGraphics(graphics.Slot, graphics.Resource, cursor));
                         break;
                     case RemapPaletteColors remap:
                         var colorDisplay = current.Story.Display ?? throw new BattleRuleException("palette-context", "story.display", true);
@@ -593,7 +595,7 @@ internal static class ProgramRunner
                             { Colors = PaletteColorTransition.Request(colorDisplay.Colors, remap.Lookup, current.Story.SimulationTick) });
                         break;
                     case AddMapEntity add:
-                        active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value, story.Flags));
+                        active = new ActiveExploration(SceneEntities.Add(current.Exploration!, add, token.Value, story.Flags, cursor));
                         break;
                     case RestoreMemberResource restoreResource:
                         var party = current.Exploration!.Party;
@@ -675,7 +677,7 @@ internal static class ProgramRunner
                                 entity.Motion with { WaitTimer = checked((byte)entity.Slot),
                                     FlagsA = motion.Installation == EntityScriptInstallation.SlotTimerClearCollision
                                         ? (byte)(entity.Motion.FlagsA & 0x9F) : entity.Motion.FlagsA };
-                            return entity with { Motion = configured, Actions = motion.Actions, ActionCursor = 0,
+                            return entity with { Motion = configured, Actions = motion.Actions, ActionSource = new ProgramEntityActions(cursor), ActionCursor = 0,
                                 WaitingForMotion = false, Follower = null };
                         });
                         if (motion.Wait) story = current.Story.Copy(cursor, new EntityWait(token, motion.Entity,

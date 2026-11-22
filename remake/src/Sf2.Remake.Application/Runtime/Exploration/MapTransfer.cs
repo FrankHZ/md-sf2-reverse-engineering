@@ -116,7 +116,7 @@ internal static class MapTransfer
                 warp.LoadMode, current.Story, observations, rules, sourcePlacement);
         var story = current.Story.Copy(null, warp: new(warp.DestinationMap!, position, warp.Facing, warp.LoadMode, sourcePlacement));
         current = new(current.SessionId, current.Revision, current.ObservationSequence,
-            new ActiveExploration(world.WithEntity(world.PlayerEntity with { Actions = null, ActionCursor = 0, WaitingForMotion = false })),
+            new ActiveExploration(world.WithEntity(world.PlayerEntity with { Actions = null, ActionSource = null, ActionCursor = 0, WaitingForMotion = false })),
             story, current.StopReason);
         return BeginFade(current, story, PresentationCueKind.FadeOut, FullFadePurpose.WarpOut, null, observations);
     }
@@ -137,7 +137,7 @@ internal static class MapTransfer
         // with the leader and DeclareRaftEntity projects the berth on the new map.
         var layout = LoadLayout(target, current.Story.Flags);
         var next = new ExplorationState(target, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
-            world.Aliases, population: world.Population, quake: world.Quake, travelMode: world.TravelMode, currentEntities: world.CurrentEntities);
+            world.Aliases, population: world.Population, quake: world.Quake, travelMode: world.TravelMode, currentEntities: world.CurrentEntities, populationSource: world.PopulationSource);
         next = FollowerMotion.Arrive(next, position, player.Motion.Facing);
         if (world.TravelMode != FieldTravelMode.Raft && current.Story.Flags.Contains(64))
             next = RaftRuntime.OnScroll(next, current.Story.Flags, current.Story.Raft);
@@ -261,12 +261,22 @@ internal static class MapTransfer
             return MapEventDispatcher.RoofOnLoad(SceneEntities.Build(map, layout, player, position, facing,
                 speed, party, flags, population, map.Entities));
         }
-        var entities = map.Entities.Where(entity => entity.Entity != player).Select(entity =>
-            new ExplorationEntity(entity.Entity, EntityMotionState.At(entity.Position, entity.Facing, entity.Speed) with
-                { FlagsA = entity.Obstruction ? (map.Caravan is null ? (byte)0x20 : (byte)0xE0) : (byte)0 }, entity.Visible, entity.Actions, Sprite: entity.Sprite)).ToList();
+        var entities = map.Entities.Select((entity, index) => (entity, index)).Where(row => row.entity.Entity != player)
+            .Select(row =>
+            {
+                var (entity, index) = row;
+                var motion = EntityMotionState.At(entity.Position, entity.Facing, entity.Speed) with
+                    { FlagsA = entity.Obstruction ? (map.Caravan is null ? (byte)0x20 : (byte)0xE0) : (byte)0 };
+                return new ExplorationEntity(entity.Entity, motion, entity.Visible, entity.Actions, Sprite: entity.Sprite)
+                {
+                    Origin = new ResidentEntityOrigin(index),
+                    ActionSource = entity.Actions is null ? null : new InitialEntityActions(),
+                };
+            }).ToList();
         entities.Insert(0, new(player, EntityMotionState.At(position, facing, speed), true, Sprite: map.Caravan is { } caravan ?
             party.Actors.Single(actor => actor.Actor == caravan.PlayerAppearance.Actor).Hp == 0
-                ? caravan.PlayerAppearance.DefeatedSprite : caravan.PlayerAppearance.Sprite : null));
+                ? caravan.PlayerAppearance.DefeatedSprite : caravan.PlayerAppearance.Sprite : null)
+            { Origin = new PlayerEntityOrigin() });
         return MapEventDispatcher.RoofOnLoad(new(map, layout, player, entities, party));
     }
 
@@ -289,7 +299,7 @@ internal static class MapTransfer
             map = map.WithBattleSceneArea(load.Camera, battle.Width, battle.Height);
         }
         return new(map, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
-            world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities);
+            world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities, populationSource: world.PopulationSource);
     }
 
     internal static (ExplorationState World, StoryState Story) ReloadScene(SessionSnapshot current, ReloadSceneMap reload)

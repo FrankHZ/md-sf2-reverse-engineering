@@ -50,6 +50,29 @@ public sealed class LayeredFieldSaveTests
         Assert.Equal((byte)0, world.PlayerEntity.Motion.Layer);
     }
 
+    [Fact]
+    public void NormalVisitRebuildReadsSecondaryCollisionAndReturnsThroughThePrimaryMarker()
+    {
+        var (definition, data) = Fixture(255, 0, 30);
+        var legacy = Restore(definition, data);
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
+            new ExplorationStartInput(new("map-22"), new("entity-0"), new(4, 4), 0, 32, data.Flags,
+                legacy.Current.Exploration!.Party))).Session;
+        var east = new Move(ExplorationDirection.East);
+        var onSecondary = FieldVisitSnapshotTests.Perform(session, session.Current, east);
+        Assert.Equal((byte)2, onSecondary.Exploration!.PlayerEntity.Motion.Layer);
+        var detached = FieldVisitSnapshotTests.Rebuild(session, onSecondary);
+        foreach (var before in new[] { onSecondary, detached })
+        {
+            var blocked = FieldVisitSnapshotTests.Perform(session, before, new Move(ExplorationDirection.North));
+            Assert.Equal(new MapPosition(5, 4), blocked.Exploration!.PlayerEntity.Position);
+            var landing = FieldVisitSnapshotTests.Perform(session, blocked, east);
+            var primary = FieldVisitSnapshotTests.Perform(session, landing, east);
+            Assert.Equal(new MapPosition(7, 3), primary.Exploration!.PlayerEntity.Position);
+            Assert.Equal((byte)0, primary.Exploration.PlayerEntity.Motion.Layer);
+        }
+    }
+
     [Theory]
     [InlineData(1)] [InlineData(3)] [InlineData(255)]
     public void UnsupportedLayerRejectsWithoutReplacingTheLiveSession(byte layer)
@@ -116,8 +139,12 @@ public sealed class LayeredFieldSaveTests
             onLoad: map.OnLoad, population: map.Population, entryFlags: map.EntryFlags, basePalette: map.BasePalette,
             viewAreas: [new(0, 0, 63, 63, plane == 0 ? ox : 0, plane == 0 ? oy : 0,
                 plane == 0 ? 0 : ox, plane == 0 ? 0 : oy, 256, 256, 256, 256, 0, 0, 0, 0, plane)]);
+        var visuals = old.Visuals! with
+        {
+            Sprites = new[] { 0, 1 }.ToDictionary(id => id, id => new ExplorationSpriteVisual(id, [], null, 0)),
+        };
         var world = new ExplorationDefinition(old.Maps.Values.Select(m => m.Map == map.Map ? layered : m),
-            old.Programs.Values, provenance: old.Provenance, partyFlags: old.PartyFlags, visuals: old.Visuals);
+            old.Programs.Values, provenance: old.Provenance, partyFlags: old.PartyFlags, visuals: visuals);
         var definition = new ScenarioDefinition(original.Package, original.Encounters.Values, exploration: world)
             { Persistence = original.Persistence };
         return (definition, data with { Recipe = "desktop-kingdom", Map = "map-22", X = 4, Y = 4, Facing = 0,

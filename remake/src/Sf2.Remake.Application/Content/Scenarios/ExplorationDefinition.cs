@@ -129,6 +129,8 @@ public enum FullFadeVisibility { Black, BaseRestored, Transitioning, White }
 public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePair Current, FullFadeVisibility Visibility,
     Runtime.Exploration.PaletteColorTransition? Colors = null);
 
+internal readonly record struct FieldMapBody(MapId Map, MapSetupId? Setup);
+
 public sealed class ExplorationMapDefinition
 {
     internal ExplorationMapDefinition(MapId map, WorkingMapLayout layout, OriginalMapTraversal traversal,
@@ -149,6 +151,9 @@ public sealed class ExplorationMapDefinition
         BasePalette = basePalette; ViewAreas = Array.AsReadOnly((viewAreas ?? []).ToArray());
         Setups = new ReadOnlyDictionary<MapSetupId, ExplorationSetupDefinition>((setups ?? []).ToDictionary(value => value.Id));
     }
+    private MapSetupId? BoundSetup { get; init; }
+    internal FieldMapBody Body => new(Map, BoundSetup ?? Setup?.DefaultSetup);
+    internal bool HasBattleSceneArea { get; private set; }
     public Runtime.Exploration.FieldReturnAnchor? ChurchSavepoint { get; init; }
     public CaravanDefinition? Caravan { get; }
     public FieldSearchDefinition? Search { get; }
@@ -178,6 +183,7 @@ public sealed class ExplorationMapDefinition
         if (index < 0) throw new BattleRuleException("field-view-area", "program.map", true);
         areas[index] = areas[index] with { MinX = 0, MinY = 0, MaxX = width - 1, MaxY = height - 1 };
         var scene = (ExplorationMapDefinition)MemberwiseClone();
+        scene.HasBattleSceneArea = true;
         scene.ViewAreas = Array.AsReadOnly(areas);
         return scene;
     }
@@ -188,14 +194,18 @@ public sealed class ExplorationMapDefinition
 
     internal ExplorationMapDefinition SelectSetup(IReadOnlyList<int> flags)
     {
-        if (Setup is null) return this;
-        var selected = SelectedSetup(flags)!;
-        if (selected == Setup.DefaultSetup) return this;
-        if (!Setups.TryGetValue(selected, out var content))
-            throw new BattleRuleException("map-setup", selected.Value, true);
+        return BindSetup(Setup is null ? Body.Setup : SelectedSetup(flags));
+    }
+
+    internal ExplorationMapDefinition BindSetup(MapSetupId? selected)
+    {
+        if (selected == Body.Setup) return this;
+        if (selected is null || Setup is null || !Setups.TryGetValue(selected, out var content))
+            throw new BattleRuleException("map-setup", selected?.Value ?? Map.Value, true);
         return new(Map, Layout, Traversal, content.Entities, content.Events, content.OnLoad, Battle,
             content.InputProgram, population: content.Population, layoutEvents: LayoutEvents, overlays: OverlayOffsets,
-            entryFlags: EntryFlags, basePalette: BasePalette, viewAreas: ViewAreas, battles: Battles, search: content.Search);
+            entryFlags: EntryFlags, basePalette: BasePalette, viewAreas: ViewAreas, battles: Battles, caravan: Caravan,
+            search: content.Search) { BoundSetup = selected, ChurchSavepoint = ChurchSavepoint };
     }
 }
 
