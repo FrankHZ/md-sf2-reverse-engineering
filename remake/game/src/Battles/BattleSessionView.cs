@@ -197,7 +197,7 @@ public sealed partial class BattleSessionView : Control
         {
             try
             {
-                _map.Build(result.Snapshot.Battle.Definition, session.Definition);
+                _map.Build(result.Snapshot.Battle, session.Definition);
                 _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
                 _inspection.ConfigureIcons(_menu.Icons, session.Definition);
                 _inspection.ConfigureOptions(session.ActiveBattleScenes);

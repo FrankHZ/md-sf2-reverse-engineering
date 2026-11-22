@@ -494,6 +494,14 @@ changes that outline; cancellation removes it. The connected regions have no sep
 foreground offset and no high-priority tiles; the affected exploration paths retain their existing
 foreground behavior. Fixed plane offsets are supported; unconsumed plane motion fails explicitly.
 
+For separate packed planes, the main plane samples the encounter crop and the other plane samples
+its own area start at battle cell zero. Rear-plane parallax uses the camera relative to that cell.
+At board construction, a separate foreground can use the load-time roof rule already shared with
+exploration. It matches the initial combatant-zero position in packed foreground coordinates and
+applies the first matching mutation to the foreground layout used for drawing. See the
+[castle projection observation](../verification/battles.md#castle-battle-projection) for the
+Continue route, source anchors and a parallax control.
+
 Private missing map/region/block resources fail through the existing adapter error UI. A failed
 hidden BattleLoad retains its wait and cannot report completion. Private startup requires a
 prepared world with map resources; standalone private inputs without those resources no longer

@@ -5,6 +5,30 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class MapBlockCopyActionTests
 {
+    [Theory]
+    [InlineData(5 * 384, true)]
+    [InlineData(5 * 384 + 1, false)]
+    public void LoadingSelectsTheFirstRoofContainingThePackedTarget(int targetX, bool clears)
+    {
+        var layout = LayoutWith((CellIndex(4, 25), 42), (CellIndex(5, 25), 43), (CellIndex(6, 25), 44));
+        var roofs = Table(Record(0, 0, MapBlockRegionMutation.Clear(4, 25, 2, 1)),
+            Record(1, 0, CopyMutation(0, 0, 5, 25)));
+
+        var roof = MapBlockCopyActionReducer.ActivateOnLoad(layout, Inactive, State(false, false), targetX, 25 * 384, roofs);
+
+        if (!clears)
+        {
+            Assert.Null(roof);
+            return;
+        }
+        Assert.NotNull(roof);
+        Assert.Equal(1, Assert.IsType<MapBlockCopyLifecycleActiveState>(roof.LifecycleState).RecordOrdinal);
+        Assert.Equal(0, roof.Layout[4, 25]);
+        Assert.Equal(0, roof.Layout[5, 25]);
+        Assert.Equal(44, roof.Layout[6, 25]);
+        Assert.Equal(43, layout[5, 25]);
+    }
+
     [Fact]
     public void ScriptedRoofUsesItsCoordinateEvenOnADoorMarker()
     {

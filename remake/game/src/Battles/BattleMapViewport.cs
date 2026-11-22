@@ -98,8 +98,9 @@ internal sealed partial class BattleMapViewport : Control
         Resized += Frame;
     }
 
-    internal void Build(BattleDefinition definition, ScenarioDefinition content)
+    internal void Build(EngineBattleState battle, ScenarioDefinition content)
     {
+        var definition = battle.Definition;
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _target.Clear(); _terrain.Clear(); _focus = [];
         _neutrals.Clear();
@@ -118,7 +119,7 @@ internal sealed partial class BattleMapViewport : Control
         _region = definition.SourceMapRegion;
         if (content.PrivateDefinitions is not null && _region is null)
             throw new InvalidOperationException("battlefield-map-region-unavailable");
-        if (_region is not null) BuildTerrain(definition, content);
+        if (_region is not null) BuildTerrain(battle, content);
         else BuildAuthoredTerrain(definition);
         foreach (var chest in content.PrivateDefinitions is null ? definition.Search?.Chests ?? [] : [])
         {
@@ -177,8 +178,9 @@ internal sealed partial class BattleMapViewport : Control
         }
     }
 
-    private void BuildTerrain(BattleDefinition definition, ScenarioDefinition content)
+    private void BuildTerrain(EngineBattleState battle, ScenarioDefinition content)
     {
+        var definition = battle.Definition;
         var region = _region!;
         if (content.Exploration is not { } exploration || _visuals is null ||
             !exploration.Maps.TryGetValue(region.Map, out var map) || !_visuals.Maps.TryGetValue(region.Map, out var visual))
@@ -195,19 +197,33 @@ internal sealed partial class BattleMapViewport : Control
             (view.Layer == 0 || followsTarget) && (view.ParallaxBX != 256 || view.ParallaxBY != 256) || view.AutoscrollAX != 0 ||
             view.AutoscrollAY != 0 || !followsTarget && (view.AutoscrollBX != 0 || view.AutoscrollBY != 0)))
             throw new InvalidOperationException("battlefield-map-plane-motion-unsupported");
-        // Main plane coordinates are selected by the source area. Overlay offsets
-        // address the other packed plane relative to it, not battle cell zero.
-        var background = view is { Layer: not 0 } ? new Vector2I(-offset.X, -offset.Y) : Vector2I.Zero;
-        var foreground = view is { Layer: not 0 } ? Vector2I.Zero : new Vector2I(offset.X, offset.Y);
+        // The main plane views the encounter crop at battle cell zero. The other
+        // plane keeps its independent packed-layout start at that same cell.
+        var main = new Vector2I(region.Origin.X, region.Origin.Y);
+        bool mainOnForeground = view is { Layer: not 0 };
+        bool separatePlanes = offset.X != 0 || offset.Y != 0;
+        var background = mainOnForeground ? new Vector2I(view!.BackgroundX, view.BackgroundY) : main;
+        var foreground = mainOnForeground ? main : view is null
+            ? main + new Vector2I(offset.X, offset.Y)
+            : new Vector2I(view.ForegroundX, view.ForegroundY);
+
+        var foregroundLayout = map.Layout;
+        if (separatePlanes && !mainOnForeground && view is not null && map.LayoutEvents is { } events &&
+            battle.Actors.FirstOrDefault(actor => actor.Deployment.Initialization?.AllyPartyMember == 0)?.Position is { } leader)
+        {
+            var roof = MapBlockCopyActionReducer.ActivateOnLoad(map.Layout, MapBlockCopyLifecycleState.Inactive,
+                new(false, false), (leader.X + foreground.X) * 384, (leader.Y + foreground.Y) * 384, events.Roofs);
+            foregroundLayout = roof?.Layout ?? map.Layout;
+        }
         foreach (bool high in new[] { false, true })
         {
-            Add(background, false, high);
-            if (offset.X != 0 || offset.Y != 0) Add(foreground, true, high);
+            Add(background, map.Layout, false, high);
+            if (separatePlanes) Add(foreground, foregroundLayout, true, high);
         }
-        void Add(Vector2I shift, bool overlay, bool high)
+        void Add(Vector2I sourceOrigin, WorkingMapLayout layout, bool overlay, bool high)
         {
             var layer = new BattlefieldTerrain();
-            try { layer.Configure(map, visual, region, _mapTextures, definition.Width, definition.Height, CellSize, shift, overlay, high, followsTarget && !overlay); }
+            try { layer.Configure(map, visual, region, layout, _mapTextures, definition.Width, definition.Height, CellSize, sourceOrigin, overlay, high, followsTarget && !overlay); }
             catch { layer.Free(); throw; }
             if (!overlay && view is not null)
                 layer.CameraShift = new(1f - view.ParallaxBX / 256f, 1f - view.ParallaxBY / 256f);
@@ -452,7 +468,7 @@ internal sealed partial class BattleMapViewport : Control
         _board.Scale = Vector2.One;
         _board.Position = (offset - WorldViewport.Origin) * WorldViewportLayout.PixelScale;
         foreach (var layer in _terrain)
-            layer.Position = WorldViewport.Origin * layer.CameraShift * WorldViewportLayout.PixelScale;
+            layer.Position = (WorldViewport.Origin - offset) * layer.CameraShift * WorldViewportLayout.PixelScale;
         if (_focus.Count > 0)
             SubjectChanged?.Invoke(new(_board.Position + new Vector2(_focus[^1].X, _focus[^1].Y) * CellSize,
                 Vector2.One * CellSize));

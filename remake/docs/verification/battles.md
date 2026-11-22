@@ -86,6 +86,65 @@ the active battle retains its region; it does not supersede the twelve preserved
 authorize rerunning their aggregate. The native observations establish current renderer behavior;
 original pixels/timing, general plane-motion support and human aesthetic approval remain **Unknown**.
 
+### Castle battle projection
+
+[Issue #2074](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2074) covers the genuine
+pre-battle slot reported on `12cbc853`. The compatible baseline `2d058c80` reproduced the defect
+with the registered `derived/issue2035/galam-town-v1` world, matching entry, scene and opening
+inputs. Fresh copies retain the complete format-6, sequence-8 save namespace. Continue slot 2
+restores Map16 at (27,7). Ordinary steps approach (17,9) for the rally and the guard at x=3 near
+y=18. Advance the dialogue with Confirm and let the guard's request load the battle. The actual
+transition selects Battle05, source Map16 crop (0,14), 24×14. The connected content and route are
+owned by [Galam escape](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control).
+
+**Confirmed, baseline and corrected Godot observations:** The baseline main ground pass starts
+at source row 14. The separate foreground incorrectly adds the crop's 14 rows to its packed
+start at row 32. The first visible board and the first Movement turn each draw 2,394
+high-priority foreground tiles over that crop. The corrected board samples the foreground at
+row 32 and applies the matching load-time clear. Both foreground passes draw zero tiles at
+entry and first input; the ground pass and its high-priority terrain still draw 2,715 and 309
+tiles. Visible units use their tactical cell centers on the same clipped board. The first
+player turn accepts Right and changes the preview from (3,4) to (4,4).
+
+**Confirmed, pinned source structure:** At SF2DISASM `c834c652`, `battleloop_1.asm:BattleLoop`
+passes combatant zero to `loadBattle.asm:LoadBattle`. `mapload.asm:LoadMapBlocksAndLayout` places
+the encounter crop at (0,0), while `LoadMapArea` retains the separate packed plane starts.
+`LoadMap` invokes `exploration.asm:ToggleRoofOnMapLoad`, which checks the load target relative to
+the foreground start. Map16's `2-areas.asm` and `5-roof-events.asm` bind the matching clear.
+This is static source evidence. Native observation above covers the remake only.
+
+For the bounded comparison, use only the authorized read-only backup and a unique disposable
+namespace. Copy its `sf2-opening` and `sf2-preferences` directories, and compare each copied
+file byte-for-byte before and after launch. Use a fresh process for each run and the same
+registered package. The isolated execution handoff retained the observer and receipts under
+`local/issue2074`. The observer feeds normal input events to `Main.tscn` and reads the built
+board's `ReadTerrainJson`, battle state and process stderr. It uses no active-state setters.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+Push-Location remake
+& $env:DOTNET_BIN restore game/Sf2.Remake.Godot.csproj --locked-mode
+& $env:DOTNET_BIN build game/Sf2.Remake.Godot.csproj -c Debug --no-restore
+Pop-Location
+./local/issue2074/Run.ps1 -Case fixed -BackupNamespace $authorizedBackup
+$controlSlot = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1861/slots/battle-en.json'
+./local/issue2074/Run.ps1 -Case desktop-control -BattleSeed $controlSlot
+uv run sf2 verify engine
+uv run sf2 verify adapter
+```
+
+Use `-Case baseline` on the baseline build. For the shared-plane control, the retained
+[Battle22](../application/desktop-battle22.md#persistence-delivery-and-remaining-boundaries)
+slot cold-continues to Movement. Its main foreground samples the crop at (9,0), the rear
+plane samples its own start at (0,30), and the rear transform follows the battle-local camera
+with the selected 192/128 coefficients. The acting sprite remains centered in its preview
+cell. The fixed-route and control processes exited 0 with no runtime errors; the route
+logged an ObjectDB shutdown warning. An initial baseline observer attempted a terrain read
+before board construction and exited 1. The bounded rerun waited for the board and exited 0.
+Original hardware timing, other reload targets and the player's visual acceptance remain
+**Unknown**.
+
 ## Replaceable Progression and Outcome Observation
 
 Use the ordinary host and
