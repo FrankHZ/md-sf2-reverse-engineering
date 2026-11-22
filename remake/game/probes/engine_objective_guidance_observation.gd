@@ -126,7 +126,7 @@ func menu_check(expected: bool) -> void:
         check(not Rect2(r.x,r.y,r.width,r.height).intersects(Rect2(layout.rect.x,layout.rect.y,layout.rect.width,layout.rect.height)),
             "independent objective avoids actual command bounds")
         check_player_clear()
-        check(not guidance().text in layout.reason and not guidance().markerVisible, "command help has no duplicate objective or world marker")
+        check(not guidance().text in layout.reason, "command help has no duplicate objective")
         check(guidance().fontSize == 30 and find("FieldGuidance").find_children("ObjectivePanel", "Panel", true, false).size() == 1,
             "exactly one passive objective panel keeps30px body")
         var initial_index: int = state().fieldMenu.index
@@ -153,13 +153,20 @@ func check_player_clear() -> void:
     var actor := Rect2((Vector2(p.x,p.y) / 16 - Vector2(g.cameraX,g.cameraY)) * 4,Vector2(96,96)).grow(24)
     check(not Rect2(r.x,r.y,r.width,r.height).intersects(actor), "objective avoids actual projected player with24px clearance")
 
+func check_text_only(next_step: String) -> void:
+    var aid := guidance()
+    var view := find("FieldGuidance")
+    check(aid.visible and aid.routeKey == next_step, "current next step is displayed as text")
+    check(view.get_child_count() == 1 and view.get_child(0).name == "ObjectivePanel" and not aid.has("markerVisible"),
+        "field guidance projection contains only the text panel")
+
 func town_flow() -> void:
     var knows_hawel: bool = 610.0 in state().flags
     check(guidance().get("objectiveKey") == ("guidance.find-hawel" if knows_hawel else null) and
         guidance().visible == knows_hawel, "before invitation retain only the disclosed Hawel task")
-    check(not guidance().get("markerVisible", false) and not "Kazin" in str(guidance().get("text", "")) and
+    check(not "Kazin" in str(guidance().get("text", "")) and
         not "WWWWWWW" in str(guidance().get("text", "")),
-        "before guide disclosure no companion name or invitation entrance marker")
+        "before guide disclosure no companion name")
     await menu_check(knows_hawel)
     await key(KEY_ENTER)
     for i in range(400):
@@ -227,10 +234,12 @@ func town_flow() -> void:
     await pad(JOY_BUTTON_B)
     await navigate(Vector2i(7,1), "visible-north-approach")
     await frames(8)
-    check(guidance().markerVisible, "actual visible north exit has a named hollow marker")
+    check_text_only("guidance.next-north")
     capture("visible-town-exit")
     var s := await navigate(Vector2i(7,0), "yeel-north-exit", "map-66")
-    check(s.map == "map-66" and guidance().visible and not guidance().markerVisible and ("Route not available" in guidance().text or "暂无可用路线" in guidance().text), "real transfer drops old town anchor; incomplete leg has no bearing")
+    check(s.map == "map-66" and guidance().map == s.map and ("Route not available" in guidance().text or "暂无可用路线" in guidance().text),
+        "real transfer replaces the town next step with the disclosed incomplete leg")
+    check_text_only("guidance.route-unavailable")
     capture("overworld-incomplete")
 
 func compact_flow() -> void:
@@ -260,16 +269,20 @@ func compact_flow() -> void:
     await set_guidance(true); await menu_check(true)
 
 func house_flow() -> void:
-    check(72.0 in state().flags and 503.0 in state().flags and guidance().visible, "retained post-battle checkpoint has current objective")
+    var flags: Array = state().get("flags", [])
+    if not (72.0 in flags and 503.0 in flags and guidance().get("visible", false)):
+        check(false, "expected settled post-battle field and its current objective")
+        return
     capture("post-battle-approach"); await menu_check(true)
-    check(guidance().markerVisible, "visible validated house entrance has hollow named marker")
+    check_text_only("guidance.known-house")
     await edge(KEY_SHIFT, true)
     var s := await navigate(Vector2i(6,5), "house-entry", "map-43")
     await edge(KEY_SHIFT, false)
     check(s.map == "map-43" and 4.0 in s.flags and 612.0 in s.flags and not 72.0 in s.flags and
         guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal" and
-        guidance().get("routeKey") == "guidance.leave-house" and not guidance().markerVisible,
-        "actual house scene replaces the guide/entrance with the disclosed Ancient Shrine goal")
+        guidance().get("routeKey") == "guidance.leave-house",
+        "actual house scene replaces the guide objective with the disclosed Ancient Shrine goal")
+    check_text_only("guidance.leave-house")
     capture("house-completed"); await menu_check(true)
 
 func run() -> void:
@@ -298,6 +311,12 @@ func run() -> void:
         capture("continued-off")
         var previous_session: String = state().sessionId
         var original_slot := FileAccess.get_file_as_string(slot_path)
+        await set_guidance(true)
+        var continued := guidance()
+        check(continued.visible and continued.sessionId == previous_session and continued.map == state().map,
+            "On after Continue publishes the restored field's objective")
+        capture("continued-on")
+        await set_guidance(false)
         var preferences := FileAccess.get_file_as_string(preference_path)
         check(not FileAccess.file_exists(slot_path.replace("slot1.json", "slot2.json")), "New Game uses an empty owned second slot")
         await key(KEY_F10)
@@ -337,13 +356,13 @@ func run() -> void:
     elif case_name == "revisit":
         check(state().map == "map-43" and 4.0 in state().flags and 612.0 in state().flags and not 72.0 in state().flags, "admitted completed F612 house revisit")
         check(guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal" and
-            guidance().get("routeKey") == "guidance.leave-house" and not guidance().markerVisible,
-            "F612 revisit retains the Ancient Shrine goal without the old guide/entrance")
+            guidance().get("routeKey") == "guidance.leave-house",
+            "F612 revisit retains the Ancient Shrine goal")
         await menu_check(true)
         var flags: Array = state().flags
         await key(KEY_UP); await settle("revisit-move")
-        check(state().flags == flags and guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal" and
-            not guidance().markerVisible, "revisit movement retains current goal without replaying the scene or restoring the old marker")
+        check(state().flags == flags and guidance().visible and guidance().get("objectiveKey") == "guidance.ancient-shrine-goal",
+            "revisit movement retains current goal without replaying the scene")
         capture("revisit")
     elif case_name == "save":
         await key(KEY_F10); await key(KEY_DOWN); await key(KEY_ENTER)
@@ -352,6 +371,7 @@ func run() -> void:
             if await wait_slots("saved"): await key(KEY_ENTER)
         check(FileAccess.file_exists(slot_path), "already eligible ordinary save succeeds")
         var saved := FileAccess.get_file_as_string(slot_path)
+        capture("saved-guidance")
         await set_guidance(false)
         check(FileAccess.get_file_as_string(slot_path) == saved, "guidance never writes gameplay slot")
         capture("saved-then-off")
@@ -365,4 +385,6 @@ func finish() -> void:
     if file != null:
         file.store_string(JSON.stringify({"passed":failures.is_empty(), "checks":checks, "failures":failures,
             "case":case_name, "samples":samples})); file.close()
-    quit(0 if failures.is_empty() else 1)
+    if is_instance_valid(host): host.queue_free()
+    await frames(12)
+    quit(0 if failures.is_empty() and file != null else 1)

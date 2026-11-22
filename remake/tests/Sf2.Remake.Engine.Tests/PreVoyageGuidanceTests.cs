@@ -138,19 +138,12 @@ public sealed class PreVoyageGuidanceTests
     private static ExplorationMapDefinition Map(int id)
     {
         var layout = new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]);
-        var events = id switch
-        {
-            5 => new[] { new ExplorationEvent(ExplorationEventKind.Warp, null, 0, null, null, new("map-66"), new(18, 21)) },
-            66 => [new(ExplorationEventKind.Warp, 6, 5, null, null, new("map-43"), new(6, 11))],
-            4 => [new(ExplorationEventKind.Warp, 50, 24, null, null, new("map-44"), new(1, 25))],
-            _ => [],
-        };
         int[] flags = id switch { 3 => [609, 506], 19 => [501, 609, 506, 507], 20 or 21 => [501, 609, 506],
             16 => [663], 17 => [505], 44 => [507], _ => [] };
         var setup = id is 57 or 58 or 60 ? null : new MapSetupRoute(new($"ms-map{id}"),
             flags.Select(f => new MapSetupFlagVariant(new(f.ToString()), new($"ms-map{id}-flag{f}"))));
         var population = new ExplorationPopulation(1, 128, 0, []);
-        return new(new($"map-{id}"), layout, new([new(0, 0, 63, 63)]), [], events, setup: setup,
-            setups: flags.Select(f => new ExplorationSetupDefinition(new($"ms-map{id}-flag{f}"), [], events, null, null, population)));
+        return new(new($"map-{id}"), layout, new([new(0, 0, 63, 63)]), [], [], setup: setup,
+            setups: flags.Select(f => new ExplorationSetupDefinition(new($"ms-map{id}-flag{f}"), [], [], null, null, population)));
     }
 }

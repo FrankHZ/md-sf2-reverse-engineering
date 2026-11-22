@@ -143,7 +143,6 @@ internal static partial class GameText
         ["guidance.reach-docks"] = "Reach the docks.",
         ["guidance.granseal-docks"] = "Granseal docks",
         ["guidance.east-safe-exit"] = "Next: Use the town’s safer eastern exit.",
-        ["guidance.east-exit"] = "East exit",
         ["guidance.board-ship"] = "Depart by ship.",
         ["guidance.dock-man"] = "Next: Speak with the man beside the ship.",
 
@@ -166,8 +165,6 @@ internal static partial class GameText
         ["guidance.visit-hawel"] = "Visit Hawel with {0}.",
         ["guidance.hawel-outside-yeel"] = "Hawel’s house · outside Yeel",
         ["guidance.next-north"] = "Next: North exit",
-        ["guidance.north-exit"] = "North exit",
-        ["guidance.house-entrance"] = "House entrance",
         ["guidance.known-house"] = "Next: Hawel’s house entrance",
         ["guidance.route-unavailable"] = "Route not available",
         ["guidance.reading"] = "{0}: Read · {1}: Commands",

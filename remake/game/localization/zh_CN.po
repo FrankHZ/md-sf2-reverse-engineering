@@ -2050,12 +2050,6 @@ msgstr "哈维尔的家 · 耶尔村外"
 msgid "guidance.next-north"
 msgstr "下一步：北侧出口"
 
-msgid "guidance.north-exit"
-msgstr "北侧出口"
-
-msgid "guidance.house-entrance"
-msgstr "房屋入口"
-
 msgid "guidance.known-house"
 msgstr "下一步：哈维尔家入口"
 
@@ -2313,9 +2307,6 @@ msgstr "格兰希尔码头"
 
 msgid "guidance.east-safe-exit"
 msgstr "下一步：走城镇东侧较安全的出口。"
-
-msgid "guidance.east-exit"
-msgstr "东侧出口"
 
 msgid "guidance.board-ship"
 msgstr "乘船离开。"

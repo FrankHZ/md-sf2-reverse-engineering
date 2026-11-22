@@ -1,26 +1,25 @@
-# Optional pre-voyage objective and destination
+# Optional pre-voyage text guidance
 
 This is the current implementation and coverage owner for
 [#1578](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1578).
-The merged [#1705 pilot](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1706) supplied the
-shared preference/query and two surfaces. The user authorized extending them, in story order,
-from ordinary New Game through boarding. The original pilot’s narrower acceptance remains in its
-Git object and retained observations. Human acceptance stays in #1578/#1456.
+The merged [#1705 pilot](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1706) introduced the
+shared preference/query, objective text and entrance marker. The user authorized expanding coverage
+from ordinary New Game through boarding. [#2072](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2072)
+removes the destination circles, labels and coordinate bindings. The pilot and subsequent expansion
+retain their original acceptance records in Git. Human acceptance stays in #1578/#1456.
 
 **Standard rigor:** finite content disclosure across existing Application, preferences and field UI.
 Deliver a useful current objective and known destination/action during every supported main-story
-free-control segment; change precision with the evidence. Include ordinary detours, defeats, EGRESS,
-revisits, eligible Continue and the dock decision. Do not make optional recruitment mandatory.
-Stop after boarding clears the aid; no later chapter guidance, new admission, quest history,
-automatic travel, path solver, new save location or additional story/knowledge record.
+free-control segment. Choose text precision from the disclosed story. Include ordinary detours,
+defeats, EGRESS, revisits, eligible Continue and the dock decision. Do not make optional recruitment mandatory.
+Current coverage ends when boarding clears the aid. Future chapters can extend authored text
+where needed. They require no destination marker coordinates or per-map marker coverage.
 
 The [visual language](ui-design-language.md), F7 field controls and existing Modern guidance setting
-remain in force. The [design proposal](modernization-design.md#optional-objective-and-destination-guidance-1578)
-records the original choices; the coverage below supersedes its pilot-only withholding boundaries
-where the expanded story has already disclosed a task. [#1710](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1710)
-supersedes the pilot's split menu/world presentation: one independent objective panel remains visible
-across ordinary exploration and root gameplay-menu toggles. Its scope is adapter layout/input only;
-story disclosure, queries, precision, settings and locale catalogs retain their existing owners.
+remain in force. The [design agreement](modernization-design.md#optional-objective-and-destination-guidance-1578)
+sets the text-only scope. [#1710](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1710)
+established one independent objective panel that remains visible across ordinary exploration and
+root gameplay-menu toggles.
 
 ## Ownership and disclosure
 
@@ -30,7 +29,7 @@ no coverage; ambiguity never selects the first rule. It changes no clock, RNG, r
 party, flags or saves. Ordinary motion retains the aid; dialogue, automatic scenes, battle, services,
 stopped scenes and host/window owners hide it. Return/Continue recompute from current state.
 
-`PrivateFieldGuidance` owns the finite story rules, copy keys and optional current-map anchors.
+`PrivateFieldGuidance` owns the finite story rules and copy keys.
 The generic query contains no campaign map/flag constants. Variant setup identity is selected with
 the existing admitted `MapSetupSelector`; source maps without setup selectors are supported.
 Optional content areas distinguish packed home/school rooms and prison/tunnel/kitchen on the same
@@ -62,29 +61,28 @@ own source symbols, exact callers and provenance. Their original natural reach/t
 remain. The [ordinary campaign owner](../application/pre-voyage-campaign.md) separately owns the
 admitted remake world, outcomes and actual connected routes; guidance admits none of those itself.
 
-The following is modern guidance content, not a claim that the original had objectives. Regions and
-actions are deliberately useful at coarse precision; absence of an exact anchor does not erase them.
-`Fnnn` and coordinates below are internal content facts, never player-facing UI.
+This table describes the remake's modern guidance. Regions and actions use the precision the
+reached story supports. `Fnnn` identifies internal story flags.
 
 | Reached free-control boundary | Current goal and next destination/action | Precision / withholding |
 | --- | --- | --- |
 | Initial home, before F601/F602/F603 | Start the day; leave home. Outside, speak with mother near home. | Current room / known home; no King, messenger or mission spoiler. |
 | Mother’s completed caller F601, before F602/F603 | Go to school; join classmates, or speak with the teacher when already downstairs. | School/room advice. Source483 discloses school; no future visitor. |
 | F602, before F603 | Return to the classroom and join the lesson. | Class area/action, not the undisclosed messenger. |
-| F603, before royal F605 | Visit Granseal Castle; north town exit / royal quarters. | Known castle and room role, no inferred doorway marker. |
+| F603, before royal F605 | Visit Granseal Castle; north town exit / royal quarters. | Known castle and room role. |
 | F605, before F608 | Join Astral in the castle hall. | Return from the royal room to the hall. Refusal does not advance it. |
 | F608, before F401 | Follow Astral toward the tower; western stairs and real guard. | Castle passage advice; no enemy/encounter disclosure. |
 | F401, before F501 | Enter Ancient Tower through the admitted castle/tower passage. | Same on defeat/EGRESS; no fabricated victory. |
 | F501, before F609/F610 | Return to the King; tower return → royal room. | Actual changed setup, not the earlier guard invitation. |
 | F609, before F610 | Speak with the royal party in the hall. | Hawel withheld until the commission returns. |
 | F610, before F502 | Find Hawel near Yeel; leave town west, then travel toward Yeel. | The commission already disclosed Hawel; Jaha’s on-route scene stays ordinary. No Battle02 spoiler. |
-| F502/F610, before F72/F612 | Find Hawel near Yeel; enter the village and ask villagers. | No new Kazin quest-giver marker or inferred villager conversation history. |
-| F72, before F4/F612 | Visit Hawel with Kazin. Yeel: recommended north exit. Overworld before F503: known house, Route not available. | Pilot exit binding retained; no bearing through the encounter. |
-| F72/F503, before F4/F612 | Same goal; known house entrance when visible. | Actual Map66 `(6,5)` from `(6,6)` to Map43 `(6,11)`. |
+| F502/F610, before F72/F612 | Find Hawel near Yeel; enter the village and ask villagers. | Withhold Kazin's offer until its caller returns. |
+| F72, before F4/F612 | Visit Hawel with Kazin. In Yeel, use the north exit. On the overworld before F503, show the known house and “Route not available”. | Withhold the encounter and the approach through it. |
+| F72/F503, before F4/F612 | Same goal. Head for Hawel's house entrance. | The admitted house route owns the actual warp. |
 | F4/F612, before F504 | Go to the Ancient Shrine; leave Hawel’s house / continue south outside. | Source last line834 names **Ancient Shrine**, not Galam. No capture/ambush spoiler; coarse onward leg. |
 | F504, settled prison before F661 | Find a way out of the cells; approach other prisoners. | Do not disclose the hidden tunnel or future Slade recruitment. Victory and special defeat converge only after real wake-up. |
 | F661, before F662/F73 | Seek a way out; approach the stairs outside the cells. | The warning, not the guide, reveals a shortcut. |
-| F662, before F73 | Find the known shortcut near the cells. | Revealed passage/action; no guessed navigation marker. |
+| F662, before F73 | Find the known shortcut near the cells. | The warning has disclosed the passage. |
 | F73 in prison interiors | Follow tunnel to kitchen; then leave kitchen / find a door to the castle grounds. | Actual physical area changes the local action on this same map. Revisit does not invent restored layout copies. |
 | Castle grounds before F505, including Battle05 defeat/EGRESS | Leave Galam; head for the western castle exit. | Live current setup. Do not send an escaped party back through the original closed cells. |
 | F505, before F506, including Battle06 retreat | Return to Granseal; southern Galam gate → drawbridge → countryside. | No mandatory Church event from Slade’s advice and no tower goal from F407 alone. |
@@ -92,8 +90,8 @@ actions are deliberately useful at coarse precision; absence of an exact anchor 
 | F620, F621 or F457, before F507, including Battle07 EGRESS | Go to the tower; castle passage and connected tower portals. With the royal scene not yet heard, the hall advice can recommend speaking with that group. | Each is actual disclosure. A reached intro/retreat keeps the tower goal even without royal following or F506; do not restore old home/castle questions. |
 | F507/F74/F640, including Map58 Continue | Leave the tower with the royal party; retrace passages toward the castle. | Restore the existing aftermath; no new aftermath save recipe. |
 | Castle F507 before/after warning F622 | Cross castle; after the warning, leave through the south exit to get everyone safe. | No harbor instruction before the actual warning/town scene. F623 does not prematurely finish the escape. |
-| Quake town after F624 | Reach Granseal docks through the safer east exit. | Source717–720 disclose ship/east route; visible `(50,24)` entrance may be marked. |
-| Docks F507/F74/F640/F624 | Depart by ship; speak with the man beside the ship. | Actual actor138/old-man handler, not an assumed NPC name or stored NPC-coordinate marker. |
+| Quake town after F624 | Reach Granseal docks through the safer east exit. | Source717–720 disclose the ship and east route. |
+| Docks F507/F74/F640/F624 | Depart by ship; speak with the man beside the ship. | Actual actor138/old-man handler. |
 | Docks No/cancel/revisit | Same disclosed goal; usable field requery. | No departure consumed, no new choice ledger or auto-acceptance. |
 | Boarding / F74 clear / successor Map14 | No objective or destination. | Hide through the scene and remain clear after usable successor input. No Battle08 goal. |
 
@@ -103,18 +101,15 @@ missing disclosure and inconsistent ambiguous rules remain uncovered. This does 
 missing main-story task exists nowhere. It does not silently admit the later Yeel F650 setup or
 other absent content to manufacture revisit coverage.
 
-The exact pilot north exit is Map5 `(7,0)`, approached from `(7,1)`, returning Map66 `(18,21)`.
-The new quake east exit is Map4 `(50,24)`, approached from `(49,24)`, entering Map44 `(1,25)`.
-Anchors are checked against the real public warp/marker, active area, current approach collision and
-live obstructions. They appear only in the current visible field view. Invalid/off-camera anchors
-retain their named destination/action at lower precision; there is no all-map reach or shortest-path
-promise. Coarse school, royal room, prison and portal advice has no invented exact marker.
+Next steps describe the disclosed route. Story progress can select “Route not available”, as it does
+on Map66 before F503. Moving actors or local approach collision no longer replace authored text.
+The ordinary map and interaction systems own travel legality, entrances and their labels.
 
 ## UI, language and persistence
 
 Modern guidance / 现代引导 remains one default-On general preference, including old format1 files
 missing it. Existing Draft/Apply/Back, atomic write/conflict/failure retention, defaults and read-only
-overrides control the panel and entrance aid. Explicit Off survives New Game, Continue and restart. Gameplay saves
+overrides control the panel and pickup glints. Explicit Off survives New Game, Continue and restart. Gameplay saves
 contain no guidance. #1703 GraphicsMode and all existing settings/input behavior are unchanged.
 
 Ordinary exploration and the root Member/Magic/Item/Search menu share the same passive objective
@@ -129,13 +124,12 @@ uses at most448px of reading width plus32px horizontal padding, and grows vertic
 word/CJK wrapping. Its body stays30px, including custom companion names. Short copy shrinks below
 the480px cap. Preferred placement is the top-left safe edge, then bottom-left/right corners as needed
 to avoid the player (24px clearance) and actual root command bounds (24px clearance). The panel stays
-inside safe edges, with no camera/world zoom change. At most one hollow named visible entrance
-remains a menu-closed world aid; root menus hide that marker. Host, dialogue, Search results,
-services, battle and window recovery hide all guidance. Off hides the panel in both root-menu states.
+inside safe edges, with no camera/world zoom change. Host, dialogue, Search results, services,
+battle and window recovery hide the panel. Off hides the panel in both root-menu states.
 The world remains at96px cells; no objective click moves an actor or camera.
 
-The English and Simplified Chinese catalogs own the authored objective, destination, next action and
-entrance text. The [localization agreement](../application/localization-design.md#fixed-names-in-modern-guidance)
+The English and Simplified Chinese catalogs own the authored objective, destination and next action.
+The [localization agreement](../application/localization-design.md#fixed-names-in-modern-guidance)
 owns the spelling source. When a rule supplies a companion, `DisplayNames.Member` resolves its
 display name and honors player-entered names. Copy without a companion has zero name operands.
 Applying the language preference refreshes the current field projection. Continue recomputes it
@@ -190,7 +184,7 @@ keep their existing owners. These draws provide no evidence about original-game 
 
 ## Verification and direct replay
 
-`FieldGuidanceTests` retains generic read-only/ambiguity/anchor/follower behavior.
+`FieldGuidanceTests` covers text selection, ambiguity, follower requirements and read-only behavior.
 `PreVoyageGuidanceTests` exercises the actual finite content rules at the above boundaries, selected
 variants, packed rooms, optional-member independence, detours, defeat/EGRESS flags, changed story,
 genuine withholding and boarding cleanup. These are engine query behavior, not observer tests.
@@ -221,13 +215,13 @@ The representative native observer is
 input/state/projection/errors and ordinary selected world, not screenshots or active-state setters.
 Its three cases are:
 
-- `opening`: actual New Game in a fresh slot; both surfaces/Off/On; real house exit and mother caller
-  change daily advice to school without future-story disclosure.
+- `opening`: actual New Game in a fresh slot, with the panel checked both Off and On. The real house
+  exit and mother caller change daily advice to school without future-story disclosure.
 - `prison`: compatible pre-session Map17 wake-return state, then actual doors, stairs warning,
   shortcut, same-map tunnel/kitchen transition and menu reading. No battle replay or fake door copy.
 - `voyage`: exact copy of the retained real Map58 save into a fresh disposable namespace; ordinary
   Continue compares all saved progress at attach; actual reverse tower/castle/quake/dock route,
-  repeat visits, No/cancel/Yes, boarding and usable Map14 with both aids clear. Source slot unchanged.
+  repeat visits, No/cancel/Yes, boarding and usable Map14 with the previous goal cleared. Source slot unchanged.
 
 Load the owning checkout’s ignored environment and select its accepted ordinary world/scene. Set
 `SF2_SAVE_ROOT` outside checkouts and a fresh `issue1578-*` `SF2_SAVE_NAMESPACE`, an explicit fresh
@@ -240,10 +234,11 @@ completion still belong to the production game.
 
 `res://probes/engine_objective_guidance_observation.gd` remains the current complementary
 preference/menu/layout consumer. Its `town` case retains the disclosed Hawel task when F610 is
-present, withholding the guide name/entrance until the actual F72 caller; without F610 there is no
+present, withholding the guide name until the actual F72 caller; without F610 there is no
 invented commission. Use F610/F502 in the ordinary pre-invitation checkpoint to observe that change.
-Its `house` and F612 `revisit` cases now retain the disclosed Ancient Shrine goal, with the old
-guide/house marker removed. Existing Off/Cancel/write-refusal, command/Party focus, locale/name,
+Its `house` and F612 `revisit` cases retain the disclosed Ancient Shrine goal after the house scene.
+The town and house approaches observe the text-only projection at former marker locations.
+Existing Off/Cancel/write-refusal, command/Party focus, locale/name,
 controller/remapped confirm, resize/recovery and save/Continue/read-only cases remain applicable.
 The old root-menu objective and overflow-reading assertions are replaced by same-panel continuity,
 no duplicated command help, passive command focus and Party return checks. The `compact` case uses
@@ -251,6 +246,26 @@ an admitted pre-session checkpoint to check short or long actual localized copy 
 2560×1440, repeated root open/close/reopen, full wrapping/padding, Off/On and below-minimum recovery.
 Run it with both English and zh-CN, including a short opening goal and a longer disclosed goal;
 it uses the same existing `issue1705-*` isolation guard and no source/catalog mutation.
+
+### Text-only observation
+
+Reuse the Debug launcher and `derived/issue2035/galam-town-v1` inputs from
+[Pickup observation](#pickup-observation). Select `derived/issue2001/catalogs-v1/world.zh-CN.json`
+with `SF2_DISPLAY_CATALOG`. Run the objective guidance observer serially, with a fresh output
+for each case and separate `issue1705-*` save namespaces except for the Save/Continue pair.
+For controlled starts, copy [the post-Battle02 checkpoint](../../reference/inputs/yeel-to-battle03-start.json)
+to ignored scratch and apply the changes below.
+
+| Case | Setup and observed boundary |
+| --- | --- |
+| `town` | Use the default Yeel guide approach at (7,7), Up, with F610/F502 set and F399 clear. Supply a custom seven-character `ally-4` name and English/HD preferences. Talk and finish the actual F72 caller. Toggle guidance, apply Chinese, then walk out the real north exit. The field projection contains only the text panel. It shows the localized north exit instruction and then replaces it with the Map66 route-unavailable text. The custom name survives the locale switch. |
+| `house` | Use the same four-member checkpoint family at Map66 (6,6), Up, with F72/F503 set and F399/F403 clear. The approach shows the named house in text. The actual warp and house scene replace it with the Ancient Shrine and the instruction to leave the house. |
+| `save`, `continue` | Use the pre-invitation Yeel setup for Save. Compare the recorded `saved-guidance` and `continued-on` samples. A fresh title Continue restores the same three text lines and initially honors the saved Off preference. Applying On shows the objective bound to the restored field. |
+| Pickup `shrine`, `continue` | Copy the retained #2024 full/unclaimed shrine slot into a fresh `issue2024-*` namespace and use the pickup observer. The shared preference still hides the glint, Reduced flash holds it steady, and Search updates the mark through Full, grant, repeat and fresh Continue. |
+
+**Confirmed in the remake** at these controlled boundaries with native input, live projection and
+process error checks. An initial house attempt carried F403 and failed to reach the intended
+field. The corrected post-victory input clears F403.
 
 **Confirmed:** bounded #1710 headless native English/zh-CN runs retain one panel/text
 through repeated root open/close/reopen and Party return, preserve command input and paused gameplay
@@ -273,13 +288,13 @@ observers and their fresh launch entries.
 
 Reuse the approximately149MB installed local world read-only. No asset copy, seven-battle rebuild,
 new tool, route platform or campaign admission is planned. Finite table expansion is below1000
-records with a small bounded definition footprint; query is O(rules + local anchor checks), one
+records with a small bounded definition footprint; query is O(rules), one
 record. Native cases run serially; bound live checkpoints to30s and a representative case to210s,
 terminal reports to100KiB each and retained report material to2MiB. Record only key control/choice
 boundaries, not per-frame world dumps. Replan on a missing admission or required new story ledger.
 A local handoff provides fresh one-command replay and ordinary play launchers without changing the
 player launcher or original slots.
 
-**Unknown:** human usefulness, wording, default preference, physical-device readability and marker
-visual cost until #1578/#1456 review. Engineering observations do not accept those judgments or
+**Unknown:** human usefulness, wording, default preference and physical-device readability
+until #1578/#1456 review. Engineering observations do not accept those judgments or
 resolve original natural traversal/timing/hardware presentation.

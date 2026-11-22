@@ -2050,12 +2050,6 @@ msgstr "Hawel’s house · outside Yeel"
 msgid "guidance.next-north"
 msgstr "Next: North exit"
 
-msgid "guidance.north-exit"
-msgstr "North exit"
-
-msgid "guidance.house-entrance"
-msgstr "House entrance"
-
 msgid "guidance.known-house"
 msgstr "Next: Hawel’s house entrance"
 
@@ -2313,9 +2307,6 @@ msgstr "Granseal docks"
 
 msgid "guidance.east-safe-exit"
 msgstr "Next: Use the town’s safer eastern exit."
-
-msgid "guidance.east-exit"
-msgstr "East exit"
 
 msgid "guidance.board-ship"
 msgstr "Depart by ship."
