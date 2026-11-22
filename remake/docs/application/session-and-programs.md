@@ -2159,7 +2159,7 @@ ordinary field input.
 
 **Confirmed** in a bounded Map43 F612 revisit on the published `derived/issue2035/galam-town-v1`
 world, matching entry, scenes and opening inputs. Use the existing
-`StartPreVoyageLocalizationObservation` startup seam with player `entity-0`, tile (11,7), West
+`StartPreVoyageLocalizationObservation` startup seam with player `entity-0`, tile (11,7), Down/South
 (facing 3), speed 24, and flags F0/F32/F612/F650. In the ordinary Godot host, hold Left through
 the second step, release late in that step and immediately press Confirm at the first input-ready
 frame at (9,7). For the held-direction description, press and hold Up against the blocked diary
