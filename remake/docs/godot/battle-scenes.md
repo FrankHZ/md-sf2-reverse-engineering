@@ -274,15 +274,15 @@ bindings with the pinned source and ROM, checks the selected rasters against the
 and checks that each replacement has its own file identity. The candidate and its dependencies are
 private. The existing play selection remains under its current owner's control.
 
-To reproduce, load `local/private-inputs.ps1` and select the pinned upstream checkout. Use a fresh
-directory on the same volume under the registered `derived` root. For a read-only check, select
-the existing candidate directory and add `--check`.
+The [private backdrop publisher](../../../src/sf2tool/remake_fixed_battle_backdrops.py) prepares a
+fresh candidate using the registered assets. Load `local/private-inputs.ps1` and set `$upstream`
+to the pinned checkout. The destination can be under the registered `derived` root or worktree
+`local/` on the base package's volume. Add `--check` to verify an existing candidate in place.
 
 ```powershell
 $shared = $env:SF2_SHARED_INPUT_ROOT
-$handoff = Join-Path $shared 'handoffs/issue2091/fixed-battle-backdrops-v1'
 $candidate = Join-Path $shared 'derived/issue2091/fixed-battle-backdrops-v1-candidate'
-uv run python (Join-Path $handoff 'Publish.py') `
+uv run python -m sf2tool.remake_fixed_battle_backdrops `
     --base (Join-Path $shared 'derived/issue2035/galam-town-v1') `
     --library (Join-Path $shared 'derived/issue2001/retail-v1') `
     --destination $candidate --upstream $upstream --rom (Join-Path $shared 'roms/sf2-us.bin')
@@ -299,16 +299,27 @@ are 256×96 for each background segment and 96×32 for the ground. These are hea
 observations of the actual scene, texture and canvas objects. Display output and original runtime
 timing remain **Unknown**.
 
-From the isolated checkout with its Debug adapter built and project imported, run the registered
-observer with an authorized read-only pre-guard backup namespace and a fresh run name. The runner
-copies the backup to the disposable external save root and launches the real Godot host. Compare
-`attack-draw` texture digests with the publisher's `--check` `imageSha256` values.
+For native verification, use the built Debug adapter and imported Godot project in the isolated
+checkout. Select the candidate `world.json`, `entry/entry.json` and `main-scenes.json` with
+`SF2_PRIVATE_EXPLORATION_CONTENT`, `SF2_PRIVATE_ENTRY_CONTENT` and
+`SF2_PRIVATE_BATTLE_SCENE_CONTENT`. Map the six files in `opening-inputs/` to the environment
+variables named by their filenames without the `.json` suffix. Use a fresh `SF2_SAVE_NAMESPACE`
+under a disposable external `SF2_SAVE_ROOT`.
 
-```powershell
-& (Join-Path $handoff 'Run.ps1') -Case battle05 -Run review05 -Package $candidate `
-    -BackupNamespace $preGuardBackup
-& (Join-Path $handoff 'Run.ps1') -Case battle07 -Run review07 -Package $candidate
-```
+- **Battle05.** Copy the authorized pre-guard backup into the disposable namespace and Continue
+  from its slot. Starting at Map16 `(27,7)`, walk to the guard zone at `(3,18)`, acknowledge the
+  dialogue, and advance the battle through one ordinary physical attack and damage message.
+- **Battle07.** Before a session starts, use the existing
+  [controlled observation entry](../../game/probes/PreVoyageLocalizationObservation.cs) with a
+  worktree-local start document. Supply `start.battle` as `battle-7`, `start.activeAllies` as
+  `["ally-0"]` and the `start.actors` entry for `ally-0` with `position` `(18,30)` as `x` and `y`.
+  Let the ordinary physical action reach its damage message.
+
+Read the participants and terrain from `BattleSessionView` and the close-up projection from
+`ReadSceneObservationJson`. At `ActionAnimation`, check the visible background, wrap and ground
+sprites, their texture and canvas handles, and the draw rectangles above. Compare the SHA-256 of
+the loaded texture image bytes with the publisher's `--check` `imageSha256` values. Check the process exit,
+stderr and the unchanged copied Battle05 slot.
 
 ### Which actions can be reused
 
