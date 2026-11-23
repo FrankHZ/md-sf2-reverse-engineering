@@ -22,15 +22,20 @@ internal static class BattleGrowthRules
     {
         int total = actor.Exp ?? throw new BattleRuleException("unspecified-exp", "actor.exp", true);
         if (total < 100) return actor.With(exp: (byte)total);
-        if (actor.Definition.Growth is not null && !PoisonTurnRules.SupportedPhysicalStatus(actor.Status))
+        if (actor.Definition.Growth is not null && !SupportsStatus(actor, inBattle: true))
             throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         // Source bsc0F processes one threshold even when another 100 remains.
         effects.Add(new("exp-threshold", actor.Actor, total, total - 100));
-        return LevelUp(actor.With(exp: (byte)(total - 100)), ref seed, effects, out _);
+        return LevelUp(actor.With(exp: (byte)(total - 100)), ref seed, effects, out _, inBattle: true);
     }
 
+    private static bool SupportsStatus(BattleActorState actor, bool inBattle) =>
+        inBattle && BattleControlRules.UsesTemporaryAllyAi(actor)
+            ? SilenceRules.SupportedInBattle(actor.Status)
+            : PoisonTurnRules.SupportedPhysicalStatus(actor.Status);
+
     internal static BattleActorState LevelUp(BattleActorState actor, ref uint seed, List<BattleEffect> effects,
-        out int[] rawGains)
+        out int[] rawGains, bool inBattle = false)
     {
         var growth = actor.Definition.Growth ?? throw new BattleRuleException("level-up", "actor.growth", true);
         if (actor.Level >= (growth.ClassId < 12 ? 40 : 99))
@@ -39,7 +44,7 @@ internal static class BattleGrowthRules
             rawGains = [];
             return actor;
         }
-        if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status)) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
+        if (!SupportsStatus(actor, inBattle)) throw new BattleRuleException("growth-status-refresh", "actor.status", true);
         int[] current = [actor.MaxHp, actor.MaxMp, actor.BaseAttack, actor.BaseDefense, actor.BaseAgility];
         int[] increased = new int[5];
         rawGains = new int[5];

@@ -125,6 +125,31 @@ public sealed class PrismLaserSessionTests
     }
 
     [Fact]
+    public void MuddleOnePreservesTheLaserRayAndUsesTheSharedAfterTurn()
+    {
+        var b = Battle().With(queue: [new(Flower, 20), new(Leader, 10)], cursor: 0);
+        b = b.With(actors: b.Actors.Select(a => a.Actor == Flower ? a.With(status: 0x10) :
+            a.Actor == Leader ? a.With(status: 0x20) : a));
+        var result = BattleAdvancer.Advance(Snapshot(b), []);
+        Assert.Null(result.Failure);
+        Assert.Equal(new[] { Companion, Leader, Sentry }, result.Snapshot.BattleScene!.Laser!.Targets);
+        List<SessionObservation> facts = [.. result.Observations];
+        while (result.Snapshot.BattleScene is { } scene && scene.Phase != BattleScenePhase.MuddleTurnMessage)
+        {
+            result = BattleSceneContinuation.Submit(result.Snapshot, Command(result.Snapshot));
+            Assert.Null(result.Failure);
+            facts.AddRange(result.Observations);
+        }
+        Assert.Equal(BattleScenePhase.MuddleTurnMessage, result.Snapshot.BattleScene?.Phase);
+        Assert.Equal(6, facts.Count(e => e.Kind == "rng-prism-damage"));
+        Assert.Equal<ushort?>(16, Assert.Single(facts, e => e.Kind == "rng-muddle-expiry" && e.Actor == Flower).RandomRange);
+        Assert.Equal(0, result.Snapshot.BattleScene!.CounterExpiry!.After);
+        Assert.Equal(0x20, result.Snapshot.Battle.GetActor(Leader).Status);
+        Assert.Equal(44, result.Snapshot.Battle.GetActor(Leader).Hp);
+        Assert.Equal(new[] { Companion, Sentry }, facts.Where(e => e.Kind == "death-cleanup").Select(e => e.Actor!.Value));
+    }
+
+    [Fact]
     public void SleepingFlowerUsesExistingSkipRecoveryAndRetainsOrdinarySceneCredit()
     {
         var b = Battle().With(firstAlly: Leader, queue: [new(Flower, 20), new(Leader, 10)], cursor: 0);

@@ -72,7 +72,8 @@ internal static class BattleOutcome
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
             // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.
-            var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, selected.Party, all: false);
+            var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, selected.Party,
+                all: false, returningFromBattle: true);
             var player = current.Story.FieldPlayer ?? throw new BattleRuleException("field-player-binding", "battle.retreat", true);
             var map = definition.Exploration!.Maps[route.Outcome!.BattleMap];
             var world = MapTransfer.Build(map, player.Player, selected.ProjectionPosition,

@@ -363,8 +363,9 @@ Both sides share the [physical](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyPh
 and [learned spell](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemySpellDecision.cs) selectors.
 Automatic allies use source-slot order, skip enemy class preference and preserve LastTarget.
 The shared ally spell filter serves ATTACK and DISPEL threat scoring. Spell candidates and
-physical candidates consume thinking RNG in source order. The attack category draw uses
-main RNG, and chosen actions go through existing movement, admission and scenes. A failed
+physical candidates consume thinking RNG in source order. Category selection uses the
+two source channels described below. Chosen actions go through existing movement, admission
+and scenes. A failed
 attack tries healing, then the existing allied SUPPORT failure and MOVE route. Controlled
 engine entries with empty packs complete physical Attack, BLAZE with DESOUL earlier in the
 book, HEAL, paid silenced HEAL, AURA 1 and MOVE. A temporary ally with learned HEAL 4
@@ -373,16 +374,30 @@ start at 3 and 14 MP and each pays once, clamping to zero. Ordinary manual selec
 requires the chosen rank's full cost. AURA 1 uses the shared roster and caster admission
 at choice and action resolution. [Behavior cases](../../tests/Sf2.Remake.Engine.Tests/MuddleAllyTurnTests.cs)
 
-The source attack getter can choose a worn Black Ring. When both spell and item candidates
-can reach targets, the source category draw uses range 2. The source heal command can choose
-Healing Rain without the ordinary AI item bit. These are attainable through the current
-campaign and need the existing item-use and automatic-action owners to agree on eligibility,
-selection and delivery. The temporary ally mechanism admits empty packs in controlled states.
-The first private MUDDLE binding also needs the reachable special enemy path. The current
-Prism Laser rejects any nonzero status on its actor or a living board occupant. Check the
-MUDDLE 1 effect through that owner before admitting the spell in connected encounters.
-The registered #2001 priority-v1 Battle26 scene already has both spell-7 icons and the
-Chinese catalog has its name. Those assets are independent of action admission.
+Temporary ally Attack scores the held item before the learned spell and physical choices.
+For the admitted packed inventory, the source getter skips empty slots and stops at the first
+occupied slot. The item must be worn and cast BLAZE, FREEZE, BOLT or BLAST. Black Ring meets
+those conditions in admitted campaign content. When both ranged choices can reach, one
+thinking RNG(2) after the scores selects spell (0) or item (1). Damage and wear still start
+from the unchanged main seed. A single ranged choice uses main RNG(6), with the source
+AQUA 1 exception. [Source and runtime choice evidence](../../../docs/research/battle/battle-ai.md) The selected item uses ordinary movement, reaction delivery
+and equipment wear or removal. It spends no MP.
+
+The Heal command can select Healing Rain without the normal item AI bit. If the combatant at
+source slot 128 is at or below half HP, the caster uses Rain from its own tile. Otherwise the
+first affordable HEAL/AURA entry retains its priority. If there is no such entry, the held
+Rain is the fallback at or below two-thirds caster HP. The existing item action heals the
+placed party and consumes the exact slot once. Engine turns cover the competing spell and
+item categories, the occupied-slot stop, Black Ring wear and destruction, and the Rain
+priority and fallback thresholds.
+
+[Finite Prism Laser](gameplay-rules.md#finite-prism-laser) is authored-only, with no private
+binding through Battle26. Its existing ray and ordered reactions now accept the MUDDLE 1
+counter on the Flower or its occupants. The Flower completes the shared MUDDLE after-turn
+step. A controlled engine turn covers the shot with both shooter and target affected.
+The registered #2001 priority-v1 Battle26 scene has both spell-7 icons and the Chinese
+catalog has its name. The first private binding and active battle Save/Continue are a
+separate acceptance step.
 [Source item getter](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/getnextuseableaiaction.asm#L196-L341) ·
 [Source heal command](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/heal.asm#L18-L120) ·
 [Source attack category](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L69-L141)
@@ -390,12 +405,20 @@ Chinese catalog has its name. Those assets are independent of action admission.
 MUDDLE 2 also needs a target-side decision shared by search, commit validation and playback,
 plus the selected-center guard, inaction and same-side accounting.
 
-Both MUDDLE ranks remain unbound while those automatic consumers are open. Battle starts
+Both MUDDLE ranks remain unbound in this consumer slice. Battle starts
 and battle Save/Continue reject pending counts and flag-only words. The direct typed
 `GameSession.Start` path checks the MUDDLE bits before using the authored raw-status allowance.
 Controlled engine cases inject status inside the simulation to exercise the completed pieces.
 No save field or format changes. The localized expiry message compiles in the adapter.
-Ordinary cast, native automatic turn and active cold Continue remain unverified at this stage.
+Growth from a temporary ally's earned EXP uses the shared battle growth and refresh path.
+It preserves the live counter through the threshold and level-up before after-turn expiry.
+The battle return recovery policy clears the rank-1 counter when an eligible ally recovers,
+regardless of its control mode. Victory recovery precedes the outcome program, retreat recovery
+follows action closure, and defeat retains the word through dialogue until leader revival and
+eligible party recovery. Allies ineligible for recovery retain their carried values. Field growth
+and field-only recovery keep their existing admission rules.
+Ordinary SourceEnemyAi status admission is a separate binding dependency. Ordinary cast,
+native automatic turn and active cold Continue remain unverified at this stage.
 
 ## Implementation order and ownership
 
@@ -437,8 +460,8 @@ required consumers are admitted.
    [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
 3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) implement
    after-turn and physical dodge. The [temporary ally commandset](#temporary-ally-commandset-06)
-   handles controlled ordinary attack, healing and movement choices. Complete the reached
-   automatic consumers before the first support binding. Pair the second with same-side AI decisions
+   handles controlled attack, healing, item and movement choices. Verify the first support
+   binding with ordinary cast, automatic turn and cold Continue. Pair the second with same-side AI decisions
    and guarded and real same-side actions. Route temporary automatic control in
    [BattleAdvancer](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs).
    Extend the existing commandset/action decisions

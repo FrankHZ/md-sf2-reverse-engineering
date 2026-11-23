@@ -189,8 +189,8 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
     private static int SpellPower(BattleActorState actor, AttackSpellDefinition spell, bool item) =>
         item ? spell.Power : actor.Definition.CastPower(spell.Power);
 
-    internal static int PotentialDamage(BattleActorState actor, BattleActorState target, AttackSpellDefinition spell, bool item = false) =>
-        ResistedDamage(target, spell, SpellPower(actor, spell, item));
+    internal static int PotentialDamage(BattleActorState actor, BattleActorState target, AttackSpellDefinition spell, bool rawPower = false) =>
+        ResistedDamage(target, spell, SpellPower(actor, spell, rawPower));
 
     private static int ResistedDamage(BattleActorState target, AttackSpellDefinition spell, int power)
     {
