@@ -280,8 +280,10 @@ binds pinned Galam Mage/Dark Cleric commandsets, mover, spells and cleric counte
 
 These spell observations are separate from the connected campaign boundary above. Wider support spells,
 item AI, higher-rank enemy spells, all-AI parity and non-Normal difficulty remain Unsupported;
-natural original first casts/timing and newly required private scene assets remain outside this
-observation. See [verification](development-and-verification.md#enemy-spell-observation).
+natural original first casts and timing remain outside this observation. The pre-voyage private
+scene admits the prepared BLAZE1 flame for casts in either direction. The authored enemy witness
+uses the legacy effect. [Verification](development-and-verification.md#enemy-spell-observation),
+[prepared presentation](godot/battle-scenes.md#prepared-blaze1-presentation).
 
 ## Player BLAZE1-2 and BLAST1
 
@@ -301,9 +303,10 @@ private growth may expose a supported learned rank without an expected-level ban
 from recruiting Kazin, importing another battle or connecting the entire Battle03-07 story.
 The finite enemy BLAZE1/HEAL1 and DISPEL/silence extensions are described above; other spell families/ranks remain Unsupported.
 Battle26 separately exercises learned player BOLT 1 and HEAL 4. [Current battle spells](application/church-promotion-design.md#current-battle-spells)
-Presentation is a functional modern effect, including private admitted casts, not original magic
-assets/timing or new original-runtime evidence. Natural pre-departure levels/opportunities remain
-Unknown. The older completed private comparison failures remain with their evidence owners.
+Battles04–07 can mount the prepared BLAZE1 flame with the actual caster, target and scene art.
+BLAZE2 and BLAST1 retain modern effects. [Presentation boundary and native observation](godot/battle-scenes.md#prepared-blaze1-presentation).
+Natural pre-departure levels/opportunities and original presentation timing remain Unknown. The
+older completed private comparison failures remain with their evidence owners.
 
 ## Early physical classes and ranged weapons
 

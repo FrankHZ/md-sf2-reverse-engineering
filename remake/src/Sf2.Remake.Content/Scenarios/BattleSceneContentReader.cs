@@ -36,6 +36,10 @@ internal static class BattleSceneContentReader
         Require(cursorKeys.Length == 0 || cursorKeys.Length == 1 &&
             rasters.TryGetValue("battle-cursor.single-cell", out var cursor) && cursor.Width == 32 && cursor.Height == 32,
             "scene-target-cursor", "battleScenes.rasters");
+        var blazeKeys = rasters.Keys.Where(key => key.StartsWith("blaze-1/", StringComparison.Ordinal)).ToArray();
+        Require(blazeKeys.Length == 0 || blazeKeys.Length == 2 &&
+            Enumerable.Range(0, 2).All(frame => rasters.TryGetValue("blaze-1/frame-" + frame, out var fire) &&
+                fire.Width == 16 && fire.Height == 32), "scene-blaze-1", "battleScenes.rasters");
         IdentityIconReader.Validate(rasters);
         IdentityIconReader.Bindings(rasters, definitions);
         string background = Text(root, "background"), ground = Text(root, "ground");
