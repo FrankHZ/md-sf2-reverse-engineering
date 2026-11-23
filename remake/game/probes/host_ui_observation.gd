@@ -54,10 +54,18 @@ func state() -> Dictionary:
     if view == null or not (view as Control).is_visible_in_tree(): view = find("BattleSessionView")
     return observation(view, "ReadObservationJson")
 func selected_menu() -> String:
-    for name_ in ["Resume", "Save", "Settings", "NewGame", "Quit"]:
+    for name_ in ["Save", "Settings", "NewGame", "Quit"]:
         var button := find("System" + name_) as Button
-        if button != null and button.theme_type_variation == "EntrySelectedButton": return name_
+        if button != null and button.is_visible_in_tree() and button.theme_type_variation == "EntrySelectedButton": return name_
     return ""
+
+func choose_system_action(id: String) -> void:
+    for i in range(4):
+        if selected_menu() == id:
+            await key(KEY_ENTER)
+            return
+        await key(KEY_DOWN)
+    check(false, "reachable system action: " + id)
 
 func open_witch_settings() -> void:
     var entry := find("SessionEntryView")
@@ -184,12 +192,12 @@ func settings_flow() -> void:
     if find("SystemMenuView") != null: await recover("SettingsWindow")
     # Orphan pointer release after relayout cannot apply or close settings.
     await key(KEY_ESCAPE)
-    var cancel := find("Setting_back") as Control
-    await mouse(cancel, true)
+    var display_row := find("Setting_display") as Control
+    await mouse(display_row, true)
     root.size = Vector2i(2560, 1440); await frames()
     root.size = Vector2i(1920, 1080); await frames()
-    await mouse(cancel, false)
-    check(find("SettingsView") != null, "relayout cancels pending click")
+    await mouse(display_row, false)
+    check(settings().get("page") == "Root", "relayout cancels pending section click")
     for size_ in [Vector2i(2560, 1440), Vector2i(3840, 2160), Vector2i(2560, 1080)]:
         root.size = size_; await frames(); geometry("SettingsWindow"); sample("settings-size-" + str(size_))
     root.size = Vector2i(1920, 1080); await frames()
@@ -220,11 +228,11 @@ func apply_flow() -> void:
 
 func save_flow() -> void:
     await key(KEY_F10)
-    check(selected_menu() == "Resume", "new system menu starts Resume")
+    check(selected_menu() == "Settings", "new system menu starts on Settings")
     geometry("SystemMenuWindow")
     var frozen := state(); await frames(12)
     check(state().revision == frozen.revision, "system menu freezes gameplay")
-    await key(KEY_DOWN); await key(KEY_ENTER)
+    await choose_system_action("Save")
     if not await wait_slots("save-slots"): return
     geometry("SlotWindow")
     await key(KEY_DOWN); await key(KEY_ENTER)
@@ -247,7 +255,7 @@ func save_flow() -> void:
     await key(KEY_ENTER)
     check(find("SystemMenuView") == null and find("SaveSlotView") == null, "saved Return closes host to play")
     # Write again through occupied slot; cancellation never publishes.
-    await key(KEY_F10); await key(KEY_DOWN); await key(KEY_ENTER)
+    await key(KEY_F10); await choose_system_action("Save")
     if not await wait_slots("save-slots"): return
     await key(KEY_DOWN); await key(KEY_ENTER)
     check(slots().state == "confirm-save" and slots().selected == 0, "occupied slot Cancel-first overwrite")
@@ -259,7 +267,7 @@ func save_flow() -> void:
     if not await wait_slots("saved"): return
     check(FileAccess.file_exists(slot_path.trim_suffix(".json") + ".bak"), "second real write preserves backup")
     await key(KEY_ENTER)
-    await key(KEY_F10); await key(KEY_DOWN); await key(KEY_ENTER)
+    await key(KEY_F10); await choose_system_action("Save")
     if not await wait_slots("save-slots"): return
     await key(KEY_ESCAPE)
     check(selected_menu() == "Save", "slots Back restores originating Save row")
@@ -273,18 +281,34 @@ func save_flow() -> void:
     check(find("SystemMenuView") == null, "Menu toggles only its root")
     await key(KEY_F10)
     # Dirty/clean consequence always starts Cancel; supported pad Back returns intact.
-    await key(KEY_UP); await key(KEY_ENTER)
+    await choose_system_action("Quit")
     check(slots().state == "confirm-quit" and slots().selected == 0, "Quit consequence defaults Cancel")
     sample("quit-confirmation")
     await pad(JOY_BUTTON_B)
     check(selected_menu() == "Quit", "pad Cancel restores Quit row")
-    await key(KEY_UP); await key(KEY_ENTER)
-    var entry := observation(find("SessionEntryView"), "ReadEntryObservationJson")
-    check(entry.get("replacement", false) and entry.get("cancelSelected", false), "session replacement starts Cancel")
+    await replacement_flow()
+
+func replacement_flow() -> void:
     var identity: String = state().sessionId
+    await choose_system_action("NewGame")
+    var page := find("SessionEntryView")
+    if page == null:
+        check(false, "replacement entry opened")
+        return
+    var entry := observation(page, "ReadEntryObservationJson")
+    check(entry.get("replacement", false) and entry.get("selectedAction") == "Settings", "replacement starts on Settings")
+    var button := page.find_child("Settings", true, false) as Button
+    check(button != null and button.is_visible_in_tree() and button.theme_type_variation == "EntrySelectedButton", "Settings is visibly selected")
+    if entry.visibleCharacters >= 0 and entry.visibleCharacters < entry.totalCharacters: await key(KEY_ENTER)
+    await key(KEY_ENTER)
+    check(find("SettingsView") != null, "confirm activates replacement Settings")
     await key(KEY_ESCAPE)
-    check(selected_menu() == "NewGame" and state().sessionId == identity, "replacement Cancel restores original journey and row")
+    check(find("SettingsView") == null and observation(page, "ReadEntryObservationJson").get("selectedAction") == "Settings",
+        "settings Cancel restores the replacement choice")
     await key(KEY_ESCAPE)
+    check(find("SessionEntryView") == null and selected_menu() == "NewGame", "Cancel restores the originating New Game row")
+    await key(KEY_ESCAPE)
+    check(find("SystemMenuView") == null and state().sessionId == identity, "Cancel resumes the original session")
 
 func battle_flow() -> void:
     for i in range(2400):
@@ -305,7 +329,7 @@ func battle_flow() -> void:
         sample("battle-" + phase); geometry("SystemMenuWindow")
         await recover("SystemMenuWindow")
         if phase == "Movement":
-            await key(KEY_DOWN); await key(KEY_ENTER)
+            await choose_system_action("Save")
             if not await wait_slots("save-slots"): return
             geometry("SlotWindow"); sample("real-battle-slot-offer")
             await key(KEY_ENTER); await key(KEY_DOWN); await key(KEY_ENTER)
@@ -315,10 +339,10 @@ func battle_flow() -> void:
             check(state().stage == "Movement" and state().actor == before.actor, "battle save returns to actual actor Movement")
             await key(KEY_F10)
             before = state()
-        await edge(KEY_ENTER, true); await frames(12)
-        check(state().revision == before.revision and state().stage == phase, "held Resume cannot advance " + phase)
-        await edge(KEY_ENTER, false)
-        check(find("SystemMenuView") == null, "Resume returns to retained " + phase)
+        await edge(KEY_ESCAPE, true); await frames(12)
+        check(state().revision == before.revision and state().stage == phase, "held Cancel cannot advance " + phase)
+        await edge(KEY_ESCAPE, false)
+        check(find("SystemMenuView") == null, "Cancel returns to retained " + phase)
 
 func story_flow() -> void:
     for direction in [KEY_DOWN, KEY_RIGHT]:
@@ -344,10 +368,11 @@ func story_flow() -> void:
         check(reading.scroll_vertical > 0, "keyboard reads long unavailable reasons without selecting them")
         await key(KEY_LEFT)
     await recover("SystemMenuWindow")
-    await edge(KEY_ENTER, true); await frames(10)
-    sample("story-held-resume")
-    check(state().revision == before.revision and state().wait == before.wait, "held Resume cannot acknowledge story")
-    await edge(KEY_ENTER, false)
+    await edge(KEY_ESCAPE, true); await frames(10)
+    sample("story-held-cancel")
+    check(state().revision == before.revision and state().wait == before.wait, "held Cancel cannot acknowledge story")
+    await edge(KEY_ESCAPE, false)
+    check(find("SystemMenuView") == null, "Cancel restores the story caller")
 
 func run() -> void:
     if output.is_empty() or not OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1688-"):
@@ -372,6 +397,10 @@ func run() -> void:
             await settings_flow()
             var choice := entry.find_child("Settings", true, false) as Button
             check(observation(entry, "ReadEntryObservationJson").get("stage") == "menu" and choice.is_visible_in_tree() and choice.theme_type_variation == "EntrySelectedButton", "Back restores the Witch Settings choice")
+    elif case_name == "replacement":
+        await key(KEY_F10)
+        check(selected_menu() == "Settings", "field system menu starts on Settings")
+        await replacement_flow()
     elif case_name in ["continue", "backup", "battle-continue"]:
         await key(KEY_ENTER); await key(KEY_E)
         var entry := observation(find("SessionEntryView"), "ReadEntryObservationJson")

@@ -281,7 +281,8 @@ public sealed partial class SessionEntryView : Control
             : GameText.Get("entry.launch-help"));
     public string ReadEntryObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     {
-        title = _page == -1, stage = Stage, replacement = Replacement, cancelSelected = Replacement && _selection == 1,
+        title = _page == -1, stage = Stage, replacement = Replacement,
+        selectedAction = _page == -2 && _buttons[_selection].IsVisibleInTree() ? _buttons[_selection].Name.ToString() : null,
         failure = _failure, canRetry = _canRetry,
         titleSelection = _selection, page = _page, message = _dialogue.Body.Text, visibleCharacters = _dialogue.Body.VisibleCharacters,
         totalCharacters = _dialogue.Body.GetTotalCharacterCount(), latched = _latched, activated = _activated, assetError = _assetError,

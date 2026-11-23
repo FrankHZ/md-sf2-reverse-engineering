@@ -103,7 +103,7 @@ measured name fitting. Update those with their owning screen and verify fit in E
 
 | Surface or state | Design baseline at native 1080p | Use and limit |
 | --- | --- | --- |
-| Reading panel | Existing `08275bf5` near-opaque blue, 2px `ffe19a` edge, restrained existing shadow | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
+| Reading panel | Shared double-gold frame with stepped corner accents and a near-opaque blue interior (`08275bf5`) | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
 | Action surface | Existing dark blue family (`102c50` normal, `204c76` hover, `354c64` pressed) | Same square edge family; avoid extra gold boxes around every idle row. Native buttons retain focus/pressed distinctions. |
 | Selected and available | `ffe19a`, plus `›`/`▸`, outline or original selected raster | Exactly one current choice per input owner. Pointer hover is not command submission. |
 | Unavailable | `8e9bab`, explicit unavailable wording and actual reason | Focus may still mark an inspectable disabled option; never recolor it as available. Do not fade the whole panel and its explanation. |

@@ -397,17 +397,17 @@ existing per-phase settings and save predicates; headless evidence does not impl
 visual acceptance.
 
 The right-top Menu remains an unmistakable host entry with its own safe region. Its centered 800px
-menu retains Resume, the current Journey actions and Session actions. Use the shared square
+menu groups the current Journey and Session actions. Cancel or Menu resumes play. Use the shared square
 surface treatment and ≥64px rows. Existing unavailable rows keep their explanatory text even
 when directional navigation skips them. Do not add a second persistent toolbar.
 
 | Page / state | Normal and focused composition | Unavailable, long, covered and return states |
 | --- | --- | --- |
 | Menu | Settings receives initial focus. Journey and Session are quiet group headings. Selected action uses marker/outline plus gold. | Save, Settings and New Game retain their real access predicates. Longer reasons wrap. Mapped Cancel, right-click or Menu resumes the retained gameplay phase after release. |
-| Settings / help | Current preference label, value and description are aligned; Apply/Back remain outside the reading/scroll area. Focus identifies the edited control. | Preserve draft/Apply/Back and current safe language refresh. Existing binding help/configuration remains; no binding-capture or device-detection UI is added. Long bilingual help scrolls. Return to the originating host page without applying on Cancel. |
+| Settings / help | Current preference label, value and description are aligned; the root Apply action sits outside the reading/scroll area. Focus identifies the edited control. | Apply publishes the draft. Cancel returns through the current page. Existing binding help/configuration remains; no binding-capture or device-detection UI is added. Long bilingual help scrolls. Return to the originating host page without applying on Cancel. |
 | Save slots / overwrite | Two clear slot rows; full actual continuation destination and selected slot. Overwrite is a separate consequence panel, Cancel initially selected. | Unavailable location is a reason, not a disabled-looking successful save. Wrap occupant/date/location/error text; keep Retry/Back where legal. Back from confirmation → slots → Menu for that origin; Church entry follows its completed-caller route. |
 | Continue / backup recovery | Name the actual primary failure and the offered backup; recover only through the existing explicit choice. | Never label corrupt primary as Empty or silently load backup. Preserve the failure detail and safe Back. Loaded state, not UI recollection, determines the resulting world. |
-| Quit / session replacement | Show current clean/dirty consequence and existing confirm/cancel actions, with Cancel initially selected as required. | Long warnings fit before action rows; no destructive click-through. Cancel returns to the origin, including recovery if it owned entry. |
+| Quit / session replacement | Quit shows the clean/dirty consequence with Cancel initially selected. The replacement menu opens on Settings and also offers New Game. | Long warnings fit before action rows; no destructive click-through. Cancel returns to the origin, including recovery if it owned entry. |
 | Undersized-window recovery | Recovery is the sole visible host action owner; offer the current legal restore/fullscreen/quit actions. | It hides covered host pages and restores the same page/selection on exit before gameplay resumes. No sub-1080p gameplay, forced restart or automatic save is introduced. |
 
 Keep the current [system Menu](presentation.md#system-menu-agreement-1518),
@@ -452,9 +452,8 @@ friendly Target and playback. Back restores the chosen level, slot or command.
 [#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
 and direct Stay. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 delivers the inspection movement field. [#2082](battle-ui-composition.md#shared-member-roster-2082)
-delivers shared field and battle Member rows. The current inspection pages place instructions and
-the visible Back button in one frame. Cursor keeps identity and vitals on the unit card and coordinates on the terrain panel.
-Details return to the same cursor or roster, and only the visible button accepts pointer Back.
+delivers shared field and battle Member rows. The inspection footer contains the instructions. Cursor and details also place a Back button in that footer. Cursor keeps identity and vitals on the unit card and coordinates on the terrain panel.
+Cancel or a complete right-click returns to the caller. Cursor and detail pages also accept a complete left-click on their Back button. Details restore the same cursor or roster selection.
 [Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
 
 The [implementation handoff](battle-ui-composition.md#implementation-handoff)
