@@ -994,6 +994,38 @@ return, private/physical close-up visibility, startup/program failure and recove
 feedback observations. The host owner records the exact evidence and retained limits; integration
 is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1400).
 
+### Staged battle return
+
+**Standard rigor.** [#2093](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2093) covers
+the Godot handoff from a battle to its enemy-defeated scene and from staged field death to the
+after-program. The existing session continuation and staged field-death projection choose whether
+the outgoing battle board is retained. At either staged handoff the root hides the battle view
+before the field presenter attaches. The field presenter draws the staged actors and camera and
+mounts the texture selected by the current portrait window. Ordinary unstaged returns can still
+hold the battle board beneath field effects. Return notices follow the outcome observations.
+
+The bounded Battle05 witness uses the registered Galam town world and an authorized disposable
+prebattle Continue slot. Use the locked Debug adapter, a checkout-local native report and an
+external disposable save root. Enable Debug auto-win with instant text. Reach the rally and guard
+through ordinary movement, then observe the first playable battle turn and the resulting field
+program. Read the first draw before text 2323, the actors, camera and mounted portrait at 2323–2326,
+then the staged leader removal, after-program receipts and ready return. Text 2324–2325 has a
+registered portrait whose texture identity matches the visible panel. Text 2326 uses full-width
+body and clears the texture. The separate after-program applies the jewel and join effects and
+returns control once. The Debug witness covers the real scene staging and field consumers.
+
+A separate controlled native witness captures a battle save at the first playable turn after
+ordinary guard entry. In a disposable copy, place the acting ally on a free tile adjacent to the
+knight and set the knight to 1 HP. Restore through Continue and select BLAZE 1 through the ordinary
+Magic and target menus. Observe `FieldSpin`, `FieldExit` and `FieldSettle` on the battle board.
+The knight is gone at `FieldSettle`. Its completion submits through the battle view and attaches
+the field in the same session revision with the board hidden. The first after-program draw uses the
+staged actors, and text 2332 mounts its registered portrait. The witness records one spell cost,
+one knight credit, the carried gold and experience, and the ordered jewel, join, flag and warp
+effects. The settled return restores living-member MP. The
+[campaign witness](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
+records the ordinary journey to this encounter.
+
 ## Party details agreement
 
 Current F5–F7 layout/navigation is owned by [Field, party and shop UI](field-and-shop.md).

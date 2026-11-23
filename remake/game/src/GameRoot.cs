@@ -270,7 +270,7 @@ public sealed partial class GameRoot : Node
             AddChild(preparedField);
             try
             {
-                BeginField(preparedField, started.Result, returning: false, candidateAudio!, preparing: true);
+                BeginField(preparedField, started.Result, retainBoard: false, candidateAudio!, preparing: true);
                 if (preparedField.PrepareSettledAttachment() is { } error) throw new InvalidOperationException(error);
             }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
@@ -312,12 +312,16 @@ public sealed partial class GameRoot : Node
             view.ObserveResult = result => { _audio.Observe(result); CheckAudio(); };
             view.PlayUiSound = command => { _audio.PlayEffect(command); CheckAudio(); };
         }
-        view.LeaveBattle = result => ShowExploration(result, returning: true);
+        view.LeaveBattle = (result, retainBoard) =>
+        {
+            if (!retainBoard) view.Hide();
+            ShowExploration(result, retainBoard);
+        };
         if (SessionPresentationOwner.IsBattle(started.Result.Snapshot)) EnterBattle(started.Result);
         else
         {
             view.Hide();
-            if (preparedField is null) ShowExploration(started.Result, returning: false);
+            if (preparedField is null) ShowExploration(started.Result, retainBoard: false);
             else
             {
                 _exploration = preparedField;
@@ -349,18 +353,18 @@ public sealed partial class GameRoot : Node
             Name = "ExplorationSessionView", WorldViewport = viewport,
             RequestServiceSave = () => RequestFieldEntry(() => ShowSettledSave(church: true)),
         };
-        void ShowExploration(SessionResult initial, bool returning)
+        void ShowExploration(SessionResult initial, bool retainBoard)
         {
             var exploration = CreateField(_worldViewport);
             _exploration = exploration; AddChild(exploration);
-            BeginField(exploration, initial, returning, _audio!);
+            BeginField(exploration, initial, retainBoard, _audio!);
         }
-        void BeginField(ExplorationSessionView exploration, SessionResult initial, bool returning, SessionAudio audio, bool preparing = false)
+        void BeginField(ExplorationSessionView exploration, SessionResult initial, bool retainBoard, SessionAudio audio, bool preparing = false)
         {
-            if (returning) { view.Reparent(exploration, false); exploration.MoveChild(view, 0); }
+            if (retainBoard) { view.Reparent(exploration, false); exploration.MoveChild(view, 0); }
             exploration.Begin(started.Session, initial, _input!, audio, EnterBattle,
                 result => { view.Reparent(exploration, false); view.Attach(started.Session, result); },
-                returning ? () => { view.Reparent(this, false); view.Hide(); } : null, preparing);
+                retainBoard ? () => { view.Reparent(this, false); view.Hide(); } : null, preparing);
         }
         void DisposeCandidate()
         {
