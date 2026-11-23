@@ -2530,6 +2530,15 @@ msgstr "{0} is stunned."
 msgid "battle.scene.stun-cleared"
 msgstr "{0} is no longer stunned."
 
+msgid "battle.scene.curse-inaction"
+msgstr "{0} cannot attack because of the curse."
+
+msgid "battle.scene.stun-inaction"
+msgstr "{0} is too stunned to attack."
+
+msgid "battle.scene.curse-recoil"
+msgstr "{0} takes {1} damage from the curse."
+
 msgid "save.destination.desktop-kingdom"
 msgstr "Desktop Kingdom"
 

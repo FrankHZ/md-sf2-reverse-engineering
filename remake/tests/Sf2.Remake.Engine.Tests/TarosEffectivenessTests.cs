@@ -158,9 +158,10 @@ public sealed class TarosEffectivenessTests
     [Fact]
     public void DodgeWinsOverIneffectiveAndCriticalDrawDoesNotBecomeCriticalDamageFeedback()
     {
-        var dodge = PhysicalStrikeRules.Resolve(30, 4, 500, 256, 62u << 16 | 0x1234, 32, 32, 1, ineffective: true);
-        Assert.True(dodge.Dodged); Assert.False(dodge.Ineffective);
-        Assert.Equal(new[] { "dodge", "double", "counter" }, dodge.Rolls.Select(row => row.Purpose));
+        var dodge = Prepare(Controlled(62), Apprentice);
+        Assert.Equal(BattleReactionKind.Dodge, dodge.Reactions[0].Kind);
+        Assert.Equal(new[] { "rng-dodge", "rng-double", "rng-counter" },
+            dodge.ConstructionEffects.Where(row => row.RandomRange is not null).Take(3).Select(row => row.Kind));
         var critical = Prepare(Controlled(388), Apprentice);
         Assert.Contains(critical.ConstructionEffects, row => row.Kind == "rng-critical" && row.RandomValue == 0);
         Assert.All(critical.Reactions, row => { Assert.False(row.Critical); Assert.Equal(BattleReactionKind.Ineffective, row.Kind); });

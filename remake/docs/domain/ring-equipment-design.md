@@ -230,21 +230,20 @@ presentation and timing. The action-source finding does not depend on that traje
 [Recoil arithmetic](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/inflictcursedamage.asm#L33-L60) ·
 [Reward exclusion](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_2.asm#L38-L65)
 
-### Architecture decision for this admission
+### Physical curse implementation
 
-Require a separate, bounded physical-curse prerequisite before enabling the worn word. For
-example, a living WIZ wears word 152 and a rod, selects an adjacent target and confirms Attack.
-The current physical status check rejects CURSE through the common supported-status mask. An
-enemy's ordinary attack on that WIZ can hit the same guard at the target. Adding bit 4 to the mask
-alone would allow strikes to skip both original curse branches. The scalar strike currently rolls
-double/counter before returning to the actor rule. Its action validator requires one to three
-opposing strikes and its scene consumes those reactions. Legal curse inaction has zero strikes,
-and lethal recoil targets the resolved attacker and can preempt a scheduled follow-up. This
-requires an explicit outcome at the existing physical action, validation and scene/death
-boundaries. For a controlled WIZ, exercise zero-strike inaction, dodge and lethal-defender skips,
-surviving recoil before follow-up rolls, and lethal recoil on an opening strike and an ally
-counter. Check ordered seed, HP, EXP, death/return and the next owner of input. STUN/SILENCE
-remain under their existing contracts. Main-gate owns the prerequisite's scope and sequencing.
+The shared physical action admits the existing CURSE status word. An opening inaction carries
+the intended target and reason through an acknowledged scene notice, then consumes the
+confirmed stop and the queued turn. A recoil is a self-reaction adjacent to its opposing
+strike. The physical actor rule rolls double and counter after the impact and possible recoil.
+Only opposing impacts can earn damage EXP or receive an enemy drop receipt. The action
+validator checks movement, reaction identity and HP continuity, effect order and the existing
+RNG chain. The scene uses its ordinary reaction HP, motion and death delivery for recoil.
+An ally who dies to recoil earns zero EXP and enters the existing field death batch.
+
+The mixed scene initializer draws CURSE then STUN and prefers the curse notice if both stop
+the attack. Ordinary stunned turns still skip before opening an action menu. A counter enters
+the strike directly. Magic and Item keep their own admission and payment.
 [Status mask](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SilenceRules.cs) ·
 [Physical action](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2PhysicalAction.cs) ·
 [Strike construction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/PhysicalStrikeRules.cs) ·
@@ -259,12 +258,12 @@ worn ring cannot block giving a different slot. Application owns Church offer, s
 validation and atomic payment, using the shared cursed-unequip and refresh operation. Godot
 consumes the existing state and typed action results. Resolve statuses from gear on actual
 refresh and keep detached Continue validation consistent with the serialized status, gear and
-last-applied counters. Today the field return policy rejects bit 4, the battle restore range check
-rejects it through the supported-status mask, and battle death clears status before its refresh.
-Original death cleanup clears status and then calls stat refresh, which can rederive CURSE
-from retained worn gear. An admission slice must cover these callers so the same legal WIZ
-can die, exit, save and resume.
-No wire version or independent curse store is needed. Keep old bare words valid.
+last-applied counters. The physical slice carries the controlled CURSE bit through living field
+return and the existing field and battle formats. Death clears the controlled status in the
+absence of a cursed equipment binding. Before enabling the worn ring, derive CURSE on actual
+refresh, including after death cleanup, using the retained gear. That restores the original
+clear-then-refresh sequence and closes the WIZ lifecycle from Equip through death, exit,
+save and Continue. Keep the current wire formats and old bare words.
 [Equipment rule owner](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs) ·
 [Church transaction](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs) ·
 [Return policy](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs) ·
@@ -280,6 +279,46 @@ unsupported curse boundary until that action can commit status and gear together
 status masks and death processing before either slice writes them. Curse admission requires the
 physical behavior and save/return closure without depending on the hostile-spell repertoire.
 [DETOX design](detox-ranks-design.md) · [Hostile spells](hostile-spells-design.md)
+
+### Physical curse reproduction
+
+**Confirmed (controlled remake).** Engine cases use an explicit authored CURSE status and the
+ordinary Attack commands. The cases check zero-strike inaction, mixed curse/stun opener ordering,
+dodge and lethal-defender recoil skips, surviving recoil before follow-up draws and lethal
+recoil on first strike, second strike and an ally counter. A connected victory case writes and
+cold-restores the original battle and field wire formats, retaining status, applied stats, seeds
+and custody on the appropriate side of the return refresh. Production Black Ring Equip, gear
+derivation, Church treatment and BLAZE 2 Use remain with the lifecycle slice.
+
+**Confirmed (bounded Godot input).** Two English authored starts use the ordinary host.
+Inaction shows both participants and the curse notice, retains both HP values, and returns to
+the next ally. Lethal recoil publishes the opposing hit first, then shows four self-damage and
+the ally death notice. Field death removes the actor once and returns control without an EXP
+award. The two observation processes exited zero with no scene or native errors. Earlier
+completed probe attempts recorded a GDScript parse error and startup below the gameplay client's
+minimum size. Original ordinary WIZ play and rendered timing remain **Unknown**.
+[Engine behavior](../../tests/Sf2.Remake.Engine.Tests/PhysicalCurseTests.cs) ·
+[Connected cold restore](../../tests/Sf2.Remake.Engine.Tests/BattleSaveReturnTests.cs) ·
+[Native observation](../../game/probes/engine_physical_curse_observation.gd)
+
+From the checkout root, load the existing local configuration, run `uv run sf2 verify engine`
+and `uv run sf2 verify adapter`, and build the Debug adapter with the
+[locked SDK workflow](../development-and-verification.md#locked-net-workflow). In a child shell,
+use a fresh ignored run directory with isolated APPDATA, LOCALAPPDATA, TEMP/TMP and disposable
+save selection. Copy [stone-court.json](../../content/authored/stone-court.json) into that
+directory, set `start.actors[0].status` to `curse`, and set both `start.actors[2].hp` and
+`actors[2].maxHp` to 60. Select one of these case inputs and run the same probe serially.
+
+| `SF2_CURSE_CASE` | `start.mainSeed` | `start.actors[0].hp` |
+| --- | ---: | ---: |
+| `inaction` | 4660 | 35 |
+| `lethal` | 70196 | 4 |
+
+Set `SF2_OBSERVATION_OUTPUT` to a fresh ignored JSON file. Use the input settings
+`{"formatVersion":1,"textMode":"instant","language":"en"}`. Launch the selected Godot with
+`--headless --fixed-fps 60 --path <checkout>/remake/game --script res://probes/engine_physical_curse_observation.gd -- --authored-package <copy> --input-settings <settings>`.
+Run one process at a time, allow 30 seconds per process, and read its exit plus the state and
+projection report. The probe observes one action before the next player input.
 
 ## Acceptance through Battle26
 

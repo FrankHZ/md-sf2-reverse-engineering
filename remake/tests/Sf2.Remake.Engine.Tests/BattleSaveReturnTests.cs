@@ -52,9 +52,11 @@ public sealed class BattleSaveReturnTests
     [InlineData(BattleOutcomeKind.Victory, false, true)]
     [InlineData(BattleOutcomeKind.Victory, false)] [InlineData(BattleOutcomeKind.Defeat, false)] [InlineData(BattleOutcomeKind.Retreat, false)]
     [InlineData(BattleOutcomeKind.Victory, true)] [InlineData(BattleOutcomeKind.Defeat, true)] [InlineData(BattleOutcomeKind.Retreat, true)]
-    public void LegalEndingRetainsReturnRegistersPartyAndReusableFieldSave(BattleOutcomeKind kind, bool authoredPlayer, bool parked = false)
+    [InlineData(BattleOutcomeKind.Victory, false, false, true)]
+    public void LegalEndingRetainsReturnRegistersPartyAndReusableFieldSave(BattleOutcomeKind kind, bool authoredPlayer,
+        bool parked = false, bool cursed = false)
     {
-        var (basis, original) = BattleSaveFixture.Create();
+        var (basis, original) = BattleSaveFixture.Create(main: cursed ? 0x1000ABCDu : 0x1234ABCDu);
         var encounter = original.Battle.Definition.WithOutcome(original.Battle.Definition.Outcome!, retreatItems: [new(115, "Angel Wing")]);
         var world = basis.Exploration!;
         var sprites = new[] { 0, 1, RaftRuntime.Sprite }.ToDictionary(sprite => sprite,
@@ -75,7 +77,7 @@ public sealed class BattleSaveReturnTests
         var loadout = new BattleSourceLoadout([115, 127, 127, 127], [63, 63, 63, 63]);
         var actors = original.Battle.Actors.Select(a => a.Actor.Value switch
         {
-            "ally-0" => a.With(hp: 1, sourceLoadout: loadout, status: 0x1000, refreshStats: true),
+            "ally-0" => a.With(hp: 1, sourceLoadout: loadout, status: (ushort)(cursed ? 0x1004 : 0x1000), refreshStats: true),
             "enemy" => a.With(hp: 1, position: new(5, 5), activationWord: 0x2061), _ => a,
         }).ToArray();
         var b = original.Battle;
@@ -95,6 +97,7 @@ public sealed class BattleSaveReturnTests
         var bytes = OpeningSaveJson.WriteRecord(new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved));
         var record = OpeningSaveJson.ReadRecord(bytes, 1);
         var restored = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, record, RuleCompositions.Sf2())).Session;
+        BattleSaveFixture.EqualBattle(live.Battle, restored.Current.Battle);
         var control = End(definition, live, kind);
         var resumed = End(definition, restored.Current, kind);
         Assert.True(control.CanWaitAtInput); Assert.True(resumed.CanWaitAtInput);
@@ -123,7 +126,7 @@ public sealed class BattleSaveReturnTests
             Assert.Equal(actor.Kills, other.Kills); Assert.Equal(actor.Defeats, other.Defeats); Assert.Equal(actor.Status, other.Status);
             Assert.Equal(actor.SourceLoadout!.Items, other.SourceLoadout!.Items);
         }
-        Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-0").Status);
+        Assert.Equal(cursed ? 4 : 0, actual.Actors.Single(a => a.Actor.Value == "ally-0").Status);
         Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-1").Hp);
         Assert.Null(resumed.Story.EnteringBattle); Assert.Null(resumed.Story.FieldPlayer);
         if (kind == BattleOutcomeKind.Victory)
@@ -178,6 +181,7 @@ public sealed class BattleSaveReturnTests
         Assert.Equal(new byte[] { 1, 0, 1 }, again.Current.Exploration!.Party.ItemCustody!.Depot);
         Assert.Equal(actual.Gold, again.Current.Exploration!.Party.Gold);
         Assert.Equal(actual.Actors.First().Kills, again.Current.Exploration.Party.Actors.First().Kills);
+        Assert.Equal(actual.Actors.First().Status, again.Current.Exploration.Party.Actors.First().Status);
         Assert.Null(EngineTestContent.Send(again, new WaitAtInput()).Failure);
     }
 

@@ -11,7 +11,7 @@ internal static class BattleSceneRules
     // an engine rule; renderer frame rate and reduced-flash settings are not inputs.
     internal static BattleReactionPlayback Reaction(EngineBattleState current, BattleReaction reaction)
     {
-        if (reaction.Kind != BattleReactionKind.Damage)
+        if (reaction.Kind is not (BattleReactionKind.Damage or BattleReactionKind.CurseRecoil))
             return new(current, Array.Empty<BattleReactionMotion>(), Array.Empty<BattleEffect>());
         bool ally = current.GetActor(reaction.Target).IsAlly;
         ushort range = ally ? (ushort)5 : (ushort)7;
