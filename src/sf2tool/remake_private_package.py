@@ -16,7 +16,7 @@ from tempfile import TemporaryDirectory
 
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
-from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
+from sf2tool.remake_asset_build import ACCEPTED_ROM_SHA256, ACCEPTED_UPSTREAM_COMMIT
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
@@ -270,6 +270,38 @@ def mount_phoenix_waves(directory: Path, scratch: Path, scene: dict) -> None:
         raster = installed_png(scratch, leaf)
         if scene["rasters"].setdefault(key, raster) != raster:
             raise ValueError(f"conflicting prepared sound wave {key}")
+
+
+def mount_blaze(directory: Path, scratch: Path, package: Path, scenes: dict[int, Path]) -> None:
+    index = read_json(directory / "index.json")
+    expected = dict(family="spell", id=2, tiles="spell-2.4bpp", palette="022e028e08ee")
+    if (
+        index["rom"] != ACCEPTED_ROM_SHA256
+        or index["upstream"] != ACCEPTED_UPSTREAM_COMMIT
+        or [row for row in index["records"] if row.get("family") == "spell" and row["id"] == 2]
+        != [expected]
+    ):
+        raise ValueError("registered BLAZE effects identity differs")
+    tiles, palette = prepared_spell_tiles(directory, 2)
+    if len(tiles) != 7104:
+        raise ValueError("registered BLAZE tile stream length differs")
+    rasters = {}
+    # table_1BE2A, small flame. Both source 2x4 entries share position and tiles.
+    for frame, first_tile in enumerate((33, 41)):
+        leaf = f"blaze-1-frame-{frame}.png"
+        layout = [first_tile + tile for tile in sprite_layout(2, 4)]
+        write_png_rgba(scratch / leaf, 16, 32, compose(tiles, palette, 16, 32, layout))
+        rasters[f"blaze-1/frame-{frame}"] = installed_png(scratch, leaf)
+    for battle, relative in scenes.items():
+        path = package / relative
+        scene = read_json(path)
+        if scene["encounter"] != f"battle-{battle}":
+            raise ValueError(f"BLAZE scene does not select Battle{battle:02d}")
+        current = scene["rasters"]
+        for key, raster in rasters.items():
+            if current.setdefault(key, raster) != raster:
+                raise ValueError(f"conflicting prepared BLAZE frame {key}")
+        path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
 
 
 def mount_indra_staff(library: Path, scratch: Path, scene: dict) -> None:
@@ -600,7 +632,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "ninja": {5: "NINJ"},
         "monster": {6: "MNST"},
     }
-    optional = retained_families.keys() | {"phoenix-wave", "south-shrine", "indra"}
+    optional = retained_families.keys() | {"phoenix-wave", "south-shrine", "indra", "blaze"}
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
     shrine = "south-shrine" in selected
     if shrine and (upstream is None or canonical_path is None):
@@ -623,7 +655,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | optional):
         raise ValueError(
             "select walking, icons, sfx, music, pldn, wiz, melee, "
-            "ranged, vicar, innate, ninja, monster, phoenix-wave, indra or south-shrine"
+            "ranged, vicar, innate, ninja, monster, phoenix-wave, indra, south-shrine or blaze"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -641,15 +673,29 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         scenes = {Path("main-scenes.json")} | {
             Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
         }
+        blaze_scenes = {}
+        blaze_only = selected == {"blaze"}
+        if "blaze" in selected:
+            for row in world["encounters"]:
+                battle = read_json(files[Path(row["placement"])])["battle"]["id"]
+                if 4 <= battle <= 7:
+                    if battle in blaze_scenes:
+                        raise ValueError(f"duplicate BLAZE scene for Battle{battle:02d}")
+                    blaze_scenes[battle] = Path(row["battleScenes"])
+            if set(blaze_scenes) != {4, 5, 6, 7} or len(set(blaze_scenes.values())) != 4:
+                raise ValueError("BLAZE mount requires the four pre-voyage scenes")
+        blaze_paths = set(blaze_scenes.values())
         indra_only = selected == {"indra"}
         battle26_scene = Path("inputs/battle26/battle-scenes.json")
         for rel, source in files.items():
-            if rel == Path("world.json") and not indra_only:
+            if rel == Path("world.json") and not (indra_only or blaze_only):
                 continue
             target = dest / rel
             target.parent.mkdir(parents=True, exist_ok=True)
-            if (selected == {"south-shrine"} and rel not in scenes) or (
-                indra_only and rel != battle26_scene
+            if (
+                (selected == {"south-shrine"} and rel not in scenes)
+                or (indra_only and rel != battle26_scene)
+                or (blaze_only and rel not in blaze_paths)
             ):
                 # Immutable external battle/audio/entry inputs. Rewritten scenes get private files.
                 try:
@@ -658,6 +704,10 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 except OSError:
                     pass  # Different storage volumes require a real copy.
             shutil.copyfile(source, target)
+        if blaze_only:
+            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes)
+            dest.rename(destination)
+            return
         presentation = world["world"]["presentation"]
         scene_path = dest / battle26_scene
         if scene_path.relative_to(dest) not in files:
@@ -768,6 +818,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         if shrine:
             items = mount_south_shrine(world, root, upstream, canonical_path)
             bind_field_item_icons(presentation, root, dest, scenes, items)
+        if blaze_scenes:
+            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes)
         if not indra_only:
             (dest / "world.json").write_text(
                 json.dumps(world, separators=(",", ":")), encoding="utf-8"

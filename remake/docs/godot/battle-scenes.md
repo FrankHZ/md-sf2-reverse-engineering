@@ -14,6 +14,89 @@ natural attack, counter, spell or equipment combination was newly observed. The
 [production UI coverage](battle-interaction-baseline.md#production-f4f8f9-contract) owns the accepted
 F4/F8/F9 rollout; the focused playback contract follows.
 
+## Prepared BLAZE1 presentation
+
+**Standard scope (#2068).** Battles04–07 can mount BLAZE1's small flame from the prepared
+private effects library. The production scene shows the caster's cast pose, the current target,
+the equipped weapon where applicable, and the selected background and ground. Ally and enemy
+casts place the flame on the recipient's side. The cast pose cues the flame and cast sound.
+Completion waits for both the pose sequence and the 48-tick flame. Reduced Flash holds one flame
+frame with a smooth fade. The existing hit/coin message setting can suppress the coin notice
+while the animation and spell damage notice retain their own waits. Session rules still deliver
+cost, ordered reactions, death, rewards and next control.
+
+**Confirmed source identity.** USA retail ROM `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
+and pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` bind `spelldefs.asm`
+BLAZE1 to animation selector 1. `spellanimationSetup_Blaze` loads tileset 2, whose table entry
+is `SpellGraphics02` at `0x1BF3E6`. `LoadSpellTileset` replaces indices 9, 13 and 14 of
+`palette_BattlesceneBase` (`0x198A8`) with `$022E`, `$028E` and `$08EE`. The registered 7,104-byte
+tiles and base palette compare byte-for-byte to the decoded ROM stream and ROM palette.
+`table_1A5E4` and `table_1BE2A` select column-major 2×4 sprites at zero-based tiles 33 and 41.
+Each variation-1 entry duplicates the other at the same position. The adapter draws a single
+16×32 flame at (72,112) or (176,128) on the 256×224 local canvas. The source cast sound is 77.
+Fade, frame cadence, reaction motion and delivery on the Godot clock are modern presentation choices.
+
+**Publication.** Select the registered fixed-backdrops package as `$base`, its prepared `retail-v1`
+asset library as `$library`, and a fresh ignored absolute output `$candidate`. Load worktree private
+selections in the same shell. The mount reads two existing tile frames and reuses the closed-package
+publisher. An omitted `blaze-1/` namespace retains the legacy effect. A partial pair, extra frame
+or wrong dimensions fails scene admission.
+
+```powershell
+uv run sf2 rom verify
+uv run python -m sf2tool.remake_retail_assets --root $library --base $base --mount $candidate --family blaze
+```
+
+To reproduce the source comparison, follow `p_pt_SpellGraphics` at `0x1B800C` through table slot 2.
+Decode its stream at header offset +8 with `decode_stack_compressed`, using
+the first header word as expanded length. Compare with `effects/spell-2.4bpp`, then compare the 16
+palette words at `0x198A8` with `effects/base-palette.json`. Apply the three replacement words from
+the header and use the named tile operands above to compare the two mounted rasters. The selected
+package has 142 byte-identical dependencies and four scenes equal to their base values after
+removing the two new rasters from each. The logical size increases by 4,496 bytes, and the largest
+changed scene is 879,858 bytes against the 4 MiB reader limit. The publisher hardlinks unchanged
+inputs on the same volume and copies changed scenes before writing. A cross-volume copy needs about
+315 MB. Complexity is linear in the selected package's file closure, with worktree-local scratch.
+
+**Native reproduction.** Select the candidate `world.json`, `main-scenes.json`, `entry/entry.json`
+and six `opening-inputs` files in their ordinary `SF2_PRIVATE_*` environment selections. Use a fresh
+worktree-local report/runtime and a disposable task-specific external save namespace. Provide
+`SF2_BLAZE_START` pointing to an ignored controlled-start JSON with these values:
+
+```json
+{"start":{"battle":"battle-4","activeAllies":["ally-0","ally-4"],"actors":[{"actor":"ally-4","position":{"x":4,"y":7}},{"actor":"enemy-1","hp":1,"position":{"x":6,"y":7}}]}}
+```
+
+The existing controlled startup mounts Battle04 with Kazin's normal learned BLAZE1 and stages one
+legal target in range. The 1 HP target exercises the actual kill and rewards within one cast.
+For each run set `SF2_OBSERVATION_OUTPUT` to a fresh file and select a version-1 input settings file
+with `suppressBattleHitCoinMessages` and `reducedFlash` false, then only the former true, then only
+the latter true. Set `SF2_BLAZE_SKIP_MESSAGES` and `SF2_BLAZE_REDUCED_FLASH` to matching `0`/`1` values
+for the observer. Build the locked Debug adapter before launching the installed Godot console.
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility --fixed-fps 60 `
+    --resolution 1920x1080 --path remake/game --script res://probes/engine_prepared_blaze_observation.gd -- `
+    --input-settings $settings
+```
+
+**Confirmed in the remake.** All three runs select and confirm BLAZE1 with ordinary input. Normal
+and coin-skip play both flames, Reduced Flash plays the first. The read-only projection sees
+Kazin's cast frame, Galam Soldier, rod, background, ground and the source flame. Cast cue 77
+starts once on the animation token. Early Confirm
+retains the animation token. The spell deals 6 damage, MP changes 13→11, Kazin gains 49 EXP and
+one kill, and gold changes 60→110. The next actor, Bowie, opens a new action menu in the same
+session. The coin notice is visible in normal and Reduced Flash and passes without input in skip.
+The spell result remains readable in all three. The recordings cover actual resource binding and
+timed playback. Original timing, an enemy-side native flame witness and foreground visual
+acceptance (#1456) remain **Unknown**. Headless exit reported ten ObjectDB instances after control
+returned.
+
+BLAZE2 shares tileset 2 but uses the medium stacked flame and ten meteors. BLAST1 uses the
+distinct tileset 15 and its dust/wind update. Both keep their modern effects and current recipient
+order until their own presentation slices. The other attack spell and item effect families remain
+with their existing consumers.
+
 ## Production playback and result layout
 
 **Confirmed bounded remake, #1686:** compact live status cards use the accepted F4 placement.
@@ -328,7 +411,7 @@ stderr and the unchanged copied Battle05 slot.
 | Physical, ally → enemy and enemy → ally | [Physical scenes](#physical-battle-scenes) use the acting side's attack and the target's reaction, including dodge, damage recoil, second/counter role changes, result and death. Private samples cover actual hits in both directions. [Ranged sample](../development-and-verification.md#early-ranged-physical-observation) covers changed equip/range, distance-2 attacks and continued input with authored content. | Reuse the combat rule. For newly bound archers and knights check a legal station, actual attacker/defender and equipped presentation. For a follow-up that occurs, cards and reaction must follow the current pair. No projectile asset or exhaustive per-actor dice outcomes required. |
 | HEAL, ally → ally or self | [Private HEAL1–4](#heal-spell-scenes) has cast/idle, healing fairy, recovery, recipient switch where required, restore caster, EXP and release. | Sarah's HEAL 4 has a Battle26 witness. A new recipient needs its own bound idle and current equipment, even if that member never casts. |
 | HEAL1, enemy → wounded enemy | The [enemy-spell witness](../development-and-verification.md#enemy-spell-observation) reads one 3 MP payment, 8→23 HP, no enemy reward and later player movement in the authored package. | #1539 needs the private cast/idle binding above. Check enemy-side recipient switch, recovery text/card and return after a legal heal. Full-health enemies do not establish this case. |
-| BLAZE1–2 / BLAST1, learned ally → enemy; BLAZE1, Mage → ally | [AttackSpellView](../../game/src/Battles/AttackSpellView.cs) draws modern fire or wind. Cards and messages carry identity and damage. [Player witness](../development-and-verification.md#player-attack-spell-observation) covers BLAZE2's ordered pair and BLAST1's single target; the enemy witness covers BLAZE1. | Keep the effects. Marks show affected targets and the current card/text identifies the reaction. Check Kazin or Mage in the actual chapter and a reached change of recipient. Recipient-specific highlighting and original spell art can wait. |
+| BLAZE1–2 / BLAST1, learned ally → enemy; BLAZE1, Mage → ally | [Prepared BLAZE1](#prepared-blaze1-presentation) draws the private flame with the actual scene actors in Battles04–07. [Player witness](../development-and-verification.md#player-attack-spell-observation) covers BLAZE2's ordered pair and BLAST1's single target with modern effects. The authored enemy witness uses the legacy effect. | Kazin's prepared cast and ordinary turn return are observed. BLAZE2's medium flame/meteors and BLAST1's wind/dust remain presentation work. |
 | DISPEL1 / suppressed spell / physical silence | [Silence witness](../development-and-verification.md#silence-observation) covers area results, one cost, a paid suppressed cast, expiry, effective later cast and movement. Support/suppressed scenes intentionally show messages/cards on black, with no character gesture. Physical silence uses the physical hit and a notice. | #1539 checks the displayed recipient and status/no-effect, or paid suppression as reached, then continued play. A quiet backdrop between acknowledged messages is expected. A stuck wait, wrong name or missing result would be a functional defect. |
 | Sleep / poison / removal | [Battle03 sleep](../verification/field-programs.md#yeel-guide-through-battle03) is private. [Poison notices](#authored-poison-notices) have authored damage/exhaustion and lethal field removal. [Field death](#battlefield-death-batches) hides close-ups, spins/exits the actual batch and settles before subsequent control or outcome. | Retain after-turn notices and ordered deaths on their own board. Check a reached new species disappears only after its exit and the correct next actor/field accepts input. Natural opening poison remains Unknown. |
 | Medical Herb / Healing Seed, friendly | [Herb](#medical-herb-scenes) has private self/other-ally item frames, switch back and recovery. The [purchased Seed witness](../development-and-verification.md#galam-shop-and-supply-observation) consumes the actual slot and restores 20 HP in its authored sample. | Reuse ordinary item, no fairy or MP. Check slot, named user/recipient and capped HP on the post-shop route. |

@@ -4,16 +4,51 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-// Functional modern attack-spell delivery. Authoritative cards and messages are shared;
-// this view only draws the selected effect and completes its own presentation wait.
+// Local effect playback. The scene owns actors, reading and continuation tokens.
 internal sealed partial class AttackSpellView : Node2D
 {
+    internal const double BlazeDuration = 48.0 / 60;
+    internal static readonly string[] BlazeResources = ["blaze-1/frame-0", "blaze-1/frame-1"];
     private BattleSceneState? _scene;
     private double _elapsed;
     private int _drawCount;
     private IReadOnlyList<Texture2D>? _breath;
+    private Texture2D[]? _blaze;
+    private Vector2 _blazePosition;
+    private bool _reducedFlash;
+
+    internal void Reset()
+    {
+        Hide();
+        _scene = null;
+        _breath = null;
+        _blaze = null;
+    }
+
     internal void Present(BattleSceneState scene, IReadOnlyList<Texture2D>? breath = null)
     { _scene = scene; _breath = breath; _elapsed = 0; Show(); QueueRedraw(); }
+
+    internal void PrepareBlaze(BattleSceneState scene, Texture2D[] frames, bool targetIsAlly, bool reducedFlash)
+    {
+        _scene = scene;
+        _blaze = frames;
+        _blazePosition = targetIsAlly ? new(176, 128) : new(72, 112);
+        _reducedFlash = reducedFlash;
+        AdvanceBlaze(-1);
+        Show();
+    }
+
+    internal void AdvanceBlaze(double age)
+    {
+        _elapsed = age;
+        QueueRedraw();
+    }
+
+    private int? BlazeFrame => _blaze is null || _elapsed < 0 || _elapsed >= BlazeDuration ? null :
+        _reducedFlash ? 0 : (int)(_elapsed * 10) % 2;
+
+    private float BlazeOpacity => (float)Math.Clamp(Math.Min(_elapsed * 15, (BlazeDuration - _elapsed) * 10), 0, 1);
+
     internal bool Advance(double elapsed)
     {
         _elapsed = elapsed; QueueRedraw();
@@ -25,6 +60,13 @@ internal sealed partial class AttackSpellView : Node2D
     public override void _Draw()
     {
         if (_scene?.AttackSpell is not { } spell) return;
+        if (_blaze is not null)
+        {
+            if (BlazeFrame is not { } frame) return;
+            DrawTexture(_blaze[frame], _blazePosition, new Color(1, 1, 1, BlazeOpacity));
+            _drawCount++;
+            return;
+        }
         _drawCount++;
         if (_breath is { } particles)
         {
@@ -77,6 +119,11 @@ internal sealed partial class AttackSpellView : Node2D
         visible = IsVisibleInTree(), drawCount = _drawCount, elapsed = _elapsed,
         element = _scene?.AttackSpell?.Element.ToString(), selector = Selector,
         variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
-        target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null
+        target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null,
+        preparedBlaze = _blaze is null ? null : new
+        {
+            frame = BlazeFrame is { } frame ? BlazeResources[frame] : null,
+            x = _blazePosition.X, y = _blazePosition.Y, reducedFlash = _reducedFlash, opacity = BlazeOpacity,
+        }
     };
 }
