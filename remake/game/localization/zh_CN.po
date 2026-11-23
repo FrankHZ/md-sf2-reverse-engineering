@@ -2914,3 +2914,24 @@ msgstr "当前无法返回休息点。"
 
 msgid "spell-description.curse"
 msgstr "当前的诅咒使此等级的法术无法施放。"
+
+msgid "battle.order.current"
+msgstr "当前 · {0}"
+
+msgid "battle.order.next"
+msgstr "状态不变时"
+
+msgid "battle.order.slot"
+msgstr "{0}. {1}"
+
+msgid "battle.order.more"
+msgstr "本回合另有 {0} 次行动"
+
+msgid "battle.order.round-end"
+msgstr "下轮顺序未确定"
+
+msgid "battle.order.unknown"
+msgstr "未知单位"
+
+msgid "battle.order.actor"
+msgstr "{0}（{1},{2}）· {3}"

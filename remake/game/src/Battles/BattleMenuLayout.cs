@@ -11,6 +11,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", DecisionHeader = true };
     internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, DecisionHeader = true };
     internal readonly BattleTerrainPanel Terrain = new() { Name = "TerrainPanel" };
+    internal readonly BattleRoundOrderPanel RoundOrder = new() { Name = "RoundOrder" };
     internal readonly Label Context = Text("Context", UI.StoryTheme.BodySize);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
@@ -71,6 +72,7 @@ internal sealed partial class BattleMenuLayout : Control
         AddChild(Actor); AddChild(Target);
         Context.AutowrapMode = TextServer.AutowrapMode.Off;
         AddChild(Terrain); AddChild(_context); _context.AddChild(Context);
+        AddChild(RoundOrder);
         _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, Visible = false,
             InvalidatePointer = () => InvalidatePointer() };
         _commandList.ItemRectChanged += () => InvalidatePointer();
@@ -144,6 +146,10 @@ internal sealed partial class BattleMenuLayout : Control
         if (Terrain.Visible)
             Terrain.Place(new(alternate ? size.X - margin : margin, top + (_context.Visible ? _context.Size.Y + Gap : 0)),
                 protection, alternate);
+        float orderTop = Terrain.Visible ? Terrain.GetRect().End.Y + Gap :
+            _context.Visible ? _context.GetRect().End.Y + Gap : top;
+        RoundOrder.Place(new(alternate ? size.X - margin : margin, orderTop), right - margin - Gap,
+            bottom, protection, alternate);
         _commandList.Position = new(x, controlsTop);
         if (_commandList.Visible && _commandList.Size.X != width) _commandList.Arrange(width);
         _list.Position = new(x, controlsTop);
@@ -256,6 +262,7 @@ internal sealed partial class BattleMenuLayout : Control
         reader = _reading.Observe(),
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
         contextText = Context.Text, contextVisible = _context.IsVisibleInTree(), terrainPanel = Terrain.Observe(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
+        roundOrder = RoundOrder.Observe(),
         heading = Heading.Text, detail = _reading.Body.Text, help = Help.Text, helpVisible = Help.IsVisibleInTree(),
         descriptionLabels = new[] { Heading, _reading.Body, Help }.Where(label => label.IsVisibleInTree()).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),

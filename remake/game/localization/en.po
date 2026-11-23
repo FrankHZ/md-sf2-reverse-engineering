@@ -2914,3 +2914,24 @@ msgstr "Returning to a refuge is unavailable from the current state."
 
 msgid "spell-description.curse"
 msgstr "The current curse prevents casting this level."
+
+msgid "battle.order.current"
+msgstr "Now · {0}"
+
+msgid "battle.order.next"
+msgstr "Next if unchanged"
+
+msgid "battle.order.slot"
+msgstr "{0}. {1}"
+
+msgid "battle.order.more"
+msgstr "+{0} this round"
+
+msgid "battle.order.round-end"
+msgstr "Next round undetermined"
+
+msgid "battle.order.unknown"
+msgstr "Unknown unit"
+
+msgid "battle.order.actor"
+msgstr "{0} ({1},{2}) · {3}"

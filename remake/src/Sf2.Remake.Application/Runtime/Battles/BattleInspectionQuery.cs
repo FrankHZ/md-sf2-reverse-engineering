@@ -27,7 +27,7 @@ internal static class BattleInspectionQuery
         var battle = current.Battle;
         var active = current.Selection!.Actor;
         var scenes = definition.ScenesFor(battle.Definition);
-        var actors = battle.Actors.Where(a => IsDisclosed(current, a)).ToArray();
+        var actors = battle.Actors.Where(a => BattleVisibility.IsDisclosed(current, a)).ToArray();
         var markers = actors.Select(a => new BattleInspectionMarker(a.Actor, a.Position!, a.IsAlly,
             BattleUnitProjection.Name(definition, current, a), BattleUnitProjection.NameIndex(a, scenes), current.Story.Names.GetValueOrDefault(a.Actor.Value))).ToArray();
         var actor = requested is null ? null : actors.FirstOrDefault(a => a.Actor == requested);
@@ -49,14 +49,11 @@ internal static class BattleInspectionQuery
     internal static BattleMovementRange? MovementRange(SessionSnapshot current, Guid session, long revision, ActorRef requested)
     {
         if (Unavailable(current, session, revision) is not null) return null;
-        var actor = current.Battle.Actors.FirstOrDefault(a => a.Actor == requested && IsDisclosed(current, a));
+        var actor = current.Battle.Actors.FirstOrDefault(a => a.Actor == requested && BattleVisibility.IsDisclosed(current, a));
         return actor?.Position is { } position && current.Battle.Definition.Contains(position)
             ? BattleMovementQuery.ForActor(current.Battle, actor.Actor, position)
             : null;
     }
-
-    private static bool IsDisclosed(SessionSnapshot current, BattleActorState actor) =>
-        actor.Hp > 0 && actor.Initialized && BattleVisibility.OnBoard(current, actor);
 
     // Shared settled-origin eligibility; callers do not need Map/marker materialization.
     internal static string? Unavailable(SessionSnapshot current, Guid? session, long? revision)

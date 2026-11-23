@@ -121,7 +121,7 @@ public sealed partial class BattleSessionView : Control
     {
         if (_session is null) return;
         if (_menu.Visible && _decision is { } decision)
-            _menu.Present(decision, _result?.Failure, _input, _session.QueryBattleActingStatus());
+            RefreshDecisionMenu(decision, _session.QueryBattleActingStatus());
         if (_inspection.Active) _inspection.RefreshInputHints();
         if (_hud.Visible)
         {

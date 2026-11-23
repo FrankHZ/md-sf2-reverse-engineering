@@ -56,8 +56,15 @@ public sealed partial class BattleSessionView
             _boardPointer.Suspend();
             _menu.SuspendPointer(keyboard: true);
         }
-        _menu.Present(decision, _result!.Failure, _input, acting);
+        RefreshDecisionMenu(decision, acting);
         return decision;
+    }
+
+    private void RefreshDecisionMenu(BattleDecision decision, BattleActingStatus? acting)
+    {
+        var order = decision.Visible && (decision.Moving || decision.Page != Page.Commit)
+            ? _session!.QueryBattleRoundOrder() : null;
+        _menu.Present(decision, _result?.Failure, _input, acting, order);
     }
 
     private bool HandleDecision(GameAction action)

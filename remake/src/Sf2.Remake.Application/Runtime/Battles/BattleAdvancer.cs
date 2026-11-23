@@ -5,6 +5,15 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 
 internal static class BattleAdvancer
 {
+    internal enum Dispatch { Act, Absent, Sleeping, Stunned }
+
+    internal static Dispatch Classify(BattleActorState actor)
+    {
+        if (actor.Hp == 0 || actor.Position is null) return Dispatch.Absent;
+        if ((actor.Status & 0xC0) != 0) return Dispatch.Sleeping;
+        return (actor.Status & 1) != 0 ? Dispatch.Stunned : Dispatch.Act;
+    }
+
     internal static SessionResult Start(BattleDefinition definition, BattleStartInput start) =>
         Start(definition, start, Gameplay.RuleCompositions.Sf2().Bind([definition], start.Actors));
 
@@ -56,7 +65,8 @@ internal static class BattleAdvancer
                     continue;
                 }
                 var actor = BattleTurnFlow.QueuedActor(battle);
-                if (actor.Hp == 0 || actor.Position is null)
+                var dispatch = Classify(actor);
+                if (dispatch == Dispatch.Absent)
                 {
                     if (battle.Definition.LeaderCleanup is not null)
                     {
@@ -70,11 +80,11 @@ internal static class BattleAdvancer
                     observations.Add(new(++sequence, revision, "dead-entry-skipped", actor.Actor));
                     continue;
                 }
-                if ((actor.Status & 0xC1) != 0)
+                if (dispatch is Dispatch.Sleeping or Dispatch.Stunned)
                 {
                     var skipped = new SessionSnapshot(current.SessionId, revision, sequence,
                         new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
-                    observations.Add(new(++sequence, revision, (actor.Status & 0xC0) != 0 ? "sleeping-action-skipped" : "stunned-action-skipped", actor.Actor));
+                    observations.Add(new(++sequence, revision, dispatch == Dispatch.Sleeping ? "sleeping-action-skipped" : "stunned-action-skipped", actor.Actor));
                     skipped = new(current.SessionId, revision, sequence, skipped.Active, current.Story, skipped.StopReason);
                     var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
                     return new(pending, observations.AsReadOnly(), pending.StopReason);

@@ -456,9 +456,10 @@ delivers shared field and battle Member rows. The inspection footer contains the
 Cancel or a complete right-click returns to the caller. Cursor and detail pages also accept a complete left-click on their Back button. Details restore the same cursor or roster selection.
 [Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
 
-The [selected spell reader](battle-ui-composition.md#selected-spell-descriptions) describes
-the chosen level on Battle Magic and field Prepare Magic. The
-[implementation handoff](battle-ui-composition.md#implementation-handoff) tracks the current-round readout (#2065).
+The selected spell reader describes the chosen level on Battle Magic and field Prepare Magic.
+Movement, Main, Magic, Item and Target show the current action and upcoming eligible entries from
+the generated queue. [Spell reader](battle-ui-composition.md#selected-spell-descriptions) ·
+[Current-round order](battle-ui-composition.md#current-round-order-2065)
 
 ### From entry to committed action
 
@@ -600,8 +601,8 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   and reading comfort in the ordinary game remain **Unknown**. The most useful checks are whether
   focus returns to the intended row and whether a player can read the next action after a long
   choice or battle result. Text guidance and contextual hints retain their own design owners.
-  Review the [actual queue](battle-ui-composition.md#current-round-order-2065) as part of the
-  battle decision layout when #2065 is implemented. [Human review](../verification/host.md#later-physical-focus-human-checklist-1456) ·
+  Review the current-round order in the ordinary battle decision layout. [Actual queue](battle-ui-composition.md#current-round-order-2065) ·
+  [Human review](../verification/host.md#later-physical-focus-human-checklist-1456) ·
   [Optional guidance](modernization-design.md#optional-objective-and-destination-guidance-1578) ·
   [Context hints](presentation.md#minimal-contextual-hints-1544)
 
