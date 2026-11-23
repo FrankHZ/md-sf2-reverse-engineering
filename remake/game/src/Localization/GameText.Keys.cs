@@ -415,6 +415,7 @@ internal static partial class GameText
         ["party.unavailable"] = 0,
         ["party.value-unavailable"] = 0,
         ["party.gold"] = 1,
+        ["party.gold-label"] = 0,
         ["party.magic"] = 0,
         ["party.items"] = 0,
         ["party.member"] = 0,

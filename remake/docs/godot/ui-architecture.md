@@ -420,6 +420,11 @@ revert consumers first or together. Use a single production path with disposable
    for allies. The [bounded reproduction](battle-ui-composition.md#shared-description-reading-and-inspection-return)
    exercises the reader, neighboring phases, retained roster, and card at real input/playback
    boundaries. Revert the reader and Back with their direct consumers if the input boundary regresses.
+   Field Party follows this reader contract in [#2094](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2094).
+   Its independent spell, inventory and reading regions keep the four carried positions and their
+   item text visible together. Field summaries align live party gold and the selected member's
+   record with shared metrics. Battle Member continues to use the shared detail controls in its
+   own inspection layout. [Current field behavior and verification](field-and-shop.md#reproduce-four-slot-capacity-and-accounting)
 3. **Rule-backed battle target footprint.** After slice 1 for the final adapter integration
    (the pure rule/query work can be scoped independently), replace `BattleActionRangeView`'s
    spell lookup and distance/party selection with selected-action geometry from the authoritative

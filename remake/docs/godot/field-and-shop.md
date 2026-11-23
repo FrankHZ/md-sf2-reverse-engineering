@@ -16,8 +16,12 @@ geometry and errors, followed by independent main-gate review.
 - `PartyStatusView` keeps the shared scrollable member column visible beside the selected sheet.
   Wrapped names, condition and available portraits use the same row control as battle Member.
   Field membership comes from the live Party query. Portrait, identity, vitals, attributes,
-  learned spells and inventory remain grouped. Records and gold sit between
-  the sheet and its fixed bottom hint panel. Inside that panel the reading hint takes the space on
+  learned spells and inventory remain grouped. Member kills and defeats share a record frame,
+  and Party gold has its own frame. All three values use 48px rows, 24px horizontal insets,
+  left-aligned labels and right-aligned values at 30px, including the localized unavailable
+  value. The selected member supplies the records and the current party supplies gold, including
+  on return from actual shop transactions. The frames sit above the fixed bottom hint panel.
+  Inside that panel the reading hint takes the space on
   the left; Prepare (Magic or Item at those entries) and Close sit together at the right inset.
   Each uses its own visible rectangle for press and release. The field sheet opts into `PartyDetailsPanel.FieldLayout`;
   the battle inspection caller retains its existing composition and 4× identity art.
@@ -36,10 +40,20 @@ geometry and errors, followed by independent main-gate review.
   current → prospective gold, including the existing sale ceiling. A known funds/capacity/unsupported
   refusal shows unchanged prospective funds; only the revalidated session command can commit.
 
-The four inventory positions reserve their icon/marker/text columns even without art. Moving focus
-changes appearance, never the slot bounds; scrolling can move the whole reading region. Item and
-spell identity art is 48×72px in field lists. Unavailable focus remains muted and inspectable.
-Original pixels are not included in the public repository.
+The four inventory positions use the full height of the right-hand column below its heading.
+Rows reserve 88px before wrapping and retain the icon, marker and text columns in empty slots.
+Equipment and damage labels wrap with the item name at 28px. The 196px item reader sits below the
+spell list, beside the inventory. Its position and 30px body hold steady as focus changes.
+The spell list scrolls independently in the space above it. Long names may grow an inventory row
+and long prose scrolls inside the reader. Item and spell identity art is 48×72px in field lists.
+Unavailable focus remains muted and inspectable.
+
+[Issue #2094](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2094) is a Standard adapter
+slice of the [shared reading and member design](ui-architecture.md#migration-and-independent-acceptance).
+The acceptance boundary covers all four slots, stable reader and hits, summary alignment and live
+balances on the [production preview](../../game/probes/previews/README.md), plus the shared Battle
+Member consumer. Party membership, slot identity and transaction authority stay with their existing
+queries and rules.
 
 ## Reading, input and return
 
@@ -155,6 +169,100 @@ finite shop stock; reports contain only named semantic boundaries. Budget 55 sec
 native case, serial ownership, and 16 MiB for small authored inputs and reports (existing build/import
 state excluded). Completed cases take roughly 7–11 seconds; replan if a case exceeds those bounds.
 Build outputs, private inputs and retained prior reports remain ignored.
+
+### Reproduce four-slot capacity and accounting
+
+Load the checkout-local environment and build the adapter in Release and Debug using the
+[locked workflow](../development-and-verification.md#locked-net-workflow). From the repository root,
+prepare this controlled variant of the tracked shop sample. The fixture uses synthetic color rasters
+to exercise actual identity texture layout without requiring game assets.
+
+```python
+from pathlib import Path
+import base64
+import hashlib
+import json
+
+p = json.loads(Path("remake/content/authored/shop-supplies.json").read_text(encoding="utf-8"))
+p["start"]["player"] = "entity-0"
+battle = p["battle"]
+battle["start"]["gold"] = 999999
+battle["start"]["actors"][0].update(kills=9999, defeats=4321)
+
+name = "Long-handled practice supply with a reinforced training grip"
+battle["items"][0]["name"] = name
+for row in p["world"]["programs"]:
+    for instruction in row["instructions"]:
+        if instruction["op"] == "shop":
+            for item in instruction["items"]:
+                if item["id"] == 0:
+                    item["name"] = name
+battle["actors"][0]["items"] = [128 | 256, 0, 1, 3]
+battle["actors"][1]["items"] = [0, 127, 127, 127]
+
+def raster(width, height):
+    raw = bytes([91, 173, 214, 255]) * (width * height)
+    return dict(width=width, height=height, format="rgba8", data=base64.b64encode(raw).decode(),
+                sha256=hashlib.sha256(raw).hexdigest())
+
+for field_map in p["world"]["maps"]:
+    field_map["population"] = dict(allyCount=30, nonAllyStart=128, playerSprite=0, followers=[], allySprites=[])
+    for entity in field_map["entities"]:
+        entity["sprite"] = 128
+direction = raster(48, 24)
+p["world"]["presentation"] = dict(
+    maps=[dict(map=m["id"], scale=1, atlas=raster(128, 320),
+               blocks=[[0] * 9] * (1 + max(word & 1023 for row in m["layout"] for word in row)))
+          for m in p["world"]["maps"]],
+    sprites=[dict(sprite=i, directions=[direction] * 3, portrait=None, speech=0) for i in (0, 128)],
+    portraits=[],
+    identityIcons={
+        f"identity-icon.item.{item}.{variant}": raster(16, 24)
+        for item in (0, 1, 3) for variant in ("normal", "selected")
+    })
+Path("local/party-capacity.json").write_text(json.dumps(p), encoding="utf-8")
+```
+
+The [sample loader](../../game/probes/PartyCapacitySample.cs) admits this package through the
+ordinary authored reader and supplies the second member's unavailable records and a wide first
+member name at startup. It mounts the real host. The
+[observer](../../game/probes/party_capacity_observation.gd) reads native controls and sends ordinary
+key and pointer input.
+
+For each case, set `$review` to a fresh absolute directory under the checkout's ignored `local/`.
+Create its `appdata` and `temp` directories before launch. Run in a PowerShell child so these
+environment selections are confined to the observation.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$env:APPDATA = $env:LOCALAPPDATA = Join-Path $review 'appdata'
+$env:TEMP = $env:TMP = Join-Path $review 'temp'
+$env:SF2_VIEWPORT_CASE = 'party-capacity'
+$env:SF2_PARTY_LANGUAGE = 'en'
+$env:SF2_PARTY_RESOLUTION = '1600x900'
+$env:SF2_PARTY_PACKAGE = (Resolve-Path -LiteralPath 'local/party-capacity.json').Path
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $review 'observation.json'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 60 --path remake/game `
+    --log-file (Join-Path $review 'native.log') --script res://probes/party_capacity_observation.gd
+```
+
+Run the capacity case at both 1600×900 and 1920×1080 with `en` and `zh-CN`. For the trade case,
+set `SF2_VIEWPORT_CASE=party-trade` and append `-- --members`. It drives F5 → F6 → F5 through each
+ordinary transaction and checks the balance of the same session. Use the
+[member-small route](battle-ui-composition.md#reproduce-the-shared-roster) for the adjacent
+battle Member sheet. Require exit 0, `passed:true`, empty failure and unavailable lists, and clean
+native logs.
+
+**Confirmed, bounded native.** At both window sizes in both languages, native rectangles and
+font measurements show the full four-slot inventory at zero scroll, including the wide member name,
+wrapped item name, mounted icon, equipped/damaged labels and the second member's empty slots.
+The reader fits the selected text at 30px. Mouse and mapped actions select the same visible slots,
+and Prepare Back retains the member, pane, slot and geometry. Member changes retain the six-digit
+balance and update the personal record or localized unavailable value. The production preview
+observed 500 → 490 → 497 in both languages. The existing battle Member observer reached the details
+and returned to the retained roster. Larger content and physical device or human visual review
+remain **Unknown**.
 
 ### Hassan Deals and cold Continue
 

@@ -68,7 +68,7 @@ func field_flow() -> void:
     inside(party.card.rect, "member detail")
     inside(party.hintRect, "member footer")
     check(party.hintMinimumHeight <= party.hintRect.height + 1, "complete member hint")
-    var gold_frame := view.find_child("GoldFrame", true, false) as PanelContainer
+    var gold_frame := view.find_child("GoldFrame", true, false) as Panel
     var gold := gold_frame.get_node("Gold") as Label
     check(gold.is_visible_in_tree() and gold.get_visible_line_count() == gold.get_line_count()
         and gold_frame.get_global_rect().grow(-4).encloses(gold.get_global_rect()), "complete member gold inside its frame")

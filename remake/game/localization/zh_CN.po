@@ -647,6 +647,9 @@ msgstr "不可用"
 msgid "party.gold"
 msgstr "金币\n{0}"
 
+msgid "party.gold-label"
+msgstr "队伍金币"
+
 msgid "party.magic"
 msgstr "魔法"
 

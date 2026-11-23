@@ -647,6 +647,9 @@ msgstr "Unavailable"
 msgid "party.gold"
 msgstr "GOLD\n{0}"
 
+msgid "party.gold-label"
+msgstr "Party gold"
+
 msgid "party.magic"
 msgstr "MAGIC"
 

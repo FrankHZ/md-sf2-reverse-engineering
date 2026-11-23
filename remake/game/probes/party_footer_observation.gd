@@ -33,7 +33,7 @@ func field_flow() -> void:
         var b := close.get_global_rect()
         check(h.end.x + 24 <= a.position.x and a.end.x + 24 <= b.position.x and b.end.x == inner.end.x
             and a.size.y >= 64 and b.size.y >= 64, "separate right-side targets and final inset")
-        var gold := view.find_child("GoldFrame", true, false) as PanelContainer
+        var gold := view.find_child("GoldFrame", true, false) as Panel
         var gold_text := gold.get_node("Gold") as Label
         check(gold.is_visible_in_tree() and gold.get_global_rect().grow(-4).encloses(gold_text.get_global_rect())
             and gold_text.get_visible_line_count() == gold_text.get_line_count()
