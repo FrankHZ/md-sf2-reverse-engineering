@@ -7,7 +7,8 @@ internal sealed class Sf2HealingRule : IHealingRule
 {
     // DetermineHealingSpellLevel can select HEAL3/4 using a cheaper packed key.
     internal static bool CanPay(BattleActorState actor, HealingSpellDefinition spell) =>
-        actor.Mp >= spell.MpCost || actor.Control == BattleControl.Automatic && !actor.IsAlly &&
+        actor.Mp >= spell.MpCost ||
+        (!actor.IsAlly && actor.Control == BattleControl.Automatic || BattleControlRules.UsesTemporaryAllyAi(actor)) &&
         actor.Spells.Contains(new SpellRef("heal", 4)) && spell.Spell.Value == "heal" &&
         (spell.Spell.Level == 3 && actor.Mp >= 3 || spell.Spell.Level == 4 && actor.Mp >= 14);
 
@@ -39,12 +40,7 @@ internal sealed class Sf2HealingRule : IHealingRule
                 spellRef is not ({ Value: "heal", Level: >= 1 and <= 4 } or { Value: "aura", Level: 1 }) ||
                 !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("healing-class", "actor.classRule", true);
-        if (spell.IsAura)
-        {
-            HealingTargetRules.ValidateAura(battle.Definition);
-            if (!(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
-                throw new BattleRuleException("aura-caster", "actor", true);
-        }
+        if (spell.IsAura) HealingTargetRules.RequireAuraCaster(battle, actor);
         if (!CanPay(actor, spell)) throw new BattleRuleException("insufficient-mp", "actor.mp");
         return spell;
     }

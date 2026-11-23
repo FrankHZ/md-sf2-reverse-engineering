@@ -32,7 +32,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
 
     internal static void RequireDamageActor(EngineBattleState battle, BattleActorState actor)
     {
-        if (!SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0)
+        if (!SilenceRules.SupportedInBattle(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0)
             throw new BattleRuleException("attack-spell-status", "actor.status", true);
         if (actor.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "actor.physical", true);
@@ -72,7 +72,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             BattleRange.Contains(target.Position!, unit.Position!, 0, spell.Radius)).OrderBy(unit => unit.ProcessingOrder).ToArray();
         foreach (var unit in targets)
         {
-            if (!PoisonTurnRules.SupportedPhysicalStatus(unit.Status) || !battle.Definition.Poison && (unit.Status & 2) != 0)
+            if (!SilenceRules.SupportedInBattle(unit.Status, battle.Definition.Poison))
                 throw new BattleRuleException("attack-spell-target-status", "actors.status", true);
             if (unit.Definition.Physical is null) throw new BattleRuleException("physical-definition", "target.physical", true);
         }

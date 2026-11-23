@@ -7,6 +7,8 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 // not clear checked regions, test activation/standby, promote orders or set path modes.
 internal sealed class SourceAllyAi : IBattleDecisionRule
 {
+    internal static readonly BattleStrategyRef Strategy = new("source-ally-physical");
+
     public string Identity => "sf2-source-ally-physical";
     public void RequireDeployment(BattleDeploymentDefinition deployment)
     {
@@ -17,19 +19,24 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
     {
         if (input.ActivationWord is null) throw new BattleRuleException("missing-activation-word", "actor.activation", true);
     }
-    public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actorRef, IPhysicalActionRule physical)
+    public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actorRef, IPhysicalActionRule physical) =>
+        Decide(battle, actorRef, physical, []);
+
+    public BattleAutomaticAction Decide(EngineBattleState battle, ActorRef actorRef, IPhysicalActionRule physical,
+        IReadOnlyList<IBattleActionRule> actions)
     {
         var actor = battle.GetActor(actorRef);
-        if (!actor.IsAlly || !actor.Deployment.SourceAllyControl || actor.Hp == 0 || actor.Position is null ||
-            actor.Control != BattleControl.Automatic || !SilenceRules.Supported(actor.Status, battle.Definition.Poison) || (actor.Status & 0xC0) != 0 ||
-            battle.StartPolicy?.Difficulty is > 0)
+        bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
+        bool controlled = temporary ? SilenceRules.SupportedInBattle(actor.Status, battle.Definition.Poison) :
+            actor.Deployment.SourceAllyControl && actor.Control == BattleControl.Automatic &&
+            SilenceRules.Supported(actor.Status, battle.Definition.Poison);
+        if (!actor.IsAlly || !controlled || actor.Hp == 0 || actor.Position is null ||
+            (actor.Status & 0xC1) != 0 || battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
-        // Bare herbs and admitted static rings do not supply an AI item command.
-        if (actor.SourceLoadout is not { } loadout || loadout.Items.Any(word => word is not (127 or 19 or 0) &&
-                (word > 511 || actor.Definition.Equipment?.Rings.ContainsKey((byte)(word & 127)) != true ||
-                 ((word & BattleInventory.Broken) != 0 && !BattleEquipment.CanBeDamaged(actor.Definition, (byte)(word & 127))))) ||
-            loadout.Spells.Any(s => s != 63) || actor.Spells.Count != 0 ||
-            actor.Definition.Physical is not { MinimumRange: 1, MaximumRange: 1 })
+
+        // A temporary turn can reach automatic item use as soon as it carries an item.
+        if (actor.SourceLoadout is not { } loadout ||
+            (temporary ? loadout.Items.Any(word => word != 127) : !PhysicalOnly(actor, loadout)))
             throw new BattleRuleException("source-ally-action-categories", "actor.loadout", true);
         if (actor.Definition.Equipment is not null) BattleEquipment.ValidateLoadout(actor.Definition, loadout);
         var slots = battle.Definition.Initialization?.SourceCombatants ??
@@ -42,47 +49,24 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var grid = BattleMovement.Grid(battle, actorRef);
         bool Occupied(MapPosition p) => battle.Actors.Any(a => a.Hp > 0 && a.Position == p);
-        var candidates = targets.Select(target => (Target: target,
-            Position: AiMovementRules.AttackPosition(grid, target.Position!, 1, Occupied)))
-            .Where(c => c.Position is not null).ToArray();
         List<BattleEffect> effects = [new("ai-commandset6-ally", actorRef)];
-        if (candidates.Length > 0)
-        {
-            _ = BattleActionRules.Invoke(physical, "ai-admission", () => physical.RequireAction(battle, actorRef, new(BattleActionKind.Physical)));
-            uint thinking = battle.ThinkingSeed;
-            var priorities = new byte[candidates.Length];
-            var costs = candidates.Select(c => (byte)grid.CostAt(c.Position!)!.Value).ToArray();
-            // Ally difficulty0 selects Script3, just like the admitted raw enemy helper.
-            // The reachable list and RNG visits are in source slot and reverse slot order.
-            for (int i = candidates.Length - 1; i >= 0; i--)
-            {
-                var candidate = candidates[i];
-                int damage = BattleActionRules.Invoke(physical, "ai-estimate", () => physical.EstimateDamage(battle, actorRef, candidate.Target.Actor));
-                var draw = BattleRandom.NextThinkingWord((ushort)(thinking >> 16), 3);
-                uint after = ((uint)draw.After << 16) | (thinking & 65535);
-                priorities[i] = PhysicalTargetRules.ScriptThree(costs[i], Math.Max(0, candidate.Target.Hp - damage), draw.Value);
-                effects.Add(new("thinking-rng", actorRef, thinking, after, 3, draw.Value, candidate.Target.Actor));
-                effects.Add(new("ai-candidate", actorRef, costs[i], priorities[i], Target: candidate.Target.Actor));
-                thinking = after;
-            }
-            byte maximum = priorities.Max();
-            var cohort = Enumerable.Range(0, candidates.Length).Reverse().Where(i => priorities[i] == maximum).ToArray();
-            int selected = cohort[0], movement = -1;
-            // Ally skips the enemy >=15 class-preference pass. The final signed byte
-            // comparison chooses greatest movement, replacing equality in reverse order.
-            foreach (int i in cohort)
-                if (unchecked((sbyte)costs[i]) >= movement) { movement = unchecked((sbyte)costs[i]); selected = i; }
-            var chosen = candidates[selected];
-            effects.Add(new("ai-target", actorRef, maximum, Math.Min(15, (int)maximum), Target: chosen.Target.Actor));
-            effects.Add(new("ai-command-attack1", actorRef, After: 0));
-            // aiCommand_Attack writes LastTarget only for enemy attackers.
-            return new(battle.With(thinkingSeed: thinking), effects.AsReadOnly(), chosen.Position!,
-                BattleMovement.Route(actor.Position, BattleMovement.MoveString(grid, actor.Position, chosen.Position!,
-                    battle.Definition.Width, battle.Definition.Height)), chosen.Target.Actor);
-        }
+        if (temporary && actions.Count == 0) throw new BattleRuleException("source-ally-actions", "actor.ai", true);
+        var attack = temporary
+            ? EnemySpellDecision.Attack(battle, actorRef, physical, actions, grid, targets)
+            : EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, grid, targets);
+        if (attack is not null)
+            return attack with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. attack.Effects,
+                new("ai-command-attack1", actorRef, After: 0)]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
+        if (temporary && actor.Spells.Count != 0)
+        {
+            var allies = slots.Where(p => p.Key is >= 0 and < 30).OrderBy(p => p.Key).Select(p => battle.GetActor(p.Value)).ToArray();
+            if (EnemySpellDecision.Heal(battle, actorRef, actions, grid, allies) is { } recovery)
+                return recovery with { Effects = Array.AsReadOnly<BattleEffect>([.. effects,
+                    new("ai-command-heal1", actorRef, After: 0), .. recovery.Effects]) };
+        }
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
-        effects.Add(new("ai-command-support", actorRef, After: -1)); // explicit ally early return
+        effects.Add(new("ai-command-support", actorRef, After: -1)); // source rejects ally casters
         var costsMap = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         var scores = WeightedMovement.Build(costsMap, actor.Position.Y * 48 + actor.Position.X, 128);
         var pursuit = AiMovementRules.PursueOrdered(costsMap, scores, grid, actor.Position, targets,
@@ -93,4 +77,12 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         BattleMovement.RequireStop(battle, actorRef, pursuit.Destination, grid);
         return new(battle, effects.AsReadOnly(), pursuit.Destination, BattleMovement.Route(actor.Position, pursuit.MoveString));
     }
+
+    // Activation-driven ally control retains its existing physical capability.
+    private static bool PhysicalOnly(BattleActorState actor, BattleSourceLoadout loadout) =>
+        loadout.Spells.All(spell => spell == 63) && actor.Spells.Count == 0 &&
+        actor.Definition.Physical is { MinimumRange: 1, MaximumRange: 1 } &&
+        loadout.Items.All(word => word is 127 or 19 or 0 ||
+            word <= 511 && actor.Definition.Equipment?.Rings.ContainsKey((byte)(word & 127)) == true &&
+            ((word & BattleInventory.Broken) == 0 || BattleEquipment.CanBeDamaged(actor.Definition, (byte)(word & 127))));
 }
