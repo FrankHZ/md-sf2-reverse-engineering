@@ -67,6 +67,31 @@ public sealed class SupportDecisionTests
         Assert.DoesNotContain(decision.Effects, e => e.Kind == "ai-command-support");
     }
 
+    [Theory]
+    [InlineData(false, 8, false)]
+    [InlineData(true, 2, true)]
+    public void DispelSkipsDesoulWhenScoringAllyBooks(bool learnsBlaze, int mp, bool choosesDispel)
+    {
+        var battle = Battle(d =>
+        {
+            d["spells"]!.AsArray().Add(new JsonObject { ["id"] = "desoul", ["level"] = 1, ["mpCost"] = 8,
+                ["minimumRange"] = 1, ["maximumRange"] = 2,
+                ["effect"] = new JsonObject { ["kind"] = "instant-death", ["radius"] = 0 } });
+            var book = d["actors"]![0]!["spells"]!.AsArray();
+            if (!learnsBlaze) book.Clear();
+            book.Insert(0, new JsonObject { ["id"] = "desoul", ["level"] = 1 });
+            d["start"]!["actors"]![0]!["mp"] = mp;
+        });
+        var action = Support(battle);
+        if (choosesDispel)
+        {
+            Assert.NotNull(action);
+            Assert.Equal(new BattleActionRef(BattleActionKind.SupportSpell, new("dispel", 1)), action.ChosenAction);
+            Assert.Equal(2, action.Effects.Single(e => e.Kind == "ai-support-target").After);
+        }
+        else Assert.Null(action);
+    }
+
     [Fact]
     public void SupportAttackGetterDoesNotSkipAnUnaffordableFirstFamilyForAnotherFamily()
     {

@@ -78,8 +78,11 @@ and retreat continuation. Unmarked SPOIT is not implemented by this slice.
 `EnemySupportDecision` participates at the existing SUPPORT command positions in sets2/6/7/8/9/14,
 after standby/earlier successful commands. It requires known DISPEL1, sufficient MP and a reachable
 legal station. Score is the number of actual area recipients whose first eligible attack-spell
-family has an affordable rank, or who know a healing spell. Healing's getter ignores MP; silence
-and existing status/resistance do not remove contributors. Each actor contributes at most1. Areas
+family has an affordable rank, or who know a healing spell. The source attack getter for ally
+books considers BLAZE, FREEZE, BOLT, BLAST, KATON and RAIJIN in book order. It skips DESOUL
+before choosing the first family. [Source filter](../../../docs/research/battle/battle-ai.md#spell-filtering)
+Healing's getter ignores MP. Silence and existing status/resistance do not remove contributors.
+Each actor contributes at most1. Areas
 below2 are filtered; the last highest candidate in source processing order wins, with existing
 station/path construction. SUPPORT consumes no scoring/category RNG and does not update LastTarget.
 It never substitutes center damage, a Mage attack tie table or MP alone for this score. A silenced
