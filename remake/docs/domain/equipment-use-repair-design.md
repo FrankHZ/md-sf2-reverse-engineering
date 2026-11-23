@@ -30,7 +30,7 @@ and turn fixtures give the ROM, emulator and controlled boundaries for those obs
 | Protect Ring (20) | ALL classes, DEF +5 worn, BOOST 1 on Use. Battle21 drop, once bit 8. Peter's legal receipt and Battle21 equipped Continue are recorded. | First implementation. |
 | Quick Ring (21), Running Ring (22), Chirrup Sandals (126) | Source `NOTHING` Use. Quick's BREAKABLE flag supplies no effect or reachable damage roll. | Retain ordinary Use refusal. Sandals acquisition and audio belong to [#1962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1962). |
 | Taros Sword (110) | Battle18 enemy BOLT 2 and potential rare drop. Mask NONE refuses player Use even from an intact bare slot. Enemy Use bypasses ally breakage. | Preserve the accepted Taros path and player refusal. |
-| Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Neither retained Pacalon party has such a class. | [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) owns admission, curse and BLAZE 2. It can consume the common slot-damage operation when admitted. |
+| Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Ordinary WIZ promotion is available. | [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) owns player admission. [Physical curse](ring-equipment-design.md#black-ring-admission-and-physical-curse) is a prerequisite for equipping it. |
 | Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | The remake admits Equip and battle Use from WIZ/VICR. The source mask also retains SORC, which has no playable class path in this slice. |
 
 The reached shop/drop/grant join yields three scoped player effects including the conditional
@@ -198,6 +198,41 @@ below for the separate native and controlled boundaries.
 
 The ring and staff slices use the accepted Item origin, Deals transaction, permanent
 growth, shared support awards and target centers.
+
+### Black Ring attack item and wear boundary
+
+**Confirmed (fixed USA source).** BLAZE 2 targets at range 1–2 with radius 1 and base power 10.
+Item Use takes these spell terms but skips learned-book, MP and Silence admission and uses the
+base spell power. The ordinary Use class check applies to both intact and broken words, worn
+or bare. The source scene visits its ordered targets and drop helper before applying breakability
+once to the selected slot, before EXP. On the fresh branch a zero draw on range 4 marks the slot
+broken. A successful use of an already broken copy removes that slot and refreshes the holder.
+Broken equipped gear can be treated at Church and then repaired. For the one selected damaged
+Black Ring, Repair charges 1,250 gold, clears only damage on the bare word, and refuses while it
+is worn. Preserve the accepted battle carrier drop versus leader-cleanup distinction.
+[BLAZE 2 row](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm#L226-L232) ·
+[Item spell dispatch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/useitem.asm) ·
+[Spell power adjustment](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/calculatespelldamage.asm) ·
+[Post-target wear call](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm#L108-L130) ·
+[Slot damage and destruction](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/breakuseditem.asm#L5-L45) ·
+[Battle26 custody](../application/battle26-higins.md)
+
+The current attack-item path checks for a single adjacent consumable and always compacts its
+slot after damage. Conversely, the existing gear wear transaction carries a Support-specific
+definition and its validation and scene messages take that type. Reuse the damage spell rules
+and extract the exact-slot wear computation from that Support-specific origin when adding the
+second caller. Keep a typed distinction between consumable and equipment payment and reuse the
+existing item result/acknowledgement. Check wear after every ordered drop receipt, before reward,
+using the full live word and slot. A controlled case with a second bare copy in another slot
+should prove the first use changes only the selected word, broken reuse compacts only that
+selected slot, and destroying a worn copy refreshes its contribution and CURSE. Use the existing
+Repair transaction and normalized word encoding. Recheck no-MP, class refusal and ownership of
+the next battle input with a legal WIZ on ordinary Use. Natural original Black Ring wear,
+presentation and cold Continue remain **Unknown**. Current remake BLAZE 2 Item Use remains open.
+[Attack-item admission](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) ·
+[Damage and payment ordering](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) ·
+[Existing wear computation](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SupportItemDefinition.cs) ·
+[Repair transaction](../../src/Sf2.Remake.Application/Runtime/Exploration/ShopService.cs)
 
 ### Persistence
 
