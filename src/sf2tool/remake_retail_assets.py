@@ -568,6 +568,7 @@ def main():
             "monster",
             "phoenix-wave",
             "blaze",
+            "blaze-2",
             "indra",
             "south-shrine",
             "all",
@@ -586,6 +587,7 @@ def main():
         "monster",
         "phoenix-wave",
         "blaze",
+        "blaze-2",
         "indra",
         "south-shrine",
     }.intersection(args.family) and not args.mount:

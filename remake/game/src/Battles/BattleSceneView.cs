@@ -109,8 +109,14 @@ internal sealed partial class BattleSceneView : Control
         try
         {
             _laser.Hide(); _aura.Hide(); _attackSpell.Reset(); _phoenixWave.Reset();
-            _preparedBlaze = state.AttackSpell is { Spell.Value: "blaze", Spell.Level: 1, SourceAnimationSelector: 1 } &&
-                state.AttackItem is null && Content?.Rasters.ContainsKey(AttackSpellView.BlazeResources[0]) == true;
+            var blazeResources = state.AttackSpell switch
+            {
+                { Spell.Value: "blaze", Spell.Level: 1, SourceAnimationSelector: 1 } => AttackSpellView.BlazeResources,
+                { Spell.Value: "blaze", Spell.Level: 2, SourceAnimationSelector: 33 } => BlazeTwoEffect.Resources,
+                _ => null,
+            };
+            _preparedBlaze = state.AttackItem is null && blazeResources is not null &&
+                Content?.Rasters.ContainsKey(blazeResources[0]) == true;
             if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
@@ -210,7 +216,7 @@ internal sealed partial class BattleSceneView : Control
                     if (_preparedBlaze)
                     {
                         _blazeStart = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0;
-                        _attackSpell.PrepareBlaze(state, AttackSpellView.BlazeResources.Select(Texture).ToArray(), target.IsAlly, _settings.ReducedFlash);
+                        _attackSpell.PrepareBlaze(state, blazeResources!.Select(Texture).ToArray(), target.IsAlly, _settings.ReducedFlash);
                     }
                     if (state.IsMonsterBreath)
                         _attackSpell.Present(state, [Texture("kiwi-breath/tile-1"), Texture("kiwi-breath/tile-9")]);
@@ -400,7 +406,7 @@ internal sealed partial class BattleSceneView : Control
         if (_preparedBlaze && state.Phase == BattleScenePhase.ActionAnimation)
         {
             _attackSpell.AdvanceBlaze(_elapsed - _blazeStart);
-            duration = Math.Max(duration, _blazeStart + AttackSpellView.BlazeDuration);
+            duration = Math.Max(duration, _blazeStart + _attackSpell.PreparedBlazeDuration);
             if (!_castSoundPlayed && _elapsed >= _blazeStart)
             {
                 _castSoundPlayed = true;

@@ -46,10 +46,11 @@ internal static class PrivateAttackSpellBindings
                 source.PropertiesExpression == (source.Code is "AQUA" or "KIWI" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
                 "source-attack-spell", "spells", true);
             byte? animation = null;
-            if (source.Code == "BLAZE" && source.Level == 1)
+            if (source.Code == "BLAZE" && source.Level is 1 or 2)
             {
-                Require(source.AnimationExpression == "BLAZE", "source-attack-animation", "spells.animation", true);
-                animation = 1;
+                string selector = source.Level == 1 ? "BLAZE" : "BLAZE|VARIATION2";
+                Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
+                animation = source.Level == 1 ? (byte)1 : (byte)33;
             }
             if (row.Element == AttackSpellElement.Neutral)
             {

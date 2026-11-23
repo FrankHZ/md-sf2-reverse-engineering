@@ -96,7 +96,7 @@ light fairy therefore has partial original-asset coverage. Original opportunity 
 | Retail rows | Original selector | Gameplay, package and scene | Remaining owner |
 | --- | --- | --- | --- |
 | BLAZE 1 | BLAZE v1 | **Original assets bound** in the prepared Battles04–07 scene mount, with current caster, target, weapon and backdrop. Controlled native Kazin Battle04 and Galam Mage Battle05 witnesses cover both sides. Packages without the mount show the placeholder. | Maintain [prepared BLAZE1](#prepared-blaze1-presentation). Later mounts and naturally reached casts are bounded by their encounter owners. |
-| BLAZE 2 | BLAZE v2 | **Placeholder** in admitted learned Magic. The authored native two-target cast and promoted Kazin Battle26 combat establish ordered damage, cost and return. Original tileset 2 is shared with rank 1, with a medium stacked flame and ten meteors for v2. | [#2105] pre-voyage learned cast. [#1926] Black Ring admission and Use. See the [dispatch boundary](#pre-voyage-dispatch). |
+| BLAZE 2 | BLAZE v2 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Battle04 Kazin casts into a legal two-target area with the medium stacked flame and ten small meteors. Other packages retain the primitive effect. | [Prepared BLAZE2](#prepared-blaze2-presentation) covers the source side operands and bounded native cast. [#1926] owns Black Ring admission and Use. |
 | BLAZE 3 | BLAZE v3 | **Placeholder** in admitted private Magic, including the Battle19 repeat Wizard binding. FBALL1, KATON2 and equipment Use share original art selection with distinct action rules. | [#2104] later flame variants after [#2105]. [#1818] other equipment and encounter callers. |
 | BLAZE 4 | BLAZE v4 | **Unavailable** for private Magic. KATON3 shares the original selector and has a separate admitted neutral-damage route with primitive playback. | [#2016] learned rule/admission, then [#2104] flame variants. |
 | FREEZE 1–2 | FREEZE v1–v2 | **Placeholder** on admitted learned/AI attack paths. Current bindings use ice shapes. Private caster reach and ordinary casts are bounded by each encounter's admitted books. | [#2104] later ice effects. Coordinate with [#2016] player ranks and BREZAD/Freeze Staff only where the original caller shares the selector. |
@@ -136,14 +136,7 @@ light fairy therefore has partial original-asset coverage. Original opportunity 
 
 ## Pre-voyage dispatch
 
-1. **P2 [#2105], BLAZE2.** Use learned Kazin with an admitted pre-voyage scene, legally holding
-   BLAZE2 (MAGE learns it at level 5 in `allystats04.asm`), 6 MP and a legal opponent center.
-   The original setup table `table_1A594` v2 and mirrored `table_1A5BC` v2 drive the
-   tileset-2 medium flame and ten meteors. Exercise ordered reactions with a legal second
-   recipient in radius 1. Galam Mage's pre-voyage cast is rank 1. A mirrored rank-2 composition
-   check can use the source operands without forcing a pre-voyage enemy to learn a new rank.
-   The original rank-2 equipment selectors include Black Ring, Heat Axe and Mage Staff.
-   Keep equipment Use admission with its own item owner. [Blaze setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/blaze.asm) · [#1926]
+1. **P2 [#2105], BLAZE2.** See the [prepared mount and observations](#prepared-blaze2-presentation).
 2. **P2 [#2106], BLAST1.** After [#2105] acceptance, use learned Sarah from a legal pre-voyage
    state (PRST learns BLAST1 at level 10 in `allystats01.asm`), 2 MP and one adjacent opponent.
    Its source radius is zero. Prepare its own tileset-15 wind/dust composition, including the
@@ -291,6 +284,100 @@ The session records one cast, one MP payment (5→3), one HP change (12→6) and
 commit. Early Confirm retains the cast token. Bowie opens a new action menu in the same session.
 The observer reports no session, scene or audio error and exits 0. Eight ObjectDB instances are
 reported at exit. Original timing and foreground visual acceptance (#1456) remain **Unknown**.
+
+## Prepared BLAZE2 presentation
+
+**Standard scope ([#2105]).** Private Battles04–07 mount BLAZE2 for learned Magic. The same
+cast pose, weapon, backdrop, cast cue 77 and completion token used by BLAZE1 now carry a
+medium ground flame and ten small falling meteors with impacts. Subsequent reactions show the
+actual recipient in order. A missing rank-2 mount uses the existing primitive effect.
+Packages with a rank-2 namespace require all six correctly sized rasters.
+
+**Confirmed source composition.** The BLAZE2 row in `spelldefs.asm` uses
+`BLAZE|VARIATION2` (selector `0x21`), 6 MP, range 1–2, radius 1 and power 10.
+`table_1A594` and `table_1A5BC` select ten small meteors and the following side operands.
+The flame is drawn as a 24×48 raster made from a 3×4 top and 3×2 bottom at their original
+relative positions. The table's tile indices are zero-based below.
+
+| Branch | Flame origin | Bottom origin | Meteor entry X window start | Meteor direction and art |
+| --- | --- | --- | --- | --- |
+| Ally casting at enemy | (68,96) | (68,128) | 80 | Leftward, horizontal flip |
+| Enemy casting at ally | (172,112) | (172,144) | 48 | Rightward, original orientation |
+
+`table_1BE2A` uses top/bottom tiles 49/61 and 67/79. `table_1BE42` uses tiles 149 and
+153 (16×16). `table_1BE52` and `table_1BE5A` use tiles 157 (24×24) and 166 (24×16)
+for the small impacts. The second impact frame sits 8 pixels lower. The original update chooses
+meteor X within a 96-pixel window and starts impact at or below Y 120 in local coordinates. In the remake, the
+projector deterministically spreads ten meteors over 1.35 seconds from the existing cast-pose
+trigger. Reduced Flash holds the first flame, meteor and impact frame and retains all ten
+trajectories. The adapter uses its own motion, fade and scheduling with no palette flash.
+The ally-side rank-2 branch was compared statically with the original side table.
+[Blaze setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/blaze.asm) ·
+[Blaze update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/blaze.asm)
+
+**Publication.** Load the private worktree selections and select the prepared #2001 retail library
+as `$library` and the accepted #2068 BLAZE1 package as `$base`. Choose a fresh absolute
+`$candidate` under worktree `local/` for validation or the registered shared `derived/`
+root for handoff. Reuse the package's current `world.json` and scene selections.
+
+```powershell
+uv run sf2 rom verify
+uv run python -m sf2tool.remake_retail_assets --root $library --base $base --mount $candidate --family blaze-2
+```
+
+Compare tiles and palette to the ROM via the [tileset-2 procedure](#prepared-blaze1-presentation).
+Compare each mounted raster with the column-major tile operands above. The 146-member package
+has 142 byte-identical dependencies and four scenes equal to their base values after removing the
+six rank-2 rasters from each. The logical size grows by 14,240 bytes. Allow about 3.3 MB plus small
+raster scratch for a same-volume mount and about 315 MB for a cross-volume copy. The largest
+changed scene is 883,418 bytes against the 4 MiB reader limit.
+
+**Native reproduction.** Use the [BLAZE1 launch and private selectors](#prepared-blaze1-presentation)
+with the mounted rank-2 candidate. Use a fresh runtime and disposable save namespace per run.
+Set `SF2_BLAZE_RANK=2` and `SF2_BLAZE_ENEMY=0`. Put this start document in a fresh ignored
+directory and point `SF2_BLAZE_START` at it.
+
+```json
+{"start":{"battle":"battle-4","activeAllies":["ally-0","ally-4"],"partyInput":"kazin.json","actors":[{"actor":"ally-4","position":{"x":4,"y":7}},{"actor":"enemy-1","hp":1,"position":{"x":6,"y":7}},{"actor":"enemy-2","position":{"x":6,"y":8}}]}}
+```
+
+Create the sibling `kazin.json` from the [controlled party template](../../reference/inputs/battle01-player-ready.json).
+Set `id` to `blaze-2-controlled-party`, `evidenceOwner` to `issue-2105`, and
+`bridgeBoundary` to `Pre-voyage Kazin level and book only`. Replace `allies` with the following array.
+The reader decodes the standard private party shape against the opening static inputs and checks
+class, equipment and the learned book against the Battle04 actor's admitted growth. MAGE
+learns BLAZE2 at level 5. [Kazin's growth table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats04.asm)
+
+Only level and book enter the Battle04 controlled start. The stat fields satisfy the controlled party shape.
+
+```json
+[{"id":4,"classId":3,"level":5,"maxHp":12,"hp":12,"maxMp":13,"mp":13,"attack":9,"defense":6,"agility":7,"move":5,"status":0,"items":[213,0,127,127],"spells":[75,63,63,63],"exp":0,"kills":0,"defeats":0}]
+```
+
+Run the observer with these settings.
+
+| Case | `SF2_BLAZE_REDUCED_FLASH` | `SF2_BLAZE_SKIP_MESSAGES` | `SF2_BLAZE_HELD_RATE` |
+| --- | ---: | ---: | ---: |
+| Normal | 0 | 0 | 0 |
+| Reduced Flash | 1 | 0 | 0 |
+| Held rate and coin skip | 0 | 1 | 1 |
+
+Match the version-1 settings file's `reducedFlash` and `suppressBattleHitCoinMessages` to
+the observer selections. In the last case the observer holds Shift during the animation, reads
+1.5× playback, and releases it before subsequent input.
+
+**Confirmed in the remake.** Ordinary Magic selects rank 2 around the Galam Soldier at (6,7).
+The Huge Bat at (6,8) receives the second reaction. Kazin's cast frame and Wooden Rod,
+the live recipients, background and ground remain visible. All ten meteors fall and impact.
+Early Confirm preserves the cast token, and cue 77 starts once. The three settings cases retain
+the same settlement. Kazin pays 6 MP once (13→7), applies two ordered 9-point hits (HP 1→0
+and 11→2), gains 49 EXP and one kill, and gold changes from 60 to 110. Skip passes the coin
+notice while retaining damage messages. Bowie opens the next action menu in the same session.
+Separate rank-1 ally and Galam Mage regressions preserve the accepted cast and usable control.
+Godot reported ObjectDB exit warnings after control returned, with no session, scene or audio error.
+
+**Unknown.** Natural pre-voyage learning and casting, a live mirrored BLAZE2 caller, original
+timing, and foreground visual acceptance [#1456]. The equipment Use path remains with [#1926].
 
 ## HEAL spell scenes
 

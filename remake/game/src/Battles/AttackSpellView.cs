@@ -14,6 +14,7 @@ internal sealed partial class AttackSpellView : Node2D
     private int _drawCount;
     private IReadOnlyList<Texture2D>? _breath;
     private Texture2D[]? _blaze;
+    private BlazeTwoEffect? _blazeTwo;
     private Vector2 _blazePosition;
     private bool _reducedFlash;
 
@@ -23,6 +24,7 @@ internal sealed partial class AttackSpellView : Node2D
         _scene = null;
         _breath = null;
         _blaze = null;
+        _blazeTwo = null;
     }
 
     internal void Present(BattleSceneState scene, IReadOnlyList<Texture2D>? breath = null)
@@ -31,12 +33,19 @@ internal sealed partial class AttackSpellView : Node2D
     internal void PrepareBlaze(BattleSceneState scene, Texture2D[] frames, bool targetIsAlly, bool reducedFlash)
     {
         _scene = scene;
-        _blaze = frames;
-        _blazePosition = targetIsAlly ? new(176, 128) : new(72, 112);
+        if (scene.AttackSpell!.Spell.Level == 2)
+            _blazeTwo = new(frames, targetIsAlly, reducedFlash);
+        else
+        {
+            _blaze = frames;
+            _blazePosition = targetIsAlly ? new(176, 128) : new(72, 112);
+        }
         _reducedFlash = reducedFlash;
         AdvanceBlaze(-1);
         Show();
     }
+
+    internal double PreparedBlazeDuration => _blazeTwo is null ? BlazeDuration : BlazeTwoEffect.Duration;
 
     internal void AdvanceBlaze(double age)
     {
@@ -60,6 +69,11 @@ internal sealed partial class AttackSpellView : Node2D
     public override void _Draw()
     {
         if (_scene?.AttackSpell is not { } spell) return;
+        if (_blazeTwo is { } blazeTwo)
+        {
+            if (blazeTwo.Draw(this, _elapsed)) _drawCount++;
+            return;
+        }
         if (_blaze is not null)
         {
             if (BlazeFrame is not { } frame) return;
@@ -120,6 +134,7 @@ internal sealed partial class AttackSpellView : Node2D
         element = _scene?.AttackSpell?.Element.ToString(), selector = Selector,
         variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
         target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null,
+        preparedBlazeTwo = _blazeTwo?.Observe(_elapsed),
         preparedBlaze = _blaze is null ? null : new
         {
             frame = BlazeFrame is { } frame ? BlazeResources[frame] : null,

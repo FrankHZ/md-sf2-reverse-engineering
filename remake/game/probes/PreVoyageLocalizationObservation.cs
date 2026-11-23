@@ -43,6 +43,34 @@ public sealed partial class GameRoot
             inputs = baseline.Actors.Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp,
                 actor.Exp ?? 0, actor.Kills ?? 0, actor.Defeats ?? 0, actor.Status, activeAllies is null ? null : actor.Position, actor.Progress, actor.SourceLoadout,
                 actor.ActivationWord, actor.Initialized, Absent: activeAllies is not null && actor.Position is null)).ToArray();
+            if (start.TryGetProperty("partyInput", out var battlePartyInput))
+            {
+                // Read a disposable party fixture through the existing controlled start reader.
+                // Import its level and learned book for the named allies before the battle mounts.
+                var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(inputPath)!, battlePartyInput.GetString()!));
+                if (!path.StartsWith(local, StringComparison.OrdinalIgnoreCase) || !File.Exists(path))
+                    return "observation-party-input";
+                var partyReader = new PrivateBattleScenarioReader(Selected("SF2_PRIVATE_BATTLE01_DATA"),
+                    Selected("SF2_PRIVATE_BATTLE01_SCENE"), Selected("SF2_PRIVATE_BATTLE01_TERRAIN"),
+                    Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"), path);
+                if (partyReader.Read() is not ScenarioReadAccepted acceptedParty)
+                    return "observation-party-rejected";
+                foreach (var row in acceptedParty.Definition.Encounters.Values.Single().Deployments.Where(row => row.Faction == BattleFaction.Ally))
+                {
+                    int index = Array.FindIndex(inputs, actor => actor.Actor == row.Actor);
+                    if (index < 0 || inputs[index].Progress is not { } progress ||
+                        inputs[index].SourceLoadout is not { } original) return "observation-party-progression";
+                    var member = baseline.GetActor(row.Actor).Definition;
+                    if (member.Growth is not { } growth || row.Definition.ClassRule != member.ClassRule ||
+                        row.Definition.Level < progress.Level || row.Definition.SourceLoadout is not { } loadout ||
+                        !loadout.Items.SequenceEqual(original.Items) ||
+                        loadout.Spells.Where(packed => packed != 63).Any(packed =>
+                            !growth.Spells.Any(spell => spell.PackedSpell == packed && spell.Level <= row.Definition.Level)))
+                        return "observation-party-progression";
+                    inputs[index] = inputs[index] with { SourceLoadout = loadout,
+                        Progress = progress with { Level = row.Definition.Level, Spells = row.Definition.Spells, SourceLoadout = loadout } };
+                }
+            }
             if (start.TryGetProperty("actors", out var overrides))
                 foreach (var row in overrides.EnumerateArray())
                 {

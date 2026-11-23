@@ -272,7 +272,9 @@ def mount_phoenix_waves(directory: Path, scratch: Path, scene: dict) -> None:
             raise ValueError(f"conflicting prepared sound wave {key}")
 
 
-def mount_blaze(directory: Path, scratch: Path, package: Path, scenes: dict[int, Path]) -> None:
+def mount_blaze(
+    directory: Path, scratch: Path, package: Path, scenes: dict[int, Path], families: set[str]
+) -> None:
     index = read_json(directory / "index.json")
     expected = dict(family="spell", id=2, tiles="spell-2.4bpp", palette="022e028e08ee")
     if (
@@ -285,13 +287,42 @@ def mount_blaze(directory: Path, scratch: Path, package: Path, scenes: dict[int,
     tiles, palette = prepared_spell_tiles(directory, 2)
     if len(tiles) != 7104:
         raise ValueError("registered BLAZE tile stream length differs")
+    sprites = {}
+    if "blaze" in families:
+        # table_1BE2A. Both 2x4 entries share position and tiles.
+        sprites.update(
+            {
+                "blaze-1/frame-0": (2, ((33, 4),)),
+                "blaze-1/frame-1": (2, ((41, 4),)),
+            }
+        )
+    if "blaze-2" in families:
+        # table_1BE2A stacks a 3x4 top over a 3x2 bottom.
+        # table_1BE42, table_1BE52 and table_1BE5A select the small meteor and impact.
+        sprites.update(
+            {
+                "blaze-2/flame-0": (3, ((49, 4), (61, 2))),
+                "blaze-2/flame-1": (3, ((67, 4), (79, 2))),
+                "blaze-2/meteor-0": (2, ((149, 2),)),
+                "blaze-2/meteor-1": (2, ((153, 2),)),
+                "blaze-2/impact-0": (3, ((157, 3),)),
+                "blaze-2/impact-1": (3, ((166, 2),)),
+            }
+        )
     rasters = {}
-    # table_1BE2A, small flame. Both source 2x4 entries share position and tiles.
-    for frame, first_tile in enumerate((33, 41)):
-        leaf = f"blaze-1-frame-{frame}.png"
-        layout = [first_tile + tile for tile in sprite_layout(2, 4)]
-        write_png_rgba(scratch / leaf, 16, 32, compose(tiles, palette, 16, 32, layout))
-        rasters[f"blaze-1/frame-{frame}"] = installed_png(scratch, leaf)
+    for key, (columns, parts) in sprites.items():
+        leaf = key.replace("/", "-") + ".png"
+        layout = [
+            first + x * rows + y
+            for first, rows in parts
+            for y in range(rows)
+            for x in range(columns)
+        ]
+        width, height = columns * 8, sum(rows for _, rows in parts) * 8
+        write_png_rgba(
+            scratch / leaf, width, height, compose(tiles, palette, width, height, layout)
+        )
+        rasters[key] = installed_png(scratch, leaf)
     for battle, relative in scenes.items():
         path = package / relative
         scene = read_json(path)
@@ -632,7 +663,13 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "ninja": {5: "NINJ"},
         "monster": {6: "MNST"},
     }
-    optional = retained_families.keys() | {"phoenix-wave", "south-shrine", "indra", "blaze"}
+    optional = retained_families.keys() | {
+        "phoenix-wave",
+        "south-shrine",
+        "indra",
+        "blaze",
+        "blaze-2",
+    }
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
     shrine = "south-shrine" in selected
     if shrine and (upstream is None or canonical_path is None):
@@ -655,7 +692,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | optional):
         raise ValueError(
             "select walking, icons, sfx, music, pldn, wiz, melee, "
-            "ranged, vicar, innate, ninja, monster, phoenix-wave, indra, south-shrine or blaze"
+            "ranged, vicar, innate, ninja, monster, phoenix-wave, indra, south-shrine, "
+            "blaze or blaze-2"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -674,8 +712,9 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
         }
         blaze_scenes = {}
-        blaze_only = selected == {"blaze"}
-        if "blaze" in selected:
+        blaze_families = selected & {"blaze", "blaze-2"}
+        blaze_only = selected == blaze_families and bool(blaze_families)
+        if blaze_families:
             for row in world["encounters"]:
                 battle = read_json(files[Path(row["placement"])])["battle"]["id"]
                 if 4 <= battle <= 7:
@@ -705,7 +744,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                     pass  # Different storage volumes require a real copy.
             shutil.copyfile(source, target)
         if blaze_only:
-            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes)
+            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes, blaze_families)
             dest.rename(destination)
             return
         presentation = world["world"]["presentation"]
@@ -819,7 +858,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             items = mount_south_shrine(world, root, upstream, canonical_path)
             bind_field_item_icons(presentation, root, dest, scenes, items)
         if blaze_scenes:
-            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes)
+            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes, blaze_families)
         if not indra_only:
             (dest / "world.json").write_text(
                 json.dumps(world, separators=(",", ":")), encoding="utf-8"
