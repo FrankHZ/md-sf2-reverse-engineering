@@ -80,7 +80,7 @@ public sealed partial class BattleSessionView : Control
     // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
     private ActorRef? _targetCandidate;
     private readonly MenuPointer _boardPointer = new();
-    internal Action<SessionResult>? LeaveBattle { get; set; }
+    internal Action<SessionResult, bool>? LeaveBattle { get; set; }
     internal Action<SessionResult>? ObserveResult { get; set; }
     internal Action<int>? PlayUiSound { get; set; }
 
@@ -420,7 +420,10 @@ public sealed partial class BattleSessionView : Control
         if (_result.Snapshot.Mode == SessionMode.Exploration)
         {
             RetireWindows();
-            LeaveBattle?.Invoke(_result);
+            // Once a scene stages its actors, the field projection owns the world.
+            bool retainBoard = current.BattleFieldScene is null &&
+                _result.Snapshot.Story.Continuation != ProgramContinuation.DefeatedProgramFinished;
+            LeaveBattle?.Invoke(_result, retainBoard);
             return;
         }
         Present();
