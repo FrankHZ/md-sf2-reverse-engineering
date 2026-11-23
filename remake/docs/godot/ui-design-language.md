@@ -61,8 +61,12 @@ Remote services and an additional host Overview remain outside this design. The 
 is reserved for the pending [current-round readout #2065](battle-ui-composition.md#current-round-order-2065).
 The battle Target phase uses one candidate change per fresh input, and choosing ordinary Stay
 commits in one gesture. The [battle input owner](battle-ui-composition.md#fresh-target-input-and-direct-stay)
-records the delivered behavior. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
-tracks pending inspection movement (#2081), shared roster presentation (#2082) and spell descriptions (#2083).
+records the delivered behavior. The inspection Cursor page uses the shared board overlay to show
+the disclosed unit's movement field. The overlay clears when a panel or host cover takes focus.
+[Inspected movement #2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
+
+Shared roster presentation (#2082) and spell descriptions (#2083) remain pending.
+[Implementation handoff](battle-ui-composition.md#implementation-handoff)
 
 ## Surfaces and hierarchy
 

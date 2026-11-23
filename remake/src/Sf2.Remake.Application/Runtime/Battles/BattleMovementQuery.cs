@@ -17,7 +17,12 @@ internal static class BattleMovementQuery
                 movement.Purpose is not (BattleMovementPurpose.Player or BattleMovementPurpose.Return))) return null;
         var actor = active.Battle.GetActor(selection.Actor);
         if (actor.Hp == 0 || actor.Control != BattleControl.Player || actor.Position is null) return null;
-        var (reachableCells, destinations) = BattleMovement.Range(active.Battle, selection.Actor);
-        return new(selection.Actor, actor.Position, reachableCells, destinations);
+        return ForActor(active.Battle, actor.Actor, actor.Position);
+    }
+
+    internal static BattleMovementRange ForActor(EngineBattleState battle, ActorRef actor, MapPosition origin)
+    {
+        var (reachableCells, destinations) = BattleMovement.Range(battle, actor);
+        return new(actor, origin, reachableCells, destinations);
     }
 }

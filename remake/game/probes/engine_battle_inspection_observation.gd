@@ -433,6 +433,67 @@ func fresh_save_entry() -> bool:
     sample("inspection-save-returned-Movement")
     return true
 
+# Short authored corridor with one ground ally, a hovering enemy and both factions' occupied cells.
+func range_checkpoint(label: String, baseline: Array, role: String, actor := "", origin_x := 0,
+        reachable_x: Array = [], stop_x: Array = []) -> bool:
+    var s := sample(label)
+    var b: Dictionary = samples[-1].board
+    var movement: Dictionary = b.movementRange
+    if not check(signature(s) == baseline and s.failure == null and s.scene.error == null,
+            label + ": authoritative state, seeds and runtime health"): return false
+    if not check(b.cursorRole == role and not b.actionRange.visible, label + ": one board field owner"): return false
+    if actor.is_empty():
+        return check(not movement.visible and movement.actor == null and movement.reachableCells == null
+            and movement.destinations == null, label + ": movement field cleared")
+    var settings: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson"))
+    if not check(movement.steady == settings.applied.ReducedFlash, label + ": range follows Reduced Flash"): return false
+    var reachable := reachable_x.map(func(x): return {"X":float(x),"Y":3.0})
+    var stops := stop_x.map(func(x): return {"X":float(x),"Y":3.0})
+    return check(movement.visible and movement.actor == actor and movement.origin == {"X":float(origin_x),"Y":3.0}
+        and movement.reachableCells == reachable and movement.drawnReachableCells == reachable
+        and movement.destinations == stops and movement.drawnDestinations == stops,
+        label + ": actual draw uses inspected origin, traversable cells and legal stops")
+
+func inspected_movement_range() -> bool:
+    var baseline := signature(state())
+    if not range_checkpoint("ordinary-movement", baseline, "Movement", "swordsman", 2, [1,2,3,4], [1,2,4]): return false
+    await act("cancel")
+    if not await inspect_page("Cursor"): return false
+    await act("right")
+    if not range_checkpoint("ground-ally", baseline, "Inspection", "lookout", 3, [1,2,3,4], [1,3,4]): return false
+    if not await cursor_to(7,3): return false
+    if not range_checkpoint("hovering-enemy", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
+    await act("confirm")
+    if not await inspect_page("Full") or not range_checkpoint("details", baseline, "None"): return false
+    await act("cancel")
+    if not await inspect_page("Cursor"): return false
+    if not range_checkpoint("details-back", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
+    await act("menu")
+    var covered: Dictionary = JSON.parse_string(host.call("ReadWindowSupportObservationJson"))
+    if not check(covered.battlePaused == "Disabled", "Host Menu owns covered battle"): return false
+    if not range_checkpoint("host-cover", baseline, "None"): return false
+    await act("cancel")
+    if not await inspect_page("Cursor"): return false
+    if not range_checkpoint("cover-back", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
+    if not await cursor_to(5,3): return false
+    if not range_checkpoint("empty-cell", baseline, "Inspection"): return false
+    await act("confirm")
+    if not await inspect_page("Options") or not range_checkpoint("options", baseline, "None"): return false
+    await act("confirm")
+    if not await inspect_page("Members") or not range_checkpoint("members", baseline, "None"): return false
+    await act("confirm")
+    if not await inspect_page("MemberFull") or not range_checkpoint("member-details", baseline, "None"): return false
+    await act("cancel"); await act("cancel"); await act("down"); await act("confirm")
+    if not await inspect_page("Map") or not range_checkpoint("map", baseline, "None"): return false
+    await act("cancel"); await act("cancel")
+    if not await inspect_page("Cursor") or not range_checkpoint("options-back", baseline, "Inspection"): return false
+    if not check(state().inspection.cursor == {"X":5.0,"Y":3.0}, "Back retains the empty cell"): return false
+    await act("right"); await act("right")
+    if not range_checkpoint("enemy-before-exit", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
+    await act("cancel")
+    if not check(not state().inspection.active, "Cancel exits inspection"): return false
+    return range_checkpoint("exit-to-ordinary-movement", baseline, "Movement", "swordsman", 2, [1,2,3,4], [1,2,4])
+
 func run() -> void:
     root.size=Vector2i(1920,1080)
     host=load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()
@@ -443,6 +504,11 @@ func run() -> void:
         if not check(admitted=="started","Registered connected controlled admission: "+str(admitted)): return
         await frames(2)
     if not await enter_battle(): return
+    if case_name == "inspected-movement-range":
+        if not await inspected_movement_range(): return
+        root.remove_child(host); host.queue_free(); await frames(2)
+        finish(true)
+        return
     if not OS.get_environment("SF2_INSPECTION_SAVE_ENTRY").is_empty():
         if not await fresh_save_entry():return
         root.remove_child(host);host.queue_free();await frames(2)

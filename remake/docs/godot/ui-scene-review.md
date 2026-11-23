@@ -419,9 +419,9 @@ its bounds as offers change. In Target, the shared board cursor marks the eligib
 the recipient's card takes the card position. Back restores the chosen level, slot or command.
 
 [#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
-and direct Stay. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
-tracks #2081 inspection range, #2082 shared roster presentation, #2083 spell descriptions and
-#2065 current-round readout.
+and direct Stay. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
+delivers the inspection movement field. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+tracks #2082 shared roster presentation, #2083 spell descriptions and #2065 current-round readout.
 
 ### From entry to committed action
 
@@ -479,8 +479,9 @@ appear. Movement Cancel finishes the real undo before inspection opens at the or
 Cancel returns to Movement first. On another unit, closing details restores the cursor. Map returns
 to Options, then cursor. Subordinate pages hide the board cursor and retain its cell.
 `Member` restores its selected roster row. Battle Quit uses its existing save eligibility and return
-flow. The pending [inspection range #2081 and shared roster #2082](battle-ui-composition.md#read-only-inspection-and-the-member-view)
-build on these callers.
+flow. The shared cyan field shows traversal and legal stops from the inspected unit's actual
+cell. It clears on empty ground, subordinate pages, host cover and exit.
+[Inspected movement and pending shared roster](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 
 ### Presentation, outcome and usable return
 
