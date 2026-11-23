@@ -282,13 +282,15 @@ transition. Godot shows typed outcomes through the current service and item menu
 [Battle restore](../../src/Sf2.Remake.Domain/Battles/State/BattleContinuationRestore.cs) ·
 [Field save reconstruction](../../src/Sf2.Remake.Application/Runtime/Persistence/FieldPartySnapshot.cs)
 
-[#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) owns calling the shared
-cursed-unequip operation from DETOX 3 and preserving worn gear on DETOX 2. Keep its current
-unsupported curse boundary until that action can commit status and gear together. Coordinate
-[#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) on action publication,
-status masks and death processing before either slice writes them. Curse admission requires the
-physical behavior and save/return closure without depending on the hostile-spell repertoire.
-[DETOX design](detox-ranks-design.md) · [Hostile spells](hostile-spells-design.md)
+Field and Battle DETOX 3 use the shared cursed-unequip operation and commit the resulting
+status and gear together. DETOX 2 preserves CURSE and the worn words.
+[DETOX input and cold Continue](detox-ranks-design.md#equipped-curse-input-and-cold-continue) ·
+[#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965)
+
+Hostile-spell admission, including its action publication, status masks and death processing,
+remains a separate scope.
+[Hostile spells](hostile-spells-design.md) ·
+[#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967)
 
 ### Physical curse reproduction
 
