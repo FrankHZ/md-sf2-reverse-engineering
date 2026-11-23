@@ -84,6 +84,7 @@ internal sealed partial class BattleInspectionView
                 if (_pointer.Read(button, "back", GetGlobalRect(), _page) is not null) Handle(GameAction.Cancel);
                 return true;
             }
+            if (button.ButtonIndex != MouseButton.Left) { _pointer.Cancel(); return true; }
             if (allowed && button.Pressed) { _cursor = cell; _pointerFocus = true; Project(); }
             if (_pointer.Read(button, allowed ? cell.ToString() : null, allowed ? _map.CellRect(cell) : default, _page) is not null)
                 Handle(GameAction.Confirm);

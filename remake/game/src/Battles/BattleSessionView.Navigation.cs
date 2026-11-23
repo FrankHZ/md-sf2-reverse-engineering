@@ -13,24 +13,22 @@ public sealed partial class BattleSessionView
     private GameAction? _navigationDirection;
     private ulong _nextNavigation;
     private bool _navigationRejected;
-    internal bool Targeting => _menu.Targeting;
     private bool NavigatingPreview => !_inspection.Active && _session?.Current.Selection?.Stage == BattleSelectionStage.Movement;
 
     private object? NavigationBoundary()
     {
-        if (_input is null || _startupFailure is not null || _inputSuspended ||
-            !IsVisibleInTree() || !CanProcess() || !GetWindow().HasFocus() ||
+        if (_input is null || !CanRouteBattleInput ||
             _session?.Current is not { Selection: { } selection } current ||
             (!current.HasBattleControl && current.BattleMovement is not { Purpose: BattleMovementPurpose.Player }) ||
-            current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
             current.BattleScene is not null || current.BattleRound is not null || current.BattleRetreat is not null ||
             current.BattleGive is not null || current.BattleDiscard is not null || current.BattleSearch is not null ||
             current.BattleMovement is { Purpose: not BattleMovementPurpose.Player }) return null;
         if (_inspectionRelease) return null;
         if (_inspection.Active) return (current.SessionId, current.Revision, selection.Actor, "Inspection", _inspection.Page);
         var stage = selection.Stage;
-        if (Targeting || _menu.NavigationPage == "Commit" || stage is BattleSelectionStage.GiveCommitReady or BattleSelectionStage.DiscardCommitReady) return null;
-        return (current.SessionId, selection.Actor, stage, _menu.NavigationPage);
+        if (_decision?.Page is BattleDecisionPage.Target or BattleDecisionPage.Commit ||
+            stage is BattleSelectionStage.GiveCommitReady or BattleSelectionStage.DiscardCommitReady) return null;
+        return (current.SessionId, selection.Actor, stage, _decision?.Page);
     }
 
     private void ClearNavigation()

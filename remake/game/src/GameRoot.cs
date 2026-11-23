@@ -77,8 +77,7 @@ public sealed partial class GameRoot : Node
             GetViewport().SetInputAsHandled();
             return;
         }
-        bool freshTargetNavigation = _systemMenu is null && _battle?.IsVisibleInTree() == true &&
-            _battle.CanProcess() && _battle.Targeting;
+        bool freshTargetNavigation = _battle?.NeedsFreshDirection == true;
         var action = _input?.Resolve(input, freshTargetNavigation);
         if (action is null) return;
         if (_exploration?.MenuEntryPending == true)

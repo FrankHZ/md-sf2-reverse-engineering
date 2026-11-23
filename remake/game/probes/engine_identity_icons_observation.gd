@@ -55,35 +55,23 @@ func field() -> void:
     record("field-return")
 
 func battle() -> void:
-    var controlled := OS.get_environment("SF2_IDENTITY_CONTROLLED") == "1"
     # Actual saved player turn. Iterate actual turns only when the current actor has no magic.
     for turn in 4:
-        await key(KEY_ENTER); await key(KEY_LEFT); await key(KEY_ENTER); await frames(4)
+        await key(KEY_ENTER); await key(KEY_H); await frames(4)
         var layout: Dictionary = state().menu.layout
         record("magic-attempt-" + str(turn))
-        if layout.rows.size() >= (3 if controlled else 1):
+        if not layout.rows.is_empty():
             icons(layout.icons, "battle-magic")
-            if controlled:
-                check(layout.icons.size() >= 3 and layout.icons[0].resource == "identity-icon.spell.0.selected" and layout.icons[1].resource == "identity-icon.spell.0.normal", "HEAL levels share source base ID")
             await key(KEY_DOWN); await frames(4); icons(state().menu.layout.icons, "battle-magic-next")
             await key(back); break
         if not expect_art and mode == "authored":
             icons(layout.icons, "authored-magic-empty"); await key(back); break
         await key(back); await key(back)
         if not await stay(): return
-    await key(KEY_RIGHT); await key(KEY_ENTER); await frames(4)
+    await key(KEY_I); await frames(4)
     check(state().menu.page == "Items", "ordinary battle Item")
     icons(state().menu.layout.icons, "battle-item")
     await key(KEY_DOWN); await frames(4); icons(state().menu.layout.icons, "battle-item-next")
-    if controlled:
-        var item_icons: Array = state().menu.layout.icons
-        check(item_icons[1].resource == "identity-icon.item.0.selected" and item_icons[2].resource == "identity-icon.item.0.normal", "duplicate herbs keep distinct slots/shared identity")
-        await key(KEY_ENTER); await key(back); await frames(4)
-        check(state().menu.page == "Items" and state().menu.row == 1, "target Back retains duplicate item slot")
-        icons(state().menu.layout.icons, "duplicate-target-return")
-        await key(back); await key(back)
-        check(state().stage == "Movement", "controlled return")
-        return
     if not expect_art and mode == "authored":
         await key(back); await key(back); record("authored-text-return"); return
     await key(back); await key(KEY_E); await frames(4)
@@ -93,8 +81,6 @@ func battle() -> void:
     await key(back); await key(back)
     check(state().stage == "Movement", "battle Back restores Movement")
     record("battle-return")
-
-
 
 func run() -> void:
     if mode == "invalid-scene":
@@ -116,7 +102,20 @@ func run() -> void:
     root.grab_focus()
     var admission: String = host.call("Begin", OS.get_environment("SF2_IDENTITY_PARTY"), OS.get_environment("SF2_IDENTITY_SETTINGS"))
     samples.append({"label":"independent-presenter-admission", "result":admission})
-    if admission != "Movement": check(false, "controlled admission: " + admission); finish(); return
-    view = host; await frames(5)
-    record("controlled-presenter-entry")
-    await battle(); finish()
+    if admission != "ActionChoice": check(false, "controlled admission: " + admission); finish(); return
+    view = host
+    var revision: int = state().revision
+    host.call("PresentChoices", false, 0); await frames(5)
+    var spell_icons: Array = state().menu.layout.icons
+    icons(spell_icons, "battle-magic")
+    check(spell_icons.size() >= 3 and spell_icons[0].resource == "identity-icon.spell.0.selected" and
+        spell_icons[1].resource == "identity-icon.spell.0.normal", "HEAL levels share source base ID")
+    host.call("PresentChoices", false, 1); await frames(4)
+    icons(state().menu.layout.icons, "battle-magic-next")
+    host.call("PresentChoices", true, 1); await frames(4)
+    var item_icons: Array = state().menu.layout.icons
+    icons(item_icons, "battle-item-next")
+    check(item_icons.size() >= 3 and item_icons[1].resource == "identity-icon.item.0.selected" and
+        item_icons[2].resource == "identity-icon.item.0.normal", "duplicate herbs keep distinct slots/shared identity")
+    check(state().revision == revision, "Rendering the offers preserves the session")
+    finish()

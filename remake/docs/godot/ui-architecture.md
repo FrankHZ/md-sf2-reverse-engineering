@@ -4,8 +4,9 @@
 documentation slice. The inspected base is `3bff875d994758c30b44086bebf57c64346a0dfd`,
 which includes the phase composition, fresh Target input, inspection range and shared roster.
 **High rigor** applies because several queued changes touch the same decision, reading and layout
-paths and past scene-by-scene review missed adjacent behavior. The proposed migration requires
-independent design acceptance and separately scoped implementation. It preserves the accepted
+paths and past scene-by-scene review missed adjacent behavior. The current milestone is
+[#2107](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2107), the first independently
+reviewed implementation slice. Each later slice has its own acceptance. The design preserves the accepted
 [visual language](ui-design-language.md), [battle phase layout](battle-ui-composition.md#phase-focus-and-return),
 [field and service behavior](field-and-shop.md) and [host/save return](host-ui.md).
 
@@ -18,8 +19,8 @@ the mount changes to a freestanding diamond, with different directional selectio
 the layout in the inspected base and the one the player reported. Main-gate confirmed that
 this change exceeded the requested scope. Restore the vertical list and its navigation under
 #2090 while retaining #2079's focus, reader and resize work and #2080–#2082 behavior. The
-remaining design uses that corrected baseline. The current audit leaves the implementation
-and its layout documentation with #2090.
+remaining design and [decision presenter](#migration-and-independent-acceptance) consume the
+restored vertical list.
 
 The investigation covers representative battle decisions, read-only inspection, field Party and
 preparation, service and dialogue routing, system Menu and replacement. It follows the action and
@@ -46,17 +47,17 @@ dispatch](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatch
 
 ### Battle page and focus
 
-A confirmed legal stop enters ActionChoice. `BattleCommandMenu.Present` maps that phase to Main or
-the local Magic/Items list. `Select` submits the action and normally selects self or the first
-enabled target. The session's selected target and the adapter's attempted candidate have distinct
-meanings. An invalid cell clears the card, cursor and effect marking and makes the old authoritative
-target unconfirmable through the menu. Local row, scroll, attempted candidate, and return
-destination are disposable. Target Back retains the confirmed stop and clears the session's chosen
-action and target. The local menu restores the originating row. Search keeps its distinct
-confirmation, ordinary Stay commits directly, and Main Back sends the movement return. [Command
-menu](../../game/src/Battles/BattleCommandMenu.cs) · [Battle routing and
-projection](../../game/src/Battles/BattleSessionView.cs) · [Fresh Target and
-Stay](battle-ui-composition.md#fresh-target-input-and-direct-stay)
+A confirmed legal stop enters ActionChoice. `BattleSessionView` derives `BattleDecision` from the
+live selection, offers, active presentation and disposable navigation. The selected action projects
+Target or Commit. Main versus Magic/Items comes from the local parent while ActionChoice is active.
+Action entry prefers self or the first enabled target from the resulting action state. The menu,
+board, mapped actions and pointer gestures consume the same decision. An invalid cell clears the card,
+cursor and effect marking. Confirm requires the attempted candidate to agree with the enabled
+session selection. Target Back clears the chosen action and target through the session and returns
+to the retained parent and row. Search keeps its distinct confirmation, ordinary Stay commits
+directly, and Main Back sends the movement return. [Decision](../../game/src/Battles/BattleDecision.cs) ·
+[Transition owner](../../game/src/Battles/BattleSessionView.Decision.cs) ·
+[Battle composition](battle-ui-composition.md#battle-decision-projection-2107)
 
 ### Inspection and field pages
 
@@ -77,8 +78,8 @@ entry](../../game/src/Exploration/ExplorationSessionView.Menu.cs) ·
 ### Device, repeat and gesture
 
 `GameInput.Resolve` resolves installed bindings, button/axis edges and neutral state.
-`GameRoot._Input` currently consults battle visibility/processability and `Targeting` for fresh
-directional handling. Battle owns repeat on preview-step arrival or a deadline for ordinary
+`GameRoot._Input` asks the battle presenter for its fresh direction policy.
+Battle owns repeat on preview-step arrival or a deadline for ordinary
 navigation, with fresh edges in Target. Exploration owns walking and neutral input service on its
 own clock. `MenuPointer` matches button, action ID, rectangle and caller-supplied boundary across
 press/release. Field dialogue may keep the same wait token/phase across revisions, so its gesture
@@ -141,29 +142,31 @@ step arrival policies are important counterexamples to a common repeat, press or
 A static defect is actionable within that boundary. **Inferred** findings specify the maintenance or
 runtime consequence that has yet to be witnessed. Prior native acceptance applies to its named paths.
 
-### Target Back publishes the old page
+### Pre-migration 1 Target Back ordering
 
-P2. **Confirmed** ordering defect. **Inferred** player impact.
+P2. **Confirmed at the inspected base.** Whether the old intermediate projection reached a drawn
+frame or changed an accepted gesture remains **Unknown**. Migration 1 derives the parent after the
+session result and projects once.
 
-Target/Commit Back in `BattleCommandMenu.Handle` calls `Submit(ReturnToBattleActions)` before setting
+Target/Commit Back in the inspected `BattleCommandMenu.Handle` called `Submit(ReturnToBattleActions)` before setting
 Magic/Items/Main. The dispatcher publishes ActionChoice, and `BattleSessionView.Send` synchronously
 calls `Present`. At that intermediate projection the menu still holds Target/Commit. The new snapshot
 has no selected action, so the old footprint drops while the stale page can still drive Target hints and
 input policy. The caller then restores the local page and the outer battle input path presents again.
 The first target when entering an action has a similar nested presentation before the candidate is
-installed. The accepted Back corridor reached the correct final page. Whether that intermediate projection reaches a drawn frame or changes an accepted gesture remains Unknown. The battle decision presenter owns the ordering defect. [Menu Handle and
-Select](../../game/src/Battles/BattleCommandMenu.cs) · [Send and
-Present](../../game/src/Battles/BattleSessionView.cs)
+installed. The accepted Back corridor reached the correct final page. [Inspected
+menu](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/3bff875d994758c30b44086bebf57c64346a0dfd/remake/game/src/Battles/BattleCommandMenu.cs) ·
+[Current submission and transition](../../game/src/Battles/BattleSessionView.Decision.cs)
 
 ### Non-activation buttons reach the board
 
-P2. **Confirmed** source-level defect.
+P2. **Confirmed at the inspected base.** Migration 1 classifies these events before selecting.
 
-With Target active, over a board cell outside menu chrome, a pressed wheel or middle button reaches
+With Target active, over a board cell outside menu chrome, a pressed wheel or middle button reached
 `BoardTarget` before `MenuPointer.Read` filters it. On an admitted actor the path can submit
 `SelectTarget`. On an empty or ineligible cell it clears the attempted candidate. Those paths change target focus or selection. Inspection's `BoardPointer` also sets its Cursor on a pressed non-right button before filtering.
-Event classification must precede any board focus change. The battle input boundary owns the fix.
-[Battle HandlePointer](../../game/src/Battles/BattleSessionView.cs) · [Inspection
+The scoped reproduction compares candidate, inspection focus, revision and submissions.
+[Battle HandlePointer](../../game/src/Battles/BattleSessionView.Decision.cs) · [Inspection
 BoardPointer](../../game/src/Battles/BattleInspectionPointer.cs) ·
 [MenuPointer.Read](../../game/src/Input/MenuPointer.cs)
 
@@ -171,10 +174,10 @@ BoardPointer](../../game/src/Battles/BattleInspectionPointer.cs) ·
 
 P2. **Confirmed** source-level gaps.
 
-Battle Target's help describes Confirm when an illegal cell leaves no current candidate, and `Refresh`
-describes it as no available target even when enabled targets remain. The actual Confirm path and hit
-guard correctly disallow confirmation. The battle decision footer's scroll region/rail take no focus and
-only `BattleMenuLayout.Scroll` handles its overflow. In Main/list/Target, arrows already have command,
+At the inspected base, Target help advertised Confirm with no current candidate and used the empty
+offer wording even when legal targets remained. Migration 1 gives an invalid cell a distinct reason
+and uses the shared confirmation decision for the hint and hit. The battle decision footer's scroll
+region and rail take no focus. Only `BattleMenuLayout.Scroll` handles its overflow. In Main/list/Target, arrows already have command,
 row or target meanings. Host Menu, Settings and field preparation demonstrate mapped read paths, though
 `FieldActionView.Handle` Left/Right can move both the list and the visible pack and does not explicitly
 identify which reader is taking input. Battle decision and field reading callers own the affected choice
@@ -394,19 +397,15 @@ input, reading or query responsibility and removes its superseded path in the sa
 acceptance, roll back a slice as a unit with its direct consumers. After dependent work lands,
 revert consumers first or together. Use a single production path with disposable UI state.
 
-1. **Coherent battle action entry, rejection and Back.** Work in `BattleSessionView` and its
-   navigation, `BattleCommandMenu` and layout, the narrow GameRoot policy call, and pointer
-   classification for battle/inspection. Introduce the single battle decision view, fix Target's
-   wheel/middle handling and distinguish illegal candidate from zero targets. Replace stale
-   page-first projection, duplicate confirmation gates and obsolete legacy fallback paths after
-   checking their actual callers. Preserve Main focus, direct Stay, distinct Search/transactions,
-   movement repeat, read-only inspection and actual completions. Accept on a short actual path
-   with a Magic or Item child, exact row Back, a rejected target and a valid target. Check wheel or
-   middle on legal and illegal ground, invalid/zero-target hints and confirmation, fresh
-   keyboard/pad Target edges, a held input across host close and resize during a captured click.
-   Compare the retained gameplay selections, revision/command sequence and visible decision
-   controls. Include one retained close-up cover/resize case if the shared presentation path
-   changes. Reverting this slice restores routing as a unit and needs no state conversion.
+1. **Coherent battle action entry, rejection and Back (#2107).** `BattleSessionView` owns local
+   focus and the action/target submission sequence. `BattleDecision` supplies the menu, board,
+   pointer and input policy from the same live revision. Session receipts, audio and pacing still
+   receive both action entry submissions before the final decision is drawn. Back derives its page
+   from the returned selection stage and the retained parent. Movement, direct Stay, Search,
+   transaction readers, read-only inspection and actual completion owners keep their boundaries.
+   The [bounded reproduction](battle-ui-composition.md#reproduce-the-battle-decision) covers the
+   shared input surface, retained parent and host/resize behavior. Reverting this slice restores
+   routing as a unit and needs no state conversion.
 2. **Shared reading behavior and visible inspection return.** After slice 1 where it shares the
    battle footer, reuse the existing description reader and establish one body/read target for
    the affected pages. Preserve row or action focus and keep scroll during same-page host cover.
@@ -431,13 +430,9 @@ revert consumers first or together. Use a single production path with disposable
    for no state/RNG/payment changes from reading. Cover new rules with small engine behavior
    assertions where needed. Revert the query and consumer together before downstream uses.
 
-**Existing issue order.** After this design freezes, #2090 should lead battle Main/layout work.
-It restores vertical labels, icons, row navigation, pointer hits and hints in the existing
-composer. Check four commands, valid/unavailable states, Magic/Item and Target/Back, ordinary
-Stay, supported layouts and stale press rejection. Keep its revert isolated from the accepted
-phase work. Slice 1 takes the restored list as its input and defers to #2090 for any layout
-behavior change. Slice 2 can then use free reading directions on the vertical page where the
-existing controls permit them. #2083 waits for coherent Back and the description reader from slices
+**Existing issue order.** Slices 2 and 3 consume the decision boundary from #2107. #2090 owns
+the restored vertical Main and its acceptance. Slice 2 can use free reading directions on the
+vertical page where the existing controls permit them. #2083 waits for coherent Back and the description reader from slices
 1–2. It may follow before the full board painter migration if it already consumes the shared
 admitted effect operands. Serialize any overlap in `BattleChoices` or `BattleMenuLayout`.
 #2065 needs the stable phase/visibility boundary from slice 1 before mounting its strip. Its pure

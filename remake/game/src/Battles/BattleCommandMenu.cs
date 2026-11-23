@@ -5,58 +5,34 @@ using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.GodotAdapter.Input;
+using Page = Sf2.Remake.GodotAdapter.Battles.BattleDecisionPage;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
-// Only menu focus lives here. The session remains authoritative for actions, targets and legality.
+// Renders the decision and reports hits against the actual control geometry.
 internal sealed partial class BattleCommandMenu : Control
 {
-    private enum Page { Main, Magic, Items, Target, Commit }
-    private static readonly BattleActionKind[] Kinds = [BattleActionKind.Physical, BattleActionKind.Healing, BattleActionKind.Item, BattleActionKind.Stay];
     private readonly BattleMenuLayout _layout = new() { Name = "Layout" };
     private readonly MenuPointer _pointer = new();
-    private Page _page;
-    private int _command, _row;
-    private ActorRef? _actor;
-    private SessionSnapshot? _current;
-    private BattleChoicesSnapshot? _choices;
-    private BattleActingStatus? _actingStatus;
-    private GameInput _input = null!;
-    private SessionFailure? _failure;
     private BattleSceneDefinition? _content;
     private ScenarioDefinition? _definition;
-    internal Action<SessionCommand> Submit { get; set; } = null!;
-    internal ActorRef? TargetCandidate { get; private set; }
-    // TargetChoice and CommitReady share one Target page even as the candidate changes.
-    internal string NavigationPage => _page.ToString();
-    internal BattleActionChoice? PreviewAction => Targeting && SelectedAction() is { Enabled: true } offer ? offer : null;
-    internal bool Targeting => Visible && _page == Page.Target && !_moving;
     internal bool Covers(Vector2 point) => _layout.Covers(point);
     internal void AvoidSubject(Rect2 rectangle) => _layout.AvoidSubject(rectangle);
-    private bool _moving;
-    internal bool BoardTarget(ActorRef? actor, bool commit)
-    {
-        if (!Targeting) return false;
-        var target = SelectedAction()?.Targets.FirstOrDefault(t => t.Actor == actor && t.Enabled);
-        TargetCandidate = target?.Actor;
-        if (target is not null)
-        {
-            PickTarget(target);
-            if (commit && _current?.Selection?.Target == target.Actor) Submit(new Confirm());
-        }
-        Refresh(); return true;
-    }
 
     public override void _Ready()
     {
         _layout.InvalidatePointer = _pointer.Cancel;
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
     }
-    internal void Arrange(Vector2 size) { Size = size; _layout.Arrange(size); }
+    internal void Arrange(Vector2 size)
+    {
+        if (Size != size) _pointer.Cancel();
+        Size = size;
+        _layout.Arrange(size);
+    }
     internal void ConfigureAssets(BattleSceneDefinition? content, ScenarioDefinition definition)
     { _content = content; _definition = definition; _layout.ConfigureAssets(content); }
     internal UI.IdentityIcons Icons => _layout.Icons;
-    internal void Reset() { _layout.StopFocusEmphasis(); _actor = null; _page = Page.Main; _row = _command = 0; TargetCandidate = null; }
     internal void SuspendPointer(bool keyboard = false)
     {
         if (keyboard) _pointer.Cancel();
@@ -70,245 +46,131 @@ internal sealed partial class BattleCommandMenu : Control
     }
     public override void _ExitTree() => _layout.StopFocusEmphasis();
 
-    internal bool HandlePointer(InputEvent input)
+    internal (string Id, bool Activate)? ReadPointer(InputEventMouse input, BattleDecision decision)
     {
-        if (!IsVisibleInTree() || _current?.Selection is not { } selection ||
-            selection.Stage == BattleSelectionStage.Movement) { _pointer.Cancel(); return false; }
-        Vector2 position = ((InputEventMouse)input).Position;
-        var hit = _layout.Hit(position);
+        if (!decision.Visible || decision.Moving) return null;
         if (input is InputEventMouseMotion motion)
         {
-            if (_pointer.Moved(motion) && hit.Id is not null) Focus(hit.Id);
-            return true;
+            bool moved = _pointer.Moved(motion);
+            return moved && _layout.Hit(motion.Position).Id is { } id ? (id, false) : null;
         }
-        if (input is not InputEventMouseButton button) return true;
+        if (input is not InputEventMouseButton button) return null;
         if (button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
         {
             _pointer.Cancel();
-            if (button.Pressed) _layout.Scroll(position, button.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
-            return true;
+            if (button.Pressed) _layout.Scroll(button.Position, button.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
+            return null;
         }
-        if (button.ButtonIndex == MouseButton.Right) hit = ("Back", GetGlobalRect());
-        object boundary = (_current.SessionId, _current.Revision, _actor, _page);
-        if (_pointer.Read(button, hit.Id, hit.Rect, boundary) is not { } activated) return true;
-        Focus(activated);
-        if (activated.StartsWith("command:", StringComparison.Ordinal)) { Open(); Refresh(); }
-        else if (activated.StartsWith("row:", StringComparison.Ordinal)) { Select(Options()[_row]); Refresh(); }
-        else if (activated == "PreviousTarget") Handle(GameAction.Left);
-        else if (activated == "NextTarget") Handle(GameAction.Right);
-        else if (activated == "Confirm") Handle(GameAction.Confirm);
-        else if (activated == "Back") Handle(GameAction.Cancel);
-        return true;
+        if (button.ButtonIndex is not (MouseButton.Left or MouseButton.Right))
+        {
+            _pointer.Cancel();
+            return null;
+        }
+        var hit = button.ButtonIndex == MouseButton.Right ? ("Back", GetGlobalRect()) : _layout.Hit(button.Position);
+        return _pointer.Read(button, hit.Item1, hit.Item2, decision.PointerBoundary) is { } activated ? (activated, true) : null;
     }
 
-    private void Focus(string id)
+    internal void Present(BattleDecision decision, SessionFailure? failure, GameInput input, BattleActingStatus? acting)
     {
-        if (id.StartsWith("command:", StringComparison.Ordinal)) _command = int.Parse(id.AsSpan(8));
-        else if (id.StartsWith("row:", StringComparison.Ordinal)) _row = int.Parse(id.AsSpan(4));
-        else return;
-        Refresh();
-    }
+        Visible = decision.Visible;
+        if (!Visible) return;
+        var current = decision.Snapshot;
+        var page = decision.Page;
+        var command = decision.Command;
+        bool moving = decision.Moving;
+        bool targetPage = decision.Targeting;
+        bool mainPage = !moving && page == Page.Main;
+        bool list = decision.IsList;
+        bool commit = page == Page.Commit;
+        bool search = current.Selection?.Stage == BattleSelectionStage.SearchCommitReady;
+        var offers = decision.Offers(command);
+        int row = decision.Row;
 
-    internal void Present(SessionSnapshot current, BattleChoicesSnapshot choices, SessionFailure? failure, GameInput input, BattleActingStatus? actingStatus)
-    {
-        var selection = current.Selection;
-        bool enteringActions = selection?.Stage == BattleSelectionStage.ActionChoice &&
-            (_actor != selection.Actor || _current?.SessionId != current.SessionId ||
-                _current?.Selection?.Stage == BattleSelectionStage.Movement);
-        if (_current?.BattleSearch is not null && current.BattleSearch is null) _page = Page.Main;
-        _current = current; _actingStatus = actingStatus; _choices = choices; _failure = failure; _input = input;
-        if (_actor != selection?.Actor || selection?.Stage == BattleSelectionStage.Movement || selection is null)
+        _layout.Actor.PresentActing(targetPage ? null : acting);
+        var candidate = decision.Candidate is { } targetRef ? current.Battle.GetActor(targetRef) : null;
+        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, current.Story), GameText.Get("battle.target"));
+        _layout.Context.Text = GameText.Get("battle.context", current.Battle.Round, current.Battle.Gold?.ToString() ?? "—");
+        for (int i = 0; i < _layout.Commands.Length; i++)
         {
-            _page = Page.Main; _command = _row = 0; TargetCandidate = null;
+            var button = _layout.Commands[i];
+            var commandRow = (BattleCommandRow)i;
+            button.CaptionOverride = commandRow == BattleCommandRow.Stay && decision.Search ? "battle.command.search" : null;
+            button.RefreshCaption();
+            button.SetSelection(mainPage && command == commandRow, input.Settings.ReducedFlash);
+            button.Available = decision.CommandAvailable(commandRow);
         }
-        // Fresh entry consumes the live offer at the confirmed stop. Child Back keeps the chosen focus.
-        if (enteringActions)
-            _command = choices.Failure is null && choices.Actions.Any(option =>
-                option.Action.Kind == BattleActionKind.Physical && option.Enabled &&
-                option.Targets.Any(target => target.Enabled)) ? 0 : 3;
-        _actor = selection?.Actor;
-        _moving = selection?.Stage == BattleSelectionStage.Movement || current.BattleMovement is not null;
-        Visible = actingStatus is not null && (_moving || selection?.Stage is
-            BattleSelectionStage.ActionChoice or BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady or BattleSelectionStage.SearchCommitReady);
-        if (selection?.Stage is BattleSelectionStage.TargetChoice or BattleSelectionStage.CommitReady)
-            _page = selection.ActionReference?.Kind == BattleActionKind.Stay ? Page.Commit : Page.Target;
-        if (selection?.Stage == BattleSelectionStage.SearchCommitReady) _page = Page.Commit;
-        Refresh();
-    }
-
-    internal bool Handle(GameAction action)
-    {
-        if (!Visible || _current?.Selection is not { } selection || _choices is null || selection.Stage == BattleSelectionStage.Movement) return false;
-        if (_page == Page.Main && action is GameAction.Equipment or GameAction.Give or GameAction.Discard) return false;
-        if (action == GameAction.Cancel)
+        var rows = list ? offers : [];
+        _layout.ShowRows(rows.Select(option => OptionLabel(option, current)).ToArray(),
+            rows.Select(option => option.Enabled).ToArray(), row, list, rows.Select(option => OptionIcon(option, current)).ToArray());
+        _layout.Heading.Text = moving ? GameText.Get("battle.position") : page switch
         {
-            if (_page is Page.Target or Page.Commit)
-            {
-                var previous = selection.ActionReference;
-                Submit(new ReturnToBattleActions());
-                if (_current!.Selection?.Stage != BattleSelectionStage.ActionChoice) return true;
-                TargetCandidate = null;
-                _page = previous?.ItemSlot is not null ? Page.Items : previous?.Spell is not null ? Page.Magic : Page.Main;
-                _row = Mathf.Clamp(_row, 0, Math.Max(0, Options().Length - 1));
-            }
-            else if (_page != Page.Main) { _page = Page.Main; _row = 0; }
-            else { Submit(new Cancel()); return true; }
-            Refresh(); return true;
-        }
-        if (_page == Page.Main)
-        {
-            int next = action switch
-            {
-                GameAction.Up => (_command + Kinds.Length - 1) % Kinds.Length,
-                GameAction.Down => (_command + 1) % Kinds.Length,
-                GameAction.Attack => 0, GameAction.Spell => 1, GameAction.Item => 2, GameAction.Stay => 3, _ => -1,
-            };
-            if (next >= 0) _command = next;
-            if (action is GameAction.Confirm or GameAction.Attack or GameAction.Spell or GameAction.Item or GameAction.Stay) Open();
-            Refresh(); return true;
-        }
-        if (_page is Page.Magic or Page.Items)
-        {
-            var options = Options();
-            int delta = action == GameAction.Up ? -1 : action == GameAction.Down ? 1 : 0;
-            if (options.Length > 0) _row = (_row + delta + options.Length) % options.Length;
-            if (action == GameAction.Confirm && options.Length > 0) Select(options[_row]);
-            Refresh(); return true;
-        }
-        if (_page == Page.Target)
-        {
-            var option = SelectedAction();
-            if (option is null) return true;
-            var targets = option.Targets.Where(target => target.Enabled).ToArray();
-            if (action is GameAction.Target or GameAction.Up or GameAction.Down or GameAction.Left or GameAction.Right)
-            {
-                int index = targets.ToList().FindIndex(target => target.Actor == (TargetCandidate ?? selection.Target));
-                int delta = action is GameAction.Up or GameAction.Left ? -1 : 1;
-                if (targets.Length > 0) PickTarget(targets[(index + delta + targets.Length) % targets.Length]);
-            }
-            else if (action == GameAction.Confirm && targets.Any(target => target.Actor == TargetCandidate && target.Enabled)
-                && _current.Selection?.Target == TargetCandidate) Submit(new Confirm());
-            Refresh(); return true;
-        }
-        if (action == GameAction.Confirm) Submit(new Confirm());
-        Refresh(); return true;
-    }
-
-    private static bool InGroup(BattleActionChoice option, int group) => group switch
-    {
-        1 => option.Action.Spell is not null, 2 => option.Action.ItemSlot is not null,
-        _ => option.Action.Kind == Kinds[group],
-    };
-    private BattleActionChoice[] Options() => _choices!.Actions.Where(option => InGroup(option, _command)).ToArray();
-    private BattleActionChoice? SelectedAction() => _choices!.Actions.FirstOrDefault(option => option.Action == _current!.Selection?.ActionReference);
-
-    private void Open()
-    {
-        _row = 0;
-        if (_command == 3 && _choices!.Search is not null) { Submit(new BeginBattleSearch()); return; }
-        if (_command is 1 or 2) { _page = _command == 1 ? Page.Magic : Page.Items; return; }
-        if (Options().FirstOrDefault() is { } option) Select(option);
-    }
-
-    private void Select(BattleActionChoice option)
-    {
-        if (!option.Enabled) return;
-        if (option.Action.Kind == BattleActionKind.Stay) { Submit(new CommitBattleStay()); return; }
-        Submit(new SelectBattleAction(option.Action));
-        if (_failure is not null || _current!.Selection?.ActionReference != option.Action) return;
-        TargetCandidate = null;
-        _page = Page.Target;
-        // Prefer self when the engine offers it; otherwise use the first admitted target.
-        var target = option.Targets.FirstOrDefault(target => target.Actor == _actor && target.Enabled)
-            ?? option.Targets.FirstOrDefault(target => target.Enabled);
-        if (target is not null) PickTarget(target);
-    }
-
-    private void PickTarget(BattleTargetChoice target)
-    {
-        TargetCandidate = target.Actor;
-        if (target.Enabled) Submit(new SelectTarget(target.Actor));
-    }
-
-    private void Refresh()
-    {
-        if (_current is null || _choices is null) return;
-        var selection = _current.Selection;
-        bool moving = _moving;
-        bool targetPage = Targeting;
-        bool mainPage = Visible && !moving && _page == Page.Main;
-        _layout.Actor.PresentActing(targetPage ? null : _actingStatus);
-        var candidate = targetPage && TargetCandidate is { } targetRef &&
-            SelectedAction()?.Targets.Any(target => target.Actor == targetRef && target.Enabled) == true
-            ? _current.Battle.GetActor(targetRef) : null;
-        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, _current!.Story), GameText.Get("battle.target"));
-        _layout.Context.Text = GameText.Get("battle.context", _current.Battle.Round, _current.Battle.Gold?.ToString() ?? "—");
-        for (int i = 0; i < Kinds.Length; i++)
-        {
-            _layout.Commands[i].CaptionOverride = i == 3 && _choices.Search is not null ? "battle.command.search" : null;
-            _layout.Commands[i].RefreshCaption();
-            _layout.Commands[i].SetSelection(Visible && !moving && _page == Page.Main && i == _command, _input.Settings.ReducedFlash);
-            _layout.Commands[i].Available = i == 3 && _choices.Search is not null ||
-                _choices.Actions.Any(option => InGroup(option, i) && option.Enabled);
-        }
-        bool itemPage = !moving && _page == Page.Items;
-        bool list = itemPage || !moving && _page == Page.Magic;
-        var options = list ? Options() : [];
-        if (list) _row = Mathf.Clamp(_row, 0, Math.Max(0, options.Length - 1));
-        _layout.ShowRows(options.Select(OptionLabel).ToArray(), options.Select(option => option.Enabled).ToArray(), _row, list, options.Select(OptionIcon).ToArray());
-        _layout.Heading.Text = moving ? GameText.Get("battle.position") : _page switch
-        {
-            Page.Magic => GameText.Get("battle.magic"), Page.Items => GameText.Get("battle.items"), Page.Target => GameText.Get("battle.choose-target"),
-            Page.Commit => GameText.Get(selection?.Stage == BattleSelectionStage.SearchCommitReady ? "battle.search-confirm" : "battle.stay-here"), _ => _layout.Commands[_command].Caption,
+            Page.Magic => GameText.Get("battle.magic"),
+            Page.Items => GameText.Get("battle.items"),
+            Page.Target => GameText.Get("battle.choose-target"),
+            Page.Commit => GameText.Get(search ? "battle.search-confirm" : "battle.stay-here"),
+            _ => _layout.Commands[(int)command].Caption,
         };
-        string confirm = KeyHint(GameAction.Confirm), cancel = KeyHint(GameAction.Cancel);
-        _layout.Help.Text = moving ? GameText.Get("battle.move-help", confirm) :
-            _page == Page.Target ? GameText.Get("battle.target-help", KeyHint(GameAction.Target), confirm, cancel) :
-            (list ? GameText.Get("battle.choice-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") :
-                _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") : "") +
-                GameText.Get("battle.confirm-help", confirm, cancel);
-        if (!moving && _page == Page.Target && _input.KeyboardMouseHints)
-            _layout.Help.Text += "\n" + GameText.Get("battle.pointer-target-help");
-        if (!moving && _page == Page.Main)
-            _layout.Help.Text += GameText.Get("battle.extra-help", KeyHint(GameAction.Equipment), KeyHint(GameAction.Give), KeyHint(GameAction.Discard));
-        string description;
-        if (moving) description = GameText.Get("battle.move-detail");
-        else if (_page == Page.Target && SelectedAction() is { } selected)
+        string confirm = input.CompactHint(GameAction.Confirm), cancel = input.CompactHint(GameAction.Cancel);
+        string back = GameText.Get("battle.back-help", cancel);
+        bool canCycle = decision.Targets.Length > 0;
+        bool canConfirm = decision.Confirmation is not null;
+        if (moving) _layout.Help.Text = GameText.Get("battle.move-help", confirm);
+        else if (targetPage)
         {
-            var target = selected.Targets.FirstOrDefault(target => target.Actor == TargetCandidate);
-            description = OptionLabel(selected) + (target is null ? "\n" + GameText.Get("battle.no-target") : "");
-            if (target?.Reason is { } reason) description += "\n" + Unavailable(reason);
+            string next = input.CompactHint(GameAction.Target);
+            _layout.Help.Text = canConfirm ? GameText.Get("battle.target-help", next, confirm, cancel) :
+                canCycle ? GameText.Get("battle.target-pick-help", next, cancel) : back;
+            if (canCycle && input.KeyboardMouseHints) _layout.Help.Text += "\n" + GameText.Get("battle.pointer-target-help");
         }
-        else if (_page == Page.Commit) description = GameText.Get(selection?.Stage == BattleSelectionStage.SearchCommitReady ? "battle.search-detail" : "battle.stay-detail");
-        else if (_page == Page.Main && _command == 3 && _choices.Search is not null) description = GameText.Get("battle.search-detail");
-        else if (itemPage) description = options.Length == 0 ? GameText.Get("battle.no-items") : DescribeItem(options[_row], selection!.Actor);
-        else if (list) description = options.Length == 0 ? GameText.Get("battle.no-magic") : Describe(options[_row]);
         else
         {
-            var offers = Options();
-            description = offers.Length == 0 ? GameText.Get(_command == 1 ? "battle.no-magic" : _command == 2 ? "battle.no-items" : "battle.no-target") :
-                !offers.Any(option => option.Enabled) && offers[0].Reason is { } reason ? Unavailable(reason) : "";
+            string directions = $"{input.CompactHint(GameAction.Up)}/{input.CompactHint(GameAction.Down)}";
+            string focus = list ? GameText.Get("battle.choice-help", directions) :
+                mainPage ? GameText.Get("battle.command-help", directions) : "";
+            _layout.Help.Text = focus + (decision.CanActivateFocus ? GameText.Get("battle.confirm-help", confirm, cancel) : back);
+            if (mainPage)
+                _layout.Help.Text += GameText.Get("battle.extra-help", input.CompactHint(GameAction.Equipment),
+                    input.CompactHint(GameAction.Give), input.CompactHint(GameAction.Discard));
         }
-        if (!_moving && _choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
-        if (_failure is { } failure && failure != _choices.Failure) description += "\n" + Unavailable(failure);
+
+        string description;
+        if (moving) description = GameText.Get("battle.move-detail");
+        else if (targetPage)
+        {
+            var selected = decision.SelectedAction;
+            description = selected is null ? "" : OptionLabel(selected, current);
+            if (!canCycle) description += "\n" + GameText.Get("battle.no-target");
+            else if (!canConfirm) description += "\n" + GameText.Get("battle.target-invalid");
+        }
+        else if (commit) description = GameText.Get(search ? "battle.search-detail" : "battle.stay-detail");
+        else if (command == BattleCommandRow.Stay && decision.Search) description = GameText.Get("battle.search-detail");
+        else if (list && offers.Length > 0) description = page == Page.Items
+            ? DescribeItem(offers[row], current.Selection!.Actor, current) : Describe(offers[row], current);
+        else if (offers.Length == 0) description = GameText.Get(command switch
+        {
+            BattleCommandRow.Magic => "battle.no-magic",
+            BattleCommandRow.Item => "battle.no-items",
+            _ => "battle.no-target",
+        });
+        else description = !offers.Any(offer => offer.Enabled) && offers[0].Reason is { } reason ? Unavailable(reason) : "";
+        if (!moving && decision.Choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
+        if (failure is not null && failure != decision.Choices.Failure) description += "\n" + Unavailable(failure);
         string fallback = GameText.Fallback("battle.", includeKey: true);
         _layout.PresentDetail(description + (fallback.Length == 0 ? "" : "\n" + fallback));
-        bool canConfirm = _page == Page.Commit || _page == Page.Target && SelectedAction()?.Targets.Any(target =>
-            target.Actor == TargetCandidate && target.Enabled && selection?.Target == TargetCandidate) == true;
-        _layout.ShowNavigation(!moving, _page == Page.Target, _page == Page.Commit, canConfirm);
+        _layout.ShowNavigation(!moving, canCycle, targetPage || commit, canConfirm);
         _layout.ShowDecision(targetPage, mainPage, moving || mainPage || list || targetPage);
     }
 
-    private string? OptionIcon(BattleActionChoice option) => _definition?.PrivateDefinitions is null ? null : option.Action.Spell is { } spell
-        ? UI.IdentityIcons.Spell(_definition!, spell) : option.Action.ItemSlot is { } slot && _current?.Selection is { } selection
-            ? UI.IdentityIcons.Item(_current.Battle.GetActor(selection.Actor).SourceLoadout!.Items[slot]) : null;
-    private string OptionLabel(BattleActionChoice option)
+    private string? OptionIcon(BattleActionChoice option, SessionSnapshot current) => _definition?.PrivateDefinitions is null ? null : option.Action.Spell is { } spell
+        ? UI.IdentityIcons.Spell(_definition!, spell) : option.Action.ItemSlot is { } slot && current.Selection is { } selection
+            ? UI.IdentityIcons.Item(current.Battle.GetActor(selection.Actor).SourceLoadout!.Items[slot]) : null;
+    private string OptionLabel(BattleActionChoice option, SessionSnapshot current)
     {
-        string name = DisplayNames.Action(option, _current!);
+        string name = DisplayNames.Action(option, current);
         string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {name}" : name;
         if (option.Action.Spell is { } spell)
         {
-            var definition = _current!.Battle.Definition;
+            var definition = current.Battle.Definition;
             byte? cost = definition.Spells.TryGetValue(spell, out var healing) ? healing.MpCost :
                 definition.AttackSpells.TryGetValue(spell, out var attack) ? attack.MpCost :
                 definition.SupportSpells.TryGetValue(spell, out var support) ? support.MpCost :
@@ -317,19 +179,19 @@ internal sealed partial class BattleCommandMenu : Control
         }
         return label + (option.Enabled ? "" : GameText.Get("battle.unavailable-tag"));
     }
-    private string Describe(BattleActionChoice option)
+    private string Describe(BattleActionChoice option, SessionSnapshot current)
     {
-        string text = OptionLabel(option);
+        string text = OptionLabel(option, current);
         if (option.MinimumRange is { } minimum) text += "\n" + GameText.Get("battle.range", minimum, option.MaximumRange!);
         if (option.Reason is { } reason) text += "\n" + Unavailable(reason);
         return text;
     }
-    private string DescribeItem(BattleActionChoice option, ActorRef actor)
+    private string DescribeItem(BattleActionChoice option, ActorRef actor, SessionSnapshot current)
     {
-        var owner = _current!.Battle.GetActor(actor);
+        var owner = current.Battle.GetActor(actor);
         ushort word = owner.SourceLoadout!.Items[option.Action.ItemSlot!.Value];
         var lines = new List<string>();
-        string effects = ItemDescriptions.Read(_definition!, _current, (byte)(word & 127), owner.Definition, (word & 256) != 0);
+        string effects = ItemDescriptions.Read(_definition!, current, (byte)(word & 127), owner.Definition, (word & 256) != 0);
         if (effects.Length > 0) lines.Add(effects);
         if (option.MinimumRange is { } minimum) lines.Add(GameText.Get("battle.range", minimum, option.MaximumRange!));
         if (option.Reason is { } reason) lines.Add(GameText.BattleRecovery(reason));
@@ -337,10 +199,9 @@ internal sealed partial class BattleCommandMenu : Control
     }
 
     private static string Unavailable(SessionFailure reason) => GameText.BattleFailure(reason);
-    internal void RefreshInputHints() { if (_current is not null) Refresh(); }
-
-    private string KeyHint(GameAction action) => _input.CompactHint(action);
-
-    internal object Observe() => new { page = _page.ToString(), command = _command, row = _row,
-        candidate = TargetCandidate?.Value, visible = Visible, layout = _layout.Observe() };
+    internal object Observe(BattleDecision? decision) => new
+    {
+        page = (decision?.Page ?? Page.Main).ToString(), command = (int)(decision?.Command ?? BattleCommandRow.Attack),
+        row = decision?.Row ?? 0, candidate = decision?.Candidate?.Value, visible = Visible, layout = _layout.Observe(),
+    };
 }
