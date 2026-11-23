@@ -147,6 +147,8 @@ public sealed class GameSession
 
     public BattleActingStatus? QueryBattleActingStatus() => BattleActingStatusQuery.Query(Definition, Current);
 
+    public BattleRoundOrder? QueryBattleRoundOrder() => BattleRoundOrderQuery.Query(Definition, Current);
+
     public BattleMovementRange? QueryBattleMovementRange() => BattleMovementQuery.Query(Current);
 
     public BattleSceneDefinition? ActiveBattleScenes => Current.Mode == SessionMode.Battle

@@ -16,8 +16,8 @@ Use the mounted battle presenters and existing canvas, input, movement, action, 
 save contracts. The session publishes the active phase, and the battle presenter owns the local
 command focus and decision projection. The map owns spatial marks. Command controls measure their
 hit rectangles, and inspection owns its read-only local focus. Short controlled input routes supply
-native acceptance. The implementation handoff tracks the delivered inspection movement and roster
-and the remaining spell descriptions and queue. Original-game evidence and
+native acceptance. The implementation handoff tracks the delivered inspection movement, roster,
+spell descriptions and current-round order. Original-game evidence and
 intentional remake features retain their separate provenance.
 
 **Confirmed, pre-#2079 remake source.** The acting bracket, target cursor or rectangle and
@@ -38,10 +38,10 @@ Visibility and hit testing change together.
 | Phase | Sole primary focus | Allowed support | Input and exit |
 | --- | --- | --- | --- |
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints, queue and board selection marks are hidden. |
-| Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
-| Main action | One focused row in the vertical command list | Acting card, round, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
-| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round, queue reservation, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
-| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
+| Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round, order readout, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
+| Main action | One focused row in the vertical command list | Acting card, round, order readout, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
+| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round, order readout, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
+| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round and order stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
 | Free inspection, Cursor page | One board cursor on the inspected cell | A unit card on occupied cells, a terrain panel, one framed instruction and return panel, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One framed instruction and return panel with data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
@@ -138,8 +138,8 @@ version of the existing pulse, with a steady presentation under Reduced Flash. E
 pulse and graphics parity remain **Unknown**. [Original range construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
 
 Use the [shared visual language](ui-design-language.md) for all panels. At 1920×1080, anchor the
-quiet round panel at the existing upper-left gameplay inset below host chrome and reserve a
-terrain readout below it and space for the planned queue. Use the existing roughly 560px right-side decision column,
+quiet round panel at the existing upper-left gameplay inset below host chrome, with the terrain
+readout and current-round order below it. Use the existing roughly 560px right-side decision column,
 32px gameplay inset and below-Menu band. The acting, recipient or hover card takes its top role
 as the phase changes. Let wide values grow within the layout budget. Place the Main or child
 list below the measured card. Use one independent reading/footer region below the controls
@@ -155,8 +155,8 @@ the controls. On 1600×900 use the existing fitted canvas. At larger native size
 existing edge anchors and readable panel widths. Reflow by phase, viewport and protected-subject
 geometry only. Use `BattleMenuLayout.AvoidSubject` and the existing hover-card clearance to
 protect the focused board cell and honor the right-top host exclusion. When the right column
-would cover that cell, keep the footer and card aligned in the alternate clear stack and suppress
-the secondary queue for that placement if needed. Fit a bounded reader and scroll before
+would cover that cell, keep the footer and card aligned in the alternate clear stack and place
+the order opposite them, below the protected cell if needed. Fit a bounded reader and scroll before
 allowing card, command, hint or host rectangles to intersect. Hit rects and pointer occlusion
 follow the actual visible panels.
 
@@ -570,7 +570,7 @@ for each row. The table describes the controlled content and actual input surfac
 | Actual card mount | Use the Battle01 controlled start from [Reproduce slice 1](#reproduce-slice-1) with the registered pre-voyage BLAZE2 publication and `SF2_CURSOR_CLOSEUP_ONLY=1`. The observer opens a friendly HEAL Target, returns without payment, then commits the physical attack. It verifies the allied and enemy cards during the real message wait and reflows the covered scene before resuming delivery. |
 
 Physical controller feel and human visual acceptance remain **Unknown** under #1456.
-The round queue and Target rule geometry remain with their linked owners.
+The linked owners cover the [round order](#current-round-order-2065) and Target rule geometry.
 
 ## Selected spell descriptions
 
@@ -667,29 +667,56 @@ Physical-device and human visual acceptance remain **Unknown** under #1456.
 
 ## Current-round order (#2065)
 
-Reserve a quiet readout below the round and terrain panels during Movement, Main, Magic/Item and
-Target. Default to current actor plus up to three subsequent eligible entries, with the count of
-additional entries when truncated. Use distinct current/next roles, allied/enemy identity and a
-disambiguator for same-name units. Repeated slots for one unit stay distinct in sequence. Keep
-the strip read-only and outside the input focus order. Use a compact two-line block at 1080p
-with the current entry above the ordered upcoming chips. A slot's side, current cell or stable encounter ordinal
-can disambiguate duplicate names in the strip. Wrap names within the width budget. If a layout needs room,
-reduce the number of later chips before shrinking the text or hiding the first eligible entry.
-The overflow count keeps the first version usable without another input mode. At the real end of the generated slots show a localized
-next-round-undetermined message. Once the next round is generated, rebuild from that queue.
+The production HUD displays the current actor and up to three later entries during Movement,
+Main, Magic, Item and Target. The current entry sits above the numbered upcoming entries. Each
+disclosed entry shows side and the unit's committed battle cell, which distinguishes units with the
+same name. Repeated entries for one unit retain separate slot numbers. An eligible undisclosed
+unit appears as an unnamed slot. The text uses fixed font sizes and wraps in each slot. When long
+names or available width reduce capacity, the readout keeps the earliest slots and counts all
+additional eligible entries. When the displayed sequence reaches the end, the readout says the
+next round is undetermined.
 
-Read `EngineBattleState.Queue` from `Cursor` to the first null-actor sentinel or end. Apply the
-same current-state dispatch classification as `BattleAdvancer` for dead/unplaced and skipped
-sleep/stun entries. The displayed eligible order can change after a committed status update,
-including skip processing or waking before a repeated slot. Refresh from the new snapshot and
-make the strip's current-round, current-state meaning clear. Reading the queue leaves skip side effects to actual dispatch. Apply existing disclosure to
-identities. An otherwise undisclosed actor can occupy an unnamed slot. Read actor identity/control from the
-live state so disabling, departure, revival, appearance and control changes are reflected.
-Continue uses the restored queue and cursor. Projection preserves engine order, RNG, AI decisions,
-round generation and persistence.
+`GameSession.QueryBattleRoundOrder` reads `EngineBattleState.Queue` from `Cursor` through the first
+null-actor sentinel or the end. The query shares the dead, unplaced, sleeping and stunned
+classification with `BattleAdvancer` and board disclosure with inspection. Actual dispatch owns
+skip effects, AI and random draws. The caption “Next if unchanged” qualifies the current-state
+eligibility read. Earlier actions can change status, placement or survival. Each presentation
+reads the current snapshot, including the first decision after a fresh round or cold Continue.
+The save contains the existing queue and cursor.
+[Order query](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRoundOrderQuery.cs) ·
 [Turn advancement](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) ·
-[Queue owner](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs) ·
-[Existing implementation ticket](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2065)
+[Queue owner](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs)
+
+`BattleMenuLayout` places the readout below the round and terrain stack, opposite the decision
+card and controls. If the readout would cover the focused cell, it moves below the protected
+rectangle. The Target page omits terrain as usual. The strip has no focus, gesture or pointer
+occlusion and leaves with the decision HUD during inspection, host cover and delivery. DesignPreview
+consumes it through the production battle view.
+[Layout](../../game/src/Battles/BattleMenuLayout.cs) · [Readout](../../game/src/Battles/BattleRoundOrderPanel.cs)
+
+### Reproduce the current-round order
+
+Run `uv run sf2 verify engine` for the behavior assertions. Compare a stored queue with real
+next-player dispatch under dead, unplaced, sleep and stun states, including a duplicate entry.
+The tests check the sentinel and the end of the list, bounded overflow, a fresh round, and a
+cold restore of a partly consumed queue. [Engine cases](../../tests/Sf2.Remake.Engine.Tests/BattleRoundOrderTests.cs)
+
+Follow [Reproduce slice 1](#reproduce-slice-1) for the Debug build, settings and disposable native
+environment. In an ignored copy of `attack-spells.json`, rename `guard` and `wing` to
+`long-controlled-combatant-name` and `long--controlled--combatant--name` in the actor definitions,
+start and encounter placements. Both resolve to the same name. Move the `center` placement to
+`x=3` so the starting mage can enter Attack Target. Set `SF2_INSPECTION_ROUTE` to `keyboard` for
+English and `pad` for Simplified Chinese with Reduced Flash. Start at 1920×1080 and substitute
+`res://probes/engine_battle_round_order_observation.gd` as the script. The observer resizes to
+1600×900 under Menu cover and exits after a real target click.
+[Native observer](../../game/probes/engine_battle_round_order_observation.gd)
+
+**Confirmed, bounded remake.** Both routes label same-name actors separately, fit two long
+upcoming names at the fixed font sizes, and count the remaining two entries. The readout clears
+the card, round, terrain, footer, command list and focused cell. Inspection and host cover hide it
+and restore the same order and gameplay state. Magic, Item and Target retain the current sequence.
+A complete target click still commits and hides the HUD. Human readability and physical device
+feel remain **Unknown** under #1456.
 
 ## Implementation handoff
 
@@ -706,7 +733,7 @@ before each implementation. The following are principal owners and distinct acce
 | 3a. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) Inspected movement | Delivered through `QueryBattleInspectionRange`, `BattleInspectionView` and the shared board overlay. | [Authored corridor observation](#reproduce-the-inspected-movement-field) checks ally → enemy → empty, traversal versus stops, details/Map/Members/host transitions, cursor exit and state/seed equality. |
 | 3b. [#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082) Shared member presentation | Delivered shared scrollable roster rows and existing details through `MemberRosterView`, `PartyStatusView`, `BattleMemberListView` and `PartyDetailsPanel`. | [Short authored observations](#reproduce-the-shared-roster) cover roster size, long names, retained conditions, pointer and mapped focus, Back/scroll and field Prepare. |
 | 4. [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083) Describe spells by level and context | Implemented through `BattleChoices`, `FieldRecovery`, `SpellDescriptionFacts` and the shared localized reader. | [Battle and field observation](#reproduce-selected-spell-descriptions) covers two ranks, area, self, refusal, cancellation, free field use and recovery payment. |
-| 5. [#2065](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2065) Show the actual queue | Current and next scheduled actors in the reserved left stack. Read projection beside `BattleAdvancer`/`BattleTurnFlow`. Render through the battle HUD/layout and document in the feature trace. | Compare the next actual eligible actor, repeated slots, same names, status skips and changes, dead/unplaced entries, sentinel and empty remainder, new round and cold Continue. Verify hide/show by phase and equality of seeds, resources and queue after repeated projection and cover/return. |
+| 5. [#2065](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2065) Show the actual queue | Implemented through `BattleRoundOrderQuery`, shared dispatch classification and the production battle HUD. | [Engine and native acceptance](#reproduce-the-current-round-order) covers real dispatch, repeated slots, identity, phase visibility, reflow and cold Continue. |
 
 [#2068](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2068) owns formal BLAZE
 playback assets and shares the playback writer only as needed. The [field Prepare command rows](field-and-shop.md#prepare-command-icons)

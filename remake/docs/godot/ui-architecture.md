@@ -380,14 +380,14 @@ query boundaries.
   [Shared facts](../../src/Sf2.Remake.Application/Runtime/SpellDescriptionFacts.cs) ·
   [Formatter](../../game/src/Localization/SpellDescriptions.cs) ·
   [Behavior and reproduction](battle-ui-composition.md#selected-spell-descriptions)
-- **Current-round queue.** #2065 can use a small read query beside `BattleAdvancer` and
-  `BattleTurnFlow`. Factor the existing current-state dispatch classification for dead/unplaced
-  and sleep/stun so a queue read cannot drift, and keep actual skip side effects in dispatch.
-  Use the stored queue/cursor and stop at the real sentinel/end. Preserve repeated slots and
-  disclosure. Label the projection as conditional on current state, since a prior action can
-  alter the next eligible actor. No advance, next-round roll, AI prediction or saved projection.
-  Host cover and Continue use the existing scope, and the readout remains outside focus.
+- **Current-round queue.** `BattleRoundOrderQuery` reads the stored queue/cursor through the
+  sentinel or end. It shares current-state eligibility with `BattleAdvancer` and board disclosure
+  with inspection. The dispatcher owns skip effects, AI and round generation. Repeated slots
+  remain distinct, and the caption qualifies eligibility on current state. The passive
+  `BattleRoundOrderPanel` follows the decision HUD's visibility, and Continue rebuilds its display
+  from restored state.
   [Queue contract](battle-ui-composition.md#current-round-order-2065) ·
+  [Query](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRoundOrderQuery.cs) ·
   [Advance and skip](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) ·
   [Queue and cursor](../../src/Sf2.Remake.Domain/Battles/Rules/BattleTurnFlow.cs)
 
@@ -438,9 +438,8 @@ the restored vertical Main and its acceptance. Slice 2 can use free reading dire
 vertical page where the existing controls permit them. #2083 consumes the shared reader and
 coherent Back from those slices. Serialize target geometry changes that touch
 `BattleChoices` or `BattleMenuLayout`.
-#2065 needs the stable phase/visibility boundary from slice 1 before mounting its strip. Its pure
-queue query may be reviewed independently of the description reader and target footprint, with
-cold Continue and read-vs-actual-next acceptance retained in #2065. The [Prepare command rows](#prepare-command-rows)
+The current-round order uses the phase boundary from slice 1. The queue acceptance compares
+the readout with real dispatch and verifies cold Continue. The [Prepare command rows](#prepare-command-rows)
 use the current reader and catalog. #2085 retains ownership of card level and
 inspection wording/hits. Handle the Target input/feedback findings attached to it in slice 1 and
 the reading/inspection findings in slice 2. This is one disposition for each reported behavior.

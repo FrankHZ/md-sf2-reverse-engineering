@@ -161,7 +161,10 @@ internal static class BattleTurnFlow
 
     // An absent actor marks the source sentinel; negative AGI entries behind it do not run.
     internal static bool AtRoundEnd(EngineBattleState battle) =>
-        battle.Cursor >= battle.Queue.Count || battle.Queue[battle.Cursor].Actor is null;
+        AtRoundEnd(battle, battle.Cursor);
+
+    internal static bool AtRoundEnd(EngineBattleState battle, int slot) =>
+        slot >= battle.Queue.Count || battle.Queue[slot].Actor is null;
 
     internal static BattleActorState QueuedActor(EngineBattleState battle) =>
         battle.GetActor(battle.Queue[battle.Cursor].Actor!.Value);

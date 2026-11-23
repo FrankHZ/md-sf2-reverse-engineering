@@ -8,6 +8,9 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 // Shared ordinary-board disclosure; no retained reveal history. Scene poses are display-only.
 public static class BattleVisibility
 {
+    internal static bool IsDisclosed(SessionSnapshot current, BattleActorState actor) =>
+        actor.Hp > 0 && actor.Initialized && OnBoard(current, actor);
+
     public static Exploration.ExplorationEntity? StagedEntity(SessionSnapshot current, BattleActorState actor)
     {
         int slot = actor.IsAlly ? actor.Deployment.Initialization?.AllyPartyMember ?? actor.ProcessingOrder : actor.ProcessingOrder;

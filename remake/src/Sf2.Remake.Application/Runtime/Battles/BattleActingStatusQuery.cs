@@ -9,6 +9,15 @@ internal static class BattleActingStatusQuery
 {
     internal static BattleActingStatus? Query(ScenarioDefinition definition, SessionSnapshot current)
     {
+        if (ActingActor(current) is not { } actor) return null;
+        // Preview.Destination is requested before delivery; actor.Position stays at the turn origin.
+        // From is the last fully delivered tile, including each segment of an undo route.
+        var shown = current.BattleMovement?.From ?? current.Selection!.Preview.Destination;
+        return new(BattleUnitProjection.Summary(definition, current, actor), BattleUnitProjection.Land(current, actor, shown));
+    }
+
+    internal static BattleActorState? ActingActor(SessionSnapshot current)
+    {
         if (current.Selection is not { } selection ||
             current.StopReason is not (SessionStopReason.PlayerInput or SessionStopReason.PresentationWait)) return null;
         // Remove only the owned player/undo delivery when checking ordinary control.
@@ -20,10 +29,6 @@ internal static class BattleActingStatusQuery
             ((ActiveBattle)current.Active) with { Movement = null }, current.Story, SessionStopReason.PlayerInput);
         if (!idle.HasBattleControl) return null;
         var actor = current.Battle.GetActor(selection.Actor);
-        if (!actor.Initialized || actor.Hp == 0 || actor.Control != BattleControl.Player || !BattleVisibility.OnBoard(current, actor)) return null;
-        // Preview.Destination is requested before delivery; actor.Position stays at the turn origin.
-        // From is the last fully delivered tile, including each segment of an undo route.
-        var shown = movement?.From ?? selection.Preview.Destination;
-        return new(BattleUnitProjection.Summary(definition, current, actor), BattleUnitProjection.Land(current, actor, shown));
+        return actor.Control == BattleControl.Player && BattleVisibility.IsDisclosed(current, actor) ? actor : null;
     }
 }
