@@ -26,10 +26,12 @@ retain their own scope; this section is a product decision, not an original timi
    three services before testing the helper return. An already-ended track therefore takes3;
    entry progress501/end505 takes6. For an empty admitted command queue the count is
    `3 * ceil(max(2, end - entryProgress) / 3)`.
-4. Matching actual finite completion, identified by cue and generation, is a second gate. It may
-   arrive before the helper. Early completion never skips logical work; late completion adds no
-   services, RNG or accumulated host debt. Previous playback uses the existing whole-PCM finish
-   then restart policy; logical eligibility does not start the player early.
+4. Ordinary playback uses matching actual finite completion, identified by cue and generation,
+   as its second gate. It may arrive before the helper. Early completion leaves logical work
+   pending. Late completion adds no services, RNG or host debt. For an eligible finite
+   recruitment wait followed by PreviousMusic, the [fresh Confirm policy](../../../../remake/docs/application/session-and-programs.md#confirm-during-field-story-waits)
+   permits an explicit skipped-delivery receipt after logical completion. The same previous-track
+   instruction owns the restart.
 5. A duplicate current cue preserves generation/progress. A legal earlier replacement starts a
    new generation at0 and preserves previous-track history. Stale/wrong/duplicate completion is
    rejected. Ordinary unprofiled/looping previous-track requests pop the same known logical history

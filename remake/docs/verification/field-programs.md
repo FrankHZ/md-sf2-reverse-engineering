@@ -102,7 +102,7 @@ Load the worktree's ignored input configuration in the launching process, force
 ignored run directory; isolate TEMP/TMP, APPDATA/LOCALAPPDATA there as in the native host recipe.
 Set `SF2_EXPLORATION_OBSERVATION_OUTPUT` to its report JSON, `SF2_READING_PACKAGE` to a new JSON
 path in it, and `SF2_READING_CASE` to one of `plain`, `field`, `field-portrait`, `w1`, `long`,
-`field-pause`, `field-clear`, `field-interrupt`. The package path must also be passed to ordinary
+`field-pause`, `field-clear`, `field-interrupt`, `field-join`. The package path must also be passed to ordinary
 startup. Use existing adjustable input settings with120 characters/second; default Confirm keys
 and pad South remain active. From repository root, the native argument equivalent is:
 
@@ -126,17 +126,98 @@ advertises movement bindings. This retains remap coverage at the actual input au
 Confirm, fully visible final segment acknowledges with pad South and completes the genuine caller
 close, with/without mounted portrait and through W1. Echo/hold does not cross the next token.
 A55-line passage retains its token while revealing and reading every page, including the press
-that exposes the last page. `{D1}` retains its22 elapsed services; CLEAR retains the new display
-span for fresh reading. During the interruption case, the observer hides the actual host from its
+that exposes the last page. CLEAR retains the new display span for fresh reading. During the
+interruption case, the observer hides the actual host from its
 first mandatory-service callback: the batch stops on that tick, hiding freezes it, restoration
 finishes only ordinary work and leaves the original input pending until a fresh Confirm.
-Adapter/native checks cover this host policy; Application commands/rules are unchanged.
+The adapter and native checks cover this host policy.
 
 A prechange authored pilot reproduced the old first-press reveal-only result (0/55 to55/55,
-same DialogueWait and simulation tick), then second-press choice. The user's exact reported scene
-and physical device/human experience remain **Unknown**. Prior private aggregate failures and
-ObjectDB warnings are retained in their owners; this finite authored observation neither reruns
-nor resolves them. No full-route/private-source acquisition or new comparator is involved.
+same DialogueWait and simulation tick), then second-press choice.
+
+### Confirm during D1 and recruitment
+
+**Confirmed (bounded Godot runs):** `field-pause` uses four D1 tokens and waits for fully visible
+dialogue during the first live pause. One fresh Enter ends all four pauses and reaches the next
+span. Held Enter and echo leave that span pending. Without Confirm, the engine behavior case
+retains the 22-service D1 path and the mouth-control branch.
+
+`field-join` uses authored text, party and item effects and an eight-second silent PCM resource
+passed through the actual audio player. One fresh Enter during finite playback finishes the
+helper's common services. The player stops the join cue, restarts the previous cue once and
+leaves the plain text acknowledgement pending under held and echo input. A separate press
+completes the caller. The actor, camera target and windows settle, the flag is set, and the
+member and single reward remain present. The engine case also compares the natural and
+confirmed returns for logical clock, RNG, actor motion and view equality.
+
+After locked SDK restore, run `dotnet test --configuration Release --no-restore` against
+`remake/tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj` with the filter
+`FullyQualifiedName~ExplorationMusicTests|FullyQualifiedName~ExplorationTextWaitTests|FullyQualifiedName~ServiceGreetingTests`,
+using the configured SDK from `remake/`. Run `uv run sf2 verify adapter` and the actual Debug
+build. Use the observer command above for the native cases. The
+[wait agreement](../application/session-and-programs.md#confirm-during-field-story-waits)
+owns the source conditions and modern admission rules.
+
+**Confirmed (bounded private Godot):** `private-galam-pause` reads the actual repeat kitchen
+dialogue, text 899, through the candidate world and the genuine entity interaction. At the live
+D1 the text is fully visible. A fresh Enter produces four interruption receipts and one W1
+acknowledgement in the same process frame. The caller closes its window and returns to Map 17
+with F256 set. Holding Enter and sending an echo leaves field control ready.
+
+Select the registered #2091 candidate world, main scenes, entry and its six opening inputs. Use
+the same isolated launch environment and English adjustable settings. Take the v6 slot 1
+from the registered `derived/disposable-saves/issue2049-stable-kitchen/sf2-opening` fixture as
+the immutable starting point. Write the derived seed to the ignored run folder. This stages
+the repeat caller beside the maid's post-scene position with F256 set. It measures the
+repeat seam. The preceding visit and original hardware input timing remain **Unknown**.
+
+```powershell
+$shared = $env:SF2_SHARED_INPUT_ROOT
+$candidate = Join-Path $shared 'derived/issue2091/fixed-battle-backdrops-v1-candidate'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $candidate 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $candidate 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $candidate 'entry/entry.json'
+foreach ($input in Get-ChildItem -LiteralPath (Join-Path $candidate 'opening-inputs') -Filter 'SF2_PRIVATE_*.json' -File) {
+    Set-Item -LiteralPath "Env:$($input.BaseName)" -Value $input.FullName
+}
+$env:SF2_SAVE_ROOT = Join-Path (Split-Path -Parent $shared) 'issue2073-confirm-waits-saves'
+$env:SF2_SAVE_NAMESPACE = "native-$([Guid]::NewGuid().ToString('N'))"
+$seed = Join-Path $run 'galam-repeat-seed.json'
+$kitchen = Join-Path $shared `
+  'derived/disposable-saves/issue2049-stable-kitchen/sf2-opening/slot1.json'
+@'
+import base64
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+source, output = map(Path, sys.argv[1:3])
+envelope = json.loads(source.read_bytes())
+payload = json.loads(base64.b64decode(envelope["payload"]))
+assert payload["formatVersion"] == 6
+data = payload["data"]
+visit = data["visit"]
+assert visit["body"]["map"] == "map-17"
+player = next(actor for actor in visit["actors"] if actor["entity"] == visit["player"])
+assert (player["motion"]["x"], player["motion"]["y"]) == (18 * 384, 4 * 384)
+player["motion"]["facing"] = 0
+maid = next(actor for actor in visit["actors"] if actor["entity"] == "entity-131")
+assert (maid["motion"]["x"], maid["motion"]["y"]) == (17 * 384, 5 * 384)
+maid["motion"].update(x=19 * 384, y=4 * 384, xDestination=19 * 384, yDestination=4 * 384, facing=0)
+registers = data["registers"]
+registers["flags"] = sorted(set(registers["flags"]) | {256})
+wire = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+output.write_text(json.dumps({"payload": base64.b64encode(wire).decode("ascii"),
+                              "sha256": hashlib.sha256(wire).hexdigest().upper()}), encoding="utf-8")
+'@ | python -X utf8 - $kitchen $seed
+if ($LASTEXITCODE -ne 0) { throw 'Galam seed preparation failed' }
+$env:SF2_READING_CASE = 'private-galam-pause'
+& $env:GODOT_BIN --headless --max-fps 60 --resolution 1920x1080 `
+  --path remake/game --rendering-method gl_compatibility --audio-driver Dummy `
+  --script res://probes/engine_dialogue_confirm_observation.gd -- `
+  --load-save $seed --input-settings $inputSettings
+```
 
 ## Continuous exploration control and contextual Talk
 

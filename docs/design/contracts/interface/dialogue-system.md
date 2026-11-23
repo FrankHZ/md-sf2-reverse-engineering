@@ -244,10 +244,10 @@ first-glyph change, W1/W2 draw/copy or acknowledgement. Its neutral delay MUST e
 common services with typewriting cleared and restore the actual saved logical flag before the
 next token. Nonzero mouth-control contributes no delay services. Token order, repeated/end/around-
 input placement, eligible entities/portrait RNG and single/batched service equivalence retain their
-existing owners. Reveal completion and reveal-only Confirm MUST NOT substitute for source held
-logical input. Held-input shortening remains unadmitted by this modern consumer; D3 and other
-unbound controls remain Unsupported. The legacy suppressed W1 shortcut cannot consume D1 by
-ignoring its services.
+existing owners. The [fresh reading Confirm](../../../../remake/docs/application/session-and-programs.md#confirm-during-field-story-waits)
+can end pauses within the active span, restoring typewriting and continuing ordered token work.
+The acknowledgement still owns its own poll and token. The legacy suppressed W1 shortcut
+admits only the controls it implements.
 
 **Confirmed (static source):** `mapscriptengine_2.asm:csc00_displaySingleTextbox` skips portrait
 lookup for operandFFFF, writes `CURRENT_SPEECH_SFX=0`, then performs view wait/text and the ordinary

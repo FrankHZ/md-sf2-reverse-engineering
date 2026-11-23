@@ -25,7 +25,9 @@ internal sealed partial class GameInput
 
     internal static bool InterruptsTextDelay(GameAction action) => action is GameAction.Up or GameAction.Down or
         GameAction.Left or GameAction.Right or GameAction.Confirm or GameAction.Cancel or GameAction.Attack;
-    internal bool TextDelayInputHeld => _bindings.Keys.Any(action => InterruptsTextDelay(action) && Godot.Input.IsActionPressed(MapName(action)));
+    // A Confirm edge may have advanced another span or opened the current dialogue.
+    internal bool TextDelayInputHeld => _bindings.Keys.Any(action => action != GameAction.Confirm &&
+        InterruptsTextDelay(action) && Godot.Input.IsActionPressed(MapName(action)));
 
     internal GameInput(InputSettings settings)
     {

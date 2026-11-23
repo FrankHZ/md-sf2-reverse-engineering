@@ -38,8 +38,11 @@ public sealed record DebugWinBattle : SessionCommand;
 public sealed record WaitAtInput : SessionCommand;
 // One nonaccepting poll. W1 also polls on acceptance; the plain input-first helper does not.
 public sealed record WaitForText(WaitToken Wait) : SessionCommand;
-// A mapped direction or face button breaks the live long delay before its next service.
-public sealed record InterruptTextDelay(WaitToken Wait) : SessionCommand;
+// The dedicated interrupt admits D3; an active reading Confirm also admits D1.
+public sealed record InterruptTextDelay(WaitToken Wait) : SessionCommand
+{
+    public bool FromReadingConfirm { get; init; }
+}
 // Actual text delivery, independent of simulation opportunities and input polling.
 public sealed record CompleteTextReveal(WaitToken Wait) : SessionCommand;
 // A live healing-scene token advances one admitted source opportunity. Its cursor
@@ -50,6 +53,17 @@ public sealed record Interact(EntityRef Entity) : SessionCommand;
 public sealed record Acknowledge(WaitToken Wait) : SessionCommand;
 public sealed record CompletePresentation(WaitToken Wait, PresentationCueKind Kind) : SessionCommand;
 public sealed record CompleteMusic(long Generation, string Cue) : SessionCommand;
+public sealed record CompleteJoinMusicWait(WaitToken Wait) : SessionCommand
+{
+    // The next PreviousMusic cue owns stopping the finite stream and restoring the live stack.
+    public static bool CanConfirm(SessionSnapshot current, ExplorationDefinition definition) =>
+        current.Story.EntrySkip is null && current.Story.Wait is MusicWait helper &&
+        current.Story.Music is { HistoryBound: true, EndStep: not null, DeliverySkipped: false } music &&
+        helper.Generation == music.Generation &&
+        definition.Visuals?.Audio.GetValueOrDefault(music.Cue)?.Command is 19 or 20 &&
+        current.Story.Cursor is { } cursor && definition.Programs.TryGetValue(cursor.Program, out var program) &&
+        program.Instructions.ElementAtOrDefault(cursor.Instruction + 1) is PresentCue { Kind: PresentationCueKind.PreviousMusic };
+}
 public sealed record EntitySpriteReady(int Slot, long Request) : SessionCommand;
 // An explicit answer: authored direct choice, or a source choice's admitted Input phase.
 public sealed record ChooseDialogue(WaitToken Wait, bool Yes) : SessionCommand;

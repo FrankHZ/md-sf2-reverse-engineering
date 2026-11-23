@@ -1246,7 +1246,9 @@ moving-bit clear observation. Reopening starts a fresh layout.
 
 Neutral mandatory work supplies logical input0. Source nonzero input shortens the extra glyph
 delay only when mouth control is0; the engine tests that rule, but exposes no new shortening
-player action. Actual delivery supplies neither this input nor work. The modern [host reading policy](../godot/presentation.md#ordinary-dialogue-confirm) may batch existing neutral mandatory services after an explicit Confirm, retaining their order and explicit text pauses. It cannot skip outstanding work; logical completion without delivery also cannot poll.
+player action. Actual delivery supplies neither this input nor work. The modern
+[host reading policy](../godot/presentation.md#ordinary-dialogue-confirm) batches neutral mandatory
+services in order after an explicit Confirm. Logical completion without delivery cannot poll.
 Each optional Wait and accepting Ack draws main RNG256, copies its byte, updates the W2 indicator
 if applicable, services once, then decides input. Enabled NPC draws may change the main image
 in that service; they cannot overwrite the copy. W2's20-step indicator is visible at counter>=7,
@@ -1450,8 +1452,9 @@ restores field following. No map/program/text ID selects production admission.
 
 D1 is a typed neutral22-service pause with saved/cleared/restored typewriting; nonzero mouth
 control skips its waits. It preserves first-glyph/token order and uses the same live entity/window/
-portrait services, with no poll/copy or fake acknowledgement. Held logical-input shortening remains
-unadmitted; reveal/Ack cannot supply it. Other unbound controls remain Unsupported. Explicit
+portrait services without a poll or copy. The [fresh reading Confirm](#confirm-during-field-story-waits)
+can end these pauses in the active span while retaining the ordinary acknowledgement rule. Other
+unbound controls remain Unsupported. Explicit
 sourceFF/null/no-event-speaker narration is admitted without replacing a retained portrait or
 inferring its absence; actual speech uses the null speaker and remains silent. Explicit closes
 still own removal. [Dialogue provenance/limits](../../../docs/design/contracts/interface/dialogue-system.md#bound-neutral-text-delay-and-narration).
@@ -1900,6 +1903,42 @@ separate this supported raw-text rule from the unknown sound-to-service clock. T
 updates are not a duration in entity services. See [verification](../verification/field-programs.md#raw-field-text-observation)
 for behavior and native expected-boundary acceptance.
 
+## Confirm during field story waits
+
+Standard rigor: the reading and recruitment paths share mapped input but own different
+continuations. The acceptance boundary is the current text span for D1 and the current finite
+join-music helper for recruitment. Compare the normal and confirmed paths at their next input
+boundary, then verify the caller's state and projection after a separate confirmation.
+
+**Confirmed (static source):** at pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/scripting/text/textfunctions_1.asm:symbol_delay1` loads 21 and `symbol_delay3` loads
+119. Both save and clear the typewriting byte and enter `loc_65D8`. When
+`MOUTH_CONTROL_TOGGLE` is zero, the loop samples `CURRENT_PLAYER_INPUT` for directions and
+A/B/C before each VInt. A matching input restores the byte and resumes text. With mouth control
+set, the loop consumes its iterations without input sampling or VInt service. The Witch setup
+explicitly clears the toggle and `PlayIntroOrEndCutscene` sets it to FF. Map 17's
+`data/maps/entries/map17/mapsetups/s2_entityevents.asm` emits text 899 with four D1 tokens and
+ends in W1. Its normal field path can enter the input-sampling branch with the cleared toggle.
+**Unknown:** the toggle and sampled input sequence in the reported Galam playthrough.
+
+The remake's fresh mapped Confirm follows these rules:
+
+- Reading intent can end D1 pauses within the current displayed span, including a run of
+  repeated D1s. It resumes the saved typewriting state and executes remaining glyph, window,
+  and acknowledgement work in order. Page reading, CLEAR and a new wait token bound that
+  intent. Without Confirm, D1 keeps its 22 neutral services. D3 retains its dedicated interrupt
+  path. Confirm must arrive as a fresh edge for either pause.
+- When a finite recruitment cue (sound command 19 or 20) owns a `MusicWait` immediately
+  followed by `PreviousMusic`, Confirm runs its
+  remaining common services in bounded batches and ends any remaining native playback through
+  the normal previous-music instruction. The matching wait records skipped delivery separately
+  from natural completion. The next plain text acknowledgement needs its own input. The
+  script remains responsible for the party, flags, items, window close, and actor or camera
+  cleanup. Both paths execute those instructions in order exactly once.
+- Camera, actor motion, fades, ordinary tick waits, choices and other music use their existing
+  commands and completion rules. An in-flight intent is discarded on loss of its token or
+  host ownership. The wait commands never acknowledge a later span or choose a menu action.
+
 ## Modern Finite Music
 
 The [accepted modern policy](../../../docs/design/contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)
@@ -1924,11 +1963,13 @@ owns changed-state acceptance and the retained baseline reproduction.
 `ExplorationMusicRunner` advances this state before each existing bound common service, regardless
 of entity enablement. It never adds a second entity service or uses PCM duration.
 
-`MusicWait` first arms, subsequently samples logical end, and returns only after a complete group
-of3 services plus matching `CompleteMusic(generation,cue)`. Early receipts latch; late receipts
-cause no tick/RNG/debt. The host observes actual finite completion and then the existing actual
-previous-track restart. Wrong/stale/duplicate receipts reject; active-helper interference or a
-changed bound map/area/battle-selection reports Unsupported, and changed host playback reports an explicit adapter error.
+`MusicWait` first arms, subsequently samples logical end, and returns after a complete group
+of3 services and a matching delivery receipt. Ordinary playback uses
+`CompleteMusic(generation,cue)`. Early receipts latch, and late receipts add no tick, RNG or
+debt. The [recruitment Confirm](#confirm-during-field-story-waits) can submit a skipped delivery
+receipt after logical completion. Either receipt lets the existing previous-track instruction
+restore playback. Wrong, stale and duplicate receipts reject. Active-helper interference or a
+changed bound map, area or battle selection reports Unsupported. Changed host playback reports an adapter error.
 Missing profiles retain the raw-text boundary above. Looping/other unbound playback remains supported.
 
 The common commit boundary invalidates history and finite phase on context changes outside a helper,

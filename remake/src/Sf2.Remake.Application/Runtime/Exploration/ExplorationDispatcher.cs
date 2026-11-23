@@ -118,7 +118,8 @@ internal static class ExplorationDispatcher
                     current = ProgramRunner.Commit(current, current.Active, FinishWait(current.Story), observations, skippedDelivery ? "text-acknowledgement-skipped" : "presentation-acknowledged");
                     break;
                 case InterruptTextDelay interrupt:
-                    if (current.Story.Wait is not FieldTextWait { InterruptibleDelay: true } delay || delay.Token != interrupt.Wait)
+                    if (current.Story.Wait is not FieldTextWait { Phase: FieldTextPhase.TextPause } delay ||
+                        delay.Token != interrupt.Wait || !(delay.InterruptibleDelay || interrupt.FromReadingConfirm))
                         return Reject(current, "text-delay-unavailable", "wait");
                     var resumed = current.Story.Copy(current.Story.Cursor, delay with { Phase = FieldTextPhase.Tokens, Remaining = 0 },
                         typewriting: delay.SavedTypewriting);
@@ -146,6 +147,15 @@ internal static class ExplorationDispatcher
                         return Reject(current, "stale-or-wrong-music", "music");
                     current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, current.Story.Wait,
                         music: playing with { ActualDone = !skippedDelivery, DeliverySkipped = skippedDelivery }), observations, skippedDelivery ? "music-delivery-skipped" : "music-actual-completed", playing.Cue);
+                    current = ExplorationMusicRunner.Finish(current, observations);
+                    break;
+                case CompleteJoinMusicWait join:
+                    if (current.Story.Wait is not MusicWait { LogicalDone: true } joinWait || joinWait.Token != join.Wait ||
+                        current.Story.Music is not { ActualDone: false } recruitment ||
+                        !CompleteJoinMusicWait.CanConfirm(current, definition.Exploration!))
+                        return Reject(current, "join-music-confirm-unavailable", "wait");
+                    current = ProgramRunner.Commit(current, current.Active, current.Story.Copy(current.Story.Cursor, joinWait,
+                        music: recruitment with { DeliverySkipped = true }), observations, "music-delivery-skipped", recruitment.Cue);
                     current = ExplorationMusicRunner.Finish(current, observations);
                     break;
                 case CompletePresentation completion:
