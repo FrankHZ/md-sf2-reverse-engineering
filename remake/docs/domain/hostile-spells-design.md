@@ -503,11 +503,11 @@ candidates have an ally class. Exercise both a tied cohort and a single high-pri
 [Action validation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
 [Automatic delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs)
 
-For a confused enemy's learned spell, score from raw `SPELLDEF_POWER` with resistance in
-`EnemySpellDecision.Score`. Live execution still applies the caster's enhanced power before
-resistance. The current scorer already uses raw power for allies and items. Keep ordinary
-enemy behavior covered by its existing cases. [Source AI estimate][aipower] ·
-[Source spell damage][castpower]
+Use raw `SPELLDEF_POWER` adjusted for target resistance in the shared
+`EnemySpellDecision.Score` for learned spells and attack items, including ordinary and
+confused enhanced enemies. Live learned-spell damage still applies eligible enhancement
+before resistance. Correct any ordinary enemy scoring expectations that used execution power
+as the estimate. [Source AI estimate][aipower] · [Source spell damage][castpower]
 
 ### Settlement and current combinations
 
@@ -545,9 +545,10 @@ existing roles. Preserve opposing counter credit, support/DETOX halving and sett
    single replay. Include an eligible ally award on a half-EXP battle, an enemy kill with no
    allied reward or drop, and a terminal casualty. Verify that the existing death batch removes
    defeated self and same-side targets from the map, clears their status words and refreshes
-   their stats. Show eligible double and counter draws with no follow-up strikes, plus an
-   enhanced enemy whose raw scored spell power differs from its resolved damage input.
-   Preserve opposing counter, spell and drop controls.
+   their stats. Show eligible double and counter draws with no follow-up strikes. For an
+   enhanced enemy, compare ordinary and confused casts. Both use raw power and resistance for
+   scoring and enhanced power and resistance for damage. Preserve opposing counter and drop
+   controls.
 2. Admit the finite rank-2 consumer set together with the effect in the existing support owner.
    Share turn admission across spell targeting, typed Start, battle Save and Continue. Check
    the live operands the selector and action builders need. Status syntax, standby, growth,
