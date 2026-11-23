@@ -189,14 +189,79 @@ settled battle wire round trip restores an active sleep count and matches the ne
 RNG results. [Learned spell and save cases](../../tests/Sf2.Remake.Engine.Tests/SleepSpellTests.cs) ·
 [Existing sleep behavior](../../tests/Sf2.Remake.Engine.Tests/SleepAndFlyingTests.cs)
 
-**Confirmed** for the current implementation boundary. SLEEP 1 is available in controlled
-authored scenarios. The generic support scene shows the sleep result once per successful
-target. Private campaign binding remains pending in #1967. The registered issue1966 package
-supplies the source row and sleep texts 306/338/354. Its encounter scenes lack both SLEEP
-menu icon variants, and the issue1941 Chinese catalog lacks the spell ID 9 name. Asset
-preparation belongs to [#2001](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2001).
-Tyrin's ordinary learn-and-cast and native Continue after a spell-inflicted sleep remain **Unknown**.
-[Current private spell bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
+**Confirmed** in the private campaign reader. SLEEP 1 binds from source spell ID 9 with
+entry SLEEP, DEBUFF1, 4 MP, center range 1–2, radius 1 and the opposing silence-affected
+Support properties. A live learned book supplies the rank to Battle Magic. [Private spell binding](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
+
+### Architecture decision
+
+Direct reuse is sufficient for SLEEP 1. Content admits the rank independently of the icon
+inventory, and Application derives the action and target choices from the admitted definition and
+the live book. The Domain builds one ordered effect roll per target. Resolution validation
+re-evaluates the same rule against those recorded draws, keeping construction and playback
+consistent without consuming RNG again. Application pays the caster before reactions and publishes
+the target word only when the successful reaction plays. Physical and spell sleep share the packed
+counter, turn skip, wake and existing save representation. Godot reads the choices and projects the
+icon, effect text and resulting state. This keeps the learned rank, RNG and status in their existing
+owners. The DEBUFF1 cast animation remains separate presentation work under
+[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+[Resolution and playback](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
+[Turn continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) ·
+[Spell description](../../src/Sf2.Remake.Application/Runtime/SpellDescriptionFacts.cs)
+
+### Controlled Tyrin 25 input and cold Continue
+
+**Confirmed** in the remake. Using prepared #2001 content, a controlled MAGE 25 Tyrin enters
+Battle26 Movement through title Continue. Chinese Magic shows 催眠 1 and 4 MP, both spell-9
+icon states and the opposing-area description. Cancel returns to the same row with the payment
+and both seeds unchanged. Select Dark Bishop (enemy-13) at (11,23). The ordered reactions apply
+sleep 192 to Lesser Demon (enemy-12) and report no effect on the bishop. Tyrin's MP changes
+49→45 and EXP 0→5. Janet gains Movement. Ordinary Save, fresh-process Continue and immediate
+re-save retain the active count, caster resources, queue and RNG. All three decoded battle data
+objects are equal at sequences 8, 9 and 10. Bowie's ordinary EGRESS then returns usable control
+on Map36. Both successful processes exit 0 with ObjectDB shutdown warnings. Tyrin's natural
+level-25 acquisition and cast from an unchanged campaign history remain **Unknown**.
+
+Use the registered #2001 priority-v1 world, main-scenes, entry and opening-inputs with the
+[ordinary private input selection](../content/presentation-assets.md#bedoe-audio-package).
+Select catalogs-v1/world.zh-CN.json for display names and the registered #1941 Chinese entry
+catalog. Both icon variants are already in the Battle26 scene. The verification mounts these
+files in place. It needs no replacement world or asset extraction. Use the locked Debug adapter,
+the issue1955 Chinese instant-text settings and a fresh disposable save namespace on G: outside
+the checkout. Keep the controlled input and receipts in the checkout's ignored local directory.
+The controlled slot is about 42 KiB and the four compact native receipts total about 292 KiB.
+
+Derive the controlled slot from a copy of issue1966's zh-CN-learned01 Battle26 slot. Keep both
+battle seeds, positions of other units, and the rest of the round-6 queue. Change only these
+party and staging operands.
+
+1. Use the existing undeployed MAGE 24 Tyrin row. Give him Karna's deployment square and
+   current position (11,24). Set level 25, max HP/MP 28/50, base ATT/DEF/AGI 21/26/30 and
+   current HP/MP 27/49. These are one legal growth result from Tyrin's level-24 values using
+   seed word 0 for the controlled growth calculation. Keep ATT 36 and his equipment. In
+   progress and loadout use packed [75,76,9,63] and append learned SLEEP 1 to expanded ranks.
+2. Use Karna's unjoined level-24 values, equipment and packed book from issue1927's castle-en
+   slot. Remove BLAST 3 from her expanded ranks, set current ATT 41 and give her Tyrin's former
+   deployment square with no current position. In the story flags remove 15 and 47 and add 17
+   and 49, leaving Tyrin as the only Creed recruit. Keep Janet deployed.
+3. Map Janet's queue entry to Tyrin and Karna's queue entry to Janet. Redirect any last-target
+   or death-credit references to Karna to Tyrin. Encode the controlled payload in the same
+   [save envelope](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs) with the matching
+   SHA-256, and put the new copy in disposable slot 1. The published slots remain read-only.
+
+Run the private behavior case with SF2_SLEEP_CONTROLLED_SAVE pointing to this copy. For native
+verification, use title Continue and open Magic from Tyrin's Movement. Select SLEEP, back out
+at the target screen, reselect the rank and target enemy-13, then acknowledge the results.
+At Janet's Movement, open Options with F10, choose Save with Up and Confirm, confirm slot 1
+and select the option to keep playing. Open a fresh process, Continue slot 1, immediately
+re-save and compare complete decoded data. Use Stay until Bowie's turn and select 撤离
+from Magic. Observe usable control on Map36.
+
+The first native attempt reached both SLEEP results and returned Movement, then the older
+Options key sequence timed out before Save. The first cold run successfully re-saved before its
+observer missed the localized EGRESS label. Both attempts exited 1. The corrected save and
+cold-return runs retained the same cast/save state and exited 0. These were observation-input
+failures. They required no runtime or save-workflow changes.
 
 **Confirmed** ordinary compatibility on the unchanged published issue1966 zh-CN-learned01
 Battle26 slot. A disposable copy cold-continued in English with the registered issue1966 world
@@ -226,12 +291,14 @@ required consumers are admitted.
    [SupportSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SupportSpellDefinition.cs),
    [Sf2SupportSpellAction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) and
    [AuthoredScenarioPackageReader](../../src/Sf2.Remake.Content/Scenarios/AuthoredScenarioPackageReader.cs).
+   [PrivateSupportSpellBindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
+   admits the source rank independently for the private campaign.
    It reuses the shared Magic selection, silence, area handling and DETOX's target-side award
    rule. [BattleActionResolution](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
    checks the ordered draws and reaction words. [SleepTurnRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SleepTurnRules.cs)
    and [BattleAfterTurnContinuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs)
-   consume the same word for spell and physical sleep. After #2001 supplies the presentation
-   inputs, #1967 owns explicit private rank binding and ordinary acceptance.
+   consume the same word for spell and physical sleep. The controlled Tyrin case above
+   exercises the private rank through ordinary Magic and cold Continue.
 2. **DESOUL 1 then 2.** Consume the accepted [#1944 attack and item split](offensive-items-design.md).
    Keep instant death on the learned spell path and preserve elemental attack-item resolution.
    Extend [AttackSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs),
@@ -334,10 +401,9 @@ its later turn, or one DESOUL death. Other outcomes can use separate bounded bra
 
 **Confirmed reach.** The initial Tyrin choice was made through ordinary Creed input. He joins
 as a level-24 MAGE; source growth puts SLEEP at effective level 25. Neither Pacalon history
-contains Tyrin. If a registered legal Tyrin branch can deploy and earn the next level on a
-short supported encounter, use that branch and confirm SLEEP through the learned-book path.
-Otherwise exercise legal Tyrin-25 state in engine acceptance and leave ordinary Tyrin SLEEP
-**Unknown**. Neither an edited castle slot nor physical sleep establishes that witness.
+contains Tyrin. The [controlled Tyrin 25 input](#controlled-tyrin-25-input-and-cold-continue)
+establishes cast and restore capability. His level-up and subsequent cast in a natural
+campaign history remain **Unknown**.
 [Tyrin growth][tyrin] · [Creed branch and persistence](../application/creed-recruitment.md)
 
 Measure the first slot and receipt before copying more. Budget up to eight slots at 128 KiB
