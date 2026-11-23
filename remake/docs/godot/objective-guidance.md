@@ -141,8 +141,13 @@ arity and `GameText.cs` loads and formats catalog text.
 **Standard scope ([#2024](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2024)).**
 Modern guidance also marks unclaimed field items, including hidden Search items. The existing
 default-On preference controls both aids. Assist gives the selected row a short description in
-English and Chinese. Reduced flash holds the same small mark steady. Pickup and ordinary Search
-remain independent of the preference.
+English and Chinese. Pickup and ordinary Search remain independent of the preference.
+
+The [#2062](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2062) four-point star uses
+a stepped, opaque dark outline, warm fill and a pale center. Its 9×9
+source-pixel footprint follows the pickup's map plane. At 1920×1080, each source pixel draws as
+4×4 screen pixels, for a 36×36 mark inside a 96×96 world cell. Only the fill and center pulse
+over 2.4 seconds. Reduced flash holds both at full opacity with the same footprint.
 
 Read the selected map's Search placements, working item markers and existing receipt flags.
 An item that the party cannot carry yet still qualifies. Empty placements, gold-only rewards and
@@ -159,14 +164,27 @@ progress provide all inputs. There is no additional discovery or pickup record.
 ### Pickup observation
 
 Use the owned Godot .NET Debug project, default English keyboard controls, and
-`res://probes/engine_field_pickup_glints_observation.gd`. Select `derived/issue2035/galam-town-v1`
-with its world, entry, main-scenes and six opening inputs as in the
-[ordinary field launcher](../application/opening-session-lifecycle.md#yeel-save-and-continue-observation).
-Select a new external `issue2024-*` save namespace and a fresh ignored `SF2_HOST_UI_OUTPUT`
-for each process. Use the [worktree configuration](../../../docs/operations/local-private-inputs.md)
-and worktree-local TEMP, APPDATA and LOCALAPPDATA. The headless command uses `--path remake/game
---audio-driver Dummy --max-fps 120 --resolution 1920x1080 --script` followed by the probe.
+`res://probes/engine_field_pickup_glints_observation.gd`. Select the admitted
+[fixed battle-backdrop candidate](battle-scenes.md#fixed-backdrops-for-the-private-campaign) and its matching
+world, entry, main-scenes and six opening inputs.
+Select a new external `issue2024-*` save namespace. The `continue` case reuses the `shrine`
+namespace. Use the [worktree configuration](../../../docs/operations/local-private-inputs.md)
+and worktree-local TEMP, APPDATA and LOCALAPPDATA. Set one `SF2_HOST_UI_CASE` and a fresh ignored
+`SF2_HOST_UI_OUTPUT` per process. Controlled start coordinates and facing are under `start`.
+Facing uses 0 for Right, 1 for Up, 2 for Left and 3 for Down.
+
+```powershell
+& $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 `
+    --resolution 1920x1080 --script res://probes/engine_field_pickup_glints_observation.gd
+```
+
 The observer reads the running draw commands and session. It frees its mounted host before exit.
+Require a passing report with a nonzero check count, exit zero and a clean engine error log.
+In each visible witness, `marks` reports `pixelSize` as 4 and `width` and `height` as 36.
+`left` and `top` plus the footprint fit the reported legal screen clip, and the mark center
+is 18px from each edge. The `hold-foreground` witness relates the star's upper arm to the
+later high-priority foreground draw. These checks cover projection and input. Player visual
+acceptance stays in [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
 
 | `SF2_HOST_UI_CASE` | Controlled prerequisite and ordinary observation |
 | --- | --- |
@@ -175,7 +193,7 @@ The observer reads the running draw commands and session. It frees its mounted h
 | `foreground` | Copy the #2035 `before-writer.json` controlled input under worktree `local/` and select it via `SF2_HOST_UI_START`. Set Map17 (59,5), Up. The hidden F205 mark appears in the prison area. Up, Left, Left and Search grant item126 and clear the mark. |
 | `wall` | Likewise use #2035 `return-writer.json` at Map16 (32,23), Right. An in-frame working wall at (33,23) blocks the view of the marked chests at (34–35,23). |
 | `docks` | Use the #2053 `dock-write.json` start at Map44 (27,7), Up. The A-plane mark appears on the deck barrel, the separate hold mark is absent, and Search grants item11/F139. |
-| `hold-foreground` | Use the same dock start at (59,9), Left. The B-plane mark's upper stroke intersects the later high-priority A-plane draw for block201 at source cell (58,22). Atlas alpha at block pixel (12,12) is opaque. Compare the bounded layout draw projection and this pixel in the mounted block definition. |
+| `hold-foreground` | Use the same dock start at (59,9), Left. The B-plane star's upper arm intersects the later high-priority A-plane draw for block201 at source cell (58,22). Atlas alpha at block pixel (12,12) is opaque. Compare the bounded layout draw projection and this pixel in the mounted block definition. |
 
 **Confirmed in the remake** at these controlled boundaries. The sightline uses current collision
 cells and does not claim that walking to every marked point will succeed through moving actors
