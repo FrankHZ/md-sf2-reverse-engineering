@@ -56,7 +56,7 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         if (targets.Any(a => !MuddleRules.SupportedRankOne(a.Status, battle.Definition.Poison)))
             throw new BattleRuleException("support-spell-target-status", "actors.status", true);
         if (spell.Effect == SupportSpellEffect.Muddle &&
-            targets.Any(a => !MuddleRules.CanTurn(battle.Definition, a.Deployment, a.SourceLoadout, a.ActivationWord)))
+            targets.Any(a => !MuddleRules.CanTurn(battle, a)))
             throw new BattleRuleException("muddle-target-turn", "actors.control", true);
         return targets;
     }

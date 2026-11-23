@@ -411,7 +411,14 @@ entries and both RNG words. The current battle and field wire formats already ca
 Both temporary and activation-driven automatic allies use the shared battle growth and refresh
 path. Level-up preserves the current rank-1 word until the after-turn tick. The ally commandset
 requires physical operands for its actor and opposing source slots, and an encounter reward
-table. Authored manual Movement and Stay remain usable in profiles without those operands.
+table. Start, spell targets and Continue check the same live opponent occupancy contract
+before entering this commandset. A placed opponent with no activation word or the neutral bit
+keeps the automatic ally outside the finite profile. The source MOVE list includes living
+on-map opponents, while the source target grid skips neutral occupants. This combination
+requires movement and target-grid behavior beyond the admitted commandset. Authored manual
+Movement and Stay remain available where the existing manual rules allow them.
+[Source MOVE list](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/move.asm#L42-L90) ·
+[Source target grid](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildtargetsarray.asm#L64-L93)
 The battle return recovery policy clears the rank-1 counter when an eligible ally recovers,
 regardless of its control mode. Victory recovery precedes the outcome program, retreat recovery
 follows action closure, and defeat retains the word through dialogue until leader revival and

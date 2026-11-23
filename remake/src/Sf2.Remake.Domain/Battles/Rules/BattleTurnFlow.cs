@@ -28,6 +28,8 @@ internal static class BattleTurnFlow
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
             regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals, deathCredit: start.DeathCredit);
         if (start.NewBattle is not null) initial = BattleInitializationRules.Initialize(initial, start);
+        Require(initial.Actors.Where(actor => MuddleRules.Present(actor.Status) && actor.Hp > 0 && actor.Position is not null)
+            .All(actor => MuddleRules.CanTurn(initial, actor)), "actor-status", "start.actors.status", true);
         return initial.Visuals is { } visuals ? initial.With(visuals: visuals.ProjectStart(initial.Actors)) : initial;
     }
 
@@ -118,9 +120,7 @@ internal static class BattleTurnFlow
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
             Require(hasMuddle
-                    ? supportedStatus &&
-                        (start.NewBattle is not null ? deployment.Faction == BattleFaction.Ally :
-                            input.Hp == 0 || input.Absent || MuddleRules.CanTurn(definition, deployment, loadout, input.ActivationWord))
+                    ? supportedStatus && (start.NewBattle is null || deployment.Faction == BattleFaction.Ally)
                     : supportedStatus || start.NewBattle is not null ||
                         definition.Initialization?.RegionProgram == BattleRegionProgram.Authored,
                 "actor-status", "start.actors.status", true);

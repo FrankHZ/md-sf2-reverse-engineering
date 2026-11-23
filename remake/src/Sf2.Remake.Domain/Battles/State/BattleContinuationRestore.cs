@@ -29,10 +29,14 @@ internal static class BattleContinuationRestore
             false, true, true, data.Options.AllyAutoBattle, data.Options.OpponentControl, data.Options.MissingCandidateAllyWord)
             { Origin = BattleStartOrigin.NewGame, BeforeBattleRouted = true };
         var visuals = Visuals(data.Visuals, actors, definition);
-        return new(definition, actors, data.MainSeed, data.ThinkingSeed, data.Round,
+        var battle = new EngineBattleState(definition, actors, data.MainSeed, data.ThinkingSeed, data.Round,
             data.Queue.Select(t => new TurnOrderEntry<ActorRef>(t.Actor is null ? null : new ActorRef(t.Actor), t.AlteredAgility)),
             data.Cursor, data.Gold, policy, data.Regions is null ? null : new(data.Regions.Flags, data.Regions.Tested),
             itemCustody: new(data.Custody.OnceFlags, data.Custody.Deals, data.Custody.Depot), deathCredit: data.DeathCredit is null ? null : data.DeathCredit with { }, visuals: visuals);
+        Require(actors.Where(actor => MuddleRules.Present(actor.Status) && actor.Hp > 0 && actor.Position is not null)
+            .All(actor => MuddleRules.SupportedRankOne(actor.Status, definition.Poison) && MuddleRules.CanTurn(battle, actor)),
+            "muddle-control");
+        return battle;
     }
 
     private static BattleActorState Actor(BattleDeploymentDefinition deployment, SavedBattleActor saved, BattleDefinition battle)
@@ -47,9 +51,6 @@ internal static class BattleContinuationRestore
         ushort applied = saved.LastRefreshCounters ?? saved.Status;
         Require(deployment.Faction == BattleFaction.Ally || (saved.Status & BattleStatCounters.Attack) == 0, "attack-status");
         var loadout = BattleContinuationValues.Loadout(saved.Loadout);
-        if (MuddleRules.Present(saved.Status) && saved.Hp > 0 && saved.Position is not null)
-            Require(MuddleRules.SupportedRankOne(saved.Status, battle.Poison) &&
-                MuddleRules.CanTurn(battle, deployment, loadout, saved.ActivationWord), "muddle-control");
         if (deployment.Faction == BattleFaction.Ally)
             Require(saved.Status == BattleEquipment.RefreshCurse(deployment.Definition, saved.Loadout, saved.Status), "curse-status");
         byte ordinaryAttack = BattleEquipment.Attack(deployment.Definition, saved.Progress, saved.Loadout, applied);

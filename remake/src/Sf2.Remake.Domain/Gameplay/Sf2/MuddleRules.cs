@@ -13,19 +13,19 @@ internal static class MuddleRules
     internal static bool SupportedRankOne(ushort status, bool poison = true) =>
         !Confused(status) && SilenceRules.SupportedInBattle(status, poison);
 
-    internal static bool CanTurn(BattleDefinition battle, BattleDeploymentDefinition deployment, BattleSourceLoadout? loadout,
-        ushort? activationWord)
+    internal static bool CanTurn(EngineBattleState battle, BattleActorState actor)
     {
-        if (deployment.Faction == BattleFaction.Enemy) return true; // The existing enemy strategy still owns its turn.
-        if (loadout is null || activationWord is null || deployment.Definition.Physical is null || battle.Rewards is null ||
-            battle.Initialization is not { } initialization ||
-            !initialization.SourceCombatants.Any(slot => slot.Key is >= 0 and < 30 && slot.Value == deployment.Actor))
+        if (!actor.IsAlly) return true; // The existing enemy strategy still owns its turn.
+        if (actor.SourceLoadout is null || actor.ActivationWord is null || actor.Definition.Physical is null ||
+            battle.Definition.Rewards is null || battle.Definition.Initialization is not { } initialization ||
+            !initialization.SourceCombatants.Any(slot => slot.Key is >= 0 and < 30 && slot.Value == actor.Actor))
             return false;
 
-        // Ally commandset 06 always evaluates physical attack, including the opposing
-        // source slots that may enter reach in later turns.
-        return initialization.SourceCombatants.Where(slot => slot.Key is >= 128 and < 160)
-            .All(slot => battle.Deployments.Any(other => other.Actor == slot.Value && other.Definition.Physical is not null));
+        // Commandset 06 needs physical operands for its source opponents, including
+        // those that can enter reach later. The live occupancy contract is shared with the selector.
+        var opponents = SourceAllyAi.Opponents(battle, initialization.SourceCombatants).ToArray();
+        return opponents.Any(SourceAllyAi.IsPlacedOpponent) &&
+            opponents.All(other => other.Definition.Physical is not null && SourceAllyAi.SupportsOpponentOccupancy(other));
     }
 
     internal static (ushort After, MainRandomDraw Draw)? AfterTurn(BattleActorState actor, uint seed)

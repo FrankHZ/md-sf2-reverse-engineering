@@ -161,6 +161,25 @@ public sealed class MuddleTurnTests
         Assert.Equal("actor-status", failure.Code);
     }
 
+    [Fact]
+    public void DirectStartWithANeutralOpponentKeepsManualStayAndRejectsAutomaticMuddle()
+    {
+        var document = EngineTestContent.Document("silence-watch");
+        document["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "stay";
+        document["start"]!["actors"]![2]!["initialization"]!["activationWord"] = 8;
+        var admitted = Assert.IsType<ScenarioReadAccepted>(EngineTestContent.Reader(document).Read());
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start)).Session;
+        Assert.Equal(Mage, session.Current.Selection!.Actor);
+        Assert.Null(EngineTestContent.Stay(session).Failure);
+        Assert.NotEqual(Mage, session.Current.Selection?.Actor);
+        Assert.Equal((ushort?)8, session.Current.Battle.GetActor(Smoke).ActivationWord);
+
+        var input = admitted.Start.WithResources(admitted.Start.Actors.Select(a => a.Actor == Mage
+            ? a with { Status = 0x10 } : a), admitted.Start.Gold);
+        var failure = Assert.IsType<SessionStartFailed>(GameSession.Start(admitted.Definition, input)).Failure;
+        Assert.Equal("actor-status", failure.Code);
+    }
+
     [Theory]
     [InlineData(0x08)]
     [InlineData(0x38)]
