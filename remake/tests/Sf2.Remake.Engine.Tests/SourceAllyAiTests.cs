@@ -25,13 +25,18 @@ public sealed class SourceAllyAiTests
     private static BattleAutomaticAction Decide(EngineBattleState b) =>
         BattleDecisionRules.Decide(new SourceAllyAi(), b, Ally, new Sf2PhysicalAction(), new Sf2BattleProgressionRule());
 
-    [Fact]
-    public void AllyBypassesStandbyCheckedWordAndDeadFollowPromotionAndRetainsEnemyOnlyMemory()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(0x20)]
+    public void AllyBypassesStandbyCheckedWordAndDeadFollowPromotionAndRetainsEnemyOnlyMemory(ushort status)
     {
-        var b = Initial(); var action = Decide(b);
+        var b = Initial();
+        b = b.With(actors: b.Actors.Select(a => a.Actor == Ally ? a.With(status: status) : a));
+        var action = Decide(b);
         Assert.Equal(Sentry, action.Target);
         Assert.Equal(0x8173, action.Battle.Regions!.Tested);
         var ally = action.Battle.GetActor(Ally);
+        Assert.Equal(BattleControl.Automatic, ally.Control); Assert.Equal(status, ally.Status);
         Assert.Equal((ushort)4, ally.ActivationWord); Assert.Equal((byte)143, ally.PrimaryOrder);
         Assert.Equal((byte)128, ally.SecondaryOrder); Assert.Equal(17, ally.AiMemory); Assert.Equal(Leader, ally.LastTarget);
         Assert.DoesNotContain(action.Effects, e => e.Kind is "source-standby" or "regions-tested-cleared" or "ai-order-promoted");
@@ -86,11 +91,11 @@ public sealed class SourceAllyAiTests
     }
 
     [Theory]
-    [InlineData("item")] [InlineData("spell")] [InlineData("muddle")] [InlineData("neutral")]
+    [InlineData("item")] [InlineData("spell")] [InlineData("confusion")] [InlineData("neutral")]
     public void UnsupportedCategoriesRejectBeforePublishingDraws(string category)
     {
         var b = Initial(); b = b.With(actors: b.Actors.Select(a =>
-            a.Actor == Ally ? a.With(status: category == "muddle" ? (ushort)0x20 : (ushort)0,
+            a.Actor == Ally ? a.With(status: category == "confusion" ? (ushort)0x28 : (ushort)0,
                 sourceLoadout: new(category == "item" ? [4, 127, 127, 127] : [127, 127, 127, 127],
                     category == "spell" ? [1, 63, 63, 63] : [63, 63, 63, 63])) :
             a.Actor == Sentry && category == "neutral" ? a.With(activationWord: 8) : a));
