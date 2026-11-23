@@ -187,8 +187,10 @@ and [mapped input hints](presentation.md#minimal-contextual-hints-1544).
 [Issue #2023](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2023)
 is a Standard slice within the shared design. It covers field Party inventory and preparation
 item/equipment lists, merchant stock and held-item selection, and the battle Item command page.
-The selected item gets a fixed reading area below its collection, with the shared 30px body face,
-word wrapping and space reserved even for empty slots or items without admitted facts. The rows,
+The selected item gets a fixed reading area with the shared 30px body face, word wrapping and
+reserved space for empty slots or items without admitted facts. Preparation, Shop and Battle place
+it below their choice list. Field Party places the reader below Magic, beside the
+[full-height four-slot inventory](field-and-shop.md#current-composition). The rows,
 reading area and mapped actions have separate bounds. Selection can scroll a row into view.
 Changing its prose cannot change row, list or footer geometry. The same layout fits the existing
 1920×1080 design canvas at smaller supported window sizes.

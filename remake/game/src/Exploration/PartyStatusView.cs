@@ -11,14 +11,17 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 // Disposable member selection/focus only; original member-screen summary + aligned details.
 internal sealed partial class PartyStatusView : Control
 {
+    private const float SummaryHeight = 72, SummaryColumnWidth = 392;
     private readonly PartyDetailsPanel _details = new() { Name = "MemberDetails", FieldLayout = true };
     private readonly Control _memberLayer = new() { Name = "MemberLayer" };
     private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", StoryTheme.HintSize), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
-    private readonly Label _portraitNote = Text("PortraitNote", 24), _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("Gold", StoryTheme.HintSize);
-    private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30);
-    private readonly Panel _recordFrame = new(), _rosterFrame = new();
-    private readonly PanelContainer _goldFrame = new() { Name = "GoldFrame" };
+    private readonly Label _portraitNote = Text("PortraitNote", 24);
+    private readonly Label _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("GoldLabel", 30);
+    private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30), _goldValue = Text("Gold", 30);
+    private readonly Panel _rosterFrame = new();
+    private readonly Panel _recordFrame = new() { Name = "RecordFrame", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly Panel _goldFrame = new() { Name = "GoldFrame", MouseFilter = MouseFilterEnum.Ignore };
     private readonly PanelContainer _footer = new() { Name = "PartyFooter", MouseFilter = MouseFilterEnum.Ignore };
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
@@ -46,8 +49,16 @@ internal sealed partial class PartyStatusView : Control
         _memberLayer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_memberLayer);
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); _memberLayer.AddChild(shade);
         foreach (var node in new Control[] { _recordFrame, _goldFrame, _details,
-            _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _selector, _previous, _next, _rosterFrame, _roster, _footer }) _memberLayer.AddChild(node);
-        _goldFrame.AddChild(_gold);
+            _portrait, _portraitNote, _selector, _previous, _next, _rosterFrame, _roster, _footer }) _memberLayer.AddChild(node);
+        foreach (var (frame, label, value) in new[]
+        {
+            (_recordFrame, _kills, _killsValue), (_recordFrame, _defeats, _defeatsValue), (_goldFrame, _gold, _goldValue)
+        })
+        {
+            label.VerticalAlignment = value.VerticalAlignment = VerticalAlignment.Center;
+            value.HorizontalAlignment = HorizontalAlignment.Right;
+            frame.AddChild(label); frame.AddChild(value);
+        }
         var footerRow = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         footerRow.AddThemeConstantOverride("separation", 24);
         _footer.AddChild(footerRow);
@@ -62,10 +73,9 @@ internal sealed partial class PartyStatusView : Control
         }
         AddChild(_actions);
         _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _selector.HorizontalAlignment = _portraitNote.HorizontalAlignment = _gold.HorizontalAlignment = HorizontalAlignment.Center;
+        _portraitNote.HorizontalAlignment = HorizontalAlignment.Center;
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 
-        _killsValue.HorizontalAlignment = _defeatsValue.HorizontalAlignment = HorizontalAlignment.Right;
         _previous.Text = "◀"; _next.Text = "▶";
         Hide();
     }
@@ -103,6 +113,7 @@ internal sealed partial class PartyStatusView : Control
         if (!session.Current.CanWaitAtInput || session.QueryPartyDetails() is not { } party) { Hide(); return; }
         _prepare.Text = GameText.Get(_entry == "magic" ? "prepare.magic" : _entry == "item" ? "field-menu.item" : "party.prepare"); _close.Text = GameText.Get("party.close");
         _kills.Text = GameText.Get("party.kills"); _defeats.Text = GameText.Get("party.defeats");
+        _gold.Text = GameText.Get("party.gold-label");
         var entries = party.Members.Select(member =>
         {
             bool available = member.Deployment is not null && member.Carried.Initialized != false;
@@ -119,11 +130,10 @@ internal sealed partial class PartyStatusView : Control
         string name = member is null ? GameText.Get("party.unavailable") : entries[Index].Name;
         _selector.Text = GameText.Get("party.member") + $"   {(Count == 0 ? 0 : Index + 1)} / {Count}";
         _details.Present(member, name, session);
-        _killsValue.Text = member?.Carried.Kills?.ToString() ?? GameText.Get("party.value-unavailable");
-        _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? GameText.Get("party.value-unavailable");
-        _killsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Kills is null ? 24 : 30);
-        _defeatsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Defeats is null ? 24 : 30);
-        _gold.Text = GameText.Get("party.gold", party.Gold?.ToString() ?? GameText.Get("party.value-unavailable"));
+        string unavailable = GameText.Get("party.value-unavailable");
+        _killsValue.Text = member?.Carried.Kills?.ToString() ?? unavailable;
+        _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? unavailable;
+        _goldValue.Text = party.Gold?.ToString() ?? unavailable;
         _portraitId = member is null ? null : entries[Index].Portrait?.Id;
         _portrait.Texture = _roster.Portrait;
         _portrait.Visible = _portrait.Texture is not null;
@@ -167,9 +177,8 @@ internal sealed partial class PartyStatusView : Control
         float left = (Size.X - 1712) / 2, top = Math.Max(112, (Size.Y - 856) / 2);
         _footer.Size = new(1712, _footer.GetCombinedMinimumSize().Y);
         _footer.Position = new(left, Size.Y - StoryTheme.GameplayInset - _footer.Size.Y);
-        float summaryHeight = Math.Max(72, _goldFrame.GetCombinedMinimumSize().Y);
-        float summaryCenter = Math.Min(top + 776, _footer.Position.Y - 12 - summaryHeight / 2);
-        float summaryTop = summaryCenter - summaryHeight / 2;
+        float summaryCenter = Math.Min(top + 776, _footer.Position.Y - 12 - SummaryHeight / 2);
+        float summaryTop = summaryCenter - SummaryHeight / 2;
         float sheetHeight = Math.Min(720, summaryTop - 8 - top);
         _selector.Position = new(left, top - 64); _selector.Size = new(304, 48);
         _selector.HorizontalAlignment = HorizontalAlignment.Left;
@@ -181,12 +190,19 @@ internal sealed partial class PartyStatusView : Control
         _details.Position = new(left + 328, top); _details.Size = new(1384, sheetHeight); _details.Arrange();
         _portrait.Position = new(left + 360, top + 24); _portrait.Size = new(144, 192);
         _portraitNote.Position = new(left + 352, top + 40); _portraitNote.Size = new(160, 160);
-        _recordFrame.Position = new(left, summaryTop); _recordFrame.Size = new(640, summaryHeight);
-        _goldFrame.Position = new(left + 664, summaryTop); _goldFrame.Size = new(400, summaryHeight);
-        _kills.Position = new(left + 16, summaryCenter - 24); _kills.Size = new(128, 48);
-        _killsValue.Position = new(left + 144, summaryCenter - 24); _killsValue.Size = new(136, 48);
-        _defeats.Position = new(left + 328, summaryCenter - 24); _defeats.Size = new(128, 48);
-        _defeatsValue.Position = new(left + 456, summaryCenter - 24); _defeatsValue.Size = new(160, 48);
+        _recordFrame.Position = new(left, summaryTop); _recordFrame.Size = new(2 * SummaryColumnWidth, SummaryHeight);
+        _goldFrame.Position = new(left + 2 * SummaryColumnWidth + 24, summaryTop); _goldFrame.Size = new(SummaryColumnWidth, SummaryHeight);
+        ArrangeSummaryRow(_kills, _killsValue, 0);
+        ArrangeSummaryRow(_defeats, _defeatsValue, SummaryColumnWidth);
+        ArrangeSummaryRow(_gold, _goldValue, 0);
+    }
+
+    private static void ArrangeSummaryRow(Label label, Label value, float column)
+    {
+        const float inset = 24, labelWidth = 152, gap = 12, rowHeight = 48;
+        label.Position = new(column + inset, (SummaryHeight - rowHeight) / 2); label.Size = new(labelWidth, rowHeight);
+        value.Position = label.Position + new Vector2(labelWidth + gap, 0);
+        value.Size = new(SummaryColumnWidth - 2 * inset - labelWidth - gap, rowHeight);
     }
 
     private void Select(int index)
@@ -261,7 +277,7 @@ internal sealed partial class PartyStatusView : Control
         header = _selector.Text, hint = _hint.Text, hintRect = Rect(_hint), hintMinimumHeight = _hint.GetMinimumSize().Y, failure = _assetFailure, memberLayerVisible = _memberLayer.IsVisibleInTree(), selectorOpen = _roster.IsVisibleInTree(), focusPane = _details.FocusPane,
         preparation = _actions.Observe(), prepareRect = Rect(_prepare),
         card = _details.Card(), layout = _details.Observe(), portraitId = _portraitId, portraitVisible = _portrait.IsVisibleInTree(),
-        portraitRect = Rect(_portrait), recordRect = Rect(_recordFrame), goldRect = Rect(_goldFrame), kills = _killsValue.Text, defeats = _defeatsValue.Text, gold = _gold.Text,
+        portraitRect = Rect(_portrait), recordRect = Rect(_recordFrame), goldRect = Rect(_goldFrame), kills = _killsValue.Text, defeats = _defeatsValue.Text, gold = _goldValue.Text,
         recordValues = new[] { _killsValue, _defeatsValue }.Select(label => new { text = label.Text,
             rect = Rect(label), minimumWidth = label.GetMinimumSize().X, fontSize = label.GetThemeFontSize("font_size") }),
         selectorRect = Rect(_selector), previousRect = Rect(_previous), nextRect = Rect(_next), closeRect = Rect(_close),

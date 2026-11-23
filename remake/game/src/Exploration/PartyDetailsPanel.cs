@@ -153,18 +153,21 @@ internal sealed partial class PartyDetailsPanel : Panel
         _class.Position = new(208, 48 + _name.GetMinimumSize().Y); _class.Size = new(width - 752, 0);
         foreach (var (control, y) in new[] { ((Control)_hp, 40), (_mp, 120), (_unknownHp, 40), (_unknownMp, 120) })
         { control.Position = new(width - 504, y); control.Size = new(480, 56); }
-        float top = Math.Max(268, _class.Position.Y + _class.GetMinimumSize().Y + 32);
+        // The list headings clear the vitals. Attributes also clear the portrait.
+        float top = Math.Max(232, _class.GetRect().End.Y + 54);
+        float statsTop = Math.Max(268, top);
         for (int i = 0; i < _stats.Count; i++)
         {
-            _stats[i].Title.Position = new(24, top + 52 * i); _stats[i].Title.Size = new(176, 48);
-            _stats[i].Value.Position = new(200, top + 52 * i); _stats[i].Value.Size = new(attributes - 176, 48);
+            _stats[i].Title.Position = new(24, statsTop + 52 * i); _stats[i].Title.Size = new(176, 48);
+            _stats[i].Value.Position = new(200, statsTop + 52 * i); _stats[i].Value.Size = new(attributes - 176, 48);
         }
         _magicTitle.Position = new(magicX, top - 54); _magicTitle.Size = new(magic, 44);
         _itemsTitle.Position = new(itemsX, top - 54); _itemsTitle.Size = new(items, 44);
-        _magic.Position = new(magicX, top); _magic.Size = new(magic, Math.Max(80, Size.Y - top - 24));
+        // Reserve the reader beside the pack so wrapped item rows can use the full column.
         float descriptionTop = Size.Y - 24 - _description.ReadingHeight;
-        _items.Position = new(itemsX, top); _items.Size = new(items, Math.Max(80, descriptionTop - 24 - top));
-        _description.Position = new(itemsX, descriptionTop); _description.Size = new(items, _description.ReadingHeight);
+        _magic.Position = new(magicX, top); _magic.Size = new(magic, Math.Max(0, descriptionTop - 12 - top));
+        _items.Position = new(itemsX, top); _items.Size = new(items, Math.Max(0, Size.Y - top - 24));
+        _description.Position = new(magicX, descriptionTop); _description.Size = new(magic, _description.ReadingHeight);
         _magicTitle.Modulate = FocusPane == 1 ? StoryTheme.Selected : Colors.White;
         _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
     }
