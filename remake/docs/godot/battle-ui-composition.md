@@ -13,8 +13,9 @@ owns the player's review of the composed experience.
 ## Scope agreement
 
 Use the mounted battle presenters and existing canvas, input, movement, action, transaction and
-save contracts. The session selects the visible phase. The map owns spatial marks. The command
-and inspection controls own their local focus and rectangles. Short controlled input routes supply
+save contracts. The session publishes the active phase, and the battle presenter owns the local
+command focus and decision projection. The map owns spatial marks. Command controls measure their
+hit rectangles, and inspection owns its read-only local focus. Short controlled input routes supply
 native acceptance. The implementation handoff tracks the delivered inspection movement and roster
 and the remaining spell descriptions and queue. Original-game evidence and
 intentional remake features retain their separate provenance.
@@ -39,8 +40,8 @@ Visibility and hit testing change together.
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints, queue and board selection marks are hidden. |
 | Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round/gold, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
 | Main action | One focused row in the vertical command list | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
-| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Child rows replace the Main list. Scrolling keeps focus visible. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
-| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An empty candidate set gives Back and the reason. Back clears target state and restores the same command or item/spell row. |
+| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
+| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
 | Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one inspection hint, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One applicable hint and data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
@@ -463,6 +464,50 @@ device feel and OS delivery remain with #1456. Use the existing [held preview](b
 [Give](../development-and-verification.md#battle-give-authored-observation) and
 [Drop](../development-and-verification.md#battle-discard-authored-observation) routes for the
 neighboring boundaries.
+
+## Battle decision projection (#2107)
+
+**High rigor.** Migrate command, target and return behavior together because mapped input, board
+activation and visible affordances share the same eligibility. Keep the vertical Main, existing
+gameplay rules, separate Search and transaction confirmation, movement/inspection repeat and
+delivery ownership. [Scope and later migrations](ui-architecture.md#migration-and-independent-acceptance)
+
+`BattleSessionView` derives one `BattleDecision` from the live snapshot, enabled offers and local
+focus. The menu consumes it for captions, hints and hit eligibility. The board uses it for the
+target card and marks, and the root takes its fresh direction policy from the presenter. Rows and
+the parent list are local. The application still decides action admission, selected target, costs,
+result and each completion token.
+
+Magic or Item action entry publishes the action and, where eligible, the initial target as two
+ordered submissions. The presenter projects the final candidate after both receipts. Back sends
+one return command and projects the originating row with the confirmed stop retained. An illegal
+cell clears the current candidate while the session can retain a previous target. Mapped Confirm,
+footer Confirm and board release all use the same confirmation. A press on an already selected
+board cell reuses the selection. The release issues only the shared Confirm. Wheel and middle
+buttons leave battle targeting and inspection focus alone. A wheel over the reader scrolls it.
+Right Back uses the menu's matched pointer gesture. Host cover and viewport resize invalidate
+incomplete gestures. [Decision projection](../../game/src/Battles/BattleDecision.cs) ·
+[Transition and pointer owner](../../game/src/Battles/BattleSessionView.Decision.cs)
+
+### Reproduce the battle decision
+
+Use the [target fixture and native launch](#reproduce-target-navigation-and-stay) at 60 FPS, with
+`fresh-targets-2` for `keyboard`, `pad` and `axis`, and `fresh-targets-0` for `keyboard`. The
+navigation observer records action entry and Back receipts alongside actual control visibility,
+selection and revision. The keyboard case includes wheel and middle over two kinds of board cell,
+an illegal click, a legal selection, exact Magic and Item return, inspection, a held direction at
+host close and a captured Confirm across a resize out and back. The zero-target Attack offer is
+declined in Main. The Target page's empty-set branch is covered by source inspection because normal
+action entry requires an enabled offer.
+
+Use the same navigation script for `direct-stay-confirm`, `confirm-give` and `confirm-discard`
+with the packages in the table above. For held movement, run `handoff` with unmodified
+`garden-watch.json`, keyboard and 60 FPS. Run the [Search observer](../development-and-verification.md#battle-search-observation)
+with unmodified `battle-search.json` to see the Search row, its Cancel return, and the real receipt
+and completion. For close-up cover and resize, use the private Battle01 setup under
+[Reproduce slice 1](#reproduce-slice-1), select the registered pre-voyage BLAZE1 publication and
+set `SF2_CURSOR_CLOSEUP_ONLY=1`. This selects the attack and follows its existing message wait
+through host cover, resize, return and actual completion.
 
 ## Selected spell descriptions
 

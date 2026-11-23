@@ -165,14 +165,14 @@ internal sealed partial class BattleMenuLayout : Control
         Detail.Visible = !string.IsNullOrWhiteSpace(text);
     }
 
-    internal void ShowNavigation(bool visible, bool target, bool commit, bool canConfirm)
+    internal void ShowNavigation(bool visible, bool canCycle, bool showConfirm, bool canConfirm)
     {
         _previous.Text = GameText.Get("battle.previous"); _next.Text = GameText.Get("battle.next");
         _confirm.Text = GameText.Get("battle.confirm"); _back.Text = GameText.Get("battle.back");
         _navigation.Visible = visible;
         _canConfirm = canConfirm;
-        _previous.Visible = _next.Visible = target;
-        _confirm.Visible = target || commit;
+        _previous.Visible = _next.Visible = canCycle;
+        _confirm.Visible = showConfirm;
         _confirm.AddThemeColorOverride("font_color", canConfirm ? UI.StoryTheme.Selected : UI.StoryTheme.Unavailable);
     }
 

@@ -42,13 +42,16 @@ func run() -> void:
     if not await settled(): return
     await act("confirm")
     var before := state()
-    if not check(before.battleChoices.Search.Flag == 701 and before.menu.layout.commands[3].label == ("调查" if chinese else "Search"), "Preview/facing selects actual chest and Down label"): return
+    if not check(before.battleChoices.Search.Flag == 701 and before.menu.layout.commands[3].label == ("调查" if chinese else "Search"), "Preview/facing selects the actual chest and Search row"): return
     record("faced-preview")
-    await act("down"); await act("confirm")
-    if not check(state().stage == "SearchCommitReady", "Explicit Search confirmation"): return
+    for i in range(posmod(3 - int(before.menu.command), 4)): await act("down")
+    await act("confirm")
+    if not check(state().stage == "SearchCommitReady", "Explicit Search confirmation from the vertical Search row"): return
     await act("cancel")
-    if not check(state().stage == "ActionChoice" and inventory(state()) == inventory(before) and turn(state()) == turn(before), "Cancel retains resources and preview"): return
-    await act("down"); await act("confirm")
+    if not check(state().stage == "ActionChoice" and state().menu.command == 3
+        and inventory(state()) == inventory(before) and turn(state()) == turn(before),
+        "Cancel restores the Search row and retains resources and preview"): return
+    await act("confirm")
     var event_start := delivered.size()
     await act("confirm")
     var result := state()

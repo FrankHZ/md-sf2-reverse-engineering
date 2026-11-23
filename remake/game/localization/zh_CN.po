@@ -923,6 +923,15 @@ msgstr "{0}：指令"
 msgid "battle.target-help"
 msgstr "{0}：下个目标\n{1}：执行 · {2}：返回"
 
+msgid "battle.target-pick-help"
+msgstr "{0}：切换目标 · {1}：返回"
+
+msgid "battle.target-invalid"
+msgstr "请选择可用的目标。"
+
+msgid "battle.back-help"
+msgstr "{0}：返回"
+
 msgid "battle.choice-help"
 msgstr "{0}：选择\n"
 

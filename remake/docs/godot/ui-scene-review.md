@@ -553,7 +553,7 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   [existing production launch/environment recipe](battle-interaction-baseline.md#direct-production-reproduction)
   with that script, `SF2_VITALS_CASE`, a fresh `SF2_VIEWPORT_OUTPUT`, matching input settings and
   `SF2_COMPACT_START` for private/field starts. [English](../../game/localization/en.po) ·
-  [Chinese](../../game/localization/zh_CN.po) · [BoardTarget](../../game/src/Battles/BattleCommandMenu.cs)
+  [Chinese](../../game/localization/zh_CN.po) · [Current decision projection](battle-ui-composition.md#battle-decision-projection-2107)
 - **Active input hints (#1544).** Movement, command/target and auxiliary cues now use the most
   recently effective keyboard/mouse or pad binding. Pure cue refresh preserves the live command,
   target and reader; full Help retains alternatives. Unknown layouts use localized positions;

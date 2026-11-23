@@ -54,8 +54,6 @@ public sealed partial class BattleSessionView : Control
     private string _help = "";
     private UI.ContextHint _feedback = null!;
     private GameInput _input = null!;
-    private SpellRef? _spellCandidate;
-    private int? _itemCandidate;
     private string _items = "";
     private string _equipment = "";
     private string _giveMenu = "";
@@ -77,8 +75,6 @@ public sealed partial class BattleSessionView : Control
     private BattleStoryView _story = null!;
     internal WorldViewportLayout WorldViewport { get; set; } = new();
     internal SessionAudio? Audio { get; set; }
-    // Last attempted UI candidate, including rejected attempts. Never the gameplay selected target.
-    private ActorRef? _targetCandidate;
     private readonly MenuPointer _boardPointer = new();
     internal Action<SessionResult, bool>? LeaveBattle { get; set; }
     internal Action<SessionResult>? ObserveResult { get; set; }
@@ -94,7 +90,7 @@ public sealed partial class BattleSessionView : Control
         AddChild(_map);
         var ui = UI.PresentationCanvas.Mount(this, "BattleUi", UI.PresentationCanvas.Battle);
         ui.AddChild(_hud); _hud.AddChild(_equipmentIcon); _hud.AddChild(_transactionIcon); _hud.AddChild(_returnIcon); _hud.Choices.Hide();
-        _menu = new BattleCommandMenu { Name = "CommandMenu", Submit = Send };
+        _menu = new BattleCommandMenu { Name = "CommandMenu" };
         ui.AddChild(_menu);
         _scene = new BattleSceneView { Name = "BattleScene", PresentationRoot = ui }; AddChild(_scene);
         _give = new BattleGiveView { Name = "BattleGive" }; ui.AddChild(_give);
@@ -124,7 +120,8 @@ public sealed partial class BattleSessionView : Control
     internal void RefreshInputHints()
     {
         if (_session is null) return;
-        _menu.RefreshInputHints();
+        if (_menu.Visible && _decision is { } decision)
+            _menu.Present(decision, _result?.Failure, _input, _session.QueryBattleActingStatus());
         if (_inspection.Active) _inspection.RefreshInputHints();
         if (_hud.Visible)
         {
@@ -163,6 +160,7 @@ public sealed partial class BattleSessionView : Control
         // Map framing is independent of overlays; the UI canvas owns their draw boundary.
         _map.Position = Vector2.Zero;
         _map.Size = size;
+        _boardPointer.Cancel();
         _menu?.Arrange(size);
         _inspection?.RefreshInputHints();
         _scene?.RefreshGeometry();
@@ -205,7 +203,6 @@ public sealed partial class BattleSessionView : Control
                 _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
                 _inspection.ConfigureIcons(_menu.Icons, session.Definition);
                 _inspection.ConfigureOptions(session.ActiveBattleScenes);
-                _menu.Reset();
             }
             catch (InvalidOperationException error)
             {
@@ -219,7 +216,7 @@ public sealed partial class BattleSessionView : Control
             }
             _mapDefinition = result.Snapshot.Battle.Definition;
             _mapScenes = session.ActiveBattleScenes;
-            _targetCandidate = null; _spellCandidate = null; _itemCandidate = null;
+            RetireDecision();
         }
         PublishResult("attach");
         ObserveResult?.Invoke(result);
@@ -245,6 +242,7 @@ public sealed partial class BattleSessionView : Control
     {
         SuspendPacing();
         ClearNavigation(); _boardPointer.Suspend(); RetireInspection();
+        RetireDecision();
         _map.ClearDecision();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
@@ -257,51 +255,11 @@ public sealed partial class BattleSessionView : Control
         ServicePacing(delta);
     }
 
-    internal void HandlePointer(InputEvent input)
-    {
-        ClearNavigation();
-        if (_inspection.Active || _inspectionRelease)
-        {
-            if (!_inspectionRelease && !_inputSuspended && GetWindow().HasFocus() && CanProcess() && IsVisibleInTree())
-            {
-                string page = _inspection.Page;
-                _inspection.HandlePointer(input);
-                if (page != _inspection.Page) InspectionBarrier();
-            }
-            return;
-        }
-        if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree() ||
-            _session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted ||
-            _session?.Current.HasBattleControl != true || _session.Current.BattleMovement is not null)
-        { _menu.SuspendPointer(); return; }
-        if (_menu.Targeting && input is InputEventMouse mouse && !_menu.Covers(mouse.Position) &&
-            _map.TryCell(mouse.Position, out var cell))
-        {
-            var actor = _session.Current.Battle.Actors.FirstOrDefault(a => a.Hp > 0 && a.Initialized &&
-                (a.Actor == _session.Current.Selection?.Actor ? _session.Current.Selection.Preview.Destination : a.Position) == cell);
-            if (input is InputEventMouseMotion motion && _boardPointer.Moved(motion))
-                _menu.BoardTarget(actor?.Actor, false);
-            if (input is InputEventMouseButton button)
-            {
-                if (button.ButtonIndex == MouseButton.Right) { _boardPointer.Cancel(); HandleAction(GameAction.Cancel); return; }
-                // An invalid ground click clears UI focus before either Confirm path can act.
-                if (button.Pressed) _menu.BoardTarget(actor?.Actor, false);
-                var boundary = (_session.Current.SessionId, _session.Current.Revision, _session.Current.Selection?.Actor);
-                if (_boardPointer.Read(button, actor?.Actor.Value, _map.CellRect(cell), boundary) is not null)
-                    _menu.BoardTarget(actor?.Actor, true);
-            }
-            Present(); return;
-        }
-        _boardPointer.Cancel();
-        if (_menu.HandlePointer(input)) Present();
-    }
-
     private void HandleActionCore(GameAction action)
     {
         _boardPointer.Cancel();
         _menu.SuspendPointer(keyboard: true);
-        if (_startupFailure is not null || _inputSuspended || !GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) return;
-        if (_session?.Current.StopReason is SessionStopReason.Unsupported or SessionStopReason.Faulted) return;
+        if (!CanRouteBattleInput) return;
         if (InspectionInput(action)) return;
         if (_session?.Current.BattleSearch is not null)
         { if (_search.Acknowledge(action) is { } ack) Send(ack); return; }
@@ -335,67 +293,38 @@ public sealed partial class BattleSessionView : Control
             return;
         }
         if (MovementInspectionEntry(action)) return;
-        if (_menu.Handle(action))
+        if (HandleDecision(action)) return;
+
+        var stage = _session.Current.Selection?.Stage;
+        SessionCommand? command = (stage, action) switch
         {
-            if (_session.Current.HasBattleControl || _session.Current.BattleScene is not null) Present();
-            return;
-        }
-        SessionCommand? command = action switch
-        {
-            GameAction.Up => new Move(ExplorationDirection.North),
-            GameAction.Right => new Move(ExplorationDirection.East),
-            GameAction.Down => new Move(ExplorationDirection.South),
-            GameAction.Left => new Move(ExplorationDirection.West),
-            GameAction.Confirm => new Confirm(),
-            GameAction.Stay => new CommitBattleStay(),
-            GameAction.Cancel => new Cancel(),
-            GameAction.Attack => new ChooseAction(SessionAction.PhysicalAttack),
-            GameAction.Equipment => new BeginEquipment(),
-            GameAction.Give => new BeginGive(),
-            GameAction.Discard => new BeginDiscard(),
+            (BattleSelectionStage.Movement, GameAction.Up) => new Move(ExplorationDirection.North),
+            (BattleSelectionStage.Movement, GameAction.Right) => new Move(ExplorationDirection.East),
+            (BattleSelectionStage.Movement, GameAction.Down) => new Move(ExplorationDirection.South),
+            (BattleSelectionStage.Movement, GameAction.Left) => new Move(ExplorationDirection.West),
+            (BattleSelectionStage.Movement or BattleSelectionStage.EquipmentChoice, GameAction.Confirm) => new Confirm(),
+            (BattleSelectionStage.EquipmentChoice, GameAction.Cancel) => new Cancel(),
+            (BattleSelectionStage.ActionChoice, GameAction.Equipment) => new BeginEquipment(),
+            (BattleSelectionStage.ActionChoice, GameAction.Give) => new BeginGive(),
+            (BattleSelectionStage.ActionChoice, GameAction.Discard) => new BeginDiscard(),
             _ => null,
         };
         if (command is not null) Send(command);
-        else if (action == GameAction.Item && _session.Current.Selection is { } itemSelection)
-        {
-            var held = _session.QueryBattleChoices().Items.Where(option => !option.Empty).ToArray();
-            int index = Array.FindIndex(held, option => option.Slot == (_itemCandidate ?? itemSelection.ItemSlot ?? -1));
-            _itemCandidate = held.Length == 0 ? 0 : held[(index + 1) % held.Length].Slot;
-            Send(new SelectItem(_itemCandidate.Value));
-            TryInitialTarget(itemSelection.Actor);
-        }
-        else if (action == GameAction.Spell && _session.Current.Selection is { } selection)
-        {
-            var spells = _session.QueryBattleChoices().Spells.Select(option => option.Spell).ToArray();
-            if (spells.Length == 0) return;
-            int index = spells.ToList().FindIndex(spell => spell == (_spellCandidate ?? selection.Spell));
-            _spellCandidate = spells[(index + 1) % spells.Length];
-            Send(new SelectSpell(_spellCandidate.Value));
-            TryInitialTarget(selection.Actor);
-        }
-        else if (action == GameAction.Target && _session.Current.Selection?.ActionReference is { } selectedAction)
-        {
-            var targets = _session.QueryBattleChoices().Actions.Single(option => option.Action == selectedAction)
-                .Targets.Select(target => target.Actor).ToArray();
-            if (targets.Length == 0) return;
-            int selected = Array.FindIndex(targets, a => a == (_targetCandidate ?? _session.Current.Selection.Target));
-            Send(new SelectTarget(targets[(selected + 1) % targets.Length]));
-        }
-        else return;
-    }
-
-    private void TryInitialTarget(ActorRef actor)
-    {
-        if (_result?.Failure is not null || _session!.Current.Selection?.ActionReference is not { } action) return;
-        var choice = _session.QueryBattleChoices().Actions.Single(option => option.Action == action);
-        if (choice.Targets.Any(target => target.Actor == actor && target.Enabled)) Send(new SelectTarget(actor));
     }
 
     private void Send(SessionCommand command)
     {
         if (_inspection.Active) return;
+        var before = _session!.Current;
+        Submit(command);
+        FinishSubmission(before);
+    }
+
+    // Session receipts, audio and pacing see every submission. The caller projects
+    // after all commands and local focus changes for this input have settled.
+    private SessionResult Submit(SessionCommand command)
+    {
         var current = _session!.Current;
-        if (command is SelectTarget target) _targetCandidate = target.Target;
         _result = _session.Submit(new(current.SessionId, current.Revision, current.Selection?.Actor, command));
         SyncPacing();
         if (_result.Failure is not null) { _navigationRejected = true; ClearNavigation(); }
@@ -408,20 +337,20 @@ public sealed partial class BattleSessionView : Control
             bool wasActionChoice = current.Selection?.Stage == BattleSelectionStage.ActionChoice;
             bool isActionChoice = _result.Snapshot.Selection?.Stage == BattleSelectionStage.ActionChoice;
             if (wasActionChoice != isActionChoice) PlayUiSound?.Invoke(65);
-            else if (command is SelectSpell or SelectItem or SelectEquipment or Cancel) PlayUiSound?.Invoke(66);
+            else if (command is SelectEquipment or Cancel) PlayUiSound?.Invoke(66);
             else if (command is Confirm) PlayUiSound?.Invoke(67);
         }
+        return _result;
+    }
+
+    private void FinishSubmission(SessionSnapshot before)
+    {
         if (_startupFailure is not null) return;
-        if (_result.Snapshot.Selection?.Action is not (SessionAction.Heal or SessionAction.Retreat or SessionAction.Item or SessionAction.PhysicalAttack)) _targetCandidate = null;
-        if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
-            _result.Snapshot.Selection?.Action is SessionAction.PhysicalAttack or SessionAction.Stay or SessionAction.Item) _spellCandidate = null;
-        if (command is Cancel || _result.Snapshot.Selection?.Actor != current.Selection?.Actor ||
-            (_result.Failure is null && _result.Snapshot.Selection?.Action != SessionAction.Item)) _itemCandidate = null;
-        if (_result.Snapshot.Mode == SessionMode.Exploration)
+        if (_result!.Snapshot.Mode == SessionMode.Exploration)
         {
             RetireWindows();
             // Once a scene stages its actors, the field projection owns the world.
-            bool retainBoard = current.BattleFieldScene is null &&
+            bool retainBoard = before.BattleFieldScene is null &&
                 _result.Snapshot.Story.Continuation != ProgramContinuation.DefeatedProgramFinished;
             LeaveBattle?.Invoke(_result, retainBoard);
             return;
@@ -460,23 +389,17 @@ public sealed partial class BattleSessionView : Control
             if (_movementSoundToken != movement.Token)
             { _movementSoundToken = movement.Token; Audio?.PlayEffect(movement.SoundOverride ?? 79); }
         }
+        var result = _result!;
         var current = _session.Current;
         var choices = _session.QueryBattleChoices();
         // The acting-status query admits only live player decisions, including the
         // real preview and undo steps. Cover and inspection supersede that decision.
         var acting = !_inspection.Active ? _session.QueryBattleActingStatus() : null;
-        bool wasTargeting = Targeting;
-        _menu.Present(current, choices, _result!.Failure, _input, _hostCovered ? null : acting);
-        if (wasTargeting != Targeting)
-        {
-            ClearNavigation();
-            _boardPointer.Suspend();
-            _menu.SuspendPointer(keyboard: true);
-        }
+        var decision = PresentDecision(current, choices, _hostCovered ? null : acting);
         var selection = current.Selection;
-        bool movementFocus = _menu.Visible && (selection?.Stage == BattleSelectionStage.Movement || current.BattleMovement is not null);
-        var candidate = _menu.Targeting ? _menu.TargetCandidate : null;
-        var projection = BattleSnapshotProjection.Project(_result, candidate, _session.Definition.Origin,
+        bool movementFocus = decision.Visible && decision.Moving;
+        var candidate = decision.Targeting ? decision.Candidate : null;
+        var projection = BattleSnapshotProjection.Project(result, candidate, _session.Definition.Origin,
             movementFocus ? _session.QueryBattleMovementRange() : null, _session.ActiveBattleScenes);
         _title = projection.Title;
         _status = projection.Status;
@@ -517,14 +440,14 @@ public sealed partial class BattleSessionView : Control
         string body = give ? _giveMenu : discard ? _discardMenu : _equipment;
         if (auxiliary && acting is { } actor)
             body = DisplayNames.InspectionName(actor.Unit.Ally, actor.Unit.NameIndex, actor.Unit.Name, actor.Unit.CustomName) + "\n" + body;
-        if (auxiliary && _result.Failure is not null) body += "\n" + _status;
+        if (auxiliary && result.Failure is not null) body += "\n" + _status;
         if (_hud.Body.Text != body) { _hud.Body.Text = body; _hud.ResetReading(); }
         bool hudVisible = !_hostCovered && acting is not null && auxiliary;
         _hud.Present(hudVisible, hudVisible, false, _hudSubject, _help,
             lifetimeOpen: auxiliary && _hostCovered || hudVisible);
         _feedback.Text.Text = _status;
         _feedback.Visible = !_hostCovered && !_inspection.Active && !_menu.Visible && !hudVisible &&
-            (_result.Failure is not null || current.BattleResult is not null && current.BattleScene is null &&
+            (result.Failure is not null || current.BattleResult is not null && current.BattleScene is null &&
                 current.BattleRound is null && current.BattleRetreat is null);
         if (_feedback.Visible) _feedback.Arrange(GetViewportRect().Size);
         var selectedEquipment = equipmentChoices.FirstOrDefault(choice => choice.Slot == selection?.EquipmentSlot);
@@ -542,7 +465,8 @@ public sealed partial class BattleSessionView : Control
         if (!_inspection.Active)
         {
             _map.Present(projection, current, movementFocus, candidate);
-            _map.PreviewAction(_menu.PreviewAction, current, candidate, _input.Settings.ReducedFlash);
+            _map.PreviewAction(decision.Targeting && decision.SelectedAction is { Enabled: true } offer ? offer : null,
+                current, candidate, _input.Settings.ReducedFlash);
         }
         // A close-up owns the art canvas. Field death and notices retain the board.
         _map.Visible = current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };
@@ -619,7 +543,7 @@ public sealed partial class BattleSessionView : Control
             rules = _session?.Rules.Identity, battleChoices = choices, healingChoices = choices,
             scene = _scene.Observe(), retreat = _retreat.Observe(), appearance = _appearance.Observe(), story = _session is null ? null : _story.Observe(), observationSequence = current?.ObservationSequence,
             inspection = _inspection.Observe(), inspectionRelease = _inspectionRelease, inspectionEntryPending = _inspectionAfterReturn is not null,
-            menu = _menu.Observe(), movement = _map.ObserveMovement(),
+            menu = _menu.Observe(_decision), movement = _map.ObserveMovement(),
             visualAliases = current?.Battle.Visuals?.Aliases.Select(p => new { actor = p.Key.Value, slot = p.Value }),
             physicalVisuals = current?.Battle.Visuals?.Visuals.Values, cameraFocus = _map.CameraFocus,
             initializationPolicy = current?.Battle.StartPolicy,
@@ -638,8 +562,8 @@ public sealed partial class BattleSessionView : Control
             map = current?.Battle.Definition.Map.Value, mapWidth = current?.Battle.Definition.Width,
             mapHeight = current?.Battle.Definition.Height, actor = current?.Selection?.Actor.Value,
             terrain = full ? current?.Battle.Definition.Terrain.Select(tile => tile.Surface.ToString()) : null,
-            target = current?.Selection?.Target?.Value, candidate = (_menu.Visible ? _menu.TargetCandidate : _targetCandidate)?.Value,
-            itemSlot = current?.Selection?.ItemSlot, itemCandidate = _itemCandidate, itemChoices = _items,
+            target = current?.Selection?.Target?.Value, candidate = _decision?.Candidate?.Value,
+            itemSlot = current?.Selection?.ItemSlot, itemChoices = _items,
             inventories = current?.Battle.Actors.Select(a => new { actor = a.Actor.Value, items = a.SourceLoadout?.Items }),
             search = _search.Observe(), searchChests = current?.Battle.Definition.Search?.Chests.Select(c => new { x = c.Position.X, y = c.Position.Y, flag = c.Flag, opened = current.Story.Flags.Contains(c.Flag) }), discard = _discard.Observe(), discardMenu = _discardMenu, custody = current?.Battle.ItemCustody,
             give = _give.Observe(), giveMenu = _giveMenu, returnSlot = current?.Selection?.ReturnSlot,
@@ -651,7 +575,7 @@ public sealed partial class BattleSessionView : Control
                 equippedSlot = BattleEquipment.EquippedSlot(a.Definition, a.SourceLoadout),
                 equippedRingSlot = BattleEquipment.EquippedRingSlot(a.Definition, a.SourceLoadout),
                 minimumRange = BattleEquipment.Physical(a)?.MinimumRange, maximumRange = BattleEquipment.Physical(a)?.MaximumRange }),
-            spell = current?.Selection?.Spell, spellCandidate = _spellCandidate, spellChoices = _spells,
+            spell = current?.Selection?.Spell, spellChoices = _spells,
             selection = current?.Selection,
             stage = current?.Selection?.Stage.ToString(), stopReason = _result?.StopReason.ToString(),
             previewX = current?.Selection?.Preview.Destination.X, previewY = current?.Selection?.Preview.Destination.Y,

@@ -8,6 +8,7 @@ var failures: Array = []
 var samples: Array = []
 var events: Dictionary = {}
 var submissions := 0
+var receipts: Array[Dictionary] = []
 var commits: Array = []
 var route := OS.get_environment("SF2_BATTLE_NAVIGATION_ROUTE")
 var steps: Array[Dictionary] = []
@@ -39,7 +40,8 @@ func state(label: String = "") -> Dictionary:
             row[key] = s.get(key)
         row["menu"] = {"page": s.menu.page, "command": s.menu.command, "row": s.menu.row,
             "candidate": s.menu.candidate, "visible": s.menu.visible,
-            "detail": s.menu.layout.detail}
+            "detail": s.menu.layout.detail, "help": s.menu.layout.help, "navigation": s.menu.layout.navigation,
+            "targetCardVisible": s.menu.layout.targetCard.visible}
         samples.append(row)
     return s
 
@@ -82,11 +84,11 @@ func resample_hold(action: String) -> void:
     Input.parse_input_event(e)
     await process_frame
 
-func pointer(rect: Dictionary, pressed: bool) -> void:
+func pointer(rect: Dictionary, pressed: bool, button := MOUSE_BUTTON_LEFT) -> void:
     var e := InputEventMouseButton.new()
-    e.button_index = MOUSE_BUTTON_LEFT
+    e.button_index = button
     e.pressed = pressed
-    e.position = Vector2(rect.x + rect.width / 2.0, rect.y + rect.height / 2.0)
+    e.position = root.get_stretch_transform() * Vector2(rect.x + rect.width / 2.0, rect.y + rect.height / 2.0)
     Input.parse_input_event(e)
     await process_frame
     await process_frame
@@ -122,10 +124,14 @@ func restart() -> void:
         return
     await settle()
     submissions = 0
+    receipts.clear()
     commits.clear()
     view.connect("SessionResultObserved", func(json: String):
         var result: Dictionary = JSON.parse_string(json)
-        if result.boundary == "submit": submissions += 1
+        if result.boundary == "submit":
+            submissions += 1
+            receipts.append({"revision": result.revision, "failure": result.failure,
+                "kinds": result.observations.map(func(event): return event.Kind)})
         for event in result.observations:
             if event.Kind == "action-committed" and event.Actor != null: commits.append(event.Actor.Value))
     events.clear()
@@ -207,9 +213,12 @@ func movement_checks(accelerated := false) -> void:
     steps.clear()
     view.connect("SessionResultObserved", track_steps)
     await send("left", true)
-    for i in 7: await process_frame
     var crossing = state().movement
-    check(crossing != null and crossing.progress > 0.5, "Turn late in the current step")
+    var deadline := Time.get_ticks_msec() + 1000
+    while crossing != null and crossing.progress <= 0.5 and steps.size() == 1 and Time.get_ticks_msec() < deadline:
+        await process_frame
+        crossing = state().movement
+    check(crossing != null and crossing.progress > 0.5 and steps.size() == 1, "Turn late in the current step")
     await send("down", true)
     await await_steps(3)
     check_handoff(1)
@@ -366,11 +375,64 @@ func lifecycle_checks() -> void:
 
 func same_target(expected: Dictionary, message: String) -> void:
     var now := state()
-    check(now.revision == expected.revision and now.menu.candidate == expected.menu.candidate, message)
+    check(now.revision == expected.revision and now.submissions == expected.submissions and
+        now.target == expected.target and now.menu.candidate == expected.menu.candidate, message)
+
+func board_cell(x: int, y: int) -> Dictionary:
+    var terrain: Dictionary = JSON.parse_string(view.get_node("MapViewport").call("ReadTerrainJson"))
+    var size: float = terrain.cellSize * terrain.scale
+    return {"x": terrain.board.x + x * size, "y": terrain.board.y + y * size, "width": size, "height": size}
+
+func inert_buttons(rect: Dictionary) -> void:
+    for button in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_MIDDLE]:
+        await pointer(rect, true, button)
+        await pointer(rect, false, button)
+
+func inspection_buttons(origin: Dictionary) -> void:
+    await tap("cancel")
+    var before := state()
+    check(before.inspection.active and before.inspection.page == "Cursor", "Cancel opens read-only inspection")
+    await inert_buttons(board_cell(origin.previewX, origin.previewY - 1))
+    var after := state()
+    check(after.inspection.cursor == before.inspection.cursor and after.revision == before.revision
+        and after.submissions == before.submissions, "Wheel and middle preserve inspection focus")
+    await tap("cancel")
+
+func target_pointer_admission() -> void:
+    var ready := state("legal-target-before-inert-buttons")
+    var other: Dictionary = ready.actors.filter(func(unit): return unit.id == "reserve-2")[0]
+    var legal := board_cell(other.x, other.y)
+    var illegal := board_cell(ready.previewX, ready.previewY)
+    await inert_buttons(legal)
+    same_target(ready, "Wheel and middle on a different legal target preserve the command and candidate")
+    await inert_buttons(illegal)
+    same_target(ready, "Wheel and middle on an illegal cell preserve the command and candidate")
+    await pointer(illegal, true)
+    await pointer(illegal, false)
+    var declined := state("illegal-candidate")
+    var confirmation: Dictionary = declined.menu.layout.navigation[2]
+    check(declined.menu.page == "Target" and declined.menu.candidate == null and declined.target == ready.target
+        and declined.revision == ready.revision and declined.submissions == ready.submissions
+        and not declined.menu.layout.targetCard.visible and confirmation.visible and not confirmation.enabled
+        and "Choose a legal target." in declined.menu.layout.detail and not "commit" in declined.menu.layout.help,
+        "Invalid board cell clears the visible candidate and confirmation while retaining the session selection")
+    await tap("confirm")
+    await pointer(confirmation.rect, true)
+    await pointer(confirmation.rect, false)
+    same_target(declined, "Mapped and pointer Confirm both refuse the invalid candidate")
+    await tap("right")
+    var restored := state("legal-target-restored")
+    check(restored.revision == declined.revision + 1 and restored.submissions == declined.submissions + 1
+        and restored.menu.candidate == restored.target and restored.menu.layout.targetCard.visible
+        and restored.menu.layout.navigation[2].enabled and "commit" in restored.menu.layout.help,
+        "Fresh direction restores a legal visible and confirmable target in one submission")
+
 
 func fresh_targets(physical_count: int) -> void:
     await restart()
     var origin := state("target-case-origin")
+    if physical_count == 2 and route == "keyboard":
+        await inspection_buttons(origin)
     await tap("confirm")
     var actions := state()
     await tap("attack")
@@ -378,8 +440,14 @@ func fresh_targets(physical_count: int) -> void:
         var unavailable := state("attack-no-target")
         check(unavailable.stage == "ActionChoice" and unavailable.menu.page == "Main"
             and unavailable.revision == actions.revision and not unavailable.menu.layout.commands[0].enabled
-            and not unavailable.menu.layout.detail.is_empty(), "Attack with no legal target stays in Main and displays its reason")
+            and "No available target" in unavailable.menu.layout.detail
+            and not "Choose a legal target." in unavailable.menu.layout.detail,
+            "Attack with zero legal targets stays in Main and displays its distinct reason")
+        await tap("confirm")
+        same_target(unavailable, "Confirm does not submit the unavailable Attack offer")
     else:
+        if physical_count == 2 and route == "keyboard":
+            await target_pointer_admission()
         await target_edges("Attack", physical_count, "Main")
 
     await tap("spell")
@@ -387,14 +455,24 @@ func fresh_targets(physical_count: int) -> void:
     var list := state()
     await wait_ms(145)
     check(state().menu.row != list.menu.row, "Magic keeps ordinary list repeat")
+    var selected_row := state("magic-row-before-target")
     await tap("confirm")
     var entered := state("target-entry-with-held-list-direction")
-    check(entered.menu.page == "Target" and entered.menu.candidate == origin.actor, "Magic enters with its legal default")
+    var entry_receipts := receipts.slice(selected_row.submissions)
+    check(entered.menu.page == "Target" and entered.menu.candidate == origin.actor
+        and entered.menu.layout.targetCard.visible and entered.menu.layout.navigation[2].enabled
+        and not entered.menu.layout.listVisible and entered.revision == selected_row.revision + 2
+        and entry_receipts.size() == 2 and entry_receipts[0].kinds == ["spell-selected"]
+        and entry_receipts[1].kinds == ["target-selected"]
+        and entry_receipts[0].revision == selected_row.revision + 1 and entry_receipts[1].revision == entered.revision,
+        "Magic publishes the action and default target receipts in order and shows the legal decision")
+
     await resample_hold("down")
     await wait_ms(260)
     same_target(entered, "An inherited direction cannot cross into Target")
     await send("down", false)
     await target_edges("Magic", 2, "Magic")
+    check(state().menu.row == selected_row.menu.row, "Target Back restores the exact Magic level")
     if physical_count == 2:
         await tap("confirm")
         await send("right", true)
@@ -403,12 +481,26 @@ func fresh_targets(physical_count: int) -> void:
         check(view.process_mode == Node.PROCESS_MODE_DISABLED, "System menu covers the target phase")
         await wait_ms(245)
         await send("right", false)
+        await send("right", true)
         await tap("cancel")
-        same_target(covered, "Host return keeps the candidate without carrying the direction")
+        await resample_hold("right")
+        await wait_ms(160)
+        same_target(covered, "Host close with a held mapped direction keeps the live Target undisturbed")
         check(state().menu.page == "Target" and state().menu.visible, "Host return shows the same target phase")
+        await send("right", false)
 
         if route == "keyboard":
             var rect: Dictionary = state().menu.layout.navigation[2].rect
+            var before_resize := state()
+            await pointer(rect, true)
+            root.size = Vector2i(2560, 1440)
+            await wait_ms(85)
+            check(state().menu.layout.navigation[2].rect != rect, "Client resize moves the actual confirmation control")
+            root.size = Vector2i(1920, 1080)
+            await wait_ms(85)
+            check(state().menu.layout.navigation[2].rect == rect, "Confirmation returns to the original bounds")
+            await pointer(rect, false)
+            same_target(before_resize, "Resize invalidates a captured Confirm even when its bounds return")
             await pointer(rect, true)
             await tap("cancel")
             await tap("confirm")
@@ -474,9 +566,17 @@ func target_edges(label: String, count: int, parent: String) -> void:
     await tap("target")
     check(state().revision == tapped.revision + 1, label + " Target shortcut selects once")
     await send("right", true)
+    var before_back := state()
     await tap("cancel")
     var backed := state(label + "-back")
-    check(backed.menu.page == parent, label + " Back returns to its owner")
+    var back_receipts := receipts.slice(before_back.submissions)
+    check(backed.menu.page == parent and backed.stage == "ActionChoice" and backed.target == null
+        and backed.menu.candidate == null and not backed.menu.layout.targetCard.visible
+        and not backed.menu.layout.navigation[2].visible and backed.menu.layout.listVisible == (parent != "Main")
+        and backed.revision == before_back.revision + 1 and back_receipts.size() == 1
+        and back_receipts[0].kinds == ["action-choice"] and back_receipts[0].revision == backed.revision,
+        label + " Back submits once and restores the live parent controls")
+
     await wait_ms(245)
     same_target(backed, label + " carried direction cannot repeat in the parent")
     await send("right", false)
@@ -666,7 +766,7 @@ func run() -> void:
     await create_timer(0.15).timeout
     var file := FileAccess.open(OS.get_environment("SF2_BATTLE_NAVIGATION_OUTPUT"), FileAccess.WRITE)
     file.store_string(JSON.stringify({"passed": failures.is_empty(), "failures": failures,
-        "route": route, "samples": samples, "focusBoundary": "window signals; physical OS focus remains unclaimed"}, "  "))
+        "route": route, "samples": samples, "receipts": receipts, "focusBoundary": "window signals; physical OS focus remains unclaimed"}, "  "))
     file.close()
     print("Battle navigation observation passed: ", failures.is_empty())
     quit(0 if failures.is_empty() else 1)

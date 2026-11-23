@@ -300,4 +300,11 @@ func run() -> void:
     if demo_case in ["area","aura"]:
         finish(await area_case()); return
     if not await wait_for(func(_s):return board().settled,"Initial camera settles"): return
+    if OS.get_environment("SF2_CURSOR_CLOSEUP_ONLY") == "1":
+        var previous: String = state().actor
+        await act("confirm")
+        await act("attack")
+        await act("confirm")
+        finish(await paused_resize() and await settle_scene(previous))
+        return
     finish(await public_cursor() if demo_case == "public" else await cursor_decision())

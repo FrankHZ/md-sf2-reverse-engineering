@@ -923,6 +923,15 @@ msgstr "{0}: Actions"
 msgid "battle.target-help"
 msgstr "{0}: next target\n{1}: commit · {2}: back"
 
+msgid "battle.target-pick-help"
+msgstr "{0}: next target · {1}: back"
+
+msgid "battle.target-invalid"
+msgstr "Choose a legal target."
+
+msgid "battle.back-help"
+msgstr "{0}: back"
+
 msgid "battle.choice-help"
 msgstr "{0}: choice\n"
 
