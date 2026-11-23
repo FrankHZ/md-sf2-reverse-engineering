@@ -1515,7 +1515,7 @@ the production session with these controlled prelaunch inputs and sends mapped m
 | Case | Initial map and position | Initial flags |
 | --- | --- | --- |
 | `prison` | `map-17` (53,6), Up (`1`) | `0,1,2,3,4,32,33,34,35,36,501,502,503,504,611,612,650,660` |
-| `ship` | `map-73` (50,2), Right (`2`) | `0,1,2,3,4,5,32,33,34,35,36,37,501,502,503,504,505,506,507` |
+| `ship` | `map-73` (50,2), Left (`2`) | `0,1,2,3,4,5,32,33,34,35,36,37,501,502,503,504,505,506,507` |
 
 For each case write a fresh checkout-local JSON in the format below with the corresponding
 operands. Select an external disposable save root, a fresh namespace and worktree-local
