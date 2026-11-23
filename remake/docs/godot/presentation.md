@@ -998,11 +998,31 @@ is tracked by [PR1400](https://github.com/FrankHZ/md-sf2-reverse-engineering/pul
 
 **Standard rigor.** [#2093](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2093) covers
 the Godot handoff from a battle to its enemy-defeated scene and from staged field death to the
-after-program. The existing session continuation and staged field-death projection choose whether
-the outgoing battle board is retained. At either staged handoff the root hides the battle view
-before the field presenter attaches. The field presenter draws the staged actors and camera and
-mounts the texture selected by the current portrait window. Ordinary unstaged returns can still
-hold the battle board beneath field effects. Return notices follow the outcome observations.
+after-program. The [scene handoff rules](../application/pre-voyage-campaign.md#scene-handoff-across-battle)
+define when each projection owns the scene.
+
+- During a before-program, the field presenter draws the script's working layout and explicit
+  camera. After battle initialization, the frozen field image can serve as the loader facade.
+  At BattleLoad, [the battlefield presenter](battle-scenes.md#battlefield-maps) binds the board to
+  the selected encounter. At local cell zero the main plane uses the encounter's source origin;
+  the other plane retains its independent packed start and admitted parallax/follow behavior.
+  Apply the admitted foreground roof copy at the source position. Terrain, units and selection
+  share the board transform. Report required missing resources or unsupported plane motion at
+  delivery; keep the load pending until the matching completion can be submitted.
+- When the session publishes the defeated program, or leaves a completed staged field-death
+  projection, the battle view yields. The root hides it before attaching the field presenter.
+  That presenter draws the staged actors and camera and mounts the texture selected by the
+  current portrait window. An explicit closure or no-portrait line clears the texture and
+  releases its layout space. An ordinary unstaged return can hold the board beneath field effects
+  until a map handoff or settled field input. Return notices follow outcome observations.
+- The host attaches views and routes completion. Application commits the battle changes and
+  the program's ordered effects. A battle result signal can precede field attachment. Inspect
+  the attached field projection to verify the first displayed scene.
+
+[Special-pose portrait identity](#special-pose-dialogue-portraits-2070) applies when the scene
+binds an explicit character to a shared pose. [Fixed close-up backdrops](battle-scenes.md#fixed-backdrops-for-the-private-campaign)
+and the [spell coverage inventory](spell-presentation.md#coverage-by-family-and-rank) own their
+separate content and action-delivery limits.
 
 The bounded Battle05 witness uses the registered Galam town world and an authorized disposable
 prebattle Continue slot. Use the locked Debug adapter, a checkout-local native report and an

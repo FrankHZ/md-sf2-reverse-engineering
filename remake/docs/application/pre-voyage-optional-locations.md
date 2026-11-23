@@ -275,11 +275,11 @@ observer parse failures.
 ## Pre-voyage save coverage
 
 Ordinary Save uses the [settled field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots)
-for supported live visits. The earlier observations below record legacy reader coverage.
+for supported live visits. The table records the earlier legacy observations and their setup limits.
 
 | Location | Legacy coverage and limits |
 | --- | --- |
-| Granseal Map3 default/F609 and completed Battle01/07 returns | Map3 uses its opening or church anchor. `battle01-return` and `battle07-return` keep the recorded outcome anchor under their existing flag/landing gates. [Implemented field recipes](opening-session-lifecycle.md#eligibility-and-restoration-recipes) |
+| Granseal Map3 default/F609 and completed Battle01/07 returns | Legacy Map3 records use the opening or church anchor. `battle01-return` and `battle07-return` keep the recorded outcome anchor under their existing flag/landing gates. [Legacy field recipes](opening-session-lifecycle.md#eligibility-and-restoration-recipes) |
 | Yeel Map5 default/F650 | Observed cold Continue retains the loaded visit, live population, follower links, Healing Seed receipt and Church Egress. Later F530/F28 have their own setup boundary. [Yeel observation](opening-session-lifecycle.md#yeel-save-and-continue-observation) |
 | Granseal Map3 F506 | Retains the current layout and Kiwi's settled refusal or named join/follow state. Ordinary reentry retires the joined resident. Church Record uses the Map3 refuge. The F543 cast and quake substitution follow their own entry rules. [Granseal observation](opening-session-lifecycle.md#granseal-f506-save-and-continue-observation) |
 | Early Galam Map16 | Legacy observations cover default, same-visit post-rally, fresh F663 and settled F505. Both priests bind the Map16 refuge. Ordinary Save now uses the settled v6 snapshot for the loaded visit. [Galam observation](opening-session-lifecycle.md#galam-town-save-and-continue-observation) |

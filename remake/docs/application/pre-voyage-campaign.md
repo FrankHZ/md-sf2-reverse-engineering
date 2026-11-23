@@ -175,15 +175,13 @@ Automatic scroll remains a modern deterministic projection, not a hardware timin
 Map44 default zone displacement retains its explicit Unsupported instruction; it is never replaced
 by the nearby return. Natural original reach and hardware-exact audiovisual timing remain **Unknown**.
 
-The existing persistence owner admits a finite completed Battle07 Map58 return recipe, with the
-outcome's retained anchor, F507/F74/F640 set and F407/F999 clear. Stable input, closed windows,
-settled followers, zero quake and legal reconstructed landing remain mandatory. Preserve all party,
-flags, equipment/status, names, semantic settings, egress and RNG; do not rerun init, healing or
-battle outcomes on Continue. The [save owner](opening-session-lifecycle.md#eligibility-and-restoration-recipes)
-records this recipe. No arbitrary checkpoint, battle suspend or observation-to-save conversion is
-admitted. The retained Stage C binary cannot offer this new recipe; a necessary updated-process
-Continue uses the existing legal Battle01 slot, then saves at the new real boundary for subsequent
-fresh-process checks. Previous route results and failures remain evidence at their original scope.
+The Stage D restart observation used the historical completed Battle07 Map58 recipe with the
+outcome's retained anchor, F507/F74/F640 set and F407/F999 clear. The retained Stage C binary
+could not offer that recipe. The updated process continued the legal Battle01 slot, then saved at
+the new boundary for fresh-process checks. The [legacy reader](opening-session-lifecycle.md#eligibility-and-restoration-recipes)
+still reconstructs the admitted anchor. Current ordinary Save at a settled Map58 aftermath uses
+the [field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots) and restores the
+captured visit and live landing. Previous route results and failures retain their original scope.
 
 Acceptance requires source compilation, small engine behavior tests, actual Godot state/input and
 projection observations, first/repeat quake entry, legal crack/exit traversal, independent followers,
@@ -476,8 +474,38 @@ phase equality. Use the ordinary `sf2tool.remake_audio` command below with these
 One ordinary title New Game selects an immutable world and starts the party from source definitions.
 Continue selects that world independently and restores progress at an admitted safe point. Each
 battle consumes the current joined/active party, HP/MP, status, levels/EXP, spells, equipped slots,
-gold, custody, accounting and both RNG streams. Apply each source mutation once. Capture the map,
-setup, placement/facing, egress register, result and next accepted input at each handoff.
+gold, custody, accounting and both RNG streams. Capture the map, setup, placement/facing,
+egress register, result and next accepted input at each handoff.
+
+### Scene handoff across battle
+
+The map, working layout, view area and active continuation each have a separate role. An
+encounter identifies a source map region and the board's local size. A story scene names its own
+map, camera and actor operands. Which coordinate space applies depends on the active stage.
+
+| Stage | Coordinate space and authority |
+| --- | --- |
+| Before-battle program | The script can load a displayed map and stage actors with source scene operands. For an admitted scene on the encounter's source map, overlay the selected flag/chest state, then copy the encounter rectangle to layout origin. The declared map area still bounds the camera, and working cells outside the copy remain addressable. A scene-map load preserves the existing cast, party and program. |
+| Battle initialization, load and start | Application commits validated battle initialization once after the before-program finishes, carrying the current party and field-player binding. The matching battle-load delivery mounts the board from the encounter crop, with battle cell zero at the source origin. Board actors, terrain and selection use battle-local coordinates. Start and first-turn admission follow the load continuation. |
+| Victory staging and after-program | A defined enemy-defeated program can take projection ownership with its staged actors before its first dialogue. Where field death is delivered on the battle board, the completed staged world carries into the after-program once that delivery completes. The applicable victory scene can use copied battle bounds. Its separate program still owns dialogue, movement, joins, flags and other effects. |
+| Ordinary return | The selected outcome determines the real landing and carried state. In a source victory that uses a final battle-local position, convert it to map coordinates using the encounter origin. Defeat and retreat use their own refuge rules. Ordinary field control resumes after the return program and map continuation finish. An unstaged return can retain the outgoing board under effects until map handoff or field input. |
+
+The session is the only gameplay publisher. Scripts choose scene operands and ordered effects.
+The host routes actual delivery to the matching continuation; the presenter mounts the published
+board or field actors, camera and current portrait before displaying their scene. The active
+continuation consumes matching completion receipts. Stale or duplicate receipts cannot release
+a later wait. See the [technical handoff](../godot/presentation.md#staged-battle-return) and
+[connected field-player binding](session-and-programs.md#field-player-binding-across-connected-battles).
+
+The [before-scene witnesses](#battle06-scene-and-battlefield-coordinates) distinguish a camera
+outside the copy from actors reading copied or uncopied cells. The [board projection controls](../verification/battles.md#castle-battle-projection)
+cover the independent packed planes, roof behavior and supported parallax. The
+[staged return witnesses](../godot/presentation.md#staged-battle-return) check first draw, actual
+portrait mounting, field death and exactly-once return effects. These cases exercise stage and
+content rules shared by callers. Other maps, display operands and original timing remain bounded
+by their own admission and evidence.
+
+### Campaign routes
 
 | Stage and current acceptance boundary | Field, encounter and party transfer | Reachable interactions and verification |
 | --- | --- | --- |
@@ -502,13 +530,13 @@ resources, next accepted input and errors. The [chapter presentation matrix](../
 identifies required bindings. Reuse the sound, physical, ranged, healing and fire consumers.
 Keep private art and audio in the selected local package. Retain one small record per handoff.
 
-Save eligibility covers the admitted default Map3 recipes, settled Battle01 Map57 return and
-the completed Battle07 Map58 aftermath recipe above.
-Save/Quit and Continue must round-trip a legal point with this selection. Restore verifies package,
-member identities, membership flags, gear, resources and the egress register. New egress values
-require explicit admission independent of location eligibility. Battle suspend, arbitrary field
-saves and high-level promotion are outside this delivery. The later
-[Map16 save recipe](opening-session-lifecycle.md#galam-town-save-and-continue-observation) has its own scope.
+Current ordinary field Save and Continue use the [settled visit rules](opening-session-lifecycle.md#unified-settled-field-snapshots).
+Save/Quit and Continue must round-trip a legal point with this selection, including the live
+landing, roster, gear, resources and independent egress register. The
+[pre-voyage save coverage](pre-voyage-optional-locations.md#pre-voyage-save-coverage) distinguishes
+current snapshot witnesses from legacy Map3, Map57, Map58 and Map16 records.
+[Battle Save](battle-save-and-continue.md#implemented-ordinary-host-boundary-c) has its own
+settled input boundary.
 
 ## Preparing the ordinary selection
 

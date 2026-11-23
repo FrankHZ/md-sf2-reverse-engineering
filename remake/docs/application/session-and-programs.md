@@ -12,7 +12,8 @@ own one outcome: ordinary focused exploration advances without holding V; legal 
 naturally; menu/save entry settles transient motion before pausing. The bounded native and engine
 acceptance includes [#1580](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1580).
 See the [current verification route](../development-and-verification.md#ordinary-clock-and-save-entry).
-Existing save recipes and guards remain binding; this is not universal save eligibility.
+The [settled field snapshot rules](opening-session-lifecycle.md#unified-settled-field-snapshots)
+own current save eligibility. The earlier restart evidence retains its recorded recipe scope.
 
 ### Original source and limits
 
@@ -53,7 +54,7 @@ committed player movement; text/choice delivery has separate guards and tokens.
 
 [`ExplorationSessionView._Process`](../../game/src/Exploration/ExplorationSessionView.cs) clears
 elapsed debt and returns at `CanWaitAtInput` unless movement or explicit Wait is supplied. This
-can strand followers when the player arrives first. The
+could strand followers when the player arrived first. The
 [retained read-only investigation](../../../docs/operations/godot-live-inspection.md#interpreting-save-refusal)
 **Confirmed** unchanged revision/tick and a physically moving follower across snapshots.
 **Inferred:** that host stop explains the persistent refusal; no target-side `QuerySave` was invoked.
@@ -169,7 +170,7 @@ menu or direct Save is requested at ordinary field control (or during its alread
 move), stop accepting new movement/interactions. Before mounting the modal, continue the same
 ordinary enabled steps until that move and visible follower motion/`WaitingForMotion` and sprite
 readiness settle. Check after every published step and freeze at the first such boundary; do not
-wait for every ambient NPC script to become idle or for every save recipe to become available.
+wait for supported ambient NPC scripts to become idle.
 No follower-only service, teleport, action clearing, manual completion or guard relaxation is used.
 
 Bound this pending entry to 120 logical steps (two nominal seconds), with cancel available. This is
@@ -186,26 +187,23 @@ Route system menu, direct Save and returned Church Save through the same boundar
 bypass settlement before offering Save. This short ordinary menu-entry policy exists to avoid
 freezing a transient save blocker; it is not a stability gate for all UI. Party/settings do not capture
 progress, and OS/explicit pause and Quit take priority over obtaining a save offer. Unsupported save
-locations still allow menu access promptly once transient motion ends or the player cancels settlement.
+states still allow menu access once transient motion ends or the player cancels settlement.
 
 After settlement, freeze dispatch, perform any actual `ObserveFieldMusic` history publication,
-then call `QuerySave` and build the offer from that final revision. Keep dispatch paused through
-slot/overwrite confirmation and `CaptureSave(offer.SessionId, offer.Revision)`. The latter must
-revalidate; stale session/revision returns failure/requery, never overwrites using an old offer.
-Cancel resumes fresh time; reopen queries anew. Do not query a live advancing world and then
-hold its offer across ticks. Neither Query nor Capture may settle entities or advance RNG itself.
+then call `QueryFieldSnapshot` and build the offer from that final revision. Keep dispatch paused
+through slot/overwrite confirmation and `CaptureFieldSnapshot` or `RecordChurchSnapshot` with the
+offered session ID and revision. Stale offers fail and require a fresh query. Cancel resumes fresh
+time. Query and capture leave the world and RNG untouched.
 
-[`OpeningSave.RequireStable`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningSave.cs)
-and the [savepoint owner](opening-session-lifecycle.md#implemented-savepoint-boundary) remain
-binding: supported map/phase/anchor, party/resource/music knowledge, settled player/followers,
-sprite readiness, closed dialogue/portrait, completed view/fade, no busy story/warp/battle/service,
-and reconstructible progress are still required. Allowed ambient motion is already discardable
-under the recipe; it must not become a new reason to wait forever. Automatic time does not add
-interior/later-map recipes, arbitrary suspended-state saving or original SRAM parity.
-[`OpeningRestore`](../../src/Sf2.Remake.Application/Runtime/Persistence/OpeningRestore.cs) still
-rebuilds the finite savepoint off-session, preserves captured seeds/progress and performs no
-ordinary-service RNG draws before publication. NPC phases and fresh music playback may differ from
-uninterrupted play. The first *eligible automatic* step after mounting resumes ambient work.
+[`SettledFieldSnapshot`](../../src/Sf2.Remake.Application/Runtime/Persistence/SettledFieldSnapshot.cs)
+checks ordinary walking control, player/follower and sprite readiness, closed windows, settled
+view/palette and representable visit, party and register bindings. It rejects pending story,
+transfer, battle or service ownership. Bound ambient work can retain its live phase. Continue
+rebuilds the exact captured visit off-session and validates its values before the first eligible
+automatic step resumes it. [Legacy field readers](opening-session-lifecycle.md#implemented-legacy-savepoint-boundary)
+keep their own anchors and reconstruction semantics. [Battle Save](battle-save-and-continue.md#implemented-ordinary-host-boundary-c)
+has its own settled Movement gate.
+
 The implementation retains the conservative unsaved warning in
 [`OpeningPersistenceHost.PresentQuitChoices`](../../game/src/Entry/OpeningPersistenceHost.cs):
 `_savedRevision != Current.Revision` can become true on the first automatic step after saving,
@@ -221,7 +219,8 @@ The session/host ordinary scheduler, normal sprite phase and menu/save entry sha
 boundary. `HasOrdinaryFieldTime` selects the eligible ordinary owner, including committed player
 motion; `HasSettledFieldEntry` additionally requires input readiness and visible follower/sprite
 readiness. Neither predicate replaces the stricter side-effect-free save query. The existing host
-accumulator and commands remain the only time authority. Acceptance is:
+accumulator and commands remain the only time authority. The following acceptance used the
+pre-v6 writer. Its recipe-specific results apply to that revision:
 
 1. Actual engine steps with a stopped player and moving followers settle and make `QuerySave`
    available at an already supported recipe. Vary direction, follower spacing and seed; blocked
@@ -239,7 +238,7 @@ accumulator and commands remain the only time authority. Acceptance is:
    not enter those consumers. A narrow existing text/finite-music boundary observation retains
    delivery-versus-logical gating. No full campaign replay, new emulator capture or tests of probes.
 
-**Confirmed:** the [bounded verification](../development-and-verification.md#ordinary-clock-and-save-entry)
+**Confirmed (pre-v6):** the [bounded verification](../development-and-verification.md#ordinary-clock-and-save-entry)
 exercises these engine and native boundaries, including genuine Church return, actual finite audio,
 physical focus transfer and fresh Continue before its first service. This does not establish all-state
 convergence or original runtime parity.
@@ -282,9 +281,9 @@ Herb and Seed NoEffect and the existing field Antidote/DETOX1 payment rules are 
 Field RNG/entity/text/portrait copies now retain the carried flags, visuals, retained source slots
 and death-credit context; battle entry transfers the already supplied death-credit context. This fixes
 the observed connected poisoned-party entry failure without relaxing source/new-battle poison guards.
-The existing save payload captures completed transaction gold/loadout at supported settled recipes;
-a held service cannot be saved. No Map16 save recipe, new save format, complete Map16 or Battle03–07
-story connection is introduced. [Admission](../content/profiles-and-trust.md#finite-galam-shop-admission),
+Completed transaction gold/loadout belong to the carried party. After service return, a legal
+settled visit can capture them through the [field snapshot](opening-session-lifecycle.md#unified-settled-field-snapshots).
+The original shop slice did not establish complete Map16 or the Battle03–07 story connection. [Admission](../content/profiles-and-trust.md#finite-galam-shop-admission),
 [rules/source](../domain/gameplay-rules.md#finite-purchased-supplies-and-detox1) and
 [ordinary native reproduction](../development-and-verification.md#galam-shop-and-supply-observation)
 separate implementation, private binding and natural-route Unknowns.
@@ -966,9 +965,10 @@ select their own program. Neither a missing setup nor an invalid explicit entry 
 and this initializer for initial-save capture, before executing any OnLoad. Initial-recipe Restore
 then uses `Sf2OpeningRestore.InitialStart` and the same dispatcher to execute the default entry once.
 The current source New Game start is Map3 at (56,3), flags 0/32/80, with no explicit entry; it selects
-the default setup. Later supported field restores instead use `OpeningRestore.Build` and
-`Sf2OpeningRestore.Rebuild`, reconstructing the admitted savepoint without executing OnLoad.
-This correction does not change that path or establish prior ordinary-game/save corruption.
+the default setup. Settled v6 Continue uses `SettledFieldSnapshot.Build` to restore the captured
+visit without executing OnLoad. Older settled v1/v3 records use `OpeningRestore.Build` and their
+admitted reconstruction rules. The start setup correction establishes no prior ordinary-game
+or save corruption.
 
 [`ExplorationStartSetupTests`](../../tests/Sf2.Remake.Engine.Tests/ExplorationStartSetupTests.cs)
 checks population/entry agreement, later and competing flags, default aliases, absent OnLoad,
@@ -1905,10 +1905,20 @@ for behavior and native expected-boundary acceptance.
 
 ## Confirm during field story waits
 
-Standard rigor: the reading and recruitment paths share mapped input but own different
-continuations. The acceptance boundary is the current text span for D1 and the current finite
-join-music helper for recruitment. Compare the normal and confirmed paths at their next input
-boundary, then verify the caller's state and projection after a separate confirmation.
+Standard rigor for these shared wait boundaries. The active continuation owns logical work.
+Ordinary field time serves free walking and neutral field opportunities. A story or service
+consumer keeps its own token, enabled services and input rules. For example, a pending
+[window handoff](#field-windows-hidden-at-input) completes only camera and window work before
+the current Search result or text span becomes visible. The Search grant has already committed
+when applicable. The handoff preserves custody and leaves text polls paused. Confirm while hidden
+supplies no reading intent. The [dialogue contract](../../../docs/design/contracts/interface/dialogue-system.md#bound-neutral-text-delay-and-narration)
+owns the admitted original-source delay and poll ordering.
+
+Actual visibility, reveal and playback are governed by their delivery owners. The continuation
+requires its own logical work as well as any matching delivery receipt, and accepting input
+remains a separate step where the consumer requires it. When the field presenter loses focus,
+visibility or processing, it suspends pacing and discards pending reading and recruitment intent.
+Resume starts with zero elapsed debt. Mandatory work stays pending with its existing token.
 
 **Confirmed (static source):** at pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `code/common/scripting/text/textfunctions_1.asm:symbol_delay1` loads 21 and `symbol_delay3` loads
@@ -1921,23 +1931,26 @@ explicitly clears the toggle and `PlayIntroOrEndCutscene` sets it to FF. Map 17'
 ends in W1. Its normal field path can enter the input-sampling branch with the cleared toggle.
 **Unknown:** the toggle and sampled input sequence in the reported Galam playthrough.
 
-The remake's fresh mapped Confirm follows these rules:
+The remake admits these input paths.
 
-- Reading intent can end D1 pauses within the current displayed span, including a run of
+- A fresh Confirm creates reading intent that can end D1 pauses within the current displayed span, including a run of
   repeated D1s. It resumes the saved typewriting state and executes remaining glyph, window,
-  and acknowledgement work in order. Page reading, CLEAR and a new wait token bound that
-  intent. Without Confirm, D1 keeps its 22 neutral services. D3 retains its dedicated interrupt
-  path. Confirm must arrive as a fresh edge for either pause.
-- When a finite recruitment cue (sound command 19 or 20) owns a `MusicWait` immediately
-  followed by `PreviousMusic`, Confirm runs its
-  remaining common services in bounded batches and ends any remaining native playback through
-  the normal previous-music instruction. The matching wait records skipped delivery separately
-  from natural completion. The next plain text acknowledgement needs its own input. The
-  script remains responsible for the party, flags, items, window close, and actor or camera
-  cleanup. Both paths execute those instructions in order exactly once.
-- Camera, actor motion, fades, ordinary tick waits, choices and other music use their existing
-  commands and completion rules. An in-flight intent is discarded on loss of its token or
-  host ownership. The wait commands never acknowledge a later span or choose a menu action.
+  and acknowledgement work in order. Once the same span is visible, fully read and at logical
+  input, the reading intent can acknowledge it through the normal poll. Page reading, CLEAR,
+  loss of host ownership and a new wait token bound that intent. Without Confirm, D1 keeps its
+  22 neutral services under the admitted source gate. D3 retains its dedicated held-input
+  interrupt path; interrupting that delay leaves acknowledgement pending.
+- A fresh mapped Confirm can finish an eligible finite recruitment helper when sound command
+  19 or 20 matches the active generation and the next instruction is `PreviousMusic`. Finish its
+  remaining common services in bounded batches through the helper's final group. If actual
+  delivery is still outstanding, record an explicit skipped-delivery receipt, distinct from
+  natural completion. The normal previous-music instruction owns ending the cue and restoring
+  the earlier track. The next plain acknowledgement requires release and a new press. The
+  caller executes party, flag, item, window and actor/camera work in order exactly once.
+- Ordinary Confirm supplies one fresh edge to its current consumer. Release barriers guard
+  the next span and modal/focus handoffs. Camera, actor motion, fades, ordinary tick waits,
+  choices and other music keep their own service and completion rules. Battle-entry skip is a
+  [separate bounded policy](#battle-entry-skip-agreement).
 
 ## Modern Finite Music
 
@@ -1956,7 +1969,7 @@ outside all areas; player traversal is consulted only when there is no logical v
 ambiguous view identity reports `map-music-area-unavailable` / `map-music-area-ambiguous` before
 publishing a music request, helper wait or finite service. This is derived context, not a second
 cached state authority. Stable save music capture/observation uses the same selection after the
-existing busy, player-area, collision and entity-stability checks; no save recipe is added.
+existing busy, player-area, collision and entity-stability checks.
 The [bounded F8 disposition](../evidence/structure-and-quality-review.md#f8-bounded-repair-disposition)
 owns changed-state acceptance and the retained baseline reproduction.
 
