@@ -56,7 +56,7 @@ public sealed partial class GameRoot
     {
         if (what == NotificationWMCloseRequest)
         {
-            if (_battlePreview is not null) return;
+            if (_preview is not null) return;
             // Cancel the draft before the existing Quit owner creates any confirmation.
             CloseSettings(); RequestQuit();
         }
@@ -138,7 +138,7 @@ public sealed partial class GameRoot
     private string? ApplySettings(InputSettings candidate, bool reset)
     {
         if (_settingsOverride) return GameText.Get("ui.settings.readonly");
-        if (_preferences is null && _battlePreview is null) return _settingsNotice + "\n" + GameText.Get("ui.settings.storage");
+        if (_preferences is null && _preview is null) return _settingsNotice + "\n" + GameText.Get("ui.settings.storage");
         Dictionary<GameAction, List<InputEvent>> prepared;
         GameText.Candidate display;
         try { prepared = GameInput.Prepare(candidate); }

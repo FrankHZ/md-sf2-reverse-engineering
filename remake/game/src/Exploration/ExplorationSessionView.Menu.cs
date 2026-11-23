@@ -31,6 +31,23 @@ public sealed partial class ExplorationSessionView
         _fieldMenuActive = true; SuspendPacing(); _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
         _tickTime = 0; _resumeAutomatic = true; _fieldMenu.Begin(); Present();
     }
+
+    internal bool OpenPreviewFieldMenu(bool party)
+    {
+        if (_partyStatus.Open)
+        {
+            if (party) return true;
+            HandleAction(GameAction.Cancel);
+            return false;
+        }
+        if (!_fieldMenu.Open)
+        {
+            if (!CanOpenFieldMenu) return false;
+            BeginFieldMenu();
+        }
+        if (party) ChooseFieldMenu(0);
+        return true;
+    }
     private void CloseFieldMenu()
     {
         _fieldMenuActive = false; _fieldMenu.HideMenu(); _partyStatus.Hide();

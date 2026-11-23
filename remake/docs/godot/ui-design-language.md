@@ -35,7 +35,8 @@ prices and transaction state.
 ## Scope, evidence and boundaries
 
 **Confirmed — accepted implementation/source structure:**
-[StoryTheme](../../game/src/UI/StoryTheme.cs) supplies blue/gold reading panels, 30px body,
+[StoryTheme](../../game/src/UI/StoryTheme.cs) supplies the shared double-gold frame with corner
+accents for blue panel, reading, popup and tooltip surfaces, 30px body,
 24px hints, selected `ffe19a` and unavailable `8e9bab`. Entry and host actions use the square
 journey theme. Field, Church and shop use labeled lists with nearest 3× command art where mounted.
 Battle Main uses nearest 3× command art and persistent 24px labels in the shared compact rows.

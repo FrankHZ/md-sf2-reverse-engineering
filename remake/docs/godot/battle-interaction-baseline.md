@@ -88,8 +88,9 @@ and result placement. Original source claims retain the separate provenance belo
 DesignPreview F4 and F8 mount these same production consumers with the public authored Practice
 Yard package. F4 enters Movement and uses ordinary input through Main, Magic, Target and ally
 playback. F8 enters the admitted read-only inspection at the actor's origin and uses the
-production detail, roster, map and host return paths. Reset remounts the session. Preview F9
-still presents staged reading samples. See [direct preview reproduction](../../game/probes/previews/README.md#run-from-the-repository-root).
+production detail, roster, map and host return paths. F9 opens the authored victory/defeat
+approaches or their allowed Egress example, with actual delivered waits and return.
+Reset remounts the session. See [direct preview reproduction](../../game/probes/previews/README.md#run-from-the-repository-root).
 
 | Accepted scene / behavior | Production consumer and actual coverage |
 | --- | --- |

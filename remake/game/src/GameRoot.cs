@@ -26,31 +26,6 @@ public sealed partial class GameRoot : Node
     private Button? _menuButton;
     private SystemMenuView? _systemMenu;
     private bool _releaseBarrier;
-    private (IScenarioSource Source, InputSettings Settings)? _battlePreview;
-
-    // The scene reviewer supplies a fresh source before this Main instance enters the tree.
-    internal void ConfigureBattlePreview(IScenarioSource source, InputSettings settings) =>
-        _battlePreview = (source, settings);
-
-    internal void RefreshBattlePreview(bool covered, string language, bool reducedFlash)
-    {
-        if (_input is null) return;
-        var mode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
-        if (ProcessMode != mode) { DisarmInput(); ProcessMode = mode; }
-        if (_input.Settings.Language == language && _input.Settings.ReducedFlash == reducedFlash) return;
-        _input.Settings.Language = language;
-        _input.Settings.ReducedFlash = reducedFlash;
-        RefreshInputHints();
-        _battle?.RefreshSettingsProjection();
-    }
-
-    internal void TrackCoveredBattlePreviewInput(InputEvent input)
-    {
-        _input?.Resolve(input);
-        _input?.DisarmMovement();
-        _input?.DisarmWait();
-    }
-
     public override void _ExitTree()
     {
         ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
@@ -139,10 +114,11 @@ public sealed partial class GameRoot : Node
         GetWindow().FocusExited += SettingsFocusLost;
         GetWindow().FocusEntered += PacingFocusReturned;
         Godot.Input.JoyConnectionChanged += PacingDeviceChanged;
-        if (_battlePreview is { } preview)
+        if (_preview is { } preview)
         {
             ConfigureInput(preview.Settings);
-            BeginSource(preview.Source);
+            if (preview.Source is { } source) BeginSource(source);
+            else ShowEntry();
             return;
         }
         GetTree().AutoAcceptQuit = false;
@@ -241,13 +217,11 @@ public sealed partial class GameRoot : Node
 
     private async void BeginSource(IScenarioSource source)
     {
-        if (_battlePreview is null && !EnsureWindowSupport()) { _windowStartup = () => BeginSource(source); return; }
+        if (!EnsureWindowSupport()) { _windowStartup = () => BeginSource(source); return; }
         var outcome = GameSession.Start(source, Sf2.Remake.Application.Gameplay.RuleCompositions.ForGame());
         if (outcome is SessionStartFailed failed) { Fail(failed.Failure); return; }
         var started = (SessionStarted)outcome;
         if (started.Result.Failure is { } startFailure) { Fail(startFailure); return; }
-        if (_battlePreview is not null && !SessionPresentationOwner.IsBattle(started.Result.Snapshot))
-        { Fail("preview-battle-required", "Select a controlled battle start."); return; }
         await MountSession(started);
     }
 
@@ -362,15 +336,12 @@ public sealed partial class GameRoot : Node
                 preparedField.PublishAttachment();
             }
         }
-        if (_battlePreview is null)
-        {
-            _menuButton = new Button { Name = "SystemMenuEntry", Text = GameText.Get("system.entry"), AnchorLeft = 1, AnchorRight = 1,
-                OffsetLeft = -UI.StoryTheme.GameplayInset - 160, OffsetRight = -UI.StoryTheme.GameplayInset,
-                OffsetTop = UI.StoryTheme.GameplayInset, OffsetBottom = UI.StoryTheme.GameplayInset + UI.StoryTheme.MenuHeight,
-                Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
-            _menuButton.AddThemeFontSizeOverride("font_size", 24);
-            _menuButton.Pressed += ShowSystemMenu; _hostUi.AddChild(_menuButton); RefreshSystemMenuLabels();
-        }
+        _menuButton = new Button { Name = "SystemMenuEntry", Text = GameText.Get("system.entry"), AnchorLeft = 1, AnchorRight = 1,
+            OffsetLeft = -UI.StoryTheme.GameplayInset - 160, OffsetRight = -UI.StoryTheme.GameplayInset,
+            OffsetTop = UI.StoryTheme.GameplayInset, OffsetBottom = UI.StoryTheme.GameplayInset + UI.StoryTheme.MenuHeight,
+            Theme = UI.StoryTheme.CreateEntry(), FocusMode = Control.FocusModeEnum.None };
+        _menuButton.AddThemeFontSizeOverride("font_size", 24);
+        _menuButton.Pressed += ShowSystemMenu; _hostUi.AddChild(_menuButton); RefreshSystemMenuLabels();
         ApplyHostPause(); DisarmInput();
 
         void CheckAudio() { if (_audio?.Error is { } failure) Fail(failure, "Required private audio could not be consumed."); }
@@ -412,7 +383,7 @@ public sealed partial class GameRoot : Node
 
     private void ShowSystemMenu()
     {
-        if (_battlePreview is not null || _session is null || _systemMenu is not null || _entry is not null || _slots is not null ||
+        if (_session is null || _systemMenu is not null || _entry is not null || _slots is not null ||
             _settings is not null || _windowRecovery is not null || _exploration?.PartyMenuOpen == true) return;
         RequestFieldEntry(OpenSystemMenu);
     }

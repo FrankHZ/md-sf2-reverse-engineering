@@ -23,7 +23,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         Theme = StoryTheme.Create();
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
-        AddThemeStyleboxOverride("panel", BattleCardFrame.Create());
+        AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(18, 14));
         var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         column.AddThemeConstantOverride("separation", 4);
         AddChild(column);

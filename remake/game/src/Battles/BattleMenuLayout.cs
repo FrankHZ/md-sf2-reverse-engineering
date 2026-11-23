@@ -64,8 +64,7 @@ internal sealed partial class BattleMenuLayout : Control
     public override void _Ready()
     {
         Theme = UI.StoryTheme.Create();
-        var insets = (StyleBoxFlat)Theme.GetStylebox("panel", "PanelContainer").Duplicate();
-        insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = PanelInset;
+        var insets = UI.StoryTheme.PanelFrame(PanelInset, PanelInset);
         foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);

@@ -116,7 +116,6 @@ public sealed partial class GameRoot
 
     private LocalSaveStore Store(ScenarioDefinition definition)
     {
-        if (_battlePreview is not null) throw new ArgumentException("save-seed-read-only");
         string? Validate(SaveRecord record) => SaveRecordRestore.Restore(definition, record, RuleCompositions.ForGame())
             is SessionStartFailed failed ? failed.Failure.Code : null;
         if (_outputFile is not null) return new(_outputFile, Validate);
@@ -405,7 +404,7 @@ public sealed partial class GameRoot
                 { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
                 if (!result.Success) { SaveError(result.Error!); return; }
                 _savedSession = offer.SessionId; _savedRevision = session.Current.Revision;
-                if (quit) { GetTree().Quit(); return; }
+                if (quit) { QuitGame(); return; }
                 void ReturnToPlay() { CloseSavePanel(); CloseSystemMenu(); }
                 _slots!.Cancel = ReturnToPlay;
                 _slots.ShowChoices("saved", GameText.Get("save.saved", slot, offer.Destination), (GameText.Get("entry.return"), ReturnToPlay));
@@ -519,7 +518,7 @@ public sealed partial class GameRoot
             SaveError("save-publication-uncertain");
             return;
         }
-        if (_session is null) { GetTree().Quit(); return; }
+        if (_session is null) { QuitGame(); return; }
         if (_windowRecovery is not null) { ShowWindowQuit(); return; }
         if (_slots is not null) return;
         OpenSavePanel(); PresentQuitChoices(_slots!, CloseSavePanel);
@@ -535,6 +534,6 @@ public sealed partial class GameRoot
         }
         bool dirty = _savedSession != _session!.Current.SessionId || _savedRevision != _session.Current.Revision;
         view.ShowChoices("confirm-quit", dirty ? GameText.Get("save.quit-dirty") : GameText.Get("save.quit-clean"),
-            (GameText.Get("entry.cancel"), cancel), (GameText.Get("entry.quit"), () => GetTree().Quit()));
+            (GameText.Get("entry.cancel"), cancel), (GameText.Get("entry.quit"), QuitGame));
     }
 }

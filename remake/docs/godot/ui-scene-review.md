@@ -8,6 +8,12 @@ controls, their observed returns and the limits that matter during play.
 
 ## Scenes in the playable demo
 
+Every F1–F10 preview tab uses the production host. F5, F6 and F7 keep the same field
+session when switching directly, so the roster reads real Shop transactions. F1's preview
+save lives in a disposable slot. F9 opens actual authored outcome approaches. The
+[preview scene ownership and controls](../../game/probes/previews/README.md#scene-ownership)
+describe the direct startup and data for each tab.
+
 | Scene | What the player can do | Production evidence and limit |
 | --- | --- | --- |
 | F1 Witch and slots / F2 dialogue | Start or Continue in either slot, read a portrait question, answer and regain control. A new name requires a physical keyboard, even when navigating with a pad. | [Entry and dialogue](presentation.md#production-entry-and-field-dialogue-1606) covers retained drafts, safe overwrite Back, backup recovery and an actual Map3 Yes/No in English and Chinese. |

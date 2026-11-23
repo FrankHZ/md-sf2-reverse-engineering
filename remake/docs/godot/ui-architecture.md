@@ -191,21 +191,22 @@ their established disclosure. Selected spell effect copy remains with #2083.
 [Inspection view](../../game/src/Battles/BattleInspectionView.cs) ·
 [Compact card](../../game/src/UI/BattleStatusCard.cs)
 
-### DesignPreview battle samples
+### DesignPreview production entry
 
-F4 and F8 instantiate `Main.tscn` with a fresh authored Practice Yard start and in-memory
-preferences. Both use its `GameRoot` and `BattleSessionView` for the board, input mapping,
-decision/description, inspection/Back and close-up. F8 uses the same read-only inspection
-entry as production Movement Back. The preview owns its toolbar, the viewport beneath it and
-remounting on a sample change. It translates pointer coordinates at the viewport boundary
-and suspends the same session under the staged F5/F10 covers. Speed uses the production
-draft and return caller, with preferences held in memory.
+All F1–F10 tabs instantiate or reuse the production `Main.tscn`. The preview owns the
+toolbar, controlled startup choice, reset, fixed review viewport and pointer translation.
+F1 uses ordinary entry and one explicit isolated save. F2/F3 use the admitted authored
+dialogue and Church programs. F5–F7 share one live field session, so Party and Shop read
+the same inventory. F4/F8 use the same Practice Yard production battle, and F9 uses
+ordinary authored outcome continuations. F10 opens the actual System Menu over its
+eligible caller. Preferences live in memory. Game entry, admission, presentation and
+return keep their production owners.
 
-The [F1–F10 inventory](../../game/probes/previews/README.md#scene-ownership) records the other
-samples' remaining migration boundaries. The next slices can follow the production callers for
-entry/dialogue, field/party/services, then result and host flows. The authored battle proves
-access to the actual presenters and return paths. Art-backed and human device review have a
-separate acceptance boundary.
+`StoryTheme` supplies one gold texture for the frame of all panel, popup and tooltip styles.
+Presenters retain their own content insets. The [sample routes](../../game/probes/previews/README.md#scene-ownership)
+describe which actual authored inputs exercise each view. The fixed review window fits the
+production viewport. Desktop window recovery and device/appearance acceptance retain their
+ordinary separate review boundaries.
 
 ### Parallel route eligibility can drift
 

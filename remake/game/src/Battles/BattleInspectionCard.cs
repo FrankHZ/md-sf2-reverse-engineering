@@ -14,7 +14,7 @@ internal sealed partial class BattleInspectionCard : PanelContainer
     {
         Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
-        AddThemeStyleboxOverride("panel", BattleCardFrame.Create());
+        AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(18, 14));
         var column = new VBoxContainer(); AddChild(column);
         var heading = new HBoxContainer(); column.AddChild(heading); heading.AddChild(_name); heading.AddChild(_classLevel);
         _name.SizeFlagsHorizontal = SizeFlags.ExpandFill; _name.CustomMinimumSize = new(220, 0);
