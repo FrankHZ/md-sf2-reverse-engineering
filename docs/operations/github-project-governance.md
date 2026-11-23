@@ -347,6 +347,12 @@ Use [fresh setup](./local-private-inputs.md#fresh-worktree-setup) for the next s
 runs, caches and old handoffs together. Recollect historical observations if needed. This requires
 neither a file inventory nor an archive. The cleanup applies only to checkout scratch.
 
+When an authorized cleanup script is available, main-gate checks its targets and consumers,
+runs it directly if execution is permitted, and verifies its exit result and the target directories.
+Do not hand the script back to the user merely because an earlier command was rejected; report a
+blocker only if the current execution is actually blocked. This does not authorize bypassing a
+rejection by rewriting the command or switching tools.
+
 For an accepted idle checkout selected for retirement, resolve uncommitted work and nested Git
 ownership, then use Git's worktree removal command. The operator authorizes this removal after
 the same checks. Keep reusable checkouts that still have a consumer.
