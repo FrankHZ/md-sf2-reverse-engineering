@@ -71,8 +71,8 @@ The shared scene award saturates at 49 before the final adjustment. A surviving 
 ordinary hostile Magic on a listed battle uses the half-EXP table, then two range-16 draws
 (zero adds 1, then zero subtracts 1) and minimum 1. This includes an all-miss cast. The USA halving
 table selects Battle01, so ordinary Battle26 casts skip the halving. Use the shared award owner
-for target side and allied DETOX/item status effects. Physical confusion uses its own source
-same-side flag below. Enemy spell casts have no player EXP or gold award. [Scene end][end] ·
+for target side and allied DETOX/item status effects. Confused offensive scenes use the source
+flag described below. Enemy spell casts have no player EXP or gold award. [Scene end][end] ·
 [Award and contribution][award] · [Kill/status EXP][exp] · [Halved battles][halved] ·
 [Shared status award decision](detox-ranks-design.md#implementation-decision-and-sequence)
 
@@ -119,9 +119,9 @@ An attacker affected by either MUDDLE rank gives the defender a dodge on main ra
 zero. A sleeping or stunned defender skips the dodge draw. The scene's MUDDLE 2 flag gates ranged
 physical presentation and prevents ordinary doubles/counters. The regular same-side gate also
 suppresses doubles/counters. Preserve actual faction for kill, drop and victory accounting.
-When the MUDDLE 2 scene flag bypasses initialization of `targetIsOnSameSide`, keep that source
-award behavior for this automatic branch. Its guard, message and effect rolls use main RNG;
-AI scoring retains the existing thinking stream. A natural retail sequence from cast through
+When the MUDDLE 2 scene flag bypasses initialization of `targetIsOnSameSide`, the field stays
+zero. This leaves the half-EXP battle check enabled for an eligible ally scene award. The
+guard, message and effect rolls use main RNG. AI scoring retains the thinking stream. A natural retail sequence from cast through
 selected same-side action, guard and control restoration is **Unknown**.
 [Scene flag initialization][init] · [Physical dodge][dodge] · [Double gate][end] · [Counter gate][counter]
 
@@ -401,9 +401,6 @@ catalog has its name.
 [Source heal command](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/heal.asm#L18-L120) ·
 [Source attack category](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L69-L141)
 
-MUDDLE 2 also needs a target-side decision shared by search, commit validation and playback,
-plus the selected-center guard, inaction and same-side accounting.
-
 Battle start and settled battle Save/Continue admit rank-1 counters with their applicable
 turn consumers. Flag-only and confused words still reject. Restoring a Movement decision
 requires that its current player can act. Other units keep their pending counter, queue
@@ -467,6 +464,85 @@ The controlled 62-HP suffix completed the countdown, EGRESS and field Save and t
 inherited script dependencies, a non-UTC rewritten header and old Options ordering.
 Natural history from a MUDDLE cast through countdown and return remains **Unknown**.
 
+## MUDDLE 2 automatic action design
+
+**Decision.** First refactor the existing automatic offensive action boundary. Carry an internal
+target relation through selection, detached preflight and delivery. Derive it from the turn owner
+and live packed status, and validate it against the selected action at commit. Default to opposing
+targets for ordinary actions. Only an admitted confused automatic offensive action uses its own
+side. Per-action status checks would leave ordered candidates, preflight and replay free to
+disagree. A second AI or action path would duplicate movement, cost, reactions and settlement.
+Swapping actor factions would change occupancy, source-slot identity and outcomes. The relation
+is transient and needs no saved field or manual command.
+
+| Owner | Required change |
+| --- | --- |
+| Source AI and shared attack selectors | Search eligible source slots on the chosen side, in source order. Preserve enemy preprocessing, order promotion, commandset and priority inputs, and ally commandset 06. Skip Heal and Support while confused. Reuse the bounded learned-spell and equipped-item scans with the six-family spell and four-family item filters. The attack-position grid still uses actual opponents to obstruct movement and checks occupied stops. |
+| Physical, spell and shared attack-item rules | Validate the selected center against the same relation. Spell and item areas follow the center's actual side and existing effect order. Keep center range, area eligibility and area radius separate. A protected slot can receive collateral damage. A reachable self uses one actor identity. Check range against the selected pre-move center when reconstructing the source search and movement, then use actual post-move positions for the scene area. |
+| Automatic decision, movement and scene | Run the selected-center guard once, after category selection and before movement. Action 5 carries no move, targets, MP cost or item use. It still runs the inaction message, eligible scene-end award and turn closure. Leave enemy `LastTarget` intact on a guard. A completed attack writes it under the existing category rules, including the source item self-write. Detached preflight and live delivery share preparation and validate the same decision and reaction operands. Playback applies the prepared reactions once and projects the actual affected combatant, including when only one side is shown. |
+| MOVE fallback | Keep ordinary order-specific movement, restrictions and terrain. For the confused MOVE command, supply the fixed own-side slot 0 or 128 to the existing pursuit owner, separately from the offensive list. Retain the Kraken approach-cost variant. Exercise a live fixed slot outside attack reach. The remake mapping for an absent or unplaced fixed slot is **Unknown**. Resolve a reachable unsupported fallback before admitting it. |
+
+Replace the opposing-only roster in `SourceAllyAi` and the opposing-only offensive target queries
+and validation in `BattleAutomaticAction` and the reaction validator. Keep path validation,
+thinking-stream scores and the dual item/spell category draw, main-stream single ranged category
+and guard draws, and the existing physical/ranged suppression rules. Source search and selected
+movement use distinct unarmed range checks, so verify self selection and movement together.
+The enemy's priority-15 class tie branch skips enemy candidates. A tied cohort with only
+enemies yields no selected attack in the fixed source. Pass the already consumed scoring and
+category draws on to the next command. The current `PhysicalTargetRules.Select` assumes ranked
+candidates have an ally class. Exercise both a tied cohort and a single high-priority enemy.
+[Source class tie][attacktie] · [Reachability][reachable] · [Source attack range][attackrange] ·
+[Attack command][aiattack] ·
+[Source area][area] · [MOVE][move] ·
+[Decision preflight](../../src/Sf2.Remake.Domain/Battles/Rules/IBattleDecisionRule.cs) ·
+[Action validation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
+[Automatic delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs)
+
+### Settlement and current combinations
+
+**Confirmed.** An ally can earn damage and kill EXP contributions against an ally. An eligible
+surviving actor receives the scene award with the confusion halving rule above. A lethal self hit
+therefore skips the final EXP award. Kill gold and action drops require an ally striker and an
+actual enemy casualty. Enemy-on-enemy damage has no EXP recipient, scene first ally, kill credit,
+gold or drop. An ally casualty still gets its own defeat entry. Leader and last-enemy checks use
+the actual casualties, including a leader hit as collateral. [Damage and kill EXP][exp] ·
+[Scene initialization][init] · [Scene actor selection][sceneactors] · [Scene award][end] ·
+[Drop helper][drop] · [Death processing][deaths] · [Battle loop][battleloop]
+
+Replace the paired ally/enemy assumption in `Sf2PhysicalAction` with actual striker, casualty
+and eligible recipient. In `Sf2AttackSpellAction`, require an actual enemy casualty for
+kill-gold construction and use the caster's resulting HP for EXP eligibility. A self reaction
+edits one actor across physical recoil, spell payment and equipment wear. Derive halving in
+`Sf2BattleProgressionRule` from the scene award rules, with the confusion exception scoped to
+the offensive or inaction scene. Use the same operands in construction and validation.
+`EnemyItemDropRules`, `BattleDeathBatch`, `BattleOutcomeRules` and outcome return retain their
+existing roles. Preserve opposing counter credit, support/DETOX halving and settlement order.
+
+| Current coverage that exercises the boundary | Decision before binding |
+| --- | --- |
+| Battle26 Lesser Demon, Dark Bishop and Wizard | Exercise actual enemy physical and BLAST 3 or BLAZE 3 area turns. Dark Bishop's AURA is skipped while confused. The carrier's Black Ring initializes bare and cannot enter that enemy's attack-item list. Preserve Wizard move orders. The first encounter's neutral Higins is a scene sprite without a turn or target entry. Use the existing controlled Kazin setup for the short cast witness. [Battle26 formation][battle26roster] · [Enemy definitions][enemies] · [Battle26](../application/battle26-higins.md) · [Rank-1 witness](#muddle-1-implementation-and-evidence) |
+| Black Ring, offensive books and promoted Kiwi | Use the existing controlled ally commandset with eligible Black Ring wear and a real learned elemental cast. Healing Rain, DESOUL and enemy AQUA supply excluded-choice controls. The bound MNST physical-to-breath conversion inherits the relation after the guard. No learned KIWI entry enters the six-family scan. [Item and category rules](#temporary-ally-commandset-06) · [Monster conversion][turn] · [Promoted Monster](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot) |
+| Battle16 Kraken and Battle18 Taros | Kraken arm/head reach and SWARM orders are current consumers. Keep the live slot-128 guard and Kraken approach table. Taros has STATUS immunity, so ordinary MUDDLE 2 casts cannot confuse him into using the sword on his side. His existing BOLT 2 and target effectiveness keep their owners. [Kraken formation][kraken] · [Enemy definitions][enemies] · [Taros](../application/taros-caravan.md) |
+| Authored profiles and campaign limits | Use one finite turn check for a temporary player-controlled ally and a supported activation-driven ally. A Move/Stay-only actor without required operands, the unconnected Prism Laser and later special AI are outside this binding. Natural ally confusion, a selected self action in ordinary play and natural leader collateral remain **Unknown**. Use controlled legal inputs for those consumers. |
+
+### Delivery sequence
+
+1. Complete the internal automatic turn for both factions, with physical, admitted spell/item,
+   fixed-slot MOVE and guarded inaction. Keep public rank-2 status and spell entry closed. Use small
+   actual engine turns for no-target movement, protected-center and self pass/fail, same-side
+   kill and area casualty. Check payment/wear, one actor on a self reaction, RNG order and
+   single replay. Include an eligible ally award on a half-EXP battle, an enemy kill with no
+   allied reward or drop, and a terminal casualty. Preserve opposing counter and drop controls.
+2. Admit the finite rank-2 consumer set together with the effect in the existing support owner.
+   Share turn admission across spell targeting, typed Start, battle Save and Continue. Check
+   the live operands the selector and action builders need. Status syntax, standby, growth,
+   refresh and recovery keep their existing owners. Exercise confused ally and enemy queue
+   closure including sleep/stun and an extra entry. Carry a retained fallen ally through field
+   Save, Raise and fresh-battle recovery. Release the private binding when those consumers pass.
+   Use the existing Kazin setup for one short ordinary Magic suffix with an automatic action,
+   active-counter cold Continue and return. Capture input, state, projection and errors.
+   Additional natural witnesses and full effect animation are separate work.
+
 ## Implementation order and ownership
 
 Learned SLEEP 1, DESOUL 1/2 and MUDDLE 1 have player bindings. MUDDLE 2 can remain in the
@@ -505,23 +581,10 @@ required consumers are admitted.
    [BattleOutcomeRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/BattleOutcomeRules.cs).
    The existing commit/replay authority retains effects, custody receipts and scene waits.
    [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
-3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) implement
-   after-turn and physical dodge. The [temporary ally commandset](#temporary-ally-commandset-06)
-   handles controlled attack, healing, item and movement choices. The first rank has ordinary
-   cast, opponent turn and cold Continue evidence. Pair the second with same-side AI decisions
-   and guarded and real same-side actions. Route temporary automatic control in
-   [BattleAdvancer](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs).
-   Extend the existing commandset/action decisions
-   ([physical](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyPhysicalDecision.cs),
-   [spell](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemySpellDecision.cs)) and automatic
-   action validation only for bounded supported actor/action combinations. Reuse the selected
-   move, validated commit and real scene for inaction. Preserve applicable enemy commandsets,
-   ally commandset 06 and their respective inputs. Neither blanket Stay nor temporarily
-   swapping faction can express movement, selected-target guards, RNG and rewards correctly.
-   Confirm the variants needed by the currently reachable formations before enabling each rank.
-   If a current legal combination needs a new shared AI or death contract, bring the concrete
-   case to main-gate before binding the effect. Existing unconnected special enemy AI and
-   arbitrary automatic spell/item combinations remain explicit boundaries.
+3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) and
+   [rank-1 evidence](#muddle-1-implementation-and-evidence) record the accepted first rank.
+   Follow the [automatic action design](#muddle-2-automatic-action-design) and its
+   [delivery sequence](#delivery-sequence) for rank 2.
 
 Keep one packed status word. The existing last-refresh operand remains scoped to stat-affecting
 counters. Reaction and after-turn refresh recompute stats using the existing support rules.
@@ -647,10 +710,17 @@ specified above.
 [move]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/move.asm
 [aiattack]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack.asm
 [guard]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinemuddledbattleaction.asm
+[attacktie]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L255-L421
+[battle26roster]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/spritesets/spriteset26.asm#L59-L123
+[attackrange]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/getactionrange.asm
+[area]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/populatetargetslist.asm
+[sceneactors]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm#L298-L349
+[kraken]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/spritesets/spriteset16.asm#L63-L106
 [message]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/createbattlescenemessage.asm
 [init]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/initbattlesceneproperties.asm
 [enemies]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/enemies/enemydefs.asm
 [drop]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/dropenemyitem.asm
+[battleloop]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop_1.asm
 [deaths]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/processkilledcombatants.asm
 [heal]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/heallivingandimmortalallies.asm
 [kazin]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats04.asm
