@@ -623,6 +623,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
             if (story.PortraitWindow is UnknownPortraitWindow { LegacySpeaker: { } speaking } legacy &&
                 world.TryResolveEntity(speaking, out var speakingEntity) && speakingEntity.Sprite is { } sprite)
             { portraitId = _visuals.Sprites[sprite].Portrait; flags = legacy.LegacyFlags; }
+            else if (ExplorationDialoguePortrait.ForSpecialPose(_visuals, world, story) is { } pose)
+            { portraitId = pose.Portrait; flags = pose.Flags; }
             if (_observeCamera) _owner.SetMeta("portrait_projection", new Godot.Collections.Dictionary
                 { ["id"] = portraitId is { } drawn ? drawn : -1, ["flags"] = flags });
             if (portraitId is { } portrait)
