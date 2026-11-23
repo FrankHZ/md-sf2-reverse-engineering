@@ -648,12 +648,25 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         return inventory.With(actors: inventory.Actors.Select(actor => actor.Actor == owner.Actor ? wear.Owner : actor));
     }
 
-    internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction) =>
-        reaction.Kind is BattleReactionKind.Dodge or BattleReactionKind.Ineffective ? current :
-        current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target
-            ? reaction.Kind == BattleReactionKind.Resource ? actor.With(mp: reaction.MpAfter)
-            : actor.With(hp: reaction.HpAfter, mp: Spell is null && AttackSpell is null && SupportSpell is null ? reaction.MpAfter : actor.Mp,
-                status: reaction.StatusWrite, refreshStats: true) : actor));
+    internal EngineBattleState ApplyReaction(EngineBattleState current, BattleReaction reaction)
+    {
+        if (reaction.Kind is BattleReactionKind.Dodge or BattleReactionKind.Ineffective) return current;
+        var target = current.GetActor(reaction.Target);
+        var changed = reaction.Kind == BattleReactionKind.Resource ? target.With(mp: reaction.MpAfter) : ApplyTargetReaction(target, reaction);
+        return current.With(actors: current.Actors.Select(actor => actor.Actor == reaction.Target ? changed : actor));
+    }
+
+    private BattleActorState ApplyTargetReaction(BattleActorState target, BattleReaction reaction)
+    {
+        var pack = Spell?.CuresPoison == true && CurseRules.Present(reaction.ClearedStatus) && target.SourceLoadout is { } worn
+            ? BattleEquipment.RemoveCurse(target.Definition, worn) : null;
+        byte? attack = pack is null ? null : BattleEquipment.Attack(target.Definition, target.Progress,
+            pack, reaction.StatusWrite ?? target.Status);
+        // The caster cost was already applied, including for a self-targeted cure.
+        byte mp = Spell is null && AttackSpell is null && SupportSpell is null ? reaction.MpAfter : target.Mp;
+        return target.With(hp: reaction.HpAfter, mp: mp, attack: attack,
+            status: reaction.StatusWrite, sourceLoadout: pack, refreshStats: true);
+    }
 
     internal EngineBattleState ApplySleep(EngineBattleState current, BattleReaction reaction) =>
         reaction.InflictedSleep is not { } status ? current : current.With(actors: current.Actors.Select(actor =>

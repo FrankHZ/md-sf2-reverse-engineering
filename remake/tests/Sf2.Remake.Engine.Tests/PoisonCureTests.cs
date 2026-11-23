@@ -109,14 +109,27 @@ public sealed class PoisonCureTests
                 [Detox, rank2, rank3], caster.Definition.Physical, sourceLoadout: caster.SourceLoadout)
         };
         var original = initial.Definition;
+        bool withRing = !self && (targetStatus & 4) != 0;
+        var friend = initial.GetActor(Friend);
+        var recipient = withRing ? friend.Deployment with
+        {
+            Definition = new(Friend, BattleClassRule.Wizard, friend.Level, friend.MaxHp, friend.MaxMp,
+                friend.BaseAttack, friend.BaseDefense, friend.Definition.Agility, false, friend.Move, [],
+                friend.Definition.Physical, equipment: new(friend.BaseAttack,
+                    [new(92, "Indra Staff", 1u << 17, 25, 1, 1)],
+                    rings: [new(24, "Black Ring", 1u << 17, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])),
+        } : friend.Deployment;
         var definition = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height, original.Terrain,
-            original.Deployments.Select(row => row.Actor == Medic ? casterDefinition : row),
+            original.Deployments.Select(row => row.Actor == Medic ? casterDefinition : row.Actor == Friend ? recipient : row),
             [original.Spells[Detox], new(rank2, 6, 0, 0, 2, CuresPoison: true), new(rank3, 10, 0, 0, 2, CuresPoison: true)],
             new(true), original.Initialization, original.Outcome, healingItems: original.HealingItems.Values, poison: true);
+        if (withRing)
+            friend = new BattleActorState(recipient, friend.Hp, friend.Mp, friend.Exp, friend.Position, friend.Kills, friend.Defeats,
+                status: targetStatus, sourceLoadout: new([220, 408, 24, 127], [63, 63, 63, 63]));
         var actors = initial.Actors.Select(actor => actor.Actor == Medic
             ? new BattleActorState(casterDefinition, caster.Hp, mp, 0, caster.Position, 0, 0,
                 status: self ? targetStatus : (ushort)0, sourceLoadout: caster.SourceLoadout)
-            : actor.Actor == Friend ? actor.With(status: (ushort)(0x5000 | (self ? 0 : targetStatus)), position: new(3, 2), refreshStats: true)
+            : actor.Actor == Friend ? friend.With(status: (ushort)(0x5000 | (self ? 0 : targetStatus)), position: new(3, 2), refreshStats: true)
                 .With(status: (ushort)(0xF000 | (self ? 0 : targetStatus)))
             : actor);
         var battle = new EngineBattleState(definition, actors, 0x1234, initial.ThinkingSeed, initial.Round,
@@ -130,6 +143,10 @@ public sealed class PoisonCureTests
     [InlineData(3, 1)]
     [InlineData(3, 0)]
     [InlineData(2, 2)]
+    [InlineData(2, 4)]
+    [InlineData(2, 7)]
+    [InlineData(3, 4)]
+    [InlineData(3, 7)]
     public void HigherBattleDetoxKeepsTheSameSideAwardAndRefreshesOnlyOnARealCure(byte rank, ushort status)
     {
         var start = HigherBattle(status);
@@ -145,18 +162,20 @@ public sealed class PoisonCureTests
         var committed = BattleCommandDispatcher.Submit(selected, new Confirm());
         Assert.Null(committed.Failure);
         var rng = committed.Observations.Where(row => row.RandomRange.HasValue).ToArray();
-        Assert.Equal(status == 0 ? new ushort?[] { 8, 16, 16 } : [16, 16], rng.Select(row => row.RandomRange));
+        int cleared = status & (rank == 2 ? 3 : 7);
+        Assert.Equal(cleared == 0 ? new ushort?[] { 8, 16, 16 } : [16, 16], rng.Select(row => row.RandomRange));
         var live = committed.Snapshot;
         Assert.Equal(20, live.Battle.GetActor(Medic).Mp);
         Assert.Equal((ushort?)(0x5000 | status & 1), live.Battle.GetActor(Friend).LastRefreshBits);
-        var notices = new List<bool>();
+        Assert.Equal(start.Battle.GetActor(Friend).SourceLoadout, live.Battle.GetActor(Friend).SourceLoadout);
+        var notices = new List<string>();
         for (int steps = 0; live.BattleScene is { } scene; steps++)
         {
             Assert.True(steps < 30);
-            if (scene.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage)
+            if (scene.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage)
             {
                 Assert.Equal(rank == 2 ? 14 : 10, live.Battle.GetActor(Medic).Mp);
-                notices.Add(scene.ShowsStunCure);
+                notices.Add(scene.ShowsStunCure ? "stun" : scene.ShowsCurseCure ? "curse" : cleared == 0 ? "ineffective" : "poison");
             }
             var advanced = BattleSceneContinuation.Submit(live, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
                 new CompletePresentation(scene.Token, scene.CompletionKind));
@@ -164,13 +183,19 @@ public sealed class PoisonCureTests
             live = advanced.Snapshot;
         }
         var target = live.Battle.GetActor(Friend);
-        Assert.Equal(0xF000, target.Status);
+        Assert.Equal(0xF000 | (status & ~cleared), target.Status);
         Assert.Equal(start.Battle.GetActor(Friend).Hp, target.Hp);
-        Assert.Equal(status == 0 ? (ushort?)0x5000 : null, target.LastRefreshBits);
-        Assert.Equal(status == 0 ? 12 : 15, target.Attack);
-        Assert.Equal(status == 0 ? 45 : 55, target.Agility);
-        Assert.Equal(status == 0 ? new[] { false } : status == 3 ? [false, true] : [status == 1], notices);
-        int exp = status == 0 ? 1 : 5 + (rng[^2].RandomValue == 0 ? 1 : 0) - (rng[^1].RandomValue == 0 ? 1 : 0);
+        Assert.Equal(cleared == 0 ? (ushort?)0x5000 : null, target.LastRefreshBits);
+        int gear = (status & 4) == 0 ? 0 : (cleared & 4) == 0 ? 35 : 25;
+        Assert.Equal((cleared == 0 ? 12 : 15) + gear, target.Attack);
+        Assert.Equal(cleared == 0 ? 45 : 55, target.Agility);
+        if ((status & 4) != 0)
+            Assert.Equal(new ushort[] { 220, (cleared & 4) == 0 ? (ushort)408 : (ushort)280, 24, 127 }, target.SourceLoadout!.Items);
+        string[] expectedNotices = cleared == 0 ? ["ineffective"] :
+            new[] { (2, "poison"), (1, "stun"), (4, "curse") }.Where(row => (cleared & row.Item1) != 0).Select(row => row.Item2).ToArray();
+        Assert.Equal(expectedNotices, notices);
+        Assert.Equal(start.Battle.ItemCustody, live.Battle.ItemCustody);
+        int exp = cleared == 0 ? 1 : 5 + (rng[^2].RandomValue == 0 ? 1 : 0) - (rng[^1].RandomValue == 0 ? 1 : 0);
         Assert.Equal((byte?)exp, live.Battle.GetActor(Medic).Exp);
         Assert.Equal(Friend, live.Selection!.Actor);
     }
@@ -178,9 +203,10 @@ public sealed class PoisonCureTests
     [Theory]
     [InlineData(2, false)]
     [InlineData(3, true)]
+    [InlineData(3, false)]
     public void BattleSelfDetoxKeepsItsPaymentAndSilenceSuppressesOnlyTheEffect(byte rank, bool silenced)
     {
-        var live = HigherBattle(silenced ? (ushort)0x102 : (ushort)2, self: true);
+        var live = HigherBattle(silenced ? (ushort)0x102 : rank == 3 ? (ushort)4 : (ushort)2, self: true);
         foreach (SessionCommand command in new SessionCommand[]
             { new Confirm(), new SelectSpell(new("detox", rank)), new SelectTarget(Medic), new Confirm() })
         {
@@ -198,18 +224,15 @@ public sealed class PoisonCureTests
             live = advanced.Snapshot;
         }
         Assert.Equal(terminal, live.BattleScene!.Phase);
-        Assert.Equal(silenced ? 10 : 14, live.Battle.GetActor(Medic).Mp);
+        Assert.Equal(rank == 3 ? 10 : 14, live.Battle.GetActor(Medic).Mp);
         Assert.Equal(silenced ? 0x102 : 0, live.Battle.GetActor(Medic).Status);
     }
 
     [Fact]
-    public void HigherBattleDetoxRejectsCurseInsufficientMpAndTargetsOutsideItsRange()
+    public void HigherBattleDetoxRejectsInsufficientMpAndTargetsOutsideItsRange()
     {
         var rule = new Sf2HealingRule();
         SpellRef rank3 = new("detox", 3);
-        var cursed = HigherBattle(4).Battle;
-        Assert.Equal("detox-curse-unsupported", Assert.Throws<BattleRuleException>(() => rule.RequireTarget(cursed,
-            Medic, cursed.GetActor(Medic).Position!, rule.RequireSpell(cursed, Medic, rank3), Friend)).Code);
         var poor = HigherBattle(0, mp: 9).Battle;
         Assert.Equal("insufficient-mp", Assert.Throws<BattleRuleException>(() => rule.RequireSpell(poor, Medic, rank3)).Code);
         var good = HigherBattle(0).Battle;

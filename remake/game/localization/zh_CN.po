@@ -1525,6 +1525,9 @@ msgstr "{0}/{1}：选择 · {2}：确认 · {3}：返回"
 msgid "battle.scene.poison-cured"
 msgstr "{0} 的中毒已治愈。"
 
+msgid "battle.scene.curse-cleared"
+msgstr "{0}的诅咒解除了。"
+
 msgid "name.spell.detox"
 msgstr "解毒"
 
@@ -2928,7 +2931,7 @@ msgid "spell-description.no-refuge"
 msgstr "当前无法返回休息点。"
 
 msgid "spell-description.curse"
-msgstr "当前的诅咒使此等级的法术无法施放。"
+msgstr "解除中毒、麻痹和诅咒，并卸下受诅咒的装备。"
 
 msgid "battle.order.current"
 msgstr "当前 · {0}"

@@ -253,6 +253,7 @@ internal sealed partial class FieldActionView : Control
         string Name(ActorRef actor) => PartyStatusView.MemberName(members.Single(member => member.Carried.Actor == actor), _session);
         string target = Name(cast.Target!.Value);
         List<string> lines = [GameText.Get("battle.heal.action", Name(cast.Member), DisplayNames.Spell(cast.Spell), cast.Spell.Level)];
+        if ((cleared & 4) != 0) lines.Add(GameText.Get("battle.scene.curse-cleared", target));
         if ((cleared & 1) != 0) lines.Add(GameText.Get("battle.scene.stun-cleared", target));
         if ((cleared & 2) != 0) lines.Add(GameText.Get("battle.scene.poison-cured", target));
         if (cleared == 0) lines.Add(GameText.Get("prepare.no-effect"));

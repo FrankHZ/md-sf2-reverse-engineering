@@ -28,8 +28,9 @@ inherit the spell-only silence gate. Query/cancel, bad range/target, missing MP/
 input preserve the complete prior state. Learned DETOX 2/3 use MP6/10 and range 0–2 to clear
 poison and stun on a single admitted teammate. Effective Battle casts refresh the recipient
 and award once per target. Field casts can target joined reserves or fallen members and
-clamp MP at zero, with refresh on both outcomes and no RNG or EXP. Equipped curse treatment
-is tracked separately. [Higher-rank rules and acceptance](detox-ranks-design.md).
+clamp MP at zero, with refresh on both outcomes and no RNG or EXP. Rank 3 also clears CURSE
+and unequips cursed gear through the shared equipment rules. Rank 2 leaves CURSE and the
+worn words intact. [Higher-rank rules and acceptance](detox-ranks-design.md).
 Enemy cure effects (including a `heal/1` authored alias) reject at both finite
 HEAL AI decision and spell admission before any automatic movement, payment, effect or RNG publication;
 this does not admit enemy DETOX.

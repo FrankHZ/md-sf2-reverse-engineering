@@ -21,14 +21,13 @@ internal static class SpellDescriptions
             lines.Add(facts.MinimumRange is { } minimum
                 ? target + " " + GameText.Get("battle.range", minimum, facts.MaximumRange!)
                 : target);
-        if (facts.Effect is SpellEffect.CurePoison or SpellEffect.CurePoisonAndParalysis && facts.FieldPayment is not null)
+        if (facts.Effect is SpellEffect.CurePoison or SpellEffect.CurePoisonAndParalysis or SpellEffect.CurePoisonParalysisAndCurse && facts.FieldPayment is not null)
             lines.Add(GameText.Get("spell-description.cure-payment"));
         if (facts.Effect != SpellEffect.NoEffect && facts.FieldPayment is { } payment && payment != facts.MpCost)
             lines.Add(GameText.Get("spell-description.clamped-mp", payment));
         if (facts.SuppressedBySilence)
             lines.Add(GameText.Get("spell-description.silenced"));
-        if (facts.Reason is { } reason && (facts.Effect is not null || reason.Kind != SessionFailureKind.UnsupportedCapability ||
-            reason.Code == "detox-curse-unsupported"))
+        if (facts.Reason is { } reason && (facts.Effect is not null || reason.Kind != SessionFailureKind.UnsupportedCapability))
             lines.Add(Refusal(reason));
         return string.Join("\n", lines);
     }
@@ -36,7 +35,6 @@ internal static class SpellDescriptions
     internal static string Refusal(SessionFailure reason) => reason.Code switch
     {
         "field-egress-context" or "egress-map" => GameText.Get("spell-description.no-refuge"),
-        "detox-curse-unsupported" => GameText.Get("spell-description.curse"),
         _ => GameText.BattleRecovery(reason),
     };
 
@@ -50,6 +48,7 @@ internal static class SpellDescriptions
         SpellEffect.FullHp => GameText.Get("spell-description.full-hp"),
         SpellEffect.CurePoison => GameText.Get("item-description.poison"),
         SpellEffect.CurePoisonAndParalysis => GameText.Get("item-description.poison-paralysis"),
+        SpellEffect.CurePoisonParalysisAndCurse => GameText.Get("spell-description.curse"),
         SpellEffect.Damage when facts.Element is { } element => Damage(element),
         SpellEffect.Silence => GameText.Get("spell-description.inflict-silence"),
         SpellEffect.Sleep => GameText.Get("spell-description.sleep"),

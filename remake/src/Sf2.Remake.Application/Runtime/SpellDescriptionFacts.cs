@@ -7,7 +7,7 @@ public enum SpellEffect
 {
     RestoreHp, FullHp, CurePoison, CurePoisonAndParalysis, Damage,
     Silence, Sleep, LowerDefenseAndAgility, RaiseDefenseAndAgility, RaiseAttack,
-    Retreat, ReturnToRefuge, NoEffect,
+    Retreat, ReturnToRefuge, NoEffect, CurePoisonParalysisAndCurse,
 }
 
 public enum SpellTarget { Self, Ally, Enemy, AllAllies, PartyMember }
@@ -18,6 +18,13 @@ public sealed record SpellDescriptionFacts(SpellRef Spell, byte? MpCost, SpellEf
     AttackSpellElement? Element = null, int? HealingLimit = null, byte? FieldPayment = null,
     bool SuppressedBySilence = false, SessionFailure? Reason = null)
 {
+    internal static SpellEffect DescribeCure(byte rank) => PoisonCureRules.SpellMask(rank) switch
+    {
+        PoisonCureRules.Poison => SpellEffect.CurePoison,
+        PoisonCureRules.PoisonAndStun => SpellEffect.CurePoisonAndParalysis,
+        _ => SpellEffect.CurePoisonParalysisAndCurse,
+    };
+
     internal static SpellDescriptionFacts Battle(EngineBattleState battle, BattleActorState caster,
         BattleActionRef action, BattleActionAdmission? admission, IHealingRule healingRule, SessionFailure? reason)
     {
@@ -33,10 +40,7 @@ public sealed record SpellDescriptionFacts(SpellRef Spell, byte? MpCost, SpellEf
         if (admission is null && reason?.Code != "insufficient-mp") return facts;
         if (healing is not null)
         {
-            var effect = healing.CuresPoison
-                ? PoisonCureRules.SpellMask(spell.Level) == PoisonCureRules.Poison
-                    ? SpellEffect.CurePoison : SpellEffect.CurePoisonAndParalysis
-                : SpellEffect.RestoreHp;
+            var effect = healing.CuresPoison ? DescribeCure(spell.Level) : SpellEffect.RestoreHp;
             int? limit = null;
             if (!healing.CuresPoison && healingRule is Sf2HealingRule)
             {

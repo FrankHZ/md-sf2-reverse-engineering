@@ -1,6 +1,6 @@
 # DETOX 2 and 3 through first Pacalon
 
-**Accepted design and uncursed implementation, [#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965).**
+**Accepted design and implementation, [#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965).**
 Standard rigor covers a two-caller change with shared status, equipment, presentation and save
 dependencies. Deliver learned player DETOX 2 and 3 through ordinary Field and Battle Magic.
 Retain the current campaign boundary at first Pacalon and Battle26. Field, battle and cure from
@@ -154,7 +154,7 @@ DETOX 2/3 Save → Continue → return observation remains **Unknown**.
 130, the learned ceiling for ranks 1–3. Her MP is 59 in English and 56 in Chinese. The Chinese
 Battle26 road slot also has the packed entry, 56 MP and a placed Sarah.
 `PrivateFieldPreparation` and `PrivateBattleActionBindings.PoisonCure` bind the three ranks.
-Ranks 2 and 3 clear STUN and POISON on currently admitted uncursed states. To inspect these seeds,
+Ranks 2 and 3 clear STUN and POISON. Rank 3 also treats admitted CURSE and unequips cursed gear. To inspect these seeds,
 decode each slot envelope's base64 payload and verify its SHA-256 against the envelope. Read
 `data.allies` by `actor` and `data.activeAllies`, or `data.battle.actors` by `actorId`
 and its position and loadout. In both forms use `ally-1` for Sarah. Rank admission is keyed by
@@ -169,8 +169,8 @@ belongs to the promotion owners.
 | --- | --- |
 | Connected physical poison and STUN | Actual earlier remake poison survives battle return. Harpy poison and Soulsower stun are source physical operands in supported encounters. Existing battle and field status readers already consume these bits, including STUN AGI/MOV and after-turn. Verify an admitted target in the selected seed rather than assuming the printed enemy class implies a live ailment. |
 | Accepted SLOW/BOOST and physical SLEEP, plus admitted silence | Use the existing packed word and applied-stat operand. DETOX preserves these effects. It neither replaces their source nor expands mixed-state admission beyond the affected cure, refresh and continuation. |
-| Black Ring [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) | Battle26 drops bare item 24. A controlled legally promoted WIZ exercises worn CURSE. DETOX 3 can use `BattleEquipment.RemoveCurse(definition, loadout)`, commit the pack with the status write, and refresh from retained gear. DETOX 2 must preserve the pack. [Worn equipment contract](ring-equipment-design.md#worn-equipment-and-treatment). |
-| Equipment Use/Repair [#1952](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1952) | Rank 3 may encounter a damaged worn word once that lifecycle is admitted. Preserve the bit and share equipment refresh and word validation. DETOX does not require item Use/Repair to ship on admitted uncursed states. Protect Ring's BOOST and Power Ring's ATTACK item callers stay with their owners. |
+| Black Ring [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) | Battle26 drops bare item 24. A controlled legally promoted WIZ exercises worn CURSE. DETOX 3 uses `BattleEquipment.RemoveCurse(definition, loadout)`, commits the pack with the status write, and refreshes from retained gear. DETOX 2 preserves the pack. [Worn equipment contract](ring-equipment-design.md#worn-equipment-and-treatment). |
+| Equipment Use/Repair [#1952](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1952) | Rank 3 preserves the damage bit on a worn word and shares equipment refresh and word validation. Protect Ring's BOOST and Power Ring's ATTACK item callers stay with their owners. |
 | Hostile spells [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) | Player MUDDLE, DESOUL and Tyrin's spell SLEEP are separate consumers. Their implementation is unnecessary for clearing STUN, POISON or CURSE. When admitted, preserve MUDDLE/SLEEP according to their owning status rules and keep fallen battle actors outside target selection. |
 
 [Harpy Pond poison source](../../../docs/research/chapters/southern-travel-creed/battle20-initialization-and-first-control.md) ·
@@ -187,17 +187,14 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
 
 ## Implementation decision and sequence
 
-1. **Connect both Magic ranks for admitted uncursed states.** Reuse `FieldCast`, the joined-party
+1. **Connect both Magic ranks.** Reuse `FieldCast`, the joined-party
    query, the existing friendly battle spell and scene pipeline, and independently validated
    source rows. Extend the finite cure rule with explicit allowed and removed bits. Preserve the
    existing rank-1 and item masks, costs and custody. Test learn ceilings, usable rank/cost/range,
    valid no-effect commits and rejected input through the same query/confirmation owner.
    The accepted [recovery item implementation](recovery-items-design.md) put the source occupancy
    guard in `HealingTargetRules`. Magic and item Use share it, and AURA has its separate area
-   membership rules. For unsupported
-   cursed battle states or gear, reject on the existing explicit admission boundary before
-   payment. Rank 3 supports its verified STUN/POISON subset on currently admitted targets.
-   Full rank-3 completion remains open.
+   membership rules. Existing equipment admission still rejects unsupported worn gear.
 2. **Publish caller-specific reactions.** Field commits payment, recipient and refreshed party
    record once, including self-target payment and no-effect refresh. Add the actual ordered
    removal result to the existing field observation so the view can format recipient notices.
@@ -210,20 +207,17 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
    two range-16 award draws and minimum 1 EXP. The same refresh reads the stored ATTACK and BOOST
    counters when a reaction succeeds. A paid ineffective cast preserves the recipient's existing
    last-refresh operand when the recipient is distinct from the caster.
-3. **Complete the equipped-curse branch with #1926.** Once shared custody, refresh and return/save
-   semantics admit a worn cursed word, use the equipment operation to clear the equipped bit only on
-   cursed definitions. Check the status/gear transition on the detached action before
-   publication. Carry the resulting gear and status into the existing refresh and reaction;
-   preserve the source ordering if an observable consumer reads between refreshes. Use one
-   atomic final gear/status result in Field, and the existing staged cost and target reaction in
-   Battle. No second gear authority or persistent intermediate state. When there is no curse
-   removal, leave worn words alone. A real supported cursed target with no rank-eligible bits
-   follows the normal no-effect branch.
+3. **Treat equipped curse through the existing equipment owner.** Field follows the Church
+   treatment path by replacing the pack, refreshing status from the remaining gear, and publishing
+   the result with payment. Battle validates the same detached cure reaction as the other ranks.
+   Reaction replay applies the pack change to the live recipient after the spell debit, computes
+   current ATT from the retained gear and stored counter, and refreshes the other stats from that
+   same pack and status. This also preserves a self-target's paid MP. Only the affected caller needed
+   a change to replay. The shared `BattleEquipment.RemoveCurse` and `RefreshCurse` rules already own
+   worn-curse detection and word edits. Both callers use one final status and pack, which the
+   existing save schema can persist. The linked presentation uses curse→stun→poison in Field and
+   poison→stun→curse in Battle.
 
-The first two steps are implemented together. The third can land with the #1926 consumer or in
-a short dependent slice. Serialize the shared reaction, save, localization and campaign records
-with upcoming work such as [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
-A finite direct engine case can express the original curse effect before natural availability.
 Content supplies rank terms; Domain owns the effect, target admission and result validation;
 Application publishes existing waits and party changes; Godot displays localized semantics and
 the admitted DETOX cast assets. Render the chosen rank and MP in both menus and reuse ordinary
@@ -240,8 +234,7 @@ carries status, raw words, book, resources and both seeds, plus the conditional 
 last-refresh operand and current queue/cursor. Restore detached, validate the actor so gear and
 status agree in the admitted curse model, and compare before publishing. Recompute projection as
 the existing save format requires, without triggering a new gameplay refresh. Keep legacy field
-and battle reads. New-rank casts alone need no version change. If #1926 finds an actual persistence
-gap for a worn cursed word, resolve it in that admission slice. Cast effects, MP payment and
+and battle reads. The equipped-curse effect uses the current format. Cast effects, MP payment and
 settled return must survive cold Continue without replaying the cure or making a second draw.
 [Save and Continue agreement](../application/battle-save-and-continue.md#stable-commit-and-request-ux) ·
 [Support save rules](support-spell-status-design.md#save-compatibility-and-recovery)
@@ -299,8 +292,8 @@ target and resource state within those boundaries.
   level 24. Play until a surviving ally has STUN and Sarah can target that ally at her next turn.
   Stop after the first effective cast or four rounds. Availability within this suffix is
   **Unknown**. If needed, use the controlled engine cases for effective and mixed results and
-  record the live Battle26 observation as paid no effect. A curse witness awaits the legally
-  equipped #1926 caller. No save edits stand in for ordinary infliction.
+  record the live Battle26 observation as paid no effect. The equipped-curse witnesses below use
+  the legal #1926 loadout on disposable controlled copies.
   [Accepted repeat seed](../application/battle20-elric.md#return-to-battle19-with-elric) ·
   [Original Soulsower prowess](../../../docs/research/chapters/southern-travel-creed/battle19-initialization-and-first-control.md)
 
@@ -355,9 +348,40 @@ directory including rehearsals is about 1.8 MB, with 13 save envelopes including
 receipt copies, one above the planned count. The saves total about 299 KB. No world or scene
 package was generated.
 
-[Focused Battle cases](../../tests/Sf2.Remake.Engine.Tests/PoisonCureTests.cs) exercise a
-real reaction against STUN and POISON, including poison-before-stun feedback, and contrast it with
-paid no effect while ATTACK/BOOST have divergent last-applied values. They also check self-payment,
-silence, curse rejection, range and same-side EXP. [Focused Field cases](../../tests/Sf2.Remake.Engine.Tests/FieldRecoveryTests.cs)
-exercise fallen members, MP clamping, the no-effect refresh and curse rejection.
-Equipped-curse treatment remains open under [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).
+[Focused Battle cases](../../tests/Sf2.Remake.Engine.Tests/PoisonCureTests.cs) exercise
+rank 2 and 3 together with mixed CURSE, STUN, POISON and divergent applied ATTACK/BOOST counters.
+They check the same-side award and draws, target refresh, staged notices, cancellation and
+self-payment. [Focused Field cases](../../tests/Sf2.Remake.Engine.Tests/FieldRecoveryTests.cs)
+exercise fallen members, MP clamping, no-effect refresh and mixed-status treatment. Both check
+the ordinary weapon, damaged ring, bare duplicate, slot order and custody.
+
+### Equipped-curse input and cold Continue
+
+**Confirmed** in English Godot 4.7.2 .NET using the registered
+[Black Ring reproduction inputs and launcher](equipment-use-repair-design.md#black-ring-reproduction).
+Fork the existing v6 Field and v4 battle WIZ slots for the following controlled starting states.
+Update the checksum of the disposable copy and preserve the active PRST40 Sarah with packed
+learned entry 130. The casts, saves and cold loads use ordinary player input.
+
+| Entry | Minimal fork and player input | Observed result |
+| --- | --- | --- |
+| Map36, Field Magic | Keep the original field position. Give Kazin pack `[85,408,24,220]`, status 7 and custody once bit 10. Open Field → Magic → Sarah → DETOX level 3 → Kazin. Cancel once at confirmation, then cast. | The menu showed 10 MP. The result named Kazin and displayed curse, stun, poison in that order. Sarah MP 56→46, Kazin HP 35, status 7→0, ATT 53→43 and AGI 36→41. His pack became `[85,280,24,220]`. The party returned to field control. |
+| Battle26, round 2 | Set the queue cursor to Sarah (entry 0). Set Kazin's pack to `[213,408,24,0]` in both loadout copies, ATT 31, status 4 and custody once bit 10. From Sarah's (6,25), wait for each segment as she moves left then up to (5,24). Open Magic, choose DETOX 3 and confirm Kazin at (5,22). | Magic showed 10 MP and the scene acknowledged removal, then 5 EXP for Sarah (40→45). Her MP went 56→46. Kazin HP stayed 35, status went 4→0, ATT fell 31→21 and the pack became `[213,280,24,0]`. Player Movement resumed on Kazin. |
+
+At settled input open System → Save (F10, Up, Enter in the observed layout), select slot 1 and
+confirm the overwrite as Save. Copy each published slot to a fresh namespace, start a fresh
+Godot process and use Title → Continue, then save again. The Battle re-save preserved the
+complete decoded data (sequence 10→11). Field preserved the complete party and custody
+(sequence 11→12), with visit motion and the simulation tick advancing before re-save. Both
+envelopes verified against their payload checksums. The cold loads were already settled
+at input, with the cured pack, HP, ATT and paid MP restored.
+
+Allow two read-only seeds (about 63 KiB total), up to ten disposable slot envelopes, 2 MiB of
+compact state/projection/error receipts, and one serial Godot process. The observed review,
+including rehearsals, retained 10 envelopes (322,012 bytes) and about 0.5 MB of JSON receipts.
+It mounted the existing package in place. Successful casts and cold loads exited 0. Some runs
+logged ObjectDB warnings at shutdown. Rehearsals exited 1 on the observer's exact Field row text,
+save-menu selection, battle movement segment timing or confirmation stage. The delayed and
+immediate Field re-saves both advanced autonomous visit state. The original selector and
+save/return remain **Unknown**. The earlier Battle19 pilot and paid EGRESS results stand
+on their original inputs.
