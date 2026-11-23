@@ -492,11 +492,10 @@ and [target input](../../../docs/research/battle/battle-functions.md#confirmed-p
 ### Viewing the battlefield
 
 During free inspection, pointer hover and directional focus reveal the same short status.
-Put the unit name and its land-effect percentage on the first line, with the percentage at
-the trailing edge. The next row gives HP and MP equal space for values and gauges. The
-location sits below them. On an empty cell, keep the percentage in the same position and
-label it “Ground effect” for a regular ground unit. Show “Ground impassable” on cells it
-cannot enter, or a dash when terrain data is unavailable. Keep the coordinates below.
+The unit card shows the name and admitted class/level above stacked HP and MP. The separate
+Land effect panel keeps its label and coordinates on both occupied and empty cells. It shows
+the inspected unit’s setting or the regular ground mover’s reading on an empty cell.
+Impassable cells show a localized status and an unavailable value reads as a dash.
 Confirm on empty ground opens battlefield options. Confirm on a unit opens
 its read-only detail sheet. Back restores the inspected cell.
 

@@ -19,13 +19,13 @@ internal sealed partial class BattleInspectionView
         var tile = _session!.Current.Battle.Definition.Terrain[_cursor.Y * 48 + _cursor.X];
         _hover.PresentInspected(query?.Unit, marker is null ? "" : UnitName(marker));
         if (query?.Land is { } land) _terrainPanel.Present(land);
-        else if (marker is not null) _terrainPanel.PresentGround(_cursor, "—");
+        else if (marker is not null) _terrainPanel.Present(_cursor, "—");
         else
         {
             bool blocked = tile.Surface is TerrainSurface.Barrier or TerrainSurface.HighSky or TerrainSurface.Impassable or TerrainSurface.Water;
             string effect = blocked ? GameText.Get("battle.inspect.ground-impassable") :
-                GameText.Get("battle.inspect.ground-effect", LandValue(BattleTerrainRules.LandEffect(tile, BattleMover.Regular)));
-            _terrainPanel.PresentGround(_cursor, effect);
+                LandValue(BattleTerrainRules.LandEffect(tile, BattleMover.Regular));
+            _terrainPanel.Present(_cursor, effect);
         }
         ArrangeHover(_map.CellRect(_cursor));
     }

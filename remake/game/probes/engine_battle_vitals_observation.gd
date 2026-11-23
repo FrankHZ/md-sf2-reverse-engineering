@@ -33,6 +33,8 @@ func header_geometry(label: String) -> bool:
     if not expect(layout.terrainPanel.visible == layout.actorCard.visible,label+": terrain belongs to the acting phase"): return false
     if layout.terrainPanel.visible and not expect(disjoint(layout.terrainPanel.rect,card.rect) and inside(layout.terrainPanel.rect),
             label+": terrain has its own visible space"): return false
+    if layout.contextVisible and layout.terrainPanel.visible and not expect(layout.context.width == layout.terrainPanel.rect.width and
+            layout.context.height == layout.terrainPanel.rect.height,label+": round and land effect form equal rows"): return false
     if layout.commandList.visible:
         if not expect(card.rect.x == layout.commandList.rect.x and card.rect.width == layout.commandList.rect.width
                 and disjoint(card.rect,layout.commandList.rect),label+": card clears the Main rows"): return false

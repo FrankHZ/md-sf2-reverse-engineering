@@ -13,19 +13,16 @@ internal sealed partial class BattleTerrainPanel : PanelContainer
     public override void _Ready()
     {
         MouseFilter = MouseFilterEnum.Ignore;
-        _reading.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
+        _reading.AddThemeFontSizeOverride("font_size", StoryTheme.BodySize);
         AddChild(_reading);
     }
 
     internal void Present(BattleLandEffect land) =>
-        ShowReading(GameText.Get("battle.acting-land", land.Percent, land.Position.X, land.Position.Y));
+        Present(land.Position, GameText.Get("battle.inspect.land-percent", land.Percent));
 
-    internal void PresentGround(MapPosition cell, string effect) =>
-        ShowReading($"{effect} · ({cell.X}, {cell.Y})");
-
-    private void ShowReading(string reading)
+    internal void Present(MapPosition cell, string value)
     {
-        _reading.Text = reading;
+        _reading.Text = GameText.Get("battle.land-effect", value, cell.X, cell.Y);
         Size = GetCombinedMinimumSize();
     }
 

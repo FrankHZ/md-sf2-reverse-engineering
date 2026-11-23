@@ -517,10 +517,12 @@ func inspected_movement_range() -> bool:
     await act("cancel")
     if not await inspect_page("Cursor"): return false
     if not range_checkpoint("cover-back", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
+    var land_label := "地形效果" if TranslationServer.get_locale().begins_with("zh") else "Land effect"
+    if not check(state().inspection.terrainPanel.text.begins_with(land_label), "Occupied cell land effect label"): return false
     if not await cursor_to(5,3): return false
     if not range_checkpoint("empty-cell", baseline, "Inspection"): return false
     var empty: Dictionary = state().inspection
-    if not check(not empty.hover.visible and empty.terrainPanel.visible and "(5, 3)" in empty.terrainPanel.text and
+    if not check(not empty.hover.visible and empty.terrainPanel.visible and empty.terrainPanel.text.begins_with(land_label) and "(5, 3)" in empty.terrainPanel.text and
         not Rect2(empty.footer.rect.x,empty.footer.rect.y,empty.footer.rect.width,empty.footer.rect.height).intersects(
         Rect2(empty.terrainPanel.rect.x,empty.terrainPanel.rect.y,empty.terrainPanel.rect.width,empty.terrainPanel.rect.height)), "Empty ground identity appears once, separate from controls"): return false
     await act("confirm")

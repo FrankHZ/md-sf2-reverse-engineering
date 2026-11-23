@@ -11,7 +11,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", DecisionHeader = true };
     internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, DecisionHeader = true };
     internal readonly BattleTerrainPanel Terrain = new() { Name = "TerrainPanel" };
-    internal readonly Label Context = Text("Context", 28);
+    internal readonly Label Context = Text("Context", UI.StoryTheme.BodySize);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
@@ -66,7 +66,7 @@ internal sealed partial class BattleMenuLayout : Control
     {
         Theme = UI.StoryTheme.Create();
         var insets = UI.StoryTheme.PanelFrame(PanelInset, PanelInset);
-        foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
+        foreach (var panel in new[] { _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);
         Context.AutowrapMode = TextServer.AutowrapMode.Off;
@@ -132,7 +132,13 @@ internal sealed partial class BattleMenuLayout : Control
             card.Size = new(width, height);
         }
         // Keep map readings opposite the active unit card.
-        _context.Size = new(0, 68);
+        var readingSize = _context.GetCombinedMinimumSize();
+        if (Terrain.Visible)
+        {
+            readingSize = readingSize.Max(Terrain.GetCombinedMinimumSize());
+            Terrain.Size = readingSize;
+        }
+        _context.Size = readingSize;
         _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
         _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
         if (Terrain.Visible)

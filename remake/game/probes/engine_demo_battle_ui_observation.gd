@@ -445,7 +445,7 @@ func run() -> void:
         samples.append({"label":"startup-refusal","text":host.find_children("*","Label",true,false).map(func(n):return n.text)})
         expect(false,"Selected package must pass ordinary startup/input admission"); return
     var catalog: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson")).localization
-    for key in ["battle.inspect.ground-effect","battle.inspect.ground-impassable","battle.inspect.land-percent","battle.inspect.cursor-help","host.help-text-29"]:
+    for key in ["battle.land-effect","battle.inspect.ground-impassable","battle.inspect.land-percent","battle.inspect.cursor-help","host.help-text-29"]:
         var translation: Dictionary = catalog.rows[key]
         if not expect(translation.EffectiveLocale == catalog.language and translation.Reason == null,"Battle catalog row uses selected language: "+key): return
     bind_events()
