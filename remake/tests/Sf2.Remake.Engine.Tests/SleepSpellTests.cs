@@ -1,10 +1,12 @@
 using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
+using Sf2.Remake.TestSupport;
 using Xunit;
 using static Sf2.Remake.Engine.Tests.SilenceSpellTests;
 
@@ -32,6 +34,32 @@ public sealed class SleepSpellTests
         var rules = RuleCompositions.Sf2();
         return BattleActionRules.Prepare(rules.Action(Magic), battle, caster, battle.GetActor(caster).Position!,
             Magic, target, rules.Progression);
+    }
+
+    [PrivateInputFact("SF2_SLEEP_CONTROLLED_SAVE", "SF2_PRIVATE_EXPLORATION_CONTENT", "SF2_PRIVATE_BATTLE_SCENE_CONTENT",
+        "SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN",
+        "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD")]
+    public void PrivateTyrinBookOffersSleepAndResolvesOpposingAreaThroughMagic()
+    {
+        static string Input(string key) => PrivateInputFactAttribute.RequireInput(key);
+        var source = new OpeningRestoreReader(Input("SF2_PRIVATE_EXPLORATION_CONTENT"),
+            Input("SF2_PRIVATE_BATTLE01_DATA"), Input("SF2_PRIVATE_BATTLE01_SCENE"), Input("SF2_PRIVATE_BATTLE01_TERRAIN"),
+            Input("SF2_PRIVATE_STATIC_DATA"), Input("SF2_PRIVATE_ENEMY_DATA"), Input("SF2_PRIVATE_ENEMY_GOLD"),
+            Input("SF2_PRIVATE_BATTLE_SCENE_CONTENT"));
+        var definition = Assert.IsType<ExplorationReadAccepted>(source.Read()).Definition;
+        var record = OpeningSaveJson.ReadRecord(File.ReadAllBytes(Input("SF2_SLEEP_CONTROLLED_SAVE")), 1);
+        var session = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, record, RuleCompositions.ForGame())).Session;
+        var tyrin = new ActorRef("ally-17");
+        var before = session.Current.Battle.GetActor(tyrin);
+        Assert.Equal(tyrin, session.Current.Selection!.Actor);
+        Assert.Equal(25, before.Level);
+        EngineTestContent.Accept(session, new Confirm());
+        EngineTestContent.Accept(session, new SelectSpell(Sleep));
+        EngineTestContent.Accept(session, new SelectTarget(new("enemy-13")));
+        var done = EngineTestContent.FinishBattleScenes(session, EngineTestContent.Accept(session, new Confirm()));
+        Assert.Equal(before.Mp - 4, session.Current.Battle.GetActor(tyrin).Mp);
+        Assert.Contains(done.Observations, row => row.Kind == "status" && row.Actor == new ActorRef("enemy-12") && row.After == 0xC0);
+        Assert.Contains(done.Observations, row => row.Kind == "ineffective" && row.Actor == new ActorRef("enemy-13"));
     }
 
     [Theory]
