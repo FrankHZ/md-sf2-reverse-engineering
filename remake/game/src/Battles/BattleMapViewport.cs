@@ -58,7 +58,7 @@ internal sealed partial class BattleMapViewport : Control
         new Vector2(_region.Origin.X, _region.Origin.Y) * 24)) / 24, Size / CellSize)
         .Intersection(new(Vector2.Zero, _mapSize / CellSize));
     internal void Inspect(MapPosition? position, bool reveal = true, bool showCursor = true,
-        BattleMovementRange? range = null, bool steady = false)
+        BattleMovementRange? range = null, bool steady = false, bool enemy = false)
     {
         var changed = _inspectionFocus != position;
         if (reveal && changed || position is null) _inspectionPan = null;
@@ -69,7 +69,7 @@ internal sealed partial class BattleMapViewport : Control
         {
             if (_cursorRole != CursorRole.Inspection) _actionRange.Clear();
             _range.Steady = steady;
-            _range.Present(range);
+            _range.Present(range, enemy);
             ShowCursor(CursorRole.Inspection, position);
         }
         else ClearDecision();
@@ -313,7 +313,8 @@ internal sealed partial class BattleMapViewport : Control
             chest.Value.Modulate = opened ? Colors.LightGray : Colors.Gold;
         }
         ClearDecision();
-        if (movementFocus) _range.Present(projection.MovementRange);
+        if (movementFocus && projection.MovementRange is { } range)
+            _range.Present(range, enemy: !current.Battle.GetActor(range.Actor).IsAlly);
         _battleVisuals = current.Battle.Visuals;
         if (_movement?.Token != projection.Movement?.Token)
         { _movementElapsed = _movementProgress = 0; _movementDelivered = false; }

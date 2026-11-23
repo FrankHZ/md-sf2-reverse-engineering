@@ -449,10 +449,12 @@ func range_checkpoint(label: String, baseline: Array, role: String, actor := "",
     if not check(movement.steady == settings.applied.ReducedFlash, label + ": range follows Reduced Flash"): return false
     var reachable := reachable_x.map(func(x): return {"X":float(x),"Y":3.0})
     var stops := stop_x.map(func(x): return {"X":float(x),"Y":3.0})
+    var tint := "ff625e" if actor == "raider" else "78e9f3"
     return check(movement.visible and movement.actor == actor and movement.origin == {"X":float(origin_x),"Y":3.0}
         and movement.reachableCells == reachable and movement.drawnReachableCells == reachable
-        and movement.destinations == stops and movement.drawnDestinations == stops,
-        label + ": actual draw uses inspected origin, traversable cells and legal stops")
+        and movement.destinations == stops and movement.drawnDestinations == stops
+        and movement.tint == tint and movement.drawnTint == tint,
+        label + ": actual draw uses the origin, traversable cells, legal stops and faction tint")
 
 func footer_mouse(bounds: Dictionary, button: MouseButton, pressed: bool) -> void:
     var event := InputEventMouseButton.new()
@@ -467,16 +469,16 @@ func visible_return(page: String, parent: String, resize := false) -> bool:
     var footer: Dictionary = inspection.footer
     var frame := Rect2(footer.rect.x,footer.rect.y,footer.rect.width,footer.rect.height)
     var button := Rect2(footer.backRect.x,footer.backRect.y,footer.backRect.width,footer.backRect.height)
-    if not check(inspection.page == page and footer.visible and frame.encloses(button) and
-        root.get_visible_rect().encloses(frame) and button.has_area(),
-        page+": framed hint has one real return button inside the viewport"): return false
-    for button_type in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-        await footer_mouse(footer.hintRect,button_type,true)
-        await footer_mouse(footer.hintRect,button_type,false)
-        if not await inspect_page(page): return false
+    var has_button := page in ["Cursor", "Full", "MemberFull"]
+    if not check(inspection.page == page and footer.visible and root.get_visible_rect().encloses(frame) and
+        footer.backVisible == has_button and (not has_button or frame.encloses(button) and button.has_area()),
+        page+": return affordance matches the inspection page"): return false
+    await footer_mouse(footer.hintRect,MOUSE_BUTTON_LEFT,true)
+    await footer_mouse(footer.hintRect,MOUSE_BUTTON_LEFT,false)
+    if not await inspect_page(page): return false
     var back := String(footer.back).split(" · ")[0]
-    if not check(back not in inspection.hint,
-        page+": Back mapping appears on its button"): return false
+    if not check((back in inspection.hint) != has_button,
+        page+": Back mapping appears once"): return false
     if resize:
         await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,true)
         root.size = Vector2i(2560,1440)
@@ -487,8 +489,10 @@ func visible_return(page: String, parent: String, resize := false) -> bool:
         root.size = Vector2i(1600,900)
         await frames(8)
         footer = state().inspection.footer
-    await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,true)
-    await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,false)
+    var return_rect: Dictionary = footer.backRect if has_button else footer.hintRect
+    var return_input := MOUSE_BUTTON_LEFT if has_button else MOUSE_BUTTON_RIGHT
+    await footer_mouse(return_rect,return_input,true)
+    await footer_mouse(return_rect,return_input,false)
     if parent == "Movement":
         return check(not state().inspection.active and state().stage == "Movement", "Visible Cursor Back restores Movement")
     return await inspect_page(parent)
@@ -513,12 +517,14 @@ func inspected_movement_range() -> bool:
     await act("cancel")
     if not await inspect_page("Cursor"): return false
     if not range_checkpoint("cover-back", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
+    var land_label := "地形效果" if TranslationServer.get_locale().begins_with("zh") else "Land effect"
+    if not check(state().inspection.terrainPanel.text.begins_with(land_label), "Occupied cell land effect label"): return false
     if not await cursor_to(5,3): return false
     if not range_checkpoint("empty-cell", baseline, "Inspection"): return false
     var empty: Dictionary = state().inspection
-    if not check(empty.hover.unit == null and empty.hover.name not in empty.hint and empty.hover.location not in empty.hint and
+    if not check(not empty.hover.visible and empty.terrainPanel.visible and empty.terrainPanel.text.begins_with(land_label) and "(5, 3)" in empty.terrainPanel.text and
         not Rect2(empty.footer.rect.x,empty.footer.rect.y,empty.footer.rect.width,empty.footer.rect.height).intersects(
-        Rect2(empty.hover.rect.x,empty.hover.rect.y,empty.hover.rect.width,empty.hover.rect.height)), "Empty ground identity appears once, separate from controls"): return false
+        Rect2(empty.terrainPanel.rect.x,empty.terrainPanel.rect.y,empty.terrainPanel.rect.width,empty.terrainPanel.rect.height)), "Empty ground identity appears once, separate from controls"): return false
     await act("confirm")
     if not await inspect_page("Options") or not range_checkpoint("options", baseline, "None"): return false
     await act("confirm")

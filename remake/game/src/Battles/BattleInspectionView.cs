@@ -28,7 +28,8 @@ internal sealed partial class BattleInspectionView : Control
     private readonly BattleMemberListView _memberList = new() { Name = "MemberList" };
     private BattleMemberSnapshot? _members;
     private readonly BattleInspectionOptions _options = new();
-    private readonly BattleInspectionCard _hover = new() { Name = "HoverCard" };
+    private readonly BattleTerrainPanel _terrainPanel = new() { Name = "TerrainPanel" };
+    private readonly BattleStatusCard _hover = new() { Name = "HoverCard" };
     private readonly MenuPointer _pointer = new();
     private string? _optionsError;
     internal void ConfigureOptions(Sf2.Remake.Application.Content.Scenarios.BattleSceneDefinition? scene)
@@ -55,7 +56,7 @@ internal sealed partial class BattleInspectionView : Control
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
         Theme = StoryTheme.Create(); ZIndex = 90;
-        AddChild(_details); AddChild(_overview); AddChild(_memberList); AddChild(_options); AddChild(_hover);
+        AddChild(_details); AddChild(_overview); AddChild(_memberList); AddChild(_options); AddChild(_hover); AddChild(_terrainPanel);
         AddChild(_footer);
         var instructions = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         instructions.AddThemeConstantOverride("separation", 16);
@@ -187,6 +188,13 @@ internal sealed partial class BattleInspectionView : Control
     internal void HandlePointer(InputEvent input)
     {
         if (input is not InputEventMouse mouse) return;
+        if (mouse is InputEventMouseButton { ButtonIndex: MouseButton.Right } right)
+        {
+            StopEdge();
+            if (_pointer.Read(right, "back", GetGlobalRect(), (_page, _snapshot!.SessionId, _snapshot.Revision)) is not null)
+                Handle(GameAction.Cancel);
+            return;
+        }
         var point = mouse.Position;
         bool back = _back.IsVisibleInTree() && _back.GetGlobalRect().HasPoint(point);
         if (_page == "Cursor" && !back && !CursorUiCovers(point) && !HostPointerCovered)
@@ -256,13 +264,14 @@ internal sealed partial class BattleInspectionView : Control
         var at = _page == "Cursor" ? _snapshot.Units.FirstOrDefault(u => u.Position == _cursor) : null;
         bool showCursor = _page == "Cursor" && IsVisibleInTree();
         _map.Inspect(_cursor, !_pointerFocus, showCursor, CursorRange(showCursor ? at?.Actor : null),
-            _input.Settings.ReducedFlash);
+            _input.Settings.ReducedFlash, enemy: at is { Ally: false });
         _pointer.ReleaseIfNeutral();
         _options.Visible = _page == "Options";
         var size = GetViewportRect().Size;
         _details.Visible = _page is "Full" or "MemberFull"; _memberList.Visible = _page == "Members"; _overview.Visible = _page == "Map";
-        _hover.Visible = _page == "Cursor";
-        if (_hover.Visible) PresentHover();
+        _terrainPanel.Visible = _page == "Cursor";
+        if (_terrainPanel.Visible) PresentHover();
+        else _hover.Hide();
         string a = _input.CompactHint(GameAction.Attack), c = _input.CompactHint(GameAction.Confirm), b = _input.CompactHint(GameAction.Cancel);
         string up = _input.CompactHint(GameAction.Up), down = _input.CompactHint(GameAction.Down);
         string message;
@@ -302,6 +311,8 @@ internal sealed partial class BattleInspectionView : Control
         _hint.Text = message;
         _back.Text = (_page is "Full" or "MemberFull" ? $"{a}/{c}/{b}" : b)
             + " · " + GameText.Get(_page == "Cursor" ? "battle.inspect.return-movement" : "battle.back");
+        _back.Visible = _page is "Full" or "MemberFull" or "Cursor";
+        if (!_back.Visible) _hint.Text += "\n" + _back.Text;
         _footer.Size = new(Mathf.Min(1040, size.X - 2 * StoryTheme.GameplayInset), 100);
         _footer.Position = new((size.X - _footer.Size.X) / 2, size.Y - StoryTheme.GameplayInset - _footer.Size.Y);
     }
@@ -328,10 +339,11 @@ internal sealed partial class BattleInspectionView : Control
         options = _options.Observe(), optionsError = _optionsError, optionIndex = _optionIndex, memberIndex = _memberList.Roster.Index, members = _members?.Members,
         roster = _memberList.IsVisibleInTree() ? _memberList.Observe() : null, unit = _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _hint.Text,
         footer = new { visible = _footer.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_footer.GetGlobalRect()),
-            hintRect = BattleMapViewport.Rectangle(_hint.GetGlobalRect()), back = _back.Text,
+            hintRect = BattleMapViewport.Rectangle(_hint.GetGlobalRect()), back = _back.Text, backVisible = _back.IsVisibleInTree(),
             backRect = BattleMapViewport.Rectangle(_back.GetGlobalRect()) },
         full = _details.IsVisibleInTree() ? _details.Observe() : null,
-        hover = _hover.IsVisibleInTree() ? _hover.Observe() : null, edge = new { speed = new { x = _edgeSpeed.X, y = _edgeSpeed.Y }, delay = _edgeDelay },
+        hover = _terrainPanel.IsVisibleInTree() ? _hover.Observe() : null,
+        terrainPanel = _terrainPanel.IsVisibleInTree() ? _terrainPanel.Observe() : null, edge = new { speed = new { x = _edgeSpeed.X, y = _edgeSpeed.Y }, delay = _edgeDelay },
         overview = _overview.IsVisibleInTree() ? _overview.Observe() : null,
     };
 }

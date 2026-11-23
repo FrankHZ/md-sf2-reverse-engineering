@@ -89,18 +89,18 @@ internal sealed partial class SettingsView : Control
     private List<Choice> Choices() => _page switch
     {
         Page.Root => [new("display", S("display")), new("assist", S("assist")), new("input", S("input")), new("debug", S("debug")),
-            new("apply", T("ui.settings.apply"), ReadOnly || IncompleteAction(_draft) != null, true), BackRow()],
+            new("apply", T("ui.settings.apply"), ReadOnly || IncompleteAction(_draft) != null, true)],
         Page.Display => [new("language", T("ui.settings.language", _draft.Language == "en" ? "English" : "简体中文"), ReadOnly),
             new("graphics", T("ui.settings.graphics", T("ui.settings.graphics-" + _draft.GraphicsMode)), ReadOnly),
             new("text", T("ui.settings.text", T(_draft.TextMode == "instant" ? "ui.settings.instant" : "ui.settings.gradual")), ReadOnly),
-            new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly), BackRow()],
+            new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly)],
         Page.Assist => [new("flash", T("ui.settings.flash", Toggle(_draft.ReducedFlash)), ReadOnly),
             new("guidance", T("ui.settings.guidance", Toggle(_draft.ModernGuidance)), ReadOnly),
-            new("defaults", T("ui.settings.defaults"), ReadOnly), BackRow()],
+            new("defaults", T("ui.settings.defaults"), ReadOnly)],
         Page.Debug => [new("diagnostics", T("ui.settings.debug", Toggle(_draft.ShowDebugDiagnostics)), ReadOnly),
-            new("victory", T("ui.settings.auto-victory", Toggle(_draft.DebugAutoVictory)), ReadOnly), BackRow()],
+            new("victory", T("ui.settings.auto-victory", Toggle(_draft.DebugAutoVictory)), ReadOnly)],
         Page.Controls => [new("convention", T("ui.settings.confirm", T(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")), ReadOnly),
-            new("edit", S("edit"), ReadOnly), new("help", T("ui.settings.help")), new("reset", S("reset"), ReadOnly), BackRow()],
+            new("edit", S("edit"), ReadOnly), new("help", T("ui.settings.help")), new("reset", S("reset"), ReadOnly)],
         Page.Battle => [new("battle-speed", T("battle.speed.value", _draft.BattleSpeed?.ToString() ?? T("battle.speed.custom", _draft.CharactersPerSecond))),
             new("messages", T("battle.speed.messages", Toggle(!_draft.SuppressBattleHitCoinMessages)))],
         _ => EditorRows()
@@ -124,7 +124,7 @@ internal sealed partial class SettingsView : Control
         foreach (var button in _buttons) { button.GetParent().RemoveChild(button); button.QueueFree(); }
         _buttons.Clear(); _rows = Choices();
         _selected = _rows.FindIndex(row => row.Id == focus && !row.Disabled);
-        if (_selected < 0) _selected = _rows.FindIndex(row => !row.Disabled);
+        if (_selected < 0) _selected = Math.Max(0, _rows.FindIndex(row => !row.Disabled));
         foreach (var row in _rows)
         {
             var button = new Button { Name = "Setting_" + row.Id, Text = row.Text, Disabled = row.Disabled,
@@ -191,7 +191,8 @@ internal sealed partial class SettingsView : Control
         if (action is GameAction.Up or GameAction.Down)
         {
             int step = action == GameAction.Up ? -1 : 1;
-            do { _selected = (_selected + step + _rows.Count) % _rows.Count; } while (_rows[_selected].Disabled);
+            bool readOnlyPage = _rows.All(row => row.Disabled);
+            do { _selected = (_selected + step + _rows.Count) % _rows.Count; } while (!readOnlyPage && _rows[_selected].Disabled);
             Paint(); if (!_rows[_selected].Footer) _scroll.EnsureControlVisible(_buttons[_selected]); return;
         }
         if (BattleOnly && action is GameAction.Confirm or GameAction.Attack) { Save(); return; }

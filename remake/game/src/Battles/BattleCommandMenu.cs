@@ -89,8 +89,10 @@ internal sealed partial class BattleCommandMenu : Control
 
         _layout.Actor.PresentActing(targetPage ? null : acting);
         var candidate = decision.Candidate is { } targetRef ? current.Battle.GetActor(targetRef) : null;
-        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, current.Story), GameText.Get("battle.target"));
-        _layout.Context.Text = GameText.Get("battle.context", current.Battle.Round, current.Battle.Gold?.ToString() ?? "—");
+        _layout.Target.Present(candidate, candidate is null ? "" : BattleCharacterNames.Resolve(candidate, _content, current.Story));
+        _layout.Context.Text = GameText.Get("battle.context", current.Battle.Round);
+        _layout.Terrain.Visible = !targetPage && acting is not null;
+        if (_layout.Terrain.Visible) _layout.Terrain.Present(acting!.Land);
         for (int i = 0; i < _layout.Commands.Length; i++)
         {
             var button = _layout.Commands[i];

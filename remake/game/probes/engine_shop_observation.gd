@@ -107,11 +107,11 @@ func art(label: String) -> void:
             check(icon.resource == icon.drawn and icon.texture != null, "actual shop item draw")
             check(icon.width == 16 and icon.height == 24 and icon.scale == 3, "source item dimensions")
     picture(label); visible_text(label+"-text")
-func pointer(rect: Dictionary) -> void:
+func pointer(rect: Dictionary, button: MouseButton = MOUSE_BUTTON_LEFT) -> void:
     var point := Vector2(rect.x+rect.width/2,rect.y+rect.height/2)
-    var event := InputEventMouseButton.new(); event.position=point;event.button_index=MOUSE_BUTTON_LEFT;event.pressed=true;Input.parse_input_event(event)
+    var event := InputEventMouseButton.new(); event.position=point;event.button_index=button;event.pressed=true;Input.parse_input_event(event)
     await process_frame;await process_frame
-    event=InputEventMouseButton.new();event.position=point;event.button_index=MOUSE_BUTTON_LEFT;event.pressed=false;Input.parse_input_event(event)
+    event=InputEventMouseButton.new();event.position=point;event.button_index=button;event.pressed=false;Input.parse_input_event(event)
     await process_frame;await process_frame
 func art_flow() -> void:
     var baseline:=field()
@@ -172,9 +172,9 @@ func art_flow() -> void:
     await pointer(field().shop.page.rows[0].icon.rect)
     check(int(field().shop.wait.Phase)==2,"pointer on item image selects its actual stock row")
     await key(KEY_ESCAPE);await key(KEY_ESCAPE)
-    await pointer(field().shop.services.backRect)
+    await pointer(field().shop.services.rect,MOUSE_BUTTON_RIGHT)
     await settle_field()
-    check(field().wait==null and not field().shop.visible, "independent Leave restores source caller")
+    check(field().wait==null and not field().shop.visible, "Right-click restores the source caller")
     picture("art-field-return")
 func run() -> void:
     if not await start_host():finish();return

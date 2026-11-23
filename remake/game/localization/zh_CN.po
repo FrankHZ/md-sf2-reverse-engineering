@@ -900,7 +900,7 @@ msgid "battle.target"
 msgstr "目标"
 
 msgid "battle.context"
-msgstr "回合 {0}    金币 {1}"
+msgstr "回合 {0}"
 
 msgid "battle.position"
 msgstr "选择位置"
@@ -1619,11 +1619,8 @@ msgstr "{0}：撤销移动后查看战场；菜单返回上一级"
 msgid "battle.inspect.empty"
 msgstr "空地"
 
-msgid "battle.inspect.ground-effect"
-msgstr "地面效果 {0}"
-
 msgid "battle.inspect.ground-impassable"
-msgstr "地面不可通行"
+msgstr "不可通行"
 
 msgid "battle.inspect.land-percent"
 msgstr "{0}%"
@@ -1700,8 +1697,8 @@ msgstr "高空"
 msgid "battle.inspect.terrain.barrier"
 msgstr "障碍"
 
-msgid "battle.acting-land"
-msgstr "地形效果 {0}% · ({1}, {2})"
+msgid "battle.land-effect"
+msgstr "地形效果 {0} · ({1}, {2})"
 
 msgid "battle.member.title"
 msgstr "战斗成员"

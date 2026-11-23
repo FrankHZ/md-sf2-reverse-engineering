@@ -37,9 +37,10 @@ func cover(by_click: bool) -> bool:
         if not expect(host.find_child("SystemMenuView",true,false) == null,"Press alone leaves caller active"): return false
         await mouse(point,false)
     else: await act("menu")
-    var resume := host.find_child("SystemResume",true,false) as Button
-    if not expect(resume != null and resume.theme_type_variation == "EntrySelectedButton" and not caller.can_process(),
-            "Menu owns input at Resume and pauses its caller"): return false
+    var settings := host.find_child("SystemSettings",true,false) as Button
+    if not expect(settings != null and settings.theme_type_variation == "EntrySelectedButton" and not caller.can_process() and
+            host.find_child("SystemResume",true,false) == null,
+            "Menu opens focused on Settings and pauses its caller"): return false
     await act("cancel")
     var after := state()
     return expect(caller.can_process() and menu_button.is_visible_in_tree() and
@@ -76,15 +77,16 @@ func inspect_map() -> bool:
     var footer := inspection.get_node("InspectionFooter") as Control
     var hint := footer.find_child("Instructions",true,false) as Label
     var back := footer.find_child("Back",true,false) as Button
-    measure("inspection-unit", [hover,footer,back], hover.find_children("*","Label",true,false) + [hint])
-    if not expect(state().inspection.hover.unit == state().actor,"Acting unit in hover card"): return false
+    var terrain := inspection.get_node("TerrainPanel") as Control
+    measure("inspection-unit", [hover,terrain,footer,back], hover.find_children("*","Label",true,false) + [hint])
+    if not expect(state().inspection.hover.actor == state().actor,"Acting unit in hover card"): return false
     var cell: Dictionary = state().inspection.cursor
     var subject := Rect2(cell_point(cell.X,cell.Y)-Vector2(48,48),Vector2(96,96))
     if not expect(not hover.get_global_rect().intersects(subject),"Card clears inspected unit"): return false
     if not await cover(true): return false
     await act("down")
-    if not expect(state().inspection.hover.unit == null,"Reach adjacent empty ground"): return false
-    measure("inspection-ground",[hover,footer,back],[hint])
+    if not expect(state().inspection.hover.actor == null,"Reach adjacent empty ground"): return false
+    measure("inspection-ground",[terrain,footer,back],[hint])
     await act("confirm")
     if not await inspect_page("Options"): return false
     var options: Dictionary = state().inspection.options
@@ -93,7 +95,7 @@ func inspect_map() -> bool:
     var panel := inspection.get_node("Overview") as Control
     for window in [Vector2i(2560,1440),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
-        measure("overview",[panel,footer,back],[panel.get_node("Legend"),hint])
+        measure("overview",[panel,footer],[panel.get_node("Legend"),hint])
         if not await cover(false): return false
     var s := state()
     var overview: Dictionary = s.inspection.overview
@@ -116,15 +118,14 @@ func battle() -> bool:
     var layout := view.find_child("CommandMenu",true,false).get_node("Layout")
     await frames(8)
     var footer := layout.get_node("DescriptionPanel")
-    var back := footer.find_child("Back",true,false)
     var reader := footer.find_child("Reader",true,false)
     var reading_area := reader.get_node("ReadingArea")
     var body := reader.find_child("Body",true,false)
     for window in [Vector2i(1920,1080),Vector2i(2560,1440),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
         if not await wait_for(func(_s):return board().settled,"decision camera after resize"): return false
-        measure("decision",[layout.get_node("ActorCard"),layout.get_node("Commands"),footer,reading_area,back],
-            [body,reader.find_child("Help",true,false),back])
+        measure("decision",[layout.get_node("ActorCard"),layout.get_node("Commands"),footer,reading_area],
+            [body,reader.find_child("Help",true,false)])
         if not expect(reading_area.clip_contents and reading_area.get_global_rect().intersects(body.get_global_rect()),
                 "Selected refusal is mounted in the clipped reader"): return false
         var actor_cell := Rect2(cell_point(state().previewX,state().previewY) - Vector2(48,48),Vector2(96,96))
@@ -133,8 +134,8 @@ func battle() -> bool:
         if not expect(state().menu.layout.commands[1].selected,"Magic row remains selected"): return false
         if window.y == 1440 and not expect(footer.size.x == layout.get_node("ActorCard").size.x,
                 "Long reason uses normal column when height permits"): return false
-    await click(control_rect(back))
-    if not expect(state().stage == "Movement","Clicking footer Back restores movement"): return false
+    await act("cancel")
+    if not expect(state().stage == "Movement","Mapped Cancel restores movement"): return false
     await act("confirm")
     for i in range(posmod(1-state().menu.command,4)): await act("down")
     var main: Dictionary = state().menu.layout

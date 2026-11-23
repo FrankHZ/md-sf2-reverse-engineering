@@ -274,7 +274,7 @@ internal sealed partial class FieldActionView : Control
         string hint = GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down), _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
         string fallback = GameText.Fallback("prepare.", true); if (fallback.Length > 0) hint += "\n" + fallback;
         var party = _session.QueryPartyDetails();
-        if (ItemOperations) _operations.Present(_input, _index, _titleText(), "", hint, "prepare.back");
+        if (ItemOperations) _operations.Present(_input, _index, _titleText(), "", hint);
         else
         {
             string? Icon(int i) => _stage switch
@@ -297,7 +297,7 @@ internal sealed partial class FieldActionView : Control
             bool inspectItem = _stage is "use-item" or "give-item" or "drop-item" or "equipment" or "exchange";
             string? description = inspectItem ? ItemDescriptions.Read(_session, word is null ? null : (byte)(word & 127),
                 party?.Members.FirstOrDefault(row => row.Carried.Actor == owner), broken: (word.GetValueOrDefault() & 256) != 0) : null;
-            _page.Present(title, hint, _input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("prepare.back"),
+            _page.Present(title, hint,
                 _options.Select((option, i) => (option.Label(), Icon(i), option.Available)).ToArray(), _iconOwner, _index,
                 description: description, descriptionSubject: (_generation, _index, owner), input: _input);
         }
@@ -328,8 +328,6 @@ internal sealed partial class FieldActionView : Control
         if (!GetWindow().HasFocus() || !CanProcess()) { Suspend(); return; }
         if (input is not InputEventMouse mouse) return;
         int hit = ItemOperations ? _operations.Hit(mouse.Position) : _page.Hit(mouse.Position);
-        Rect2 backRect = ItemOperations ? _operations.BackRect : _page.BackRect;
-        bool back = backRect.HasPoint(mouse.Position);
         if (input is InputEventMouseMotion motion)
         { if (_pointer.Moved(motion) && hit >= 0 && !_requiresRelease) { _index = hit; Present(); } return; }
         if (input is not InputEventMouseButton button) return;
@@ -342,9 +340,9 @@ internal sealed partial class FieldActionView : Control
             else if (_operations.GetGlobalRect().HasPoint(mouse.Position)) _operations.Wheel(step);
             return;
         }
-        back |= button.ButtonIndex == MouseButton.Right;
+        bool back = button.ButtonIndex == MouseButton.Right;
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(),
-            back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : backRect : hit < 0 ? default : ItemOperations ? _operations.RowRect(hit) : _page.RowRect(hit), _generation);
+            back ? GetGlobalRect() : hit < 0 ? default : ItemOperations ? _operations.RowRect(hit) : _page.RowRect(hit), _generation);
         if (!_requiresRelease && clicked is not null)
         { if (clicked == "back") Back(); else { _index = int.Parse(clicked); _options[_index].Choose(); } }
         Present();

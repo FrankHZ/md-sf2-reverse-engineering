@@ -56,9 +56,11 @@ internal static class DisplayNames
         // Source display names are base names. The caller owns the level, never an English-text parser.
         return level && definition is not null ? $"{name} {spell.Level}" : definition is null ? fallback : name;
     }
-    internal static string Class(PartyMemberDetails? member)
+    internal static string Class(PartyMemberDetails? member) =>
+        Class(member?.Deployment?.Definition.Growth?.ClassId);
+
+    internal static string Class(byte? id)
     {
-        byte? id = member?.Deployment?.Definition.Growth?.ClassId;
         string? expression = id is { } key ? _source?.PrivateDefinitions?.Classes.GetValueOrDefault(key)?.NameExpression : null;
         string canonical = expression is { Length: >= 2 } && expression[0] == '"' && expression[^1] == '"'
             ? expression[1..^1] : GameText.Get("party.class-unavailable");

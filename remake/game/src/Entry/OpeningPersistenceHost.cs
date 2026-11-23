@@ -144,11 +144,10 @@ public sealed partial class GameRoot
             choices.Add((freshChoice.Label, () => { _saveSelection = _slots!.SelectedIndex; freshChoice.Choose(); }));
         if (page.Index > 0) choices.Add((GameText.Get("slot.previous"), () => ChangePage(-1)));
         if (page.Index + 1 < page.Count) choices.Add((GameText.Get("slot.next"), () => ChangePage(1)));
-        choices.Add((GameText.Get("entry.cancel"), cancel));
         string heading = _outputFile is null ? message : message + "\n" + GameText.Get("slot.output", System.IO.Path.GetFileName(_outputFile));
         _slots!.Cancel = cancel;
         _slots.ShowChoices(state, heading, choices.ToArray());
-        _slots.Select(Math.Clamp(_saveSelection, 0, choices.Count - 1));
+        _slots.Select(Math.Clamp(_saveSelection, 0, Math.Max(0, choices.Count - 1)));
 
         void ChangePage(int direction)
         {
@@ -405,7 +404,7 @@ public sealed partial class GameRoot
                 { if (written.Error == "save-publication-uncertain") _saveNeedsInspection = true; });
                 if (!result.Success) { SaveError(result.Error!); return; }
                 _savedSession = offer.SessionId; _savedRevision = session.Current.Revision;
-                if (quit) { GetTree().Quit(); return; }
+                if (quit) { QuitGame(); return; }
                 void ReturnToPlay() { CloseSavePanel(); CloseSystemMenu(); }
                 _slots!.Cancel = ReturnToPlay;
                 _slots.ShowChoices("saved", GameText.Get("save.saved", slot, offer.Destination), (GameText.Get("entry.return"), ReturnToPlay));
@@ -519,7 +518,7 @@ public sealed partial class GameRoot
             SaveError("save-publication-uncertain");
             return;
         }
-        if (_session is null) { GetTree().Quit(); return; }
+        if (_session is null) { QuitGame(); return; }
         if (_windowRecovery is not null) { ShowWindowQuit(); return; }
         if (_slots is not null) return;
         OpenSavePanel(); PresentQuitChoices(_slots!, CloseSavePanel);
@@ -535,6 +534,6 @@ public sealed partial class GameRoot
         }
         bool dirty = _savedSession != _session!.Current.SessionId || _savedRevision != _session.Current.Revision;
         view.ShowChoices("confirm-quit", dirty ? GameText.Get("save.quit-dirty") : GameText.Get("save.quit-clean"),
-            (GameText.Get("entry.cancel"), cancel), (GameText.Get("entry.quit"), () => GetTree().Quit()));
+            (GameText.Get("entry.cancel"), cancel), (GameText.Get("entry.quit"), QuitGame));
     }
 }

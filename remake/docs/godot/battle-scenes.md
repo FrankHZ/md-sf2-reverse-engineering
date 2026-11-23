@@ -40,7 +40,7 @@ identity; after-turn notices retain only the actor and field deaths hide close-u
 Cards never predict damage, interpolate resources, pay costs or advance continuations. Their compact
 mode is explicit per battle consumer; shared field/full cards keep their existing geometry. Names
 retain two-line shaping and measured growth so an expanded name also reserves height above the
-reader. Commands, lists, range and round/gold retire during playback. The map remains hidden for
+reader. Commands, lists, range and round retire during playback. The map remains hidden for
 full close-ups and visible for field-owned death/notices/return. Message paging and the actual
 session's confirmation/completion tokens retain their existing owners.
 
@@ -144,7 +144,7 @@ Pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 sprite and base palette at `0x309E..0x30BD` yield32×32 RGBA8, with a transparent center and
 four painted corner regions. Its4096 decoded bytes have SHA256
 `3F2F8EE6F6FDD1B9889FE8595666D407B58CD1D3FF7E0E33FCDD01C192EF5090` and reproduce the
-[accepted private preview](../../game/probes/previews/README.md#single-cell-cursor) PNG exactly.
+[accepted private preview](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/33842660bed0318eefc4d5e96d8b72121159e93e/remake/game/probes/previews/README.md#single-cell-cursor) PNG exactly.
 This is a source/pixel identity claim, not a new original-runtime observation.
 
 The normal scene producer includes the cursor in its existing candidate manifest/source spans,

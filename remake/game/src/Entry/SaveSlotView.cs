@@ -19,6 +19,7 @@ internal sealed partial class SaveSlotView : Control
     private ScrollContainer? _reading;
     private readonly List<Button> _buttons = [];
     private readonly List<Action> _actions = [];
+    private readonly MenuPointer _pointer = new();
     private int _selected;
     internal int SelectedIndex => _selected;
     private bool _loading;
@@ -96,6 +97,7 @@ internal sealed partial class SaveSlotView : Control
 
     internal void ShowChoices(string state, string message, params (string Label, Action Action)[] choices)
     {
+        _pointer.Suspend();
         _loading = false; _loadingBack = null; State = state; _message.Text = message;
         _detail.Hide(); _detail.Text = "";
         _coverage.Text = string.Join("\n", new[] { GameText.Fallback("slot.", includeKey: true), GameText.Fallback("save.", includeKey: true),
@@ -130,13 +132,22 @@ internal sealed partial class SaveSlotView : Control
     internal void Handle(GameAction action)
     {
         if (_loading) { if (action == GameAction.Cancel) _loadingBack?.Invoke(); return; }
+        if (action == GameAction.Cancel) { Cancel?.Invoke(); return; }
         if (_buttons.Count == 0) return;
-        if (action == GameAction.Cancel) Cancel?.Invoke();
-        else if (action is GameAction.Left or GameAction.Right && _reading is not null)
+        if (action is GameAction.Left or GameAction.Right && _reading is not null)
             _reading.ScrollVertical += action == GameAction.Left ? -112 : 112;
         else if (action == GameAction.Up) Select((_selected + _buttons.Count - 1) % _buttons.Count);
         else if (action == GameAction.Down) Select((_selected + 1) % _buttons.Count);
         else if (action == GameAction.Confirm && _actions.Count > 0) _actions[_selected]();
+    }
+    internal bool HandlePointerCancel(InputEvent input)
+    {
+        if (input is not InputEventMouseButton { ButtonIndex: MouseButton.Right } button)
+        { _pointer.ReleaseIfNeutral(); return false; }
+        if (!GetWindow().HasFocus()) { _pointer.Suspend(); return true; }
+        if (_pointer.Read(button, "back", GetGlobalRect(), (State, _loading)) is not null)
+            Handle(GameAction.Cancel);
+        return true;
     }
     internal void Select(int index)
     {

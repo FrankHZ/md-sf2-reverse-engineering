@@ -56,6 +56,7 @@ public sealed partial class GameRoot
     {
         if (what == NotificationWMCloseRequest)
         {
+            if (_preview is not null) return;
             // Cancel the draft before the existing Quit owner creates any confirmation.
             CloseSettings(); RequestQuit();
         }
@@ -84,8 +85,13 @@ public sealed partial class GameRoot
                 _settingsNotice = "Preferences storage is not configured safely. Current defaults are usable; configure SF2_SAVE_ROOT and SF2_SAVE_NAMESPACE outside the checkout, then relaunch to save changes.";
             }
         }
-        GameText.Initialize(settings.Language);
+        ConfigureInput(settings);
         if (GameText.StartupError is { } languageError) _settingsNotice = languageError + (_settingsNotice is null ? "" : "\n" + _settingsNotice);
+    }
+
+    private void ConfigureInput(InputSettings settings)
+    {
+        GameText.Initialize(settings.Language);
         _input = new GameInput(settings);
         _input.HintFocus(GetWindow().HasFocus(), GetViewport().GetMousePosition());
         _input.HintsChanged += RefreshInputHints;
@@ -132,7 +138,7 @@ public sealed partial class GameRoot
     private string? ApplySettings(InputSettings candidate, bool reset)
     {
         if (_settingsOverride) return GameText.Get("ui.settings.readonly");
-        if (_preferences is null) return _settingsNotice + "\n" + GameText.Get("ui.settings.storage");
+        if (_preferences is null && _preview is null) return _settingsNotice + "\n" + GameText.Get("ui.settings.storage");
         Dictionary<GameAction, List<InputEvent>> prepared;
         GameText.Candidate display;
         try { prepared = GameInput.Prepare(candidate); }
@@ -141,7 +147,7 @@ public sealed partial class GameRoot
         catch (ArgumentException) { return GameText.Get("ui.settings.display"); }
         try { _exploration?.PrepareGraphics(candidate.GraphicsMode); }
         catch (InvalidOperationException) { return GameText.Get("ui.settings.graphics-error"); }
-        string? error = _preferences.Write(candidate, reset);
+        string? error = _preferences?.Write(candidate, reset);
         if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");
         _settingsRelease = _settingsActivation;
         _input!.Apply(candidate, prepared); GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;

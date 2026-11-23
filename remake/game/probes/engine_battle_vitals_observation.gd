@@ -1,4 +1,4 @@
-extends "res://probes/engine_demo_battle_ui_observation.gd"
+extends "res://probes/engine_battle_cursor_observation.gd"
 
 # Bounded correction witness: actual F4 headers and the actual F10 targeting help.
 var vitals_case := OS.get_environment("SF2_VITALS_CASE")
@@ -12,20 +12,29 @@ func header_geometry(label: String) -> bool:
     var layout: Dictionary = s.menu.layout
     var card: Dictionary = layout.targetCard if layout.targetCard.visible else layout.actorCard
     samples.append({"label":label,"menu":s.menu,"stage":s.stage,"window":[root.size.x,root.size.y]})
-    if not expect(card.visible and card.decisionHeader and inside(card.rect),label+": decision-only live header fits"): return false
+    if not expect(card.visible and card.decisionHeader and card.frame and inside(card.rect),label+": framed live header fits"): return false
     if not expect(card.nameVisibleLines == card.nameLines and card.nameLines <= 2,label+": actual full name fits measured lines"): return false
     if vitals_case == "wide" and not expect(card.name.length() >= 55 and card.hp.maximum == 30000,label+": real prelaunch long-name/wide-vital selection"): return false
     for vital in [card.hp,card.mp]:
-        if not expect(vital.fontSize == 36 and vital.image.rect.width == 232 and vital.image.rect.height == 28,label+":36px readings and232x28 images"): return false
-        if not expect(vital.valueRect.y+vital.valueRect.height <= vital.image.rect.y+1 and vital.valueMinimumWidth <= vital.valueRect.width+1,
-                label+": full numeric value above its gauge"): return false
+        if not expect(vital.fontSize == 25 and vital.image.rect.width >= 220 and vital.image.rect.height == 28,label+": mini-status reading and gauge geometry"): return false
+        if not expect(vital.image.rect.x+vital.image.rect.width <= vital.valueRect.x+1 and
+                vital.valueRect.y <= vital.image.rect.y and vital.valueRect.y+vital.valueRect.height >= vital.image.rect.y+vital.image.rect.height and
+                vital.valueMinimumWidth <= vital.valueRect.width+1,
+                label+": full numeric value sits beside its gauge"): return false
         if not expect(within(vital.valueRect,card.rect) and within(vital.image.rect,card.rect),label+": vital stays in header"): return false
         if not expect(card.nameRect.y+card.nameRect.height <= vital.valueRect.y+1,label+": name and readings do not overlap"): return false
         if vital.maximum == 0 and not expect(vital.text == "—" and vital.image.fraction == 0,label+": no-MP dash and empty track retained"): return false
-    if not expect(card.hp.valueRect.y == card.mp.valueRect.y and card.hp.image.rect.y == card.mp.image.rect.y
-            and card.hp.valueRect.x+card.hp.valueRect.width <= card.mp.valueRect.x,label+": parallel separate HP/MP columns"): return false
+    if not expect(card.hp.valueRect.y+card.hp.valueRect.height <= card.mp.valueRect.y and
+            card.hp.valueRect.x == card.mp.valueRect.x and card.hp.image.rect.width == card.mp.image.rect.width,
+            label+": HP/MP rows align in one column"): return false
     if not expect(card.rect.x == layout.description.x and card.rect.width == layout.description.width and disjoint(card.rect,layout.description),
             label+": header and footer form one measured column"): return false
+    if not expect(layout.contextText == (("回合 %d" if TranslationServer.get_locale().begins_with("zh") else "Round %d") % s.round),label+": round has no currency"): return false
+    if not expect(layout.terrainPanel.visible == layout.actorCard.visible,label+": terrain belongs to the acting phase"): return false
+    if layout.terrainPanel.visible and not expect(disjoint(layout.terrainPanel.rect,card.rect) and inside(layout.terrainPanel.rect),
+            label+": terrain has its own visible space"): return false
+    if layout.contextVisible and layout.terrainPanel.visible and not expect(layout.context.width == layout.terrainPanel.rect.width and
+            layout.context.height == layout.terrainPanel.rect.height,label+": round and land effect form equal rows"): return false
     if layout.commandList.visible:
         if not expect(card.rect.x == layout.commandList.rect.x and card.rect.width == layout.commandList.rect.width
                 and disjoint(card.rect,layout.commandList.rect),label+": card clears the Main rows"): return false
@@ -94,7 +103,9 @@ func decision_vitals() -> bool:
     if not expect(committed.scene.phase != null and not committed.menu.visible,"Complete legal-target click immediately executes without another Confirm"): return false
     if not expect(not committed.scene.actorCard.decisionHeader and not committed.scene.targetCard.decisionHeader,
             "Close-up retains its existing non-decision cards"): return false
-    return expect(committed.scene.actorCard.hp.image.rect.y < committed.scene.actorCard.mp.image.rect.y,"Close-up readings retain prior stacked layout")
+    return expect(committed.scene.actorCard.frame and
+        committed.scene.actorCard.hp.image.rect.y < committed.scene.actorCard.mp.image.rect.y,
+        "Close-up shares the framed mini-status layout")
 
 func help_vitals() -> bool:
     if not await help_case(): return false

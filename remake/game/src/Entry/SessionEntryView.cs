@@ -20,6 +20,7 @@ public sealed partial class SessionEntryView : Control
     private Label _hint = null!;
     private ScrollContainer _actionScroll = null!;
     private readonly List<Button> _buttons = [];
+    private readonly MenuPointer _pointer = new();
     private GameInput? _input;
     private int _page = -1, _selection;
     private double _revealed;
@@ -51,8 +52,9 @@ public sealed partial class SessionEntryView : Control
         _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 160),
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         AddChild(_hint);
-        string[] names = Replacement ? ["NewGame", "Cancel", "Settings"] : ["NewGame", "Continue", "Quit", "Settings"];
-        string[] keys = Replacement ? ["entry.new", "entry.cancel", "ui.settings.entry"] : ["entry.new", "entry.continue", "entry.quit", "ui.settings.entry"];
+        string[] names = Replacement ? ["NewGame", "Settings"] : ["NewGame", "Continue", "Quit", "Settings"];
+        string[] keys = Replacement ? ["entry.new", "ui.settings.entry"] : ["entry.new", "entry.continue", "entry.quit", "ui.settings.entry"];
+        _pointer.Suspend();
         for (int index = 0; index < names.Length; index++)
         {
             int selected = index;
@@ -95,7 +97,7 @@ public sealed partial class SessionEntryView : Control
     {
         if (_input is not { } input) return; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
         for (int i = 0; i < _buttons.Count - 1; i++)
-            _buttons[i].Text = GameText.Get(i == 0 ? "entry.new" : Replacement ? "entry.cancel" : i == 1 ? "entry.continue" : "entry.quit");
+            _buttons[i].Text = GameText.Get(i == 0 ? "entry.new" : i == 1 ? "entry.continue" : "entry.quit");
         if (_buttons.Count > 0) _buttons[^1].Text = GameText.Get("ui.settings.entry");
         _start.Text = GameText.Get("entry.start", input.CompactHint(GameAction.Confirm));
         _start.TooltipText = input.CompactHint(GameAction.Confirm) + " / " + input.CompactHint(GameAction.Equipment);
@@ -113,6 +115,7 @@ public sealed partial class SessionEntryView : Control
     }
     internal void Setup(bool active)
     {
+        _pointer.Suspend();
         _activated = active; _setup = active;
         foreach (var button in _buttons) button.Visible = !active;
         _dialogue.Visible = !active; _hint.Visible = !active;
@@ -125,6 +128,7 @@ public sealed partial class SessionEntryView : Control
     }
     public override void _Process(double delta)
     {
+        _pointer.ReleaseIfNeutral();
         if (_input?.GameplayHeld == false) _latched = false;
         if (!IsVisibleInTree()) return;
         if (!Revealed)
@@ -134,6 +138,14 @@ public sealed partial class SessionEntryView : Control
         }
         _backdrop.Speaking = !Revealed;
         RefreshHint();
+    }
+    internal bool HandlePointerCancel(InputEvent input)
+    {
+        if (input is not InputEventMouseButton { ButtonIndex: MouseButton.Right } button) return false;
+        if (!GetWindow().HasFocus()) { _pointer.Suspend(); return true; }
+        if (_pointer.Read(button, "back", GetGlobalRect(), (_page, _setup, _activated)) is not null)
+            Handle(GameAction.Cancel);
+        return true;
     }
     internal void Handle(GameAction action)
     {
@@ -248,7 +260,6 @@ public sealed partial class SessionEntryView : Control
         Select(index); Latch();
         if (index == _buttons.Count - 1) { Settings?.Invoke(); return; }
         if (index == 0) { _activated = true; NewGame?.Invoke(); }
-        else if (Replacement) Cancel?.Invoke();
         else if (index == 1) Continue?.Invoke();
         else Quit?.Invoke();
     }
@@ -270,7 +281,8 @@ public sealed partial class SessionEntryView : Control
             : GameText.Get("entry.launch-help"));
     public string ReadEntryObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     {
-        title = _page == -1, stage = Stage, replacement = Replacement, cancelSelected = Replacement && _selection == 1,
+        title = _page == -1, stage = Stage, replacement = Replacement,
+        selectedAction = _page == -2 && _buttons[_selection].IsVisibleInTree() ? _buttons[_selection].Name.ToString() : null,
         failure = _failure, canRetry = _canRetry,
         titleSelection = _selection, page = _page, message = _dialogue.Body.Text, visibleCharacters = _dialogue.Body.VisibleCharacters,
         totalCharacters = _dialogue.Body.GetTotalCharacterCount(), latched = _latched, activated = _activated, assetError = _assetError,

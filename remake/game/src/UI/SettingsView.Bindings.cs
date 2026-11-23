@@ -56,12 +56,12 @@ internal sealed partial class SettingsView
                     var text = Effective(name, _draft) == name ? S(name) : S("effective", S(name), S(Effective(name, _draft)));
                     if (GameInput.MissingFamily(name, rows[name], _draft.Bindings.ContainsKey(name))) text = S("required", text);
                     return new Choice("action-" + name, text);
-                }), BackRow()];
-            case Page.Device: return [new("keyboard", S("keyboard")), new("pad", S("pad")), BackRow()];
-            case Page.Alternatives: return [.. Family(Row).Select((a,i) => new Choice("slot-" + i, LabelFor(a))), new("add", S("add")), ReservedRow(), BackRow()];
-            case Page.Operation: return [new("replace", S("replace")), new("remove", S("remove")), ReservedRow(), BackRow()];
+                })];
+            case Page.Device: return [new("keyboard", S("keyboard")), new("pad", S("pad"))];
+            case Page.Alternatives: return [.. Family(Row).Select((a,i) => new Choice("slot-" + i, LabelFor(a))), new("add", S("add")), ReservedRow()];
+            case Page.Operation: return [new("replace", S("replace")), new("remove", S("remove")), ReservedRow()];
             case Page.Capture: return [BackRow()];
-            case Page.Review: return [new("accept", S("accept")), BackRow()];
+            case Page.Review: return [new("accept", S("accept"))];
             default: throw new InvalidOperationException();
         }
     }

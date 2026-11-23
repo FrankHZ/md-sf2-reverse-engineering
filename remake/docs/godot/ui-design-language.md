@@ -35,7 +35,8 @@ prices and transaction state.
 ## Scope, evidence and boundaries
 
 **Confirmed — accepted implementation/source structure:**
-[StoryTheme](../../game/src/UI/StoryTheme.cs) supplies blue/gold reading panels, 30px body,
+[StoryTheme](../../game/src/UI/StoryTheme.cs) supplies the shared double-gold frame with corner
+accents for blue panel, reading, popup and tooltip surfaces, 30px body,
 24px hints, selected `ffe19a` and unavailable `8e9bab`. Entry and host actions use the square
 journey theme. Field, Church and shop use labeled lists with nearest 3× command art where mounted.
 Battle Main uses nearest 3× command art and persistent 24px labels in the shared compact rows.
@@ -59,7 +60,7 @@ In scope: existing entry, field, party/preparation, service, host and battle pre
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
-Remote services and an additional host Overview remain outside this design. The space below round/gold
+Remote services and an additional host Overview remain outside this design. The space below the round and terrain panels
 is reserved for the pending [current-round readout #2065](battle-ui-composition.md#current-round-order-2065).
 The battle Target phase uses one candidate change per fresh input, and choosing ordinary Stay
 commits in one gesture. The [battle input owner](battle-ui-composition.md#fresh-target-input-and-direct-stay)
@@ -79,14 +80,30 @@ canonical/custom names and fallback notices under the
 [localization owner](../application/localization-design.md). No font substitution, Chinese naming
 or IME admission follows from these layouts.
 
-| Role | Design baseline at native 1080p | Use and limit |
+### Gameplay typography
+
+Use the bundled font at two sizes on the native 1920×1080 canvas. Apply the following roles
+when revising a gameplay screen.
+
+| Size | What the player reads | Examples |
 | --- | --- | --- |
-| Scene/section heading | 32px, ordinary light text; 40px only for a sparse entry heading | One heading per panel. Gold is primarily selection, not every heading. Preserve original title artwork rather than typesetting a replacement logo. |
-| Dialogue, menu choice, transaction facts | 30px `f4f5fc` | Readable full text and explicit amounts. Keep choice rows at least 64px tall; wrap and increase height. |
-| Status identity | Existing card 26px baseline and bounded 22px exceptional-name fallback | Retain its existing measured two-line/widening policy. Do not propagate the exceptional 22px fallback to body or menu text. |
-| Operation hints and binding tooltips | Fixed 24px in the native gameplay canvas | Wrap or allocate reading space as text, device or phase changes. Menu choices, transaction details and status values keep their own roles. |
-| Quiet counters and metadata | 24px baseline | Keep price, a refusal reason and irreversible consequences at readable body size. |
-| Reading panel | Existing `08275bf5` near-opaque blue, 2px `ffe19a` edge, restrained existing shadow | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
+| Body · 30px | Game information, choices, and the consequences of a choice | Dialogue, menu and section labels, unit names and vitals, item and spell descriptions, prices, party gold, member kills and defeats, round and land effect |
+| Hint · 24px | Help with operating the current screen | Button bindings, mouse gestures, paging and scrolling instructions |
+
+Use the existing light body color (`f4f5fc`). Keep menu rows at least 64px tall and allow wrapped choices to grow. Give a section heading its own line and spacing. Use alignment to associate labels with values,
+and use the existing focus marker, border and explicit status text for selection, danger or
+refusal. Keep the title screen's artwork. For a long localized or custom name, try wrapping
+and widening its column before considering a measured fit exception.
+
+The round and land-effect panels already use the body size with equal margins and row dimensions.
+Other screens still have local sizes, including compact command captions and the unit card's
+measured name fitting. Update those with their owning screen and verify fit in English and Chinese.
+
+### Panels and states
+
+| Surface or state | Design baseline at native 1080p | Use and limit |
+| --- | --- | --- |
+| Reading panel | Shared double-gold frame with stepped corner accents and a near-opaque blue interior (`08275bf5`) | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
 | Action surface | Existing dark blue family (`102c50` normal, `204c76` hover, `354c64` pressed) | Same square edge family; avoid extra gold boxes around every idle row. Native buttons retain focus/pressed distinctions. |
 | Selected and available | `ffe19a`, plus `›`/`▸`, outline or original selected raster | Exactly one current choice per input owner. Pointer hover is not command submission. |
 | Unavailable | `8e9bab`, explicit unavailable wording and actual reason | Focus may still mark an inspectable disabled option; never recolor it as available. Do not fade the whole panel and its explanation. |
@@ -259,10 +276,10 @@ canvas and larger native viewports.
 
 | Phase | Components and placement |
 | --- | --- |
-| Movement | Quiet round/gold and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
+| Movement | Quiet round and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
 | Main and spell/item lists | A measured acting card heads the 560px decision column. Main uses four labeled vertical rows above the blue reader. Magic and Item replace them with scrollable rows. The fixed footer contains descriptions, refusals and the mapped actions. |
 | Choose a target | The selected recipient takes the card. The cursor denotes the legal candidate, with one reach and effect field. Back retains the previous command, spell level or item slot. |
-| Free inspection | One hover card clears the cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
+| Free inspection | The shared unit card shows the name and admitted class/level above stacked HP and MP. Coordinates and land effect occupy the separate terrain panel. Empty ground shows the terrain panel alone. |
 | Action playback and outcome | Decision windows retire. Actual close-up participants and their messages own the scene. Resize refreshes the art, cards and reader around the retained delivery state. |
 
 At supported sizes, move the card and footer together when the preferred column would cover the

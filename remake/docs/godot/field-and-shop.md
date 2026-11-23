@@ -29,7 +29,8 @@ geometry and errors, followed by independent main-gate review.
 - Give names the donor and item while showing the focused recipient's four-slot pack. A full pack
   opens its numbered return slots before the real exchange confirmation. A refusal's Back returns
   to the same provisional page and index. Committed actions refresh their query before another action.
-- `ShopServiceView` shows Buy / Sell / Repair / Deals and separate Leave. The service list yields
+- `ShopServiceView` shows Buy / Sell / Repair / Deals. B, Esc or a complete right-click returns
+  through the current service caller. The service list yields
   to stock, member, slot, quote or result in the same region. The chosen person's four slots remain
   to its left during member, slot and quote decisions. Quotes name the item/member/price and show
   current → prospective gold, including the existing sale ceiling. A known funds/capacity/unsupported

@@ -99,7 +99,7 @@ func decision_geometry(label: String) -> bool:
             bottom = row.rect.y+row.rect.height
     if m.listVisible and not expect(within(m.list,bounds) and m.list.y >= card.rect.y+card.rect.height and
         m.list.y+m.list.height <= m.description.y and not m.commandList.visible,label+": child list replaces Main in clear column"): return false
-    if m.contextVisible and not expect(within(m.context,bounds),label+": round and gold fit"): return false
+    if m.contextVisible and not expect(within(m.context,bounds),label+": round fits"): return false
     samples.append({"label":label,"viewport":bounds,"menu":s.menu})
     return true
 
@@ -150,8 +150,8 @@ func cursor_inspection() -> bool:
     if not expect(state().inspection.page == "Cursor" and state().inspection.cursor == saved
             and signature(state()) == baseline,"Host cover/Back preserves inspection and gameplay"): return false
     await act("down")
-    if state().inspection.hover.unit != null: await act("down")
-    if not expect(state().inspection.hover.unit == null,"Inspection finds empty ground"): return false
+    if state().inspection.hover.actor != null: await act("down")
+    if not expect(state().inspection.hover.actor == null,"Inspection finds empty ground"): return false
     await act("confirm")
     if not await inspect_page("Options") or not clear_marks("Options"): return false
     await act("cancel")

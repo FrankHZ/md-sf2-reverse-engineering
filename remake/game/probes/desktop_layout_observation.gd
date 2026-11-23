@@ -171,7 +171,7 @@ func battle_pages() -> void:
         var physical := root.get_final_transform() * logical
         await pointer(physical, false)
         var hover: Dictionary = state().inspection.hover
-        check(hover.unit == unit.Actor.Value, "physical hover finds actual map unit")
+        check(hover.actor == unit.Actor.Value, "physical hover finds actual map unit")
         await pointer(physical)
         check(state().inspection.page == "Full", "same map hit opens unit details")
         await key(KEY_ESCAPE)

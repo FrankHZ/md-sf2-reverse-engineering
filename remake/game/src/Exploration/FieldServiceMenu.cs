@@ -14,7 +14,7 @@ internal sealed partial class FieldServiceMenu : Panel
     private readonly DiamondCommandButton[] _icons;
     private readonly string[] _keys;
     private readonly string _owner;
-    private readonly Label _title = Label("Title", 32), _back = Label("Back", 30), _reason = Label("Reason", 30);
+    private readonly Label _title = Label("Title", 32), _reason = Label("Reason", 30);
     private readonly Label _hint = Label("Hint", StoryTheme.HintSize);
     private readonly VBoxContainer _notes = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly ScrollContainer _reading = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
@@ -28,16 +28,15 @@ internal sealed partial class FieldServiceMenu : Panel
         Theme = StoryTheme.Create();
         MouseFilter = MouseFilterEnum.Ignore;
         _list = new(_icons) { InvalidatePointer = () => InvalidatePointer() };
-        AddChild(_title); AddChild(_list); AddChild(_back); AddChild(_reading); _reading.AddChild(_notes);
+        AddChild(_title); AddChild(_list); AddChild(_reading); _reading.AddChild(_notes);
         _notes.AddThemeConstantOverride("separation", 12);
         _notes.AddChild(_reason); _notes.AddChild(_hint);
         ItemRectChanged += () => InvalidatePointer();
     }
     internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters) => MenuRasterTextures.Configure(_icons, rasters, "", _owner);
-    internal void Present(GameInput input, int index, string title, string reason, string hint, string backKey, IReadOnlyList<bool>? available = null)
+    internal void Present(GameInput input, int index, string title, string reason, string hint, IReadOnlyList<bool>? available = null)
     {
-        _title.Text = title; _back.Text = (index == 4 ? "› " : "   ") + input.CompactHint(GameAction.Cancel) + " · " + GameText.Get(backKey);
-        _back.AddThemeColorOverride("font_color", index == 4 ? StoryTheme.Selected : Colors.White);
+        _title.Text = title;
         for (int i = 0; i < _icons.Length; i++)
         { _icons[i].Available = available is null || available[i]; _icons[i].RefreshCaption(); _icons[i].SetSelection(i == index, input.Settings.ReducedFlash); }
         if (_reason.Text != reason || _hint.Text != hint) _reading.ScrollVertical = 0;
@@ -52,8 +51,7 @@ internal sealed partial class FieldServiceMenu : Panel
         float width = Math.Min(560, GetViewportRect().Size.X - 64), inner = width - 32;
         _title.Position = new(16, 16); _title.Size = new(inner, 0);
         _list.Position = new(16, 40 + _title.GetMinimumSize().Y); _list.Arrange(inner);
-        _back.Position = new(16, _list.Position.Y + _list.RequestedHeight + 8); _back.Size = new(inner, 64);
-        float top = _back.Position.Y + 80;
+        float top = _list.Position.Y + _list.RequestedHeight + 12;
         _notes.CustomMinimumSize = new(inner - 16, 0); _notes.CustomMaximumSize = new(inner - 16, -1);
         float height = Math.Min(_notes.GetCombinedMinimumSize().Y, Math.Max(64, GetViewportRect().Size.Y - 144 - top - 16));
         _reading.Position = new(16, top); _reading.Size = new(inner, height);
@@ -62,14 +60,12 @@ internal sealed partial class FieldServiceMenu : Panel
     }
     internal int Hit(Vector2 p) => _list.Hit(p).Index;
     internal Rect2 RowRect(int index) => ((Control)_list.GetChild(index)).GetGlobalRect();
-    internal Rect2 BackRect => _back.GetGlobalRect();
-    internal bool BackHit(Vector2 p) => BackRect.HasPoint(p);
     internal void Wheel(int step) { _reading.ScrollVertical += step; InvalidatePointer(); }
     internal bool ReadingOverflow => _notes.GetCombinedMinimumSize().Y > _reading.Size.Y + 1;
     internal void Suspend() { foreach (var icon in _icons) icon.StopFocusEmphasis(); }
     public override void _Process(double delta) { if (IsVisibleInTree()) { Arrange(); foreach (var icon in _icons) icon.AdvanceFocus(delta); } }
     internal object Observe() => new { visible = IsVisibleInTree(), rect = Rect(this), title = _title.Text, list = _list.Observe(),
-        titleRect = Rect(_title), backRect = BattleMapViewport.Rectangle(BackRect),
+        titleRect = Rect(_title),
         reason = _reason.Text, hint = _hint.Text, readingRect = Rect(_reading), readingHeight = _notes.GetCombinedMinimumSize().Y, scroll = _reading.ScrollVertical,
         commands = _icons.Select((icon, i) => new { id = icon.Identity, selected = icon.Selected, enabled = icon.Available, rect = BattleMapViewport.Rectangle(RowRect(i)), art = icon.ObserveArt() }) };
     internal static object Rect(Control c) => BattleMapViewport.Rectangle(c.GetGlobalRect());
@@ -77,13 +73,13 @@ internal sealed partial class FieldServiceMenu : Panel
     { var label = new Label { Name = name, AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }
 }
 
-// Measured, scrollable choices and reading, with a fixed Back/footer outside the scroll content.
+// Measured, scrollable choices and a fixed input hint.
 internal sealed partial class FieldChoicePanel : Panel
 {
     private readonly ItemDescriptionView _description = new();
     private readonly ScrollContainer _scroll = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private readonly VBoxContainer _body = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-    private readonly Label _title = FieldServiceMenu.Label("Title", 32), _hint = FieldServiceMenu.Label("Hint", StoryTheme.HintSize), _back = FieldServiceMenu.Label("Back", 30);
+    private readonly Label _title = FieldServiceMenu.Label("Title", 32), _hint = FieldServiceMenu.Label("Hint", StoryTheme.HintSize);
     private readonly List<(Control Row, Label Text, Label Marker, IdentityIcon Icon)> _rows = [];
     internal Action InvalidatePointer { get; set; } = () => { };
     private int _focus = -1;
@@ -92,14 +88,14 @@ internal sealed partial class FieldChoicePanel : Panel
     {
         Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
         AddChild(_scroll); _scroll.AddChild(_body); _body.AddChild(_title); _body.AddThemeConstantOverride("separation", 8);
-        _title.SizeFlagsHorizontal = SizeFlags.ExpandFill; AddChild(_description); AddChild(_hint); AddChild(_back);
+        _title.SizeFlagsHorizontal = SizeFlags.ExpandFill; AddChild(_description); AddChild(_hint);
         ItemRectChanged += () => InvalidatePointer(); _scroll.GetVScrollBar().ValueChanged += _ => InvalidatePointer();
     }
-    internal void Present(string title, string hint, string back, IReadOnlyList<(string Text, string? Icon, bool Available)> choices,
+    internal void Present(string title, string hint, IReadOnlyList<(string Text, string? Icon, bool Available)> choices,
         IdentityIcons icons, int focus, float width = 560, string? description = null,
         object? descriptionSubject = null, GameInput? input = null)
     {
-        bool changed = _heading != title || _rows.Count < choices.Count; _heading = title; _title.Text = title; _hint.Text = hint; _back.Text = back;
+        bool changed = _heading != title || _rows.Count < choices.Count; _heading = title; _title.Text = title; _hint.Text = hint;
         while (_rows.Count < choices.Count)
         {
             var row = new Control { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
@@ -122,21 +118,20 @@ internal sealed partial class FieldChoicePanel : Panel
         _hint.Position = new(16, 0); _hint.Size = new(width - 32, 0);
         _description.Present(description, descriptionSubject, input);
         float descriptionSpace = description is null ? 0 : _description.ReadingHeight + 24;
-        float footer = _hint.GetMinimumSize().Y + 96;
+        float footer = _hint.GetMinimumSize().Y + 24;
         float desired = _title.GetMinimumSize().Y + choices.Select((_, i) => _rows[i].Row.CustomMinimumSize.Y + 8).Sum() + 48 + footer + descriptionSpace;
         Size = new(width, Math.Min(Math.Max(320, desired), GetViewportRect().Size.Y - 144));
         Position = new(GetViewportRect().Size.X - width - 32, 112);
         _scroll.Position = new(16, 16); _scroll.Size = new(width - 32, Math.Max(80, Size.Y - footer - descriptionSpace - 32));
         _description.Position = new(16, Size.Y - footer - descriptionSpace);
         _description.Size = new(width - 32, _description.ReadingHeight);
-        _hint.Position = new(16, Size.Y - footer); _back.Position = new(16, Size.Y - 80); _back.Size = new(width - 32, 64);
+        _hint.Position = new(16, Size.Y - footer);
         if (changed) _scroll.ScrollVertical = 0;
         if ((changed || _focus != focus) && focus >= 0 && focus < choices.Count) _scroll.EnsureControlVisible(_rows[focus].Row);
         _focus = focus;
     }
     internal int Hit(Vector2 point) => _scroll.GetGlobalRect().HasPoint(point) ? _rows.FindIndex(r => r.Row.Visible && r.Row.GetGlobalRect().HasPoint(point)) : -1;
     internal Rect2 RowRect(int index) => _rows[index].Row.GetGlobalRect().Intersection(_scroll.GetGlobalRect());
-    internal Rect2 BackRect => _back.GetGlobalRect();
     internal void Wheel(int step) { _scroll.ScrollVertical += step; InvalidatePointer(); }
     internal void Read(int step)
     {
@@ -149,7 +144,7 @@ internal sealed partial class FieldChoicePanel : Panel
             _scroll.ScrollVertical += step;
     }
     internal object Observe() => new { visible = IsVisibleInTree(), description = _description.Observe(), rect = FieldServiceMenu.Rect(this), title = _title.Text, titleRect = FieldServiceMenu.Rect(_title),
-        readingRect = FieldServiceMenu.Rect(_scroll), scroll = _scroll.ScrollVertical, hint = _hint.Text, hintRect = FieldServiceMenu.Rect(_hint), backRect = FieldServiceMenu.Rect(_back),
+        readingRect = FieldServiceMenu.Rect(_scroll), scroll = _scroll.ScrollVertical, hint = _hint.Text, hintRect = FieldServiceMenu.Rect(_hint),
         rows = _rows.Where(r => r.Row.Visible).Select(r => new { text = r.Text.Text, rect = FieldServiceMenu.Rect(r.Row), textRect = FieldServiceMenu.Rect(r.Text), minimumHeight = r.Text.GetMinimumSize().Y, icon = r.Icon.Observe() }) };
 }
 

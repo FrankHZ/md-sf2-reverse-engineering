@@ -66,7 +66,7 @@ public sealed partial class GameRoot
     }
     private bool EnsureWindowSupport()
     {
-        if (WindowClientAllowed) return true;
+        if (_preview is not null || WindowClientAllowed) return true;
         ShowWindowRecovery(); return false;
     }
     private void ShowWindowRecovery()
@@ -155,7 +155,7 @@ public sealed partial class GameRoot
     // These existing finite host modals share one resume decision, not a separate pause service.
     private void ApplyHostPause()
     {
-        ApplyWindowCanvas();
+        if (_preview is null) ApplyWindowCanvas();
         bool covered = _windowRecovery is not null || _windowQuit is not null;
         if (_entry is not null) _entry.ProcessMode = covered || _settings is not null || _slots is not null
             ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
@@ -175,7 +175,8 @@ public sealed partial class GameRoot
         if (_windowQuit is not null)
         {
             // The existing SaveSlotView owns GUI clicks; no underlying modal receives keys.
-            if (input is not InputEventMouse)
+            if (_windowQuit.HandlePointerCancel(input)) GetViewport().SetInputAsHandled();
+            else if (input is not InputEventMouse)
             {
                 if (_input?.Resolve(input) is { } action) _windowQuit.Handle(action);
                 GetViewport().SetInputAsHandled();

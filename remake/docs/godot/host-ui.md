@@ -25,7 +25,8 @@ including the popup created on hover over Menu. The field footer retires on host
 
 The centered Menu uses the existing square entry theme, an 800px capped width, at least 64px
 command rows, quiet Journey/Session headings and a gold outline plus marker on the selected row.
-Resume starts selected on each new opening. Unavailable commands retain reasons and are skipped
+Settings starts selected on each new opening. Cancel, right-click or the Menu binding resumes
+the covered caller. Unavailable commands retain reasons and are skipped
 by directional selection. The bounded command/reason region scrolls; title and mapped footer
 remain outside it. Pointer hit testing intersects the reading viewport, including after scrolling.
 Left/Right and the mouse wheel read long reasons without activating unavailable commands.

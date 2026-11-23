@@ -68,18 +68,18 @@ func inspect_case() -> bool:
     if not expect(state().previewX == initial.previewX and state().previewY == initial.previewY and resources(state()) == resources(initial),
             "Movement Cancel finishes real undo before inspection and preserves resources/RNG"): return false
     var baseline := signature(state())
-    if not expect(state().inspection.hover.unit == initial.actor,"Cursor immediately projects actual unit"): return false
+    if not expect(state().inspection.hover.actor == initial.actor,"Cursor immediately projects actual unit"): return false
     await act("confirm")
     if not await inspect_page("Full"): return false
     await act("cancel")
     if not await inspect_page("Cursor"): return false
-    # Hover another disclosed unit; equal-width HP/MP and land effect occupy the same card.
+    # Hover another disclosed unit; equal-width HP/MP use the shared unit card beside the terrain panel.
     var unit: Dictionary = state().inspection.units.filter(func(u):return u.Actor.Value != initial.actor)[0]
     var p := cell_point(unit.Position.X,unit.Position.Y)
     await move_mouse(p)
     var h: Dictionary = state().inspection.hover
-    if not expect(h.unit == unit.Actor.Value and h.land.ends_with("%"),"Pointer and directional focus disclose same unit/land"): return false
-    if not expect(abs(h.hpGauge.rect.width-h.mpGauge.rect.width) < 1 and inside(h.rect),"Inspection vitals share equal readable space"): return false
+    if not expect(h.actor == unit.Actor.Value and "%" in state().inspection.terrainPanel.text,"Pointer and directional focus disclose same unit/land"): return false
+    if not expect(abs(h.hp.image.rect.width-h.mp.image.rect.width) < 1 and inside(h.rect),"Inspection vitals share equal readable space"): return false
     samples.append({"label":"unit-hover","inspection":state().inspection})
     await mouse(p,true); await mouse(p,false)
     if not await inspect_page("Full"): return false
@@ -89,12 +89,12 @@ func inspect_case() -> bool:
     # Move to empty ground by ordinary direction input, then use pointer to enter options.
     await act("down")
     for i in range(6):
-        if state().inspection.hover.unit == null: break
+        if state().inspection.hover.actor == null: break
         await act("down")
     var empty: Dictionary = state().inspection.cursor
     p = cell_point(empty.X,empty.Y)
     await move_mouse(p)
-    if not expect(state().inspection.hover.unit == null and not state().inspection.hover.land.is_empty(),"Empty ground hover has terrain and coordinates"): return false
+    if not expect(state().inspection.hover.actor == null and not state().inspection.terrainPanel.text.is_empty(),"Empty ground hover has terrain and coordinates"): return false
     samples.append({"label":"ground-hover","inspection":state().inspection})
     await mouse(p,true); await mouse(p,false)
     if not await inspect_page("Options"): return false
@@ -445,7 +445,7 @@ func run() -> void:
         samples.append({"label":"startup-refusal","text":host.find_children("*","Label",true,false).map(func(n):return n.text)})
         expect(false,"Selected package must pass ordinary startup/input admission"); return
     var catalog: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson")).localization
-    for key in ["battle.inspect.ground-effect","battle.inspect.ground-impassable","battle.inspect.land-percent","battle.inspect.cursor-help","host.help-text-29"]:
+    for key in ["battle.land-effect","battle.inspect.ground-impassable","battle.inspect.land-percent","battle.inspect.cursor-help","host.help-text-29"]:
         var translation: Dictionary = catalog.rows[key]
         if not expect(translation.EffectiveLocale == catalog.language and translation.Reason == null,"Battle catalog row uses selected language: "+key): return
     bind_events()

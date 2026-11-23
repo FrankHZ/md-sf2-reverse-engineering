@@ -8,14 +8,15 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 internal sealed partial class BattleMenuLayout : Control
 {
     private const int PanelInset = 16, Gap = 12;
-    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true, DecisionHeader = true };
-    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true, DecisionHeader = true };
-    internal readonly Label Context = Text("Context", 28);
+    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", DecisionHeader = true };
+    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, DecisionHeader = true };
+    internal readonly BattleTerrainPanel Terrain = new() { Name = "TerrainPanel" };
+    internal readonly Label Context = Text("Context", UI.StoryTheme.BodySize);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
-    private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
+    private readonly Label _confirm = Text("Confirm", 26);
     private UI.CompactCommandList _commandList = null!;
     internal readonly UI.DiamondCommandButton[] Commands = [
         new("Attack", "battle.command.attack", "command-menu") { CaptionBeside = true },
@@ -42,7 +43,7 @@ internal sealed partial class BattleMenuLayout : Control
     private bool _canConfirm;
     internal Action InvalidatePointer { get; set; } = () => { };
     internal bool Covers(Vector2 point) =>
-        Covers(Actor, point) || Covers(Target, point) || Covers(_context, point) || Covers(_list, point) ||
+        Covers(Actor, point) || Covers(Target, point) || Covers(Terrain, point) || Covers(_context, point) || Covers(_list, point) ||
         Covers(_detail, point) || HitCommand(point).Id is not null;
 
     private static bool Covers(Control control, Vector2 point) =>
@@ -64,12 +65,12 @@ internal sealed partial class BattleMenuLayout : Control
     public override void _Ready()
     {
         Theme = UI.StoryTheme.Create();
-        var insets = (StyleBoxFlat)Theme.GetStylebox("panel", "PanelContainer").Duplicate();
-        insets.ContentMarginLeft = insets.ContentMarginRight = insets.ContentMarginTop = insets.ContentMarginBottom = PanelInset;
-        foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
+        var insets = UI.StoryTheme.PanelFrame(PanelInset, PanelInset);
+        foreach (var panel in new[] { _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);
-        AddChild(_context); _context.AddChild(Context);
+        Context.AutowrapMode = TextServer.AutowrapMode.Off;
+        AddChild(Terrain); AddChild(_context); _context.AddChild(Context);
         _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, Visible = false,
             InvalidatePointer = () => InvalidatePointer() };
         _commandList.ItemRectChanged += () => InvalidatePointer();
@@ -83,7 +84,7 @@ internal sealed partial class BattleMenuLayout : Control
         _detail.AddChild(column); column.AddChild(_reading); column.AddChild(_navigation);
         _reading.AddContext(Heading, Help);
         _scroll.GetVScrollBar().ValueChanged += _ => InvalidatePointer();
-        foreach (var control in new[] { _previous, _next, _confirm, _back })
+        foreach (var control in new[] { _previous, _next, _confirm })
         {
             control.CustomMinimumSize = new(0, 44);
             control.HorizontalAlignment = HorizontalAlignment.Center;
@@ -130,10 +131,19 @@ internal sealed partial class BattleMenuLayout : Control
             card.Position = new(x, top);
             card.Size = new(width, height);
         }
-        // Round/gold owns the upper left. The space below is reserved for #2065.
-        _context.Size = new(300, 68);
+        // Keep map readings opposite the active unit card.
+        var readingSize = _context.GetCombinedMinimumSize();
+        if (Terrain.Visible)
+        {
+            readingSize = readingSize.Max(Terrain.GetCombinedMinimumSize());
+            Terrain.Size = readingSize;
+        }
+        _context.Size = readingSize;
         _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
         _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
+        if (Terrain.Visible)
+            Terrain.Place(new(alternate ? size.X - margin : margin, top + (_context.Visible ? _context.Size.Y + Gap : 0)),
+                protection, alternate);
         _commandList.Position = new(x, controlsTop);
         if (_commandList.Visible && _commandList.Size.X != width) _commandList.Arrange(width);
         _list.Position = new(x, controlsTop);
@@ -160,8 +170,8 @@ internal sealed partial class BattleMenuLayout : Control
     internal void ShowNavigation(bool visible, bool canCycle, bool showConfirm, bool canConfirm)
     {
         _previous.Text = GameText.Get("battle.previous"); _next.Text = GameText.Get("battle.next");
-        _confirm.Text = GameText.Get("battle.confirm"); _back.Text = GameText.Get("battle.back");
-        _navigation.Visible = visible;
+        _confirm.Text = GameText.Get("battle.confirm");
+        _navigation.Visible = visible && (canCycle || showConfirm);
         _canConfirm = canConfirm;
         _previous.Visible = _next.Visible = canCycle;
         _confirm.Visible = showConfirm;
@@ -170,7 +180,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal (string? Id, Rect2 Rect) Hit(Vector2 position)
     {
-        foreach (var control in new[] { _previous, _next, _confirm, _back })
+        foreach (var control in new[] { _previous, _next, _confirm })
             if ((control != _confirm || _canConfirm) && Covers(control, position)) return (control.Name.ToString(), control.GetGlobalRect());
         var command = HitCommand(position);
         if (command.Id is not null) return command;
@@ -245,7 +255,7 @@ internal sealed partial class BattleMenuLayout : Control
         descriptionVisible = _detail.IsVisibleInTree(),
         reader = _reading.Observe(),
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
-        contextVisible = _context.IsVisibleInTree(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
+        contextText = Context.Text, contextVisible = _context.IsVisibleInTree(), terrainPanel = Terrain.Observe(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
         heading = Heading.Text, detail = _reading.Body.Text, help = Help.Text, helpVisible = Help.IsVisibleInTree(),
         descriptionLabels = new[] { Heading, _reading.Body, Help }.Where(label => label.IsVisibleInTree()).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),
@@ -255,7 +265,7 @@ internal sealed partial class BattleMenuLayout : Control
         iconMode = Icons.Mounted ? "bound" : "unmounted-text",
         icons = _rowIcons.Select(icon => icon.Observe()).ToArray(),
         scroll = _scroll.ScrollVertical,
-        navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
+        navigation = new[] { _previous, _next, _confirm }.Select(control => new { id = control.Name.ToString(),
             visible = control.IsVisibleInTree(), enabled = control != _confirm || _canConfirm, rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
         commands = Commands.Select((button, index) => new { id = button.Identity, label = button.Caption,
             visible = button.IsVisibleInTree(), selected = button.Selected, enabled = button.Available,

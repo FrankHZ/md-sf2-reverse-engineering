@@ -26,7 +26,6 @@ public sealed partial class GameRoot : Node
     private Button? _menuButton;
     private SystemMenuView? _systemMenu;
     private bool _releaseBarrier;
-
     public override void _ExitTree()
     {
         ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
@@ -69,6 +68,8 @@ public sealed partial class GameRoot : Node
         }
         if (input is InputEventMouse)
         {
+            if ((_slots?.HandlePointerCancel(input) ?? _entry?.HandlePointerCancel(input)) == true)
+            { GetViewport().SetInputAsHandled(); return; }
             if (_entry is not null || _slots is not null) return;
             if (_menuButton is { } button && button.IsVisibleInTree() && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position)) return;
             if (_exploration is { } field && GodotObject.IsInstanceValid(field) && field.IsVisibleInTree())
@@ -110,10 +111,17 @@ public sealed partial class GameRoot : Node
     public override void _Ready()
     {
         _hostUi = UI.PresentationCanvas.Mount(this, "HostUi", UI.PresentationCanvas.Host);
-        GetTree().AutoAcceptQuit = false;
         GetWindow().FocusExited += SettingsFocusLost;
         GetWindow().FocusEntered += PacingFocusReturned;
         Godot.Input.JoyConnectionChanged += PacingDeviceChanged;
+        if (_preview is { } preview)
+        {
+            ConfigureInput(preview.Settings);
+            if (preview.Source is { } source) BeginSource(source);
+            else ShowEntry();
+            return;
+        }
+        GetTree().AutoAcceptQuit = false;
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         var arguments = OS.GetCmdlineUserArgs();
         for (int index = 0; index < arguments.Length; index++)

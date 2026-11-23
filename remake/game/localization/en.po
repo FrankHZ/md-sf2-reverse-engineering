@@ -900,7 +900,7 @@ msgid "battle.target"
 msgstr "Target"
 
 msgid "battle.context"
-msgstr "Round {0}    Gold {1}"
+msgstr "Round {0}"
 
 msgid "battle.position"
 msgstr "Choose a position"
@@ -1619,11 +1619,8 @@ msgstr "{0}: undo movement, then inspect; menu Back returns one level"
 msgid "battle.inspect.empty"
 msgstr "Empty ground"
 
-msgid "battle.inspect.ground-effect"
-msgstr "Ground effect {0}"
-
 msgid "battle.inspect.ground-impassable"
-msgstr "Ground impassable"
+msgstr "Impassable"
 
 msgid "battle.inspect.land-percent"
 msgstr "{0}%"
@@ -1700,8 +1697,8 @@ msgstr "High sky"
 msgid "battle.inspect.terrain.barrier"
 msgstr "Barrier"
 
-msgid "battle.acting-land"
-msgstr "Land effect {0}% · ({1}, {2})"
+msgid "battle.land-effect"
+msgstr "Land effect {0} · ({1}, {2})"
 
 msgid "battle.member.title"
 msgstr "Battle members"

@@ -6,6 +6,7 @@ namespace Sf2.Remake.GodotAdapter.UI;
 internal static class StoryTheme
 {
     private static FontFile? _font;
+    private static Texture2D? _frameTexture;
     internal static void PrepareFont(string required)
     {
         var font = _font ?? GD.Load<FontFile>("res://fonts/localization/NotoSansCJKsc-Regular.otf");
@@ -24,7 +25,6 @@ internal static class StoryTheme
     internal static Theme CreateEntry(bool journey = false)
     {
         var theme = Create();
-        theme.SetStylebox("panel", "TooltipPanel", theme.GetStylebox("panel", "PanelContainer"));
         theme.SetFontSize("font_size", "TooltipLabel", HintSize);
         theme.SetColor("font_color", "TooltipLabel", theme.GetColor("font_color", "Label"));
         theme.SetStylebox("normal", "Button", Box("102c50", "607d9f"));
@@ -87,14 +87,44 @@ internal static class StoryTheme
     {
         var theme = new Theme { DefaultFontSize = BodySize, DefaultFont = _font };
         theme.SetColor("font_color", "Label", new Color("f4f5fc"));
-        theme.SetStylebox("panel", "PanelContainer", new StyleBoxFlat
-        {
-            BgColor = new("08275bf5"), BorderColor = Selected,
-            BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2,
-            ShadowColor = new("05122bb0"), ShadowSize = 3,
-            ContentMarginLeft = 14, ContentMarginTop = 12, ContentMarginRight = 14, ContentMarginBottom = 12,
-        });
-        theme.SetStylebox("panel", "Panel", theme.GetStylebox("panel", "PanelContainer"));
+        var frame = PanelFrame();
+        foreach (string type in new[] { "PanelContainer", "Panel", "PopupMenu", "PopupPanel", "TooltipPanel" })
+            theme.SetStylebox("panel", type, frame);
         return theme;
+    }
+
+    internal static StyleBoxTexture PanelFrame(float horizontal = 14, float vertical = 12) => new()
+    {
+        Texture = _frameTexture ??= CreateFrameTexture(),
+        TextureMarginLeft = 22, TextureMarginRight = 22,
+        TextureMarginTop = 22, TextureMarginBottom = 22,
+        ContentMarginLeft = horizontal, ContentMarginRight = horizontal,
+        ContentMarginTop = vertical, ContentMarginBottom = vertical,
+    };
+
+    private static Texture2D CreateFrameTexture()
+    {
+        const int size = 48;
+        using var image = Image.CreateEmpty(size, size, false, Image.Format.Rgba8);
+        image.Fill(new("512f22"));
+        image.FillRect(new(2, 2, 44, 44), new("b67836"));
+        image.FillRect(new(4, 4, 40, 40), Selected);
+        image.FillRect(new(6, 6, 36, 36), new("102444"));
+        image.FillRect(new(8, 8, 32, 32), new("80572d"));
+        image.FillRect(new(10, 10, 28, 28), new("08275bf5"));
+        var highlight = new Color("f4c572");
+        foreach (bool right in new[] { false, true })
+        foreach (bool bottom in new[] { false, true })
+        {
+            Accent(1, 1, 16, 3);
+            Accent(1, 1, 3, 16);
+            Accent(6, 6, 6, 3);
+            Accent(6, 6, 3, 6);
+
+            void Accent(int x, int y, int width, int height) =>
+                image.FillRect(new(right ? size - x - width : x, bottom ? size - y - height : y,
+                    width, height), highlight);
+        }
+        return ImageTexture.CreateFromImage(image);
     }
 }

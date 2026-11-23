@@ -17,29 +17,35 @@ internal sealed partial class BattleInspectionView
         var marker = _snapshot!.Units.FirstOrDefault(u => u.Position == _cursor);
         var query = marker is null ? null : _session!.QueryBattleInspection(_snapshot.SessionId, _snapshot.Revision, marker.Actor);
         var tile = _session!.Current.Battle.Definition.Terrain[_cursor.Y * 48 + _cursor.X];
-        string land;
-        if (marker is null)
+        _hover.PresentInspected(query?.Unit, marker is null ? "" : UnitName(marker));
+        if (query?.Land is { } land) _terrainPanel.Present(land);
+        else if (marker is not null) _terrainPanel.Present(_cursor, "—");
+        else
         {
             bool blocked = tile.Surface is TerrainSurface.Barrier or TerrainSurface.HighSky or TerrainSurface.Impassable or TerrainSurface.Water;
-            land = blocked ? GameText.Get("battle.inspect.ground-impassable") :
-                GameText.Get("battle.inspect.ground-effect", LandValue(BattleTerrainRules.LandEffect(tile, BattleMover.Regular)));
+            string effect = blocked ? GameText.Get("battle.inspect.ground-impassable") :
+                LandValue(BattleTerrainRules.LandEffect(tile, BattleMover.Regular));
+            _terrainPanel.Present(_cursor, effect);
         }
-        else land = LandValue(query?.Land?.Percent);
-        _hover.Present(query?.Unit, marker is null ? GameText.Get("battle.inspect.empty") : UnitName(marker), land, _cursor);
         ArrangeHover(_map.CellRect(_cursor));
     }
     internal void ArrangeHover(Rect2 cell)
     {
-        if (!Active || _page != "Cursor" || !_hover.IsVisibleInTree()) return;
+        if (!Active || _page != "Cursor" || !_terrainPanel.IsVisibleInTree()) return;
+        if (_hover.Visible) _hover.Size = new(Mathf.Max(560, _hover.RequestedSize.X), _hover.RequestedSize.Y);
         float right = GetViewportRect().Size.X - UI.StoryTheme.GameplayInset - _hover.Size.X;
         var position = new Vector2(right, UI.StoryTheme.BelowMenu);
         if (new Rect2(position, _hover.Size).Intersects(cell.Grow(16)))
             position.X = UI.StoryTheme.GameplayInset;
         _hover.Position = position;
+        bool terrainRight = _hover.Visible && position.X != right;
+        _terrainPanel.Place(new(terrainRight ? GetViewportRect().Size.X - UI.StoryTheme.GameplayInset : UI.StoryTheme.GameplayInset,
+            UI.StoryTheme.BelowMenu), cell.Grow(16), terrainRight);
     }
     private static string LandValue(int? percent) => percent is { } value ? GameText.Get("battle.inspect.land-percent", value) : "—";
     private bool CursorUiCovers(Vector2 position) => _footer.GetGlobalRect().HasPoint(position) ||
-        _hover.IsVisibleInTree() && _hover.GetGlobalRect().HasPoint(position);
+        _hover.IsVisibleInTree() && _hover.GetGlobalRect().HasPoint(position) ||
+        _terrainPanel.IsVisibleInTree() && _terrainPanel.GetGlobalRect().HasPoint(position);
     private bool HostPointerCovered => GetViewport().GuiGetHoveredControl() is { } control &&
         control.IsVisibleInTree() && !IsAncestorOf(control);
     private void BoardPointer(InputEventMouse mouse)

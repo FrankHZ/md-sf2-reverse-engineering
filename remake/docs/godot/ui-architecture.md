@@ -181,14 +181,31 @@ active Left/Right mappings in vertical Main, Magic, Item and field Prepare descr
 Prepare directs the operation to the selected description alone while it is present. Target
 retains its existing commands with a short action and availability footer.
 
-Inspection now puts instructions and one visible Back button in the same framed footer across its
-pages. The complete pointer gesture must match the actual button rectangle. Cursor's hover card
-owns cell identity and coordinates. The shared compact status card reads the live ally's current
+Inspection puts return instructions in its framed footer. Cursor and detail sheets also show a
+Back button whose complete left-click must match the actual button rectangle. Options, Map and
+Members use mapped Cancel or a complete right-click. Movement and inspection share the unit card and an independent terrain panel for cell coordinates and mover-qualified effect. The shared compact status card reads the live ally's current
 level from the acting projection or actor state in Movement, Target and playback. Enemies keep
 their established disclosure. Selected spell effect copy remains with #2083.
 [Description reader](../../game/src/UI/ItemDescriptionView.cs) ·
 [Inspection view](../../game/src/Battles/BattleInspectionView.cs) ·
 [Compact card](../../game/src/UI/BattleStatusCard.cs)
+
+### DesignPreview production entry
+
+All F1–F10 tabs instantiate or reuse the production `Main.tscn`. The preview owns the
+toolbar, controlled startup choice, reset, fixed review viewport and pointer translation.
+F1 uses ordinary entry and one explicit isolated save. F2/F3 use the admitted authored
+dialogue and Church programs. F5–F7 share one live field session, so Party and Shop read
+the same inventory. F4/F8 use the same Practice Yard production battle, and F9 uses
+ordinary authored outcome continuations. F10 opens the actual System Menu over its
+eligible caller. Preferences live in memory. Game entry, admission, presentation and
+return keep their production owners.
+
+`StoryTheme` supplies one gold texture for the frame of all panel, popup and tooltip styles.
+Presenters retain their own content insets. The [sample routes](../../game/probes/previews/README.md#scene-ownership)
+describe which actual authored inputs exercise each view. The fixed review window fits the
+production viewport. Desktop window recovery and device/appearance acceptance retain their
+ordinary separate review boundaries.
 
 ### Parallel route eligibility can drift
 
