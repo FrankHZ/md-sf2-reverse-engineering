@@ -200,7 +200,8 @@ internal sealed partial class BattleSceneView : Control
                 {
                     var sequences = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences;
                     string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedBlaze ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
-                    // Earlier scenes carry the ordinary class/species pose under idle/attack.
+                    // battlesceneScript_PerformAnimation selects the ordinary sequence for these
+                    // casters. Earlier packages expose it as ally idle or enemy attack.
                     if (_preparedBlaze && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
                     var animation = sequences[sequence];
                     _animationIndex = animation.Index;

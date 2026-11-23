@@ -36,6 +36,15 @@ Each variation-1 entry duplicates the other at the same position. The adapter dr
 16×32 flame at (72,112) or (176,128) on the 256×224 local canvas. The source cast sound is 77.
 Fade, frame cadence, reaction motion and delivery on the Godot clock are modern presentation choices.
 
+`createbattlesceneanimation.asm:battlesceneScript_PerformAnimation` selects `BATTLEANIMATION_ATTACK`
+for ordinary spellcasters, including Kazin and Galam Mage. `GetAllyAnimation` resolves Kazin's
+class sequence 4 and `GetEnemyAnimation` resolves Galam Mage's species sequence 36. Battle04's
+Kazin row exposes sequence 4 through `idle`, identical to its `attack` sequence. The registered
+Battle05 Galam Mage row exposes sequence 36 through `attack`. Battles06–07 provide a `cast` alias
+with exactly the same operands as `attack`, including trigger 2 and the frame 2→3 pose. The adapter
+prefers a published `cast` row and otherwise reads the existing ordinary pose. The pose's trigger
+cues the modern flame interval.
+
 **Publication.** Select the registered fixed-backdrops package as `$base`, its prepared `retail-v1`
 asset library as `$library`, and a fresh ignored absolute output `$candidate`. Load worktree private
 selections in the same shell. The mount reads two existing tile frames and reuses the closed-package
@@ -88,9 +97,23 @@ retains the animation token. The spell deals 6 damage, MP changes 13→11, Kazin
 one kill, and gold changes 60→110. The next actor, Bowie, opens a new action menu in the same
 session. The coin notice is visible in normal and Reduced Flash and passes without input in skip.
 The spell result remains readable in all three. The recordings cover actual resource binding and
-timed playback. Original timing, an enemy-side native flame witness and foreground visual
-acceptance (#1456) remain **Unknown**. Headless exit reported ten ObjectDB instances after control
-returned.
+timed playback. Headless exit reported ten ObjectDB instances after control returned.
+
+**Enemy-side reproduction.** With the same private package and observer, set `SF2_BLAZE_ENEMY=1`,
+`SF2_BLAZE_SKIP_MESSAGES=0`, `SF2_BLAZE_REDUCED_FLASH=0`, and use normal input settings. Point
+`SF2_BLAZE_START` at a fresh ignored controlled-start JSON containing these values:
+
+```json
+{"start":{"battle":"battle-5","activeAllies":["ally-0"],"actors":[{"actor":"enemy-2","position":{"x":9,"y":6}}]}}
+```
+
+**Confirmed in the remake.** Battle05's SENTRY Galam Mage moves (9,6)→(5,5) and casts BLAZE1
+at Bowie (3,5) through the ordinary enemy decision. Both frames draw at (176,128) with
+`enemy36/frame3`, `ally0-palette0/frame0`, the equipped sword, `background8` and `ground8` visible.
+The session records one cast, one MP payment (5→3), one HP change (12→6) and one enemy action
+commit. Early Confirm retains the cast token. Bowie opens a new action menu in the same session.
+The observer reports no session, scene or audio error and exits 0. Eight ObjectDB instances are
+reported at exit. Original timing and foreground visual acceptance (#1456) remain **Unknown**.
 
 BLAZE2 shares tileset 2 but uses the medium stacked flame and ten meteors. BLAST1 uses the
 distinct tileset 15 and its dust/wind update. Both keep their modern effects and current recipient
