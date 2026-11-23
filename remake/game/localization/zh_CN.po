@@ -1363,6 +1363,9 @@ msgstr "{0}陷入混乱！"
 msgid "battle.scene.muddle-expired"
 msgstr "{0}恢复了清醒。"
 
+msgid "battle.scene.muddle-inaction"
+msgstr "{0}陷入混乱，无法行动。"
+
 msgid "battle.scene.silence-expired"
 msgstr "封魔效果结束。{0}可以再次施法。"
 

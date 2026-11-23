@@ -146,12 +146,11 @@ public sealed class SourceAllyAiTests
     }
 
     [Theory]
-    [InlineData("item")] [InlineData("spell")] [InlineData("confusion")] [InlineData("neutral")]
+    [InlineData("item")] [InlineData("spell")] [InlineData("neutral")]
     public void UnsupportedCategoriesRejectBeforePublishingDraws(string category)
     {
         var b = Initial(); b = b.With(actors: b.Actors.Select(a =>
-            a.Actor == Ally ? a.With(status: category == "confusion" ? (ushort)0x28 : (ushort)0,
-                sourceLoadout: new(category == "item" ? [4, 127, 127, 127] : [127, 127, 127, 127],
+            a.Actor == Ally ? a.With(sourceLoadout: new(category == "item" ? [4, 127, 127, 127] : [127, 127, 127, 127],
                     category == "spell" ? [1, 63, 63, 63] : [63, 63, 63, 63])) :
             a.Actor == Sentry && category == "neutral" ? a.With(activationWord: 8) : a));
         var before = b.ThinkingSeed;

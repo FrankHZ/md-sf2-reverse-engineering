@@ -41,35 +41,44 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         if (actor.IsAlly && actor.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
     }
 
-    private static bool Eligible(BattleActorState actor, BattleActorState target) =>
-        target.Faction != actor.Faction && target.Initialized && target.Hp > 0 && target.Position is not null &&
+    private static bool Eligible(BattleActorState actor, BattleActorState target, OffensiveTargetSide side) =>
+        BattleOffense.Matches(actor, target, side) && target.Initialized && target.Hp > 0 && target.Position is not null &&
         (target.ActivationWord & 8) != 8;
 
     public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
         TargetChoices(battle, actor);
 
-    internal static IReadOnlyList<ActorRef> TargetChoices(EngineBattleState battle, ActorRef actor) =>
-        battle.Actors.Where(target => Eligible(battle.GetActor(actor), target))
-            .OrderBy(target => target.ProcessingOrder).Select(target => target.Actor).ToArray();
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action, OffensiveTargetSide side) =>
+        TargetChoices(battle, actor, side);
+
+    internal static IReadOnlyList<ActorRef> TargetChoices(EngineBattleState battle, ActorRef actor,
+        OffensiveTargetSide side = OffensiveTargetSide.Opponents) =>
+        BattleOffense.OrderedRoster(battle, battle.GetActor(actor), side)
+            .Where(target => Eligible(battle.GetActor(actor), target, side)).Select(target => target.Actor).ToArray();
 
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef target)
+        BattleActionRef action, ActorRef target) =>
+        RequireTarget(battle, actor, destination, action, target, OffensiveTargetSide.Opponents);
+    public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef target, OffensiveTargetSide side)
     {
         var spell = RequireAction(battle, actor, action).AttackSpell!;
-        _ = ResolveTargets(battle, actor, destination, spell, target);
+        _ = ResolveTargets(battle, actor, destination, spell, target, side);
         return battle.GetActor(target);
     }
 
     internal static IReadOnlyList<BattleActorState> ResolveTargets(EngineBattleState battle, ActorRef actorRef,
-        MapPosition destination, AttackSpellDefinition spell, ActorRef center)
+        MapPosition destination, AttackSpellDefinition spell, ActorRef center, OffensiveTargetSide side = OffensiveTargetSide.Opponents)
     {
         var actor = battle.GetActor(actorRef);
         var target = battle.Actors.SingleOrDefault(unit => unit.Actor == center);
-        if (target is null || !Eligible(actor, target)) throw new BattleRuleException("attack-spell-target", "target");
-        if (!BattleRange.Contains(destination, target.Position!, spell.MinimumRange, spell.MaximumRange))
+        if (target is null || !Eligible(actor, target, side)) throw new BattleRuleException("attack-spell-target", "target");
+        bool converted = spell.IsMonsterBreath && side == OffensiveTargetSide.OwnSide;
+        if (!converted && !BattleRange.Contains(destination, target.Position!, spell.MinimumRange, spell.MaximumRange))
             throw new BattleRuleException("target-range", "target");
-        var targets = battle.Actors.Where(unit => Eligible(actor, unit) &&
-            BattleRange.Contains(target.Position!, unit.Position!, 0, spell.Radius)).OrderBy(unit => unit.ProcessingOrder).ToArray();
+        var centerPosition = center == actorRef ? destination : target.Position!;
+        var targets = Area(BattleOffense.OrderedRoster(battle, actor, side), actor, destination, centerPosition, spell.Radius, side)
+            .OrderBy(unit => unit.ProcessingOrder).ToArray();
         foreach (var unit in targets)
         {
             if (!SilenceRules.SupportedInBattle(unit.Status, battle.Definition.Poison))
@@ -79,21 +88,29 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         return targets;
     }
 
+    internal static IEnumerable<BattleActorState> Area(IEnumerable<BattleActorState> roster, BattleActorState actor,
+        MapPosition actorPosition, MapPosition center, int radius, OffensiveTargetSide side) =>
+        roster.Where(unit => Eligible(actor, unit, side) &&
+            BattleRange.Contains(center, unit.Actor == actor.Actor ? actorPosition : unit.Position!, 0, radius));
+
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actorRef, MapPosition destination,
-        BattleActionRef action, ActorRef? center, IBattleProgressionRule progression)
+        BattleActionRef action, ActorRef? center, IBattleProgressionRule progression) =>
+        Prepare(battle, actorRef, destination, action, center, progression, OffensiveTargetSide.Opponents);
+    public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actorRef, MapPosition destination,
+        BattleActionRef action, ActorRef? center, IBattleProgressionRule progression, OffensiveTargetSide side)
     {
         var spell = RequireAction(battle, actorRef, action).AttackSpell!;
-        return PrepareAttack(battle, actorRef, destination, spell, center, progression, action.ItemSlot);
+        return PrepareAttack(battle, actorRef, destination, spell, center, progression, action.ItemSlot, side: side);
     }
 
     internal static BattleActionResolution PrepareAttack(EngineBattleState battle, ActorRef actorRef,
         MapPosition destination, AttackSpellDefinition spell, ActorRef? center, IBattleProgressionRule progression,
-        int? itemSlot, AttackItemDefinition? item = null)
+        int? itemSlot, AttackItemDefinition? item = null, OffensiveTargetSide side = OffensiveTargetSide.Opponents)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var actor = battle.GetActor(actorRef);
         var targets = ResolveTargets(battle, actorRef, destination, spell,
-            center ?? throw new BattleRuleException("attack-spell-target", "target"));
+            center ?? throw new BattleRuleException("attack-spell-target", "target"), side);
         string reactionAction = item is null ? "attack-spell" : "attack-item";
         uint seed = battle.MainSeed;
         var inventory = battle;
@@ -108,14 +125,12 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         {
             var reaction = spell.IsInstantDeath ? ResolveInstantDeath(target) : ResolveDamage(target);
             ushort hp = reaction.HpAfter;
-            if (hp == 0 && actor.IsAlly)
+            BattleOffense.RequireDeathAccounting(battle, reaction);
+            if (BattleOffense.PaysGold(battle, reaction))
             {
-                if (actor.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
                 gold = BattleProgressionRules.Invoke(progression.Identity, "gold", () => progression.Gold(
                     gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true), target.Definition.Physical!.Gold));
             }
-            if (hp == 0 && target.IsAlly && target.Defeats is null)
-                throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
             // The ordinary source post-effect drop helper remains ordered before the next target and award.
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), actorRef, target.Actor, hp == 0);
             inventory = dropped.Battle; seed = inventory.MainSeed;
@@ -143,14 +158,15 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             }
             inventory = inventory.With(actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? holder : unit));
         }
-        var award = actor.IsAlly ? BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
+        bool earnsExp = actor.IsAlly && BattleOffense.Survives(actor, reactions);
+        var award = earnsExp ? BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
             inventory.GetActor(actorRef), BattleActionKind.AttackSpell, reactions)
             : (Amount: 0, Seed: seed, Effects: (IReadOnlyList<BattleEffect>)Array.Empty<BattleEffect>());
         effects.AddRange(award.Effects);
         if (gold != battle.Gold) effects.Add(new("gold", actorRef, battle.Gold, gold));
         var prepared = inventory.With(mainSeed: award.Seed, gold: gold,
             actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
-        return new(prepared, actorRef, destination, reactions.AsReadOnly(), actor.IsAlly ? new(actorRef, award.Amount) : null,
+        return new(prepared, actorRef, destination, reactions.AsReadOnly(), earnsExp ? new(actorRef, award.Amount) : null,
             effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: itemSlot, AttackItem: item, EquipmentUse: equipmentUse);
 
         BattleReaction ResolveInstantDeath(BattleActorState target)

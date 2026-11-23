@@ -28,7 +28,7 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         var actor = battle.GetActor(actorRef);
         bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
         bool controlled = (temporary || actor.Deployment.SourceAllyControl && actor.Control == BattleControl.Automatic) &&
-            MuddleRules.SupportedRankOne(actor.Status, battle.Definition.Poison);
+            SilenceRules.SupportedInBattle(actor.Status, battle.Definition.Poison);
         if (!actor.IsAlly || !controlled || actor.Hp == 0 || actor.Position is null ||
             (actor.Status & 0xC1) != 0 || battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
@@ -41,23 +41,30 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             throw new BattleRuleException("source-ally-slot", "battle.sourceCombatants", true);
         if (!slots.Any(p => p.Key is >= 0 and < 30 && p.Value == actorRef))
             throw new BattleRuleException("source-ally-slot", "actor.sourceSlot", true);
-        var targets = Opponents(battle, slots).Where(IsPlacedOpponent).ToArray();
+        var side = BattleOffense.AutomaticSide(actor);
+        var allies = slots.Where(p => p.Key is >= 0 and < 30).OrderBy(p => p.Key).Select(p => battle.GetActor(p.Value)).ToArray();
+        var opponents = Opponents(battle, slots).Where(IsPlacedOpponent).ToArray();
+        var targets = side == OffensiveTargetSide.OwnSide ? allies.Where(IsPlacedOpponent).ToArray() : opponents;
         if (targets.Any(a => !SupportsOpponentOccupancy(a)))
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var grid = BattleMovement.Grid(battle, actorRef);
         bool Occupied(MapPosition p) => battle.Actors.Any(a => a.Hp > 0 && a.Position == p);
         List<BattleEffect> effects = [new("ai-commandset6-ally", actorRef)];
         if (temporary && actions.Count == 0) throw new BattleRuleException("source-ally-actions", "actor.ai", true);
-        var attack = temporary
+        var search = temporary
             ? EnemySpellDecision.Attack(battle, actorRef, physical, actions, grid, targets)
-            : EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, grid, targets);
-        if (attack is not null)
+            : EnemyPhysicalDecision.Score(battle, actorRef, physical, side, grid, targets);
+        if (search.Choice is { } attack)
+        {
+            if (!temporary) attack = BattleOffense.Choose(battle, actorRef, attack);
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. attack.Effects,
                 new("ai-command-attack1", actorRef, After: 0)]) };
+        }
+        battle = search.Battle;
+        effects.AddRange(search.Effects);
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
-        if (temporary)
+        if (temporary && side == OffensiveTargetSide.Opponents)
         {
-            var allies = slots.Where(p => p.Key is >= 0 and < 30).OrderBy(p => p.Key).Select(p => battle.GetActor(p.Value)).ToArray();
             if (EnemySpellDecision.Heal(battle, actorRef, actions, grid, allies) is { } recovery)
                 return recovery with { Effects = Array.AsReadOnly<BattleEffect>([.. effects,
                     new("ai-command-heal1", actorRef, After: 0), .. recovery.Effects]) };
@@ -66,6 +73,7 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         effects.Add(new("ai-command-support", actorRef, After: -1)); // source rejects ally casters
         var costsMap = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         var scores = WeightedMovement.Build(costsMap, actor.Position.Y * 48 + actor.Position.X, 128);
+        targets = BattleOffense.PursuitTargets(battle, actor, opponents);
         var pursuit = AiMovementRules.PursueOrdered(costsMap, scores, grid, actor.Position, targets,
             PhysicalTargetRules.Table(actor.Definition.Mover), Occupied, battle.Definition.Width, battle.Definition.Height);
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost,

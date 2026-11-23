@@ -1363,6 +1363,9 @@ msgstr "{0} is muddled!"
 msgid "battle.scene.muddle-expired"
 msgstr "{0} is no longer muddled."
 
+msgid "battle.scene.muddle-inaction"
+msgstr "{0} is too muddled to act."
+
 msgid "battle.scene.silence-expired"
 msgstr "DISPEL expires. {0} can cast again."
 

@@ -536,6 +536,29 @@ existing roles. Preserve opposing counter credit, support/DETOX halving and sett
 | Battle16 Kraken and Battle18 Taros | Kraken arm/head reach and SWARM orders are current consumers. Keep the live slot-128 guard and Kraken approach table. Taros has STATUS immunity, so ordinary MUDDLE 2 casts cannot confuse him into using the sword on his side. His existing BOLT 2 and target effectiveness keep their owners. [Kraken formation][kraken] · [Enemy definitions][enemies] · [Taros](../application/taros-caravan.md) |
 | Authored profiles and campaign limits | Use one finite turn check for a temporary player-controlled ally and a supported activation-driven ally. A Move/Stay-only actor without required operands, the unconnected Prism Laser and later special AI are outside this binding. Natural ally confusion, a selected self action in ordinary play and natural leader collateral remain **Unknown**. Use controlled legal inputs for those consumers. |
 
+### Internal automatic turns
+
+The source automatic commandsets now carry the offensive target relation through preflight,
+movement and the existing scene. Controlled engine turns cover attacks on both factions'
+own sides, paid and guarded self actions, Black Ring wear and growth, the MNST conversion,
+fixed-slot pursuit, area casualties and terminal cleanup. Eligible double and counter draws
+still precede suppression. Enemy class ties keep the draws the search has consumed before it
+continues the commandset. Enemy learned spells and attack items share the raw-power estimate.
+Execution still uses the action's applicable damage power.
+
+The inaction scene records the selected source message ID and uses generic English and Chinese
+feedback. Original effect animation and prose variants remain outside this slice. An absent
+or unplaced fixed pursuit slot rejects that internal continuation before the decision is
+published. Its original behavior remains **Unknown**. MUDDLE 2 is still learned-only.
+Public Start and battle Save/Continue still reject confused status words. The next slice
+owns spell binding and public admission.
+
+With the registered worktree SDK environment loaded, run the engine project with
+`--filter 'FullyQualifiedName~Muddle|FullyQualifiedName~EnemySpellDecisionTests'`.
+[Actual turn cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs) ·
+[Estimate and execution cases](../../tests/Sf2.Remake.Engine.Tests/EnemySpellDecisionTests.cs) ·
+[Closed public entry cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs)
+
 ### Delivery sequence
 
 1. Complete the internal automatic turn for both factions, with physical, admitted spell/item,

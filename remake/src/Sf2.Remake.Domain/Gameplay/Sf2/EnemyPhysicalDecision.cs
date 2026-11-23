@@ -5,27 +5,37 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal static class EnemyPhysicalDecision
 {
+    internal sealed record Search(BattleAutomaticAction? Choice, EngineBattleState Battle,
+        IReadOnlyList<BattleEffect> Effects, bool HasReachable);
+
+    internal static BattleAutomaticAction? TryResolve(EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical)
+    {
+        var search = Score(current, actorRef, physical, OffensiveTargetSide.Opponents);
+        return search.Choice is { } attack ? BattleOffense.Choose(current, actorRef, attack) : null;
+    }
+
     // Admitted ordinary script3/4 decision, using the caller's temporary grid when supplied.
     // CalculateTargetPriorityForAttack clears ATTACK1/2/3's extra parameter; the priority
     // script is selected from activation/difficulty, not that command parameter.
-    internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, WeightedMovementGrid? selectedGrid = null,
+    internal static Search Score(
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, OffensiveTargetSide side,
+        WeightedMovementGrid? selectedGrid = null,
         IReadOnlyList<BattleActorState>? orderedTargets = null)
     {
         var actor = current.GetActor(actorRef);
         var grid = selectedGrid ?? BattleMovement.Grid(current, actorRef);
         var action = new BattleActionRef(BattleActionKind.Physical);
         var admission = BattleActionRules.Invoke(physical, "ai-range", () => physical.QueryRange(current, actorRef));
-        var targets = BattleActionRules.Invoke(physical, "ai-targets", () => physical.QueryTargets(current, actorRef, action)).ToHashSet();
+        var targets = BattleActionRules.Invoke(physical, "ai-targets", () => physical.QueryTargets(current, actorRef, action, side)).ToHashSet();
         var candidates = new List<(BattleActorState Target, MapPosition Position, int Cost)>();
-        var ordered = orderedTargets ?? current.Actors.OrderBy(a => a.ProcessingOrder).ToArray();
+        var ordered = orderedTargets ?? BattleOffense.OrderedRoster(current, actor, side).ToArray();
         foreach (var target in ordered.Where(a => a.Hp > 0 && a.Position is not null && targets.Contains(a.Actor)))
         {
             if (AiMovementRules.AttackPosition(grid, target.Position!, admission.MinimumRange!.Value, admission.MaximumRange!.Value,
                 position => current.Actors.Any(a => a.Hp > 0 && a.Position == position)) is { } position)
                 candidates.Add((target, position, grid.CostAt(position)!.Value));
         }
-        if (candidates.Count == 0) return null;
+        if (candidates.Count == 0) return new(null, current, [], false);
         var priorities = new PhysicalTargetPriority[candidates.Count];
         var decisions = new List<BattleEffect>();
         uint thinking = current.ThinkingSeed;
@@ -45,17 +55,23 @@ internal static class EnemyPhysicalDecision
             decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
         }
         // Physical preferences follow the actual source mover, independently of the target class.
-        var selection = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover), preferTargetClass: !actor.IsAlly)
-            ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
-        var selected = candidates[selection.Index];
         var prepared = current.With(thinkingSeed: thinking);
-        if (!actor.IsAlly)
-            prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
+        var result = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover),
+            preferTargetClass: !actor.IsAlly, hasTargetClasses: side == OffensiveTargetSide.Opponents);
+        if (result is not { } selection)
+        {
+            if (side == OffensiveTargetSide.Opponents) throw new BattleRuleException("ai-target-selection", "ai.targets", true);
+            return new(null, prepared, decisions.AsReadOnly(), true);
+        }
+        var selected = candidates[selection.Index];
+        // The final source unarmed attack-position query allows the origin for
+        // a selected self. Reachability and scoring above still use GetAttackRange.
+        var stop = selected.Target.Actor == actorRef && BattleOffense.SelfPhysicalUsesOrigin(actor)
+            ? actor.Position! : selected.Position;
         var path = BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
-            selected.Position, current.Definition.Width, current.Definition.Height));
-        return new(prepared, Array.AsReadOnly<BattleEffect>([
-            .. decisions,
-            new("ai-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: selected.Target.Actor)]),
-            selected.Position, path, selected.Target.Actor);
+            stop, current.Definition.Width, current.Definition.Height));
+        decisions.Add(new("ai-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: selected.Target.Actor));
+        return new(new(prepared, decisions.AsReadOnly(), stop, path, selected.Target.Actor),
+            prepared, decisions.AsReadOnly(), true);
     }
 }

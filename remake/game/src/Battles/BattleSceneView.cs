@@ -540,6 +540,8 @@ internal sealed partial class BattleSceneView : Control
         if (Suppressed(state)) return "";
         if (state.Phase == BattleScenePhase.MuddleTurnMessage)
             return LocalizedMessage("battle.scene.muddle-expired", ActorName(state.Actor));
+        if (state.Phase == BattleScenePhase.PhysicalInactionMessage && state.MuddleActionMessage is not null)
+            return LocalizedMessage("battle.scene.muddle-inaction", ActorName(state.Actor));
         if (state.Phase == BattleScenePhase.PhysicalInactionMessage)
             return LocalizedMessage(state.CurseStoppedAttack ? "battle.scene.curse-inaction" : "battle.scene.stun-inaction",
                 ActorName(state.Actor));

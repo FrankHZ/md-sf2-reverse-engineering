@@ -41,12 +41,13 @@ internal static class EnemySpellDecision
         return null;
     }
 
-    internal static BattleAutomaticAction? Attack(EngineBattleState battle, ActorRef actorRef,
+    internal static EnemyPhysicalDecision.Search Attack(EngineBattleState battle, ActorRef actorRef,
         IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null,
         IReadOnlyList<BattleActorState>? orderedTargets = null)
     {
         var actor = battle.GetActor(actorRef);
-        var known = actor.Spells.FirstOrDefault(spell => actor.IsAlly
+        var side = BattleOffense.AutomaticSide(actor);
+        var known = actor.Spells.FirstOrDefault(spell => actor.IsAlly || side == OffensiveTargetSide.OwnSide
             ? AllyAttackFamily(spell) : spell.Value is "blaze" or "freeze" or "blast" or "aqua");
         if (known != default && !battle.Definition.AttackSpells.ContainsKey(known))
             throw new BattleRuleException("spell-effect", "spell", true);
@@ -59,7 +60,7 @@ internal static class EnemySpellDecision
         else swordSlot = null;
 
         var grid = selectedGrid ?? BattleMovement.Grid(battle, actorRef);
-        var ordered = orderedTargets ?? battle.Actors.OrderBy(a => a.ProcessingOrder).ToArray();
+        var ordered = orderedTargets ?? BattleOffense.OrderedRoster(battle, actor, side).ToArray();
         List<BattleEffect> effects = [];
         uint thinking = battle.ThinkingSeed;
         // The source scores in item, learned spell, physical order.
@@ -77,11 +78,13 @@ internal static class EnemySpellDecision
             spell = Score(effect, new(BattleActionKind.AttackSpell, key, swordSlot), "spell");
         }
         var ranged = spell ?? item;
-        if (ranged is null) return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, grid, orderedTargets);
+        var physicalSearch = EnemyPhysicalDecision.Score(battle.With(thinkingSeed: thinking), actorRef, physical, side, grid, ordered);
+        if (ranged is null)
+            return physicalSearch.Choice is { } onlyPhysical
+                ? physicalSearch with { Choice = BattleOffense.Choose(battle, actorRef, onlyPhysical) } : physicalSearch;
 
-        var prepared = battle.With(thinkingSeed: thinking);
-        var attack = EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, grid, orderedTargets);
-        if (attack is not null) { effects.AddRange(attack.Effects); prepared = attack.Battle; }
+        var prepared = physicalSearch.Battle;
+        effects.AddRange(physicalSearch.Effects);
         if (item is not null && spell is not null)
         {
             // determinebattleaction @loc_15 uses the thinking channel after all scores.
@@ -98,25 +101,33 @@ internal static class EnemySpellDecision
             var category = BattleRandom.NextMain(battle.MainSeed, 6);
             effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, category.Range, category.Value));
             prepared = prepared.With(mainSeed: category.After);
-            if (attack is not null && !(item is not null || swordSlot.HasValue
+            if (physicalSearch.HasReachable && !(item is not null || swordSlot.HasValue
                     ? category.Value is 3 or 5 : category.Value is 2 or 4))
-                return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
+                return Finish(physicalSearch.Choice);
         }
         var table = ranged.Action.ItemSlot.HasValue ? PhysicalTargetRules.Table(actor.Definition.Mover) : PhysicalPriorityTable.Mage;
-        var selection = PhysicalTargetRules.Select(ranged.Priorities, table, preferTargetClass: !actor.IsAlly)
-            ?? throw new BattleRuleException("ai-target-selection", "ai.spells", true);
+        var result = PhysicalTargetRules.Select(ranged.Priorities, table,
+            preferTargetClass: !actor.IsAlly, hasTargetClasses: side == OffensiveTargetSide.Opponents);
+        if (result is not { } selection)
+        {
+            if (side == OffensiveTargetSide.Opponents) throw new BattleRuleException("ai-target-selection", "ai.spells", true);
+            return Finish(null);
+        }
         var chosen = ranged.Reachable[selection.Index];
-        if (!actor.IsAlly)
-            prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: swordSlot.HasValue ? actorRef : chosen.Target.Actor) : a));
         effects.Add(new($"ai-{ranged.Label}-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: chosen.Target.Actor));
-        return new(prepared, effects.AsReadOnly(), chosen.Position!, BattleMovement.Route(actor.Position!,
+        return Finish(new(prepared, effects.AsReadOnly(), chosen.Position!, BattleMovement.Route(actor.Position!,
             BattleMovement.MoveString(grid, actor.Position!, chosen.Position!, battle.Definition.Width, battle.Definition.Height)),
-            chosen.Target.Actor, ChosenAction: ranged.Action);
+            chosen.Target.Actor, ChosenAction: ranged.Action));
+
+        EnemyPhysicalDecision.Search Finish(BattleAutomaticAction? selected) =>
+            new(selected is null ? null : BattleOffense.Choose(battle, actorRef,
+                selected with { Battle = prepared, Effects = effects.AsReadOnly() }),
+                prepared, effects.AsReadOnly(), true);
 
         RangedCandidates? Score(AttackSpellDefinition effect, BattleActionRef action, string label)
         {
             var rule = actions.Single(r => r.Kind == action.Kind);
-            var targets = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();
+            var targets = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action, side)).ToHashSet();
             var candidates = ordered.Where(a => targets.Contains(a.Actor))
                 .Select(target => (Target: target, Position: AiMovementRules.AttackPosition(grid, target.Position!,
                     effect.MinimumRange, effect.MaximumRange, Occupied)))
@@ -128,10 +139,10 @@ internal static class EnemySpellDecision
                 var candidate = candidates[i];
                 int cost = grid.CostAt(candidate.Position!)!.Value;
                 int total = 0;
-                foreach (var affected in ordered.Where(unit => targets.Contains(unit.Actor) &&
-                        BattleRange.Contains(candidate.Target.Position!, unit.Position!, 0, effect.Radius)))
+                foreach (var affected in Sf2AttackSpellAction.Area(ordered, actor, actor.Position!,
+                        candidate.Target.Position!, effect.Radius, side))
                     total += PhysicalTargetRules.Score(actor, affected, (byte)cost,
-                        Sf2AttackSpellAction.PotentialDamage(actor, affected, effect, rawPower: actor.IsAlly || action.ItemSlot.HasValue),
+                        Sf2AttackSpellAction.PotentialDamage(actor, affected, effect, rawPower: true),
                         ref thinking, effects);
                 byte priority = unchecked((byte)total);
                 priorities[i] = new((byte)cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));

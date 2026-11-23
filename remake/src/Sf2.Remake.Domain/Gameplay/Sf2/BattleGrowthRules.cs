@@ -30,7 +30,7 @@ internal static class BattleGrowthRules
     }
 
     private static bool SupportsStatus(ushort status, bool inBattle) =>
-        inBattle ? MuddleRules.SupportedRankOne(status) : PoisonTurnRules.SupportedPhysicalStatus(status);
+        inBattle ? SilenceRules.SupportedInBattle(status) : PoisonTurnRules.SupportedPhysicalStatus(status);
 
     internal static BattleActorState LevelUp(BattleActorState actor, ref uint seed, List<BattleEffect> effects,
         out int[] rawGains, bool inBattle = false)

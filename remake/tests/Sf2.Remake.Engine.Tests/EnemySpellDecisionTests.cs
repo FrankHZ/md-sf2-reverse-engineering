@@ -96,6 +96,33 @@ public sealed class EnemySpellDecisionTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EnhancedEnemyScoresRawResistedPowerAndExecutesEnhancedResistedDamage(bool confused)
+    {
+        var battle = Battle(d =>
+        {
+            d["actors"]![confused ? 3 : 0]!["resistance"] = 1 << 6;
+            var encounter = d["encounters"]![0]!;
+            encounter["placements"]![confused ? 3 : 0]!["x"] = 4;
+            encounter["placements"]![confused ? 3 : 0]!["y"] = 2;
+        });
+        var victim = confused ? Wounded : Scout;
+        battle = MuddleConfusedTurnTests.Stationary(battle, Mage, enhanced: true, outcome: new(Scout, Mage));
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == Mage
+            ? actor.With(status: confused ? (ushort)0x18 : (ushort)0, activationWord: 0x3001)
+            : actor.Actor == victim ? actor.With(hp: 6) : actor));
+        var (end, events) = MuddleConfusedTurnTests.Play(battle, Mage, Scout, 1680);
+        var candidate = Assert.Single(events, e => e.Kind == "ai-spell-candidate");
+        Assert.Equal(victim, candidate.Target);
+        Assert.Equal(2, candidate.After); // Raw 6 minus 1 resistance leaves 1 HP, below the kill threshold.
+        var hp = Assert.Single(events, e => e.Kind == "hp" && e.Actor == victim);
+        Assert.Equal(6, hp.Before);
+        Assert.Equal(0, hp.After); // Enhanced 7 minus 1 resistance deals the lethal 6.
+        Assert.Equal(3, end.GetActor(Mage).Mp);
+    }
+
+    [Theory]
     [InlineData(1, 0u, true, false)]
     [InlineData(2, 0u, false, false)]
     [InlineData(2, 0x10000000u, true, false)]

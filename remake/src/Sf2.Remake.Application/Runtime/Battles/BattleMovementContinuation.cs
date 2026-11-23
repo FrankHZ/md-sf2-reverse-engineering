@@ -13,7 +13,7 @@ public sealed class BattleMovementState
 {
     internal BattleMovementState(ActorRef actor, IReadOnlyList<MapPosition> path, int segment,
         WaitToken token, BattleMovementPurpose purpose, ActorRef? target = null, BattleActionRef? chosenAction = null,
-        int? soundOverride = null)
+        int? soundOverride = null, OffensiveTargetSide side = OffensiveTargetSide.Opponents)
     {
         Actor = actor;
         Path = path;
@@ -23,6 +23,7 @@ public sealed class BattleMovementState
         Target = target;
         ChosenAction = chosenAction;
         SoundOverride = soundOverride;
+        Side = side;
     }
     public ActorRef Actor { get; }
     public IReadOnlyList<MapPosition> Path { get; }
@@ -36,6 +37,7 @@ public sealed class BattleMovementState
     public PresentationCueKind CompletionKind => PresentationCueKind.Gesture;
     internal ActorRef? Target { get; }
     internal BattleActionRef? ChosenAction { get; }
+    internal OffensiveTargetSide Side { get; }
 }
 
 internal static class BattleMovementContinuation
@@ -73,13 +75,14 @@ internal static class BattleMovementContinuation
         var decided = new SessionSnapshot(current.SessionId, revision, sequence,
             new ActiveBattle(action.Battle, null), current.Story, SessionStopReason.SimulationWait);
         if (action.Path.Count <= 1)
-            return FinishAutomatic(decided, actor, action.Destination, action.Target, action.ChosenAction, observations, rules);
+            return FinishAutomatic(decided, actor, action.Destination, action.Target, action.ChosenAction,
+                observations, rules, action.Side, action.Guarded);
         observations.Add(new(++sequence, revision, "battle-movement-segment-started", actor,
             From: action.Path[0], To: action.Path[1], Detail: BattleMovementPurpose.Automatic.ToString()));
         var moving = action.Battle.GetActor(actor);
         return Result(current, action.Battle, null, new(actor, action.Path, 0, new(sequence),
             BattleMovementPurpose.Automatic, action.Target, action.ChosenAction,
-            BattleEquipment.MovementSound(moving.Definition, moving.SourceLoadout)), revision, sequence, observations);
+            BattleEquipment.MovementSound(moving.Definition, moving.SourceLoadout), action.Side), revision, sequence, observations);
     }
 
     internal static SessionResult Submit(SessionSnapshot current, SessionCommand command) =>
@@ -105,20 +108,22 @@ internal static class BattleMovementContinuation
             observations.Add(new(++sequence, revision, "battle-movement-segment-started", movement.Actor,
                 From: movement.Path[next], To: movement.Path[next + 1], Detail: movement.Purpose.ToString()));
             return Result(current, delivered, current.Selection, new(movement.Actor, movement.Path,
-                next, new(sequence), movement.Purpose, movement.Target, movement.ChosenAction, movement.SoundOverride),
+                next, new(sequence), movement.Purpose, movement.Target, movement.ChosenAction, movement.SoundOverride, movement.Side),
                 revision, sequence, observations);
         }
         observations.Add(new(++sequence, revision, "battle-movement-finished", movement.Actor,
             From: movement.Path[0], To: movement.To, Detail: movement.Purpose.ToString()));
         var finished = Result(current, delivered, current.Selection, null, revision, sequence, observations);
         if (movement.Purpose != BattleMovementPurpose.Automatic) return finished;
-        var automatic = FinishAutomatic(finished.Snapshot, movement.Actor, movement.To, movement.Target, movement.ChosenAction, observations, rules);
+        var automatic = FinishAutomatic(finished.Snapshot, movement.Actor, movement.To, movement.Target, movement.ChosenAction,
+            observations, rules, movement.Side);
         return automatic.Failure is not null || automatic.Snapshot.BattleScene is not null
             ? automatic : BattleAdvancer.Advance(automatic.Snapshot, observations, rules);
     }
 
     private static SessionResult FinishAutomatic(SessionSnapshot current, ActorRef actor, MapPosition destination,
-        ActorRef? target, BattleActionRef? chosenAction, List<SessionObservation> observations, SessionRules rules)
+        ActorRef? target, BattleActionRef? chosenAction, List<SessionObservation> observations, SessionRules rules,
+        OffensiveTargetSide side, bool guarded = false)
     {
         // The decision and its preflight ran once before movement. Only now does
         // actual action construction publish its main RNG and scene/reward work.
@@ -126,8 +131,11 @@ internal static class BattleMovementContinuation
         {
             try
             {
-                var prepared = BattleChoices.Prepare(rules, current.Battle, actor, destination,
-                    chosenAction ?? new(BattleActionKind.Physical), target);
+                var action = chosenAction ?? new(BattleActionKind.Physical);
+                var prepared = side == OffensiveTargetSide.Opponents
+                    ? BattleChoices.Prepare(rules, current.Battle, actor, destination, action, target)
+                    : BattleActionRules.Prepare(rules.Action(action), current.Battle, actor, destination,
+                        action, target, rules.Progression, side, guarded);
                 return BattleSceneContinuation.Begin(current, prepared, observations);
             }
             catch (BattlePolicyFault error)
