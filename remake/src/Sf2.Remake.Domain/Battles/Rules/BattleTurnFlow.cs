@@ -14,9 +14,13 @@ internal static class BattleTurnFlow
         var actors = BattleInitializationRules.Deployments(definition, start).Select(deployment =>
         {
             var input = inputs[deployment.Actor];
+            ushort status = deployment.Faction == BattleFaction.Ally
+                ? BattleEquipment.RefreshCurse(deployment.Definition,
+                    input.SourceLoadout ?? input.Progress?.SourceLoadout ?? deployment.Definition.SourceLoadout, input.Status)
+                : input.Status;
             return new BattleActorState(deployment, input.Hp, input.Mp, input.Exp,
                 input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)
-                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: input.Status,
+                    ? null : input.PositionOverride ?? deployment.Position, input.Kills, input.Defeats, status: status,
                 progress: input.Progress, sourceLoadout: input.SourceLoadout, activationWord: input.ActivationWord ?? (definition.PrismLaser is null ? null : (ushort)0),
                 initialized: input.Initialized ?? true, retainDeadPosition: input.RetainDeadPosition,
                 useInitialStats: start.NewBattle is null);

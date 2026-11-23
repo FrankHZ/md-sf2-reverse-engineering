@@ -30,7 +30,7 @@ and turn fixtures give the ROM, emulator and controlled boundaries for those obs
 | Protect Ring (20) | ALL classes, DEF +5 worn, BOOST 1 on Use. Battle21 drop, once bit 8. Peter's legal receipt and Battle21 equipped Continue are recorded. | First implementation. |
 | Quick Ring (21), Running Ring (22), Chirrup Sandals (126) | Source `NOTHING` Use. Quick's BREAKABLE flag supplies no effect or reachable damage roll. | Retain ordinary Use refusal. Sandals acquisition and audio belong to [#1962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1962). |
 | Taros Sword (110) | Battle18 enemy BOLT 2 and potential rare drop. Mask NONE refuses player Use even from an intact bare slot. Enemy Use bypasses ally breakage. | Preserve the accepted Taros path and player refusal. |
-| Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Ordinary WIZ promotion is available. | [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) owns player admission. [Physical curse](ring-equipment-design.md#black-ring-admission-and-physical-curse) is a prerequisite for equipping it. |
+| Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Ordinary WIZ promotion is available. | Equip, BLAZE 2 Item Use, wear and Repair are admitted. [Worn equipment and physical curse](ring-equipment-design.md#black-ring-admission-and-physical-curse). |
 | Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | The remake admits Equip and battle Use from WIZ/VICR. The source mask also retains SORC, which has no playable class path in this slice. |
 
 The reached shop/drop/grant join yields three scoped player effects including the conditional
@@ -139,7 +139,7 @@ The UI must refresh the slot's broken indicator and gold from the new state.
 The source compares `GetEquipmentType`'s result with `ITEMTYPE_BIT_WEAPON` rather than
 `EQUIPMENTTYPE_WEAPON`. Both constants equal 1 in the pinned source, so that dispatch still
 reaches the weapon branch. Curse means the **selected equipped slot** and a cursed definition;
-a bare cursed copy is not refused by that branch. Black Ring gameplay remains with #1926.
+a bare cursed copy is not refused by that branch. Black Ring uses the same merchant transaction.
 The original helper's intact branch writes `d1` while its output comment names `d2`.
 The ordinary caller gates intact first and does not depend on that helper result.
 [Shop Repair source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/shop/shopactions.asm#L327-L435) ·
@@ -217,21 +217,24 @@ is worn. Preserve the accepted battle carrier drop versus leader-cleanup distinc
 [Slot damage and destruction](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/breakuseditem.asm#L5-L45) ·
 [Battle26 custody](../application/battle26-higins.md)
 
-The current attack-item path checks for a single adjacent consumable and always compacts its
-slot after damage. Conversely, the existing gear wear transaction carries a Support-specific
-definition and its validation and scene messages take that type. Reuse the damage spell rules
-and extract the exact-slot wear computation from that Support-specific origin when adding the
-second caller. Keep a typed distinction between consumable and equipment payment and reuse the
-existing item result/acknowledgement. Check wear after every ordered drop receipt, before reward,
-using the full live word and slot. A controlled case with a second bare copy in another slot
-should prove the first use changes only the selected word, broken reuse compacts only that
-selected slot, and destroying a worn copy refreshes its contribution and CURSE. Use the existing
-Repair transaction and normalized word encoding. Recheck no-MP, class refusal and ownership of
-the next battle input with a legal WIZ on ordinary Use. Natural original Black Ring wear,
-presentation and cold Continue remain **Unknown**. Current remake BLAZE 2 Item Use remains open.
+The existing attack consumable admitted only adjacent single-target damage and always removed
+its slot. Support equipment embedded its effect definition in the wear result, which would
+have attached support-scene behavior to BLAZE 2. Extracting the slot, word, and wear result into
+`EquipmentItemUse` gives both callers one eligibility and wear rule. BLAZE 2 owns targets,
+damage and drop order. Its item payment runs wear once after the ordered drop handling and
+before reward. The same validator checks the full live word and slot using the shared wear
+rule. Support effects keep their own scene routing, and both origins reuse the existing
+equipment-wear message. Ordinary consumables still compact their selected slot after damage.
+
+**Confirmed (controlled remake).** WIZ can use a bare or worn copy with zero MP, an empty book
+and Silence. An unpromoted MAGE is refused at Use and Equip. With duplicate rings, only the
+selected word gains damage or is destroyed. Reuse of a damaged ring spends no wear draw,
+compacts the slot, and refreshes ATT and CURSE if it was worn. The existing Repair transaction
+clears the damaged bit for 1,250 gold and refuses a worn cursed selection. Natural original
+Black Ring wear and presentation remain **Unknown**.
 [Attack-item admission](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) ·
 [Damage and payment ordering](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) ·
-[Existing wear computation](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SupportItemDefinition.cs) ·
+[Shared wear computation](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EquipmentItemUse.cs) ·
 [Repair transaction](../../src/Sf2.Remake.Application/Runtime/Exploration/ShopService.cs)
 
 ### Persistence
@@ -451,3 +454,69 @@ The [shop engine test](../../tests/Sf2.Remake.Engine.Tests/ShopServiceTests.cs) 
 the 800-gold transaction at exact funds with a duplicate staff. Battle Use was
 observed on WIZ. VICR has controlled engine coverage, and SORC is a retained source
 mask bit. Other SPOIT equipment and a learned Magic action are outside this admission.
+
+## Black Ring reproduction
+
+Use the same registered `indra-v1` and display catalog as above. The read-only sources are
+the accepted Battle26 receipt for item 24 with once bit 10, the `wiz-review` post-promotion
+battle slot, and the `Sf2IndraReview` final Map36 field slot. The following forks place that
+receipt in a legal WIZ pack under controlled conditions. The title Continue, merchant,
+Church and battle actions run through the ordinary player inputs.
+
+| `SF2_RING_CASE` | Read-only starting record and changes on the disposable copy |
+| --- | --- |
+| `battle-damage` | `derived/issue1956/wiz-review/receipts/kazin-cast01/after-action-slot.json` (v4). Set `data.battle.cursor` to the round 2 queue entry for ally-4, already at (5,22). Set `mainSeed` to 131072. Set Kazin's MP to 0, ATT to 21, status to 0 and item slot 2 to bare word 24 in both `loadout.value.items` and `progress.value.sourceLoadout.value.items`. Include 10 in `data.battle.custody.onceFlags`. |
+| `battle-destroy` | Same v4 source and changes, using worn damaged word 408, ATT 31 and status 4. |
+| `battle-cold` | Byte copy of the actual `battle-damage` output. |
+| `field-church` | The final v6 `slot1.json` from [Indra Staff reproduction](#indra-staff-reproduction), registered under `derived/disposable-saves/Sf2IndraReview/6c5f4a5f1dd84a5b8333d9f0ccf03f1a/indra-review/sf2-opening`. Set ally-4's `data.party.allies` slot 2 to 408 and status to 4. Set `data.party.gold` to 8747 and include 10 in `data.party.onceFlags`. Move the settled `data.visit.actors` player slot 0 to (40,5), copying the 384-unit tile position into `motion.x`, `motion.y` and their respective destinations. Keep facing up. |
+| `field-repair` | Same v6 input, gold and once flag as above, with bare damaged word 280 and status 0. Keep the original (20,30) landing, one tile from the castle's south exit. |
+| `field-repair-worn` | Same landing and gold as the Repair fork, with word 408 and status 4. |
+| `field-cold` | Byte copy of the actual `field-church` output. |
+
+Use the [private launcher route](../application/pacalon-first-visit.md#continue-after-worktree-cleanup)
+and the [Indra package selection](#indra-staff-reproduction). Mount the registered
+`derived/issue2001/catalogs-v1/world.zh-CN.json` through `SF2_DISPLAY_CATALOG`.
+For each fork use a fresh ignored receipt directory and an external disposable save
+root and namespace. Copy the chosen source into slot 1 there. For a changed record, decode
+the save envelope's base64 payload and edit the listed fields on that copy. Preserve the
+UTC `savedAt` string (PowerShell 7.5 `ConvertFrom-Json -AsHashtable -DateKind String`).
+Encode the edited UTF-8 payload and update the envelope's uppercase SHA-256 from those
+exact bytes, using the [existing format](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs).
+For the cold cases start a fresh process and namespace using the published slot from
+the preceding run. Keep app data, logs and temporary outputs local to the worktree.
+
+Build the Debug adapter with the [locked SDK workflow](../development-and-verification.md#locked-net-workflow).
+Use `{"formatVersion":1,"textMode":"instant","language":"en"}` or replace `en` with `zh-CN` in
+the ignored settings file. With the isolated paths and the case selected above, launch:
+
+```powershell
+$env:SF2_RING_LANGUAGE = 'en' # Match the settings file. Use 'zh-CN' for Chinese.
+$env:SF2_SAVE_CASE = $env:SF2_RING_CASE
+$env:SF2_SAVE_REPORT = Join-Path $receipt 'native.json'
+& $env:GODOT_BIN --headless --fixed-fps 60 --audio-driver Dummy --resolution 1920x1080 `
+    --path remake/game --script res://probes/engine_black_ring_observation.gd -- --input-settings $inputSettings
+```
+
+The [observer](../../game/probes/engine_black_ring_observation.gd) checks the native exit, state
+and projected menu and scene messages. Allow 45 seconds per serial process. Inspect the report
+and stderr because a script error may occur before a check. No screenshots are used.
+
+**Confirmed (bounded Godot input).** In Battle26, Kazin's English and Chinese Equip previews
+showed Black Ring and ATT 31. Confirmed Equip changed 24 → 152 and ATT 21 → 31. Removing the worn
+ring produced the localized refusal. BLAZE 2 Item Use dealt 12 HP to the Lesser Demon at zero MP,
+then changed 152 → 408, awarded EXP, and returned control to the next ally. A fresh Continue
+retained the worn damaged word and CURSE. In the separate broken-ring fork the Chinese cast
+showed the destruction message, removed that slot, and cleared CURSE before the next input.
+The Church quoted and charged 1,250, retained the damaged word as 280, and cleared CURSE.
+After leaving the Church and saving at settled field input, cold Continue retained Kazin's
+slot, status and the 7,497 gold balance. At the Pacalon weapon shop, the Chinese Repair
+quote for a bare damaged copy charged 1,250 and restored word 24. The English worn-copy quote
+and result refused Repair, retaining word 408, CURSE and the entire balance.
+
+Observed attempts retained the harness failures for date normalization, an unsafe temporary slot
+selection, packed-word comparison and outdated menu inputs. The legacy v3 promotion mount could
+treat the ring but hit `field-visit-actor-origin` on saving. The current v6 field fork allowed
+treatment followed by settled Save. Attempts to save immediately inside the Church could still
+meet pending ambient motion. The first shop path reached the correct merchant, but its observer
+read the wrong projection key for the owner row. Successful processes exited zero. Some emitted ObjectDB shutdown
+warnings under the existing [exit issue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).

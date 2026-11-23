@@ -678,9 +678,10 @@ internal sealed partial class BattleSceneView : Control
             BattleScenePhase.SlowExpiredMessage => LocalizedMessage("battle.scene.slow-expired", Target()),
             BattleScenePhase.BoostExpiredMessage => LocalizedMessage("battle.scene.boost-expired", Target()),
             BattleScenePhase.AttackExpiredMessage => LocalizedMessage("battle.scene.attack-expired", Target()),
-            BattleScenePhase.EquipmentWearMessage when state.EquipmentItem is { } item =>
+            BattleScenePhase.EquipmentWearMessage =>
                 LocalizedMessage(state.Wear == EquipmentWear.Damaged ? "battle.scene.item-damaged" : "battle.scene.item-destroyed",
-                    DisplayNames.Item(item.ItemId, item.Name)),
+                    DisplayNames.Item(state.EquipmentItem?.ItemId ?? state.AttackItem!.ItemId,
+                        state.EquipmentItem?.Name ?? state.AttackItem!.Name)),
             _ when state.ShowsStunCure => LocalizedMessage("battle.scene.stun-cleared", Target()),
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {

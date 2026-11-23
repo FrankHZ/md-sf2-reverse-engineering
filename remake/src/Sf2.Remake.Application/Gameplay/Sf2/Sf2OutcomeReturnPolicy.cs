@@ -119,8 +119,9 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
             if (!CanRecover(deployment, input, all)) return input;
             if (!SilenceRules.Supported(input.Status)) throw new BattleRuleException("return-status-refresh", "party.status", true);
             const ushort retained = PoisonCureRules.PoisonAndStun | CurseRules.Mask;
-            return input.RefreshStats() with { Status = (ushort)(input.Status & retained), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
+            var recovered = input with { Status = (ushort)(input.Status & retained), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
                 Mp = input.Progress?.MaxMp ?? deployment.Definition.MaxMp };
+            return recovered.RefreshStats(deployment.ResolveClass(input.Progress?.ClassId).Definition);
         }).ToArray();
         return party.WithResources(actors, party.Gold);
     }

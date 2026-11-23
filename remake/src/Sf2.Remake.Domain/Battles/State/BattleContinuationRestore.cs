@@ -46,6 +46,8 @@ internal static class BattleContinuationRestore
             saved.Hp == 0 && saved.Position is null, "initialization");
         ushort applied = saved.LastRefreshCounters ?? saved.Status;
         Require(deployment.Faction == BattleFaction.Ally || (saved.Status & BattleStatCounters.Attack) == 0, "attack-status");
+        if (deployment.Faction == BattleFaction.Ally)
+            Require(saved.Status == BattleEquipment.RefreshCurse(deployment.Definition, saved.Loadout, saved.Status), "curse-status");
         byte ordinaryAttack = BattleEquipment.Attack(deployment.Definition, saved.Progress, saved.Loadout, applied);
         if (deployment.Faction == BattleFaction.Enemy && saved.Initialized)
         {

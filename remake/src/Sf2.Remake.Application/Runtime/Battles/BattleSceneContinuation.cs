@@ -256,7 +256,7 @@ public sealed class BattleSceneState
         Phase == BattleScenePhase.ResultMessage && HasReaction && Reaction.ClearedStatus == PoisonCureRules.Stun;
     public bool UsesAttackItem => _action?.AttackItemSlot is not null;
     public AttackItemDefinition? AttackItem => _action?.AttackItem;
-    public SupportItemDefinition? EquipmentItem => _action?.EquipmentUse is { } use
+    public SupportItemDefinition? EquipmentItem => _action is { AttackItem: null, EquipmentUse: { } use }
         ? Action.Prepared.Definition.SupportItems.GetValueOrDefault(use.ItemId) : null;
     public EquipmentWear Wear => _action?.EquipmentUse?.Wear ?? EquipmentWear.None;
     public bool RaisesAttack => SupportSpell?.Spell.Value == "attack";

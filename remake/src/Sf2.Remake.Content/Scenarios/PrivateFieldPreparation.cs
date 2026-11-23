@@ -69,6 +69,9 @@ internal static class PrivateFieldPreparation
             yield return new(id, item.DisplayName, uint.MaxValue, stat, bonus,
                 DamageOnUse: kind.EndsWith("|BREAKABLE", StringComparison.Ordinal) && item.UseSpell != "NOTHING");
         }
+        if (source.Items.TryGetValue(24, out var blackRing) && PrivateBattleActionBindings.IsBlackRing(blackRing))
+            yield return new(blackRing.Id, blackRing.DisplayName, (1u << 17) | (1u << 18),
+                RingStat.Attack, 10, DamageOnUse: true, Cursed: true);
         if (source.Items.TryGetValue(126, out var sandals))
         {
             Require(sandals is { Code: "CHIRRUP_SANDALS", EquipFlagsExpression: "ALL", ItemTypeExpression: "RING|RARE",

@@ -22,7 +22,8 @@ public sealed class ShopServiceTests
         if (repairGear) battle = battle.WithDeployments(battle.Deployments.Select(row => row.Actor == Buyer
             ? row with { Definition = row.Definition.WithEquipment(new(row.Definition.Equipment!.BaseAttack,
                 row.Definition.Equipment.Weapons.Values.Append(new(92, "Indra Staff", uint.MaxValue, 25, 1, 1, DamageOnUse: true)),
-                rings: [new(19, "Ring", uint.MaxValue, RingStat.Attack, 5, DamageOnUse: true)])) }
+                rings: [new(19, "Ring", uint.MaxValue, RingStat.Attack, 5, DamageOnUse: true),
+                    new(24, "Black Ring", uint.MaxValue, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])) }
             : row));
         var map = new ExplorationMapDefinition(new("market"), new(new ushort[WorkingMapLayout.WordCount]),
             new([new(0, 0, 63, 63)]), [new(new("trader"), new(2, 1), 3, 32)],
@@ -145,8 +146,31 @@ public sealed class ShopServiceTests
         Choose(session, ShopAction.Sell);
         Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
         Accept(session, new SelectShopSlot(Wait(session).Token, 0, 178));
-        Assert.Equal(ShopResult.UnsupportedItem, Wait(session).Result);
+        Assert.Equal(ShopResult.EquippedCurse, Wait(session).Result);
         Assert.Same(party, Party(session));
+    }
+
+    [Theory]
+    [InlineData(408, ShopResult.EquippedCurse)]
+    [InlineData(280, ShopResult.Repaired)]
+    public void BlackRingRepairChargesQuarterPriceOnlyForTheBareDamagedSelection(ushort word, ShopResult expected)
+    {
+        var terms = new ShopDefinition([0], [Terms.Items[0],
+            new(24, "Black Ring", 5000, Rare: true, Cursed: true, Repairable: true)]);
+        var session = Session(1250, [24, word, 0, 127], terms: terms, repairGear: true);
+        var before = Party(session);
+        Choose(session, ShopAction.Repair);
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Accept(session, new SelectShopSlot(Wait(session).Token, 1, word));
+        Assert.Equal(1250u, Wait(session).Offer!.Price);
+        Pay(session);
+        Assert.Equal(expected, Wait(session).Result);
+        if (expected == ShopResult.Repaired)
+        {
+            Assert.Equal(0u, Party(session).Gold);
+            Assert.Equal(new ushort[] { 24, 24, 0, 127 }, Owner(session).SourceLoadout!.Items);
+        }
+        else Assert.Same(before, Party(session));
     }
 
     [Theory]

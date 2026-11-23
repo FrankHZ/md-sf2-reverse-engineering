@@ -585,9 +585,12 @@ ally on entry. After battle Continue, Bowie plays the override. The controlled p
 service visit confirms ordinary Depot deposit, bilingual appraisal and retrieval to Bowie.
 [Sandals route and limits](content/special-equipment-reach.md#remake-controls-and-reproduction)
 Indra Staff admits WIZ/VICR weapon Equip, SPOIT1 Item Use, wear, 800-gold Repair and existing
-save/restore. Black Ring currently admits bare receipt and carry. The shared physical curse
-action, death delivery and return/Continue support have controlled evidence. Worn Black Ring
-admission, custody and Cure, and player BLAZE 2 Item Use and Repair remain with #1926.
+save/restore. Black Ring admits WIZ Equip for ATT +10, physical curse, selected-slot custody
+protection, Church Cure, BLAZE 2 Item Use, shared wear and merchant Repair. The source SORC bit
+is retained for class admission. The ordinary WIZ observations use controlled copies of accepted
+post-promotion saves. They cover the localized ring and outcomes, return to battle input and cold
+battle and field Continue. The engine covers the independently held bare copy and death refresh.
+[Black Ring reproduction](domain/equipment-use-repair-design.md#black-ring-reproduction)
 [Physical curse reproduction](domain/ring-equipment-design.md#physical-curse-reproduction)
 [Black Ring admission decision](domain/ring-equipment-design.md#black-ring-admission-and-physical-curse)
 [Indra Staff](domain/equipment-use-repair-design.md#indra-staff-reproduction)

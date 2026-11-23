@@ -206,6 +206,8 @@ public sealed class BattleActorState
             nextProgress = nextProgress with { CurrentStats = null };
         var nextLoadout = sourceLoadout ?? progress?.SourceLoadout ?? SourceLoadout;
         ushort nextStatus = status ?? Status;
+        if (refreshStats && IsAlly)
+            nextStatus = BattleEquipment.RefreshCurse(Definition, nextLoadout, nextStatus);
         byte nextAttack = attack ?? Attack;
         if (refreshStats && IsAlly && ((AppliedStatBits | nextStatus) & BattleStatCounters.Attack) != 0)
             nextAttack = BattleEquipment.Attack(Definition, nextProgress, nextLoadout, nextStatus);

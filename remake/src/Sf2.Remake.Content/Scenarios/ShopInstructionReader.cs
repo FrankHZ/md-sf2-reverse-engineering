@@ -24,7 +24,7 @@ internal static class ShopInstructionReader
                 return new ShopItem(item.Id, item.DisplayName, item.Price, types.Contains("UNSELLABLE"),
                     types.Contains("RARE"), types.Contains("CURSED"),
                     Repairable: item.ItemTypeExpression == "RING|RARE|BREAKABLE" && item.UseSpell is "ATTACK" or "BOOST" ||
-                        PrivateBattleActionBindings.IsIndraStaff(item));
+                        PrivateBattleActionBindings.IsIndraStaff(item) || PrivateBattleActionBindings.IsBlackRing(item));
             });
             Require(stock.All(id => source.Items.TryGetValue(id, out var item) && item.ItemTypeExpression is "WEAPON" or "WEAPON|BREAKABLE" or "CONSUMABLE"),
                 "shop-stock-unsupported", "shop.stock", true);

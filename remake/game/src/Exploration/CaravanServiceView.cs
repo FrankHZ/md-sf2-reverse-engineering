@@ -171,7 +171,7 @@ internal sealed partial class CaravanServiceView : Control
         {
             _error = GameText.Get(result.Failure.Code switch
             {
-                "depot-equipped-curse" or "caravan-equipped-curse" => "depot.cursed",
+                "depot-equipped-curse" or "caravan-equipped-curse" or "equipped-curse" => "depot.cursed",
                 "caravan-item-not-usable" => "caravan.items.not-usable",
                 "field-item-effect-unsupported" => "caravan.items.unsupported",
                 "discard-unsellable" => "prepare.drop-refused",

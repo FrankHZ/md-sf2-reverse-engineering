@@ -57,6 +57,7 @@ public static class BattleDiscard
     internal static BattleDiscardResult Prepare(EngineBattleState battle, ActorRef actor, int slot, ushort word)
     {
         var selected = RequireSelected(battle, actor, slot, word);
+        BattleEquipment.RequireTransferable(battle.GetActor(actor).Definition, selected.Word);
         if (selected.Item.Unsellable) throw new BattleRuleException("discard-unsellable", "item");
         if (selected.Item.Rare && battle.ItemCustody is null)
             throw new BattleRuleException("discard-custody-unavailable", "battle.itemCustody", true);

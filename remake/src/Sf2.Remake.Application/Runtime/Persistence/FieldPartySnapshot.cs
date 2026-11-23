@@ -108,6 +108,7 @@ internal sealed record FieldPartySnapshot(string Encounter, IReadOnlyList<SavedA
         var loadout = new BattleSourceLoadout(saved.Items, saved.Spells);
         // Equipment's numerical accessor validates its supported equipped state where definitions admit it.
         if (definition.Equipment is not null) BattleEquipment.ValidateLoadout(definition, loadout);
+        Require(saved.Status == BattleEquipment.RefreshCurse(definition, loadout, saved.Status), "save-curse-status");
         Require(saved.Items.All(word => word <= 511), "save-item-word");
         var progress = new BattleActorProgress(saved.Level, saved.MaxHp, saved.MaxMp, saved.BaseAttack, saved.Defense,
             saved.Agility, Array.AsReadOnly(spells.ToArray()), loadout, saved.Class)

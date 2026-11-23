@@ -156,7 +156,8 @@ internal sealed partial class ShopServiceView : Control
                 if (refusal is not null) _title += "\n" + GameText.Get("shop.result." + refusal);
                 Add("shop.confirm", new AnswerShop(wait.Token, offer, true)); Add("shop.back", new AnswerShop(wait.Token, offer, false)); break;
             case ShopPhase.Result:
-                _title += "\n" + GameText.Get("shop.result." + wait.Result!.Value.ToString().ToLowerInvariant());
+                _title += "\n" + GameText.Get(wait.Action == ShopAction.Sell && wait.Result == ShopResult.EquippedCurse
+                    ? "depot.cursed" : "shop.result." + wait.Result!.Value.ToString().ToLowerInvariant());
                 Add("shop.continue", new ContinueShop(wait.Token)); break;
         }
         foreach (var option in _options)

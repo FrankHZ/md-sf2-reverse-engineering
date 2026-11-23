@@ -404,6 +404,7 @@ internal static partial class GameText
 
     internal static string BattleRecovery(SessionFailure failure, bool stopped = false)
     {
+        if (!stopped && failure.Code == "equipped-curse") return Get("depot.cursed");
         string recovery = stopped ? "stop" : failure.Code switch
         {
             "movement-range" => "movement", "occupied-destination" => "occupied",

@@ -265,7 +265,7 @@ internal sealed partial class ChurchServiceView : Control
         _index = index;
     }
     private static string EffectKey(ChurchEffect effect) => effect switch
-    { ChurchEffect.Poison => "poison", ChurchEffect.Stun => "stun", _ => "raise" };
+    { ChurchEffect.Poison => "poison", ChurchEffect.Stun => "stun", ChurchEffect.Curse => "uncurse", _ => "raise" };
     private static string Treatment(ChurchEffect effect) => GameText.Get("church." + EffectKey(effect));
     internal object Observe() => new { visible = IsVisibleInTree(), wait = _wait, index = _index, revision = _revision,
         title = _title.Text, hint = _hint.Text, error = _error, page = IsMenu ? "services" : _wait?.Phase.ToString().ToLowerInvariant(),
