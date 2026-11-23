@@ -41,19 +41,20 @@ func card_at(label: String, x: int, y: int, percent: int) -> bool:
     if not check(card.visible and card.actor == s.actor and not card.name.is_empty(), label + ": current actor card"): return false
     if not check(("等级" if chinese else "Level") in card.role, label + ": localized live class/level header"): return false
     if private_case and not check(not ("unavailable" in card.role) and not ("未知" in card.role), label + ": admitted class identity"): return false
+    var terrain_panel: Dictionary = s.menu.layout.terrainPanel
     var prefix := "地形效果" if chinese else "Land effect"
-    if not check(prefix in card.land and ("(%d, %d)" % [x,y]) in card.land, label + ": actor-qualified shown tile"): return false
-    if s.stage == "Movement" and not check(OS.get_keycode_string(events.confirm.keycode) in s.menu.layout.help and
-            OS.get_keycode_string(events.right.keycode) in s.menu.layout.help, label + ": hints follow actual mapped controls"): return false
-    if percent >= 0 and not check(("%d%%" % percent) in card.land, label + ": mover/protection setting"): return false
+    if not check(prefix in terrain_panel.text and ("(%d, %d)" % [x,y]) in terrain_panel.text, label + ": actor-qualified shown tile"): return false
+    if s.stage == "Movement" and not check(OS.get_keycode_string(events.confirm.keycode) in s.menu.layout.help, label + ": hints follow actual mapped controls"): return false
+    if percent >= 0 and not check(("%d%%" % percent) in terrain_panel.text, label + ": mover/protection setting"): return false
     var actor: Dictionary = s.actors.filter(func(a): return a.id == s.actor)[0]
     for vital in ["hp","mp"]:
         var gauge: Dictionary = card[vital]
         if not check(gauge.current == actor[vital] and gauge.image.mounted and gauge.image.drawCount > 0,
                 label + ": live mounted " + vital + " gauge"): return false
-        if not check(gauge.valueRect.y >= card.landRect.y + card.landRect.height and
+        if not check(terrain_panel.visible and not Rect2(terrain_panel.rect.x, terrain_panel.rect.y, terrain_panel.rect.width, terrain_panel.rect.height).intersects(
+                Rect2(card.rect.x, card.rect.y, card.rect.width, card.rect.height)) and gauge.valueRect.y >= card.nameRect.y + card.nameRect.height and
                 gauge.valueRect.y + gauge.valueRect.height <= card.rect.y + card.rect.height,
-                label + ": land and vitals fit inside card"): return false
+                label + ": terrain clears the status card and vitals fit"): return false
     var terrain: Dictionary = JSON.parse_string(view.get_node("MapViewport").call("ReadTerrainJson"))
     return check(terrain.cellSize == 96 and s.zoom == 1 and s.viewport == s.mapViewport, label + ": fixed world geometry")
 
@@ -147,11 +148,14 @@ func run() -> void:
     if not check(state().inspection.page == "Full", "Current actor full details"): return
     await press("cancel")
     await frames(3)
+    if not check(state().inspection.page == "Cursor", "Details return to inspection cursor"): return
+    await press("cancel")
     if not check(not state().inspection.active and signature(state()) == baseline, "Inspection return is pure and same actor"): return
     if not await card_at("inspection-return",x,y,-1 if private_case else 15): return
     await press("confirm")
-    # Stay is down from the diamond's deterministic Attack/Stay initial focus.
-    await press("down")
+    for i in range(4):
+        if state().menu.layout.commands[3].selected: break
+        await press("down")
     await press("confirm")
     if not await wait_for(func(s): return s.get("actor") != null and s.actor != first.actor and s.get("stage") == "Movement", "next player actor"): return
     var next := state()

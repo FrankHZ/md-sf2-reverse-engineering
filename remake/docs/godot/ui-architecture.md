@@ -183,8 +183,7 @@ retains its existing commands with a short action and availability footer.
 
 Inspection puts return instructions in its framed footer. Cursor and detail sheets also show a
 Back button whose complete left-click must match the actual button rectangle. Options, Map and
-Members use mapped Cancel or a complete right-click. Cursor's hover card
-owns cell identity and coordinates. The shared compact status card reads the live ally's current
+Members use mapped Cancel or a complete right-click. Movement and inspection share the unit card and an independent terrain panel for cell coordinates and mover-qualified effect. The shared compact status card reads the live ally's current
 level from the acting projection or actor state in Movement, Target and playback. Enemies keep
 their established disclosure. Selected spell effect copy remains with #2083.
 [Description reader](../../game/src/UI/ItemDescriptionView.cs) ·

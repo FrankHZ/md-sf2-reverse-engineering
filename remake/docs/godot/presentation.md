@@ -1229,8 +1229,7 @@ main-gate integration and broader aesthetic/all-map approval remain separate.
 ### Ordinary acting-card information (#1655)
 
 **Standard rigor:** a bounded extension of the existing card/query lifecycle, spanning Application
-disclosure and its Godot consumer. The ordinary player card now includes ally class/level and
-actor-qualified land effect, retaining the existing HP/MP image gauges, names, input authority and
+disclosure and its Godot consumer. The ordinary player card includes ally class/level beside a separate terrain panel, retaining the existing HP/MP image gauges, names, input authority and
 96px world cells. Enemy class/level are not disclosed. Missing class/name values remain unavailable;
 live private HP/MP values at or above 100 remain unavailable, while authored values keep their policy.
 No member list, transaction admission, action-order prediction or #1616 visual redesign is included.
@@ -1253,10 +1252,7 @@ current segment. After matching completion it becomes the next segment's From or
 preview destination. This applies to each undo segment too: the preview already requests the origin,
 and committed actor coordinates still describe the turn origin, so neither alone gives the shown
 tile. `BattleTerrainRules.LandEffect` supplies the 0/15/30 setting by that actor's mover and tile's
-protection. The localized line names its coordinates within the actor's card; it is not a physical
-damage-reduction percentage or an empty tile's actor-independent attribute. Only acting cards add
-the 26px land row (ordinary starting frame 500×218); other cards retain the 500×192 base and all
-gauges retain their existing live values, image crops and zero-MP track behavior.
+protection. The dedicated terrain panel shows the coordinates and mover-qualified setting. Inspection reuses both the terrain panel and the ordinary unit card. Empty cells retain only the terrain panel. HP/MP gauges keep their live values, image crops and zero-MP behavior.
 
 **Confirmed static:** the [pinned S1/S3/S4/S6 sources](battle-interaction-baseline.md#evidence-and-reproduction-boundary)
 at `c834c652b6862bc5679fd7f69a38a7093206efc6` open mini status/land effect before player movement,
@@ -1288,6 +1284,7 @@ physical-device/focus, original-runtime or human visual acceptance.
 
 Reproduce with the existing environment, engine/adapter commands and ordinary authored-package entry
 using this probe; `SF2_ACTING_ZH=1` checks Chinese, and `SF2_VIEWPORT_OUTPUT` selects the ignored report.
+For the English terrain check, copy `practice-yard.json` to scratch and set tile (6, 3) to open terrain with no protection. Use `--authored-package` and the acting-status probe above. Moving right three cells reads 15 → 30 → 30 → 0, then undo restores the origin.
 The connected case uses the existing pre-voyage controlled-start observation admission and
 `SF2_ACTING_PRIVATE=1` / `SF2_ACTING_START`, without player saves or new asset extraction. Exact local
 variant/launch inputs, completed failures and process identities are retained in the Issue handoff.

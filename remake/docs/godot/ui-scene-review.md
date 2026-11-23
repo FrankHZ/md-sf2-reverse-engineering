@@ -428,8 +428,9 @@ restores four vertical Main rows between the measured acting card and the bounde
 the board subject, the card, controls and reader move together to the clear left column.
 
 ```text
-   Round / Gold                                       Acting unit · Level
-                                                      HP             MP
+   Round                                              Acting unit · Level
+   Coordinates · Land effect                          HP
+                                                      MP
 
    Battle board                                       [icon] Attack
                                                       [icon] Magic
@@ -452,7 +453,7 @@ friendly Target and playback. Back restores the chosen level, slot or command.
 and direct Stay. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 delivers the inspection movement field. [#2082](battle-ui-composition.md#shared-member-roster-2082)
 delivers shared field and battle Member rows. The current inspection pages place instructions and
-the visible Back button in one frame. Cursor leaves the name and coordinate in its hover card.
+the visible Back button in one frame. Cursor keeps identity and vitals on the unit card and coordinates on the terrain panel.
 Details return to the same cursor or roster, and only the visible button accepts pointer Back.
 [Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
 
@@ -464,7 +465,7 @@ tracks pending spell descriptions (#2083) and the current-round readout (#2065).
 | Decision phase | Visible composition and focus | Invalid/long state and return |
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
-| Movement | An acting card and quiet round/gold support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
+| Movement | An acting card and quiet round support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
 | Main action | Four labeled rows beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Left/Right reads long reasons in the fixed reader without moving focus. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
 | Spell / item list | A scrollable list replaces Main beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
 | Target / affected area | One cursor marks the eligible recipient. One field shows reach and affected cells. The recipient card replaces the acting card. Cycle, Confirm and Back use the footer. | An empty, defeated, wrong-side or out-of-range cell clears the cursor, recipient card and effect inset. Confirm cannot commit the old target. Back returns to the prior row or Main. |
@@ -540,7 +541,7 @@ here. [Initialization](https://github.com/ShiningForceCentral/SF2DISASM/blob/c83
 
 | Phase | Composition | Stress state, acknowledgement and return |
 | --- | --- | --- |
-| Physical / item / spell close-up | Hide the board under the existing close-up rule. Show only actual acting/current reaction-target cards and the current message; retire command panels and round/gold strip. Character/weapon/effects stay in their own local composition below UI. | Costs and HP/MP update at the real committed phases. Multi-target reactions switch the target card at that boundary. Long messages read/page without premature acknowledgement. [Weapon-frame composition](battle-scenes.md#weapon-frame-composition-1620) owns front/back order. |
+| Physical / item / spell close-up | Hide the board under the existing close-up rule. Show only actual acting/current reaction-target cards and the current message; retire command panels and round strip. Character/weapon/effects stay in their own local composition below UI. | Costs and HP/MP update at the real committed phases. Multi-target reactions switch the target card at that boundary. Long messages read/page without premature acknowledgement. [Weapon-frame composition](battle-scenes.md#weapon-frame-composition-1620) owns front/back order. |
 | Quiet support / suppressed / no-effect | Existing message/card presentation may have a quiet black backdrop. Keep the actual reason and recipient readable. | Do not fabricate an attack animation to fill silence. Preserve source/delivery semantics and supported effects; a quiet frame is not evidence of a stuck action. |
 | Death / after-turn notice / automatic enemy turn | Restore the board for field-owned removal and notices; show only relevant status/text. Player command controls are absent while automatic progression owns play. | Low/zero HP is explicit; cards never retain a departed target into the next action. Message delivery, removal completion and focus suspension remain under current owners. |
 | Reward / growth / victory / loss / retreat | Show the existing ordered results and current return prompt in the same reading family. No new duplicate reward summary or clickable future actor strip. | Wide amounts and multiple growth lines use reading pages. Closing cannot replay rewards. Retreat payment/return and special victory/loss programs keep their owners. |
@@ -584,7 +585,7 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
 - **F4 decision vitals and layout.** The acting and recipient cards use stacked HP and MP rows
   with aligned bars and readings, a measured name and admitted ally class/level, and a double-gold
-  frame. The same card renders close-up status. The inspection hover adds cell and land effect.
+  frame. Inspection and close-ups use the same unit card. Movement and inspection use a separate panel for coordinates and land effect.
   The Main or child list sits below the card, clear of the fixed footer. Long reasons scroll
   inside the reader. The card and footer move together when the preferred column covers the subject.
   The [native observations](battle-ui-composition.md#reproduce-slice-1) cover wide values, long text

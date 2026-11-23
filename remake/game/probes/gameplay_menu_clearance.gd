@@ -77,15 +77,16 @@ func inspect_map() -> bool:
     var footer := inspection.get_node("InspectionFooter") as Control
     var hint := footer.find_child("Instructions",true,false) as Label
     var back := footer.find_child("Back",true,false) as Button
-    measure("inspection-unit", [hover,footer,back], hover.find_children("*","Label",true,false) + [hint])
-    if not expect(state().inspection.hover.unit == state().actor,"Acting unit in hover card"): return false
+    var terrain := inspection.get_node("TerrainPanel") as Control
+    measure("inspection-unit", [hover,terrain,footer,back], hover.find_children("*","Label",true,false) + [hint])
+    if not expect(state().inspection.hover.actor == state().actor,"Acting unit in hover card"): return false
     var cell: Dictionary = state().inspection.cursor
     var subject := Rect2(cell_point(cell.X,cell.Y)-Vector2(48,48),Vector2(96,96))
     if not expect(not hover.get_global_rect().intersects(subject),"Card clears inspected unit"): return false
     if not await cover(true): return false
     await act("down")
-    if not expect(state().inspection.hover.unit == null,"Reach adjacent empty ground"): return false
-    measure("inspection-ground",[hover,footer,back],[hint])
+    if not expect(state().inspection.hover.actor == null,"Reach adjacent empty ground"): return false
+    measure("inspection-ground",[terrain,footer,back],[hint])
     await act("confirm")
     if not await inspect_page("Options"): return false
     var options: Dictionary = state().inspection.options

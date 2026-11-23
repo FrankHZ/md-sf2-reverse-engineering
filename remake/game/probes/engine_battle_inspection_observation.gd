@@ -520,9 +520,9 @@ func inspected_movement_range() -> bool:
     if not await cursor_to(5,3): return false
     if not range_checkpoint("empty-cell", baseline, "Inspection"): return false
     var empty: Dictionary = state().inspection
-    if not check(empty.hover.unit == null and empty.hover.name not in empty.hint and empty.hover.location not in empty.hint and
+    if not check(not empty.hover.visible and empty.terrainPanel.visible and "(5, 3)" in empty.terrainPanel.text and
         not Rect2(empty.footer.rect.x,empty.footer.rect.y,empty.footer.rect.width,empty.footer.rect.height).intersects(
-        Rect2(empty.hover.rect.x,empty.hover.rect.y,empty.hover.rect.width,empty.hover.rect.height)), "Empty ground identity appears once, separate from controls"): return false
+        Rect2(empty.terrainPanel.rect.x,empty.terrainPanel.rect.y,empty.terrainPanel.rect.width,empty.terrainPanel.rect.height)), "Empty ground identity appears once, separate from controls"): return false
     await act("confirm")
     if not await inspect_page("Options") or not range_checkpoint("options", baseline, "None"): return false
     await act("confirm")

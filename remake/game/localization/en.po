@@ -900,7 +900,7 @@ msgid "battle.target"
 msgstr "Target"
 
 msgid "battle.context"
-msgstr "Round {0}    Gold {1}"
+msgstr "Round {0}"
 
 msgid "battle.position"
 msgstr "Choose a position"

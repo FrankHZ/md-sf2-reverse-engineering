@@ -54,7 +54,11 @@ internal sealed partial class BattleStatusCard : PanelContainer
             unit?.ClassId, unit?.Level, unit?.Hp, unit?.MaxHp, unit?.Mp, unit?.MaxMp);
     }
 
-    internal static string ClassAndLevel(byte? classId, int? level)
+    internal void PresentInspected(BattleInspectionUnit? unit, string name) =>
+        Present(unit?.Actor, name, unit?.ClassId, unit is { Ally: true } ? unit.Level : null,
+            unit?.Hp, unit?.MaxHp, unit?.Mp, unit?.MaxMp);
+
+    private static string ClassAndLevel(byte? classId, int? level)
     {
         if (level is not { } rank) return "";
         string levelText = GameText.Get("battle.card-level", rank);

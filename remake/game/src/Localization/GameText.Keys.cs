@@ -345,7 +345,7 @@ internal static partial class GameText
         ["battle.command.stay"] = 0,
         ["battle.acting"] = 0,
         ["battle.target"] = 0,
-        ["battle.context"] = 2,
+        ["battle.context"] = 1,
         ["battle.position"] = 0,
         ["battle.magic"] = 0,
         ["battle.items"] = 0,

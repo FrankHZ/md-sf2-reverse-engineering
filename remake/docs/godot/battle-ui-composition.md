@@ -38,12 +38,12 @@ Visibility and hit testing change together.
 | Phase | Sole primary focus | Allowed support | Input and exit |
 | --- | --- | --- | --- |
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints, queue and board selection marks are hidden. |
-| Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round/gold, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
-| Main action | One focused row in the vertical command list | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
-| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
-| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
+| Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
+| Main action | One focused row in the vertical command list | Acting card, round, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
+| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round, queue reservation, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
+| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
-| Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one framed instruction and return panel, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
+| Free inspection, Cursor page | One board cursor on the inspected cell | A unit card on occupied cells, a terrain panel, one framed instruction and return panel, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One framed instruction and return panel with data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
 | Enemy action, close-up, field notice/death, result or battle exit | Actual delivered action or current message/return prompt | Playback cards for the actual participants, message reader, board only when owned by the continuation | Existing completion token and acknowledgement. All decision surfaces and board marks retire. Rebuild from live control after delivery. Field return uses field chrome. A failure shows once at its owning view. |
 | Host Menu, Save, Speed or recovery cover | Host/modal's current choice or reader | Only the permitted covered backdrop | Suspend battle gestures, holds and pacing using existing ownership. Restore the same eligible caller, with its current layout and fresh input after release. A resize while covered may recompute geometry. |
@@ -138,8 +138,8 @@ version of the existing pulse, with a steady presentation under Reduced Flash. E
 pulse and graphics parity remain **Unknown**. [Original range construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
 
 Use the [shared visual language](ui-design-language.md) for all panels. At 1920×1080, anchor the
-quiet round/gold panel at the existing upper-left gameplay inset below host chrome and reserve a
-left stack under it for the queue. Use the existing roughly 560px right-side decision column,
+quiet round panel at the existing upper-left gameplay inset below host chrome and reserve a
+terrain readout below it and space for the planned queue. Use the existing roughly 560px right-side decision column,
 32px gameplay inset and below-Menu band. The acting, recipient or hover card takes its top role
 as the phase changes. Let wide values grow within the layout budget. Place the Main or child
 list below the measured card. Use one independent reading/footer region below the controls
@@ -527,13 +527,13 @@ The inspection footer contains instructions on every page. Cursor and the two de
 retain a measured Back button. Options, Map and Members show the mapped return in their
 instructions. Mapped Cancel, a complete right-click and an eligible Back button follow the
 same local parent and retain cursor or roster focus. The footer shields the board from left
-clicks. Cursor shows the name or empty-ground caption and coordinates in the hover card.
+clicks. Cursor shows the shared unit card on occupied cells and keeps the terrain panel on empty ground.
 Resizing or changing page cancels an old capture.
 
 Movement, Target, hover inspection and playback use a project-authored double-gold frame
 with stepped corner accents. The mini-status composition puts the name and admitted ally
 class and level in the header, then stacks HP and MP with aligned bars and right-side values.
-Inspection adds coordinates and land effect in the bottom row. The game preserves the live
+Movement and inspection display coordinates and land effect in a dedicated panel opposite the unit card. During movement it follows the last delivered tile. During inspection it follows the cursor. Target selection and playback omit this terrain readout. The game preserves the live
 resource and participant boundaries. This composition follows the placement of information in
 the [pinned mini-status routine](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L572-L664).
 
@@ -584,7 +584,7 @@ own eligible choice, target and Confirm flow.
 
 ## Current-round order (#2065)
 
-Reserve a quiet readout immediately below round/gold during Movement, Main, Magic/Item and
+Reserve a quiet readout below the round and terrain panels during Movement, Main, Magic/Item and
 Target. Default to current actor plus up to three subsequent eligible entries, with the count of
 additional entries when truncated. Use distinct current/next roles, allied/enemy identity and a
 disambiguator for same-name units. Repeated slots for one unit stay distinct in sequence. Keep

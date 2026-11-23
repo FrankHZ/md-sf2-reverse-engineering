@@ -29,6 +29,10 @@ func header_geometry(label: String) -> bool:
             label+": HP/MP rows align in one column"): return false
     if not expect(card.rect.x == layout.description.x and card.rect.width == layout.description.width and disjoint(card.rect,layout.description),
             label+": header and footer form one measured column"): return false
+    if not expect(layout.contextText == (("回合 %d" if TranslationServer.get_locale().begins_with("zh") else "Round %d") % s.round),label+": round has no currency"): return false
+    if not expect(layout.terrainPanel.visible == layout.actorCard.visible,label+": terrain belongs to the acting phase"): return false
+    if layout.terrainPanel.visible and not expect(disjoint(layout.terrainPanel.rect,card.rect) and inside(layout.terrainPanel.rect),
+            label+": terrain has its own visible space"): return false
     if layout.commandList.visible:
         if not expect(card.rect.x == layout.commandList.rect.x and card.rect.width == layout.commandList.rect.width
                 and disjoint(card.rect,layout.commandList.rect),label+": card clears the Main rows"): return false

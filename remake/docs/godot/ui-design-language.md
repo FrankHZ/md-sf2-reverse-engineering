@@ -60,7 +60,7 @@ In scope: existing entry, field, party/preparation, service, host and battle pre
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
-Remote services and an additional host Overview remain outside this design. The space below round/gold
+Remote services and an additional host Overview remain outside this design. The space below the round and terrain panels
 is reserved for the pending [current-round readout #2065](battle-ui-composition.md#current-round-order-2065).
 The battle Target phase uses one candidate change per fresh input, and choosing ordinary Stay
 commits in one gesture. The [battle input owner](battle-ui-composition.md#fresh-target-input-and-direct-stay)
@@ -260,10 +260,10 @@ canvas and larger native viewports.
 
 | Phase | Components and placement |
 | --- | --- |
-| Movement | Quiet round/gold and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
+| Movement | Quiet round and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
 | Main and spell/item lists | A measured acting card heads the 560px decision column. Main uses four labeled vertical rows above the blue reader. Magic and Item replace them with scrollable rows. The fixed footer contains descriptions, refusals and the mapped actions. |
 | Choose a target | The selected recipient takes the card. The cursor denotes the legal candidate, with one reach and effect field. Back retains the previous command, spell level or item slot. |
-| Free inspection | One hover card clears the cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
+| Free inspection | The shared unit card shows the name and admitted class/level above stacked HP and MP. Coordinates and land effect occupy the separate terrain panel. Empty ground shows the terrain panel alone. |
 | Action playback and outcome | Decision windows retire. Actual close-up participants and their messages own the scene. Resize refreshes the art, cards and reader around the retained delivery state. |
 
 At supported sizes, move the card and footer together when the preferred column would cover the

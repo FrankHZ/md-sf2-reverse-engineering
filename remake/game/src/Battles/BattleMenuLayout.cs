@@ -10,6 +10,7 @@ internal sealed partial class BattleMenuLayout : Control
     private const int PanelInset = 16, Gap = 12;
     internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", DecisionHeader = true };
     internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, DecisionHeader = true };
+    internal readonly BattleTerrainPanel Terrain = new() { Name = "TerrainPanel" };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
@@ -42,7 +43,7 @@ internal sealed partial class BattleMenuLayout : Control
     private bool _canConfirm;
     internal Action InvalidatePointer { get; set; } = () => { };
     internal bool Covers(Vector2 point) =>
-        Covers(Actor, point) || Covers(Target, point) || Covers(_context, point) || Covers(_list, point) ||
+        Covers(Actor, point) || Covers(Target, point) || Covers(Terrain, point) || Covers(_context, point) || Covers(_list, point) ||
         Covers(_detail, point) || HitCommand(point).Id is not null;
 
     private static bool Covers(Control control, Vector2 point) =>
@@ -68,7 +69,8 @@ internal sealed partial class BattleMenuLayout : Control
         foreach (var panel in new[] { _context, _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);
-        AddChild(_context); _context.AddChild(Context);
+        Context.AutowrapMode = TextServer.AutowrapMode.Off;
+        AddChild(Terrain); AddChild(_context); _context.AddChild(Context);
         _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, Visible = false,
             InvalidatePointer = () => InvalidatePointer() };
         _commandList.ItemRectChanged += () => InvalidatePointer();
@@ -129,10 +131,13 @@ internal sealed partial class BattleMenuLayout : Control
             card.Position = new(x, top);
             card.Size = new(width, height);
         }
-        // Round/gold owns the upper left. The space below is reserved for #2065.
-        _context.Size = new(300, 68);
+        // Keep map readings opposite the active unit card.
+        _context.Size = new(0, 68);
         _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
         _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
+        if (Terrain.Visible)
+            Terrain.Place(new(alternate ? size.X - margin : margin, top + (_context.Visible ? _context.Size.Y + Gap : 0)),
+                protection, alternate);
         _commandList.Position = new(x, controlsTop);
         if (_commandList.Visible && _commandList.Size.X != width) _commandList.Arrange(width);
         _list.Position = new(x, controlsTop);
@@ -244,7 +249,7 @@ internal sealed partial class BattleMenuLayout : Control
         descriptionVisible = _detail.IsVisibleInTree(),
         reader = _reading.Observe(),
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
-        contextVisible = _context.IsVisibleInTree(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
+        contextText = Context.Text, contextVisible = _context.IsVisibleInTree(), terrainPanel = Terrain.Observe(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
         heading = Heading.Text, detail = _reading.Body.Text, help = Help.Text, helpVisible = Help.IsVisibleInTree(),
         descriptionLabels = new[] { Heading, _reading.Body, Help }.Where(label => label.IsVisibleInTree()).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),

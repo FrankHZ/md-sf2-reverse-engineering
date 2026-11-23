@@ -900,7 +900,7 @@ msgid "battle.target"
 msgstr "目标"
 
 msgid "battle.context"
-msgstr "回合 {0}    金币 {1}"
+msgstr "回合 {0}"
 
 msgid "battle.position"
 msgstr "选择位置"

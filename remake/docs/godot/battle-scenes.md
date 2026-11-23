@@ -40,7 +40,7 @@ identity; after-turn notices retain only the actor and field deaths hide close-u
 Cards never predict damage, interpolate resources, pay costs or advance continuations. Their compact
 mode is explicit per battle consumer; shared field/full cards keep their existing geometry. Names
 retain two-line shaping and measured growth so an expanded name also reserves height above the
-reader. Commands, lists, range and round/gold retire during playback. The map remains hidden for
+reader. Commands, lists, range and round retire during playback. The map remains hidden for
 full close-ups and visible for field-owned death/notices/return. Message paging and the actual
 session's confirmation/completion tokens retain their existing owners.
 
