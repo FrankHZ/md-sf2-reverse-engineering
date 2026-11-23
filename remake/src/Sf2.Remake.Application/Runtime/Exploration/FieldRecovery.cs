@@ -9,11 +9,55 @@ public enum FieldRecoveryEffect
     NoEffect, CurePoison, Egress, MapEvent, CurePoisonAndParalysis,
     IncreaseAttack, IncreaseDefense, IncreaseAgility, IncreaseMove, IncreaseHp, IncreaseMp, LevelUp,
 }
-public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, FieldRecoveryEffect Effect);
+public sealed record FieldSpellChoice(SpellRef Spell, string Name, byte MpCost, FieldRecoveryEffect Effect)
+{
+    public SpellDescriptionFacts? Description { get; init; }
+}
 
 // Field caller policies are admitted separately from battle recovery and its EXP/RNG rolls.
 internal static class FieldRecovery
 {
+    internal static SpellDescriptionFacts Describe(ScenarioDefinition definition, SessionSnapshot current,
+        PartyMemberDetails caster, FieldSpellChoice spell)
+    {
+        SpellEffect? effect = spell.Effect switch
+        {
+            FieldRecoveryEffect.NoEffect => SpellEffect.NoEffect,
+            FieldRecoveryEffect.CurePoison => SpellEffect.CurePoison,
+            FieldRecoveryEffect.CurePoisonAndParalysis => SpellEffect.CurePoisonAndParalysis,
+            FieldRecoveryEffect.Egress => SpellEffect.ReturnToRefuge,
+            _ => null,
+        };
+        var facts = new SpellDescriptionFacts(spell.Spell, spell.MpCost, effect, effect switch
+        {
+            SpellEffect.CurePoison or SpellEffect.CurePoisonAndParalysis => SpellTarget.PartyMember,
+            _ => null,
+        });
+        try
+        {
+            if (effect is null) throw new BattleRuleException("field-spell-unsupported", "spell", true);
+            RequireSpellMember(definition, spell, caster);
+            if (spell.Effect == FieldRecoveryEffect.Egress)
+                _ = FieldEgress.RequireRoute(definition, current);
+            return facts with { FieldPayment = SpellPayment(spell, caster.Carried.Mp) };
+        }
+        catch (BattleRuleException error)
+        {
+            return facts with { Reason = new(error.Unsupported ? SessionFailureKind.UnsupportedCapability :
+                SessionFailureKind.IllegalCommand, error.Code, error.Field, error.Code.Replace('-', ' ')) };
+        }
+    }
+
+    private static void RequireSpellMember(ScenarioDefinition definition, FieldSpellChoice spell, PartyMemberDetails member)
+    {
+        if (spell is { Spell.Level: > 1, Effect: FieldRecoveryEffect.CurePoisonAndParalysis })
+            FieldInventory.RequireDetoxEquipment(definition, member);
+    }
+
+    // ExecuteExplorationMagicMenu allows low MP. The paid branch clamps at zero.
+    private static byte SpellPayment(FieldSpellChoice spell, byte mp) =>
+        spell.Effect is FieldRecoveryEffect.NoEffect or FieldRecoveryEffect.MapEvent ? (byte)0 : Math.Min(mp, spell.MpCost);
+
     internal static BattleStartInput Prepare(ScenarioDefinition definition, SessionSnapshot current, FieldCommand command,
         out FieldRecoveryEffect effect, out bool effective, out FieldGrowthResult? growth, out ushort clearedStatus,
         FieldItemCaller caller = FieldItemCaller.Field)
@@ -56,14 +100,14 @@ internal static class FieldRecovery
             if (spell is null || targetRef is not null)
                 throw new BattleRuleException("field-egress-target", "target");
             return FieldInventory.Replace(party,
-                [member.Carried with { Mp = (byte)Math.Max(0, member.Carried.Mp - spell.MpCost) }]);
+                [member.Carried with { Mp = (byte)(member.Carried.Mp - SpellPayment(spell, member.Carried.Mp)) }]);
         }
         var target = FieldInventory.Member(definition, current,
             targetRef ?? throw new BattleRuleException("field-recovery-target", "target"), caller);
-        if (spell is { Spell.Level: > 1, Effect: FieldRecoveryEffect.CurePoisonAndParalysis })
+        if (spell is not null)
         {
-            FieldInventory.RequireDetoxEquipment(definition, member);
-            if (target.Carried.Actor != member.Carried.Actor) FieldInventory.RequireDetoxEquipment(definition, target);
+            RequireSpellMember(definition, spell, member);
+            if (target.Carried.Actor != member.Carried.Actor) RequireSpellMember(definition, spell, target);
         }
         uint seed = party.MainSeed;
         BattleActorStartInput changedTarget;
@@ -84,8 +128,7 @@ internal static class FieldRecovery
         }
         bool self = changedTarget.Actor == member.Carried.Actor;
         var changedMember = self ? changedTarget : member.Carried;
-        // ExecuteExplorationMagicMenu does not check MP. DecreaseCurrentMp clamps at zero.
-        if (spell is not null) changedMember = changedMember with { Mp = (byte)Math.Max(0, changedMember.Mp - spell.MpCost) };
+        if (spell is not null) changedMember = changedMember with { Mp = (byte)(changedMember.Mp - SpellPayment(spell, changedMember.Mp)) };
         else
         {
             var pack = changedMember.SourceLoadout ?? changedMember.Progress?.SourceLoadout ?? FieldInventory.Loadout(member);

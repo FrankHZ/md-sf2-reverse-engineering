@@ -88,6 +88,13 @@ release barriers keep their existing input ownership. Holding Confirm cannot com
 
 Back unwinds provisional preparation to the same member and roster scroll, then returns to the
 originating field choice. [Shared roster observation](battle-ui-composition.md#reproduce-the-shared-roster)
+
+On Prepare Magic, Left/Right and the wheel over the description read the selected spell in the
+fixed reader. The row shows its nominal cost. The body describes the field effect and any lower
+deduction at the caster's current MP, including free NoEffect. Target shows the chosen level
+and the recipient prompt. Back from Target or confirmation returns to that level without payment.
+[Spell descriptions and reproduction](battle-ui-composition.md#reproduce-selected-spell-descriptions)
+
 Use/Drop/Give and completed purchases/sales remain committed after acknowledgement. Shop Back follows
 `ShopService.Back`: a quote returns to member selection (including Sell), a sale slot returns to its
 owner, a purchase recipient returns to its Buy or Deals stock, and Leave completes the actual

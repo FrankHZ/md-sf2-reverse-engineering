@@ -185,7 +185,7 @@ Inspection puts return instructions in its framed footer. Cursor and detail shee
 Back button whose complete left-click must match the actual button rectangle. Options, Map and
 Members use mapped Cancel or a complete right-click. Movement and inspection share the unit card and an independent terrain panel for cell coordinates and mover-qualified effect. The shared compact status card reads the live ally's current
 level from the acting projection or actor state in Movement, Target and playback. Enemies keep
-their established disclosure. Selected spell effect copy remains with #2083.
+their established disclosure.
 [Description reader](../../game/src/UI/ItemDescriptionView.cs) ·
 [Inspection view](../../game/src/Battles/BattleInspectionView.cs) ·
 [Compact card](../../game/src/UI/BattleStatusCard.cs)
@@ -372,15 +372,14 @@ query boundaries.
   opacity and Reduced Flash. [Rule interface](../../src/Sf2.Remake.Domain/Battles/Rules/IBattleActionRule.cs) ·
   [Attack recipient rules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) ·
   [Support recipient rules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs)
-- **Spell description.** #2083 uses exact `SpellRef` and admitted effect facts from battle
-  admission and the field recovery projection. Reuse the existing description query pattern
-  and one localized formatter. Preserve field free no-effect and clamped deductions. A battle
-  effect suppressed by Silence may still be selectable and paid under the current rule.
-  Distinguish that result from a refusal such as insufficient MP. Field applies its own cost
-  and availability rules. Where geometry and description need the same meaning, expose that
-  operand once at admission. [Item query pattern](../../src/Sf2.Remake.Application/Runtime/ItemDescriptionQuery.cs) ·
-  [Field recovery](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldRecovery.cs) ·
-  [Silence](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SilenceRules.cs)
+- **Spell description.** `BattleChoices` and `FieldRecovery` project `SpellDescriptionFacts`
+  for the exact `SpellRef`. The Godot formatter consumes typed effect operands and current
+  restrictions in the shared reader. Field recovery owns free NoEffect and clamped MP.
+  `SilenceRules` owns whether an otherwise eligible battle cast pays and loses its effect.
+  Future target geometry can consume the same admitted reach and radius operands.
+  [Shared facts](../../src/Sf2.Remake.Application/Runtime/SpellDescriptionFacts.cs) ·
+  [Formatter](../../game/src/Localization/SpellDescriptions.cs) ·
+  [Behavior and reproduction](battle-ui-composition.md#selected-spell-descriptions)
 - **Current-round queue.** #2065 can use a small read query beside `BattleAdvancer` and
   `BattleTurnFlow`. Factor the existing current-state dispatch classification for dead/unplaced
   and sleep/stun so a queue read cannot drift, and keep actual skip side effects in dispatch.
@@ -436,9 +435,9 @@ revert consumers first or together. Use a single production path with disposable
 
 **Existing issue order.** Slices 2 and 3 consume the decision boundary from #2107. #2090 owns
 the restored vertical Main and its acceptance. Slice 2 can use free reading directions on the
-vertical page where the existing controls permit them. #2083 waits for coherent Back and the description reader from slices
-1–2. It may follow before the full board painter migration if it already consumes the shared
-admitted effect operands. Serialize any overlap in `BattleChoices` or `BattleMenuLayout`.
+vertical page where the existing controls permit them. #2083 consumes the shared reader and
+coherent Back from those slices. Serialize target geometry changes that touch
+`BattleChoices` or `BattleMenuLayout`.
 #2065 needs the stable phase/visibility boundary from slice 1 before mounting its strip. Its pure
 queue query may be reviewed independently of the description reader and target footprint, with
 cold Continue and read-vs-actual-next acceptance retained in #2065. The [Prepare command rows](#prepare-command-rows)

@@ -69,7 +69,7 @@ the disclosed unit's movement field. The overlay clears when a panel or host cov
 [Inspected movement #2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 
 Field Party and battle Member use shared scrollable rows with wrapped names, optional portraits,
-and focused and unavailable treatment. Spell descriptions (#2083) remain pending.
+and focused and unavailable treatment.
 [Shared roster #2082](battle-ui-composition.md#shared-member-roster-2082)
 [Implementation handoff](battle-ui-composition.md#implementation-handoff)
 
@@ -205,8 +205,10 @@ target confirmation use their own existing pages.
 Use the mounted weapon, ring, recovery and action definitions for effects and numbers, and the
 current actor/slot for conditions such as class eligibility or damage. Distinguish field effects
 from battle effects. Keep descriptions short and localize complete phrases in the UI catalog.
-The pending [spell descriptions #2083](battle-ui-composition.md#selected-spell-descriptions)
-will use the stable reading region and the admitted level and effect facts for their context.
+Battle Magic and field Prepare Magic use the same fixed reader for
+[selected spell descriptions](battle-ui-composition.md#selected-spell-descriptions).
+The row identifies the level and nominal MP. The reader explains the effect, targeting and
+current restriction.
 Names keep the existing name catalog. Where gameplay has no bound effect, leave the item prose
 blank. Depot, other battle menus, game rules, item data and save formats are outside this slice.
 

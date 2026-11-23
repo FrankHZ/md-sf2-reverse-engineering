@@ -204,17 +204,22 @@ internal sealed partial class FieldActionView : Control
                 () => GameText.Get("prepare.confirm-use", DisplayNames.ItemWord(item.Word, item.Name))));
         }, item => item.Use is not null);
 
+    private static string SpellLabel(FieldSpellChoice spell) =>
+        GameText.Get("prepare.spell-row", DisplayNames.Spell(spell.Spell, spell.Name), spell.Spell.Level);
+
     private void Magic() => Menu("magic", () => GameText.Get("prepare.choose-magic"), _choices.Spells.Select(spell =>
-        ((Func<string>)(() => GameText.Get("prepare.spell-row", DisplayNames.Spell(spell.Spell, spell.Name), spell.Spell.Level) + $" · {spell.MpCost} MP"), (Action)(() =>
+        ((Func<string>)(() => SpellLabel(spell) + $" · {spell.MpCost} MP"), (Action)(() =>
         {
-            if (spell.Effect == FieldRecoveryEffect.NoEffect)
-                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-no-effect-spell", DisplayNames.Spell(spell.Spell, spell.Name)));
+            if (spell.Description?.Reason is { } reason)
+                Message(() => SpellDescriptions.Refusal(reason));
+            else if (spell.Effect == FieldRecoveryEffect.NoEffect)
+                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-no-effect-spell", SpellLabel(spell)));
             else if (spell.Effect == FieldRecoveryEffect.Egress)
-                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-egress", DisplayNames.Spell(spell.Spell, spell.Name), spell.MpCost));
-            else Targets("magic-target", () => GameText.Get("prepare.magic-target"), true, target => Confirm(new FieldCast(_member, spell.Spell, target),
-                () => GameText.Get("prepare.confirm-cast",
-                    GameText.Get("prepare.spell-row", DisplayNames.Spell(spell.Spell, spell.Name), spell.Spell.Level), spell.MpCost)));
-        }), true)));
+                Confirm(new FieldCast(_member, spell.Spell), () => GameText.Get("prepare.confirm-egress", SpellLabel(spell), spell.MpCost));
+            else Targets("magic-target", () => GameText.Get("prepare.magic-target") + "\n" + SpellLabel(spell), true,
+                target => Confirm(new FieldCast(_member, spell.Spell, target),
+                    () => GameText.Get("prepare.confirm-cast", SpellLabel(spell), spell.MpCost)));
+        }), spell.Description?.Reason is null)));
 
     private void Drop() => Items("drop-item", () => GameText.Get("prepare.drop-item"), item => DisplayNames.ItemWord(item.Word, item.Name) +
         (!item.CanDrop ? " · " + GameText.Get("prepare.cannot-drop") : ""), item =>
@@ -319,6 +324,8 @@ internal sealed partial class FieldActionView : Control
             bool inspectItem = _stage is "use-item" or "give-item" or "drop-item" or "equipment" or "exchange";
             string? description = inspectItem ? ItemDescriptions.Read(_session, word is null ? null : (byte)(word & 127),
                 party?.Members.FirstOrDefault(row => row.Carried.Actor == owner), broken: (word.GetValueOrDefault() & 256) != 0) : null;
+            if (_stage == "magic" && _choices.Spells.ElementAtOrDefault(_index)?.Description is { } spell)
+                description = SpellDescriptions.Read(spell);
             _page.Present(title, hint,
                 _options.Select((option, i) => (option.Label(), Icon(i), option.Available)).ToArray(), _iconOwner, _index,
                 description: description, descriptionSubject: (_generation, _index, owner), input: _input);

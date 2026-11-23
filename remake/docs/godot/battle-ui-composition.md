@@ -570,35 +570,100 @@ for each row. The table describes the controlled content and actual input surfac
 | Actual card mount | Use the Battle01 controlled start from [Reproduce slice 1](#reproduce-slice-1) with the registered pre-voyage BLAZE2 publication and `SF2_CURSOR_CLOSEUP_ONLY=1`. The observer opens a friendly HEAL Target, returns without payment, then commits the physical attack. It verifies the allied and enemy cards during the real message wait and reflows the covered scene before resuming delivery. |
 
 Physical controller feel and human visual acceptance remain **Unknown** under #1456.
-Spell effect wording, the round queue and Target rule geometry remain with their linked owners.
+The round queue and Target rule geometry remain with their linked owners.
 
 ## Selected spell descriptions
 
-Pending implementation under [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083).
+[#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083) is a Standard
+slice because battle and field display the same learned identity with different admission and
+payment rules. Both lists render `SpellDescriptionFacts` for the exact `SpellRef` in the
+fixed `ItemDescriptionView`. The adapter formats those facts in English and zh-CN using the
+same descriptions and existing name catalog.
 
-Reuse the fixed-height reader from `ItemDescriptionView` in battle Magic and field Prepare Magic.
-Use one typed spell-description projection and localized formatter for both, keyed by exact
-`SpellRef` including level. Derive it from the same admitted effect/offer data as the action.
-Battle uses the typed choices, healing/attack/support/retreat definitions, and live availability
-reason. Field contributes the actual field effect, member/target requirements, cost and map/party
-availability from its recovery rules. Share meanings and names where they match. Explain a
-no-effect field use as free and distinguish a nominal field MP cost from the amount deducted when
-consumption clamps at zero. Reserve the insufficient-MP refusal for a context that enforces it. The battle cost, target team, min/max reach and area radii apply on the battlefield.
-Distinguish self, single target, selected-area and all applicable allies. Explain current refusal
-such as insufficient MP, Silence, no eligible target or missing effect support as returned by the
-context. Use actual level effects and omit invented damage or availability.
+Battle choices project the admitted effect, target side, reach and area. Self and all-allies
+actions describe their own center selection. Damage wording names the effect without calculating
+damage. The MP cost stays in the row. When insufficient MP prevents admission, the reader still
+shows the registered level's effect and actual refusal. An unbound effect stays explicit.
+When a selectable cast is suppressed by Silence, the reader explains the paid suppression.
+EGRESS follows the retreat rule and can select self while silenced.
+
+Field choices use the actual field binding. HEAL can be selected here and resolves to free
+NoEffect. Spells without a field binding stay outside the field offer list. DETOX names the
+conditions this level clears and the party-member target. The reader shows the actual deduction
+when available MP is below the nominal row cost. EGRESS describes refuge return when admitted.
+Its map-specific free branch and current route refusal remain distinct. The command still
+validates the chosen recipient or destination on confirmation.
 [Battle offers](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) ·
-[Field recovery](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldRecovery.cs)
+[Field recovery](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldRecovery.cs) ·
+[Shared facts](../../src/Sf2.Remake.Application/Runtime/SpellDescriptionFacts.cs)
 
-The row keeps label, level, icon and cost. The reader below it provides the details and resets
-reading position on selection, while row bounds and focus stay stable. Enter Target with the
-short action identity and applicable hint in the same footer, yielding the description area.
-Back restores the same level/slot and its description. Keep the old item behavior and reuse the
-PO catalogs for English and Chinese, including localized refusal reasons. Field retains its
-own eligible choice, target and Confirm flow.
+The row keeps label, level, icon and cost. Changing the selected spell resets the reader inside
+the same bounds. Battle Target replaces the body with the short spell identity and ordinary
+target hints. Field Target puts the identity below its target prompt and releases the reader.
+Back restores the exact level and description. Focus and reading leave gameplay state, MP and
+both RNG streams untouched.
 [Battle layout](../../game/src/Battles/BattleMenuLayout.cs) ·
 [Field preparation](../../game/src/Exploration/FieldActionView.cs) ·
-[Reader](../../game/src/UI/ItemDescriptionView.cs)
+[Reader](../../game/src/UI/ItemDescriptionView.cs) ·
+[Formatter](../../game/src/Localization/SpellDescriptions.cs)
+
+### Reproduce selected spell descriptions
+
+Use the registered SDK, Debug adapter and checkout-local app data/TEMP setup in
+[Reproduce slice 1](#reproduce-slice-1). Set `$review` to a fresh absolute directory under
+`local/` per run. The spell observer uses read-only startup. Clear `SF2_SAVE_ROOT` and
+`SF2_SAVE_NAMESPACE` after loading local configuration and leave `--save-output` unset.
+Set `$language` to `en` for 1920×1080 or `zh-CN` for 1600×900.
+
+For battle, start from the tracked authored `attack-spells.json`. This variant uses its first
+two ranks, the registered healing and retreat shapes, and a mage with Silence. Use 20 MP in
+English and 5 MP in Chinese. From the checkout root:
+
+```powershell
+$env:SF2_DEMO_BATTLE_CASE = 'spell-battle'
+$env:SF2_SPELL_DESCRIPTION_LOW_MP = [string][int]($language -eq 'zh-CN')
+$case = Get-Content -LiteralPath remake/content/authored/attack-spells.json -Raw | ConvertFrom-Json -AsHashtable
+$case.start.actors[0].status = 'silence3'
+if ($language -eq 'zh-CN') { $case.start.actors[0].mp = 5 }
+$case.spells += '[{"id":"mend","level":1,"mpCost":2,"minimumRange":0,"maximumRange":1,"effect":{"kind":"heal","adjustedPower":4,"fullRecovery":false}},{"id":"egress","level":1,"mpCost":8,"minimumRange":0,"maximumRange":0,"effect":{"kind":"retreat"}}]' | ConvertFrom-Json -AsHashtable
+$case.actors[0].spells = @($case.actors[0].spells[0], $case.actors[0].spells[1], @{ id='mend'; level=1 }, @{ id='egress'; level=1 })
+$package = Join-Path $review 'authored.json'
+$case | ConvertTo-Json -Depth 64 | Set-Content -LiteralPath $package -Encoding utf8NoBOM
+$launchInput = @('--authored-package', $package)
+```
+
+For field, select the published [matching world and opening inputs](../content/presentation-assets.md#reuse-a-closed-private-package).
+Set `SF2_DEMO_BATTLE_CASE=spell-field`. Copy the registered
+`handoffs/issue1847-formation/slots/rescued-en.json` to `$review/seed.json` and set
+`$launchInput = @('--load-save', (Join-Path $review 'seed.json'))`. This is the published
+[poisoned-party witness](../domain/detox-ranks-design.md#ordinary-input-and-cold-continue).
+It uses title Continue to mount the copied seed without an external writable save namespace.
+
+For either case run:
+
+```powershell
+$env:SF2_INSPECTION_ROUTE = 'keyboard'
+$env:SF2_SPELL_DESCRIPTION_LANGUAGE = $language
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $review 'observation.json'
+$settings = Join-Path $review 'settings.json'
+@{ formatVersion=1; language=$language; textMode='instant'; reducedFlash=$true; bindings=@{} } |
+    ConvertTo-Json | Set-Content -LiteralPath $settings -Encoding utf8NoBOM
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --quit-after 6200 --path remake/game `
+    --log-file (Join-Path $review 'native.log') --script res://probes/engine_spell_description_observation.gd -- `
+    --input-settings $settings @launchInput
+```
+
+Require exit 0, `passed:true`, empty failure and unavailable lists, and inspect the native log.
+The observer extends one line per locale to force overflow. The battle cases compare two levels,
+single and area reach, insufficient MP, paid Silence suppression, unsupported healing and
+self-targeted EGRESS. Keyboard, synthetic mapped pad and wheel scrolling preserve the complete
+gameplay signature. Field reads HEAL's free branch and DETOX 2, returns from Target and
+confirmation, then checks one actual cure and MP deduction with unchanged RNG. Low-MP clamping
+is covered by the focused [field recovery tests](../../tests/Sf2.Remake.Engine.Tests/FieldRecoveryTests.cs).
+The field observation reports a two-instance ObjectDB warning during shutdown and exits 0.
+[Shutdown tracking #1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+
+Physical-device and human visual acceptance remain **Unknown** under #1456.
 
 ## Current-round order (#2065)
 
@@ -640,7 +705,7 @@ before each implementation. The following are principal owners and distinct acce
 | 2. [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080) Target edges and ordinary Stay | One selection per fresh direction, one gesture to Stay, continuous Movement. `BattleSessionView.Navigation`, `BattleCommandMenu`, current `GameInput` release tracking and `BattleCommandDispatcher`. | Keyboard and pad/d-pad or stick single target and multiple targets for physical, Magic and Item. Compare hold, neutral/repress, fast taps, menu/move → target with inherited direction, target Back/reentry, host cover, and continued held movement. Origin and moved Stay commit once on key/pad/click. Exercise next actor or after-turn delivery while holding Confirm. Search and Give/Drop confirmations, refusal and backwards routes still work. |
 | 3a. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) Inspected movement | Delivered through `QueryBattleInspectionRange`, `BattleInspectionView` and the shared board overlay. | [Authored corridor observation](#reproduce-the-inspected-movement-field) checks ally → enemy → empty, traversal versus stops, details/Map/Members/host transitions, cursor exit and state/seed equality. |
 | 3b. [#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082) Shared member presentation | Delivered shared scrollable roster rows and existing details through `MemberRosterView`, `PartyStatusView`, `BattleMemberListView` and `PartyDetailsPanel`. | [Short authored observations](#reproduce-the-shared-roster) cover roster size, long names, retained conditions, pointer and mapped focus, Back/scroll and field Prepare. |
-| 4. [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083) Describe spells by level and context | Actual MP/effect/targets/range and current reason in the shared reader. `BattleChoices`, field recovery/choice owners, `BattleCommandMenu`/`BattleMenuLayout`, `FieldActionView`, reader and PO catalogs. | Compare two levels, a multi-target effect, self or EGRESS, lack of MP/Silence/unavailable content, legal field recovery and field-limited effect. Focus or scroll changes do not spend MP or move the rows/footer. Confirm/cancel still use their existing action path and restore the chosen row. |
+| 4. [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083) Describe spells by level and context | Implemented through `BattleChoices`, `FieldRecovery`, `SpellDescriptionFacts` and the shared localized reader. | [Battle and field observation](#reproduce-selected-spell-descriptions) covers two ranks, area, self, refusal, cancellation, free field use and recovery payment. |
 | 5. [#2065](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2065) Show the actual queue | Current and next scheduled actors in the reserved left stack. Read projection beside `BattleAdvancer`/`BattleTurnFlow`. Render through the battle HUD/layout and document in the feature trace. | Compare the next actual eligible actor, repeated slots, same names, status skips and changes, dead/unplaced entries, sentinel and empty remainder, new round and cold Continue. Verify hide/show by phase and equality of seeds, resources and queue after repeated projection and cover/return. |
 
 [#2068](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2068) owns formal BLAZE

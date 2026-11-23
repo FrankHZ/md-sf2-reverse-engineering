@@ -456,8 +456,9 @@ delivers shared field and battle Member rows. The inspection footer contains the
 Cancel or a complete right-click returns to the caller. Cursor and detail pages also accept a complete left-click on their Back button. Details restore the same cursor or roster selection.
 [Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
 
-The [implementation handoff](battle-ui-composition.md#implementation-handoff)
-tracks pending spell descriptions (#2083) and the current-round readout (#2065).
+The [selected spell reader](battle-ui-composition.md#selected-spell-descriptions) describes
+the chosen level on Battle Magic and field Prepare Magic. The
+[implementation handoff](battle-ui-composition.md#implementation-handoff) tracks the current-round readout (#2065).
 
 ### From entry to committed action
 
