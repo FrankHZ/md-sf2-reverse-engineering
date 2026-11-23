@@ -120,6 +120,20 @@ public sealed class PrivateBattleInitializationTests
         Assert.Equal("physical-definition", Send(session, new ChooseAction(SessionAction.PhysicalAttack)).Failure!.Code);
     }
 
+    [Fact]
+    public void NewBattleRefreshClearsMuddleCarriedByARaisedAlly()
+    {
+        var (scenario, start) = Setup();
+        var battle = scenario.Encounters[start.Encounter];
+        var ally = start.Actors[0];
+        var carried = start.WithResources(start.Actors.Select(row => row.Actor == ally.Actor
+            ? row with { Hp = 1, Status = 0x130 } : row), start.Gold);
+        var placed = BattleTurnFlow.Start(battle, carried).GetActor(ally.Actor);
+        Assert.Equal(0, placed.Status);
+        Assert.Equal(30, placed.Hp);
+        Assert.NotNull(placed.Position);
+    }
+
     [Theory]
     [InlineData(7, 8)] [InlineData(11, 13)] [InlineData(204, 255)]
     public void EnemyDifficultyZeroAddsTheTruncatedQuarterWithinItsAdmittedDomain(byte source, byte expected) =>

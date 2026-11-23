@@ -1357,6 +1357,9 @@ msgid "battle.scene.silenced-cast"
 msgstr "{0}处于沉默状态。已消耗MP，但法术没有效果。"
 
 #. Project-authored functional silence feedback.
+msgid "battle.scene.muddle"
+msgstr "{0}陷入混乱！"
+
 msgid "battle.scene.muddle-expired"
 msgstr "{0}恢复了清醒。"
 
@@ -1672,6 +1675,9 @@ msgstr "中毒"
 
 msgid "battle.inspect.status.stun"
 msgstr "麻痹"
+
+msgid "battle.inspect.status.muddle"
+msgstr "混乱"
 
 msgid "battle.inspect.status.sleep"
 msgstr "睡眠"
@@ -2887,6 +2893,9 @@ msgstr "有几率使目标沉默。"
 
 msgid "spell-description.instant-death"
 msgstr "有概率使目标立即倒下。"
+
+msgid "spell-description.muddle"
+msgstr "使敌人暂时陷入混乱。"
 
 msgid "spell-description.sleep"
 msgstr "有几率使目标睡眠。"

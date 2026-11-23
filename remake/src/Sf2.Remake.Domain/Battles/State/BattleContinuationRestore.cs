@@ -46,6 +46,10 @@ internal static class BattleContinuationRestore
             saved.Hp == 0 && saved.Position is null, "initialization");
         ushort applied = saved.LastRefreshCounters ?? saved.Status;
         Require(deployment.Faction == BattleFaction.Ally || (saved.Status & BattleStatCounters.Attack) == 0, "attack-status");
+        var loadout = BattleContinuationValues.Loadout(saved.Loadout);
+        if (MuddleRules.Present(saved.Status) && saved.Hp > 0 && saved.Position is not null)
+            Require(MuddleRules.SupportedRankOne(saved.Status, battle.Poison) &&
+                MuddleRules.CanTurn(battle, deployment, loadout, saved.ActivationWord), "muddle-control");
         if (deployment.Faction == BattleFaction.Ally)
             Require(saved.Status == BattleEquipment.RefreshCurse(deployment.Definition, saved.Loadout, saved.Status), "curse-status");
         byte ordinaryAttack = BattleEquipment.Attack(deployment.Definition, saved.Progress, saved.Loadout, applied);
@@ -76,7 +80,7 @@ internal static class BattleContinuationRestore
         return new(deployment with { Position = saved.DeploymentPosition }, saved.Hp, saved.Mp, saved.Exp, saved.Position,
             saved.Kills, saved.Defeats, saved.LastTarget is null ? null : new ActorRef(saved.LastTarget), saved.Attack,
             saved.Status, saved.ActivationWord, saved.AiMemory, BattleContinuationValues.Progress(saved.Progress),
-            BattleContinuationValues.Loadout(saved.Loadout), retainDeadPosition: true,
+            loadout, retainDeadPosition: true,
             primaryOrder: saved.PrimaryOrder, secondaryOrder: saved.SecondaryOrder, facing: saved.Facing, initialized: saved.Initialized,
             appliedStatBits: saved.LastRefreshCounters is { } bits ? (ushort)(bits | (saved.Status & 1)) : null);
     }
@@ -88,7 +92,7 @@ internal static class BattleContinuationRestore
         var progress = saved.Progress;
         Require(saved.Facing <= 3 && saved.Hp <= (progress?.MaxHp ?? definition.MaxHp) &&
             saved.Mp <= (progress?.MaxMp ?? definition.MaxMp) && saved.Exp is null or <= 200 &&
-            saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && SilenceRules.Supported(saved.Status), "actor-range");
+            saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && MuddleRules.SupportedRankOne(saved.Status), "actor-range");
         if (progress is not null)
             Require(definition.Growth is not null && progress.Level is >= 1 and <= 99 && progress.MaxHp is > 0 and <= 200 &&
                 progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100 &&

@@ -5,11 +5,19 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 internal static class MuddleRules
 {
     internal const ushort CounterMask = 0x0030;
-    private const ushort ConfusionFlag = 0x0008;
+    internal const ushort ConfusionFlag = 0x0008;
     internal const ushort Mask = CounterMask | ConfusionFlag;
     internal static bool Present(ushort status) => (status & CounterMask) != 0;
     internal static bool Confused(ushort status) => Present(status) && (status & ConfusionFlag) != 0;
     internal static bool Valid(ushort status) => (status & ConfusionFlag) == 0 || Present(status);
+    internal static bool SupportedRankOne(ushort status, bool poison = true) =>
+        !Confused(status) && SilenceRules.SupportedInBattle(status, poison);
+
+    internal static bool CanTurn(BattleDefinition battle, BattleDeploymentDefinition deployment, BattleSourceLoadout? loadout,
+        ushort? activationWord) =>
+        deployment.Faction == BattleFaction.Enemy ||
+        (loadout is not null && activationWord is not null &&
+            battle.Initialization?.SourceCombatants.Any(slot => slot.Key is >= 0 and < 30 && slot.Value == deployment.Actor) == true);
 
     internal static (ushort After, MainRandomDraw Draw)? AfterTurn(BattleActorState actor, uint seed)
     {

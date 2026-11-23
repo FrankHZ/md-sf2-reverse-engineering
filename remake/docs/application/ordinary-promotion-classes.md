@@ -135,9 +135,10 @@ A palette or sprite match from another member is insufficient class admission.
 ### Spell and attack boundaries
 
 - **WIZ.** The castle Kazin seeds have BLAZE 3, MUDDLE 2 and DISPEL 1. English has DESOUL 1,
-  Chinese DESOUL 2. Reuse the currently bound BLAZE 1–3, DISPEL 1 and learned
-  [DESOUL 1/2](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence).
-  BLAZE 4 at effective level 35 and MUDDLE still need their rank/action admission. Tyrin learns
+  Chinese DESOUL 2. The currently bound ranks include BLAZE 1–3, DISPEL 1,
+  [DESOUL 1/2](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence)
+  and [MUDDLE 1](../domain/hostile-spells-design.md#muddle-1-implementation-and-evidence).
+  BLAZE 4 at effective level 35 and MUDDLE 2 still need action admission. Tyrin learns
   FREEZE 1–2 and BLAZE 1–2 by recruitment at 24, with SLEEP at effective 25, BOLT 1 at 28
   and later FREEZE/BOLT/BLAZE ranks. Preserve them per member and list unsupported ranks
   explicitly. WIZ resolves the Black Ring class mask. The ordinary ring interfaces and item
@@ -757,6 +758,6 @@ actions are admitted. The linked action owners track the remaining boundaries.
 - Packed spell learning and retention have their own coverage. Unsupported attack
   and healing ranks, including BLAZE 4, later FREEZE/BOLT ranks and higher campaign
   AURA ranks, stay with the [spell actions](church-promotion-design.md#current-battle-spells).
-  MUDDLE remains with [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
+  MUDDLE 2 remains with [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
   BOOST 2 and DETOX 4 remain with [support statuses](../domain/support-spell-status-design.md)
   and [DETOX rank admission](../domain/detox-ranks-design.md), respectively.

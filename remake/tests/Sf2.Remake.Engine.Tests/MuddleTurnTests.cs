@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
@@ -116,9 +117,9 @@ public sealed class MuddleTurnTests
     [Theory]
     [InlineData(0x02, true)]
     [InlineData(0x08, false)]
-    [InlineData(0x10, false)]
+    [InlineData(0x10, true)]
     [InlineData(0x38, false)]
-    public void DirectAuthoredStartAdmitsOtherWordsAndRejectsMuddle(int status, bool admitted)
+    public void DirectAuthoredStartAdmitsRankOneAndRejectsConfusion(int status, bool admitted)
     {
         var input = EngineTestContent.Admitted("jaro-conversion");
         var enemy = new ActorRef("enemy-jaro");
@@ -142,9 +143,8 @@ public sealed class MuddleTurnTests
 
     [Theory]
     [InlineData(0x08)]
-    [InlineData(0x10)]
     [InlineData(0x38)]
-    public void PendingMuddleWordsRemainOutsidePublicSaveAndRestore(int status)
+    public void ConfusionWordsRemainOutsidePublicSaveAndRestore(int status)
     {
         var (definition, current) = BattleSaveFixture.Create();
         var staged = BattleSaveFixture.At(Status(current.Battle, new("enemy"), (ushort)status), current.Story);
@@ -171,6 +171,68 @@ public sealed class MuddleTurnTests
         Assert.Equal(SessionStopReason.Unsupported, result.StopReason);
         Assert.Same(battle, result.Snapshot.Battle);
         Assert.Empty(result.Observations);
+    }
+
+    [Theory]
+    [InlineData(0u, 0, 0x100, false)]
+    [InlineData(4010u, 3, 0x100, true)]
+    [InlineData(4010u, 2, 0x110, true)]
+    [InlineData(4010u, 1, 0x130, true)]
+    public void MuddleOneUsesOneStatusRollAndStagesTheCurrentWordBeforePlayback(
+        uint seed, int resistance, int oldWord, bool success)
+    {
+        var battle = Battle(document =>
+        {
+            document["terrains"]![0]!["rows"]![2] = "pppppppppp";
+            document["actors"]![2]!["resistance"] = resistance << 14;
+            document["actors"]![0]!["spells"]!.AsArray().Add(new JsonObject { ["id"] = "muddle", ["level"] = 1 });
+            document["spells"]!.AsArray().Add(new JsonObject { ["id"] = "muddle", ["level"] = 1,
+                ["mpCost"] = 6, ["minimumRange"] = 1, ["maximumRange"] = 2,
+                ["effect"] = new JsonObject { ["kind"] = "muddle", ["radius"] = 1 } });
+        }).With(mainSeed: seed << 16);
+        battle = Status(battle, Smoke, (ushort)oldWord);
+        var rule = new Sf2SupportSpellAction();
+        var key = new SpellRef("muddle", 1);
+        var action = BattleActionRules.Prepare(rule, battle, Mage, battle.GetActor(Mage).Position!,
+            new(BattleActionKind.SupportSpell, key), Smoke, new Sf2BattleProgressionRule());
+        var effect = Assert.Single(action.Reactions);
+        Assert.Equal(new[] { "rng-muddle", "rng-exp-plus", "rng-exp-minus" }, action.ConstructionEffects.Select(e => e.Kind));
+        Assert.Equal(success ? BattleReactionKind.Status : BattleReactionKind.Ineffective, effect.Kind);
+        Assert.Equal(oldWord, action.Prepared.GetActor(Smoke).Status);
+        Assert.Equal(20, action.Prepared.GetActor(Mage).Mp);
+        var paid = action.ApplySpellCost(action.Prepared);
+        Assert.Equal(14, paid.GetActor(Mage).Mp);
+        Assert.Equal(success ? oldWord | 0x30 : oldWord, action.ApplyReaction(paid, effect).GetActor(Smoke).Status);
+        Assert.InRange(action.Reward!.Amount, success ? 4 : 1, success ? 6 : 1);
+        var silenced = Status(battle, Mage, 0x300);
+        var suppressed = BattleActionRules.Prepare(rule, silenced, Mage, silenced.GetActor(Mage).Position!,
+            new(BattleActionKind.SupportSpell, key), Smoke, new Sf2BattleProgressionRule());
+        Assert.NotNull(suppressed.Silenced);
+        Assert.Empty(suppressed.ConstructionEffects);
+        Assert.Equal(14, suppressed.ApplySpellCost(suppressed.Prepared).GetActor(Mage).Mp);
+    }
+
+    [Fact]
+    public void SettledSaveRestoresAnActiveEnemyCounterAndItsRealSourceTurn()
+    {
+        var (definition, current) = BattleSaveFixture.Create();
+        var enemy = new ActorRef("enemy");
+        var staged = BattleSaveFixture.At(Status(current.Battle, enemy, 0x10), current.Story);
+        var data = BattleSaveFixture.Capture(definition, staged);
+        var wire = OpeningSaveJson.ReadRecord(OpeningSaveJson.WriteRecord(new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, data)), 1);
+        var rules = RuleCompositions.Sf2();
+        var restored = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, wire, rules)).Session.Current;
+        BattleSaveFixture.EqualBattle(staged.Battle, restored.Battle);
+        var expected = BattleSaveFixture.Stay(staged);
+        var actual = BattleSaveFixture.Stay(restored);
+        Assert.Equal(0, actual.Battle.GetActor(enemy).Status);
+        BattleSaveFixture.EqualBattle(expected.Battle, actual.Battle);
+
+        string queued = data.Battle.Queue[data.Battle.Cursor].Actor!;
+        var invalid = data with { Battle = data.Battle with { Actors = data.Battle.Actors.Select(row =>
+            row.Actor == queued ? row with { Status = 0x10 } : row).ToArray() } };
+        Assert.Equal("save-battle-actor-unavailable",
+            Assert.IsType<SessionStartFailed>(GameSession.RestoreBattle(definition, invalid, rules)).Failure.Code);
     }
 
     private static SessionResult Advance(EngineBattleState battle) =>

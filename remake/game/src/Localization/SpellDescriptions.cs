@@ -53,6 +53,7 @@ internal static class SpellDescriptions
         SpellEffect.InstantDeath => GameText.Get("spell-description.instant-death"),
         SpellEffect.Silence => GameText.Get("spell-description.inflict-silence"),
         SpellEffect.Sleep => GameText.Get("spell-description.sleep"),
+        SpellEffect.Muddle => GameText.Get("spell-description.muddle"),
         SpellEffect.LowerDefenseAndAgility => GameText.Get("spell-description.slow"),
         SpellEffect.RaiseDefenseAndAgility => GameText.Get("spell-description.boost"),
         SpellEffect.RaiseAttack => GameText.Get("item-description.raise-attack"),

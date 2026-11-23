@@ -78,7 +78,7 @@ internal static class BattleTurnFlow
             Require(start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
             Require(start.DeathCredit!.Ally is not { } first || definition.Deployments.Any(d => d.Actor == first && d.Faction == BattleFaction.Ally),
                 "death-first-ally-context", "start.firstAlly", true);
-            Require(start.Actors.All(a => SilenceRules.Supported(a.Status)), "poison-status", "start.actors.status", true);
+            Require(start.Actors.All(a => MuddleRules.SupportedRankOne(a.Status)), "poison-status", "start.actors.status", true);
         }
         Sf2.Remake.Domain.Gameplay.Sf2.HealingTargetRules.ValidateAura(definition);
         BattleInitializationRules.Validate(definition, start);
@@ -92,14 +92,17 @@ internal static class BattleTurnFlow
                 deployment.Initialization?.SpawnMode is 2 or 3 && input.Hp == 0 && input.PositionOverride is null,
                 "dormant-start-state", "start.actors.initialization");
             var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
+            bool hasMuddle = (input.Status & MuddleRules.Mask) != 0;
+            bool supportedStatus = hasMuddle
+                ? MuddleRules.SupportedRankOne(input.Status, definition.Poison || start.NewBattle is not null)
+                : SilenceRules.Supported(input.Status, definition.Poison);
             if (actor.Equipment is not null)
             {
                 BattleEquipment.ValidateLoadout(actor, loadout);
                 bool playerEquipment = deployment.Faction == BattleFaction.Ally && deployment.Control == BattleControl.Player &&
                     Sf2ClassRules.SourceClass(actor.ClassRule) is not null;
                 bool fixedEnemyEquipment = deployment.Faction == BattleFaction.Enemy && !actor.Equipment.AllowChanges;
-                Require((playerEquipment || fixedEnemyEquipment) && (SilenceRules.Supported(input.Status, definition.Poison) ||
-                        !actor.Equipment.AllowChanges && start.NewBattle is not null) && actor.Physical is not null,
+                Require((playerEquipment || fixedEnemyEquipment) && (supportedStatus || !actor.Equipment.AllowChanges && start.NewBattle is not null) && actor.Physical is not null,
                     "equipment-actor", "start.actors", true);
             }
             Require(definition.ItemDrops is null || loadout is not null,
@@ -114,10 +117,12 @@ internal static class BattleTurnFlow
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            // Authored starts can retain raw status words, but MUDDLE requires its automatic consumers.
-            Require((input.Status & MuddleRules.Mask) == 0 &&
-                (SilenceRules.Supported(input.Status, definition.Poison) || start.NewBattle is not null ||
-                    definition.Initialization?.RegionProgram == BattleRegionProgram.Authored),
+            Require(hasMuddle
+                    ? supportedStatus &&
+                        (start.NewBattle is not null ? deployment.Faction == BattleFaction.Ally :
+                            input.Hp == 0 || input.Absent || MuddleRules.CanTurn(definition, deployment, loadout, input.ActivationWord))
+                    : supportedStatus || start.NewBattle is not null ||
+                        definition.Initialization?.RegionProgram == BattleRegionProgram.Authored,
                 "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");

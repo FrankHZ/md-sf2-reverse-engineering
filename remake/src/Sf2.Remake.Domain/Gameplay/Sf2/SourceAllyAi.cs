@@ -27,9 +27,8 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
     {
         var actor = battle.GetActor(actorRef);
         bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
-        bool controlled = temporary ? SilenceRules.SupportedInBattle(actor.Status, battle.Definition.Poison) :
-            actor.Deployment.SourceAllyControl && actor.Control == BattleControl.Automatic &&
-            SilenceRules.Supported(actor.Status, battle.Definition.Poison);
+        bool controlled = (temporary || actor.Deployment.SourceAllyControl && actor.Control == BattleControl.Automatic) &&
+            MuddleRules.SupportedRankOne(actor.Status, battle.Definition.Poison);
         if (!actor.IsAlly || !controlled || actor.Hp == 0 || actor.Position is null ||
             (actor.Status & 0xC1) != 0 || battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);

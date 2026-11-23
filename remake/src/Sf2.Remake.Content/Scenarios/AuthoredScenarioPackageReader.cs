@@ -126,7 +126,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                 continue;
             }
             Require(!supports.ContainsKey(key), "duplicate-spell", "spells.id/level");
-            if (Text(effect, "kind") is "dispel" or "slow" or "boost" or "sleep")
+            if (Text(effect, "kind") is "dispel" or "slow" or "boost" or "sleep" or "muddle")
             {
                 Object(effect, "spell.effect", "kind", "radius");
                 var support = new SupportSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),

@@ -2,6 +2,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Persistence;
 
@@ -73,7 +74,7 @@ internal static class BattleSave
         if (BattleTurnFlow.AtRoundEnd(battle) || current.Selection is null) Fail("actor-unavailable");
         var actor = BattleTurnFlow.QueuedActor(battle);
         if (actor.Hp == 0 || actor.Position is null || actor.Control != BattleControl.Player || (actor.Status & 0xC1) != 0 ||
-            current.Selection!.Actor != actor.Actor || BattleOutcomeSelection.Check(rules.Outcome, battle) is not null)
+            MuddleRules.Present(actor.Status) || current.Selection!.Actor != actor.Actor || BattleOutcomeSelection.Check(rules.Outcome, battle) is not null)
             Fail("actor-unavailable");
         var selection = current.Selection!;
         if (selection.Stage != BattleSelectionStage.Movement || selection.Action is not null || selection.Spell is not null ||

@@ -396,8 +396,7 @@ binding through Battle26. Its existing ray and ordered reactions now accept the 
 counter on the Flower or its occupants. The Flower completes the shared MUDDLE after-turn
 step. A controlled engine turn covers the shot with both shooter and target affected.
 The registered #2001 priority-v1 Battle26 scene has both spell-7 icons and the Chinese
-catalog has its name. The first private binding and active battle Save/Continue are a
-separate acceptance step.
+catalog has its name.
 [Source item getter](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/getnextuseableaiaction.asm#L196-L341) ·
 [Source heal command](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/heal.asm#L18-L120) ·
 [Source attack category](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L69-L141)
@@ -405,11 +404,10 @@ separate acceptance step.
 MUDDLE 2 also needs a target-side decision shared by search, commit validation and playback,
 plus the selected-center guard, inaction and same-side accounting.
 
-Both MUDDLE ranks remain unbound in this consumer slice. Battle starts
-and battle Save/Continue reject pending counts and flag-only words. The direct typed
-`GameSession.Start` path checks the MUDDLE bits before using the authored raw-status allowance.
-Controlled engine cases inject status inside the simulation to exercise the completed pieces.
-No save field or format changes. The localized expiry message compiles in the adapter.
+Battle start and settled battle Save/Continue admit rank-1 counters with their applicable
+turn consumers. Flag-only and confused words still reject. Restoring a Movement decision
+requires that its current player can act. Other units keep their pending counter, queue
+entries and both RNG words. The current battle and field wire formats already carry the word.
 Growth from a temporary ally's earned EXP uses the shared battle growth and refresh path.
 It preserves the live counter through the threshold and level-up before after-turn expiry.
 The battle return recovery policy clears the rank-1 counter when an eligible ally recovers,
@@ -417,13 +415,53 @@ regardless of its control mode. Victory recovery precedes the outcome program, r
 follows action closure, and defeat retains the word through dialogue until leader revival and
 eligible party recovery. Allies ineligible for recovery retain their carried values. Field growth
 and field-only recovery keep their existing admission rules.
-Ordinary SourceEnemyAi status admission is a separate binding dependency. Ordinary cast,
-native automatic turn and active cold Continue remain unverified at this stage.
+Ordinary enemy orders, enemy HEAL/AURA and existing Support use the same admitted rank-1
+word. An enemy can still act under its normal commandset and then tick its status. A fallen
+ordinary ally may carry the counter out of battle and into field Save/Continue. Church Raise
+restores HP and leaves that word intact. Fresh battle entry refreshes the raised ally and
+clears the temporary bits. Engine tests exercise the field wire, real Raise payment, and fresh
+battle initialization at those boundaries. Ordinary scene reset retains its narrower admission.
+
+## MUDDLE 1 implementation and evidence
+
+The private binding admits source slot 7, rank 1, DEBUFF1, 6 MP, range 1–2 and radius 1.
+The learned book supplies the rank. The shared Support action stages an ordered STATUS draw
+for each opposing recipient, pays silenced and all-miss casts once, and delivers the packed
+word and status EXP through ordinary playback. The modern result, inspection status and
+expiry expose the effect in English and Chinese. Full original animation remains with
+[issue #2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+
+Reuse the [Kazin controlled setup](#controlled-kazin-input-and-cold-continue) from #1966
+zh-CN-learned01. Make the same position and queue swap, keeping both seeds and the original
+UTC save header. Mount #2001 priority-v1 and its catalogs as above. With ordinary Chinese
+Magic choose 混乱 1 and center on Dark Bishop (enemy-13). Before paying, Cancel and reselect the
+same rank. The Lesser Demon (enemy-12) is first in the area and reaches status 48. The Dark
+Bishop takes no effect. Kazin's MP 55→49 and EXP 5→10. Karna returns to Movement, round 6
+cursor 20.
+
+At that Movement open Options with F10, Up and Confirm. Save slot 1 and return to play.
+In a new process Continue and save again without taking a turn. The decoded battle data
+is equal in full, including status 48, queue, cursor and both RNG words. Save and cold
+Continue used the original 22-HP Bowie setting. For a separate controlled short suffix only,
+set Bowie's current HP to his existing maximum 62 in a disposable copy of the saved
+battle. Keep both seeds and all other data. From the restored Movement use Confirm then
+Stay until the affected enemy's turn has completed. The Lesser Demon attacks normally and
+its range-48 roll of 20 reduces its count 48→32 at round 7. Continue to Bowie's Movement,
+cast EGRESS 1 and save after usable Map36 field control. Engine cases also cover count
+expiry, recast at the current word and status-specific admission refusals.
+
+The unchanged 22-HP suffix had a legitimate defeat before after-turn. The ordinary cast
+and re-save succeeded even though process shutdown failed after the cast. The cold suffix
+first stopped in ActionChoice because the old driver sent an extra Confirm after Stay.
+The controlled 62-HP suffix completed the countdown, EGRESS and field Save and then exited
+2 in the old quit-input wrapper. Earlier driver/slot preparation failures used missing
+inherited script dependencies, a non-UTC rewritten header and old Options ordering.
+Natural history from a MUDDLE cast through countdown and return remains **Unknown**.
 
 ## Implementation order and ownership
 
-Learned SLEEP 1 and DESOUL 1/2 have player bindings. Kazin's learned MUDDLE ranks can
-remain in the book while MUDDLE's effect and turn consumers are open.
+Learned SLEEP 1, DESOUL 1/2 and MUDDLE 1 have player bindings. MUDDLE 2 can remain in the
+learned book until its automatic targeting and accounting consumers are complete.
 
 Use the finite effects on the existing learned-spell entries. Putting all three families on
 the damage path would conflate status EXP and instant death with modified damage. A parallel
@@ -460,8 +498,8 @@ required consumers are admitted.
    [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
 3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) implement
    after-turn and physical dodge. The [temporary ally commandset](#temporary-ally-commandset-06)
-   handles controlled attack, healing, item and movement choices. Verify the first support
-   binding with ordinary cast, automatic turn and cold Continue. Pair the second with same-side AI decisions
+   handles controlled attack, healing, item and movement choices. The first rank has ordinary
+   cast, opponent turn and cold Continue evidence. Pair the second with same-side AI decisions
    and guarded and real same-side actions. Route temporary automatic control in
    [BattleAdvancer](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs).
    Extend the existing commandset/action decisions

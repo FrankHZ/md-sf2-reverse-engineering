@@ -2,13 +2,14 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-internal enum SupportSpellEffect { Silence, Sleep, Slow, Boost, Attack, AbsorbMp }
+internal enum SupportSpellEffect { Silence, Sleep, Slow, Boost, Attack, AbsorbMp, Muddle }
 
 public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte MinimumRange, byte MaximumRange, byte Radius)
 {
     internal SupportSpellEffect Effect => Spell.Value switch
     {
         "sleep" => SupportSpellEffect.Sleep,
+        "muddle" => SupportSpellEffect.Muddle,
         "slow" => SupportSpellEffect.Slow,
         "boost" => SupportSpellEffect.Boost,
         "attack" => SupportSpellEffect.Attack,
@@ -24,7 +25,7 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
         if ((Spell.Value, Spell.Level, MpCost, MinimumRange, MaximumRange, Radius) is not
             (("dispel", 1, 5, 1, 2, 1) or ("boost", 1, 2, 0, 1, 1) or
              ("attack", 1, 7, 1, 3, 0) or ("slow", 1, 3, 1, 1, 1) or ("slow", 2, 6, 1, 2, 2) or
-             ("sleep", 1, 4, 1, 2, 1) or ("spoit", 1, 0, 1, 2, 0)))
+             ("sleep", 1, 4, 1, 2, 1) or ("muddle", 1, 6, 1, 2, 1) or ("spoit", 1, 0, 1, 2, 0)))
             throw new BattleRuleException("support-spell-definition", "spells", true);
     }
 
@@ -47,6 +48,9 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
         int resistance = target.Definition.Resistance >> 14;
         if (Effect == SupportSpellEffect.Sleep)
             return (roll("rng-sleep") >= 5 + resistance ? (ushort)(target.Status | 0xC0) : null, null);
+        if (Effect == SupportSpellEffect.Muddle)
+            return (roll("rng-muddle") >= ((target.Status & MuddleRules.ConfusionFlag) != 0 ? 8 : 5)
+                ? (ushort)(target.Status | MuddleRules.CounterMask) : null, null);
         if (!ChangesStats)
             return (roll("rng-dispel") >= (SilenceRules.HasSpells(target) ? 5 + resistance : 8)
                 ? (ushort)(target.Status | SilenceRules.Mask) : null, null);
