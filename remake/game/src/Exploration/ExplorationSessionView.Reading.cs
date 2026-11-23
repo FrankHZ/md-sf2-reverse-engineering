@@ -8,6 +8,29 @@ public sealed partial class ExplorationSessionView
 {
     // One explicit reading intent, never a queue of confirmations or a script skip.
     private (WaitToken Token, int DisplayStart, ulong Frame)? _readingConfirmation;
+    private WaitToken? _joinMusicConfirmation;
+
+    private void ConfirmJoinMusic(MusicWait wait)
+    {
+        if (!ReadingHostReady || _session!.Current.NeedsFieldWindowService) return;
+        if (RevealText()) return;
+        _joinMusicConfirmation = wait.Token;
+    }
+
+    private bool ContinueJoinMusicConfirmation()
+    {
+        if (_joinMusicConfirmation is not { } token) return false;
+        if (!ReadingHostReady || _session!.Current.Story.Wait is not MusicWait wait || wait.Token != token)
+        { _joinMusicConfirmation = null; return false; }
+
+        // Preserve the live helper's entity, view and window service, including its final group.
+        if (!wait.LogicalDone) Send(new AdvanceSimulation(token, 600));
+        if (_joinMusicConfirmation == token && ReadingHostReady &&
+            _session.Current.Story.Wait is MusicWait { LogicalDone: true } done && done.Token == token)
+            Send(new CompleteJoinMusicWait(token));
+        if (_session.Current.Story.Wait?.Token != token || !ReadingHostReady) _joinMusicConfirmation = null;
+        return true;
+    }
 
     private void InterruptDelay(FieldTextWait delay)
     {
@@ -50,12 +73,14 @@ public sealed partial class ExplorationSessionView
         if (!SameReading()) { _readingConfirmation = null; return false; }
         if (!ReadingHostReady) { _readingConfirmation = null; return true; }
         if (Engine.GetProcessFrames() <= reading.Frame) return true;
-        // Reuse real neutral services, preserving RNG/entities/window order. Yield at 600
-        // opportunities; explicit text delays use the ordinary clock and their own input rules.
+        // Preserve RNG, entity and window service order. D1 belongs to this span's reading
+        // intent, while D3 retains its separate interruption and elapsed-time rules.
         for (int work = 0; work < 600 && _session!.Current.Story.Wait is FieldTextWait { LogicalDone: false } field; work++)
         {
-            if (field.Phase == FieldTextPhase.TextPause) return false;
-            Send(new AdvanceSimulation(field.Token));
+            if (field.InterruptibleDelay) return false;
+            Send(field.Phase == FieldTextPhase.TextPause
+                ? new InterruptTextDelay(field.Token) { FromReadingConfirm = true }
+                : new AdvanceSimulation(field.Token));
             if (!ReadingHostReady || _readingConfirmation is null) { _readingConfirmation = null; return true; }
             // CLEAR may replace a projection under the same token. It needs new reading intent.
             if (!SameReading()) { _readingConfirmation = null; return true; }

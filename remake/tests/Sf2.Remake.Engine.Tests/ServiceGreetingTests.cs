@@ -37,6 +37,42 @@ public sealed class ServiceGreetingTests
         Assert.True(session.Current.CanWaitForText);
     }
 
+    [Fact]
+    public void ReadingConfirmEndsRepeatedShortPausesWithoutPollingOrAcknowledgingAnotherSpan()
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{D1}.{D1}.{D1}.{D1}!{W1}Next.{W1}");
+        int interrupted = 0;
+        for (int steps = 0; steps < 120 && session.Current.Story.Wait is FieldTextWait { LogicalDone: false } wait; steps++)
+        {
+            if (wait.Phase != FieldTextPhase.TextPause)
+            {
+                Accept(session, new AdvanceSimulation(wait.Token));
+                continue;
+            }
+
+            var before = session.Current;
+            Assert.NotNull(Send(session, new InterruptTextDelay(wait.Token)).Failure);
+            var result = Accept(session, new InterruptTextDelay(wait.Token) { FromReadingConfirm = true });
+            Assert.Single(result.Observations, row => row.Kind == "text-delay-interrupted");
+            Assert.Equal(before.Story.SimulationTick, session.Current.Story.SimulationTick);
+            Assert.Equal(before.Exploration!.Party.MainSeed, session.Current.Exploration!.Party.MainSeed);
+            Assert.Equal(wait.SavedTypewriting, session.Current.Story.Typewriting);
+            interrupted++;
+        }
+
+        Assert.True(Assert.IsType<FieldTextWait>(session.Current.Story.Wait).LogicalDone);
+        Assert.Equal(4, interrupted);
+        var first = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Accept(session, new CompleteTextReveal(first.Token));
+        Assert.Single(Accept(session, new Acknowledge(first.Token)).Observations, row => row.Kind == "text-w1-accepted");
+        var next = Assert.IsType<FieldTextWait>(session.Current.Story.Wait);
+        Assert.NotEqual(first.Token, next.Token);
+        Assert.False(next.Revealed);
+        Assert.NotNull(Send(session, new Acknowledge(first.Token)).Failure);
+        Assert.NotNull(Send(session, new InterruptTextDelay(first.Token) { FromReadingConfirm = true }).Failure);
+        Assert.Same(next, session.Current.Story.Wait);
+    }
+
     [Theory]
     [InlineData(false, 11)] [InlineData(true, 31)]
     public void CaravanMessagesSelectTheirOwnPortraitAndReturnThroughTheActualCaller(bool astral, int portrait)

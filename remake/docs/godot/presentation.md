@@ -1404,9 +1404,8 @@ region and legal viewport rules are retained; native wrapping determines final v
 **High; bounded host clock/read-intent change.** One mapped Confirm on ordinary exploration
 `DialogueWait`, `W1TextWait` or `FieldTextWait` requests the next segment or end, including while
 characters are still revealing. Portrait animation is not an additional admission condition.
-This supersedes reveal-first for these consumers only. Entry, battle presentation, Search results,
-transaction results and choice questions retain their separate reading/confirmation contracts.
-No layout/theme, binding, engine command, save format, content admission or source rule changes.
+Entry, battle presentation, Search results, transaction results and choice questions retain their
+own reading and confirmation rules.
 
 A single-screen segment may be dismissed directly. A segment overflowing the screen first reveals
 its current page; further fresh presses move through every remaining page. The press exposing the
@@ -1418,14 +1417,19 @@ The controller's Reading partial owns at most one current token/display-span int
 text keeps the full projection mounted for a process boundary, then submits its real delivery and
 eligible acknowledgement separately. Field text executes the existing neutral mandatory services
 in batches of at most600 opportunities per host frame, stopping at the same span's input/end.
-This is an explicit modern latency choice: logical entity/window/portrait work, RNG and accepting
-poll still execute in their original order. It does not synthesize completion or shorten a service.
-An explicit `{D1}` pause retains ordinary elapsed-time service. CLEAR replaces the projection and
-cancels old intent even when the token is unchanged. No intent crosses another token, choice,
-map/battle ownership, focus loss, hiding, modal suspension or failure. When camera suppression
+Logical entity, window and portrait work, RNG and the accepting poll run in order. A fresh
+reading Confirm can end D1 pauses in the displayed span. In ordinary unattended playback each
+D1 takes its elapsed-time services. CLEAR replaces the projection and cancels old intent even
+when the token is unchanged. A new token, choice, map or battle owner takes fresh input.
+Focus loss, hiding, modal suspension and failure discard pending intent. When camera suppression
 persists at a logically complete field span, the [window handoff](../application/session-and-programs.md#field-windows-hidden-at-input)
-finishes before delivery or a new reading intent. Subsequent close, movement,
-audio and script waits retain their existing authorities and elapsed/delivery boundaries.
+finishes before delivery or a new reading intent.
+
+A fresh Confirm on the displayed recruitment notice can finish an eligible finite join-music
+wait. The field view advances the current helper's logical services and the existing previous-music
+cue restores playback. The following plain text acknowledgement needs a separate press. The
+[field story wait agreement](../application/session-and-programs.md#confirm-during-field-story-waits)
+owns admission and the remaining script's close, movement and camera work.
 
 **Confirmed (bounded host witness):** an authored no-portrait ordinary dialogue on the previous
 policy consumed its first Confirm solely revealing55 characters, with no simulation tick; a second

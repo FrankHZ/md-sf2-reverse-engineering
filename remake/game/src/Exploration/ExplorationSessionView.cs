@@ -158,6 +158,7 @@ public sealed partial class ExplorationSessionView : Control
         SuspendPacing();
         CancelMenuEntry("save-entry-paused");
         _readingConfirmation = null;
+        _joinMusicConfirmation = null;
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
@@ -292,7 +293,7 @@ public sealed partial class ExplorationSessionView : Control
             AdvanceProgramTime(gameplayDelta);
             return;
         }
-        if (ContinueReadingConfirmation()) return;
+        if (ContinueJoinMusicConfirmation() || ContinueReadingConfirmation()) return;
         WaitToken? deliveryToken = _session.Current.Story.Wait switch
         {
             W1TextWait { Revealed: false } delivery => delivery.Token,
@@ -424,6 +425,12 @@ public sealed partial class ExplorationSessionView : Control
         else if (current.Story.Wait is DialogueWait)
         {
             if (action == GameAction.Confirm) ConfirmReading();
+            return;
+        }
+        else if (action == GameAction.Confirm && current.Story.Wait is MusicWait join &&
+            CompleteJoinMusicWait.CanConfirm(current, _session.Definition.Exploration!))
+        {
+            ConfirmJoinMusic(join);
             return;
         }
         else if (current.CanWaitAtInput)

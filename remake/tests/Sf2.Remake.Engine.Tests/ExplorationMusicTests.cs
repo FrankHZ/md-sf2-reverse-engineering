@@ -126,6 +126,90 @@ public sealed class ExplorationMusicTests
     }
 
     [Fact]
+    public void RecruitmentConfirmPreservesScriptEffectsAndLeavesPlainAcknowledgementPending()
+    {
+        var natural = FinishRecruitment(false);
+        var confirmed = FinishRecruitment(true);
+        Assert.Equal(natural.Story.SimulationTick, confirmed.Story.SimulationTick);
+        Assert.Equal(natural.Story.LogicalView, confirmed.Story.LogicalView);
+        Assert.Equal(natural.Exploration!.Party.MainSeed, confirmed.Exploration!.Party.MainSeed);
+        Assert.Equal(natural.Exploration.Entities[new("ferryman")].Motion,
+            confirmed.Exploration.Entities[new("ferryman")].Motion);
+
+        static SessionSnapshot FinishRecruitment(bool confirm)
+        {
+            var session = StartMusic(0, "Companion joined.", enabled: true, edit: doc =>
+            {
+                var world = doc["world"]!;
+                world["partyFlags"] = JsonNode.Parse("""{"memberCount":2,"joinedStart":10,"activeStart":20,"capacity":2}""");
+                doc["start"]!["flags"] = new JsonArray(10, 20);
+                var instructions = world["programs"]![0]!["instructions"]!.AsArray();
+                instructions.Insert(2, JsonNode.Parse("""{"op":"join-party","member":1}"""));
+                instructions.Insert(3, JsonNode.Parse("""{"op":"try-add-actor-item","actor":"medic-a","item":5}"""));
+                instructions.Insert(instructions.Count - 1, JsonNode.Parse("""{"op":"face","entity":"ferryman","facing":3}"""));
+                instructions.Insert(instructions.Count - 1, JsonNode.Parse("""{"op":"camera-entity","entity":"traveler"}"""));
+                instructions.Insert(instructions.Count - 1, JsonNode.Parse("""{"op":"set-flag","flag":906,"value":true}"""));
+            });
+            DrainTextWork(session);
+            Accept(session, new CompleteTextReveal(session.Current.Story.Wait!.Token));
+            var wait = Assert.IsType<MusicWait>(session.Current.Story.Wait);
+            var music = session.Current.Story.Music!;
+            Assert.Equal(new[] { 0, 1 }, session.Current.Story.PartyLists!.Joined);
+            Assert.Single(session.Current.Exploration!.Party.Actors.First().SourceLoadout!.Items, item => item == 5);
+            Assert.NotNull(Send(session, new CompleteJoinMusicWait(wait.Token)).Failure);
+            Accept(session, new AdvanceSimulation(wait.Token, 600));
+            Assert.NotNull(Send(session, new CompleteJoinMusicWait(new(wait.Token.Value + 1))).Failure);
+            var completion = Accept(session, confirm ? new CompleteJoinMusicWait(wait.Token) : new CompleteMusic(music.Generation, music.Cue));
+            Assert.Single(completion.Observations, e => e.Kind == (confirm ? "music-delivery-skipped" : "music-actual-completed"));
+            Assert.Single(completion.Observations, e => e.Kind == "music-wait-returned");
+            var previous = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+            Assert.Equal(PresentationCueKind.PreviousMusic, previous.Cue.Kind);
+            Assert.Equal("town", session.Current.Story.Music!.Cue);
+            Accept(session, new CompletePresentation(previous.Token, previous.Cue.Kind));
+            var input = Assert.IsType<DialogueWait>(session.Current.Story.Wait);
+            Assert.True(session.Current.CanWaitForText);
+            Assert.DoesNotContain(906, session.Current.Story.Flags);
+            Assert.NotNull(Send(session, new CompleteJoinMusicWait(wait.Token)).Failure);
+            Assert.Same(input, session.Current.Story.Wait);
+            Assert.NotNull(Send(session, new Acknowledge(wait.Token)).Failure);
+
+            Accept(session, new Acknowledge(input.Token));
+            for (int step = 0; step < 60 && session.Current.Story.Wait is { } remaining; step++)
+                Accept(session, new AdvanceSimulation(remaining.Token));
+            Assert.True(session.Current.CanWaitAtInput);
+            Assert.Contains(906, session.Current.Story.Flags);
+            Assert.IsType<ClosedTextWindow>(session.Current.Story.TextWindow);
+            Assert.Equal(session.Current.Exploration!.PlayerEntity.Slot, session.Current.Story.LogicalView!.TargetSlot);
+            Assert.Equal(3, session.Current.Exploration.Entities[new("ferryman")].Motion.Facing);
+            Assert.Equal(new[] { 0, 1 }, session.Current.Story.PartyLists!.Joined);
+            Assert.Single(session.Current.Exploration.Party.Actors.First().SourceLoadout!.Items, item => item == 5);
+            return session.Current;
+        }
+    }
+
+    [Theory]
+    [InlineData(18, true)]
+    [InlineData(19, false)]
+    public void FiniteMusicWithoutRecruitmentReturnStillRequiresNaturalCompletion(int command, bool restoresMusic)
+    {
+        var session = StartMusic(0, "Wait complete.", command: command, end: 5, edit: doc =>
+        {
+            if (!restoresMusic) doc["world"]!["programs"]![0]!["instructions"]!.AsArray().RemoveAt(5);
+        });
+        DrainTextWork(session);
+        Accept(session, new CompleteTextReveal(session.Current.Story.Wait!.Token));
+        var wait = Assert.IsType<MusicWait>(session.Current.Story.Wait);
+        Accept(session, new AdvanceSimulation(wait.Token, 600));
+        var done = session.Current;
+        Assert.NotNull(Send(session, new CompleteJoinMusicWait(wait.Token)).Failure);
+        Assert.Same(done, session.Current);
+        var music = done.Story.Music!;
+        Accept(session, new CompleteMusic(music.Generation, music.Cue));
+        if (restoresMusic) Assert.Equal(PresentationCueKind.PreviousMusic, Assert.IsType<PresentationWait>(session.Current.Story.Wait).Cue.Kind);
+        else Assert.IsType<DialogueWait>(session.Current.Story.Wait);
+    }
+
+    [Fact]
     public void GenerationsRejectStaleDuplicateAndInterferingCompletions()
     {
         var session = StartMusic(0);
