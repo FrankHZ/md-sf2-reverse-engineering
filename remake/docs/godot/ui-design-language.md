@@ -65,7 +65,9 @@ records the delivered behavior. The inspection Cursor page uses the shared board
 the disclosed unit's movement field. The overlay clears when a panel or host cover takes focus.
 [Inspected movement #2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 
-Shared roster presentation (#2082) and spell descriptions (#2083) remain pending.
+Field Party and battle Member use shared scrollable rows with wrapped names, optional portraits,
+and focused and unavailable treatment. Spell descriptions (#2083) remain pending.
+[Shared roster #2082](battle-ui-composition.md#shared-member-roster-2082)
 [Implementation handoff](battle-ui-composition.md#implementation-handoff)
 
 ## Surfaces and hierarchy

@@ -13,8 +13,10 @@ geometry and errors, followed by independent main-gate review.
   directly consumes the accepted `CompactCommandList`, original command frames at nearest 3×,
   80px minimum rows and reserved markers. Up/Down follows the list; Back has its own row.
   The list retains its initiating selection while a member/preparation page owns input.
-- `PartyStatusView` keeps the member column visible beside the selected sheet. Portrait, identity,
-  vitals, attributes, learned spells and inventory remain grouped. Records and gold sit between
+- `PartyStatusView` keeps the shared scrollable member column visible beside the selected sheet.
+  Wrapped names, condition and available portraits use the same row control as battle Member.
+  Field membership comes from the live Party query. Portrait, identity, vitals, attributes,
+  learned spells and inventory remain grouped. Records and gold sit between
   the sheet and its fixed bottom hint panel. Inside that panel the reading hint takes the space on
   the left; Prepare (Magic or Item at those entries) and Close sit together at the right inset.
   Each uses its own visible rectangle for press and release. The field sheet opts into `PartyDetailsPanel.FieldLayout`;
@@ -66,7 +68,8 @@ scrolls the region beneath it. A complete pointer gesture activates a row; point
 focus without submitting. Keyboard/pad, right-click Back, focus/relayout cancellation and opening
 release barriers keep their existing input ownership. Holding Confirm cannot commit through a new page.
 
-Back unwinds provisional preparation and restores its selection, then the originating field choice.
+Back unwinds provisional preparation to the same member and roster scroll, then returns to the
+originating field choice. [Shared roster observation](battle-ui-composition.md#reproduce-the-shared-roster)
 Use/Drop/Give and completed purchases/sales remain committed after acknowledgement. Shop Back follows
 `ShopService.Back`: a quote returns to member selection (including Sell), a sale slot returns to its
 owner, a purchase recipient returns to its Buy or Deals stock, and Leave completes the actual

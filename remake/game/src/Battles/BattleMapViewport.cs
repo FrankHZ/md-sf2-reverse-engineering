@@ -5,6 +5,7 @@ using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Maps;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
@@ -421,6 +422,12 @@ internal sealed partial class BattleMapViewport : Control
         segment = movement.Segment, from = movement.From, to = movement.To, facing = movement.Facing,
         progress = _movementProgress, delivered = _movementDelivered, path = movement.Path,
     };
+
+    internal MemberPortrait? RosterPortrait(ActorRef actor, bool hd) =>
+        _spriteIds.TryGetValue(actor, out int sprite)
+            ? MemberPortrait.ForSprite(_visuals, sprite, hd && _region?.Map is { } map &&
+                _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null)
+            : null;
 
     private ImageTexture Texture(int sprite, int direction, int walkingFrame = 0)
     {
