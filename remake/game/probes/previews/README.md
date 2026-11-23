@@ -52,6 +52,10 @@ returns to the selected member. **Map** returns to Options on Back. **Speed** us
 settings draft and restores Options when closed. **Quit** opens the production caller with the
 authored profile's save refusal and a Back action.
 
+Hover the enemy or move the cursor to (8, 5) to inspect its red movement range. Allied ranges
+use cyan. The mini-status header shows the name and admitted ally class/level. HP and MP
+occupy separate rows, with cell and land effect below them.
+
 The toolbar sits above the production viewport. F5/F10 can cover the current battle page. Back
 from the cover resumes that session. Re-selecting F4 or F8 creates a fresh independent session.
 

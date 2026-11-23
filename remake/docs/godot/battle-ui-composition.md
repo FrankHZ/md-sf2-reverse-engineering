@@ -127,7 +127,7 @@ foreground priority are preserved.
 
 Reuse the board-local movement and action drawing owners. Only one field may be visible, below
 units and source foreground, using a pixel-aligned tile motif that leaves terrain readable.
-Movement uses cyan, with distinct interior fill for legal stops and a simpler edge mark for
+Movement uses cyan for allies and red for enemies, with distinct interior fill for legal stops and a simpler edge mark for
 traversable-only cells such as occupied friendly cells. In targeting use warm reach tiles and one
 lighter inset for affected cells. A cell in both has one outline and a distinct effect interior.
 A radius-zero effect shares the candidate cell with the cursor. Rules, costs, target side,
@@ -177,7 +177,8 @@ unit's movement field on the Cursor page. `QueryBattleInspectionRange` uses the 
 settled-origin, session/revision and disclosure checks before calling `BattleMovement.Range`.
 The field starts at the inspected unit's actual cell and uses live Move, mover type, terrain and
 occupancy. Both factions can cross a friendly occupied cell without stopping there. The shared
-board overlay draws `ReachableCells` as cyan edges and fills the legal `Destinations`.
+board overlay draws `ReachableCells` as edges and fills the legal `Destinations`.
+The inspected actor's faction selects cyan for allies or red for enemies.
 Reduced Flash keeps the field steady.
 The query runs when the inspected actor or live snapshot changes, or the visible Cursor page
 returns. The field clears on empty ground or when the subject is stale, undisclosed, absent or defeated.
@@ -529,9 +530,12 @@ focus where it was. The frame shields the underlying board from clicks. Cursor s
 or empty-ground caption and coordinate in the hover card only. Options displays its Back binding
 on the button. Resizing or changing page cancels an old capture.
 
-The compact Movement, friendly Target and real playback cards show the live ally level. Enemy
-cards retain their existing disclosure. The original mini-status routine provides ally level and
-skips that field for enemies. [Pinned source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L600-L626)
+Movement, Target, hover inspection and playback use a project-authored double-gold frame
+with stepped corner accents. The mini-status composition puts the name and admitted ally
+class and level in the header, then stacks HP and MP with aligned bars and right-side values.
+Inspection adds coordinates and land effect in the bottom row. The game preserves the live
+resource and participant boundaries. This composition follows the placement of information in
+the [pinned mini-status routine](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L572-L664).
 
 ### Reproduce shared description reading and inspection return
 
@@ -646,6 +650,11 @@ Use UTF-8 input settings with `formatVersion` 1, `confirmCancel` standard, `text
 | --- | --- |
 | Private Battle01 | Select the registered `derived/issue2035/galam-town-v1` world, entry, main-scenes and six opening files as described in the [publication owner](../content/presentation-assets.md#final-publication-and-ordinary-selection). Set `SF2_DEMO_BATTLE_CASE=private`, `SF2_CURSOR_ORIGINAL=1` and `SF2_CURSOR_SHA256` to the decoded identity in [cursor publication](battle-scenes.md#source-and-publication). Set `language` to en and `reducedFlash` to false. Set `SF2_COMPACT_START` to the controlled start below. Use 1920×1080. |
 | Public long text and wide vitals | Set `SF2_DEMO_BATTLE_CASE=public`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Set `language` to zh-CN and `reducedFlash` to true. Copy `remake/content/authored/attack-spells.json` to run scratch. Change the mage maximum HP to 30,000 and initial HP to 29,999. Rename its actor ID, start actor reference and encounter placement reference to `very-long-controlled-mage-name-for-wrap-and-five-digit-vitals`. Keep its physical movement type. Widen the terrain to the left by eight cells, extending the barrier on the top and bottom rows and inserting eight open cells after the left barrier of each interior row. Shift every placement eight cells right to exercise right-edge target clearance. Pass that copy as the authored package. The observer extends one localized help string before mounting the host. Use 1600×900. |
+
+For the [mini-status geometry observer](../../game/probes/engine_battle_vitals_observation.gd),
+set `SF2_VITALS_CASE=wide` and give the authored center enemy the same wide HP values and a
+similarly long ID (change the definition, placement and start actor references). This covers wide
+values in both the acting and target cards, including the enemy header's disclosure boundary.
 | Public area completion | Set `SF2_DEMO_BATTLE_CASE=area`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Use English and Reduced Flash and select the unchanged `attack-spells.json` at 1920×1080. |
 
 The private controlled start declares the active lineup. Save it under the checkout's ignored

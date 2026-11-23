@@ -509,7 +509,7 @@ appear. Movement Cancel finishes the real undo before inspection opens at the or
 Cancel returns to Movement first. On another unit, closing details restores the cursor. Map returns
 to Options, then cursor. Subordinate pages hide the board cursor and retain its cell.
 `Member` restores its selected roster row. Battle Quit uses its existing save eligibility and return
-flow. The shared cyan field shows traversal and legal stops from the inspected unit's actual
+flow. Cyan ally and red enemy fields show traversal and legal stops from the inspected unit's actual
 cell. It clears on empty ground, subordinate pages, host cover and exit.
 [Inspected movement and pending shared roster](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 
@@ -576,13 +576,14 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   supported on full Main rows, child rows, eligible targets and the free-inspection board.
   [Preview controls](../../game/probes/previews/README.md#f4-action-playback) ·
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
-- **F4 decision vitals and layout (#2079).** The acting or recipient card measures its available
-  width and name height. It uses 36px HP/MP readings above side-by-side 232×28 gauge images.
+- **F4 decision vitals and layout.** The acting and recipient cards use stacked HP and MP rows
+  with aligned bars and readings, a measured name and admitted ally class/level, and a double-gold
+  frame. The same card renders close-up status. The inspection hover adds cell and land effect.
   The Main or child list sits below the card, clear of the fixed footer. Long reasons scroll
   inside the reader. The card and footer move together when the preferred column covers the subject.
   The [native observations](battle-ui-composition.md#reproduce-slice-1) cover wide values, long text
   and disjoint geometry. [Decision cards](../../game/src/Battles/BattleMenuLayout.cs) ·
-  [Decision vitals](../../game/src/UI/BattleDecisionVitals.cs)
+  [Mini-status card](../../game/src/UI/BattleStatusCard.cs)
 - **Artwork — shared battlefield cursor (#2079).** Movement, Target and free inspection share
   one cursor. The admitted 32×32 source art is centered at nearest 4× on a 96px cell. Public and
   older private packages draw the authored pixel corners. Native input and geometry checks cover

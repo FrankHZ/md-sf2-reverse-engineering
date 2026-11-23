@@ -32,7 +32,7 @@ internal sealed partial class BattleSceneView : Control
     private string _messageFallback = "";
     private readonly StoryDialoguePanel _messagePanel = new() { Name = "MessagePanel" };
     private GameInput _input = null!;
-    private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard", Compact = true }, _targetCard = new() { Name = "TargetCard", Compact = true };
+    private readonly BattleStatusCard _actorCard = new() { Name = "ActorCard" }, _targetCard = new() { Name = "TargetCard" };
     private GameSession _session = null!;
     private InputSettings _settings = null!;
     private SessionAudio? _audio;
@@ -510,9 +510,8 @@ internal sealed partial class BattleSceneView : Control
             actor = battle.GetActor(state.DisplayedAlly ?? state.DisplayedEnemy ?? state.Actor);
             target = null;
         }
-        string role = state.FriendlySupport && actor.Actor != state.Actor ? "battle.target" : "battle.acting";
-        _actorCard.Present(actor, ActorName(actor.Actor), GameText.Get(role));
-        _targetCard.Present(target, target is null ? "" : ActorName(target.Actor), GameText.Get("battle.target"));
+        _actorCard.Present(actor, ActorName(actor.Actor));
+        _targetCard.Present(target, target is null ? "" : ActorName(target.Actor));
         ArrangeStatus(state);
     }
 

@@ -449,10 +449,12 @@ func range_checkpoint(label: String, baseline: Array, role: String, actor := "",
     if not check(movement.steady == settings.applied.ReducedFlash, label + ": range follows Reduced Flash"): return false
     var reachable := reachable_x.map(func(x): return {"X":float(x),"Y":3.0})
     var stops := stop_x.map(func(x): return {"X":float(x),"Y":3.0})
+    var tint := "ff625e" if actor == "raider" else "78e9f3"
     return check(movement.visible and movement.actor == actor and movement.origin == {"X":float(origin_x),"Y":3.0}
         and movement.reachableCells == reachable and movement.drawnReachableCells == reachable
-        and movement.destinations == stops and movement.drawnDestinations == stops,
-        label + ": actual draw uses inspected origin, traversable cells and legal stops")
+        and movement.destinations == stops and movement.drawnDestinations == stops
+        and movement.tint == tint and movement.drawnTint == tint,
+        label + ": actual draw uses the origin, traversable cells, legal stops and faction tint")
 
 func footer_mouse(bounds: Dictionary, button: MouseButton, pressed: bool) -> void:
     var event := InputEventMouseButton.new()

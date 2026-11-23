@@ -8,8 +8,8 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 internal sealed partial class BattleMenuLayout : Control
 {
     private const int PanelInset = 16, Gap = 12;
-    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", Compact = true, DecisionHeader = true };
-    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true, DecisionHeader = true };
+    internal readonly UI.BattleStatusCard Actor = new() { Name = "ActorCard", DecisionHeader = true };
+    internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, DecisionHeader = true };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);

@@ -6,168 +6,120 @@ using Sf2.Remake.Application.Runtime.Battles;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
-// Disposable projection of live actor state. No resource interpolation or gameplay clock.
+// Disposable projection of the live combatant, used for decisions and close-ups.
 internal sealed partial class BattleStatusCard : PanelContainer
 {
-    internal bool Compact { get; init; }
+    private const int BaseWidth = 500, HorizontalInsets = 36, HeaderGap = 14;
     internal bool DecisionHeader { get; init; }
-    internal static readonly Vector2 CardSize = new(500, 192);
-    internal Vector2 RequestedSize { get; private set; } = CardSize;
-    private readonly Label _role = Text("Role", 18), _name = Text("CharacterName", 26);
-    private readonly Label _land = Text("LandEffect", 18);
-    private BattleVitalGauge _hp = null!, _mp = null!;
-    private BattleDecisionVitals _decision = null!;
+    internal Vector2 RequestedSize { get; private set; } = new(BaseWidth, 152);
+    private readonly Label _name = Text("CharacterName", 26), _role = Text("ClassLevel", 18);
+    private readonly BattleVitalGauge _hp = new("HP", miniStatus: true), _mp = new("MP", miniStatus: true);
     private ActorRef? _actor;
     private int? _level;
     internal ActorRef? Actor => _actor;
-    private float _compactHeight = 148;
-    private float _decisionHeight = 164, _nameWidth = CardSize.X;
 
     public override void _Ready()
     {
-        Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
-        if (DecisionHeader)
-        {
-            var style = (StyleBoxFlat)GetThemeStylebox("panel").Duplicate();
-            style.ContentMarginLeft = style.ContentMarginRight = style.ContentMarginTop = style.ContentMarginBottom = 16;
-            AddThemeStyleboxOverride("panel", style);
-        }
-        var column = new VBoxContainer(); column.AddThemeConstantOverride("separation", 2);
-        AddChild(column); column.AddChild(_role); column.AddChild(_name); _role.Visible = !Compact;
+        Theme = StoryTheme.Create();
+        MouseFilter = MouseFilterEnum.Ignore;
+        TextureFilter = TextureFilterEnum.Nearest;
+        AddThemeStyleboxOverride("panel", BattleCardFrame.Create());
+        var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        column.AddThemeConstantOverride("separation", 4);
+        AddChild(column);
+        var header = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        header.AddThemeConstantOverride("separation", HeaderGap);
+        column.AddChild(header);
         _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _name.CustomMinimumSize = new(0, Compact ? 36 : 64);
+        _name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _name.CustomMinimumSize = new(0, 40);
         _name.MaxLinesVisible = 2;
         _name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
-        column.AddChild(_land); _land.Hide();
-        if (DecisionHeader) { _decision = new(); column.AddChild(_decision); }
-        else { _hp = new("HP"); _mp = new("MP"); column.AddChild(_hp); column.AddChild(_mp); }
-        // A hidden wrapped label initially measures at width 1. Reset the requested
-        // frame when native sorting publishes the real minimum (also on actor changes).
+        _role.VerticalAlignment = VerticalAlignment.Top;
+        _role.AddThemeColorOverride("font_color", StoryTheme.Selected);
+        header.AddChild(_name); header.AddChild(_role);
+        column.AddChild(_hp); column.AddChild(_mp);
         if (!DecisionHeader) MinimumSizeChanged += () => Size = RequestedSize;
         Size = RequestedSize;
     }
 
-    internal void Present(BattleActorState? actor, string name, string role)
-    {
-        string silence = actor is not null && (actor.Status & 0x300) != 0
-            ? " · " + GameText.Get("battle.status.silence", (actor.Status & 0x300) >> 8) : "";
-        Present(actor?.Actor, name, role + silence, actor?.Hp ?? 0, actor?.MaxHp ?? 0, actor?.Mp ?? 0, actor?.MaxMp ?? 0,
-            actor?.IsAlly == true ? actor.Level : null);
-    }
-
-    // Field callers project scalar carried resources without constructing a battle actor.
-    internal void Present(ActorRef? actor, string name, string role, int hp, int maxHp, int mp, int maxMp, int? level = null)
-    {
-        _land.Hide();
-        _actor = actor; Visible = actor is not null;
-        bool low = hp > 0 && maxHp > 0 && hp * 4 <= maxHp;
-        PresentRole(level, role + (hp == 0 ? GameText.Get("battle.defeated") : low ? GameText.Get("battle.low-hp") : ""));
-        PresentName(name);
-        _role.Modulate = low ? StoryTheme.Selected : Colors.White;
-        Size = RequestedSize;
-        PresentVitals(hp, maxHp, mp, maxMp);
-    }
-
-    internal void Present(Sf2.Remake.Application.Runtime.Battles.BattleInspectionUnit unit, string name)
-    {
-        _land.Hide();
-        _actor = unit.Actor; Show();
-        PresentRole(unit.Ally ? unit.Level : null, (unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
-            unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
-            GameText.Get("battle.inspect.enemy")) + " · " + DisplayNames.InspectionStatus(unit.Status));
-        PresentName(name);
-        _role.Modulate = Colors.White; Size = RequestedSize;
-        PresentVitals(unit.Hp, unit.MaxHp, unit.Mp, unit.MaxMp);
-    }
+    internal void Present(BattleActorState? actor, string name) =>
+        Present(actor?.Actor, name, actor?.IsAlly == true ? actor.Definition.Growth?.ClassId : null,
+            actor?.IsAlly == true ? actor.Level : null, actor?.Hp, actor?.MaxHp, actor?.Mp, actor?.MaxMp);
 
     internal void PresentActing(BattleActingStatus? status)
     {
-        _actor = status?.Unit.Actor; Visible = status is not null;
-        if (status is null) { _land.Hide(); return; }
-        var unit = status.Unit;
-        _land.Visible = !Compact;
-        _land.Text = GameText.Get("battle.acting-land", status.Land.Percent, status.Land.Position.X, status.Land.Position.Y);
-        string header = unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
-            unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
-            GameText.Get("battle.inspect.enemy");
-        bool low = unit.Hp is > 0 && unit.MaxHp is > 0 && unit.Hp * 4 <= unit.MaxHp;
-        PresentRole(unit.Ally ? unit.Level : null, GameText.Get("battle.acting") + " · " + header +
-            ((unit.Status & 0x300) != 0 ? " · " + GameText.Get("battle.status.silence", (unit.Status & 0x300) >> 8) : "") +
-            (low ? GameText.Get("battle.low-hp") : ""));
-        PresentName(DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName));
-        _role.Modulate = low ? StoryTheme.Selected : Colors.White; Size = RequestedSize;
-        PresentVitals(unit.Hp, unit.MaxHp, unit.Mp, unit.MaxMp);
+        var unit = status?.Unit;
+        Present(unit?.Actor, unit is null ? "" : DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName),
+            unit?.ClassId, unit?.Level, unit?.Hp, unit?.MaxHp, unit?.Mp, unit?.MaxMp);
     }
 
-    private void PresentRole(int? level, string role)
+    internal static string ClassAndLevel(byte? classId, int? level)
     {
+        if (level is not { } rank) return "";
+        string levelText = GameText.Get("battle.card-level", rank);
+        return classId is null ? levelText : DisplayNames.Class(classId) + " · " + levelText;
+    }
+
+    private void Present(ActorRef? actor, string name, byte? classId, int? level, int? hp, int? maxHp, int? mp, int? maxMp)
+    {
+        _actor = actor;
         _level = level;
-        _role.Visible = !Compact || level is not null;
-        _role.Text = Compact && level is { } current ? GameText.Get("battle.card-level", current) : role;
-    }
-
-    private void PresentVitals(int? hp, int? maxHp, int? mp, int? maxMp)
-    {
-        if (DecisionHeader)
+        Visible = actor is not null;
+        string role = ClassAndLevel(classId, level);
+        _role.Visible = role.Length > 0;
+        if (_name.Text != name || _role.Text != role)
         {
-            _decision.Present(hp, maxHp, mp, maxMp);
-            RequestedSize = new(Mathf.Max(_nameWidth, _decision.GetCombinedMinimumSize().X + 32), Height);
-            Size = RequestedSize;
+            _name.Text = name;
+            _role.Text = role;
+            MeasureName();
         }
-        else { _hp.Present(hp, maxHp); _mp.Present(mp, maxMp); }
+        _role.Modulate = hp > 0 && maxHp > 0 && hp * 4 <= maxHp ? StoryTheme.Selected : Colors.White;
+        _hp.Present(hp, maxHp); _mp.Present(mp, maxMp);
+        _hp.AlignValueColumn(_mp);
+        Size = RequestedSize;
     }
 
-    private void PresentName(string name)
+    private void MeasureName()
     {
-        if (_name.Text == name)
-        { RequestedSize = new(RequestedSize.X, Height); return; }
-        _name.Text = name;
+        float badge = _role.Visible ? _role.GetMinimumSize().X + HeaderGap : 0;
         var font = _name.GetThemeFont("font");
         using var shaped = new TextParagraph
         {
-            Width = CardSize.X - 28,
+            Width = BaseWidth - HorizontalInsets - badge,
             BreakFlags = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive,
         };
-        // Native smart wrapping also accounts for word boundaries, unlike dividing
-        // a single-line width by two. Keep complete long identifiers at >=22px.
         int fontSize = 26;
         for (; fontSize >= 22; fontSize--)
         {
-            shaped.Clear(); shaped.AddString(name, font, fontSize);
+            shaped.Clear(); shaped.AddString(_name.Text, font, fontSize);
             if (shaped.GetLineCount() <= 2 || fontSize == 22) break;
         }
-        // At most 19 width steps. Ordinary 64-character IDs fit completely;
-        // exceptional longer metadata stays within a finite two-line frame.
-        const float maximumNameWidth = 800 - 28;
-        while (shaped.GetLineCount() > 2 && shaped.Width < maximumNameWidth)
-            shaped.Width = Mathf.Min(shaped.Width + 16, maximumNameWidth);
-        _compactHeight = Mathf.Max(148, shaped.GetSize().Y + 100);
-        _decisionHeight = Mathf.Max(164, shaped.GetSize().Y + 122);
-        _nameWidth = shaped.Width + (DecisionHeader ? 32 : 28);
-        RequestedSize = new(shaped.Width + 28, Height);
+        float maxWidth = 800 - HorizontalInsets - badge;
+        while (shaped.GetLineCount() > 2 && shaped.Width < maxWidth)
+            shaped.Width = Mathf.Min(shaped.Width + 16, maxWidth);
         _name.AddThemeFontSizeOverride("font_size", fontSize);
+        _name.CustomMinimumSize = new(0, Mathf.Max(40, Mathf.Ceil(shaped.GetSize().Y)));
+        RequestedSize = new(shaped.Width + badge + HorizontalInsets, _name.CustomMinimumSize.Y + 112);
     }
-    private float Height => Compact
-        ? (DecisionHeader ? _decisionHeight : _compactHeight) + (_role.Visible ? _role.GetMinimumSize().Y + 2 : 0)
-        : CardSize.Y + (_land.Visible ? 26 : 0);
 
     internal object Observe() => new
     {
         actor = _actor?.Value, visible = IsVisibleInTree(), name = _name.Text, role = _role.Text,
         level = _level, roleVisible = _role.IsVisibleInTree(), roleRect = BattleMapViewport.Rectangle(_role.GetGlobalRect()),
-        land = _land.IsVisibleInTree() ? _land.Text : null, landRect = BattleMapViewport.Rectangle(_land.GetGlobalRect()),
         rect = BattleMapViewport.Rectangle(GetGlobalRect()),
+        frame = GetThemeStylebox("panel") is StyleBoxTexture,
         nameRect = BattleMapViewport.Rectangle(_name.GetGlobalRect()),
         nameLines = _name.GetLineCount(), nameFontSize = _name.GetThemeFontSize("font_size"),
-        nameVisibleLines = _name.GetVisibleLineCount(),
-        decisionHeader = DecisionHeader,
-        hp = DecisionHeader ? _decision.ObserveHp() : _hp.Observe(), mp = DecisionHeader ? _decision.ObserveMp() : _mp.Observe(),
+        nameVisibleLines = _name.GetVisibleLineCount(), decisionHeader = DecisionHeader,
+        hp = _hp.Observe(), mp = _mp.Observe(),
     };
 
     private static Label Text(string name, int size)
     {
         var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore };
-        label.AddThemeFontSizeOverride("font_size", size); return label;
+        label.AddThemeFontSizeOverride("font_size", size);
+        return label;
     }
 }
 
@@ -176,15 +128,15 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
     private readonly Label _label, _value;
     private readonly BattleGaugeImage _image;
     private int? _current, _maximum;
-    internal BattleVitalGauge(string label)
+    internal BattleVitalGauge(string label, bool miniStatus = false)
     {
         Name = label; MouseFilter = MouseFilterEnum.Ignore;
         AddThemeConstantOverride("separation", 10);
-        _label = new Label { Name = "Label", Text = label, CustomMinimumSize = new(42, 30) };
+        _label = new Label { Name = "Label", Text = label, CustomMinimumSize = new(42, miniStatus ? 36 : 30) };
         _value = new Label { Name = "Value", CustomMinimumSize = new(132, 30), HorizontalAlignment = HorizontalAlignment.Right };
         _image = new BattleGaugeImage(label) { Name = "Image", SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.ShrinkCenter, CustomMinimumSize = new(220, 28) };
-        foreach (var text in new[] { _label, _value }) text.AddThemeFontSizeOverride("font_size", 22);
+        foreach (var text in new[] { _label, _value }) text.AddThemeFontSizeOverride("font_size", miniStatus ? 25 : 22);
     }
     public override void _Ready() { AddChild(_label); AddChild(_image); AddChild(_value); }
     internal void Present(int? current, int? maximum)
@@ -196,8 +148,17 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
     }
     internal static string Value(int? current, int? maximum) => maximum == 0 ? "—" :
         $"{current?.ToString() ?? GameText.Get("party.value-unavailable")}/{maximum?.ToString() ?? GameText.Get("party.value-unavailable")}";
+    internal string Reading => _value.Text;
+    internal void AlignValueColumn(BattleVitalGauge other)
+    {
+        float width = Mathf.Max(132, Mathf.Ceil(Mathf.Max(_value.GetMinimumSize().X, other._value.GetMinimumSize().X)));
+        _value.CustomMinimumSize = other._value.CustomMinimumSize = new(width, 30);
+    }
+    internal object ObserveImage() => _image.Observe();
     internal object Observe() => new { label = _label.Text, current = _current, maximum = _maximum,
-        text = _value.Text, image = _image.Observe(), valueRect = BattleMapViewport.Rectangle(_value.GetGlobalRect()) };
+        text = _value.Text, fontSize = _value.GetThemeFontSize("font_size"),
+        valueMinimumWidth = _value.GetMinimumSize().X, valueRect = BattleMapViewport.Rectangle(_value.GetGlobalRect()),
+        image = ObserveImage() };
 }
 
 // Four small public-authored PNG segments, loaded through Godot's ordinary resource system.
