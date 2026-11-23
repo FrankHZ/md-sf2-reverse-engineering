@@ -37,12 +37,12 @@ func main_focus(label: String, expected: int) -> bool:
     if not check(s.stage == "ActionChoice" and s.menu.page == "Main" and s.menu.command == command,
             label + ": initial focus follows current enabled physical targets"): return false
     if expected >= 0 and not check(command == expected, label + ": representative target boundary"): return false
-    return check(s.menu.layout.diamondVisible and s.menu.layout.commands[command].selected,
-        label + ": actual diamond projects the selected command")
+    return check(s.menu.layout.commandList.visible and s.menu.layout.commands[command].selected,
+        label + ": actual list projects the selected command")
 
 func children() -> bool:
     var before := state()
-    await press("right")
+    for i in range(posmod(2-state().menu.command,4)): await press("down")
     await edge("confirm", true)
     await frames(20)
     await edge("confirm", false)
@@ -53,7 +53,7 @@ func children() -> bool:
     if not check(state().menu.page == "Main" and state().menu.command == 3 and resources(state()) == resources(before),
             "Focusing Stay preserves resources before choosing"): return false
     if before.menu.command == 0:
-        await press("up")
+        await press("down")
         await press("confirm")
         if not check(state().menu.page == "Target", "Attack opens target choice without committing"): return false
         await press("cancel")

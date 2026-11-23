@@ -13,7 +13,7 @@ controls, their observed returns and the limits that matter during play.
 | F1 Witch and slots / F2 dialogue | Start or Continue in either slot, read a portrait question, answer and regain control. A new name requires a physical keyboard, even when navigating with a pad. | [Entry and dialogue](presentation.md#production-entry-and-field-dialogue-1606) covers retained drafts, safe overwrite Back, backup recovery and an actual Map3 Yes/No in English and Chinese. |
 | F3 Church | Scan labeled services with Up/Down, decline a quote, or Record and return from the shared slots to the field. Promotion displays its refusal. | [Church list and caller](#10-production-church-and-battle-command-lists) distinguishes the actual private Record route from the authored paid Raise case. |
 | F5 party / F6 shop / F7 field | Open Member, Magic, Item or contextual Search. Inspect four numbered slots, compare a recipient’s pack or a Galam quote, then back out or confirm. | [Field, party and shop](field-and-shop.md#verification-boundary-and-remaining-gaps) covers selection return, full-pack exchange, Search dismissal and real buy/sell followed by walking. The [field footer and shop hint audit](#production-controls-audit) checks the mounted controls across input and shop phases. Repair and Deals remain unavailable. |
-| F4 battle / F8 inspection | Move with directions, confirm a stop, then choose a labeled diamond command. Cycle or hover eligible targets. From Movement, Cancel undoes the preview and opens free inspection. | [Battle decisions and inspection](battle-interaction-baseline.md#production-f4f8f9-contract) covers actual range, targeting, board gestures, Map and return. See the [input and artwork differences](#9-remaining-differences-in-play). |
+| F4 battle / F8 inspection | Move with directions, confirm a stop, then choose a labeled command row. Cycle or hover eligible targets. From Movement, Cancel undoes the preview and opens free inspection. | [Battle decisions and inspection](battle-interaction-baseline.md#production-f4f8f9-contract) covers actual range, targeting, board gestures, Map and return. See the [input and artwork differences](#9-remaining-differences-in-play). |
 | F9 results | Read damage, death, rewards and growth, then wait for the next actor or walk after a field return. | [Playback and results](battle-scenes.md#production-playback-and-result-layout) distinguishes Battle01 combat, connected Battle02 EGRESS and authored victory/defeat. [Campaign handoffs](../application/pre-voyage-campaign.md#session-and-handoffs) cover Galam, the tower and the later return. |
 | F10 Menu, Settings, Save and recovery | Open Help from shared Settings at the Witch menu, in settled field or from the battle system Menu. Cancel a slot overwrite or settings draft, restore a covered page after resize, and Continue a saved turn. | [Host access and restore](host-ui.md#access-through-the-finite-demo) lists actual Save predicates. The tower return on Map58 supports Save; first control on Map14 has no field-save recipe. |
 
@@ -414,8 +414,8 @@ The current user slot and backup must never be a design-validation fixture.
 
 The [#2079 battle composition](battle-ui-composition.md#phase-focus-and-return) is mounted in
 production. The [battle feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
-owns gameplay and source evidence. Main places the measured acting card above the freestanding
-diamond and the bounded reader below it. The preferred column is on the right. If it would cover
+owns gameplay and source evidence. [#2090](battle-ui-composition.md#vertical-battle-main-2090)
+restores four vertical Main rows between the measured acting card and the bounded reader. The preferred column is on the right. If it would cover
 the board subject, the card, controls and reader move together to the clear left column.
 
 ```text
@@ -423,17 +423,16 @@ the board subject, the card, controls and reader move together to the clear left
                                                       HP             MP
 
    Battle board                                       [icon] Attack
-
-                                              Magic [icon]   [icon] Item
-
+                                                      [icon] Magic
+                                                      [icon] Item
                                                       [icon] Stay / Search
 
                                                       Consequence or refusal
                                                       Mapped hints        Back
 ```
 
-Up focuses Attack, Left Magic, Right Item and Down Stay or Search. Confirm chooses the focused
-slot. Magic and Item replace the diamond with a scrollable list below the card. The footer keeps
+Up/Down moves through the rows and wraps at either end. Confirm or a complete row click chooses
+the command. Magic and Item replace Main with a scrollable list below the card. The footer keeps
 its bounds as offers change. In Target, the shared board cursor marks the eligible recipient and
 the recipient's card takes the card position. Back restores the chosen level, slot or command.
 
@@ -449,8 +448,8 @@ tracks pending spell descriptions (#2083) and the current-round readout (#2065).
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
 | Movement | An acting card and quiet round/gold support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
-| Main action | Four labeled slots beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the lower slot offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Long reasons scroll within the fixed reader. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
-| Spell / item list | A scrollable list replaces the diamond beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
+| Main action | Four labeled rows beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Long reasons scroll within the fixed reader. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
+| Spell / item list | A scrollable list replaces Main beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
 | Target / affected area | One cursor marks the eligible recipient. One field shows reach and affected cells. The recipient card replaces the acting card. Cycle, Confirm and Back use the footer. | An empty, defeated, wrong-side or out-of-range cell clears the cursor, recipient card and effect inset. Confirm cannot commit the old target. Back returns to the prior row or Main. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
 | Commit | The explicit current command owns payment/action commitment; UI retires the provisional pages and switches to the real presentation phase. | A refusal/stale offer remains with its current responsible view and reason; do not invent success or silently submit a previous choice. Returning held directions/Confirm cannot act on the next phase. |
@@ -562,13 +561,13 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   [Battle footer](../../game/src/Battles/BattleCommandMenu.cs) ·
   [Mappings and acceptance](presentation.md#mappings-first-use-and-reading-limits)
 - **Movement input.** The F4 example accepts a click on a cyan cell. In real Movement, use mapped
-  directions, then Confirm. Mouse input is supported on diamond slots and captions, child rows,
+  directions, then Confirm. Mouse input is supported on full Main rows, child rows,
   eligible targets and the free-inspection board. Click-to-walk was outside the accepted movement scope. It would require
   a new product decision. [Preview controls](../../game/probes/previews/README.md#f4-action-playback) ·
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
 - **F4 decision vitals and layout (#2079).** The acting or recipient card measures its available
   width and name height. It uses 36px HP/MP readings above side-by-side 232×28 gauge images.
-  The diamond or child list sits below the card, clear of the fixed footer. Long reasons scroll
+  The Main or child list sits below the card, clear of the fixed footer. Long reasons scroll
   inside the reader. The card and footer move together when the preferred column covers the subject.
   The [native observations](battle-ui-composition.md#reproduce-slice-1) cover wide values, long text
   and disjoint geometry. [Decision cards](../../game/src/Battles/BattleMenuLayout.cs) ·
@@ -597,10 +596,10 @@ available rows. Reduced Flash holds the selected frame. Public commands without 
 display their localized names. The [field and shop lists](field-and-shop.md#current-composition)
 also use this component.
 
-Battle Main uses the [#2079 diamond](#8-battle-one-complete-decision-then-its-consequences).
+Battle Main uses the [compact vertical rows](#8-battle-one-complete-decision-then-its-consequences).
 Magic and Item retain scrollable child rows with 48×72 identity icons where mounted. The
-[current battle observation](battle-ui-composition.md#reproduce-slice-1) covers the mounted
-diamond, child rows and reader.
+[current battle observation](battle-ui-composition.md#vertical-battle-main-2090) covers the
+Main rows, child pages and reader.
 
 Church places the measured 560px service panel on the right, below the host safe area, with the
 room under a 35% veil. The four services and separate Leave row use Up/Down; moving focus or
@@ -652,7 +651,7 @@ native cases are sufficient and each is bounded to under 60 seconds.
 pad, complete row clicks, and canceled relayout gestures. The Church cases observed refusal,
 authored quote/decline/payment and the Record host return. The authored Search case observed the
 contextual Search offer and result. The earlier Battle01 compact-list run recorded HEAL targeting,
-Item and Stay cancellation, and resource and RNG equality during browsing. See the
-[current production contract](battle-interaction-baseline.md#production-f4f8f9-contract) for
-the #2079 layout and its native observations. Some compact-list runs reported
+Item and Stay cancellation, and resource and RNG equality during browsing. The
+[current production contract](battle-interaction-baseline.md#production-f4f8f9-contract)
+links the restored Main rows and the phase layout observations. Some compact-list runs reported
 ObjectDB exit warnings (4 or 6 instances). Their cause remains **Unknown**.

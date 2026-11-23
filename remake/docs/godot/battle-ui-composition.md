@@ -5,6 +5,7 @@
 misrouted input could commit an action. [Issue #2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079)
 implements phase visibility, board marks, decision layout and geometry-only close-up resize.
 [Issue #2080](#fresh-target-input-and-direct-stay) delivers fresh target navigation and direct Stay.
+[Issue #2090](#vertical-battle-main-2090) restores the vertical Main command list.
 The [feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
 records current behavior. [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456)
 owns the player's review of the composed experience.
@@ -37,14 +38,81 @@ Visibility and hit testing change together.
 | --- | --- | --- | --- |
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints, queue and board selection marks are hidden. |
 | Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round/gold, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
-| Main action | One focused command in the freestanding diamond | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the lower Stay/Search slot. Direction changes focus, Confirm chooses, and mapped shortcuts still choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
-| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Child rows replace the diamond. Scrolling keeps focus visible. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
+| Main action | One focused row in the vertical command list | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
+| Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Child rows replace the Main list. Scrolling keeps focus visible. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
 | Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An empty candidate set gives Back and the reason. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
 | Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one inspection hint, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One applicable hint and data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
 | Enemy action, close-up, field notice/death, result or battle exit | Actual delivered action or current message/return prompt | Playback cards for the actual participants, message reader, board only when owned by the continuation | Existing completion token and acknowledgement. All decision surfaces and board marks retire. Rebuild from live control after delivery. Field return uses field chrome. A failure shows once at its owning view. |
 | Host Menu, Save, Speed or recovery cover | Host/modal's current choice or reader | Only the permitted covered backdrop | Suspend battle gestures, holds and pacing using existing ownership. Restore the same eligible caller, with its current layout and fresh input after release. A resize while covered may recompute geometry. |
+
+## Vertical battle Main (#2090)
+
+**Standard rigor.** [#2090](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2090)
+restores the Main list seen at `277cb0dad2ce7dc7a6f34a7443426d422d48e25f`. The diamond
+introduced at `434c2ae93cdb278f0a5fcc727d61d60b1929a38b` exceeded the requested layout
+scope. The shared compact list owns row layout and hit bounds. `BattleCommandMenu` owns the
+selected row and existing shortcuts. The card, footer, child lists and phase routing retain
+their existing owners. Original cardinal input and the Search/Stay branch remain documented
+in their [source contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md).
+
+### Reproduce the Main rows
+
+Use the builds and isolated headless setup in [Reproduce slice 1](#reproduce-slice-1). Use a
+fresh checkout-local report and log for each case and a disposable save namespace.
+
+For the authored battle, copy `remake/content/authored/battle-give.json` to ignored scratch.
+Use the champion, spell and weapon changes from [the Target recipe](#reproduce-target-navigation-and-stay).
+Keep one foe and place `reserve` at (1,1). Keep the allied placements and Herb slot. The
+[compact command observer](../../game/probes/engine_compact_commands_observation.gd) starts the
+real host with this controlled package. Run it once with `language=en` and route `keyboard`
+and once with `language=zh-CN`, `reducedFlash=true` and route `pad`. It resizes the client
+to 1600×900 and back to 1920×1080 and projects the actual canvas rectangles into each client.
+
+For mounted command art, use the same observer with the private Battle01 source and start
+under [Reproduce slice 1](#reproduce-slice-1), English settings and keyboard route. For Search,
+use unchanged `remake/content/authored/battle-search.json` with English and keyboard route.
+
+| Case | `SF2_COMPACT_CASE` | Package argument |
+| --- | --- | --- |
+| Authored battle | `authored-battle` | Controlled `battle-give.json` copy |
+| Private Battle01 | `battle` | Set `SF2_COMPACT_START` and select registered assets in place |
+| Authored Search | `authored-search` | Tracked `battle-search.json` |
+
+From `remake/`, use absolute report, settings, package and log paths.
+For the private case, use an empty `$packageArguments` array. For either authored case use
+`@('--authored-package', $package)` and leave private selection unset.
+
+```powershell
+$env:SF2_COMPACT_CASE = $case
+$env:SF2_INSPECTION_ROUTE = $route
+$env:SF2_VIEWPORT_OUTPUT = $report
+& $env:GODOT_BIN --headless --path game --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+    --log-file $nativeLog --script res://probes/engine_compact_commands_observation.gd -- `
+    --input-settings $settings @packageArguments
+```
+
+For ordinary Stay, use the existing [direct Stay confirmation and click cases](#reproduce-target-navigation-and-stay).
+Keep Down held on the move from Item to Stay in the confirmation case. Require exit 0, a passing
+report and clean script/runtime error output.
+
+**Confirmed, bounded remake.** English keyboard and Chinese D-pad traversed all four rows in both
+directions, wrapped, and kept the same footer and revision. All four labels and hit regions fit
+between the measured card and footer at both client sizes. The pointer entered Item from a press
+at the row edge and a release over its caption. A press started before resize was rejected on
+release. Attack Target Back returned to Main. Magic and Item Target Back returned to the same
+spell level and inventory slot. Browsing left resources and both RNG seeds intact, and Main Back
+restored Movement. Private Battle01 drew the registered 24×24 command art at nearest 3×. The Stay
+runs advanced exactly one turn from a single D-pad Confirm or complete click. Search entered
+explicit confirmation, allowed Back, and then returned the admitted result when confirmed.
+
+The initial geometry run exited 1 because the observer compared fitted canvas coordinates
+directly with physical client dimensions. The first Stay runs exited 1 because the observer
+assumed the former cardinal Down jump. The observer now applies the viewport stretch transform
+and reaches Stay through the rows. One earlier private run reported six ObjectDB instances at
+exit. Its successful rerun emitted no exit warning. These observations use scripted mapped input
+and geometry. Physical controller feel and human visual review remain with #1456.
 
 ## World marks and panel placement
 
@@ -72,12 +140,13 @@ Use the [shared visual language](ui-design-language.md) for all panels. At 1920�
 quiet round/gold panel at the existing upper-left gameplay inset below host chrome and reserve a
 left stack under it for the queue. Use the existing roughly 560px right-side decision column,
 32px gameplay inset and below-Menu band. The acting, recipient or hover card takes its top role
-as the phase changes. Let wide values grow within the layout budget. Place the main diamond or
-child list below the measured card. Use one independent reading/footer region below the controls
-and keep Back and Confirm fixed within their phase. The main four source slots are Up Attack,
-Left Magic, Right Item, Down Stay/Search. Reuse `DiamondCommandButton` and
-`DiamondMenuGeometry` from the existing diamond surfaces, keep labels visible next to their
-slots, and keep the controls outside the blue reading frame. Magic and Item retain their lists. A blocked command can show its refusal in the same reader.
+as the phase changes. Let wide values grow within the layout budget. Place the Main or child
+list below the measured card. Use one independent reading/footer region below the controls
+and keep Back and Confirm fixed within their phase. Main uses `CompactCommandList` in
+Attack, Magic, Item, Stay/Search order. The existing icon control draws the admitted art
+at nearest 3× beside the persistent 24px localized label. Each complete row is a single hit
+area. Magic and Item retain their scrollable lists. A blocked command can show its refusal
+in the same reader.
 
 Reserve the footer's reading bounds on page entry from the available viewport and keep them
 stable across offers. Long rows and descriptions wrap and scroll within their own bounds without moving
@@ -459,7 +528,7 @@ before each implementation. The following are principal owners and distinct acce
 
 | Slice | Player behavior and principal owners | Acceptance and risk |
 | --- | --- | --- |
-| 1. [#2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079) Board focus and decision layout | One cursor/field/card owner per phase, freestanding command diamond, stable child and footer regions, auxiliary and close-up retirement. `BattleSessionView`, `BattleMapViewport`, range/cursor views, `BattleCommandMenu`/`BattleMenuLayout`, `BattleInspectionView`, `BattleSceneView`. | Short real Move → command → Attack/Magic/item target → Back → Movement and inspection/options/return. Include a rejected mouse target, ally crossing, multi-target and field delivery. Inspect visible/hit rectangles, focus, map clipping and errors in both languages, at supported minimum/1080p/larger wide viewport, with wide values/long text and Reduced Flash. Verify private source cursor and public fallback. Resize a retained close-up token while paused and check art/card positions and unchanged delivery on return. |
+| 1. [#2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079) Board focus and decision layout | One cursor/field/card owner per phase, the #2079 Main diamond (later corrected by [#2090](#vertical-battle-main-2090)), stable child and footer regions, auxiliary and close-up retirement. `BattleSessionView`, `BattleMapViewport`, range/cursor views, `BattleCommandMenu`/`BattleMenuLayout`, `BattleInspectionView`, `BattleSceneView`. | Short real Move → command → Attack/Magic/item target → Back → Movement and inspection/options/return. Include a rejected mouse target, ally crossing, multi-target and field delivery. Inspect visible/hit rectangles, focus, map clipping and errors in both languages, at supported minimum/1080p/larger wide viewport, with wide values/long text and Reduced Flash. Verify private source cursor and public fallback. Resize a retained close-up token while paused and check art/card positions and unchanged delivery on return. |
 | 2. [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080) Target edges and ordinary Stay | One selection per fresh direction, one gesture to Stay, continuous Movement. `BattleSessionView.Navigation`, `BattleCommandMenu`, current `GameInput` release tracking and `BattleCommandDispatcher`. | Keyboard and pad/d-pad or stick single target and multiple targets for physical, Magic and Item. Compare hold, neutral/repress, fast taps, menu/move → target with inherited direction, target Back/reentry, host cover, and continued held movement. Origin and moved Stay commit once on key/pad/click. Exercise next actor or after-turn delivery while holding Confirm. Search and Give/Drop confirmations, refusal and backwards routes still work. |
 | 3a. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) Inspected movement | Delivered through `QueryBattleInspectionRange`, `BattleInspectionView` and the shared board overlay. | [Authored corridor observation](#reproduce-the-inspected-movement-field) checks ally → enemy → empty, traversal versus stops, details/Map/Members/host transitions, cursor exit and state/seed equality. |
 | 3b. [#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082) Shared member presentation | Delivered shared scrollable roster rows and existing details through `MemberRosterView`, `PartyStatusView`, `BattleMemberListView` and `PartyDetailsPanel`. | [Short authored observations](#reproduce-the-shared-roster) cover roster size, long names, retained conditions, pointer and mapped focus, Back/scroll and field Prepare. |
@@ -523,7 +592,7 @@ array for Battle01 or `@('--authored-package', $packagePath)` for either public 
 Use the observer's 50-second deadline and a 55-second wall bound. Require exit 0, `passed:true`,
 empty failures and unavailable lists, and inspect stderr.
 
-The source-art route uses actual preview and undo, cardinal Main focus, a full caption click,
+The source-art route uses actual preview and undo, vertical Main focus, a full caption click,
 HEAL/Attack/Item Target and Back, a rejected board cell, and a complete legal attack click.
 The inspection route covers both map edges, Details, Options and host cover. The private route
 checks native wide relayout and a paused close-up resize with stable delivery. The public routes

@@ -12,6 +12,7 @@ internal sealed partial class CompactCommandList : Control
     private readonly List<Label> _labels = [];
     private readonly List<Label> _markers = [];
     internal float RequestedHeight { get; private set; }
+    internal int CaptionSize { get; init; } = 30;
     internal Action InvalidatePointer { get; set; } = () => { };
 
     internal CompactCommandList(DiamondCommandButton[] icons)
@@ -29,9 +30,11 @@ internal sealed partial class CompactCommandList : Control
                 VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
             var marker = new Label { Text = "›", VerticalAlignment = VerticalAlignment.Center,
                 MouseFilter = MouseFilterEnum.Ignore };
-            label.AddThemeFontSizeOverride("font_size", 30);
+            label.AddThemeFontSizeOverride("font_size", CaptionSize);
             marker.AddThemeFontSizeOverride("font_size", 30);
-            _icons[i].IconOnly = true;
+            // Buttons with a separate caption already hide their internal label and
+            // retain their existing short focus emphasis in the row.
+            _icons[i].IconOnly = !_icons[i].CaptionBeside;
             AddChild(row); row.AddChild(marker); row.AddChild(_icons[i]); row.AddChild(label);
             _rows.Add(row); _labels.Add(label); _markers.Add(marker);
             row.ItemRectChanged += () => InvalidatePointer();
@@ -75,6 +78,9 @@ internal sealed partial class CompactCommandList : Control
             if (_rows[i].GetGlobalRect().HasPoint(position)) return (i, _rows[i].GetGlobalRect());
         return (-1, default);
     }
+
+    internal Rect2 RowRect(int index) => _rows[index].GetGlobalRect();
+    internal Rect2 CaptionRect(int index) => _labels[index].GetGlobalRect();
 
     internal object Observe() => new { visible = IsVisibleInTree(), rect = BattleMapViewport.Rectangle(GetGlobalRect()),
         rows = _rows.Select((row, i) => new { label = _labels[i].Text, selected = _icons[i].Selected,

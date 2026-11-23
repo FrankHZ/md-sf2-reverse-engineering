@@ -26,11 +26,11 @@ func header_geometry(label: String) -> bool:
             and card.hp.valueRect.x+card.hp.valueRect.width <= card.mp.valueRect.x,label+": parallel separate HP/MP columns"): return false
     if not expect(card.rect.x == layout.description.x and card.rect.width == layout.description.width and disjoint(card.rect,layout.description),
             label+": header and footer form one measured column"): return false
-    if layout.diamond.visible:
-        if not expect(card.rect.x == layout.diamond.rect.x and card.rect.width == layout.diamond.rect.width
-                and disjoint(card.rect,layout.diamond.rect),label+": card clears the freestanding diamond"): return false
+    if layout.commandList.visible:
+        if not expect(card.rect.x == layout.commandList.rect.x and card.rect.width == layout.commandList.rect.width
+                and disjoint(card.rect,layout.commandList.rect),label+": card clears the Main rows"): return false
     if layout.listVisible and not expect(card.rect.x == layout.list.x and card.rect.width == layout.list.width
-            and disjoint(card.rect,layout.list),label+": list replaces diamond below the card"): return false
+            and disjoint(card.rect,layout.list),label+": child list replaces Main below the card"): return false
     if not expect(within(layout.reader.rect,layout.description),label+": text scrolls inside the reader"): return false
     for row in layout.navigation:
         if row.visible and not expect(within(row.rect,layout.description),label+": target controls contained"): return false
@@ -52,7 +52,7 @@ func decision_vitals() -> bool:
     if not await header_geometry("main"): return false
     if not await host_cover(): return false
     var baseline := resources(state())
-    await act("left")
+    for i in range(posmod(1-state().menu.command,4)): await act("down")
     await act("confirm")
     if not expect(state().menu.page == "Magic","Actual Magic list opens"): return false
     if not await header_geometry("magic-list"): return false

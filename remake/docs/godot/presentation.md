@@ -2263,24 +2263,25 @@ natural route evidence and hardware fidelity remain **Unknown**.
 
 ### Modern UI experiment
 
-The user-selected direction for #438 retains the original diamond command arrangement and spatial
+This section records an earlier layout and its observation boundary. The
+[current Main list](battle-ui-composition.md#vertical-battle-main-2090) owns the deployed layout
+and input. The earlier #438 experiment used the original diamond command arrangement and spatial
 input relationships. The [common-menu input contract](../../../docs/research/presentation/common-menus.md#confirmed-input-contracts)
 maps up/left/right/down to choices 0/1/2/3; the
 [battle action contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md)
 orders attack, magic, item and search-or-stay. Search admission remains a gameplay/content decision;
 an interface experiment showing Stay does not remove the source-specific Search route.
 
-Modernization separates world framing, UI dimensions and drawing resolution. The current experiment
+Modernization separates world framing, UI dimensions and drawing resolution. The earlier experiment
 uses the original square command rasters directly, arranged up/left/right/down. No additional button
 frame or per-icon caption surrounds those rasters. One compact native-text window identifies the
 focused command, with an unavailable reason when needed; main-menu keyboard instructions and generic
 description paragraphs are hidden. Do not uniformly enlarge the entire original menu or preserve its
 tiny physical size. Icons keep their original selected state; selected-item costs and unavailable reasons
 sit against the right safe edge, leaving the middle open. Magic and inventory use list submenus, with explicit confirmation and a
-cancel path back to the preceding selection. A vertical list replacing the main diamond is not the
-selected direction.
+cancel path back to the preceding selection. That experiment used cardinal focus for Main.
 
-The current 1920×1080 layout uses 96×96 icons (4× source pixels) in a compact 288×224 cardinal
+The experiment's 1920×1080 layout uses 96×96 icons (4× source pixels) in a compact 288×224 cardinal
 cluster, with 64-pixel vertical steps between the top, side and bottom positions. This is a modern
 spacing choice inspired by the source arrangement, not a pixel-exact original layout claim.
 The battle map occupies the full game viewport; command menus, lists, hints and supplementary HUD
@@ -2337,7 +2338,7 @@ The shared 1080p world viewport is defined above; the earlier 640-by-360 proposa
 
 ### Battle directional hold and mode isolation (#1615)
 
-**Current navigation:** Main uses cardinal focus and lists use Up/Down. The
+Main, Magic and Item use Up/Down for row focus. The
 [phase and focus owner](battle-ui-composition.md#phase-focus-and-return) and
 [target input observation](battle-ui-composition.md#reproduce-target-navigation-and-stay)
 describe the current presentation and input. For the earlier #1686 observation, see [`engine_battle_navigation_observation.gd` at this pin](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_navigation_observation.gd). The held-direction clock, release barriers and source movement rules below remain binding.

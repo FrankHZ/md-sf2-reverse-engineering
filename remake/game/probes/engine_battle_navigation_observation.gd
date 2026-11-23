@@ -489,6 +489,7 @@ func direct_stay(gesture: String, notice := false) -> void:
         await settle()
         check(state().previewX == initial.previewX + 1, "Stay uses a moved legal preview")
     await tap("confirm")
+    for i in range(posmod(2-state().menu.command,4)): await tap("down")
     await send("down", true)
     var decision := state("stay-decision")
     check(decision.stage == "ActionChoice" and decision.menu.command == 3, "Main owns the Stay decision")
