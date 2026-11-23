@@ -367,7 +367,11 @@ physical candidates consume thinking RNG in source order. The attack category dr
 main RNG, and chosen actions go through existing movement, admission and scenes. A failed
 attack tries healing, then the existing allied SUPPORT failure and MOVE route. Controlled
 engine entries with empty packs complete physical Attack, BLAZE with DESOUL earlier in the
-book, HEAL, paid silenced HEAL and MOVE. [Behavior cases](../../tests/Sf2.Remake.Engine.Tests/MuddleAllyTurnTests.cs)
+book, HEAL, paid silenced HEAL, AURA 1 and MOVE. A temporary ally with learned HEAL 4
+uses the same packed-key MP exception as the enemy selector. The HEAL 3 and 4 regressions
+start at 3 and 14 MP and each pays once, clamping to zero. Ordinary manual selection still
+requires the chosen rank's full cost. AURA 1 uses the shared roster and caster admission
+at choice and action resolution. [Behavior cases](../../tests/Sf2.Remake.Engine.Tests/MuddleAllyTurnTests.cs)
 
 The source attack getter can choose a worn Black Ring. When both spell and item candidates
 can reach targets, the source category draw uses range 2. The source heal command can choose

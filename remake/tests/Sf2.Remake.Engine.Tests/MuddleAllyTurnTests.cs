@@ -77,6 +77,66 @@ public sealed class MuddleAllyTurnTests
         Assert.Equal(before.ThinkingSeed, after.Battle.ThinkingSeed);
     }
 
+    [Theory]
+    [InlineData(3, 3, 50)]
+    [InlineData(14, 4, 60)]
+    public void PackedHealFourSelectionCompletesAtLowMpWhileManualChoiceRefuses(int mp, byte rank, int hpAfter)
+    {
+        var before = Battle(d =>
+        {
+            d["actors"]![0]!["maxHp"] = 60;
+            d["actors"]![1]!["level"] = 40;
+            d["start"]!["actors"]![0]!["hp"] = 20;
+            d["start"]!["actors"]![1]!["mp"] = mp;
+            d["encounters"]![0]!["placements"]![2]!["x"] = 8;
+            foreach (var (level, cost, power) in new[] { (2, 5, 15), (3, 10, 30), (4, 20, 255) })
+            {
+                d["spells"]!.AsArray().Add(new JsonObject { ["id"] = "heal", ["level"] = level, ["mpCost"] = cost,
+                    ["minimumRange"] = 0, ["maximumRange"] = level == 2 ? 2 : 1,
+                    ["effect"] = new JsonObject { ["kind"] = "heal", ["adjustedPower"] = power, ["fullRecovery"] = false } });
+                d["actors"]![1]!["spells"]!.AsArray().Add(new JsonObject { ["id"] = "heal", ["level"] = level });
+            }
+        });
+        var rules = RuleCompositions.Sf2();
+        var manual = before.With(queue: [new(Priest, 30), new(Mage, 24), new(null, 255)], cursor: 0);
+        var ready = BattleAdvancer.Advance(new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveBattle(manual, null),
+            new StoryState(), SessionStopReason.SimulationWait), [], rules);
+        Assert.Equal(Priest, ready.Snapshot.Selection!.Actor);
+        var commands = BattleCommandDispatcher.Submit(ready.Snapshot, new Confirm(), rules);
+        Assert.Null(commands.Failure);
+        var refused = BattleCommandDispatcher.Submit(commands.Snapshot, new SelectSpell(new("heal", rank)), rules);
+        Assert.Equal("insufficient-mp", refused.Failure!.Code);
+        Assert.Equal(mp, refused.Snapshot.Battle.GetActor(Priest).Mp);
+
+        var (after, events) = Play(Status(before, Priest, 0x10), Priest, mainWord: 3000);
+        Assert.Equal(Mage, Assert.Single(events, e => e.Kind == "ai-heal-target").Target);
+        var payment = Assert.Single(events, e => e.Kind == "mp" && e.Actor == Priest);
+        Assert.Equal(mp, payment.Before);
+        Assert.Equal(0, payment.After);
+        Assert.Equal(0, after.Battle.GetActor(Priest).Mp);
+        Assert.Equal(hpAfter, after.Battle.GetActor(Mage).Hp);
+    }
+
+    [Fact]
+    public void TemporaryAuraUsesBothEligibleAlliesAndPaysOnce()
+    {
+        var before = Battle(d =>
+        {
+            d["encounters"]![0]!["placements"]![2]!["x"] = 8;
+            d["start"]!["actors"]![0]!["hp"] = 6;
+            d["start"]!["actors"]![1]!["hp"] = 9;
+            d["spells"]!.AsArray().Add(new JsonObject { ["id"] = "aura", ["level"] = 1, ["mpCost"] = 7,
+                ["minimumRange"] = 0, ["maximumRange"] = 3,
+                ["effect"] = new JsonObject { ["kind"] = "aura", ["adjustedPower"] = 15, ["fullRecovery"] = false, ["radius"] = 1 } });
+            d["actors"]![1]!["spells"] = new JsonArray(new JsonObject { ["id"] = "aura", ["level"] = 1 });
+        });
+        var (after, events) = Play(Status(before, Priest, 0x10), Priest, mainWord: 3000);
+        Assert.Equal(13, Assert.Single(events, e => e.Kind == "mp" && e.Actor == Priest).After);
+        Assert.Equal(21, after.Battle.GetActor(Mage).Hp);
+        Assert.Equal(24, after.Battle.GetActor(Priest).Hp);
+        Assert.Equal(before.GetActor(Smoke).Hp, after.Battle.GetActor(Smoke).Hp);
+    }
+
     [Fact]
     public void NoReachableAttackOrHealUsesTheNormalMoveWithoutDecisionRng()
     {

@@ -42,16 +42,24 @@ internal static class HealingTargetRules
     {
         var target = RequireCenter(battle, actor, destination, spell, center);
         if (!spell.IsAura) return [target];
-        ValidateAura(battle.Definition);
         var caster = battle.GetActor(actor);
-        if ((caster.IsAlly ? caster.Control != BattleControl.Player : caster.Control != BattleControl.Automatic) ||
-            !(SilenceRules.Supported(caster.Status, battle.Definition.Poison) && (caster.Status & 0xC0) == 0))
-            throw new BattleRuleException("aura-caster", "actor", true);
+        RequireAuraCaster(battle, caster);
         var origin = center == actor ? destination : target.Position!;
         var placed = PlacedSide(battle, caster);
         return spell.Targets == HealingTargets.AuraAllAllies ? placed : placed.Where(row =>
             (row.ActivationWord.GetValueOrDefault() & 8) == 0 &&
             BattleRange.Contains(origin, row.Actor == actor ? destination : row.Position!, 0, spell.Radius)).ToArray();
+    }
+
+    internal static void RequireAuraCaster(EngineBattleState battle, BattleActorState caster)
+    {
+        ValidateAura(battle.Definition);
+        bool supportedStatus = BattleControlRules.UsesTemporaryAllyAi(caster)
+            ? SilenceRules.SupportedInBattle(caster.Status, battle.Definition.Poison)
+            : SilenceRules.Supported(caster.Status, battle.Definition.Poison);
+        if ((caster.IsAlly ? caster.Control != BattleControl.Player : caster.Control != BattleControl.Automatic) ||
+            !supportedStatus || (caster.Status & 0xC0) != 0)
+            throw new BattleRuleException("aura-caster", "actor", true);
     }
 
     internal static IReadOnlyList<BattleActorState> ResolveItem(EngineBattleState battle, ActorRef actor,
