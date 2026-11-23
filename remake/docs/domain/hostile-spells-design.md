@@ -408,8 +408,10 @@ Battle start and settled battle Save/Continue admit rank-1 counters with their a
 turn consumers. Flag-only and confused words still reject. Restoring a Movement decision
 requires that its current player can act. Other units keep their pending counter, queue
 entries and both RNG words. The current battle and field wire formats already carry the word.
-Growth from a temporary ally's earned EXP uses the shared battle growth and refresh path.
-It preserves the live counter through the threshold and level-up before after-turn expiry.
+Both temporary and activation-driven automatic allies use the shared battle growth and refresh
+path. Level-up preserves the current rank-1 word until the after-turn tick. The ally commandset
+requires physical operands for its actor and opposing source slots, and an encounter reward
+table. Authored manual Movement and Stay remain usable in profiles without those operands.
 The battle return recovery policy clears the rank-1 counter when an eligible ally recovers,
 regardless of its control mode. Victory recovery precedes the outcome program, retreat recovery
 follows action closure, and defeat retains the word through dialogue until leader revival and
