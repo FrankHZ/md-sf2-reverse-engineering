@@ -203,6 +203,9 @@ msgid "church.stun"
 msgstr "解除眩晕"
 
 #. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.uncurse"
+msgstr "解除诅咒"
+
 msgid "church.cure"
 msgstr "治疗"
 
@@ -258,6 +261,9 @@ msgid "church.paid.stun"
 msgstr "已解除眩晕。支付了 {0} 金币。"
 
 #. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.uncurse"
+msgstr "支付 {0} 金币，已解除诅咒。"
+
 msgid "church.curse"
 msgstr "此处暂不支持解除诅咒。"
 

@@ -189,8 +189,8 @@ for Chirrup Sandals and owns its pickup, footstep sound and special Depot descri
 [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) retains the High-rigor
 scope of one class-legal item from the accepted Battle26 receipt through Equip, custody, Cure,
 Use, Repair and cold Continue. The first eligible controlled consumer is a WIZ from the accepted
-ordinary promotion path. The current player grant is bare carry. A failed class check applies
-equally to Equip and Use. The item-origin BLAZE 2 and wear contract belongs to the
+ordinary promotion path. Production receipt adds a bare word. Equip and Use both check the
+current class against the same WIZ/SORC eligibility. The item-origin BLAZE 2 and wear contract belongs to the
 [equipment Use owner](equipment-use-repair-design.md#black-ring-attack-item-and-wear-boundary).
 [Battle26 receipt](../application/battle26-higins.md) ·
 [WIZ promotion](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
@@ -250,20 +250,30 @@ the strike directly. Magic and Item keep their own admission and payment.
 [Action validation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
 [Scene continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
 
-Reuse the existing four slot words, class resolution, inventory mutation and persisted status
-word. Resolve curse metadata into typed equipment terms. The same equipped-cursed predicate can
-support Equip replacement, removal, battle Give (including exchange), Discard and the existing
-Field, Shop and Caravan custody guards. Keep these checks at selected-slot commit boundaries so a
-worn ring cannot block giving a different slot. Application owns Church offer, stale-selection
-validation and atomic payment, using the shared cursed-unequip and refresh operation. Godot
-consumes the existing state and typed action results. Resolve statuses from gear on actual
-refresh and keep detached Continue validation consistent with the serialized status, gear and
-last-applied counters. The physical slice carries the controlled CURSE bit through living field
-return and the existing field and battle formats. Death clears the controlled status in the
-absence of a cursed equipment binding. Before enabling the worn ring, derive CURSE on actual
-refresh, including after death cleanup, using the retained gear. That restores the original
-clear-then-refresh sequence and closes the WIZ lifecycle from Equip through death, exit,
-save and Continue. Keep the current wire formats and old bare words.
+### Worn equipment and treatment
+
+The four packed slot words are the equipment authority. Content admits the source terms for
+item 24 into the existing ring category. Domain class validation, confirmed Equip, removal,
+battle Give and exchange, and Discard read the selected live word. The ring lock affects only
+that slot and category. Field and Caravan use the same typed rule. Merchant and Depot custody
+use the same source curse flag because those services also guard raw carried items outside the
+playable gear catalog. A separately held bare copy can still move. Previews are detached, so a
+player can inspect a candidate before its removal or replacement is refused.
+
+When an ally's stats refresh, the existing status word retains unrelated bits and recomputes
+CURSE from worn gear in the typed catalog. Battle death clears status and refreshes from the
+retained pack, restoring CURSE when the ring is still worn. Field return resolves the member's
+surviving class and does the same refresh where it clears temporary status. Field v6 and battle
+Continue compare the serialized bit to the same gear rule without rerolling or resetting
+last-applied counters. The wire formats retain existing bare words and separately authored
+status for encounters without cursed equipment terms.
+
+Church Cure keeps its poison and stun passes before curse. The Application quote reads the
+live selected member, exact worn slot/word and the sum of the carried quarter prices. Confirm
+revalidates the live offer, then commits payment, unequipping, and refresh together. Domain's
+`BattleEquipment.RemoveCurse(definition, loadout)` returns the same pack in order with only the
+equipped bits of cursed gear cleared. The caller commits the pack and refreshes in the same
+transition. Godot shows typed outcomes through the current service and item menus.
 [Equipment rule owner](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs) ·
 [Church transaction](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs) ·
 [Return policy](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs) ·
@@ -287,8 +297,9 @@ ordinary Attack commands. The cases check zero-strike inaction, mixed curse/stun
 dodge and lethal-defender recoil skips, surviving recoil before follow-up draws and lethal
 recoil on first strike, second strike and an ally counter. A connected victory case writes and
 cold-restores the original battle and field wire formats, retaining status, applied stats, seeds
-and custody on the appropriate side of the return refresh. Production Black Ring Equip, gear
-derivation, Church treatment and BLAZE 2 Use remain with the lifecycle slice.
+and custody on the appropriate side of the return refresh. The lifecycle checks extend this
+with the actual worn word, including the death batch's clear-then-refresh operation.
+[Black Ring native input and Continue](equipment-use-repair-design.md#black-ring-reproduction)
 
 **Confirmed (bounded Godot input).** Two English authored starts use the ordinary host.
 Inaction shows both participants and the curse notice, retains both HP values, and returns to

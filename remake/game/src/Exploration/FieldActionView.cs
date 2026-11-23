@@ -281,6 +281,7 @@ internal sealed partial class FieldActionView : Control
         "field-equipped-item-unsupported" or "equipment-unavailable" or "field-item-effect-unsupported" or
         "field-spell-unsupported" or "field-egress-context" or "egress-map" => "prepare.recovery.unsupported",
         "field-give-exchange-required" => "prepare.recovery.exchange",
+        "equipped-curse" => "depot.cursed",
         "discard-unsellable" => "prepare.drop-refused",
         _ => "prepare.recovery.retry",
     });

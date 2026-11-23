@@ -6,13 +6,14 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public enum ChurchAction { Raise, Cure, Promote }
-public enum ChurchEffect { Raise, Poison, Stun }
+public enum ChurchEffect { Raise, Poison, Stun, Curse }
 public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService, Special }
 public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid, LowLevel, NoPromotion, Unavailable, SpecialUnavailable, Promoted }
 public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null);
 public sealed record HeldPromotionItem(ActorRef Holder, int Slot, ushort Word);
 public sealed record PromotionOffer(ActorRef Member, byte? Source, byte? Destination, byte Level, HeldPromotionItem? SpecialItem);
-public sealed record ChurchOffer(ActorRef Member, ChurchEffect Effect, uint Cost, ushort Hp, ushort Status);
+public sealed record ChurchOffer(ActorRef Member, ChurchEffect Effect, uint Cost, ushort Hp, ushort Status,
+    int? Slot = null, ushort? Word = null);
 public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, ChurchAction? Action = null,
     IReadOnlyList<ChurchOffer>? Offers = null, int Index = 0, ChurchResult? Result = null, bool CurseUnavailable = false) : ProgramWait(Token)
 {
@@ -128,9 +129,13 @@ internal static class FieldService
                         else
                         {
                             var member = PartyDetailsQuery.Query(definition, current)!.Members.Single(row => row.Carried.Actor == offer.Member);
-                            var changed = offer.Effect == ChurchEffect.Raise
-                                ? member.Carried with { Hp = Math.Min(member.MaxHp!.Value, wait.Definition.RaisedHpCap) }
-                                : member.Carried with { Status = (ushort)(member.Carried.Status & ~(offer.Effect == ChurchEffect.Poison ? 2 : 1)) };
+                            var changed = offer.Effect switch
+                            {
+                                ChurchEffect.Raise => member.Carried with { Hp = Math.Min(member.MaxHp!.Value, wait.Definition.RaisedHpCap) },
+                                ChurchEffect.Curse => FieldInventory.WithLoadout(member,
+                                    BattleEquipment.RemoveCurse(member.Deployment!.Definition, FieldInventory.Loadout(member)), refresh: true),
+                                _ => member.Carried with { Status = (ushort)(member.Carried.Status & ~TreatmentMask(offer.Effect)) },
+                            };
                             party = FieldInventory.Replace(party, [changed], gold: gold - offer.Cost);
                             next = next with { Offers = Array.AsReadOnly(wait.Offers!.Select(row => row.Member == changed.Actor
                                 ? row with { Hp = changed.Hp, Status = changed.Status } : row).ToArray()) };
@@ -227,7 +232,28 @@ internal static class FieldService
     }
 
     private static bool CurseUnavailable(ScenarioDefinition definition, SessionSnapshot current, ChurchAction action) =>
-        action == ChurchAction.Cure && PartyDetailsQuery.Query(definition, current)!.Members.Any(member => (member.Carried.Status & 4) != 0);
+        action == ChurchAction.Cure && PartyDetailsQuery.Query(definition, current)!.Members.Any(member =>
+            CurseRules.Present(member.Carried.Status) && CurseOffer(definition, member) is null);
+
+    private static ushort TreatmentMask(ChurchEffect effect) =>
+        effect == ChurchEffect.Poison ? PoisonCureRules.Poison : PoisonCureRules.Stun;
+
+    private static ChurchOffer? CurseOffer(ScenarioDefinition definition, PartyMemberDetails member)
+    {
+        if (!CurseRules.Present(member.Carried.Status) || definition.PrivateDefinitions is not { } source ||
+            member.Deployment is not { } deployment) return null;
+        var loadout = FieldInventory.Loadout(member);
+        if (BattleEquipment.EquippedRingSlot(deployment.Definition, loadout) is not { } slot ||
+            (!BattleEquipment.WornCurse(deployment.Definition, loadout.Items[slot]) ||
+             !CaravanDepotQuery.Cursed(definition, loadout.Items[slot]))) return null;
+
+        uint cost = 0;
+        foreach (ushort held in loadout.Items)
+            if (CaravanDepotQuery.Cursed(definition, held))
+                cost += (uint)source.Items[(byte)(held & 127)].Price >> 2;
+        return new(member.Carried.Actor, ChurchEffect.Curse, cost, member.Carried.Hp, member.Carried.Status,
+            slot, loadout.Items[slot]);
+    }
 
     private static IReadOnlyList<ChurchOffer> Offers(ScenarioDefinition definition, SessionSnapshot current, ChurchDefinition terms, ChurchAction action)
     {
@@ -235,13 +261,19 @@ internal static class FieldService
         // PartyDetails preserves carried order; private source membership uses its member index order.
         var ordered = members.OrderBy(member => member.Deployment?.Initialization?.AllyPartyMember ?? int.MaxValue).ToArray();
         List<ChurchOffer> offers = [];
-        foreach (var effect in action == ChurchAction.Raise ? new[] { ChurchEffect.Raise } : new[] { ChurchEffect.Poison, ChurchEffect.Stun })
+        foreach (var effect in action == ChurchAction.Raise ? new[] { ChurchEffect.Raise } :
+            new[] { ChurchEffect.Poison, ChurchEffect.Stun, ChurchEffect.Curse })
             foreach (var member in ordered)
             {
                 if (member.Carried.Initialized == false || member.Deployment is null)
                     throw new BattleRuleException("service-member-unavailable", "party.member", true);
+                if (effect == ChurchEffect.Curse)
+                {
+                    if (CurseOffer(definition, member) is { } treatment) offers.Add(treatment);
+                    continue;
+                }
                 var actor = member.Carried;
-                bool applicable = effect == ChurchEffect.Raise ? actor.Hp == 0 : (actor.Status & (effect == ChurchEffect.Poison ? 2 : 1)) != 0;
+                bool applicable = effect == ChurchEffect.Raise ? actor.Hp == 0 : (actor.Status & TreatmentMask(effect)) != 0;
                 if (!applicable) continue;
                 uint cost;
                 if (effect == ChurchEffect.Raise)

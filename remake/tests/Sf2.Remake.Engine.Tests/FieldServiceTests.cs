@@ -17,7 +17,7 @@ public sealed class FieldServiceTests
     private static GameSession Session(uint? gold = 100, ushort hp = 0, ushort status = 0,
         ushort secondHp = 100, ushort secondStatus = 0, byte level = 2, bool promoted = false, ushort maxHp = 250,
         ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false, bool power = false,
-        BattleClassRule sourceRule = BattleClassRule.UnpromotedSwordsman, byte warriorAxe = 33)
+        BattleClassRule sourceRule = BattleClassRule.UnpromotedSwordsman, byte warriorAxe = 33, ushort[]? curseItems = null)
     {
         var original = FieldInventoryTests.Session().Current.Exploration!.Party;
         var source = FieldInventoryTests.Session().Definition.Encounters.Values.Single();
@@ -132,6 +132,20 @@ public sealed class FieldServiceTests
                 });
             }
         }
+        PrivateBattleDefinitions? curseTerms = null;
+        if (curseItems is not null)
+        {
+            var ring = new SourceItemDefinition(24, "BLACK_RING", "Black Ring", "Black Ring", "WIZ|SORC",
+                ["WIZ", "SORC"], 0, 0, 5000, "RING|RARE|CURSED|BREAKABLE", "BLAZE|LV2", "BLAZE", 2,
+                [new("INCREASE_ATT", 10), new("NONE", 0), new("NONE", 0)]);
+            curseTerms = new(null!, [], [], [ring], [], [], []);
+            deployments = deployments.Select(row => row.Actor != First ? row : row with
+            {
+                Definition = new(row.Actor, BattleClassRule.Wizard, 2, maxHp, row.Definition.MaxMp, 20, 10, 20, false,
+                    5, [], physical: row.Definition.Physical! with { Promoted = true },
+                    equipment: new(20, [], rings: [new(24, "Black Ring", 1u << 17, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])),
+            });
+        }
         var battle = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height,
             source.Terrain, deployments, source.Spells.Values);
         EntityRef priest = new("priest");
@@ -142,9 +156,11 @@ public sealed class FieldServiceTests
             [new("caller", [new CallProgram(new("service", 0)), new WriteFlag(999, true),
                 failReturn ? new UnsupportedInstruction("unadmitted", "authored-caller") : new EndProgram()]),
              new("service", [new OpenChurch(terms ?? Terms), new ReturnProgram()])], []);
-        var definition = new ScenarioDefinition("service-behavior", [battle], exploration: world);
+        var definition = new ScenarioDefinition("service-behavior", [battle], curseTerms, exploration: world);
         var party = new BattleStartInput(battle.Encounter, original.Actors.Select(actor => actor.Actor == First
-            ? actor with { Hp = hp, Status = status, Progress = currentLevel is { } attained
+            ? actor with { Hp = hp, Status = status,
+                SourceLoadout = curseItems is null ? actor.SourceLoadout : new(curseItems, [63, 63, 63, 63]),
+                Progress = currentLevel is { } attained
                 ? new(attained, 76, ninja || monster ? (byte)0 : (byte)10, 20, 4, 60, [], actor.SourceLoadout) : null }
             : actor.Actor == Second ? actor with { Hp = secondHp, Status = secondStatus } : actor),
             original.MainSeed, original.ThinkingSeed, gold, original.NewBattle, original.ActiveAllies, original.ItemCustody);
@@ -161,6 +177,33 @@ public sealed class FieldServiceTests
         Assert.IsType<ChurchWait>(session.Current.Story.Wait);
         return session;
     }
+    [Theory]
+    [InlineData(2499u, true, ChurchResultKind.InsufficientGold)]
+    [InlineData(2500u, false, ChurchResultKind.Declined)]
+    [InlineData(2500u, true, ChurchResultKind.Paid)]
+    public void CureQuotesBothCursedCopiesAndOnlyUnwearsTheSelectedMember(uint gold, bool yes, ChurchResultKind expected)
+    {
+        var session = Session(gold: gold, hp: 100, status: 4, curseItems: [408, 0, 24, 127]);
+        var owner = Member(session, First);
+        Choose(session, ChurchAction.Cure);
+        Assert.Equal(new ChurchOffer(First, ChurchEffect.Curse, 2500, 100, 4, 0, 408), Wait(session).Offer);
+        Answer(session, yes);
+        Assert.Equal(expected, Wait(session).Result!.Kind);
+        var cured = Member(session, First);
+        if (expected == ChurchResultKind.Paid)
+        {
+            Assert.Equal(0u, session.Current.Exploration!.Party.Gold);
+            Assert.Equal(0, cured.Status);
+            Assert.Equal(new ushort[] { 280, 0, 24, 127 }, cured.SourceLoadout!.Items);
+            Assert.Equal(20, session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Attack!.Value);
+        }
+        else
+        {
+            Assert.Same(owner, cured);
+            Assert.Equal(gold, session.Current.Exploration!.Party.Gold);
+        }
+    }
+
     private static ChurchWait Wait(GameSession session) => Assert.IsType<ChurchWait>(session.Current.Story.Wait);
     private static SessionResult Send(GameSession session, SessionCommand command) =>
         session.Submit(new(session.Current.SessionId, session.Current.Revision, null, command));

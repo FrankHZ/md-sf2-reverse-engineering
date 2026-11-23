@@ -7,8 +7,16 @@ public sealed record BattleActorStartInput(ActorRef Actor, ushort Hp, byte Mp, b
     ushort? Kills, ushort? Defeats, ushort Status, MapPosition? PositionOverride, BattleActorProgress? Progress = null,
     BattleSourceLoadout? SourceLoadout = null, ushort? ActivationWord = null, bool? Initialized = null, bool Absent = false, bool RetainDeadPosition = false)
 {
-    internal BattleActorStartInput RefreshStats() => Progress?.CurrentStats is null ? this :
-        this with { Progress = Progress with { CurrentStats = null } };
+    internal BattleActorStartInput RefreshStats(BattleActorDefinition? definition = null)
+    {
+        ushort status = definition is null ? Status :
+            BattleEquipment.RefreshCurse(definition, SourceLoadout ?? Progress?.SourceLoadout ?? definition.SourceLoadout, Status);
+        return Progress?.CurrentStats is null && status == Status ? this : this with
+        {
+            Status = status,
+            Progress = Progress?.CurrentStats is null ? Progress : Progress with { CurrentStats = null },
+        };
+    }
 }
 
 public sealed class BattleStartInput

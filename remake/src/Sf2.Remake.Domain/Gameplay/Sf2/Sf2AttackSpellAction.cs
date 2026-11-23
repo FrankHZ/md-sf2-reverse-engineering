@@ -88,13 +88,13 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
 
     internal static BattleActionResolution PrepareDamage(EngineBattleState battle, ActorRef actorRef,
         MapPosition destination, AttackSpellDefinition spell, ActorRef? center, IBattleProgressionRule progression,
-        int? itemSlot, AttackItemDefinition? consumable = null)
+        int? itemSlot, AttackItemDefinition? item = null)
     {
         BattleMovement.RequireStop(battle, actorRef, destination);
         var actor = battle.GetActor(actorRef);
         var targets = ResolveTargets(battle, actorRef, destination, spell,
             center ?? throw new BattleRuleException("attack-spell-target", "target"));
-        string reactionAction = consumable is null ? "attack-spell" : "attack-item";
+        string reactionAction = item is null ? "attack-spell" : "attack-item";
         uint seed = battle.MainSeed;
         var inventory = battle;
         List<BattleEffect> effects = [];
@@ -136,14 +136,25 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
                 target.Hp, hp, target.Mp, target.Mp, critical, damage, target.Status, Receipt: dropped.Receipt));
         }
         BattleOutcomeSelection.RequireContinuing(battle, reactions);
-        if (consumable is not null)
+        EquipmentItemUse? equipmentUse = null;
+        if (item is not null)
         {
-            // Drops see the pre-payment pack, including the slot this action will free.
+            // Every drop sees the pre-payment pack, including the selected slot.
             int slot = itemSlot!.Value;
             var holder = inventory.GetActor(actorRef);
-            effects.Add(new("item-consumed", actorRef, holder.SourceLoadout!.Items[slot], slot));
-            var paid = BattleEquipment.RemoveItem(holder, slot);
-            inventory = inventory.With(actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? paid : unit));
+            if (item.Breakable)
+            {
+                var wear = EquipmentItemUse.Apply(slot, holder, seed, effects);
+                equipmentUse = wear.Use;
+                holder = wear.Owner;
+                seed = wear.Seed;
+            }
+            else
+            {
+                effects.Add(new("item-consumed", actorRef, holder.SourceLoadout!.Items[slot], slot));
+                holder = BattleEquipment.RemoveItem(holder, slot);
+            }
+            inventory = inventory.With(actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? holder : unit));
         }
         var award = actor.IsAlly ? BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
             inventory.GetActor(actorRef), BattleActionKind.AttackSpell, reactions)
@@ -153,7 +164,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         var prepared = inventory.With(mainSeed: award.Seed, gold: gold,
             actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), actor.IsAlly ? new(actorRef, award.Amount) : null,
-            effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: itemSlot, AttackItem: consumable);
+            effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: itemSlot, AttackItem: item, EquipmentUse: equipmentUse);
 
         int Roll(ushort range, string purpose, ActorRef target)
         {

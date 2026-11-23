@@ -182,7 +182,8 @@ internal static class ShopService
     {
         if (item is null) return ShopResult.UnsupportedItem;
         if (item.Unsellable) return ShopResult.Unsellable;
-        if ((word & 256) != 0 || (word & 128) != 0 && item.Cursed || item.Rare && custody is null)
+        if ((word & 128) != 0 && item.Cursed) return ShopResult.EquippedCurse;
+        if ((word & BattleInventory.Broken) != 0 || item.Rare && custody is null)
             return ShopResult.UnsupportedItem;
         return null;
     }

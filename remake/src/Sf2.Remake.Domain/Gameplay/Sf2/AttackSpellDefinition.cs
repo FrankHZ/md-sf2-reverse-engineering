@@ -4,7 +4,7 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 // Damage operands are independent of healing, its target policy and fairy playback.
 public enum AttackSpellElement { Wind = 0, Lightning = 2, Ice = 4, Fire = 6, Neutral = 8 }
-public sealed record AttackItemDefinition(byte ItemId, string Name, AttackSpellDefinition Effect);
+public sealed record AttackItemDefinition(byte ItemId, string Name, AttackSpellDefinition Effect, bool Breakable = false);
 
 public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort Power,
     byte MinimumRange, byte MaximumRange, byte Radius, AttackSpellElement Element, byte? SourceAnimationSelector = null)

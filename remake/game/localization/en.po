@@ -203,6 +203,9 @@ msgid "church.stun"
 msgstr "Remove stun"
 
 #. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.uncurse"
+msgstr "Lift curse"
+
 msgid "church.cure"
 msgstr "Cure"
 
@@ -258,6 +261,9 @@ msgid "church.paid.stun"
 msgstr "Stun removed. Paid {0} gold."
 
 #. Church/Search display only; positional arguments are retained semantic values.
+msgid "church.paid.uncurse"
+msgstr "The curse was lifted for {0} gold."
+
 msgid "church.curse"
 msgstr "Curse removal is unavailable here."
 

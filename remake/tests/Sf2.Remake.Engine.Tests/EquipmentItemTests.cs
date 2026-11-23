@@ -19,22 +19,31 @@ public sealed class EquipmentItemTests
             [new(92, "Indra Staff", 1u << 17 | 1u << 18 | 1u << 19, 25, 1, 1, DamageOnUse: true)], rings:
             [new(19, "Attack Ring", classMask, RingStat.Attack, 5, DamageOnUse: true),
              new(20, "Defense Ring", classMask, RingStat.Defense, 5, DamageOnUse: true),
-             new(21, "Quick Ring", uint.MaxValue, RingStat.Agility, 5)]);
+             new(21, "Quick Ring", uint.MaxValue, RingStat.Agility, 5),
+             new(24, "Black Ring", (1u << 17) | (1u << 18), RingStat.Attack, 10, DamageOnUse: true, Cursed: true)]);
         var deployments = basis.Definition.Deployments.Select(row => row.Actor == Mage
             ? row with { Definition = staffClass is { } selected
-                ? new(Mage, selected, 5, 30, 20, 10, 5, 100, false, 5, [], equipment: equipment)
+                ? new(Mage, selected, 5, 30, 20, 10, 5, 100, false, 5, [],
+                    physical: row.Definition.Physical! with { Promoted = selected != BattleClassRule.UnpromotedMage },
+                    equipment: equipment)
                 : row.Definition.WithEquipment(equipment) }
             : row).ToArray();
         var old = basis.Definition;
         var definition = new BattleDefinition(old.Encounter, old.Map, old.Width, old.Height, old.Terrain,
             deployments, old.Spells.Values, old.Rewards, old.Initialization, old.Outcome, attackSpells: old.AttackSpells.Values,
-            supportSpells: old.SupportSpells.Values, supportItems:
+            supportSpells: old.SupportSpells.Values,
+            give: new(new Dictionary<byte, string> { [0] = "Herb", [24] = "Black Ring" }),
+            discard: new([new(0, "Herb", false, false), new(24, "Black Ring", true, false)]),
+            attackItems: [new(24, "Black Ring", new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire), Breakable: true)],
+            supportItems:
             [new(19, "Attack Ring", new(new("attack", 1), 7, 1, 3, 0)),
              new(20, "Defense Ring", new(new("boost", 1), 2, 0, 1, 1)),
              new(92, "Indra Staff", new(new("spoit", 1), 0, 1, 2, 0))]);
         var original = basis.GetActor(Mage);
         var owner = new BattleActorState(deployments.Single(row => row.Actor == Mage), original.Hp, casterMp, 0,
-            original.Position, 0, 0, sourceLoadout: new(words, [63, 63, 63, 63]), status: 0x200, activationWord: 0);
+            original.Position, 0, 0, sourceLoadout: new(words, [63, 63, 63, 63]),
+            status: BattleEquipment.RefreshCurse(deployments.Single(row => row.Actor == Mage).Definition, new(words, []), 0x200),
+            activationWord: 0);
         var battle = new EngineBattleState(definition, basis.Actors.Select(actor => actor.Actor == Mage ? owner :
             actor.Actor == Priest ? actor.With(status: targetStatus, refreshStats: true) :
             actor.Actor == Smoke ? actor.With(mp: enemyMp) : actor),
@@ -220,6 +229,107 @@ public sealed class EquipmentItemTests
         Assert.Equal("equipment-use-class", result.Failure?.Code);
         Assert.Same(wrongClass, result.Snapshot);
         Assert.Empty(result.Observations);
+    }
+
+    [Fact]
+    public void BlackRingChecksCurrentClassAndLocksOnlyItsWornSlot()
+    {
+        var mage = Accept(At([24, 19, 24, 127], staffClass: BattleClassRule.UnpromotedMage), new Confirm());
+        Assert.Equal("equipment-use-class", Send(mage, new SelectItem(0)).Failure!.Code);
+        Assert.Equal("equipment-slot", Send(Accept(mage, new BeginEquipment()), new SelectEquipment(0)).Failure!.Code);
+
+        var ready = At([24, 19, 24, 220], staffClass: BattleClassRule.Wizard);
+        var acting = Accept(ready, new Confirm());
+        var preview = Accept(Accept(acting, new BeginEquipment()), new SelectEquipment(0));
+        Assert.Equal(35, preview.Battle.GetActor(Mage).Attack);
+        var equipped = Accept(preview, new Confirm());
+        var wiz = equipped.Battle.GetActor(Mage);
+        Assert.Equal(45, wiz.Attack);
+        Assert.Equal(0x204, wiz.Status);
+        foreach (int slot in new[] { 1, 2, BattleEquipment.RemoveRingChoice })
+        {
+            var choice = Accept(Accept(equipped, new BeginEquipment()), new SelectEquipment(slot));
+            var rejected = Send(choice, new Confirm());
+            Assert.Equal("equipped-curse", rejected.Failure!.Code);
+            Assert.Same(choice, rejected.Snapshot);
+        }
+        var unarmed = Accept(Accept(equipped, new BeginEquipment()), new SelectEquipment(BattleEquipment.UnarmedChoice));
+        Assert.Equal(0x204, Accept(unarmed, new Confirm()).Battle.GetActor(Mage).Status);
+        var fallen = wiz.With(hp: 0);
+        var afterHit = equipped.Battle.With(actors: equipped.Battle.Actors.Select(actor => actor.Actor == Mage ? fallen : actor));
+        var cleaned = BattleDeathBatch.Empty.Append(wiz, fallen)
+            .Clean(afterHit, Mage, new Sf2BattleProgressionRule()).Battle.GetActor(Mage);
+        Assert.Null(cleaned.Position);
+        Assert.Equal<ushort?>(1, cleaned.Defeats);
+        Assert.Equal(4, cleaned.Status);
+        Assert.Equal(wiz.Attack, cleaned.Attack);
+        Assert.Equal(wiz.SourceLoadout!.Items, cleaned.SourceLoadout!.Items);
+    }
+
+    [Fact]
+    public void BlackRingTransferChecksTheSelectedWordOnBothSidesOfAnExchange()
+    {
+        var battle = At([408, 24, 0, 0], staffClass: BattleClassRule.Wizard).Battle;
+        var mage = battle.GetActor(Mage);
+        var priest = battle.GetActor(Priest).With(sourceLoadout: new([0, 127, 127, 127], [63, 63, 63, 63]));
+        battle = battle.With(actors: battle.Actors.Select(actor => actor.Actor == Priest ? priest : actor));
+
+        Assert.Equal("equipped-curse", Assert.Throws<BattleRuleException>(() =>
+            BattleGive.Prepare(battle, Mage, mage.Position!, 0, 408, Priest, null, null)).Code);
+        Assert.Equal("equipped-curse", Assert.Throws<BattleRuleException>(() =>
+            BattleGive.Prepare(battle, Priest, priest.Position!, 0, 0, Mage, 0, 408)).Code);
+        Assert.Equal("equipped-curse", Assert.Throws<BattleRuleException>(() =>
+            BattleDiscard.Prepare(battle, Mage, 0, 408)).Code);
+
+        var exchanged = BattleGive.Prepare(battle, Priest, priest.Position!, 0, 0, Mage, 1, 24).Battle;
+        Assert.Equal(new ushort[] { 408, 0, 0, 0 }, exchanged.GetActor(Mage).SourceLoadout!.Items);
+        Assert.Equal(new ushort[] { 24, 127, 127, 127 }, exchanged.GetActor(Priest).SourceLoadout!.Items);
+        Assert.Equal(mage.Status, exchanged.GetActor(Mage).Status);
+        var discarded = BattleDiscard.Prepare(battle, Mage, 1, 24).Battle;
+        Assert.Equal(new ushort[] { 408, 0, 0, 127 }, discarded.GetActor(Mage).SourceLoadout!.Items);
+        Assert.Equal(1, discarded.ItemCustody!.Deals[24]);
+    }
+
+    [Theory]
+    [InlineData(24, 280, 10, 0x200, true)]
+    [InlineData(152, 408, 20, 0x204, true)]
+    [InlineData(408, 24, 10, 0x200, false)]
+    public void BlackRingPaysItsExactSlotAfterBlazeAndKeepsMagicResources(ushort word, ushort nextFirst,
+        int attack, int status, bool rollsWear)
+    {
+        var start = At([word, 24, 0, 127], seed: 0x00020000, staffClass: BattleClassRule.Wizard);
+        var result = Send(Select(start, 0, Smoke), new Confirm());
+        Assert.Null(result.Failure);
+        var scene = result.Snapshot.BattleScene!;
+        Assert.Equal(new SpellRef("blaze", 2), scene.AttackSpell!.Spell);
+        Assert.Equal(10, scene.AttackSpell.Power);
+        Assert.Equal(1, scene.AttackSpell.Radius);
+        var owner = result.Snapshot.Battle.GetActor(Mage);
+        Assert.Equal((ushort)nextFirst, owner.SourceLoadout!.Items[0]);
+        Assert.Equal((ushort)(rollsWear ? 24 : 0), owner.SourceLoadout.Items[1]);
+        Assert.Equal(attack, owner.Attack);
+        Assert.Equal(status, owner.Status);
+        Assert.Equal(0, owner.Mp);
+        Assert.True(owner.Spells.Count == 0);
+
+        var draws = result.Observations.Where(row => row.RandomRange.HasValue).Select(row => row.Kind).ToArray();
+        Assert.Equal(new[] { "rng-spell-critical", "rng-spell-variance", "rng-spell-variance" }, draws.Take(3));
+        Assert.Equal(rollsWear, draws.Contains("rng-item-wear"));
+        if (rollsWear) Assert.Equal("rng-item-wear", draws[3]);
+        SessionSnapshot current = result.Snapshot;
+        List<BattleScenePhase> phases = [];
+        while (current.BattleScene is { } step)
+        {
+            Assert.True(phases.Count < 30);
+            phases.Add(step.Phase);
+            var advanced = BattleSceneContinuation.Submit(current, step.RequiresAcknowledgement ? new Acknowledge(step.Token) :
+                new CompletePresentation(step.Token, step.CompletionKind));
+            Assert.Null(advanced.Failure);
+            current = advanced.Snapshot;
+        }
+        Assert.DoesNotContain(BattleScenePhase.SpellCost, phases);
+        Assert.Contains(BattleScenePhase.EquipmentWearMessage, phases);
+        Assert.True(current.HasBattleControl);
     }
 
     [Fact]

@@ -158,8 +158,11 @@ internal static class FieldInventory
         catch (BattleRuleException error) { return new(current.SessionId, current.Revision, actor, [], [], [], error.Code); }
     }
 
-    internal static BattleActorStartInput WithLoadout(PartyMemberDetails member, BattleSourceLoadout loadout) =>
-        WithLoadout(member.Carried, loadout);
+    internal static BattleActorStartInput WithLoadout(PartyMemberDetails member, BattleSourceLoadout loadout, bool refresh = false)
+    {
+        var actor = WithLoadout(member.Carried, loadout);
+        return refresh ? actor.RefreshStats(member.Deployment?.Definition) : actor;
+    }
 
     internal static BattleActorStartInput WithLoadout(BattleActorStartInput actor, BattleSourceLoadout loadout) =>
         actor with { SourceLoadout = loadout, Progress = actor.Progress is { } progress
@@ -197,24 +200,19 @@ internal static class FieldInventory
         var member = Member(definition, current, command.Member, caller);
         var party = current.Exploration!.Party;
         var loadout = Loadout(member);
-        // Known source refusals precede the broader unsupported equipment/loadout checks.
-        if (caller == FieldItemCaller.Caravan)
+        // Known source refusals precede unsupported loadout checks for the selected words.
+        if (command is FieldGive outgoing)
         {
-            if (command is FieldGive outgoing)
-            {
-                RequireNotCursed(definition, loadout, outgoing.Slot, outgoing.ExpectedWord);
-                if (outgoing.ReturnSlot is { } returned && outgoing.ExpectedReturnWord is { } word)
-                    RequireNotCursed(definition, Loadout(Member(definition, current, outgoing.Target, caller)), returned, word);
-            }
-            else if (command is FieldDrop dropItem)
-                RequireNotCursed(definition, loadout, dropItem.Slot, dropItem.ExpectedWord);
-            else if (command is FieldEquip)
-            {
-                for (int slot = 0; slot < loadout.Items.Count; slot++)
-                    if ((loadout.Items[slot] & 127) != 127)
-                        RequireNotCursed(definition, loadout, slot, loadout.Items[slot]);
-            }
+            RequireNotCursed(definition, member, outgoing.Slot, outgoing.ExpectedWord, caller);
+            if (outgoing.ReturnSlot is { } returned && outgoing.ExpectedReturnWord is { } word)
+                RequireNotCursed(definition, Member(definition, current, outgoing.Target, caller), returned, word, caller);
         }
+        else if (command is FieldDrop dropItem)
+            RequireNotCursed(definition, member, dropItem.Slot, dropItem.ExpectedWord, caller);
+        else if (command is FieldEquip && caller == FieldItemCaller.Caravan &&
+            loadout.Items.Any(word => (word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word) &&
+                (member.Deployment is not { } deployment || !BattleEquipment.WornCurse(deployment.Definition, word))))
+            throw new BattleRuleException("caravan-equipped-curse", "item.word");
         switch (command)
         {
             case FieldEquip equip:
@@ -226,7 +224,7 @@ internal static class FieldInventory
                 if (choice.ExpectedWord != equip.ExpectedWord ||
                     (equip.Slot == BattleEquipment.RemoveRingChoice || equip.ExpectedSourceSlot.HasValue) && choice.SourceSlot != equip.ExpectedSourceSlot)
                     throw new BattleRuleException("field-stale-item", "item.word");
-                return Replace(party, [WithLoadout(member, BattleEquipment.Equip(member.Deployment.Definition, loadout, choice.Slot)).RefreshStats()]);
+                return Replace(party, [WithLoadout(member, BattleEquipment.Equip(member.Deployment.Definition, loadout, choice.Slot), refresh: true)]);
             case FieldGive give:
                 var given = Slot(definition, member, give.Slot, give.ExpectedWord);
                 var target = Member(definition, current, give.Target, caller);
@@ -237,7 +235,7 @@ internal static class FieldInventory
                     if (give.ReturnSlot.HasValue || give.ExpectedReturnWord.HasValue)
                         throw new BattleRuleException("caravan-self-exchange", "target.items");
                     return Replace(party, [WithLoadout(member,
-                        BattleInventory.Add(BattleInventory.Remove(loadout, given.Slot), given.Word)).RefreshStats()]);
+                        BattleInventory.Add(BattleInventory.Remove(loadout, given.Slot), given.Word), refresh: true)]);
                 }
                 bool full = targetLoadout.Items.All(word => (word & 127) != 127);
                 if (full != give.ReturnSlot.HasValue || give.ReturnSlot.HasValue != give.ExpectedReturnWord.HasValue)
@@ -253,13 +251,13 @@ internal static class FieldInventory
                         if (ownReturn == given.Slot)
                         {
                             var words = own.Items.ToArray(); words[given.Slot] &= unchecked((ushort)~128);
-                            return Replace(party, [WithLoadout(member, new(words, own.Spells)).RefreshStats()]);
+                            return Replace(party, [WithLoadout(member, new(words, own.Spells), refresh: true)]);
                         }
                         own = BattleInventory.Add(BattleInventory.Remove(own, given.Slot), returned.Word);
                         own = BattleInventory.Remove(own, ownReturn > given.Slot ? ownReturn - 1 : ownReturn);
                     }
                     else own = BattleInventory.Remove(own, given.Slot);
-                    return Replace(party, [WithLoadout(member, BattleInventory.Add(own, given.Word)).RefreshStats()]);
+                    return Replace(party, [WithLoadout(member, BattleInventory.Add(own, given.Word), refresh: true)]);
                 }
                 var donor = BattleInventory.Remove(loadout, given.Slot);
                 if (give.ReturnSlot is { } returnSlot)
@@ -269,25 +267,29 @@ internal static class FieldInventory
                     donor = BattleInventory.Add(donor, returned.Word);
                 }
                 targetLoadout = BattleInventory.Add(targetLoadout, given.Word);
-                var recipient = WithLoadout(target, targetLoadout);
-                return Replace(party, [WithLoadout(member, donor).RefreshStats(),
-                    give.ReturnSlot.HasValue ? recipient.RefreshStats() : recipient]);
+                var recipient = WithLoadout(target, targetLoadout, refresh: give.ReturnSlot.HasValue);
+                return Replace(party, [WithLoadout(member, donor, refresh: true), recipient]);
             case FieldDrop drop:
                 var removed = Slot(definition, member, drop.Slot, drop.ExpectedWord);
                 var item = definition.FieldPreparation!.Items[(byte)(removed.Word & 127)];
                 if (!removed.CanDrop) throw new BattleRuleException("discard-unsellable", "item");
                 if (item.Rare && party.ItemCustody is null) throw new BattleRuleException("discard-custody-unavailable", "party.itemCustody", true);
-                return Replace(party, [WithLoadout(member, BattleInventory.Remove(loadout, drop.Slot)).RefreshStats()],
+                return Replace(party, [WithLoadout(member, BattleInventory.Remove(loadout, drop.Slot), refresh: true)],
                     item.Rare ? party.ItemCustody!.AddDeal(item.ItemId) : party.ItemCustody);
             default: throw new BattleRuleException("field-command-unsupported", "command", true);
         }
     }
 
-    private static void RequireNotCursed(ScenarioDefinition definition, BattleSourceLoadout loadout, int slot, ushort word)
+    private static void RequireNotCursed(ScenarioDefinition definition, PartyMemberDetails member, int slot, ushort word, FieldItemCaller caller)
     {
+        var loadout = Loadout(member);
         if (slot is < 0 or >= 4 || loadout.Items.Count != 4 || loadout.Items[slot] != word || (word & 127) == 127)
-            throw new BattleRuleException("field-stale-item", "item.word");
-        if ((word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word))
+        {
+            if (caller == FieldItemCaller.Caravan) throw new BattleRuleException("field-stale-item", "item.word");
+            return;
+        }
+        if (caller == FieldItemCaller.Caravan && (word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word))
             throw new BattleRuleException("caravan-equipped-curse", "item.word");
+        if (member.Deployment is { } deployment) BattleEquipment.RequireTransferable(deployment.Definition, word);
     }
 }

@@ -42,7 +42,12 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         if (battle.Definition.AttackItems.TryGetValue(id, out var attack))
         {
             Sf2AttackSpellAction.RequireDamageActor(battle, owner);
-            attack.Effect.RequireConsumableEffect();
+            if (attack.Breakable)
+            {
+                attack.Effect.RequireSupported();
+                EquipmentItemUse.RequireOwner(battle, owner, id);
+            }
+            else attack.Effect.RequireConsumableEffect();
             return new(attack.Effect.MinimumRange, attack.Effect.MaximumRange, AttackItem: attack);
         }
         if (battle.Definition.SupportItems.TryGetValue(id, out var support))

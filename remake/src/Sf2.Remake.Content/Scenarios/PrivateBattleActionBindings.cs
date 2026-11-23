@@ -74,6 +74,12 @@ internal static class PrivateBattleActionBindings
             Price: 3200, MinimumRange: 1, MaximumRange: 1,
             EquipEffects: [{ Type: "INCREASE_ATT", Parameter: 25 }, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] };
 
+    internal static bool IsBlackRing(SourceItemDefinition item) =>
+        item is { Id: 24, Code: "BLACK_RING", ItemTypeExpression: "RING|RARE|CURSED|BREAKABLE",
+            EquipFlagsExpression: "WIZ|SORC", UseSpell: "BLAZE", UseSpellLevel: 2,
+            Price: 5000, MinimumRange: 0, MaximumRange: 0,
+            EquipEffects: [{ Type: "INCREASE_ATT", Parameter: 10 }, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] };
+
     internal static IEnumerable<AttackItemDefinition> AttackItems(PrivateBattleDefinitions definitions)
     {
         foreach (var row in new (byte Item, string Code, string Effect, byte BaseId, ushort Power,
@@ -97,6 +103,13 @@ internal static class PrivateBattleActionBindings
             yield return new(item.Id, item.DisplayName, new(spell!.Spell, spell.MpCost, spell.Power,
                 spell.MinimumRange, spell.MaximumRange, spell.Radius, row.Element));
         }
+        if (!definitions.Items.TryGetValue(24, out var ring) || !IsBlackRing(ring)) yield break;
+        Require(definitions.Spells.TryGetValue(new("blaze", 2), out var blaze) &&
+            blaze is { BaseId: 11, Code: "BLAZE", Level: 2, MpCost: 6, Power: 10,
+                MinimumRange: 1, MaximumRange: 2, Radius: 1, PropertiesExpression: "TYPE_ATTACK|AFFECTEDBYSILENCE",
+                AnimationExpression: "BLAZE|VARIATION2" }, "source-black-ring-effect", "items.useSpell", true);
+        yield return new(ring.Id, ring.DisplayName, new(blaze!.Spell, 0, blaze.Power,
+            blaze.MinimumRange, blaze.MaximumRange, blaze.Radius, AttackSpellElement.Fire), Breakable: true);
     }
 
     internal static IEnumerable<HealingSpellDefinition> PoisonCure(PrivateBattleDefinitions definitions)

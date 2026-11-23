@@ -78,11 +78,14 @@ public static class BattleGive
         var target = RequireTarget(battle, giver, destination, recipient);
         var given = RequireSlot(battle, giver, slot);
         if (given.Word != expectedWord) throw new BattleRuleException("stale-give-item", "item.slot");
+        var giverState = battle.GetActor(giver);
+        BattleEquipment.RequireTransferable(giverState.Definition, given.Word);
         bool full = target.SourceLoadout!.Items.All(word => (word & 127) != 127);
         if (full != returnSlot.HasValue) throw new BattleRuleException("give-capacity-changed", "target.items");
         var returned = returnSlot is { } selected ? RequireSlot(battle, recipient, selected, false) : null;
         if (returned?.Word != expectedReturnWord) throw new BattleRuleException("stale-give-return", "return.slot");
-        var donor = BattleEquipment.RemoveItem(battle.GetActor(giver), slot);
+        if (returned is not null) BattleEquipment.RequireTransferable(target.Definition, returned.Word);
+        var donor = BattleEquipment.RemoveItem(giverState, slot);
         if (returned is not null)
         {
             target = BattleEquipment.RemoveItem(target, returned.Slot);

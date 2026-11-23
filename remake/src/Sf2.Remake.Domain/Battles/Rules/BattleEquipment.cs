@@ -9,7 +9,7 @@ public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint Class
 public enum BattleEquipmentCategory { Weapon, Ring }
 public enum RingStat { Attack, Defense, Agility, Move }
 internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat? Stat, byte Bonus,
-    bool DamageOnUse = false, int? MovementSound = null, string? DepotDescriptionKey = null);
+    bool DamageOnUse = false, int? MovementSound = null, string? DepotDescriptionKey = null, bool Cursed = false);
 
 public sealed class BattleEquipmentDefinition
 {
@@ -63,6 +63,26 @@ public static class BattleEquipment
 
     private static byte EffectiveAttack(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
         (byte)Math.Min(200, basis + BattleStatCounters.AttackBonus(basis, applied) + Contribution(definition, loadout));
+
+    internal static bool WornCurse(BattleActorDefinition definition, ushort word) =>
+        (word & 128) != 0 && definition.Equipment?.Rings.GetValueOrDefault((byte)(word & 127))?.Cursed == true;
+
+    internal static ushort RefreshCurse(BattleActorDefinition definition, BattleSourceLoadout? loadout, ushort status)
+    {
+        // Controlled scenarios can supply independent packed statuses without cursed equipment terms.
+        if (definition.Equipment?.Rings.Values.Any(ring => ring.Cursed) != true) return status;
+        return loadout?.Items.Any(word => WornCurse(definition, word)) == true
+            ? (ushort)(status | CurseRules.Mask) : (ushort)(status & ~CurseRules.Mask);
+    }
+
+    internal static BattleSourceLoadout RemoveCurse(BattleActorDefinition definition, BattleSourceLoadout loadout) =>
+        new(loadout.Items.Select(word => WornCurse(definition, word) ? (ushort)(word & ~128) : word), loadout.Spells);
+
+    internal static void RequireTransferable(BattleActorDefinition definition, ushort word)
+    {
+        if (WornCurse(definition, word))
+            throw new BattleRuleException("equipped-curse", "item.word");
+    }
 
     internal static bool CanBeDamaged(BattleActorDefinition definition, byte item) =>
         definition.Equipment?.Rings.GetValueOrDefault(item)?.DamageOnUse == true ||
@@ -262,7 +282,7 @@ public static class BattleEquipment
         static bool Current(ushort word) => (word & 128) != 0;
         BattleEquipmentChoice Choice(int choice, int? sourceSlot, string label, bool equipped, BattleEquipmentCategory category)
         {
-            var candidate = Equip(definition, loadout, choice);
+            var candidate = Swap(definition, loadout, choice);
             var weapon = Weapon(definition, candidate);
             byte agility = (byte)((progress?.Agility ?? definition.Agility) | (definition.ExtraRoundAction ? 128 : 0));
             return new(choice, label, equipped, EffectiveAttack(baseAttack, status, definition, candidate),
@@ -286,8 +306,18 @@ public static class BattleEquipment
 
     internal static BattleSourceLoadout Equip(BattleActorDefinition definition, BattleSourceLoadout loadout, int slot)
     {
+        if (IsRingChoice(definition, loadout, slot) && EquippedRingSlot(definition, loadout) is { } worn && worn != slot)
+            RequireTransferable(definition, loadout.Items[worn]);
+        return Swap(definition, loadout, slot);
+    }
+
+    private static bool IsRingChoice(BattleActorDefinition definition, BattleSourceLoadout loadout, int slot) =>
+        slot == RemoveRingChoice || slot is >= 0 and < 4 && definition.Equipment!.Rings.ContainsKey((byte)(loadout.Items[slot] & 127));
+
+    private static BattleSourceLoadout Swap(BattleActorDefinition definition, BattleSourceLoadout loadout, int slot)
+    {
         var equipment = definition.Equipment!;
-        bool ring = slot == RemoveRingChoice || slot is >= 0 and < 4 && equipment.Rings.ContainsKey((byte)(loadout.Items[slot] & 127));
+        bool ring = IsRingChoice(definition, loadout, slot);
         var words = loadout.Items.Select((word, index) =>
             (ring ? equipment.Rings.ContainsKey((byte)(word & 127)) : equipment.Weapons.ContainsKey((byte)(word & 127)))
                 ? (ushort)((word & ~128) | (index == slot ? 128 : 0)) : word).ToArray();

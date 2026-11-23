@@ -1,4 +1,5 @@
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.GodotAdapter.Localization;
 
@@ -39,6 +40,9 @@ internal static class SpellDescriptions
         _ => GameText.BattleRecovery(reason),
     };
 
+    internal static string Damage(AttackSpellElement element) =>
+        GameText.Get("spell-description.damage." + element.ToString().ToLowerInvariant());
+
     private static string Effect(SpellDescriptionFacts facts) => facts.Effect switch
     {
         SpellEffect.RestoreHp when facts.HealingLimit is { } limit => GameText.Get("spell-description.hp-limit", limit),
@@ -46,8 +50,7 @@ internal static class SpellDescriptions
         SpellEffect.FullHp => GameText.Get("spell-description.full-hp"),
         SpellEffect.CurePoison => GameText.Get("item-description.poison"),
         SpellEffect.CurePoisonAndParalysis => GameText.Get("item-description.poison-paralysis"),
-        SpellEffect.Damage when facts.Element is { } element =>
-            GameText.Get("spell-description.damage." + element.ToString().ToLowerInvariant()),
+        SpellEffect.Damage when facts.Element is { } element => Damage(element),
         SpellEffect.Silence => GameText.Get("spell-description.inflict-silence"),
         SpellEffect.Sleep => GameText.Get("spell-description.sleep"),
         SpellEffect.LowerDefenseAndAgility => GameText.Get("spell-description.slow"),
