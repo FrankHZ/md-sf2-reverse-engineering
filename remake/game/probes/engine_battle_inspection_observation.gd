@@ -445,6 +445,8 @@ func range_checkpoint(label: String, baseline: Array, role: String, actor := "",
     if actor.is_empty():
         return check(not movement.visible and movement.actor == null and movement.reachableCells == null
             and movement.destinations == null, label + ": movement field cleared")
+    var settings: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson"))
+    if not check(movement.steady == settings.applied.ReducedFlash, label + ": range follows Reduced Flash"): return false
     var reachable := reachable_x.map(func(x): return {"X":float(x),"Y":3.0})
     var stops := stop_x.map(func(x): return {"X":float(x),"Y":3.0})
     return check(movement.visible and movement.actor == actor and movement.origin == {"X":float(origin_x),"Y":3.0}

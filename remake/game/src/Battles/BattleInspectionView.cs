@@ -194,7 +194,8 @@ internal sealed partial class BattleInspectionView : Control
         if (_snapshot is null) return;
         var at = _page == "Cursor" ? _snapshot.Units.FirstOrDefault(u => u.Position == _cursor) : null;
         bool showCursor = _page == "Cursor" && IsVisibleInTree();
-        _map.Inspect(_cursor, !_pointerFocus, showCursor, CursorRange(showCursor ? at?.Actor : null));
+        _map.Inspect(_cursor, !_pointerFocus, showCursor, CursorRange(showCursor ? at?.Actor : null),
+            _input.Settings.ReducedFlash);
         _pointer.ReleaseIfNeutral();
         _options.Visible = _page == "Options"; _hint.Visible = _page != "Options";
         var size = GetViewportRect().Size;

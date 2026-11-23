@@ -56,7 +56,8 @@ internal sealed partial class BattleMapViewport : Control
     internal Rect2 CameraCells => new Rect2((WorldViewport.Origin - (_region is null ? Vector2.Zero :
         new Vector2(_region.Origin.X, _region.Origin.Y) * 24)) / 24, Size / CellSize)
         .Intersection(new(Vector2.Zero, _mapSize / CellSize));
-    internal void Inspect(MapPosition? position, bool reveal = true, bool showCursor = true, BattleMovementRange? range = null)
+    internal void Inspect(MapPosition? position, bool reveal = true, bool showCursor = true,
+        BattleMovementRange? range = null, bool steady = false)
     {
         var changed = _inspectionFocus != position;
         if (reveal && changed || position is null) _inspectionPan = null;
@@ -66,6 +67,7 @@ internal sealed partial class BattleMapViewport : Control
         if (position is not null && showCursor)
         {
             if (_cursorRole != CursorRole.Inspection) _actionRange.Clear();
+            _range.Steady = steady;
             _range.Present(range);
             ShowCursor(CursorRole.Inspection, position);
         }

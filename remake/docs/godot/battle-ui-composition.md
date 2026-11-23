@@ -108,6 +108,7 @@ settled-origin, session/revision and disclosure checks before calling `BattleMov
 The field starts at the inspected unit's actual cell and uses live Move, mover type, terrain and
 occupancy. Both factions can cross a friendly occupied cell without stopping there. The shared
 board overlay draws `ReachableCells` as cyan edges and fills the legal `Destinations`.
+Reduced Flash keeps the field steady.
 The query runs when the inspected actor or live snapshot changes, or the visible Cursor page
 returns. The field clears on empty ground or when the subject is stale, undisclosed, absent or defeated.
 Details, Options, Map, Members and host cover hide it while retaining the cursor for Back. Exiting
@@ -166,7 +167,9 @@ $env:SF2_INSPECTION_PRIVATE = '0'
     --authored-package $package --input-settings $settings
 ```
 
-The [observer](../../game/probes/engine_battle_inspection_observation.gd) requires exit 0,
+Run with `reducedFlash` set to false and true in the input settings. Use fresh report and log
+destinations for each run. The [observer](../../game/probes/engine_battle_inspection_observation.gd)
+requires exit 0,
 `passed:true`, empty failures and unavailable lists, and clean engine/adapter logs. It uses
 actual mapped keys for ground ally, hovering enemy and empty terrain. The recorded draw
 distinguishes same-faction traversal from legal stops for both sides. It checks clearing and
