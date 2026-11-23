@@ -73,8 +73,10 @@ func inspect_map() -> bool:
     if not await inspect_page("Cursor"): return false
     var inspection := view.find_child("Inspection",true,false)
     var hover := inspection.get_node("HoverCard") as Control
-    var hint := inspection.get_node("InspectionHint") as Label
-    measure("inspection-unit", [hover,hint], hover.find_children("*","Label",true,false) + [hint])
+    var footer := inspection.get_node("InspectionFooter") as Control
+    var hint := footer.find_child("Instructions",true,false) as Label
+    var back := footer.find_child("Back",true,false) as Button
+    measure("inspection-unit", [hover,footer,back], hover.find_children("*","Label",true,false) + [hint])
     if not expect(state().inspection.hover.unit == state().actor,"Acting unit in hover card"): return false
     var cell: Dictionary = state().inspection.cursor
     var subject := Rect2(cell_point(cell.X,cell.Y)-Vector2(48,48),Vector2(96,96))
@@ -82,7 +84,7 @@ func inspect_map() -> bool:
     if not await cover(true): return false
     await act("down")
     if not expect(state().inspection.hover.unit == null,"Reach adjacent empty ground"): return false
-    measure("inspection-ground",[hover,hint],[hint])
+    measure("inspection-ground",[hover,footer,back],[hint])
     await act("confirm")
     if not await inspect_page("Options"): return false
     var options: Dictionary = state().inspection.options
@@ -91,7 +93,7 @@ func inspect_map() -> bool:
     var panel := inspection.get_node("Overview") as Control
     for window in [Vector2i(2560,1440),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
-        measure("overview",[panel,hint],[panel.get_node("Legend"),hint])
+        measure("overview",[panel,footer,back],[panel.get_node("Legend"),hint])
         if not await cover(false): return false
     var s := state()
     var overview: Dictionary = s.inspection.overview
@@ -99,7 +101,7 @@ func inspect_map() -> bool:
     var map: Dictionary = overview.map
     var point := panel.global_position + Vector2(map.x+(unit.Position.X+0.5)*map.width/s.mapWidth,
         map.y+(unit.Position.Y+0.5)*map.height/s.mapHeight)
-    await move_mouse(point); await mouse(point,true); await mouse(point,false)
+    await click({"x":point.x-1,"y":point.y-1,"width":2,"height":2})
     if not expect(state().inspection.page == "Cursor" and state().inspection.cursor == unit.Position,
             "Click on relocated map returns to the chosen unit"): return false
     await act("cancel")
@@ -115,11 +117,16 @@ func battle() -> bool:
     await frames(8)
     var footer := layout.get_node("DescriptionPanel")
     var back := footer.find_child("Back",true,false)
+    var reader := footer.find_child("Reader",true,false)
+    var reading_area := reader.get_node("ReadingArea")
+    var body := reader.find_child("Body",true,false)
     for window in [Vector2i(1920,1080),Vector2i(2560,1440),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
         if not await wait_for(func(_s):return board().settled,"decision camera after resize"): return false
-        measure("decision",[layout.get_node("ActorCard"),layout.get_node("Commands"),footer,back],
-            [footer.find_child("Detail",true,false),footer.find_child("Help",true,false),back])
+        measure("decision",[layout.get_node("ActorCard"),layout.get_node("Commands"),footer,reading_area,back],
+            [body,reader.find_child("Help",true,false),back])
+        if not expect(reading_area.clip_contents and reading_area.get_global_rect().intersects(body.get_global_rect()),
+                "Selected refusal is mounted in the clipped reader"): return false
         var actor_cell := Rect2(cell_point(state().previewX,state().previewY) - Vector2(48,48),Vector2(96,96))
         samples[-1].actorCell = str(actor_cell); samples[-1].cameraSettled = board().settled
         if not expect(not footer.get_global_rect().intersects(actor_cell),"Reason clears the acting unit"): return false
@@ -139,7 +146,7 @@ func battle() -> bool:
     if not expect(state().menu.page == "Target","Host Back restores targeting"): return false
     var target: Dictionary = state().actors.filter(func(a):return a.id == state().candidate)[0]
     var point := cell_point(target.x,target.y)
-    await move_mouse(point); await mouse(point,true); await mouse(point,false)
+    await click({"x":point.x-1,"y":point.y-1,"width":2,"height":2})
     var scene := view.find_child("SceneUi",true,false)
     if not await wait_for(func(s):return s.scene.phase != null and scene.is_visible_in_tree(),"ordinary attack enters close-up"): return false
     measure("close-up",[scene.get_node("ActorCard"),scene.get_node("TargetCard")])

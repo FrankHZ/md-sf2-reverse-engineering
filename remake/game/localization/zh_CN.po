@@ -921,10 +921,13 @@ msgid "battle.move-help"
 msgstr "{0}：指令"
 
 msgid "battle.target-help"
-msgstr "{0}：下个目标\n{1}：执行 · {2}：返回"
+msgstr "{0}：下个目标 · {1}：执行 · {2}：返回"
 
 msgid "battle.target-pick-help"
 msgstr "{0}：切换目标 · {1}：返回"
+
+msgid "battle.pointer-target-help"
+msgstr "悬停预览 · 点击合法目标执行"
 
 msgid "battle.target-invalid"
 msgstr "请选择可用的目标。"
@@ -1595,26 +1598,20 @@ msgstr "开场中文不可用，使用英文。"
 msgid "ui.settings.world-unbound"
 msgstr "开始新游戏或继续旅程时会加载世界中文文本。"
 
-msgid "battle.inspect.close"
-msgstr "{0} / {1} / {2}：关闭"
-
 msgid "battle.inspect.detail-help"
-msgstr "{0} · {1}：魔法/物品 · {2}/{3}：滚动"
+msgstr "{0} · 魔法/道具　{1}/{2} · 滚动"
 
 msgid "battle.inspect.land"
 msgstr "{0} · 地形效果 {1}%（{2},{3}）"
 
 msgid "battle.inspect.options"
-msgstr "战场选项 · {0}\n{1}/{2}：选择 · {3} / {4}：打开 · {5}：返回光标"
+msgstr "战场选项 · {0}/{1} 选择 · {2}/{3} 打开"
 
 msgid "battle.inspect.map-help"
-msgstr "{0}/{1}：已知单位 · {2}：返回选项"
-
-msgid "battle.inspect.cursor"
-msgstr "查看 ·（{0},{1}）· {2}"
+msgstr "{0}/{1} · 浏览已知单位"
 
 msgid "battle.inspect.cursor-help"
-msgstr "方向键或鼠标选格 · {0}/{1}：详情或战场选项 · {2}：返回移动"
+msgstr "方向键或鼠标 · 选择　{0}/{1} · 查看详情或选项"
 
 msgid "battle.inspect.entry-help"
 msgstr "{0}：撤销移动后查看战场；菜单返回上一级"
@@ -1716,7 +1713,7 @@ msgid "battle.member.empty"
 msgstr "没有可查看的战斗成员。"
 
 msgid "battle.member.help"
-msgstr "{0}/{1}：成员 · {2} / {3}：详情 · {4}：返回选项"
+msgstr "{0}/{1} · 选择队员　{2}/{3} · 详情"
 
 msgid "battle.command.search"
 msgstr "调查"
@@ -1797,7 +1794,7 @@ msgid "host.help-text-3"
 msgstr "向东行走"
 
 msgid "host.help-text-4"
-msgstr "场内指令、道具操作和商店服务用上 / 下选择项目，用左 / 右滚动说明和背包。其它选项按画面提示的方向操作。"
+msgstr "场内指令、道具操作和商店服务用上 / 下选择项目，用左 / 右滚动当前阅读区。其它选项按画面提示的方向操作。"
 
 msgid "host.help-text-5"
 msgstr "向南行走"
@@ -2022,9 +2019,6 @@ msgstr "视图键"
 
 msgid "input.button"
 msgstr "按键 {0}"
-
-msgid "battle.pointer-target-help"
-msgstr "悬停：预览 · 点击合法目标：立即执行"
 
 msgid "field.reveal-continue"
 msgstr "{0}：显示全文并继续"
@@ -2830,3 +2824,12 @@ msgstr "{0}已转职为{1}！"
 
 msgid "church.another"
 msgstr "还有别的心愿吗？"
+
+msgid "battle.inspect.return-movement"
+msgstr "返回移动"
+
+msgid "battle.card-level"
+msgstr "等级 {0}"
+
+msgid "ui.read-description"
+msgstr "{0}/{1} · 阅读"

@@ -3060,13 +3060,16 @@ $env:SF2_SHOP_CASE = 'item' # weapon selects that counter's expected stock
 $env:SF2_MENU_ASSETS_EXPECT = 'original'
 $env:SF2_OBSERVATION_OUTPUT = $shopReport
 & $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_shop_observation.gd -- --input-settings $settings
-# Separate ordinary Continue over a disposable real saved turn:
-$env:SF2_MENU_ASSETS_CASE = 'battle-continue'
-$env:SF2_MENU_ASSETS_OUTPUT = $battleReport
-& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_menu_assets_observation.gd -- --input-settings $settings
 ```
 
-`SF2_MENU_REMAPPED=1` selects the finite U/K/L/J/Q/B input witness with those actual bindings in
+For current battle UI, use the [vertical command observation](battle-ui-composition.md#reproduce-the-main-rows),
+the [inspection return observation](battle-ui-composition.md#reproduce-shared-description-reading-and-inspection-return),
+and the separate [Speed](../development-and-verification.md#battle-speed-and-message-observation)
+and [Quit](../verification/battle-save.md#options-quit-caller-1651) routes. The combined
+battle-continue command reproduces the historical cardinal layout in a
+[pinned checkout](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/a480804eb16fe34249a2c8543da62734a9c4f271/remake/docs/godot/presentation.md#shop-and-options-art-acceptance-1669).
+
+For the pinned battle command, `SF2_MENU_REMAPPED=1` selects the finite U/K/L/J/Q/B input witness with those actual bindings in
 `$settings`; defaults use arrows/Enter/Escape. `SF2_MENU_FAULT=1` requires an explicitly malformed
 selected resource and checks its error/exit rather than treating it as text success. Legacy command
 art can be declared separately with `SF2_COMMAND_ART=original` while new options remain text.

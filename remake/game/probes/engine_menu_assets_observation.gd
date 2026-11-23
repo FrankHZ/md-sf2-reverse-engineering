@@ -140,7 +140,7 @@ func options() -> void:
     await click(state().inspection.options.commands[1].rect)
     check(state().inspection.page == "Map","pointer selects same Map caller")
     await key(back);await frames(3)
-    await click(state().inspection.options.backRect)
+    await click(state().inspection.footer.backRect)
     check(state().inspection.page == "Cursor","independent pointer Back returns to cursor")
     await key(back);await frames(4)
     check(not state().inspection.active and state().stage == "Movement" and state().actor == before.actor and state().revision == before.revision,"pure browsing returns to same actor/revision")

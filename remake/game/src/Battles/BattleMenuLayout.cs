@@ -12,7 +12,6 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly UI.BattleStatusCard Target = new() { Name = "TargetCard", Visible = false, Compact = true, DecisionHeader = true };
     internal readonly Label Context = Text("Context", 28);
     internal readonly Label Heading = Text("Heading", 32);
-    internal readonly Label Detail = Text("Detail", 30);
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
@@ -24,8 +23,7 @@ internal sealed partial class BattleMenuLayout : Control
         new("Item", "battle.command.item", "command-menu") { CaptionBeside = true },
         new("Stay", "battle.command.stay", "command-menu") { CaptionBeside = true },
     ];
-    private readonly ScrollContainer _reading = new() { Name = "ReadingArea", MouseFilter = MouseFilterEnum.Ignore,
-        HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None,
+    private readonly UI.ItemDescriptionView _reading = new() { Name = "Reader", ReadingHeight = 0,
         SizeFlagsVertical = SizeFlags.ExpandFill };
     private readonly PanelContainer _context = Frame("ContextPanel");
     private readonly PanelContainer _detail = Frame("DescriptionPanel");
@@ -83,10 +81,8 @@ internal sealed partial class BattleMenuLayout : Control
         var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         column.AddThemeConstantOverride("separation", Gap);
         _detail.AddChild(column); column.AddChild(_reading); column.AddChild(_navigation);
-        var text = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        text.AddThemeConstantOverride("separation", 8);
-        _reading.AddChild(text); text.AddChild(Heading); text.AddChild(Detail); text.AddChild(Help);
-        _reading.GetVScrollBar().FocusMode = FocusModeEnum.None;
+        _reading.AddContext(Heading, Help);
+        _scroll.GetVScrollBar().ValueChanged += _ => InvalidatePointer();
         foreach (var control in new[] { _previous, _next, _confirm, _back })
         {
             control.CustomMinimumSize = new(0, 44);
@@ -124,7 +120,7 @@ internal sealed partial class BattleMenuLayout : Control
         float controlsTop = top + (card.Visible ? height + Gap : 0);
         // Allocate the reader once per phase and viewport. The selected offer can
         // change its scroll content without moving the controls or the footer.
-        float footerHeight = _list.Visible ? 304 : _commandList.Visible ? 260 : _targeting ? 280 : 228;
+        float footerHeight = _targeting ? 320 : _list.Visible ? 304 : _commandList.Visible ? 260 : 228;
         float detailTop = bottom - footerHeight;
         var protection = _subject.HasArea() ? _subject.Grow(16) : default;
         bool alternate = protection.HasArea() && new Rect2(right, top, width, bottom - top).Intersects(protection);
@@ -158,12 +154,8 @@ internal sealed partial class BattleMenuLayout : Control
         Arrange(Size);
     }
 
-    internal void PresentDetail(string text)
-    {
-        if (Detail.Text != text) _reading.ScrollVertical = 0;
-        Detail.Text = text;
-        Detail.Visible = !string.IsNullOrWhiteSpace(text);
-    }
+    internal void PresentDetail(string text, object subject, Input.GameInput? input) => _reading.Present(text, subject, input);
+    internal void ReadDescription(int step) => _reading.Read(step);
 
     internal void ShowNavigation(bool visible, bool canCycle, bool showConfirm, bool canConfirm)
     {
@@ -197,12 +189,9 @@ internal sealed partial class BattleMenuLayout : Control
         return index >= 0 ? ($"command:{index}", rectangle) : (null, default);
     }
 
-    internal bool Scroll(Vector2 position, int direction)
+    internal void Wheel(Vector2 position, int step)
     {
-        var region = Covers(_reading, position) ? _reading : Covers(_scroll, position) ? _scroll : null;
-        if (region is null) return false;
-        region.ScrollVertical += direction * 80;
-        return true;
+        if (!_reading.Wheel(position, step) && Covers(_scroll, position)) _scroll.ScrollVertical += step;
     }
 
     internal void ShowRows(string[] labels, bool[] enabled, int selected, bool visible, string?[] identities)
@@ -254,14 +243,11 @@ internal sealed partial class BattleMenuLayout : Control
         commandList = new { visible = _commandList.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_commandList.GetGlobalRect()) },
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
         descriptionVisible = _detail.IsVisibleInTree(),
-        reader = new { rect = BattleMapViewport.Rectangle(_reading.GetGlobalRect()), scroll = _reading.ScrollVertical,
-            visible = Detail.IsVisibleInTree(), text = Detail.Text, fontSize = Detail.GetThemeFontSize("font_size"),
-            minimumHeight = Detail.GetMinimumSize().Y,
-            maximum = _reading.GetVScrollBar().MaxValue - _reading.GetVScrollBar().Page },
+        reader = _reading.Observe(),
         actor = BattleMapViewport.Rectangle(Actor.GetGlobalRect()), context = BattleMapViewport.Rectangle(_context.GetGlobalRect()),
         contextVisible = _context.IsVisibleInTree(), actorCard = Actor.Observe(), targetCard = Target.Observe(),
-        heading = Heading.Text, detail = Detail.Text, help = Help.Text, helpVisible = Help.IsVisibleInTree(),
-        descriptionLabels = new[] { Heading, Detail, Help }.Where(label => label.IsVisibleInTree()).Select(label => new { text = label.Text,
+        heading = Heading.Text, detail = _reading.Body.Text, help = Help.Text, helpVisible = Help.IsVisibleInTree(),
+        descriptionLabels = new[] { Heading, _reading.Body, Help }.Where(label => label.IsVisibleInTree()).Select(label => new { text = label.Text,
             rect = BattleMapViewport.Rectangle(label.GetGlobalRect()) }).ToArray(),
         listVisible = _list.IsVisibleInTree(), list = BattleMapViewport.Rectangle(_list.GetGlobalRect()),
         rows = _rowLabels.Select(label => label.Text).ToArray(), selectedRow = _selected,
