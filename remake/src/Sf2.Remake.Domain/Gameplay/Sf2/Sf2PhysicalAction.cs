@@ -170,7 +170,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), reward,
             effects.AsReadOnly(), []);
 
-        PhysicalStrike Hit(string kind, bool counter)
+        (bool DoubleRolled, bool CounterRolled) Hit(string kind, bool counter)
         {
             var attacker = counter ? target : actor;
             var defender = counter ? actor : target;
@@ -187,9 +187,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 hp, multiplier, seed, !archerBonus && defender.Definition.Mover is (BattleMover.Hovering or BattleMover.Flying) ? (ushort)8 : (ushort)32,
                 profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC1) != 0,
-                ineffective: !counter && ineffective, doubleRange: profile.Critical.DoubleChanceDenominator,
-                counterRange: defender.Definition.Physical!.Critical.CounterChanceDenominator,
-                silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,
+                ineffective: !counter && ineffective, silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,
                 stunCritical: profile.Critical.InflictsStun, archerBonus: archerBonus);
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
@@ -202,6 +200,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
+            bool twice = strike.Hp > 0 && Roll("double", profile.Critical.DoubleChanceDenominator, attacker.Actor, defender.Actor) == 0;
+            bool response = strike.Hp > 0 && Roll("counter", defender.Definition.Physical!.Critical.CounterChanceDenominator, attacker.Actor, defender.Actor) == 0;
             if (strike.Dodged) effects.Add(new("dodge", defender.Actor, hp, hp));
             else if (strike.Ineffective) effects.Add(new("ineffective", defender.Actor, hp, hp));
             else
@@ -218,7 +218,15 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             inventory = dropped.Battle; seed = inventory.MainSeed;
             effects.AddRange(dropped.Effects);
             reactions[^1] = reactions[^1] with { Receipt = dropped.Receipt };
-            return strike;
+            return (twice, response);
+        }
+
+        ushort Roll(string purpose, ushort range, ActorRef roller, ActorRef? subject = null)
+        {
+            var draw = BattleRandom.NextMain(seed, range);
+            seed = draw.After;
+            effects.Add(new("rng-" + purpose, roller, draw.Before, draw.After, range, draw.Value, subject));
+            return draw.Value;
         }
 
         void AddRolls(IEnumerable<PhysicalRoll> rolls, ActorRef roller, ActorRef? targetActor = null)

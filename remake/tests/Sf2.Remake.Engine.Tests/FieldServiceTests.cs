@@ -640,9 +640,12 @@ public sealed class FieldServiceTests
         Assert.Equal(2, grown.Level);
         Assert.Equal(classId, grown.Progress!.ClassId);
 
-        static bool Counters(BattleActorState defender, uint word) => PhysicalStrikeRules.Resolve(
-            30, 20, 60, 256, (word << 16) | 0x1234, 32, 16, 2,
-            counterRange: defender.Definition.Physical!.Critical.CounterChanceDenominator).CounterRolled;
+        static bool Counters(BattleActorState defender, uint word)
+        {
+            var impact = PhysicalStrikeRules.Resolve(30, 20, 60, 256, (word << 16) | 0x1234, 32, 16, 2);
+            var doubleDraw = BattleRandom.NextMain(impact.Seed, 32);
+            return BattleRandom.NextMain(doubleDraw.After, defender.Definition.Physical!.Critical.CounterChanceDenominator).Value == 0;
+        }
     }
 
     [Theory]
