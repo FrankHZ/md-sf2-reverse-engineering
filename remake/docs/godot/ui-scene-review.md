@@ -420,8 +420,9 @@ the recipient's card takes the card position. Back restores the chosen level, sl
 
 [#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
 and direct Stay. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
-delivers the inspection movement field. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
-tracks #2082 shared roster presentation, #2083 spell descriptions and #2065 current-round readout.
+delivers the inspection movement field. [#2082](battle-ui-composition.md#shared-member-roster-2082)
+delivers shared field and battle Member rows. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+tracks pending spell descriptions (#2083) and the current-round readout (#2065).
 
 ### From entry to committed action
 

@@ -2185,7 +2185,10 @@ list-specific return is covered by the separate [#1645 acceptance](#battle-membe
 
 ### Battle Member roster and read-only details (#1645)
 
-**Current reproduction:** the retained member driver assumes pre-#1686 cardinal Options and full-card UI. Its [historical script](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_member_observation.gd) remains evidence for that named boundary. Use the [current production F8 observer](battle-interaction-baseline.md#direct-production-reproduction), case `retreat`, for connected joined-member detail/row return. Membership/disclosure and source caller rules remain unchanged.
+**Current reproduction:** the authored #2082 cases exercise the actual shared roster and detail
+return. Use the [production F8 observer](battle-interaction-baseline.md#direct-production-reproduction),
+case `retreat`, for connected joined-member detail/row return. The historical connected Member
+driver below covers the pre-#1686 Options layout. [Shared roster cases](battle-ui-composition.md#reproduce-the-shared-roster)
 
 **Standard rigor:** this bounded multi-layer extension completes Options → Member → selected full
 sheet → same selected roster row → same Options choice → cursor → the same actor's settled Movement.
@@ -2220,11 +2223,12 @@ reject explicitly. No live actor means no invented row or scalars.
 `BattleUnitProjection.Details` now supplies both map inspection and Member from the same live scalar,
 status, spell and loadout readers, retaining private ≥100 stat unavailability and missing inventory
 semantics. `BattleInspectionView` uses a distinct disposable `MemberFull` caller: A/B/C returns to
-`Members` with its selected index, including the current actor. Direct cursor A on that actor still
+`Members` with its selected actor and scroll, including the current actor. Direct cursor A on that actor still
 closes to Movement. Options retains the Member choice after list Back; Map remains reachable.
-`BattleMemberListView` presents a bounded moving list window, defeated/absent/unavailable annotations,
-and localized en/zh-CN copy. Up/Down, A/C/B and detail reading hints come from `GameInput`; browsing
-never submits gameplay. Changed revision, actor, unavailable control or host replacement retires the
+`BattleMemberListView` mounts the same scrollable rows as field Party, with localized wrapped names,
+optional admitted portraits and distinct defeated, absent and unavailable annotations. Up/Down
+reveals the selected row. A/C or a complete row click opens eligible details. Mapped hints come
+from `GameInput`, and browsing never submits gameplay. Changed revision, actor, unavailable control or host replacement retires the
 same inspection context. No Member state is saved.
 
 **Confirmed bounded engineering acceptance:** the finite engine behavior selection covers live scalar

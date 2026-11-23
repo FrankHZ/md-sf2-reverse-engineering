@@ -22,9 +22,7 @@ internal sealed partial class PartyStatusView : Control
     private readonly PanelContainer _footer = new() { Name = "PartyFooter", MouseFilter = MouseFilterEnum.Ignore };
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
-    private readonly ScrollContainer _roster = new() { Name = "Roster", HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
-        VerticalScrollMode = ScrollContainer.ScrollMode.Auto, FocusMode = FocusModeEnum.None };
-    private readonly VBoxContainer _rows = new() { Name = "Members", SizeFlagsHorizontal = SizeFlags.ExpandFill };
+    private readonly MemberRosterView _roster = new() { Name = "Roster" };
     private readonly MenuPointer _pointer = new();
     private readonly Label _prepare = Text("Prepare", 28);
     private readonly FieldActionView _actions = new() { Name = "FieldActions" };
@@ -32,14 +30,12 @@ internal sealed partial class PartyStatusView : Control
     private object? _iconSource;
     private SessionFailure? _assetFailure;
     internal Func<Sf2.Remake.Application.Runtime.Exploration.FieldCommand, long, SessionResult>? SubmitField { get; set; }
-    private readonly List<Label> _labels = [];
     private GameSession? _session;
     private GameInput? _input;
     private PartyDetails? _shown;
-    private ImageTexture? _portraitTexture;
     private int? _portraitId;
-    private bool _portraitHd;
-    private int _index, _count;
+    private int Index => _roster.Index;
+    private int Count => _shown?.Members.Count ?? 0;
     private bool _requiresRelease;
     internal bool Open => Visible;
 
@@ -52,7 +48,6 @@ internal sealed partial class PartyStatusView : Control
         foreach (var node in new Control[] { _recordFrame, _goldFrame, _details,
             _portrait, _portraitNote, _kills, _defeats, _killsValue, _defeatsValue, _selector, _previous, _next, _rosterFrame, _roster, _footer }) _memberLayer.AddChild(node);
         _goldFrame.AddChild(_gold);
-        _roster.AddChild(_rows);
         var footerRow = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         footerRow.AddThemeConstantOverride("separation", 24);
         _footer.AddChild(footerRow);
@@ -75,7 +70,7 @@ internal sealed partial class PartyStatusView : Control
         Hide();
     }
 
-    public override void _ExitTree() { _portrait.Texture = null; _portraitTexture?.Dispose(); _icons.Dispose(); _iconSource = null; }
+    public override void _ExitTree() { _portrait.Texture = null; _icons.Dispose(); _iconSource = null; }
     private string _entry = "actions";
     internal void PrepareGraphics(GameSession session)
     {
@@ -91,8 +86,8 @@ internal sealed partial class PartyStatusView : Control
         catch (InvalidOperationException error)
         { _assetFailure = new(SessionFailureKind.AdapterError, error.Message, "presentation.identityIcons", "Member identity icon decoding failed."); }
         _details.ConfigureIcons(_icons, session.Definition);
-        _session = session; _input = input; _index = 0; _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0;
-        _requiresRelease = true; _pointer.Suspend(); _roster.ScrollVertical = 0; _details.ResetReading();
+        _session = session; _input = input; _roster.Reset(); _details.FocusPane = entry == "magic" ? 1 : entry == "item" ? 2 : 0;
+        _requiresRelease = true; _pointer.Suspend(); _details.ResetReading();
         _actions.Hide();
         Show(); Present(session, input);
     }
@@ -108,33 +103,32 @@ internal sealed partial class PartyStatusView : Control
         if (!session.Current.CanWaitAtInput || session.QueryPartyDetails() is not { } party) { Hide(); return; }
         _prepare.Text = GameText.Get(_entry == "magic" ? "prepare.magic" : _entry == "item" ? "field-menu.item" : "party.prepare"); _close.Text = GameText.Get("party.close");
         _kills.Text = GameText.Get("party.kills"); _defeats.Text = GameText.Get("party.defeats");
-        _shown = party; _count = party.Members.Count; _index = Math.Clamp(_index, 0, Math.Max(0, _count - 1));
-        while (_labels.Count < _count)
+        var entries = party.Members.Select(member =>
         {
-            var label = Text("Member" + _labels.Count, 28);
-            label.AutowrapMode = TextServer.AutowrapMode.WordSmart; label.CustomMinimumSize = new(0, 72);
-            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; _labels.Add(label); _rows.AddChild(label);
-        }
-        for (int i = 0; i < _labels.Count; i++)
-        {
-            _labels[i].Visible = i < _count;
-            if (i >= _count) continue;
-            var row = party.Members[i];
-            _labels[i].Text = (i == _index && _details.FocusPane == 0 ? "› " : "   ") + MemberName(row, session) +
-                (row.Carried.Absent ? " · " + GameText.Get("party.absent") : row.Carried.Hp == 0 ? " · " + GameText.Get("party.defeated") : "");
-            if (i == _index && _details.FocusPane == 0) _labels[i].AddThemeColorOverride("font_color", StoryTheme.Selected);
-            else _labels[i].RemoveThemeColorOverride("font_color");
-        }
-        var member = _count == 0 ? null : party.Members[_index];
-        string name = member is null ? GameText.Get("party.unavailable") : MemberName(member, session);
-        _selector.Text = GameText.Get("party.member") + $"   {(_count == 0 ? 0 : _index + 1)} / {_count}";
+            bool available = member.Deployment is not null && member.Carried.Initialized != false;
+            string condition = !available ? GameText.Get("party.value-unavailable") :
+                member.Carried.Absent ? GameText.Get("party.absent") : member.Carried.Hp == 0 ? GameText.Get("party.defeated") : "";
+            return new MemberRosterEntry(member.Carried.Actor, MemberName(member, session),
+                condition, available, PortraitFor(session, member));
+        }).ToArray();
+        var previous = _roster.Actor;
+        _shown = party;
+        _roster.Present(entries, focused: _details.FocusPane == 0);
+        if (previous != _roster.Actor) _details.ResetReading();
+        var member = Count == 0 ? null : party.Members[Index];
+        string name = member is null ? GameText.Get("party.unavailable") : entries[Index].Name;
+        _selector.Text = GameText.Get("party.member") + $"   {(Count == 0 ? 0 : Index + 1)} / {Count}";
         _details.Present(member, name, session);
         _killsValue.Text = member?.Carried.Kills?.ToString() ?? GameText.Get("party.value-unavailable");
         _defeatsValue.Text = member?.Carried.Defeats?.ToString() ?? GameText.Get("party.value-unavailable");
         _killsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Kills is null ? 24 : 30);
         _defeatsValue.AddThemeFontSizeOverride("font_size", member?.Carried.Defeats is null ? 24 : 30);
         _gold.Text = GameText.Get("party.gold", party.Gold?.ToString() ?? GameText.Get("party.value-unavailable"));
-        PresentPortrait(session, member);
+        _portraitId = member is null ? null : entries[Index].Portrait?.Id;
+        _portrait.Texture = _roster.Portrait;
+        _portrait.Visible = _portrait.Texture is not null;
+        _portraitNote.Visible = !_portrait.Visible;
+        _portraitNote.Text = GameText.Get("party.portrait-unavailable");
         string focus = GameText.Get(_details.FocusPane switch { 1 => "party.magic", 2 => "party.items", _ => "party.member" });
         _hint.Text = GameText.Get("party.hint", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Up),
             input.CompactHint(GameAction.Down), focus, input.CompactHint(GameAction.Target),
@@ -156,25 +150,16 @@ internal sealed partial class PartyStatusView : Control
                 ? CharacterNames.ReadableIdentity(member.Carried.Actor) : GameText.Get("party.name-unavailable"));
     }
 
-    private void PresentPortrait(GameSession session, PartyMemberDetails? member)
+    private MemberPortrait? PortraitFor(GameSession session, PartyMemberDetails member)
     {
         var visuals = session.Definition.Exploration?.Visuals;
-        var appearance = session.Current.Exploration?.Population?.AllySprites?.FirstOrDefault(row =>
-            row.Character == member?.Deployment?.Initialization?.AllyPartyMember);
+        int? binding = member.Deployment?.Initialization?.AllyPartyMember;
+        var appearance = session.Current.Exploration?.Population?.AllySprites?.FirstOrDefault(row => row.Character == binding);
         int? sprite = appearance is null ? null : appearance.JoinedFlag is { } joined && !session.Current.Story.Flags.Contains(joined)
-            ? appearance.UnjoinedSprite : appearance.ForClass(member?.Carried.Progress?.ClassId);
-        int? portrait = sprite is { } id ? visuals?.Sprites.GetValueOrDefault(id)?.Portrait : null;
+            ? appearance.UnjoinedSprite : appearance.ForClass(member.Carried.Progress?.ClassId);
         bool hd = _input?.Settings.GraphicsMode == "hd" && session.Current.Exploration is { } field &&
-            visuals?.Maps.GetValueOrDefault(field.Map)?.HdBlocks is not null && portrait is { } selected &&
-            visuals.Portraits.GetValueOrDefault(selected)?.HdRaster is not null;
-        if (portrait != _portraitId || hd != _portraitHd)
-        {
-            _portrait.Texture = null; _portraitTexture?.Dispose(); _portraitTexture = null; _portraitId = portrait; _portraitHd = hd;
-            if (portrait is { } value && visuals?.Portraits.TryGetValue(value, out var visual) == true)
-                _portrait.Texture = _portraitTexture = ExplorationRasterImages.Portrait(visual, hd: hd);
-        }
-        _portrait.Visible = _portraitTexture is not null;
-        _portraitNote.Visible = !_portrait.Visible; _portraitNote.Text = GameText.Get("party.portrait-unavailable");
+            visuals?.Maps.GetValueOrDefault(field.Map)?.HdBlocks is not null;
+        return MemberPortrait.ForSprite(visuals, sprite, hd);
     }
 
     private void Arrange()
@@ -205,12 +190,16 @@ internal sealed partial class PartyStatusView : Control
     }
 
     private void Select(int index)
-    { if (_count == 0) return; _index = (index + _count) % _count; _details.ResetReading(keepItemSlot: _details.FocusPane == 2); _roster.EnsureControlVisible(_labels[_index]); }
+    {
+        if (Count == 0) return;
+        _roster.Select(index);
+        _details.ResetReading(keepItemSlot: _details.FocusPane == 2);
+    }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _actions.Suspend(); }
     private void Prepare()
     {
-        if (_shown is null || _count == 0 || SubmitField is null) return;
-        var member = _shown.Members[_index];
+        if (_shown is null || Count == 0 || SubmitField is null) return;
+        var member = _shown.Members[Index];
         _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField, _icons, _entry);
     }
     internal void Handle(GameAction action, GameSession session, GameInput input)
@@ -224,7 +213,7 @@ internal sealed partial class PartyStatusView : Control
         if (action is GameAction.Up or GameAction.Down && _details.FocusPane == 2)
             _details.SelectItemSlot(_details.ItemSlot + step);
         else if (action is GameAction.Up or GameAction.Down && _details.FocusPane == 1) _details.ScrollFocused(step * 112);
-        else if (step != 0) Select(_index + step);
+        else if (step != 0) Select(Index + step);
         Present(session, input);
     }
 
@@ -239,35 +228,36 @@ internal sealed partial class PartyStatusView : Control
         {
             int step = button.ButtonIndex == MouseButton.WheelUp ? -112 : 112;
             if (button.Pressed && !_requiresRelease)
-            { if (_roster.GetGlobalRect().HasPoint(button.Position)) _roster.ScrollVertical += step;
-              else _details.Wheel(button.Position, step); }
+            {
+                if (!_roster.Wheel(button.Position, step)) _details.Wheel(button.Position, step);
+            }
             _pointer.Cancel(); return;
         }
         string? id = null; Rect2 rect = default;
+        int memberIndex = -1;
         if (button.ButtonIndex == MouseButton.Right) { id = "close"; rect = GetGlobalRect(); }
         if (button.ButtonIndex == MouseButton.Left)
         {
             foreach (var (key, control) in new[] { ("close", _close), ("previous", _previous), ("next", _next), ("selector", _selector), ("prepare", _prepare) })
                 if (control.GetGlobalRect().HasPoint(button.Position)) { id = key; rect = control.GetGlobalRect(); break; }
-            if (_roster.GetGlobalRect().HasPoint(button.Position))
-                for (int i = 0; i < _count; i++)
-                    if (_labels[i].GetGlobalRect().HasPoint(button.Position)) { id = i.ToString(); rect = _labels[i].GetGlobalRect(); break; }
+            if (_roster.Hit(button.Position) is (>= 0 and var index, var rowId, var rowRect))
+            { memberIndex = index; id = rowId; rect = rowRect; }
             if (id is null && _details.HitItem(button.Position) is { Slot: >= 0 } item)
             { id = $"item:{item.Slot}"; rect = item.Rect; }
         }
-        string? clicked = _pointer.Read(button, id, rect, (_index, _details.FocusPane, _roster.ScrollVertical));
+        string? clicked = _pointer.Read(button, id, rect, (_roster.Actor, _details.FocusPane, _roster.ScrollVertical));
         if (_requiresRelease || clicked is null) return;
         if (clicked == "close") { Hide(); return; }
         if (clicked == "prepare") { Prepare(); return; }
         if (clicked == "selector") { _details.FocusPane = 0; }
-        else if (clicked is "previous" or "next") Select(_index + (clicked == "previous" ? -1 : 1));
+        else if (clicked is "previous" or "next") Select(Index + (clicked == "previous" ? -1 : 1));
         else if (clicked.StartsWith("item:", StringComparison.Ordinal))
         { _details.FocusPane = 2; _details.SelectItemSlot(int.Parse(clicked.AsSpan(5))); }
-        else { Select(int.Parse(clicked)); _details.FocusPane = 0; }
+        else if (memberIndex >= 0) { Select(memberIndex); _details.FocusPane = 0; }
         Present(_session!, _input!);
     }
 
-    internal object Observe() => new { visible = IsVisibleInTree(), index = _index, count = _count, requiresRelease = _requiresRelease,
+    internal object Observe() => new { visible = IsVisibleInTree(), index = Index, count = Count, requiresRelease = _requiresRelease,
         header = _selector.Text, hint = _hint.Text, hintRect = Rect(_hint), hintMinimumHeight = _hint.GetMinimumSize().Y, failure = _assetFailure, memberLayerVisible = _memberLayer.IsVisibleInTree(), selectorOpen = _roster.IsVisibleInTree(), focusPane = _details.FocusPane,
         preparation = _actions.Observe(), prepareRect = Rect(_prepare),
         card = _details.Card(), layout = _details.Observe(), portraitId = _portraitId, portraitVisible = _portrait.IsVisibleInTree(),
@@ -279,7 +269,7 @@ internal sealed partial class PartyStatusView : Control
         projection = _shown?.Members.Select(member => new { actor = member.Carried.Actor.Value, hp = member.Carried.Hp, mp = member.Carried.Mp,
             exp = member.Carried.Exp, member.Carried.Kills, member.Carried.Defeats, absent = member.Carried.Absent,
             member.MaxHp, member.MaxMp, member.Level, member.Attack, member.Defense, member.Agility, member.Spells, member.Inventory }),
-        rows = _labels.Take(_count).Select(label => new { text = label.Text, rect = Rect(label) }) };
+        rows = _roster.ObserveRows() };
     private static object Rect(Control control) => BattleMapViewport.Rectangle(control.GetGlobalRect());
     private static Label Text(string name, int size)
     { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }

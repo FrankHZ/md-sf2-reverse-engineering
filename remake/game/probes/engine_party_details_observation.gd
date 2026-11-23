@@ -100,7 +100,7 @@ func inspect_party() -> void:
     await click(state().partyStatus.nextRect)
     if not check(state().partyStatus.index == (int(selected_before)+1)%party.size(), "Mouse next-member arrow"): return
     if case_name == "private" and not check_portrait(): return
-    if case_name == "authored":
+    if case_name in ["authored", "member-field"]:
         if not check(party.size() == 14 and party[0].Inventory[0].Empty == false and party[0].Inventory[0].Name == party[0].Inventory[1].Name, "Full roster and duplicate slot identity"): return
         if not check(party[1].Inventory.all(func(slot): return slot.Empty == true) and party[2].hp == 0 and party[3].Inventory.all(func(slot): return slot.Empty == false), "Empty slots and dead retained member"): return
         await click(state().partyStatus.selectorRect)
@@ -113,6 +113,21 @@ func inspect_party() -> void:
         if not check(s.partyStatus.index == 13 and s.partyStatus.rows[-1].rect.y >= s.partyStatus.rosterRect.y and s.partyStatus.rows[-1].rect.y < s.partyStatus.rosterRect.y+s.partyStatus.rosterRect.height, "Keyboard selected member remains visible"): return
         await click(s.partyStatus.rows[-1].rect)
         if not check(state().partyStatus.selectorOpen, "Selected last member remains visible"): return
+        if case_name == "member-field":
+            var roster: Dictionary = state().partyStatus
+            var actor: String = roster.rows[-1].actor
+            if not check(roster.rows[0].lines > 1 and roster.rows[2].condition == "Defeated" and roster.rows[-1].focused,
+                    "Shared wrapped rows show condition and focus on field"): return
+            await click(roster.prepareRect)
+            var prepared := record("field-prepare")
+            if not check(prepared.partyStatus.preparation.visible and prepared.partyStatus.preparation.stage == "actions"
+                    and not prepared.partyStatus.memberLayerVisible and prepared.partyStatus.preparation.failure == null,
+                    "Field roster still opens Prepare"): return
+            await tap(KEY_ESCAPE)
+            var restored: Dictionary = record("field-prepare-back").partyStatus
+            if not check(restored.selectorOpen and restored.rows[restored.index].actor == actor and
+                    restored.rosterScroll == roster.rosterScroll and restored.rows[-1].focused,
+                    "Prepare Back retains field actor and roster scroll"): return
     # Paired list panes retain distinct scroll positions; wheel cannot move the other pane.
     s = state()
     var magic_scroll = s.partyStatus.layout.magic.scroll

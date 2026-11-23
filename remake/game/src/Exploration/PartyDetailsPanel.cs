@@ -172,20 +172,23 @@ internal sealed partial class PartyDetailsPanel : Panel
     {
         float half = (Size.X - 72) / 2;
         _name.Position = new(24, 16); _name.Size = new(Size.X - 48, 76);
-        _class.Position = new(24, 94); _class.Size = new(Size.X - 48, 36);
+        float classY = Math.Max(94, _name.GetRect().End.Y + 2);
+        _class.Position = new(24, classY); _class.Size = new(Size.X - 48, 36);
+        float headerExtra = Math.Max(0, _class.GetRect().End.Y - 130);
+        Vector2 belowHeader = new(0, headerExtra);
         Vector2[] positions = [new(24, 146), new(48 + half, 146), new(48 + half, 218),
             new(48 + half, 290), new(24, 362), new(48 + half, 362)];
         for (int i = 0; i < _stats.Count; i++)
         {
-            _stats[i].Title.Position = positions[i]; _stats[i].Title.Size = new(152, 48);
-            _stats[i].Value.Position = positions[i] + new Vector2(156, 0); _stats[i].Value.Size = new(half - 156, 48);
+            _stats[i].Title.Position = positions[i] + belowHeader; _stats[i].Title.Size = new(152, 48);
+            _stats[i].Value.Position = positions[i] + belowHeader + new Vector2(156, 0); _stats[i].Value.Size = new(half - 156, 48);
         }
         foreach (var (control, y) in new[] { ((Control)_hp, 218), (_mp, 290), (_unknownHp, 218), (_unknownMp, 290) })
-        { control.Position = new(24, y); control.Size = new(half, 48); }
-        _magicTitle.Position = new(24, 442); _magicTitle.Size = new(half, 44);
-        _itemsTitle.Position = new(48 + half, 442); _itemsTitle.Size = new(half, 44);
-        _magic.Position = new(24, 498); _magic.Size = new(half, Size.Y - 522);
-        _items.Position = new(48 + half, 498); _items.Size = new(half, Size.Y - 522);
+        { control.Position = new(24, y + headerExtra); control.Size = new(half, 48); }
+        _magicTitle.Position = new(24, 442 + headerExtra); _magicTitle.Size = new(half, 44);
+        _itemsTitle.Position = new(48 + half, 442 + headerExtra); _itemsTitle.Size = new(half, 44);
+        _magic.Position = new(24, 498 + headerExtra); _magic.Size = new(half, Size.Y - 522 - headerExtra);
+        _items.Position = new(48 + half, 498 + headerExtra); _items.Size = new(half, Size.Y - 522 - headerExtra);
         _magicTitle.Modulate = FocusPane == 1 ? StoryTheme.Selected : Colors.White;
         _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
     }
