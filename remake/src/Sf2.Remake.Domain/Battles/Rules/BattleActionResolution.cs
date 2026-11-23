@@ -105,29 +105,37 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             Require(before.Actors.Any(unit => unit.Actor == target && unit.Hp > 0 && unit.Position is not null &&
                 (ChosenAction?.Kind == BattleActionKind.Healing || healingItem ? unit.Faction == actor.Faction : unit.Faction != actor.Faction)));
         uint seed = before.ThinkingSeed;
-        uint main = before.MainSeed; int categories = 0;
+        uint main = before.MainSeed;
+        int categories = 0;
+        bool dualCategory = temporary && Effects.Any(row => row.Kind == "ai-item-candidate") &&
+            Effects.Any(row => row.Kind == "ai-spell-candidate");
+        bool choseFromThinking = false;
         foreach (var effect in Effects)
         {
             Require(!string.IsNullOrWhiteSpace(effect.Kind) && effect.Actor == actorRef &&
                 (effect.Target is null || before.Actors.Any(unit => unit.Actor == effect.Target)));
             if (effect.Kind == "rng-ai-attack-category")
             {
-                ushort range = temporary && Effects.Any(row => row.Kind == "ai-item-candidate") &&
-                    Effects.Any(row => row.Kind == "ai-spell-candidate") ? (ushort)2 : (ushort)6;
-                var category = BattleRandom.NextMain(main, range);
-                Require(++categories == 1 && effect.RandomRange == range && effect.Target is null &&
+                var category = BattleRandom.NextMain(main, 6);
+                Require(!dualCategory && ++categories == 1 && effect.RandomRange == category.Range && effect.Target is null &&
                     effect.Before == main && effect.After == category.After && effect.RandomValue == category.Value);
                 main = category.After; continue;
             }
             if (effect.RandomRange is null)
             { Require(effect.RandomValue is null && !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)); continue; }
-            Require(effect.Kind == "thinking-rng" && effect.RandomRange <= byte.MaxValue);
+            if (effect.Kind == "thinking-ai-attack-category")
+            {
+                Require(dualCategory && !choseFromThinking && effect.RandomRange == 2 && effect.Target is null &&
+                    (effect.RandomValue == 1 ? itemAttack : ChosenAction is { Kind: BattleActionKind.AttackSpell }));
+                choseFromThinking = true;
+            }
+            else Require(!choseFromThinking && effect.Kind == "thinking-rng" && effect.RandomRange <= byte.MaxValue);
             var draw = BattleRandom.NextThinkingWord((ushort)(seed >> 16), (byte)effect.RandomRange!.Value);
             uint after = ((uint)draw.After << 16) | (seed & 65535);
             Require(effect.Before == seed && effect.After == after && effect.RandomValue == draw.Value);
             seed = after;
         }
-        Require(Battle.ThinkingSeed == seed && Battle.MainSeed == main);
+        Require(dualCategory == choseFromThinking && Battle.ThinkingSeed == seed && Battle.MainSeed == main);
         if (QueueOnly) Require(ReferenceEquals(Battle, before) && Path.Count == 1 && Target is null);
     }
 }

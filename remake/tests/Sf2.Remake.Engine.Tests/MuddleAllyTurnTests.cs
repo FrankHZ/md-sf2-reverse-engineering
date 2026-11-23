@@ -58,11 +58,12 @@ public sealed class MuddleAllyTurnTests
     }
 
     [Theory]
-    [InlineData(4500u, 127, 408, true)]
-    [InlineData(4500u, 127, 152, true)]
-    [InlineData(0u, 127, 408, false)]
-    [InlineData(1700u, 0, 408, false)]
-    public void BlackRingAndLearnedBlazeShareTheAttackChoice(uint mainWord, ushort firstSlot, ushort ring, bool item)
+    [InlineData(4500u, 104, 127, 408, true, true)]
+    [InlineData(4500u, 104, 127, 152, true)]
+    [InlineData(4500u, 51, 127, 408, false)]
+    [InlineData(1700u, 104, 0, 408, false)]
+    public void BlackRingAndLearnedBlazeShareTheAttackChoice(uint mainWord, byte thinkingByte, ushort firstSlot,
+        ushort ring, bool item, bool grows = false)
     {
         var before = Battle(d => d["terrains"]![0]!["rows"]![2] = "pppppppppp");
         var mage = before.GetActor(Mage);
@@ -71,36 +72,51 @@ public sealed class MuddleAllyTurnTests
         var deployment = mage.Deployment with
         {
             Definition = new(Mage, BattleClassRule.Wizard, 5, 30, 20, 10, 5, 100, false, 5, mage.Spells,
-                physical: mage.Definition.Physical! with { Promoted = true }, equipment: equipment)
+                physical: mage.Definition.Physical! with { Promoted = true }, equipment: equipment,
+                growth: grows ? Growth(17, [30, 20, 10, 5, 100]) : null)
         };
         var loadout = new BattleSourceLoadout([firstSlot, ring, 127, 127], [11, 63, 63, 63]);
-        var owner = new BattleActorState(deployment, mage.Hp, mage.Mp, mage.Exp, mage.Position, 0, 0,
+        var owner = new BattleActorState(deployment, mage.Hp, mage.Mp, grows ? (byte)99 : mage.Exp, mage.Position, 0, 0,
             sourceLoadout: loadout, status: BattleEquipment.RefreshCurse(deployment.Definition, loadout, 0x10),
             activationWord: 0);
         before = WithItems(before, owner, attackItems:
-            [new(24, "Black Ring", new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire), Breakable: true)]);
+            [new(24, "Black Ring", new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire), Breakable: true)])
+            .With(thinkingSeed: (uint)thinkingByte << 24 | 0x00EF5678u);
 
         var (after, events) = Play(before, Mage, mainWord);
-        var category = Assert.Single(events, e => e.Kind == "rng-ai-attack-category");
-        Assert.Equal<ushort?>(firstSlot == 127 ? (ushort)2 : (ushort)6, category.RandomRange);
+        long mainAtDamage = mainWord << 16;
         if (firstSlot == 127)
         {
+            var category = Assert.Single(events, e => e.Kind == "thinking-ai-attack-category");
+            var lastScore = events.Last(e => e.Kind == "thinking-rng");
+            Assert.True(events.IndexOf(lastScore) < events.IndexOf(category));
+            Assert.Equal(lastScore.After, category.Before);
+            Assert.Equal<ushort?>(2, category.RandomRange);
             Assert.Equal<ushort?>(item ? (ushort)1 : (ushort)0, category.RandomValue);
-            Assert.True(events.FindIndex(e => e.Kind == "ai-item-candidate") <
-                events.FindIndex(e => e.Kind == "ai-spell-candidate"));
-            Assert.Contains(events, e => e.Kind == "ai-item-candidate");
+            Assert.Equal((long)(item ? 0x01EF5678u : 0x00EF5678u), category.After);
+            Assert.Equal(after.Battle.ThinkingSeed, category.After);
+            Assert.DoesNotContain(events, e => e.Kind == "rng-ai-attack-category");
+            var itemScore = Assert.Single(events, e => e.Kind == "ai-item-candidate");
+            Assert.True(events.IndexOf(itemScore) < events.FindIndex(e => e.Kind == "ai-spell-candidate"));
         }
-        else Assert.DoesNotContain(events, e => e.Kind == "ai-item-candidate");
+        else
+        {
+            Assert.DoesNotContain(events, e => e.Kind is "ai-item-candidate" or "thinking-ai-attack-category");
+            var category = Assert.Single(events, e => e.Kind == "rng-ai-attack-category");
+            Assert.Equal<ushort?>(6, category.RandomRange);
+            Assert.Equal(mainAtDamage, category.Before);
+            mainAtDamage = category.After!.Value;
+        }
 
         Assert.Equal(Smoke, Assert.Single(events, e => e.Kind == (item ? "ai-item-target" : "ai-spell-target")).Target);
-        Assert.Single(events, e => e.Kind == "rng-spell-critical");
+        Assert.Equal(mainAtDamage, Assert.Single(events, e => e.Kind == "rng-spell-critical").Before);
         bool destroyed = item && ring == 408;
         ushort remaining = destroyed ? (ushort)127 : ring;
         if (item && !destroyed)
         {
             var wear = Assert.Single(events, e => e.Kind == "rng-item-wear");
             Assert.Equal<ushort?>(4, wear.RandomRange);
-            Assert.True(events.FindIndex(e => e.Kind == "rng-spell-variance") < events.IndexOf(wear));
+            Assert.Equal(events.Last(e => e.Kind == "rng-spell-variance").After, wear.Before);
             if (wear.RandomValue == 0) remaining = 408;
         }
         else Assert.DoesNotContain(events, e => e.Kind == "rng-item-wear");
@@ -110,6 +126,17 @@ public sealed class MuddleAllyTurnTests
         Assert.Equal(mage.Spells, played.Spells);
         Assert.Equal(destroyed ? 0 : CurseRules.Mask, played.Status);
         Assert.Equal(destroyed ? 1 : 0, events.Count(e => e.Kind == "item-destroyed"));
+        if (grows)
+        {
+            var removal = Assert.Single(events, e => e.Kind == "item-destroyed");
+            var level = Assert.Single(events, e => e.Kind == "level" && e.Actor == Mage);
+            var expiry = Assert.Single(events, e => e.Kind == "muddle-status" && e.Actor == Mage);
+            Assert.True(events.IndexOf(removal) < events.IndexOf(level));
+            Assert.True(events.IndexOf(level) < events.IndexOf(expiry));
+            Assert.Equal(0x10, expiry.Before);
+            Assert.Equal(owner.Level + 1, played.Level);
+            Assert.Equal(played.BaseAttack, played.Attack);
+        }
         Assert.Equal(mage.LastTarget, played.LastTarget);
         Assert.InRange(after.Battle.GetActor(Smoke).Hp, 1, before.GetActor(Smoke).Hp - 1);
     }
@@ -153,6 +180,49 @@ public sealed class MuddleAllyTurnTests
             Assert.InRange(after.Battle.GetActor(Mage).Hp, 7, 29);
         }
         else Assert.Equal(6, after.Battle.GetActor(Mage).Hp);
+    }
+
+    [Fact]
+    public void TemporaryHealerPaysAndGrowsFromEarnedExperienceBeforeMuddleExpires()
+    {
+        var before = Battle(d =>
+        {
+            d["encounters"]![0]!["placements"]![2]!["x"] = 8;
+            d["start"]!["actors"]![0]!["hp"] = 6;
+            d["start"]!["actors"]![1]!["hp"] = 24;
+        });
+        var priest = before.GetActor(Priest);
+        var deployment = priest.Deployment with { Definition = priest.Definition.WithGrowth(Growth(4, [30, 20, 7, 2, 50])) };
+        var owner = new BattleActorState(deployment, priest.Hp, priest.Mp, 99, priest.Position, 0, 0,
+            status: 0x10, activationWord: 0);
+        before = WithItems(before, owner);
+
+        var (after, events) = Play(before, Priest, mainWord: 3000);
+        var threshold = Assert.Single(events, e => e.Kind == "exp-threshold" && e.Actor == Priest);
+        var payment = Assert.Single(events, e => e.Kind == "mp" && e.Actor == Priest);
+        var level = Assert.Single(events, e => e.Kind == "level" && e.Actor == Priest);
+        var expiry = Assert.Single(events, e => e.Kind == "muddle-status" && e.Actor == Priest);
+        Assert.True(events.IndexOf(payment) < events.IndexOf(threshold));
+        Assert.True(events.IndexOf(threshold) < events.IndexOf(level));
+        Assert.True(events.IndexOf(level) < events.IndexOf(expiry));
+        Assert.Equal(0x10, expiry.Before);
+        Assert.Equal(0, expiry.After);
+        Assert.Equal(10, events.Count(e => e.Kind is "rng-growth-plus" or "rng-growth-minus"));
+        var grown = after.Battle.GetActor(Priest);
+        Assert.Equal(priest.Level + 1, grown.Level);
+        Assert.Equal(threshold.After, grown.Exp);
+        Assert.Equal(24, grown.Hp);
+        Assert.Equal(17, grown.Mp);
+        Assert.True(grown.MaxHp > priest.MaxHp);
+        Assert.True(grown.MaxMp > priest.MaxMp);
+        Assert.Equal(owner.SourceLoadout!.Items, grown.SourceLoadout!.Items);
+    }
+
+    private static BattleGrowthDefinition Growth(byte classId, byte[] bases)
+    {
+        var curve = Enumerable.Repeat(new StatGrowthFraction(128, 128), 29).ToArray();
+        return new(classId, 0, bases.Select(value => new StatGrowth(value, (byte)(value + 10), curve)).ToArray(),
+            [], new Dictionary<byte, SpellRef>());
     }
 
     private static EngineBattleState WithItems(EngineBattleState before, BattleActorState owner,

@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Exploration;
@@ -29,8 +30,8 @@ internal static class BattleOutcome
             var route = current.Story.EnteringBattle?.Outcome ?? throw new BattleRuleException("outcome-route", "battle.outcome", true);
             var battle = current.Battle;
             var party = new BattleStartInput(battle.Definition.Encounter,
-                battle.Actors.Where(actor => actor.IsAlly || definition.EncounterStarts.Count == 0).Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp, actor.Exp,
-                    actor.Kills, actor.Defeats, actor.Status, null, actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)).Concat(current.Story.FieldPlayer?.RetainedAllies ?? []),
+                battle.Actors.Where(actor => actor.IsAlly || definition.EncounterStarts.Count == 0)
+                    .Select(ReturningActor).Concat(current.Story.FieldPlayer?.RetainedAllies ?? []),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, kind, party);
             var player = current.Story.FieldPlayer ?? throw new BattleRuleException("field-player-binding", "battle.outcome", true);
@@ -66,9 +67,8 @@ internal static class BattleOutcome
                     current.Story.Copy(null, flags: ProgramRunner.Flags(current.Story, unlocked, false)),
                     observations, "battle-unlock-cleared", unlocked.ToString(System.Globalization.CultureInfo.InvariantCulture));
             var party = new BattleStartInput(battle.Definition.Encounter,
-                battle.Actors.Where(actor => actor.IsAlly).Select(actor => new BattleActorStartInput(actor.Actor,
-                    actor.Hp, actor.Mp, actor.Exp, actor.Kills, actor.Defeats, actor.Status, null,
-                    actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized)).Concat(current.Story.FieldPlayer?.RetainedAllies ?? []),
+                battle.Actors.Where(actor => actor.IsAlly).Select(ReturningActor)
+                    .Concat(current.Story.FieldPlayer?.RetainedAllies ?? []),
                 battle.MainSeed, battle.ThinkingSeed, battle.Gold, battle.StartPolicy, itemCustody: battle.ItemCustody);
             var selected = OutcomeReturnRules.Start(rules.OutcomeReturn, definition, battle, current.Story, BattleOutcomeKind.Retreat, party);
             // ExplorationLoop heals before fade/load; this is later than retreat payment and closure.
@@ -125,6 +125,16 @@ internal static class BattleOutcome
         return ProgramRunner.Commit(current, new ActiveExploration(field.WithParty(selected.Returned)),
             current.Story.Copy(selected.Program, continuation: ProgramContinuation.OutcomeMapLoaded), observations,
             "exploration-return-started");
+    }
+
+    private static BattleActorStartInput ReturningActor(BattleActorState actor)
+    {
+        // An ending can take precedence over the queued after-turn step.
+        // Drop the admitted temporary battle counter before field recovery.
+        ushort status = BattleControlRules.UsesTemporaryAllyAi(actor)
+            ? (ushort)(actor.Status & ~MuddleRules.CounterMask) : actor.Status;
+        return new(actor.Actor, actor.Hp, actor.Mp, actor.Exp, actor.Kills, actor.Defeats, status,
+            null, actor.Progress, actor.SourceLoadout, actor.ActivationWord, actor.Initialized);
     }
 
     // Explicit source-default scalar comparison entry. Runtime reset instructions pass SessionRules.

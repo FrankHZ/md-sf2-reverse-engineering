@@ -363,8 +363,9 @@ Both sides share the [physical](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyPh
 and [learned spell](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemySpellDecision.cs) selectors.
 Automatic allies use source-slot order, skip enemy class preference and preserve LastTarget.
 The shared ally spell filter serves ATTACK and DISPEL threat scoring. Spell candidates and
-physical candidates consume thinking RNG in source order. The attack category draw uses
-main RNG, and chosen actions go through existing movement, admission and scenes. A failed
+physical candidates consume thinking RNG in source order. Category selection uses the
+two source channels described below. Chosen actions go through existing movement, admission
+and scenes. A failed
 attack tries healing, then the existing allied SUPPORT failure and MOVE route. Controlled
 engine entries with empty packs complete physical Attack, BLAZE with DESOUL earlier in the
 book, HEAL, paid silenced HEAL, AURA 1 and MOVE. A temporary ally with learned HEAL 4
@@ -376,9 +377,10 @@ at choice and action resolution. [Behavior cases](../../tests/Sf2.Remake.Engine.
 Temporary ally Attack scores the held item before the learned spell and physical choices.
 For the admitted packed inventory, the source getter skips empty slots and stops at the first
 occupied slot. The item must be worn and cast BLAZE, FREEZE, BOLT or BLAST. Black Ring meets
-those conditions in admitted campaign content. When both ranged choices can reach, one main
-RNG(2) selects spell (0) or item (1). A single ranged choice uses the existing RNG(6) decision
-with the source AQUA 1 exception. The selected item uses ordinary movement, reaction delivery
+those conditions in admitted campaign content. When both ranged choices can reach, one
+thinking RNG(2) after the scores selects spell (0) or item (1). Damage and wear still start
+from the unchanged main seed. A single ranged choice uses main RNG(6), with the source
+AQUA 1 exception. [Source and runtime choice evidence](../../../docs/research/battle/battle-ai.md) The selected item uses ordinary movement, reaction delivery
 and equipment wear or removal. It spends no MP.
 
 The Heal command can select Healing Rain without the normal item AI bit. If the combatant at
@@ -408,7 +410,12 @@ and battle Save/Continue reject pending counts and flag-only words. The direct t
 `GameSession.Start` path checks the MUDDLE bits before using the authored raw-status allowance.
 Controlled engine cases inject status inside the simulation to exercise the completed pieces.
 No save field or format changes. The localized expiry message compiles in the adapter.
-Ordinary cast, native automatic turn and active cold Continue remain unverified at this stage.
+Growth from a temporary ally's earned EXP uses the shared battle growth and refresh path.
+It preserves the live counter through the threshold and level-up before after-turn expiry.
+The battle-to-field projection clears the rank-1 counter on returning player allies even when
+an ending skips that turn's expiry. Field growth and recovery keep their existing admission rules.
+Ordinary SourceEnemyAi status admission is a separate binding dependency. Ordinary cast,
+native automatic turn and active cold Continue remain unverified at this stage.
 
 ## Implementation order and ownership
 

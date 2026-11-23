@@ -17,7 +17,8 @@ public sealed class FieldPlayerReturnTests
     [InlineData("traveler", 96, false)]
     [InlineData("scout", 192, true)]
     [InlineData("entity-0", 128, false)]
-    public void OutcomesRetainLivePlayerAcrossProgramsAndLaterTransfer(string id, ushort speed, bool direct)
+    [InlineData("entity-0", 128, true, true)]
+    public void OutcomesRetainLivePlayerAcrossProgramsAndLaterTransfer(string id, ushort speed, bool direct, bool muddled = false)
     {
         foreach (var kind in new[] { BattleOutcomeKind.Victory, BattleOutcomeKind.Defeat, BattleOutcomeKind.Retreat })
         {
@@ -29,7 +30,7 @@ public sealed class FieldPlayerReturnTests
             // Valid terminal battle states isolate projection from combat damage calculation.
             var terminal = battle.With(actors: battle.Actors.Select(actor =>
                 kind == BattleOutcomeKind.Victory && !actor.IsAlly || kind == BattleOutcomeKind.Defeat && actor.IsAlly
-                    ? actor.With(hp: 0) : actor));
+                    ? actor.With(hp: 0) : muddled && actor.IsAlly ? actor.With(status: 0x30) : actor));
             var snapshot = new SessionSnapshot(entered.SessionId, entered.Revision, entered.ObservationSequence,
                 new ActiveBattle(terminal, null), entered.Story, SessionStopReason.SimulationWait);
             var result = kind == BattleOutcomeKind.Retreat
@@ -49,6 +50,7 @@ public sealed class FieldPlayerReturnTests
                 Assert.Equal(actor.Defeats, carried.Defeats);
                 Assert.Equal(actor.Progress, carried.Progress);
                 Assert.Equal(actor.SourceLoadout, carried.SourceLoadout);
+                Assert.Equal(0, carried.Status);
             }
             var returned = Drain(session.Definition, result.Snapshot, session.Rules);
             Assert.True(returned.CanWaitAtInput);

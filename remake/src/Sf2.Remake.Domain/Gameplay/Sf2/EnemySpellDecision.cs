@@ -82,18 +82,24 @@ internal static class EnemySpellDecision
         var prepared = battle.With(thinkingSeed: thinking);
         var attack = EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, grid, orderedTargets);
         if (attack is not null) { effects.AddRange(attack.Effects); prepared = attack.Battle; }
-        // AQUA1 alone bypasses the category draw. With both ranged categories
-        // reachable, the range-2 draw chooses spell (0) or item (1).
-        if (key is not { Value: "aqua", Level: 1 } || item is not null)
+        if (item is not null && spell is not null)
         {
-            ushort range = item is not null && spell is not null ? (ushort)2 : (ushort)6;
-            var category = BattleRandom.NextMain(battle.MainSeed, range);
-            effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, range, category.Value));
+            // determinebattleaction @loc_15 uses the thinking channel after all scores.
+            uint image = prepared.ThinkingSeed;
+            var category = BattleRandom.NextThinkingWord((ushort)(image >> 16), 2);
+            uint after = ((uint)category.After << 16) | (image & 65535);
+            effects.Add(new("thinking-ai-attack-category", actorRef, image, after, category.Range, category.Value));
+            prepared = prepared.With(thinkingSeed: after);
+            ranged = category.Value == 1 ? item : spell;
+        }
+        else if (key is not { Value: "aqua", Level: 1 })
+        {
+            // AQUA1 alone bypasses the main-stream category draw.
+            var category = BattleRandom.NextMain(battle.MainSeed, 6);
+            effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, category.Range, category.Value));
             prepared = prepared.With(mainSeed: category.After);
-            if (range == 2)
-                ranged = category.Value == 1 ? item! : spell!;
-            else if (attack is not null && !(item is not null || swordSlot.HasValue
-                         ? category.Value is 3 or 5 : category.Value is 2 or 4))
+            if (attack is not null && !(item is not null || swordSlot.HasValue
+                    ? category.Value is 3 or 5 : category.Value is 2 or 4))
                 return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
         }
         var table = ranged.Action.ItemSlot.HasValue ? PhysicalTargetRules.Table(actor.Definition.Mover) : PhysicalPriorityTable.Mage;
