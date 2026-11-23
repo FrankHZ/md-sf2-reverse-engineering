@@ -1013,8 +1013,18 @@ then the staged leader removal, after-program receipts and ready return. Text 23
 registered portrait whose texture identity matches the visible panel. Text 2326 uses full-width
 body and clears the texture. The separate after-program applies the jewel and join effects and
 returns control once. The Debug witness covers the real scene staging and field consumers.
-The [campaign witness](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
-owns the ordinary lethal action and death accounting observations.
+
+A separate controlled native witness captures a battle save at the first playable turn after
+ordinary guard entry. In a disposable copy, place the acting ally on a free tile adjacent to the
+knight and set the knight to 1 HP. Restore through Continue and select BLAZE 1 through the ordinary
+Magic and target menus. Observe `FieldSpin`, `FieldExit` and `FieldSettle` on the battle board.
+The knight is gone at `FieldSettle`. Its completion submits through the battle view and attaches
+the field in the same session revision with the board hidden. The first after-program draw uses the
+staged actors, and text 2332 mounts its registered portrait. The witness records one spell cost,
+one knight credit, the carried gold and experience, and the ordered jewel, join, flag and warp
+effects. The settled return restores living-member MP. The
+[campaign witness](../application/pre-voyage-campaign.md#galam-escape-through-battle06-first-control)
+records the ordinary journey to this encounter.
 
 ## Party details agreement
 
