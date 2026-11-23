@@ -33,6 +33,12 @@ could not resolve. Give main-gate the unresolved question, relevant evidence and
 already tried. Report a missing input, unaccepted dependency or permission limit as a blocker to
 its owner. Use the evidence already available to justify escalation.
 
+For an unresolved instruction-restriction interpretation without an actual tool/approval rejection,
+the user-selected reassessment model is `gpt-6-astra` / `high`, in the same task. Follow the
+[operations recovery boundary](../operations/github-project-governance.md#recovery), preserving
+applicable constraints and the current result. This exception does not change the ordinary worker
+default or the engineering-reasoning escalation above.
+
 At dispatch, main-gate requests the selected model and supported reasoning level through the
 task-creation tool instead of inheriting an application default. Record the request and any override
 reason in the current Issue handoff. Respect the callable tool's current choices and constraints.

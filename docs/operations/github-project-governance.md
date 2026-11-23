@@ -288,6 +288,18 @@ that identifies the reviewed head. The PR holds the review record.
 
 #### Recovery
 
+When a worker reports an instruction-based restriction, first distinguish its interpretation from
+an actual tool/approval rejection or confirmed permission limit. Check the current user authorization,
+task outcome and applicable constraints. For an unresolved interpretation with no actual rejection,
+continue the same task with `gpt-6-astra` / `high` for reassessment under those constraints. This is
+the user-selected routing exception in [ADR 0018](../decisions/0018-astra-role-routing-trial.md#current-routing).
+Keep the checkout, candidate, completed checks and failures; record the model change and reason on
+the Issue. Do not open a replacement task, repeat completed suites or substitute a different product
+outcome merely to make progress. Resume the authorized work only when the reassessment establishes
+that it is permitted. If the constraint is confirmed or remains unresolved, retain the blocker and
+report the unmet outcome. Model changes must not bypass a tool/approval rejection, permission limit
+or applicable prohibition. Missing inputs and engineering failures keep their existing recovery paths.
+
 If an execution task cannot continue, main-gate first confirms its writer and active commands have
 stopped and accounts for any retained idle instance, then creates one replacement for the same Issue
 within the original authorization. The Issue
