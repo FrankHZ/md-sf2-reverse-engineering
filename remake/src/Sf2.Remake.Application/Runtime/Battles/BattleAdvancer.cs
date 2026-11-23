@@ -1,4 +1,5 @@
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
@@ -89,6 +90,9 @@ internal static class BattleAdvancer
                     var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
                     return new(pending, observations.AsReadOnly(), pending.StopReason);
                 }
+                // These automatic branches need their registered action/target consumers before admission.
+                if (MuddleRules.Confused(actor.Status) || actor.Control == BattleControl.Player && MuddleRules.Present(actor.Status))
+                    throw new BattleRuleException("muddle-automatic-turn", "actor.status", true);
                 if (actor.Control == BattleControl.Player)
                 {
                     var controlled = BattleControlRules.EnterPlayer(battle, actor.Actor);
@@ -105,7 +109,7 @@ internal static class BattleAdvancer
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression, rules.Actions);
                 SessionResult delivery;
-                if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || actor.NeedsStatRefresh || (actor.Status & (0x3C0 | BattleStatCounters.Mask)) != 0 || battle.Definition.Poison && (actor.Status & 2) != 0))
+                if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || BattleActionCommitter.NeedsAfterTurn(battle, actor)))
                 {
                     // Source standby still returns to the post-action hook. It never
                     // initializes BATTLESCENE_FIRST_ALLY or fabricates a battle scene.

@@ -1357,6 +1357,9 @@ msgid "battle.scene.silenced-cast"
 msgstr "{0} is silenced. MP was spent, but the spell has no effect."
 
 #. Project-authored functional silence feedback.
+msgid "battle.scene.muddle-expired"
+msgstr "{0} is no longer muddled."
+
 msgid "battle.scene.silence-expired"
 msgstr "DISPEL expires. {0} can cast again."
 

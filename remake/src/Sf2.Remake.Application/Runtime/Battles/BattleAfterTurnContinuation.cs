@@ -70,6 +70,7 @@ internal static class BattleAfterTurnContinuation
                 a.Actor == unit.Actor ? a.With(status: expiry.After) : a));
             string effect = scene.Phase switch
             {
+                BattleScenePhase.MuddleTurnMessage => "muddle-status",
                 BattleScenePhase.SlowExpiredMessage => "slow-status",
                 BattleScenePhase.AttackExpiredMessage => "attack-status",
                 BattleScenePhase.BoostExpiredMessage => "boost-status",
@@ -80,6 +81,7 @@ internal static class BattleAfterTurnContinuation
                 new ActiveBattle(updatedBattle, null), current.Story, SessionStopReason.SimulationWait);
             var next = scene.Phase switch
             {
+                BattleScenePhase.MuddleTurnMessage => AfterMuddle(updated, unit.Actor, expired),
                 BattleScenePhase.SlowExpiredMessage => TickCounter(updated, unit.Actor, BattleScenePhase.AttackExpiredMessage, expired),
                 BattleScenePhase.AttackExpiredMessage => TickCounter(updated, unit.Actor, BattleScenePhase.BoostExpiredMessage, expired),
                 BattleScenePhase.BoostExpiredMessage => AfterCounters(updated, unit.Actor, expired),
@@ -101,6 +103,29 @@ internal static class BattleAfterTurnContinuation
     }
 
     private static SessionSnapshot AfterSleep(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
+    {
+        var unit = current.Battle.GetActor(actor);
+        if (MuddleRules.AfterTurn(unit, current.Battle.MainSeed) is not { } result)
+            return AfterMuddle(current, actor, observations);
+        long sequence = current.ObservationSequence, revision = current.Revision + 1;
+        var draw = result.Draw;
+        observations.Add(new(++sequence, revision, "rng-muddle-expiry", actor, draw.Before, draw.After,
+            RandomRange: draw.Range, RandomValue: draw.Value));
+        var battle = current.Battle.With(mainSeed: draw.After);
+        if (!MuddleRules.Present(result.After))
+        {
+            observations.Add(new(++sequence, revision, "muddle-turn-message", actor, Detail: "355"));
+            return new(current.SessionId, revision, sequence, new ActiveBattle(battle, null,
+                new(null, BattleScenePhase.MuddleTurnMessage, 0, new(sequence),
+                    counterExpiry: new(actor, unit.Status, result.After))), current.Story, SessionStopReason.PresentationWait);
+        }
+        battle = battle.With(actors: battle.Actors.Select(a => a.Actor == actor ? a.With(status: result.After) : a));
+        observations.Add(new(++sequence, revision, "muddle-status", actor, unit.Status, result.After));
+        return AfterMuddle(new(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story,
+            SessionStopReason.SimulationWait), actor, observations);
+    }
+
+    private static SessionSnapshot AfterMuddle(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
     {
         var result = SilenceRules.AfterTurn(current.Battle.GetActor(actor), current.Battle.MainSeed);
         if (result is null) return AfterSilence(current, actor, observations);

@@ -621,6 +621,8 @@ rebuild. These are the source subroutine/opcode orders, not an atomic roster tra
 player/automatic authority. The immutable strategy is `source-ally-physical`; ordinary authored
 control retains its earlier meaning. Queue generation still uses live placement/HP/agility, and
 sleep/dead-entry handling remains in ordinary turn flow. No enemy slot is substituted into the queue.
+The [internal MUDDLE prerequisites](hostile-spells-design.md#muddle-turn-prerequisites) cover packed
+expiry and physical dodge. The automatic MUDDLE consumers and public admission remain pending.
 
 **Confirmed static clarification:** at pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:

@@ -13,6 +13,11 @@ internal static class SilenceRules
     internal static bool Present(ushort status) => (status & Mask) != 0;
     internal static bool Supported(ushort status, bool poison = true) =>
         (status & ~(Mask | BattleStatCounters.Mask | CurseRules.Mask | 0xC0 | 1 | (poison ? 2 : 0))) == 0;
+    // The reaction consumers share this internal operand check. External admission
+    // still uses Supported until automatic MUDDLE turns can be completed.
+    internal static bool SupportedInBattle(ushort status, bool poison = true) =>
+        MuddleRules.Valid(status) && Supported((ushort)(status & ~MuddleRules.Mask), poison);
+
     internal static bool HasSpells(BattleActorState actor) => actor.SourceLoadout is { } packed &&
         packed.Spells.Any(s => (s & 63) != 63) || actor.Spells.Count != 0;
 
@@ -39,7 +44,7 @@ internal static class SilenceRules
     {
         ushort counter = (ushort)(actor.Status & Mask);
         if (actor.Hp == 0 || counter == 0) return null;
-        if (!Supported(actor.Status)) throw new BattleRuleException("after-turn-status", "actor.status", true);
+        if (!SupportedInBattle(actor.Status)) throw new BattleRuleException("after-turn-status", "actor.status", true);
         var draw = BattleRandom.NextMain(seed, counter);
         ushort after = (ushort)((actor.Status & ~Mask) | ((draw.Value & Mask) == 0 ? 0 : counter - 0x100));
         return new(actor.Status, after, draw);
