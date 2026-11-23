@@ -512,7 +512,8 @@ Acceptance requires live actors, weapon, backdrop, effect, one payment and settl
 animation, and usable next control under normal, Reduced Flash and held-rate/coin-skip settings.
 The implementation owns AttackSpellView, BattleSceneView, BlastOneEffect, the scene reader,
 PrivateAttackSpellBindings, the existing retail publisher and its extracted spell-mount helper,
-the narrow observation, SessionAudio cue 114 mapping, and these presentation/capability documents.
+the narrow observation, SessionAudio cue 114 mapping, its producer registration in verification_engine_paths.py,
+and these presentation/capability documents.
 
 Publication is linear in the existing package closure. Budget 120 MB of new same-volume package
 storage and raster scratch, 400 MB if hardlinks require copying, and 2 GiB publisher memory for
