@@ -16,7 +16,8 @@ func record(label: String) -> Dictionary:
     var s := state()
     samples.append({"label":label,"revision":s.revision,"failure":s.failure,"gold":s.get("gold"),
         "party":s.get("party"),"church":s.get("church"),"stage":s.get("stage"),"menu":s.get("menu"),
-        "target":s.get("target"),"selection":s.get("selection"),"search":s.get("search")})
+        "target":s.get("target"),"selection":s.get("selection"),"search":s.get("search"),
+        "client":[root.size.x,root.size.y],"viewport":s.get("viewport")})
     return s
 
 func resources(s: Dictionary) -> Array:
@@ -150,8 +151,9 @@ func church_case() -> bool:
 
 func battle_case() -> bool:
     if not await enter_battle(): return false
-    # Reach a learned-spell actor by ordinary Stay turns, never a running-state setter.
-    for turn in range(6):
+    var authored := compact_case == "authored-battle"
+    # The private approach reaches a learned-spell actor by ordinary Stay turns.
+    for turn in range(0 if authored else 6):
         if state().actor == "ally-1": break
         var previous: String = state().actor
         await act("confirm")
@@ -163,33 +165,73 @@ func battle_case() -> bool:
             if current.get("stage") == "Movement" and current.get("movement") == null and current.actor != previous: break
             if current.get("scene",{}).get("requiresAcknowledgement",false): await act("confirm")
             else: await process_frame
-    if not expect(state().actor == "ally-1", "Actual turn schedule reaches learned-spell actor"): return false
+    if not expect(state().actor == ("champion" if authored else "ally-1"), "Learned-spell actor reaches ordinary control"): return false
     await act("confirm"); await frames(4)
     var opened := record("battle-actions")
     if route == "remapped" and not expect("U/" in opened.menu.layout.help and "/J" in opened.menu.layout.help and "Q" in opened.menu.layout.help,
             "Battle hints use installed custom bindings"): return false
     if not expect(opened.stage == "ActionChoice","Real action boundary"): return false
-    for window in [Vector2i(1920,1080),Vector2i(2560,1440),Vector2i(1920,1080)]:
+    for window in [Vector2i(1600,900),Vector2i(1920,1080)]:
         root.size = window; await frames(6)
         var s := record("battle-resize-"+str(window))
         var layout: Dictionary = s.menu.layout
-        if not expect(layout.diamond.visible and layout.commands.size() == 4,"Four visible command slots"): return false
-        for slot in layout.commands:
-            if not expect(slot.visible and inside(slot.rect) and inside(slot.caption) and not slot.label.is_empty(),
-                "Full slot and caption fit"): return false
-        if not expect(inside(layout.actor) and inside(layout.description) and
-            layout.actor.y+layout.actor.height <= layout.diamond.rect.y,
-            "Acting vitals head command column; refusal/help fit"): return false
+        var rows: Array = layout.commands
+        var list_rect: Dictionary = layout.commandList.rect
+        var stretch := root.get_stretch_transform()
+        var fits := func(rect: Dictionary) -> bool:
+            var top_left: Vector2 = stretch * Vector2(rect.x,rect.y)
+            var bottom_right: Vector2 = stretch * Vector2(rect.x+rect.width,rect.y+rect.height)
+            return top_left.x >= 0 and top_left.y >= 0 and bottom_right.x <= window.x+1 and bottom_right.y <= window.y+1
+        if not expect(root.size == window,"Actual client reached the requested size"): return false
+        if not expect(layout.commandList.visible and rows.size() == 4,"Four visible Main rows"): return false
+        var labels: Array = rows.map(func(row): return row.label)
+        if not expect(labels in [["Attack","Magic","Item","Stay"],["攻击","魔法","道具","待机"]],
+                "Localized command captions are always visible in source command order"): return false
+        var row_top: float = layout.actor.y+layout.actor.height
+        for row in rows:
+            if not expect(row.visible and fits.call(row.rect) and fits.call(row.caption) and
+                    row.rect.x == list_rect.x and row.rect.width == list_rect.width and row.rect.y >= row_top and
+                    row.caption.y >= row.rect.y and row.caption.y+row.caption.height <= row.rect.y+row.rect.height,
+                    "Full hit row and caption fit without intersecting the card or another row"): return false
+            if not expect(row.art.mounted != authored and row.art.filter == "Nearest" and
+                    (authored or (row.art.width == 24 and row.art.height == 24 and row.art.scale == 3)),
+                    "Main reuses admitted command art or its authored fallback"): return false
+            row_top = row.rect.y+row.rect.height
+        if not expect(fits.call(layout.actor) and fits.call(layout.description) and
+                row_top <= layout.description.y and layout.reader.rect.height > 0,
+                "All rows clear the measured acting card and the scrollable footer"): return false
+        var back: Dictionary = layout.navigation.filter(func(control): return control.id == "Back")[0]
+        if not expect(back.visible and fits.call(back.rect) and back.rect.y >= layout.reader.rect.y+layout.reader.rect.height and
+                back.rect.y+back.rect.height <= layout.description.y+layout.description.height,
+                "Back fits below the reader at the supported minimum"): return false
+    var initial_focus: int = opened.menu.command
+    if not expect(initial_focus == (0 if opened.menu.layout.commands[0].enabled else 3),
+            "Initial focus follows the live Attack offer"): return false
+    for direction in ["down","up"]:
+        var step := 1 if direction == "down" else -1
+        for i in range(1,5):
+            await act(direction)
+            var focused := record("battle-main-"+direction+"-"+str(i))
+            var expected := posmod(initial_focus+i*step,4)
+            if not expect(focused.menu.page == "Main" and focused.menu.command == expected and
+                    focused.menu.layout.commands[expected].selected and
+                    focused.menu.layout.commands.filter(func(row): return row.selected).size() == 1 and
+                    focused.menu.layout.description == opened.menu.layout.description and focused.revision == opened.revision,
+                    "Up/Down wraps one row at a time without moving the footer or submitting"): return false
+    await act("left"); await act("right")
+    if not expect(state().menu.command == initial_focus,"Horizontal directions leave vertical selection in place"): return false
     var baseline := resources(opened)
     var guide := InputEventJoypadButton.new(); guide.device = 3; guide.button_index = JOY_BUTTON_GUIDE
     for pressed in [true,false]:
         guide.pressed = pressed; Input.parse_input_event(guide); await frames(3)
     var pad_state := state()
-    if not expect(pad_state.menu.layout.help != opened.menu.layout.help and pad_state.menu.command == opened.menu.command
-            and resources(pad_state) == baseline and pad_state.actor == opened.actor,"inert controller changes battle cues only"): return false
+    if not expect((pad_state.menu.layout.help != opened.menu.layout.help or route == "pad") and
+            pad_state.menu.command == opened.menu.command and resources(pad_state) == baseline and
+            pad_state.actor == opened.actor,"Inert controller preserves selection and gameplay"): return false
     var motion := InputEventMouseMotion.new(); motion.position = Vector2(80,80); motion.relative = Vector2(15,0)
     Input.parse_input_event(motion); await frames(3)
-    if not expect(state().menu.layout.help == opened.menu.layout.help and resources(state()) == baseline,"mouse restores current keyboard cues"): return false
+    if not expect((state().menu.layout.help == opened.menu.layout.help or route == "pad") and resources(state()) == baseline,
+            "Mouse restores keyboard/mouse cues without changing gameplay"): return false
     var first: Dictionary = state().menu.layout.commands[0].rect
     await mouse(Vector2(first.x+48,first.y+48),true)
     root.size = Vector2i(2560,1440); await frames(4)
@@ -197,15 +239,22 @@ func battle_case() -> bool:
     await mouse(Vector2(first.x+48,first.y+48),false)
     if not expect(state().menu.page == "Main" and state().revision == opened.revision,
             "Relayout cancels incomplete command click"): return false
-    await act("left")
+    if opened.menu.layout.commands[0].enabled:
+        await click(state().menu.layout.commands[0].caption)
+        if not expect(state().menu.page == "Target","Attack caption opens the legal targets"): return false
+        await act("cancel")
+        if not expect(state().menu.page == "Main" and state().menu.command == 0,"Attack Target Back keeps the parent row"): return false
+    for i in range(posmod(1-state().menu.command,4)): await act("down")
     await act("confirm"); await frames(4)
     var magic := record("magic-child")
-    if not expect(magic.menu.page == "Magic" and not magic.menu.layout.diamond.visible,"Child replaces diamond"): return false
-    if not expect(abs(magic.menu.layout.list.x-opened.menu.layout.diamond.rect.x) < 1
-            and abs(magic.menu.layout.list.y-opened.menu.layout.diamond.rect.y) < 1,"Child list keeps parent origin"): return false
+    if not expect(magic.menu.page == "Magic" and not magic.menu.layout.commandList.visible,"Child replaces Main rows"): return false
+    if not expect(abs(magic.menu.layout.list.x-opened.menu.layout.commandList.rect.x) < 1
+            and abs(magic.menu.layout.list.y-opened.menu.layout.commandList.rect.y) < 1,"Child list keeps parent origin"): return false
     if not expect(magic.menu.layout.rows.size() > 0,"Learned spells replace rows"): return false
     if magic.menu.layout.rows.size() > 0:
+        if authored: await act("down")
         var action: int = state().menu.row
+        var spell: String = state().menu.layout.rows[action]
         await act("confirm"); await frames(3)
         var target := record("magic-target-or-refusal")
         if not expect(target.menu.page == "Target", "Enabled actual healing offer reaches target page"): return false
@@ -214,11 +263,28 @@ func battle_case() -> bool:
                     and target.menu.layout.targetCard.actor == target.target,"Recipient card replaces acting card during targeting"): return false
             await act("right"); await act("left")
             await act("cancel"); await frames(3)
-            if not expect(state().menu.page == "Magic" and state().menu.row == action,"Target Back restores selected spell"): return false
+            if not expect(state().menu.page == "Magic" and state().menu.row == action and
+                    state().menu.layout.rows[action] == spell,"Target Back restores the same spell and level"): return false
     await act("cancel")
     if not expect(state().menu.page == "Main" and state().menu.command == 1,"Child Back restores Magic command"): return false
-    await click(state().menu.layout.commands[2].caption)
-    if not expect(state().menu.page == "Items","Pointer label opens actual Item list"): return false
+    var item: Dictionary = state().menu.layout.commands[2]
+    var hit := Vector2(item.rect.x+item.rect.width-4,item.rect.y+item.rect.height/2)
+    var item_motion := InputEventMouseMotion.new(); item_motion.position = hit; item_motion.relative = Vector2(4,3)
+    Input.parse_input_event(item_motion); await frames(3)
+    if not expect(state().menu.page == "Main" and state().menu.command == 2,"Hover focuses the entire Item row"): return false
+    await mouse(hit,true)
+    if not expect(state().menu.page == "Main","Press alone does not open a child"): return false
+    await mouse(Vector2(item.caption.x+8,hit.y),false)
+    if not expect(state().menu.page == "Items","Full click from row edge to caption opens Item"): return false
+    if authored:
+        await act("down")
+        var item_row: int = state().menu.row
+        var item_label: String = state().menu.layout.rows[item_row]
+        await act("confirm")
+        if not expect(state().menu.page == "Target","An enabled Item row opens Target"): return false
+        await act("cancel")
+        if not expect(state().menu.page == "Items" and state().menu.row == item_row and
+                state().menu.layout.rows[item_row] == item_label,"Target Back restores the same inventory slot"): return false
     await act("cancel")
     if not expect(state().menu.page == "Main" and state().menu.command == 2,"Item Back retains parent"): return false
     await act("down")

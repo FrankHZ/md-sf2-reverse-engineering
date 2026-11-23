@@ -4,15 +4,16 @@
 remake's design system. The [scene review](ui-scene-review.md) applies it to the player journey.
 The [presentation agreement](presentation.md) records what runs today. [#2079](battle-ui-composition.md)
 delivers the first slice of #2064, with phase-specific battle focus, one shared board cursor,
-a freestanding Main diamond and a fixed reader for the current decision.
+and a fixed reader for the current decision. [#2090](battle-ui-composition.md#vertical-battle-main-2090)
+restores the vertical Main command list.
 
 **High rigor.** Shared controls and scene layouts affect the whole player journey. The user
 accepted the Godot review at its 1920×1080 design size. Each gameplay or host caller owns its
 input, transactions and return.
 
-Field, Church and shop use compact labeled lists. Battle Main places four labeled directional
-slots between the measured acting card and the separate footer. Magic and Item replace the diamond
-with lists. Targeting moves focus to the board and replaces the acting card with the recipient
+Field, Church, shop and battle Main use compact labeled lists. Battle Main places four vertical
+rows between the measured acting card and the separate footer. Magic and Item replace Main with
+scrollable lists. Targeting moves focus to the board and replaces the acting card with the recipient
 card. Admitted icons keep their localized names visible before focus. The
 [scene review](ui-scene-review.md#scenes-in-the-playable-demo) links each layout to its mounted
 consumer and evidence.
@@ -37,7 +38,8 @@ prices and transaction state.
 [StoryTheme](../../game/src/UI/StoryTheme.cs) supplies blue/gold reading panels, 30px body,
 24px hints, selected `ffe19a` and unavailable `8e9bab`. Entry and host actions use the square
 journey theme. Field, Church and shop use labeled lists with nearest 3× command art where mounted.
-Battle Main uses freestanding labeled 4× diamond slots. Magic and Item retain labeled rows. The [Church agreement](ui-scene-review.md#10-production-church-and-battle-command-lists)
+Battle Main uses nearest 3× command art and persistent 24px labels in the shared compact rows.
+Magic and Item retain labeled rows. The [Church agreement](ui-scene-review.md#10-production-church-and-battle-command-lists)
 and [field and shop owner](field-and-shop.md#current-composition) identify the actual consumers.
 The [display contract](display-composition-contract.md) owns the world and UI layers.
 
@@ -249,7 +251,7 @@ Choose the overall composition by what the player needs to see during each step.
 | Meet someone, then choose | Witch artwork keeps its full rectangle | Right-column greeting gives way to actions. |
 | Read while watching the world | Speaker or searched object | Stable top/bottom reading frame with optional portrait and choices. |
 | Compare services and goods | Priest or merchant | Side list with labeled actions. A quote replaces the list. |
-| Decide on a battle action | Acting unit, candidate cell or target | The acting card heads the diamond or child list. The recipient card and board take over during targeting. |
+| Decide on a battle action | Acting unit, candidate cell or target | The acting card heads the Main or child list. The recipient card and board take over during targeting. |
 
 The [battle composition](battle-ui-composition.md#world-marks-and-panel-placement) defines the
 battle grid at 1920×1080. Keep the host Menu and the projected subject clear on the fitted smaller
@@ -258,7 +260,7 @@ canvas and larger native viewports.
 | Phase | Components and placement |
 | --- | --- |
 | Movement | Quiet round/gold and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
-| Main and spell/item lists | A measured acting card heads the 560px decision column. Main uses four labeled diamond slots outside the blue reader. Magic and Item replace them with scrollable rows. The fixed footer contains descriptions, refusals and the mapped actions. |
+| Main and spell/item lists | A measured acting card heads the 560px decision column. Main uses four labeled vertical rows above the blue reader. Magic and Item replace them with scrollable rows. The fixed footer contains descriptions, refusals and the mapped actions. |
 | Choose a target | The selected recipient takes the card. The cursor denotes the legal candidate, with one reach and effect field. Back retains the previous command, spell level or item slot. |
 | Free inspection | One hover card clears the cell. Unit name and land effect share its first row, HP and MP share the next row, and coordinates follow. Empty ground uses the shorter terrain card. |
 | Action playback and outcome | Decision windows retire. Actual close-up participants and their messages own the scene. Resize refreshes the art, cards and reader around the retained delivery state. |

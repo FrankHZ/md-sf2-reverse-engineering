@@ -17,8 +17,7 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
     private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
-    private readonly Control _diamond = new() { Name = "Commands", MouseFilter = MouseFilterEnum.Ignore };
-    private readonly Label[] _captions = [Text("AttackCaption", 24), Text("MagicCaption", 24), Text("ItemCaption", 24), Text("StayCaption", 24)];
+    private UI.CompactCommandList _commandList = null!;
     internal readonly UI.DiamondCommandButton[] Commands = [
         new("Attack", "battle.command.attack", "command-menu") { CaptionBeside = true },
         new("Magic", "battle.command.magic", "command-menu") { CaptionBeside = true },
@@ -42,7 +41,6 @@ internal sealed partial class BattleMenuLayout : Control
     private int _selected;
     private Rect2 _subject;
     private bool _targeting, _decisionContext;
-    private float _diamondWidth;
     private bool _canConfirm;
     internal Action InvalidatePointer { get; set; } = () => { };
     internal bool Covers(Vector2 point) =>
@@ -74,13 +72,10 @@ internal sealed partial class BattleMenuLayout : Control
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);
         AddChild(_context); _context.AddChild(Context);
-        AddChild(_diamond);
-        for (int i = 0; i < Commands.Length; i++)
-        {
-            _diamond.AddChild(Commands[i]); _diamond.AddChild(_captions[i]);
-            Commands[i].ItemRectChanged += () => InvalidatePointer();
-            _captions[i].ItemRectChanged += () => InvalidatePointer();
-        }
+        _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, Visible = false,
+            InvalidatePointer = () => InvalidatePointer() };
+        _commandList.ItemRectChanged += () => InvalidatePointer();
+        AddChild(_commandList);
         AddChild(_list); _list.AddChild(_scroll); _scroll.AddChild(_rows);
         _scroll.GetVScrollBar().FocusMode = FocusModeEnum.None;
         _rows.AddThemeConstantOverride("separation", 8);
@@ -129,7 +124,7 @@ internal sealed partial class BattleMenuLayout : Control
         float controlsTop = top + (card.Visible ? height + Gap : 0);
         // Allocate the reader once per phase and viewport. The selected offer can
         // change its scroll content without moving the controls or the footer.
-        float footerHeight = _list.Visible ? 304 : _diamond.Visible ? 260 : _targeting ? 280 : 228;
+        float footerHeight = _list.Visible ? 304 : _commandList.Visible ? 260 : _targeting ? 280 : 228;
         float detailTop = bottom - footerHeight;
         var protection = _subject.HasArea() ? _subject.Grow(16) : default;
         bool alternate = protection.HasArea() && new Rect2(right, top, width, bottom - top).Intersects(protection);
@@ -143,8 +138,8 @@ internal sealed partial class BattleMenuLayout : Control
         _context.Size = new(300, 68);
         _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
         _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
-        _diamond.Position = new(x, controlsTop);
-        if (_diamond.Visible && _diamondWidth != width) ArrangeDiamond(width);
+        _commandList.Position = new(x, controlsTop);
+        if (_commandList.Visible && _commandList.Size.X != width) _commandList.Arrange(width);
         _list.Position = new(x, controlsTop);
         _list.Size = new(width, Mathf.Max(0, detailTop - controlsTop - Gap));
         _detail.Position = new(x, detailTop);
@@ -152,44 +147,12 @@ internal sealed partial class BattleMenuLayout : Control
         foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, width - 164), -1);
     }
 
-    private void ArrangeDiamond(float width)
-    {
-        // The helper owns the four square locations. Center their group in the
-        // column, leaving label space at the outside edges.
-        _diamondWidth = width;
-        UI.DiamondMenuGeometry.Arrange(_diamond, Commands);
-        _diamond.Size = new(width, UI.DiamondMenuGeometry.Size.Y);
-        var offset = new Vector2((width - UI.DiamondMenuGeometry.Size.X) / 2, 0).Round();
-        for (int i = 0; i < Commands.Length; i++)
-        {
-            var button = Commands[i];
-            button.Position += offset;
-            var caption = _captions[i];
-            float x = i == 1 ? 0 : button.Position.X + button.Size.X + 8;
-            float captionWidth = i == 1 ? button.Position.X - 8 : width - x;
-            caption.HorizontalAlignment = i == 1 ? HorizontalAlignment.Right : HorizontalAlignment.Left;
-            caption.VerticalAlignment = VerticalAlignment.Center;
-            const int captionHeight = 48;
-            // Keep the top and bottom captions out of the neighboring side slots' hit area.
-            float y = button.Position.Y + (i == 0 ? 8 : i == 3 ? button.Size.Y - captionHeight - 8 :
-                (button.Size.Y - captionHeight) / 2);
-            caption.Position = new(x, y);
-            caption.Size = new(captionWidth, captionHeight);
-        }
-    }
-
     internal void ShowDecision(bool target, bool main, bool context)
     {
         _targeting = target;
         _decisionContext = context;
-        _diamond.Visible = main;
-        for (int i = 0; i < Commands.Length; i++)
-        {
-            var command = Commands[i];
-            _captions[i].Text = command.Caption;
-            _captions[i].Modulate = command.Selected ? UI.StoryTheme.Selected :
-                command.Available ? Colors.White : UI.StoryTheme.Unavailable;
-        }
+        _commandList.Visible = main;
+        if (main) _commandList.Present(Commands.Select(command => command.Caption).ToArray());
         Heading.Visible = !main;
         Help.Visible = true;
         Arrange(Size);
@@ -230,13 +193,8 @@ internal sealed partial class BattleMenuLayout : Control
 
     private (string? Id, Rect2 Rect) HitCommand(Vector2 position)
     {
-        if (!_diamond.IsVisibleInTree()) return (null, default);
-        for (int i = 0; i < Commands.Length; i++)
-        {
-            if (Covers(Commands[i], position)) return ($"command:{i}", Commands[i].GetGlobalRect());
-            if (Covers(_captions[i], position)) return ($"command:{i}", _captions[i].GetGlobalRect());
-        }
-        return (null, default);
+        var (index, rectangle) = _commandList.Hit(position);
+        return index >= 0 ? ($"command:{index}", rectangle) : (null, default);
     }
 
     internal bool Scroll(Vector2 position, int direction)
@@ -293,7 +251,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal object Observe() => new
     {
-        diamond = new { visible = _diamond.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_diamond.GetGlobalRect()) },
+        commandList = new { visible = _commandList.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_commandList.GetGlobalRect()) },
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
         descriptionVisible = _detail.IsVisibleInTree(),
         reader = new { rect = BattleMapViewport.Rectangle(_reading.GetGlobalRect()), scroll = _reading.ScrollVertical,
@@ -313,9 +271,9 @@ internal sealed partial class BattleMenuLayout : Control
         scroll = _scroll.ScrollVertical,
         navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
             visible = control.IsVisibleInTree(), enabled = control != _confirm || _canConfirm, rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
-        commands = Commands.Select((button, index) => new { id = button.Identity, label = _captions[index].Text,
+        commands = Commands.Select((button, index) => new { id = button.Identity, label = button.Caption,
             visible = button.IsVisibleInTree(), selected = button.Selected, enabled = button.Available,
-            rect = BattleMapViewport.Rectangle(button.GetGlobalRect()), caption = BattleMapViewport.Rectangle(_captions[index].GetGlobalRect()),
+            rect = BattleMapViewport.Rectangle(_commandList.RowRect(index)), caption = BattleMapViewport.Rectangle(_commandList.CaptionRect(index)),
             art = button.ObserveArt() }).ToArray(),
     };
 

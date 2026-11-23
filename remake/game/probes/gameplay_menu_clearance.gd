@@ -109,7 +109,8 @@ func battle() -> bool:
     if not await enter_battle(): return false
     if not await wait_for(func(_s):return board().settled,"camera settles"): return false
     if not await inspect_map(): return false
-    await act("confirm"); await act("left")
+    await act("confirm")
+    for i in range(posmod(1-state().menu.command,4)): await act("down")
     var layout := view.find_child("CommandMenu",true,false).get_node("Layout")
     await frames(8)
     var footer := layout.get_node("DescriptionPanel")
@@ -122,12 +123,13 @@ func battle() -> bool:
         var actor_cell := Rect2(cell_point(state().previewX,state().previewY) - Vector2(48,48),Vector2(96,96))
         samples[-1].actorCell = str(actor_cell); samples[-1].cameraSettled = board().settled
         if not expect(not footer.get_global_rect().intersects(actor_cell),"Reason clears the acting unit"): return false
-        if not expect(state().menu.layout.commands[1].selected,"Magic slot remains selected"): return false
+        if not expect(state().menu.layout.commands[1].selected,"Magic row remains selected"): return false
         if window.y == 1440 and not expect(footer.size.x == layout.get_node("ActorCard").size.x,
                 "Long reason uses normal column when height permits"): return false
     await click(control_rect(back))
     if not expect(state().stage == "Movement","Clicking footer Back restores movement"): return false
-    await act("confirm"); await act("left")
+    await act("confirm")
+    for i in range(posmod(1-state().menu.command,4)): await act("down")
     var main: Dictionary = state().menu.layout
     if not await cover(false): return false
     await click(main.commands[0].caption)

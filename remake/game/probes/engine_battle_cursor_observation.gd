@@ -81,23 +81,20 @@ func decision_geometry(label: String) -> bool:
         for vital in [card.hp, card.mp]:
             if not expect(within(vital.valueRect,card.rect) and within(vital.image.rect,card.rect) and
                 vital.valueMinimumWidth <= vital.valueRect.width+1, label+": full vital values inside card"): return false
-    if m.diamond.visible:
-        var c: Array = m.commands
-        if not expect(c.all(func(v):return v.visible and not v.label.is_empty() and within(v.rect,bounds) and within(v.caption,bounds)) and
-            c.filter(func(v):return v.selected).size() == 1 and
-            c[0].rect.y < c[1].rect.y and c[1].rect.y == c[2].rect.y and c[2].rect.y < c[3].rect.y and
-            c[1].rect.x < c[0].rect.x and c[0].rect.x < c[2].rect.x and c[0].rect.x == c[3].rect.x and
-            card.rect.y+card.rect.height <= m.diamond.rect.y and m.diamond.rect.y+m.diamond.rect.height <= m.description.y,
-            label+": visible labels and source slots clear of card and reader"): return false
-        var hits: Array[Rect2] = []
-        for slot in c:
-            for rect in [slot.rect,slot.caption]:
-                var hit := Rect2(rect.x,rect.y,rect.width,rect.height)
-                if not expect(not hits.any(func(prior):return prior.intersects(hit)),
-                    label+": icon and caption hit areas are disjoint"): return false
-                hits.append(hit)
+    if m.commandList.visible:
+        var commands: Array = m.commands
+        var column: Dictionary = m.commandList.rect
+        if not expect(commands.size() == 4 and commands.filter(func(row):return row.selected).size() == 1 and
+                card.rect.y+card.rect.height <= column.y and column.y+column.height <= m.description.y,
+                label+": four Main rows with one focus clear the card and reader"): return false
+        var bottom: float = column.y
+        for row in commands:
+            if not expect(row.visible and not row.label.is_empty() and within(row.rect,bounds) and within(row.caption,row.rect) and
+                    row.rect.x == column.x and row.rect.width == column.width and row.rect.y >= bottom,
+                    label+": labeled row matches its full hit area"): return false
+            bottom = row.rect.y+row.rect.height
     if m.listVisible and not expect(within(m.list,bounds) and m.list.y >= card.rect.y+card.rect.height and
-        m.list.y+m.list.height <= m.description.y and not m.diamond.visible,label+": list replaces diamond in clear column"): return false
+        m.list.y+m.list.height <= m.description.y and not m.commandList.visible,label+": child list replaces Main in clear column"): return false
     if m.contextVisible and not expect(within(m.context,bounds),label+": round and gold fit"): return false
     samples.append({"label":label,"viewport":bounds,"menu":s.menu})
     return true
@@ -204,11 +201,11 @@ func cursor_decision() -> bool:
     if not expect(state().previewX == initial.previewX,"Undo returns to the original cell"): return false
     await act("confirm")
     if not clear_marks("Main") or not await decision_geometry("Main at 1080p"): return false
-    await act("left")
-    if not expect(state().menu.command == 1,"Left focuses Magic without choosing it"): return false
+    for i in range(posmod(1-state().menu.command,4)): await act("down")
+    if not expect(state().menu.command == 1,"Row navigation focuses Magic without choosing it"): return false
     var magic_caption: Dictionary = state().menu.layout.commands[1].caption
     await click(magic_caption)
-    if not expect(state().menu.page == "Magic","Complete caption click chooses visible slot"): return false
+    if not expect(state().menu.page == "Magic","Complete caption click chooses visible row"): return false
     if not clear_marks("Magic reader") or not await decision_geometry("Magic reader"): return false
     await act("confirm")
     if not await target_art("F4 HEAL"): return false

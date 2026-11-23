@@ -159,7 +159,8 @@ internal sealed partial class BattleCommandMenu : Control
         {
             int next = action switch
             {
-                GameAction.Up => 0, GameAction.Left => 1, GameAction.Right => 2, GameAction.Down => 3,
+                GameAction.Up => (_command + Kinds.Length - 1) % Kinds.Length,
+                GameAction.Down => (_command + 1) % Kinds.Length,
                 GameAction.Attack => 0, GameAction.Spell => 1, GameAction.Item => 2, GameAction.Stay => 3, _ => -1,
             };
             if (next >= 0) _command = next;
@@ -264,7 +265,7 @@ internal sealed partial class BattleCommandMenu : Control
         _layout.Help.Text = moving ? GameText.Get("battle.move-help", confirm) :
             _page == Page.Target ? GameText.Get("battle.target-help", KeyHint(GameAction.Target), confirm, cancel) :
             (list ? GameText.Get("battle.choice-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") :
-                _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Left)}/{KeyHint(GameAction.Right)}/{KeyHint(GameAction.Down)}") : "") +
+                _page == Page.Main ? GameText.Get("battle.command-help", $"{KeyHint(GameAction.Up)}/{KeyHint(GameAction.Down)}") : "") +
                 GameText.Get("battle.confirm-help", confirm, cancel);
         if (!moving && _page == Page.Target && _input.KeyboardMouseHints)
             _layout.Help.Text += "\n" + GameText.Get("battle.pointer-target-help");

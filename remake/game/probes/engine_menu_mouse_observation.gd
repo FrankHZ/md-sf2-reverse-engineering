@@ -158,14 +158,14 @@ func focus_emphasis(initial: Dictionary) -> void:
     var settled := state()
     var rectangles: Array = settled.menu.layout.commands.map(func(c): return c.rect)
     var revision: int = settled.revision
-    await tap(KEY_LEFT)
+    await tap(KEY_DOWN)
     var first := emphasis_sample("keyboard-emphasis")
     if not emphasis_active(first,1,reduced): return
     await frames(4)
     var advancing := emphasis_sample("keyboard-advances")
     if not reduced and not check(advancing.menu.layout.commands[1].art.drawnOffsetY > first.menu.layout.commands[1].art.drawnOffsetY,
         "Short emphasis advances toward stable selected drawing"): return
-    await tap(KEY_RIGHT)
+    await tap(KEY_DOWN)
     if not emphasis_active(emphasis_sample("quick-new-focus"),2,reduced): return
     var position := center(state().menu.layout.commands[3].rect)
     await motion(position)
@@ -175,11 +175,11 @@ func focus_emphasis(initial: Dictionary) -> void:
     if not check(idle.menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0 and c.art.drawnOffsetY == 0), "Emphasis settles without idle animation"): return
     await motion(position) # Same coordinates are not a fresh focus change.
     if not check(state().menu.layout.commands[3].art.focusRemainingMs == 0, "Stationary pointer cannot restart emphasis"): return
-    await tap(KEY_DOWN)
-    if not check(state().menu.layout.commands[3].art.focusRemainingMs == 0, "Repeated current direction cannot restart emphasis"): return
+    await tap(KEY_RIGHT)
+    if not check(state().menu.layout.commands[3].art.focusRemainingMs == 0, "Horizontal input cannot restart emphasis"): return
     if not check(state().revision == revision and resources(state()) == resources(initial), "Drawing/focus never submits commands or spends resources/RNG"): return
     if not check(state().menu.layout.commands.map(func(c): return c.rect) == rectangles, "Drawing never moves hit rectangles"): return
-    await tap(KEY_LEFT)
+    await tap(KEY_DOWN)
     view.hide()
     if not check(state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0), "Hiding immediately cancels active emphasis"): return
     await frames(2)
@@ -187,7 +187,7 @@ func focus_emphasis(initial: Dictionary) -> void:
     var shown := emphasis_sample("shown-stable")
     if not check(shown.menu.layout.commands.all(func(c): return c.art.drawnOffsetY == 0 and c.art.focusRemainingMs == 0), "Showing cannot resume stale emphasis"): return
     if not DisplayServer.get_name() == "headless":
-        await tap(KEY_RIGHT)
+        await tap(KEY_DOWN)
         if not await transfer_focus(): return
         if not check(state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0 and c.art.drawnOffsetY == 0), "Native focus loss/return leaves stable selection"): return
     await tap(KEY_ESCAPE)
@@ -196,7 +196,7 @@ func focus_emphasis(initial: Dictionary) -> void:
     if not emphasis_active(emphasis_sample("reopened-new-selection"),0,reduced): return
     await frames(15)
     if not check(state().menu.layout.commands.all(func(c): return c.art.focusRemainingMs == 0 and c.art.drawnOffsetY == 0), "Reopened selection settles without stale motion"): return
-    await tap(KEY_RIGHT)
+    await tap(KEY_DOWN); await tap(KEY_DOWN)
     if not emphasis_active(emphasis_sample("before-scene-retirement"),2,reduced): return
     host.queue_free()
     await frames(3)
@@ -216,7 +216,7 @@ func battle_menus(initial: Dictionary) -> void:
     await button(magic,false)
     if not check(state().menu.page == "Main", "Hidden owner cannot reuse a held gesture"): return
     await button(magic,true)
-    await tap(KEY_RIGHT)
+    await tap(KEY_DOWN)
     await button(magic,false)
     if not check(state().menu.page == "Main" and state().menu.command == 2, "Keyboard focus cancels prior pointer press"): return
     await click(state().menu.layout.commands[0].rect)
