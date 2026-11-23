@@ -117,13 +117,15 @@ attack is selected. [Attack command][aiattack] · [Action guard][guard] ·
 
 An attacker affected by either MUDDLE rank gives the defender a dodge on main range-2 roll
 zero. A sleeping or stunned defender skips the dodge draw. The scene's MUDDLE 2 flag gates ranged
-physical presentation and prevents ordinary doubles/counters. The regular same-side gate also
-suppresses doubles/counters. Preserve actual faction for kill, drop and victory accounting.
+physical presentation. The source double and counter validations suppress follow-up strikes
+for the confusion or same-side flag after the qualifying first attack consumes its ordinary
+double and counter main RNG draws. Preserve actual faction for kill, drop and victory accounting.
 When the MUDDLE 2 scene flag bypasses initialization of `targetIsOnSameSide`, the field stays
 zero. This leaves the half-EXP battle check enabled for an eligible ally scene award. The
 guard, message and effect rolls use main RNG. AI scoring retains the thinking stream. A natural retail sequence from cast through
 selected same-side action, guard and control restoration is **Unknown**.
-[Scene flag initialization][init] · [Physical dodge][dodge] · [Double gate][end] · [Counter gate][counter]
+[Scene flag initialization][init] · [Physical dodge][dodge] · [Double and counter rolls][doublerolls] ·
+[Double gate][end] · [Counter gate][counter]
 
 **Confirmed.** After a living actor's own consumed entry, tick MUDDLE between SLEEP and SILENCE.
 With `count = status & 0x0030`, draw main RNG with range `count` only when nonzero. If
@@ -418,15 +420,18 @@ Movement and Stay remain available where the existing manual rules allow them.
 [Source target grid](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildtargetsarray.asm#L64-L93)
 The battle return recovery policy clears the rank-1 counter when an eligible ally recovers,
 regardless of its control mode. Victory recovery precedes the outcome program, retreat recovery
-follows action closure, and defeat retains the word through dialogue until leader revival and
-eligible party recovery. Allies ineligible for recovery retain their carried values. Field growth
-and field-only recovery keep their existing admission rules.
+follows action closure, and defeat recovery follows dialogue and leader revival. Allies
+ineligible for recovery retain the values supplied to recovery. Field growth and field-only
+recovery keep their existing admission rules.
 Ordinary enemy orders, enemy HEAL/AURA and existing Support use the same admitted rank-1
-word. An enemy can still act under its normal commandset and then tick its status. A fallen
-ordinary ally may carry the counter out of battle and into field Save/Continue. Church Raise
-restores HP and leaves that word intact. Fresh battle entry refreshes the raised ally and
-clears the temporary bits. Engine tests exercise the field wire, real Raise payment, and fresh
-battle initialization at those boundaries. Ordinary scene reset retains its narrower admission.
+word. An enemy can still act under its normal commandset and then tick its status. Battle death
+cleanup clears the status word of every processed casualty. Separate compatibility tests supply
+an already fallen retained ally with a counter. Field Save/Continue preserves that input, Church
+Raise restores HP and leaves the word intact, and fresh battle entry clears the temporary bits
+on refresh. Ordinary scene reset retains its narrower admission. [Source death cleanup][deaths] ·
+[Field save test](../../tests/Sf2.Remake.Engine.Tests/BattleSaveReturnTests.cs) ·
+[Raise test](../../tests/Sf2.Remake.Engine.Tests/FieldServiceTests.cs) ·
+[Fresh entry test](../../tests/Sf2.Remake.Engine.Tests/PrivateBattleInitializationTests.cs)
 
 ## MUDDLE 1 implementation and evidence
 
@@ -498,6 +503,12 @@ candidates have an ally class. Exercise both a tied cohort and a single high-pri
 [Action validation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
 [Automatic delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs)
 
+For a confused enemy's learned spell, score from raw `SPELLDEF_POWER` with resistance in
+`EnemySpellDecision.Score`. Live execution still applies the caster's enhanced power before
+resistance. The current scorer already uses raw power for allies and items. Keep ordinary
+enemy behavior covered by its existing cases. [Source AI estimate][aipower] ·
+[Source spell damage][castpower]
+
 ### Settlement and current combinations
 
 **Confirmed.** An ally can earn damage and kill EXP contributions against an ally. An eligible
@@ -532,13 +543,18 @@ existing roles. Preserve opposing counter credit, support/DETOX halving and sett
    actual engine turns for no-target movement, protected-center and self pass/fail, same-side
    kill and area casualty. Check payment/wear, one actor on a self reaction, RNG order and
    single replay. Include an eligible ally award on a half-EXP battle, an enemy kill with no
-   allied reward or drop, and a terminal casualty. Preserve opposing counter and drop controls.
+   allied reward or drop, and a terminal casualty. Verify that the existing death batch removes
+   defeated self and same-side targets from the map, clears their status words and refreshes
+   their stats. Show eligible double and counter draws with no follow-up strikes, plus an
+   enhanced enemy whose raw scored spell power differs from its resolved damage input.
+   Preserve opposing counter, spell and drop controls.
 2. Admit the finite rank-2 consumer set together with the effect in the existing support owner.
    Share turn admission across spell targeting, typed Start, battle Save and Continue. Check
    the live operands the selector and action builders need. Status syntax, standby, growth,
    refresh and recovery keep their existing owners. Exercise confused ally and enemy queue
-   closure including sleep/stun and an extra entry. Carry a retained fallen ally through field
-   Save, Raise and fresh-battle recovery. Release the private binding when those consumers pass.
+   closure including sleep/stun and an extra entry. Separately test field Save/Continue, Raise
+   and fresh-battle recovery with a controlled retained ally supplied already fallen with a
+   rank-2 word. Release the private binding when those consumers pass.
    Use the existing Kazin setup for one short ordinary Magic suffix with an automatic action,
    active-counter cold Continue and return. Capture input, state, projection and errors.
    Additional natural witnesses and full effect animation are separate work.
@@ -712,6 +728,9 @@ specified above.
 [guard]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinemuddledbattleaction.asm
 [attacktie]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L255-L421
 [battle26roster]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/spritesets/spriteset26.asm#L59-L123
+[doublerolls]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/determinedoubleandcounter.asm#L34-L80
+[aipower]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/prioritizetargets.asm#L425-L456
+[castpower]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/calculatespelldamage.asm#L34-L102
 [attackrange]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/getactionrange.asm
 [area]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/populatetargetslist.asm
 [sceneactors]: https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm#L298-L349
