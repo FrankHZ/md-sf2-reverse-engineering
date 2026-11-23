@@ -60,6 +60,9 @@ public sealed class AttackSpellSessionTests
         var choices = session.QueryBattleChoices(); Assert.Same(initial, session.Current);
         Assert.Equal(new[] { new SpellRef("blaze", 1), new("blaze", 2), new("blast", 1) }, choices.Spells.Select(s => s.Spell));
         Assert.All(choices.Spells.Take(2), s => Assert.True(s.Enabled));
+        Assert.Equal((SpellEffect.Damage, AttackSpellElement.Fire, (byte)0),
+            (choices.Spells[0].Description!.Effect, choices.Spells[0].Description!.Element, choices.Spells[0].Description!.Radius));
+        Assert.Equal((byte)1, choices.Spells[1].Description!.Radius);
         Assert.False(choices.Spells[2].Enabled); // BLAST1 cannot center two tiles away.
         Accept(session, new Confirm()); Accept(session, new SelectSpell(new("blaze", 2)));
         foreach (var target in choices.Spells[1].Targets)
@@ -76,7 +79,10 @@ public sealed class AttackSpellSessionTests
         Assert.NotNull(session.Submit(stale).Failure); Assert.Same(canceled, session.Current);
         Assert.Same(initial.Battle, session.Current.Battle);
         var poor = Start("attack-spells", d => d["start"]!["actors"]![0]!["mp"] = 5);
-        Assert.Equal("insufficient-mp", poor.QueryBattleChoices().Spells[1].Reason!.Code);
+        var unaffordable = poor.QueryBattleChoices().Spells[1].Description!;
+        Assert.Equal("insufficient-mp", unaffordable.Reason!.Code);
+        Assert.Equal((byte)6, unaffordable.MpCost);
+        Assert.Equal((byte)1, unaffordable.Radius);
         Accept(poor, new Confirm()); var unchanged = poor.Current;
         Assert.Equal("insufficient-mp", Send(poor, new SelectSpell(new("blaze", 2))).Failure!.Code); Assert.Same(unchanged, poor.Current);
         var unlearned = Start("attack-spells", d => d["actors"]![0]!["spells"]!.AsArray().RemoveAt(1));

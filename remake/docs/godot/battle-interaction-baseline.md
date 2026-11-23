@@ -40,8 +40,9 @@ delivers fresh target input and direct Stay. [#2107](battle-ui-composition.md#ba
 projects the same decision for input, hints and board activation. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 delivers the inspected unit's movement field on the Cursor page.
 [#2082](battle-ui-composition.md#shared-member-roster-2082) delivers the field and battle member rows.
-The [implementation handoff](battle-ui-composition.md#implementation-handoff) tracks pending
-spell descriptions (#2083) and the current-round queue readout (#2065).
+[#2083](battle-ui-composition.md#selected-spell-descriptions) shows the selected level's effect,
+reach and refusal before target selection. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+tracks the current-round queue readout (#2065).
 
 The trace covers battle entry → observation → movement → action/item → target/confirmation →
 presentation/settlement → next actor or victory/defeat/retreat → Save/Continue. Acceptance here is a

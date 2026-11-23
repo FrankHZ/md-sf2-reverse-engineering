@@ -798,7 +798,7 @@ msgid "prepare.confirm-no-effect-spell"
 msgstr "Cast {0}? Nothing happens here; MP is kept."
 
 msgid "prepare.confirm-cast"
-msgstr "Cast {0}? Cost: {1} MP, even when there is no ailment to cure."
+msgstr "Cast {0}? Uses up to {1} MP, even when there is no ailment to cure."
 
 msgid "prepare.confirm-egress"
 msgstr "Cast {0} and return to your last refuge? Uses up to {1} MP, even when MP is low. Gold and progress are kept."
@@ -2833,3 +2833,84 @@ msgstr "Level {0}"
 
 msgid "ui.read-description"
 msgstr "{0}/{1} · Read"
+
+msgid "spell-description.hp-limit"
+msgstr "Restores up to {0} HP per recipient."
+
+msgid "spell-description.hp"
+msgstr "Restores HP."
+
+msgid "spell-description.full-hp"
+msgstr "Restores HP to full."
+
+msgid "spell-description.damage.wind"
+msgstr "Deals wind damage."
+
+msgid "spell-description.damage.lightning"
+msgstr "Deals lightning damage."
+
+msgid "spell-description.damage.ice"
+msgstr "Deals ice damage."
+
+msgid "spell-description.damage.fire"
+msgstr "Deals fire damage."
+
+msgid "spell-description.damage.neutral"
+msgstr "Deals non-elemental damage."
+
+msgid "spell-description.inflict-silence"
+msgstr "May inflict Silence."
+
+msgid "spell-description.sleep"
+msgstr "May put targets to sleep."
+
+msgid "spell-description.slow"
+msgstr "May temporarily lower Defense and Agility."
+
+msgid "spell-description.boost"
+msgstr "Temporarily raises Defense and Agility."
+
+msgid "spell-description.refuge"
+msgstr "Returns the party to the last refuge."
+
+msgid "spell-description.free"
+msgstr "Has no effect here and uses no MP."
+
+msgid "spell-description.unsupported"
+msgstr "This spell effect is unavailable here."
+
+msgid "spell-description.self"
+msgstr "Select the caster."
+
+msgid "spell-description.all-allies"
+msgstr "Select the caster to affect all living allies on the battlefield."
+
+msgid "spell-description.party-member"
+msgstr "Select one party member."
+
+msgid "spell-description.ally"
+msgstr "Select one ally."
+
+msgid "spell-description.enemy"
+msgstr "Select one enemy."
+
+msgid "spell-description.ally-area"
+msgstr "Select an ally. Affects allies within {0} tile(s) of that target."
+
+msgid "spell-description.enemy-area"
+msgstr "Select an enemy. Affects enemies within {0} tile(s) of that target."
+
+msgid "spell-description.cure-payment"
+msgstr "The same cost applies if the target has no ailment."
+
+msgid "spell-description.clamped-mp"
+msgstr "Uses {0} MP with your current reserves."
+
+msgid "spell-description.silenced"
+msgstr "Silence suppresses the effect. Casting still uses MP."
+
+msgid "spell-description.no-refuge"
+msgstr "Returning to a refuge is unavailable from the current state."
+
+msgid "spell-description.curse"
+msgstr "The current curse prevents casting this level."

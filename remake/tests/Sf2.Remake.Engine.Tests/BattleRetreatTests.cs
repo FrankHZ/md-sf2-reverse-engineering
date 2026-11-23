@@ -27,6 +27,9 @@ public sealed class BattleRetreatTests
         Assert.Equal(enabled, choice.Enabled);
         Assert.Same(before, session.Current.Battle);
         Assert.Equal(Egress, choice.Spell);
+        Assert.Equal(SpellEffect.Retreat, choice.Description!.Effect);
+        Assert.Equal(SpellTarget.Self, choice.Description.Target);
+        Assert.False(choice.Description.SuppressedBySilence);
         Accept(session, new Confirm());
         var selection = Send(session, new SelectSpell(Egress));
         if (!enabled)

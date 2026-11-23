@@ -20,6 +20,8 @@ public sealed class SilenceSessionTests
         Accept(session, new Confirm());
         var offered = session.QueryBattleChoices().Actions.Single(a => a.Action.Spell == new SpellRef("blaze", 1));
         Assert.True(offered.Enabled); // Silence is not an unavailable menu item.
+        Assert.True(offered.SpellDescription!.SuppressedBySilence);
+        Assert.Equal((byte)2, offered.SpellDescription.MpCost);
         Assert.Equal(initial.MainSeed, session.Current.Battle.MainSeed);
         Accept(session, new SelectSpell(new("blaze", 1))); Accept(session, new Cancel());
         Assert.Same(initial, session.Current.Battle);

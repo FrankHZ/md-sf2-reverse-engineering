@@ -39,7 +39,11 @@ public sealed class FieldRecoveryTests
         var session = Recovery(higherRanks: true, casterStatus: status, casterHp: 0);
         var before = session.Current;
         var spell = new SpellRef("detox", rank);
-        Assert.Contains(session.QueryFieldActions(Giver).Spells, choice => choice.Spell == spell && choice.MpCost == (rank == 2 ? 6 : 10));
+        var choice = Assert.Single(session.QueryFieldActions(Giver).Spells, choice => choice.Spell == spell);
+        Assert.Equal(rank == 2 ? 6 : 10, choice.MpCost);
+        Assert.Equal(SpellEffect.CurePoisonAndParalysis, choice.Description!.Effect);
+        Assert.Equal(SpellTarget.PartyMember, choice.Description.Target);
+        Assert.Equal((byte)(7 - remainingMp), choice.Description.FieldPayment);
         Assert.Same(before, session.Current);
 
         var result = Accept(session, new FieldCast(Giver, spell, Giver));
@@ -95,6 +99,9 @@ public sealed class FieldRecoveryTests
     {
         var session = Recovery(recoveryItem: recoveryItem); var before = session.Current;
         var query = session.QueryFieldActions(Giver); Assert.Null(query.Error);
+        var fieldHeal = Assert.Single(query.Spells, choice => choice.Spell == Heal).Description!;
+        Assert.Equal(SpellEffect.NoEffect, fieldHeal.Effect);
+        Assert.Equal((byte)0, fieldHeal.FieldPayment);
         Assert.Same(before, session.Current);
         var result = Accept(session, magic ? new FieldCast(Giver, Heal) : new FieldUseItem(Giver, 0, recoveryItem));
         Assert.Equal("field-no-effect", Assert.Single(result.Observations).Kind);

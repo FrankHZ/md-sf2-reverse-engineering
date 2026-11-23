@@ -11,6 +11,16 @@ internal sealed class Sf2HealingRule : IHealingRule
         actor.Spells.Contains(new SpellRef("heal", 4)) && spell.Spell.Value == "heal" &&
         (spell.Spell.Level == 3 && actor.Mp >= 3 || spell.Spell.Level == 4 && actor.Mp >= 14);
 
+    // VICR and imported enemies apply their source-class scaling to the raw operand.
+    // Authored priest inputs already supply adjusted power.
+    internal static int? RecoveryLimit(BattleActorState caster, HealingSpellDefinition spell)
+    {
+        if (spell.Targets == HealingTargets.AuraAllAllies ||
+            spell.Spell is { Value: "heal", Level: 4 } && spell.Power == 255) return null;
+        return caster.Definition.ClassRule == BattleClassRule.Vicar || caster.Deployment.SourceEnemy.HasValue
+            ? caster.Definition.CastPower(spell.Power) : spell.Power;
+    }
+
     public HealingSpellDefinition RequireSpell(EngineBattleState battle, ActorRef actorRef, SpellRef spellRef)
     {
         var actor = battle.GetActor(actorRef);
@@ -65,10 +75,7 @@ internal sealed class Sf2HealingRule : IHealingRule
         BattleReaction[] reactions = targets.Select(target =>
         {
             if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal", PoisonCureRules.SpellMask(spellRef.Level));
-            bool fullRecovery = spell.Targets == HealingTargets.AuraAllAllies || spell.Spell is { Value: "heal", Level: 4 } && spell.Power == 255;
-            // VICR and imported enemies use the raw source spell operand. Authored priest inputs supply adjusted power.
-            bool sourcePower = actor.Definition.ClassRule == BattleClassRule.Vicar || actor.Deployment.SourceEnemy.HasValue;
-            int power = fullRecovery ? target.MaxHp : sourcePower ? actor.Definition.CastPower(spell.Power) : spell.Power;
+            int power = RecoveryLimit(actor, spell) ?? target.MaxHp;
             int recovery = Math.Min(power, target.MaxHp - target.Hp);
             return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
                 (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);

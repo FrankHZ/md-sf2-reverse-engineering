@@ -9,10 +9,16 @@ public enum BattlePresentationKind { Healing, Physical, Item, None, Retreat, Att
 public sealed record BattleTargetChoice(ActorRef Actor, bool Enabled, SessionFailure? Reason);
 public sealed record BattleActionChoice(BattleActionRef Action, string Label, BattlePresentationKind Presentation,
     byte? MinimumRange, byte? MaximumRange, bool Empty, bool Enabled, SessionFailure? Reason,
-    IReadOnlyList<BattleTargetChoice> Targets);
+    IReadOnlyList<BattleTargetChoice> Targets)
+{
+    public SpellDescriptionFacts? SpellDescription { get; init; }
+}
 public sealed record BattleSpellChoice(SpellRef Spell, string Label, BattlePresentationKind Presentation,
     byte? MinimumRange, byte? MaximumRange, bool Enabled, SessionFailure? Reason,
-    IReadOnlyList<BattleTargetChoice> Targets);
+    IReadOnlyList<BattleTargetChoice> Targets)
+{
+    public SpellDescriptionFacts? Description { get; init; }
+}
 public sealed record BattleItemChoice(int Slot, string Label, bool Empty, bool Enabled, SessionFailure? Reason,
     IReadOnlyList<BattleTargetChoice> Targets);
 public sealed record BattleChoicesSnapshot(Guid SessionId, long Revision, ActorRef? Actor,
@@ -26,7 +32,8 @@ public sealed record BattleChoicesSnapshot(Guid SessionId, long Revision, ActorR
     public BattleGiveChoices Give { get; init; } = new([], [], []);
     public IReadOnlyList<BattleSpellChoice> Spells => Array.AsReadOnly(Actions.Where(option => option.Action.Spell is not null)
         .Select(option => new BattleSpellChoice(option.Action.Spell!.Value, option.Label, option.Presentation,
-            option.MinimumRange, option.MaximumRange, option.Enabled, option.Reason, option.Targets)).ToArray());
+            option.MinimumRange, option.MaximumRange, option.Enabled, option.Reason, option.Targets)
+            { Description = option.SpellDescription }).ToArray());
     public IReadOnlyList<BattleItemChoice> Items => Array.AsReadOnly(Actions.Where(option => option.Action.ItemSlot is not null)
         .Select(option => new BattleItemChoice(option.Action.ItemSlot!.Value, option.Label, option.Empty,
             option.Enabled, option.Reason, option.Targets)).ToArray());
@@ -217,6 +224,7 @@ internal static class BattleChoices
             return new(current.SessionId, current.Revision, null, null, null, [],
                 new(SessionFailureKind.IllegalCommand, "not-player-control", "phase", "not player control"));
         var battle = selection.AtConfirmedStop(current.Battle);
+        var caster = battle.GetActor(selection.Actor);
         List<BattleActionChoice> options = [];
         foreach (var rule in rules.Actions)
         {
@@ -278,11 +286,15 @@ internal static class BattleChoices
                     _ => BattlePresentationKind.None,
                 };
                 options.Add(new(offer.Action, offer.Label, presentation, admission?.MinimumRange, admission?.MaximumRange,
-                    offer.Empty, failure is null, failure, targets.AsReadOnly()));
+                    offer.Empty, failure is null, failure, targets.AsReadOnly())
+                {
+                    SpellDescription = offer.Action.Spell is null ? null :
+                        SpellDescriptionFacts.Battle(battle, caster, offer.Action, admission, rules.Healing, failure),
+                });
             }
         }
         // Finite spell effects have different rules, but retain the actor's learned ordering.
-        var learned = battle.GetActor(selection.Actor).Spells.ToList();
+        var learned = caster.Spells.ToList();
         var spells = options.Where(option => option.Action.Spell is not null)
             .OrderBy(option => learned.IndexOf(option.Action.Spell!.Value)).ToArray();
         int spellIndex = 0;

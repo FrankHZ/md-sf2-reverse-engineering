@@ -148,8 +148,12 @@ internal static class FieldInventory
             var items = Items(definition, member, current.Exploration!.Map);
             var equipment = EquipmentChoices(definition, member, Loadout(member));
             var learned = member.Carried.Progress?.Spells ?? member.Deployment!.Definition.Spells;
-            return new(current.SessionId, current.Revision, actor, equipment, items,
-                learned.Where(definition.FieldPreparation!.Spells.ContainsKey).Select(spell => definition.FieldPreparation.Spell(spell, current.Exploration.Map)!).ToArray());
+            var preparation = definition.FieldPreparation!;
+            var spells = learned.Where(preparation.Spells.ContainsKey)
+                .Select(spell => preparation.Spell(spell, current.Exploration.Map)!)
+                .Select(spell => spell with { Description = FieldRecovery.Describe(definition, current, member, spell) })
+                .ToArray();
+            return new(current.SessionId, current.Revision, actor, equipment, items, spells);
         }
         catch (BattleRuleException error) { return new(current.SessionId, current.Revision, actor, [], [], [], error.Code); }
     }

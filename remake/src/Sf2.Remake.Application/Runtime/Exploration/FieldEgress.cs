@@ -7,8 +7,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 internal static class FieldEgress
 {
-    internal static SessionResult Begin(ScenarioDefinition definition, SessionSnapshot current, ActorRef caster,
-        BattleStartInput paid, SessionRules rules)
+    internal static (FieldEgressDefinition Capability, FieldReturnAnchor Anchor) RequireRoute(
+        ScenarioDefinition definition, SessionSnapshot current)
     {
         var world = current.Exploration!;
         var capability = definition.FieldPreparation!.Egress;
@@ -17,6 +17,14 @@ internal static class FieldEgress
             throw new BattleRuleException("field-egress-context", "field.egress", true);
         var anchor = current.Story.EgressMap is { } live ? Sf2OutcomeReturnPolicy.FindEgress(definition, live) : null;
         if (anchor is null) throw new BattleRuleException("egress-map", "story.egressMap", true);
+        return (capability, anchor);
+    }
+
+    internal static SessionResult Begin(ScenarioDefinition definition, SessionSnapshot current, ActorRef caster,
+        BattleStartInput paid, SessionRules rules)
+    {
+        var world = current.Exploration!;
+        var (capability, anchor) = RequireRoute(definition, current);
         var warp = new ExplorationEvent(ExplorationEventKind.Warp, null, null, null, null,
             anchor.Map, anchor.Position, anchor.Facing);
         // Compute entry recovery and validate the selected destination before publishing payment.

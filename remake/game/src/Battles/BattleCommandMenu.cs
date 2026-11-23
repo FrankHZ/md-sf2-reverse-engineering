@@ -141,14 +141,16 @@ internal sealed partial class BattleCommandMenu : Control
         else if (targetPage)
         {
             var selected = decision.SelectedAction;
-            description = selected is null ? "" : OptionLabel(selected, current);
+            description = selected is null ? "" : selected.Action.Spell is not null
+                ? DisplayNames.Action(selected, current) : OptionLabel(selected, current);
             if (!canCycle) description += "\n" + GameText.Get("battle.no-target");
             else if (!canConfirm) description += "\n" + GameText.Get("battle.target-invalid");
         }
         else if (commit) description = GameText.Get(search ? "battle.search-detail" : "battle.stay-detail");
         else if (command == BattleCommandRow.Stay && decision.Search) description = GameText.Get("battle.search-detail");
         else if (list && offers.Length > 0) description = page == Page.Items
-            ? DescribeItem(offers[row], current.Selection!.Actor, current) : Describe(offers[row], current);
+            ? DescribeItem(offers[row], current.Selection!.Actor, current)
+            : SpellDescriptions.Read(offers[row].SpellDescription!);
         else if (offers.Length == 0) description = GameText.Get(command switch
         {
             BattleCommandRow.Magic => "battle.no-magic",
@@ -172,23 +174,8 @@ internal sealed partial class BattleCommandMenu : Control
     {
         string name = DisplayNames.Action(option, current);
         string label = option.Action.ItemSlot is { } slot ? $"{slot + 1}. {name}" : name;
-        if (option.Action.Spell is { } spell)
-        {
-            var definition = current.Battle.Definition;
-            byte? cost = definition.Spells.TryGetValue(spell, out var healing) ? healing.MpCost :
-                definition.AttackSpells.TryGetValue(spell, out var attack) ? attack.MpCost :
-                definition.SupportSpells.TryGetValue(spell, out var support) ? support.MpCost :
-                definition.RetreatSpells.TryGetValue(spell, out var retreat) ? retreat.MpCost : null;
-            if (cost is { } mp) label += $" · {mp} MP";
-        }
+        if (option.SpellDescription?.MpCost is { } mp) label += $" · {mp} MP";
         return label + (option.Enabled ? "" : GameText.Get("battle.unavailable-tag"));
-    }
-    private string Describe(BattleActionChoice option, SessionSnapshot current)
-    {
-        string text = OptionLabel(option, current);
-        if (option.MinimumRange is { } minimum) text += "\n" + GameText.Get("battle.range", minimum, option.MaximumRange!);
-        if (option.Reason is { } reason) text += "\n" + Unavailable(reason);
-        return text;
     }
     private string DescribeItem(BattleActionChoice option, ActorRef actor, SessionSnapshot current)
     {

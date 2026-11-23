@@ -801,7 +801,7 @@ msgid "prepare.confirm-egress"
 msgstr "施放{0}，返回上次的休息点？消耗至多 {1} MP，MP 不足时也能使用。保留金币和进度。"
 
 msgid "prepare.confirm-cast"
-msgstr "施放{0}？即使目标没有可解除的异常状态，也会消耗 {1} MP。"
+msgstr "施放{0}？即使目标没有可解除的异常状态，也会消耗至多 {1} MP。"
 
 msgid "prepare.drop-item"
 msgstr "丢弃哪件道具？"
@@ -2833,3 +2833,84 @@ msgstr "等级 {0}"
 
 msgid "ui.read-description"
 msgstr "{0}/{1} · 阅读"
+
+msgid "spell-description.hp-limit"
+msgstr "每个目标最多恢复 {0} 点 HP。"
+
+msgid "spell-description.hp"
+msgstr "恢复 HP。"
+
+msgid "spell-description.full-hp"
+msgstr "将 HP 恢复至满值。"
+
+msgid "spell-description.damage.wind"
+msgstr "造成风属性伤害。"
+
+msgid "spell-description.damage.lightning"
+msgstr "造成雷属性伤害。"
+
+msgid "spell-description.damage.ice"
+msgstr "造成冰属性伤害。"
+
+msgid "spell-description.damage.fire"
+msgstr "造成火属性伤害。"
+
+msgid "spell-description.damage.neutral"
+msgstr "造成无属性伤害。"
+
+msgid "spell-description.inflict-silence"
+msgstr "有几率使目标沉默。"
+
+msgid "spell-description.sleep"
+msgstr "有几率使目标睡眠。"
+
+msgid "spell-description.slow"
+msgstr "有几率暂时降低防御和敏捷。"
+
+msgid "spell-description.boost"
+msgstr "暂时提高防御和敏捷。"
+
+msgid "spell-description.refuge"
+msgstr "使队伍返回上次的休息点。"
+
+msgid "spell-description.free"
+msgstr "在这里无效，不消耗 MP。"
+
+msgid "spell-description.unsupported"
+msgstr "这里无法使用此法术效果。"
+
+msgid "spell-description.self"
+msgstr "选择施法者本人。"
+
+msgid "spell-description.all-allies"
+msgstr "选择施法者本人，效果覆盖战场上所有存活的友军。"
+
+msgid "spell-description.party-member"
+msgstr "选择一名队员。"
+
+msgid "spell-description.ally"
+msgstr "选择一名友军。"
+
+msgid "spell-description.enemy"
+msgstr "选择一名敌人。"
+
+msgid "spell-description.ally-area"
+msgstr "选择一名友军，效果覆盖以目标为中心、半径 {0} 格内的友军。"
+
+msgid "spell-description.enemy-area"
+msgstr "选择一名敌人，效果覆盖以目标为中心、半径 {0} 格内的敌人。"
+
+msgid "spell-description.cure-payment"
+msgstr "目标没有可解除的异常状态时，消耗也相同。"
+
+msgid "spell-description.clamped-mp"
+msgstr "按当前剩余 MP，本次消耗 {0} 点。"
+
+msgid "spell-description.silenced"
+msgstr "沉默会抑制法术效果，施放仍会消耗 MP。"
+
+msgid "spell-description.no-refuge"
+msgstr "当前无法返回休息点。"
+
+msgid "spell-description.curse"
+msgstr "当前的诅咒使此等级的法术无法施放。"

@@ -2,11 +2,22 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
+internal enum SupportSpellEffect { Silence, Sleep, Slow, Boost, Attack, AbsorbMp }
+
 public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte MinimumRange, byte MaximumRange, byte Radius)
 {
-    public bool TargetsTeammates => Spell.Value is "boost" or "attack";
-    public bool AbsorbsMp => Spell.Value == "spoit";
-    public bool ChangesStats => Spell.Value is "boost" or "slow" or "attack";
+    internal SupportSpellEffect Effect => Spell.Value switch
+    {
+        "sleep" => SupportSpellEffect.Sleep,
+        "slow" => SupportSpellEffect.Slow,
+        "boost" => SupportSpellEffect.Boost,
+        "attack" => SupportSpellEffect.Attack,
+        "spoit" => SupportSpellEffect.AbsorbMp,
+        _ => SupportSpellEffect.Silence,
+    };
+    public bool TargetsTeammates => Effect is SupportSpellEffect.Boost or SupportSpellEffect.Attack;
+    public bool AbsorbsMp => Effect == SupportSpellEffect.AbsorbMp;
+    public bool ChangesStats => Effect is SupportSpellEffect.Boost or SupportSpellEffect.Slow or SupportSpellEffect.Attack;
 
     internal void RequireSupported()
     {
@@ -34,16 +45,16 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
     internal (ushort? ReactionWord, ushort? ConstructionWord) Resolve(BattleActorState target, Func<string, int> roll)
     {
         int resistance = target.Definition.Resistance >> 14;
-        if (Spell.Value == "sleep")
+        if (Effect == SupportSpellEffect.Sleep)
             return (roll("rng-sleep") >= 5 + resistance ? (ushort)(target.Status | 0xC0) : null, null);
         if (!ChangesStats)
             return (roll("rng-dispel") >= (SilenceRules.HasSpells(target) ? 5 + resistance : 8)
                 ? (ushort)(target.Status | SilenceRules.Mask) : null, null);
         if (!TargetsTeammates && roll("rng-slow") < (resistance == 0 ? 0 : 5 + resistance)) return (null, null);
-        ushort mask = Spell.Value switch
+        ushort mask = Effect switch
         {
-            "boost" => BattleStatCounters.Boost,
-            "attack" => BattleStatCounters.Attack,
+            SupportSpellEffect.Boost => BattleStatCounters.Boost,
+            SupportSpellEffect.Attack => BattleStatCounters.Attack,
             _ => BattleStatCounters.Slow,
         };
         ushort word = (ushort)(target.Status | mask);
