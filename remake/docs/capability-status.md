@@ -585,9 +585,10 @@ ally on entry. After battle Continue, Bowie plays the override. The controlled p
 service visit confirms ordinary Depot deposit, bilingual appraisal and retrieval to Bowie.
 [Sandals route and limits](content/special-equipment-reach.md#remake-controls-and-reproduction)
 Indra Staff admits WIZ/VICR weapon Equip, SPOIT1 Item Use, wear, 800-gold Repair and existing
-save/restore. Black Ring currently admits bare receipt and carry. Its worn lifecycle in #1926
-requires the shared physical curse action and return/Continue boundary. Player BLAZE 2 Item Use
-and Black Ring Cure/Repair remain open.
+save/restore. Black Ring currently admits bare receipt and carry. The shared physical curse
+action, death delivery and return/Continue support have controlled evidence. Worn Black Ring
+admission, custody and Cure, and player BLAZE 2 Item Use and Repair remain with #1926.
+[Physical curse reproduction](domain/ring-equipment-design.md#physical-curse-reproduction)
 [Black Ring admission decision](domain/ring-equipment-design.md#black-ring-admission-and-physical-curse)
 [Indra Staff](domain/equipment-use-repair-design.md#indra-staff-reproduction)
 [Ring equipment](domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input) ·

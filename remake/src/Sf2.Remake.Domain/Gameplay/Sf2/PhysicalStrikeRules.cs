@@ -3,8 +3,11 @@ using Sf2.Remake.Domain.Battles;
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal sealed record PhysicalRoll(string Purpose, ushort Range, uint Before, uint After, ushort Result);
-internal sealed record PhysicalStrike(bool Dodged, bool Critical, int Damage, ushort Hp,
-    uint Seed, IReadOnlyList<PhysicalRoll> Rolls, bool SleepInflicted = false, bool Ineffective = false, bool SilenceInflicted = false, bool PoisonInflicted = false, bool StunInflicted = false);
+internal sealed record PhysicalStrike(bool Dodged, bool Critical, int DamageForRecoil, ushort Hp,
+    uint Seed, IReadOnlyList<PhysicalRoll> Rolls, bool SleepInflicted = false, bool Ineffective = false, bool SilenceInflicted = false, bool PoisonInflicted = false, bool StunInflicted = false)
+{
+    internal int Damage => Ineffective ? 0 : DamageForRecoil;
+}
 
 // Resolve one impact up to the point at which the action can apply ailment and recoil.
 // The action owns follow-up draws, which depend on both participants surviving the impact.
@@ -54,9 +57,9 @@ internal static class PhysicalStrikeRules
                 damage -= Roll(ref seed, rolls, "spread-2", spread);
                 damage = Math.Max(1, damage);
             }
-            else damage = 0;
         }
-        ushort remaining = (ushort)Math.Max(0, hp - damage);
+        // The original ineffective hit leaves d6 intact for the following recoil helper.
+        ushort remaining = ineffective ? hp : (ushort)Math.Max(0, hp - damage);
         return new(dodged, critical, damage, remaining, seed, rolls.AsReadOnly(), sleep && remaining > 0,
             !dodged && ineffective, silence && remaining > 0, poison && remaining > 0, stun && remaining > 0);
     }

@@ -1,6 +1,7 @@
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Gameplay.Sf2;
@@ -116,9 +117,9 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
             if (!CanRecover(deployment, input, all)) return input;
-            if ((input.Status & ~(0xC0 | 0x0300 | BattleStatCounters.Mask | 3)) != 0) throw new BattleRuleException("return-status-refresh", "party.status", true);
-            // HealLivingAndImmortalAllies and ResetAlliesStats preserve stun and poison.
-            return input.RefreshStats() with { Status = (ushort)(input.Status & 3), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
+            if (!SilenceRules.Supported(input.Status)) throw new BattleRuleException("return-status-refresh", "party.status", true);
+            const ushort retained = PoisonCureRules.PoisonAndStun | CurseRules.Mask;
+            return input.RefreshStats() with { Status = (ushort)(input.Status & retained), Hp = input.Progress?.MaxHp ?? deployment.Definition.MaxHp,
                 Mp = input.Progress?.MaxMp ?? deployment.Definition.MaxMp };
         }).ToArray();
         return party.WithResources(actors, party.Gold);

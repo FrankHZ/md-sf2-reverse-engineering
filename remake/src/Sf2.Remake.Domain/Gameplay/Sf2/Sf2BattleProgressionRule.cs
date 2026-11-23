@@ -9,7 +9,7 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
         IReadOnlyList<BattleReaction> reactions, ref uint seed, List<BattleEffect> effects)
     {
         int accumulated = 0;
-        foreach (var reaction in reactions.Where(reaction => reaction.Actor == recipient.Actor))
+        foreach (var reaction in reactions.Where(reaction => reaction.Actor == recipient.Actor && reaction.Kind != BattleReactionKind.CurseRecoil))
         {
             var target = battle.GetActor(reaction.Target);
             if (kind == BattleActionKind.SupportSpell ||

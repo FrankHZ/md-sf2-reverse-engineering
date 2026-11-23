@@ -2530,6 +2530,15 @@ msgstr "{0}麻痹了。"
 msgid "battle.scene.stun-cleared"
 msgstr "{0}的麻痹解除了。"
 
+msgid "battle.scene.curse-inaction"
+msgstr "{0}因诅咒无法攻击。"
+
+msgid "battle.scene.stun-inaction"
+msgstr "{0}因麻痹无法攻击。"
+
+msgid "battle.scene.curse-recoil"
+msgstr "{0}因诅咒受到{1}点伤害。"
+
 msgid "save.destination.desktop-kingdom"
 msgstr "桌面王国"
 

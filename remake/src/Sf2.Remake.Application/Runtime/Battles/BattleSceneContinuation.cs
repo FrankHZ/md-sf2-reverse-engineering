@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage, AttackExpiredMessage, EquipmentWearMessage, CureStunMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage, AttackExpiredMessage, EquipmentWearMessage, CureStunMessage, PhysicalInactionMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -244,8 +244,13 @@ public sealed class BattleSceneState
     public bool HasReaction => _action is not null && ReactionIndex < Action.Reactions.Count;
     public ActorRef? ReactionTarget => HasReaction ? Reaction.Target : null;
     public ActorRef Actor => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
-    public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? ReactionTarget;
-    public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.AttackExpiredMessage ? "attack-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" : Laser is not null ? "prism-laser" : Reaction.Action;
+    public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ??
+        CounterExpiry?.Actor ?? ReactionTarget ?? _action?.Inaction?.Target;
+    public bool IsCurseRecoil => HasReaction && Reaction.Kind == BattleReactionKind.CurseRecoil;
+    public bool CurseStoppedAttack => _action?.Inaction?.DueToCurse == true;
+    public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.AttackExpiredMessage ? "attack-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" :
+        _action?.Inaction is { } stopped ? (stopped.DueToCurse ? "curse-inaction" : "stun-inaction") :
+        Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
     public bool ShowsStunCure => Phase == BattleScenePhase.CureStunMessage ||
         Phase == BattleScenePhase.ResultMessage && HasReaction && Reaction.ClearedStatus == PoisonCureRules.Stun;
@@ -295,6 +300,7 @@ public sealed class BattleSceneState
     public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : Item is not null || Spell is not null || FriendlySupport
         ? !Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
+        : IsCurseRecoil ? Action.Reactions[ReactionIndex - 1].Target
         : AbsorbsMp ? Action.Reactions[0].Target : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
     public bool Critical => HasReaction && Reaction.Critical;
     public int HpChange => !HasReaction ? 0 : Reaction.HpAfter - Reaction.HpBefore;
@@ -315,7 +321,7 @@ public sealed class BattleSceneState
     public bool CanSuppressHitCoinMessage => Phase == BattleScenePhase.GoldMessage ||
         Phase == BattleScenePhase.ResultMessage && ReactionKind == "Damage" && !Critical &&
         ActionKind is "physical-first" or "physical-second" or "physical-counter";
-    public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or
+    public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or BattleScenePhase.PhysicalInactionMessage or
         BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.DeathMessage
         or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage
         or BattleScenePhase.ItemDroppedMessage or BattleScenePhase.ItemReceivedMessage or BattleScenePhase.EquipmentWearMessage;
@@ -341,7 +347,7 @@ internal static class BattleSceneContinuation
         // Computation facts can be observed now; persistent HP/reward facts are emitted only
         // when their commands execute. The typed action, not these observations, owns replay.
         foreach (var effect in construction ?? action.ConstructionEffects)
-            if (effect.Kind is not ("hp" or "mp" or "dodge" or "ineffective" or "critical" or "physical-first" or "physical-second" or "physical-counter"))
+            if (effect.Kind is not ("hp" or "mp" or "dodge" or "ineffective" or "critical" or "physical-first" or "physical-second" or "physical-counter" or "curse-recoil"))
                 observations.Add(Observe(effect, ++sequence, revision));
         observations.Add(new(++sequence, revision, "scene-prepared", action.Actor));
         bool authoredAura = action.Spell?.IsAura == true && sceneContent is null && action.Prepared.GetActor(action.Actor).IsAlly;
@@ -425,7 +431,13 @@ internal static class BattleSceneContinuation
         int noticeIndex = scene.NoticeIndex;
         switch (scene.Phase)
         {
-            case BattleScenePhase.Initialize: next = BattleScenePhase.ActionMessage; break;
+            case BattleScenePhase.Initialize:
+                next = scene.Action.Inaction is null ? BattleScenePhase.ActionMessage : BattleScenePhase.PhysicalInactionMessage;
+                break;
+            case BattleScenePhase.PhysicalInactionMessage:
+                observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.Target));
+                next = BattleScenePhase.End;
+                break;
             case BattleScenePhase.ActionMessage:
                 observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.ReactionTarget));
                 if (scene.Spell is not null || scene.AttackSpell is not null && !scene.UsesAttackItem && !scene.IsMonsterBreath || scene.SupportSpell is not null && scene.EquipmentItem is null || scene.IsSilencedCast)
@@ -463,6 +475,9 @@ internal static class BattleSceneContinuation
                     if (scene.HpChange != 0) observations.Add(new(++sequence, revision, "hp", scene.Target, scene.Reaction.HpBefore, scene.Reaction.HpAfter));
                     if (scene.MpChange != 0) observations.Add(new(++sequence, revision, "mp", scene.Target, scene.Reaction.MpBefore, scene.Reaction.MpAfter));
                 }
+                if (scene.IsCurseRecoil)
+                    observations.Add(new(++sequence, revision, "curse-recoil", scene.Actor,
+                        scene.Reaction.HpBefore, scene.Reaction.HpAfter, Target: scene.Target));
                 if (scene.IsAura)
                     observations.Add(new(++sequence, revision, "healing-recovery", scene.Actor,
                         scene.Reaction.HpBefore, scene.Reaction.HpAfter, Target: scene.ReactionTarget));
@@ -538,6 +553,7 @@ internal static class BattleSceneContinuation
                 {
                     index++;
                     next = scene.EquipmentItem is not null ? BattleScenePhase.TargetExit :
+                        scene.Action.Reactions[index].Kind == BattleReactionKind.CurseRecoil ||
                         scene.Laser is not null || scene.AttackSpell is not null || scene.SupportSpell is not null
                             ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage;
                     break;

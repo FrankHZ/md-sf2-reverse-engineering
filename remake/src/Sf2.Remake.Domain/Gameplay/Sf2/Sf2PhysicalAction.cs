@@ -119,10 +119,22 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             }
         }
 
+        if (CurseRules.Present(actor.Status))
+        {
+            bool curseStops = Roll("curse-inaction", CurseRules.InactionRange, actorRef, targetRef) == 0;
+            // Scene initialization draws for both bits before choosing the visible cause.
+            // Ordinary stun turn skipping is owned by BattleAdvancer.
+            bool stunStops = (actor.Status & PoisonCureRules.Stun) != 0 &&
+                Roll("stun-inaction", 4, actorRef, targetRef) == 0;
+            if (curseStops || stunStops)
+                return new(PreparedState(current.Gold), actorRef, destination, [], null, effects.AsReadOnly(), [])
+                { Inaction = new(targetRef, DueToCurse: curseStops) };
+        }
+
         bool ineffective = current.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         var first = Hit("physical-first", counter: false);
         bool counterRequested = first.CounterRolled;
-        if (targetHp > 0 && first.DoubleRolled)
+        if (actorHp > 0 && targetHp > 0 && first.DoubleRolled)
         {
             var second = Hit("physical-second", counter: false);
             // Source DetermineDoubleAndCounter only sets successful toggles. A failed second
@@ -130,7 +142,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             counterRequested |= second.CounterRolled;
         }
         var counterRange = BattleEquipment.Physical(target)!;
-        bool counterPerformed = targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC1) == 0 &&
+        bool counterPerformed = actorHp > 0 && targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC1) == 0 &&
             !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
@@ -163,12 +175,12 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         }
         if (allyDead && ally.Defeats is null)
             throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
-        // Admitted equipment changes effective ATT only. Status-free after-turn does not change this snapshot;
-        // the second faction check therefore has the same continuing result as the first.
-        var prepared = inventory.With(actors: inventory.Actors.Select(a => a.Actor == actorRef
-            ? a.With(position: destination) : a), mainSeed: seed, gold: gold);
-        return new(prepared, actorRef, destination, reactions.AsReadOnly(), reward,
+        return new(PreparedState(gold), actorRef, destination, reactions.AsReadOnly(), reward,
             effects.AsReadOnly(), []);
+
+        EngineBattleState PreparedState(uint? goldAfter) =>
+            inventory.With(actors: inventory.Actors.Select(a => a.Actor == actorRef
+                ? a.With(position: destination) : a), mainSeed: seed, gold: goldAfter);
 
         (bool DoubleRolled, bool CounterRolled) Hit(string kind, bool counter)
         {
@@ -189,6 +201,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC1) != 0,
                 ineffective: !counter && ineffective, silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,
                 stunCritical: profile.Critical.InflictsStun, archerBonus: archerBonus);
+            int impactIndex = reactions.Count;
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
                 hp, strike.Hp, defender.Mp, defender.Mp, strike.Critical && !strike.Ineffective, strike.Damage,
@@ -200,8 +213,21 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
-            bool twice = strike.Hp > 0 && Roll("double", profile.Critical.DoubleChanceDenominator, attacker.Actor, defender.Actor) == 0;
-            bool response = strike.Hp > 0 && Roll("counter", defender.Definition.Physical!.Critical.CounterChanceDenominator, attacker.Actor, defender.Actor) == 0;
+            ushort attackerHp = counter ? targetHp : actorHp;
+            BattleReaction? recoil = null;
+            if (CurseRules.CanRecoil(attacker, strike.Dodged, strike.Hp) &&
+                Roll("curse-recoil", CurseRules.RecoilRange, attacker.Actor, defender.Actor) != 0)
+            {
+                int damage = CurseRules.RecoilDamage(strike.DamageForRecoil);
+                ushort after = (ushort)Math.Max(0, attackerHp - damage);
+                recoil = new(attacker.Actor, attacker.Actor, "curse-recoil", BattleReactionKind.CurseRecoil,
+                    attackerHp, after, attacker.Mp, attacker.Mp, Amount: damage);
+                reactions.Add(recoil);
+                attackerHp = after;
+            }
+            bool canFollow = attackerHp > 0 && strike.Hp > 0;
+            bool twice = canFollow && Roll("double", profile.Critical.DoubleChanceDenominator, attacker.Actor, defender.Actor) == 0;
+            bool response = canFollow && Roll("counter", defender.Definition.Physical!.Critical.CounterChanceDenominator, attacker.Actor, defender.Actor) == 0;
             if (strike.Dodged) effects.Add(new("dodge", defender.Actor, hp, hp));
             else if (strike.Ineffective) effects.Add(new("ineffective", defender.Actor, hp, hp));
             else
@@ -209,15 +235,16 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 if (strike.Critical) effects.Add(new("critical", attacker.Actor, Target: defender.Actor));
                 effects.Add(new("hp", defender.Actor, hp, strike.Hp));
             }
-            if (counter) actorHp = strike.Hp;
-            else targetHp = strike.Hp;
+            if (recoil is not null)
+                effects.Add(new(recoil.Action, recoil.Actor, recoil.HpBefore, recoil.HpAfter, Target: recoil.Target));
+            (actorHp, targetHp) = counter ? (strike.Hp, attackerHp) : (attackerHp, strike.Hp);
             // WriteBattlesceneScript calls DropEnemyItem after each effect, before
             // second/counter dispatch and GiveExpAndGold. HP/status playback is later.
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), attacker.Actor,
                 defender.Actor, strike.Hp == 0);
             inventory = dropped.Battle; seed = inventory.MainSeed;
             effects.AddRange(dropped.Effects);
-            reactions[^1] = reactions[^1] with { Receipt = dropped.Receipt };
+            reactions[impactIndex] = reactions[impactIndex] with { Receipt = dropped.Receipt };
             return (twice, response);
         }
 

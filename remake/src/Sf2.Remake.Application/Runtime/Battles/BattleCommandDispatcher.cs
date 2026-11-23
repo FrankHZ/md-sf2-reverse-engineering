@@ -167,7 +167,7 @@ internal static class BattleCommandDispatcher
         var action = BattleChoices.Prepare(rules, selection.AtConfirmedStop(current.Battle), selection.Actor, selection.Preview.Destination,
             selected, selection.Target, sceneContent, requireSceneContent);
         if (action.Retreat is not null) return BattleRetreatContinuation.Begin(current, action);
-        if (action.Reactions.Count > 0 || action.Silenced is not null)
+        if (action.Reactions.Count > 0 || action.Silenced is not null || action.Inaction is not null)
             return BattleSceneContinuation.Begin(current, action, [], sceneContent: sceneContent);
         var observations = new List<SessionObservation>();
         return BattleAdvancer.Advance(BattleActionCommitter.Publish(current, action.Prepared, selection.Actor,

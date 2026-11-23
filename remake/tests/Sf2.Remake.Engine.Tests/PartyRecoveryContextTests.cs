@@ -138,7 +138,7 @@ public sealed class PartyRecoveryContextTests
     {
         var session = Start("shop-supplies"); var current = session.Current; var world = current.Exploration!;
         var party = Context(world.Party, world.Party.Actors.Select(a => a with
-            { Status = a.Actor.Value == "guard-a" ? (ushort)4 : (ushort)0 }));
+            { Status = a.Actor.Value == "guard-a" ? (ushort)0x10 : (ushort)0 }));
         var programs = session.Definition.Exploration!;
         var program = new StoryProgram("reset-only", [new ResetPartyBattleStats(), new EndProgram()]);
         var exploration = new ExplorationDefinition(programs.Maps.Values, programs.Programs.Values.Append(program), programs.Texts);

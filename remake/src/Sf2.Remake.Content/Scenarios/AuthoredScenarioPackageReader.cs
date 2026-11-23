@@ -462,6 +462,7 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
             _ => throw new BattleRuleException("actor-status", "start.actors.status", true),
         };
         if (status == "none") return 0;
+        if (status == "curse") return CurseRules.Mask;
         ushort packed = 0;
         foreach (string part in status.Split('-'))
         {

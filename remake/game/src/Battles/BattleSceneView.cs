@@ -235,7 +235,7 @@ internal sealed partial class BattleSceneView : Control
             PresentMessage(state);
             _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
             if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _blastSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
-            if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Damage") _audio?.PlayEffect(target.IsAlly ? 81 : 83);
+            if (state.Phase == BattleScenePhase.Reaction && (state.ReactionKind == "Damage" || state.IsCurseRecoil)) _audio?.PlayEffect(target.IsAlly ? 81 : 83);
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Recovery") _audio?.PlayEffect(113);
             if (state.GrowthNotice is { Kind: BattleGrowthNoticeKind.Level }) _audio?.PlayEffect(102);
             if (state.Phase == BattleScenePhase.End) _audio?.BeginSceneEnd();
@@ -354,7 +354,7 @@ internal sealed partial class BattleSceneView : Control
             duration = 0.5;
             _audio?.FadeOut(_elapsed / duration);
         }
-        else if (state.Phase is BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter)
+        else if (!state.IsCurseRecoil && state.Phase is (BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter))
         {
             // bscWait $1E then bsc07/SwitchAllyBattlesprite: source coordinates
             // minus the VDP 128 bias, steps capped at 16. Presentation only;
@@ -504,6 +504,7 @@ internal sealed partial class BattleSceneView : Control
         var battle = _session.Current.Battle;
         var actor = battle.GetActor(state.Actor);
         var target = !state.IsAfterTurnNotice && state.Target is { } id ? battle.GetActor(id) : null;
+        if (state.IsCurseRecoil) target = null;
         // Recovery occupies one actual scene side, switching on Application's displayed participant.
         if (state.Spell is not null || state.Item is not null || state.FriendlySupport)
         {
@@ -534,6 +535,13 @@ internal sealed partial class BattleSceneView : Control
     {
         _messageFallback = "";
         if (Suppressed(state)) return "";
+        if (state.Phase == BattleScenePhase.PhysicalInactionMessage)
+            return LocalizedMessage(state.CurseStoppedAttack ? "battle.scene.curse-inaction" : "battle.scene.stun-inaction",
+                ActorName(state.Actor));
+        if (state.IsCurseRecoil && state.Phase == BattleScenePhase.ResultMessage)
+            return LocalizedMessage("battle.scene.curse-recoil", ActorName(state.Actor), state.Amount);
+        if (state.IsCurseRecoil && state.Phase == BattleScenePhase.DeathMessage)
+            return LocalizedMessage("battle.scene.ally-death", ActorName(state.Actor));
         if (state.Healing is { } message && (!GameText.Ready || message.Display is null ||
             string.IsNullOrEmpty(message.Display.CasterName) || string.IsNullOrEmpty(message.Display.TargetName) ||
             message.Display.RecoveredHp < 0))

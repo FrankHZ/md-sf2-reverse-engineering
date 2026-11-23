@@ -3,13 +3,14 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Domain.Battles;
 
-internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resource, Status }
+internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resource, Status, CurseRecoil }
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
     BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null, ushort? InflictedStun = null,
     ushort ClearedStatus = 0);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
+internal sealed record PhysicalInaction(ActorRef Target, bool DueToCurse);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
     MapPosition Destination, IReadOnlyList<MapPosition> Path, ActorRef? Target = null, bool QueueOnly = false, BattleActionRef? ChosenAction = null)
 {
@@ -128,9 +129,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
     HealingItemDefinition? Item = null, HealingSpellDefinition? Spell = null, RetreatPayment? Retreat = null, PrismLaserShot? Laser = null, AttackSpellDefinition? AttackSpell = null, SupportSpellDefinition? SupportSpell = null, SilencedCast? Silenced = null, int? AttackItemSlot = null, ushort? CasterCostStatus = null,
     AttackItemDefinition? AttackItem = null, SupportItemUse? EquipmentUse = null)
 {
+    internal PhysicalInaction? Inaction { get; init; }
+
     internal void Validate(EngineBattleState before, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, BattleActionAdmission admission)
     {
+        Require(Inaction is null || action.Kind == BattleActionKind.Physical && Silenced is null);
         Require(CasterCostStatus == (action.Kind == BattleActionKind.SupportSpell && SupportSpell is not null
             ? before.GetActor(actor).Status : (ushort?)null));
         Require(EquipmentUse?.Definition == admission.SupportItem && (EquipmentUse is null || action.Kind == BattleActionKind.Item));
@@ -151,6 +155,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         if (conversion is not null) Require(ConstructionEffects.FirstOrDefault() == conversion);
         Require(ConstructionEffects.Count(e => e.Kind == "rng-kiwi-conversion") == (conversion is null ? 0 : 1));
         bool converts = conversion?.RandomValue == 0;
+        Require(!converts || Inaction is null);
         bool usesDamageEffect = action.Kind == BattleActionKind.AttackSpell || AttackItem is not null || converts;
         Require(usesDamageEffect || action.Kind == BattleActionKind.Physical || Reactions.All(reaction => reaction.Receipt is null));
         Require(usesDamageEffect == (AttackSpell is not null));
@@ -189,7 +194,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                         AttackSpell == breath && AttackItemSlot is null);
                     ValidateAttackSpell(before, actor, destination, breath!, victim, firstDraw: 1);
                 }
-                else ValidatePhysical(before, actor, destination, victim);
+                else ValidatePhysical(before, actor, destination, victim, conversion is null ? 0 : 1);
                 break;
             case BattleActionKind.Item when action.Spell is null && action.ItemSlot is { } attackSlot &&
                 target is { } attackTarget && AttackItem is { } attackItem:
@@ -307,19 +312,38 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         if (recipient.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
     }
 
-    private void ValidatePhysical(EngineBattleState before, ActorRef actorRef, MapPosition destination, ActorRef targetRef)
+    private void ValidatePhysical(EngineBattleState before, ActorRef actorRef, MapPosition destination, ActorRef targetRef,
+        int cursor)
     {
         var actor = before.GetActor(actorRef); var target = before.GetActor(targetRef);
         Require(actorRef != targetRef && actor.Faction != target.Faction && actor.Hp > 0 && target.Hp > 0 &&
-            target.Position is not null && Spell is null && Item is null && Reactions.Count is > 0 and <= 3 && CompletionEffects.Count == 0);
+            target.Position is not null && Spell is null && Item is null && CompletionEffects.Count == 0);
+        int openingStart = cursor;
+        bool curseStops = CurseRules.Present(actor.Status) && OpeningDraw("rng-curse-inaction", CurseRules.InactionRange) == 0;
+        bool stunStops = CurseRules.Present(actor.Status) && (actor.Status & PoisonCureRules.Stun) != 0 &&
+            OpeningDraw("rng-stun-inaction", 4) == 0;
+        Require(ConstructionEffects.Count(effect => effect.Kind is "rng-curse-inaction" or "rng-stun-inaction") == cursor - openingStart);
+        if (curseStops || stunStops)
+        {
+            Require(Inaction == new PhysicalInaction(targetRef, DueToCurse: curseStops) && Reactions.Count == 0 &&
+                Reward is null && ConstructionEffects.Count == cursor);
+            ValidateState(before, actorRef, destination);
+            ValidateRandom(before, _ => true);
+            return;
+        }
+
+        Require(Inaction is null && Reactions.Count is > 0 and <= 6);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
         bool ineffective = before.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         bool counter = false;
+        int strikes = 0, dropDraws = 0, recoilDraws = 0;
+        List<BattleEffect> facts = [];
+        var inventory = before;
         for (int index = 0; index < Reactions.Count; index++)
         {
             var reaction = Reactions[index];
             bool reversed = reaction.Actor == targetRef && reaction.Target == actorRef;
-            Require(!counter && (reversed ? index > 0 : index < 2 && reaction.Actor == actorRef && reaction.Target == targetRef));
+            Require(!counter && (reversed ? strikes > 0 : strikes < 2 && reaction.Actor == actorRef && reaction.Target == targetRef));
             counter = reversed;
             var attacker = reversed ? target : actor; var defender = reversed ? actor : target;
             var profile = BattleEquipment.Physical(attacker) ?? throw new BattleRuleException("physical-definition", "actor.physical", true);
@@ -327,7 +351,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             ushort hp = reversed ? actorHp : targetHp;
             ushort status = defender.Status;
             Require(actorHp > 0 && targetHp > 0 && BattleRange.Contains(from, to, profile.MinimumRange, profile.MaximumRange) &&
-                reaction.Action == (reversed ? "physical-counter" : index == 0 ? "physical-first" : "physical-second") &&
+                reaction.Action == (reversed ? "physical-counter" : strikes == 0 ? "physical-first" : "physical-second") &&
                 reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Dodge or BattleReactionKind.Ineffective && reaction.HpBefore == hp &&
                 reaction.Amount >= 0 && reaction.HpAfter == Math.Max(0, hp - reaction.Amount) &&
                 reaction.MpBefore == defender.Mp && reaction.MpAfter == defender.Mp &&
@@ -350,21 +374,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             Require(reaction.InflictedSilence is null || profile.Critical.InflictsSilence &&
                 reaction.Kind is BattleReactionKind.Damage or BattleReactionKind.Ineffective && reaction.HpAfter > 0 &&
                 !reaction.Critical && SilenceRules.HasSpells(defender) && reaction.InflictedSilence == (ushort)(status | SilenceRules.Mask));
-            if (reversed) actorHp = reaction.HpAfter; else targetHp = reaction.HpAfter;
-        }
-        var ally = actor.IsAlly ? actor : target; var enemy = actor.IsAlly ? target : actor;
-        bool allyDead = (actor.IsAlly ? actorHp : targetHp) == 0;
-        bool enemyDead = (actor.IsAlly ? targetHp : actorHp) == 0;
-        if (enemyDead && before.Gold is null) throw new BattleRuleException("unspecified-gold", "battle.gold", true);
-        if (enemyDead && ally.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
-        if (allyDead && ally.Defeats is null) throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
-        Require(enemyDead ? Prepared.Gold is not null : Prepared.Gold == before.Gold);
-        ValidateReward(before, !allyDead && Reactions.Any(reaction => reaction.Actor == ally.Actor) ? ally.Actor : null);
-        List<BattleEffect> facts = [];
-        var inventory = before;
-        int cursor = 0, dropDraws = 0;
-        foreach (var reaction in Reactions)
-        {
+            strikes++;
+            ushort attackerHp = reversed ? targetHp : actorHp;
             facts.Add(new(reaction.Action, reaction.Actor, Target: reaction.Target));
             if (reaction.Kind == BattleReactionKind.Dodge)
                 facts.Add(new("dodge", reaction.Target, reaction.HpBefore, reaction.HpAfter));
@@ -375,14 +386,42 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 if (reaction.Critical) facts.Add(new("critical", reaction.Actor, Target: reaction.Target));
                 facts.Add(new("hp", reaction.Target, reaction.HpBefore, reaction.HpAfter));
             }
-            // The selected rule may choose strike algorithms, but it cannot invent
-            // inventory writes or move the source drop helper past another strike/reward.
-            var lastStrikeFact = facts[^1];
-            while (cursor < ConstructionEffects.Count && ConstructionEffects[cursor] != lastStrikeFact) cursor++;
+            int impactStart = cursor;
+            while (cursor < ConstructionEffects.Count && ConstructionEffects[cursor] != facts[^1]) cursor++;
             Require(cursor < ConstructionEffects.Count);
-            uint seed = before.MainSeed;
-            foreach (var effect in ConstructionEffects.Take(++cursor))
-                if (effect.Kind.StartsWith("rng-", StringComparison.Ordinal)) seed = checked((uint)effect.After!.Value);
+            var impact = ConstructionEffects.Skip(impactStart).Take(cursor++ - impactStart).ToArray();
+            var recoilRolls = impact.Where(effect => effect.Kind == "rng-curse-recoil").ToArray();
+            bool canRecoil = CurseRules.CanRecoil(attacker, reaction.Kind == BattleReactionKind.Dodge, reaction.HpAfter);
+            Require(recoilRolls.Length == (canRecoil ? 1 : 0));
+            if (canRecoil)
+            {
+                var roll = recoilRolls[0];
+                recoilDraws++;
+                Require(roll.Actor == attacker.Actor && roll.Target == defender.Actor &&
+                    roll.RandomRange == CurseRules.RecoilRange &&
+                    !impact.TakeWhile(effect => effect != roll).Any(IsFollowUpDraw));
+                if (roll.RandomValue != 0)
+                {
+                    Require(++index < Reactions.Count);
+                    var recoil = Reactions[index];
+                    Require(recoil.Amount > 0 && (reaction.Kind != BattleReactionKind.Damage ||
+                        recoil.Amount == CurseRules.RecoilDamage(reaction.Amount)));
+                    ushort after = (ushort)Math.Max(0, attackerHp - recoil.Amount);
+                    Require(recoil == new BattleReaction(attacker.Actor, attacker.Actor, "curse-recoil",
+                        BattleReactionKind.CurseRecoil, attackerHp, after, attacker.Mp, attacker.Mp, Amount: recoil.Amount));
+                    Require(after > 0 || !impact.Any(IsFollowUpDraw));
+                    attackerHp = after;
+                    var recoilFact = new BattleEffect(recoil.Action, recoil.Actor, recoil.HpBefore, recoil.HpAfter, Target: recoil.Target);
+                    Require(cursor < ConstructionEffects.Count && ConstructionEffects[cursor++] == recoilFact);
+                    facts.Add(recoilFact);
+                }
+            }
+            (actorHp, targetHp) = reversed ? (reaction.HpAfter, attackerHp) : (attackerHp, reaction.HpAfter);
+
+            // Loot belongs to the opposing strike, after recoil and before the next strike.
+            var lastDraw = ConstructionEffects.Take(cursor).LastOrDefault(effect =>
+                effect.Kind.StartsWith("rng-", StringComparison.Ordinal));
+            uint seed = checked((uint)(lastDraw?.After ?? before.MainSeed));
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), reaction.Actor,
                 reaction.Target, reaction.HpAfter == 0);
             Require(reaction.Receipt == dropped.Receipt && ConstructionEffects.Skip(cursor).Take(dropped.Effects.Count).SequenceEqual(dropped.Effects));
@@ -391,13 +430,32 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             facts.AddRange(dropped.Effects.Where(effect => !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)));
             dropDraws += dropped.Effects.Count(effect => effect.Kind == "rng-item-drop");
         }
-        Require(ConstructionEffects.Count(effect => effect.Kind == "rng-item-drop") == dropDraws);
+        Require(ConstructionEffects.Count(effect => effect.Kind == "rng-item-drop") == dropDraws &&
+            ConstructionEffects.Count(effect => effect.Kind == "rng-curse-recoil") == recoilDraws);
+        var ally = actor.IsAlly ? actor : target;
+        bool allyDead = (actor.IsAlly ? actorHp : targetHp) == 0;
+        bool enemyDead = (actor.IsAlly ? targetHp : actorHp) == 0;
+        if (enemyDead && before.Gold is null) throw new BattleRuleException("unspecified-gold", "battle.gold", true);
+        if (enemyDead && ally.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
+        if (allyDead && ally.Defeats is null) throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
+        Require(enemyDead ? Prepared.Gold is not null : Prepared.Gold == before.Gold);
+        ValidateReward(before, !allyDead && Reactions.Any(reaction => reaction.Actor == ally.Actor) ? ally.Actor : null);
         ValidateState(before, actorRef, destination, allowGold: enemyDead, inventory: inventory);
         if (enemyDead) facts.Add(new("gold", ally.Actor, before.Gold, Prepared.Gold));
         Require(ConstructionEffects.Where(effect => !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)).SequenceEqual(facts));
         ValidateRandom(before, effect => !effect.Kind.StartsWith("rng-", StringComparison.Ordinal) ||
             (effect.Actor == actorRef || effect.Actor == targetRef) &&
             (effect.Target is null || effect.Target != effect.Actor && (effect.Target == actorRef || effect.Target == targetRef)));
+
+        ushort OpeningDraw(string kind, ushort range)
+        {
+            Require(cursor < ConstructionEffects.Count);
+            var draw = ConstructionEffects[cursor++];
+            Require(draw.Kind == kind && draw.RandomRange == range && draw.Actor == actorRef && draw.Target == targetRef);
+            return draw.RandomValue ?? throw new InvalidOperationException("Missing opening draw value.");
+        }
+
+        static bool IsFollowUpDraw(BattleEffect effect) => effect.Kind is "rng-double" or "rng-counter";
     }
 
     private void ValidateItem(EngineBattleState before, ActorRef actorRef, MapPosition destination,
