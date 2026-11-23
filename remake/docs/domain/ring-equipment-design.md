@@ -184,6 +184,103 @@ for Chirrup Sandals and owns its pickup, footstep sound and special Depot descri
 [Promotion caller dependencies](../application/church-promotion-design.md#remake-decision) ·
 [Sandals reach](../content/special-equipment-reach.md)
 
+## Black Ring admission and physical curse
+
+[#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) retains the High-rigor
+scope of one class-legal item from the accepted Battle26 receipt through Equip, custody, Cure,
+Use, Repair and cold Continue. The first eligible controlled consumer is a WIZ from the accepted
+ordinary promotion path. The current player grant is bare carry. A failed class check applies
+equally to Equip and Use. The item-origin BLAZE 2 and wear contract belongs to the
+[equipment Use owner](equipment-use-repair-design.md#black-ring-attack-item-and-wear-boundary).
+[Battle26 receipt](../application/battle26-higins.md) ·
+[WIZ promotion](../application/ordinary-promotion-classes.md#wiz-ordinary-reproduction)
+
+**Confirmed (fixed USA source and bounded refresh evidence).** Item 24 has WIZ/SORC eligibility,
+ATT +10 while worn, and independent CURSED and BREAKABLE flags. After retaining other status bits,
+stat refresh derives ally CURSE from worn equipment, including damaged equipment. Confirming a
+different ring must respect the currently worn cursed slot, even if the candidate is another
+copy of the same item. Taking off the weapon, moving another slot, or carrying a bare cursed copy
+does not remove the ring's contribution. The Church reads the member's CURSE status after the
+poison and stun passes. It sums each held cursed item's price shifted right by two, including
+bare copies. One Black Ring costs 1,250 gold, and two cost 2,500 even if only one is worn.
+Affordability includes equality. Treatment clears only the worn bits of cursed definitions,
+retains damage and inventory order, and refreshes stats with the payment. A bare-only member
+without CURSE gets no such offer. The retained runtime witness checks the Church transaction
+with Dark Sword. The Black Ring price and duplicate case follow the source loop.
+[Item definition](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm#L263-L271) ·
+[Refresh and observed ATT stacking](../../../docs/research/party/ally-growth.md#semantics-boundary) ·
+[Church cost and payment](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/church/churchactions_1.asm#L197-L265) ·
+[Church runtime seam](../../../docs/design/contracts/party/service-interactions.md#church-cure-runtime-seam)
+
+**Confirmed (fixed USA action source).** For the opening physical Attack the scene initializer
+draws range 4 for CURSE and then independently draws for STUN if present. Zero on the curse draw
+produces curse inaction before the strike and reward. Magic and Item Use take separate
+initializer branches and skip that curse draw. In each executed physical strike, a dodge or a
+lethal hit on the defender skips curse recoil. After a hit that leaves the defender alive, an
+ally attacker with CURSE draws range 2 before the double/counter decision. A nonzero result deals
+self-damage of floor(final strike damage / 8) + 1. Lethal recoil ends that sequence before the
+next strike and skips the dead ally's EXP. A dispatched follow-up strike reaches the same recoil
+helper. An opening inaction check belongs to scene initialization, so it does not repeat inside
+a double or counter. Ordinary BLAZE 2 Item Use reaches CastSpell and equipment wear through
+its own route. **Unknown** covers the ordinary original WIZ trajectory, including its precise
+presentation and timing. The action-source finding does not depend on that trajectory.
+[Action initialization](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/initbattlesceneproperties.asm#L82-L144) ·
+[Action dispatch and follow-ups](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm#L76-L182) ·
+[Strike branches](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/attack.asm#L34-L58) ·
+[Recoil arithmetic](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/inflictcursedamage.asm#L33-L60) ·
+[Reward exclusion](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_2.asm#L38-L65)
+
+### Architecture decision for this admission
+
+Require a separate, bounded physical-curse prerequisite before enabling the worn word. For
+example, a living WIZ wears word 152 and a rod, selects an adjacent target and confirms Attack.
+The current physical status check rejects CURSE through the common supported-status mask. An
+enemy's ordinary attack on that WIZ can hit the same guard at the target. Adding bit 4 to the mask
+alone would allow strikes to skip both original curse branches. The scalar strike currently rolls
+double/counter before returning to the actor rule. Its action validator requires one to three
+opposing strikes and its scene consumes those reactions. Legal curse inaction has zero strikes,
+and lethal recoil targets the resolved attacker and can preempt a scheduled follow-up. This
+requires an explicit outcome at the existing physical action, validation and scene/death
+boundaries. For a controlled WIZ, exercise zero-strike inaction, dodge and lethal-defender skips,
+surviving recoil before follow-up rolls, and lethal recoil on an opening strike and an ally
+counter. Check ordered seed, HP, EXP, death/return and the next owner of input. STUN/SILENCE
+remain under their existing contracts. Main-gate owns the prerequisite's scope and sequencing.
+[Status mask](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SilenceRules.cs) ·
+[Physical action](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2PhysicalAction.cs) ·
+[Strike construction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/PhysicalStrikeRules.cs) ·
+[Action validation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
+[Scene continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
+
+Reuse the existing four slot words, class resolution, inventory mutation and persisted status
+word. Resolve curse metadata into typed equipment terms. The same equipped-cursed predicate can
+support Equip replacement, removal, battle Give (including exchange), Discard and the existing
+Field, Shop and Caravan custody guards. Keep these checks at selected-slot commit boundaries so a
+worn ring cannot block giving a different slot. Application owns Church offer, stale-selection
+validation and atomic payment, using the shared cursed-unequip and refresh operation. Godot
+consumes the existing state and typed action results. Resolve statuses from gear on actual
+refresh and keep detached Continue validation consistent with the serialized status, gear and
+last-applied counters. Today the field return policy rejects bit 4, the battle restore range check
+rejects it through the supported-status mask, and battle death clears status before its refresh.
+Original death cleanup clears status and then calls stat refresh, which can rederive CURSE
+from retained worn gear. An admission slice must cover these callers so the same legal WIZ
+can die, exit, save and resume.
+No wire version or independent curse store is needed. Keep old bare words valid.
+[Equipment rule owner](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs) ·
+[Church transaction](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs) ·
+[Return policy](../../src/Sf2.Remake.Application/Gameplay/Sf2/Sf2OutcomeReturnPolicy.cs) ·
+[Source death refresh](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/processkilledcombatants.asm#L85-L106) ·
+[Remake death cleanup](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDeathBatch.cs) ·
+[Battle restore](../../src/Sf2.Remake.Domain/Battles/State/BattleContinuationRestore.cs) ·
+[Field save reconstruction](../../src/Sf2.Remake.Application/Runtime/Persistence/FieldPartySnapshot.cs)
+
+[#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) owns calling the shared
+cursed-unequip operation from DETOX 3 and preserving worn gear on DETOX 2. Keep its current
+unsupported curse boundary until that action can commit status and gear together. Coordinate
+[#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) on action publication,
+status masks and death processing before either slice writes them. Curse admission requires the
+physical behavior and save/return closure without depending on the hostile-spell repertoire.
+[DETOX design](detox-ranks-design.md) · [Hostile spells](hostile-spells-design.md)
+
 ## Acceptance through Battle26
 
 - **Power. Confirmed** remake receipt and carry. Battle10 Witch 129, once bit 4, awarded Jaha
