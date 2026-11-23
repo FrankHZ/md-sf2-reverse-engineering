@@ -412,8 +412,11 @@ Controlled engine cases inject status inside the simulation to exercise the comp
 No save field or format changes. The localized expiry message compiles in the adapter.
 Growth from a temporary ally's earned EXP uses the shared battle growth and refresh path.
 It preserves the live counter through the threshold and level-up before after-turn expiry.
-The battle-to-field projection clears the rank-1 counter on returning player allies even when
-an ending skips that turn's expiry. Field growth and recovery keep their existing admission rules.
+The battle return recovery policy clears the rank-1 counter when an eligible ally recovers,
+regardless of its control mode. Victory recovery precedes the outcome program, retreat recovery
+follows action closure, and defeat retains the word through dialogue until leader revival and
+eligible party recovery. Allies ineligible for recovery retain their carried values. Field growth
+and field-only recovery keep their existing admission rules.
 Ordinary SourceEnemyAi status admission is a separate binding dependency. Ordinary cast,
 native automatic turn and active cold Continue remain unverified at this stage.
 

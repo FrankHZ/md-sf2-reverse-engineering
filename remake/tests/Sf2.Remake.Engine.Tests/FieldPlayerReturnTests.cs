@@ -27,10 +27,19 @@ public sealed class FieldPlayerReturnTests
             Assert.True(entered.HasBattleControl);
             Assert.Equal(new FieldPlayerBinding(new(id), speed), entered.Story.FieldPlayer);
             var battle = entered.Battle;
-            // Valid terminal battle states isolate projection from combat damage calculation.
+            // Controlled terminal states isolate recovery from the damage and cleanup that end the battle.
+            var leader = battle.Definition.Outcome!.Leader;
             var terminal = battle.With(actors: battle.Actors.Select(actor =>
-                kind == BattleOutcomeKind.Victory && !actor.IsAlly || kind == BattleOutcomeKind.Defeat && actor.IsAlly
-                    ? actor.With(hp: 0) : muddled && actor.IsAlly ? actor.With(status: 0x30) : actor));
+            {
+                bool dead = kind switch
+                {
+                    BattleOutcomeKind.Victory => !actor.IsAlly || muddled && actor.Actor != leader,
+                    BattleOutcomeKind.Defeat => actor.IsAlly && (!muddled || actor.Actor == leader),
+                    _ => muddled && actor.IsAlly && actor.Actor != leader,
+                };
+                return actor.With(hp: dead ? (ushort)0 : actor.Hp,
+                    status: muddled && actor.IsAlly ? (ushort)0x30 : actor.Status);
+            }));
             var snapshot = new SessionSnapshot(entered.SessionId, entered.Revision, entered.ObservationSequence,
                 new ActiveBattle(terminal, null), entered.Story, SessionStopReason.SimulationWait);
             var result = kind == BattleOutcomeKind.Retreat
@@ -50,10 +59,23 @@ public sealed class FieldPlayerReturnTests
                 Assert.Equal(actor.Defeats, carried.Defeats);
                 Assert.Equal(actor.Progress, carried.Progress);
                 Assert.Equal(actor.SourceLoadout, carried.SourceLoadout);
-                Assert.Equal(0, carried.Status);
+                Assert.Equal(kind == BattleOutcomeKind.Defeat || actor.Hp == 0 ? actor.Status : 0, carried.Status);
+                if (kind == BattleOutcomeKind.Defeat) Assert.Equal(actor.Hp, carried.Hp);
+            }
+            if (kind == BattleOutcomeKind.Defeat)
+            {
+                Assert.Equal(ProgramContinuation.DefeatProgramFinished, result.Snapshot.Story.Continuation);
+                Assert.NotNull(result.Snapshot.Story.Wait);
             }
             var returned = Drain(session.Definition, result.Snapshot, session.Rules);
             Assert.True(returned.CanWaitAtInput);
+            foreach (var actor in terminal.Actors.Where(actor => actor.IsAlly))
+            {
+                var carried = returned.Exploration!.Party.Actors.Single(row => row.Actor == actor.Actor);
+                bool recovered = actor.Hp > 0 || kind == BattleOutcomeKind.Defeat && actor.Actor == leader;
+                Assert.Equal(recovered ? 0 : actor.Status, carried.Status);
+                Assert.Equal(recovered ? actor.MaxHp : 0, carried.Hp);
+            }
             Assert.Equal(entered.SessionId, returned.SessionId);
             Assert.Null(returned.Story.EnteringBattle);
             Assert.Null(returned.Story.FieldPlayer);

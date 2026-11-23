@@ -168,6 +168,6 @@ public sealed class JaroVictoryProgramTests
             _source.Start(definition, battle, story, kind, party);
         public OutcomeFinish Finish(ScenarioDefinition definition, StoryState story, BattleStartInput party) =>
             Fail ? throw new InvalidOperationException("transient") : _source.Finish(definition, story, party);
-        public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all) => _source.Heal(definition, party, all);
+        public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool returningFromBattle) => _source.Heal(definition, party, all, returningFromBattle);
     }
 }
