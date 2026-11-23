@@ -418,9 +418,10 @@ slot. Magic and Item replace the diamond with a scrollable list below the card. 
 its bounds as offers change. In Target, the shared board cursor marks the eligible recipient and
 the recipient's card takes the card position. Back restores the chosen level, slot or command.
 
-The [implementation handoff](battle-ui-composition.md#implementation-handoff) tracks the pending
-#2080 target press and Stay inputs, #2081 inspection range, #2082 shared roster presentation, #2083
-spell descriptions and #2065 current-round readout.
+[#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
+and direct Stay. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+tracks #2081 inspection range, #2082 shared roster presentation, #2083 spell descriptions and
+#2065 current-round readout.
 
 ### From entry to committed action
 
@@ -428,7 +429,7 @@ spell descriptions and #2065 current-round readout.
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
 | Movement | An acting card and quiet round/gold support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
-| Main action | Four labeled slots beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the lower slot offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Long reasons scroll within the fixed reader. Back undoes the preview through the current Cancel contract. Stay uses an explicit second confirmation. Direct Stay is pending under [#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay). |
+| Main action | Four labeled slots beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the lower slot offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Long reasons scroll within the fixed reader. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
 | Spell / item list | A scrollable list replaces the diamond beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
 | Target / affected area | One cursor marks the eligible recipient. One field shows reach and affected cells. The recipient card replaces the acting card. Cycle, Confirm and Back use the footer. | An empty, defeated, wrong-side or out-of-range cell clears the cursor, recipient card and effect inset. Confirm cannot commit the old target. Back returns to the prior row or Main. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
@@ -442,11 +443,12 @@ on the Target page, and a lighter inset marks the affected cells around the lega
 A radius-zero effect and the cursor share one cell. The remake uses a restrained 1.2-second pulse.
 Reduced Flash holds the fill steady. The original varies the tile palette during its pulse.
 
-Up/Left selects the previous eligible combatant and Down/Right the next, wrapping within the action's living, in-range
-target list. Production can repeat directional cycling while held. One cycle per press is pending under
-[#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay). Hover previews a candidate from that list. A complete left-click on the same legal unit
-commits the action. A single candidate stays selected. With none,
-show the reason and Back. Returning to the command menu allows the player to reconsider the move.
+Up/Left selects the previous eligible combatant and Down/Right the next, wrapping within the
+action's living, in-range target list. Each fresh direction or Target shortcut cycles once. Release
+the key or D-pad button, or return the stick to neutral, before reusing that input. Hover previews
+a candidate from the list. A complete left-click on the same legal unit commits the action.
+A single candidate stays selected. With none, show the reason and Back. Returning to the command
+menu allows the player to reconsider the move.
 [Original grid construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
 and [target input](../../../docs/research/battle/battle-functions.md#confirmed-player-control-state-machine).
 

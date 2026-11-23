@@ -302,15 +302,13 @@ func laser_cards() -> void:
     for turn in range(2):
         await tap(KEY_ENTER)
         await tap(KEY_SPACE)
-        await tap(KEY_ENTER)
         if not await wait_for(func(s): return s.get("stage") == "Movement", "off-ray turn"): return
     for turn in range(2):
         await tap(KEY_UP)
         if not await wait_for(func(s): return s.get("movement") == null, "laser positioning"): return
         await tap(KEY_ENTER)
-        await tap(KEY_SPACE)
         sample("laser-before-commit")
-        await tap(KEY_ENTER)
+        await tap(KEY_SPACE)
         if turn == 0 and not await wait_for(func(s): return s.get("stage") == "Movement", "second ally"): return
     if not await scene_until_control(false): return
     if not check(reaction_targets == ["companion","leader","sentry"], "Laser card switches through every ordered ally/enemy reaction"): return
@@ -326,7 +324,6 @@ func private_menu() -> void:
         if state().actor == "ally-1": break
         await tap(KEY_ENTER)
         await tap(KEY_SPACE)
-        await tap(KEY_ENTER)
         if not await wait_for(func(r): return r.get("stage") == "Movement" and r.get("movement") == null, "private next actor", 12.0): return
     if not check(state().actor == "ally-1", "Ordinary Sarah control"): return
     await tap(KEY_ENTER)

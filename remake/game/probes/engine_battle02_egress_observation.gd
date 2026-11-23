@@ -58,7 +58,6 @@ func run_egress() -> void:
         if s.get("actor") == "ally-0": break
         await key(KEY_ENTER)
         await key(KEY_SPACE)
-        await key(KEY_ENTER)
         s = await map_settle()
     _check(s.get("actor") == "ally-0", "live Bowie control")
     if not failures.is_empty():

@@ -21,7 +21,7 @@ func settle_battle() -> Dictionary:
         if s.phase in ["ActionMessage","ResultMessage","RewardMessage","GrowthMessage","PoisonDamageMessage","PoisonExhaustedMessage"]:await key(KEY_ENTER)
     samples.append({"label":"battle-timeout","board":board(),"scene":scene()});check(false,"bounded battle settle");return {}
 func stay() -> Dictionary:
-    await key(KEY_ENTER);await key(KEY_SPACE);await key(KEY_ENTER);return await settle_battle()
+    await key(KEY_ENTER);await key(KEY_SPACE);return await settle_battle()
 func use_item(index: int) -> Dictionary:
     await key(KEY_ENTER);await key(KEY_I)
     for i in range(index):await key(KEY_DOWN)

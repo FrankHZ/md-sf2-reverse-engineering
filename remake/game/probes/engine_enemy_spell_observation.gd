@@ -60,7 +60,7 @@ func run() -> void:
     if initial.is_empty(): finish(); return
     check(initial.actor == "scout","ordinary initial player control")
     picture("initial"); visible_text("visible-initial")
-    await key(KEY_ENTER); await key(KEY_SPACE); await key(KEY_ENTER)
+    await key(KEY_ENTER); await key(KEY_SPACE)
     var next := await settle()
     if next.is_empty(): finish(); return
     check(delivered == ["blaze","heal"],"both automatic spell results exactly once")

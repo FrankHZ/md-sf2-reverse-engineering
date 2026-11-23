@@ -145,7 +145,7 @@ func fight(s: Dictionary, lose: bool) -> Dictionary:
         if s.failure!=null or (step.target!=null and s.target!=step.target):
             issue="battle02-action-target"
             return s
-        await key(KEY_ENTER)
+        if step.action!="stay": await key(KEY_ENTER)
         s=await outcome_settle()
         if issue!="": return s
     issue="battle02-action-bound"

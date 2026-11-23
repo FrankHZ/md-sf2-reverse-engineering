@@ -898,7 +898,7 @@ editor until Apply succeeds. [Format and reproduction](input-remapping.md) and t
 
 **Standard rigor; [#1408](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1408).**
 This bounded input change covers the existing battle command diamond, spell/item lists, ordered
-targets and Stay confirmation, followed by the existing field Yes/No choices. It retains the
+targets and the direct Stay gesture, followed by the existing field Yes/No choices. It retains the
 accepted 1920×1080 geometry, original admitted command rasters and shared story panel. World movement,
 map/actor picking, title/settings menus, supplementary Equipment/Give/Drop and Party Status mouse
 redesign, new targeting rules and full-game mouse-only play are outside this agreement.
@@ -1225,7 +1225,7 @@ inspection behavior tests pass with the shared projection. The bounded
 [`engine_battle_acting_status_observation.gd`](../../game/probes/engine_battle_acting_status_observation.gd)
 uses actual ordinary host input and reads actual card nodes/draws: public `practice-yard` variants
 use Regular and Hovering across Light → Heavy → None terrain, multi-segment undo, same-actor full
-inspection/return, explicit Stay confirmation and next-actor handoff. The Hovering case uses Chinese
+inspection/return, direct Stay and next-actor handoff. The Hovering case uses Chinese
 and remapped/swapped controls; actual hints consume those bindings. A focused authored `battle-give`
 case also opens actual Equipment/Give inventory shells and the visible Item submenu, verifies retained
 acting projection and Back, and preserves resources/RNG without committing a transaction. A connected
@@ -2306,9 +2306,9 @@ tracked UI implementation nor public builds include them. The graphics sample re
 Confirm at movement opens the diamond. Up/left/right/down focus Attack/Magic/Item/Stay; Confirm
 enters the focused choice. F/H/I/Space are shortcuts from the main diamond; H/I now open lists,
 not immediate selections. Up/down inspect list rows, including disabled rows. Confirm selects an
-enabled offer and its first enabled target (self when offered). Arrows or Tab cycle all offered
-targets; a disabled candidate shows its reason and cannot commit the previously accepted target.
-Target confirmation commits through the session. Stay has its own confirmation step.
+enabled offer and its first enabled target (self when offered). Each fresh direction or Target
+shortcut cycles the legal candidates once. Target confirmation commits through the session.
+Choosing ordinary Stay commits the legal stop through the same session continuation.
 Equipment/Give/Discard retain their existing shortcuts and presenters from the main menu. Spell and
 item lists group by the semantic offer's spell/item metadata, including admitted retreat offers.
 
@@ -2332,7 +2332,10 @@ The shared 1080p world viewport is defined above; the earlier 640-by-360 proposa
 
 ### Battle directional hold and mode isolation (#1615)
 
-**Current navigation:** #1686 uses Up/Down vertical command/Options lists and cycles only legal targets. Its [production observer](battle-interaction-baseline.md#direct-production-reproduction) replaces the old cardinal/disabled-target menu route in [`engine_battle_navigation_observation.gd` at this pin](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_navigation_observation.gd). The held-direction clock, release barriers and source movement rules below remain binding.
+**Current navigation:** Main uses cardinal focus and lists use Up/Down. The
+[phase and focus owner](battle-ui-composition.md#phase-focus-and-return) and
+[target input observation](battle-ui-composition.md#reproduce-target-navigation-and-stay)
+describe the current presentation and input. For the earlier #1686 observation, see [`engine_battle_navigation_observation.gd` at this pin](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/83a5d47adcabab295420ef15a54848529180cd2e/remake/game/probes/engine_battle_navigation_observation.gd). The held-direction clock, release barriers and source movement rules below remain binding.
 
 **Standard rigor:** battle movement and existing directional selection need a consistent held-input
 boundary across provisional movement, menu pages, target candidates and actor changes. The finite
@@ -2340,18 +2343,18 @@ scope is adapter navigation; engine legality, action costs, RNG, field speed, Sh
 inspection retain their existing owners.
 
 `GameInput` remains the single mapped keyboard/button/signed-axis edge and held-direction authority.
-For menus and inspection, `BattleSessionView.Navigation` applies a fresh direction immediately, then
+For ordinary menus and inspection, `BattleSessionView.Navigation` applies a fresh direction immediately, then
 repeats at most once per 120 ms deadline. For provisional movement, `BattleMapViewport.ConsumeMovement`
 delivers the current step. The battle view then submits the still-held direction on that frame.
 Turning during delivery replaces the direction used at arrival. The
 [held preview observation](battle-interaction-baseline.md#held-preview-step-handoff) covers that handoff.
 Exploration's successful-step cadence and rejected-attempt backoff retain their field owner.
 
-Directions repeat in Movement, the cardinal command menu, spell/item lists, offered targets and
-existing admitted Equipment/Give/Drop selectors. TargetChoice and CommitReady share their target
-navigation page; a different candidate does not create a new mode. Stay/transaction confirmation and
-result/scene/round/return phases are ineligible. Disabled target candidates retain their actual reason
-and cannot commit a previously accepted target. The engine still validates each submitted Move or
+Directions repeat in Movement, the cardinal command menu, spell/item lists and admitted
+Equipment/Give/Drop selectors. TargetChoice and CommitReady share one Target page for each action.
+It accepts only fresh direction and Target shortcut events. A rejected board candidate cannot
+commit a previously accepted target. Search and other transaction confirmations, results, scenes,
+round delivery and return phases do not repeat. The engine validates each submitted Move or
 selection against live state.
 
 Release of the active direction stops future repeats and does not resume an older held direction.

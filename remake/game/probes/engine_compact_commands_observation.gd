@@ -158,7 +158,6 @@ func battle_case() -> bool:
         var stay: InputEvent = InputMap.action_get_events("sf2_stay").filter(func(e):return e is InputEventKey)[0]
         for pressed in [true,false]:
             var e: InputEvent = stay.duplicate(); e.pressed = pressed; Input.parse_input_event(e); await frames(2)
-        await act("confirm")
         for frame in range(600):
             var current := state()
             if current.get("stage") == "Movement" and current.get("movement") == null and current.actor != previous: break
@@ -222,11 +221,9 @@ func battle_case() -> bool:
     if not expect(state().menu.page == "Items","Pointer label opens actual Item list"): return false
     await act("cancel")
     if not expect(state().menu.page == "Main" and state().menu.command == 2,"Item Back retains parent"): return false
-    await act("down"); await act("confirm")
-    var commit := record("stay-confirmation")
-    if not expect(commit.menu.page == "Commit","Stay retains separate commitment"): return false
-    await act("cancel")
-    if not expect(state().menu.page == "Main" and state().menu.command == 3,"Stay Back restores parent"): return false
+    await act("down")
+    var focused := record("stay-focused")
+    if not expect(focused.menu.page == "Main" and focused.menu.command == 3,"Stay remains focused before choice"): return false
     if not expect(resources(state()) == baseline,"All provisional pages preserve resources and both RNG seeds"): return false
     await act("cancel")
     if not await settled(): return false

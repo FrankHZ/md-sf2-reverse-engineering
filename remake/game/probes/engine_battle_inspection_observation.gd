@@ -258,14 +258,13 @@ func hidden_appearance() -> bool:
     await act("up")
     if not await settled(): return false
     await act("confirm")
-    # Use ordinary Stay shortcut and confirmation; appearance is real engine progression.
+    # Use the ordinary Stay shortcut to reach the real appearance continuation.
     var stay_event: InputEvent = InputMap.action_get_events("sf2_stay").filter(func(e): return e is InputEventKey)[0].duplicate()
     stay_event.pressed=true
     Input.parse_input_event(stay_event)
     await frames(2)
     stay_event=stay_event.duplicate(); stay_event.pressed=false; Input.parse_input_event(stay_event)
     await frames(2)
-    await act("confirm")
     if not await wait_for(func(s): return s.appearance.active,"real pending appearance"): return false
     sample("pending-appearance")
     await act("cancel")

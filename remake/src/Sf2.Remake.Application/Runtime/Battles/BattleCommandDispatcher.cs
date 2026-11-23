@@ -77,6 +77,9 @@ internal static class BattleCommandDispatcher
                 case Confirm when selection.Stage == BattleSelectionStage.Movement:
                     BattleMovement.RequireStop(battle, selection.Actor, selection.Preview.Destination);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice), "action-choice");
+                case CommitBattleStay when selection.Stage == BattleSelectionStage.ActionChoice:
+                    return Commit(current, new(selection.Actor, selection.Preview, BattleSelectionStage.CommitReady, SessionAction.Stay),
+                        sceneContent, requireSceneContent, rules);
                 case ChooseAction choice when selection.Stage == BattleSelectionStage.ActionChoice:
                     return choice.Action switch
                     {

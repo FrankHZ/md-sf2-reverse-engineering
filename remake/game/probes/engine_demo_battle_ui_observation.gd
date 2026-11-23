@@ -242,7 +242,7 @@ func decision_case() -> bool:
     for turn in range(5):
         if state().actor == "ally-1": break
         var previous: String = state().actor
-        await act("confirm"); await act("stay"); await act("confirm")
+        await act("confirm"); await act("stay")
         if not await settle_scene(previous): return false
     if not expect(state().actor == "ally-1","Real turn schedule reaches Sarah"): return false
     await act("confirm"); await act("spell"); await frames(3)
@@ -274,7 +274,7 @@ func return_case() -> bool:
         for turn in range(6):
             if state().actor == "ally-0": break
             var previous: String = state().actor
-            await act("confirm"); await act("stay"); await act("confirm")
+            await act("confirm"); await act("stay")
             if not await settle_scene(previous): return false
         if not expect(state().actor == "ally-0","Real schedule reaches learned EGRESS caster"): return false
     await act("confirm")
@@ -287,7 +287,7 @@ func return_case() -> bool:
         if not expect(resources(state()) == before and state().menu.page == "Magic","Retreat cancellation does not pay"): return false
         await act("confirm"); await act("confirm")
     elif demo_case == "defeat":
-        await act("stay"); await act("confirm")
+        await act("stay")
     else:
         await act("attack"); await act("confirm")
     var deadline := Time.get_ticks_msec()+20000

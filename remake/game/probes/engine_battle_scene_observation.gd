@@ -175,13 +175,11 @@ func _run_menu_audio() -> void:
         await _menu_input(KEY_ENTER, "TargetChoice", "TargetChoice", [], true)
         await _menu_input(KEY_ESCAPE, "TargetChoice", "Movement", [66])
         await _menu_input(KEY_ENTER, "Movement", "ActionChoice", [65])
-        await _menu_input(KEY_SPACE, "ActionChoice", "CommitReady", [65])
-        await _menu_input(KEY_SPACE, "CommitReady", "CommitReady", [], true)
         if turn == 0:
-            await _press(KEY_ENTER) # Commit the real Stay and let the ordinary turn flow run.
+            await _menu_input(KEY_SPACE, "ActionChoice", "Movement", [65])
             await _settle()
         else:
-            await _menu_input(KEY_ESCAPE, "CommitReady", "Movement", [66])
+            await _menu_input(KEY_ESCAPE, "ActionChoice", "Movement", [65])
     await _menu_idle()
     _check(actors[0] != actors[1], "action-menu mapping works for another actual actor")
     _check(receipts.any(func(receipt): return receipt.Command == 65 and receipt.Operation == "finished"), "actual menu voice naturally finishes")
@@ -311,7 +309,6 @@ func _settle() -> Dictionary:
 func _stay() -> Dictionary:
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     return await _settle()
 
 func _audio_selection() -> void:

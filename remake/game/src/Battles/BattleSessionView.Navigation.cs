@@ -7,12 +7,13 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 public sealed partial class BattleSessionView
 {
-    // Menus and inspection use a repeat deadline. Player preview repeats on arrival.
+    // Ordinary menus and inspection use a repeat deadline. Player preview repeats on arrival.
     private const ulong NavigationRepeatMicros = 120000;
     private object? _navigationBoundary;
     private GameAction? _navigationDirection;
     private ulong _nextNavigation;
     private bool _navigationRejected;
+    internal bool Targeting => _menu.Targeting;
     private bool NavigatingPreview => !_inspection.Active && _session?.Current.Selection?.Stage == BattleSelectionStage.Movement;
 
     private object? NavigationBoundary()
@@ -28,8 +29,7 @@ public sealed partial class BattleSessionView
         if (_inspectionRelease) return null;
         if (_inspection.Active) return (current.SessionId, current.Revision, selection.Actor, "Inspection", _inspection.Page);
         var stage = selection.Stage;
-        if (_menu.NavigationPage == "Commit" || stage is BattleSelectionStage.GiveCommitReady or BattleSelectionStage.DiscardCommitReady) return null;
-        if (stage == BattleSelectionStage.CommitReady) stage = BattleSelectionStage.TargetChoice;
+        if (Targeting || _menu.NavigationPage == "Commit" || stage is BattleSelectionStage.GiveCommitReady or BattleSelectionStage.DiscardCommitReady) return null;
         return (current.SessionId, selection.Actor, stage, _menu.NavigationPage);
     }
 
@@ -45,7 +45,11 @@ public sealed partial class BattleSessionView
         if (what == NotificationEnabled) SetHostCovered(false);
         if (what == NotificationPaused || what == NotificationDisabled || what == NotificationEnabled || what == NotificationUnpaused ||
             what == NotificationVisibilityChanged && !IsVisibleInTree())
-        { ClearNavigation(); SuspendPacing(); }
+        {
+            ClearNavigation();
+            _boardPointer.Suspend();
+            SuspendPacing();
+        }
     }
 
     internal void HandleAction(GameAction action, bool repeating = false)

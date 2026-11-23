@@ -177,7 +177,6 @@ func _run() -> void:
         "Actual HUD and actor node project healed state")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var next_round := _read("automatic-next-round")
     _check(next_round.round == 2 and next_round.actor == initial.actor and next_round.mainSeed == 2656571956,
         "STAY naturally reaches round 2 with carried RNG")
@@ -206,18 +205,16 @@ func _extra_turn(initial: Dictionary) -> void:
     _check(initial.round == 1 and initial.queueCursor == 0 and initial.actor == player
         and initial.mainSeed == 0xFF4D1234, "Initial extra-turn round consumes exactly eleven draws")
     await _press(KEY_ENTER)
+    var focused := _read("first-stay-focused")
+    _check(focused.stage == "ActionChoice" and focused.queueCursor == 0
+        and focused.mainSeed == initial.mainSeed, "Opening actions keeps the first queue entry")
     await _press(KEY_SPACE)
-    var selected := _read("first-stay-selected")
-    _check(selected.stage == "CommitReady" and selected.queueCursor == 0
-        and selected.mainSeed == initial.mainSeed, "Selection does not consume the first entry")
-    await _press(KEY_ENTER)
     var first := _read("first-entry-consumed")
     _check(first.failure == null and first.actor == player and first.round == 1 and first.queueCursor == 1
         and first.stage == "Movement" and first.stopReason == "PlayerInput"
         and first.mainSeed == initial.mainSeed, "Same actor receives its second entry in the same round")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var second := _read("second-entry-consumed")
     _check(second.failure == null and second.actor == other and second.round == 1 and second.queueCursor == 3
         and second.mainSeed == initial.mainSeed, "Second entry consumes once before ordinary AI and next ally")
@@ -227,20 +224,17 @@ func _extra_turn(initial: Dictionary) -> void:
     _check(saw_ai, "Configured enemy runs between the extra actor and ordinary ally")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var next_round := _read("next-round")
     _check(next_round.failure == null and next_round.round == 2 and next_round.queueCursor == 0
         and next_round.actor == player and next_round.mainSeed == 0x887A1234,
         "Natural next round carries the seed after twenty-two draws")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var next_first := _read("next-round-first-consumed")
     _check(next_first.actor == player and next_first.round == 2 and next_first.queueCursor == 1,
         "Extra eligibility persists on natural round generation")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var next_second := _read("next-round-second-consumed")
     _check(next_second.failure == null and next_second.actor == other and next_second.round == 2
         and next_second.queueCursor == 3 and next_second.mainSeed == next_round.mainSeed,
@@ -328,7 +322,6 @@ func _layout(initial: Dictionary, long_path: bool) -> void:
     _visible_layout(wide, "wide-window")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var committed := _read("movement-committed-next-control")
     _check(committed.failure == null and committed.actors[0].x == wide.previewX
         and committed.actors[0].y == wide.previewY, "Visible preview can be committed through actual input")
@@ -340,10 +333,9 @@ func _enemy_actions(initial: Dictionary, shape: String) -> void:
     var enemy: String = initial.actors[2].id
     var ally: String = initial.actors[0].id
     await _press(KEY_ENTER)
-    await _press(KEY_SPACE)
     var ready := _read("enemy-action-ready")
     _check(_same_battle(initial, ready), "Player selection does not execute automatic enemy work")
-    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
     var result: Dictionary = _read("enemy-action-result") if shape == "unsupported" else await consumer._settle("enemy-action-result")
     result.observations = consumer.facts.duplicate(true)
     if shape == "unsupported":
@@ -394,10 +386,9 @@ func _target_selection(initial: Dictionary, shape: String) -> void:
     var secondary: String = initial.actors[1].id
     var selected: String = secondary if shape == "secondary" else primary
     await _press(KEY_ENTER)
-    await _press(KEY_SPACE)
     var ready := _read("targets-ready")
     _check(_same_battle(initial, ready), "Selection does not run target scoring")
-    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
     var result := _read("targets-first-action")
     if shape == "missing-class":
         _check(result.failure == "ai-target-class" and result.stopReason == "Unsupported", "Reached class cohort requires actual class definition")
@@ -430,13 +421,11 @@ func _target_selection(initial: Dictionary, shape: String) -> void:
         "Chosen ally receives damage, counters and earns the shared reward")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var round_two := _read("targets-round-two")
     _check(round_two.round == 2 and round_two.actor == primary and round_two.mainSeed == 0x97231234,
         "Actual commands carry the first action's RNG into the next generated round")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var second := _read("targets-second-action")
     _check(second.failure == null and second.actor == secondary and second.aiMemory[0].lastTarget == primary,
         "Continued thinking selects primary from live competing candidates")
@@ -451,11 +440,10 @@ func _commandset_continuation(initial: Dictionary, shape: String) -> void:
             and initial.queueCursor == 1 and initial.mainSeed == 0xDC7F1234 and initial.thinkingSeed == 0xBEEF0042,
             "Enemy-first startup completes MOVE1 and yields actual player control")
     await _press(KEY_ENTER)
-    await _press(KEY_SPACE)
     if shape != "startup":
         var ready := _read("continuation-ready")
         _check(_same_battle(initial, ready), "Player selection leaves AI continuation provisional")
-    await _press(KEY_ENTER)
+    await _press(KEY_SPACE)
     var result := _read("continuation-result")
     if shape == "unreachable":
         _check(result.failure == "ai-move-target-domain" and result.stopReason == "Unsupported"
@@ -491,13 +479,11 @@ func _commandset_continuation(initial: Dictionary, shape: String) -> void:
     if shape == "move-attack":
         await _press(KEY_ENTER)
         await _press(KEY_SPACE)
-        await _press(KEY_ENTER)
         var next_round := _read("continuation-round-two")
         _check(next_round.round == 2 and next_round.actor == initial.actor and next_round.mainSeed == 0xEE281234,
             "Actual input naturally generates the next round from unchanged movement history")
         await _press(KEY_ENTER)
         await _press(KEY_SPACE)
-        await _press(KEY_ENTER)
         result = _read("continuation-next-turn-attack")
         _check(result.failure == null and result.actor == initial.actors[1].id and result.actors[2].x == 2
             and result.actors[0].hp == 478 and result.actors[2].hp == 493 and result.actors[0].exp == 1,
@@ -552,7 +538,6 @@ func _private_initialized(initial: Dictionary) -> void:
     await _press(KEY_ESCAPE)
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var centaur := _read("private-next-centaur")
     _check(centaur.actor == "ally-2" and centaur.queueCursor == 1 and centaur.actors[2].mover == "Centaur", "Next generated player uses the required Centaur mover")
     await _press(KEY_W)
@@ -561,7 +546,6 @@ func _private_initialized(initial: Dictionary) -> void:
     _check(centaur_cancelled.previewX == 7 and centaur_cancelled.previewY == 18 and centaur_cancelled.mainSeed == initial.mainSeed, "Centaur uses the same movement/cancel commands")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var enemy := _read("private-standby-relay")
     _check(enemy.failure == null and enemy.stopReason == "PlayerInput" and enemy.actor == "ally-0" and enemy.queueCursor == 8, "Six actual inactive enemies complete standby before Bowie control")
     _check(enemy.mainSeed == initial.mainSeed and enemy.thinkingSeed == 0x01340000, "Standby advances only the independent thinking channel")
@@ -577,7 +561,6 @@ func _private_initialized(initial: Dictionary) -> void:
 func _private_stay() -> void:
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
 
 func _private_source_ai(initial: Dictionary) -> void:
     await _private_initialized(initial)

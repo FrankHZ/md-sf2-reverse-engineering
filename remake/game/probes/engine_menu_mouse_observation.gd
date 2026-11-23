@@ -254,16 +254,13 @@ func battle_menus(initial: Dictionary) -> void:
     await click(state().menu.layout.rowRects[0])
     if not check(state().menu.page == "Target", "Available item enters target flow"): return
     await click(nav("Back")); await click(nav("Back"))
-    await click(state().menu.layout.commands[3].rect)
-    if not check(state().menu.page == "Commit" and resources(state()) == baseline, "Stay requires separate confirmation"): return
-    await click(nav("Back")); await click(nav("Back"))
+    await click(nav("Back"))
     if not check(state().stage == "Movement" and resources(state()) == baseline, "Layered Back preserves resources and RNG"): return
     # A held release cannot open a menu created by a different physical input.
     await button(magic,true); await tap(KEY_ENTER); await button(magic,false)
     if not check(state().menu.page == "Main", "Menu creation does not adopt an earlier press"): return
     await click(state().menu.layout.commands[3].rect)
-    await click(nav("Confirm"))
-    if not await wait_for(func(s): return s.get("stage") == "Movement" and s.actor != initial.actor, "Stay advances actor once"): return
+    if not await wait_for(func(s): return s.get("stage") == "Movement" and s.actor != initial.actor, "One Stay click advances the actor"): return
     sample("stay-committed-next-actor")
     finish(true)
 

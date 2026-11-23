@@ -180,7 +180,8 @@ func after_admission(s: Dictionary) -> Dictionary:
         await key(KEY_H if step.action == "heal" else KEY_F if step.action == "attack" else KEY_SPACE)
         await process_frame
         s = state()
-        if s.failure != null or s.sessionId != castle_identity or s.actor != step.actor or s.stage not in ["TargetChoice", "CommitReady"]:
+        if s.failure != null or s.sessionId != castle_identity or (
+                step.action != "stay" and (s.actor != step.actor or s.stage not in ["TargetChoice", "CommitReady"])):
             issue = "native-action-selection"
             break
         if step.target != null:
@@ -192,7 +193,7 @@ func after_admission(s: Dictionary) -> Dictionary:
             if s.target != step.target or s.failure != null:
                 issue = "native-target-selection"
                 break
-        await key(KEY_ENTER)
+        if step.action != "stay": await key(KEY_ENTER)
         s = await outcome_settle()
         capture_row("outcomeRecords",{"actor":step.actor,"round":step.round,"action":step.action,"target":step.target,"map":s.get("map"),"failure":s.failure}, outcome_records)
         if issue != "": break

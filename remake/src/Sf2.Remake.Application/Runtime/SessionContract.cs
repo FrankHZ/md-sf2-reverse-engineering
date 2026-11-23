@@ -16,6 +16,7 @@ public enum SessionAction { Stay, Heal, PhysicalAttack, Item, Retreat, AttackSpe
 public abstract record SessionCommand;
 public sealed record Move(ExplorationDirection Direction) : SessionCommand;
 public sealed record ChooseAction(SessionAction Action) : SessionCommand;
+public sealed record CommitBattleStay : SessionCommand;
 public sealed record SelectBattleAction(BattleActionRef Action) : SessionCommand;
 public sealed record SelectSpell(SpellRef Spell) : SessionCommand;
 public sealed record SelectItem(int Slot) : SessionCommand;

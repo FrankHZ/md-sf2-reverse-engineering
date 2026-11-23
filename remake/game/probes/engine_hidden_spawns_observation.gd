@@ -137,7 +137,6 @@ func _run() -> void:
         return
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     state = await settle()
     if state.is_empty():
         _finish()

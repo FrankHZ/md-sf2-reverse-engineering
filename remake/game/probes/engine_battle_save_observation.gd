@@ -63,7 +63,7 @@ func settle() -> bool:
         await process_frame
     sample("settle-timeout"); check(false,"settled action");return false
 func stay() -> bool:
-    await key(KEY_ENTER); await key(KEY_SPACE); await key(KEY_ENTER)
+    await key(KEY_ENTER); await key(KEY_SPACE)
     return await settle()
 func suffix() -> void:
     for i in range(8):
@@ -241,7 +241,7 @@ func run() -> void:
             elif mode=="defeat":await key(KEY_SPACE)
             else:await key(KEY_H);await key(KEY_ENTER)
             sample("outcome-action")
-            await key(KEY_ENTER)
+            if mode != "defeat": await key(KEY_ENTER)
             if not await wait_field():finish();return
             sample("usable-field-return")
             if not await save_flow(false):finish();return

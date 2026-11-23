@@ -8,6 +8,7 @@ var failures: Array = []
 var samples: Array = []
 var events: Dictionary = {}
 var submissions := 0
+var commits: Array = []
 var route := OS.get_environment("SF2_BATTLE_NAVIGATION_ROUTE")
 var steps: Array[Dictionary] = []
 var shift_pressed := false
@@ -29,14 +30,16 @@ func wait_ms(duration: int) -> void:
 func state(label: String = "") -> Dictionary:
     var s: Dictionary = JSON.parse_string(view.call("ReadObservationJson"))
     s["submissions"] = submissions
+    s["commits"] = commits.duplicate()
     if not label.is_empty():
         var row := {"label": label}
         for key in ["revision", "actor", "stage", "stopReason", "previewX", "previewY",
                 "failure", "mainSeed", "thinkingSeed", "queueCursor", "movement", "previewRect",
-                "equipmentSlot", "giveMenu", "discardMenu", "returnSlot", "submissions"]:
+                "equipmentSlot", "giveMenu", "discardMenu", "returnSlot", "submissions", "commits"]:
             row[key] = s.get(key)
         row["menu"] = {"page": s.menu.page, "command": s.menu.command, "row": s.menu.row,
-            "candidate": s.menu.candidate, "visible": s.menu.visible}
+            "candidate": s.menu.candidate, "visible": s.menu.visible,
+            "detail": s.menu.layout.detail}
         samples.append(row)
     return s
 
@@ -53,6 +56,37 @@ func send(action: String, pressed: bool) -> void:
             shift_pressed = pressed
             e.location = KEY_LOCATION_LEFT
         e.shift_pressed = shift_pressed
+    Input.parse_input_event(e)
+    await process_frame
+    await process_frame
+
+func resample_hold(action: String) -> void:
+    var e: InputEvent = events[action].duplicate()
+    if e is InputEventKey:
+        e.pressed = true
+        e.echo = true
+    elif e is InputEventJoypadButton:
+        e.device = 0
+        e.pressed = true
+    else:
+        e.device = 0
+        e.axis_value *= 0.42
+        Input.parse_input_event(e)
+        await process_frame
+        e = e.duplicate()
+        e.axis_value = -events[action].axis_value
+        Input.parse_input_event(e)
+        await process_frame
+        e = e.duplicate()
+        e.axis_value = events[action].axis_value
+    Input.parse_input_event(e)
+    await process_frame
+
+func pointer(rect: Dictionary, pressed: bool) -> void:
+    var e := InputEventMouseButton.new()
+    e.button_index = MOUSE_BUTTON_LEFT
+    e.pressed = pressed
+    e.position = Vector2(rect.x + rect.width / 2.0, rect.y + rect.height / 2.0)
     Input.parse_input_event(e)
     await process_frame
     await process_frame
@@ -88,11 +122,14 @@ func restart() -> void:
         return
     await settle()
     submissions = 0
+    commits.clear()
     view.connect("SessionResultObserved", func(json: String):
         var result: Dictionary = JSON.parse_string(json)
-        if result.boundary == "submit": submissions += 1)
+        if result.boundary == "submit": submissions += 1
+        for event in result.observations:
+            if event.Kind == "action-committed" and event.Actor != null: commits.append(event.Actor.Value))
     events.clear()
-    for action in ["up", "right", "down", "left", "confirm", "cancel", "menu", "accelerate", "equipment", "give", "discard", "spell"]:
+    for action in ["up", "right", "down", "left", "confirm", "cancel", "menu", "accelerate", "equipment", "give", "discard", "spell", "attack", "item", "target", "stay"]:
         var mapped := InputMap.action_get_events("sf2_" + action)
         for e in mapped:
             if route == "pad" and e is InputEventJoypadButton or route == "axis" and e is InputEventJoypadMotion:
@@ -267,9 +304,10 @@ func menu_checks() -> void:
     check(state().menu.page == "Target", "Fresh Confirm enters target selection")
     await send("right", true)
     var target := state()
-    await wait_ms(160)
+    await wait_ms(260)
     var next := state("target-held")
-    check(target.menu.candidate != next.menu.candidate, "Held direction cycles actual offered target candidates")
+    check(target.menu.candidate == next.menu.candidate and target.revision == next.revision,
+        "Held direction leaves the selected target stable")
     check(next.scene.visible == false, "Target navigation cannot commit an action")
     await send("cancel", true)
     await wait_ms(260)
@@ -324,22 +362,207 @@ func lifecycle_checks() -> void:
     await wait_ms(240)
     check(same_position(shown, state()), "Hide/show does not resume held navigation")
     await send("right", false)
+    await direct_stay("confirm")
+
+func same_target(expected: Dictionary, message: String) -> void:
+    var now := state()
+    check(now.revision == expected.revision and now.menu.candidate == expected.menu.candidate, message)
+
+func fresh_targets(physical_count: int) -> void:
     await restart()
-    var original_actor = state().actor
+    var origin := state("target-case-origin")
+    await tap("confirm")
+    var actions := state()
+    await tap("attack")
+    if physical_count == 0:
+        var unavailable := state("attack-no-target")
+        check(unavailable.stage == "ActionChoice" and unavailable.menu.page == "Main"
+            and unavailable.revision == actions.revision and not unavailable.menu.layout.commands[0].enabled
+            and not unavailable.menu.layout.detail.is_empty(), "Attack with no legal target stays in Main and displays its reason")
+    else:
+        await target_edges("Attack", physical_count, "Main")
+
+    await tap("spell")
+    await send("down", true)
+    var list := state()
+    await wait_ms(145)
+    check(state().menu.row != list.menu.row, "Magic keeps ordinary list repeat")
+    await tap("confirm")
+    var entered := state("target-entry-with-held-list-direction")
+    check(entered.menu.page == "Target" and entered.menu.candidate == origin.actor, "Magic enters with its legal default")
+    await resample_hold("down")
+    await wait_ms(260)
+    same_target(entered, "An inherited direction cannot cross into Target")
+    await send("down", false)
+    await target_edges("Magic", 2, "Magic")
+    if physical_count == 2:
+        await tap("confirm")
+        await send("right", true)
+        await tap("menu")
+        var covered := state("target-host-covered")
+        check(view.process_mode == Node.PROCESS_MODE_DISABLED, "System menu covers the target phase")
+        await wait_ms(245)
+        await send("right", false)
+        await tap("cancel")
+        same_target(covered, "Host return keeps the candidate without carrying the direction")
+        check(state().menu.page == "Target" and state().menu.visible, "Host return shows the same target phase")
+
+        if route == "keyboard":
+            var rect: Dictionary = state().menu.layout.navigation[2].rect
+            await pointer(rect, true)
+            await tap("cancel")
+            await tap("confirm")
+            var reopened := state("target-reopened-with-held-click")
+            await pointer(rect, false)
+            same_target(reopened, "A held click release cannot confirm a different target phase")
+        var before_edge := state()
+        await tap("right")
+        check(state().revision == before_edge.revision + 1,
+            "Fresh direction after cover and reentry submits one selection")
+        await tap("cancel")
+    await tap("cancel")
+
+    await tap("item")
+    await tap("down")
+    await tap("confirm")
+    await target_edges("Item", 2, "Items")
+    var returned := state("target-item-parent")
+    check(returned.menu.row == 1 and returned.inventories == origin.inventories and
+        returned.mainSeed == origin.mainSeed and returned.thinkingSeed == origin.thinkingSeed and commits.is_empty(),
+        "All target returns preserve the item row, inventory and RNG without spending an action")
+    if route == "keyboard" and physical_count == 2:
+        await tap("confirm")
+        var board := view.get_node("MapViewport")
+        var terrain: Dictionary = JSON.parse_string(board.call("ReadTerrainJson"))
+        var rect: Dictionary = terrain.cellCursor.rect
+        await pointer(rect, true)
+        await tap("cancel")
+        var parent := state()
+        await pointer(rect, false)
+        same_target(parent, "A board release after Back has no target or commit")
+        await tap("confirm")
+        terrain = JSON.parse_string(board.call("ReadTerrainJson"))
+        rect = terrain.cellCursor.rect
+        await pointer(rect, true)
+        await pointer(rect, false)
+        var clicked := state("fresh-board-click-after-back")
+        check(clicked.menu.page != "Target" and clicked.scene.visible, "A fresh complete board click commits after reentry")
+
+func target_edges(label: String, count: int, parent: String) -> void:
+    var start := state(label + "-entered")
+    check(start.menu.page == "Target" and start.menu.candidate != null and start.menu.candidate == start.target,
+        label + " enters a legal Target phase")
+    await send("right", true)
+    var moved := state(label + "-first-edge")
+    check(moved.revision == start.revision + 1 and (moved.menu.candidate != start.menu.candidate) == (count > 1),
+        label + " selects once per fresh direction")
+    await resample_hold("right")
+    await wait_ms(260)
+    same_target(moved, label + " ignores repeated samples and held direction")
+    await tap("down")
+    check(state().revision == moved.revision + 1, label + " accepts a different direction while Right is held")
+    await tap("up")
+    var independent := state()
+    check(independent.menu.candidate == moved.menu.candidate and independent.revision == moved.revision + 2,
+        label + " preserves previous/next candidate order")
+    await send("right", false)
+    await tap("right")
+    await tap("right")
+    var tapped := state(label + "-rapid-taps")
+    check(tapped.revision == independent.revision + 2 and tapped.menu.candidate == independent.menu.candidate,
+        label + " accepts each rapid fresh press in the existing order")
+    await tap("target")
+    check(state().revision == tapped.revision + 1, label + " Target shortcut selects once")
+    await send("right", true)
+    await tap("cancel")
+    var backed := state(label + "-back")
+    check(backed.menu.page == parent, label + " Back returns to its owner")
+    await wait_ms(245)
+    same_target(backed, label + " carried direction cannot repeat in the parent")
+    await send("right", false)
+
+func direct_stay(gesture: String, notice := false) -> void:
+    await restart()
+    var initial := state("stay-origin")
+    if gesture != "confirm":
+        await tap("right")
+        await settle()
+        check(state().previewX == initial.previewX + 1, "Stay uses a moved legal preview")
     await tap("confirm")
     await send("down", true)
-    await send("confirm", true)
-    await wait_ms(260)
-    check(state().menu.page == "Commit", "Held Confirm cannot commit Stay across the mode transition")
-    await send("confirm", false)
-    await tap("confirm")
-    var next_actor := await settle()
-    check(next_actor.actor != original_actor, "Stay actually advances to another actor before isolation is checked")
-    state("next-actor-held-old-direction")
-    await wait_ms(300)
-    check(same_position(next_actor, state()) and state().stage == "Movement",
-        "Old held direction cannot move or choose actions for the next actor")
+    var decision := state("stay-decision")
+    check(decision.stage == "ActionChoice" and decision.menu.command == 3, "Main owns the Stay decision")
+    if gesture == "click":
+        var rect: Dictionary = decision.menu.layout.commands[3].rect
+        await pointer(rect, true)
+        check(state().revision == decision.revision and commits.is_empty(), "Mouse-down alone does not spend Stay")
+        await pointer(rect, false)
+    else:
+        await send(gesture, true)
+    if notice:
+        for i in range(180):
+            if state().scene.phase == "PoisonDamageMessage": break
+            await process_frame
+        var shown := state("stay-poison-notice")
+        check(shown.scene.phase == "PoisonDamageMessage", "Stay reaches the real after-turn notice")
+        await resample_hold(gesture)
+        await wait_ms(260)
+        check(state().revision == shown.revision and state().scene.phase == shown.scene.phase,
+            "Held Confirm cannot acknowledge the new notice")
+        await send(gesture, false)
+        await tap("confirm")
+    var next := await settle()
+    state("stay-next-actor")
+    check(next.actor != initial.actor and next.stage == "Movement" and commits.count(initial.actor) == 1,
+        "One Stay gesture advances the acting turn once directly to continuation")
+    var stayed: Dictionary = next.actors.filter(func(a): return a.id == initial.actor)[0]
+    check(stayed.x == decision.previewX and stayed.y == decision.previewY, "Stay commits the displayed legal stop")
+    if gesture != "click" and not notice:
+        await resample_hold(gesture)
+        await wait_ms(280)
+        check(state().revision == next.revision and state().stage == "Movement",
+            "Held input cannot operate the next actor")
+        await send(gesture, false)
     await send("down", false)
+
+func transaction_confirmation(kind: String) -> void:
+    await restart()
+    await tap("confirm")
+    var decision := state("transaction-decision")
+    await tap(kind)
+    await tap("confirm")
+    if kind == "give":
+        await tap("target")
+        await tap("confirm")
+    var expected := "GiveCommitReady" if kind == "give" else "DiscardCommitReady"
+    var pending := state("explicit-" + kind + "-confirmation")
+    check(pending.stage == expected and pending.inventories == decision.inventories and commits.is_empty(),
+        "Transaction waits for explicit confirmation before changing custody")
+    await tap("cancel")
+    var parent := state("transaction-back")
+    check(parent.stage == ("GiveTargetChoice" if kind == "give" else "ActionChoice") and
+        parent.inventories == decision.inventories and same_position(parent, decision),
+        "Transaction Back preserves inventory and the legal stop")
+    if kind == "discard":
+        await tap(kind)
+    await tap("confirm")
+    check(state().stage == expected, "Reentering still requires confirmation")
+    await tap("confirm")
+    for i in range(60):
+        if state()[kind].revealed == true: break
+        await process_frame
+    var result := state("transaction-awaiting-acknowledgement")
+    check(result[kind].visible and result[kind].revealed and result.inventories != decision.inventories and
+        commits.is_empty(), "Committed custody waits for real result acknowledgement")
+    await tap("confirm")
+    var returned := await settle()
+    state("transaction-return")
+    if kind == "give":
+        check(returned.actor != decision.actor and commits.count(decision.actor) == 1,
+            "Give ends the acting turn after acknowledgement")
+    else:
+        check(returned.actor == decision.actor and returned.stage == "ActionChoice" and
+            same_position(returned, decision) and commits.is_empty(), "Drop returns free to the same decision")
 
 func auxiliary_checks(kind: String) -> void:
     await restart()
@@ -424,6 +647,13 @@ func run() -> void:
         await movement_menu()
     elif auxiliary == "traversal-range":
         await traversal_range_checks()
+    elif auxiliary.begins_with("fresh-targets-"):
+        await fresh_targets(int(auxiliary.get_slice("-", 2)))
+    elif auxiliary.begins_with("confirm-"):
+        await transaction_confirmation(auxiliary.get_slice("-", 1))
+    elif auxiliary.begins_with("direct-stay-"):
+        var gesture := auxiliary.get_slice("-", 2)
+        await direct_stay({"notice": "confirm", "shortcut": "stay"}.get(gesture, gesture), gesture == "notice")
     elif auxiliary.is_empty():
         await movement_checks()
         await menu_checks()

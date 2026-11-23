@@ -317,7 +317,7 @@ at this slice's start. Fresh `SF2_OBSERVATION_OUTPUT`, isolated child APPDATA/LO
 The existing local reproduction is
 `pwsh -NoProfile -File local/issue1525/run-native.ps1 -Run <fresh> -Language en|zh-CN`.
 
-Ordinary Confirm/Stay/Confirm dispatches both enemies. BLAZE1 moves Mage(6,2)->(4,2), pays5->3
+Opening actions with Confirm and choosing Stay dispatches both enemies. BLAZE1 moves Mage(6,2)->(4,2), pays5->3
 and damages Scout60->53. HEAL1 moves Cleric(6,5)->(5,5), pays7->4 and heals Wounded8->23.
 The observer reads visible result messages, real faction-side projection, mounted glyph/layout
 checks, exactly two MP events, no enemy EXP/gold and same-session Scout control; a new Right input
@@ -790,7 +790,7 @@ $env:SF2_OBSERVATION_OUTPUT = Join-Path $freshIgnoredOutput 'native.json'
 Use `{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":120}` for `input.json`.
 Keep APPDATA, LOCALAPPDATA, TEMP/TMP, stdout/stderr and report in a fresh `local/issue1365` run
 subdirectory. Await actual process completion if the GUI launcher detaches. The compact probe uses
-ordinary keys at1280×720 and reads actual state/text/errors: protected refusal, both cancellations,
+ordinary keys at 1920×1080 and reads actual state/text/errors: protected refusal, both cancellations,
 normal and equipped rare removal, focus/hide suspension, unchanged actor/preview/turn/RNG, later
 STAY, Herb use and usable movement. No post-start gameplay injection, synthetic completion,
 screenshots, frame capture or new assets. JSON numeric arrays use float expected entries.

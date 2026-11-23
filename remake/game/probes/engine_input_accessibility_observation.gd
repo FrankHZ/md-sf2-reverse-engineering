@@ -781,7 +781,6 @@ func run() -> void:
     check(healed.actor != first_actor, "Another supported actor receives control")
     await key(KEY_ENTER)
     await key(KEY_SPACE)
-    await key(KEY_ENTER)
     var stayed := read_sample("stay-committed")
     check(stayed.actor == first_actor and stayed.round > battle.round, "Stay and automatic work reach next round")
     await key(KEY_ENTER)

@@ -244,7 +244,7 @@ public sealed partial class BattleSessionView : Control
     internal void RetireWindows()
     {
         SuspendPacing();
-        ClearNavigation(); RetireInspection();
+        ClearNavigation(); _boardPointer.Suspend(); RetireInspection();
         _map.ClearDecision();
         _map.Show();
         _menu.Hide(); _hud.Hide(); _scene.Hide(); _story.Hide(); _retreat.Hide();
@@ -253,6 +253,7 @@ public sealed partial class BattleSessionView : Control
 
     public override void _Process(double delta)
     {
+        _boardPointer.ReleaseIfNeutral();
         ServicePacing(delta);
     }
 
@@ -346,7 +347,7 @@ public sealed partial class BattleSessionView : Control
             GameAction.Down => new Move(ExplorationDirection.South),
             GameAction.Left => new Move(ExplorationDirection.West),
             GameAction.Confirm => new Confirm(),
-            GameAction.Stay => new ChooseAction(SessionAction.Stay),
+            GameAction.Stay => new CommitBattleStay(),
             GameAction.Cancel => new Cancel(),
             GameAction.Attack => new ChooseAction(SessionAction.PhysicalAttack),
             GameAction.Equipment => new BeginEquipment(),
@@ -433,7 +434,6 @@ public sealed partial class BattleSessionView : Control
         if (_session is null || _result is null || _result.Snapshot.Mode == SessionMode.Exploration) return;
         if (covered)
         {
-            _boardPointer.Suspend();
             _menu.Hide(); _hud.Hide(); _feedback.Hide();
             _inspection.Hide();
             _map.ClearDecision();
@@ -462,7 +462,14 @@ public sealed partial class BattleSessionView : Control
         // The acting-status query admits only live player decisions, including the
         // real preview and undo steps. Cover and inspection supersede that decision.
         var acting = !_inspection.Active ? _session.QueryBattleActingStatus() : null;
+        bool wasTargeting = Targeting;
         _menu.Present(current, choices, _result!.Failure, _input, _hostCovered ? null : acting);
+        if (wasTargeting != Targeting)
+        {
+            ClearNavigation();
+            _boardPointer.Suspend();
+            _menu.SuspendPointer(keyboard: true);
+        }
         var selection = current.Selection;
         bool movementFocus = _menu.Visible && (selection?.Stage == BattleSelectionStage.Movement || current.BattleMovement is not null);
         var candidate = _menu.Targeting ? _menu.TargetCandidate : null;

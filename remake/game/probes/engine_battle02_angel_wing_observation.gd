@@ -57,7 +57,6 @@ func run_wing() -> void:
         if s.get("actor") == "ally-2": break
         await key(KEY_ENTER)
         await key(KEY_SPACE)
-        await key(KEY_ENTER)
         s = await map_settle()
     _check(s.get("actor") == "ally-2", "live Chester control")
     if not failures.is_empty():

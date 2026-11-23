@@ -101,7 +101,7 @@ func same_action(before: Dictionary, label: String) -> void:
             check(state.actors[i][field] == before.actors[i][field], label + " preserved " + str(i) + "." + field)
 
 func run() -> void:
-    root.size = Vector2i(1280, 720)
+    root.size = Vector2i(1920, 1080)
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     await process_frame
@@ -174,7 +174,6 @@ func run() -> void:
     check(inventory("champion") == [113.0,0.0,127.0,127.0] and board().custody.Deals["61"] == 15, "outer cancel retains accepted discards")
     await key(KEY_ENTER)
     await key(KEY_SPACE)
-    await key(KEY_ENTER)
     await settle()
     check(board().actor == "receiver", "later ordinary STAY consumes the action")
     await key(KEY_ENTER)

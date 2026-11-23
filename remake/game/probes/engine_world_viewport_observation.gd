@@ -299,7 +299,6 @@ func entry() -> void:
         if current.actor == "ally-0": break
         if not await tap(KEY_ENTER): return
         if not await tap(KEY_SPACE): return
-        if not await tap(KEY_ENTER): return
         if not await wait_for(func(s): return s.get("stage") == "Movement" and s.get("stopReason") == "PlayerInput" and s.get("movement") == null, "next ordinary ally", 12.0): return
     if not check(state().actor == "ally-0", "Egress user receives normal control"): return
     if not await tap(KEY_ENTER): return

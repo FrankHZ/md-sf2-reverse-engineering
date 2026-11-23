@@ -50,11 +50,8 @@ func children() -> bool:
     await press("cancel")
     if not check(state().menu.page == "Main" and state().menu.command == 2, "Item Back keeps manual focus"): return false
     await press("down")
-    await press("confirm")
-    if not check(state().menu.page == "Commit" and resources(state()) == resources(before),
-            "Stay requires a separate confirmation and preserves resources"): return false
-    await press("cancel")
-    if not check(state().menu.page == "Main" and state().menu.command == 3, "Stay Back keeps chosen focus"): return false
+    if not check(state().menu.page == "Main" and state().menu.command == 3 and resources(state()) == resources(before),
+            "Focusing Stay preserves resources before choosing"): return false
     if before.menu.command == 0:
         await press("up")
         await press("confirm")

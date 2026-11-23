@@ -33,7 +33,6 @@ func sample(label: String, state: Dictionary) -> void:
 func stay() -> void:
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
 
 func move_up() -> void:
     await _press(KEY_UP)

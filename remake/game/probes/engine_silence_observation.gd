@@ -52,7 +52,7 @@ func settle() -> Dictionary:
     check(false,"bounded native settle");return {}
 
 func stay() -> Dictionary:
-    await key(KEY_ENTER);await key(KEY_SPACE);await key(KEY_ENTER)
+    await key(KEY_ENTER);await key(KEY_SPACE)
     return await settle()
 
 func cast() -> Dictionary:

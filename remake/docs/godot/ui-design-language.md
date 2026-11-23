@@ -59,9 +59,10 @@ their supported languages, windows, reading and return states. Keep the [impleme
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
 Remote services and an additional host Overview remain outside this design. The space below round/gold
 is reserved for the pending [current-round readout #2065](battle-ui-composition.md#current-round-order-2065).
-The [implementation handoff](battle-ui-composition.md#implementation-handoff) also tracks pending
-target press and Stay behavior (#2080), inspection movement (#2081), shared roster presentation
-(#2082), and spell descriptions (#2083).
+The battle Target phase uses one candidate change per fresh input, and choosing ordinary Stay
+commits in one gesture. The [battle input owner](battle-ui-composition.md#fresh-target-input-and-direct-stay)
+records the delivered behavior. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+tracks pending inspection movement (#2081), shared roster presentation (#2082) and spell descriptions (#2083).
 
 ## Surfaces and hierarchy
 

@@ -4,6 +4,7 @@
 **High** rigor design. Several presenters consumed the same battle decision independently, and
 misrouted input could commit an action. [Issue #2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079)
 implements phase visibility, board marks, decision layout and geometry-only close-up resize.
+[Issue #2080](#fresh-target-input-and-direct-stay) delivers fresh target navigation and direct Stay.
 The [feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
 records current behavior. [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456)
 owns the player's review of the composed experience.
@@ -13,8 +14,8 @@ owns the player's review of the composed experience.
 Use the mounted battle presenters and existing canvas, input, movement, action, transaction and
 save contracts. The session selects the visible phase. The map owns spatial marks. The command
 and inspection controls own their local focus and rectangles. Short controlled input routes supply
-native acceptance. The implementation handoff links later slices for target edges and direct Stay,
-inspection movement, the roster, spell descriptions and the queue. Original-game evidence and
+native acceptance. The implementation handoff links later slices for inspection movement, the
+roster, spell descriptions and the queue. Original-game evidence and
 intentional remake features retain their separate provenance.
 
 **Confirmed, pre-#2079 remake source.** The acting bracket, target cursor or rectangle and
@@ -36,9 +37,9 @@ Visibility and hit testing change together.
 | --- | --- | --- | --- |
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints, queue and board selection marks are hidden. |
 | Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round/gold, queue reservation, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
-| Main action | One focused command in the freestanding diamond | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the lower Stay/Search slot. Direction changes focus, Confirm chooses, and mapped shortcuts still choose their existing command. Main Back returns through the real movement undo. Stay uses a separate confirmation until [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080). |
+| Main action | One focused command in the freestanding diamond | Acting card, round/gold, queue reservation, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the lower Stay/Search slot. Direction changes focus, Confirm chooses, and mapped shortcuts still choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
 | Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Child rows replace the diamond. Scrolling keeps focus visible. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
-| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Directions cycle the live candidates. Fresh-edge handling is [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080). Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An empty candidate set gives Back and the reason. Back clears target state and restores the same command or item/spell row. |
+| Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An empty candidate set gives Back and the reason. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
 | Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one inspection hint. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) owns the movement field for a disclosed living unit | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One applicable hint and data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
@@ -135,18 +136,15 @@ a disclosed enemy stays a separate entry into the shared details panel.
 
 ## Fresh target input and direct Stay
 
-Pending implementation under [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080).
-
-`BattleSessionView.Navigation` currently classifies `CommitReady` as `TargetChoice` and
-arms the same 120ms repeat used by non-movement pages. Use the actual Target page, independent of engine staging, to route target direction events through
-the existing fresh physical edge resolution in `GameInput`. Arm repeat only for modes that retain
-it. On entry, cancel or exit, clear the prior repeat, pending pointer gesture and inherited held
-directions. A carried keyboard/d-pad or stick direction requires its release or neutral crossing
-before it acts in the new phase. A separately pressed direction is a new edge. A held direction
-changes at most one candidate per press. Rapid separate presses each work. The mapped
-Target shortcut is also one cycle per fresh press. Keep previous/next order, wrapping, default
-candidate, and the separate explicit Confirm untouched. A repeated refresh or a candidate change
-is still the same target navigation boundary.
+**Standard** implementation under [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080).
+One mapped direction or Target shortcut selects once among live offers on the Attack, Magic and
+Item Target page. Keyboard echoes and repeated D-pad presses cannot cycle it. A mapped stick
+axis rearms after a sample below 0.35 magnitude. A held deflection or a sampled sign change without
+neutral cannot cycle it again. A fresh press on a different source can select independently.
+Rapid taps keep the existing order, wrap, initial legal target and explicit Confirm. Target
+entry, exit, Back and host cover clear carried navigation and pending pointer gestures. Candidate
+updates stay within the same Target phase. Movement keeps its on-arrival repeat. Main, lists and
+free inspection keep their existing repeat rules.
 [Navigation](../../game/src/Battles/BattleSessionView.Navigation.cs) ·
 [Input resolution](../../game/src/Input/GameInput.cs)
 
@@ -158,18 +156,59 @@ takes a separate branch.
 [Menu and Stay branch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm#L952-L964) ·
 [Turn continuation](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/executeindividualturn.asm#L166-L172)
 
-**Confirmed, remake source.** `BattleCommandMenu.Select` enters a second Commit page after
-selecting Stay. Remove that extra player step. A fresh Confirm on Stay, its mapped shortcut, or a
-complete Stay click commits once at the legal preview stop. Keep the same session validation and
-commit/continuation path, including after-turn effects. Prefer a single ordinary-Stay intent at
-the session boundary that reuses the existing admission and commit logic. It avoids exposing an
-intermediate Stay page to the synchronous `Submit`/presentation callbacks. Existing explicit
-staged action callers can retain their contract. On rejection retain the current decision and
-reason. Consume the triggering input through the next actor or presentation acknowledgement
-boundary. Main Back still cancels before choice. The Search substitution, its confirmation, and
-transaction confirmation and acknowledgement keep their own paths.
+**Confirmed, remake behavior.** A fresh Confirm on Stay, its mapped shortcut, or a complete
+Stay click sends one `CommitBattleStay` at the legal preview stop. The session uses the existing
+admission, commit and after-turn continuation in that submission. Explicit staged action callers
+can still select Stay and submit Confirm. The ordinary presenter retains the decision and reason
+on refusal. The triggering input cannot operate the next actor or acknowledge an after-turn
+notice. Main Back before choice restores Movement through existing undo. A faced chest substitutes
+Search with its own confirmation and result. Give and Drop keep their own confirmation and result
+handling.
 [Command presenter](../../game/src/Battles/BattleCommandMenu.cs) ·
 [Dispatcher](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs)
+
+### Reproduce target navigation and Stay
+
+Use the SDK, Debug build, headless Godot and isolated output setup under [Reproduce slice 1](#reproduce-slice-1).
+Use the same English standard bindings and instant text. For the target routes, prepare three
+ignored copies of `remake/content/authored/battle-give.json`. Give `champion` the
+`unpromoted-priest` class, 190 HP, 12 maximum and initial MP, and Care levels 1–3. Copy the Care 1
+spell from `garden-watch.json` for each level and use class masks of 17 for both weapons. Clone
+`reserve` as `reserve-2` in the actor definitions, start vitals and encounter placements with
+processing order 155. Use the following foe placements. Keep the allied positions and Herb slot.
+
+| `SF2_BATTLE_NAVIGATION_AUX` | `SF2_BATTLE_NAVIGATION_ROUTE` | Authored package |
+| --- | --- | --- |
+| `fresh-targets-2` | `keyboard`, then `pad` and `axis` | Copy with `reserve` at (1,1) and `reserve-2` at (1,3) |
+| `fresh-targets-1` | `pad` | Copy with `reserve` at (1,1) and `reserve-2` at (6,5) |
+| `fresh-targets-0` | `keyboard` | Copy with `reserve` at (7,5) and `reserve-2` at (6,5) |
+| `direct-stay-confirm` | `pad` | Unchanged `garden-watch.json` |
+| `direct-stay-click` | `keyboard` | Unchanged `garden-watch.json` |
+| `direct-stay-shortcut` | `pad` | Unchanged `garden-watch.json` |
+| `direct-stay-notice` | `keyboard` | Unchanged `poison-turn.json` |
+| `confirm-give` | `keyboard` | Unchanged `battle-give.json` |
+| `confirm-discard` | `keyboard` | Unchanged `battle-discard.json` |
+
+Set both variables from the row. Run from `remake/` with absolute report, log, package and settings
+paths. Use a fresh report and native log for each case.
+
+```powershell
+$env:SF2_BATTLE_NAVIGATION_OUTPUT = $report
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 60 --resolution 1920x1080 `
+    --path game --log-file $nativeLog --script res://probes/engine_battle_navigation_observation.gd -- `
+    --authored-package $package --input-settings $settings
+```
+
+The [observer](../../game/probes/engine_battle_navigation_observation.gd) bounds each run to 35
+seconds. Require exit 0, `passed:true`, an empty failures list and clean script/runtime logs.
+It submits actual mapped Godot key events with echoes, device-0 D-pad buttons and signed axes
+with dead-zone samples, plus complete and interrupted mouse gestures. It reads live revisions,
+candidates, parents, decline reasons, movement stops, action receipts and notice state. Physical
+device feel and OS delivery remain with #1456. Use the existing [held preview](battle-interaction-baseline.md#held-preview-step-handoff),
+[Search](../development-and-verification.md#battle-search-observation),
+[Give](../development-and-verification.md#battle-give-authored-observation) and
+[Drop](../development-and-verification.md#battle-discard-authored-observation) routes for the
+neighboring boundaries.
 
 ## Selected spell descriptions
 
