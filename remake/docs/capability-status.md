@@ -150,7 +150,7 @@ The [native verification owner](verification/battle-save.md) distinguishes contr
 ordinary input, inherited engine/storage evidence and remaining physical/exit-warning limits.
 Required unknown or finite music/interpreter state rejects; arbitrary battle suspension remains outside scope.
 Active MUDDLE remains outside battle Save/Continue. Controlled engine cases complete the
-temporary ally's Attack, learned BLAZE, HEAL and MOVE with an empty pack.
+temporary ally's Attack, learned spells, Black Ring and Healing Rain use, and MOVE.
 [Temporary control and remaining admission](domain/hostile-spells-design.md#temporary-ally-commandset-06)
 
 ## Castle bedroom scene retirement

@@ -13,8 +13,10 @@ internal sealed record EquipmentItemUse(int Slot, ushort Word, EquipmentWear Wea
         if (!BattleEquipment.CanBeDamaged(owner.Definition, item) || !BattleEquipment.IsEligible(owner.Definition, item))
             throw new BattleRuleException("equipment-use-class", "item.slot");
         BattleEquipment.ValidateLoadout(owner.Definition, owner.SourceLoadout);
-        if (!owner.Initialized || (owner.ActivationWord & 8) == 8 ||
-            !SilenceRules.Supported(owner.Status, battle.Definition.Poison))
+        bool supportedStatus = BattleControlRules.UsesTemporaryAllyAi(owner)
+            ? SilenceRules.SupportedInBattle(owner.Status, battle.Definition.Poison)
+            : SilenceRules.Supported(owner.Status, battle.Definition.Poison);
+        if (!owner.Initialized || (owner.ActivationWord & 8) == 8 || !supportedStatus)
             throw new BattleRuleException("equipment-use-actor", "actor");
         if (battle.Definition.Rewards is null || owner.Exp is null)
             throw new BattleRuleException("equipment-use-reward", "actor.exp", true);

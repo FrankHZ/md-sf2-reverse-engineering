@@ -77,7 +77,7 @@ internal sealed class PrismLaser : IBattleActionRule
         binding.RequireDefinition(battle.Definition);
         var flower = battle.GetActor(actor);
         if (!binding.Combatants.TryGetValue(actor, out var source) || source.Direction is null || flower.IsAlly ||
-            flower.Control != BattleControl.Automatic || flower.Hp == 0 || flower.Status != 0 ||
+            flower.Control != BattleControl.Automatic || flower.Hp == 0 || (flower.Status & ~MuddleRules.CounterMask) != 0 ||
             flower.Position is not { X: > 0 and < 47, Y: > 0 and < 47 } ||
             flower.ActivationWord is not { } word || (word & ~1) != 0 ||
             battle.StartPolicy is { AllyAutoBattle: true } or { OpponentControl: true })
@@ -92,7 +92,7 @@ internal sealed class PrismLaser : IBattleActionRule
         foreach (var unit in battle.Actors)
         {
             if (unit.Hp == 0 || unit.Position is not { X: >= 0 and < 48, Y: >= 0 and < 48 } position) continue;
-            if (unit.Hp > unit.MaxHp || unit.MaxHp >= 32768 || unit.Status != 0 || unit.ActivationWord is not { } word || (word & ~9) != 0)
+            if (unit.Hp > unit.MaxHp || unit.MaxHp >= 32768 || (unit.Status & ~MuddleRules.CounterMask) != 0 || unit.ActivationWord is not { } word || (word & ~9) != 0)
                 throw new BattleRuleException("prism-target-state", "actors", true);
             if ((word & 8) != 0) continue;
             // Source overwrites overlapping squares. This bounded admission rejects

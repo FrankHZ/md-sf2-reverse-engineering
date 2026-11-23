@@ -21,7 +21,15 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         static void Require(bool valid)
         { if (!valid) throw new InvalidOperationException("Invalid automatic decision."); }
         var actor = before.GetActor(actorRef);
-        Require(ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser) ||
+        bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
+        bool itemAttack = false, healingItem = false;
+        if (temporary && !QueueOnly && Target is not null &&
+            ChosenAction is { Kind: BattleActionKind.Item, Spell: null, ItemSlot: { } itemSlot })
+        {
+            itemAttack = itemSlot == EnemySpellDecision.AllyAttackItemSlot(before.Definition, actor);
+            healingItem = Target == actorRef && itemSlot == EnemySpellDecision.AllyRainSlot(before.Definition, actor);
+        }
+        Require(itemAttack || healingItem || ChosenAction is null || ChosenAction == new BattleActionRef(BattleActionKind.PrismLaser) ||
             ChosenAction is { } sword && TarosEffectiveness.IsSwordUse(actor, sword) && Target is not null && !QueueOnly ||
             ChosenAction is { Kind: BattleActionKind.AttackSpell or BattleActionKind.Healing or BattleActionKind.SupportSpell, Spell: not null, ItemSlot: null } &&
                 Target is not null && !QueueOnly);
@@ -37,7 +45,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             ReferenceEquals(Battle.ItemCustody, before.ItemCustody) && Equals(Battle.DeathCredit, before.DeathCredit) &&
             ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && ReferenceEquals(Battle.Visuals, before.Visuals) && Battle.Queue.SequenceEqual(before.Queue) &&
             Battle.Actors.Count == before.Actors.Count &&
-            (actor.Control == BattleControl.Automatic || BattleControlRules.UsesTemporaryAllyAi(actor)) &&
+            (actor.Control == BattleControl.Automatic || temporary) &&
             actor.Hp > 0 && actor.Position is not null);
         Require(before.Regions is null ? Battle.Regions is null : Battle.Regions is { } regions &&
             regions.Flags.SequenceEqual(before.Regions.Flags) && (regions.Tested == before.Regions.Tested || regions.Tested == 0));
@@ -95,7 +103,7 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
         Require(!before.Actors.Any(unit => unit.Actor != actorRef && unit.Hp > 0 && unit.Position == Destination));
         if (Target is { } target)
             Require(before.Actors.Any(unit => unit.Actor == target && unit.Hp > 0 && unit.Position is not null &&
-                (ChosenAction?.Kind == BattleActionKind.Healing ? unit.Faction == actor.Faction : unit.Faction != actor.Faction)));
+                (ChosenAction?.Kind == BattleActionKind.Healing || healingItem ? unit.Faction == actor.Faction : unit.Faction != actor.Faction)));
         uint seed = before.ThinkingSeed;
         uint main = before.MainSeed; int categories = 0;
         foreach (var effect in Effects)
@@ -104,8 +112,10 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                 (effect.Target is null || before.Actors.Any(unit => unit.Actor == effect.Target)));
             if (effect.Kind == "rng-ai-attack-category")
             {
-                var category = BattleRandom.NextMain(main, 6);
-                Require(++categories == 1 && effect.RandomRange == 6 && effect.Target is null &&
+                ushort range = temporary && Effects.Any(row => row.Kind == "ai-item-candidate") &&
+                    Effects.Any(row => row.Kind == "ai-spell-candidate") ? (ushort)2 : (ushort)6;
+                var category = BattleRandom.NextMain(main, range);
+                Require(++categories == 1 && effect.RandomRange == range && effect.Target is null &&
                     effect.Before == main && effect.After == category.After && effect.RandomValue == category.Value);
                 main = category.After; continue;
             }

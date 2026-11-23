@@ -117,7 +117,7 @@ public sealed class AttackSpellTests
         var caster = battle.GetActor(Caster);
         int promoted = power + power / 4;
         Assert.Equal(promoted / 2, Sf2AttackSpellAction.PotentialDamage(caster, battle.GetActor(Center), effect));
-        Assert.Equal(power / 2, Sf2AttackSpellAction.PotentialDamage(caster, battle.GetActor(Center), effect, item: true));
+        Assert.Equal(power / 2, Sf2AttackSpellAction.PotentialDamage(caster, battle.GetActor(Center), effect, rawPower: true));
         Assert.Equal(radius == 2 ? new[] { Wing, Center } : [Center], action.Reactions.Select(r => r.Target));
         Assert.All(action.ConstructionEffects.Where(e => e.Kind == "rng-spell-critical"),
             draw => Assert.Equal(critical, draw.RandomRange));

@@ -34,9 +34,8 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             (actor.Status & 0xC1) != 0 || battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
 
-        // A temporary turn can reach automatic item use as soon as it carries an item.
         if (actor.SourceLoadout is not { } loadout ||
-            (temporary ? loadout.Items.Any(word => word != 127) : !PhysicalOnly(actor, loadout)))
+            (temporary ? loadout.Items.Any(word => word > 511) : !PhysicalOnly(actor, loadout)))
             throw new BattleRuleException("source-ally-action-categories", "actor.loadout", true);
         if (actor.Definition.Equipment is not null) BattleEquipment.ValidateLoadout(actor.Definition, loadout);
         var slots = battle.Definition.Initialization?.SourceCombatants ??
@@ -58,7 +57,7 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([.. effects, .. attack.Effects,
                 new("ai-command-attack1", actorRef, After: 0)]) };
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
-        if (temporary && actor.Spells.Count != 0)
+        if (temporary)
         {
             var allies = slots.Where(p => p.Key is >= 0 and < 30).OrderBy(p => p.Key).Select(p => battle.GetActor(p.Value)).ToArray();
             if (EnemySpellDecision.Heal(battle, actorRef, actions, grid, allies) is { } recovery)

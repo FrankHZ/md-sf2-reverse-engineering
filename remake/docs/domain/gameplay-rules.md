@@ -699,8 +699,9 @@ these rules and their ordinary scene/return consumers, including state retained 
 enemies128–159) and each Flower to a cardinal direction0right/1up/2left/3down. Processing order,
 actor name and display facing do not select the ray. `PrismLaserDecision` implements the admitted
 kind93 branch under ordinary enemy automatic control and unconditional15/15 activation. Existing
-sleep turn handling prevents a sleeping actor from executing; other actor status/control and
-non15/standby configurations remain Unsupported.
+sleep turn handling prevents a sleeping actor from executing. The MUDDLE 1 counter preserves
+the ray decision and uses shared after-turn recovery. Other actor status/control and non15/standby
+configurations remain Unsupported.
 
 **Confirmed static source:** SF2DISASM pin `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `code/gameflow/battle/ai/startaicontrol.asm` (`StartAiControl`, `ProcessLineAttackerAi`),
@@ -717,8 +718,8 @@ neutral-bit3 actors, and chooses the nearest eligible ally or Stay without movem
 Preparation uses current occupancy from both factions, sorts by explicit source slot, and ignores
 whether the old focus remains eligible. Walls, terrain, ordinary range and rendered crop do not stop
 the ray. Eligible overlap is explicitly rejected instead of approximating source overwrite semantics.
-All edge origins, signed-high/malformed HP, unknown activation words, target statuses and special
-kinds remain closed. The authored binding declares ordinary initial activation word0; a missing
+The MUDDLE 1 counter is admitted on living occupants. Edge origins, signed-high/malformed HP,
+unknown activation words, other target statuses and special kinds remain closed. The authored binding declares ordinary initial activation word0; a missing
 binding is not an inferred original state.
 
 Each ordinary target receives base16 minus two main-stream `RNG(3)` results, with minimum1 before

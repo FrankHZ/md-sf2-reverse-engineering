@@ -10,6 +10,37 @@ internal static class EnemySpellDecision
     internal static bool AllyAttackFamily(SpellRef spell) =>
         spell.Value is "blaze" or "freeze" or "bolt" or "blast" or "katon" or "raijin";
 
+    private sealed record RangedCandidates(BattleActionRef Action, string Label,
+        (BattleActorState Target, MapPosition? Position)[] Reachable, PhysicalTargetPriority[] Priorities);
+
+    internal static int? AllyAttackItemSlot(BattleDefinition definition, BattleActorState actor)
+    {
+        var items = actor.SourceLoadout?.Items;
+        if (items is null) return null;
+        for (int slot = 0; slot < items.Count; slot++)
+        {
+            ushort word = items[slot];
+            byte id = (byte)(word & 127);
+            if (id == 127) continue;
+            // Admitted ally words have no AI-use bit. Retail's use-spell test
+            // accepts NOTHING ($3f), so the first nonempty word ends this scan.
+            return (word & 128) != 0 && definition.AttackItems.TryGetValue(id, out var attack) &&
+                attack.Effect.Spell.Value is ("blaze" or "freeze" or "bolt" or "blast") ? slot : null;
+        }
+        return null;
+    }
+
+    internal static int? AllyRainSlot(BattleDefinition definition, BattleActorState actor)
+    {
+        if (!definition.HealingItems.TryGetValue(8, out var rain) || rain.Effect != HealingItemEffect.FullPartyHp)
+            return null;
+        var items = actor.SourceLoadout?.Items;
+        if (items is not null)
+            for (int slot = 0; slot < items.Count; slot++)
+                if ((items[slot] & 127) == rain.ItemId) return slot;
+        return null;
+    }
+
     internal static BattleAutomaticAction? Attack(EngineBattleState battle, ActorRef actorRef,
         IPhysicalActionRule physical, IReadOnlyList<IBattleActionRule> actions, WeightedMovementGrid? selectedGrid = null,
         IReadOnlyList<BattleActorState>? orderedTargets = null)
@@ -26,62 +57,82 @@ internal static class EnemySpellDecision
         if (swordSlot.HasValue && battle.Definition.AttackSpells.ContainsKey(TarosEffectiveness.SwordSpell))
             key = TarosEffectiveness.SwordSpell;
         else swordSlot = null;
-        if (key == default)
-            return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, selectedGrid, orderedTargets);
-        var spell = battle.Definition.AttackSpells[key];
-        spell.RequireSupported(enemy: !actor.IsAlly);
-        var rule = actions.Single(r => r.Kind == BattleActionKind.AttackSpell);
-        var action = new BattleActionRef(BattleActionKind.AttackSpell, key, swordSlot);
-        var targets = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();
+
         var grid = selectedGrid ?? BattleMovement.Grid(battle, actorRef);
         var ordered = orderedTargets ?? battle.Actors.OrderBy(a => a.ProcessingOrder).ToArray();
-        var candidates = ordered.Where(a => targets.Contains(a.Actor))
-            .Select(target => (Target: target, Position: AiMovementRules.AttackPosition(grid, target.Position!,
-                spell.MinimumRange, spell.MaximumRange, Occupied)))
-            .Where(c => c.Position is not null).ToArray();
-        if (candidates.Length == 0) return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, grid, orderedTargets);
-        var priorities = new PhysicalTargetPriority[candidates.Length];
         List<BattleEffect> effects = [];
         uint thinking = battle.ThinkingSeed;
-        for (int i = candidates.Length - 1; i >= 0; i--)
+        // The source scores in item, learned spell, physical order.
+        RangedCandidates? item = null;
+        if (BattleControlRules.UsesTemporaryAllyAi(actor) && AllyAttackItemSlot(battle.Definition, actor) is { } slot)
         {
-            var candidate = candidates[i];
-            int cost = grid.CostAt(candidate.Position!)!.Value;
-            int total = 0;
-            foreach (var affected in ordered.Where(unit => targets.Contains(unit.Actor) &&
-                    BattleRange.Contains(candidate.Target.Position!, unit.Position!, 0, spell.Radius)))
-                total += PhysicalTargetRules.Score(actor, affected, (byte)cost,
-                    Sf2AttackSpellAction.PotentialDamage(actor, affected, spell, swordSlot.HasValue), ref thinking, effects);
-            byte priority = unchecked((byte)total);
-            priorities[i] = new((byte)cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));
-            effects.Add(new("ai-spell-candidate", actorRef, cost, priority, Target: candidate.Target.Actor));
+            var effect = battle.Definition.AttackItems[(byte)(actor.SourceLoadout!.Items[slot] & 127)].Effect;
+            item = Score(effect, new(BattleActionKind.Item, ItemSlot: slot), "item");
         }
+        RangedCandidates? spell = null;
+        if (key != default)
+        {
+            var effect = battle.Definition.AttackSpells[key];
+            effect.RequireSupported(enemy: !actor.IsAlly);
+            spell = Score(effect, new(BattleActionKind.AttackSpell, key, swordSlot), "spell");
+        }
+        var ranged = spell ?? item;
+        if (ranged is null) return EnemyPhysicalDecision.TryResolve(battle, actorRef, physical, grid, orderedTargets);
+
         var prepared = battle.With(thinkingSeed: thinking);
-        // Source scores spells before physical attacks, even when the category draw
-        // later selects physical. Category selection uses MAIN, not thinking RNG.
         var attack = EnemyPhysicalDecision.TryResolve(prepared, actorRef, physical, grid, orderedTargets);
         if (attack is not null) { effects.AddRange(attack.Effects); prepared = attack.Battle; }
-        // determinebattleaction compares the full packed spell word with AQUA1.
-        // AQUA2 therefore consumes the ordinary category draw, including spell-only choices.
-        if (key is not { Value: "aqua", Level: 1 })
+        // AQUA1 alone bypasses the category draw. With both ranged categories
+        // reachable, the range-2 draw chooses spell (0) or item (1).
+        if (key is not { Value: "aqua", Level: 1 } || item is not null)
         {
-            var category = BattleRandom.NextMain(battle.MainSeed, 6);
-            effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, 6, category.Value));
+            ushort range = item is not null && spell is not null ? (ushort)2 : (ushort)6;
+            var category = BattleRandom.NextMain(battle.MainSeed, range);
+            effects.Add(new("rng-ai-attack-category", actorRef, category.Before, category.After, range, category.Value));
             prepared = prepared.With(mainSeed: category.After);
-            if (attack is not null && !(swordSlot.HasValue ? category.Value is 3 or 5 : category.Value is 2 or 4))
+            if (range == 2)
+                ranged = category.Value == 1 ? item! : spell!;
+            else if (attack is not null && !(item is not null || swordSlot.HasValue
+                         ? category.Value is 3 or 5 : category.Value is 2 or 4))
                 return attack with { Battle = prepared, Effects = effects.AsReadOnly() };
         }
-        // determinebattleaction.asm @loc_34 overrides the mover table for CAST_SPELL.
-        var table = swordSlot.HasValue ? PhysicalTargetRules.Table(actor.Definition.Mover) : PhysicalPriorityTable.Mage;
-        var selection = PhysicalTargetRules.Select(priorities, table, preferTargetClass: !actor.IsAlly)
+        var table = ranged.Action.ItemSlot.HasValue ? PhysicalTargetRules.Table(actor.Definition.Mover) : PhysicalPriorityTable.Mage;
+        var selection = PhysicalTargetRules.Select(ranged.Priorities, table, preferTargetClass: !actor.IsAlly)
             ?? throw new BattleRuleException("ai-target-selection", "ai.spells", true);
-        var chosen = candidates[selection.Index];
+        var chosen = ranged.Reachable[selection.Index];
         if (!actor.IsAlly)
             prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: swordSlot.HasValue ? actorRef : chosen.Target.Actor) : a));
-        effects.Add(new("ai-spell-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: chosen.Target.Actor));
+        effects.Add(new($"ai-{ranged.Label}-target", actorRef, selection.RawPriority, selection.CappedPriority, Target: chosen.Target.Actor));
         return new(prepared, effects.AsReadOnly(), chosen.Position!, BattleMovement.Route(actor.Position!,
             BattleMovement.MoveString(grid, actor.Position!, chosen.Position!, battle.Definition.Width, battle.Definition.Height)),
-            chosen.Target.Actor, ChosenAction: action);
+            chosen.Target.Actor, ChosenAction: ranged.Action);
+
+        RangedCandidates? Score(AttackSpellDefinition effect, BattleActionRef action, string label)
+        {
+            var rule = actions.Single(r => r.Kind == action.Kind);
+            var targets = BattleActionRules.Invoke(rule, "ai-targets", () => rule.QueryTargets(battle, actorRef, action)).ToHashSet();
+            var candidates = ordered.Where(a => targets.Contains(a.Actor))
+                .Select(target => (Target: target, Position: AiMovementRules.AttackPosition(grid, target.Position!,
+                    effect.MinimumRange, effect.MaximumRange, Occupied)))
+                .Where(c => c.Position is not null).ToArray();
+            if (candidates.Length == 0) return null;
+            var priorities = new PhysicalTargetPriority[candidates.Length];
+            for (int i = candidates.Length - 1; i >= 0; i--)
+            {
+                var candidate = candidates[i];
+                int cost = grid.CostAt(candidate.Position!)!.Value;
+                int total = 0;
+                foreach (var affected in ordered.Where(unit => targets.Contains(unit.Actor) &&
+                        BattleRange.Contains(candidate.Target.Position!, unit.Position!, 0, effect.Radius)))
+                    total += PhysicalTargetRules.Score(actor, affected, (byte)cost,
+                        Sf2AttackSpellAction.PotentialDamage(actor, affected, effect, rawPower: actor.IsAlly || action.ItemSlot.HasValue),
+                        ref thinking, effects);
+                byte priority = unchecked((byte)total);
+                priorities[i] = new((byte)cost, priority, Sf2ClassRules.SourceClass(candidate.Target.Definition.ClassRule));
+                effects.Add(new($"ai-{label}-candidate", actorRef, cost, priority, Target: candidate.Target.Actor));
+            }
+            return new(action, label, candidates, priorities);
+        }
 
         bool Occupied(MapPosition position) => battle.Actors.Any(a => a.Hp > 0 && a.Position == position);
     }
@@ -91,14 +142,21 @@ internal static class EnemySpellDecision
         IReadOnlyList<BattleActorState>? orderedTargets = null)
     {
         var actor = battle.GetActor(actorRef);
+        int? rainSlot = BattleControlRules.UsesTemporaryAllyAi(actor) ? AllyRainSlot(battle.Definition, actor) : null;
+        if (rainSlot is not null && battle.Definition.Initialization?.SourceCombatants.TryGetValue(128, out var first) == true)
+        {
+            var enemy = battle.GetActor(first);
+            if (2 * enemy.Hp <= enemy.MaxHp) return Rain();
+        }
+
         var key = actor.Spells.FirstOrDefault(s => s.Level == 1 &&
             (s.Value is "heal" or "aura" || actor.IsAlly && s.Value == "detox"));
         // The source healing command tries only HEAL/AURA. A preceding DETOX
         // entry reaches the item fallback without testing a later healing spell.
-        if (key == default || key.Value == "detox") return null;
+        if (key == default || key.Value == "detox") return RainFallback();
         if (!battle.Definition.Spells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
         if (spell.CuresPoison) throw new BattleRuleException("enemy-poison-cure", "spell", true);
-        if (actor.Mp < spell.MpCost) return null;
+        if (actor.Mp < spell.MpCost) return RainFallback();
         byte entryLevel = actor.Spells.Where(s => s.Value == key.Value).Max(s => s.Level);
         var rule = actions.Single(r => r.Kind == BattleActionKind.Healing);
         var allowed = BattleActionRules.Invoke(rule, "ai-targets", () =>
@@ -130,6 +188,13 @@ internal static class EnemySpellDecision
                     battle.Definition.Width, battle.Definition.Height)), target.Actor, ChosenAction: action);
         }
         return null;
+
+        BattleAutomaticAction? RainFallback() =>
+            rainSlot.HasValue && 3 * actor.Hp <= 2 * actor.MaxHp ? Rain() : null;
+
+        BattleAutomaticAction Rain() => new(battle, [new("ai-rain-target", actorRef, Target: actorRef)],
+            actor.Position!, [actor.Position!], actorRef,
+            ChosenAction: new(BattleActionKind.Item, ItemSlot: rainSlot));
     }
 
     // DetermineHealingSpellLevel checks an unmasked packed entry with a five-bit shift.
