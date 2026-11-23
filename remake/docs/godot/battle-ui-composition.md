@@ -213,8 +213,8 @@ return. The fourteen-member field route opened Prepare, returned to the same foc
 scroll, and resumed ordinary field input. The #2081 corridor passed with Reduced Flash off and on.
 The authored start reader rejects uninitialized allies, and these settled menus offer no
 membership-changing command. Existing `BattleMemberQueryTests` cover uninitialized detail refusal.
-Nearest-survivor selection was reviewed at the source boundary. Art-present rows and human
-visual/device review remain outside the authored observations.
+Nearest-survivor selection was reviewed at the source boundary. The registered-art observation
+below covers visible portraits and texture lifetime.
 
 The first large run exited 1 after the initial 65-character ID failed admission and the observer
 could not reach player control. The first field run exited 1 at “Field roster still opens Prepare”:
@@ -222,6 +222,57 @@ without field preparation metadata it reached `field-preparation-unsupported`. T
 fixtures above reached the intended boundaries. The first full-name detail check exited 1 at
 “The long name remains readable on the full sheet”. The measured header layout passed its rerun.
 Human review stays with #1456.
+
+#### Reproduce registered portraits
+
+Use the same Debug adapter, disposable saves, original graphics mode, and fresh output/settings
+from the authored recipe. Load `local/private-inputs.ps1` in the launch process. Select the
+registered world, entry and battle scenes in place. Each case is an independent controlled start
+through the existing host observer, with selection and Back driven by ordinary mapped keys.
+
+From the repository root, select `$case` below, use an absolute `$start` path under this
+checkout's ignored `local/`, and copy that case's tracked input unchanged to `$start`.
+Use the registered opening party. These cases need no separate party input.
+
+| `$case` | Copy from `remake/reference/inputs/` | Input and observation |
+| --- | --- | --- |
+| `member-field-portraits` | `yeel-to-battle03-start.json` | From settled Map66 Party, select two members, open Prepare and Back, then close/reopen Party. Read the selected row and summary textures directly. |
+| `member-battle-portraits` | `engine-battle02-egress-start.json` | Accept the initial Battle02 entry, open Member, select a second row, open details and Back, then close/reopen Member. No turn is committed. |
+
+```powershell
+$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2035/galam-town-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $pack 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $pack 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $pack 'entry/entry.json'
+Get-ChildItem -LiteralPath (Join-Path $pack 'opening-inputs') -File -Filter 'SF2_*.json' |
+    ForEach-Object { [Environment]::SetEnvironmentVariable($_.BaseName, $_.FullName, 'Process') }
+$env:SF2_INSPECTION_START = $start
+$env:SF2_INSPECTION_ROUTE = 'keyboard'
+$env:SF2_VIEWPORT_CASE = $case
+$env:SF2_VIEWPORT_OUTPUT = $report
+Push-Location remake
+& $env:GODOT_BIN --verbose --headless --audio-driver Dummy --max-fps 60 --resolution 1920x1080 `
+    --path game --log-file $nativeLog --script res://probes/engine_battle_member_observation.gd -- `
+    --input-settings $settings
+$nativeExit = $LASTEXITCODE
+Pop-Location
+```
+
+**Confirmed, bounded native observation.** Both cases exited 0 with `passed:true` and empty
+failures and unavailable lists. The sampled rows contained visible 48×64 textures in 48×72
+controls. Two selected members used different textures. Field's 144×192 summary shared the
+selected row texture through Prepare/Back and used the first row's texture after reopening.
+Battle selected the matching member's sheet and restored the row's live texture and focus
+on Back. Reopening mounted the first row again. No disposed texture, adapter or script errors
+were reported. The battle process retained the known two-ObjectDB warning at shutdown.
+Verbose output identified `AudioStreamWAV` and `AudioStreamPlaybackWAV`.
+[Audio lifetime boundary](../verification/host.md#audio-resource-lifetime-observation)
+
+Two initial attempts exited 1 before a portrait checkpoint. The old separate party input
+returned `observation-party-rejected` in this package. Using the registered party at (29,32)
+entered Battle02 immediately and hit `Deadline: settled field before Battle02`. The two starts
+above isolate the actual field and battle callers. These observations cover original graphics
+mode; HD and human visual/device review remain outside this check.
 
 ### Reproduce the inspected movement field
 

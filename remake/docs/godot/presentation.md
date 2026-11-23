@@ -2223,8 +2223,9 @@ reject explicitly. No live actor means no invented row or scalars.
 `BattleUnitProjection.Details` now supplies both map inspection and Member from the same live scalar,
 status, spell and loadout readers, retaining private ≥100 stat unavailability and missing inventory
 semantics. `BattleInspectionView` uses a distinct disposable `MemberFull` caller: A/B/C returns to
-`Members` with its selected actor and scroll, including the current actor. Direct cursor A on that actor still
-closes to Movement. Options retains the Member choice after list Back; Map remains reachable.
+`Members` with its selected actor and scroll, including the current actor. Back from details opened
+directly on the board returns to Cursor for any actor. Cancel on Cursor returns to Movement.
+Options retains the Member choice after list Back, and Map remains reachable.
 `BattleMemberListView` mounts the same scrollable rows as field Party, with localized wrapped names,
 optional admitted portraits and distinct defeated, absent and unavailable annotations. Up/Down
 reveals the selected row. A/C or a complete row click opens eligible details. Mapped hints come

@@ -60,8 +60,7 @@ func roster_pointer(rect: Dictionary, button: MouseButton, pressed: bool) -> voi
     Input.parse_input_event(event)
     await frames(3)
 
-func authored_roster() -> bool:
-    var baseline := signature(state())
+func enter_roster() -> bool:
     await act("cancel")
     if not await inspect_page("Cursor"): return false
     var s := state()
@@ -73,7 +72,11 @@ func authored_roster() -> bool:
     await act("confirm")
     if not await inspect_page("Options"): return false
     await act("confirm")
-    if not await inspect_page("Members"): return false
+    return await inspect_page("Members")
+
+func authored_roster() -> bool:
+    var baseline := signature(state())
+    if not await enter_roster(): return false
     var inspection: Dictionary = sample("roster-open").inspection
     var roster: Dictionary = inspection.roster
     var rows: Array = roster.rows
@@ -139,10 +142,92 @@ func authored_roster() -> bool:
     return check(not state().inspection.active and state().failure == null and state().scene.error == null
         and board().cursorRole == "Movement", "Back returns healthy ordinary Movement") and purity(baseline, "authored members")
 
+func portrait_texture(image: TextureRect, label: String) -> Texture2D:
+    if not check(is_instance_valid(image) and image.is_visible_in_tree()
+            and is_instance_valid(image.texture) and image.texture.get_size() == Vector2(48, 64),
+            label + ": visible, valid 48x64 texture"): return null
+    samples.append({"label":label, "control_size":[image.size.x, image.size.y],
+        "texture_size":[image.texture.get_width(), image.texture.get_height()]})
+    return image.texture
+
+func roster_portrait(index: int, label: String) -> Texture2D:
+    var row := view.find_child("Roster", true, false).get_node("Members/Member" + str(index))
+    var image: TextureRect
+    for child in row.get_children():
+        if child is TextureRect: image = child
+    if not check(is_instance_valid(image) and image.size.x == 48 and image.size.y >= 64, label + ": portrait row geometry"):
+        return null
+    return portrait_texture(image, label)
+
+func field_portrait(index: int, label: String) -> int:
+    var party: Dictionary = state().partyStatus
+    if not check(party.visible and party.index == index and party.rows[index].focused, label + ": selected field row"):
+        return 0
+    var row_texture := roster_portrait(index, label + "-row")
+    if row_texture == null: return 0
+    var summary := view.find_child("MemberPortrait", true, false) as TextureRect
+    if not check(is_instance_valid(summary) and summary.size == Vector2(144, 192), label + ": summary portrait geometry"):
+        return 0
+    var detail_texture := portrait_texture(summary, label + "-summary")
+    if not check(detail_texture == row_texture, label + ": summary borrows the selected row texture"):
+        return 0
+    return row_texture.get_instance_id()
+
+func field_portraits() -> bool:
+    if not await wait_for(func(s): return s.get("canWaitAtInput", false), "settled field for Party"): return false
+    await tap(KEY_E)
+    var first := field_portrait(0, "field-first")
+    if first == 0: return false
+    await act("down")
+    var second := field_portrait(1, "field-second")
+    if not check(second != 0 and second != first, "Different member selects different art"): return false
+    await act("confirm")
+    if not check(state().partyStatus.preparation.visible, "Prepare opened on the selected member"): return false
+    await act("cancel")
+    if not check(field_portrait(1, "field-prepare-back") == second, "Prepare Back restores the live selected texture"): return false
+    await act("cancel")
+    if not check(not state().partyStatus.visible, "Field Party closes"): return false
+    await tap(KEY_E)
+    if not check(field_portrait(0, "field-reopen") == first, "Reopened field Party uses live first-row art"): return false
+    await act("cancel")
+    return check(not state().partyStatus.visible and state().failure == null, "Field Party closes cleanly again")
+
+func battle_portraits() -> bool:
+    if not await enter_battle(): return false
+    var baseline := signature(state())
+    if not await enter_roster(): return false
+    var battle_first := roster_portrait(0, "battle-first")
+    if battle_first == null: return false
+    await act("down")
+    var battle_second := roster_portrait(1, "battle-second")
+    if not check(battle_second != null and battle_second != battle_first, "Battle selection has distinct admitted portraits"): return false
+    var selected: Dictionary = state().inspection
+    await act("confirm")
+    if not await inspect_page("MemberFull"): return false
+    if not check(state().inspection.unit.Actor.Value == selected.roster.rows[1].actor, "Battle detail selected the portrait row"): return false
+    await act("cancel")
+    if not await inspect_page("Members"): return false
+    if not check(state().inspection.roster.rows[1].focused and roster_portrait(1, "battle-detail-back") == battle_second,
+            "Battle detail Back restores focus and live art"): return false
+    await act("cancel")
+    if not await inspect_page("Options"): return false
+    await act("confirm")
+    if not await inspect_page("Members"): return false
+    return check(roster_portrait(0, "battle-reopen") == battle_first and state().scene.error == null,
+        "Reopened battle Member uses live first-row art") and purity(baseline, "portrait route")
+
 func run() -> void:
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()
     await frames(4); bind_events()
+    if case_name in ["member-field-portraits", "member-battle-portraits"]:
+        if not await focus(): return
+        var art_admission = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_INSPECTION_START"))
+        if not check(art_admission == "started", "Controlled art-present admission: " + str(art_admission)): return
+        if case_name == "member-field-portraits":
+            if await field_portraits(): finish(true)
+        elif await battle_portraits(): finish(true)
+        return
     if case_name in ["member-small", "member-large"]:
         if not await focus(): return
         var entry := host.find_child("SessionEntryView", true, false)
