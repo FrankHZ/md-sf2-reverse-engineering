@@ -125,7 +125,7 @@ does not establish intermediate ordering, input ownership or resource lifetime.
 
 #### Reproduce gameplay Menu clearance
 
-**Confirmed.** At 1920×1080 the square 160×56 Menu hit area spans x=1728–1888 and y=32–88.
+**Confirmed in the earlier clearance observation.** At 1920×1080 the square 160×56 Menu hit area spans x=1728–1888 and y=32–88.
 The acting and target headers, the F8 overview and the right-side ally close-up start at y=112,
 leaving 24px below Menu. The left-side close-up keeps its own position. The overview ends at y=948,
 12px above its mapped Back hint. Clicking a marker on the resized map returns to that unit.
@@ -140,14 +140,17 @@ On base `bccb670c`, the Menu intersected both the overview and the ally close-up
 same Magic reason placed Back below the viewport in both languages.
 
 Build Debug and load the registered world, scenes, catalogs and disposable namespace as in the
-[battle reproduction](battle-interaction-baseline.md#direct-production-reproduction).
-Point `SF2_COMPACT_START` to an ignored copy of
-[`map3-followers-start.json`](../../reference/inputs/map3-followers-start.json) for the field,
-or the linked reproduction’s `battle` JSON for Battle01. Use English keyboard and zh-CN pad
-settings for the battle runs, with `SF2_INSPECTION_ROUTE` set to `keyboard` or `pad`.
+[battle reproduction](battle-interaction-baseline.md#direct-production-reproduction). The Battle01
+samples use the registered pre-voyage BLAZE2 publication. Point `SF2_COMPACT_START` to an ignored copy of
+[`map3-followers-start.json`](../../reference/inputs/map3-followers-start.json) for the field.
+For the short Battle01 run, use the linked `battle` JSON with
+`start.activeAllies = ["ally-0", "ally-1", "ally-2"]` and set `ally-1` HP to zero. This starts
+with the swordsman at (8,14), a visible no-Magic reason and a legal adjacent Attack.
+Use English keyboard and zh-CN pad settings, with `SF2_INSPECTION_ROUTE` set to `keyboard` or `pad`.
 Each run uses its own output and settings. The [observer](../../game/probes/gameplay_menu_clearance.gd)
-reads live hit rectangles, shaped text, selection, pause and return. Some processes reported two
-or six ObjectDB instances at exit; their owner remains **Unknown**.
+reads the current mounted inspection frame and Back button, the shared reader viewport and
+shaped description text, and the caller's selection through pause and return. Earlier processes
+reported two or six ObjectDB instances at exit; their owner remains **Unknown**.
 
 ```powershell
 $env:SF2_VIEWPORT_OUTPUT = Join-Path $freshRun 'menu-clearance.json'
