@@ -305,7 +305,7 @@ The [spell coverage inventory](godot/spell-presentation.md#coverage-by-family-an
 admitted, authored-only and unavailable ranks, with separate asset and observation boundaries.
 Battle26 separately exercises learned player BOLT 1 and HEAL 4. [Current battle spells](application/church-promotion-design.md#current-battle-spells)
 Battles04–07 can mount the prepared BLAZE1 flame with the actual caster, target and scene art.
-Learned BLAZE2 and BLAST1 retain placeholder effects. [Pre-voyage implementation scope](godot/spell-presentation.md#pre-voyage-dispatch) · [BLAZE1 native observations](godot/spell-presentation.md#prepared-blaze1-presentation)
+Prepared Battles04–07 bind BLAZE2 and BLAST1 original assets. Controlled Sarah BLAST1 preserves the scene, cues, settlement and next control. [BLAST1 evidence and limits](godot/spell-presentation.md#prepared-blast1-presentation). [Pre-voyage implementation scope](godot/spell-presentation.md#pre-voyage-dispatch) · [BLAZE1 native observations](godot/spell-presentation.md#prepared-blaze1-presentation)
 Natural pre-departure levels/opportunities and original presentation timing remain Unknown. The
 older completed private comparison failures remain with their evidence owners.
 

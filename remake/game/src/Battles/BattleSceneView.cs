@@ -47,8 +47,9 @@ internal sealed partial class BattleSceneView : Control
     private string? _allyResource, _enemyResource, _weaponResource;
     private readonly List<Sprite2D> _fairyBodies = [], _fairyWings = [], _fairyDust = [];
     private bool _castSoundPlayed;
-    private bool _preparedBlaze;
-    private double _blazeStart;
+    private bool _blastSoundPlayed;
+    private bool _preparedAttackSpell;
+    private double _attackSpellStart;
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
     private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
@@ -109,14 +110,15 @@ internal sealed partial class BattleSceneView : Control
         try
         {
             _laser.Hide(); _aura.Hide(); _attackSpell.Reset(); _phoenixWave.Reset();
-            var blazeResources = state.AttackSpell switch
+            var preparedResources = state.AttackSpell switch
             {
                 { Spell.Value: "blaze", Spell.Level: 1, SourceAnimationSelector: 1 } => AttackSpellView.BlazeResources,
                 { Spell.Value: "blaze", Spell.Level: 2, SourceAnimationSelector: 33 } => BlazeTwoEffect.Resources,
+                { Spell.Value: "blast", Spell.Level: 1, SourceAnimationSelector: 5 } => BlastOneEffect.Resources,
                 _ => null,
             };
-            _preparedBlaze = state.AttackItem is null && blazeResources is not null &&
-                Content?.Rasters.ContainsKey(blazeResources[0]) == true;
+            _preparedAttackSpell = state.AttackItem is null && preparedResources is not null &&
+                Content?.Rasters.ContainsKey(preparedResources[0]) == true;
             if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
@@ -125,7 +127,7 @@ internal sealed partial class BattleSceneView : Control
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 return;
             }
-            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !state.IsFieldDeath && !_preparedBlaze)
+            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !state.IsFieldDeath && !_preparedAttackSpell)
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -205,18 +207,18 @@ internal sealed partial class BattleSceneView : Control
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
                     var sequences = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences;
-                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedBlaze ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
+                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedAttackSpell ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
                     // battlesceneScript_PerformAnimation selects the ordinary sequence for these
                     // casters. Earlier packages expose it as ally idle or enemy attack.
-                    if (_preparedBlaze && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
+                    if (_preparedAttackSpell && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
                     var animation = sequences[sequence];
                     _animationIndex = animation.Index;
                     int skippedFrames = actor.IsAlly ? 1 : 0;
                     _frames = animation.Frames.Skip(skippedFrames).ToArray();
-                    if (_preparedBlaze)
+                    if (_preparedAttackSpell)
                     {
-                        _blazeStart = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0;
-                        _attackSpell.PrepareBlaze(state, blazeResources!.Select(Texture).ToArray(), target.IsAlly, _settings.ReducedFlash);
+                        _attackSpellStart = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0;
+                        _attackSpell.PrepareAttackSpell(state, preparedResources!.Select(Texture).ToArray(), target.IsAlly, _settings.ReducedFlash);
                     }
                     if (state.IsMonsterBreath)
                         _attackSpell.Present(state, [Texture("kiwi-breath/tile-1"), Texture("kiwi-breath/tile-9")]);
@@ -232,7 +234,7 @@ internal sealed partial class BattleSceneView : Control
             _ally.Modulate = _enemy.Modulate = Colors.White;
             PresentMessage(state);
             _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
-            if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
+            if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _blastSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Damage") _audio?.PlayEffect(target.IsAlly ? 81 : 83);
             if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Recovery") _audio?.PlayEffect(113);
             if (state.GrowthNotice is { Kind: BattleGrowthNoticeKind.Level }) _audio?.PlayEffect(102);
@@ -309,7 +311,7 @@ internal sealed partial class BattleSceneView : Control
             if (_elapsed < 0.25) return null;
             _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !_preparedBlaze)
+        if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !_preparedAttackSpell)
         {
             if (!_attackSpell.Advance(_elapsed)) return null;
             _completed = true;
@@ -403,11 +405,16 @@ internal sealed partial class BattleSceneView : Control
             node.Modulate = _settings.ReducedFlash || _logicalReaction % 2 == 0 ? Colors.White : new Color(0.2f,0.2f,0.2f,1);
         }
         else duration = 1.0 / 60;
-        if (_preparedBlaze && state.Phase == BattleScenePhase.ActionAnimation)
+        if (_preparedAttackSpell && state.Phase == BattleScenePhase.ActionAnimation)
         {
-            _attackSpell.AdvanceBlaze(_elapsed - _blazeStart);
-            duration = Math.Max(duration, _blazeStart + _attackSpell.PreparedBlazeDuration);
-            if (!_castSoundPlayed && _elapsed >= _blazeStart)
+            _attackSpell.AdvancePrepared(_elapsed - _attackSpellStart);
+            duration = Math.Max(duration, _attackSpellStart + _attackSpell.PreparedDuration);
+            if (!_blastSoundPlayed && state.AttackSpell?.Spell.Value == "blast" && _elapsed >= _attackSpellStart + 0.1)
+            {
+                _blastSoundPlayed = true;
+                _audio?.PlayEffect(114);
+            }
+            if (!_castSoundPlayed && _elapsed >= _attackSpellStart)
             {
                 _castSoundPlayed = true;
                 _audio?.PlayEffect(77);

@@ -16,7 +16,8 @@ from tempfile import TemporaryDirectory
 
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
-from sf2tool.remake_asset_build import ACCEPTED_ROM_SHA256, ACCEPTED_UPSTREAM_COMMIT
+from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
+from sf2tool.remake_attack_spell_mount import mount_attack_spells
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
@@ -272,67 +273,47 @@ def mount_phoenix_waves(directory: Path, scratch: Path, scene: dict) -> None:
             raise ValueError(f"conflicting prepared sound wave {key}")
 
 
-def mount_blaze(
-    directory: Path, scratch: Path, package: Path, scenes: dict[int, Path], families: set[str]
-) -> None:
-    index = read_json(directory / "index.json")
-    expected = dict(family="spell", id=2, tiles="spell-2.4bpp", palette="022e028e08ee")
+def mount_prepared_audio(directory, command, dest, presentation):
+    entry = read_json(directory / "candidate.json")["asset"]
+    runtime, timer = entry["runtime"], entry["timerB"]
+    leaf = f"command-{command:02x}-timer-{timer:02x}.wav"
+    wav = directory / leaf
     if (
-        index["rom"] != ACCEPTED_ROM_SHA256
-        or index["upstream"] != ACCEPTED_UPSTREAM_COMMIT
-        or [row for row in index["records"] if row.get("family") == "spell" and row["id"] == 2]
-        != [expected]
+        entry["command"] != command
+        or hashlib.sha256(wav.read_bytes()).hexdigest().upper() != runtime["sha256"]
     ):
-        raise ValueError("registered BLAZE effects identity differs")
-    tiles, palette = prepared_spell_tiles(directory, 2)
-    if len(tiles) != 7104:
-        raise ValueError("registered BLAZE tile stream length differs")
-    sprites = {}
-    if "blaze" in families:
-        # table_1BE2A. Both 2x4 entries share position and tiles.
-        sprites.update(
-            {
-                "blaze-1/frame-0": (2, ((33, 4),)),
-                "blaze-1/frame-1": (2, ((41, 4),)),
-            }
-        )
-    if "blaze-2" in families:
-        # table_1BE2A stacks a 3x4 top over a 3x2 bottom.
-        # table_1BE42, table_1BE52 and table_1BE5A select the small meteor and impact.
-        sprites.update(
-            {
-                "blaze-2/flame-0": (3, ((49, 4), (61, 2))),
-                "blaze-2/flame-1": (3, ((67, 4), (79, 2))),
-                "blaze-2/meteor-0": (2, ((149, 2),)),
-                "blaze-2/meteor-1": (2, ((153, 2),)),
-                "blaze-2/impact-0": (3, ((157, 3),)),
-                "blaze-2/impact-1": (3, ((166, 2),)),
-            }
-        )
-    rasters = {}
-    for key, (columns, parts) in sprites.items():
-        leaf = key.replace("/", "-") + ".png"
-        layout = [
-            first + x * rows + y
-            for first, rows in parts
-            for y in range(rows)
-            for x in range(columns)
-        ]
-        width, height = columns * 8, sum(rows for _, rows in parts) * 8
-        write_png_rgba(
-            scratch / leaf, width, height, compose(tiles, palette, width, height, layout)
-        )
-        rasters[key] = installed_png(scratch, leaf)
-    for battle, relative in scenes.items():
-        path = package / relative
-        scene = read_json(path)
-        if scene["encounter"] != f"battle-{battle}":
-            raise ValueError(f"BLAZE scene does not select Battle{battle:02d}")
-        current = scene["rasters"]
-        for key, raster in rasters.items():
-            if current.setdefault(key, raster) != raster:
-                raise ValueError(f"conflicting prepared BLAZE frame {key}")
-        path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
+        raise ValueError(f"invalid prepared audio {command}")
+    with wave.open(str(wav), "rb") as sound:
+        pcm = sound.readframes(sound.getnframes())
+    row = {
+        k: runtime[k] for k in ("sampleRate", "channels", "sampleFrames", "loopBegin", "loopEnd")
+    }
+    row.update(
+        command=command,
+        timerB=timer,
+        cue=entry["cue"],
+        runtimeWav=True,
+        sha256=hashlib.sha256(pcm).hexdigest().upper(),
+    )
+    target = dest / f"audio-{command:02x}-{timer:02x}" / leaf
+    target.parent.mkdir(exist_ok=True)
+    if target.exists():
+        if target.read_bytes() != wav.read_bytes():
+            raise ValueError(f"conflicting WAV {command}")
+    else:
+        shutil.copyfile(wav, target)
+    existing = next(
+        (
+            r
+            for r in presentation["audio"]
+            if r["command"] == command and (command <= 64 or r["timerB"] == timer)
+        ),
+        None,
+    )
+    if existing is None:
+        presentation["audio"].append(row)
+    elif existing != row:
+        raise ValueError(f"conflicting audio binding {command}")
 
 
 def mount_indra_staff(library: Path, scratch: Path, scene: dict) -> None:
@@ -669,6 +650,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "indra",
         "blaze",
         "blaze-2",
+        "blast-1",
     }
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
     shrine = "south-shrine" in selected
@@ -693,7 +675,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         raise ValueError(
             "select walking, icons, sfx, music, pldn, wiz, melee, "
             "ranged, vicar, innate, ninja, monster, phoenix-wave, indra, south-shrine, "
-            "blaze or blaze-2"
+            "blaze, blaze-2 or blast-1"
         )
     destination = private_output(destination)
     if destination.exists() or any(destination.is_relative_to(p.resolve()) for p in (root, base)):
@@ -711,30 +693,32 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         scenes = {Path("main-scenes.json")} | {
             Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
         }
-        blaze_scenes = {}
-        blaze_families = selected & {"blaze", "blaze-2"}
-        blaze_only = selected == blaze_families and bool(blaze_families)
-        if blaze_families:
+        spell_scenes = {}
+        spell_families = selected & {"blaze", "blaze-2", "blast-1"}
+        spell_only = selected == spell_families and bool(spell_families)
+        if spell_families:
             for row in world["encounters"]:
                 battle = read_json(files[Path(row["placement"])])["battle"]["id"]
                 if 4 <= battle <= 7:
-                    if battle in blaze_scenes:
-                        raise ValueError(f"duplicate BLAZE scene for Battle{battle:02d}")
-                    blaze_scenes[battle] = Path(row["battleScenes"])
-            if set(blaze_scenes) != {4, 5, 6, 7} or len(set(blaze_scenes.values())) != 4:
-                raise ValueError("BLAZE mount requires the four pre-voyage scenes")
-        blaze_paths = set(blaze_scenes.values())
+                    if battle in spell_scenes:
+                        raise ValueError(f"duplicate attack-spell scene for Battle{battle:02d}")
+                    spell_scenes[battle] = Path(row["battleScenes"])
+            if set(spell_scenes) != {4, 5, 6, 7} or len(set(spell_scenes.values())) != 4:
+                raise ValueError("attack-spell mount requires the four pre-voyage scenes")
+        spell_paths = set(spell_scenes.values())
+        if "blast-1" in spell_families:
+            spell_paths.add(Path("world.json"))
         indra_only = selected == {"indra"}
         battle26_scene = Path("inputs/battle26/battle-scenes.json")
         for rel, source in files.items():
-            if rel == Path("world.json") and not (indra_only or blaze_only):
+            if rel == Path("world.json") and not (indra_only or spell_only):
                 continue
             target = dest / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             if (
                 (selected == {"south-shrine"} and rel not in scenes)
                 or (indra_only and rel != battle26_scene)
-                or (blaze_only and rel not in blaze_paths)
+                or (spell_only and rel not in spell_paths)
             ):
                 # Immutable external battle/audio/entry inputs. Rewritten scenes get private files.
                 try:
@@ -743,8 +727,13 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 except OSError:
                     pass  # Different storage volumes require a real copy.
             shutil.copyfile(source, target)
-        if blaze_only:
-            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes, blaze_families)
+        if spell_only:
+            mount_attack_spells(root / "effects", Path(temp), dest, spell_scenes, spell_families)
+            if "blast-1" in spell_families:
+                mount_prepared_audio(root / "sfx/114", 114, dest, world["world"]["presentation"])
+                (dest / "world.json").write_text(
+                    json.dumps(world, separators=(",", ":")), encoding="utf-8"
+                )
             dest.rename(destination)
             return
         presentation = world["world"]["presentation"]
@@ -796,6 +785,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             mount_phoenix_waves(root / "effects", Path(temp), scene)
         if upstream is not None and promotions:
             bind_ordinary_progression(world, upstream, promotions)
+        if "blast-1" in spell_families:
+            mount_prepared_audio(root / "sfx/114", 114, dest, presentation)
         mounted_commands = list(commands or (25, 87, 99))
         if shrine and 9 not in mounted_commands:
             mounted_commands.append(9)
@@ -812,53 +803,13 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 if available:
                     presentation["audio"].extend(available)
                     continue
-            entry = read_json(directory / "candidate.json")["asset"]
-            runtime, timer = entry["runtime"], entry["timerB"]
-            leaf = f"command-{command:02x}-timer-{timer:02x}.wav"
-            wav = directory / leaf
-            if (
-                entry["command"] != command
-                or hashlib.sha256(wav.read_bytes()).hexdigest().upper() != runtime["sha256"]
-            ):
-                raise ValueError(f"invalid prepared audio {command}")
-            with wave.open(str(wav), "rb") as sound:
-                pcm = sound.readframes(sound.getnframes())
-            row = {
-                k: runtime[k]
-                for k in ("sampleRate", "channels", "sampleFrames", "loopBegin", "loopEnd")
-            }
-            row.update(
-                command=command,
-                timerB=timer,
-                cue=entry["cue"],
-                runtimeWav=True,
-                sha256=hashlib.sha256(pcm).hexdigest().upper(),
-            )
-            target = dest / f"audio-{command:02x}-{timer:02x}" / leaf
-            target.parent.mkdir(exist_ok=True)
-            if target.exists():
-                if target.read_bytes() != wav.read_bytes():
-                    raise ValueError(f"conflicting WAV {command}")
-            else:
-                shutil.copyfile(wav, target)
-            existing = next(
-                (
-                    r
-                    for r in presentation["audio"]
-                    if r["command"] == command and (command <= 64 or r["timerB"] == timer)
-                ),
-                None,
-            )
-            if existing is None:
-                presentation["audio"].append(row)
-            elif existing != row:
-                raise ValueError(f"conflicting audio binding {command}")
+            mount_prepared_audio(directory, command, dest, presentation)
         scene_path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
         if shrine:
             items = mount_south_shrine(world, root, upstream, canonical_path)
             bind_field_item_icons(presentation, root, dest, scenes, items)
-        if blaze_scenes:
-            mount_blaze(root / "effects", Path(temp), dest, blaze_scenes, blaze_families)
+        if spell_scenes:
+            mount_attack_spells(root / "effects", Path(temp), dest, spell_scenes, spell_families)
         if not indra_only:
             (dest / "world.json").write_text(
                 json.dumps(world, separators=(",", ":")), encoding="utf-8"
