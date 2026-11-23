@@ -114,14 +114,7 @@ internal static class FieldInventory
             throw new BattleRuleException("field-equipped-item-unsupported", "actor.items", true);
     }
 
-    internal static void RequireDetoxEquipment(ScenarioDefinition definition, PartyMemberDetails member)
-    {
-        PoisonCureRules.RequireUncursed(member.Carried.Status, "member.status");
-        var loadout = Loadout(member);
-        if (loadout.Items.Any(word => (word & 128) != 0 && CaravanDepotQuery.Cursed(definition, word)))
-            throw new BattleRuleException("detox-curse-unsupported", "member.items", true);
-        ValidateEquipped(member, loadout);
-    }
+    internal static void RequireDetoxEquipment(PartyMemberDetails member) => ValidateEquipped(member, Loadout(member));
 
     private static IReadOnlyList<BattleEquipmentChoice> EquipmentChoices(ScenarioDefinition definition,
         PartyMemberDetails member, BattleSourceLoadout loadout)

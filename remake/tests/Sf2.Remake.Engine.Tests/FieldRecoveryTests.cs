@@ -32,6 +32,8 @@ public sealed class FieldRecoveryTests
     [Theory]
     [InlineData(2, 0x103, 3, 1)]
     [InlineData(3, 0x101, 1, 0)]
+    [InlineData(2, 0x104, 0, 1)]
+    [InlineData(3, 0x104, 4, 0)]
     [InlineData(3, 0x100, 0, 0)]
     public void LearnedHigherFieldDetoxPaysOnceAndRefreshesSelfEvenWithoutAnAilment(
         byte rank, ushort status, ushort cleared, byte remainingMp)
@@ -41,7 +43,8 @@ public sealed class FieldRecoveryTests
         var spell = new SpellRef("detox", rank);
         var choice = Assert.Single(session.QueryFieldActions(Giver).Spells, choice => choice.Spell == spell);
         Assert.Equal(rank == 2 ? 6 : 10, choice.MpCost);
-        Assert.Equal(SpellEffect.CurePoisonAndParalysis, choice.Description!.Effect);
+        Assert.Equal(rank == 2 ? SpellEffect.CurePoisonAndParalysis : SpellEffect.CurePoisonParalysisAndCurse,
+            choice.Description!.Effect);
         Assert.Equal(SpellTarget.PartyMember, choice.Description.Target);
         Assert.Equal((byte)(7 - remainingMp), choice.Description.FieldPayment);
         Assert.Same(before, session.Current);
@@ -54,27 +57,22 @@ public sealed class FieldRecoveryTests
         var party = session.Current.Exploration!.Party;
         var after = party.Actors.Single(actor => actor.Actor == Giver);
         Assert.Equal(remainingMp, after.Mp);
-        Assert.Equal((ushort)0x100, after.Status);
+        Assert.Equal((ushort)(status & ~cleared), after.Status);
         Assert.Equal(0, after.Hp);
         Assert.Null(after.Progress!.CurrentStats);
         var prior = before.Exploration!.Party;
         Assert.Equal(prior.MainSeed, party.MainSeed);
         Assert.Equal(prior.ThinkingSeed, party.ThinkingSeed);
         Assert.Equal(prior.Actors.Single(actor => actor.Actor == Giver).Exp, after.Exp);
-        Assert.Equal(prior.Actors.Single(actor => actor.Actor == Giver).SourceLoadout, after.SourceLoadout);
+        Assert.Equal(prior.Actors.Single(actor => actor.Actor == Giver).SourceLoadout!.Items, after.SourceLoadout!.Items);
     }
 
     [Fact]
-    public void HigherFieldDetoxAcceptsAFallenReserveAndRejectsAnUnlearnedRankOrCurse()
+    public void HigherFieldDetoxAcceptsAFallenReserveAndRejectsAnUnlearnedRank()
     {
         var unlearned = Recovery();
         Assert.DoesNotContain(unlearned.QueryFieldActions(Giver).Spells, choice => choice.Spell == Detox2);
         Assert.NotNull(Send(unlearned, new FieldCast(Giver, Detox2, Recipient)).Failure);
-
-        var cursed = Recovery(higherRanks: true, targetStatus: 6);
-        var before = cursed.Current;
-        Assert.Equal("detox-curse-unsupported", Send(cursed, new FieldCast(Giver, Detox3, Recipient)).Failure!.Code);
-        Assert.Same(before, cursed.Current);
 
         var fallen = Recovery(higherRanks: true, targetHp: 0, targetStatus: 3);
         var state = fallen.Current;
@@ -91,6 +89,51 @@ public sealed class FieldRecoveryTests
         var cured = resultParty.Actors.Single(actor => actor.Actor == Recipient);
         Assert.Equal(0, cured.Status);
         Assert.Equal(0, cured.Hp);
+    }
+
+    [Theory]
+    [InlineData(2, 3, 408, 0x104, 35)]
+    [InlineData(3, 7, 280, 0x100, 25)]
+    public void FieldDetoxOnlyUnequipsTheCursedWornWordWhenTheRankClearsCurse(
+        byte rank, ushort cleared, ushort ring, ushort status, byte gearAttack)
+    {
+        var session = Recovery(mp: 20, higherRanks: true, targetStatus: 0x107);
+        var state = session.Current;
+        var world = state.Exploration!;
+        var prior = world.Party;
+        var encounter = session.Definition.Encounters[prior.Encounter];
+        var recipient = encounter.Deployments.Single(row => row.Actor == Recipient);
+        var original = recipient.Definition;
+        byte baseAttack = original.Attack;
+        var wizard = recipient with
+        {
+            Definition = new(Recipient, BattleClassRule.Wizard, original.Level, original.MaxHp, original.MaxMp,
+                baseAttack, original.Defense, original.Agility, false, original.Move, [], original.Physical,
+                equipment: new(baseAttack, [new(92, "Indra Staff", 1u << 17, 25, 1, 1)],
+                    rings: [new(24, "Black Ring", 1u << 17, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])),
+        };
+        var product = new ScenarioDefinition("field-detox-equipment",
+            [encounter.WithDeployments(encounter.Deployments.Select(row => row.Actor == Recipient ? wizard : row))],
+            exploration: session.Definition.Exploration) { FieldPreparation = session.Definition.FieldPreparation };
+        var loadout = new BattleSourceLoadout([220, 408, 24, 127], [63, 63, 63, 63]);
+        var equipped = prior.WithResources(prior.Actors.Select(actor =>
+            actor.Actor == Recipient ? FieldInventory.WithLoadout(actor, loadout) : actor), prior.Gold);
+        var before = new SessionSnapshot(state.SessionId, state.Revision, state.ObservationSequence,
+            new ActiveExploration(world.WithParty(equipped)), state.Story, state.StopReason);
+
+        var result = FieldCommands.Submit(product, before, new FieldCast(Giver, new("detox", rank), Recipient));
+        Assert.Null(result.Failure);
+        Assert.Equal(cleared, Assert.Single(result.Observations).FieldCuredStatus);
+        var after = result.Snapshot.Exploration!.Party;
+        var target = after.Actors.Single(actor => actor.Actor == Recipient);
+        Assert.Equal(status, target.Status);
+        Assert.Equal(new ushort[] { 220, ring, 24, 127 }, target.SourceLoadout!.Items);
+        Assert.Equal(baseAttack + gearAttack, BattleEquipment.Attack(wizard.Definition, target.Progress, target.SourceLoadout, target.Status));
+        Assert.Equal((byte)(rank == 2 ? 14 : 10), after.Actors.Single(actor => actor.Actor == Giver).Mp);
+        Assert.Equal(equipped.Actors.Single(actor => actor.Actor == Recipient).Hp, target.Hp);
+        Assert.Equal(equipped.MainSeed, after.MainSeed);
+        Assert.Equal(equipped.ThinkingSeed, after.ThinkingSeed);
+        Assert.Equal(equipped.ItemCustody, after.ItemCustody);
     }
 
     [Theory]

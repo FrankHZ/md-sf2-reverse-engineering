@@ -32,8 +32,6 @@ internal sealed class Sf2HealingRule : IHealingRule
             throw new BattleRuleException("poison-cure-definition", "spell", true);
         if (spell.CuresPoison && !actor.IsAlly)
             throw new BattleRuleException("enemy-poison-cure", "spell", true);
-        if (spell.CuresPoison && spellRef.Level > 1)
-            PoisonCureRules.RequireUncursed(actor.Status, "actor.status");
         if (!spell.IsAura && spellRef.Level is < 1 or > 4)
             throw new BattleRuleException("healing-animation", "spell.level", true);
         if (actor.IsAlly ? !Sf2ClassRules.PlayerHealer(actor.Definition.ClassRule) :
@@ -59,10 +57,7 @@ internal sealed class Sf2HealingRule : IHealingRule
         MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef)
     {
         var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
-        var target = spell.IsAura ? battle.GetActor(targetRef) : targets[0];
-        if (spell.CuresPoison && spell.Spell.Level > 1)
-            PoisonCureRules.RequireUncursed(target.Status, "target.status");
-        return target;
+        return spell.IsAura ? battle.GetActor(targetRef) : targets[0];
     }
     public BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef, IBattleProgressionRule progression)
@@ -70,8 +65,7 @@ internal sealed class Sf2HealingRule : IHealingRule
         BattleMovement.RequireStop(battle, actorRef, destination);
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
-        var targets = spell.IsAura ? HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef)
-            : [RequireTarget(battle, actorRef, destination, spell, targetRef)];
+        var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
         BattleReaction[] reactions = targets.Select(target =>
         {
             if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal", PoisonCureRules.SpellMask(spellRef.Level));

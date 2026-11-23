@@ -1525,6 +1525,9 @@ msgstr "{0}/{1}: select · {2}: confirm · {3}: back"
 msgid "battle.scene.poison-cured"
 msgstr "{0} is cured of poison."
 
+msgid "battle.scene.curse-cleared"
+msgstr "{0} is no longer cursed."
+
 msgid "name.spell.detox"
 msgstr "DETOX"
 
@@ -2928,7 +2931,7 @@ msgid "spell-description.no-refuge"
 msgstr "Returning to a refuge is unavailable from the current state."
 
 msgid "spell-description.curse"
-msgstr "The current curse prevents casting this level."
+msgstr "Cures poison, paralysis and curse. Cursed gear is unequipped."
 
 msgid "battle.order.current"
 msgstr "Now · {0}"

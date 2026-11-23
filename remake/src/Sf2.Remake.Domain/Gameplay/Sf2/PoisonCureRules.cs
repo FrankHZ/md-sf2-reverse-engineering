@@ -2,19 +2,19 @@ using Sf2.Remake.Domain.Battles;
 
 namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
-// Uncursed DETOX and its item callers share the packed status calculation.
+// DETOX and its item callers share the packed status calculation.
 internal static class PoisonCureRules
 {
     internal const ushort Poison = 2;
     internal const ushort Stun = 1;
     internal const ushort PoisonAndStun = Poison | Stun;
 
-    internal static ushort SpellMask(byte rank) => rank == 1 ? Poison : PoisonAndStun;
-
-    internal static void RequireUncursed(ushort status, string field)
+    internal static ushort SpellMask(byte rank) => rank switch
     {
-        if ((status & 4) != 0) throw new BattleRuleException("detox-curse-unsupported", field, true);
-    }
+        1 => Poison,
+        3 => PoisonAndStun | CurseRules.Mask,
+        _ => PoisonAndStun,
+    };
 
     internal static EngineBattleState PrepareIneffective(EngineBattleState battle, ActorRef actor,
         IReadOnlyList<BattleReaction> reactions, List<BattleEffect> effects)

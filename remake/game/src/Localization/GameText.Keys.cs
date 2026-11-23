@@ -665,6 +665,7 @@ internal static partial class GameText
         ["shop.unavailable"] = 0,
         ["shop.hint"] = 4,
         ["battle.scene.poison-cured"] = 1,
+        ["battle.scene.curse-cleared"] = 1,
         ["church.menu"] = 1,
         ["church.offer"] = 4,
         ["church.raise"] = 0,

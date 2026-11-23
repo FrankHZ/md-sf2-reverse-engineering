@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage, AttackExpiredMessage, EquipmentWearMessage, CureStunMessage, PhysicalInactionMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage, AttackExpiredMessage, EquipmentWearMessage, CureStunMessage, PhysicalInactionMessage, CureCurseMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -253,7 +253,9 @@ public sealed class BattleSceneState
         Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
     public bool ShowsStunCure => Phase == BattleScenePhase.CureStunMessage ||
-        Phase == BattleScenePhase.ResultMessage && HasReaction && Reaction.ClearedStatus == PoisonCureRules.Stun;
+        Phase == BattleScenePhase.ResultMessage && HasReaction && (Reaction.ClearedStatus & PoisonCureRules.PoisonAndStun) == PoisonCureRules.Stun;
+    public bool ShowsCurseCure => Phase == BattleScenePhase.CureCurseMessage ||
+        Phase == BattleScenePhase.ResultMessage && HasReaction && Reaction.ClearedStatus == CurseRules.Mask;
     public bool UsesAttackItem => _action?.AttackItemSlot is not null;
     public AttackItemDefinition? AttackItem => _action?.AttackItem;
     public SupportItemDefinition? EquipmentItem => _action is { AttackItem: null, EquipmentUse: { } use }
@@ -290,7 +292,7 @@ public sealed class BattleSceneState
     // Recovery switches caster/recipient on their actual faction's single scene side.
     private ActorRef RecoveryDisplayed => (IsAura || EquipmentItem is not null) && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
         ? Action.Reactions[ReactionIndex - 1].Target
-        : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
+        : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
             ? Target!.Value : Actor;
     public ActorRef? DisplayedAlly => IsAfterTurnNotice || IsFieldDeath ? null : Laser is not null
         ? HasReaction && LaserTargetsVisible && Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : null : Item is not null || Spell is not null || FriendlySupport
@@ -323,7 +325,7 @@ public sealed class BattleSceneState
         Phase == BattleScenePhase.ResultMessage && ReactionKind == "Damage" && !Critical &&
         ActionKind is "physical-first" or "physical-second" or "physical-counter";
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or BattleScenePhase.PhysicalInactionMessage or
-        BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.DeathMessage
+        BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.DeathMessage
         or BattleScenePhase.RewardMessage or BattleScenePhase.GrowthMessage or BattleScenePhase.GoldMessage
         or BattleScenePhase.ItemDroppedMessage or BattleScenePhase.ItemReceivedMessage or BattleScenePhase.EquipmentWearMessage;
     public PresentationCueKind CompletionKind => Phase switch
@@ -493,10 +495,14 @@ internal static class BattleSceneContinuation
                 next = BattleScenePhase.TargetEnter;
                 break;
             case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
-            case BattleScenePhase.ResultMessage when scene.Reaction.ClearedStatus == PoisonCureRules.PoisonAndStun:
+            case BattleScenePhase.ResultMessage when (scene.Reaction.ClearedStatus & PoisonCureRules.PoisonAndStun) == PoisonCureRules.PoisonAndStun:
                 next = BattleScenePhase.CureStunMessage; break;
+            case BattleScenePhase.ResultMessage when CurseRules.Present(scene.Reaction.ClearedStatus) && scene.Reaction.ClearedStatus != CurseRules.Mask:
+            case BattleScenePhase.CureStunMessage when CurseRules.Present(scene.Reaction.ClearedStatus):
+                next = BattleScenePhase.CureCurseMessage; break;
             case BattleScenePhase.ResultMessage:
             case BattleScenePhase.CureStunMessage:
+            case BattleScenePhase.CureCurseMessage:
                 if (scene.SupportSpell?.ChangesStats == true && !scene.RaisesAttack && scene.Reaction.Kind == BattleReactionKind.Status)
                 { next = BattleScenePhase.SupportDefenseMessage; break; }
                 if (scene.AttackSpell is not null || scene.SupportSpell is not null)

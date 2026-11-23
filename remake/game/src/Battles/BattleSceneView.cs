@@ -683,6 +683,7 @@ internal sealed partial class BattleSceneView : Control
                     DisplayNames.Item(state.EquipmentItem?.ItemId ?? state.AttackItem!.ItemId,
                         state.EquipmentItem?.Name ?? state.AttackItem!.Name)),
             _ when state.ShowsStunCure => LocalizedMessage("battle.scene.stun-cleared", Target()),
+            _ when state.ShowsCurseCure => LocalizedMessage("battle.scene.curse-cleared", Target()),
             BattleScenePhase.ResultMessage => state.ReactionKind switch
             {
                 "Status" => LocalizedMessage(state.Spell?.CuresPoison == true || state.Item?.CuresPoison == true ? "battle.scene.poison-cured" : "battle.scene.silence", Target()),
