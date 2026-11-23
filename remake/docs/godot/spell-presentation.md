@@ -103,7 +103,7 @@ light fairy therefore has partial original-asset coverage. Original opportunity 
 | FREEZE 3–4 | FREEZE v3–v4 | **Unavailable** for private Magic. Blizzard's BREZAD1 shares v3 in the source table and has the ordinary non-equipment item scene. Freeze Staff Use selects v3. | [#2016] private Magic, [#1818] equipment admission, then [#2104] ice playback. |
 | BOLT 1–2 | BOLT v1–v2 | **Placeholder**. Bowie BOLT1 in Battle26 and Taros Sword BOLT2 enemy Use in Battle18 have actual private combat witnesses. The lightning presenter is primitive. Taros's item-origin attack uses zero MP. Its class mask prevents ordinary player Use. | [#2104] later lightning effects. Keep actual cast versus sword origin, recipient order and payment. [Bowie witness](../application/church-promotion-design.md#current-battle-spells) · [Taros witness](../application/taros-caravan.md) |
 | BOLT 3–4 | BOLT v3–v4 | **Unavailable** for private Magic. RAIJIN2/3 share selectors and have independent neutral rules and primitive playback. THUNDR1 uses v3 in the table. | [#2016] learned rule/admission, then [#2104] lightning variants. |
-| BLAST 1 | BLAST v1 | **Placeholder**. Authored native Sarah/PRST witness reaches one recipient and returns to control. Private attack binding is present for the learned rank. Original wind/dust uses tileset 15. | [#2106] pre-voyage learned cast. See the [dispatch boundary](#pre-voyage-dispatch). |
+| BLAST 1 | BLAST v1 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Sarah PRST level 10 casts on one adjacent enemy with current actors and backdrop. | [Prepared BLAST1](#prepared-blast1-presentation) owns the tileset-15 fragments, slashes, cues and observations. |
 | BLAST 2–4 | BLAST v2–v4 | **Placeholder**. All three ranks bind to the private wind rule. Battle19 repeat admits Dark Bishop BLAST3; Battle22 observes Sarah's BLAST4 single-target use. | [#2104] later wind variants after [#2106]. Compare their actual area/single-target behavior and setup variants. [Battle19](../application/battle19-repeat.md) · [Battle22](../application/desktop-battle22.md) |
 | KATON 1–3 | BLAZE v2–v4 | **Placeholder**. All three ranks bind to distinct learned neutral damage. Controlled private NINJ rank-1 input shows selector 33 and primitive fire; other ranks have engine coverage. | [#2104] reuse compatible art after flame variants. Preserve the recorded neutral rules. [Ninja evidence](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot) |
 | RAIJIN 1–3 | BOLT v2–v4 | **Placeholder**. All three ranks bind to distinct learned neutral damage. Controlled private NINJ rank-1 input shows selector 39 and primitive lightning; other ranks have engine coverage. | [#2104] reuse compatible art after lightning variants. Preserve the recorded neutral rules. [Ninja evidence](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot) |
@@ -502,3 +502,113 @@ Confirms after natural text readiness; their final-input receipts contain no ext
 Later HEAL cases retain early acknowledgements. This proves bounded settings conformance, not original neutral-input conformance.
 The reproduction and completed failure records belong to the
 [verification owner](../verification/battles.md#heal-scene-verification).
+
+## Prepared BLAST1 presentation
+
+**Standard scope (#2106).** This bounded adapter/content slice mounts the registered tileset-15
+rank-1 fragments and slashes in Battles04–07. It shares the prepared cast clock and completion
+token with BLAZE. Sarah's PRST level-10 book supplies the legal adjacent, single-target cast.
+Acceptance requires live actors, weapon, backdrop, effect, one payment and settlement, completed
+animation, and usable next control under normal, Reduced Flash and held-rate/coin-skip settings.
+The implementation owns AttackSpellView, BattleSceneView, BlastOneEffect, the scene reader,
+PrivateAttackSpellBindings, the existing retail publisher and its extracted spell-mount helper,
+the narrow observation, SessionAudio cue 114 mapping, and these presentation/capability documents.
+
+Publication is linear in the existing package closure. Budget 120 MB of new same-volume package
+storage and raster scratch, 400 MB if hardlinks require copying, and 2 GiB publisher memory for
+parsing the approximately 102 MB world JSON and its decoded objects.
+Four scene JSON files and the world audio binding change. The publisher copies those files before writing and hardlinks
+unchanged dependencies. Reassess if the closure or any scene's 4 MiB admission limit is exceeded.
+
+
+**Confirmed source and identity.** Pinned SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6 and
+USA ROM 9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9 select animation 5,
+2 MP, power 6, range 1–1 and radius 0. PRST learns BLAST at level 10.
+Follow the [existing ROM comparison](#prepared-blaze1-presentation), using slot 15 at
+p_pt_SpellGraphics (0x1B800C). Its header is at 0x1C2C56. The decoded 6,816 bytes equal the
+registered effects/spell-15.4bpp. Header replacement words are 0EC8, 026C, 0C82. The registered
+base palette equals the 16 ROM words at 0x198A8.
+
+Setup initializes eight fragments and one short-slash slot. Rank 1 leaves the even-rank flag clear
+and bypasses the rank-3 cyclone and attached dust. The unmirrored/mirrored VDP origins
+(208,224)/(312,240) become (80,96)/(184,112) on the local canvas. The six fragment modifiers
+and eight slash modifiers stay relative to that origin. Mirroring changes the origin and
+preserves those local modifiers.
+
+The publisher uses column-major sprite tiles and the following zero-based operands.
+
+| Frames | Starting tiles | Dimensions in pixels |
+| --- | --- | --- |
+| Diagonal fragments 0–2 | 0, 1, 5 | 8×8, 16×16, 16×24 |
+| Horizontal fragments 3–5 | 23, 25, 29 | 8×16, 16×16, 24×16 |
+| Vertical slash 6–8 | 151, 155, 163 | 16×16, 16×32, 16×24 |
+| Horizontal slash 9–11 | 169, 173, 181 | 16×16, 32×16, 24×16 |
+| Angled slash 12–14 | 187, 191, 207 | 16×16, 32×32, 16×24 |
+
+table_1CBDE adds offsets to VDPTILE_SPELLTILE1, equal to SPELLTILE_START. table_1CC44 supplies
+the slash dimensions and tile offsets. The adapter schedules eight fragments and eight short
+slashes over 1.4 seconds with deterministic converging motion and fades. Reduced Flash fixes
+each family to its middle frame. Timing, sampling and fades are modern approximations.
+Cast cue 77 starts at the pose trigger and wind cue 114 starts 0.1 seconds later. The original
+requests 114 repeatedly when particles spawn. The adapter uses one whole recording through
+the accepted finite mixing policy. sounddriver.asm:sfx_32, driver offset 0x1D08, is type 1
+with active channel indices 8/9 pointing at 0x1D1D/0x1D2A, PSG tone 3 and noise.
+SessionAudio now admits that combination.
+
+**Publication.** Load the worktree private configuration. Select the registered #2001 library as
+$library, accepted #2105 package as $base, and a fresh absolute output as $candidate.
+Run the following from the checkout root.
+
+    uv run python -m sf2tool.remake_retail_assets --root $library --base $base --mount $candidate --family blast-1
+
+The stable handoff selection is registered derived/issue2106/pre-voyage-spells-v2. The earlier
+v1 retains the visual-only observation. Version 2 adds the registered cue 114 WAV with the existing
+audio publisher. Four scenes grow by 20,536 bytes total and the largest is 888,552 bytes.
+The final 147-file closure keeps 141 base files byte-identical. The five rewritten files total
+105,448,603 bytes and the new WAV is 51,192 bytes. After removing the 15 BLAST rasters from each
+scene and cue 114 from world audio, all five parsed documents equal their base documents.
+
+**Native reproduction.** Select the candidate world.json, main-scenes.json, entry/entry.json and
+six opening-inputs through the ordinary SF2_PRIVATE_* variables. Use a fresh worktree-local
+report/runtime and a task-specific external save namespace. Copy the controlled party template
+remake/reference/inputs/battle01-player-ready.json as sarah.json in the report directory.
+Set id to blast-1-controlled-party, evidenceOwner to issue-2106 and bridgeBoundary to
+Pre-voyage Sarah level and book only. Replace allies with the following array.
+
+    [{"id":1,"classId":4,"level":10,"maxHp":11,"hp":11,"maxMp":10,"mp":10,"attack":9,"defense":5,"agility":5,"move":5,"status":0,"items":[213,0,0,127],"spells":[64,2,14,63],"exp":0,"kills":0,"defeats":0}]
+
+Items and max MP match the opening Sarah baseline. The controlled reader imports only the validated
+level/book. HEAL2, DETOX1 and BLAST1 are legal learned entries at level 10. Point SF2_BLAST_START
+at an absolute sibling start JSON containing this document.
+
+    {"start":{"battle":"battle-4","activeAllies":["ally-0","ally-1"],"partyInput":"sarah.json","actors":[{"actor":"ally-1","position":{"x":5,"y":7}},{"actor":"enemy-1","hp":1,"position":{"x":6,"y":7}}]}}
+
+Build the Debug adapter using the locked SDK workflow. Set SF2_OBSERVATION_OUTPUT to a fresh report.
+Launch the installed Godot with the following arguments and an absolute version-1 settings file.
+
+    & $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility --fixed-fps 60 --resolution 1920x1080 --path remake/game --script res://probes/engine_private_wind_cast_observation.gd -- --input-settings $settings
+
+Normal uses reducedFlash=false, suppressBattleHitCoinMessages=false and observer switches
+SF2_BLAST_REDUCED_FLASH, SF2_BLAST_SKIP_MESSAGES, SF2_BLAST_HELD_RATE all set to 0.
+Reduced Flash changes its settings field and observer switch to true/1.
+The third case sets suppressBattleHitCoinMessages=true, SF2_BLAST_SKIP_MESSAGES=1 and
+SF2_BLAST_HELD_RATE=1 with Reduced Flash off.
+The ordinary Magic observer advances three rows because HEAL1 and HEAL2 both appear.
+
+**Confirmed in the remake.** All three cases bind caster, target, weapon, background and ground,
+read selector 5 and mounted frames, retain early-Confirm ownership, and cover the full effect.
+Normal reads 15 frames, Reduced Flash reads 5, and held Shift reads 1.5× pacing.
+Cues 77 and 114 each start once. Sarah pays 2 MP (10→8), delivers one 6-point hit to the 1-HP
+enemy, gains one EXP and one kill, and gold changes 60→110. Bowie opens the next action menu.
+BLAZE1 ally/enemy and BLAZE2 ally regressions pass on the final package.
+
+**Completed failures.** The initial placeholder probe selected DETOX1 because it omitted HEAL2's
+list row. The first prepared observation queried a reset effect target during Reaction; the
+corrected assertion reads the displayed enemy. Adding cue 114 exposed sfx-slots-unavailable and
+three completed deadline failures. The source-backed slot mapping corrected the failure and all
+three affected cases passed. Reports remain under local/issue2106-baseline in the owning worktree.
+Some runs report 8–10 ObjectDB instances at exit, covered by paused #1716.
+
+**Unknown.** Natural pre-voyage learning/casting, live enemy BLAST1, exact hardware timing and
+human foreground visual acceptance. Mirrored placement has static source comparison only.
+Higher ranks remain with their existing owners.

@@ -15,6 +15,7 @@ internal sealed partial class AttackSpellView : Node2D
     private IReadOnlyList<Texture2D>? _breath;
     private Texture2D[]? _blaze;
     private BlazeTwoEffect? _blazeTwo;
+    private BlastOneEffect? _blast;
     private Vector2 _blazePosition;
     private bool _reducedFlash;
 
@@ -25,15 +26,18 @@ internal sealed partial class AttackSpellView : Node2D
         _breath = null;
         _blaze = null;
         _blazeTwo = null;
+        _blast = null;
     }
 
     internal void Present(BattleSceneState scene, IReadOnlyList<Texture2D>? breath = null)
     { _scene = scene; _breath = breath; _elapsed = 0; Show(); QueueRedraw(); }
 
-    internal void PrepareBlaze(BattleSceneState scene, Texture2D[] frames, bool targetIsAlly, bool reducedFlash)
+    internal void PrepareAttackSpell(BattleSceneState scene, Texture2D[] frames, bool targetIsAlly, bool reducedFlash)
     {
         _scene = scene;
-        if (scene.AttackSpell!.Spell.Level == 2)
+        if (scene.AttackSpell!.Spell.Value == "blast")
+            _blast = new(frames, targetIsAlly, reducedFlash);
+        else if (scene.AttackSpell.Spell.Level == 2)
             _blazeTwo = new(frames, targetIsAlly, reducedFlash);
         else
         {
@@ -41,13 +45,13 @@ internal sealed partial class AttackSpellView : Node2D
             _blazePosition = targetIsAlly ? new(176, 128) : new(72, 112);
         }
         _reducedFlash = reducedFlash;
-        AdvanceBlaze(-1);
+        AdvancePrepared(-1);
         Show();
     }
 
-    internal double PreparedBlazeDuration => _blazeTwo is null ? BlazeDuration : BlazeTwoEffect.Duration;
+    internal double PreparedDuration => _blast is not null ? BlastOneEffect.Duration : _blazeTwo is null ? BlazeDuration : BlazeTwoEffect.Duration;
 
-    internal void AdvanceBlaze(double age)
+    internal void AdvancePrepared(double age)
     {
         _elapsed = age;
         QueueRedraw();
@@ -69,6 +73,11 @@ internal sealed partial class AttackSpellView : Node2D
     public override void _Draw()
     {
         if (_scene?.AttackSpell is not { } spell) return;
+        if (_blast is { } blast)
+        {
+            if (blast.Draw(this, _elapsed)) _drawCount++;
+            return;
+        }
         if (_blazeTwo is { } blazeTwo)
         {
             if (blazeTwo.Draw(this, _elapsed)) _drawCount++;
@@ -134,6 +143,7 @@ internal sealed partial class AttackSpellView : Node2D
         element = _scene?.AttackSpell?.Element.ToString(), selector = Selector,
         variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
         target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null,
+        preparedBlast = _blast?.Observe(_elapsed),
         preparedBlazeTwo = _blazeTwo?.Observe(_elapsed),
         preparedBlaze = _blaze is null ? null : new
         {

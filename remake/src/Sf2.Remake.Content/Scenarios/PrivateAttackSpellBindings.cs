@@ -52,6 +52,11 @@ internal static class PrivateAttackSpellBindings
                 Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
                 animation = source.Level == 1 ? (byte)1 : (byte)33;
             }
+            if (source.Code == "BLAST" && source.Level == 1)
+            {
+                Require(source.AnimationExpression == "BLAST", "source-attack-animation", "spells.animation", true);
+                animation = 5;
+            }
             if (row.Element == AttackSpellElement.Neutral)
             {
                 string family = source.Code == "KATON" ? "BLAZE" : "BOLT";

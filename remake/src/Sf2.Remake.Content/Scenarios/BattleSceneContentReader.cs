@@ -50,6 +50,13 @@ internal static class BattleSceneContentReader
         Require(blazeTwoCount == 0 || blazeTwoCount == blazeTwo.Length &&
             blazeTwo.All(row => rasters.TryGetValue(blazeTwoPrefix + row.Name, out var image) &&
                 image.Width == row.Width && image.Height == row.Height), "scene-blaze-2", "battleScenes.rasters");
+        (int Width, int Height)[] blast = [(8,8), (16,16), (16,24), (8,16), (16,16), (24,16),
+            (16,16), (16,32), (16,24), (16,16), (32,16), (24,16), (16,16), (32,32), (16,24)];
+        int blastCount = rasters.Keys.Count(key => key.StartsWith("blast-1/", StringComparison.Ordinal));
+        Require(blastCount == 0 || blastCount == blast.Length &&
+            blast.Select((size, slot) => rasters.TryGetValue("blast-1/frame-" + slot, out var image) &&
+                image.Width == size.Width && image.Height == size.Height).All(valid => valid),
+            "scene-blast-1", "battleScenes.rasters");
         IdentityIconReader.Validate(rasters);
         IdentityIconReader.Bindings(rasters, definitions);
         string background = Text(root, "background"), ground = Text(root, "ground");
