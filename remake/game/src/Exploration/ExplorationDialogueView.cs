@@ -119,10 +119,14 @@ internal sealed partial class ExplorationDialogueView : Control
             Panel.ResetReading();
         if (current.Story.Wait is FieldTextWait displayed) _displaySpan = displayed;
         else if (!_fieldTextProjection) _displaySpan = null;
-        bool portrait = session.Definition.Exploration?.Visuals is not null &&
+        var visuals = session.Definition.Exploration.Visuals;
+        var posePortrait = visuals is not null
+            ? ExplorationDialoguePortrait.ForSpecialPose(visuals, current.Exploration, current.Story) : null;
+        bool portrait = visuals is not null &&
             current.Story.PortraitWindow is OpenPortraitWindow or UnknownPortraitWindow { LegacySpeaker: not null };
+        portrait |= posePortrait is not null;
         byte flags = current.Story.PortraitWindow switch
-        { OpenPortraitWindow open => open.Flags, UnknownPortraitWindow unknown => unknown.LegacyFlags, _ => 0 };
+        { OpenPortraitWindow open => open.Flags, UnknownPortraitWindow unknown => unknown.LegacyFlags, _ => posePortrait?.Flags ?? 0 };
         if (portrait) _portraitFlags = flags;
         // Source portrait and text close waits are independent. Keep the last mounted portrait
         // with this text window until the composed panel exits; a new window must not inherit it.
