@@ -185,7 +185,11 @@ public sealed class SceneMusicContextTests
         var scene = MapTransfer.LoadScene(definition, active, command);
         Assert.Equal(0xC000, scene.Layout[1, 1]);
         var view = ExplorationViewRunner.LoadScene(scene, command.Camera, snapshot.Story.LogicalView!);
-        Assert.Equal(map.ViewAreas[1] with { MinX = 0, MinY = 0, MaxX = 21, MaxY = 5 }, view.Area);
+        var declaredArea = map.ViewAreas[1];
+        var expectedArea = phase == ProgramContinuation.VictoryProgramFinished
+            ? declaredArea with { MinX = 0, MinY = 0, MaxX = 21, MaxY = 5 }
+            : declaredArea;
+        Assert.Equal(expectedArea, view.Area);
         Assert.Equal(1, ExplorationViewContext.Resolve(scene, view).Area);
         Assert.Equal(0, MapTransfer.LoadScene(definition, snapshot, command).Layout[1, 1]);
         Assert.Equal(16, map.ViewAreas[1].MinX);

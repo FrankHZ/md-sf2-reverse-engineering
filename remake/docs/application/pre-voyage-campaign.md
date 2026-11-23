@@ -484,7 +484,7 @@ setup, placement/facing, egress register, result and next accepted input at each
 | Opening to Yeel. Confirmed in one ordinary session through Battle03. | Map3 → castle/tower → Battle01 return → commission and Jaha → Map66 Battle02. Victory hands the current field party back on Map66. Yeel's conversation sets F72 for Kazin following. A legal Map66 request consumes encounter state to enter Battle03. | Retain opening [search, dialogue and Church](../content/opening-branch-inventory.md), refusal/acceptance, ordinary Battle02 defeat and paid retreat/retry, Yeel conversation, repeat visit and the source-eligible encounter without visiting Yeel. |
 | A · Battle03 outcomes, Hawel recruitment and Battle04 observed. | Battle03 victory clears F403, sets F503 and uses the first party member's final tile plus origin. Defeat restores Bowie, halves gold and uses egress. Paid escape takes its own egress return. Map66 (6,5) enters Map43 (6,11) Up. Default setup runs the house scene; F612 selects the revisit. Join Kazin (F4, active subject to capacity), follow, clear F72, set F404. Caller sets F612/F650, clears F72 and writes egress 43. | Ordinary input played the house scene, inspected the diary, exited and revisited the F612 setup in the three-encounter world. The level-4 mage retained his generated stats, equipped rod and herb. House init has no F503 or F72 gate. Battle04 exercised Kazin BLAZE with the selected enemy recipient, and Galam Archer attacks from distance 2, with result messages and resumed turns. |
 | A · Battle04 outcomes and prison entry observed. | First victory stages Lemon's capture warp, executes the shared Bowie join tail, clears F404 and sets F504 before returning Map17 (0,0) Right. Completed victory skips capture and uses the saved ordinary victory return. Special defeat restores Bowie and halves gold, clears F404, sets F504 and overrides the egress map to 17; retain egress coordinates/facing. With egress 43 these are (7,5) Down. Legal EGRESS/Wing consumes its actual resource and returns to the egress map; first escape leaves F404 armed. | First victory and special defeat reached their distinct Map17 entry operands, then the first text 880 input. Paid EGRESS returned to Map43 and allowed re-entry. Stage B owns the remaining F660-gated prison program and subsequent interactions. |
-| B · Captivity through Battle06 first usable control observed. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Actual first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). The jewel is F384, not an inventory award. | Prison/maid first and repeated interactions, actual defeat/paid EGRESS/retry, completed guard/interior revisit, paid Buy/Sell/equipment/supplies and six living members on the Battle06 board are observed below. No Battle06 result is admitted. |
+| B · Captivity through Battle06 first usable control observed. | Early Map17 wake (F660), doors (F661), warning (F662) and Slade following (F73) → Map16 rally (F663), guard request (F405/F664) → Battle05. Actual first victory returns Map16 (16,18) Down, recruits Slade, clears F73 and unlocks Battle06 (F406). The jewel is F384. Map18's south exit requests Map66, where `bbcs-06` uses source scene coordinates before the loader mounts the encounter crop. | Prison/maid interactions, defeat and paid EGRESS/retry, completed guard/interior revisit, paid Buy/Sell/equipment/supplies and six living members on the Battle06 board are observed below. [South-gate entry check](#battle06-scene-and-battlefield-coordinates) |
 | C · Battle06 through Battle07 tower return observed. | Actual Battle06 victory clears F406, sets F506 and returns on Map66. Map3's changed setup offers Kiwi (joined F6, active F38 subject to capacity). Battle07 admission uses F407. First victory sets F74/F640 through its scene and clears F407/sets F507 through the caller. Slade, Kiwi and royal followers retain their separate roles. | Refusal, castle bypass, later naming/join and repeated talk; paid Battle07 EGRESS/re-entry; ordinary faction combat, casualties, silence/suppressed cast, full first-victory program and usable Map58 movement are observed. |
 | D · Tower aftermath through first damaged-ship control. Independently accepted in [PR #1563](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1563). | The Map58 tower return carries F507 and F74/F640. The castle's Map3 request selects quake Map4 on F640. Map44 departure clears F74/F640 and requests Map73 (26,13) Right. Map73 init loads Map14 and writes F700. | Fresh-process Map58 Continue, first/repeated quake entry, crack/exit traversal, No/cancel and Yes reach usable Map14(40,8) control. Stop before plank choice/Battle08; human route/visual acceptance remains separate under [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456). |
 
@@ -761,6 +761,102 @@ one kill credit at cleanup. A bounded authored native observation mounts the exi
 companion(8,4) Left stay at their actual nodes through death delivery, the corpse uses(7,4), and its
 marker disappears only at cleanup. This is a projection-boundary check, not another ordinary
 campaign run; the complete ordinary route and main-gate entrance/EGRESS observations remain retained.
+
+### Battle06 scene and battlefield coordinates
+
+**Confirmed in pinned source.** At SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`CheckBattle` sets the encounter area from `table_BattleMapCoordinates`. The fresh
+`BattleLoop` installs the incoming map/battle and calls `ExecuteBeforeBattleCutscene`.
+`bbcs_06` supplies Map66 camera (25,5), Bowie (30,9) and Slade (29,8).
+`csc37_loadMapAndFadeIn` falls through to `csc48_loadMap` with an explicit
+origin. `LoadMapBlocksAndLayout` copies the selected 20×32 region from (21,2)
+to (0,0) after flag and chest overlays. `LoadMap` selects the map area with
+the explicit camera before `LoadMapArea` sets the battle follow limits.
+The camera and actor literals are used as supplied. Once the before program ends,
+`BattleLoop` restores the incoming map/battle, initializes combatant positions
+and calls `LoadBattle` with combatant zero. That path builds combatant entities,
+loads map and terrain, and leads to the start hook and turn preparation.
+[Source admission and opening](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md)
+
+**Remake contract.** `MapTransfer.LoadScene` keeps both the copied cells and the
+rest of the working layout addressable during the before program. The declared
+map area supplies the explicit camera validation, tracking and projection.
+Both initial and later camera positions use that area, including a pan beyond
+the copied rectangle. Battle21 is a complementary case. Its Map67 opening
+camera (5,18) and Bowie (27,23) address copied cells, and the copy from (21,0)
+still supplies their layout. Battle08's Map72 camera (1,46) and Bowie (4,50)
+address cells beyond its copy. `BattleEntry` and the typed `BattleLoad` delivery
+own the active battle and the clipped, battle-local board. The victory scene's
+existing copied layout and bounds remain in use. Battle05's packed foreground
+clear and Battle22's parallax board have separate, retained observations.
+[Map projection controls](../verification/battles.md#castle-battle-projection)
+
+**Confirmed in the remake.** The baseline resumed the isolated recovery slot,
+walked to the Map18 south gate and faulted at `bbcs-06` instruction 3 with
+`field-view-area`. The corrected session loaded Map66 at (25,5), staged Bowie
+and Slade, panned to (31,9) and followed the officer to his (30,11) mark.
+It displayed 2342–2356 in order and recorded one F407 write, one battle
+initialization and one battle load. The actual 20×32 board bound Map66 (21,2).
+After automatic enemy presentation was acknowledged, Chester's first Movement
+accepted Confirm and Back. Six living allies and the 1,072 gold from the
+recovery slot were present. The copied slot remained byte-identical.
+The separate Battle21 control saw camera (5,18), the speaker at (8,22)
+and five cells matching the copy from source (21,0). Both corrected native
+runs exited 0 without runtime errors.
+
+The first native attempt used a save root inside the checkout and hit the
+save-path guard. Two follow-up observers reached the last before-scene text
+and timed out before first control. The second captured a battle presentation
+wait. The final observer acknowledges the opening enemy's actual messages.
+The early Battle21 checks expected Bowie's initial position at the later
+dialogue checkpoint, after a follower operand could already move him. The
+final control samples the staged speaker and the working layout.
+
+#### Reproduce the south-gate entry
+
+Use the registered `derived/issue2035/galam-town-v1` world, entry, main scenes
+and six opening inputs. Load the ignored machine configuration in the launch
+process and build the Debug adapter from `remake/` with the
+[locked SDK workflow](../development-and-verification.md#locked-net-workflow).
+Set fresh checkout-local APPDATA, LOCALAPPDATA, TEMP and TMP. Set
+`SF2_SAVE_ROOT` to a disposable directory outside the worktree and
+`SF2_SAVE_NAMESPACE` to a fresh name. Copy the authorized backed-up recovery
+slot to `<root>/<namespace>/sf2-opening/slot1.json`. It represents a fresh
+Map16 church visit at (27,7), Up, with six active allies, 1,072 gold, F406 and
+F505 set, and F456 clear. Use English, instant text and standard controls in
+a version-1 input-settings file. Verify the copied slot is byte-identical
+afterward.
+
+```powershell
+$env:SF2_HOST_UI_CASE = 'recovery'
+$env:SF2_HOST_UI_OUTPUT = $report # Fresh absolute path under checkout-local scratch.
+Push-Location remake
+& $env:GODOT_BIN --headless --path game --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+    --log-file $nativeLog --script res://probes/engine_battle_entry_coordinates_observation.gd -- `
+    --input-settings $settings
+Pop-Location
+```
+
+The observer opens title Continue slot 1 and sends ordinary movement across
+Map16's south exit and Map18's south gate. It reads the live scene camera,
+actor positions and draw projection, then the battle board and first control.
+For the local-coordinate control, use a fresh run with
+`SF2_HOST_UI_CASE=battle21` and point `SF2_HOST_UI_START` at a checkout-local
+JSON file containing the following controlled input. The observer stops at
+the first dialogue and compares five copied cells to their source cells.
+
+```json
+{"start":{"map":"map-67","player":"entity-0","position":{"x":57,"y":24},
+ "facing":3,"speed":32,"flags":[0,1,2,3,4,5,32,33,34,35,36,37,399,421]}}
+```
+
+Run the affected `BattleEntryProgramTests` and `SceneMusicContextTests`,
+`uv run sf2 verify adapter`, and
+`uv run sf2 verify plan --base origin/main --head HEAD` after committing.
+
+**Unknown in the original.** The static load and follow rules establish the
+coordinate operands, copy and call order. Exact rendered bounds, original
+camera cadence and hardware presentation through the south gate remain open.
 
 ## Galam door audio
 

@@ -112,6 +112,87 @@ public sealed class BattleEntryProgramTests
         Assert.Same(current.Battle, cancelled.Snapshot.Battle);
     }
 
+    [Theory]
+    [InlineData(3, 4, false, 30, 30)]
+    [InlineData(18, 4, false, 30, 30)]
+    [InlineData(3, 15, false, 30, 30)]
+    [InlineData(31, 4, false, -1, -1)]
+    [InlineData(18, 4, true, -1, -1)]
+    public void SceneLoadKeepsItsCameraDomainUntilTheBattleLoader(int x, int y, bool victory, int maxX, int maxY)
+    {
+        var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
+        {
+            document["world"]!["programs"]![0]!["instructions"] =
+                JsonNode.Parse("""[{"op":"wait-ticks","ticks":1},{"op":"end"}]""");
+            var map = document["world"]!["maps"]![1]!;
+            map["layout"]![2]![5] = 19;
+            map["basePalette"] = JsonNode.Parse("""{"color2":546,"color3":1092}""");
+        });
+        var entry = session.Current;
+        var world = session.Definition.Exploration!;
+        var map = world.Maps[new("yard-map")];
+        var sceneEntry = new ProgramLocation("scene", 0);
+        var route = map.Battle! with { LoadProgram = new("load-board", 0),
+            Outcome = victory ? new(sceneEntry, 0, sceneEntry, sceneEntry, sceneEntry, map.Map, 3, map.Map, new(1, 1), 3) : null };
+        var original = session.Definition.Encounters[route.Encounter];
+        var region = new BattleMapRegion(map.Map, new(5, 2));
+        var battle = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height,
+            original.Terrain, original.Deployments, original.Spells.Values, sourceMapRegion: region);
+        var programs = world.Programs.Values.Concat([
+            new StoryProgram("scene", [new LoadSceneMap(map.Map, new(x, y)), new WaitProgramTicks(1),
+                new SetCameraTarget(new(19, 6)), new WaitProgramTicks(1),
+                new WriteFlag(910, true), new EndProgram()]),
+            new StoryProgram("load-board", [new PresentCue(PresentationCueKind.BattleLoad, null), new EndProgram()]),
+        ]);
+        var definition = new ScenarioDefinition("camera-domain", [battle],
+            exploration: new ExplorationDefinition(world.Maps.Values, programs));
+        var story = entry.Story.Copy(sceneEntry, enteringBattle: route,
+            continuation: victory ? ProgramContinuation.VictoryProgramFinished : ProgramContinuation.BeforeBattleFinished,
+            outcomeReturn: victory ? new(map.Map, new(1, 1), 3) : null,
+            display: new(1, new(0xEEE, 0xAAA), new(0, 0), FullFadeVisibility.Black));
+        var input = entry.WithStory(story);
+        var result = ProgramRunner.Run(definition, input, []);
+        if (maxX < 0)
+        {
+            Assert.Equal("field-view-area", result.Failure?.Code);
+            Assert.Same(input.Active, result.Snapshot.Active);
+            return;
+        }
+
+        Assert.Null(result.Failure);
+        var scene = result.Snapshot;
+        var view = scene.Story.LogicalView!;
+        Assert.Equal((maxX, maxY), (view.Area.MaxX, view.Area.MaxY));
+        Assert.Equal((x * 384, y * 384), (view.BX.Position, view.BY.Position));
+        Assert.Equal(32, view.Area.ForegroundY);
+        Assert.Equal(19, scene.Exploration!.Layout[0, 0]);
+        Assert.Same(entry.Exploration!.Party, scene.Exploration.Party);
+        Assert.DoesNotContain(910, scene.Story.Flags);
+        if (victory) return;
+
+        var scrolling = ExplorationDispatcher.Submit(definition, scene, new AdvanceSimulation(scene.Story.Wait!.Token));
+        Assert.Null(scrolling.Failure);
+        var scrollView = scrolling.Snapshot.Story.LogicalView!;
+        Assert.Equal(view.Area, scrollView.Area);
+        Assert.Equal(19 * 384, scrollView.BX.Destination);
+        Assert.NotNull(scrolling.Snapshot.Exploration);
+
+        var initialized = ExplorationDispatcher.Submit(definition, scrolling.Snapshot,
+            new AdvanceSimulation(scrolling.Snapshot.Story.Wait!.Token));
+        Assert.Null(initialized.Failure);
+        Assert.Contains(910, initialized.Snapshot.Story.Flags);
+        Assert.Single(initialized.Observations, row => row.Kind == "program-instruction" && row.Detail == "WriteFlag");
+        Assert.Equal(region, initialized.Snapshot.Battle.Definition.SourceMapRegion);
+        Assert.Equal((12, 9), (initialized.Snapshot.Battle.Definition.Width, initialized.Snapshot.Battle.Definition.Height));
+        Assert.False(initialized.Snapshot.HasBattleControl);
+        var load = Assert.IsType<PresentationWait>(initialized.Snapshot.Story.Wait);
+        Assert.Equal(PresentationCueKind.BattleLoad, load.Cue.Kind);
+        var ready = ExplorationDispatcher.Submit(definition, initialized.Snapshot,
+            new CompletePresentation(load.Token, PresentationCueKind.BattleLoad));
+        Assert.Null(ready.Failure);
+        Assert.True(ready.Snapshot.HasBattleControl);
+    }
+
     [Fact]
     public void ExplicitFieldFadeRejectsBattleContextBeforePublication()
     {

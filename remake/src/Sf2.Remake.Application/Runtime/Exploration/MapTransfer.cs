@@ -292,11 +292,14 @@ internal static class MapTransfer
             current.Story.EnteringBattle is { } route && definition.Encounters.TryGetValue(route.Encounter, out var battle) &&
             battle.SourceMapRegion is { } region && region.Map == load.Map)
         {
-            // CopyMapBlocks runs after the ordinary flag and chest overlays. Script coordinates
-            // address the resulting working layout, while the later warp carries full map coordinates.
+            // The explicit map load still copies the battle blocks after flag and chest overlays.
+            // Script operands address that working layout, including cells beyond the copy.
             layout = LoadLayout(map.SelectSetup(current.Story.Flags), current.Story.Flags)
                 .ApplyBlockCopy(new(region.Origin.X, region.Origin.Y, 0, 0, battle.Width, battle.Height));
-            map = map.WithBattleSceneArea(load.Camera, battle.Width, battle.Height);
+            // Before LoadBattle the scene camera and actors move through the declared map
+            // area. Only the victory scene reuses the already loaded battle's view bounds.
+            if (current.Story.Continuation == ProgramContinuation.VictoryProgramFinished)
+                map = map.WithBattleSceneArea(load.Camera, battle.Width, battle.Height);
         }
         return new(map, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
             world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities, populationSource: world.PopulationSource);
