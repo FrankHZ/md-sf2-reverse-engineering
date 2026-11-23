@@ -405,8 +405,10 @@ owns settled Save and Continue. Original natural reach remains Unknown.
 Field preparation is **implemented, bounded** under #1422; [PR1429](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1429)
 owns review/integration status:
 Party Status → Prepare offers Equip/Unarmed, Give/full-pack exchange, Use, Magic and confirmed Drop
-on that same carried party, including defeated members' inventory access. Original field HEAL and
-ordinary HP-recovery item NoEffect are explicit. Antidote and DETOX 1 clear poison with caller-specific
+on that same carried party, including defeated members' inventory access. The common field list
+shows the five command icons with persistent captions. Back returns to the retained member and
+slot. [Prepare presentation and headless acceptance](godot/field-and-shop.md#prepare-command-icons)
+Original field HEAL and ordinary HP-recovery item NoEffect are explicit. Antidote and DETOX 1 clear poison with caller-specific
 payment. Learned DETOX 2/3 clear poison and stun for currently admitted uncursed targets in Field
 and Battle Magic, with distinct costs, feedback and refresh. [Higher-rank availability and evidence](domain/detox-ranks-design.md).
 Fairy Powder clears poison and paralysis through Field Use and consumes the selected holder

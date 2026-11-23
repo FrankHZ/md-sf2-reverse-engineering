@@ -260,15 +260,13 @@ lifetime](../../game/src/Battles/BattleMenuLayout.cs) · [Board
 lifetime](../../game/src/Battles/BattleMapViewport.cs) · [Playback
 lifetime](../../game/src/Battles/BattleSceneView.cs)
 
-### Prepare omits command icons
+### Prepare command rows
 
-P2. **Confirmed** bounded field presentation gap.
-
-The six-entry default Prepare route puts commands through the generic list, where the `Icon` switch has
-no `actions` branch. The Item entry has dedicated operation art. #2071 owns the missing icon bindings
-for the default route. Preserve its full six actions and current availability/feedback. [Prepare menu
-and icon projection](../../game/src/Exploration/FieldActionView.cs) ·
-[#2071](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2071)
+[#2071](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2071) gives the five Member →
+Prepare commands the common `FieldServiceMenu` projection. `FieldActionView` retains focus, Back,
+the revision-bound transaction and the `FieldChoicePanel` subpages. The Item command family supplies
+Equip, Give, Use and Drop. The field command family supplies Magic. Mapped Cancel and right-click
+return through the existing caller to the selected member. [Production observation](field-and-shop.md#prepare-command-icons)
 
 Some defenses express real boundaries. Stale session/revision and actual wait tokens protect
 commands and acknowledgements. Distinct press/hold invalidation is needed at different physical
@@ -443,9 +441,8 @@ vertical page where the existing controls permit them. #2083 waits for coherent 
 admitted effect operands. Serialize any overlap in `BattleChoices` or `BattleMenuLayout`.
 #2065 needs the stable phase/visibility boundary from slice 1 before mounting its strip. Its pure
 queue query may be reviewed independently of the description reader and target footprint, with
-cold Continue and read-vs-actual-next acceptance retained in #2065. #2071 can land earlier in
-its own bounded Prepare interval, once dispatch resumes, ahead of concurrent reader/formatter or
-catalog edits. Reuse its six-command acceptance. #2085 retains ownership of card level and
+cold Continue and read-vs-actual-next acceptance retained in #2065. The [Prepare command rows](#prepare-command-rows)
+use the current reader and catalog. #2085 retains ownership of card level and
 inspection wording/hits. Handle the Target input/feedback findings attached to it in slice 1 and
 the reading/inspection findings in slice 2. This is one disposition for each reported behavior.
 
