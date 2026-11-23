@@ -13,7 +13,7 @@ internal sealed partial class FieldServiceMenu : Panel
 {
     private readonly DiamondCommandButton[] _icons;
     private readonly string[] _keys;
-    private readonly string _owner;
+    private readonly IReadOnlyDictionary<string, DiamondCommandButton[]> _resourceGroups;
     private readonly Label _title = Label("Title", 32), _reason = Label("Reason", 30);
     private readonly Label _hint = Label("Hint", StoryTheme.HintSize);
     private readonly VBoxContainer _notes = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
@@ -22,7 +22,14 @@ internal sealed partial class FieldServiceMenu : Panel
     internal Action InvalidatePointer { get; set; } = () => { };
     internal Rect2? ProtectedSubject { get; set; }
     internal FieldServiceMenu(string owner, params (string Id, string Key)[] commands)
-    { _owner = owner; _keys = commands.Select(c => c.Key).ToArray(); _icons = commands.Select(c => new DiamondCommandButton(c.Id, c.Key, owner)).ToArray(); }
+        : this(commands.Select(command => (owner, command.Id, command.Key)).ToArray()) { }
+    internal FieldServiceMenu(params (string Owner, string Id, string Key)[] commands)
+    {
+        _keys = commands.Select(command => command.Key).ToArray();
+        _icons = commands.Select(command => new DiamondCommandButton(command.Id, command.Key, command.Owner)).ToArray();
+        _resourceGroups = _icons.Select((icon, i) => (commands[i].Owner, Icon: icon))
+            .GroupBy(row => row.Owner).ToDictionary(group => group.Key, group => group.Select(row => row.Icon).ToArray());
+    }
     public override void _Ready()
     {
         Theme = StoryTheme.Create();
@@ -33,7 +40,9 @@ internal sealed partial class FieldServiceMenu : Panel
         _notes.AddChild(_reason); _notes.AddChild(_hint);
         ItemRectChanged += () => InvalidatePointer();
     }
-    internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters) => MenuRasterTextures.Configure(_icons, rasters, "", _owner);
+    internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters) => Configure(_resourceGroups.Keys.Single(), rasters);
+    internal void Configure(string owner, IReadOnlyDictionary<string, ExplorationRaster>? rasters) =>
+        MenuRasterTextures.Configure(_resourceGroups[owner], rasters, "", owner);
     internal void Present(GameInput input, int index, string title, string reason, string hint, IReadOnlyList<bool>? available = null)
     {
         _title.Text = title;

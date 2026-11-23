@@ -644,8 +644,8 @@ before each implementation. The following are principal owners and distinct acce
 | 5. [#2065](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2065) Show the actual queue | Current and next scheduled actors in the reserved left stack. Read projection beside `BattleAdvancer`/`BattleTurnFlow`. Render through the battle HUD/layout and document in the feature trace. | Compare the next actual eligible actor, repeated slots, same names, status skips and changes, dead/unplaced entries, sentinel and empty remainder, new round and cold Continue. Verify hide/show by phase and equality of seeds, resources and queue after repeated projection and cover/return. |
 
 [#2068](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2068) owns formal BLAZE
-playback assets and shares the playback writer only as needed. [#2071](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2071)
-owns the field Prepare command icons and its six actions. [#2070](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2070)
+playback assets and shares the playback writer only as needed. The [field Prepare command rows](field-and-shop.md#prepare-command-icons)
+use the common field list and current Back path. [#2070](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2070)
 owns special dialogue portraits, [#2073](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2073)
 owns story wait/Confirm, and [#2062](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2062)
 owns pickup glints. Schedule shared-path work around those owners.

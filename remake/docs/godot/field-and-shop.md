@@ -11,7 +11,7 @@ geometry and errors, followed by independent main-gate review.
 
 - `FieldMenuView` presents Member / Magic / Item / Search in the right-hand list. `FieldServiceMenu`
   directly consumes the accepted `CompactCommandList`, original command frames at nearest 3×,
-  80px minimum rows and reserved markers. Up/Down follows the list; Back has its own row.
+  80px minimum rows and reserved markers. Up/Down follows the list and Cancel returns to the field.
   The list retains its initiating selection while a member/preparation page owns input.
 - `PartyStatusView` keeps the shared scrollable member column visible beside the selected sheet.
   Wrapped names, condition and available portraits use the same row control as battle Member.
@@ -25,8 +25,11 @@ geometry and errors, followed by independent main-gate review.
   the left; Prepare (Magic or Item at those entries) and Close sit together at the right inset.
   Each uses its own visible rectangle for press and release. The field sheet opts into `PartyDetailsPanel.FieldLayout`;
   the battle inspection caller retains its existing composition and 4× identity art.
-- Item operations use the same right-hand list. Use / Give / Equip / Drop, item/level lists,
-  recipients, exchange slots and confirmation use the existing field consumers. Spell rows include
+- Member → Prepare uses the same right-hand list for Equip, Give / exchange, Use item, Magic and
+  Drop. Its four item commands use the published Item operation frames and Magic uses the Field
+  Magic frames. Captions stay visible, and Reduced Flash holds the focused frame. The direct Item
+  entry retains Use / Give / Equip / Drop. Both lists use mapped Cancel or right-click for Back.
+  Item/level lists, recipients, exchange slots and confirmation use the existing field consumers. Spell rows include
   their MP cost; equipment rows retain the prospective attack value. Empty, unavailable and
   duplicate items retain their actual numbered positions. Inspecting an empty slot cannot submit a
   previously selected item. Unsupported/no-effect behavior remains attributed by the real query/result.
@@ -102,6 +105,65 @@ and dismissal after a result return to the member selection. Back at the member 
 returns to the shop menu. [Ordinary New Granseal Repair and Continue](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction)
 
 ## Reproduce the bounded observations
+
+### Prepare command icons
+
+The [#2071 adapter slice](ui-architecture.md#prepare-command-rows) uses the existing
+[field preparation rules](../application/opening-session-lifecycle.md#implemented-field-preparation).
+Build the [Debug adapter](../development-and-verification.md#locked-net-workflow), import once for a
+fresh checkout, and load the registered configuration. The observer uses the [published Map 16
+world](../application/opening-session-lifecycle.md#reproduce-the-map16-observation). Set
+`APPDATA`, `LOCALAPPDATA`, `TEMP` and `TMP` to fresh checkout-local directories.
+
+In PowerShell from the checkout root, set `$review` to a fresh absolute directory under ignored
+`local/`. Run once with `$language = 'en'; $reduced = $false` and once with
+`$language = 'zh-CN'; $reduced = $true`. The observer selects the 1920×1080 and 1600×900 clients,
+respectively.
+
+```powershell
+$handoff = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue2035/galam-town-v1'
+$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2035/galam-town-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+foreach ($key in @('SF2_PRIVATE_BATTLE01_DATA', 'SF2_PRIVATE_BATTLE01_SCENE', 'SF2_PRIVATE_BATTLE01_TERRAIN',
+    'SF2_PRIVATE_STATIC_DATA', 'SF2_PRIVATE_ENEMY_DATA', 'SF2_PRIVATE_ENEMY_GOLD')) {
+    [Environment]::SetEnvironmentVariable($key, (Join-Path $package "opening-inputs/$key.json"))
+}
+$env:SF2_SAVE_ROOT = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/disposable-saves'
+$env:SF2_SAVE_NAMESPACE = 'prepare-review-' + [guid]::NewGuid().ToString('N')
+$env:SF2_PREPARE_START = Join-Path $review 'start.json'
+$env:SF2_VIEWPORT_OUTPUT = Join-Path $review 'observation.json'
+$env:SF2_VIEWPORT_CASE = 'prepare'
+$env:SF2_PREPARE_LANGUAGE = $language
+$env:SF2_PREPARE_REDUCED = [int]$reduced
+$inputDoc = Get-Content -Raw -LiteralPath (Join-Path $handoff 'return-writer.json') | ConvertFrom-Json
+$inputDoc.start.position = @{ x = 35; y = 26 }
+$inputDoc.start.facing = 1
+$inputDoc | ConvertTo-Json -Depth 64 | Set-Content -LiteralPath $env:SF2_PREPARE_START -Encoding utf8NoBOM
+$settings = Join-Path $review 'settings.json'
+@{ formatVersion=1; language=$language; textMode='instant'; reducedFlash=$reduced; bindings=@{} } |
+    ConvertTo-Json | Set-Content -LiteralPath $settings -Encoding utf8NoBOM
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --quit-after 5200 --path remake/game `
+    --log-file (Join-Path $review 'native.log') --script res://probes/engine_prepare_commands_observation.gd `
+    -- --input-settings $settings
+```
+
+For the English text-only case set `SF2_VIEWPORT_CASE=prepare-authored`. Copy the tracked
+`remake/content/authored/localization-pilot.json` to ignored scratch with its `start.program`
+property removed. Append `--authored-package $authored` where `$authored` is the absolute path to
+that file. Require exit 0, `passed:true`, empty failure and unavailable lists and no runtime errors.
+
+**Confirmed, bounded headless.** The production host reports all five mounted command identities,
+localized captions and complete hit rows. The focused art alternates with normal motion and holds
+the selected frame with Reduced Flash. All five commands reach their existing choice pages. The
+ineligible Use slot stays muted and its refusal keeps resources and revision. Keyboard, caption
+click and mapped pad events cover selection and Back. Right-click returns to the retained member,
+pane and inventory slot. Direct Magic and Item retain their distinct routes. Authored content
+that admits preparation can show text-only rows. Human visual review, physical-device behavior and
+desktop focus remain **Unknown** under [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
+
+### Field and shop
 
 Load the owning ignored environment in the launching process. Override its inherited save selection
 **before launching any game**, selecting a fresh disposable namespace outside every worktree; never

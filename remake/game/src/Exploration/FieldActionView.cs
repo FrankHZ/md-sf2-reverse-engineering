@@ -18,11 +18,14 @@ internal sealed partial class FieldActionView : Control
     private IdentityIcons _iconOwner = null!;
     private readonly FieldServiceMenu _operations = new("item-menu", ("Use", "prepare.use"),
         ("Give", "prepare.give"), ("Equip", "prepare.equip"), ("Drop", "prepare.drop")) { Name = "ItemOperations" };
+    private readonly FieldServiceMenu _prepare = new(("item-menu", "Equip", "prepare.equip"),
+        ("item-menu", "Give", "prepare.give"), ("item-menu", "Use", "prepare.use"),
+        ("field-menu", "Magic", "prepare.magic"), ("item-menu", "Drop", "prepare.drop")) { Name = "PrepareCommands" };
     private FieldInventoryChoice?[] _slotItems = [];
     private ActorRef[] _targets = [];
     private ActorRef? _packActor;
     private string? _givingItem;
-    private object? _iconSource;
+    private object? _itemIconSource, _prepareIconSource;
     private readonly List<(Func<string> Label, Action Choose, bool Available)> _options = [];
     private readonly MenuPointer _pointer = new();
     private GameSession _session = null!;
@@ -38,13 +41,19 @@ internal sealed partial class FieldActionView : Control
     private Action? _restore;
     private bool _requiresRelease;
     internal bool Open => Visible;
-    internal bool ItemOperations => _stage == "item-actions";
+    private FieldServiceMenu? CommandMenu => _stage switch
+    {
+        "actions" => _prepare,
+        "item-actions" => _operations,
+        _ => null,
+    };
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Stop;
-        _shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_shade); AddChild(_page); AddChild(_pack); AddChild(_operations);
-        _pack.InvalidatePointer = _page.InvalidatePointer = _operations.InvalidatePointer = _pointer.Cancel;
+        _shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(_shade); AddChild(_page); AddChild(_pack);
+        AddChild(_operations); AddChild(_prepare);
+        _pack.InvalidatePointer = _page.InvalidatePointer = _operations.InvalidatePointer = _prepare.InvalidatePointer = _pointer.Cancel;
         Hide();
     }
 
@@ -53,30 +62,41 @@ internal sealed partial class FieldActionView : Control
     {
         _entry = entry;
         _session = session; _input = input; _member = member; _name = name; _submit = submit; _iconOwner = icons;
-        _parents.Clear(); _restore = null; _assetFailure = null; _packActor = null; Show();
-        if (_entry == "item" && ConfigureOperations(session) is { } failure)
+        _parents.Clear(); _restore = null; _packActor = null; Show();
+        _assetFailure = _entry switch
         {
-            _assetFailure = failure;
+            "actions" => ConfigureCommands(session, _prepare, ref _prepareIconSource),
+            "item" => ConfigureCommands(session, _operations, ref _itemIconSource),
+            _ => null,
+        };
+        if (_assetFailure is { } failure)
+        {
             Menu("result", () => GameText.Get("prepare.failure", Recovery("field-preparation-unsupported"),
                 failure.Code, failure.Field, failure.Message), [(() => GameText.Get("prepare.back"), Hide, true)]);
             return;
         }
         Actions();
     }
-    private SessionFailure? ConfigureOperations(GameSession session)
+    private SessionFailure? ConfigureCommands(GameSession session, FieldServiceMenu menu, ref object? source)
     {
-        if (!ReferenceEquals(_iconSource, session.Definition))
+        if (ReferenceEquals(source, session.Definition)) return null;
+        source = null;
+        var visuals = session.Definition.Exploration?.Visuals;
+        string field = "presentation.itemMenu";
+        try
         {
-            try
+            menu.Configure("item-menu", visuals?.ItemMenu);
+            if (menu == _prepare)
             {
-                _operations.Configure(session.Definition.Exploration?.Visuals?.ItemMenu);
+                field = "presentation.fieldMenu";
+                menu.Configure("field-menu", visuals?.FieldMenu);
             }
-            catch (InvalidOperationException error)
-            {
-                return new(SessionFailureKind.AdapterError, error.Message, "presentation.itemMenu", "Item operation icon decoding failed.");
-            }
-            _iconSource = session.Definition;
         }
+        catch (InvalidOperationException error)
+        {
+            return new(SessionFailureKind.AdapterError, error.Message, field, "Command icon decoding failed.");
+        }
+        source = session.Definition;
         return null;
     }
     private SessionFailure? _assetFailure;
@@ -93,7 +113,7 @@ internal sealed partial class FieldActionView : Control
         _restore = () => { _restore = null; Menu(stage, title, saved); };
         if (stage is not ("confirm" or "exchange")) _packActor = null;
         if (stage is "actions" or "item-actions" or "give-item" or "use-item" or "drop-item" or "equipment" or "magic") _givingItem = null;
-        _stage = stage; _titleText = title; _index = 0; _generation++; _pointer.Suspend(); _requiresRelease = true;
+        _stage = stage; _titleText = title; _index = 0; _generation++; Suspend();
         _options.Clear(); _options.AddRange(saved);
         if (_options.Count == 0) _options.Add((() => GameText.Get("prepare.empty"), Back, true));
         Present();
@@ -114,14 +134,13 @@ internal sealed partial class FieldActionView : Control
         {
             Menu("item-actions", () => GameText.Get("prepare.title", _name), [
                 (() => GameText.Get("prepare.use"), Use, true), (() => GameText.Get("prepare.give"), Give, true),
-                (() => GameText.Get("prepare.equip"), Equip, true), (() => GameText.Get("prepare.drop"), Drop, true),
-                (() => GameText.Get("prepare.back"), Hide, true)]);
+                (() => GameText.Get("prepare.equip"), Equip, true), (() => GameText.Get("prepare.drop"), Drop, true)]);
             return;
         }
         Menu("actions", () => GameText.Get("prepare.title", _name), [
             (() => GameText.Get("prepare.equip"), Equip, true), (() => GameText.Get("prepare.give"), Give, true),
             (() => GameText.Get("prepare.use"), Use, true), (() => GameText.Get("prepare.magic"), Magic, true),
-            (() => GameText.Get("prepare.drop"), Drop, true), (() => GameText.Get("prepare.back"), Hide, true)]);
+            (() => GameText.Get("prepare.drop"), Drop, true)]);
     }
 
     private void Equip()
@@ -270,11 +289,14 @@ internal sealed partial class FieldActionView : Control
     {
         if (!Open) return;
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
-        _operations.Visible = ItemOperations; _page.Visible = !ItemOperations;
+        var commands = CommandMenu;
+        _operations.Visible = commands == _operations;
+        _prepare.Visible = commands == _prepare;
+        _page.Visible = commands is null;
         string hint = GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down), _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
         string fallback = GameText.Fallback("prepare.", true); if (fallback.Length > 0) hint += "\n" + fallback;
         var party = _session.QueryPartyDetails();
-        if (ItemOperations) _operations.Present(_input, _index, _titleText(), "", hint);
+        if (commands is not null) commands.Present(_input, _index, _titleText(), "", hint);
         else
         {
             string? Icon(int i) => _stage switch
@@ -305,9 +327,9 @@ internal sealed partial class FieldActionView : Control
             _stage is "exchange" or "confirm" && _packActor is { } recipient ? recipient : _member;
         var member = party?.Members.FirstOrDefault(row => row.Carried.Actor == actor);
         _pack.Visible = member is not null && _stage != "result";
-        if (_pack.Visible) _pack.Present(member!, PartyStatusView.MemberName(member!, _session), _iconOwner, ItemOperations ? _operations.Position : _page.Position);
+        if (_pack.Visible) _pack.Present(member!, PartyStatusView.MemberName(member!, _session), _iconOwner, commands?.Position ?? _page.Position);
     }
-    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _operations.Suspend(); }
+    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _operations.Suspend(); _prepare.Suspend(); }
     internal void Handle(GameAction action)
     {
         _pointer.Cancel(); if (_requiresRelease) return;
@@ -315,7 +337,7 @@ internal sealed partial class FieldActionView : Control
         if (action is GameAction.Left or GameAction.Right)
         {
             int step = action == GameAction.Left ? -112 : 112;
-            if (ItemOperations) _operations.Wheel(step);
+            if (CommandMenu is { } commands) commands.Wheel(step);
             else _page.Read(step);
             return;
         }
@@ -327,7 +349,8 @@ internal sealed partial class FieldActionView : Control
     {
         if (!GetWindow().HasFocus() || !CanProcess()) { Suspend(); return; }
         if (input is not InputEventMouse mouse) return;
-        int hit = ItemOperations ? _operations.Hit(mouse.Position) : _page.Hit(mouse.Position);
+        var commands = CommandMenu;
+        int hit = commands?.Hit(mouse.Position) ?? _page.Hit(mouse.Position);
         if (input is InputEventMouseMotion motion)
         { if (_pointer.Moved(motion) && hit >= 0 && !_requiresRelease) { _index = hit; Present(); } return; }
         if (input is not InputEventMouseButton button) return;
@@ -336,18 +359,18 @@ internal sealed partial class FieldActionView : Control
             _pointer.Cancel();
             int step = button.ButtonIndex == MouseButton.WheelUp ? -112 : 112;
             if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) _pack.Wheel(step);
-            else if (!ItemOperations) _page.Wheel(mouse.Position, step);
-            else if (_operations.GetGlobalRect().HasPoint(mouse.Position)) _operations.Wheel(step);
+            else if (commands is null) _page.Wheel(mouse.Position, step);
+            else if (commands.GetGlobalRect().HasPoint(mouse.Position)) commands.Wheel(step);
             return;
         }
         bool back = button.ButtonIndex == MouseButton.Right;
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(),
-            back ? GetGlobalRect() : hit < 0 ? default : ItemOperations ? _operations.RowRect(hit) : _page.RowRect(hit), _generation);
+            back ? GetGlobalRect() : hit < 0 ? default : commands?.RowRect(hit) ?? _page.RowRect(hit), _generation);
         if (!_requiresRelease && clicked is not null)
         { if (clicked == "back") Back(); else { _index = int.Parse(clicked); _options[_index].Choose(); } }
         Present();
     }
     internal object Observe() => new { visible = IsVisibleInTree(), stage = _stage, index = _index, title = _titleText(),
         revision = _choices?.Revision, requiresRelease = _requiresRelease, failure = _assetFailure,
-        operations = _operations.Observe(), page = _page.Observe(), pack = _pack.Observe() };
+        commands = _prepare.Observe(), operations = _operations.Observe(), page = _page.Observe(), pack = _pack.Observe() };
 }
