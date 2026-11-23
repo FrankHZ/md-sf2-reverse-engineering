@@ -94,7 +94,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
     {
         var admission = RequireAction(battle, actor, action);
         if (admission.AttackItem is { } attack)
-            return Sf2AttackSpellAction.PrepareDamage(battle, actor, destination, attack.Effect,
+            return Sf2AttackSpellAction.PrepareAttack(battle, actor, destination, attack.Effect,
                 target, progression, action.ItemSlot, attack);
         if (admission.SupportItem is { } support)
             return Sf2SupportSpellAction.PrepareEffect(battle, actor, destination, support.Effect, target,

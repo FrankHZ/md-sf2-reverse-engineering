@@ -274,10 +274,74 @@ One 42,030-byte input slot and about 1.6 MB of state/input/projection receipts s
 Godot exited 0 with an ObjectDB shutdown warning. Historical Battle03 physical sleep separately
 observed a skipped turn and restored ordinary control. [Existing physical-sleep run](../verification/field-programs.md)
 
+## DESOUL 1/2 implementation and evidence
+
+**Architecture.** The learned offensive action already admits the opposing center, sorts
+the diamond, stages one MP cost and owns the ordered award and custody transaction. Extending
+that action with a typed `InstantDeath` reaction keeps those owners and lets the result carry
+HP zero, its prior status, and no damage amount. A separate action would repeat that transaction.
+Encoding the source operand as damage would enter damage EXP, variance and hit motion.
+`BattleActionResolution` validates the exact per-target STATUS draw and reaction before
+publication. The elemental and consumable branches retain their existing damage route.
+
+A successful reaction enters the existing death message, drop receipt, field removal and
+after-action continuation. The shared death batch owns actual and forced deaths and their
+accounting. The settled save persists the existing fields, including the next queue position,
+both RNG values, MP, EXP, kills, gold and custody. No new persisted effect field is needed.
+Private Content admits the exact source ranks and flags, including their source animation
+expressions. That admission is independent of the icon mount. Godot renders the ordinary
+localized cast, death, ineffective and award messages on black. Source DESOUL animation v1/v2
+is tracked by [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+
+**Confirmed** in [engine behavior cases](../../tests/Sf2.Remake.Engine.Tests/DesoulSpellTests.cs).
+Rank 1 checks each resistance threshold, the all-miss award and halving, and the old HP/MP/status
+through a paid reaction. Rank 2 checks a paid silenced cast, unlearned and short-MP refusal, and
+legal area settlement. The connected cases exercise a leader kill, one chance drop before the
+next target draw, a pre-set flag, full-pack delivery to Deals, reward and forced cleanup before
+field return. A separate kill/miss/kill verifies two kill EXP and gold contributions, actual
+kill credit, and the caster's existing lethal after-turn poison producing defeat when the immune
+enemy survives. The zero-enemy variant reaches victory before that poison tick. Ordinary player
+admission excludes friendly targets. Enemy/automatic DESOUL and item-origin DESOUL are outside
+this binding.
+
+### Controlled Kazin input and cold Continue
+
+**Confirmed** in the remake. Start with the registered issue1966 zh-CN-learned01 Battle26 slot used
+above. Kazin already has MAGE 29, 55 MP and packed `[139,71,6,72]`. Keep the class, party, book,
+progress, deployment square, story and both seeds. In a disposable copy only, move Kazin from
+(5,25) to the free tile (11,24). At round 6 cursor 18, swap the actor identities at zero-based
+queue positions 2 and 18 (Kazin and Janet). Keep the stored queue scores. Write two copies of the
+result in separate disposable namespaces using the existing save envelope. Each staged slot is
+42,037 bytes. This setup shortens the input to a cast from an existing legal book.
+
+Use the same #2001 priority-v1 world, scenes, entry and opening-inputs, Chinese catalogs and
+issue1955 Chinese instant-text settings as the [Tyrin reproduction](#controlled-tyrin-25-input-and-cold-continue).
+Use title Continue for each copy. From Kazin's Movement, Confirm then Magic opens the learned
+rows. The normal and selected spell-8 icons are visible. Choose 摄魂 1 and Lesser Demon
+(enemy-12, two tiles away) in one copy. Choose 摄魂 2 and Dark Bishop (enemy-13, one tile away)
+in the other. Acknowledge each result. Rank 2's radius 1 includes the demon before the bishop
+even though the bishop was the selected center. The demon falls (HP 40→0 and removed from the
+field), and the bishop takes no effect (HP 39). Rank 1 pays 8 MP (55→47) and rank 2 pays 13 MP
+(55→42). Both give 1 EXP (5→6), 360 gold (8747→9107), one kill (58→59), and return to
+ally-15's Movement at cursor 20.
+
+Open Options with F10 and choose Save with Up and Confirm. Save slot 1 and keep playing. For rank
+2, start a fresh process, Continue slot 1 and Save again before acting. The decoded records at
+sequences 8 and 9 have equal complete `data`, including ranks, removal, HP/MP, EXP, kills, gold,
+custody, queue and both RNG words. Use Stay until Bowie's Movement and choose 撤离 1 through Magic.
+Map36 resumes field input. All three Godot processes exited 0 without in-session errors.
+Rank 2 and cold Continue emitted ObjectDB warnings on shutdown. The compact receipts total
+about 1.38 MiB, within the 2 MiB budget.
+
+Natural unchanged-history DESOUL casting, a native rare-drop DESOUL kill, and natural retail
+boss victory by DESOUL remain **Unknown**. The engine cases exercise custody and terminal
+behavior. The native segments exercise ordinary selection, result messages, settled save/restore
+and return after a controlled stage.
+
 ## Implementation order and ownership
 
-Kazin's learned MUDDLE and DESOUL ranks can be retained without an action binding. Their
-implementation stages remain open. [Current attack binding](../../src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs)
+Learned SLEEP 1 and DESOUL 1/2 have player bindings. Kazin's learned MUDDLE ranks can
+remain in the book while MUDDLE's effect and turn consumers are open.
 
 Use the finite effects on the existing learned-spell entries. Putting all three families on
 the damage path would conflate status EXP and instant death with modified damage. A parallel
@@ -301,17 +365,17 @@ required consumers are admitted.
    exercises the private rank through ordinary Magic and cold Continue.
 2. **DESOUL 1 then 2.** Consume the accepted [#1944 attack and item split](offensive-items-design.md).
    Keep instant death on the learned spell path and preserve elemental attack-item resolution.
-   Extend [AttackSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs),
+   [AttackSpellDefinition](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs),
    [Sf2AttackSpellAction](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) and
-   [PrivateAttackSpellBindings](../../src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs).
-   Use a finite instant-death effect and a validated death reaction in the current spell scene.
-   Keep the instant-death outcome available to reward calculation, so it adds exactly kill
-   EXP. Pass death through [Sf2BattleProgressionRule](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2BattleProgressionRule.cs),
+   [PrivateAttackSpellBindings](../../src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs)
+   admit both finite ranks. The validated instant-death reaction adds exactly kill EXP through
+   [Sf2BattleProgressionRule](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2BattleProgressionRule.cs).
+   The same settlement uses
    [EnemyItemDropRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyItemDropRules.cs),
    [BattleDeathBatch](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDeathBatch.cs) and
    [BattleOutcomeRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/BattleOutcomeRules.cs).
-   Keep effects, custody receipts and scene waits within the existing commit/replay authority.
-   Admit rank 2 via the same effect after varied ordered outcomes and its legal area pass.
+   The existing commit/replay authority retains effects, custody receipts and scene waits.
+   [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
 3. **MUDDLE 1 then 2.** Pair the first support binding with after-turn, effective automatic
    ownership and the physical dodge consumer. Pair the second with same-side AI decisions
    and guarded and real same-side actions. Route temporary automatic control in

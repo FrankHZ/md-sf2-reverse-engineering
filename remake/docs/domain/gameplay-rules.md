@@ -78,8 +78,11 @@ and retreat continuation. Unmarked SPOIT is not implemented by this slice.
 `EnemySupportDecision` participates at the existing SUPPORT command positions in sets2/6/7/8/9/14,
 after standby/earlier successful commands. It requires known DISPEL1, sufficient MP and a reachable
 legal station. Score is the number of actual area recipients whose first eligible attack-spell
-family has an affordable rank, or who know a healing spell. Healing's getter ignores MP; silence
-and existing status/resistance do not remove contributors. Each actor contributes at most1. Areas
+family has an affordable rank, or who know a healing spell. The source attack getter for ally
+books considers BLAZE, FREEZE, BOLT, BLAST, KATON and RAIJIN in book order. It skips DESOUL
+before choosing the first family. [Source filter](../../../docs/research/battle/battle-ai.md#spell-filtering)
+Healing's getter ignores MP. Silence and existing status/resistance do not remove contributors.
+Each actor contributes at most1. Areas
 below2 are filtered; the last highest candidate in source processing order wins, with existing
 station/path construction. SUPPORT consumes no scoring/category RNG and does not update LastTarget.
 It never substitutes center damage, a Mage attack tie table or MP alone for this score. A silenced
@@ -190,10 +193,10 @@ ally/class or enemy/actor dictionary. Authored gestures and private resource adm
 
 ## Finite player attack spells
 
-**Implemented bounded capability, Standard rigor:** learned BLAZE1-2 and BLAST1 use the existing
+**Implemented bounded capability:** learned elemental spells and DESOUL use the existing
 `IBattleActionRule` query/admission/preparation seam. `HealingSpellDefinition` and `IHealingRule`
 continue to own healing only. Separate immutable `AttackSpellDefinition` operands and
-`Sf2AttackSpellAction` own damaging spell legality, target resolution and construction;
+`Sf2AttackSpellAction` own offensive spell legality, target resolution and construction;
 `SessionAction.AttackSpell` preserves that distinction through selection. No new scheduler,
 dispatcher, effect language or mutable state authority is introduced. Existing transaction and
 later-failure prefix rules remain in force.
@@ -207,6 +210,10 @@ sorted by deployment processing order (the private reader maps original combatan
 order). Dead, absent, allied and neutral occupants do not receive the attack. Unsupported caster
 statuses/AI and reached unknown accounting reject explicitly. Queries consume neither RNG stream;
 confirmation rechecks the same admission and constructs without publishing speculative changes.
+
+[DESOUL 1/2](hostile-spells-design.md#desoul-12-implementation-and-evidence) uses the source
+STATUS draw and a typed zero-HP death reaction. It shares ordered targets, MP, drops, kill
+EXP and outcomes. The elemental path below owns critical, variance, damage EXP and hit motion.
 
 The [spell-resolution contract](../../../docs/design/contracts/battle/spell-resolution.md) owns
 resistance, truncated quarter adjustment, 1/32 critical, two downward variance draws, proportional

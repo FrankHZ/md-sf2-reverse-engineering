@@ -38,10 +38,12 @@ internal static class EnemySupportDecision
 
         bool Contributes(BattleActorState target)
         {
-            // GetNextUsableAttackSpell asks only its first matching family, then
-            // lowers that family's rank for MP. Healing's getter ignores MP.
-            var first = target.Spells.Where(battle.Definition.AttackSpells.ContainsKey).Select(s => (SpellRef?)s).FirstOrDefault();
-            return first is { } family && target.Spells.Any(s => s.Value == family.Value &&
+            // DISPEL scores opposing allies. The source attack getter filters their books
+            // before selecting one family and checking its ranks for MP. Healing's getter ignores MP.
+            var first = target.Spells.FirstOrDefault(s =>
+                (s.Value is "blaze" or "freeze" or "bolt" or "blast" or "katon" or "raijin") &&
+                battle.Definition.AttackSpells.ContainsKey(s));
+            return first != default && target.Spells.Any(s => s.Value == first.Value &&
                 battle.Definition.AttackSpells.TryGetValue(s, out var attack) && target.Mp >= attack.MpCost) ||
                 target.Spells.Any(battle.Definition.Spells.ContainsKey);
         }

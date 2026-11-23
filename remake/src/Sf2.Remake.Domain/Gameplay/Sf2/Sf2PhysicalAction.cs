@@ -113,7 +113,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             {
                 var spell = current.Definition.AttackSpells.GetValueOrDefault(MonsterBreathSpell(actor.Level))
                     ?? throw new BattleRuleException("monster-breath-content", "spells.kiwi", true);
-                var breath = Sf2AttackSpellAction.PrepareDamage(current.With(mainSeed: seed),
+                var breath = Sf2AttackSpellAction.PrepareAttack(current.With(mainSeed: seed),
                     actorRef, destination, spell, targetRef, progression, itemSlot: null);
                 return breath with { ConstructionEffects = Array.AsReadOnly<BattleEffect>([conversion, .. breath.ConstructionEffects]) };
             }

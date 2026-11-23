@@ -7,7 +7,7 @@ public enum SpellEffect
 {
     RestoreHp, FullHp, CurePoison, CurePoisonAndParalysis, Damage,
     Silence, Sleep, LowerDefenseAndAgility, RaiseDefenseAndAgility, RaiseAttack,
-    Retreat, ReturnToRefuge, NoEffect, CurePoisonParalysisAndCurse,
+    Retreat, ReturnToRefuge, NoEffect, CurePoisonParalysisAndCurse, InstantDeath,
 }
 
 public enum SpellTarget { Self, Ally, Enemy, AllAllies, PartyMember }
@@ -53,9 +53,9 @@ public sealed record SpellDescriptionFacts(SpellRef Spell, byte? MpCost, SpellEf
                 Radius = healing.Radius, HealingLimit = limit };
         }
         else if (attack is not null)
-            facts = facts with { Effect = SpellEffect.Damage, Target = SpellTarget.Enemy,
+            facts = facts with { Effect = attack.IsInstantDeath ? SpellEffect.InstantDeath : SpellEffect.Damage, Target = SpellTarget.Enemy,
                 MinimumRange = attack.MinimumRange, MaximumRange = attack.MaximumRange,
-                Radius = attack.Radius, Element = attack.Element };
+                Radius = attack.Radius, Element = attack.IsInstantDeath ? null : attack.Element };
         else if (support is not null)
             facts = facts with { Effect = support.Effect switch
             {

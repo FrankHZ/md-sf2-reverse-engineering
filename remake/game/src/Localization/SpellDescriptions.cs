@@ -50,6 +50,7 @@ internal static class SpellDescriptions
         SpellEffect.CurePoisonAndParalysis => GameText.Get("item-description.poison-paralysis"),
         SpellEffect.CurePoisonParalysisAndCurse => GameText.Get("spell-description.curse"),
         SpellEffect.Damage when facts.Element is { } element => Damage(element),
+        SpellEffect.InstantDeath => GameText.Get("spell-description.instant-death"),
         SpellEffect.Silence => GameText.Get("spell-description.inflict-silence"),
         SpellEffect.Sleep => GameText.Get("spell-description.sleep"),
         SpellEffect.LowerDefenseAndAgility => GameText.Get("spell-description.slow"),

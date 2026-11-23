@@ -83,10 +83,10 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         BattleActionRef action, ActorRef? center, IBattleProgressionRule progression)
     {
         var spell = RequireAction(battle, actorRef, action).AttackSpell!;
-        return PrepareDamage(battle, actorRef, destination, spell, center, progression, action.ItemSlot);
+        return PrepareAttack(battle, actorRef, destination, spell, center, progression, action.ItemSlot);
     }
 
-    internal static BattleActionResolution PrepareDamage(EngineBattleState battle, ActorRef actorRef,
+    internal static BattleActionResolution PrepareAttack(EngineBattleState battle, ActorRef actorRef,
         MapPosition destination, AttackSpellDefinition spell, ActorRef? center, IBattleProgressionRule progression,
         int? itemSlot, AttackItemDefinition? item = null)
     {
@@ -103,23 +103,11 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         // DetermineIneffectiveAttack reads the first sorted target once. InflictDamage
         // consults that toggle only for targets with the Taros enemy definition.
         var taros = battle.Definition.TarosEffectiveness;
-        bool ineffective = taros?.IsTaros(targets[0]) == true;
+        bool ineffective = !spell.IsInstantDeath && taros?.IsTaros(targets[0]) == true;
         foreach (var target in targets)
         {
-            int power = SpellPower(actor, spell, itemSlot.HasValue);
-            int quarter = power / 4;
-            int damage = ResistedDamage(target, spell, power);
-            bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;
-            if (ineffective && taros!.IsTaros(target))
-            {
-                reactions.Add(new(actorRef, target.Actor, reactionAction, BattleReactionKind.Ineffective,
-                    target.Hp, target.Hp, target.Mp, target.Mp, false, 0, target.Status));
-                continue;
-            }
-            if (critical) damage += quarter;
-            ushort range = checked((ushort)(damage / 8 + 1));
-            damage = Math.Max(1, damage - Roll(range, "spell-variance", target.Actor) - Roll(range, "spell-variance", target.Actor));
-            ushort hp = (ushort)Math.Max(0, target.Hp - damage);
+            var reaction = spell.IsInstantDeath ? ResolveInstantDeath(target) : ResolveDamage(target);
+            ushort hp = reaction.HpAfter;
             if (hp == 0 && actor.IsAlly)
             {
                 if (actor.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
@@ -132,8 +120,7 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), actorRef, target.Actor, hp == 0);
             inventory = dropped.Battle; seed = inventory.MainSeed;
             effects.AddRange(dropped.Effects);
-            reactions.Add(new(actorRef, target.Actor, reactionAction, BattleReactionKind.Damage,
-                target.Hp, hp, target.Mp, target.Mp, critical, damage, target.Status, Receipt: dropped.Receipt));
+            reactions.Add(reaction with { Receipt = dropped.Receipt });
         }
         BattleOutcomeSelection.RequireContinuing(battle, reactions);
         EquipmentItemUse? equipmentUse = null;
@@ -165,6 +152,31 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
             actors: inventory.Actors.Select(unit => unit.Actor == actorRef ? unit.With(position: destination) : unit));
         return new(prepared, actorRef, destination, reactions.AsReadOnly(), actor.IsAlly ? new(actorRef, award.Amount) : null,
             effects.AsReadOnly(), [], AttackSpell: spell, AttackItemSlot: itemSlot, AttackItem: item, EquipmentUse: equipmentUse);
+
+        BattleReaction ResolveInstantDeath(BattleActorState target)
+        {
+            bool hit = AttackSpellDefinition.InstantDeathSucceeds(target, Roll(8, "desoul", target.Actor));
+            return new(actorRef, target.Actor, reactionAction,
+                hit ? BattleReactionKind.InstantDeath : BattleReactionKind.Ineffective,
+                target.Hp, hit ? (ushort)0 : target.Hp, target.Mp, target.Mp, false, 0, target.Status);
+        }
+
+        BattleReaction ResolveDamage(BattleActorState target)
+        {
+            int power = SpellPower(actor, spell, itemSlot.HasValue);
+            int quarter = power / 4;
+            int damage = ResistedDamage(target, spell, power);
+            bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;
+            if (ineffective && taros!.IsTaros(target))
+                return new(actorRef, target.Actor, reactionAction, BattleReactionKind.Ineffective,
+                    target.Hp, target.Hp, target.Mp, target.Mp, false, 0, target.Status);
+            if (critical) damage += quarter;
+            ushort range = checked((ushort)(damage / 8 + 1));
+            damage = Math.Max(1, damage - Roll(range, "spell-variance", target.Actor) - Roll(range, "spell-variance", target.Actor));
+            ushort hp = (ushort)Math.Max(0, target.Hp - damage);
+            return new(actorRef, target.Actor, reactionAction, BattleReactionKind.Damage,
+                target.Hp, hp, target.Mp, target.Mp, critical, damage, target.Status);
+        }
 
         int Roll(ushort range, string purpose, ActorRef target)
         {

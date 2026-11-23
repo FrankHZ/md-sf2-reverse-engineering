@@ -3,7 +3,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Domain.Battles;
 
-internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resource, Status, CurseRecoil }
+internal enum BattleReactionKind { Damage, Dodge, Ineffective, Recovery, Resource, Status, CurseRecoil, InstantDeath }
 internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Action,
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
@@ -540,23 +540,37 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         var inventory = before;
         int cursor = firstDraw;
         var taros = before.Definition.TarosEffectiveness;
-        bool ineffective = taros?.IsTaros(targets[0]) == true;
+        bool ineffective = !spell.IsInstantDeath && taros?.IsTaros(targets[0]) == true;
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i]; var reaction = Reactions[i];
-            bool blocked = ineffective && taros!.IsTaros(target);
             Require(reaction.Actor == actor && reaction.Target == target.Actor &&
                 reaction.Action == (AttackItem is null ? "attack-spell" : "attack-item") &&
-                reaction.Kind == (blocked ? BattleReactionKind.Ineffective : BattleReactionKind.Damage) &&
-                reaction.HpBefore == target.Hp && (blocked ? reaction.Amount == 0 && !reaction.Critical : reaction.Amount >= 1) &&
-                reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) && reaction.MpBefore == target.Mp &&
-                reaction.MpAfter == target.Mp && reaction.StatusWrite == target.Status && reaction.InflictedSleep is null && reaction.InflictedSilence is null && reaction.InflictedPoison is null && reaction.InflictedStun is null);
+                reaction.HpBefore == target.Hp && reaction.MpBefore == target.Mp && reaction.MpAfter == target.Mp &&
+                reaction.StatusWrite == target.Status && reaction.InflictedSleep is null && reaction.InflictedSilence is null &&
+                reaction.InflictedPoison is null && reaction.InflictedStun is null);
+            bool blocked = ineffective && taros!.IsTaros(target);
+            int drawCount = spell.IsInstantDeath || blocked ? 1 : 3;
+            var draws = ConstructionEffects.Skip(cursor).Take(drawCount).ToArray();
+            Require(draws.Length == drawCount && draws.All(e => e.Actor == actor && e.Target == target.Actor));
+            if (spell.IsInstantDeath)
+            {
+                var draw = draws[0];
+                Require(draw.Kind == "rng-desoul" && draw.RandomRange == 8 && draw.RandomValue.HasValue);
+                bool hit = AttackSpellDefinition.InstantDeathSucceeds(target, draw.RandomValue!.Value);
+                Require(reaction.Kind == (hit ? BattleReactionKind.InstantDeath : BattleReactionKind.Ineffective) &&
+                    reaction.HpAfter == (hit ? 0 : target.Hp) && reaction.Amount == 0 && !reaction.Critical);
+            }
+            else
+            {
+                Require(reaction.Kind == (blocked ? BattleReactionKind.Ineffective : BattleReactionKind.Damage) &&
+                    (blocked ? reaction.Amount == 0 && !reaction.Critical : reaction.Amount >= 1) &&
+                    reaction.HpAfter == Math.Max(0, target.Hp - reaction.Amount) &&
+                    draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
+                    draws.Skip(1).All(e => e.Kind == "rng-spell-variance"));
+            }
             if (reaction.HpAfter == 0 && target.IsAlly && target.Defeats is null)
                 throw new BattleRuleException("unspecified-defeats", "target.defeats", true);
-            int drawCount = blocked ? 1 : 3;
-            var draws = ConstructionEffects.Skip(cursor).Take(drawCount).ToArray();
-            Require(draws.Length == drawCount && draws[0].Kind == "rng-spell-critical" && draws[0].RandomRange == spell.CriticalRange &&
-                draws.Skip(1).All(e => e.Kind == "rng-spell-variance") && draws.All(e => e.Actor == actor && e.Target == target.Actor));
             cursor += drawCount;
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: checked((uint)draws[^1].After!.Value)),
                 actor, target.Actor, reaction.HpAfter == 0);

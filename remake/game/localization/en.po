@@ -1280,6 +1280,9 @@ msgid "battle.scene.spell-growth"
 msgstr "{0} learns {1} level {2}."
 
 #. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.instant-death"
+msgstr "{0} lost their soul."
+
 msgid "battle.scene.sleep"
 msgstr "{0} falls asleep."
 
@@ -2878,6 +2881,9 @@ msgstr "Deals non-elemental damage."
 
 msgid "spell-description.inflict-silence"
 msgstr "May inflict Silence."
+
+msgid "spell-description.instant-death"
+msgstr "May defeat a target instantly."
 
 msgid "spell-description.sleep"
 msgstr "May put targets to sleep."

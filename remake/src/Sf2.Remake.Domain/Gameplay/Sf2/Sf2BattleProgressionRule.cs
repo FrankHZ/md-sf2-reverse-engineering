@@ -26,7 +26,8 @@ internal class Sf2BattleProgressionRule : IBattleProgressionRule
             {
                 int before = accumulated;
                 int kill = BattleRewards.KillExperience(recipient.Level, recipient.Definition.Physical!.Promoted, target.Level);
-                accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(reaction.Amount, target.MaxHp, kill));
+                if (reaction.Kind != BattleReactionKind.InstantDeath)
+                    accumulated = Math.Min(49, accumulated + BattleRewards.DamageExperience(reaction.Amount, target.MaxHp, kill));
                 if (reaction.HpAfter == 0) accumulated = Math.Min(49, accumulated + kill);
                 if (kind == BattleActionKind.AttackSpell)
                     effects.Add(new("spell-exp-contribution", recipient.Actor, before, accumulated, Target: reaction.Target));
