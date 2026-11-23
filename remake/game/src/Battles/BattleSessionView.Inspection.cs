@@ -30,7 +30,7 @@ public sealed partial class BattleSessionView
     private void RetireInspection()
     { _inspectionAfterReturn = null; _inspection?.Close(); }
 
-    private bool EnterInspection()
+    internal bool EnterInspection()
     {
         if (!_inspection.Open(_session!, _input, _map)) return false;
         InspectionBarrier(); _menu.Hide(); _hud.Hide(); _feedback.Hide(); return true;

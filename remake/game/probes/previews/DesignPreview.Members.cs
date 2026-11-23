@@ -18,7 +18,7 @@ public partial class DesignPreview
         _giveStep = GiveStep.Closed;
         if (!_showMembers)
             _member = _scene == ShopScene ? (_shopStep == ShopStep.Member ? (Member)_focus : _shopMember)
-                : _scene == 3 && !(_page == Page.Target && _target == 0) ? Member.Sarah : Member.Bowie;
+                : _scene == BattleScene ? Member.Sarah : Member.Bowie;
         _showMembers = !_showMembers;
         Render();
     }
@@ -78,16 +78,14 @@ public partial class DesignPreview
         Utility(new(1642, 1003, 204, 48), T("返回", "Back"), ToggleMembers);
     }
 
-    // A null roster member is the staged enemy. Its inventory and attributes are independent of the party.
-    private void DrawUnitSheet(Vector2 position, Member? member)
+    private void DrawUnitSheet(Vector2 position, Member member)
     {
         var sheet = Panel(new(position, new Vector2(1388, 704)));
         sheet.Name = "MemberSheet";
         bool healer = member == Member.Sarah;
-        var unit = member is { } ally ? MemberUnit(ally) : Gizmo;
-        var pack = member is { } owner ? _packs[owner] : null;
-        var portrait = member is { } actor ? _stage.MemberPortrait((int)actor) :
-            _stage.SceneArt?.Enemies.Values.FirstOrDefault() is { } enemy ? _stage.BattleTexture(enemy.Frames[0]) : null;
+        var unit = MemberUnit(member);
+        var pack = _packs[member];
+        var portrait = _stage.MemberPortrait((int)member);
         if (portrait is not null)
             Put(sheet, new TextureRect { Texture = portrait, TextureFilter = TextureFilterEnum.Nearest,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
@@ -95,12 +93,10 @@ public partial class DesignPreview
         int identityX = portrait is null ? 32 : 208;
         Text(sheet, new(identityX, 22, 470, 68), unit.Name, 40);
         Text(sheet, new(identityX, 96, 470, 52), member switch {
-            null => T("敌军", "Enemy"),
             Member.Sarah => T("僧侣   ·   Lv. 4", "Priest   ·   Lv. 4"),
             Member.Chester => T("骑士   ·   Lv. 4", "Knight   ·   Lv. 4"),
             _ => T("剑士   ·   Lv. 5", "Swordsman   ·   Lv. 5") }, 30);
-        if (member.HasValue)
-            Text(sheet, new(identityX, 155, 470, 48), healer ? "EXP    24" : "EXP    36", 24, "cad6e5");
+        Text(sheet, new(identityX, 155, 470, 48), healer ? "EXP    24" : "EXP    36", 24, "cad6e5");
         Vitals(sheet, new(808, 64), unit);
 
         void Section(float x, float width, string title)
@@ -113,10 +109,10 @@ public partial class DesignPreview
         Section(382, 404, GameText.Get("party.magic"));
         Section(834, 522, GameText.Get("party.items"));
         string[] stats = ["attack", "defense", "agility", "move"];
-        int[] values = member switch { null => [7, 5, 5, 5], Member.Sarah => [11, 9, 12, 5],
+        int[] values = member switch { Member.Sarah => [11, 9, 12, 5],
             Member.Chester => [15, 13, 11, 7], _ => [16, 12, 10, 6] };
         // The two starting weapons each contribute 3 attack until sold.
-        if (pack is not null && member != Member.Chester && !pack.Any(IsWeapon)) values[0] -= 3;
+        if (member != Member.Chester && !pack.Any(IsWeapon)) values[0] -= 3;
         for (int i = 0; i < stats.Length; i++)
         {
             Text(sheet, new(32, 332 + i * 76, 224, 64), GameText.Get("party.stat." + stats[i]), 30);
@@ -144,7 +140,7 @@ public partial class DesignPreview
         else DetailRow(382, 328, 404, null, GameText.Get("party.none-learned"));
         for (int slot = 0; slot < PackCapacity; slot++)
         {
-            var id = pack is null ? -1 : SlotId(pack, slot);
+            var id = SlotId(pack, slot);
             DetailRow(834, 328 + slot * 82, 522, ItemArt(id), SlotLabel(id, slot),
                 IsWeapon(id) ? GameText.Get("party.equipped") : "");
         }

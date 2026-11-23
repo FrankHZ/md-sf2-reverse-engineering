@@ -85,6 +85,12 @@ The [direct slice 1 observations](battle-ui-composition.md#reproduce-slice-1) co
 composition. The [scene owner](battle-scenes.md#production-playback-and-result-layout) owns playback
 and result placement. Original source claims retain the separate provenance below.
 
+DesignPreview F4 and F8 mount these same production consumers with the public authored Practice
+Yard package. F4 enters Movement and uses ordinary input through Main, Magic, Target and ally
+playback. F8 enters the admitted read-only inspection at the actor's origin and uses the
+production detail, roster, map and host return paths. Reset remounts the session. Preview F9
+still presents staged reading samples. See [direct preview reproduction](../../game/probes/previews/README.md#run-from-the-repository-root).
+
 | Accepted scene / behavior | Production consumer and actual coverage |
 | --- | --- |
 | F4 Movement and Main | Movement shows one cursor following actual preview and undo and one cyan field. A friendly occupied tile can be traversable; only legal stops receive a fill. Main clears board marks. Up/Down wraps focus through Attack, Magic, Item and Stay/Search. The measured acting card, Main or child list and independent footer share the decision column. |

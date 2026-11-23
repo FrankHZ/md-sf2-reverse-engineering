@@ -13,7 +13,7 @@ controls, their observed returns and the limits that matter during play.
 | F1 Witch and slots / F2 dialogue | Start or Continue in either slot, read a portrait question, answer and regain control. A new name requires a physical keyboard, even when navigating with a pad. | [Entry and dialogue](presentation.md#production-entry-and-field-dialogue-1606) covers retained drafts, safe overwrite Back, backup recovery and an actual Map3 Yes/No in English and Chinese. |
 | F3 Church | Scan labeled services with Up/Down, decline a quote, or Record and return from the shared slots to the field. Promotion displays its refusal. | [Church list and caller](#10-production-church-and-battle-command-lists) distinguishes the actual private Record route from the authored paid Raise case. |
 | F5 party / F6 shop / F7 field | Open Member, Magic, Item or contextual Search. Inspect four numbered slots, compare a recipient’s pack or a Galam quote, then back out or confirm. | [Field, party and shop](field-and-shop.md#verification-boundary-and-remaining-gaps) covers selection return, full-pack exchange, Search dismissal and real buy/sell followed by walking. The [field footer and shop hint audit](#production-controls-audit) checks the mounted controls across input and shop phases. Repair and Deals remain unavailable. |
-| F4 battle / F8 inspection | Move with directions, confirm a stop, then choose a labeled command row. Cycle or hover eligible targets. From Movement, Cancel undoes the preview and opens free inspection. | [Battle decisions and inspection](battle-interaction-baseline.md#production-f4f8f9-contract) covers actual range, targeting, board gestures, Map and return. See the [input and artwork differences](#9-remaining-differences-in-play). |
+| F4 battle / F8 inspection | Move with directions, confirm a stop, then choose a labeled command row. Cycle or hover eligible targets. F8 starts at free inspection in a fresh Practice Yard battle. | Both preview tabs mount `Main.tscn`. The [preview route](../../game/probes/previews/README.md#f4-action-playback) uses the same decision, playback card and inspection presenters as [the game](battle-interaction-baseline.md#production-f4f8f9-contract). |
 | F9 results | Read damage, death, rewards and growth, then wait for the next actor or walk after a field return. | [Playback and results](battle-scenes.md#production-playback-and-result-layout) distinguishes Battle01 combat, connected Battle02 EGRESS and authored victory/defeat. [Campaign handoffs](../application/pre-voyage-campaign.md#session-and-handoffs) cover Galam, the tower and the later return. |
 | F10 Menu, Settings, Save and recovery | Open Help from shared Settings at the Witch menu, in settled field or from the battle system Menu. Cancel a slot overwrite or settings draft, restore a covered page after resize, and Continue a saved turn. | [Host access and restore](host-ui.md#access-through-the-finite-demo) lists actual Save predicates. The tower return on Map58 supports Save; first control on Map14 has no field-save recipe. |
 
@@ -517,8 +517,9 @@ cell. It clears on empty ground, subordinate pages, host cover and exit.
 
 **Close-up layout decision.** Use the original battlescene mini-status window placement during
 action playback. The ordinary ally/enemy opening places the ally's window at the **upper right**
-and the enemy's at the **lower left**. In F4, Sarah's rod attack uses these two windows. For HEAL on Bowie, Sarah casts at the
-upper right, then Bowie appears at the upper left for recovery. Self-healing keeps Sarah in place.
+and the enemy's at the **lower left**. For ally-to-ally healing, the actual scene participant
+switches from the caster at the upper right to the recipient at the upper left. Self-healing
+keeps the caster in place. F4 exercises the switch through MEND on the Practice Yard guard.
 
 **Confirmed (pinned US source).** At SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `InitializeBattlescene` opens each present combatant's window with a zero placement argument and
@@ -571,10 +572,9 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   physical controller recognition and human discovery remain with #1456.
   [Battle footer](../../game/src/Battles/BattleCommandMenu.cs) ·
   [Mappings and acceptance](presentation.md#mappings-first-use-and-reading-limits)
-- **Movement input.** The F4 example accepts a click on a cyan cell. In real Movement, use mapped
-  directions, then Confirm. Mouse input is supported on full Main rows, child rows,
-  eligible targets and the free-inspection board. Click-to-walk was outside the accepted movement scope. It would require
-  a new product decision. [Preview controls](../../game/probes/previews/README.md#f4-action-playback) ·
+- **Movement input.** F4 and the game use mapped directions, then Confirm. Mouse input is
+  supported on full Main rows, child rows, eligible targets and the free-inspection board.
+  [Preview controls](../../game/probes/previews/README.md#f4-action-playback) ·
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
 - **F4 decision vitals and layout (#2079).** The acting or recipient card measures its available
   width and name height. It uses 36px HP/MP readings above side-by-side 232×28 gauge images.

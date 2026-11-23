@@ -155,7 +155,7 @@ public sealed partial class GameRoot
     // These existing finite host modals share one resume decision, not a separate pause service.
     private void ApplyHostPause()
     {
-        ApplyWindowCanvas();
+        if (_battlePreview is null) ApplyWindowCanvas();
         bool covered = _windowRecovery is not null || _windowQuit is not null;
         if (_entry is not null) _entry.ProcessMode = covered || _settings is not null || _slots is not null
             ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;

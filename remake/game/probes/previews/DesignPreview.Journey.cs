@@ -61,7 +61,7 @@ public partial class DesignPreview
         : T("空槽位", "Empty slot");
     private bool EntrySlots => _scene == 0 && !_fromMenu;
     private bool CanSaveSample => _scene == FieldScene && _field is FieldPage.Commands or FieldPage.Walking
-        || _scene == InspectScene && _inspection is InspectPage.Cursor or InspectPage.Options || _scene == 2 && _page == Page.Root;
+        || _scene == 2 && _page == Page.Root;
 
     private void DrawJourney()
     {

@@ -190,6 +190,22 @@ their established disclosure. Selected spell effect copy remains with #2083.
 [Inspection view](../../game/src/Battles/BattleInspectionView.cs) ·
 [Compact card](../../game/src/UI/BattleStatusCard.cs)
 
+### DesignPreview battle samples
+
+F4 and F8 instantiate `Main.tscn` with a fresh authored Practice Yard start and in-memory
+preferences. Both use its `GameRoot` and `BattleSessionView` for the board, input mapping,
+decision/description, inspection/Back and close-up. F8 uses the same read-only inspection
+entry as production Movement Back. The preview owns its toolbar, the viewport beneath it and
+remounting on a sample change. It translates pointer coordinates at the viewport boundary
+and suspends the same session under the staged F5/F10 covers. Speed uses the production
+draft and return caller, with preferences held in memory.
+
+The [F1–F10 inventory](../../game/probes/previews/README.md#scene-ownership) records the other
+samples' remaining migration boundaries. The next slices can follow the production callers for
+entry/dialogue, field/party/services, then result and host flows. The authored battle proves
+access to the actual presenters and return paths. Art-backed and human device review have a
+separate acceptance boundary.
+
 ### Parallel route eligibility can drift
 
 P2. **Confirmed** independent predicates. **Inferred** drift outside the observed routes.

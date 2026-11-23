@@ -116,6 +116,7 @@ public sealed partial class GameRoot
 
     private LocalSaveStore Store(ScenarioDefinition definition)
     {
+        if (_battlePreview is not null) throw new ArgumentException("save-seed-read-only");
         string? Validate(SaveRecord record) => SaveRecordRestore.Restore(definition, record, RuleCompositions.ForGame())
             is SessionStartFailed failed ? failed.Failure.Code : null;
         if (_outputFile is not null) return new(_outputFile, Validate);
