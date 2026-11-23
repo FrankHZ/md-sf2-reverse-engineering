@@ -139,6 +139,9 @@ public sealed class GameSession
     public BattleInspectionSnapshot QueryBattleInspection(Guid? session = null, long? revision = null, ActorRef? unit = null) =>
         BattleInspectionQuery.Query(Definition, Current, session, revision, unit);
 
+    public BattleMovementRange? QueryBattleInspectionRange(Guid session, long revision, ActorRef unit) =>
+        BattleInspectionQuery.MovementRange(Current, session, revision, unit);
+
     public BattleMemberSnapshot QueryBattleMembers(Guid? session = null, long? revision = null, ActorRef? member = null) =>
         BattleMemberQuery.Query(Definition, Current, session, revision, member);
 

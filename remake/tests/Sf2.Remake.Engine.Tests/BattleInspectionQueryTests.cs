@@ -41,6 +41,74 @@ public sealed class BattleInspectionQueryTests
     }
 
     [Fact]
+    public void InspectionRangeUsesTheDisclosedUnitsOwnMoverOriginAndCurrentBudget()
+    {
+        var session = Start("stone-court", d =>
+        {
+            var terrain = d["terrains"]![0]!;
+            terrain["legend"]!["x"] = System.Text.Json.Nodes.JsonNode.Parse("""{"surface":"impassable","protection":"none"}""");
+            var rows = terrain["rows"]!.AsArray();
+            for (int y = 0; y < rows.Count; y++)
+                rows[y] = y == 3 ? "#ppppxpp#" : y == 5 ? "#######p#" : "#########";
+            var placements = d["encounters"]![0]!["placements"]!;
+            placements[0]!["x"] = 2;
+            placements[1]!["x"] = 3; placements[1]!["y"] = 3;
+            placements[2]!["x"] = 7;
+            placements[3]!["x"] = 6;
+            d["actors"]![2]!["physical"]!["movementType"] = "hovering";
+            d["actors"]![2]!["move"] = 4;
+        });
+        var before = session.Current;
+        Assert.Equal(new ActorRef("swordsman"), before.Selection!.Actor);
+        var ally = session.QueryBattleInspectionRange(before.SessionId, before.Revision, new("lookout"))!;
+        Assert.Equal(new ActorRef("lookout"), ally.Actor);
+        Assert.Equal(new MapPosition(3, 3), ally.Origin);
+        Assert.Equal(Enumerable.Range(1, 4).Select(x => new MapPosition(x, 3)), ally.ReachableCells);
+        Assert.Equal(ally.ReachableCells.Where(p => p.X != 2), ally.Destinations);
+
+        var enemy = session.QueryBattleInspectionRange(before.SessionId, before.Revision, new("raider"))!;
+        Assert.Equal(new ActorRef("raider"), enemy.Actor);
+        Assert.Equal(new MapPosition(7, 3), enemy.Origin);
+        Assert.Equal(Enumerable.Range(4, 4).Select(x => new MapPosition(x, 3)), enemy.ReachableCells);
+        Assert.Equal(enemy.ReachableCells.Where(p => p.X != 6), enemy.Destinations);
+        Assert.Same(before, session.Current);
+
+        var actor = before.Battle.GetActor(enemy.Actor);
+        var progress = new BattleActorProgress(actor.Level, actor.MaxHp, actor.MaxMp, actor.BaseAttack,
+            actor.Defense, actor.Agility, actor.Spells, actor.SourceLoadout) { CurrentStats = new(null, null, 1) };
+        var live = WithActor(before, actor.With(position: new(5, 3), progress: progress));
+        Assert.Null(BattleInspectionQuery.MovementRange(live, before.SessionId, before.Revision, enemy.Actor));
+        var fresh = BattleInspectionQuery.MovementRange(live, live.SessionId, live.Revision, enemy.Actor)!;
+        Assert.Equal(new MapPosition(5, 3), fresh.Origin);
+        Assert.Equal(Enumerable.Range(4, 3).Select(x => new MapPosition(x, 3)), fresh.ReachableCells);
+        Assert.Equal(fresh.ReachableCells.Where(p => p.X != 6), fresh.Destinations);
+    }
+
+    [Fact]
+    public void InspectionRangeRejectsDefeatedUninitializedAbsentAndInvalidSubjects()
+    {
+        var session = Start("stone-court");
+        var before = session.Current;
+        var enemy = before.Battle.GetActor(new("raider"));
+        foreach (var rejected in new[] { enemy.With(hp: 0), enemy.With(initialized: false), enemy.With(clearPosition: true),
+            enemy.With(position: new(before.Battle.Definition.Width, enemy.Position!.Y)) })
+        {
+            var live = WithActor(before, rejected);
+            Assert.Null(BattleInspectionQuery.MovementRange(live, live.SessionId, live.Revision, enemy.Actor));
+        }
+        Assert.Null(session.QueryBattleInspectionRange(before.SessionId, before.Revision, new("missing")));
+        Assert.Null(session.QueryBattleInspectionRange(Guid.NewGuid(), before.Revision, enemy.Actor));
+        Assert.Same(before, session.Current);
+    }
+
+    private static SessionSnapshot WithActor(SessionSnapshot current, BattleActorState actor)
+    {
+        var battle = current.Battle.With(actors: current.Battle.Actors.Select(a => a.Actor == actor.Actor ? actor : a));
+        return new(current.SessionId, current.Revision + 1, current.ObservationSequence,
+            ((ActiveBattle)current.Active) with { Battle = battle }, current.Story, current.StopReason);
+    }
+
+    [Fact]
     public void ActualMovementAndUndoMustFinishBeforeInspectionAndOldBindingsReject()
     {
         var session = Start(); var initial = session.QueryBattleInspection();
@@ -48,6 +116,7 @@ public sealed class BattleInspectionQueryTests
         Assert.False(session.QueryBattleInspection().Available);
         FinishMovement(session, step);
         Assert.Equal("inspection-unsettled", session.QueryBattleInspection().Reason);
+        Assert.Null(session.QueryBattleInspectionRange(initial.SessionId, session.Current.Revision, initial.ActiveActor!.Value));
         var returning = Accept(session, new Cancel());
         Assert.NotNull(session.Current.BattleMovement); Assert.False(session.QueryBattleInspection().Available);
         FinishMovement(session, returning);
@@ -129,6 +198,7 @@ public sealed class BattleInspectionQueryTests
         Assert.True(first.Available);
         Assert.DoesNotContain(first.Units, a => a.Actor == HiddenSpawnTests.Hidden || a.Actor == HiddenSpawnTests.Returner);
         Assert.Equal("unit-not-disclosed", session.QueryBattleInspection(unit: HiddenSpawnTests.Hidden).Reason);
+        Assert.Null(session.QueryBattleInspectionRange(first.SessionId, first.Revision, HiddenSpawnTests.Hidden));
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
         HiddenSpawnSessionTests.Settle(session, Stay(session), stopAtAppearance: true);
         Assert.NotNull(session.Current.BattleRound);
@@ -137,6 +207,7 @@ public sealed class BattleInspectionQueryTests
         HiddenSpawnSessionTests.Settle(session, new(session.Current, [], session.Current.StopReason));
         Assert.Contains(session.QueryBattleInspection().Units, a => a.Actor == HiddenSpawnTests.Hidden);
         Assert.Contains(session.QueryBattleInspection().Units, a => a.Actor == HiddenSpawnTests.Returner);
+        Assert.NotNull(session.QueryBattleInspectionRange(first.SessionId, session.Current.Revision, HiddenSpawnTests.Hidden));
     }
 
     [Fact]

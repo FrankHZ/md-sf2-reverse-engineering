@@ -18,8 +18,10 @@ internal sealed partial class BattleMovementRangeView : Node2D
     { if (IsVisibleInTree() && !Steady) { _pulse += delta; QueueRedraw(); } }
     internal void Present(BattleMovementRange? range)
     {
+        bool visible = range is not null;
+        if (ReferenceEquals(_range, range) && Visible == visible) return;
         _range = range;
-        Visible = range is not null;
+        Visible = visible;
         QueueRedraw();
     }
     public override void _Draw()

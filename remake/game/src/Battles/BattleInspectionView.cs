@@ -1,6 +1,7 @@
 using Godot;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.Localization;
@@ -14,6 +15,7 @@ internal sealed partial class BattleInspectionView : Control
 {
     private GameSession? _session;
     private BattleInspectionSnapshot? _snapshot;
+    private (SessionSnapshot Snapshot, BattleMovementRange Range)? _cursorRange;
     private GameInput _input = null!;
     private BattleMapViewport _map = null!;
     private readonly PartyDetailsPanel _details = new() { Name = "Details" };
@@ -58,8 +60,9 @@ internal sealed partial class BattleInspectionView : Control
     internal void SuspendPointer() { StopEdge(); _pointer.Suspend(); _options.Suspend(); }
     public override void _Notification(int what)
     {
-        if (what == NotificationPaused || what == NotificationUnpaused ||
-            what == NotificationVisibilityChanged && !IsVisibleInTree()) SuspendPointer();
+        bool hidden = what == NotificationVisibilityChanged && !IsVisibleInTree();
+        if (hidden) _cursorRange = null;
+        if (what == NotificationPaused || what == NotificationUnpaused || hidden) SuspendPointer();
     }
     public override void _ExitTree()
     { GetWindow().MouseExited -= StopEdge; GetWindow().FocusExited -= StopEdge; SuspendPointer(); }
@@ -73,7 +76,7 @@ internal sealed partial class BattleInspectionView : Control
     }
     internal void Close()
     {
-        _snapshot = null; _session = null; _unit = null; _land = null; _members = null;
+        _snapshot = null; _session = null; _unit = null; _land = null; _members = null; _cursorRange = null;
         StopEdge(); _pointer.Suspend(); _options.Suspend(); _map?.Inspect(null); Hide();
     }
     internal bool Refresh(GameSession? session, bool afterSave = false)
@@ -189,7 +192,9 @@ internal sealed partial class BattleInspectionView : Control
     private void Project()
     {
         if (_snapshot is null) return;
-        _map.Inspect(_cursor, !_pointerFocus, _page == "Cursor" && IsVisibleInTree());
+        var at = _page == "Cursor" ? _snapshot.Units.FirstOrDefault(u => u.Position == _cursor) : null;
+        bool showCursor = _page == "Cursor" && IsVisibleInTree();
+        _map.Inspect(_cursor, !_pointerFocus, showCursor, CursorRange(showCursor ? at?.Actor : null));
         _pointer.ReleaseIfNeutral();
         _options.Visible = _page == "Options"; _hint.Visible = _page != "Options";
         var size = GetViewportRect().Size;
@@ -231,13 +236,28 @@ internal sealed partial class BattleInspectionView : Control
         }
         else
         {
-            var at = _snapshot.Units.FirstOrDefault(u => u.Position == _cursor);
             message = GameText.Get("battle.inspect.cursor", _cursor.X, _cursor.Y, at is null ? GameText.Get("battle.inspect.empty") : UnitName(at)) +
                 "\n" + GameText.Get("battle.inspect.cursor-help", a, c, b);
         }
         if (_page == "Options") _options.Present(_input, _optionIndex, "", message, available: _optionsError is null ? null : [false, false, false, false]);
         _hint.Text = message; _hint.Position = new(24, size.Y - 120); _hint.Size = new(size.X - 48, 112);
     }
+    private BattleMovementRange? CursorRange(ActorRef? actor)
+    {
+        if (actor is not { } unit)
+        {
+            _cursorRange = null;
+            return null;
+        }
+        var current = _session!.Current;
+        if (_cursorRange is { } cached && cached.Snapshot == current && cached.Range.Actor == unit)
+            return cached.Range;
+
+        var range = _session.QueryBattleInspectionRange(_snapshot!.SessionId, _snapshot.Revision, unit);
+        _cursorRange = range is null ? null : (current, range);
+        return range;
+    }
+
     internal object Observe() => new
     {
         active = Active, page = Active ? _page : null, cursor = Active ? _cursor : null,
