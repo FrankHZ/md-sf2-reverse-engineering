@@ -192,8 +192,10 @@ outcome where they share a decision. The executor updates or completes the ownin
 section as part of that outcome. A small, clear correction can use the existing section and Issue.
 When a design decision is missing or conflicts with another owner, resolve it before dispatching
 dependent implementation. Keep original source and observed behavior distinct from the intended
-remake change. Independent review follows the links from feedback to feature, evidence and design,
-then checks the changed behavior and a representative variant that could distinguish the rule.
+remake change. Independent review follows the links from feedback to feature, evidence and design.
+Check the changed behavior and include a representative variant when it helps distinguish the rule.
+Reuse accepted evidence or static inspection where they answer the question. A focused runtime
+check is needed when the claim depends on an observation the existing evidence cannot supply.
 
 Before selecting a chapter slice, compare the affected system designs with the chapter's behavior and
 configuration inventory, including optional interactions. Use the campaign route to identify callers
