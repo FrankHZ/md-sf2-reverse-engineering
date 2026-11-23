@@ -167,7 +167,6 @@ public partial class DesignPreview
                 break;
         }
         Footer(T("↑ ↓ 选择     Enter / A 确认     Esc / B 返回", "↑ ↓ Select     Enter / A Confirm     Esc / B Back"));
-        Utility(new(1642, 1003, 204, 48), T("返回", "Back"), BackGive);
     }
 
     private Panel GivePack(Vector2 origin, string owner, List<int> pack, bool donor)

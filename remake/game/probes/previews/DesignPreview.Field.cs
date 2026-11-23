@@ -21,12 +21,6 @@ public partial class DesignPreview
         _field = page; _focus = focus; Render();
     }
 
-    private void ReviewFooter(string hint, Action back)
-    {
-        Footer(hint);
-        Utility(new(1642, 1003, 204, 48), T("返回", "Back"), back);
-    }
-
     private void DrawField()
     {
         if (_field >= FieldPage.Owner) { DrawFieldPack(); return; }
@@ -68,7 +62,7 @@ public partial class DesignPreview
                     T("此处无法使用回复魔法。", "HEAL cannot be used here."), i == 0 ? "3 MP" : "5 MP");
         }
         FieldReason(panel);
-        ReviewFooter(T("↑ ↓ 选择     Enter / A  确认", "↑ ↓ Select     Enter / A  Confirm"), BackField);
+        Footer(T("↑ ↓ 选择     Enter / A 确认     Esc / B / 右键 返回", "↑ ↓ Select     Enter / A Confirm     Esc / B / Right-click Back"));
     }
 
     private void FooterHintRight(string hint)
@@ -163,6 +157,6 @@ public partial class DesignPreview
                 ReadingActions(frame, T($"丢弃 {what}？", $"Discard {what}?"), T("丢弃", "Discard"), T("取消", "Cancel"));
             else ReadingActions(frame, T($"已丢弃 {what}。", $"Discarded {what}."), T("返回道具栏", "Return to pack"));
         }
-        ReviewFooter(T("↑ ↓ 选择     Enter / A  确认", "↑ ↓ Select     Enter / A  Confirm"), BackField);
+        Footer(T("↑ ↓ 选择     Enter / A 确认     Esc / B / 右键 返回", "↑ ↓ Select     Enter / A Confirm     Esc / B / Right-click Back"));
     }
 }

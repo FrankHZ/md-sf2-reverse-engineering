@@ -51,11 +51,11 @@ internal sealed partial class FieldMenuView : Control
         _pointer.ReleaseIfNeutral(); if (!input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < 4; i++) _available[i] = i == 3 ? search : i == 0 ? party : preparation;
         if (!Open) return;
-        string key = new[] { "member", "magic", "item", "search" }[Math.Min(_index, 3)];
-        string reason = _index == 4 ? "" : GameText.Get(_available[_index] ? "field-menu." + key + "-help" : "field-menu.unavailable");
+        string key = new[] { "member", "magic", "item", "search" }[_index];
+        string reason = GameText.Get(_available[_index] ? "field-menu." + key + "-help" : "field-menu.unavailable");
         string hint = GameText.Get("prepare.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         if (_menu.ReadingOverflow) hint += "\n" + GameText.Get("host.menu-reading", input.CompactHint(GameAction.Left), input.CompactHint(GameAction.Right));
-        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason, hint, "prepare.back", _available);
+        _menu.Present(input, _index, GameText.Get("field-menu.title"), reason, hint, _available);
     }
     internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); _menu.Suspend(); }
     internal void Handle(GameAction action)
@@ -63,23 +63,23 @@ internal sealed partial class FieldMenuView : Control
         _pointer.Cancel(); if (_requiresRelease || !Open) return;
         if (action == GameAction.Cancel) { _close(); return; }
         if (action is GameAction.Left or GameAction.Right) { _menu.Wheel(action == GameAction.Left ? -192 : 192); return; }
-        if (action is GameAction.Up or GameAction.Down) _index = (_index + (action == GameAction.Up ? -1 : 1) + 5) % 5;
+        if (action is GameAction.Up or GameAction.Down) _index = (_index + (action == GameAction.Up ? -1 : 1) + 4) % 4;
         else if (action == GameAction.Confirm)
-        { if (_index == 4) _close(); else if (_available[_index]) { Suspend(); _choose(_index); } }
+        { if (_available[_index]) { Suspend(); _choose(_index); } }
     }
     internal void HandlePointer(InputEvent input)
     {
         if (input is not InputEventMouse mouse) return;
         int hit = Open ? _menu.Hit(mouse.Position) : -1;
-        bool back = Open && _menu.BackHit(mouse.Position), entry = Entry.IsVisibleInTree() && Entry.GetGlobalRect().HasPoint(mouse.Position);
+        bool entry = Entry.IsVisibleInTree() && Entry.GetGlobalRect().HasPoint(mouse.Position);
         if (input is InputEventMouseMotion motion)
-        { if (_pointer.Moved(motion) && !_requiresRelease && (hit >= 0 || back)) _index = back ? 4 : hit; return; }
+        { if (_pointer.Moved(motion) && !_requiresRelease && hit >= 0) _index = hit; return; }
         if (input is not InputEventMouseButton button) return;
         if (Open && button.Pressed && button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
         { _menu.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
         bool right = Open && button.ButtonIndex == MouseButton.Right;
-        string? id = back || right ? "back" : entry ? "entry" : hit >= 0 ? hit.ToString() : null;
-        Rect2 rect = right ? GetGlobalRect() : back ? _menu.BackRect : entry ? Entry.GetGlobalRect() : hit >= 0 ? _menu.RowRect(hit) : default;
+        string? id = right ? "back" : entry ? "entry" : hit >= 0 ? hit.ToString() : null;
+        Rect2 rect = right ? GetGlobalRect() : entry ? Entry.GetGlobalRect() : hit >= 0 ? _menu.RowRect(hit) : default;
         string? clicked = _pointer.Read(button, id, rect, (_generation, Open, Entry.Visible));
         if (_requiresRelease || clicked is null) return;
         if (clicked == "entry") _begin(); else if (clicked == "back") _close();

@@ -87,7 +87,6 @@ internal sealed partial class CaravanServiceView : Control
         _index = Math.Clamp(_index, 0, Math.Max(0, _options.Count - 1));
         _hint = GameText.Get("shop.hint", input.CompactHint(GameAction.Up), input.CompactHint(GameAction.Down), input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
         _page.Present(_title + (_error is null ? "" : "\n" + _error), _hint,
-            input.CompactHint(GameAction.Cancel) + " · " + GameText.Get(wait.Phase == CaravanPhase.Menu ? "shop.leave" : "shop.back"),
             _options.Select(row => (row.Text, row.Command switch
             {
                 SelectDepotItem item => IdentityIcons.Item(item.ExpectedItem),
@@ -126,7 +125,6 @@ internal sealed partial class CaravanServiceView : Control
                 Add("caravan.depot", new ChooseCaravan(wait.Token, CaravanAction.Depot));
                 Add("caravan.item", new ChooseCaravan(wait.Token, CaravanAction.Item));
                 Add("caravan.purge", new ChooseCaravan(wait.Token, CaravanAction.Purge));
-                Add("shop.leave", new BackCaravan(wait.Token));
                 break;
             case CaravanPhase.Member:
             case CaravanPhase.Relief:
@@ -220,7 +218,6 @@ internal sealed partial class CaravanServiceView : Control
             return;
         }
         int hit = _page.Hit(mouse.Position);
-        bool back = _page.BackRect.HasPoint(mouse.Position);
         if (input is InputEventMouseMotion motion)
         {
             if (_pointer.Moved(motion) && !_release && hit >= 0)
@@ -247,8 +244,8 @@ internal sealed partial class CaravanServiceView : Control
             }
             return;
         }
-        back |= button.ButtonIndex == MouseButton.Right;
-        Rect2 rect = back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : _page.BackRect : hit < 0 ? default : _page.RowRect(hit);
+        bool back = button.ButtonIndex == MouseButton.Right;
+        Rect2 rect = back ? GetGlobalRect() : hit < 0 ? default : _page.RowRect(hit);
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(), rect, _wait.Token);
         if (_release || clicked is null)
         {

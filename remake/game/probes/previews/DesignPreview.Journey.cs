@@ -31,7 +31,7 @@ public partial class DesignPreview
         if (_journey != JourneyPage.Closed || _showMembers) return;
         _priorFocus = _focus;
         _fromMenu = true;
-        Journey(JourneyPage.Menu);
+        Journey(JourneyPage.Menu, 1);
     }
 
     private void OpenSlots(SlotTask task)
@@ -103,8 +103,8 @@ public partial class DesignPreview
             case JourneyPage.Quit: body = T("结束本次场景并返回女巫入口？预览槽位将保留。", "Leave this scene for the Witch entrance? Preview slots will be retained."); break;
             case JourneyPage.WindowHelp: body = T("窗口过小。恢复后可继续刚才的操作。", "The window is too small. Restore to continue where you left off."); break;
         }
-        int rows = _journey switch { JourneyPage.Menu => 5, JourneyPage.Settings => 4,
-            JourneyPage.Slots => 3, JourneyPage.Quit when CanSaveSample => 3, JourneyPage.Confirm or JourneyPage.Quit => 2, _ => 1 };
+        int rows = _journey switch { JourneyPage.Menu => 4, JourneyPage.Settings => 3,
+            JourneyPage.Slots => 2, JourneyPage.Quit when CanSaveSample => 3, JourneyPage.Confirm or JourneyPage.Quit => 2, _ => 1 };
         int rowHeight = _journey == JourneyPage.Slots ? 104 : 72;
         int bodyHeight = _journey == JourneyPage.Confirm ? 180 : 88;
         int rowStart = 86 + bodyHeight;
@@ -118,18 +118,18 @@ public partial class DesignPreview
         switch (_journey)
         {
             case JourneyPage.Menu:
-                Row(T("继续", "Resume")); Row(T("设置", "Settings"));
                 Row(CanSaveSample ? T("记录冒险", "Save adventure") : T("记录冒险 · 当前阶段不可用", "Save · unavailable in this phase"), CanSaveSample);
+                Row(T("设置", "Settings"));
                 Row(GameText.Get("entry.new")); Row(T("退出冒险", "Quit adventure")); break;
             case JourneyPage.Settings:
                 Row(T("界面语言", "Language") + "     " + (_draftEnglish ? "English" : "中文"));
                 Row(T("图标动效", "Icon animation") + "     " + (_draftSteady ? T("关", "Off") : T("开", "On")));
-                Row(T("应用", "Apply")); Row(T("返回", "Back")); break;
+                Row(T("应用", "Apply")); break;
             case JourneyPage.Slots:
                 for (int i = 0; i < _slots.Length; i++)
                     Row($"{SlotName(i)}   ·   {Occupant(i)}" + (_slots[i]?.BackupOnly == true ? T("\n主记录损坏 · 有备份", "\nDamaged record · backup available") : ""),
                         _slotTask != SlotTask.Continue || _slots[i] != null);
-                Row(T("返回", "Back")); break;
+                break;
             case JourneyPage.Confirm: Row(T("确认", "Confirm")); Row(T("取消", "Cancel")); break;
             case JourneyPage.Quit:
                 if (CanSaveSample) Row(T("记录并退出", "Save and quit"));
@@ -151,11 +151,10 @@ public partial class DesignPreview
             case JourneyPage.Menu:
                 switch (_focus)
                 {
-                    case 0: CloseJourney(); break;
+                    case 0: OpenSlots(SlotTask.Save); break;
                     case 1: _draftEnglish = _english; _draftSteady = _steadyIcons; Journey(JourneyPage.Settings); break;
-                    case 2: OpenSlots(SlotTask.Save); break;
-                    case 3: OpenSlots(SlotTask.New); break;
-                    case 4: Journey(JourneyPage.Quit, CanSaveSample ? 2 : 1); break;
+                    case 2: OpenSlots(SlotTask.New); break;
+                    case 3: Journey(JourneyPage.Quit, CanSaveSample ? 2 : 1); break;
                 }
                 break;
             case JourneyPage.Settings:
@@ -167,7 +166,6 @@ public partial class DesignPreview
                 }
                 break;
             case JourneyPage.Slots:
-                if (_focus == 2) { BackJourney(); break; }
                 _slot = _focus;
                 if (_slotTask == SlotTask.New) Journey(JourneyPage.Name);
                 else if (_slotTask == SlotTask.Continue && _slots[_slot] is { BackupOnly: false } ready)
@@ -197,7 +195,7 @@ public partial class DesignPreview
         {
             case JourneyPage.Settings: Journey(JourneyPage.Menu, 1); break;
             case JourneyPage.WindowHelp: Journey(_coveredHostPage, _coveredHostFocus); break;
-            case JourneyPage.Quit: if (_fromMenu) Journey(JourneyPage.Menu, 4); else CloseJourney(); break;
+            case JourneyPage.Quit: if (_fromMenu) Journey(JourneyPage.Menu, 3); else CloseJourney(); break;
             case JourneyPage.Name: Journey(JourneyPage.Slots, _slot); break;
             case JourneyPage.Confirm:
                 if (_slotTask == SlotTask.New) Journey(JourneyPage.Name); else Journey(JourneyPage.Slots, _slot);
@@ -207,7 +205,7 @@ public partial class DesignPreview
                 goto case JourneyPage.Receipt;
             case JourneyPage.Receipt:
                 if (_slotTask == SlotTask.SaveAndQuit) { ChooseScene(0); break; }
-                if (_fromMenu) Journey(JourneyPage.Menu, _slotTask == SlotTask.New ? 3 : 2); else CloseJourney();
+                if (_fromMenu) Journey(JourneyPage.Menu, _slotTask == SlotTask.New ? 2 : 0); else CloseJourney();
                 break;
             default: CloseJourney(); break;
         }

@@ -175,7 +175,8 @@ public sealed partial class GameRoot
         if (_windowQuit is not null)
         {
             // The existing SaveSlotView owns GUI clicks; no underlying modal receives keys.
-            if (input is not InputEventMouse)
+            if (_windowQuit.HandlePointerCancel(input)) GetViewport().SetInputAsHandled();
+            else if (input is not InputEventMouse)
             {
                 if (_input?.Resolve(input) is { } action) _windowQuit.Handle(action);
                 GetViewport().SetInputAsHandled();

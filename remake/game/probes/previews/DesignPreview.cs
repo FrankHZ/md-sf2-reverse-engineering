@@ -340,9 +340,9 @@ public partial class DesignPreview : Control
     {
         Put(_surface, new ColorRect { Color = new(0, 0, 0, 0.35f), MouseFilter = MouseFilterEnum.Ignore }, new(0, 72, 1920, 1008));
         string service = _rootFocus switch { 0 => T("复活", "Raise"), 1 => T("治疗", "Cure"),
-            3 => T("记录冒险", "Record adventure"), _ => T("离开", "Leave") };
+            3 => T("记录冒险", "Record adventure"), _ => T("转职", "Promotion") };
         string title = T("教堂", "Church") + (_page == Page.Root ? "" : " / " + service);
-        var panel = SidePage(title, _page == Page.Root ? 5 : _page == Page.Quote ? 3 : 2,
+        var panel = SidePage(title, _page == Page.Root ? 4 : _page == Page.Quote ? 3 : 2,
             _page == Page.Result ? "" : T("金币   150", "Gold   150"));
         if (_page == Page.Root)
         {
@@ -351,9 +351,7 @@ public partial class DesignPreview : Control
             for (int i = 0; i < 4; i++)
                 Item(CommandRow(i), names[i], keys[i], i != 2,
                     i == 2 ? T("这位神父没有提供转职服务。", "Promotion is unavailable from this priest.") : "");
-            var leave = CommandRow(4);
-            Item(new(leave.Position, new(CommandSize.X, 64)), T("离开", "Leave"));
-            _detail = Text(panel, new(leave.Position - panel.Position + new Vector2(0, 72),
+            _detail = Text(panel, new(CommandRow(4).Position - panel.Position,
                 new(CommandSize.X, 0)), "", 30);
         }
         else if (_page == Page.Quote)
@@ -364,11 +362,7 @@ public partial class DesignPreview : Control
         }
         else
         {
-            ReadingActions(panel, _result switch
-            {
-                "leave" => T("已离开服务菜单。", "You have left the service menu."),
-                _ => T("示例服务完成。", "Sample service complete.")
-            }, T("返回服务列表", "Return to services"));
+            ReadingActions(panel, T("示例服务完成。", "Sample service complete."), T("继续", "Continue"));
         }
         Footer(T("↑ ↓ 选择     Enter 确认     Esc 返回", "↑ ↓ Select     Enter Confirm     Esc Back"));
     }
@@ -394,7 +388,6 @@ public partial class DesignPreview : Control
             {
                 _rootFocus = _focus;
                 if (_focus == 3) { OpenSlots(SlotTask.Save); return; }
-                _result = _focus == 4 ? "leave" : "service";
                 Show(_focus < 2 ? Page.Quote : Page.Result, _focus < 2 ? 1 : 0);
             }
             else if (_page == Page.Quote && _focus == 0) Show(Page.Result);
@@ -409,6 +402,7 @@ public partial class DesignPreview : Control
         if (_scene == FieldScene) { BackField(); return; }
         if (_scene == OutcomeScene) { _reading = 0; _focus = _outcome; Render(); return; }
         if (_scene == ShopScene) { BackShop(); return; }
+        if (_scene == 2 && _page == Page.Root) { ChooseScene(FieldScene); return; }
         if (_scene == 1 && _page == Page.Question) { _result = "no"; Show(Page.Reply); }
         else if (_page != Page.Root) Show(Page.Root, _scene >= 2 ? _rootFocus : 0);
     }
@@ -450,7 +444,7 @@ public partial class DesignPreview : Control
         }
         if (_showMembers) return;
         if (input.IsActionPressed("ui_cancel") || input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true }
-            || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }) Back();
+            || input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }) Back();
         else if (input.IsActionPressed("ui_accept") || input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true }) Activate();
         else
         {

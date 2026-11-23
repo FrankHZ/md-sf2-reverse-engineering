@@ -397,7 +397,7 @@ when directional navigation skips them. Do not add a second persistent toolbar.
 
 | Page / state | Normal and focused composition | Unavailable, long, covered and return states |
 | --- | --- | --- |
-| Menu | Resume remains initial focus; Journey and Session are quiet group headings. Selected action uses marker/outline plus gold. | Save/Settings/New Game retain their real access predicates. Longer reasons wrap; measured rows scroll if necessary. Menu toggles Resume only at its own root. Back resumes the retained gameplay phase after release. |
+| Menu | Settings receives initial focus. Journey and Session are quiet group headings. Selected action uses marker/outline plus gold. | Save, Settings and New Game retain their real access predicates. Longer reasons wrap. Mapped Cancel, right-click or Menu resumes the retained gameplay phase after release. |
 | Settings / help | Current preference label, value and description are aligned; Apply/Back remain outside the reading/scroll area. Focus identifies the edited control. | Preserve draft/Apply/Back and current safe language refresh. Existing binding help/configuration remains; no binding-capture or device-detection UI is added. Long bilingual help scrolls. Return to the originating host page without applying on Cancel. |
 | Save slots / overwrite | Two clear slot rows; full actual continuation destination and selected slot. Overwrite is a separate consequence panel, Cancel initially selected. | Unavailable location is a reason, not a disabled-looking successful save. Wrap occupant/date/location/error text; keep Retry/Back where legal. Back from confirmation → slots → Menu for that origin; Church entry follows its completed-caller route. |
 | Continue / backup recovery | Name the actual primary failure and the offered backup; recover only through the existing explicit choice. | Never label corrupt primary as Empty or silently load backup. Preserve the failure detail and safe Back. Loaded state, not UI recollection, determines the resulting world. |
@@ -614,8 +614,9 @@ Magic and Item retain scrollable child rows with 48×72 identity icons where mou
 Main rows, child pages and reader.
 
 Church places the measured 560px service panel on the right, below the host safe area, with the
-room under a 35% veil. The four services and separate Leave row use Up/Down; moving focus or
-showing a refusal leaves the root hit areas fixed. Promotion remains unavailable. Quotes retain
+room under a 35% veil. Up/Down moves through the four services. Mapped Cancel or a complete
+right-click returns from the service list. Focus and refusals keep the root hit areas fixed.
+Promotion remains unavailable. Quotes retain
 the actual source-ordered member, condition, funds and exact price; Cancel declines and paid
 results stay paid. Record completes the caller before the shared Save host opens. Back from that
 host resumes field control; reopening services requires a fresh priest interaction.

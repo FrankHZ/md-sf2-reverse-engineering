@@ -187,6 +187,13 @@ internal sealed partial class BattleInspectionView : Control
     internal void HandlePointer(InputEvent input)
     {
         if (input is not InputEventMouse mouse) return;
+        if (mouse is InputEventMouseButton { ButtonIndex: MouseButton.Right } right)
+        {
+            StopEdge();
+            if (_pointer.Read(right, "back", GetGlobalRect(), (_page, _snapshot!.SessionId, _snapshot.Revision)) is not null)
+                Handle(GameAction.Cancel);
+            return;
+        }
         var point = mouse.Position;
         bool back = _back.IsVisibleInTree() && _back.GetGlobalRect().HasPoint(point);
         if (_page == "Cursor" && !back && !CursorUiCovers(point) && !HostPointerCovered)
@@ -302,6 +309,8 @@ internal sealed partial class BattleInspectionView : Control
         _hint.Text = message;
         _back.Text = (_page is "Full" or "MemberFull" ? $"{a}/{c}/{b}" : b)
             + " · " + GameText.Get(_page == "Cursor" ? "battle.inspect.return-movement" : "battle.back");
+        _back.Visible = _page is "Full" or "MemberFull" or "Cursor";
+        if (!_back.Visible) _hint.Text += "\n" + _back.Text;
         _footer.Size = new(Mathf.Min(1040, size.X - 2 * StoryTheme.GameplayInset), 100);
         _footer.Position = new((size.X - _footer.Size.X) / 2, size.Y - StoryTheme.GameplayInset - _footer.Size.Y);
     }
@@ -328,7 +337,7 @@ internal sealed partial class BattleInspectionView : Control
         options = _options.Observe(), optionsError = _optionsError, optionIndex = _optionIndex, memberIndex = _memberList.Roster.Index, members = _members?.Members,
         roster = _memberList.IsVisibleInTree() ? _memberList.Observe() : null, unit = _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _hint.Text,
         footer = new { visible = _footer.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_footer.GetGlobalRect()),
-            hintRect = BattleMapViewport.Rectangle(_hint.GetGlobalRect()), back = _back.Text,
+            hintRect = BattleMapViewport.Rectangle(_hint.GetGlobalRect()), back = _back.Text, backVisible = _back.IsVisibleInTree(),
             backRect = BattleMapViewport.Rectangle(_back.GetGlobalRect()) },
         full = _details.IsVisibleInTree() ? _details.Observe() : null,
         hover = _hover.IsVisibleInTree() ? _hover.Observe() : null, edge = new { speed = new { x = _edgeSpeed.X, y = _edgeSpeed.Y }, delay = _edgeDelay },

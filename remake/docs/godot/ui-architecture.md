@@ -181,8 +181,9 @@ active Left/Right mappings in vertical Main, Magic, Item and field Prepare descr
 Prepare directs the operation to the selected description alone while it is present. Target
 retains its existing commands with a short action and availability footer.
 
-Inspection now puts instructions and one visible Back button in the same framed footer across its
-pages. The complete pointer gesture must match the actual button rectangle. Cursor's hover card
+Inspection puts return instructions in its framed footer. Cursor and detail sheets also show a
+Back button whose complete left-click must match the actual button rectangle. Options, Map and
+Members use mapped Cancel or a complete right-click. Cursor's hover card
 owns cell identity and coordinates. The shared compact status card reads the live ally's current
 level from the acting projection or actor state in Movement, Target and playback. Enemies keep
 their established disclosure. Selected spell effect copy remains with #2083.

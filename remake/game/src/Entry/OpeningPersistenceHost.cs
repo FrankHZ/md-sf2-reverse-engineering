@@ -145,11 +145,10 @@ public sealed partial class GameRoot
             choices.Add((freshChoice.Label, () => { _saveSelection = _slots!.SelectedIndex; freshChoice.Choose(); }));
         if (page.Index > 0) choices.Add((GameText.Get("slot.previous"), () => ChangePage(-1)));
         if (page.Index + 1 < page.Count) choices.Add((GameText.Get("slot.next"), () => ChangePage(1)));
-        choices.Add((GameText.Get("entry.cancel"), cancel));
         string heading = _outputFile is null ? message : message + "\n" + GameText.Get("slot.output", System.IO.Path.GetFileName(_outputFile));
         _slots!.Cancel = cancel;
         _slots.ShowChoices(state, heading, choices.ToArray());
-        _slots.Select(Math.Clamp(_saveSelection, 0, choices.Count - 1));
+        _slots.Select(Math.Clamp(_saveSelection, 0, Math.Max(0, choices.Count - 1)));
 
         void ChangePage(int direction)
         {

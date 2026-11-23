@@ -469,16 +469,16 @@ func visible_return(page: String, parent: String, resize := false) -> bool:
     var footer: Dictionary = inspection.footer
     var frame := Rect2(footer.rect.x,footer.rect.y,footer.rect.width,footer.rect.height)
     var button := Rect2(footer.backRect.x,footer.backRect.y,footer.backRect.width,footer.backRect.height)
-    if not check(inspection.page == page and footer.visible and frame.encloses(button) and
-        root.get_visible_rect().encloses(frame) and button.has_area(),
-        page+": framed hint has one real return button inside the viewport"): return false
-    for button_type in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-        await footer_mouse(footer.hintRect,button_type,true)
-        await footer_mouse(footer.hintRect,button_type,false)
-        if not await inspect_page(page): return false
+    var has_button := page in ["Cursor", "Full", "MemberFull"]
+    if not check(inspection.page == page and footer.visible and root.get_visible_rect().encloses(frame) and
+        footer.backVisible == has_button and (not has_button or frame.encloses(button) and button.has_area()),
+        page+": return affordance matches the inspection page"): return false
+    await footer_mouse(footer.hintRect,MOUSE_BUTTON_LEFT,true)
+    await footer_mouse(footer.hintRect,MOUSE_BUTTON_LEFT,false)
+    if not await inspect_page(page): return false
     var back := String(footer.back).split(" · ")[0]
-    if not check(back not in inspection.hint,
-        page+": Back mapping appears on its button"): return false
+    if not check((back in inspection.hint) != has_button,
+        page+": Back mapping appears once"): return false
     if resize:
         await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,true)
         root.size = Vector2i(2560,1440)
@@ -489,8 +489,10 @@ func visible_return(page: String, parent: String, resize := false) -> bool:
         root.size = Vector2i(1600,900)
         await frames(8)
         footer = state().inspection.footer
-    await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,true)
-    await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,false)
+    var return_rect: Dictionary = footer.backRect if has_button else footer.hintRect
+    var return_input := MOUSE_BUTTON_LEFT if has_button else MOUSE_BUTTON_RIGHT
+    await footer_mouse(return_rect,return_input,true)
+    await footer_mouse(return_rect,return_input,false)
     if parent == "Movement":
         return check(not state().inspection.active and state().stage == "Movement", "Visible Cursor Back restores Movement")
     return await inspect_page(parent)

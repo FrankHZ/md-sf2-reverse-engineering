@@ -38,7 +38,7 @@ public partial class DesignPreview
         if (!_showMembers) return false;
         if (input.IsActionPressed("ui_cancel") ||
             input is InputEventJoypadButton { ButtonIndex: JoyButton.B, Pressed: true } ||
-            input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true })
+            input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false })
         { if (Preparing) BackGive(); else ToggleMembers(); return true; }
         if (input.IsActionPressed("ui_accept") ||
             input is InputEventJoypadButton { ButtonIndex: JoyButton.A, Pressed: true })
@@ -75,7 +75,6 @@ public partial class DesignPreview
         DrawUnitSheet(new(428, 186), _member);
         Footer(T("↑ ↓ 切换队员     Enter / A 整备     Esc / B 返回", "↑ ↓ Switch member     Enter / A Prepare     Esc / B Back"));
         Utility(new(1418, 1003, 204, 48), GameText.Get("party.prepare"), OpenGive);
-        Utility(new(1642, 1003, 204, 48), T("返回", "Back"), ToggleMembers);
     }
 
     private void DrawUnitSheet(Vector2 position, Member member)

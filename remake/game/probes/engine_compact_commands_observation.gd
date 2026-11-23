@@ -200,10 +200,8 @@ func battle_case() -> bool:
         if not expect(fits.call(layout.actor) and fits.call(layout.description) and
                 row_top <= layout.description.y and layout.reader.rect.height > 0,
                 "All rows clear the measured acting card and the scrollable footer"): return false
-        var back: Dictionary = layout.navigation.filter(func(control): return control.id == "Back")[0]
-        if not expect(back.visible and fits.call(back.rect) and back.rect.y >= layout.reader.rect.y+layout.reader.rect.height and
-                back.rect.y+back.rect.height <= layout.description.y+layout.description.height,
-                "Back fits below the reader at the supported minimum"): return false
+        if not expect(layout.navigation.all(func(control): return control.id != "Back"),
+                "Main lists actions and leaves cancellation to input"): return false
     var initial_focus: int = opened.menu.command
     if not expect(initial_focus == (0 if opened.menu.layout.commands[0].enabled else 3),
             "Initial focus follows the live Attack offer"): return false

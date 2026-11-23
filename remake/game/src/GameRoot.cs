@@ -93,6 +93,8 @@ public sealed partial class GameRoot : Node
         }
         if (input is InputEventMouse)
         {
+            if ((_slots?.HandlePointerCancel(input) ?? _entry?.HandlePointerCancel(input)) == true)
+            { GetViewport().SetInputAsHandled(); return; }
             if (_entry is not null || _slots is not null) return;
             if (_menuButton is { } button && button.IsVisibleInTree() && button.GetGlobalRect().HasPoint(((InputEventMouse)input).Position)) return;
             if (_exploration is { } field && GodotObject.IsInstanceValid(field) && field.IsVisibleInTree())

@@ -136,12 +136,11 @@ internal sealed partial class ChurchServiceView : Control
                     (GameText.Get("church.cure"), new ChooseChurch(wait.Token, ChurchAction.Cure)), (GameText.Get("church.promote"),
                         session.Definition.Encounters.Values.Any(e => e.Deployments.Any(d => d.RegularPromotion is not null))
                             ? new ChooseChurch(wait.Token, ChurchAction.Promote) : null),
-                    (GameText.Get("church.save"), new LeaveChurch(wait.Token, true)),
-                    (GameText.Get("church.leave"), new LeaveChurch(wait.Token))]);
+                    (GameText.Get("church.save"), new LeaveChurch(wait.Token, true))]);
             }
             while (_rows.Count < Math.Max(1, _options.Count)) { var row = Text("Choice" + _rows.Count, 28); _rows.Add(row); _panel.AddChild(row); }
             for (int i = 0; i < _rows.Count; i++)
-            { _rows[i].Visible = IsMenu ? i == 0 : i < _options.Count; }
+            { _rows[i].Visible = !IsMenu && i < _options.Count; }
         }
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         _commandsList.Visible = IsMenu;
@@ -152,9 +151,7 @@ internal sealed partial class ChurchServiceView : Control
                 _commands[i].RefreshCaption(); _commands[i].Available = _options[i].Command is not null;
                 _commands[i].SetSelection(i == _index, input.Settings.ReducedFlash);
             }
-            _commandsList.Present(_options.Take(4).Select(option => option.Label).ToArray());
-            _rows[0].AddThemeColorOverride("font_color", _index == 4 ? StoryTheme.Selected : Colors.White);
-            _rows[0].Text = (_index == 4 ? "› " : "   ") + GameText.Get("church.leave");
+            _commandsList.Present(_options.Select(option => option.Label).ToArray());
         }
         else for (int i = 0; i < _options.Count; i++)
         {
@@ -185,9 +182,7 @@ internal sealed partial class ChurchServiceView : Control
         if (IsMenu)
         {
             _commandsList.Position = new(inset, top); _commandsList.Arrange(inner);
-            _rows[0].Position = new(inset, top + _commandsList.RequestedHeight + 8);
-            _rows[0].Size = new(inner, 64);
-            top = _rows[0].Position.Y + _rows[0].Size.Y;
+            top += _commandsList.RequestedHeight;
         }
         else
         {
@@ -243,10 +238,9 @@ internal sealed partial class ChurchServiceView : Control
         Vector2 position = ((InputEventMouse)input).Position;
         int hit = IsMenu ? _commandsList.Hit(position).Index :
             _rows.FindIndex(row => row.Visible && row.GetGlobalRect().HasPoint(position));
-        bool back = IsMenu && _rows[0].GetGlobalRect().HasPoint(position);
         if (input is InputEventMouseMotion motion)
         {
-            if (_pointer.Moved(motion) && (hit >= 0 || back) && !_requiresRelease) { Focus(back ? 4 : hit); Present(_session, _input, _submit); }
+            if (_pointer.Moved(motion) && hit >= 0 && !_requiresRelease) { Focus(hit); Present(_session, _input, _submit); }
             return;
         }
         if (input is not InputEventMouseButton button) return;
@@ -254,9 +248,9 @@ internal sealed partial class ChurchServiceView : Control
         {
             Handle(button.ButtonIndex == MouseButton.WheelDown ? GameAction.Down : GameAction.Up); return;
         }
-        back |= button.ButtonIndex == MouseButton.Right;
+        bool back = button.ButtonIndex == MouseButton.Right;
         string? id = back ? "back" : hit < 0 ? null : hit.ToString();
-        Rect2 rect = button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : back ? _rows[0].GetGlobalRect() :
+        Rect2 rect = back ? GetGlobalRect() :
             hit < 0 ? default : IsMenu ? _commandsList.Hit(position).Rect : _rows[hit].GetGlobalRect();
         string? clicked = _pointer.Read(button, id, rect, (_wait.Token, _revision, IsMenu));
         if (!_requiresRelease && clicked is not null)

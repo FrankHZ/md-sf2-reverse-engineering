@@ -61,7 +61,6 @@ public partial class DesignPreview
         switch (_shopStep)
         {
             case ShopStep.Services:
-                if (_focus == 4) { ShopPage(ShopStep.Closed); break; }
                 _buying = _focus == 0;
                 _shopMember = Member.Bowie;
                 _stockIndex = _saleSlot = 0;
@@ -117,12 +116,11 @@ public partial class DesignPreview
         switch (_shopStep)
         {
             case ShopStep.Services:
-                SidePage(shop, 5, GoldNow);
+                SidePage(shop, 4, GoldNow);
                 string[] ids = ["buy", "sell", "repair", "deals"];
                 for (int i = 0; i < ids.Length; i++)
                     Item(CommandRow(i), GameText.Get("shop." + ids[i]), "shop." + ids[i], i < 2,
                         i < 2 ? "" : GameText.Get("shop.unavailable"));
-                Item(CommandRow(4), GameText.Get("shop.leave"));
                 break;
             case ShopStep.Stock:
                 SidePage(T("购买 / 商品", "Buy / Stock"), Stock.Length, GoldNow);
@@ -181,7 +179,6 @@ public partial class DesignPreview
         var hints = Panel(new(32, 997, 1856, 60), true);
         Text(hints, new(18, 0, 710, 60), T("↑ ↓ 选择     Enter / A 确认", "↑ ↓ Select     Enter / A Confirm"), 24, "cad6e5");
         _detail = Text(hints, new(740, 0, 860, 60), "", 24);
-        Utility(new(1654, 1003, 204, 48), T("Esc / B 返回", "Esc / B Back"), BackShop);
     }
 
     private void RefreshShopPack()

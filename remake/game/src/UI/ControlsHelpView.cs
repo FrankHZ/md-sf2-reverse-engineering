@@ -59,7 +59,7 @@ internal sealed partial class ControlsHelpView : Control
         _hint = new Label { Name = "HelpHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", 24); column.AddChild(_hint);
         var actions = new HBoxContainer(); column.AddChild(actions);
-        foreach (string text in new[] { "Previous", "Next", "Back" })
+        foreach (string text in new[] { "Previous", "Next" })
         {
             var button = new Button { Name = "Help" + text, Text = text, SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 CustomMinimumSize = new(0, 64), FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore };
@@ -87,7 +87,7 @@ internal sealed partial class ControlsHelpView : Control
         _body.Text = Text(page.Note) + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Input.Hint(row.Action)}"));
         _hint.Text = GameText.Get("host.help-hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
             Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down), Input.CompactHint(GameAction.Cancel));
-        string[] keys = ["host.help-previous", "host.help-next", "entry.back"];
+        string[] keys = ["host.help-previous", "host.help-next"];
         for (int i = 0; i < _buttons.Count; i++) _buttons[i].Text = GameText.Get(keys[i]);
         _scroll.ScrollVertical = 0;
     }
@@ -120,7 +120,7 @@ internal sealed partial class ControlsHelpView : Control
         string? id = mouse.ButtonIndex == MouseButton.Right ? "back" : hit < 0 ? null : hit.ToString();
         var bounds = mouse.ButtonIndex == MouseButton.Right ? GetGlobalRect() : hit < 0 ? new Rect2() : _buttons[hit].GetGlobalRect();
         string? clicked = _pointer.Read(mouse, id, bounds, _page);
-        if (clicked is "back" or "2") Back();
+        if (clicked == "back") Back();
         else if (clicked is "0" or "1") Turn(clicked == "0" ? -1 : 1);
     }
     public string ReadControlsHelpObservationJson() => System.Text.Json.JsonSerializer.Serialize(new

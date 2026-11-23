@@ -15,7 +15,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal readonly Label Help = Text("Help", UI.StoryTheme.HintSize);
     private readonly HBoxContainer _navigation = new() { Name = "Navigation", MouseFilter = MouseFilterEnum.Ignore };
     private readonly Label _previous = Text("PreviousTarget", 26), _next = Text("NextTarget", 26);
-    private readonly Label _confirm = Text("Confirm", 26), _back = Text("Back", 26);
+    private readonly Label _confirm = Text("Confirm", 26);
     private UI.CompactCommandList _commandList = null!;
     internal readonly UI.DiamondCommandButton[] Commands = [
         new("Attack", "battle.command.attack", "command-menu") { CaptionBeside = true },
@@ -83,7 +83,7 @@ internal sealed partial class BattleMenuLayout : Control
         _detail.AddChild(column); column.AddChild(_reading); column.AddChild(_navigation);
         _reading.AddContext(Heading, Help);
         _scroll.GetVScrollBar().ValueChanged += _ => InvalidatePointer();
-        foreach (var control in new[] { _previous, _next, _confirm, _back })
+        foreach (var control in new[] { _previous, _next, _confirm })
         {
             control.CustomMinimumSize = new(0, 44);
             control.HorizontalAlignment = HorizontalAlignment.Center;
@@ -160,8 +160,8 @@ internal sealed partial class BattleMenuLayout : Control
     internal void ShowNavigation(bool visible, bool canCycle, bool showConfirm, bool canConfirm)
     {
         _previous.Text = GameText.Get("battle.previous"); _next.Text = GameText.Get("battle.next");
-        _confirm.Text = GameText.Get("battle.confirm"); _back.Text = GameText.Get("battle.back");
-        _navigation.Visible = visible;
+        _confirm.Text = GameText.Get("battle.confirm");
+        _navigation.Visible = visible && (canCycle || showConfirm);
         _canConfirm = canConfirm;
         _previous.Visible = _next.Visible = canCycle;
         _confirm.Visible = showConfirm;
@@ -170,7 +170,7 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal (string? Id, Rect2 Rect) Hit(Vector2 position)
     {
-        foreach (var control in new[] { _previous, _next, _confirm, _back })
+        foreach (var control in new[] { _previous, _next, _confirm })
             if ((control != _confirm || _canConfirm) && Covers(control, position)) return (control.Name.ToString(), control.GetGlobalRect());
         var command = HitCommand(position);
         if (command.Id is not null) return command;
@@ -255,7 +255,7 @@ internal sealed partial class BattleMenuLayout : Control
         iconMode = Icons.Mounted ? "bound" : "unmounted-text",
         icons = _rowIcons.Select(icon => icon.Observe()).ToArray(),
         scroll = _scroll.ScrollVertical,
-        navigation = new[] { _previous, _next, _confirm, _back }.Select(control => new { id = control.Name.ToString(),
+        navigation = new[] { _previous, _next, _confirm }.Select(control => new { id = control.Name.ToString(),
             visible = control.IsVisibleInTree(), enabled = control != _confirm || _canConfirm, rect = BattleMapViewport.Rectangle(control.GetGlobalRect()) }).ToArray(),
         commands = Commands.Select((button, index) => new { id = button.Identity, label = button.Caption,
             visible = button.IsVisibleInTree(), selected = button.Selected, enabled = button.Available,

@@ -77,7 +77,7 @@ internal sealed partial class ShopServiceView : Control
         if (focused is SelectShopMember memberChoice) actor = memberChoice.Member;
         var member = members.FirstOrDefault(row => row.Carried.Actor == actor);
         if (IsMenu) _services.Present(input, _index, _title, reason, _hint,
-            "shop.leave", _options.Take(4).Select(option => _assetError is null && option.Command is not null).ToArray());
+            _options.Select(option => _assetError is null && option.Command is not null).ToArray());
         else
         {
             byte? item = focused is SelectShopItem stock ? stock.Item :
@@ -87,7 +87,6 @@ internal sealed partial class ShopServiceView : Control
             bool inspectItem = wait.Phase is ShopPhase.Stock or ShopPhase.Slot ||
                 wait.Phase == ShopPhase.Member && wait.Item.HasValue;
             _page.Present(reason.Length == 0 ? _title : _title + "\n" + reason, _hint,
-                input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("shop.back"),
                 _options.Select((option, i) => (option.Text, _identities[i], option.Command is not null)).ToArray(), _icons, _index,
                 description: inspectItem ? ItemDescriptions.Read(session, item, member, broken) : null);
         }
@@ -107,7 +106,7 @@ internal sealed partial class ShopServiceView : Control
                 Add("shop.repair", new ChooseShop(wait.Token, ShopAction.Repair));
                 Add("shop.deals", _session.Current.Exploration!.Party.ItemCustody is null
                     ? null : new ChooseShop(wait.Token, ShopAction.Deals));
-                Add("shop.leave", new BackShop(wait.Token)); break;
+                break;
             case ShopPhase.Stock:
                 if (wait.Action == ShopAction.Deals) _title += "\n" + GameText.Get("shop.deals");
                 foreach (byte id in wait.AvailableStock(_session.Current.Exploration!.Party.ItemCustody))
@@ -195,15 +194,13 @@ internal sealed partial class ShopServiceView : Control
     {
         if (_wait is null || input is not InputEventMouse mouse) return;
         int hit = IsMenu ? _services.Hit(mouse.Position) : _page.Hit(mouse.Position);
-        Rect2 backRect = IsMenu ? _services.BackRect : _page.BackRect;
-        bool back = backRect.HasPoint(mouse.Position);
         if (input is InputEventMouseMotion motion)
-        { if (_pointer.Moved(motion) && !_release && (hit >= 0 || IsMenu && back)) { _index = back ? 4 : hit; _error = null; Present(_session, _input, _submit); } return; }
+        { if (_pointer.Moved(motion) && !_release && hit >= 0) { _index = hit; _error = null; Present(_session, _input, _submit); } return; }
         if (input is not InputEventMouseButton button) return;
         if (button.Pressed && button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
         { if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) { _pack.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; } if (IsMenu) _services.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); else _page.Wheel(mouse.Position, button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
-        back |= button.ButtonIndex == MouseButton.Right;
-        Rect2 rect = back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : backRect : hit < 0 ? default : IsMenu ? _services.RowRect(hit) : _page.RowRect(hit);
+        bool back = button.ButtonIndex == MouseButton.Right;
+        Rect2 rect = back ? GetGlobalRect() : hit < 0 ? default : IsMenu ? _services.RowRect(hit) : _page.RowRect(hit);
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(), rect, _wait.Token);
         if (_release || clicked is null) return;
         if (clicked == "back") Choose(_wait.Phase == ShopPhase.Result ? new ContinueShop(_wait.Token) : new BackShop(_wait.Token));

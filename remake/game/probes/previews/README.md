@@ -3,7 +3,8 @@
 Run `DesignPreview.tscn` in the remake Godot project. Click a tab or press its function key to
 open a sample. **L** or the language button switches between Chinese and English. The motion
 button holds staged icon animation and sets Reduced Flash for the production battle. Use
-directions to navigate, Enter / A to confirm and Esc / B to return.
+directions to navigate and Enter / A to confirm. Esc, B or right-click returns from menu lists.
+Transaction confirmations retain their affirmative and decline choices.
 
 ## Scene ownership
 
@@ -33,7 +34,7 @@ description while preserving the focused row.
 
 1. Confirm MEND. Cycle to **GUARD A** with Right / the next-target input, or hover the eligible
    unit. The current friendly target card shows level and live HP/MP.
-2. Use Esc or the visible Back action to return to the same spell row. Re-enter Target and confirm
+2. Use B, Esc or right-click to return to the same spell row. Re-enter Target and confirm
    GUARD A to start the real recovery scene. A full pointer click on an eligible target also
    commits the action.
 3. Advance the on-screen messages. The close-up begins with the caster card on the right, then

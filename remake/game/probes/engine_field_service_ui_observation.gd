@@ -21,8 +21,9 @@ func inside(rect: Dictionary, label: String) -> void:
 
 func choices(page: Dictionary, label: String) -> void:
     inside(page.rect, label)
-    inside(page.backRect, label + " Back")
-    check(page.hintRect.y + page.hintRect.height <= page.backRect.y + 1, label + " footer separate")
+    inside(page.hintRect, label + " input hint")
+    check(page.readingRect.y + page.readingRect.height <= page.hintRect.y + 1 and not page.has("backRect"),
+        label + " hint clears the choices without a navigation row")
     for row in page.rows:
         check(row.minimumHeight <= row.rect.height + 1, label + " full row reading")
         check(row.textRect.x - row.rect.x == 88, label + " fixed marker/icon columns")
@@ -254,11 +255,14 @@ func shop_flow() -> void:
     if int(state().shop.wait.Phase) == 5: await press(confirm_key)
     else:
         await press(back_key); await press(back_key); await press(back_key)
-    await click(state().shop.services.backRect)
+    var shop_panel: Dictionary = state().shop.services.rect
+    var shop_point := point(shop_panel)
+    await mouse(shop_point,true,MOUSE_BUTTON_RIGHT)
+    await mouse(shop_point,false,MOUSE_BUTTON_RIGHT)
     for i in range(600):
         if state().canWaitAtInput: break
         await frames(1)
-    check(state().canWaitAtInput and not state().shop.visible,"Leave completes actual source caller")
+    check(state().canWaitAtInput and not state().shop.visible,"Right-click completes the actual shop caller")
     var old = state().entities
     await press(KEY_LEFT); await frames(60)
     check(state().entities != old,"usable ordinary movement after shop return")

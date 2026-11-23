@@ -523,12 +523,12 @@ gets the mapped reading request while it is present; the pack no longer scrolls 
 Resuming the same battle page preserves scroll and focus. A different page, acting member or
 focused offer starts at the top.
 
-The inspection footer contains instructions and a measured Back button in Cursor, Full,
-Options, Map, Members and MemberFull. A pointer Back requires a complete matching gesture inside
-the visible button. Mapped Back follows the same local parent and leaves the cursor or roster
-focus where it was. The frame shields the underlying board from clicks. Cursor shows the name
-or empty-ground caption and coordinate in the hover card only. Options displays its Back binding
-on the button. Resizing or changing page cancels an old capture.
+The inspection footer contains instructions on every page. Cursor and the two detail sheets
+retain a measured Back button. Options, Map and Members show the mapped return in their
+instructions. Mapped Cancel, a complete right-click and an eligible Back button follow the
+same local parent and retain cursor or roster focus. The footer shields the board from left
+clicks. Cursor shows the name or empty-ground caption and coordinates in the hover card.
+Resizing or changing page cancels an old capture.
 
 Movement, Target, hover inspection and playback use a project-authored double-gold frame
 with stepped corner accents. The mini-status composition puts the name and admitted ally
