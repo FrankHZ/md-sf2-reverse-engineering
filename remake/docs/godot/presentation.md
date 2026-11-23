@@ -1482,6 +1482,70 @@ for CLEAR/pages/portrait; use the [shared story recipe](../verification/host.md#
 with `jaro-conversion.json` for the unchanged battle consumer. Retain native exit logs separately:
 the observed ObjectDB exit warnings are not resolved by this projection correction.
 
+### Special-pose dialogue portraits (#2070)
+
+This Standard-rigor slice is an intentional remake presentation change for the currently playable
+`POSE1` speakers. An open text window with an explicit, resolved ally speaker may display that
+actor's ordinary portrait while the actor uses sprite 59 and the source portrait window is closed.
+The presenter resolves the ally through the current field population's registered appearance,
+including joined status and promotion class. It uses the existing portrait raster, column, mirror
+and side flags. The supplemental portrait is static during that text window. The original logic
+continues to own sprite, speech cue, portrait service, waits and RNG. Registered portraits retain
+priority. Narration and speakers without a bound portrait keep the existing portraitless layout.
+
+**Confirmed (pinned source and admitted content).** At SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`cs_52530` sets `ALLY_SLADE` to `MAPSPRITE_POSE1` for texts 919, 921, 923 and 945. The
+sprite dialogue table assigns `NONE` to POSE1. The selected world preserves sprite 59 → null and
+sprite 14 → portrait 5. `cs_50624` uses the same pose for `ALLY_JAHA` at 2250–2251, whose ordinary
+sprite 8 selects portrait 3. Battle08 `cs_4AAB6` uses sprite 59 at 2470 for worker `entity-129`.
+The worker's normal sprite 202 also has `NONE`. Battle07's POSE4 is used by Bowie during the Jewel
+narration, which explicitly uses `ENTITY_NONE`. The admitted programs require no pose-wide
+character assignment.
+[Sprite dialogue table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/spritedialogproperties.asm) ·
+[Galam prison](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map17/mapsetups/scripts.asm) ·
+[Damaged ship](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map73/mapsetups/s6_initfunction.asm) ·
+[Battle08 aftermath](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/entries/battle08/cs_afterbattle.asm)
+
+Use the [registered ordinary private inputs](../development-and-verification.md#pre-voyage-chinese-consumer-observation)
+and the imported Godot 4.7.2 .NET Debug project from the owning checkout. Select the campaign world,
+main scenes and entry through `SF2_PRIVATE_EXPLORATION_CONTENT`, `SF2_PRIVATE_BATTLE_SCENE_CONTENT`
+and `SF2_PRIVATE_ENTRY_CONTENT`, plus the six named New Game opening inputs. The probe starts
+the production session with these controlled prelaunch inputs and sends mapped movement and Confirm.
+
+| Case | Initial map and position | Initial flags |
+| --- | --- | --- |
+| `prison` | `map-17` (53,6), Up (`1`) | `0,1,2,3,4,32,33,34,35,36,501,502,503,504,611,612,650,660` |
+| `ship` | `map-73` (50,2), Left (`2`) | `0,1,2,3,4,5,32,33,34,35,36,37,501,502,503,504,505,506,507` |
+
+For each case write a fresh checkout-local JSON in the format below with the corresponding
+operands. Select an external disposable save root, a fresh namespace and worktree-local
+APPDATA/LOCALAPPDATA/TEMP/TMP after loading the configuration. Run the cases serially with a
+settings JSON containing `{"formatVersion":1,"language":"en","textMode":"instant"}`.
+
+```json
+{"start":{"map":"map-17","player":"entity-0","position":{"x":53,"y":6},"facing":1,"speed":32,"flags":[0,1,2,3,4,32,33,34,35,36,501,502,503,504,611,612,650,660]}}
+```
+
+```powershell
+. ./local/private-inputs.ps1
+$env:SF2_VIEWPORT_CASE = 'prison' # or 'ship'
+$env:SF2_HOST_UI_START = '<absolute checkout-local start JSON>'
+$env:SF2_VIEWPORT_OUTPUT = '<absolute fresh checkout-local report JSON>'
+$env:SF2_SAVE_ROOT = '<absolute external disposable save root>'
+$env:SF2_SAVE_NAMESPACE = "issue2070-$($env:SF2_VIEWPORT_CASE)-$([Guid]::NewGuid().ToString('N'))"
+& $env:GODOT_BIN --headless --audio-driver Dummy --fixed-fps 60 --max-fps 120 `
+  --resolution 1920x1080 --path remake/game --script res://probes/engine_pose_dialogue_observation.gd -- `
+  --input-settings '<absolute settings JSON>'
+```
+
+**Confirmed (bounded Godot observation).** Slade retains sprite 59 and displays portrait 5
+at 919, 921, 923 and 945. Text 945 preserves flags 192 and mirrors the portrait. Text 928
+uses Slade's registered portrait with sprite 14, text 931 has no portrait texture, and text 946
+uses Sarah's registered portrait. The prison caller sets F661 and returns to field control
+with the panel closed. On the ship, texts 2250–2251 display Jaha's portrait 3 with sprite 59.
+The next speaker at 2252 uses the registered Slade portrait. The supplemental cases all have
+a closed logical portrait window and a mounted portrait in the native panel.
+
 ### Current story presentation
 
 `ExplorationDialogueView` owns field text-to-label projection. The existing field controller still
