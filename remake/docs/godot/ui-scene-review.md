@@ -104,6 +104,25 @@ and human reading comfort remain with the [play review](../evidence/opening-loop
 
 Physical controller legends, desktop DPI and reading comfort remain **Unknown** under [human play review](../verification/host.md#later-physical-focus-human-checklist-1456).
 
+### Review changed UI responsibilities
+
+Use this check in the existing independent review when a change touches a decision page,
+input boundary, description reader, gameplay projection or resource lifetime. Start with the
+accepted caller and the requested behavior. Compare the changed layout and controls against
+that baseline, including their direction and Back semantics. A change to an accepted player
+interaction needs explicit scope. [UI architecture and current product constraint](ui-architecture.md)
+
+Follow one changed operation through input, admission, result, projection and return. Name
+the authoritative snapshot or wait, the local focus owner and the visible activation target.
+Check the relevant counterexample, such as a rejected command, a non-activation button,
+overflow on mapped input, cover or resize during a press, or replacement of a borrowed texture.
+Confirm that captions, geometry and mapped/pointer activation match the same available
+operation. When the change uses game rules for a preview, compare one changed legal state
+with actual resolution and verify that reading alone publishes no state. Keep the review
+with the affected scene and its existing reproduction. Passing the final screen alone
+does not establish intermediate ordering, input ownership or resource lifetime.
+[Independent review boundary](../../../docs/operations/bounded-inspection-and-review.md#consolidated-independent-review)
+
 #### Reproduce gameplay Menu clearance
 
 **Confirmed.** At 1920×1080 the square 160×56 Menu hit area spans x=1728–1888 and y=32–88.

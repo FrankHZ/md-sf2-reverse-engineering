@@ -39,6 +39,7 @@ Use the owner that matches the responsibility being changed:
 | Content profiles, admission, explicit starts and private provenance | [Profiles and trust](content/profiles-and-trust.md) |
 | Local source/master/runtime assets and offline preparation | [Presentation assets](content/presentation-assets.md) |
 | Godot entry, semantic input, field projection and UI boundaries | [Presentation](godot/presentation.md) |
+| Godot UI phase, input, local navigation, read queries and responsibility changes | [UI architecture](godot/ui-architecture.md) |
 | Audio cue delivery and source limits | [Audio](godot/audio.md) |
 | Battle scene, movement and death presentation | [Battle scenes](godot/battle-scenes.md) |
 | Player action, implementation, chapter coverage and remaining gaps | [Campaign features and optional field interactions](capability-status.md#campaign-feature-trace) · [Battle decisions and return](godot/battle-interaction-baseline.md) |
