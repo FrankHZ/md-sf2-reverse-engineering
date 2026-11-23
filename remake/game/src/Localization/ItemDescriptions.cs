@@ -28,7 +28,7 @@ internal static class ItemDescriptions
             lines.Add(snapshot.Mode == SessionMode.Battle ? battle : GameText.Get("item-description.battle", battle));
         string field = FieldEffect(facts.FieldUse);
         if (field.Length > 0) lines.Add(GameText.Get("item-description.field", field));
-        if (broken && facts.CanBreakOnUse && facts.Support is not null)
+        if (broken && facts.CanBreakOnUse && (facts.Support is not null || facts.Attack is { Breakable: true }))
             lines.Add(GameText.Get("item-description.damaged"));
         return string.Join("\n", lines);
     }
@@ -47,6 +47,8 @@ internal static class ItemDescriptions
                 _ => "",
             };
         }
+        if (facts.Attack is { Effect: { Radius: > 0 } area })
+            return SpellDescriptions.Damage(area.Element) + " " + GameText.Get("spell-description.enemy-area", area.Radius);
         if (facts.Attack is not null) return GameText.Get("item-description.damage");
         if (facts.Retreat) return GameText.Get("item-description.retreat");
         return facts.Support?.Effect.Spell.Value switch

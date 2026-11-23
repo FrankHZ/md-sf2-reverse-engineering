@@ -231,7 +231,15 @@ and Silence. An unpromoted MAGE is refused at Use and Equip. With duplicate ring
 selected word gains damage or is destroyed. Reuse of a damaged ring spends no wear draw,
 compacts the slot, and refreshes ATT and CURSE if it was worn. The existing Repair transaction
 clears the damaged bit for 1,250 gold and refuses a worn cursed selection. Natural original
-Black Ring wear and presentation remain **Unknown**.
+Black Ring wear and exact original presentation timing remain **Unknown**.
+
+**Confirmed (current presentation).** Black Ring uses the normal item gesture and delivers the
+BLAZE 2 damage, results and wear notices with zero MP cost. The equipment attack binding has no
+source animation selector and `BattleSceneView` excludes `AttackItem` from the spell overlay.
+The original BLAZE 2 overlay is a remaining presentation task under
+[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+[Equipment effect reuse](../godot/spell-presentation.md#follow-up-order) ·
+[Scene consumer](../../game/src/Battles/BattleSceneView.cs)
 [Attack-item admission](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) ·
 [Damage and payment ordering](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) ·
 [Shared wear computation](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EquipmentItemUse.cs) ·
@@ -468,6 +476,7 @@ Church and battle actions run through the ordinary player inputs.
 | `battle-damage` | `derived/issue1956/wiz-review/receipts/kazin-cast01/after-action-slot.json` (v4). Set `data.battle.cursor` to the round 2 queue entry for ally-4, already at (5,22). Set `mainSeed` to 131072. Set Kazin's MP to 0, ATT to 21, status to 0 and item slot 2 to bare word 24 in both `loadout.value.items` and `progress.value.sourceLoadout.value.items`. Include 10 in `data.battle.custody.onceFlags`. |
 | `battle-destroy` | Same v4 source and changes, using worn damaged word 408, ATT 31 and status 4. |
 | `battle-cold` | Byte copy of the actual `battle-damage` output. |
+| `battle-description` | Copy either v4 starting fork. Open Item and highlight slot 2. The observer checks damage and target area, the equipped ATT bonus and the existing bilingual destruction warning when the damaged bit is set. It stops before using the item. |
 | `field-church` | The final v6 `slot1.json` from [Indra Staff reproduction](#indra-staff-reproduction), registered under `derived/disposable-saves/Sf2IndraReview/6c5f4a5f1dd84a5b8333d9f0ccf03f1a/indra-review/sf2-opening`. Set ally-4's `data.party.allies` slot 2 to 408 and status to 4. Set `data.party.gold` to 8747 and include 10 in `data.party.onceFlags`. Move the settled `data.visit.actors` player slot 0 to (40,5), copying the 384-unit tile position into `motion.x`, `motion.y` and their respective destinations. Keep facing up. |
 | `field-repair` | Same v6 input, gold and once flag as above, with bare damaged word 280 and status 0. Keep the original (20,30) landing, one tile from the castle's south exit. |
 | `field-repair-worn` | Same landing and gold as the Repair fork, with word 408 and status 4. |
@@ -511,12 +520,20 @@ The Church quoted and charged 1,250, retained the damaged word as 280, and clear
 After leaving the Church and saving at settled field input, cold Continue retained Kazin's
 slot, status and the 7,497 gold balance. At the Pacalon weapon shop, the Chinese Repair
 quote for a bare damaged copy charged 1,250 and restored word 24. The English worn-copy quote
-and result refused Repair, retaining word 408, CURSE and the entire balance.
+and result refused Repair, retaining word 408, CURSE and the entire balance. Item detail shows
+fire damage and the one-tile target area. A damaged copy shows the existing destruction warning
+once in each language. An intact copy omits it. The earlier English detail observation failed
+only its missing-warning assertion.
 
 Observed attempts retained the harness failures for date normalization, an unsafe temporary slot
-selection, packed-word comparison and outdated menu inputs. The legacy v3 promotion mount could
-treat the ring but hit `field-visit-actor-origin` on saving. The current v6 field fork allowed
-treatment followed by settled Save. Attempts to save immediately inside the Church could still
-meet pending ambient motion. The first shop path reached the correct merchant, but its observer
+selection, packed-word comparison and outdated menu inputs. The legacy v3 promotion record's
+Continue had already reported `field-visit-actor-origin` before the first player input. It
+allowed Cure and later refused the v6 write for the same binding reason. This is the existing
+legacy reader boundary for a reconstructed visit whose actor origin cannot be established for
+the current snapshot. The v6 field fork allowed treatment followed by settled Save.
+[Legacy reader and writer cutover](../application/opening-session-lifecycle.md#reader-and-writer-cutover) ·
+[#2049](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2049)
+
+Attempts to save immediately inside the Church could still meet pending ambient motion. The first shop path reached the correct merchant, but its observer
 read the wrong projection key for the owner row. Successful processes exited zero. Some emitted ObjectDB shutdown
 warnings under the existing [exit issue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).

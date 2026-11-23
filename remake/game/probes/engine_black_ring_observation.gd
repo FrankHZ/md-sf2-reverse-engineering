@@ -95,6 +95,27 @@ func battle_use() -> bool:
             "broken reuse removes only the selected slot and clears curse")
     return failures.is_empty()
 
+func battle_description() -> void:
+    var before := state()
+    var word := int(wizard(before).items[1])
+    check(before.actor == "ally-4" and (word & 127) == 24, "controlled WIZ with Black Ring in slot 2")
+    await key(KEY_ENTER)
+    await key(KEY_I)
+    await key(KEY_DOWN)
+    sample("ring-description")
+    var chosen := state()
+    var layout: Dictionary = chosen.menu.layout
+    check(chosen.failure == null and chosen.menu.page == "Items" and layout.descriptionVisible
+        and ring_name in layout.rows[int(layout.selectedRow)], "Black Ring detail visible")
+    var lines := String(layout.detail).split("\n")
+    var warning := "损坏时在战斗中使用，道具会消失。" if chinese else "Damaged: battle use destroys it."
+    check(lines.count(warning) == (1 if (word & 256) != 0 else 0), "destruction warning matches the damaged bit")
+    check(("装备后：攻击 +10。" if chinese else "When equipped: Attack +10.") in lines,
+        "description retains equipment contribution")
+    check(("火属性伤害" if chinese else "fire damage") in layout.detail and
+        ("半径 1 格" if chinese else "within 1 tile") in layout.detail, "description reflects BLAZE 2 damage and area")
+    check(pack(chosen) == pack(before), "reading the description preserves the pack")
+
 func service_page(kind: String, name: String) -> bool:
     for cycle in range(500):
         var s := state()
@@ -233,6 +254,8 @@ func run() -> void:
             await key(KEY_UP)
             await key(KEY_ENTER)
             check((await confirm_save()) == true, "battle save complete")
+    elif mode == "battle-description":
+        await battle_description()
     elif mode == "battle-cold":
         check(pack(state()) == [213,408,17,0] and (int(wizard(state()).status) & 4) != 0,
             "cold battle restored worn damage and curse")
