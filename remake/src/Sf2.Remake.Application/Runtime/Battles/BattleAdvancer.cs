@@ -90,10 +90,10 @@ internal static class BattleAdvancer
                     var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
                     return new(pending, observations.AsReadOnly(), pending.StopReason);
                 }
-                // These automatic branches need their registered action/target consumers before admission.
-                if (MuddleRules.Confused(actor.Status) || actor.Control == BattleControl.Player && MuddleRules.Present(actor.Status))
+                if (MuddleRules.Confused(actor.Status))
                     throw new BattleRuleException("muddle-automatic-turn", "actor.status", true);
-                if (actor.Control == BattleControl.Player)
+                bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
+                if (actor.Control == BattleControl.Player && !temporary)
                 {
                     var controlled = BattleControlRules.EnterPlayer(battle, actor.Actor);
                     var preview = BattleMovement.Preview(controlled, actor.Actor, actor.Position!);
@@ -105,7 +105,8 @@ internal static class BattleAdvancer
                     return new(snapshot, observations.AsReadOnly(), SessionStopReason.PlayerInput);
                 }
                 var beforeAction = new SessionSnapshot(current.SessionId, revision, sequence, new ActiveBattle(battle, null), current.Story, SessionStopReason.SimulationWait);
-                if (actor.Control != BattleControl.Automatic || actor.AiStrategy is not { } strategy)
+                var strategyRef = temporary ? SourceAllyAi.Strategy : actor.AiStrategy;
+                if (strategyRef is not { } strategy || !temporary && actor.Control != BattleControl.Automatic)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
                 var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression, rules.Actions);
                 SessionResult delivery;

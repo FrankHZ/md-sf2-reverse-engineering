@@ -9,7 +9,8 @@ internal static class EnemyPhysicalDecision
     // CalculateTargetPriorityForAttack clears ATTACK1/2/3's extra parameter; the priority
     // script is selected from activation/difficulty, not that command parameter.
     internal static BattleAutomaticAction? TryResolve(
-        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, WeightedMovementGrid? selectedGrid = null)
+        EngineBattleState current, ActorRef actorRef, IPhysicalActionRule physical, WeightedMovementGrid? selectedGrid = null,
+        IReadOnlyList<BattleActorState>? orderedTargets = null)
     {
         var actor = current.GetActor(actorRef);
         var grid = selectedGrid ?? BattleMovement.Grid(current, actorRef);
@@ -17,7 +18,8 @@ internal static class EnemyPhysicalDecision
         var admission = BattleActionRules.Invoke(physical, "ai-range", () => physical.QueryRange(current, actorRef));
         var targets = BattleActionRules.Invoke(physical, "ai-targets", () => physical.QueryTargets(current, actorRef, action)).ToHashSet();
         var candidates = new List<(BattleActorState Target, MapPosition Position, int Cost)>();
-        foreach (var target in current.Actors.Where(a => a.Hp > 0 && a.Position is not null && targets.Contains(a.Actor)).OrderBy(a => a.ProcessingOrder))
+        var ordered = orderedTargets ?? current.Actors.OrderBy(a => a.ProcessingOrder).ToArray();
+        foreach (var target in ordered.Where(a => a.Hp > 0 && a.Position is not null && targets.Contains(a.Actor)))
         {
             if (AiMovementRules.AttackPosition(grid, target.Position!, admission.MinimumRange!.Value, admission.MaximumRange!.Value,
                 position => current.Actors.Any(a => a.Hp > 0 && a.Position == position)) is { } position)
@@ -43,11 +45,12 @@ internal static class EnemyPhysicalDecision
             decisions.Add(new("ai-candidate", actorRef, candidate.Cost, priority, Target: candidate.Target.Actor));
         }
         // Physical preferences follow the actual source mover, independently of the target class.
-        var selection = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover))
+        var selection = PhysicalTargetRules.Select(priorities, PhysicalTargetRules.Table(actor.Definition.Mover), preferTargetClass: !actor.IsAlly)
             ?? throw new BattleRuleException("ai-target-selection", "ai.targets", true);
         var selected = candidates[selection.Index];
-        var prepared = current.With(thinkingSeed: thinking,
-            actors: current.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
+        var prepared = current.With(thinkingSeed: thinking);
+        if (!actor.IsAlly)
+            prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actorRef ? a.With(lastTarget: selected.Target.Actor) : a));
         var path = BattleMovement.Route(actor.Position!, BattleMovement.MoveString(grid, actor.Position!,
             selected.Position, current.Definition.Width, current.Definition.Height));
         return new(prepared, Array.AsReadOnly<BattleEffect>([

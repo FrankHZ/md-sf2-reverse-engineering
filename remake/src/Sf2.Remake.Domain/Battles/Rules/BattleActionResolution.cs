@@ -36,7 +36,8 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             Battle.Round == before.Round && Battle.Cursor == before.Cursor && Battle.Gold == before.Gold &&
             ReferenceEquals(Battle.ItemCustody, before.ItemCustody) && Equals(Battle.DeathCredit, before.DeathCredit) &&
             ReferenceEquals(Battle.StartPolicy, before.StartPolicy) && ReferenceEquals(Battle.Visuals, before.Visuals) && Battle.Queue.SequenceEqual(before.Queue) &&
-            Battle.Actors.Count == before.Actors.Count && actor.Control == BattleControl.Automatic &&
+            Battle.Actors.Count == before.Actors.Count &&
+            (actor.Control == BattleControl.Automatic || BattleControlRules.UsesTemporaryAllyAi(actor)) &&
             actor.Hp > 0 && actor.Position is not null);
         Require(before.Regions is null ? Battle.Regions is null : Battle.Regions is { } regions &&
             regions.Flags.SequenceEqual(before.Regions.Flags) && (regions.Tested == before.Regions.Tested || regions.Tested == 0));

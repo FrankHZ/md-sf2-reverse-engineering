@@ -42,7 +42,8 @@ internal static class PhysicalTargetRules
 
     // Input is the reachable-target array order, not the reverse order of RNG calls.
     // determinebattleaction.asm keeps the raw maximum for collection before capping output.
-    internal static PhysicalTargetSelection? Select(IReadOnlyList<PhysicalTargetPriority> targets, PhysicalPriorityTable table)
+    internal static PhysicalTargetSelection? Select(IReadOnlyList<PhysicalTargetPriority> targets, PhysicalPriorityTable table,
+        bool preferTargetClass = true)
     {
         int maximum = 0;
         for (int i = targets.Count - 1; i >= 0; i--)
@@ -50,7 +51,7 @@ internal static class PhysicalTargetRules
         var cohort = Enumerable.Range(0, targets.Count).Reverse()
             .Where(i => unchecked((sbyte)targets[i].Priority) == maximum).ToArray();
         if (cohort.Length == 0) return null;
-        if (cohort.Length > 1 && maximum >= 15)
+        if (preferTargetClass && cohort.Length > 1 && maximum >= 15)
         {
             var ranked = cohort.Select(i => (Index: i, Rank: ClassRank(targets[i].ClassId, table))).ToArray();
             int firstClass = ranked.Min(t => t.Rank);

@@ -41,7 +41,7 @@ internal static class EnemySupportDecision
             // DISPEL scores opposing allies. The source attack getter filters their books
             // before selecting one family and checking its ranks for MP. Healing's getter ignores MP.
             var first = target.Spells.FirstOrDefault(s =>
-                (s.Value is "blaze" or "freeze" or "bolt" or "blast" or "katon" or "raijin") &&
+                EnemySpellDecision.AllyAttackFamily(s) &&
                 battle.Definition.AttackSpells.ContainsKey(s));
             return first != default && target.Spells.Any(s => s.Value == first.Value &&
                 battle.Definition.AttackSpells.TryGetValue(s, out var attack) && target.Mp >= attack.MpCost) ||

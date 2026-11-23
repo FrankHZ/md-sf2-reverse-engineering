@@ -160,7 +160,7 @@ public sealed class MuddleTurnTests
     }
 
     [Theory]
-    [InlineData(true, 0x10)]
+    [InlineData(true, 0x38)]
     [InlineData(false, 0x38)]
     public void UnimplementedMuddledAutomaticEntriesRefuseWithoutPublishingTurnWork(bool player, int status)
     {

@@ -348,14 +348,43 @@ between SLEEP and SILENCE. An expiry clears count and flag with notice 355 using
 timed status delivery. A decrement retains the flag and advances without a message. Skipped and
 queue-only entries use the same continuation, including a second entry in the same round.
 
-[SourceAllyAi](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceAllyAi.cs) already owns the applicable
-ally commandset 06. Its current admission is for adjacent physical actors without learned
-spells. The [automatic action validator](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
-expects opposing attack targets. A MUDDLE 1 binding needs temporary ally dispatch and the
-actual reachable Attack, Heal and movement choices. MUDDLE 2 also needs a target-side decision
-shared by search, commit validation and playback, plus the selected-center guard, inaction
-and same-side accounting. Reuse those owners and the existing action rules. Keep faction and
-permanent control identity as their current operands.
+### Temporary ally commandset 06
+
+[SourceAllyAi](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceAllyAi.cs) owns commandset 06
+for both the activation-driven physical caller and the temporary ally turn. The
+[advancer](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) derives the
+temporary decision from the status word after the SLEEP/STUN skip. The
+[automatic action validator](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
+uses the same predicate. Permanent control, faction, slot, commandset input and activation
+word remain the combatant's own. After expiry the same entry stream can return a player
+to Movement, even on their next entry in the same round.
+
+Both sides share the [physical](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemyPhysicalDecision.cs)
+and [learned spell](../../src/Sf2.Remake.Domain/Gameplay/Sf2/EnemySpellDecision.cs) selectors.
+Automatic allies use source-slot order, skip enemy class preference and preserve LastTarget.
+The shared ally spell filter serves ATTACK and DISPEL threat scoring. Spell candidates and
+physical candidates consume thinking RNG in source order. The attack category draw uses
+main RNG, and chosen actions go through existing movement, admission and scenes. A failed
+attack tries healing, then the existing allied SUPPORT failure and MOVE route. Controlled
+engine entries with empty packs complete physical Attack, BLAZE with DESOUL earlier in the
+book, HEAL, paid silenced HEAL and MOVE. [Behavior cases](../../tests/Sf2.Remake.Engine.Tests/MuddleAllyTurnTests.cs)
+
+The source attack getter can choose a worn Black Ring. When both spell and item candidates
+can reach targets, the source category draw uses range 2. The source heal command can choose
+Healing Rain without the ordinary AI item bit. These are attainable through the current
+campaign and need the existing item-use and automatic-action owners to agree on eligibility,
+selection and delivery. The temporary ally mechanism admits empty packs in controlled states.
+The first private MUDDLE binding also needs the reachable special enemy path. The current
+Prism Laser rejects any nonzero status on its actor or a living board occupant. Check the
+MUDDLE 1 effect through that owner before admitting the spell in connected encounters.
+The registered #2001 priority-v1 Battle26 scene already has both spell-7 icons and the
+Chinese catalog has its name. Those assets are independent of action admission.
+[Source item getter](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/getnextuseableaiaction.asm#L196-L341) ·
+[Source heal command](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/heal.asm#L18-L120) ·
+[Source attack category](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L69-L141)
+
+MUDDLE 2 also needs a target-side decision shared by search, commit validation and playback,
+plus the selected-center guard, inaction and same-side accounting.
 
 Both MUDDLE ranks remain unbound while those automatic consumers are open. Battle starts
 and battle Save/Continue reject pending counts and flag-only words. The direct typed
@@ -403,7 +432,9 @@ required consumers are admitted.
    The existing commit/replay authority retains effects, custody receipts and scene waits.
    [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
 3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) implement
-   after-turn and physical dodge. Pair the first support binding with effective automatic ownership. Pair the second with same-side AI decisions
+   after-turn and physical dodge. The [temporary ally commandset](#temporary-ally-commandset-06)
+   handles controlled ordinary attack, healing and movement choices. Complete the reached
+   automatic consumers before the first support binding. Pair the second with same-side AI decisions
    and guarded and real same-side actions. Route temporary automatic control in
    [BattleAdvancer](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs).
    Extend the existing commandset/action decisions
