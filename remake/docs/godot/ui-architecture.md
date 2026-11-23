@@ -4,9 +4,11 @@
 documentation slice. The inspected base is `3bff875d994758c30b44086bebf57c64346a0dfd`,
 which includes the phase composition, fresh Target input, inspection range and shared roster.
 **High rigor** applies because several queued changes touch the same decision, reading and layout
-paths and past scene-by-scene review missed adjacent behavior. The current milestone is
-[#2107](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2107), the first independently
-reviewed implementation slice. Each later slice has its own acceptance. The design preserves the accepted
+paths and past scene-by-scene review missed adjacent behavior. The current milestone is shared
+description reading, visible inspection return and allied compact-card levels under
+[#2113](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2113). It consumes the accepted
+[#2107](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2107) decision boundary.
+The design preserves the accepted
 [visual language](ui-design-language.md), [battle phase layout](battle-ui-composition.md#phase-focus-and-return),
 [field and service behavior](field-and-shop.md) and [host/save return](host-ui.md).
 
@@ -170,37 +172,23 @@ The scoped reproduction compares candidate, inspection focus, revision and submi
 BoardPointer](../../game/src/Battles/BattleInspectionPointer.cs) ·
 [MenuPointer.Read](../../game/src/Input/MenuPointer.cs)
 
-### Decision reading and action hints disagree
+### Decision reading and inspection return
 
-P2. **Confirmed** source-level gaps.
+**Confirmed** against the current adapter and the
+[bounded native observations](battle-ui-composition.md#shared-description-reading-and-inspection-return).
+The earlier battle footer only took a wheel gesture. Shared description reading now uses the
+active Left/Right mappings in vertical Main, Magic, Item and field Prepare descriptions. Field
+Prepare directs the operation to the selected description alone while it is present. Target
+retains its existing commands with a short action and availability footer.
 
-At the inspected base, Target help advertised Confirm with no current candidate and used the empty
-offer wording even when legal targets remained. Migration 1 gives an invalid cell a distinct reason
-and uses the shared confirmation decision for the hint and hit. The battle decision footer's scroll
-region and rail take no focus. Only `BattleMenuLayout.Scroll` handles its overflow. In Main/list/Target, arrows already have command,
-row or target meanings. Host Menu, Settings and field preparation demonstrate mapped read paths, though
-`FieldActionView.Handle` Left/Right can move both the list and the visible pack and does not explicitly
-identify which reader is taking input. Battle decision and field reading callers own the affected choice
-of operation. [Battle choices and hints](../../game/src/Battles/BattleCommandMenu.cs) ·
-[Layout](../../game/src/Battles/BattleMenuLayout.cs) · [Field Prepare
-routing](../../game/src/Exploration/FieldActionView.cs) · [Host reader
-behavior](host-ui.md#implemented-composition-and-return)
-
-### Inspection hints also act as hidden buttons
-
-P3 for hit and hint mismatch. P2 for the requested ally level. **Confirmed** source-level gaps.
-
-Inspection Full/MemberFull/Map/Members infer a left Back hit from the full-width bare hint label. In the
-Full/Map path the captured Back rectangle is the viewport even when the initial left hit came from that
-label. Some blank width therefore acts as a button with no visible boundary. Cursor repeats the
-name/coordinate in the hint and hover card. Options supplies its own Back plus a Cancel hint. Compact
-cards suppress the Role row containing level. Use the explicit inspection return control and friend-only
-vitals under #2085. Magic row/footer duplication stays with #2083. [Inspection
-projection](../../game/src/Battles/BattleInspectionView.cs) · [Board hit
-routing](../../game/src/Battles/BattleInspectionPointer.cs) ·
-[Options](../../game/src/Battles/BattleInspectionOptions.cs) · [Compact
-card](../../game/src/UI/BattleStatusCard.cs) · [#2085
-feedback](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2085#issuecomment-7088088480)
+Inspection now puts instructions and one visible Back button in the same framed footer across its
+pages. The complete pointer gesture must match the actual button rectangle. Cursor's hover card
+owns cell identity and coordinates. The shared compact status card reads the live ally's current
+level from the acting projection or actor state in Movement, Target and playback. Enemies keep
+their established disclosure. Selected spell effect copy remains with #2083.
+[Description reader](../../game/src/UI/ItemDescriptionView.cs) ·
+[Inspection view](../../game/src/Battles/BattleInspectionView.cs) ·
+[Compact card](../../game/src/UI/BattleStatusCard.cs)
 
 ### Parallel route eligibility can drift
 
@@ -406,19 +394,15 @@ revert consumers first or together. Use a single production path with disposable
    The [bounded reproduction](battle-ui-composition.md#reproduce-the-battle-decision) covers the
    shared input surface, retained parent and host/resize behavior. Reverting this slice restores
    routing as a unit and needs no state conversion.
-2. **Shared reading behavior and visible inspection return.** After slice 1 where it shares the
-   battle footer, reuse the existing description reader and establish one body/read target for
-   the affected pages. Preserve row or action focus and keep scroll during same-page host cover.
-   Apply #2085's inspection Back/hint work here, including Map/Members/details hit bounds, framed
-   deduplicated Cursor help and the Options Back hint. Its friendly level is a separable
-   presentation change under the same issue and may land earlier if its card/layout ownership
-   is free. `BattleMenuLayout`, `BattleInspectionView`, `BattleInspectionOptions`,
-   `ItemDescriptionView` and field preparation are the main seams. Replace per-page wheel-only
-   paths and the bare hint hit region where migrated. Accept with overflowing English or Chinese
-   text via mapped keyboard/pad and wheel, unchanged selection/command/resource state, no
-   live hit on blank space, retained roster focus/scroll and valid return control. Include the
-   narrower supported layout and friend-only level in the contexts specified by #2085.
-   Roll back the reader/Back change and caller together if input or reading regresses.
+2. **Shared reading behavior and visible inspection return (#2113 and #2085).**
+   `ItemDescriptionView` owns one clipped description and an overflow-dependent mapped hint.
+   The decision and Prepare callers route reading to that control with selection and transaction
+   state owned by the existing phase. A page, actor or focused offer change resets the body.
+   Same-page host cover retains scroll and focus. Inspection presents one visible pointer Back
+   control with the same parent as mapped Back. The reused compact status card adds current levels
+   for allies. The [bounded reproduction](battle-ui-composition.md#shared-description-reading-and-inspection-return)
+   exercises the reader, neighboring phases, retained roster, and card at real input/playback
+   boundaries. Revert the reader and Back with their direct consumers if the input boundary regresses.
 3. **Rule-backed battle target footprint.** After slice 1 for the final adapter integration
    (the pure rule/query work can be scoped independently), replace `BattleActionRangeView`'s
    spell lookup and distance/party selection with selected-action geometry from the authoritative

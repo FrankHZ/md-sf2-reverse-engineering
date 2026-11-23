@@ -921,10 +921,13 @@ msgid "battle.move-help"
 msgstr "{0}: Actions"
 
 msgid "battle.target-help"
-msgstr "{0}: next target\n{1}: commit · {2}: back"
+msgstr "{0}: next · {1}: commit · {2}: back"
 
 msgid "battle.target-pick-help"
 msgstr "{0}: next target · {1}: back"
+
+msgid "battle.pointer-target-help"
+msgstr "Hover: preview · Legal click: act"
 
 msgid "battle.target-invalid"
 msgstr "Choose a legal target."
@@ -1595,26 +1598,20 @@ msgstr "Opening Chinese is unavailable; using English."
 msgid "ui.settings.world-unbound"
 msgstr "World Chinese is loaded when you start or continue a journey."
 
-msgid "battle.inspect.close"
-msgstr "{0} / {1} / {2}: close"
-
 msgid "battle.inspect.detail-help"
-msgstr "{0} · {1}: Magic/Items · {2}/{3}: scroll"
+msgstr "{0} · Magic/Items    {1}/{2} · Scroll"
 
 msgid "battle.inspect.land"
 msgstr "{0} · Land effect {1}% at ({2},{3})"
 
 msgid "battle.inspect.options"
-msgstr "Battle options · {0}\n{1}/{2}: choose · {3} / {4}: open · {5}: return to cursor"
+msgstr "Battlefield options · {0}/{1} Select · {2}/{3} Open"
 
 msgid "battle.inspect.map-help"
-msgstr "{0}/{1}: known units · {2}: return to options"
-
-msgid "battle.inspect.cursor"
-msgstr "Inspect · ({0},{1}) · {2}"
+msgstr "{0}/{1} · Browse known units"
 
 msgid "battle.inspect.cursor-help"
-msgstr "Directions or mouse: select · {0}/{1}: details or battlefield options · {2}: return to movement"
+msgstr "Directions or mouse · Select    {0}/{1} · Details or options"
 
 msgid "battle.inspect.entry-help"
 msgstr "{0}: undo movement, then inspect; menu Back returns one level"
@@ -1716,7 +1713,7 @@ msgid "battle.member.empty"
 msgstr "No battle members available."
 
 msgid "battle.member.help"
-msgstr "{0}/{1}: member · {2} / {3}: details · {4}: return to options"
+msgstr "{0}/{1} · Select member    {2}/{3} · Details"
 
 msgid "battle.command.search"
 msgstr "Search"
@@ -1797,7 +1794,7 @@ msgid "host.help-text-3"
 msgstr "Walk east"
 
 msgid "host.help-text-4"
-msgstr "Field commands, item operations and shop services use Up/Down to select rows. Left/Right scroll their reading area and pack. Other choices keep their displayed directions."
+msgstr "Field commands, item operations and shop services use Up/Down to select rows. Left/Right scroll the active reading area. Other choices keep their displayed directions."
 
 msgid "host.help-text-5"
 msgstr "Walk south"
@@ -2022,9 +2019,6 @@ msgstr "View button"
 
 msgid "input.button"
 msgstr "Button {0}"
-
-msgid "battle.pointer-target-help"
-msgstr "Hover: preview · Click a legal target: execute"
 
 msgid "field.reveal-continue"
 msgstr "{0}: Reveal / Continue"
@@ -2830,3 +2824,12 @@ msgstr "{0} was promoted to {1}!"
 
 msgid "church.another"
 msgstr "Do you have another desire?"
+
+msgid "battle.inspect.return-movement"
+msgstr "Return to movement"
+
+msgid "battle.card-level"
+msgstr "Level {0}"
+
+msgid "ui.read-description"
+msgstr "{0}/{1} · Read"

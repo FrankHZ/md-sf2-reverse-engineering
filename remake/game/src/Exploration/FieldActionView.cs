@@ -272,7 +272,6 @@ internal sealed partial class FieldActionView : Control
         _pointer.ReleaseIfNeutral(); if (!_input.GameplayHeld) _requiresRelease = false;
         _operations.Visible = ItemOperations; _page.Visible = !ItemOperations;
         string hint = GameText.Get("prepare.hint", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down), _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel));
-        hint += "\n" + _input.CompactHint(GameAction.Left) + "/" + _input.CompactHint(GameAction.Right) + " · ↕";
         string fallback = GameText.Fallback("prepare.", true); if (fallback.Length > 0) hint += "\n" + fallback;
         var party = _session.QueryPartyDetails();
         if (ItemOperations) _operations.Present(_input, _index, _titleText(), "", hint, "prepare.back");
@@ -299,7 +298,8 @@ internal sealed partial class FieldActionView : Control
             string? description = inspectItem ? ItemDescriptions.Read(_session, word is null ? null : (byte)(word & 127),
                 party?.Members.FirstOrDefault(row => row.Carried.Actor == owner), broken: (word.GetValueOrDefault() & 256) != 0) : null;
             _page.Present(title, hint, _input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("prepare.back"),
-                _options.Select((option, i) => (option.Label(), Icon(i), option.Available)).ToArray(), _iconOwner, _index, description: description);
+                _options.Select((option, i) => (option.Label(), Icon(i), option.Available)).ToArray(), _iconOwner, _index,
+                description: description, descriptionSubject: (_generation, _index, owner), input: _input);
         }
         ActorRef actor = _stage.EndsWith("-target", StringComparison.Ordinal) && _index < _targets.Length ? _targets[_index] :
             _stage is "exchange" or "confirm" && _packActor is { } recipient ? recipient : _member;
@@ -312,7 +312,13 @@ internal sealed partial class FieldActionView : Control
     {
         _pointer.Cancel(); if (_requiresRelease) return;
         if (action is GameAction.Cancel or GameAction.Equipment) { Back(); return; }
-        if (action is GameAction.Left or GameAction.Right) { if (ItemOperations) _operations.Wheel(action == GameAction.Left ? -192 : 192); else _page.Wheel(action == GameAction.Left ? -192 : 192); if (_pack.Visible) _pack.Wheel(action == GameAction.Left ? -192 : 192); return; }
+        if (action is GameAction.Left or GameAction.Right)
+        {
+            int step = action == GameAction.Left ? -112 : 112;
+            if (ItemOperations) _operations.Wheel(step);
+            else _page.Read(step);
+            return;
+        }
         if (action is GameAction.Up or GameAction.Down) _index = (_index + (action == GameAction.Up ? -1 : 1) + _options.Count) % _options.Count;
         else if (action == GameAction.Confirm) _options[_index].Choose();
         Present();
@@ -328,7 +334,14 @@ internal sealed partial class FieldActionView : Control
         { if (_pointer.Moved(motion) && hit >= 0 && !_requiresRelease) { _index = hit; Present(); } return; }
         if (input is not InputEventMouseButton button) return;
         if (button.Pressed && button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
-        { if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) { _pack.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; } if (ItemOperations) _operations.Wheel(button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); else _page.Wheel(mouse.Position, button.ButtonIndex == MouseButton.WheelUp ? -112 : 112); return; }
+        {
+            _pointer.Cancel();
+            int step = button.ButtonIndex == MouseButton.WheelUp ? -112 : 112;
+            if (_pack.Visible && _pack.GetGlobalRect().HasPoint(mouse.Position)) _pack.Wheel(step);
+            else if (!ItemOperations) _page.Wheel(mouse.Position, step);
+            else if (_operations.GetGlobalRect().HasPoint(mouse.Position)) _operations.Wheel(step);
+            return;
+        }
         back |= button.ButtonIndex == MouseButton.Right;
         string? clicked = _pointer.Read(button, back ? "back" : hit < 0 ? null : hit.ToString(),
             back ? button.ButtonIndex == MouseButton.Right ? GetGlobalRect() : backRect : hit < 0 ? default : ItemOperations ? _operations.RowRect(hit) : _page.RowRect(hit), _generation);

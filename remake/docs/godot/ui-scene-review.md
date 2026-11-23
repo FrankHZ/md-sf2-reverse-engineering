@@ -419,7 +419,7 @@ restores four vertical Main rows between the measured acting card and the bounde
 the board subject, the card, controls and reader move together to the clear left column.
 
 ```text
-   Round / Gold                                       Acting unit
+   Round / Gold                                       Acting unit · Level
                                                       HP             MP
 
    Battle board                                       [icon] Attack
@@ -433,13 +433,21 @@ the board subject, the card, controls and reader move together to the clear left
 
 Up/Down moves through the rows and wraps at either end. Confirm or a complete row click chooses
 the command. Magic and Item replace Main with a scrollable list below the card. The footer keeps
-its bounds as offers change. In Target, the shared board cursor marks the eligible recipient and
-the recipient's card takes the card position. Back restores the chosen level, slot or command.
+its bounds as offers change. Left/Right reads overflowing descriptions in Main and child lists,
+and the wheel reads the body under the pointer. Read feedback uses the active bindings and appears
+only when there is overflow. In Target, the shared board cursor marks the eligible recipient and
+the recipient's card takes the card position. Allied compact cards show current level in Movement,
+friendly Target and playback. Back restores the chosen level, slot or command.
 
 [#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
 and direct Stay. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 delivers the inspection movement field. [#2082](battle-ui-composition.md#shared-member-roster-2082)
-delivers shared field and battle Member rows. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+delivers shared field and battle Member rows. The current inspection pages place instructions and
+the visible Back button in one frame. Cursor leaves the name and coordinate in its hover card.
+Details return to the same cursor or roster, and only the visible button accepts pointer Back.
+[Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
+
+The [implementation handoff](battle-ui-composition.md#implementation-handoff)
 tracks pending spell descriptions (#2083) and the current-round readout (#2065).
 
 ### From entry to committed action
@@ -448,7 +456,7 @@ tracks pending spell descriptions (#2083) and the current-round readout (#2065).
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
 | Movement | An acting card and quiet round/gold support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
-| Main action | Four labeled rows beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Long reasons scroll within the fixed reader. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
+| Main action | Four labeled rows beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Left/Right reads long reasons in the fixed reader without moving focus. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
 | Spell / item list | A scrollable list replaces Main beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
 | Target / affected area | One cursor marks the eligible recipient. One field shows reach and affected cells. The recipient card replaces the acting card. Cycle, Confirm and Back use the footer. | An empty, defeated, wrong-side or out-of-range cell clears the cursor, recipient card and effect inset. Confirm cannot commit the old target. Back returns to the prior row or Main. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |

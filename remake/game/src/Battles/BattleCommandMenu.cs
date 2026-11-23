@@ -18,6 +18,7 @@ internal sealed partial class BattleCommandMenu : Control
     private ScenarioDefinition? _definition;
     internal bool Covers(Vector2 point) => _layout.Covers(point);
     internal void AvoidSubject(Rect2 rectangle) => _layout.AvoidSubject(rectangle);
+    internal void ReadDescription(GameAction direction) => _layout.ReadDescription(direction == GameAction.Left ? -80 : 80);
 
     public override void _Ready()
     {
@@ -58,7 +59,7 @@ internal sealed partial class BattleCommandMenu : Control
         if (button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
         {
             _pointer.Cancel();
-            if (button.Pressed) _layout.Scroll(button.Position, button.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
+            if (button.Pressed) _layout.Wheel(button.Position, button.ButtonIndex == MouseButton.WheelUp ? -80 : 80);
             return null;
         }
         if (button.ButtonIndex is not (MouseButton.Left or MouseButton.Right))
@@ -156,7 +157,8 @@ internal sealed partial class BattleCommandMenu : Control
         if (!moving && decision.Choices.Failure is { } queryFailure) description = Unavailable(queryFailure);
         if (failure is not null && failure != decision.Choices.Failure) description += "\n" + Unavailable(failure);
         string fallback = GameText.Fallback("battle.", includeKey: true);
-        _layout.PresentDetail(description + (fallback.Length == 0 ? "" : "\n" + fallback));
+        _layout.PresentDetail(description + (targetPage || fallback.Length == 0 ? "" : "\n" + fallback),
+            (current.SessionId, current.Selection?.Actor, moving, page, command, row), mainPage || list ? input : null);
         _layout.ShowNavigation(!moving, canCycle, targetPage || commit, canConfirm);
         _layout.ShowDecision(targetPage, mainPage, moving || mainPage || list || targetPage);
     }

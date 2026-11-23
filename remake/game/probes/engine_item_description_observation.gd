@@ -6,6 +6,7 @@ var view: Node
 var samples: Dictionary = {}
 var failures: Array[String] = []
 var mode := OS.get_environment("SF2_ITEM_DESCRIPTION_CASE")
+var long_field := OS.get_environment("SF2_ITEM_DESCRIPTION_LONG") == "1"
 
 func _initialize() -> void:
     call_deferred("run")
@@ -59,7 +60,10 @@ func description(label: String, detail: Dictionary, parent: Dictionary,
     check(root.get_visible_rect().encloses(area), label + " viewport fit")
     for bounds in adjacent:
         check(not area.intersects(rect(bounds)), label + " separated from controls")
-    check(detail.minimumHeight <= area.size.y and detail.scroll == 0, label + " full prose fits")
+    if long_field and label in ["party weapon", "field Equip weapon"]:
+        check(detail.maximum > 0 and detail.scroll == 0, label + " starts at top of overflowing body")
+    else:
+        check(detail.minimumHeight <= area.size.y and detail.scroll == 0, label + " full prose fits")
     if expected.is_empty():
         check(detail.text.is_empty(), label + " empty reserved area")
     else:
@@ -116,11 +120,23 @@ func party_flow(is_zh: bool) -> void:
     var page: Dictionary = party.preparation.page
     description("field Equip weapon", page.description, page.rect,
         [page.readingRect, page.hintRect, page.backRect], "装备后" if is_zh else "When equipped")
+    if long_field:
+        var before: Dictionary = read().partyStatus.preparation
+        var read_before := read()
+        await press(KEY_RIGHT)
+        var after: Dictionary = read().partyStatus.preparation
+        samples["field mapped read"] = after.page.description
+        check(after.page.description.scroll > 0 and after.page.description.hint != null and
+            after.index == before.index and after.pack.scroll == before.pack.scroll and
+            choice_geometry(after.page) == choice_geometry(before.page) and
+            read().revision == read_before.revision and field_resources(read()) == field_resources(read_before),
+            "Field mapped reading moves only the description")
     await press(KEY_DOWN)
     var next: Dictionary = read().partyStatus.preparation.page
     description("field Equip consumable", next.description, next.rect,
         [next.readingRect, next.hintRect, next.backRect], "10 点 HP" if is_zh else "10 HP")
-    check(choice_geometry(next) == choice_geometry(page), "field Equip description never relayouts its choices")
+    check(choice_geometry(next) == choice_geometry(page) and next.description.hint == null,
+        "Short field description removes the scroll hint and keeps the choices in place")
     await press(KEY_ESCAPE)
     await press(KEY_ESCAPE)
     await press(KEY_ESCAPE)
@@ -283,6 +299,12 @@ func run() -> void:
         return
     var resolution := OS.get_environment("SF2_ITEM_DESCRIPTION_RESOLUTION").split("x")
     root.size = Vector2i(int(resolution[0]), int(resolution[1]))
+    if long_field:
+        var chinese := OS.get_environment("SF2_ITEM_DESCRIPTION_LANGUAGE") == "zh-CN"
+        var catalog: Translation = load("res://localization/zh_CN.po" if chinese else "res://localization/en.po")
+        var extra := "装备前请查看所选道具的说明。" if chinese else "Read the selected item description before equipping. "
+        var key := "item-description.weapon"
+        catalog.add_message(key, str(catalog.get_message(key)) + "\n" + extra.repeat(24))
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     await frames(10)

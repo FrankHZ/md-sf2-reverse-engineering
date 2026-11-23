@@ -454,6 +454,45 @@ func range_checkpoint(label: String, baseline: Array, role: String, actor := "",
         and movement.destinations == stops and movement.drawnDestinations == stops,
         label + ": actual draw uses inspected origin, traversable cells and legal stops")
 
+func footer_mouse(bounds: Dictionary, button: MouseButton, pressed: bool) -> void:
+    var event := InputEventMouseButton.new()
+    event.position = root.get_stretch_transform() * Vector2(bounds.x+bounds.width/2,bounds.y+bounds.height/2)
+    event.button_index = button
+    event.pressed = pressed
+    Input.parse_input_event(event)
+    await frames(3)
+
+func visible_return(page: String, parent: String, resize := false) -> bool:
+    var inspection: Dictionary = state().inspection
+    var footer: Dictionary = inspection.footer
+    var frame := Rect2(footer.rect.x,footer.rect.y,footer.rect.width,footer.rect.height)
+    var button := Rect2(footer.backRect.x,footer.backRect.y,footer.backRect.width,footer.backRect.height)
+    if not check(inspection.page == page and footer.visible and frame.encloses(button) and
+        root.get_visible_rect().encloses(frame) and button.has_area(),
+        page+": framed hint has one real return button inside the viewport"): return false
+    for button_type in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+        await footer_mouse(footer.hintRect,button_type,true)
+        await footer_mouse(footer.hintRect,button_type,false)
+        if not await inspect_page(page): return false
+    var back := String(footer.back).split(" · ")[0]
+    if not check(back not in inspection.hint,
+        page+": Back mapping appears on its button"): return false
+    if resize:
+        await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,true)
+        root.size = Vector2i(2560,1440)
+        await frames(8)
+        footer = state().inspection.footer
+        await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,false)
+        if not await inspect_page(page): return false
+        root.size = Vector2i(1600,900)
+        await frames(8)
+        footer = state().inspection.footer
+    await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,true)
+    await footer_mouse(footer.backRect,MOUSE_BUTTON_LEFT,false)
+    if parent == "Movement":
+        return check(not state().inspection.active and state().stage == "Movement", "Visible Cursor Back restores Movement")
+    return await inspect_page(parent)
+
 func inspected_movement_range() -> bool:
     var baseline := signature(state())
     if not range_checkpoint("ordinary-movement", baseline, "Movement", "swordsman", 2, [1,2,3,4], [1,2,4]): return false
@@ -465,8 +504,7 @@ func inspected_movement_range() -> bool:
     if not range_checkpoint("hovering-enemy", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
     await act("confirm")
     if not await inspect_page("Full") or not range_checkpoint("details", baseline, "None"): return false
-    await act("cancel")
-    if not await inspect_page("Cursor"): return false
+    if not await visible_return("Full","Cursor",true): return false
     if not range_checkpoint("details-back", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
     await act("menu")
     var covered: Dictionary = JSON.parse_string(host.call("ReadWindowSupportObservationJson"))
@@ -477,21 +515,27 @@ func inspected_movement_range() -> bool:
     if not range_checkpoint("cover-back", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
     if not await cursor_to(5,3): return false
     if not range_checkpoint("empty-cell", baseline, "Inspection"): return false
+    var empty: Dictionary = state().inspection
+    if not check(empty.hover.unit == null and empty.hover.name not in empty.hint and empty.hover.location not in empty.hint and
+        not Rect2(empty.footer.rect.x,empty.footer.rect.y,empty.footer.rect.width,empty.footer.rect.height).intersects(
+        Rect2(empty.hover.rect.x,empty.hover.rect.y,empty.hover.rect.width,empty.hover.rect.height)), "Empty ground identity appears once, separate from controls"): return false
     await act("confirm")
     if not await inspect_page("Options") or not range_checkpoint("options", baseline, "None"): return false
     await act("confirm")
     if not await inspect_page("Members") or not range_checkpoint("members", baseline, "None"): return false
     await act("confirm")
     if not await inspect_page("MemberFull") or not range_checkpoint("member-details", baseline, "None"): return false
-    await act("cancel"); await act("cancel"); await act("down"); await act("confirm")
+    if not await visible_return("MemberFull","Members"): return false
+    if not await visible_return("Members","Options"): return false
+    await act("down"); await act("confirm")
     if not await inspect_page("Map") or not range_checkpoint("map", baseline, "None"): return false
-    await act("cancel"); await act("cancel")
+    if not await visible_return("Map","Options"): return false
+    if not await visible_return("Options","Cursor"): return false
     if not await inspect_page("Cursor") or not range_checkpoint("options-back", baseline, "Inspection"): return false
     if not check(state().inspection.cursor == {"X":5.0,"Y":3.0}, "Back retains the empty cell"): return false
     await act("right"); await act("right")
     if not range_checkpoint("enemy-before-exit", baseline, "Inspection", "raider", 7, [4,5,6,7], [4,5,7]): return false
-    await act("cancel")
-    if not check(not state().inspection.active, "Cancel exits inspection"): return false
+    if not await visible_return("Cursor","Movement"): return false
     return range_checkpoint("exit-to-ordinary-movement", baseline, "Movement", "swordsman", 2, [1,2,3,4], [1,2,4])
 
 func run() -> void:

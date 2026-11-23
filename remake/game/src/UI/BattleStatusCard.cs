@@ -18,6 +18,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
     private BattleVitalGauge _hp = null!, _mp = null!;
     private BattleDecisionVitals _decision = null!;
     private ActorRef? _actor;
+    private int? _level;
     internal ActorRef? Actor => _actor;
     private float _compactHeight = 148;
     private float _decisionHeight = 164, _nameWidth = CardSize.X;
@@ -50,17 +51,18 @@ internal sealed partial class BattleStatusCard : PanelContainer
     {
         string silence = actor is not null && (actor.Status & 0x300) != 0
             ? " · " + GameText.Get("battle.status.silence", (actor.Status & 0x300) >> 8) : "";
-        Present(actor?.Actor, name, role + silence, actor?.Hp ?? 0, actor?.MaxHp ?? 0, actor?.Mp ?? 0, actor?.MaxMp ?? 0);
+        Present(actor?.Actor, name, role + silence, actor?.Hp ?? 0, actor?.MaxHp ?? 0, actor?.Mp ?? 0, actor?.MaxMp ?? 0,
+            actor?.IsAlly == true ? actor.Level : null);
     }
 
     // Field callers project scalar carried resources without constructing a battle actor.
-    internal void Present(ActorRef? actor, string name, string role, int hp, int maxHp, int mp, int maxMp)
+    internal void Present(ActorRef? actor, string name, string role, int hp, int maxHp, int mp, int maxMp, int? level = null)
     {
         _land.Hide();
         _actor = actor; Visible = actor is not null;
-        PresentName(name);
         bool low = hp > 0 && maxHp > 0 && hp * 4 <= maxHp;
-        _role.Text = role + (hp == 0 ? GameText.Get("battle.defeated") : low ? GameText.Get("battle.low-hp") : "");
+        PresentRole(level, role + (hp == 0 ? GameText.Get("battle.defeated") : low ? GameText.Get("battle.low-hp") : ""));
+        PresentName(name);
         _role.Modulate = low ? StoryTheme.Selected : Colors.White;
         Size = RequestedSize;
         PresentVitals(hp, maxHp, mp, maxMp);
@@ -69,10 +71,11 @@ internal sealed partial class BattleStatusCard : PanelContainer
     internal void Present(Sf2.Remake.Application.Runtime.Battles.BattleInspectionUnit unit, string name)
     {
         _land.Hide();
-        _actor = unit.Actor; Show(); PresentName(name);
-        _role.Text = (unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
+        _actor = unit.Actor; Show();
+        PresentRole(unit.Ally ? unit.Level : null, (unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
             unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
-            GameText.Get("battle.inspect.enemy")) + " · " + DisplayNames.InspectionStatus(unit.Status);
+            GameText.Get("battle.inspect.enemy")) + " · " + DisplayNames.InspectionStatus(unit.Status));
+        PresentName(name);
         _role.Modulate = Colors.White; Size = RequestedSize;
         PresentVitals(unit.Hp, unit.MaxHp, unit.Mp, unit.MaxMp);
     }
@@ -84,16 +87,23 @@ internal sealed partial class BattleStatusCard : PanelContainer
         var unit = status.Unit;
         _land.Visible = !Compact;
         _land.Text = GameText.Get("battle.acting-land", status.Land.Percent, status.Land.Position.X, status.Land.Position.Y);
-        PresentName(DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName));
         string header = unit.Ally ? GameText.Get("battle.inspect.ally-header", DisplayNames.Name("name.class", unit.ClassId,
             unit.ClassName ?? GameText.Get("party.class-unavailable")), unit.Level?.ToString() ?? GameText.Get("party.value-unavailable")) :
             GameText.Get("battle.inspect.enemy");
         bool low = unit.Hp is > 0 && unit.MaxHp is > 0 && unit.Hp * 4 <= unit.MaxHp;
-        _role.Text = GameText.Get("battle.acting") + " · " + header +
+        PresentRole(unit.Ally ? unit.Level : null, GameText.Get("battle.acting") + " · " + header +
             ((unit.Status & 0x300) != 0 ? " · " + GameText.Get("battle.status.silence", (unit.Status & 0x300) >> 8) : "") +
-            (low ? GameText.Get("battle.low-hp") : "");
+            (low ? GameText.Get("battle.low-hp") : ""));
+        PresentName(DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName));
         _role.Modulate = low ? StoryTheme.Selected : Colors.White; Size = RequestedSize;
         PresentVitals(unit.Hp, unit.MaxHp, unit.Mp, unit.MaxMp);
+    }
+
+    private void PresentRole(int? level, string role)
+    {
+        _level = level;
+        _role.Visible = !Compact || level is not null;
+        _role.Text = Compact && level is { } current ? GameText.Get("battle.card-level", current) : role;
     }
 
     private void PresentVitals(int? hp, int? maxHp, int? mp, int? maxMp)
@@ -137,11 +147,14 @@ internal sealed partial class BattleStatusCard : PanelContainer
         RequestedSize = new(shaped.Width + 28, Height);
         _name.AddThemeFontSizeOverride("font_size", fontSize);
     }
-    private float Height => DecisionHeader ? _decisionHeight : Compact ? _compactHeight : CardSize.Y + (_land.Visible ? 26 : 0);
+    private float Height => Compact
+        ? (DecisionHeader ? _decisionHeight : _compactHeight) + (_role.Visible ? _role.GetMinimumSize().Y + 2 : 0)
+        : CardSize.Y + (_land.Visible ? 26 : 0);
 
     internal object Observe() => new
     {
         actor = _actor?.Value, visible = IsVisibleInTree(), name = _name.Text, role = _role.Text,
+        level = _level, roleVisible = _role.IsVisibleInTree(), roleRect = BattleMapViewport.Rectangle(_role.GetGlobalRect()),
         land = _land.IsVisibleInTree() ? _land.Text : null, landRect = BattleMapViewport.Rectangle(_land.GetGlobalRect()),
         rect = BattleMapViewport.Rectangle(GetGlobalRect()),
         nameRect = BattleMapViewport.Rectangle(_name.GetGlobalRect()),

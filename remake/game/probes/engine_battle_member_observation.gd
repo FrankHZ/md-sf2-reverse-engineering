@@ -14,7 +14,7 @@ func open_members() -> bool:
     if not await cursor_to(empty.x, empty.y): return false
     await act("confirm")
     if not await inspect_page("Options"): return false
-    if not check(("地图" if chinese else "Map") in state().inspection.hint, "Map remains an offered option"): return false
+    if not check(("地图" if chinese else "Map") in state().inspection.options.commandList.rows[1].label, "Map remains an offered option"): return false
     await act("up")
     if not check(state().inspection.optionIndex == 0, "Up chooses Member"): return false
     await send_action("confirm", true)
@@ -130,7 +130,11 @@ func authored_roster() -> bool:
     await act("confirm")
     if not await inspect_page("MemberFull"): return false
     if not check(state().inspection.unit.Actor.Value == last.actor, "Keyboard opens the focused member"): return false
+    var back: Dictionary = state().inspection.footer.backRect
+    await footer_mouse(back,MOUSE_BUTTON_LEFT,true)
     await act("cancel")
+    if not await inspect_page("Members"): return false
+    await roster_pointer(last.rect,MOUSE_BUTTON_LEFT,false)
     if not await inspect_page("Members"): return false
     var restored: Dictionary = sample("roster-detail-back").inspection.roster
     if not check(restored.scroll == roster.scroll and restored.rows[-1].actor == last.actor and restored.rows[-1].focused,
@@ -253,7 +257,7 @@ func run() -> void:
     if not check(("战斗成员" if chinese else "Battle members") in roster.inspection.roster.text,
             "Localized roster is actually projected"): return
     for action in ["up", "down", "attack", "confirm", "cancel"]:
-        if not check(OS.get_keycode_string(events[action].keycode) in roster.inspection.hint, "Hints use installed binding: " + action): return
+        if not check(OS.get_keycode_string(events[action].keycode) in roster.inspection.hint + roster.inspection.footer.back, "Hints use installed binding: " + action): return
     await act("up")
     if not check(state().inspection.memberIndex == roster.inspection.members.size()-1, "Roster wraps upward"): return
     await act("down")

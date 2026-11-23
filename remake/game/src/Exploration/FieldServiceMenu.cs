@@ -96,7 +96,8 @@ internal sealed partial class FieldChoicePanel : Panel
         ItemRectChanged += () => InvalidatePointer(); _scroll.GetVScrollBar().ValueChanged += _ => InvalidatePointer();
     }
     internal void Present(string title, string hint, string back, IReadOnlyList<(string Text, string? Icon, bool Available)> choices,
-        IdentityIcons icons, int focus, float width = 560, string? description = null)
+        IdentityIcons icons, int focus, float width = 560, string? description = null,
+        object? descriptionSubject = null, GameInput? input = null)
     {
         bool changed = _heading != title || _rows.Count < choices.Count; _heading = title; _title.Text = title; _hint.Text = hint; _back.Text = back;
         while (_rows.Count < choices.Count)
@@ -119,7 +120,7 @@ internal sealed partial class FieldChoicePanel : Panel
             row.Text.AddThemeColorOverride("font_color", color); row.Marker.AddThemeColorOverride("font_color", color);
         }
         _hint.Position = new(16, 0); _hint.Size = new(width - 32, 0);
-        _description.Present(description);
+        _description.Present(description, descriptionSubject, input);
         float descriptionSpace = description is null ? 0 : _description.ReadingHeight + 24;
         float footer = _hint.GetMinimumSize().Y + 96;
         float desired = _title.GetMinimumSize().Y + choices.Select((_, i) => _rows[i].Row.CustomMinimumSize.Y + 8).Sum() + 48 + footer + descriptionSpace;
@@ -137,7 +138,16 @@ internal sealed partial class FieldChoicePanel : Panel
     internal Rect2 RowRect(int index) => _rows[index].Row.GetGlobalRect().Intersection(_scroll.GetGlobalRect());
     internal Rect2 BackRect => _back.GetGlobalRect();
     internal void Wheel(int step) { _scroll.ScrollVertical += step; InvalidatePointer(); }
-    internal void Wheel(Vector2 point, int step) { if (!_description.Wheel(point, step)) Wheel(step); }
+    internal void Read(int step)
+    {
+        if (_description.Visible) _description.Read(step);
+        else Wheel(step);
+    }
+    internal void Wheel(Vector2 point, int step)
+    {
+        if (!_description.Wheel(point, step) && _scroll.GetGlobalRect().HasPoint(point))
+            _scroll.ScrollVertical += step;
+    }
     internal object Observe() => new { visible = IsVisibleInTree(), description = _description.Observe(), rect = FieldServiceMenu.Rect(this), title = _title.Text, titleRect = FieldServiceMenu.Rect(_title),
         readingRect = FieldServiceMenu.Rect(_scroll), scroll = _scroll.ScrollVertical, hint = _hint.Text, hintRect = FieldServiceMenu.Rect(_hint), backRect = FieldServiceMenu.Rect(_back),
         rows = _rows.Where(r => r.Row.Visible).Select(r => new { text = r.Text.Text, rect = FieldServiceMenu.Rect(r.Row), textRect = FieldServiceMenu.Rect(r.Text), minimumHeight = r.Text.GetMinimumSize().Y, icon = r.Icon.Observe() }) };

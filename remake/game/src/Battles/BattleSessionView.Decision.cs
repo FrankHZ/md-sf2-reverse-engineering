@@ -70,6 +70,11 @@ public sealed partial class BattleSessionView
             else Send(new Cancel());
             return true;
         }
+        if ((decision.Page == Page.Main || decision.IsList) && action is GameAction.Left or GameAction.Right)
+        {
+            _menu.ReadDescription(action);
+            return true;
+        }
         if (decision.Page == Page.Main)
         {
             if (action is GameAction.Equipment or GameAction.Give or GameAction.Discard) return false;

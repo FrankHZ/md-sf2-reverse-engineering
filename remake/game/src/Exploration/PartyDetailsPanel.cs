@@ -74,7 +74,8 @@ internal sealed partial class PartyDetailsPanel : Panel
         if (FieldLayout)
         {
             var slot = member?.Inventory.ElementAtOrDefault(ItemSlot);
-            _description.Present(FocusPane == 2 ? ItemDescriptions.Read(session, slot?.ItemId, member, slot?.Broken == true) : "");
+            _description.Present(FocusPane == 2 ? ItemDescriptions.Read(session, slot?.ItemId, member, slot?.Broken == true) : "",
+                (member?.Carried.Actor, ItemSlot));
         }
         Arrange();
     }

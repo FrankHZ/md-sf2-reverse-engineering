@@ -43,6 +43,10 @@ func target_art(label: String) -> bool:
     if not expect(b.cursorRole == "Target" and not b.movementRange.visible, label+": only target markers"): return false
     if not expect(s.menu.layout.targetCard.visible and not s.menu.layout.actorCard.visible, label+": only recipient card"): return false
     var at := {"X":s.previewX,"Y":s.previewY} if actor.id == s.actor else {"X":actor.x,"Y":actor.y}
+    var card: Dictionary = s.menu.layout.targetCard
+    var friendly: bool = card.level != null and card.roleVisible
+    if not expect(friendly if label.begins_with("F4 HEAL") or label == "F4 friendly item"
+        else card.level == null and not card.roleVisible, label+": friendly-only level"): return false
     return cursor_art(b.cellCursor,at,label)
 
 func clear_marks(label: String) -> bool:
@@ -104,6 +108,10 @@ func movement_focus(label: String) -> bool:
     var s := state()
     var b := board()
     samples.append({"label":label,"cursor":b.cellCursor,"range":b.movementRange})
+    var card: Dictionary = s.menu.layout.actorCard
+    var expected: int = 5 if demo_case == "public" else 1
+    if not expect(card.visible and card.roleVisible and card.level == expected and within(card.roleRect,card.rect),
+        label+": current ally level fits Movement card"): return false
     return expect(b.cursorRole == "Movement" and b.movementRange.visible and not b.actionRange.visible,
         label+": sole movement cursor and field") and cursor_art(b.cellCursor,{"X":s.previewX,"Y":s.previewY},label)
 
@@ -160,6 +168,10 @@ func settle_scene(previous: String) -> bool:
 func paused_resize() -> bool:
     if not await wait_for(func(s):return s.scene.requiresAcknowledgement and s.scene.messagePanel.visible,
         "Actual close-up message awaits input"): return false
+    var cards: Dictionary = state().scene
+    if not expect(cards.actorCard.visible and cards.actorCard.roleVisible and cards.actorCard.level == 1 and
+        within(cards.actorCard.roleRect,cards.actorCard.rect) and cards.targetCard.visible and
+        cards.targetCard.level == null and not cards.targetCard.roleVisible, "Mounted scene shows only the ally level"): return false
     await act("menu")
     if not expect(host.find_child("SystemMenuView",true,false) != null,"Host covers actual close-up"): return false
     var before: Dictionary = state().scene
@@ -251,29 +263,70 @@ func cursor_decision() -> bool:
     if not await paused_resize() or not await settle_scene(initial.actor): return false
     return true
 
+func read_wheel(reader: Dictionary) -> void:
+    var point := Vector2(reader.rect.x+reader.rect.width/2,reader.rect.y+reader.rect.height/2)
+    var wheel := InputEventMouseButton.new()
+    wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN; wheel.position = root.get_stretch_transform() * point; wheel.pressed = true
+    Input.parse_input_event(wheel); await frames(4)
+
 func public_cursor() -> bool:
     if not await movement_focus("Public authored movement fallback"): return false
     await act("confirm")
-    if not await decision_geometry("Public Main at 1600x900"): return false
+    if not await decision_geometry("Public Main"): return false
+    while state().menu.command != 2: await act("down")
+    var main := state()
+    await act("right")
+    if not expect(main.menu.layout.reader.hint != null and state().menu.layout.reader.scroll > 0 and
+        state().menu.command == main.menu.command and signature(state()) == signature(main),
+        "Mapped Right reads overflowing Main without changing command or state"): return false
+
     await act("spell")
     if not clear_marks("Public Magic") or not await decision_geometry("Public Magic"): return false
-    var fixed_reader: Dictionary = state().menu.layout.description
+    var list := state()
+    var reader: Dictionary = list.menu.layout.reader
+    if not expect(reader.maximum > 0 and reader.hint != null and within(reader.hintRect,list.menu.layout.description),
+        "Wrapped Magic shows the active reading hint below the body"): return false
+    await act("right")
+    var keyboard: Dictionary = state().menu.layout.reader
+    if not expect(keyboard.scroll > 0,"Keyboard reads Magic"): return false
+    var key: InputEvent = events.left
+    events.left = InputMap.action_get_events("sf2_left").filter(func(e): return e is InputEventJoypadButton)[0]
+    await act("left"); events.left = key
+    var pad: Dictionary = state().menu.layout.reader
+    if not expect(pad.scroll < keyboard.scroll and pad.hint != keyboard.hint, "Mapped D-pad reads Magic and updates its hint"): return false
+    await read_wheel(reader)
+    var wheel: Dictionary = state().menu.layout.reader
+    if not expect(wheel.scroll > pad.scroll and state().menu.row == list.menu.row and signature(state()) == signature(list),
+        "Wheel and mapped reads preserve row, revision, submissions, resources and RNG"): return false
+    await send_action("right",true)
+    await act("menu")
+    var held_at_cover: int = state().menu.layout.reader.scroll
+    await send_action("right",false)
+    await frames(3)
+    await send_action("right",true)
+    await act("cancel")
+    await create_timer(0.25).timeout
+    if not expect(state().menu.visible and state().menu.row == list.menu.row and state().menu.layout.reader.scroll == held_at_cover and
+        signature(state()) == signature(list), "Host return preserves reading and focus while held direction stays inert"): return false
+    await send_action("right",false)
     await act("down")
-    if not expect(state().menu.layout.description == fixed_reader,"Rows keep a fixed footer when offer changes"): return false
+    var changed := state()
+    samples.append({"label":"mapped-and-wheel-reading","keyboard":keyboard,"pad":pad,"wheel":wheel,
+        "resumedScroll":held_at_cover,"initialRow":list.menu.row,"changedRow":changed.menu.row,
+        "afterRow":changed.menu.layout.reader})
+    if not expect(changed.menu.row != list.menu.row and changed.menu.layout.reader.scroll == 0 and
+        changed.menu.layout.reader.rect == reader.rect, "Changing row resets scroll within the same reader geometry"): return false
     await act("confirm")
     if not await target_art("Public authored multi-target fallback") or not await decision_geometry("Public Target"): return false
     var m: Dictionary = state().menu.layout
     if not expect(m.targetCard.rect.x == 32 and m.description.x == 32 and board().cellCursor.rect.x > 1270,
         "Right-edge recipient moves the card and footer to the clear left column"): return false
-    if not expect(board().actionRange.effect.size() > 1 and board().actionRange.steady and m.reader.maximum > 0,
-        "Multi-target, Reduced Flash and long text use the actual bounded overlay and reader"): return false
-    var point := Vector2(m.reader.rect.x+m.reader.rect.width/2,m.reader.rect.y+m.reader.rect.height/2)
-    var wheel := InputEventMouseButton.new()
-    wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN; wheel.position = root.get_stretch_transform() * point; wheel.pressed = true
-    Input.parse_input_event(wheel); await frames(4)
-    samples.append({"label":"reader-scroll","before":m.reader,"after":state().menu.layout.reader})
-    if not expect(state().menu.layout.reader.scroll > 0 and state().menu.layout.navigation == m.navigation,
-        "Reader scrolls without moving target navigation"): return false
+    if not expect(board().actionRange.effect.size() > 1 and board().actionRange.steady and m.reader.maximum == 0 and
+        m.reader.hint == null, "Target keeps the quiet range and concise non-overflowing footer"): return false
+    var target := state()
+    await read_wheel(m.reader)
+    if not expect(state().candidate == target.candidate and signature(state()) == signature(target),
+        "Wheel over Target footer is inert"): return false
     await act("cancel"); await act("cancel"); await act("cancel")
     if not await settled(): return false
     return await cursor_inspection()
@@ -281,9 +334,11 @@ func public_cursor() -> bool:
 func run() -> void:
     root.size = Vector2i(1600,900) if demo_case == "public" else Vector2i(1920,1080)
     if demo_case == "public":
-        var catalog: Translation = load("res://localization/zh_CN.po")
-        catalog.add_message("battle.target-help", str(catalog.get_message("battle.target-help")) +
-            "\n" + "在确认前请检查行动说明。".repeat(70))
+        var chinese := OS.get_environment("SF2_CURSOR_LANGUAGE") != "en"
+        var catalog: Translation = load("res://localization/zh_CN.po" if chinese else "res://localization/en.po")
+        var long_text := "在确认前请查看所选行动的说明。" if chinese else "Read the selected action description before confirming. "
+        for key in ["battle.range", "battle.no-items"]:
+            catalog.add_message(key, str(catalog.get_message(key)) + "\n" + long_text.repeat(24))
     host = load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()
     await frames(5); bind_events()
     for action in ["spell","item","stay"]:
@@ -303,6 +358,14 @@ func run() -> void:
     if OS.get_environment("SF2_CURSOR_CLOSEUP_ONLY") == "1":
         var previous: String = state().actor
         await act("confirm")
+        await act("spell")
+        await act("confirm")
+        if not await target_art("F4 HEAL") or not await decision_geometry("Friendly Target"): return
+        var card: Dictionary = state().menu.layout.targetCard
+        if not expect(card.actor == previous and card.level == 1 and within(card.roleRect,card.rect),
+            "Friendly Target displays the live self level inside the card"): return
+        await act("cancel")
+        await act("cancel")
         await act("attack")
         await act("confirm")
         finish(await paused_resize() and await settle_scene(previous))

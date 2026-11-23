@@ -43,8 +43,8 @@ Visibility and hit testing change together.
 | Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round/gold, queue reservation, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
 | Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Round/gold and queue reservation stay quiet. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
-| Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one inspection hint, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
-| Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One applicable hint and data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
+| Free inspection, Cursor page | One board cursor on the inspected cell | One hover card, one framed instruction and return panel, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
+| Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One framed instruction and return panel with data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
 | Enemy action, close-up, field notice/death, result or battle exit | Actual delivered action or current message/return prompt | Playback cards for the actual participants, message reader, board only when owned by the continuation | Existing completion token and acknowledgement. All decision surfaces and board marks retire. Rebuild from live control after delivery. Field return uses field chrome. A failure shows once at its owning view. |
 | Host Menu, Save, Speed or recovery cover | Host/modal's current choice or reader | Only the permitted covered backdrop | Suspend battle gestures, holds and pacing using existing ownership. Restore the same eligible caller, with its current layout and fresh input after release. A resize while covered may recompute geometry. |
 
@@ -484,7 +484,7 @@ one return command and projects the originating row with the confirmed stop reta
 cell clears the current candidate while the session can retain a previous target. Mapped Confirm,
 footer Confirm and board release all use the same confirmation. A press on an already selected
 board cell reuses the selection. The release issues only the shared Confirm. Wheel and middle
-buttons leave battle targeting and inspection focus alone. A wheel over the reader scrolls it.
+buttons leave battle targeting and inspection focus alone. The wheel scrolls an overflowing reader under the pointer. Main and child lists also read with the active Left/Right mappings.
 Right Back uses the menu's matched pointer gesture. Host cover and viewport resize invalidate
 incomplete gestures. [Decision projection](../../game/src/Battles/BattleDecision.cs) ·
 [Transition and pointer owner](../../game/src/Battles/BattleSessionView.Decision.cs)
@@ -508,6 +508,47 @@ and completion. For close-up cover and resize, use the private Battle01 setup un
 [Reproduce slice 1](#reproduce-slice-1), select the registered pre-voyage BLAZE1 publication and
 set `SF2_CURSOR_CLOSEUP_ONLY=1`. This selects the attack and follows its existing message wait
 through host cover, resize, return and actual completion.
+
+## Shared description reading and inspection return
+
+[#2113](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2113) and
+[#2085](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2085) share the
+`ItemDescriptionView` viewport between battle Main/child lists and field Prepare descriptions.
+Mapped Left/Right and a wheel over the body scroll the actual overflow. The visible Read hint
+follows the active bindings and disappears when the body fits. Up/Down still selects the
+command or row. On Target, directions still choose a recipient once per fresh input. The footer
+shows the short action identity, applicable refusal and current controls. Prepare's described item
+gets the mapped reading request while it is present; the pack no longer scrolls along with it.
+Resuming the same battle page preserves scroll and focus. A different page, acting member or
+focused offer starts at the top.
+
+The inspection footer contains instructions and a measured Back button in Cursor, Full,
+Options, Map, Members and MemberFull. A pointer Back requires a complete matching gesture inside
+the visible button. Mapped Back follows the same local parent and leaves the cursor or roster
+focus where it was. The frame shields the underlying board from clicks. Cursor shows the name
+or empty-ground caption and coordinate in the hover card only. Options displays its Back binding
+on the button. Resizing or changing page cancels an old capture.
+
+The compact Movement, friendly Target and real playback cards show the live ally level. Enemy
+cards retain their existing disclosure. The original mini-status routine provides ally level and
+skips that field for enemies. [Pinned source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L600-L626)
+
+### Reproduce shared description reading and inspection return
+
+Use the registered SDK, Debug adapter, isolated app data/TEMP and explicit disposable save scope
+from [Reproduce slice 1](#reproduce-slice-1). Run the native commands with a fresh report and log
+for each row. The table describes the controlled content and actual input surface.
+
+| Observation | Existing launch and selection |
+| --- | --- |
+| Long battle description and narrow client | Run the public wide-vitals case in [Reproduce slice 1](#reproduce-slice-1) at 1600×900 once with `SF2_CURSOR_LANGUAGE=en` and once with `SF2_CURSOR_LANGUAGE=zh-CN`, matching the input settings. The observer extends the respective range and no-items strings before mounting the host. Keyboard, mapped D-pad and wheel move only the reader in Main/Magic. The check covers host cover with a direction held across Resume, row reset, short Target, and no revision, selection or resource change from reading. |
+| Visible returns, both locales | Use [inspected-movement-range](#reproduce-the-inspected-movement-field). The observer clicks instruction space and the actual button across details, Map, Options and Members, and resizes between press and release. It checks live range/cursor ownership and the unchanged gameplay signature. |
+| Retained roster | Run [member-large](#reproduce-the-shared-roster) in English. Navigate to the final row, hold a pointer press in the sheet, return with mapped Cancel, and release over the row. The roster keeps the selected actor and exact scroll. |
+| Field Prepare | Run the `party` case from [Observe the selected item pages](ui-design-language.md#observe-the-selected-item-pages) with `SF2_ITEM_DESCRIPTION_LONG=1`. The observer extends the weapon description before the host mounts. In Equip, mapped Right moves only the body. The adjacent short consumable retains the row geometry with no overflow hint. |
+| Actual card mount | Use the Battle01 controlled start from [Reproduce slice 1](#reproduce-slice-1) with the registered pre-voyage BLAZE2 publication and `SF2_CURSOR_CLOSEUP_ONLY=1`. The observer opens a friendly HEAL Target, returns without payment, then commits the physical attack. It verifies the allied and enemy cards during the real message wait and reflows the covered scene before resuming delivery. |
+
+Physical controller feel and human visual acceptance remain **Unknown** under #1456.
+Spell effect wording, the round queue and Target rule geometry remain with their linked owners.
 
 ## Selected spell descriptions
 

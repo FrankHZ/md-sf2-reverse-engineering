@@ -38,58 +38,28 @@ internal sealed partial class BattleInspectionView
         _hover.Position = position;
     }
     private static string LandValue(int? percent) => percent is { } value ? GameText.Get("battle.inspect.land-percent", value) : "—";
-    private bool CursorUiCovers(Vector2 position) => _hint.GetGlobalRect().HasPoint(position) ||
+    private bool CursorUiCovers(Vector2 position) => _footer.GetGlobalRect().HasPoint(position) ||
         _hover.IsVisibleInTree() && _hover.GetGlobalRect().HasPoint(position);
     private bool HostPointerCovered => GetViewport().GuiGetHoveredControl() is { } control &&
         control.IsVisibleInTree() && !IsAncestorOf(control);
-    private bool BoardPointer(InputEvent input)
+    private void BoardPointer(InputEventMouse mouse)
     {
-        if (input is not InputEventMouse mouse) return false;
-        if (_page == "Cursor" && (CursorUiCovers(mouse.Position) || HostPointerCovered))
-        { _pointer.Cancel(); StopEdge(); return true; }
-        if (_page is "Full" or "MemberFull" or "Members" or "Map")
-        {
-            if (_page == "Map" && input is InputEventMouseMotion motion && _pointer.Moved(motion))
-            {
-                int index = _overview.Hit(mouse.Position);
-                if (index >= 0) { _knownIndex = index; Project(); }
-            }
-            if (input is InputEventMouseButton button)
-            {
-                bool back = button.ButtonIndex == MouseButton.Right || _hint.GetGlobalRect().HasPoint(mouse.Position);
-                int hit = _page == "Map" ? _overview.Hit(mouse.Position) : -1;
-                string? id = back ? "back" : hit >= 0 ? "unit:" + hit : null;
-                if (_pointer.Read(button, id, back ? GetGlobalRect() : _overview.GetGlobalRect(), _page) is { } clicked)
-                {
-                    if (clicked == "back") Handle(GameAction.Cancel);
-                    else { _knownIndex = hit; _cursor = _snapshot!.Units[hit].Position; _page = "Cursor"; _pointerFocus = false; Project(); }
-                }
-            }
-            return false;
-        }
-        if (_page != "Cursor") return false;
         bool allowed = _map.TryCell(mouse.Position, out var cell);
-        if (input is InputEventMouseMotion move)
+        if (mouse is InputEventMouseMotion move)
         {
-            if (!_pointer.Moved(move)) return true;
+            if (!_pointer.Moved(move)) return;
             bool rim = mouse.Position.Y < 8 || mouse.Position.Y >= GetViewportRect().Size.Y - 8;
             TrackEdge(mouse.Position, (allowed || rim && GetGlobalRect().HasPoint(mouse.Position)) && move.ButtonMask == 0);
             if (allowed) { _cursor = cell; _pointerFocus = true; Project(); }
         }
-        else if (input is InputEventMouseButton button)
+        else if (mouse is InputEventMouseButton button)
         {
             StopEdge();
-            if (button.ButtonIndex == MouseButton.Right)
-            {
-                if (_pointer.Read(button, "back", GetGlobalRect(), _page) is not null) Handle(GameAction.Cancel);
-                return true;
-            }
-            if (button.ButtonIndex != MouseButton.Left) { _pointer.Cancel(); return true; }
+            if (button.ButtonIndex != MouseButton.Left) { _pointer.Read(button, null, default, _page); return; }
             if (allowed && button.Pressed) { _cursor = cell; _pointerFocus = true; Project(); }
             if (_pointer.Read(button, allowed ? cell.ToString() : null, allowed ? _map.CellRect(cell) : default, _page) is not null)
                 Handle(GameAction.Confirm);
         }
-        return true;
     }
     private void TrackEdge(Vector2 position, bool allowed)
     {
@@ -106,7 +76,7 @@ internal sealed partial class BattleInspectionView
     internal void AdvancePointer(double delta)
     {
         if (_edgeSpeed == Vector2.Zero) return;
-        if (!Active || _page != "Cursor" || !IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || HostPointerCovered ||
+        if (!Active || _page != "Cursor" || !IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || CursorUiCovers(_edgeMouse) || HostPointerCovered ||
             Godot.Input.IsMouseButtonPressed(MouseButton.Left) || Godot.Input.IsMouseButtonPressed(MouseButton.Right)) { StopEdge(); return; }
         double travel = Math.Max(0, delta - _edgeDelay); _edgeDelay = Math.Max(0, _edgeDelay - delta);
         if (travel <= 0 || !_map.PanInspection(_edgeSpeed, travel)) return;
