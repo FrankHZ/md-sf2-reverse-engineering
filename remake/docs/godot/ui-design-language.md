@@ -80,14 +80,29 @@ canonical/custom names and fallback notices under the
 [localization owner](../application/localization-design.md). No font substitution, Chinese naming
 or IME admission follows from these layouts.
 
-| Role | Design baseline at native 1080p | Use and limit |
+### Gameplay typography
+
+Use the bundled font at two sizes on the native 1920×1080 canvas. Apply the following roles
+when revising a gameplay screen.
+
+| Size | What the player reads | Examples |
 | --- | --- | --- |
-| Scene/section heading | 32px, ordinary light text; 40px only for a sparse entry heading | One heading per panel. Gold is primarily selection, not every heading. Preserve original title artwork rather than typesetting a replacement logo. |
-| Dialogue, menu choice, transaction facts | 30px `f4f5fc` | Readable full text and explicit amounts. Keep choice rows at least 64px tall; wrap and increase height. |
-| Status identity | Existing card 26px baseline and bounded 22px exceptional-name fallback | Retain its existing measured two-line/widening policy. Do not propagate the exceptional 22px fallback to body or menu text. |
-| Operation hints and binding tooltips | Fixed 24px in the native gameplay canvas | Wrap or allocate reading space as text, device or phase changes. Menu choices, transaction details and status values keep their own roles. |
-| Battle round and land effect | 30px body | The two gameplay readings share frame margins and row dimensions. Their equal weight distinguishes game information from 24px input hints. |
-| Other metadata | 24px baseline | Keep prices, refusal reasons and irreversible consequences at readable body size. |
+| Body · 30px | Game information, choices, and the consequences of a choice | Dialogue, menu and section labels, unit names and vitals, item and spell descriptions, prices, party gold, member kills and defeats, round and land effect |
+| Hint · 24px | Help with operating the current screen | Button bindings, mouse gestures, paging and scrolling instructions |
+
+Use the existing light body color (`f4f5fc`). Keep menu rows at least 64px tall and allow wrapped choices to grow. Give a section heading its own line and spacing. Use alignment to associate labels with values,
+and use the existing focus marker, border and explicit status text for selection, danger or
+refusal. Keep the title screen's artwork. For a long localized or custom name, try wrapping
+and widening its column before considering a measured fit exception.
+
+The round and land-effect panels already use the body size with equal margins and row dimensions.
+Other screens still have local sizes, including compact command captions and the unit card's
+measured name fitting. Update those with their owning screen and verify fit in English and Chinese.
+
+### Panels and states
+
+| Surface or state | Design baseline at native 1080p | Use and limit |
+| --- | --- | --- |
 | Reading panel | Existing `08275bf5` near-opaque blue, 2px `ffe19a` edge, restrained existing shadow | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
 | Action surface | Existing dark blue family (`102c50` normal, `204c76` hover, `354c64` pressed) | Same square edge family; avoid extra gold boxes around every idle row. Native buttons retain focus/pressed distinctions. |
 | Selected and available | `ffe19a`, plus `›`/`▸`, outline or original selected raster | Exactly one current choice per input owner. Pointer hover is not command submission. |

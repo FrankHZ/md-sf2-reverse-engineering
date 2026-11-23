@@ -537,6 +537,24 @@ Movement and inspection display coordinates and land effect in a dedicated panel
 resource and participant boundaries. This composition follows the placement of information in
 the [pinned mini-status routine](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L572-L664).
 
+### Proposed terrain panel placement for playtest
+
+The current layout places the terrain panel across the board from the unit card. At the
+1920×1080 canvas width, reading one unit's vitals and land effect requires looking at both
+sides of the battlefield.
+
+For the next layout trial, keep the two frames distinct and align the terrain panel with the
+leading edge of the unit card, **12px below it**. Keep the round counter in its current column.
+This preserves the visual link between the unit and its cell and leaves room in the round
+column for the action queue. A side-by-side pair would extend farther over the playable map.
+
+Use the combined bounds of both panels when choosing the side that clears the focused cell.
+In F4 the terrain row takes vertical space above Main or the spell/item list. Check the longest
+two-line unit name, all four Main rows, the selected list row and the fixed description footer.
+In F8, keep the same column when moving to adjacent empty ground where possible. Show just the
+terrain frame there and keep it clear of the cursor. Target selection and playback retain their
+existing disclosure. Review both languages at 1600×900 and 1920×1080 before adopting the placement.
+
 ### Reproduce shared description reading and inspection return
 
 Use the registered SDK, Debug adapter, isolated app data/TEMP and explicit disposable save scope
