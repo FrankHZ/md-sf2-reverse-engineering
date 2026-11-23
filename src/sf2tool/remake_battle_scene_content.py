@@ -193,6 +193,15 @@ def campaign_ally_visuals(
                 yield ("ally", sprite, palette, item)
 
 
+def battle_scene_backdrops(read, battle: int) -> tuple[int, tuple[int, ...]]:
+    # GetBattlesceneBackground checks Zeon before the custom table. That enemy
+    # is outside the supported encounters here. Only OVERWORLD uses terrain.
+    custom = read(0x1FA8A + battle, 1)[0]
+    if custom == 0xFF:
+        return 0, tuple(read(0x19E5E, 16))
+    return custom, ()
+
+
 def build(
     rom_path: Path, upstream: Path, output: Path, battle: int = 1, selection: Path | None = None,
     scratch_root: Path | None = None,
@@ -524,12 +533,9 @@ def build(
     backgrounds = table("battle-background-decode")
     layout = [int.from_bytes(read(0x1FAEA + i * 2, 2), "big") for i in range(384)]
     layout = [(value & 0x1800) | ((value & 2047) - 928) for value in layout]
-    terrain_scenes = []
     backdrop = {}
-    fixed = read(0x1FA8A + battle, 1)[0] if battle >= 11 else 9 if battle == 1 else None
-    if fixed == 255:  # OVERWORLD selects the backdrop by terrain.
-        fixed = None
-    indices = [fixed] if fixed is not None else sorted(set(read(0x19E5E, 16)))
+    default_backdrop, terrain_backgrounds = battle_scene_backdrops(read, battle)
+    indices = sorted({default_backdrop, *terrain_backgrounds})
     for index in indices:
         ground = pointer(weapons["groundTableAddress"] + index * 4)
         ground_palette = list(base_palette)
@@ -552,11 +558,10 @@ def build(
             "background" + str(index), bgdata, bgpal, 256, 96, layout, opaque=True
         )
         backdrop[index] = dict(background=background_asset, ground=ground_asset)
-    if fixed is None:
-        terrain_scenes = [
-            dict(terrain=index, **backdrop[value]) for index, value in enumerate(read(0x19E5E, 16))
-        ]
-    background_asset, ground_asset = backdrop[fixed if fixed is not None else 0].values()
+    terrain_scenes = [
+        dict(terrain=index, **backdrop[value]) for index, value in enumerate(terrain_backgrounds)
+    ]
+    background_asset, ground_asset = backdrop[default_backdrop].values()
 
     # LoadSpellTileset: section-14 pointer, HEALING=6, length and three CRAM
     # replacements precede compressed tiles. Preserve all operands as ROM spans.
@@ -662,7 +667,7 @@ def build(
             texts=texts,
             memberNames=names,
             healing=healing,
-            **({"terrainScenes": terrain_scenes} if fixed is None else {}),
+            **({"terrainScenes": terrain_scenes} if terrain_scenes else {}),
         ),
     )
     report = dict(

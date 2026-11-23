@@ -248,6 +248,79 @@ card during a switch, or stranded input after death. The representative checks b
 these risks from an observed failure. The existing 4 MiB private scene-document cap applies per
 file. A chapter owner should size its selected pack before expanding generation.
 
+### Fixed backdrops for the private campaign
+
+**Confirmed, original source and retail ROM.** At pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `data/battles/global/custombackgrounds.asm`
+(`table_CustomBackgrounds`, `0x1FA8A`) selects Castle 8 for Battle05 and Tower Interior 9 for
+Battles01/07. `code/gameflow/battle/battlescenes/getbattlescenebackground.asm`
+(`GetBattlesceneBackground`, `0x19DFE`) checks for enemy Zeon first and selects 27 for him.
+He is outside the supported Battle01–26 formations. Only `OVERWORLD` (`0xFF`) consults
+`table_TerrainBackgrounds` (`0x19E5E`) using the terrain low nibble. With no explicit combatant the
+original terrain arm uses its saved combatant index and falls back to slot 0 if that index is also
+absent. `GetBattlesceneGround` calls the same selector for an eligible ground-bound ally.
+
+**Confirmed, export and private package.** The [scene exporter](../../../src/sf2tool/remake_battle_scene_content.py)
+reads the fixed table for each supported encounter. A fixed scene binds its background and ground
+directly. An OVERWORLD scene has the 16 terrain bindings used for the back and front combatants.
+The previous exporter skipped the table for Battles02–10. The #2035 private selection therefore
+published terrain bindings for Battles05/07. That gap is consistent with the reported grass in
+Battle05. The participants and terrain of the reported attack are **Unknown**.
+
+The #2091 candidate reuses the registered #2035 world, entry, opening inputs and all other referenced
+content as immutable files. It replaces exactly two scene documents and reuses the four #2001
+`terrain` rasters at the existing 2× scene texture scale. The direct audit compares all 26 scene
+bindings with the pinned source and ROM, checks the selected rasters against the ROM palettes,
+and checks that each replacement has its own file identity. The candidate and its dependencies are
+private. The existing play selection remains under its current owner's control.
+
+The [private backdrop publisher](../../../src/sf2tool/remake_fixed_battle_backdrops.py) prepares a
+fresh candidate using the registered assets. Load `local/private-inputs.ps1` and set `$upstream`
+to the pinned checkout. The destination can be under the registered `derived` root or worktree
+`local/` on the base package's volume. Add `--check` to verify an existing candidate in place.
+
+```powershell
+$shared = $env:SF2_SHARED_INPUT_ROOT
+$candidate = Join-Path $shared 'derived/issue2091/fixed-battle-backdrops-v1-candidate'
+uv run python -m sf2tool.remake_fixed_battle_backdrops `
+    --base (Join-Path $shared 'derived/issue2035/galam-town-v1') `
+    --library (Join-Path $shared 'derived/issue2001/retail-v1') `
+    --destination $candidate --upstream $upstream --rom (Join-Path $shared 'roms/sf2-us.bin')
+```
+
+**Confirmed, remake consumption.** On the Debug adapter, ordinary Continue on a disposable copy
+of the pre-guard Map16 slot reaches Battle05 through the guard zone. The first physical close-up
+uses the Castle background and ground for Jaha at `(8,3)` and the Galam Archer at `(10,3)`.
+The controlled Battle07 witness starts Bowie on legal Map58 terrain at `(18,30)` and lets the
+ordinary Galam Knight action from `(20,30)` reach the Tower close-up. Both witnesses reach the
+damage message. The renderer binds the background, its wrap and the ground to visible sprites.
+Their live texture bytes match the palette-checked candidate rasters, and the sprite rectangles
+are 256×96 for each background segment and 96×32 for the ground. These are headless Godot
+observations of the actual scene, texture and canvas objects. Display output and original runtime
+timing remain **Unknown**.
+
+For native verification, use the built Debug adapter and imported Godot project in the isolated
+checkout. Select the candidate `world.json`, `entry/entry.json` and `main-scenes.json` with
+`SF2_PRIVATE_EXPLORATION_CONTENT`, `SF2_PRIVATE_ENTRY_CONTENT` and
+`SF2_PRIVATE_BATTLE_SCENE_CONTENT`. Map the six files in `opening-inputs/` to the environment
+variables named by their filenames without the `.json` suffix. Use a fresh `SF2_SAVE_NAMESPACE`
+under a disposable external `SF2_SAVE_ROOT`.
+
+- **Battle05.** Copy the authorized pre-guard backup into the disposable namespace and Continue
+  from its slot. Starting at Map16 `(27,7)`, walk to the guard zone at `(3,18)`, acknowledge the
+  dialogue, and advance the battle through one ordinary physical attack and damage message.
+- **Battle07.** Before a session starts, use the existing
+  [controlled observation entry](../../game/probes/PreVoyageLocalizationObservation.cs) with a
+  worktree-local start document. Supply `start.battle` as `battle-7`, `start.activeAllies` as
+  `["ally-0"]` and the `start.actors` entry for `ally-0` with `position` `(18,30)` as `x` and `y`.
+  Let the ordinary physical action reach its damage message.
+
+Read the participants and terrain from `BattleSessionView` and the close-up projection from
+`ReadSceneObservationJson`. At `ActionAnimation`, check the visible background, wrap and ground
+sprites, their texture and canvas handles, and the draw rectangles above. Compare the SHA-256 of
+the loaded texture image bytes with the publisher's `--check` `imageSha256` values. Check the process exit,
+stderr and the unchanged copied Battle05 slot.
+
 ### Which actions can be reused
 
 | Action and direction | Working consumer and bounded evidence | Remaining decision or minimum check at first use |
