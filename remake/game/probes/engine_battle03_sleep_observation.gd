@@ -116,7 +116,6 @@ func run_sleep() -> void:
         await key(KEY_ENTER)
         s=await sleep_settle()
         await key(KEY_SPACE)
-        await key(KEY_ENTER)
         s=await sleep_settle()
         if action%16==0: samples.append({"label":"sleep-progress-"+str(action),"state":s})
     _check(sleep_seen,"natural source bat sleep infliction")

@@ -63,7 +63,7 @@ func run() -> void:
                     record("unavailable-magic")
                     await tap(KEY_ESCAPE)
                 await tap(KEY_SPACE if case_name == "defeat" else KEY_F)
-                await tap(KEY_ENTER)
+                if case_name != "defeat": await tap(KEY_ENTER)
                 acted = true
             else: await process_frame
         else:

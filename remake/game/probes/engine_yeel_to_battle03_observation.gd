@@ -168,7 +168,6 @@ func run_yeel() -> void:
                 await key(KEY_ENTER)
                 s=await outcome_settle()
                 await key(KEY_SPACE)
-                await key(KEY_ENTER)
                 s=await outcome_settle()
                 samples.append({"label":"committed-player-action-"+str(action),"state":s})
                 var changed: bool=s.actors.any(func(a): return str(a.id).begins_with("enemy-") and old_actors.any(func(old): return old.id==a.id and (old.x!=a.x or old.y!=a.y or old.hp!=a.hp)))

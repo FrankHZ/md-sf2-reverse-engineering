@@ -89,9 +89,8 @@ func run() -> void:
     if not await tap(KEY_I): return
     if not hidden("item-list"): return
     if not await tap(KEY_ESCAPE): return
-    if not await tap(KEY_SPACE): return
-    if not hidden("commit-ready"): return
-    if not await tap(KEY_ESCAPE): return
+    if not await tap(KEY_DOWN): return
+    if not hidden("stay-focused"): return
     if not await wait_for(func(s): return s.get("stage") == "ActionChoice" and s.menu.page == "Main", "cancel commit to actions"): return
     sample("cancel-commit-to-actions")
     if not await tap(KEY_ESCAPE): return
@@ -101,7 +100,6 @@ func run() -> void:
     if not stable(range_read("cancel-restored"), initial, "cancel restored"): return
     if not await tap(KEY_ENTER): return
     if not await tap(KEY_SPACE): return
-    if not await tap(KEY_ENTER): return
     if not await wait_for(func(s): return s.get("stage") == "Movement" and s.get("actor") != initial.actor, "next actor"): return
     await frames(3)
     if not visible_geometry("next-actor"): return
@@ -138,7 +136,6 @@ func private_region() -> void:
         await tap(KEY_ENTER)
         if not hidden("private-action-" + str(turn)): return
         await tap(KEY_SPACE)
-        await tap(KEY_ENTER)
         if not await wait_for(func(s): return s.get("stage") == "Movement" and s.get("movement") == null, "private next actor"): return
     if not check(state().actor == "ally-0", "Ordinary Egress user control"): return
     await tap(KEY_ENTER)
@@ -163,7 +160,6 @@ func automatic_lifecycle() -> void:
     for turn in range(5):
         await tap(KEY_ENTER)
         await tap(KEY_SPACE)
-        await tap(KEY_ENTER)
         if not await wait_for(func(s): return s.get("stage") == "Movement" or s.get("movement") != null, "next turn or automatic movement"): return
         if state().get("movement") != null:
             if not check(state().movement.purpose == "Automatic", "Ordinary automatic actor movement"): return

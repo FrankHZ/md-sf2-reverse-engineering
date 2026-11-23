@@ -217,7 +217,7 @@ func battle_story_copy() -> void:
     for i in 2:
         await press(KEY_UP)
         if not await battle_ready(): return
-    await press(KEY_ENTER); await press(KEY_SPACE); await press(KEY_ENTER)
+    await press(KEY_ENTER); await press(KEY_SPACE)
     var tokens := []
     for i in 1600:
         var s := state()

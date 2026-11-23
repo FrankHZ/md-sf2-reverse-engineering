@@ -183,7 +183,6 @@ func _run() -> void:
         if case_name == "ordinary-control":
             await _press(KEY_ENTER)
             await _press(KEY_SPACE)
-            await _press(KEY_ENTER)
             ready = await control()
             _check(not ready.is_empty() and ready.round == 2, "automatic actors and next player turn remain usable")
         if case_name == "direct-return":

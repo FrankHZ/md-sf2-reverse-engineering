@@ -216,7 +216,7 @@ func battle_actions(s: Dictionary, finish: bool, lose: bool) -> Dictionary:
                 s = await map_settle()
                 map_read("target-cancelled",s)
                 continue
-        await key(KEY_ENTER)
+        if step.action != "stay": await key(KEY_ENTER)
         s = await map_settle()
         if s.has("stage") and (action < 2 or scene_return_seen and not map_seen.has("scene-return")):
             await process_frame
@@ -292,7 +292,6 @@ func run_map() -> void:
             await key(KEY_ENTER)
             await map_settle()
             await key(KEY_SPACE)
-            await key(KEY_ENTER)
             s = await map_settle()
         await key(KEY_ENTER)
         await map_settle()

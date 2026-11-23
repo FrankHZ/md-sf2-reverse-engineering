@@ -19,10 +19,9 @@ func run(owner: SceneTree, initial: Dictionary) -> void:
     observer._check(initial.actors[0].hp == 400 and initial.actors[1].hp == 100 and initial.actors[2].hp == 500,
         "Same starting resources contain a first legal and a distinct lowest-HP candidate")
     await observer._press(KEY_ENTER)
-    await observer._press(KEY_SPACE)
     var ready: Dictionary = observer._read("decision-ready")
-    observer._check(observer._same_battle(initial, ready), "Provisional player Stay does not invoke automatic decision or draws")
-    await observer._press(KEY_ENTER)
+    observer._check(observer._same_battle(initial, ready), "Opening actions does not invoke automatic decisions or draws")
+    await observer._press(KEY_SPACE)
     var begun: Dictionary = observer._read("automatic-decision-movement")
     observer._check(begun.failure == null and begun.mainSeed == initial.mainSeed and begun.thinkingSeed == initial.thinkingSeed,
         "Decision and live movement carry no future physical construction or repeated thinking")

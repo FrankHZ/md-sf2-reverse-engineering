@@ -82,7 +82,6 @@ func suspended() -> void:
 func stay() -> void:
     await key(KEY_ENTER)
     await key(KEY_SPACE)
-    await key(KEY_ENTER)
 
 func run() -> void:
     root.size = Vector2i(1280, 720)

@@ -53,8 +53,8 @@ func _run() -> void:
     await _press(KEY_F if victory else KEY_SPACE)
     if victory:
         await _press(KEY_TAB)
-    _read("action-selected")
-    await _press(KEY_ENTER)
+    _read("player-action")
+    if victory: await _press(KEY_ENTER)
     var phase := ""
     var seen_reward := false
     var seen_growth := false

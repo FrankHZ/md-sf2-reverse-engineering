@@ -27,8 +27,7 @@ internal sealed partial class BattleCommandMenu : Control
     private ScenarioDefinition? _definition;
     internal Action<SessionCommand> Submit { get; set; } = null!;
     internal ActorRef? TargetCandidate { get; private set; }
-    // TargetChoice and CommitReady share this navigation page; choosing a different
-    // target must not create a new mode or restart the directional repeat clock.
+    // TargetChoice and CommitReady share one Target page even as the candidate changes.
     internal string NavigationPage => _page.ToString();
     internal BattleActionChoice? PreviewAction => Targeting && SelectedAction() is { Enabled: true } offer ? offer : null;
     internal bool Targeting => Visible && _page == Page.Target && !_moving;
@@ -213,10 +212,10 @@ internal sealed partial class BattleCommandMenu : Control
     private void Select(BattleActionChoice option)
     {
         if (!option.Enabled) return;
+        if (option.Action.Kind == BattleActionKind.Stay) { Submit(new CommitBattleStay()); return; }
         Submit(new SelectBattleAction(option.Action));
         if (_failure is not null || _current!.Selection?.ActionReference != option.Action) return;
         TargetCandidate = null;
-        if (option.Action.Kind == BattleActionKind.Stay) { _page = Page.Commit; return; }
         _page = Page.Target;
         // Prefer self when the engine offers it; otherwise use the first admitted target.
         var target = option.Targets.FirstOrDefault(target => target.Actor == _actor && target.Enabled)

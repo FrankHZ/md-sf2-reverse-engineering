@@ -168,7 +168,7 @@ internal sealed partial class GameInput
         HintsChanged?.Invoke();
     }
 
-    internal GameAction? Resolve(InputEvent input)
+    internal GameAction? Resolve(InputEvent input, bool freshTargetNavigation = false)
     {
         // Shift is a pacing modifier, not a second action or direction edge. Preserve
         // exact matching for all other modifiers and never mutate the received event.
@@ -194,13 +194,15 @@ internal sealed partial class GameInput
             if (!button.Pressed) { _pressedButtons.Remove(identity); return null; }
             if (!_pressedButtons.Add(identity)) return null;
         }
+        bool stickHeld = false;
         if (input is InputEventJoypadMotion motion)
         {
             int direction = Math.Abs(motion.AxisValue) < 0.5f ? 0 : Math.Sign(motion.AxisValue);
             var key = (motion.Device, motion.Axis);
             int previous = _axes.GetValueOrDefault(key);
-            // Keep the deflection latched through dead-zone chatter; only a clear
-            // neutral rearms it. This also prevents Menu reopening on one noisy hold.
+            stickHeld = previous != 0;
+            // Keep the previous sign through dead-zone chatter. Only a clear
+            // neutral releases the latch for this axis.
             if (Math.Abs(motion.AxisValue) < 0.35f) _axes[key] = 0;
             else if (direction != 0) _axes[key] = direction;
             // Each mapped axis gets one edge per deflection. A release, noise on another
@@ -212,6 +214,10 @@ internal sealed partial class GameInput
         foreach (var action in _bindings.Keys)
             if (InputMap.EventIsAction(input, MapName(action), true))
             {
+                // The target page rearms an axis at neutral, including when a
+                // sampled deflection jumps straight to the opposite sign.
+                if (freshTargetNavigation && stickHeld && (action == GameAction.Target || Directions.Contains(action)))
+                    return null;
                 if (Directions.Contains(action))
                 {
                     if (_movementDirections.Contains(action)) return null;

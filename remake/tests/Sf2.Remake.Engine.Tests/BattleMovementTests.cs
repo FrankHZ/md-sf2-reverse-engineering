@@ -135,9 +135,30 @@ public sealed class BattleMovementTests
         Assert.Same(before, session.Current.Battle);
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         Accept(session, new Confirm());
-        Accept(session, new ChooseAction(SessionAction.Stay));
-        Accept(session, new Confirm());
+        var stayed = Accept(session, new CommitBattleStay());
+        Assert.Single(stayed.Observations, row => row.Kind == "after-turn" && row.Actor == pending.Selection!.Actor);
         Assert.Equal(new MapPosition(3, 6), session.Current.Battle.GetActor(new("medic-a")).Position);
+    }
+
+    [Fact]
+    public void DirectStayRequiresActionChoiceAndCompletesTheOriginTurnOnce()
+    {
+        var session = Start("garden-watch");
+        var initial = session.Current;
+        var actor = initial.Selection!.Actor;
+        var stay = new CommitBattleStay();
+        Assert.Equal("wrong-selection-stage", Send(session, stay).Failure!.Code);
+        Assert.Same(initial, session.Current);
+
+        Accept(session, new Confirm());
+        var decision = session.Current;
+        var result = Accept(session, stay);
+        Assert.Single(result.Observations, row => row.Kind == "after-turn" && row.Actor == actor);
+        Assert.DoesNotContain(result.Observations, row => row.Kind == "stay-selected");
+        Assert.Equal(initial.Selection.Preview.Destination, result.Snapshot.Battle.GetActor(actor).Position);
+        Assert.False(result.Snapshot.Selection is { Stage: BattleSelectionStage.CommitReady });
+        Assert.NotNull(session.Submit(new(decision.SessionId, decision.Revision, actor, stay)).Failure);
+        Assert.Same(result.Snapshot, session.Current);
     }
 
     [Fact]

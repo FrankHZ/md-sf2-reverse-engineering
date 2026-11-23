@@ -279,7 +279,6 @@ func private_egress() -> void:
         if board().actor == "ally-0": break
         await tap(KEY_ENTER)
         await tap(KEY_SPACE)
-        await tap(KEY_ENTER)
         if not await settle_selection(): return
     check(board().actor == "ally-0", "ordinary queue reaches learned EGRESS caster")
     if not failures.is_empty(): return
@@ -334,7 +333,6 @@ func round_program() -> void:
         if not await ready(): return
     await tap(KEY_ENTER)
     await tap(KEY_SPACE)
-    await tap(KEY_ENTER)
     if not await settle_selection(): return
     var s := snapshot("after finite round")
     check(s.round == 2, "one round generated after finite consumers")

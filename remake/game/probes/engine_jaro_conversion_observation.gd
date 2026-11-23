@@ -83,7 +83,6 @@ func _run() -> void:
             return
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     state = await settle()
     if state.is_empty():
         _finish()
@@ -93,7 +92,6 @@ func _run() -> void:
     _check(actor(state, "ally-jaro").control == "Automatic" and actor(state, "ally-jaro").activationWord == 4, "live source AI bit controls ally")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     state = await settle()
     if not state.is_empty():
         sample("after-ally-action", state)

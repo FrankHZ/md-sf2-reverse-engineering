@@ -176,7 +176,6 @@ func items(owner: SceneTree, initial: Dictionary) -> void:
             break
         await observer._press(KEY_ENTER)
         await observer._press(KEY_SPACE)
-        await observer._press(KEY_ENTER)
         current = JSON.parse_string(observer.view.call("ReadObservationJson"))
     observer._check(current.actor == "guard-a", "Ordinary turns return the empty holder")
     await observer._press(KEY_ENTER)
@@ -226,7 +225,6 @@ func physical(owner: SceneTree, initial: Dictionary, reverse: bool) -> void:
     observer._check(killed.actor == initial.actors[1].id and killed.stopReason == "PlayerInput", "Automatic next living player")
     await observer._press(KEY_ENTER)
     await observer._press(KEY_SPACE)
-    await observer._press(KEY_ENTER)
     var next_round: Dictionary = observer._read("physical-next-round")
     observer._check(next_round.actor == player and next_round.round == 2 and next_round.mainSeed == 0x01231234,
         "Next round consumes only living turn entries")
@@ -303,7 +301,6 @@ func followups(owner: SceneTree, initial: Dictionary, shape: String) -> void:
             "Second-hit death cancels counter and clears the enemy exactly once")
     await observer._press(KEY_ENTER)
     await observer._press(KEY_SPACE)
-    await observer._press(KEY_ENTER)
     var next_round: Dictionary = observer._read("followup-next-round")
     observer._check(next_round.round == 2 and next_round.actor == (initial.actors[1].id if expected.hp == 0 else initial.actor),
         "Next round excludes any dead actor and returns actual living control")

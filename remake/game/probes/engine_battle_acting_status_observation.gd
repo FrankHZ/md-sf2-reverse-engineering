@@ -153,8 +153,6 @@ func run() -> void:
     # Stay is down from the diamond's deterministic Attack/Stay initial focus.
     await press("down")
     await press("confirm")
-    if not check(state().menu.page == "Commit", "Stay still requires separate confirmation"): return
-    await press("confirm")
     if not await wait_for(func(s): return s.get("actor") != null and s.actor != first.actor and s.get("stage") == "Movement", "next player actor"): return
     var next := state()
     if not await card_at("actor-handoff",int(next.previewX),int(next.previewY),-1): return

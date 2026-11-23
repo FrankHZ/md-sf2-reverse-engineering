@@ -97,6 +97,7 @@ func choose_target() -> void:
     await key(KEY_ENTER)
 
 func run() -> void:
+    root.size = Vector2i(1920, 1080)
     host = (load("res://Main.tscn") as PackedScene).instantiate()
     root.add_child(host)
     await process_frame
@@ -149,7 +150,6 @@ func run() -> void:
     check(board().actor == "receiver", "next receiver control after normal Give")
     await key(KEY_ENTER)
     await key(KEY_SPACE)
-    await key(KEY_ENTER)
     await settle()
     check(board().actor == "champion", "giver returns through ordinary round")
     await key(KEY_ENTER)

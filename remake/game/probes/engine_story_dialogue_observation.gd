@@ -326,7 +326,7 @@ func battle_story() -> void:
     for step in range(2):
         await tap(KEY_UP)
         if not await wait_for(func(s): return s.get("stage") == "Movement" and JSON.parse_string(view.call("ReadSceneObservationJson")).movement == null, "settled battle preview"): return
-    await tap(KEY_ENTER); await tap(KEY_SPACE); await tap(KEY_ENTER)
+    await tap(KEY_ENTER); await tap(KEY_SPACE)
     var delivered := 0
     var previous := -1
     var deadline := Time.get_ticks_msec()+45000

@@ -73,7 +73,6 @@ func _run() -> void:
     _check(battle.sessionId == identity and battle.storyFlags == [10.0, 12.0, 13.0, 14.0, 15.0, 16.0, 20.0], "Session identity and flags survive mode transition")
     await _press(KEY_ENTER)
     await _press(KEY_SPACE)
-    await _press(KEY_ENTER)
     var continued := _read("battle-continued")
     _check(continued.failure == null and continued.sessionId == identity, "Existing battle commands continue the same session")
     _finish()

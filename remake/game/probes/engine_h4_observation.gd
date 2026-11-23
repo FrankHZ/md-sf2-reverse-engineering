@@ -161,7 +161,7 @@ func run() -> void:
             elif decision.action != "Stay":
                 failure = "first-action-normalization-unavailable"
             else:
-                for action in ["Confirm", "Stay", "Confirm"]:
+                for action in ["Confirm", "Stay"]:
                     await press(action)
                     if failure != "": break
                 await settle("field")
