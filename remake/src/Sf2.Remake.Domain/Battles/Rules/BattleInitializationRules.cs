@@ -1,3 +1,5 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
+
 namespace Sf2.Remake.Domain.Battles;
 
 internal static class BattleInitializationRules
@@ -53,9 +55,11 @@ internal static class BattleInitializationRules
         }
         foreach (var input in start.Actors)
         {
-            bool sleepingCasualty = input.Hp == 0 && (input.Status & ~0xC0) == 0 &&
-                definition.Deployments.Any(row => row.Actor == input.Actor && row.Faction == BattleFaction.Ally);
-            Require((input.Status & ~7) == 0 || sleepingCasualty, "new-battle-status-refresh", "start.actors.status", true);
+            bool ally = definition.Deployments.Any(row => row.Actor == input.Actor && row.Faction == BattleFaction.Ally);
+            bool sleepingCasualty = ally && input.Hp == 0 && (input.Status & ~0xC0) == 0;
+            bool muddledCarry = ally && MuddleRules.Present(input.Status) && MuddleRules.SupportedRankOne(input.Status);
+            Require((input.Status & ~7) == 0 || sleepingCasualty || muddledCarry,
+                "new-battle-status-refresh", "start.actors.status", true);
             Require(input.PositionOverride is null, "initialization-placement-override", "start.actors.positionOverride", true);
         }
     }

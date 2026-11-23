@@ -54,9 +54,7 @@ internal static class HealingTargetRules
     internal static void RequireAuraCaster(EngineBattleState battle, BattleActorState caster)
     {
         ValidateAura(battle.Definition);
-        bool supportedStatus = BattleControlRules.UsesTemporaryAllyAi(caster)
-            ? SilenceRules.SupportedInBattle(caster.Status, battle.Definition.Poison)
-            : SilenceRules.Supported(caster.Status, battle.Definition.Poison);
+        bool supportedStatus = MuddleRules.SupportedRankOne(caster.Status, battle.Definition.Poison);
         if ((caster.IsAlly ? caster.Control != BattleControl.Player : caster.Control != BattleControl.Automatic) ||
             !supportedStatus || (caster.Status & 0xC0) != 0)
             throw new BattleRuleException("aura-caster", "actor", true);

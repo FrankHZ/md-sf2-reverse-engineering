@@ -27,9 +27,8 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
     {
         var actor = battle.GetActor(actorRef);
         bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
-        bool controlled = temporary ? SilenceRules.SupportedInBattle(actor.Status, battle.Definition.Poison) :
-            actor.Deployment.SourceAllyControl && actor.Control == BattleControl.Automatic &&
-            SilenceRules.Supported(actor.Status, battle.Definition.Poison);
+        bool controlled = (temporary || actor.Deployment.SourceAllyControl && actor.Control == BattleControl.Automatic) &&
+            MuddleRules.SupportedRankOne(actor.Status, battle.Definition.Poison);
         if (!actor.IsAlly || !controlled || actor.Hp == 0 || actor.Position is null ||
             (actor.Status & 0xC1) != 0 || battle.StartPolicy?.Difficulty is > 0)
             throw new BattleRuleException("source-ally-ai-state", "actor.ai", true);
@@ -42,9 +41,8 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
             throw new BattleRuleException("source-ally-slot", "battle.sourceCombatants", true);
         if (!slots.Any(p => p.Key is >= 0 and < 30 && p.Value == actorRef))
             throw new BattleRuleException("source-ally-slot", "actor.sourceSlot", true);
-        var targets = slots.Where(p => p.Key is >= 128 and < 160).OrderBy(p => p.Key)
-            .Select(p => battle.GetActor(p.Value)).Where(a => !a.IsAlly && a.Hp > 0 && a.Position is not null).ToArray();
-        if (targets.Any(a => a.ActivationWord is null || (a.ActivationWord.Value & 8) != 0))
+        var targets = Opponents(battle, slots).Where(IsPlacedOpponent).ToArray();
+        if (targets.Any(a => !SupportsOpponentOccupancy(a)))
             throw new BattleRuleException("source-occupancy-word", "actors.activationWord", true);
         var grid = BattleMovement.Grid(battle, actorRef);
         bool Occupied(MapPosition p) => battle.Actors.Any(a => a.Hp > 0 && a.Position == p);
@@ -76,6 +74,15 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         BattleMovement.RequireStop(battle, actorRef, pursuit.Destination, grid);
         return new(battle, effects.AsReadOnly(), pursuit.Destination, BattleMovement.Route(actor.Position, pursuit.MoveString));
     }
+
+    internal static IEnumerable<BattleActorState> Opponents(EngineBattleState battle, IReadOnlyDictionary<int, ActorRef> slots) =>
+        slots.Where(slot => slot.Key is >= 128 and < 160).OrderBy(slot => slot.Key)
+            .Select(slot => battle.GetActor(slot.Value)).Where(actor => !actor.IsAlly);
+
+    internal static bool IsPlacedOpponent(BattleActorState actor) => actor.Hp > 0 && actor.Position is not null;
+
+    internal static bool SupportsOpponentOccupancy(BattleActorState actor) =>
+        !IsPlacedOpponent(actor) || actor.ActivationWord is { } word && (word & 8) == 0;
 
     // Activation-driven ally control retains its existing physical capability.
     private static bool PhysicalOnly(BattleActorState actor, BattleSourceLoadout loadout) =>

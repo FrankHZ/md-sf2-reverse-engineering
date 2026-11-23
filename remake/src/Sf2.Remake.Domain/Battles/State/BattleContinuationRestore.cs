@@ -29,10 +29,14 @@ internal static class BattleContinuationRestore
             false, true, true, data.Options.AllyAutoBattle, data.Options.OpponentControl, data.Options.MissingCandidateAllyWord)
             { Origin = BattleStartOrigin.NewGame, BeforeBattleRouted = true };
         var visuals = Visuals(data.Visuals, actors, definition);
-        return new(definition, actors, data.MainSeed, data.ThinkingSeed, data.Round,
+        var battle = new EngineBattleState(definition, actors, data.MainSeed, data.ThinkingSeed, data.Round,
             data.Queue.Select(t => new TurnOrderEntry<ActorRef>(t.Actor is null ? null : new ActorRef(t.Actor), t.AlteredAgility)),
             data.Cursor, data.Gold, policy, data.Regions is null ? null : new(data.Regions.Flags, data.Regions.Tested),
             itemCustody: new(data.Custody.OnceFlags, data.Custody.Deals, data.Custody.Depot), deathCredit: data.DeathCredit is null ? null : data.DeathCredit with { }, visuals: visuals);
+        Require(actors.Where(actor => MuddleRules.Present(actor.Status) && actor.Hp > 0 && actor.Position is not null)
+            .All(actor => MuddleRules.SupportedRankOne(actor.Status, definition.Poison) && MuddleRules.CanTurn(battle, actor)),
+            "muddle-control");
+        return battle;
     }
 
     private static BattleActorState Actor(BattleDeploymentDefinition deployment, SavedBattleActor saved, BattleDefinition battle)
@@ -46,6 +50,7 @@ internal static class BattleContinuationRestore
             saved.Hp == 0 && saved.Position is null, "initialization");
         ushort applied = saved.LastRefreshCounters ?? saved.Status;
         Require(deployment.Faction == BattleFaction.Ally || (saved.Status & BattleStatCounters.Attack) == 0, "attack-status");
+        var loadout = BattleContinuationValues.Loadout(saved.Loadout);
         if (deployment.Faction == BattleFaction.Ally)
             Require(saved.Status == BattleEquipment.RefreshCurse(deployment.Definition, saved.Loadout, saved.Status), "curse-status");
         byte ordinaryAttack = BattleEquipment.Attack(deployment.Definition, saved.Progress, saved.Loadout, applied);
@@ -76,7 +81,7 @@ internal static class BattleContinuationRestore
         return new(deployment with { Position = saved.DeploymentPosition }, saved.Hp, saved.Mp, saved.Exp, saved.Position,
             saved.Kills, saved.Defeats, saved.LastTarget is null ? null : new ActorRef(saved.LastTarget), saved.Attack,
             saved.Status, saved.ActivationWord, saved.AiMemory, BattleContinuationValues.Progress(saved.Progress),
-            BattleContinuationValues.Loadout(saved.Loadout), retainDeadPosition: true,
+            loadout, retainDeadPosition: true,
             primaryOrder: saved.PrimaryOrder, secondaryOrder: saved.SecondaryOrder, facing: saved.Facing, initialized: saved.Initialized,
             appliedStatBits: saved.LastRefreshCounters is { } bits ? (ushort)(bits | (saved.Status & 1)) : null);
     }
@@ -88,7 +93,7 @@ internal static class BattleContinuationRestore
         var progress = saved.Progress;
         Require(saved.Facing <= 3 && saved.Hp <= (progress?.MaxHp ?? definition.MaxHp) &&
             saved.Mp <= (progress?.MaxMp ?? definition.MaxMp) && saved.Exp is null or <= 200 &&
-            saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && SilenceRules.Supported(saved.Status), "actor-range");
+            saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && MuddleRules.SupportedRankOne(saved.Status), "actor-range");
         if (progress is not null)
             Require(definition.Growth is not null && progress.Level is >= 1 and <= 99 && progress.MaxHp is > 0 and <= 200 &&
                 progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100 &&

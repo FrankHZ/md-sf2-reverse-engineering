@@ -92,7 +92,8 @@ public sealed class BattleSaveReturnTests
         }
         var live = BattleSaveFixture.At(battle, story.Copy(null, fieldPlayer: story.FieldPlayer! with
             { Player = new(authoredPlayer ? "authored-player" : "entity-0"),
-                RetainedAllies = story.FieldPlayer.RetainedAllies!.Select(a => a with { Absent = false }).ToArray() }));
+                RetainedAllies = story.FieldPlayer.RetainedAllies!.Select(a => a with
+                    { Absent = false, Status = parked && a.Hp == 0 ? (ushort)(a.Status | 0x30) : a.Status }).ToArray() }));
         var saved = BattleSaveFixture.Capture(definition, live);
         var bytes = OpeningSaveJson.WriteRecord(new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, saved));
         var record = OpeningSaveJson.ReadRecord(bytes, 1);
@@ -127,7 +128,9 @@ public sealed class BattleSaveReturnTests
             Assert.Equal(actor.SourceLoadout!.Items, other.SourceLoadout!.Items);
         }
         Assert.Equal(cursed ? 4 : 0, actual.Actors.Single(a => a.Actor.Value == "ally-0").Status);
-        Assert.Equal(0, actual.Actors.Single(a => a.Actor.Value == "ally-1").Hp);
+        var fallen = actual.Actors.Single(a => a.Actor.Value == "ally-1");
+        Assert.Equal(0, fallen.Hp);
+        Assert.Equal(parked ? 0x32 : 2, fallen.Status);
         Assert.Null(resumed.Story.EnteringBattle); Assert.Null(resumed.Story.FieldPlayer);
         if (kind == BattleOutcomeKind.Victory)
         {
@@ -135,7 +138,11 @@ public sealed class BattleSaveReturnTests
             Assert.NotNull(resumed.Story.OutcomeReturn);
             Assert.NotNull(resumed.Story.SaveAnchor);
             var visit = SettledFieldSnapshotTests.Capture(definition, resumed);
-            var detached = visit.Build(definition, rules).Snapshot;
+            var wire = OpeningSaveJson.ReadRecord(OpeningSaveJson.WriteRecord(new FieldSnapshotRecord(
+                1, 1, DateTimeOffset.UnixEpoch, new(visit))), 1);
+            var detached = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, wire, rules)).Session.Current;
+            Assert.Equal(fallen.Status, detached.Exploration!.Party.Actors.Single(a => a.Actor == fallen.Actor).Status);
+            Assert.Equal(0, detached.Exploration.Party.Actors.Single(a => a.Actor == fallen.Actor).Hp);
             Assert.Null(detached.Story.OutcomeReturn);
             Assert.Null(detached.Story.SaveAnchor);
             Assert.Equal(resumed.Story.EgressMap, detached.Story.EgressMap);

@@ -38,7 +38,7 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (actor.IsAlly ? !Sf2ClassRules.PlayerHealer(actor.Definition.ClassRule) :
             actor.Control != BattleControl.Automatic || actor.Definition.ClassRule != BattleClassRule.Ordinary ||
                 spellRef is not ({ Value: "heal", Level: >= 1 and <= 4 } or { Value: "aura", Level: 1 }) ||
-                !(SilenceRules.Supported(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
+                !(MuddleRules.SupportedRankOne(actor.Status, battle.Definition.Poison) && (actor.Status & 0xC0) == 0))
             throw new BattleRuleException("healing-class", "actor.classRule", true);
         if (spell.IsAura) HealingTargetRules.RequireAuraCaster(battle, actor);
         if (!CanPay(actor, spell)) throw new BattleRuleException("insufficient-mp", "actor.mp");

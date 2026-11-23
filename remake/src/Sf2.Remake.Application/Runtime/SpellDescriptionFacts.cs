@@ -7,7 +7,7 @@ public enum SpellEffect
 {
     RestoreHp, FullHp, CurePoison, CurePoisonAndParalysis, Damage,
     Silence, Sleep, LowerDefenseAndAgility, RaiseDefenseAndAgility, RaiseAttack,
-    Retreat, ReturnToRefuge, NoEffect, CurePoisonParalysisAndCurse, InstantDeath,
+    Retreat, ReturnToRefuge, NoEffect, CurePoisonParalysisAndCurse, InstantDeath, Muddle,
 }
 
 public enum SpellTarget { Self, Ally, Enemy, AllAllies, PartyMember }
@@ -61,6 +61,7 @@ public sealed record SpellDescriptionFacts(SpellRef Spell, byte? MpCost, SpellEf
             {
                 SupportSpellEffect.Silence => SpellEffect.Silence,
                 SupportSpellEffect.Sleep => SpellEffect.Sleep,
+                SupportSpellEffect.Muddle => SpellEffect.Muddle,
                 SupportSpellEffect.Slow => SpellEffect.LowerDefenseAndAgility,
                 SupportSpellEffect.Boost => SpellEffect.RaiseDefenseAndAgility,
                 SupportSpellEffect.Attack => SpellEffect.RaiseAttack,

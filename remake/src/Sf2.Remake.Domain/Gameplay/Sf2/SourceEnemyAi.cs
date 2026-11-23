@@ -39,7 +39,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         actions ??= [physical];
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 ||
-            !(SilenceRules.Supported(actor.Status, current.Definition.Poison) && (actor.Status & 0xC0) == 0) ||
+            !(MuddleRules.SupportedRankOne(actor.Status, current.Definition.Poison) && (actor.Status & 0xC0) == 0) ||
             actor.Deployment.Initialization is not { } source || current.Regions is null)
             throw new BattleRuleException("source-ai-state", "actor.ai", true);
         if (actor.ActivationWord is not { } word)

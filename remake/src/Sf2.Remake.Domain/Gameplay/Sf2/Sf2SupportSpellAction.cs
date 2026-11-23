@@ -18,7 +18,7 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
         if (!battle.Definition.SupportSpells.TryGetValue(key, out var spell)) throw new BattleRuleException("spell-effect", "spell", true);
         spell.RequireSupported();
         if (spell.AbsorbsMp) throw new BattleRuleException("spell-effect", "spell", true);
-        if (actor.Hp == 0 || actor.Position is null || !SilenceRules.Supported(actor.Status, battle.Definition.Poison) ||
+        if (actor.Hp == 0 || actor.Position is null || !MuddleRules.SupportedRankOne(actor.Status, battle.Definition.Poison) ||
             (actor.Status & 0xC0) != 0 || (!actor.IsAlly && actor.Control != BattleControl.Automatic))
             throw new BattleRuleException("support-spell-caster", "actor", true);
         if (battle.Definition.Rewards is null) throw new BattleRuleException("battle-rewards", "encounter.rewards", true);
@@ -53,8 +53,11 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
             throw new BattleRuleException("target-range", "target");
         var targets = battle.Actors.Where(a => Eligible(caster, a, spell) && BattleRange.Contains(Position(target), Position(a), 0, spell.Radius))
             .OrderBy(a => a.ProcessingOrder).ToArray();
-        if (targets.Any(a => !SilenceRules.Supported(a.Status, battle.Definition.Poison)))
+        if (targets.Any(a => !MuddleRules.SupportedRankOne(a.Status, battle.Definition.Poison)))
             throw new BattleRuleException("support-spell-target-status", "actors.status", true);
+        if (spell.Effect == SupportSpellEffect.Muddle &&
+            targets.Any(a => !MuddleRules.CanTurn(battle, a)))
+            throw new BattleRuleException("muddle-target-turn", "actors.control", true);
         return targets;
     }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,

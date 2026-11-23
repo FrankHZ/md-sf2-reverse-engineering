@@ -674,6 +674,8 @@ internal sealed partial class BattleSceneView : Control
             },
             BattleScenePhase.ResultMessage when state.AbsorbsMp =>
                 LocalizedMessage("battle.scene.mp-absorbed", ActorName(state.Actor), state.Amount),
+            BattleScenePhase.ResultMessage when state.SupportSpell?.Spell.Value == "muddle" && state.ReactionKind == "Status" =>
+                LocalizedMessage("battle.scene.muddle", Target()),
             BattleScenePhase.ResultMessage when state.SupportSpell?.Spell.Value == "sleep" && state.ReactionKind == "Status" =>
                 LocalizedMessage("battle.scene.sleep", Target()),
             BattleScenePhase.ResultMessage when state.SupportSpell?.ChangesStats == true && state.ReactionKind == "Status" =>

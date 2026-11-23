@@ -696,7 +696,7 @@ public sealed class FieldServiceTests
     [InlineData(7, true, 90, 270, 90)]
     public void RaiseUsesCurrentLevelPromotionCapAndExactFundsWithoutResettingTheParty(byte level, bool promoted, ushort maxHp, uint cost, ushort raisedHp)
     {
-        var session = Session(gold: cost, level: level, promoted: promoted, maxHp: maxHp);
+        var session = Session(gold: cost, level: level, promoted: promoted, maxHp: maxHp, status: 0x30);
         var before = session.Current.Exploration!.Party;
         Choose(session, ChurchAction.Raise);
         Assert.Equal(cost, Wait(session).Offer!.Cost); Assert.Same(before, session.Current.Exploration!.Party);
