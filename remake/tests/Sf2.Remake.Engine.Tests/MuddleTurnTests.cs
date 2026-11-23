@@ -114,6 +114,33 @@ public sealed class MuddleTurnTests
     }
 
     [Theory]
+    [InlineData(0x02, true)]
+    [InlineData(0x08, false)]
+    [InlineData(0x10, false)]
+    [InlineData(0x38, false)]
+    public void DirectAuthoredStartAdmitsOtherWordsAndRejectsMuddle(int status, bool admitted)
+    {
+        var input = EngineTestContent.Admitted("jaro-conversion");
+        var enemy = new ActorRef("enemy-jaro");
+        var actors = input.Start.Actors.Select(a => a.Actor == enemy ? a with { Status = (ushort)status } : a);
+        var start = input.Start.WithResources(actors, input.Start.Gold);
+
+        var result = GameSession.Start(input.Definition, start);
+        if (admitted)
+        {
+            var started = Assert.IsType<SessionStarted>(result);
+            Assert.Null(started.Result.Failure);
+            Assert.Equal((ushort)status, started.Session.Current.Battle.GetActor(enemy).Status);
+        }
+        else
+        {
+            var failure = Assert.IsType<SessionStartFailed>(result).Failure;
+            Assert.Equal(SessionFailureKind.UnsupportedCapability, failure.Kind);
+            Assert.Equal("actor-status", failure.Code);
+        }
+    }
+
+    [Theory]
     [InlineData(0x08)]
     [InlineData(0x10)]
     [InlineData(0x38)]

@@ -114,7 +114,11 @@ internal static class BattleTurnFlow
                     "actor-progress", "start.actors.progress");
             Require(input.Hp <= (input.Progress?.MaxHp ?? actor.MaxHp) && input.Mp <= (input.Progress?.MaxMp ?? actor.MaxMp) && (input.Exp is null || input.Exp <= (start.NewBattle is null ? 99 : 200)) &&
                 (input.Kills is null or <= 9999) && (input.Defeats is null or <= 9999), "numeric-range", "start.actors.resources");
-            Require(SilenceRules.Supported(input.Status, definition.Poison) || start.NewBattle is not null || definition.Initialization?.RegionProgram == BattleRegionProgram.Authored, "actor-status", "start.actors.status", true);
+            // Authored starts can retain raw status words, but MUDDLE requires its automatic consumers.
+            Require((input.Status & MuddleRules.Mask) == 0 &&
+                (SilenceRules.Supported(input.Status, definition.Poison) || start.NewBattle is not null ||
+                    definition.Initialization?.RegionProgram == BattleRegionProgram.Authored),
+                "actor-status", "start.actors.status", true);
             if (start.NewBattle is null) Require(input.Exp is not null && input.Kills is not null && input.Defeats is not null,
                 "missing-accounting", "start.actors");
             if (input.Absent || deployment.Faction == BattleFaction.Ally && start.ActiveAllies is { } active && !active.Contains(deployment.Actor)) continue;

@@ -357,10 +357,10 @@ shared by search, commit validation and playback, plus the selected-center guard
 and same-side accounting. Reuse those owners and the existing action rules. Keep faction and
 permanent control identity as their current operands.
 
-Both MUDDLE ranks remain unbound while those automatic consumers are open. The authored,
-private and save admission rules retain their existing rejection of active MUDDLE. The
-controlled engine cases inject status inside the simulation to exercise the completed pieces
-and check that public save and restore still reject pending counts and flag-only words.
+Both MUDDLE ranks remain unbound while those automatic consumers are open. Battle starts
+and battle Save/Continue reject pending counts and flag-only words. The direct typed
+`GameSession.Start` path checks the MUDDLE bits before using the authored raw-status allowance.
+Controlled engine cases inject status inside the simulation to exercise the completed pieces.
 No save field or format changes. The localized expiry message compiles in the adapter.
 Ordinary cast, native automatic turn and active cold Continue remain unverified at this stage.
 
