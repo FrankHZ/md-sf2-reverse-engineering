@@ -14,111 +14,15 @@ natural attack, counter, spell or equipment combination was newly observed. The
 [production UI coverage](battle-interaction-baseline.md#production-f4f8f9-contract) owns the accepted
 F4/F8/F9 rollout; the focused playback contract follows.
 
-## Prepared BLAZE1 presentation
+## Spell presentation
 
-**Standard scope (#2068).** Battles04–07 can mount BLAZE1's small flame from the prepared
-private effects library. The production scene shows the caster's cast pose, the current target,
-the equipped weapon where applicable, and the selected background and ground. Ally and enemy
-casts place the flame on the recipient's side. The cast pose cues the flame and cast sound.
-Completion waits for both the pose sequence and the 48-tick flame. Reduced Flash holds one flame
-frame with a smooth fade. The existing hit/coin message setting can suppress the coin notice
-while the animation and spell damage notice retain their own waits. Session rules still deliver
-cost, ordered reactions, death, rewards and next control.
+The [spell coverage inventory](spell-presentation.md#coverage-by-family-and-rank) maps each original
+rank to its current gameplay binding, assets, package, witnesses and follow-up owner.
 
-**Confirmed source identity.** USA retail ROM `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
-and pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` bind `spelldefs.asm`
-BLAZE1 to animation selector 1. `spellanimationSetup_Blaze` loads tileset 2, whose table entry
-is `SpellGraphics02` at `0x1BF3E6`. `LoadSpellTileset` replaces indices 9, 13 and 14 of
-`palette_BattlesceneBase` (`0x198A8`) with `$022E`, `$028E` and `$08EE`. The registered 7,104-byte
-tiles and base palette compare byte-for-byte to the decoded ROM stream and ROM palette.
-`table_1A5E4` and `table_1BE2A` select column-major 2×4 sprites at zero-based tiles 33 and 41.
-Each variation-1 entry duplicates the other at the same position. The adapter draws a single
-16×32 flame at (72,112) or (176,128) on the 256×224 local canvas. The source cast sound is 77.
-Fade, frame cadence, reaction motion and delivery on the Godot clock are modern presentation choices.
+### Prepared BLAZE1 presentation
 
-`createbattlesceneanimation.asm:battlesceneScript_PerformAnimation` selects `BATTLEANIMATION_ATTACK`
-for ordinary spellcasters, including Kazin and Galam Mage. `GetAllyAnimation` resolves Kazin's
-class sequence 4 and `GetEnemyAnimation` resolves Galam Mage's species sequence 36. Battle04's
-Kazin row exposes sequence 4 through `idle`, identical to its `attack` sequence. The registered
-Battle05 Galam Mage row exposes sequence 36 through `attack`. Battles06–07 provide a `cast` alias
-with exactly the same operands as `attack`, including trigger 2 and the frame 2→3 pose. The adapter
-prefers a published `cast` row and otherwise reads the existing ordinary pose. The pose's trigger
-cues the modern flame interval.
-
-**Publication.** Select the registered fixed-backdrops package as `$base`, its prepared `retail-v1`
-asset library as `$library`, and a fresh ignored absolute output `$candidate`. Load worktree private
-selections in the same shell. The mount reads two existing tile frames and reuses the closed-package
-publisher. An omitted `blaze-1/` namespace retains the legacy effect. A partial pair, extra frame
-or wrong dimensions fails scene admission.
-
-```powershell
-uv run sf2 rom verify
-uv run python -m sf2tool.remake_retail_assets --root $library --base $base --mount $candidate --family blaze
-```
-
-To reproduce the source comparison, follow `p_pt_SpellGraphics` at `0x1B800C` through table slot 2.
-Decode its stream at header offset +8 with `decode_stack_compressed`, using
-the first header word as expanded length. Compare with `effects/spell-2.4bpp`, then compare the 16
-palette words at `0x198A8` with `effects/base-palette.json`. Apply the three replacement words from
-the header and use the named tile operands above to compare the two mounted rasters. The selected
-package has 142 byte-identical dependencies and four scenes equal to their base values after
-removing the two new rasters from each. The logical size increases by 4,496 bytes, and the largest
-changed scene is 879,858 bytes against the 4 MiB reader limit. The publisher hardlinks unchanged
-inputs on the same volume and copies changed scenes before writing. A cross-volume copy needs about
-315 MB. Complexity is linear in the selected package's file closure, with worktree-local scratch.
-
-**Native reproduction.** Select the candidate `world.json`, `main-scenes.json`, `entry/entry.json`
-and six `opening-inputs` files in their ordinary `SF2_PRIVATE_*` environment selections. Use a fresh
-worktree-local report/runtime and a disposable task-specific external save namespace. Provide
-`SF2_BLAZE_START` pointing to an ignored controlled-start JSON with these values:
-
-```json
-{"start":{"battle":"battle-4","activeAllies":["ally-0","ally-4"],"actors":[{"actor":"ally-4","position":{"x":4,"y":7}},{"actor":"enemy-1","hp":1,"position":{"x":6,"y":7}}]}}
-```
-
-The existing controlled startup mounts Battle04 with Kazin's normal learned BLAZE1 and stages one
-legal target in range. The 1 HP target exercises the actual kill and rewards within one cast.
-For each run set `SF2_OBSERVATION_OUTPUT` to a fresh file and select a version-1 input settings file
-with `suppressBattleHitCoinMessages` and `reducedFlash` false, then only the former true, then only
-the latter true. Set `SF2_BLAZE_SKIP_MESSAGES` and `SF2_BLAZE_REDUCED_FLASH` to matching `0`/`1` values
-for the observer. Build the locked Debug adapter before launching the installed Godot console.
-
-```powershell
-& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility --fixed-fps 60 `
-    --resolution 1920x1080 --path remake/game --script res://probes/engine_prepared_blaze_observation.gd -- `
-    --input-settings $settings
-```
-
-**Confirmed in the remake.** All three runs select and confirm BLAZE1 with ordinary input. Normal
-and coin-skip play both flames, Reduced Flash plays the first. The read-only projection sees
-Kazin's cast frame, Galam Soldier, rod, background, ground and the source flame. Cast cue 77
-starts once on the animation token. Early Confirm
-retains the animation token. The spell deals 6 damage, MP changes 13→11, Kazin gains 49 EXP and
-one kill, and gold changes 60→110. The next actor, Bowie, opens a new action menu in the same
-session. The coin notice is visible in normal and Reduced Flash and passes without input in skip.
-The spell result remains readable in all three. The recordings cover actual resource binding and
-timed playback. Headless exit reported ten ObjectDB instances after control returned.
-
-**Enemy-side reproduction.** With the same private package and observer, set `SF2_BLAZE_ENEMY=1`,
-`SF2_BLAZE_SKIP_MESSAGES=0`, `SF2_BLAZE_REDUCED_FLASH=0`, and use normal input settings. Point
-`SF2_BLAZE_START` at a fresh ignored controlled-start JSON containing these values:
-
-```json
-{"start":{"battle":"battle-5","activeAllies":["ally-0"],"actors":[{"actor":"enemy-2","position":{"x":9,"y":6}}]}}
-```
-
-**Confirmed in the remake.** Battle05's SENTRY Galam Mage moves (9,6)→(5,5) and casts BLAZE1
-at Bowie (3,5) through the ordinary enemy decision. Both frames draw at (176,128) with
-`enemy36/frame3`, `ally0-palette0/frame0`, the equipped sword, `background8` and `ground8` visible.
-The session records one cast, one MP payment (5→3), one HP change (12→6) and one enemy action
-commit. Early Confirm retains the cast token. Bowie opens a new action menu in the same session.
-The observer reports no session, scene or audio error and exits 0. Eight ObjectDB instances are
-reported at exit. Original timing and foreground visual acceptance (#1456) remain **Unknown**.
-
-BLAZE2 shares tileset 2 but uses the medium stacked flame and ten meteors. BLAST1 uses the
-distinct tileset 15 and its dust/wind update. Both keep their modern effects and current recipient
-order until their own presentation slices. The other attack spell and item effect families remain
-with their existing consumers.
+The [prepared BLAZE1 scene](spell-presentation.md#prepared-blaze1-presentation) records the
+Battles04–07 package and the separate Battle04 Kazin and Battle05 Galam Mage native witnesses.
 
 ## Production playback and result layout
 
@@ -308,7 +212,7 @@ The remake column describes accepted code and the named observation only.
 | 02 · [formation](../../../docs/research/chapters/grans-opening/battle02-initialization-and-first-control.md), [outcomes and retry](../verification/field-programs.md#battle02-outcomes-and-retry) | Add joined Jaha WARR (3/0) Short Axe 33. Huge Rat (1/0), Ooze (0/1). | The selected Map66 board and private scene admit the four starting pairs plus SDMN/Short Sword and KNTE/Short Spear. [Ordinary short-spear playback](#equipped-weapons-from-the-campaign-shops) reaches the next player input. Connected entry and selected outcome, defeat and retreat/retry have their own evidence. Binding a pair does not establish every attack, dodge or counter was played. |
 | 03 · [formation](../../../docs/research/chapters/grans-opening/battle03-initialization-and-first-control.md), [Yeel witness](../verification/field-programs.md#yeel-guide-through-battle03) | Same battle party. Kazin may follow in the field. Huge Rat, Ooze, Huge Bat (23/0) with sleep critical. | Selected Battle02-return start connects Yeel to Battle03 control. The real bat can inflict sleep, skip an entry and release control after waking in the bounded variation. Twelve formation rows are capacity; current connected route/outcome evidence belongs to the campaign agreement. |
 | 04 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle04-initialization-and-first-control.md) | After Hawel add Kazin MAGE (4/0) Wooden Rod 85. Galam Soldier (2/0) Short Axe, Galam Archer (31/0) Wooden Arrow at distance 2, Huge Bat. | Connected campaign content supplies Kazin and the admitted Soldier/Archer/bat bindings. Sharing Sarah's rod never substitutes for Kazin's body or sequences; the campaign owner retains the actual route/resource evidence. The bow user here is an enemy. |
-| 05 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md) | Retain Kazin. Slade follows before his formal post-victory join. Galam Knight (3/0) Short Spear at 1–2, Archer, Soldier, Galam Mage (36/0) Short Rod and BLAZE1. | The campaign admits Knight/Mage and retained Soldier/Archer on this board. Mage's ordinary physical/defensive poses still need binding even though its fire effect renders independently. Slade's scripted positioning in the Knight outcome does not require a pre-join player attack. |
+| 05 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle05-initialization-and-first-control.md) | Retain Kazin. Slade follows before his formal post-victory join. Galam Knight (3/0) Short Spear at 1–2, Archer, Soldier, Galam Mage (36/0) Short Rod and BLAZE1. | The campaign admits Knight/Mage and retained Soldier/Archer on this board. Mage uses its ordinary attack sequence for the mounted BLAZE1 cast. Battle05's controlled enemy cast covers its pose and recipient-side flame. Independent physical and defensive observations remain bounded by their own witnesses. Slade's scripted positioning in the Knight outcome does not require a pre-join player attack. |
 | 06 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle06-opening-and-first-control.md) | Add Slade THIF (5/0) Short Knife 103. Actual equipment may now include Galam purchases. Dark Cleric (40/0) Short Rod and HEAL1, Galam Mage, Soldier, Knight, Archer. | The campaign admits the post-shop loadout, Slade physical and cleric content. Authored enemy HEAL proves only its named semantic consumer, not every private cleric cast/recovery combination. |
 | 07 · [formation and weapons](../../../docs/research/chapters/grans-opening/battle07-opening-and-first-control.md) | Optional joined Kiwi TORT (6/0), unarmed. Dark Smoke (22/0), Galam Mage, Dark Cleric, Galam Archer, Galam Knight. Smoke has DISPEL1, silence critical and a possible extra round entry. | The campaign admits optional TORT class/scene/field bindings and Smoke with its own palette despite sharing Gizmo's sprite index. Keep the absent-Kiwi path and story followers distinct. Victory follows ordinary faction counts. No forced Smoke cast, critical or boss kill. |
 
@@ -432,9 +336,9 @@ stderr and the unchanged copied Battle05 slot.
 | Action and direction | Working consumer and bounded evidence | Remaining decision or minimum check at first use |
 | --- | --- | --- |
 | Physical, ally → enemy and enemy → ally | [Physical scenes](#physical-battle-scenes) use the acting side's attack and the target's reaction, including dodge, damage recoil, second/counter role changes, result and death. Private samples cover actual hits in both directions. [Ranged sample](../development-and-verification.md#early-ranged-physical-observation) covers changed equip/range, distance-2 attacks and continued input with authored content. | Reuse the combat rule. For newly bound archers and knights check a legal station, actual attacker/defender and equipped presentation. For a follow-up that occurs, cards and reaction must follow the current pair. No projectile asset or exhaustive per-actor dice outcomes required. |
-| HEAL, ally → ally or self | [Private HEAL1–4](#heal-spell-scenes) has cast/idle, healing fairy, recovery, recipient switch where required, restore caster, EXP and release. | Sarah's HEAL 4 has a Battle26 witness. A new recipient needs its own bound idle and current equipment, even if that member never casts. |
-| HEAL1, enemy → wounded enemy | The [enemy-spell witness](../development-and-verification.md#enemy-spell-observation) reads one 3 MP payment, 8→23 HP, no enemy reward and later player movement in the authored package. | #1539 needs the private cast/idle binding above. Check enemy-side recipient switch, recovery text/card and return after a legal heal. Full-health enemies do not establish this case. |
-| BLAZE1–2 / BLAST1, learned ally → enemy; BLAZE1, Mage → ally | [Prepared BLAZE1](#prepared-blaze1-presentation) draws the private flame with the actual scene actors in Battles04–07. [Player witness](../development-and-verification.md#player-attack-spell-observation) covers BLAZE2's ordered pair and BLAST1's single target with modern effects. The authored enemy witness uses the legacy effect. | Kazin's prepared cast and ordinary turn return are observed. BLAZE2's medium flame/meteors and BLAST1's wind/dust remain presentation work. |
+| HEAL, ally → ally or self | [Private HEAL1–4](spell-presentation.md#heal-spell-scenes) has cast/idle, healing fairy, recovery, recipient switch where required, restore caster, EXP and release. | Sarah's HEAL 4 has a Battle26 witness. A new recipient needs its own bound idle and current equipment, even if that member never casts. |
+| HEAL1, enemy → wounded enemy | The [enemy-spell witness](../development-and-verification.md#enemy-spell-observation) reads one 3 MP payment, 8→23 HP, no enemy reward and later player movement in the authored package. | Private cleric content supplies cast and idle. A legal private enemy HEAL1 and the original evil-fairy art remain [coverage gaps](spell-presentation.md#recovery-support-and-retreat). |
+| BLAZE1–2 / BLAST1, learned ally → enemy; BLAZE1, Mage → ally | [Prepared BLAZE1](spell-presentation.md#prepared-blaze1-presentation) draws the private flame with the actual scene actors in Battles04–07. [Player witness](../development-and-verification.md#player-attack-spell-observation) covers BLAZE2's ordered pair and BLAST1's single target with modern effects. The authored enemy witness uses the legacy effect. | Kazin and Galam Mage have bounded native prepared casts. BLAZE2 and BLAST1 have separate [pre-voyage presentation slices](spell-presentation.md#pre-voyage-dispatch). |
 | DISPEL1 / suppressed spell / physical silence | [Silence witness](../development-and-verification.md#silence-observation) covers area results, one cost, a paid suppressed cast, expiry, effective later cast and movement. Support/suppressed scenes intentionally show messages/cards on black, with no character gesture. Physical silence uses the physical hit and a notice. | #1539 checks the displayed recipient and status/no-effect, or paid suppression as reached, then continued play. A quiet backdrop between acknowledged messages is expected. A stuck wait, wrong name or missing result would be a functional defect. |
 | Sleep / poison / removal | [Battle03 sleep](../verification/field-programs.md#yeel-guide-through-battle03) is private. [Poison notices](#authored-poison-notices) have authored damage/exhaustion and lethal field removal. [Field death](#battlefield-death-batches) hides close-ups, spins/exits the actual batch and settles before subsequent control or outcome. | Retain after-turn notices and ordered deaths on their own board. Check a reached new species disappears only after its exit and the correct next actor/field accepts input. Natural opening poison remains Unknown. |
 | Medical Herb / Healing Seed, friendly | [Herb](#medical-herb-scenes) has private self/other-ally item frames, switch back and recovery. The [purchased Seed witness](../development-and-verification.md#galam-shop-and-supply-observation) consumes the actual slot and restores 20 HP in its authored sample. | Reuse ordinary item, no fairy or MP. Check slot, named user/recipient and capped HP on the post-shop route. |
@@ -878,127 +782,13 @@ contract and no screenshots, original emulator, runtime state setters or fixed c
 
 ## HEAL spell scenes
 
-The bounded HEAL1–4 consumer prepares two award draws, then retains scene/turn ownership through
-MP cost, casting, optional ally switch, HP recovery, recovery text, ordinary idle, fairy retirement,
-cleanup, actor restoration, EXP/growth and input release. Full HP still casts and awards the healing
-minimum; self-healing preserves the already charged caster MP. Growth consumes the seed carried
-through the scene, not the construction seed. Private scenes require admitted PRST cast content,
-idle parameters and healing rasters; authored packages use an explicitly authored small gesture.
-Private player AURA 1 uses the fairy path and checks the actual recovery recipients' scene bindings.
-Its engine test checks ordered recovery and turn release. Ordinary player AURA 1 in private content
-remains **Unknown**. Public authored AURA and the [finite attack, support and cure spells](#which-actions-can-be-reused)
-use their own delivery paths. [Battle26 input and save observation](../application/church-promotion-design.md#current-battle-spells)
-The historical #523/#437 records do not establish full scene or hardware parity; the
-[current composed milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
-has its separately bounded acceptance.
-
-`HealingFairy` implements source integer word arithmetic, signed motion residuals, wing/dust state,
-level-dependent one/one/two instances, setup ranges32/30/12 and conditional update draws. Lifetime
-FFFF decrements before update. X-boundary ranges28/32 and periodic dust12 can co-occur; phase3
-retirement under control2, clear-before-cleanup-wait and later restoration remain separate boundaries.
-The existing private scene extractor supplies source body/wing/dust rasters and PRST cast sequence
-without promoting assets. Godot projects that state and plays source SFX77 at cast setup and113 at
-recovery. Reduced flash and text reveal alter delivery only.
-
-The scene-local `HealingSceneCursor` separates mandatory operations, explicit neutral timed-input
-reads and host delivery. Its logical message setting is speed2/no-messages0, independent of modern
-text settings. `bsc10` tests acknowledgement before the next VInt opportunity; a neutral read advances
-one opportunity. Neither reveal nor acknowledgement injects W2/range256 draws. Ordinary field
-`WaitAtInput` and plain-dialogue `WaitForText` retain their own eligibility guards. Scene commands
-require the current session, revision and scene token, with exactly one logical step per command.
-Completion delivery may arrive early or late, but cannot add steps after logical completion.
-For HEAL action/recovery messages, `CompletePresentation` reports text readiness independently of
-`Acknowledge`. The source speed2 neutral timeout completes without an additional confirmation once
-text is ready; if reveal finishes later, its delivery alone releases the expired message, with no
-new logical opportunity or RNG. The host reports readiness at the timed-input boundary or after
-timeout, and idle/reveal callbacks do not supply neutral Wait. Early acknowledgement still returns
-before the next input-loop VInt. Reward/growth messages retain their existing acknowledgement policy.
-
-Source owners are pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
-`battlescenes/animation/healingfairy.asm`, `animation/update/healingfairy.asm`, `battlesceneengine_0.asm`
-(`bsc01`, `bsc05`, `bsc0B`, `bsc0D`, `bsc10`), `battlesceneengine_1.asm`, `common/tech/graphics/graphics_1.asm`
-(`sub_179C/table_1840`) and the window/text helpers identified in the
-[retained HEAL evidence](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#retained-heal-consumer-evidence).
-Paths start below `disasm/code/gameflow/battle/` except the common helpers. PR550's accepted
-prepared-04 instrumentation uses execution `3e69c2d49c8105c0e485dcbea70c688b57a86902` and its explicitly
-rebound Issue515 prepared-11 parent. It does not reinterpret the incompatible older parent.
+The [HEAL spell scene owner](spell-presentation.md#heal-spell-scenes) records private cast/idle,
+fairy playback, authored delivery and the bounded recovery, continuation and input checks.
 
 ### Separate comparison boundaries
 
-**Confirmed — function comparison:** `local/issue523/heal-scene/comparison/Compare.csproj` calls the
-production kernel with HEAL1 and the externally observed post-award seed5C0D0000. Setup produces
-seed00920000 and the observed properties. It then supplies exactly one update per recorded
-`heal:fairy:after` and requests control2 from the trace's stop/control events. All244 returns match
-property words, lifetime/control/toggle, dust age/frame/clock and carried seed, including29 conditional
-update draws. Counts are comparison outcomes, not production budgets. This proves the update function
-for that externally supplied opportunity/control schedule; it does not prove that the application
-admits the original schedule, sprite coordinates/pixels, or every possible entry state.
-
-**Confirmed — completed continuous-cursor comparison failure:**
-`local/issue523/heal-scene/cursor-comparison/Compare.csproj` runs the production cursor from the same
-external post-award seed, admitted PRST cast/idle content, recovery text `Sarah recovered\n6 hit points.`
-and neutral timed reads. Subsequent opportunities and control2 come from the cursor, not trace events.
-The first named divergence is recovery `bsc0B`, prepared-04 CP2059–2091 (one-based checkpoint lines),
-observer frames32364–32367. Entry has actor/target1, HEAL1; the source action supplies HP+6, MP+0,
-status0, reaction mode2. At CP2059, a6=FF0022, seed00920000, control1, lifetimeFFFE, toggle1,
-fairy age2/phase7/delay23/dustClock1. Source `OpenAllyBattlesceneMiniStatusWindow` contains an explicit
-move/VInt and a movement-end wait. The current cursor ends recovery after two opportunities with
-lifetimeFFFC, age4, delay21. The observed caller returns after three, with lifetimeFFFB, age5,
-delay20 (CP2084/2091). Neither has drawn yet, so both seeds are00920000 at this first divergence.
-
-At recovery text return, the cursor has seed43EE0000/lifetimeFF80; original CP3458/3459 has
-D8800000/FF7F. This is an actual intermediate RNG divergence, not a waived display difference.
-At make-idle exit the cursor has seedECE20000/lifetimeFF6A, while CP3727 has ECE20000/FF65;
-the equal seed does not restore the missing state/opportunity correspondence. At final stop return,
-both reach seed8E2D0000/control0; this particular capped recovery and construction-time award remain
-HP5→11, MP10→7, EXP+13. That endpoint coincidence does not establish general result equality:
-other seeds, content or stop phases may alter conditional draws and later gameplay/growth.
-
-The PRST idle header is20. `bsc05` performs a real frame load on each side of Sleep; each ends in
-`WaitForDmaQueueProcessing`, whose helper unconditionally branches to `WaitForVInt`. The cursor
-therefore retains those two operations around the content-provided sleep. Weapon queue enable and
-`sub_1942` do not themselves wait. The observed26-frame bsc05 interval is not a source sleep value.
-An earlier hand-calculated153-versus154 estimate incorrectly used that observed interval; it is
-superseded by direct cursor execution:149 active opportunities before stop versus154 observed.
-No149/153/154/26 budget or seed padding is used in production.
-
-**Confirmed — bounded opportunity readback:** the
-[research attribution](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md#recovery-and-make-idle-opportunity-attribution)
-records three top-level recovery VInts: the first has A6=`FFFFDE80` (the source number buffer), the
-next two have restored script A6=`00FF0028`. Source numeric conversion has no waits; window movement
-has an explicit VInt followed by a wait that repeats conditionally until movement ends. Make-idle
-has26 top-level VInts: four with stack A6 in two pairs, two with restored script A6/d0=`$900`, and20
-with the Sleep counter19…0. The source performs two decompressions and DMA waits around Sleep(20).
-
-**Inferred:** recovery's extra opportunity interrupts numeric window construction; make-idle's four
-extra opportunities interrupt the two decompressions. These are CPU-work interruptions outside the
-explicit waits, not evidence for fixed +1/+4 waits. The pinned source/register mapping and exact
-readback command belong to the research owner. The audited `HealingSceneCursor` opportunity rules
-are unchanged between the retained comparison at8e6881ea and accepted PR557 main
-`bfcb819fe61cf6b7f2a3a45822f6de51e411e559`; its neutral timeout correction changes completion handling,
-not these opportunity rules. The completed continuous-cursor **FAIL** remains.
-
-**Unknown — gameplay-opportunity admission:** exact interrupted PCs, live busy/window/graphics gates,
-cross-state/content timing, and a general semantic treatment remain unproven. Conditional window
-completion alone does not account for interruptions during CPU work. Wider content/gate coverage
-and full continuous scene conformance remain Unknown at the [retained comparison boundary](../evidence/retained-comparisons.md).
-[ADR0010 Option A/8D](../../../docs/decisions/0010-map3-battle01-product-acceptance.md#evidenced-gameplay-waits-accepted-option-a)
-still controls shared RNG and selected gameplay results. This attribution does not waive the
-intermediate RNG difference or establish that hardware simulation is necessary. A next proposal
-must identify concrete gameplay effects and feasible semantic handling under that policy; the
-observed counts alone supply neither a new product decision nor permission for new capture.
-
-**Confirmed — separate native settings comparison:** actual Godot inputs in the existing scene
-observer exercise full-HP HEAL3, wounded other-target HEAL1 and wounded self-target HEAL2, alongside
-physical scenes. Each completes real fairy retirement/cleanup and releases input, with actual77/113
-audio and live projected nodes. Normal/instant versus reduced-flash/adjustable text uses the same
-semantic inputs; final `native-timeout-normal-01` / `native-timeout-reduced-01` records each finish
-six scenes and match all2311 ordered semantic events, RNG and final resource/turn state (delivery
-metadata excluded). Both action and recovery messages also exhaust65 neutral inputs with zero
-Confirms after natural text readiness; their final-input receipts contain no extra RNG or delivery.
-Later HEAL cases retain early acknowledgements. This proves bounded settings conformance, not original neutral-input conformance.
-The reproduction and completed failure records belong to the
-[verification owner](../verification/battles.md#heal-scene-verification).
+The [retained HEAL comparisons](spell-presentation.md#separate-comparison-boundaries) include the
+completed continuous-opportunity failure and the separate native settings pass.
 
 ## Battlefield death batches
 
