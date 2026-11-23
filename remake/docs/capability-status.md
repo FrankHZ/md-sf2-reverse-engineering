@@ -149,6 +149,8 @@ results. After an admitted settled return, ordinary field Save uses v6.
 The [native verification owner](verification/battle-save.md) distinguishes controlled preconditions,
 ordinary input, inherited engine/storage evidence and remaining physical/exit-warning limits.
 Required unknown or finite music/interpreter state rejects; arbitrary battle suspension remains outside scope.
+Active MUDDLE remains outside save admission while its automatic turn consumers are pending.
+[Internal turn prerequisites](domain/hostile-spells-design.md#muddle-turn-prerequisites)
 
 ## Castle bedroom scene retirement
 

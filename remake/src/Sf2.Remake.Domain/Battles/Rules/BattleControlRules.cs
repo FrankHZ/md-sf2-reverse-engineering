@@ -1,3 +1,5 @@
+using Sf2.Remake.Domain.Gameplay.Sf2;
+
 namespace Sf2.Remake.Domain.Battles;
 
 internal enum BattleControlAdmission
@@ -10,7 +12,7 @@ internal static class BattleControlRules
     {
         if (hp == 0) return BattleControlAdmission.Dead;
         if (x is < 0 or >= 48 || y is < 0 or >= 48) return BattleControlAdmission.Unplaced;
-        if ((status & 0x30) != 0) return BattleControlAdmission.MuddledAi;
+        if (MuddleRules.Present(status)) return BattleControlAdmission.MuddledAi;
         if (activationWord is null) return BattleControlAdmission.MissingActivationWord;
         if ((activationWord.Value & 4) != 0) return BattleControlAdmission.AiControlled;
         if (ally && allyAutoBattle) return BattleControlAdmission.AllyAutoBattle;

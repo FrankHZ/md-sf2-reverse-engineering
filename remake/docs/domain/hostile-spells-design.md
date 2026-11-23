@@ -115,8 +115,8 @@ attack is selected. [Attack command][aiattack] · [Action guard][guard] ·
 [Scene targets][loop] · [Action message][message] ·
 [Controlled predicate and guard observations](../../../docs/research/battle/runtime-rng-and-battle-math.md#confirmed-muddle-confusion-predicate-truth-table)
 
-Both MUDDLE ranks make a normal physical attack dodgeable on main range-2 roll zero, except
-when the target's SLEEP or STUN bypasses the dodge. The scene's MUDDLE 2 flag gates ranged
+An attacker affected by either MUDDLE rank gives the defender a dodge on main range-2 roll
+zero. A sleeping or stunned defender skips the dodge draw. The scene's MUDDLE 2 flag gates ranged
 physical presentation and prevents ordinary doubles/counters. The regular same-side gate also
 suppresses doubles/counters. Preserve actual faction for kill, drop and victory accounting.
 When the MUDDLE 2 scene flag bypasses initialization of `targetIsOnSameSide`, keep that source
@@ -338,6 +338,32 @@ boss victory by DESOUL remain **Unknown**. The engine cases exercise custody and
 behavior. The native segments exercise ordinary selection, result messages, settled save/restore
 and return after a controlled stage.
 
+## MUDDLE turn prerequisites
+
+**Confirmed** in [controlled engine cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs).
+The packed count and confusion bit stay in the combatant's status word. The existing physical
+impact uses range 2 for the draw when the attacker is muddled. The usual sleeping or stunned
+defender bypass takes precedence. The after-turn continuation consumes the current count
+between SLEEP and SILENCE. An expiry clears count and flag with notice 355 using the existing
+timed status delivery. A decrement retains the flag and advances without a message. Skipped and
+queue-only entries use the same continuation, including a second entry in the same round.
+
+[SourceAllyAi](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceAllyAi.cs) already owns the applicable
+ally commandset 06. Its current admission is for adjacent physical actors without learned
+spells. The [automatic action validator](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
+expects opposing attack targets. A MUDDLE 1 binding needs temporary ally dispatch and the
+actual reachable Attack, Heal and movement choices. MUDDLE 2 also needs a target-side decision
+shared by search, commit validation and playback, plus the selected-center guard, inaction
+and same-side accounting. Reuse those owners and the existing action rules. Keep faction and
+permanent control identity as their current operands.
+
+Both MUDDLE ranks remain unbound while those automatic consumers are open. The authored,
+private and save admission rules retain their existing rejection of active MUDDLE. The
+controlled engine cases inject status inside the simulation to exercise the completed pieces
+and check that public save and restore still reject pending counts and flag-only words.
+No save field or format changes. The localized expiry message compiles in the adapter.
+Ordinary cast, native automatic turn and active cold Continue remain unverified at this stage.
+
 ## Implementation order and ownership
 
 Learned SLEEP 1 and DESOUL 1/2 have player bindings. Kazin's learned MUDDLE ranks can
@@ -376,8 +402,8 @@ required consumers are admitted.
    [BattleOutcomeRules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/BattleOutcomeRules.cs).
    The existing commit/replay authority retains effects, custody receipts and scene waits.
    [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
-3. **MUDDLE 1 then 2.** Pair the first support binding with after-turn, effective automatic
-   ownership and the physical dodge consumer. Pair the second with same-side AI decisions
+3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) implement
+   after-turn and physical dodge. Pair the first support binding with effective automatic ownership. Pair the second with same-side AI decisions
    and guarded and real same-side actions. Route temporary automatic control in
    [BattleAdvancer](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs).
    Extend the existing commandset/action decisions

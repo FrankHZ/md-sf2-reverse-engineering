@@ -809,6 +809,7 @@ internal static partial class GameText
         ["battle.scene.sleep"] = 1,
         ["battle.scene.sleeping"] = 1,
         ["battle.scene.awake"] = 1,
+        ["battle.scene.muddle-expired"] = 1,
         ["battle.scene.poison"] = 2,
         ["battle.scene.exhausted"] = 1,
         ["battle.scene.in-progress"] = 0,

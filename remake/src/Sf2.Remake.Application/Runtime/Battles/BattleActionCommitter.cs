@@ -6,6 +6,11 @@ namespace Sf2.Remake.Application.Runtime.Battles;
 
 internal static class BattleActionCommitter
 {
+    internal static bool NeedsAfterTurn(EngineBattleState battle, BattleActorState actor) =>
+        actor.Hp > 0 && actor.Position is not null &&
+        (actor.NeedsStatRefresh || (actor.Status & (0x3C1 | MuddleRules.CounterMask | BattleStatCounters.Mask)) != 0 ||
+            battle.Definition.Poison && PoisonTurnRules.Eligible(actor));
+
     // Called only after an entire player or enemy ACTION has resolved on temporary state.
     internal static SessionSnapshot Publish(SessionSnapshot current, EngineBattleState battle,
         ActorRef actor, MapPosition? destination, IReadOnlyList<BattleEffect> effects, List<SessionObservation> observations, SessionRules rules, bool defeatedHookHandled = false, bool sceneEnded = false, BattleDeathBatch? deaths = null)
@@ -51,8 +56,7 @@ internal static class BattleActionCommitter
         }
         // BattleLoop reloads the queue entry for after-turn effects. A trap rewrites only the scene attacker.
         var turnOwner = outcome is null ? BattleTurnFlow.QueuedActor(battle) : null;
-        bool lifecycle = turnOwner is { Hp: > 0, Position: not null } &&
-            (turnOwner.NeedsStatRefresh || (turnOwner.Status & (0x3C1 | BattleStatCounters.Mask)) != 0 || battle.Definition.Poison && PoisonTurnRules.Eligible(turnOwner));
+        bool lifecycle = turnOwner is not null && NeedsAfterTurn(battle, turnOwner);
         if (outcome is null && !lifecycle) observations.Add(new(++sequence, revision, "after-turn", turnOwner!.Actor));
         else if (outcome is not null) observations.Add(new(++sequence, revision, "battle-outcome", Detail: outcome.Value.ToString()));
         if (battle.MainSeed != current.Battle.MainSeed)

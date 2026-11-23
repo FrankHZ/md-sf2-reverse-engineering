@@ -97,8 +97,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         _ = RequireActor(current, actorRef);
         var actor = current.GetActor(actorRef);
         var target = RequireTarget(current, actorRef, destination, targetRef);
-        if (!PoisonTurnRules.SupportedPhysicalStatus(actor.Status) || !PoisonTurnRules.SupportedPhysicalStatus(target.Status) ||
-            !current.Definition.Poison && ((actor.Status | target.Status) & 2) != 0)
+        if (!SilenceRules.SupportedInBattle(actor.Status, current.Definition.Poison) ||
+            !SilenceRules.SupportedInBattle(target.Status, current.Definition.Poison))
             throw new BattleRuleException("physical-status", "actors.status", true);
         ushort actorHp = actor.Hp, targetHp = target.Hp;
         uint seed = current.MainSeed;
@@ -195,8 +195,10 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             // moved original actor's destination when it becomes the counter's target.
             int multiplier = LandMultiplier(terrain, defender.Definition.Mover);
             bool archerBonus = ArcherBonus(attacker.Definition.Mover, defender.Definition.Mover);
+            ushort dodgeRange = MuddleRules.Present(attacker.Status) ? (ushort)2 :
+                !archerBonus && defender.Definition.Mover is (BattleMover.Hovering or BattleMover.Flying) ? (ushort)8 : (ushort)32;
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
-                hp, multiplier, seed, !archerBonus && defender.Definition.Mover is (BattleMover.Hovering or BattleMover.Flying) ? (ushort)8 : (ushort)32,
+                hp, multiplier, seed, dodgeRange,
                 profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC1) != 0,
                 ineffective: !counter && ineffective, silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,

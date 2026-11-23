@@ -1357,6 +1357,9 @@ msgid "battle.scene.silenced-cast"
 msgstr "{0}处于沉默状态。已消耗MP，但法术没有效果。"
 
 #. Project-authored functional silence feedback.
+msgid "battle.scene.muddle-expired"
+msgstr "{0}恢复了清醒。"
+
 msgid "battle.scene.silence-expired"
 msgstr "封魔效果结束。{0}可以再次施法。"
 
